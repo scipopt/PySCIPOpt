@@ -18,10 +18,10 @@ args = sys.argv[1:]
 
 # remove links to lib and include
 if 'cleanlib' in args:
-    if os.path.exists(libscipopt):
+    if os.path.lexists(libscipopt):
         print 'removing '+libscipopt
         os.remove(libscipopt)
-    if os.path.exists(includescip):
+    if os.path.lexists(includescip):
         print 'removing '+includescip
         os.remove(includescip)
     quit()
@@ -31,7 +31,7 @@ if args.count("build_ext") > 0 and args.count("--inplace") == 0:
     sys.argv.insert(sys.argv.index("build_ext")+1, "--inplace")
 
 # check for missing scipopt library
-if not os.path.exists('lib/libscipopt.so'):
+if not os.path.lexists('lib/libscipopt.so'):
     pathToLib = os.path.abspath(raw_input('Please enter path to scipopt library (scipoptsuite/lib/libscipopt.so):\n'))
     print pathToLib
 
@@ -39,10 +39,12 @@ if not os.path.exists('lib/libscipopt.so'):
     if not os.path.exists('lib'):
         os.makedirs('lib')
 
-    os.symlink(pathToLib, libscipopt)
+    if not os.path.exists(pathToLib):
+        print 'Sorry, the path to scipopt library does not exist'
+        quit()
 
 # check for missing scip src directory
-if not os.path.exists(includescip):
+if not os.path.lexists(includescip):
     pathToScip = os.path.abspath(raw_input('Please enter path to scip src directory (scipoptsuite/scip/src):\n'))
     print pathToScip
 
@@ -50,7 +52,16 @@ if not os.path.exists(includescip):
     if not os.path.exists('include'):
         os.makedirs('include')
 
+    if not os.path.exists(pathToScip): 
+        print 'Sorry, the path to scip src directory does not exist'
+        quit()
+
+
+if not os.path.lexists('lib/libscipopt.so'):
+    os.symlink(pathToLib, libscipopt)
+if not os.path.lexists(includescip):
     os.symlink(pathToScip, includescip)
+
 
 ext_modules = []
 

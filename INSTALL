@@ -7,22 +7,50 @@ After extracting the archive, build the shared library with
 
     make SHARED=true ZIMPL=false scipoptlib
 
-which should appear in "lib/libscipopt-3.0.2.linux.x86_64.gnu.opt.so".
-This library should be found in your LD_LIBRARY_PATH, e.g.,
+This will result in the creation of the directory "<path_to_scipopt/lib>" and
+the shared library will be created there.
+
+To properly build python-scip, it is necessary to have <path_to_scipopt/lib>
+included in your LD_LIBRARY_PATH. This is achieved by executing the following,
 
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<path_to_scipopt/lib>
 
-additionally, it is necessary to append the path to this directory to
-your PYTHONPATH, e.g.,
+Additionally, it is necessary to append the path to the python-scip directory to
+your PYTHONPATH. This is achieved with the following command,
 
    export PYTHONPATH=$PYTHONPATH:<path_to_python-scip>
 
-Then, back in the python-scip directory, execute
+In the python-scip directory, execute
 
     python setup.py build_ext --inplace
 
-which should result in a file pyscipopt/scip/scip.so, which you can
-now import directly in your Python code.
+When running the setup.py script, you will be prompted for the path to the shared library,
+which will be similar to
+   
+   <path_to_scipopt/lib>/libscipopt-3.1.0.linux.x86_64.gnu.opt.so
+
+additionally, you will be prompted for the path to the scip source code, which
+will be similar to
+
+   <path_to_scipopt>/scip-3.1.0/src
+
+The result of this script is the production of the file pyscipopt/scip.so in the pyscipopt directory.
+the file can then be imported directly in your Python code to interface with SCIP.
 
 
 To test the library, simply run "py.test".
+
+
+TROUBLESHOOTING
+===============
+
+In case you input the wrong paths after running
+
+   python setup.py build_ext --inplace
+
+you can delete the link by running
+
+   python setup.py cleanlib
+
+If this does not work, it is possible to manually delete the links
+in the folders "include" and "lib".
