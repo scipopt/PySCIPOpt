@@ -1,0 +1,118 @@
+python-scip - a low-level wrapper for SCIP
+==========================================
+
+This package wraps the SCIP solver library with Cython to help
+prototyping algorithmic ideas.
+
+See the file LICENSE for copyright information.
+
+
+How to extend python-scip
+=========================
+
+The package in the distribution is provided as a starting point for people who would like to use
+python to interface with SCIP. It is possible to extend python-scip to increase the functionality of
+this interface. The following will provide some directions on how this can be achieved.
+
+The two most important files in python-scip are the scip.pxd and scip.pyx. These two files specify
+the public functions of SCIP that can be accessed from your python code.
+
+To make python-scip aware of the public functions you would like to access, you must add them to
+scip.pxd. There are two things that must be done in order to properly add the functions to
+python-scip.
+
+   1) Ensure any enums, structs or SCIP variable types are included in scip.pxd
+   2) Add the prototype of the public function you wish to access to scip.pxd
+
+After following the previous two steps, it is then possible to create functions in python that
+reference the SCIP public functions included in scip.pxd. This is completed by modifying the
+scip.pyx file to add the functionality you require. To better explain this a small example from the
+current scip.pyx file will be provided.
+
+Example:
+
+To add a variable in SCIP it is necessary to create the variable and then add it to the problem. To
+create the variable, it is possible to use the function SCIPcreateVarBasic. Then to add the
+variable, the function SCIPaddVar is used.
+
+In the scip.pxd file, the following is added:
+
+    ctypedef enum SCIP_VARTYPE:
+        SCIP_VARTYPE_BINARY     = 0
+        SCIP_VARTYPE_INTEGER    = 1
+        SCIP_VARTYPE_IMPLINT    = 2
+        SCIP_VARTYPE_CONTINUOUS = 3
+
+    ctypedef struct SCIP_VAR:
+        pass
+
+    SCIP_RETCODE SCIPaddVar(SCIP* scip, SCIP_VAR* var)
+    SCIP_RETCODE SCIPcreateVarBasic(SCIP* scip,
+                                    SCIP_VAR** var,
+                                    char* name,
+                                    SCIP_Real lb,
+                                    SCIP_Real ub,
+                                    SCIP_Real obj,
+                                    SCIP_VARTYPE vartype)
+
+NOTE: This is assuming the enum for SCIP_RETCODE and the SCIP variable type SCIP_REAL has already
+been added to scip.pxd.
+
+To interface with the SCIPaddVar and SCIPcreateVarBasic functions, the following is added to the
+scip.pyx file:
+
+
+    cdef _addVar(self, scip.SCIP_VAR* scip_var):
+        PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
+
+    cdef _createVarBasic(self, scip.SCIP_VAR** scip_var, name,
+                        lb, ub, obj, scip.SCIP_VARTYPE varType):
+        PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, scip_var,
+                           name, lb, ub, obj, varType))
+
+which provides the interface between the C function to create python functions.
+
+Using these two python functions, the function addContVar can be written, which provides the
+functionality to add a continuous variable to an problem. This function is written as:
+
+    def addContVar(self, name, lb=0.0, ub=None, obj=0.0):
+        if ub is None:
+            ub = scip.SCIPinfinity(self._scip)
+        cdef scip.SCIP_VAR* scip_var
+        self._createVarBasic(&scip_var, name, lb, ub, obj,
+                            scip.SCIP_VARTYPE_CONTINUOUS)
+        self._addVar(scip_var)
+        var = Var()
+        var._var = scip_var
+        return var
+
+
+How to build a model using python-scip
+======================================
+
+There are to python-scip examples provided in the tests folder: test_simplelp.py and
+test_knapsack.py. These display the basic functionality of python-scip by building linear
+programming and integer programming models with linear constraints. This section will provide a
+quick overview of the key features required to build a model using python-scip.
+
+1) It is necessary to import python-scip in your code. This is achieved by including the line
+
+    cimport pyscipopt.scip as scip
+
+2) Create a solver instance.
+
+    s = scip.Solver()
+
+This is equivalent to creating a SCIP* scip variable in your C code.
+
+3)  Access the methods in the scip.pyx file using the solver instance "s".
+
+Important Notes
+===============
+
+At the top of the scip.pyx file (and the files included in the tests folder) the statement
+
+    cimport pyscipopt.scip as scip
+
+is included. This provides access to the C functions contained in the scip.pxd file through the
+module label "scip".
