@@ -1,8 +1,9 @@
 # Copyright (C) 2012-2013 Robert Schwarz
 #   see file 'LICENSE' for details.
 
-cimport pyscipopt.scip as scip
+from os.path import abspath
 
+cimport pyscipopt.scip as scip
 
 def scipErrorHandler(function):
     def wrapper(*args, **kwargs):
@@ -318,3 +319,7 @@ cdef class Solver:
 
     def setStringParam(self, name, value):
         PY_SCIP_CALL(scip.SCIPsetStringParam(self._scip, name, value))
+
+    def readParams(self, file):
+        absfile = abspath(file)
+        PY_SCIP_CALL(scip.SCIPreadParams(self._scip, absfile))
