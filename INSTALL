@@ -5,38 +5,41 @@ Before building the python-scip wrapper, you need to download the SCIP
 Optimization Suite from http://scip.zib.de.
 After extracting the archive, build the shared library with
 
-    make SHARED=true ZIMPL=false scipoptlib
+    make SHARED=true scipoptlib
 
 This will result in the creation of the directory "<path_to_scipopt/lib>" and
 the shared library will be created there.
 
-To properly build python-scip, it is necessary to have <path_to_scipopt/lib>
-included in your LD_LIBRARY_PATH. This is achieved by executing the following,
+There are several ways to install/build python-scip:
 
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<path_to_scipopt/lib>
+a) In the python-scip directory, execute
 
-Additionally, it is necessary to append the path to the python-scip directory to
-your PYTHONPATH. This is achieved with the following command,
+      python setup.py build_ext --inplace
 
-   export PYTHONPATH=$PYTHONPATH:<path_to_python-scip>
+   Additionally, it is necessary to append the path to the python-scip directory to
+   your PYTHONPATH. This is achieved with the following command,
 
-In the python-scip directory, execute
+      export PYTHONPATH=$PYTHONPATH:<path_to_python-scip>
 
-    python setup.py build_ext --inplace
+   The result of this script is the production of the file pyscipopt/scip.so in the pyscipopt directory.
+   the file can then be imported directly in your Python code to interface with SCIP.
+
+b) In the python-scip directory, execute
+
+      python setup.py install [--prefix=<path-to-custom-python-packages>]
+
+   This will perform a global installation or put the compiled package into the directory
+   specified by --prefix.
 
 When running the setup.py script, you will be prompted for the path to the shared library,
 which will be similar to
-   
+
    <path_to_scipopt/lib>/libscipopt-3.1.0.linux.x86_64.gnu.opt.so
 
 additionally, you will be prompted for the path to the scip source code, which
 will be similar to
 
    <path_to_scipopt>/scip-3.1.0/src
-
-The result of this script is the production of the file pyscipopt/scip.so in the pyscipopt directory.
-the file can then be imported directly in your Python code to interface with SCIP.
-
 
 To test the library, simply run "py.test".
 
