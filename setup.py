@@ -19,10 +19,10 @@ args = sys.argv[1:]
 # remove links to lib and include
 if 'cleanlib' in args:
     if os.path.lexists(libscipopt):
-        print 'removing '+libscipopt
+        print('removing '+libscipopt)
         os.remove(libscipopt)
     if os.path.lexists(includescip):
-        print 'removing '+includescip
+        print('removing '+includescip)
         os.remove(includescip)
     quit()
 
@@ -33,14 +33,14 @@ if args.count("build_ext") > 0 and args.count("--inplace") == 0:
 # check for missing scipopt library
 if not os.path.lexists('lib/libscipopt.so'):
     pathToLib = os.path.abspath(raw_input('Please enter path to scipopt library (scipoptsuite/lib/libscipopt.so):\n'))
-    print pathToLib
+    print(pathToLib)
 
     # create lib directory if necessary
     if not os.path.exists('lib'):
         os.makedirs('lib')
 
     if not os.path.exists(pathToLib):
-        print 'Sorry, the path to scipopt library does not exist'
+        print('Sorry, the path to scipopt library does not exist')
         quit()
 
 # check for missing scip src directory
@@ -53,7 +53,7 @@ if not os.path.lexists(includescip):
         os.makedirs('include')
 
     if not os.path.exists(pathToScip): 
-        print 'Sorry, the path to scip src directory does not exist'
+        print('Sorry, the path to scip src directory does not exist')
         quit()
 
 
@@ -84,7 +84,7 @@ ext_modules += [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip.pyx
 
 setup(
     name = 'pyscipopt',
-    version = '0.1',
+    version = '0.2',
     description = 'wrapper for SCIP in Python',
     author = 'Zuse Institute Berlin',
     author_email = 'scip@zib.de',
