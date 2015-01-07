@@ -4,6 +4,12 @@
 from os.path import abspath
 
 cimport pyscipopt.scip as scip
+import sys
+
+if sys.version_info >= (3, 0):
+    str_conversion = lambda x:bytes(x,'utf-8')
+else:
+    str_conversion = lambda x:x
 
 def scipErrorHandler(function):
     def wrapper(*args, **kwargs):
@@ -43,7 +49,7 @@ def PY_SCIP_CALL(scip.SCIP_RETCODE rc):
     if rc == scip.SCIP_OKAY:
         pass
     elif rc == scip.SCIP_ERROR:
-        raise StandardError('SCIP: unspecified error!')
+        raise Exception('SCIP: unspecified error!')
     elif rc == scip.SCIP_NOMEMORY:
         raise MemoryError('SCIP: insufficient memory error!')
     elif rc == scip.SCIP_READERROR:
@@ -55,18 +61,18 @@ def PY_SCIP_CALL(scip.SCIP_RETCODE rc):
     elif rc == scip.SCIP_FILECREATEERROR:
         raise IOError('SCIP: cannot create file!')
     elif rc == scip.SCIP_LPERROR:
-        raise StandardError('SCIP: error in LP solver!')
+        raise Exception('SCIP: error in LP solver!')
     elif rc == scip.SCIP_NOPROBLEM:
-        raise StandardError('SCIP: no problem exists!')
+        raise Exception('SCIP: no problem exists!')
     elif rc == scip.SCIP_INVALIDCALL:
-        raise StandardError('SCIP: method cannot be called at this time'
+        raise Exception('SCIP: method cannot be called at this time'
                             + ' in solution process!')
     elif rc == scip.SCIP_INVALIDDATA:
-        raise StandardError('SCIP: error in input data!')
+        raise Exception('SCIP: error in input data!')
     elif rc == scip.SCIP_INVALIDRESULT:
-        raise StandardError('SCIP: method returned an invalid result code!')
+        raise Exception('SCIP: method returned an invalid result code!')
     elif rc == scip.SCIP_PLUGINNOTFOUND:
-        raise StandardError('SCIP: a required plugin was not found !')
+        raise Exception('SCIP: a required plugin was not found !')
     elif rc == scip.SCIP_PARAMETERUNKNOWN:
         raise KeyError('SCIP: the parameter with the given name was not found!')
     elif rc == scip.SCIP_PARAMETERWRONGTYPE:
@@ -76,9 +82,9 @@ def PY_SCIP_CALL(scip.SCIP_RETCODE rc):
     elif rc == scip.SCIP_KEYALREADYEXISTING:
         raise KeyError('SCIP: the given key is already existing in table!')
     elif rc == scip.SCIP_MAXDEPTHLEVEL:
-        raise StandardError('SCIP: maximal branching depth level exceeded!')
+        raise Exception('SCIP: maximal branching depth level exceeded!')
     else:
-        raise StandardError('SCIP: unknown return code!')
+        raise Exception('SCIP: unknown return code!')
     return rc
 
 cdef class Solution:
@@ -104,7 +110,8 @@ cdef class Solver:
 
     @scipErrorHandler
     def createProbBasic(self, problemName):
-        return scip.SCIPcreateProbBasic(self._scip, problemName)
+        name1 = str_conversion(problemName)
+        return scip.SCIPcreateProbBasic(self._scip, name1)
 
     @scipErrorHandler
     def free(self):
@@ -118,8 +125,9 @@ cdef class Solver:
     #                        interface the relevant classes (SCIP_VAR, ...)
     cdef _createVarBasic(self, scip.SCIP_VAR** scip_var, name,
                         lb, ub, obj, scip.SCIP_VARTYPE varType):
+        name1 = str_conversion(name)
         PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, scip_var,
-                           name, lb, ub, obj, varType))
+                           name1, lb, ub, obj, varType))
 
     cdef _addVar(self, scip.SCIP_VAR* scip_var):
         PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
@@ -129,8 +137,9 @@ cdef class Solver:
                                 initial=True, separate=True, enforce=True, check=True,
                                 propagate=True, local=False, modifiable=False, dynamic=False,
                                 removable=False, stickingatnode=False):
+        name1 = str_conversion(name)
         PY_SCIP_CALL(scip.SCIPcreateConsLinear(self._scip, cons,
-                                                    name, nvars, vars, vals,
+                                                    name1, nvars, vars, vals,
                                                     lhs, rhs, initial, separate, enforce,
                                                     check, propagate, local, modifiable,
                                                     dynamic, removable, stickingatnode) )
@@ -146,7 +155,7 @@ cdef class Solver:
 
     cdef _releaseVar(self, scip.SCIP_VAR* var):
         PY_SCIP_CALL(scip.SCIPreleaseVar(self._scip, &var))
-        
+
 
     # Setting the objective sense
     def setMinimise(self):
@@ -303,22 +312,28 @@ cdef class Solver:
 
     # Parameter Methods
     def setBoolParam(self, name, value):
-        PY_SCIP_CALL(scip.SCIPsetBoolParam(self._scip, name, value))
+        name1 = str_conversion(name)
+        PY_SCIP_CALL(scip.SCIPsetBoolParam(self._scip, name1, value))
 
     def setIntParam(self, name, value):
-        PY_SCIP_CALL(scip.SCIPsetIntParam(self._scip, name, value))
+        name1 = str_conversion(name)
+        PY_SCIP_CALL(scip.SCIPsetIntParam(self._scip, name1, value))
 
     def setLongintParam(self, name, value):
-        PY_SCIP_CALL(scip.SCIPsetLongintParam(self._scip, name, value))
+        name1 = str_conversion(name)
+        PY_SCIP_CALL(scip.SCIPsetLongintParam(self._scip, name1, value))
 
     def setRealParam(self, name, value):
-        PY_SCIP_CALL(scip.SCIPsetRealParam(self._scip, name, value))
+        name1 = str_conversion(name)
+        PY_SCIP_CALL(scip.SCIPsetRealParam(self._scip, name1, value))
 
     def setCharParam(self, name, value):
-        PY_SCIP_CALL(scip.SCIPsetCharParam(self._scip, name, value))
+        name1 = str_conversion(name)
+        PY_SCIP_CALL(scip.SCIPsetCharParam(self._scip, name1, value))
 
     def setStringParam(self, name, value):
-        PY_SCIP_CALL(scip.SCIPsetStringParam(self._scip, name, value))
+        name1 = str_conversion(name)
+        PY_SCIP_CALL(scip.SCIPsetStringParam(self._scip, name1, value))
 
     def readParams(self, file):
         absfile = abspath(file)
