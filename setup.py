@@ -46,7 +46,7 @@ if not os.path.lexists('lib/libscipopt.so'):
 # check for missing scip src directory
 if not os.path.lexists(includescip):
     pathToScip = os.path.abspath(raw_input('Please enter path to scip src directory (scipoptsuite/scip/src):\n'))
-    print pathToScip
+    print(pathToScip)
 
     # create lib directory if necessary
     if not os.path.exists('include'):

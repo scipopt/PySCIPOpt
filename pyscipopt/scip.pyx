@@ -6,6 +6,9 @@ from os.path import abspath
 cimport pyscipopt.scip as scip
 import sys
 
+# for external user functions use def; for functions used only inside the interface (starting with _) use cdef
+# todo: check whether this is currently done like this
+
 if sys.version_info >= (3, 0):
     str_conversion = lambda x:bytes(x,'utf-8')
 else:
@@ -96,7 +99,12 @@ cdef class Var:
 cdef class Cons:
     cdef scip.SCIP_CONS* _cons
 
-
+# todo:
+# - integrate create(), includeDefaultPlugins(), createProbBasic() in constructor; constructor takes model name
+#   string and optional includeDefaultPlugins=True parameter
+# - remove create(), includeDefaultPlugins(), createProbBasic() methods
+# - replace free() by "destructor"
+# - interface SCIPfreeProb()
 cdef class Solver:
     cdef scip.SCIP* _scip
 
@@ -158,10 +166,10 @@ cdef class Solver:
 
 
     # Setting the objective sense
-    def setMinimise(self):
+    def setMinimize(self):
         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MINIMIZE))
 
-    def setMaximise(self):
+    def setMaximize(self):
         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))
 
     # Setting parameters
