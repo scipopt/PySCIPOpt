@@ -8,7 +8,7 @@ def test_knapsack():
     s.createProbBasic("Knapsack")
 
     # setting the objective sense to maximise
-    s.setMaximise()
+    s.setMaximize()
 
     # item weights
     weights = [4, 2, 6, 3, 7, 5]
