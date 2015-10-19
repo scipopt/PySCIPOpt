@@ -31,8 +31,11 @@ if args.count("build_ext") > 0 and args.count("--inplace") == 0:
     sys.argv.insert(sys.argv.index("build_ext")+1, "--inplace")
 
 # check for missing scipopt library
-if not os.path.lexists('lib/libscipopt.so'):
-    pathToLib = os.path.abspath(raw_input('Please enter path to scipopt library (scipoptsuite/lib/libscipopt.so):\n'))
+if not os.path.lexists(libscipopt):
+    if sys.version_info >= (3, 0):
+        pathToLib = os.path.abspath(input('Please enter path to scipopt library (scipoptsuite/lib/libscipopt.so):\n'))
+    else:
+        pathToLib = os.path.abspath(raw_input('Please enter path to scipopt library (scipoptsuite/lib/libscipopt.so):\n'))
     print(pathToLib)
 
     # create lib directory if necessary
@@ -45,7 +48,10 @@ if not os.path.lexists('lib/libscipopt.so'):
 
 # check for missing scip src directory
 if not os.path.lexists(includescip):
-    pathToScip = os.path.abspath(raw_input('Please enter path to scip src directory (scipoptsuite/scip/src):\n'))
+    if sys.version_info >= (3, 0):
+        pathToScip = os.path.abspath(input('Please enter path to scip src directory (scipoptsuite/scip/src):\n'))
+    else:
+        pathToScip = os.path.abspath(raw_input('Please enter path to scip src directory (scipoptsuite/scip/src):\n'))
     print(pathToScip)
 
     # create lib directory if necessary
@@ -56,21 +62,14 @@ if not os.path.lexists(includescip):
         print('Sorry, the path to scip src directory does not exist')
         quit()
 
-
-if not os.path.lexists('lib/libscipopt.so'):
+# create symbolic links to SCIP
+if not os.path.lexists(libscipopt):
     os.symlink(pathToLib, libscipopt)
 if not os.path.lexists(includescip):
     os.symlink(pathToScip, includescip)
 
 
 ext_modules = []
-
-#extensions =  [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip.pyx')],
-                          ## extra_compile_args=['-g', '-O0', '-UNDEBUG'],
-                          #include_dirs=[includescip],
-                          #library_dirs=['lib'],
-                          #runtime_library_dirs=[os.path.abspath('lib')],
-                          #libraries=['scipopt', 'readline', 'z', 'gmp', 'ncurses', 'm'])]
 
 ext_modules += [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip.pyx')],
                           #extra_compile_args=['-g', '-O0', '-UNDEBUG'],
