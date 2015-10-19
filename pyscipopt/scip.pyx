@@ -263,6 +263,7 @@ cdef class Solver:
 
 
     # Problem solving functions
+    # todo: define optimize() as a copy of solve() for Gurobi compatibility
     def solve(self):
         PY_SCIP_CALL( scip.SCIPsolve(self._scip) )
 
