@@ -178,33 +178,21 @@ cdef class Solver:
 
 
     # Variable Functions
-    # Creating and adding a continuous variable
-    def addContVar(self, name, lb=0.0, ub=None, obj=0.0):
+    # Create a new variable
+    def addVar(self, name, vtype='C', lb=0.0, ub=None, obj=0.0):
         if ub is None:
             ub = scip.SCIPinfinity(self._scip)
         cdef scip.SCIP_VAR* scip_var
-        self._createVarBasic(&scip_var, name, lb, ub, obj,
-                            scip.SCIP_VARTYPE_CONTINUOUS)
+        if vtype in ['C', 'CONTINUOUS']:
+            self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_CONTINUOUS)
+        elif vtype in ['B', 'BINARY']:
+            lb = 0.0
+            ub = 1.0
+            self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_BINARY)
+        elif vtype in ['I', 'INTEGER']:
+            self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_INTEGER)
 
         self._addVar(scip_var)
-        var = Var()
-        var._var = scip_var
-
-        self._releaseVar(scip_var)
-        return var
-
-    # Creating and adding an integer variable
-        # Note: setting the bounds to 0.0 and 1.0 will automatically
-        # convert this variable to binary.
-    def addIntVar(self, name, lb=0.0, ub=None, obj=0.0):
-        if ub is None:
-            ub = scip.SCIPinfinity(self._scip)
-        cdef scip.SCIP_VAR* scip_var
-        self._createVarBasic(&scip_var, name, lb, ub, obj,
-                            scip.SCIP_VARTYPE_INTEGER)
-
-        self._addVar(scip_var)
-
         var = Var()
         var._var = scip_var
 

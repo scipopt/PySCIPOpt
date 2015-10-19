@@ -8,8 +8,8 @@ def test_simplelp():
     s.createProbBasic("Knapsack")
 
     # add some variables
-    x = s.addContVar("x", obj=1.0)
-    y = s.addContVar("y", obj=2.0)
+    x = s.addVar("x", vtype='C', obj=1.0)
+    y = s.addVar("y", vtype='C', obj=2.0)
 
     # add some constraint
     coeffs = {x: 1.0, y: 2.0}

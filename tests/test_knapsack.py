@@ -26,7 +26,7 @@ def test_knapsack():
     varBaseName = "Item"
     for i in range(len(weights)):
         varNames.append(varBaseName + "_" + str(i))
-        knapsackVars.append(s.addIntVar(varNames[i], obj=costs[i], ub=1.0))
+        knapsackVars.append(s.addVar(varNames[i], vtype='I', obj=costs[i], ub=1.0))
 
 
     # adding a linear constraint for the knapsack constraint
