@@ -2,7 +2,7 @@ import pyscipopt.scip as scip
 
 def test_simplelp():
     # create solver instance
-    s = scip.Solver()
+    s = scip.Model()
     s.create()
     s.includeDefaultPlugins()
     s.createProbBasic("Knapsack")

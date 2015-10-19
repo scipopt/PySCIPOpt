@@ -105,7 +105,7 @@ cdef class Cons:
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
 # - interface SCIPfreeProb()
-cdef class Solver:
+cdef class Model:
     cdef scip.SCIP* _scip
 
     @scipErrorHandler
