@@ -215,7 +215,7 @@ cdef class Model:
     # Adding a linear constraint. By default the lhs is set to 0.0.
     # If the lhs is to be unbounded, then you set lhs to None.
     # By default the rhs is unbounded.
-    def addCons(self, coeffs, lhs=0.0, rhs=None,
+    def addCons(self, coeffs, lhs=0.0, rhs=None, name="cons",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, modifiable=False, dynamic=False,
                 removable=False, stickingatnode=False):
@@ -224,7 +224,7 @@ cdef class Model:
         if rhs is None:
             rhs = scip.SCIPinfinity(self._scip)
         cdef scip.SCIP_CONS* scip_cons
-        self._createConsLinear(&scip_cons, "cons", 0, NULL, NULL, lhs, rhs,
+        self._createConsLinear(&scip_cons, name, 0, NULL, NULL, lhs, rhs,
                                 initial, separate, enforce, check, propagate,
                                 local, modifiable, dynamic, removable, stickingatnode)
         cdef Var var
