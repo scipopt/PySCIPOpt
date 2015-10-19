@@ -55,7 +55,7 @@ In the scip.pxd file, the following is added:
                                     SCIP_Real obj,
                                     SCIP_VARTYPE vartype)
 
-NOTE: This is assuming the enum for SCIP_RETCODE and the SCIP variable type SCIP_REAL has already
+NOTE: This is assuming the enum for SCIP_RETCODE and the SCIP variable type SCIP_Real has already
 been added to scip.pxd.
 
 To interface with the SCIPaddVar and SCIPcreateVarBasic functions, the following is added to the
@@ -73,7 +73,7 @@ scip.pyx file:
 which provides the interface between the C function to create python functions.
 
 Using these two python functions, the function addContVar can be written, which provides the
-functionality to add a continuous variable to an problem. This function is written as:
+functionality to add a continuous variable to a problem. This function is written as:
 
     def addContVar(self, name, lb=0.0, ub=None, obj=0.0):
         if ub is None:
