@@ -91,6 +91,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPdelCons(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPsetObjsense(SCIP* scip, SCIP_OBJSENSE objsense)
     SCIP_RETCODE SCIPsetPresolving(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)
+    SCIP_RETCODE SCIPwriteOrigProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
 
     # Solve Methods
     SCIP_RETCODE SCIPsolve(SCIP* scip)

@@ -176,6 +176,16 @@ cdef class Model:
     def setPresolve(self, setting):
         PY_SCIP_CALL(scip.SCIPsetPresolving(self._scip, setting, True))
 
+    # Write original problem to file
+    def writeProblem(self, filename='origprob.cip'):
+        if filename.find('.') < 0:
+            filename = filename + '.cip'
+            ext = str_conversion('cip')
+        else:
+            ext = str_conversion(filename.split('.')[1])
+        fn = str_conversion(filename)
+        PY_SCIP_CALL(scip.SCIPwriteOrigProblem(self._scip, fn, ext, False))
+        print('wrote original problem to file ' + filename)
 
     # Variable Functions
     # Create a new variable
