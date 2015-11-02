@@ -131,8 +131,10 @@ if __name__ == "__main__":
             print("\n\nDiet for a maximum of %s calories"%b["Cal"])
 
         model = diet(F,N,a,b,c,d)
-        # todo: model.setMessagehdlrQuiet(True) # silent mode
-        model.solve() # todo: model.optimize()
+        model.hideOutput()
+        model.optimize()
+
+        model.writeProblem()
 
         # todo:
         # print("Optimal value:",model.getObjVal())

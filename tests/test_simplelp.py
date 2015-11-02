@@ -16,7 +16,7 @@ def test_simplelp():
     s.addCons(coeffs, 5.0)
 
     # solve problem
-    s.solve()
+    s.optimize()
 
     # retrieving the best solution
     solution = s.getBestSol()

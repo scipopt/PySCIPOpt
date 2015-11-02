@@ -34,7 +34,7 @@ def test_knapsack():
     s.addCons(coeffs, lhs=None, rhs=knapsackSize)
 
     # solve problem
-    s.solve()
+    s.optimize()
 
     s.printStatistics()
 
