@@ -18,11 +18,7 @@ def diet(F,N,a,b,c,d):
     Returns a model, ready to be solved.
     """
 
-    # todo: simplify to model = Model("modern diet")
-    model = Model()
-    model.create()
-    model.includeDefaultPlugins()
-    model.createProbBasic("modern diet")
+    model = Model("modern diet")
 
     # Create variables
     x,y,z = {},{},{}
@@ -30,10 +26,9 @@ def diet(F,N,a,b,c,d):
         x[j] = model.addVar(vtype="I", name="x(%s)"%j)
         y[j] = model.addVar(vtype="B", name="y(%s)"%j, obj=1.0) # todo: use setObjective() below
     for i in N:
-        z[i] = model.addVar(lb=a[i], ub=b[i], name="z(%s)"%j)
+        z[i] = model.addVar(lb=a[i], ub=b[i], name="z(%s)"%i)
     v = model.addVar(vtype="C", name="v")
 
-    # todo: make constraint names work
     # Constraints:
     for i in N:
         coeffs = { x[j] : d[j][i] for j in F }
@@ -74,8 +69,8 @@ def make_inst():
     d = { # composition
         "QPounder" : {"Cal":510, "Carbo":34, "Protein":28,
                       "VitA":15, "VitC":  6, "Calc":30, "Iron":20},
-        "McLean"   : {"Cal":370, "Carbo":35, "Protein":24, "VitA":15,
-                      "VitC": 10, "Calc":20, "Iron":20},
+        "McLean"   : {"Cal":370, "Carbo":35, "Protein":24,
+                      "VitA":15, "VitC": 10, "Calc":20, "Iron":20},
         "Big Mac"  : {"Cal":500, "Carbo":42, "Protein":25,
                       "VitA": 6, "VitC":  2, "Calc":25, "Iron":20},
         "FFilet"   : {"Cal":370, "Carbo":38, "Protein":14,
@@ -136,8 +131,13 @@ if __name__ == "__main__":
 
         model.writeProblem()
 
+        solution = model.getBestSol()
+
+        print(solution)
+
+        print("Optimal value:",model.getObjVal())
+
         # todo:
-        # print("Optimal value:",model.getObjVal())
         # x,y,z,v = model.__data
         # for j in x:
         #     if x[j].getSolVal() > 0:

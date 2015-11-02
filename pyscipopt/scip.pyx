@@ -108,6 +108,12 @@ cdef class Cons:
 cdef class Model:
     cdef scip.SCIP* _scip
 
+    def __init__(self, problemName='model', defaultPlugins=True):
+        self.create()
+        if defaultPlugins:
+            self.includeDefaultPlugins()
+        self.createProbBasic(problemName)
+
     @scipErrorHandler
     def create(self):
         return scip.SCIPcreate(&self._scip)
@@ -117,7 +123,7 @@ cdef class Model:
         return scip.SCIPincludeDefaultPlugins(self._scip)
 
     @scipErrorHandler
-    def createProbBasic(self, problemName):
+    def createProbBasic(self, problemName='model'):
         name1 = str_conversion(problemName)
         return scip.SCIPcreateProbBasic(self._scip, name1)
 
@@ -296,6 +302,10 @@ cdef class Model:
             objval = scip.SCIPgetSolOrigObj(self._scip, _solution)
         return objval
 
+    # Get objective value of best solution
+    def getObjVal(self):
+        solution = self.getBestSol()
+        return self.getSolObjVal(solution)
 
     # Retrieve the value of the variable in the final solution
     def getVal(self, Solution solution, Var var):
