@@ -316,6 +316,9 @@ cdef class Model:
     def printStatistics(self):
         PY_SCIP_CALL(scip.SCIPprintStatistics(self._scip, NULL))
 
+    # Verbosity Methods
+    def hideOutput(self, quiet = True):
+        scip.SCIPsetMessagehdlrQuiet(self._scip, quiet)
 
     # Parameter Methods
     def setBoolParam(self, name, value):

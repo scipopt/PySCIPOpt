@@ -82,6 +82,7 @@ cdef extern from "scip/scip.h":
     # General SCIP Methods
     SCIP_RETCODE SCIPcreate(SCIP** scip)
     SCIP_RETCODE SCIPfree(SCIP** scip)
+    void SCIPsetMessagehdlrQuiet(SCIP* scip, SCIP_Bool quiet)
 
     # Global Problem Methods
     SCIP_RETCODE SCIPcreateProbBasic(SCIP* scip, char* name)
