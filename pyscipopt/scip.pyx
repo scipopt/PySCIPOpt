@@ -104,6 +104,8 @@ cdef class Cons:
 # - interface SCIPfreeProb()
 cdef class Model:
     cdef scip.SCIP* _scip
+    # can be used to store problem data
+    cdef public object data
 
     def __init__(self, problemName='model', defaultPlugins=True):
         self.create()

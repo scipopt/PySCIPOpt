@@ -48,6 +48,8 @@ def diet(F,N,a,b,c,d):
     # todo: model.setObjective(quicksum(y[j]  for j in F), GRB.MAXIMIZE)
     # todo: model.__data = x,y,z,v
 
+    model.data = x,y,z,v
+
     return model
 
 
@@ -121,28 +123,30 @@ if __name__ == "__main__":
 
     for b["Cal"] in [None,3500,3000,2500]:
 
+        print()
+
         if b["Cal"] is None:
             print("Diet for an unlimited amount of calories")
         else:
-            print("Diet for a maximum of %s calories"%b["Cal"])
+            print("Diet for a maximum of {0:2.0f} calories".format(b["Cal"]))
 
         model = diet(F,N,a,b,c,d)
         model.hideOutput()
         model.optimize()
 
-        # model.writeProblem()
-
         solution = model.getBestSol()
 
-        print("Optimal value:",model.getObjVal())
+        print("Optimal value: %i different meals" % model.getObjVal())
 
-        # todo:
-        # x,y,z,v = model.__data
-        # for j in x:
-        #     if x[j].getSolVal() > 0:
-        #         print("%30s: %5s dishes --> %s added to objective") % (j,x[j].getSolVal(),y[j].getSolVal())
-        # print("amount spent:",v.getSolVal())
-        #
-        # print("amount of nutrients:")
-        # for i in z:
-        #     print("%30s: %5s") % (i,z[i].getSolVal())
+        x,y,z,v = model.data
+
+        for j in x:
+            # to avoid strange results due to rounding errors we don't check for exactly 0
+            if model.getVal(solution, x[j]) > 0.1:
+                print("{0:10s}: {1:2.0f} dishes --> {2:2.1f} added to objective".format(j, model.getVal(solution, x[j]), model.getVal(solution, y[j])))
+
+        print("amount spent: {0:2.2f}".format(model.getVal(solution,v)))
+
+        print("amount of nutrients:")
+        for i in z:
+            print("{0:10s}: {1:5.1f}".format(i, model.getVal(solution, z[i])))
