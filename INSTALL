@@ -34,12 +34,12 @@ b) In the python-scip directory, execute
 When running the setup.py script, you will be prompted for the path to the shared library,
 which will be similar to
 
-   <path_to_scipopt/lib>/libscipopt-3.1.0.linux.x86_64.gnu.opt.so
+   <path_to_scipopt/lib>/libscipopt-3.2.0.linux.x86_64.gnu.opt.so
 
 additionally, you will be prompted for the path to the scip source code, which
 will be similar to
 
-   <path_to_scipopt>/scip-3.1.0/src
+   <path_to_scipopt>/scip-3.2.0/src
 
 To test the library, simply run "py.test".
 

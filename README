@@ -72,15 +72,21 @@ scip.pyx file:
 
 which provides the interface between the C function to create python functions.
 
-Using these two python functions, the function addContVar can be written, which provides the
-functionality to add a continuous variable to a problem. This function is written as:
+Using these two python functions, the function addVar can be written, which provides the
+functionality to add a binary, integer, or continuous variable to a problem. This function is written as:
 
-    def addContVar(self, name, lb=0.0, ub=None, obj=0.0):
+    def addVar(self, name, vtype="C", lb=0.0, ub=None, obj=0.0):
         if ub is None:
             ub = scip.SCIPinfinity(self._scip)
         cdef scip.SCIP_VAR* scip_var
-        self._createVarBasic(&scip_var, name, lb, ub, obj,
-                            scip.SCIP_VARTYPE_CONTINUOUS)
+        if vtype in ["C", "CONTINUOUS"]:
+            self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_CONTINUOUS)
+        elif vtype in ["B", "BINARY"]:
+            lb = 0.0
+            ub = 1.0
+            self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_BINARY)
+        elif vtype in ["I", "INTEGER"]:
+            self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_INTEGER)
         self._addVar(scip_var)
         var = Var()
         var._var = scip_var
@@ -101,11 +107,11 @@ quick overview of the key features required to build a model using python-scip.
 
 2) Create a solver instance.
 
-    s = scip.Solver()
+    s = scip.Model()
 
 This is equivalent to creating a SCIP* scip variable in your C code.
 
-3)  Access the methods in the scip.pyx file using the solver instance "s".
+3)  Access the methods in the scip.pyx file using the solver/model instance "s".
 
 Important Notes
 ===============
