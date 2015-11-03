@@ -86,6 +86,7 @@ cdef extern from "scip/scip.h":
 
     # Global Problem Methods
     SCIP_RETCODE SCIPcreateProbBasic(SCIP* scip, char* name)
+    SCIP_RETCODE SCIPfreeProb(SCIP* scip)
     SCIP_RETCODE SCIPaddVar(SCIP* scip, SCIP_VAR* var)
     SCIP_RETCODE SCIPdelVar(SCIP* scip, SCIP_VAR* var, SCIP_Bool* deleted)
     SCIP_RETCODE SCIPaddCons(SCIP* scip, SCIP_CONS* cons)

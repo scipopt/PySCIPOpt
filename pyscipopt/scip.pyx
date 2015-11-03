@@ -99,9 +99,6 @@ cdef class Var:
 cdef class Cons:
     cdef scip.SCIP_CONS* _cons
 
-# todo:
-# - integrate create(), includeDefaultPlugins(), createProbBasic() in constructor; constructor takes model name
-#   string and optional includeDefaultPlugins=True parameter
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
 # - interface SCIPfreeProb()
@@ -113,6 +110,11 @@ cdef class Model:
         if defaultPlugins:
             self.includeDefaultPlugins()
         self.createProbBasic(problemName)
+
+    def __del__(self):
+        self.freeTransform()
+        self.freeProb()
+        self.free()
 
     @scipErrorHandler
     def create(self):
@@ -130,6 +132,10 @@ cdef class Model:
     @scipErrorHandler
     def free(self):
         return scip.SCIPfree(&self._scip)
+
+    @scipErrorHandler
+    def freeProb(self):
+        return scip.SCIPfreeProb(self._scip)
 
     @scipErrorHandler
     def freeTransform(self):
@@ -293,13 +299,13 @@ cdef class Model:
         return solution
 
     # Get problem objective value
-    def getSolObjVal(self, Solution solution, transform=True):
+    def getSolObjVal(self, Solution solution, original=True):
         cdef scip.SCIP_SOL* _solution
         _solution = <scip.SCIP_SOL*>solution._solution
-        if transform:
-            objval = scip.SCIPgetSolTransObj(self._scip, _solution)
-        else:
+        if original:
             objval = scip.SCIPgetSolOrigObj(self._scip, _solution)
+        else:
+            objval = scip.SCIPgetSolTransObj(self._scip, _solution)
         return objval
 
     # Get objective value of best solution

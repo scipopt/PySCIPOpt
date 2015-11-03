@@ -43,6 +43,7 @@ def diet(F,N,a,b,c,d):
         coeffs = { y[j] : 1.0, x[j] : -1.0 }
         model.addCons(coeffs, lhs=None, rhs=0.0, name="Eat(%s)"%j)
 
+    model.setMaximize()
     # Objective:
     # todo: model.setObjective(quicksum(y[j]  for j in F), GRB.MAXIMIZE)
     # todo: model.__data = x,y,z,v
@@ -121,19 +122,17 @@ if __name__ == "__main__":
     for b["Cal"] in [None,3500,3000,2500]:
 
         if b["Cal"] is None:
-            print("\n\nDiet for an unlimited amount of calories")
+            print("Diet for an unlimited amount of calories")
         else:
-            print("\n\nDiet for a maximum of %s calories"%b["Cal"])
+            print("Diet for a maximum of %s calories"%b["Cal"])
 
         model = diet(F,N,a,b,c,d)
         model.hideOutput()
         model.optimize()
 
-        model.writeProblem()
+        # model.writeProblem()
 
         solution = model.getBestSol()
-
-        print(solution)
 
         print("Optimal value:",model.getObjVal())
 
