@@ -16,6 +16,12 @@ includescip = 'include/scip'
 
 args = sys.argv[1:]
 
+# Python 2/3 compatibility
+if sys.version_info >= (3, 0):
+    my_input = input
+else:
+    my_input = raw_input
+
 # remove links to lib and include
 if 'cleanlib' in args:
     if os.path.lexists(libscipopt):
@@ -32,10 +38,7 @@ if args.count("build_ext") > 0 and args.count("--inplace") == 0:
 
 # check for missing scipopt library
 if not os.path.lexists(libscipopt):
-    if sys.version_info >= (3, 0):
-        pathToLib = os.path.abspath(input('Please enter path to scipopt library (scipoptsuite/lib/libscipopt.so):\n'))
-    else:
-        pathToLib = os.path.abspath(raw_input('Please enter path to scipopt library (scipoptsuite/lib/libscipopt.so):\n'))
+    pathToLib = os.path.abspath(my_input('Please enter path to scipopt library (scipoptsuite/lib/libscipopt.so):\n'))
     print(pathToLib)
 
     # create lib directory if necessary
@@ -48,10 +51,7 @@ if not os.path.lexists(libscipopt):
 
 # check for missing scip src directory
 if not os.path.lexists(includescip):
-    if sys.version_info >= (3, 0):
-        pathToScip = os.path.abspath(input('Please enter path to scip src directory (scipoptsuite/scip/src):\n'))
-    else:
-        pathToScip = os.path.abspath(raw_input('Please enter path to scip src directory (scipoptsuite/scip/src):\n'))
+    pathToScip = os.path.abspath(my_input('Please enter path to scip src directory (scipoptsuite/scip/src):\n'))
     print(pathToScip)
 
     # create lib directory if necessary
