@@ -2,9 +2,10 @@
 #   see file 'LICENSE' for details.
 
 from os.path import abspath
+import sys
 
 cimport pyscipopt.scip as scip
-import sys
+from pyscipopt.linexpr import LinExpr
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
@@ -93,11 +94,31 @@ def PY_SCIP_CALL(scip.SCIP_RETCODE rc):
 cdef class Solution:
     cdef scip.SCIP_SOL* _solution
 
+
 cdef class Var:
+    '''Base class holding a pointer to corresponding SCIP_VAR'''
     cdef scip.SCIP_VAR* _var
+
+class Variable(LinExpr):
+    '''Double inheritance, is now a linear expression and has SCIP_VAR*'''
+
+    def __init__(self, var):
+        self.var = var
+        LinExpr.__init__(self, {(self,) : 1.0})
+
+    def __hash__(self):
+        return hash(id(self))
+
+    def __lt__(self, other):
+        return id(self) < id(other)
+
+    def __gt__(self, other):
+        return id(self) > id(other)
+
 
 cdef class Cons:
     cdef scip.SCIP_CONS* _cons
+
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
