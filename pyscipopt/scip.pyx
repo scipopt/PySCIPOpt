@@ -101,6 +101,7 @@ cdef class Var:
 
 class Variable(LinExpr):
     '''Is a linear expression and has SCIP_VAR*'''
+    # name = ""
 
     def __init__(self):
         self.var = Var()
@@ -115,6 +116,8 @@ class Variable(LinExpr):
     def __gt__(self, other):
         return id(self) > id(other)
 
+    def __name__(self):
+        return self.name
 
 cdef class Cons:
     cdef scip.SCIP_CONS* _cons
@@ -125,6 +128,8 @@ cdef class Cons:
 # - interface SCIPfreeProb()
 cdef class Model:
     cdef scip.SCIP* _scip
+    # store best solution to get the solution values easier
+    cdef scip.SCIP_SOL* _bestSol
     # can be used to store problem data
     cdef public object data
 
@@ -240,6 +245,7 @@ cdef class Model:
 
         self._addVar(scip_var)
         var = Variable()
+        var.name = name
         v = var.var
         v._var = scip_var
 
@@ -328,7 +334,7 @@ cdef class Model:
     # todo: define optimize() as a copy of solve() for Gurobi compatibility
     def optimize(self):
         PY_SCIP_CALL( scip.SCIPsolve(self._scip) )
-
+        self._bestSol = scip.SCIPgetBestSol(self._scip)
 
 
     # Solution functions
@@ -349,19 +355,25 @@ cdef class Model:
         return objval
 
     # Get objective value of best solution
-    def getObjVal(self):
-        solution = self.getBestSol()
-        return self.getSolObjVal(solution)
+    def getObjVal(self, original=True):
+        if original:
+            objval = scip.SCIPgetSolOrigObj(self._scip, self._bestSol)
+        else:
+            objval = scip.SCIPgetSolTransObj(self._scip, self._bestSol)
+        return objval
 
     # Retrieve the value of the variable in the final solution
-    def getVal(self, Solution solution, var):
-        cdef scip.SCIP_SOL* _solution
+    def getVal(self, var, Solution solution=None):
+        cdef scip.SCIP_SOL* _sol
+        if solution is None:
+            _sol = self._bestSol
+        else:
+            _sol = <scip.SCIP_SOL*>solution._solution
         cdef scip.SCIP_VAR* _var
         cdef Var v
-        _solution = <scip.SCIP_SOL*>solution._solution
         v = <Var>var.var
         _var = <scip.SCIP_VAR*>v._var
-        return scip.SCIPgetSolVal(self._scip, _solution, _var)
+        return scip.SCIPgetSolVal(self._scip, _sol, _var)
 
     # Write the names of the variable to the std out.
     def writeName(self, var):

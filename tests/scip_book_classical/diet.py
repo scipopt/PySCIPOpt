@@ -134,19 +134,17 @@ if __name__ == "__main__":
         model.hideOutput()
         model.optimize()
 
-        solution = model.getBestSol()
-
         print("Optimal value: %i different meals" % model.getObjVal())
 
         x,y,z,v = model.data
 
         for j in x:
             # to avoid strange results due to rounding errors we don't check for exactly 0
-            if model.getVal(solution, x[j]) > 0.1:
-                print("{0:10s}: {1:2.0f} dishes --> {2:2.1f} added to objective".format(j, model.getVal(solution, x[j]), model.getVal(solution, y[j])))
+            if model.getVal(x[j]) > 0.1:
+                print("{0:10s}: {1:2.0f} dishes --> {2:2.1f} added to objective".format(j, model.getVal(x[j]), model.getVal(y[j])))
 
-        print("amount spent: {0:2.2f}".format(model.getVal(solution,v)))
+        print("amount spent: {0:2.2f}".format(model.getVal(v)))
 
         print("amount of nutrients:")
         for i in z:
-            print("{0:10s}: {1:5.1f}".format(i, model.getVal(solution, z[i])))
+            print("{0:10s}: {1:5.1f}".format(i, model.getVal(z[i])))
