@@ -4,7 +4,9 @@ def _is_number(e):
     try:
         f = float(e)
         return True
-    except ValueError:
+    except ValueError: # for malformed strings
+        return False
+    except TypeError: # for other types (Variable, LinExpr)
         return False
 
 class LinExpr(object):
@@ -17,7 +19,9 @@ class LinExpr(object):
         self.terms = {} if terms is None else terms
 
     def __getitem__(self, key):
-        return self.terms[key]
+        if not isinstance(key, tuple):
+            key = (key,)
+        return self.terms.get(key, 0.0)
 
     def __add__(self, other):
         terms = self.terms.copy()
@@ -27,7 +31,7 @@ class LinExpr(object):
                 terms[v] = terms.get(v, 0.0) + c
         elif _is_number(other):
             c = float(other)
-            terms[CONST] = terms.get(CONST) + c
+            terms[CONST] = terms.get(CONST, 0.0) + c
         else:
             raise NotImplementedError
         return LinExpr(terms)
