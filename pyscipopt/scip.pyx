@@ -100,10 +100,10 @@ cdef class Var:
     cdef scip.SCIP_VAR* _var
 
 class Variable(LinExpr):
-    '''Double inheritance, is now a linear expression and has SCIP_VAR*'''
+    '''Is a linear expression and has SCIP_VAR*'''
 
-    def __init__(self, var):
-        self.var = var
+    def __init__(self):
+        self.var = Var()
         LinExpr.__init__(self, {(self,) : 1.0})
 
     def __hash__(self):
@@ -228,6 +228,7 @@ cdef class Model:
         if ub is None:
             ub = scip.SCIPinfinity(self._scip)
         cdef scip.SCIP_VAR* scip_var
+        cdef Var v
         if vtype in ['C', 'CONTINUOUS']:
             self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_CONTINUOUS)
         elif vtype in ['B', 'BINARY']:
@@ -238,22 +239,34 @@ cdef class Model:
             self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_INTEGER)
 
         self._addVar(scip_var)
-        var = Var()
-        var._var = scip_var
+        var = Variable()
+        v = var.var
+        v._var = scip_var
 
         self._releaseVar(scip_var)
         return var
 
     # Release the variable
-    def releaseVar(self, Var var):
+    def releaseVar(self, var):
         cdef scip.SCIP_VAR* _var
-        _var = <scip.SCIP_VAR*>var._var
+        cdef Var v
+        v = <Var>var.var
+        _var = <scip.SCIP_VAR*>v._var
         self._releaseVar(_var)
 
     # Retrieving the pointer for the transformed variable
-    def getTransformedVar(self, Var var):
-        transvar = Var()
-        PY_SCIP_CALL(scip.SCIPtransformVar(self._scip, var._var, &transvar._var))
+    def getTransformedVar(self, var):
+        cdef scip.SCIP_VAR* _var
+        cdef scip.SCIP_VAR* _tvar
+        cdef Var v
+        cdef Var tv
+        transvar = Variable()
+        v = <Var>var.var
+        _var = <scip.SCIP_VAR*>v._var
+        tv = <Var>var.var
+        _tvar = <scip.SCIP_VAR*>tv._var
+        PY_SCIP_CALL(
+            scip.SCIPtransformVar(self._scip, _var, &_tvar))
         return transvar
 
     # Constraint functions
@@ -272,23 +285,27 @@ cdef class Model:
         self._createConsLinear(&scip_cons, name, 0, NULL, NULL, lhs, rhs,
                                 initial, separate, enforce, check, propagate,
                                 local, modifiable, dynamic, removable, stickingatnode)
-        cdef Var var
         cdef scip.SCIP_Real coeff
+        cdef Var v
+        cdef scip.SCIP_VAR* _var
         for k in coeffs:
-            var = <Var>k
             coeff = <scip.SCIP_Real>coeffs[k]
-            self._addCoefLinear(scip_cons, var._var, coeff)
+            v = <Var>k.var
+            _var = <scip.SCIP_VAR*>v._var
+            self._addCoefLinear(scip_cons, _var, coeff)
         self._addCons(scip_cons)
         cons = Cons()
         cons._cons = scip_cons
         return cons
 
 
-    def addConsCoeff(self, Cons cons, Var var, coeff):
+    def addConsCoeff(self, Cons cons, var, coeff):
         cdef scip.SCIP_CONS* _cons
-        _cons = <scip.SCIP_CONS*>cons._cons
         cdef scip.SCIP_VAR* _var
-        _var = <scip.SCIP_VAR*>var._var
+        cdef Var v
+        _cons = <scip.SCIP_CONS*>cons._cons
+        v = <Var>var.var
+        _var = <scip.SCIP_VAR*>v._var
         PY_SCIP_CALL(scip.SCIPaddCoefLinear(self._scip, _cons, _var, coeff))
 
 
@@ -337,17 +354,21 @@ cdef class Model:
         return self.getSolObjVal(solution)
 
     # Retrieve the value of the variable in the final solution
-    def getVal(self, Solution solution, Var var):
+    def getVal(self, Solution solution, var):
         cdef scip.SCIP_SOL* _solution
-        _solution = <scip.SCIP_SOL*>solution._solution
         cdef scip.SCIP_VAR* _var
-        _var = <scip.SCIP_VAR*>var._var
+        cdef Var v
+        _solution = <scip.SCIP_SOL*>solution._solution
+        v = <Var>var.var
+        _var = <scip.SCIP_VAR*>v._var
         return scip.SCIPgetSolVal(self._scip, _solution, _var)
 
     # Write the names of the variable to the std out.
-    def writeName(self, Var var):
+    def writeName(self, var):
         cdef scip.SCIP_VAR* _var
-        _var = <scip.SCIP_VAR*>var._var
+        cdef Var v
+        v = <Var>var.var
+        _var = <scip.SCIP_VAR*>v._var
         self._writeVarName(_var)
 
 
