@@ -57,3 +57,37 @@ class LinExpr(object):
 
     def __rsub__(self, other):
         return -1.0 * self + other
+
+    def __le__(self, other):
+        '''turn it into a constraint'''
+        if isinstance(other, LinExpr):
+            return (self - other) <= 0.0
+        elif _is_number(other):
+            return LinCons(self, ub=float(other))
+
+    def __ge__(self, other):
+        '''turn it into a constraint'''
+        if isinstance(other, LinExpr):
+            return (self - other) >= 0.0
+        elif _is_number(other):
+            return LinCons(self, lb=float(other))
+
+
+class LinCons(object):
+    '''Constraints with a linear expressions and lower/upper bounds.'''
+
+    def __init__(self, expr, lb=None, ub=None):
+        self.expr = expr
+        self.lb = lb
+        self.ub = ub
+        assert not (lb is None and ub is None)
+        self._normalize()
+
+    def _normalize(self):
+        '''move constant terms in expression to bounds'''
+        c = self.expr[CONST]
+        if not self.lb is None:
+            self.lb -= c
+        if not self.ub is None:
+            self.ub -= c
+        self.expr -= c
