@@ -64,6 +64,8 @@ class LinExpr(object):
             return (self - other) <= 0.0
         elif _is_number(other):
             return LinCons(self, ub=float(other))
+        else:
+            raise NotImplementedError
 
     def __ge__(self, other):
         '''turn it into a constraint'''
@@ -71,6 +73,8 @@ class LinExpr(object):
             return (self - other) >= 0.0
         elif _is_number(other):
             return LinCons(self, lb=float(other))
+        else:
+            raise NotImplementedError
 
     def __repr__(self):
         return 'LinExpr(%s)' % repr(self.terms)
@@ -94,6 +98,31 @@ class LinCons(object):
         if not self.ub is None:
             self.ub -= c
         self.expr -= c
+        assert self.expr[CONST] == 0.0
+
+    def __le__(self, other):
+        '''self <= other'''
+        if not self.ub is None:
+            raise TypeError('LinCons already has upper bound')
+        assert self.ub is None
+        assert not self.lb is None
+
+        if not _is_number(other):
+            raise TypeError('Ranged LinCons is not well defined!')
+
+        return LinCons(self.expr, lb=self.lb, ub=float(other))
+
+    def __ge__(self, other):
+        '''self >= other'''
+        if not self.lb is None:
+            raise TypeError('LinCons already has lower bound')
+        assert self.lb is None
+        assert not self.ub is None
+
+        if not _is_number(other):
+            raise TypeError('Ranged LinCons is not well defined!')
+
+        return LinCons(self.expr, lb=float(other), ub=self.ub)
 
     def __repr__(self):
         return 'LinCons(%s, %s, %s)' % (self.expr, self.lb, self.ub)

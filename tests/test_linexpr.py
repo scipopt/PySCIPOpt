@@ -86,3 +86,34 @@ def test_inequality():
     assert cons.expr[y] == 2.0
     assert cons.expr[z] == 0.0
     assert cons.expr[()] == 0.0
+
+def test_ranged():
+    expr = x + 2*y
+    cons = expr >= 3
+    ranged = cons <= 5
+    assert isinstance(ranged, LinCons)
+    assert ranged.lb == 3.0
+    assert ranged.ub == 5.0
+    assert ranged.expr[y] == 2.0
+    assert ranged.expr[()] == 0.0
+
+    # again, more or less directly:
+    ranged = 3 <= (x + 2*y <= 5)
+    assert isinstance(ranged, LinCons)
+    assert ranged.lb == 3.0
+    assert ranged.ub == 5.0
+    assert ranged.expr[y] == 2.0
+    assert ranged.expr[()] == 0.0
+    # we must use the paranthesis, because
+    #     x <= y <= z
+    # is a "chained comparison", which will be interpreted by Python
+    # to be equivalent to
+    #     (x <= y) and (y <= z)
+    # where "and" can not be overloaded and the expressions in
+    # paranthesis are coerced to booleans.
+
+    with pytest.raises(TypeError):
+        ranged = (x + 2*y <= 5) <= 3
+
+    with pytest.raises(TypeError):
+        ranged = 3 >= (x + 2*y <= 5)
