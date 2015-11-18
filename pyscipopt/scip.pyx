@@ -5,7 +5,7 @@ from os.path import abspath
 import sys
 
 cimport pyscipopt.scip as scip
-from pyscipopt.linexpr import LinExpr
+from pyscipopt.linexpr import LinExpr, LinCons
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
@@ -285,6 +285,14 @@ cdef class Model:
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, modifiable=False, dynamic=False,
                 removable=False, stickingatnode=False):
+        if isinstance(coeffs, LinCons):
+            kwargs = dict(lhs=lhs, rhs=rhs, name=name,
+                          initial=initial, separate=separate, enforce=enforce,
+                          check=check, propagate=propagate, local=local,
+                          modifiable=modifiable, dynamic=dynamic,
+                          removable=removable, stickingatnode=stickingatnode)
+            return self._addLinCons(coeffs, **kwargs)
+
         if lhs is None:
             lhs = -scip.SCIPinfinity(self._scip)
         if rhs is None:
@@ -306,6 +314,15 @@ cdef class Model:
         cons._cons = scip_cons
         return cons
 
+    def _addLinCons(self, lincons, **kwargs):
+        '''add object of class LinCons'''
+        assert isinstance(lincons, LinCons)
+        kwargs['lhs'], kwargs['rhs'] = lincons.lb, lincons.ub
+        terms = lincons.expr.terms
+        assert terms[()] == 0.0
+        coeffs = {t[0]:c for t, c in terms.items() if c != 0.0}
+
+        return self.addCons(coeffs, **kwargs)
 
     def addConsCoeff(self, Cons cons, var, coeff):
         cdef scip.SCIP_CONS* _cons
