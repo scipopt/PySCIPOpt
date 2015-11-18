@@ -101,10 +101,9 @@ cdef class Var:
 
 class Variable(LinExpr):
     '''Is a linear expression and has SCIP_VAR*'''
-    # name = ""
-
-    def __init__(self):
+    def __init__(self, name=None):
         self.var = Var()
+        self.name = name
         LinExpr.__init__(self, {(self,) : 1.0})
 
     def __hash__(self):
@@ -244,8 +243,7 @@ cdef class Model:
             self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_INTEGER)
 
         self._addVar(scip_var)
-        var = Variable()
-        var.name = name
+        var = Variable(name)
         v = var.var
         v._var = scip_var
 
@@ -266,7 +264,7 @@ cdef class Model:
         cdef scip.SCIP_VAR* _tvar
         cdef Var v
         cdef Var tv
-        transvar = Variable()
+        transvar = Variable() # TODO: set proper name?
         v = <Var>var.var
         _var = <scip.SCIP_VAR*>v._var
         tv = <Var>var.var
