@@ -59,6 +59,3 @@ def test_knapsack():
     assert includedWeight > 0 and includedWeight <= knapsackSize
 
     s.free()
-
-if __name__ == '__main__':
-    test_knapsack()

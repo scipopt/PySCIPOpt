@@ -26,6 +26,3 @@ def test_simplelp():
     assert round(s.getVal(y, solution)) == 0.0
 
     s.free()
-
-if __name__ == '__main__':
-    test_simplelp()
