@@ -45,7 +45,7 @@ def test_knapsack():
     print()
     varSolutions = []
     for i in range(len(weights)):
-        solValue = round(s.getVal(solution, knapsackVars[i]))
+        solValue = round(s.getVal(knapsackVars[i], solution))
         varSolutions.append(solValue)
         if solValue > 0:
             print (varNames[i], "Times Selected:", solValue)

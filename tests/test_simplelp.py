@@ -22,8 +22,8 @@ def test_simplelp():
     solution = s.getBestSol()
 
     # print solution
-    assert round(s.getVal(solution, x)) == 5.0
-    assert round(s.getVal(solution, y)) == 0.0
+    assert round(s.getVal(x, solution)) == 5.0
+    assert round(s.getVal(y, solution)) == 0.0
 
     s.free()
 
