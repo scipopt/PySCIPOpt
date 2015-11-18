@@ -72,6 +72,9 @@ class LinExpr(object):
         elif _is_number(other):
             return LinCons(self, lb=float(other))
 
+    def __repr__(self):
+        return 'LinExpr(%s)' % repr(self.terms)
+
 
 class LinCons(object):
     '''Constraints with a linear expressions and lower/upper bounds.'''
@@ -91,3 +94,6 @@ class LinCons(object):
         if not self.ub is None:
             self.ub -= c
         self.expr -= c
+
+    def __repr__(self):
+        return 'LinCons(%s, %s, %s)' % (self.expr, self.lb, self.ub)
