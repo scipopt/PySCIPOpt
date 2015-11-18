@@ -30,8 +30,8 @@ def test_nicelp():
     s = scip.Model()
 
     # add some variables
-    x = s.addVar("x", vtype='C', obj=1.0)
-    y = s.addVar("y", vtype='C', obj=2.0)
+    x = s.addVar("x", obj=1.0)
+    y = s.addVar("y", obj=2.0)
 
     # add some constraint
     s.addCons(x + 2*y >= 5)
@@ -39,11 +39,8 @@ def test_nicelp():
     # solve problem
     s.optimize()
 
-    # retrieving the best solution
-    solution = s.getBestSol()
-
     # print solution
-    assert round(s.getVal(x, solution)) == 5.0
-    assert round(s.getVal(y, solution)) == 0.0
+    assert round(s.getVal(x)) == 5.0
+    assert round(s.getVal(y)) == 0.0
 
     s.free()

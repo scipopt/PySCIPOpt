@@ -99,8 +99,10 @@ cdef class Var:
     '''Base class holding a pointer to corresponding SCIP_VAR'''
     cdef scip.SCIP_VAR* _var
 
+
 class Variable(LinExpr):
     '''Is a linear expression and has SCIP_VAR*'''
+
     def __init__(self, name=None):
         self.var = Var()
         self.name = name
@@ -114,9 +116,6 @@ class Variable(LinExpr):
 
     def __gt__(self, other):
         return id(self) > id(other)
-
-    def __name__(self):
-        return self.name
 
     def __repr__(self):
         return self.name
