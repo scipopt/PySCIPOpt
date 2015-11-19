@@ -76,6 +76,15 @@ class LinExpr(object):
         else:
             raise NotImplementedError
 
+    def __eq__(self, other):
+        '''turn it into a constraint'''
+        if isinstance(other, LinExpr):
+            return (self - other) == 0.0
+        elif _is_number(other):
+            return LinCons(self, lb=float(other), ub=float(other))
+        else:
+            raise NotImplementedError
+
     def __repr__(self):
         return 'LinExpr(%s)' % repr(self.terms)
 

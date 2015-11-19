@@ -9,8 +9,6 @@ y = m.addVar("y")
 z = m.addVar("z")
 
 def test_variable():
-    assert x == x
-    assert x != y
     assert x < y or y < x
 
 def test_operations():
@@ -117,3 +115,12 @@ def test_ranged():
 
     with pytest.raises(TypeError):
         ranged = 3 >= (x + 2*y <= 5)
+
+def test_equation():
+    equat = 2*x - 3*y == 1
+    assert isinstance(equat, LinCons)
+    assert equat.lb == equat.ub
+    assert equat.lb == 1.0
+    assert equat.expr[x] == 2.0
+    assert equat.expr[y] == -3.0
+    assert equat.expr[()] == 0.0
