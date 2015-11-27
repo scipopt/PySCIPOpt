@@ -1,6 +1,8 @@
 # Copyright (C) 2012-2013 Robert Schwarz
 #   see file 'LICENSE' for details.
 
+include "pricer.pyx"
+
 from os.path import abspath
 import sys
 
@@ -182,6 +184,9 @@ cdef class Model:
     cdef _addVar(self, scip.SCIP_VAR* scip_var):
         PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
 
+    cdef _addPricedVar(self, scip.SCIP_VAR* scip_var):
+        PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, 1.0))
+
     cdef _createConsLinear(self, scip.SCIP_CONS** cons, name, nvars,
                                 SCIP_VAR** vars, SCIP_Real* vals, lhs, rhs,
                                 initial=True, separate=True, enforce=True, check=True,
@@ -231,7 +236,7 @@ cdef class Model:
 
     # Variable Functions
     # Create a new variable
-    def addVar(self, name, vtype='C', lb=0.0, ub=None, obj=0.0):
+    def addVar(self, name, vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar = False):
         if ub is None:
             ub = scip.SCIPinfinity(self._scip)
         cdef scip.SCIP_VAR* scip_var
@@ -245,7 +250,10 @@ cdef class Model:
         elif vtype in ['I', 'INTEGER']:
             self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_INTEGER)
 
-        self._addVar(scip_var)
+        if pricedVar:
+            self._addPricedVar(scip_var)
+        else:
+            self._addVar(scip_var)
         var = Variable(name)
         v = var.var
         v._var = scip_var
@@ -353,6 +361,14 @@ cdef class Model:
     def optimize(self):
         PY_SCIP_CALL( scip.SCIPsolve(self._scip) )
         self._bestSol = scip.SCIPgetBestSol(self._scip)
+
+
+    # Pricer Functions
+    def includePricer(self, Pricer pricer, name, desc):
+        PY_SCIP_CALL(scip.SCIPincludePricerBasic(self._scip, &(pricer._pricer), name, desc, 1, True, scipPricerRedcost, scipPricerFarkas, pricer._pricerdata))
+        PY_SCIP_CALL(scip.SCIPactivatePricer(self._scip, pricer._pricer))
+        PY_SCIP_CALL(scip.SCIPsetPricerInit(self._scip, pricer._pricer, scipPricerInit))
+
 
 
     # Solution functions

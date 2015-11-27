@@ -79,6 +79,16 @@ cdef extern from "scip/scip.h":
     ctypedef struct FILE:
         pass
 
+    #Structs related to the variable pricer
+    ctypedef struct SCIP_PRICER:
+        pass
+
+    ctypedef struct SCIP_PRICERDATA:
+        pass
+
+    ctypedef struct SCIP_CONSDATA:
+        pass
+
     # General SCIP Methods
     SCIP_RETCODE SCIPcreate(SCIP** scip)
     SCIP_RETCODE SCIPfree(SCIP** scip)
@@ -108,6 +118,7 @@ cdef extern from "scip/scip.h":
                                     SCIP_Real obj,
                                     SCIP_VARTYPE vartype)
     SCIP_RETCODE SCIPcaptureVar(SCIP* scip, SCIP_VAR* var)
+    SCIP_RETCODE SCIPaddPricedVar(SCIP* scip, SCIP_VAR* var, SCIP_Real score)
     SCIP_RETCODE SCIPreleaseVar(SCIP* scip, SCIP_VAR** var)
     SCIP_RETCODE SCIPtransformVar(SCIP* scip, SCIP_VAR* var, SCIP_VAR** transvar) 
 
@@ -122,6 +133,13 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPwriteVarName(SCIP* scip, FILE* outfile, SCIP_VAR* var, SCIP_Bool vartype)
     SCIP_Real SCIPgetSolOrigObj(SCIP* scip, SCIP_SOL* sol)
     SCIP_Real SCIPgetSolTransObj(SCIP* scip, SCIP_SOL* sol)
+
+    # Variable pricer functions
+    SCIP_RETCODE SCIPincludePricerBasic(SCIP* scip, SCIP_PRICER** pricerptr, char* name, char* desc, int priority, SCIP_Bool delay, SCIP_RETCODE (*scipPricerRedcost)(SCIP*, SCIP_PRICER*, SCIP_Real*, SCIP_Bool*, SCIP_RESULT*), SCIP_RETCODE (*scipPricerFarkas)(SCIP*, SCIP_PRICER*), SCIP_PRICERDATA* pricerdata)
+
+    SCIP_RETCODE SCIPactivatePricer(SCIP* scip, SCIP_PRICER* pricer)
+    SCIP_RETCODE SCIPsetPricerInit(SCIP* scip, SCIP_PRICER* pricer, SCIP_RETCODE (*scipPricerInit)(SCIP*, SCIP_PRICER*))
+    SCIP_PRICERDATA* SCIPpricerGetData(SCIP_PRICER* pricer)
 
     # Numerical Methods
     SCIP_Real SCIPinfinity(SCIP* scip)
