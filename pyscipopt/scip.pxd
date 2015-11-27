@@ -135,7 +135,10 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetSolTransObj(SCIP* scip, SCIP_SOL* sol)
 
     # Variable pricer functions
-    SCIP_RETCODE SCIPincludePricerBasic(SCIP* scip, SCIP_PRICER** pricerptr, char* name, char* desc, int priority, SCIP_Bool delay, SCIP_RETCODE (*scipPricerRedcost)(SCIP*, SCIP_PRICER*, SCIP_Real*, SCIP_Bool*, SCIP_RESULT*), SCIP_RETCODE (*scipPricerFarkas)(SCIP*, SCIP_PRICER*), SCIP_PRICERDATA* pricerdata)
+    SCIP_RETCODE SCIPincludePricerBasic(SCIP* scip, SCIP_PRICER** pricerptr, char* name, char* desc, int priority,
+            SCIP_Bool delay, SCIP_RETCODE (*scipPricerRedcost)(SCIP*, SCIP_PRICER*, SCIP_Real*, SCIP_Bool*,
+                SCIP_RESULT*), SCIP_RETCODE (*scipPricerFarkas)(SCIP*, SCIP_PRICER*, SCIP_RESULT*),
+            SCIP_PRICERDATA* pricerdata)
 
     SCIP_RETCODE SCIPactivatePricer(SCIP* scip, SCIP_PRICER* pricer)
     SCIP_RETCODE SCIPsetPricerInit(SCIP* scip, SCIP_PRICER* pricer, SCIP_RETCODE (*scipPricerInit)(SCIP*, SCIP_PRICER*))
