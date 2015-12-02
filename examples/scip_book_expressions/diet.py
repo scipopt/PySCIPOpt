@@ -35,16 +35,16 @@ def diet(F,N,a,b,c,d):
 
     # Constraints:
     for i in N:
-        model.addCons(quicksum(d[j][i]*x[j] for j in F) == z[i], name="Nutr(%s)"%i)
+        model.addCons(sum(d[j][i]*x[j] for j in F) == z[i], name="Nutr(%s)"%i)
 
-    model.addCons(quicksum(c[j]*x[j] for j in F) == v, name="Cost")
+    model.addCons(sum(c[j]*x[j] for j in F) == v, name="Cost")
 
     for j in F:
         model.addCons(y[j] <= x[j], name="Eat(%s)"%j)
 
     # Objective:
-    model.setObjective(quicksum(y[j] for j in F), SCIP_OBJSENSE_MAXIMIZE)
-    model.__data = x,y,z,v
+    #model.setObjective(quicksum(y[j] for j in F), SCIP_OBJSENSE_MAXIMIZE)
+    model.data = x,y,z,v
 
     return model
 
@@ -118,18 +118,18 @@ if __name__ == "__main__":
 
     for b["Cal"] in [None,3500,3000,2500]:
 
-        print("\n\nDiet for a maximum of %s calories") % b["Cal"] if b["Cal"] != None else "unlimited"
+        print("\n\nDiet for a maximum of {0} calories".format(b["Cal"] if b["Cal"] != None else "unlimited"))
         model = diet(F,N,a,b,c,d)
-        model.setMessagehdlrQuiet(True) # silent mode
+        model.hideOutput # silent mode
         model.optimize()
 
         print("Optimal value:",model.getObjVal())
-        x,y,z,v = model.__data
+        x,y,z,v = model.data
         for j in x:
-            if x[j].getSolVal() > 0:
-                print("%30s: %5s dishes --> %s added to objective") % (j,x[j].getSolVal(),y[j].getSolVal())
-        print("amount spent:",v.getSolVal())
+            if model.getVal(x[j]) > 0:
+                print("{0:30s}: {1:3.1f} dishes --> {2:4.2f} added to objective".format(j,model.getVal(x[j]),model.getVal(y[j])))
+        print("amount spent:",model.getObjVal())
 
         print("amount of nutrients:")
         for i in z:
-            print("%30s: %5s") % (i,z[i].getSolVal())
+            print("{0:30s}: {1:4.2f}".format(i,model.getVal(z[i])))
