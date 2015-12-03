@@ -1,5 +1,9 @@
 CONST = ()
 
+# TODO this needs a proper implementation; is just a placeholder
+def quicksum(expression):
+    return sum(expression)
+
 def _is_number(e):
     try:
         f = float(e)

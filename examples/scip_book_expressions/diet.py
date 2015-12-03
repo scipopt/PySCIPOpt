@@ -5,6 +5,8 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 # todo: can we make it work as "from pyscipopt import *"?
 from pyscipopt.scip import *
+from pyscipopt.linexpr import *
+from pyscipopt.multidict import *
 
 def diet(F,N,a,b,c,d):
     """diet -- model for the modern diet problem
@@ -18,11 +20,7 @@ def diet(F,N,a,b,c,d):
     Returns a model, ready to be solved.
     """
 
-    # todo: simplify to model = Model("modern diet")
-    model = Model()
-    model.create()
-    model.includeDefaultPlugins()
-    model.createProbBasic("modern diet")
+    model = Model("modern diet")
 
     # Create variables
     x,y,z = {},{},{}
@@ -35,9 +33,9 @@ def diet(F,N,a,b,c,d):
 
     # Constraints:
     for i in N:
-        model.addCons(sum(d[j][i]*x[j] for j in F) == z[i], name="Nutr(%s)"%i)
+        model.addCons(quicksum(d[j][i]*x[j] for j in F) == z[i], name="Nutr(%s)"%i)
 
-    model.addCons(sum(c[j]*x[j] for j in F) == v, name="Cost")
+    model.addCons(quicksum(c[j]*x[j] for j in F) == v, name="Cost")
 
     for j in F:
         model.addCons(y[j] <= x[j], name="Eat(%s)"%j)
@@ -51,63 +49,36 @@ def diet(F,N,a,b,c,d):
 
 def make_inst():
     """make_inst: prepare data for the diet model"""
+    F,c,d = multidict({       # cost # composition
+        "QPounder" :  [ 1.84, {"Cal":510, "Carbo":34, "Protein":28,
+                               "VitA":15, "VitC":  6, "Calc":30, "Iron":20}],
+        "McLean"   :  [ 2.19, {"Cal":370, "Carbo":35, "Protein":24, "VitA":15,
+                               "VitC": 10, "Calc":20, "Iron":20}],
+        "Big Mac"  :  [ 1.84, {"Cal":500, "Carbo":42, "Protein":25,
+                               "VitA": 6, "VitC":  2, "Calc":25, "Iron":20}],
+        "FFilet"   :  [ 1.44, {"Cal":370, "Carbo":38, "Protein":14,
+                               "VitA": 2, "VitC":  0, "Calc":15, "Iron":10}],
+        "Chicken"  :  [ 2.29, {"Cal":400, "Carbo":42, "Protein":31,
+                               "VitA": 8, "VitC": 15, "Calc":15, "Iron": 8}],
+        "Fries"    :  [  .77, {"Cal":220, "Carbo":26, "Protein": 3,
+                               "VitA": 0, "VitC": 15, "Calc": 0, "Iron": 2}],
+        "McMuffin" :  [ 1.29, {"Cal":345, "Carbo":27, "Protein":15,
+                               "VitA": 4, "VitC":  0, "Calc":20, "Iron":15}],
+        "1% LFMilk":  [  .60, {"Cal":110, "Carbo":12, "Protein": 9,
+                               "VitA":10, "VitC":  4, "Calc":30, "Iron": 0}],
+        "OrgJuice" :  [  .72, {"Cal": 80, "Carbo":20, "Protein": 1,
+                               "VitA": 2, "VitC":120, "Calc": 2, "Iron": 2}],
+        })
 
-    c = { # cost
-        "QPounder" :  1.84,
-        "McLean"   :  2.19,
-        "Big Mac"  :  1.84,
-        "FFilet"   :  1.44,
-        "Chicken"  :  2.29,
-        "Fries"    :   .77,
-        "McMuffin" :  1.29,
-        "1% LFMilk":   .60,
-        "OrgJuice" :   .72
-    }
-
-    d = { # composition
-        "QPounder" : {"Cal":510, "Carbo":34, "Protein":28,
-                      "VitA":15, "VitC":  6, "Calc":30, "Iron":20},
-        "McLean"   : {"Cal":370, "Carbo":35, "Protein":24, "VitA":15,
-                      "VitC": 10, "Calc":20, "Iron":20},
-        "Big Mac"  : {"Cal":500, "Carbo":42, "Protein":25,
-                      "VitA": 6, "VitC":  2, "Calc":25, "Iron":20},
-        "FFilet"   : {"Cal":370, "Carbo":38, "Protein":14,
-                      "VitA": 2, "VitC":  0, "Calc":15, "Iron":10},
-        "Chicken"  : {"Cal":400, "Carbo":42, "Protein":31,
-                      "VitA": 8, "VitC": 15, "Calc":15, "Iron": 8},
-        "Fries"    : {"Cal":220, "Carbo":26, "Protein": 3,
-                      "VitA": 0, "VitC": 15, "Calc": 0, "Iron": 2},
-        "McMuffin" : {"Cal":345, "Carbo":27, "Protein":15,
-                      "VitA": 4, "VitC":  0, "Calc":20, "Iron":15},
-        "1% LFMilk": {"Cal":110, "Carbo":12, "Protein": 9,
-                      "VitA":10, "VitC":  4, "Calc":30, "Iron": 0},
-        "OrgJuice" : {"Cal": 80, "Carbo":20, "Protein": 1,
-                      "VitA": 2, "VitC":120, "Calc": 2, "Iron": 2}
-    }
-
-    F = c.keys()
-
-    a = { # min intake
-        "Cal"     : 2000,
-        "Carbo"   :  350,
-        "Protein" :   55,
-        "VitA"    :  100,
-        "VitC"    :  100,
-        "Calc"    :  100,
-        "Iron"    :  100
-    }
-
-    b = { # max intake
-        "Cal"     : None,
-        "Carbo"   : 375,
-        "Protein" : None,
-        "VitA"    : None,
-        "VitC"    : None,
-        "Calc"    : None,
-        "Iron"    : None
-    }
-
-    N = a.keys()
+    N,a,b = multidict({       # min,max intake
+        "Cal"     : [ 2000,  None ],
+        "Carbo"   : [  350,  375 ],
+        "Protein" : [   55,  None ],
+        "VitA"    : [  100,  None ],
+        "VitC"    : [  100,  None ],
+        "Calc"    : [  100,  None ],
+        "Iron"    : [  100,  None ],
+     })
 
     return F,N,a,b,c,d
 
@@ -118,9 +89,9 @@ if __name__ == "__main__":
 
     for b["Cal"] in [None,3500,3000,2500]:
 
-        print("\n\nDiet for a maximum of {0} calories".format(b["Cal"] if b["Cal"] != None else "unlimited"))
+        print("\nDiet for a maximum of {0} calories".format(b["Cal"] if b["Cal"] != None else "unlimited"))
         model = diet(F,N,a,b,c,d)
-        model.hideOutput # silent mode
+        model.hideOutput() # silent mode
         model.optimize()
 
         print("Optimal value:",model.getObjVal())
