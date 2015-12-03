@@ -10,9 +10,9 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 from pyscipopt.scip import *
 
 model = Model("puzzle")
-x = model.addVar(vtype="I", name="octopuss", obj=1)
-y = model.addVar(vtype="I", name="turtle", obj=1)
-z = model.addVar(vtype="I", name="crane")
+x = model.addVar(vtype="I", name="octopusses", obj=1)
+y = model.addVar(vtype="I", name="turtles", obj=1)
+z = model.addVar(vtype="I", name="cranes")
 
 # Set up constraint for number of heads
 coeffs = { x : 1, y : 1, z : 1 }
@@ -22,12 +22,10 @@ model.addCons(coeffs, lhs=32, rhs=32, name="Heads")
 coeffs = { x : 8, y : 4 , z : 2 }
 model.addCons(coeffs, lhs=80, rhs=80, name="Legs")
 
-model.setMinimize()
-
 model.hideOutput()
 model.optimize()
 
-solution = model.getBestSol()
+#solution = model.getBestSol()
 
-print("Opt. Val.=", model.getObjVal())
+print("Optimal value:", model.getObjVal())
 print((x.name, y.name, z.name), " = ", (model.getVal(x), model.getVal(y), model.getVal(z)))
