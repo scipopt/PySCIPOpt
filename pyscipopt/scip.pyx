@@ -219,6 +219,25 @@ cdef class Model:
     def setMaximize(self):
         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))
 
+    # set objective function, either as variable dictionary or as linear expression
+    def setObjective(self, coeffs, sense = 'minimize'):
+        cdef scip.SCIP_Real coeff
+        cdef Var v
+        cdef scip.SCIP_VAR* _var
+        if isinstance(coeffs, LinExpr):
+            # transform linear expression into variable dictionary
+            terms = coeffs.terms
+            coeffs = {t[0]:c for t, c in terms.items() if c != 0.0}
+        for k in coeffs:
+            coeff = <scip.SCIP_Real>coeffs[k]
+            v = <Var>k.var
+            _var = <scip.SCIP_VAR*>v._var
+            PY_SCIP_CALL(scip.SCIPchgVarObj(self._scip, _var, coeff))
+        if sense == 'maximize':
+            self.setMaximize();
+        else:
+            self.setMinimize();
+
     # Setting parameters
     def setPresolve(self, setting):
         PY_SCIP_CALL(scip.SCIPsetPresolving(self._scip, setting, True))

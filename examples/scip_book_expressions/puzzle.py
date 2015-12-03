@@ -10,17 +10,18 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 from pyscipopt.scip import *
 
 model = Model("puzzle")
-x = model.addVar(vtype="I", name="octopusses", obj=1)
-y = model.addVar(vtype="I", name="turtles", obj=1)
+x = model.addVar(vtype="I", name="octopusses")
+y = model.addVar(vtype="I", name="turtles")
 z = model.addVar(vtype="I", name="cranes")
 
 # Set up constraint for number of heads
-coeffs = { x : 1, y : 1, z : 1 }
-model.addCons(coeffs, lhs=32, rhs=32, name="Heads")
+model.addCons(x + y + z == 32, name="Heads")
 
-# Set up constraints for number of legs
-coeffs = { x : 8, y : 4 , z : 2 }
-model.addCons(coeffs, lhs=80, rhs=80, name="Legs")
+# Set up constraint for number of legs
+model.addCons(8*x + 4*y + 2*z == 80, name="Legs")
+
+# Set objective function
+model.setObjective(x + y, "minimize")
 
 model.hideOutput()
 model.optimize()
