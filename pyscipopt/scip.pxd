@@ -52,6 +52,23 @@ cdef extern from "scip/scip.h":
         SCIP_SUSPENDED   =  16
         SCIP_SUCCESS     =  17
 
+    ctypedef enum SCIP_STATUS:
+        SCIP_STATUS_UNKNOWN        =  0
+        SCIP_STATUS_USERINTERRUPT  =  1
+        SCIP_STATUS_NODELIMIT      =  2
+        SCIP_STATUS_TOTALNODELIMIT =  3
+        SCIP_STATUS_STALLNODELIMIT =  4
+        SCIP_STATUS_TIMELIMIT      =  5
+        SCIP_STATUS_MEMLIMIT       =  6
+        SCIP_STATUS_GAPLIMIT       =  7
+        SCIP_STATUS_SOLLIMIT       =  8
+        SCIP_STATUS_BESTSOLLIMIT   =  9
+        SCIP_STATUS_RESTARTLIMIT   = 10
+        SCIP_STATUS_OPTIMAL        = 11
+        SCIP_STATUS_INFEASIBLE     = 12
+        SCIP_STATUS_UNBOUNDED      = 13
+        SCIP_STATUS_INFORUNBD      = 14
+
     ctypedef enum SCIP_PARAMSETTING:
         SCIP_PARAMSETTING_DEFAULT = 0
         SCIP_PARAMSETTING_AGGRESSIVE = 1
@@ -104,6 +121,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetObjsense(SCIP* scip, SCIP_OBJSENSE objsense)
     SCIP_RETCODE SCIPsetPresolving(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)
     SCIP_RETCODE SCIPwriteOrigProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
+    SCIP_STATUS SCIPgetStatus(SCIP* scip)
 
     # Solve Methods
     SCIP_RETCODE SCIPsolve(SCIP* scip)

@@ -41,7 +41,7 @@ def diet(F,N,a,b,c,d):
         model.addCons(y[j] <= x[j], name="Eat(%s)"%j)
 
     # Objective:
-    #model.setObjective(quicksum(y[j] for j in F), SCIP_OBJSENSE_MAXIMIZE)
+    model.setObjective(quicksum(y[j] for j in F), "maximize")
     model.data = x,y,z,v
 
     return model

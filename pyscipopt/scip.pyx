@@ -50,6 +50,22 @@ cdef class scip_paramsetting:
     fast        = 2
     off         = 3
 
+cdef class scip_status:
+    unknown        =  0
+    userinterrupt  =  1
+    nodelimit      =  2
+    totalnodelimit =  3
+    stallnodelimit =  4
+    timelimit      =  5
+    memlimit       =  6
+    gaplimit       =  7
+    sollimit       =  8
+    bestsollimit   =  9
+    restartlimit   = 10
+    optimal        = 11
+    infeasible     = 12
+    unbounded      = 13
+    inforunbd      = 14
 
 def PY_SCIP_CALL(scip.SCIP_RETCODE rc):
     if rc == scip.SCIP_OKAY:
@@ -436,6 +452,19 @@ cdef class Model:
         _var = <scip.SCIP_VAR*>v._var
         self._writeVarName(_var)
 
+    # return solution status
+    def getStatus(self):
+        cdef scip.SCIP_STATUS stat = scip.SCIPgetStatus(self._scip)
+        if stat == scip.SCIP_STATUS_OPTIMAL:
+            return "optimal"
+        elif stat == scip.SCIP_STATUS_TIMELIMIT:
+            return "timelimit"
+        elif stat == scip.SCIP_STATUS_INFEASIBLE:
+            return "infeasible"
+        elif stat == scip.SCIP_STATUS_UNBOUNDED:
+            return "unbounded"
+        else:
+            return "unknown"
 
     # Statistic Methods
     def printStatistics(self):

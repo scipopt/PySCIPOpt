@@ -49,6 +49,8 @@ model.writeProblem("lo_wines.lp")  # useful for debugging
 
 model.optimize()
 
+print("Solution status: ", model.getStatus())
+
 print("Optimal value:", model.getObjVal())
 for j in x:
     print(x[j].name, model.getVal(x[j]))
