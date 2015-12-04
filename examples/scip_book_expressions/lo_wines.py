@@ -14,10 +14,8 @@ Constraints correspond to the inventory of pure-grape wines.
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 from pyscipopt.scip import *
-model = Model("Wine blending")
 
-#Grapes,Inventory = multidict({"Alfrocheiro":60, "Baga":60, "Castelao":30})
-#Blends,Profit = multidict({"Dry":15, "Medium":18, "Sweet":30})
+model = Model("Wine blending")
 
 Inventory = {"Alfrocheiro":60, "Baga":60, "Castelao":30}
 Grapes = Inventory.keys()
