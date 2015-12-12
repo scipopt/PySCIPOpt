@@ -22,6 +22,7 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 
 from pyscipopt.scip import *
+from pyscipopt.linexpr import *
 
 LOG = True
 EPS = 1.e-6
@@ -54,13 +55,15 @@ def solveCuttingStock(w,q,B):
     x = {}
     
     for k in range(K):
-        x[k] = master.addVar(vtype="I", name="x(%s)"%k, obj=1)
+        x[k] = master.addVar(vtype="I", name="x(%s)"%k)
 
     orders = {}
 
     for i in range(m):
         orders[i] = master.addCons(
-            sum(t[k][i]*x[k] for k in range(K) if t[k][i] > 0) >= q[i], "Order(%s)"%i)
+            quicksum(t[k][i]*x[k] for k in range(K) if t[k][i] > 0) >= q[i], "Order(%s)"%i)
+   
+    master.setObjective(quicksum(x[k] for k in range(K)), "minimize")
 
     # master.Params.OutputFlag = 0 # silent mode
 
@@ -81,12 +84,11 @@ def solveCuttingStock(w,q,B):
         y = {}
         
         for i in range(m):
-            y[i] = knapsack.addVar(lb=0, ub=q[i], vtype="I", name="y(%s)"%i, obj=pi[i])
+            y[i] = knapsack.addVar(lb=0, ub=q[i], vtype="I", name="y(%s)"%i)
 
-
-        knapsack.addCons(sum(w[i]*y[i] for i in range(m)) <= B, "Width")
+        knapsack.addCons(quicksum(w[i]*y[i] for i in range(m)) <= B, "Width")
         
-        model.setMaximize()
+        knapsack.setObjective(quicksum(pi[i]*y[i] for i in range(m)), "maximize")
 
         # knapsack.Params.OutputFlag = 0 # silent mode
         knapsack.optimize()

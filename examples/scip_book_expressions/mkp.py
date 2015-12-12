@@ -4,8 +4,10 @@ mkp.py: model for the multi-constrained knapsack problem
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 from pyscipopt.scip import *
+from pyscipopt.linexpr import *
+from pyscipopt.multidict import *
 
-def mkp(I,J,v,a,b): #todo wrong solution?
+def mkp(I,J,v,a,b):
     """mkp -- model for solving the multi-constrained knapsack
     Parameters:
         - I: set of dimensions
@@ -16,29 +18,29 @@ def mkp(I,J,v,a,b): #todo wrong solution?
     Returns a model, ready to be solved.
     """
     model = Model("mkp")
+
+    # Create Variables
     x = {}
-
     for j in J:
-        x[j] = model.addVar(vtype="B", name="x(%s)"%j, obj=v[j])
+        x[j] = model.addVar(vtype="B", name="x(%s)"%j)
 
+    # Create constraints
     for i in I:
-        model.addCons(sum(a[i,j]*x[j] for j in J) <= b[i], "Capacity(%s)"%i)
+        model.addCons(quicksum(a[i,j]*x[j] for j in J) <= b[i], "Capacity(%s)"%i)
 
-    model.setMaximize()
+    # Objective
+    model.setObjective(quicksum(v[j]*x[j] for j in J), "maximize")
     model.data = x
 
     return model
 
 
 def example():
-    v = {1:16, 2:19, 3:23, 4:28}
-    J = v.keys()
+    J,v = multidict({1:16, 2:19, 3:23, 4:28})
     a = {(1,1):2,    (1,2):3,    (1,3):4,    (1,4):5,
          (2,1):3000, (2,2):3500, (2,3):5100, (2,4):7200,
          }
-    b = {1:7, 2:10000}
-    I = b.keys()
-    
+    I,b = multidict({1:7, 2:10000})
     return I,J,v,a,b
 
 

@@ -9,6 +9,8 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 
 from pyscipopt.scip import *
+from pyscipopt.linexpr import *
+from pyscipopt.multidict import *
 
 def mctransp(I,J,K,c,d,M):
     """mctransp -- model for solving the Multi-commodity Transportation Problem
@@ -28,7 +30,7 @@ def mctransp(I,J,K,c,d,M):
     x = {}
 
     for (i,j,k) in c:
-        x[i,j,k] = model.addVar(vtype="C", name="x(%s,%s,%s)" % (i,j,k), obj=c[i,j,k])
+        x[i,j,k] = model.addVar(vtype="C", name="x(%s,%s,%s)" % (i,j,k))
 
     # Demand constraints
     for i in I:
@@ -38,6 +40,9 @@ def mctransp(I,J,K,c,d,M):
     # Capacity constraints
     for j in J:
         model.addCons(sum(x[i,j,k] for (i,j2,k) in x if j2 == j) <= M[j], "Capacity(%s)" % j)
+
+    # Objective
+    model.setObjective(quicksum(c[i,j,k]*x[i,j,k]  for (i,j,k) in x), "minimize")
 
     model.data = x
     
@@ -53,8 +58,7 @@ def make_inst1():
          }
     I = set([i for (i,k) in d])
     K = set([k for (i,k) in d])
-    M = {1:3000, 2:3000, 3:3000}  # capacity
-    J = M.keys()
+    J,M = multidict({1:3000, 2:3000, 3:3000})  # capacity
 
     produce = {1:[2,4], 2:[1,2,3], 3:[2,3,4]}  # products that can be produced in each facility
     weight = {1:5, 2:2, 3:3, 4:4}              # {commodity: weight}
@@ -65,7 +69,6 @@ def make_inst1():
             (5,1):10, (5,2):8, (5,3):4
             }
     c = {}
-
     for i in I:
         for j in J:
             for k in produce[j]:
@@ -81,9 +84,7 @@ def make_inst2():
          }
     I = set([i for (i,k) in d])
     K = set([k for (i,k) in d])
-    M = {1:35, 2:50, 3:40}       # {factory: capacity}}
-    J = M.keys()
-    
+    J,M = multidict({1:35, 2:50, 3:40})       # {factory: capacity}}
     produce = {1:[1], 2:[1], 3:[1]}           # products that can be produced in each facility
     weight = {1:1}                            # {commodity: weight}
     cost = {(1,1):8,    (1,2):9,    (1,3):14, # {(customer,factory): cost}
@@ -92,7 +93,6 @@ def make_inst2():
             (4,1):9,    (4,2):7,    (4,3):5 ,
             }
     c = {}
-
     for i in I:
         for j in J:
             for k in produce[j]:
@@ -110,8 +110,7 @@ def make_inst3():
          }
     I = set([i for (i,k) in d])
     K = set([k for (i,k) in d])
-    M = {1:500, 2:500, 3:500}  # capacity
-    J = M.keys()
+    J,M = multidict({1:500, 2:500, 3:500})  # capacity
 
     produce = {1:[2,4], 2:[1,2,3], 3:[2,3,4]}  # products that can be produced in each facility
     weight = {1:5, 2:2, 3:3, 4:4}              # {commodity: weight}
@@ -122,14 +121,12 @@ def make_inst3():
             (5,1):10, (5,2):8, (5,3):4
             }
     c = {}
-
     for i in I:
         for j in J:
             for k in produce[j]:
                 c[i,j,k] = cost[i,j] * weight[k]
 
     return I,J,K,c,d,M
-
 
 
 if __name__ == "__main__":

@@ -8,6 +8,8 @@ customers, from capacitated facilities.
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 from pyscipopt.scip import *
+from pyscipopt.linexpr import *
+from pyscipopt.multidict import *
 
 def transp(I,J,c,d,M):
     """transp -- model for solving the transportation problem
@@ -27,18 +29,19 @@ def transp(I,J,c,d,M):
 
     for i in I:
         for j in J:
-            x[i,j] = model.addVar(vtype="C", name="x(%s,%s)" % (i, j), obj=c[i,j])
-
+            x[i,j] = model.addVar(vtype="C", name="x(%s,%s)" % (i, j))
 
     # Demand constraints
     for i in I:
-        model.addCons(sum(x[i,j] for j in J if (i,j) in x) == d[i], name="Demand(%s)" % i)
+        model.addCons(quicksum(x[i,j] for j in J if (i,j) in x) == d[i], name="Demand(%s)" % i)
 
     # Capacity constraints
     for j in J:
-        model.addCons(sum(x[i,j] for i in I if (i,j) in x) <= M[j], name="Capacity(%s)" % j)
+        model.addCons(quicksum(x[i,j] for i in I if (i,j) in x) <= M[j], name="Capacity(%s)" % j)
 
     # Objective
+    model.setObjective(quicksum(c[i,j]*x[i,j]  for (i,j) in x), "minimize")
+    
     model.optimize()
 
     model.data = x
@@ -46,13 +49,8 @@ def transp(I,J,c,d,M):
 
 
 def make_inst1():
-  
-    d = {1:80, 2:270, 3:250 , 4:160, 5:180}  # demand
-    I = d.keys() 
-
-    M = {1:500, 2:500, 3:500}  # capacity
-    J = M.keys()
-    
+    I,d = multidict({1:80, 2:270, 3:250 , 4:160, 5:180}) # demand
+    J,M = multidict({1:500, 2:500, 3:500})               # capacity
     c = {(1,1):4,    (1,2):6,    (1,3):9,  # cost
          (2,1):5,    (2,2):4,    (2,3):7,
          (3,1):6,    (3,2):3,    (3,3):4,
@@ -63,12 +61,8 @@ def make_inst1():
 
 
 def make_inst2():
-    d = {1:45, 2:20, 3:30 , 4:30}  # demand
-    I = d.keys()
-    
-    M = {1:35, 2:50, 3:40}  # capacity
-    I = d.keys() 
-    
+    I,d = multidict({1:45, 2:20, 3:30 , 4:30}) # demand
+    J,M = multidict({1:35, 2:50, 3:40})        # capacity
     c = {(1,1):8,    (1,2):9,    (1,3):14  ,   # {(customer,factory) : cost<float>}
          (2,1):6,    (2,2):12,   (2,3):9   ,
          (3,1):10,   (3,2):13,   (3,3):16  ,

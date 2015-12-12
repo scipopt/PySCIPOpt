@@ -14,7 +14,9 @@ Constraints correspond to the inventory of pure-grape wines.
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 from pyscipopt.scip import *
+from pyscipopt.linexpr import *
 
+#Initialize model
 model = Model("Wine blending")
 
 Inventory = {"Alfrocheiro":60, "Baga":60, "Castelao":30}
@@ -35,25 +37,25 @@ Use = {
     ("Castelao","Sweet"):1
     }
 
+# Create variables
 x = {}
-
 for j in Blends:
     x[j] = model.addVar(vtype="C", name="x(%s)"%j, obj=Profit[j])
 
+# Create constraints
 for i in Grapes:
-    model.addCons(sum(Use[i,j]*x[j] for j in Blends) <= Inventory[i], name="Use(%s)"%i)
+    model.addCons(quicksum(Use[i,j]*x[j] for j in Blends) <= Inventory[i], name="Use(%s)"%i)
 
-model.setMaximize()
+# Objective
+model.setObjective(quicksum(Profit[j]*x[j] for j in Blends), "maximize")
 
 model.writeProblem("lo_wines.lp")  # useful for debugging
 
 model.optimize()
 
-print("Solution status: ", model.getStatus())
-
 print("Optimal value:", model.getObjVal())
 for j in x:
     print(x[j].name, model.getVal(x[j]))
-#for c in model.getCons(): todo
+#for c in model.getCons(): todo?
 #    print(c.name, model.getDualsolLinear(c))
 

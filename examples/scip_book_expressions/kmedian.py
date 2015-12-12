@@ -4,9 +4,10 @@ kmedian.py:  model for solving the k-median problem.
 minimize the total (weighted) travel cost for servicing
 a set of customers from k facilities.
 
-Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
+Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012 
 """
 from pyscipopt.scip import *
+from pyscipopt.linexpr import *
 
 def kmedian(I,J,c,k):
     """kmedian -- minimize total cost of servicing customers from k facilities
@@ -24,14 +25,15 @@ def kmedian(I,J,c,k):
     for j in J:
         y[j] = model.addVar(vtype="B", name="y(%s)"%j)
         for i in I:
-            x[i,j] = model.addVar(vtype="B", name="x(%s,%s)"%(i,j), obj=c[i,j])
+            x[i,j] = model.addVar(vtype="B", name="x(%s,%s)"%(i,j))
 
     for i in I:
-        model.addCons(sum(x[i,j] for j in J) == 1, "Assign(%s)"%i)
+        model.addCons(quicksum(x[i,j] for j in J) == 1, "Assign(%s)"%i)
         for j in J:
             model.addCons(x[i,j] <= y[j], "Strong(%s,%s)"%(i,j))
-    model.addCons(sum(y[j] for j in J) == k, "Facilities")
+    model.addCons(quicksum(y[j] for j in J) == k, "Facilities")
 
+    model.setObjective(quicksum(c[i,j]*x[i,j] for i in I for j in J), "minimize")
     model.data = x,y
 
     return model

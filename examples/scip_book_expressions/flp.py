@@ -7,6 +7,8 @@ to some facilities with fixed costs and capacities.
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 from pyscipopt.scip import *
+from pyscipopt.linexpr import *
+from pyscipopt.multidict import *
 
 def flp(I,J,d,M,f,c):
     """flp -- model for the capacitated facility location problem
@@ -21,32 +23,35 @@ def flp(I,J,d,M,f,c):
     """
 
     model = Model("flp")
-    x,y = {},{}
 
+    x,y = {},{}
     for j in J:
-        y[j] = model.addVar(vtype="B", name="y(%s)"%j, obj=f[j])
+        y[j] = model.addVar(vtype="B", name="y(%s)"%j)
         for i in I:
-            x[i,j] = model.addVar(vtype="C", name="x(%s,%s)"%(i,j), obj=c[i,j])
+            x[i,j] = model.addVar(vtype="C", name="x(%s,%s)"%(i,j))
 
     for i in I:
-        model.addConstr(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
+        model.addCons(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
 
     for j in M:
-        model.addConstr(quicksum(x[i,j] for i in I) <= M[j]*y[j], "Capacity(%s)"%i)
+        model.addCons(quicksum(x[i,j] for i in I) <= M[j]*y[j], "Capacity(%s)"%i)
 
     for (i,j) in x:
-        model.addConstr(x[i,j] <= d[i]*y[j], "Strong(%s,%s)"%(i,j))
+        model.addCons(x[i,j] <= d[i]*y[j], "Strong(%s,%s)"%(i,j))
 
+    model.setObjective(
+        quicksum(f[j]*y[j] for j in J) +
+        quicksum(c[i,j]*x[i,j] for i in I for j in J),
+        "minimize")
     model.data = x,y
 
     return model
 
 
 def make_data():
-    d = {1:80, 2:270, 3:250, 4:160, 5:180}  # demand
-    I = d.keys()
-    J,M,f = multidict({1:[500,1000], 2:[500,1000], 3:[500,1000]})  # capacity, fixed costs
-    c = {(1,1):4,  (1,2):6,  (1,3):9, # transportation costs
+    I,d = multidict({1:80, 2:270, 3:250, 4:160, 5:180})            # demand
+    J,M,f = multidict({1:[500,1000], 2:[500,1000], 3:[500,1000]}) # capacity, fixed costs
+    c = {(1,1):4,  (1,2):6,  (1,3):9,    # transportation costs
          (2,1):5,  (2,2):4,  (2,3):7,
          (3,1):6,  (3,2):3,  (3,3):4,
          (4,1):8,  (4,2):5,  (4,3):3,

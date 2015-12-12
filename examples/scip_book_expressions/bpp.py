@@ -12,6 +12,7 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 
 from pyscipopt.scip import *
+from pyscipopt.linexpr import *
 
 def FFD(s,B):
     """First Fit Decreasing heuristics for the Bin Packing Problem.
@@ -50,15 +51,15 @@ def bpp(s,B):
         for j in range(U):
             x[i,j] = model.addVar(vtype="B", name="x(%s,%s)"%(i,j))
     for j in range(U):
-        y[j] = model.addVar(vtype="B", name="y(%s)"%j, obj=1)
+        y[j] = model.addVar(vtype="B", name="y(%s)"%j)
 
     # assignment constraints
     for i in range(n):
-        model.addCons(sum(x[i,j] for j in range(U)) == 1, "Assign(%s)"%i)
+        model.addCons(quicksum(x[i,j] for j in range(U)) == 1, "Assign(%s)"%i)
 
     # bin capacity constraints
     for j in range(U):
-        model.addCons(sum(s[i]*x[i,j] for i in range(n)) <= B*y[j], "Capac(%s)"%j)
+        model.addCons(quicksum(s[i]*x[i,j] for i in range(n)) <= B*y[j], "Capac(%s)"%j)
 
     # tighten assignment constraints
     for j in range(U):
@@ -73,6 +74,7 @@ def bpp(s,B):
 ##    for i in range(n):
 ##        model.addSOS(1,[x[i,j] for j in range(U)])
 
+    model.setObjective(quicksum(y[j] for j in range(U)), "minimize")
     model.data = x,y
 
     return model
