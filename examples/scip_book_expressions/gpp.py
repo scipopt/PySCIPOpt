@@ -1,4 +1,3 @@
-#todo
 """
 gpp.py: model for the graph partitioning problem
 
@@ -6,6 +5,7 @@ Copyright (c) by Joao Pedro PEDROSO, Masahiro MURAMATSU and Mikio KUBO, 2012
 """
 
 from pyscipopt.scip import *
+from pyscipopt.linexpr import *
 
 def gpp(V,E):
     """gpp -- model for the graph partitioning problem
@@ -15,19 +15,21 @@ def gpp(V,E):
     Returns a model, ready to be solved.
     """
     model = Model("gpp")
+
     x = {}
     y = {}
-
     for i in V:
         x[i] = model.addVar(vtype="B", name="x(%s)"%i)
     for (i,j) in E:
-        y[i,j] = model.addVar(vtype="B", name="y(%s,%s)"%(i,j), obj=1)
+        y[i,j] = model.addVar(vtype="B", name="y(%s,%s)"%(i,j))
 
-    model.addConstr(sum(x[i] for i in V) == len(V)/2, "Partition")
+    model.addCons(quicksum(x[i] for i in V) == len(V)/2, "Partition")
 
     for (i,j) in E:
-        model.addConstr(x[i] - x[j] <= y[i,j], "Edge(%s,%s)"%(i,j))
-        model.addConstr(x[j] - x[i] <= y[i,j], "Edge(%s,%s)"%(j,i))
+        model.addCons(x[i] - x[j] <= y[i,j], "Edge(%s,%s)"%(i,j))
+        model.addCons(x[j] - x[i] <= y[i,j], "Edge(%s,%s)"%(j,i))
+
+    model.setObjective(quicksum(y[i,j] for (i,j) in E), "minimize")
 
     model.data = x
     return model
@@ -41,14 +43,14 @@ def gpp_qo(V,E):
     Returns a model, ready to be solved.
     """
     model = Model("gpp")
+    
     x = {}
-
     for i in V:
-        x[i] = model.addVar(vtype="B", name="x(%s)"%i, obj=(1-x[j]) + x[j]*(1-x[i]))
+        x[i] = model.addVar(vtype="B", name="x(%s)"%i)
 
-    model.addConstr(sum(x[i] for i in V) == len(V)/2, "Partition")
+    model.addCons(quicksum(x[i] for i in V) == len(V)/2, "Partition")
 
-    model.setObjective(quicksum(x[i]*(1-x[j]) + x[j]*(1-x[i]) for (i,j) in E), GRB.MINIMIZE)
+    model.setObjective(quicksum(x[i]*(1-x[j]) + x[j]*(1-x[i]) for (i,j) in E), "minimize")
 
     model.data = x
     return model
@@ -62,17 +64,16 @@ def gpp_qo_ps(V,E):
     Returns a model, ready to be solved.
     """
     model = Model("gpp")
+
     x = {}
     for i in V:
         x[i] = model.addVar(vtype="B", name="x(%s)"%i)
-    model.update()
 
-    model.addConstr(quicksum(x[i] for i in V) == len(V)/2, "Partition")
+    model.addCons(quicksum(x[i] for i in V) == len(V)/2, "Partition")
 
-    model.setObjective(quicksum((x[i] - x[j]) * (x[i] - x[j]) for (i,j) in E), GRB.MINIMIZE)
+    model.setObjective(quicksum((x[i] - x[j]) * (x[i] - x[j]) for (i,j) in E), "minimize")
 
-    model.update()
-    model.__data = x
+    model.data = x
     return model
 
 
@@ -84,36 +85,35 @@ def gpp_soco(V,E):
     Returns a model, ready to be solved.
     """
     model = Model("gpp model -- soco")
+
     x,s,z = {},{},{}
     for i in V:
         x[i] = model.addVar(vtype="B", name="x(%s)"%i)
     for (i,j) in E:
         s[i,j] = model.addVar(vtype="C", name="s(%s,%s)"%(i,j))
         z[i,j] = model.addVar(vtype="C", name="z(%s,%s)"%(i,j))
-    model.update()
 
-    model.addConstr(quicksum(x[i] for i in V) == len(V)/2, "Partition")
+    model.addCons(quicksum(x[i] for i in V) == len(V)/2, "Partition")
 
     for (i,j) in E:
-        model.addConstr((x[i] + x[j] -1)*(x[i] + x[j] -1) <= s[i,j], "S(%s,%s)"%(i,j))
-        model.addConstr((x[j] - x[i])*(x[j] - x[i]) <= z[i,j], "Z(%s,%s)"%(i,j))
-        model.addConstr(s[i,j] + z[i,j]  == 1, "P(%s,%s)"%(i,j))
+        model.addCons((x[i] + x[j] -1)*(x[i] + x[j] -1) <= s[i,j], "S(%s,%s)"%(i,j))
+        model.addCons((x[j] - x[i])*(x[j] - x[i]) <= z[i,j], "Z(%s,%s)"%(i,j))
+        model.addCons(s[i,j] + z[i,j]  == 1, "P(%s,%s)"%(i,j))
 
     # # triangle inequalities (seem to make model slower)
     # for i in V:
     #     for j in V:
     #         for k in V:
     #             if (i,j) in E and (j,k) in E and (i,k) in E:
-    #                 print "\t***",(i,j,k)
-    #                 model.addConstr(z[i,j] + z[j,k] + z[i,k] <= 2, "T1(%s,%s,%s)"%(i,j,k))
-    #                 model.addConstr(z[i,j] + s[j,k] + s[i,k] <= 2, "T2(%s,%s,%s)"%(i,j,k))
-    #                 model.addConstr(s[i,j] + s[j,k] + z[i,k] <= 2, "T3(%s,%s,%s)"%(i,j,k))
-    #                 model.addConstr(s[i,j] + z[j,k] + s[i,k] <= 2, "T4(%s,%s,%s)"%(i,j,k))
+    #                 print("\t***",(i,j,k)
+    #                 model.addCons(z[i,j] + z[j,k] + z[i,k] <= 2, "T1(%s,%s,%s)"%(i,j,k))
+    #                 model.addCons(z[i,j] + s[j,k] + s[i,k] <= 2, "T2(%s,%s,%s)"%(i,j,k))
+    #                 model.addCons(s[i,j] + s[j,k] + z[i,k] <= 2, "T3(%s,%s,%s)"%(i,j,k))
+    #                 model.addCons(s[i,j] + z[j,k] + s[i,k] <= 2, "T4(%s,%s,%s)"%(i,j,k))
 
-    model.setObjective(quicksum(z[i,j] for (i,j) in E), GRB.MINIMIZE)
+    model.setObjective(quicksum(z[i,j] for (i,j) in E), "minimize")
 
-    model.update()
-    model.__data = x,s,z
+    model.data = x,s,z
     return model
 
 
@@ -133,56 +133,53 @@ def make_data(n,prob):
 if __name__ == "__main__":
     random.seed(1)
     V,E = make_data(4,.5)
-    print "edges:",E
+    print("edges:",E)
 
-    print "\n\n\nStandard model:"
+    print("\n\n\nStandard model:")
     model = gpp(V,E)
     model.optimize()
-    print "Opt.value=",model.ObjVal
-    x = model.__data
-    print "partition:"
-    print [i for i in V if x[i].X >= .5]
-    print [i for i in V if x[i].X < .5]
+    print("Optimal value:", model.getObjVal())
+    x = model.data
+    print("partition:")
+    print([i for i in V if model.getVal(x[i]) >= .5])
+    print([i for i in V if model.getVal(x[i]) < .5])
 
-
-    print "\n\n\nQuadratic optimization"
+    print("\n\n\nQuadratic optimization")
     model = gpp_qo(V,E)
     model.optimize()
-    model.write("gpp_qo.lp")
-    print "Opt.value=",model.ObjVal
-    x = model.__data
-    print "partition:"
-    print [i for i in V if x[i].X >= .5]
-    print [i for i in V if x[i].X < .5]
+    model.writeProblem("gpp_qo.lp")
+    print("Optimal value:", model.getObjVal())
+    x = model.data
+    print("partition:")
+    print([i for i in V if model.getVal(x[i]) >= .5])
+    print([i for i in V if model.getVal(x[i]) < .5])
 
-
-    print "\n\n\nQuadratic optimization - positive semidefinite"
+    print("\n\n\nQuadratic optimization - positive semidefinite")
     model = gpp_qo_ps(V,E)
     model.optimize()
-    model.write("gpp_qo.lp")
-    print "Opt.value=",model.ObjVal
-    x = model.__data
-    print "partition:"
-    print [i for i in V if x[i].X >= .5]
-    print [i for i in V if x[i].X < .5]
+    model.writeProblem("gpp_qo.lp")
+    print("Optimal value:", model.getObjVal())
+    x = model.data
+    print("partition:")
+    print([i for i in V if model.getVal(x[i]) >= .5])
+    print([i for i in V if model.getVal(x[i]) < .5])
 
-
-    print "\n\n\nSecond order cone optimization"
+    print("\n\n\nSecond order cone optimization")
     model = gpp_soco(V,E)
     model.optimize()
-    model.write("tmp.lp")
-    status = model.Status
-    if status == GRB.Status.OPTIMAL:
-        print "Opt.value=",model.ObjVal
-        x,s,z = model.__data
-        print "partition:"
-        print [i for i in V if x[i].X >= .5]
-        print [i for i in V if x[i].X < .5]
+    model.writeProblem("tmp.lp")
+    status = model.getStatus()
+    if status == "optimal":
+        print("Optimal value:", model.getObjVal())
+        x,s,z = model.data
+        print("partition:")
+        print([i for i in V if model.getVal(x[i]) >= .5])
+        print([i for i in V if model.getVal(x[i]) < .5])
 
         #for (i,j) in s:
-        #    print "(%s,%s)\t%s\t%s" % (i,j,s[i,j].X,z[i,j].X)
-    else:
-        model.computeIIS()
-        for c in model.getConstrs():
-            if c.IISConstr:
-                print c.ConstrName
+        #    print("(%s,%s)\t%s\t%s" % (i,j,s[i,j].X,z[i,j].X)
+#    else: todo
+  #      model.computeIIS()
+   #     for c in model.getConstrs():
+    #        if c.IISConstr:
+     #           print(c.ConstrName)

@@ -90,7 +90,7 @@ def solveCuttingStock(w,q,B):
         
         knapsack.setObjective(quicksum(pi[i]*y[i] for i in range(m)), "maximize")
 
-        # knapsack.Params.OutputFlag = 0 # silent mode
+        knapsack.hideOutput() # silent mode
         knapsack.optimize()
         # if LOG:
         #     print "objective of knapsack problem:", knapsack.ObjVal

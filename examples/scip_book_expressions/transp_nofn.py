@@ -16,6 +16,7 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 
 from pyscipopt.scip import *
+from pyscipopt.linexpr import *
 
 d = {1:80, 2:270, 3:250 , 4:160, 5:180}  # demand
 I = d.keys() 
@@ -37,7 +38,7 @@ x = {}
 
 for i in I:
     for j in J:
-        x[i,j] = model.addVar(vtype="C", name="x(%s,%s)" % (i,j), obj=c[i,j])
+        x[i,j] = model.addVar(vtype="C", name="x(%s,%s)" % (i,j))
 
 # Demand constraints
 for i in I:
@@ -46,6 +47,9 @@ for i in I:
 # Capacity constraints
 for j in J:
     model.addCons(sum(x[i,j] for i in I if (i,j) in x) <= M[j], name="Capacity(%s)" % j)
+
+# Objective
+model.setObjective(quicksum(c[i,j]*x[i,j]  for (i,j) in x), "minimize")
 
 model.optimize()
 

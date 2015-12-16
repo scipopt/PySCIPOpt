@@ -24,5 +24,6 @@ model.setMaximize()
 
 model.optimize()
 
-print("Optimal value:", model.getObjVal())
-print((x1.name, x2.name, x3.name), " = ", (model.getVal(x1), model.getVal(x2), model.getVal(x3)))
+if model.getStatus() == "optimal":
+    print("Optimal value:", model.getObjVal())
+    print((x1.name, x2.name, x3.name), " = ", (model.getVal(x1), model.getVal(x2), model.getVal(x3)))

@@ -40,11 +40,12 @@ Use = {
 # Create variables
 x = {}
 for j in Blends:
-    x[j] = model.addVar(vtype="C", name="x(%s)"%j, obj=Profit[j])
+    x[j] = model.addVar(vtype="C", name="x(%s)"%j)
 
 # Create constraints
+c = {}
 for i in Grapes:
-    model.addCons(quicksum(Use[i,j]*x[j] for j in Blends) <= Inventory[i], name="Use(%s)"%i)
+    c[i] = model.addCons(quicksum(Use[i,j]*x[j] for j in Blends) <= Inventory[i], name="Use(%s)"%i)
 
 # Objective
 model.setObjective(quicksum(Profit[j]*x[j] for j in Blends), "maximize")
@@ -53,9 +54,11 @@ model.writeProblem("lo_wines.lp")  # useful for debugging
 
 model.optimize()
 
-print("Optimal value:", model.getObjVal())
-for j in x:
-    print(x[j].name, model.getVal(x[j]))
-#for c in model.getCons(): todo?
-#    print(c.name, model.getDualsolLinear(c))
-
+if model.getStatus() == "optimal":
+    print("Optimal value:", model.getObjVal())
+    for j in x:
+        print(x[j].name, model.getVal(x[j]))
+    for i in c:
+        print("dual:", model.getDualsolLinear(c[i])) # c[i].name, 
+else:
+    print("Problem could not be solved to optimality")

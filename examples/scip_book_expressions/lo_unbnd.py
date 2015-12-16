@@ -12,40 +12,38 @@ from pyscipopt.scip import *
 
 model = Model("lo unbounded")
 
-x1 = model.addVar(vtype="C", name="x1", obj=1)
-x2 = model.addVar(vtype="C", name="x2", obj=1)
-model.update()
+x1 = model.addVar(vtype="C", name="x1")
+x2 = model.addVar(vtype="C", name="x2")
 
-model.addConstr(x1-x2 >= -1)
-model.addConstr(x2-x1 >= -1)
+model.addCons(x1-x2 >= -1)
+model.addCons(x2-x1 >= -1)
 
-model.setMaximize()
+model.setObjective(x1 + x2, "maximize")
 
 model.optimize()
 
-# todo
-status = model.Status
-if status == GRB.Status.OPTIMAL:
-    print "Optimal value:",model.ObjVal
-    for v in model.getVars():
-        print v.VarName,v.X
+status = model.getStatus()
+
+if status == "optimal":
+    print("Optimal value:",model.getObjVal())
+    print((x1.name, x2.name), " = ", (model.getVal(x1), model.getVal(x2)))
     exit(0)
 
-if status == GRB.Status.UNBOUNDED or status == GRB.Status.INF_OR_UNBD:
-    #print "Unbounded or infeasible instance"
-    model.setObjective(0, GRB.MAXIMIZE)
+if status == "unbounded" or status == "infeasible":
+    print("Unbounded or infeasible instance")
+    model.setObjective(0, "maximize") #todo
     model.optimize()
-    status = model.Status
+    status = model.getStatus()
 
-if status == GRB.Status.OPTIMAL:
-    print "Instance unbounded"
-elif status == GRB.Status.INFEASIBLE:
-    print "Infeasible instance: violated constraints are:"
-    model.computeIIS()
-    for c in model.getConstrs():
-        if c.IISConstr:
-            print c.ConstrName
+if status == "optimal":
+    print("Instance unbounded")
+elif status == "infeasible":
+    print("Infeasible instance: violated constraints are:")
+   # model.computeIIS() todo
+    #for c in model.getConstrs():
+   #     if c.IISConstr:
+     #       print c.ConstrName
 else:
-    print "Error: Solver finished with non-optimal status",status
-    from grbcodes import grbcodes
-    print grbcodes[status]
+    print("Error: Solver finished with non-optimal status",status)
+  #  from grbcodes import grbcodes
+  #  print grbcodes[status]

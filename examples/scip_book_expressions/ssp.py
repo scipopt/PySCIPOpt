@@ -4,7 +4,8 @@ ssp.py: model for the stable set problem
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 
-from gurobipy import *
+from pyscipopt.scip import *
+from pyscipopt.linexpr import *
 
 def ssp(V,E):
     """ssp -- model for the stable set problem
@@ -14,18 +15,17 @@ def ssp(V,E):
     Returns a model, ready to be solved.
     """
     model = Model("ssp")
+
     x = {}
     for i in V:
         x[i] = model.addVar(vtype="B", name="x(%s)"%i)
-    model.update()
 
     for (i,j) in E:
-        model.addConstr(x[i] + x[j] <= 1, "Edge(%s,%s)"%(i,j))
+        model.addCons(x[i] + x[j] <= 1, "Edge(%s,%s)"%(i,j))
 
-    model.setObjective(quicksum(x[i] for i in V), GRB.MAXIMIZE)
+    model.setObjective(quicksum(x[i] for i in V), "maximize")
 
-    model.update()
-    model.__data = x
+    model.data = x
     return model
 
 
@@ -48,7 +48,8 @@ if __name__ == "__main__":
 
     model = ssp(V,E)
     model.optimize()
-    print "Opt.value=",model.ObjVal
-    x = model.__data
-    print "maximum stable set:"
-    print [i for i in V if x[i].X > 0.5]
+    print("Optimal value:", model.getObjVal())
+    
+    x = model.data
+    print("maximum stable set:")
+    print([i for i in V if model.getVal(x[i]) > 0.5])

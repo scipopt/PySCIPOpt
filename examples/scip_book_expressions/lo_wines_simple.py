@@ -25,5 +25,9 @@ model.setMaximize()
 
 model.optimize()
 
-print("Optimal value:", model.getObjVal())
-print((x.name, y.name, z.name), " = ", (model.getVal(x), model.getVal(y), model.getVal(z)))
+if model.getStatus() == "optimal":
+    model.writeProblem("lo_wines_simple.lp")
+    print("Optimal value:", model.getObjVal())
+    print((x.name, y.name, z.name), " = ", (model.getVal(x), model.getVal(y), model.getVal(z)))
+else:
+    print("Problem could not be solved to optimality")

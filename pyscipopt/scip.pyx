@@ -142,7 +142,27 @@ class Variable(LinExpr):
 cdef class Cons:
     cdef scip.SCIP_CONS* _cons
 
+class Constraint(LinExpr): #todo
+    '''Is a linear expression and has SCIP_CONS*'''
 
+    def __init__(self, name=None):
+        self.cons = Cons()
+        self.name = name
+        LinExpr.__init__(self, {(self,) : 1.0})
+
+    def __hash__(self):
+        return hash(id(self))
+
+    def __lt__(self, other):
+        return id(self) < id(other)
+
+    def __gt__(self, other):
+        return id(self) > id(other)
+
+    def __repr__(self):
+        return self.name    
+
+        
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
 # - interface SCIPfreeProb()
@@ -244,6 +264,8 @@ cdef class Model:
             # transform linear expression into variable dictionary
             terms = coeffs.terms
             coeffs = {t[0]:c for t, c in terms.items() if c != 0.0}
+        elif coeffs == 0:
+            coeffs = {}
         for k in coeffs:
             coeff = <scip.SCIP_Real>coeffs[k]
             v = <Var>k.var
@@ -354,6 +376,7 @@ cdef class Model:
         self._addCons(scip_cons)
         cons = Cons()
         cons._cons = scip_cons
+        
         return cons
 
     def _addLinCons(self, lincons, **kwargs):

@@ -16,25 +16,24 @@ def gcp_fixed_k(V,E,K):
     Returns a model, ready to be solved.
     """
     model = Model("gcp - fixed k")
+    
     x,z = {},{}
     for i in V:
         for k in range(K):
             x[i,k] = model.addVar(vtype="B", name="x(%s,%s)"%(i,k))
     for (i,j) in E:
         z[i,j] = model.addVar(vtype="B", name="z(%s,%s)"%(i,j))
-    model.update()
-
+   
     for i in V:
-        model.addConstr(quicksum(x[i,k] for k in range(K)) == 1, "AssignColor(%s)" % i)
+        model.addCons(quicksum(x[i,k] for k in range(K)) == 1, "AssignColor(%s)" % i)
 
     for (i,j) in E:
         for k in range(K):
-            model.addConstr(x[i,k] + x[j,k] <= 1 + z[i,j], "BadEdge(%s,%s,%s)"%(i,j,k))
+            model.addCons(x[i,k] + x[j,k] <= 1 + z[i,j], "BadEdge(%s,%s,%s)"%(i,j,k))
 
-    model.setObjective(quicksum(z[i,j] for (i,j) in E), GRB.MINIMIZE)
-
-    model.update()
-    model.__data = x,z
+    model.setObjective(quicksum(z[i,j] for (i,j) in E), "minimize")
+   
+    model.data = x,z
     return model
 
 
@@ -54,8 +53,9 @@ def solve_gcp(V,E):
         # gcp.Params.OutputFlag = 0 # silent mode
         gcp.Params.Cutoff = .1
         gcp.optimize()
-        if gcp.status == GRB.Status.OPTIMAL:
-            x,z = gcp.__data
+        status = gcp.getStatus()
+        if status == "optimal":
+            x,z = gcp.data
             for i in V:
                 for k in range(K):
                     if x[i,k].X > 0.5:

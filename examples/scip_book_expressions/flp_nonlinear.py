@@ -17,6 +17,8 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 import math
 import random
 from pyscipopt.scip import *
+from pyscipopt.linexpr import *
+from pyscipopt.multidict import *
 from piecewise import *
 
 def flp_nonlinear_mselect(I,J,d,M,f,c,K):
@@ -40,11 +42,11 @@ def flp_nonlinear_mselect(I,J,d,M,f,c,K):
         b[j] = [f[j]*math.sqrt(value) for value in a[j]]
 
     model = Model("nonlinear flp -- piecewise linear version with multiple selection")
+    
     x = {}
     for j in J:
         for i in I:
             x[i,j] = model.addVar(vtype="C", name="x(%s,%s)"%(i,j))  # i's demand satisfied from j
-    model.update()
 
     # total volume transported from plant j, corresponding (linearized) cost, selection variable:
     X,F,z = {},{},{}
@@ -53,24 +55,23 @@ def flp_nonlinear_mselect(I,J,d,M,f,c,K):
         X[j],F[j],z[j] = mult_selection(model,a[j],b[j])
         X[j].ub = M[j]
         # for i in I:
-        #     model.addConstr(
+        #     model.addCons(
         #         x[i,j] <= \
         #         quicksum(min(d[i],a[j][k+1]) * z[j][k] for k in range(K)),\
         #         "Strong(%s,%s)"%(i,j))
 
     # constraints for customer's demand satisfaction
     for i in I:
-        model.addConstr(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
+        model.addCons(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
 
     for j in J:
-        model.addConstr(quicksum(x[i,j] for i in I) == X[j], "Capacity(%s)"%j)
+        model.addCons(quicksum(x[i,j] for i in I) == X[j], "Capacity(%s)"%j)
 
     model.setObjective(quicksum(F[j] for j in J) +\
                        quicksum(c[i,j]*x[i,j] for j in J for i in I),\
-                       GRB.MINIMIZE)
+                       "minimize")
 
-    model.update()
-    model.__data = x,X,F
+    model.data = x,X,F
     return model
 
 
@@ -96,11 +97,12 @@ def flp_nonlinear_cc_dis_strong(I,J,d,M,f,c,K):
         b[j] = [f[j]*math.sqrt(value) for value in a[j]]
 
     model = Model("nonlinear flp -- piecewise linear version with convex combination")
+    
     x = {}
     for j in J:
         for i in I:
             x[i,j] = model.addVar(vtype="C", name="x(%s,%s)"%(i,j))  # i's demand satisfied from j
-    model.update()
+    
 
     # total volume transported from plant j, corresponding (linearized) cost, selection variable:
     X,F,z = {},{},{}
@@ -109,24 +111,23 @@ def flp_nonlinear_cc_dis_strong(I,J,d,M,f,c,K):
         X[j],F[j],z[j] = convex_comb_dis(model,a[j],b[j])
         X[j].ub = M[j]
         for i in I:
-            model.addConstr(
+            model.addCons(
                 x[i,j] <= \
                 quicksum(min(d[i],a[j][k+1]) * z[j][k] for k in range(K)),\
                 "Strong(%s,%s)"%(i,j))
 
     # constraints for customer's demand satisfaction
     for i in I:
-        model.addConstr(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
+        model.addCons(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
 
     for j in J:
-        model.addConstr(quicksum(x[i,j] for i in I) == X[j], "Capacity(%s)"%j)
+        model.addCons(quicksum(x[i,j] for i in I) == X[j], "Capacity(%s)"%j)
 
     model.setObjective(quicksum(F[j] for j in J) +\
                        quicksum(c[i,j]*x[i,j] for j in J for i in I),\
-                       GRB.MINIMIZE)
+                       "minimize")
 
-    model.update()
-    model.__data = x,X,F
+    model.data = x,X,F
     return model
 
 
@@ -152,11 +153,11 @@ def flp_nonlinear_cc_dis(I,J,d,M,f,c,K):
         b[j] = [f[j]*math.sqrt(value) for value in a[j]]
 
     model = Model("nonlinear flp -- piecewise linear version with convex combination")
+    
     x = {}
     for j in J:
         for i in I:
             x[i,j] = model.addVar(vtype="C", name="x(%s,%s)"%(i,j))  # i's demand satisfied from j
-    model.update()
 
     # total volume transported from plant j, corresponding (linearized) cost, selection variable:
     X,F,z = {},{},{}
@@ -165,24 +166,23 @@ def flp_nonlinear_cc_dis(I,J,d,M,f,c,K):
         X[j],F[j],z[j] = convex_comb_dis(model,a[j],b[j])
         X[j].ub = M[j]
         # for i in I:
-        #     model.addConstr(
+        #     model.addCons(
         #         x[i,j] <= \
         #         quicksum(min(d[i],a[j][k+1]) * z[j][k] for k in range(K)),\
         #         "Strong(%s,%s)"%(i,j))
 
     # constraints for customer's demand satisfaction
     for i in I:
-        model.addConstr(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
+        model.addCons(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
 
     for j in J:
-        model.addConstr(quicksum(x[i,j] for i in I) == X[j], "Capacity(%s)"%j)
+        model.addCons(quicksum(x[i,j] for i in I) == X[j], "Capacity(%s)"%j)
 
     model.setObjective(quicksum(F[j] for j in J) +\
                        quicksum(c[i,j]*x[i,j] for j in J for i in I),\
-                       GRB.MINIMIZE)
+                       "minimize")
 
-    model.update()
-    model.__data = x,X,F
+    model.data = x,X,F
     return model
 
 
@@ -208,12 +208,12 @@ def flp_nonlinear_cc_dis_log(I,J,d,M,f,c,K):
         b[j] = [f[j]*math.sqrt(value) for value in a[j]]
 
     model = Model("nonlinear flp -- convex combination model with logarithmic number of binary variables")
+
     x = {}
     for j in J:
         for i in I:
             x[i,j] = model.addVar(vtype="C", name="x(%s,%s)"%(i,j))  # i's demand satisfied from j
-    model.update()
-
+    
     # total volume transported from plant j, corresponding (linearized) cost, selection variable:
     X,F,yL,yR = {},{},{},{}
     for j in J:
@@ -221,24 +221,23 @@ def flp_nonlinear_cc_dis_log(I,J,d,M,f,c,K):
         X[j],F[j],yL[j],yR[j] = convex_comb_dis_log(model,a[j],b[j])
         X[j].ub = M[j]
         # for i in I:
-        #     model.addConstr(
+        #     model.addCons(
         #         x[i,j] <= \
         #         quicksum(min(d[i],a[j][k+1]) * (yL[j][k]+yR[j][k]) for k in range(K)),\
         #         "Strong(%s,%s)"%(i,j))
 
     # constraints for customer's demand satisfaction
     for i in I:
-        model.addConstr(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
+        model.addCons(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
 
     for j in J:
-        model.addConstr(quicksum(x[i,j] for i in I) == X[j], "Capacity(%s)"%j)
+        model.addCons(quicksum(x[i,j] for i in I) == X[j], "Capacity(%s)"%j)
 
     model.setObjective(quicksum(F[j] for j in J) +\
                        quicksum(c[i,j]*x[i,j] for j in J for i in I),\
-                       GRB.MINIMIZE)
-
-    model.update()
-    model.__data = x,X,F
+                       "minimize")
+ 
+    model.data = x,X,F
     return model
 
 
@@ -264,12 +263,12 @@ def flp_nonlinear_cc_agg(I,J,d,M,f,c,K):
         b[j] = [f[j]*math.sqrt(value) for value in a[j]]
 
     model = Model("nonlinear flp -- piecewise linear aggregated convex combination")
+
     x = {}
     for j in J:
         for i in I:
             x[i,j] = model.addVar(vtype="C", name="x(%s,%s)"%(i,j))  # i's demand satisfied from j
-    model.update()
-
+    
     # total volume transported from plant j, corresponding (linearized) cost, selection variable:
     X,F,z = {},{},{}
     for j in J:
@@ -277,24 +276,24 @@ def flp_nonlinear_cc_agg(I,J,d,M,f,c,K):
         X[j],F[j],z[j] = convex_comb_agg(model,a[j],b[j])
         X[j].ub = M[j]
         # for i in I:
-        #     model.addConstr(
+        #     model.addCons(
         #         x[i,j] <= \
         #         quicksum(min(d[i],a[j][k+1]) * z[j][k] for k in range(K)),\
         #         "Strong(%s,%s)"%(i,j))
 
     # constraints for customer's demand satisfaction
     for i in I:
-        model.addConstr(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
+        model.addCons(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
 
     for j in J:
-        model.addConstr(quicksum(x[i,j] for i in I) == X[j], "Capacity(%s)"%j)
+        model.addCons(quicksum(x[i,j] for i in I) == X[j], "Capacity(%s)"%j)
 
     model.setObjective(quicksum(F[j] for j in J) +\
                        quicksum(c[i,j]*x[i,j] for j in J for i in I),\
-                       GRB.MINIMIZE)
+                       "minimize")
 
-    model.update()
-    model.__data = x,X,F
+    
+    model.data = x,X,F
     return model
 
 
@@ -320,12 +319,12 @@ def flp_nonlinear_cc_agg_log(I,J,d,M,f,c,K):
         b[j] = [f[j]*math.sqrt(value) for value in a[j]]
 
     model = Model("nonlinear flp -- piecewise linear version with convex combination")
+
     x = {}
     for j in J:
         for i in I:
             x[i,j] = model.addVar(vtype="C", name="x(%s,%s)"%(i,j))  # i's demand satisfied from j
-    model.update()
-
+    
     # total volume transported from plant j, corresponding (linearized) cost, selection variable:
     X,F,y = {},{},{}
     for j in J:
@@ -333,24 +332,23 @@ def flp_nonlinear_cc_agg_log(I,J,d,M,f,c,K):
         X[j],F[j],y[j] = convex_comb_agg_log(model,a[j],b[j])
         X[j].ub = M[j]
         # for i in I:
-        #     model.addConstr(
+        #     model.addCons(
         #         x[i,j] <= \
         #         quicksum(min(d[i],a[j][k+1]) * (y[j][k]+y[j][k+1]) for k in range(K)),\
         #         "Strong(%s,%s)"%(i,j))
 
     # constraints for customer's demand satisfaction
     for i in I:
-        model.addConstr(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
+        model.addCons(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
 
     for j in J:
-        model.addConstr(quicksum(x[i,j] for i in I) == X[j], "Capacity(%s)"%j)
+        model.addCons(quicksum(x[i,j] for i in I) == X[j], "Capacity(%s)"%j)
 
     model.setObjective(quicksum(F[j] for j in J) +\
                        quicksum(c[i,j]*x[i,j] for j in J for i in I),\
-                       GRB.MINIMIZE)
+                       "minimize")
 
-    model.update()
-    model.__data = x,X,F
+    model.data = x,X,F
     return model
 
 
@@ -376,12 +374,12 @@ def flp_nonlinear_sos(I,J,d,M,f,c,K):
         b[j] = [f[j]*math.sqrt(value) for value in a[j]]
 
     model = Model("nonlinear flp -- use model with SOS constraints")
+    
     x = {}
     for j in J:
         for i in I:
             x[i,j] = model.addVar(vtype="C", name="x(%s,%s)"%(i,j))  # i's demand satisfied from j
-    model.update()
-
+    
     # total volume transported from plant j, corresponding (linearized) cost, selection variable:
     X,F,z = {},{},{}
     for j in J:
@@ -389,7 +387,7 @@ def flp_nonlinear_sos(I,J,d,M,f,c,K):
         X[j],F[j],z[j] = convex_comb_sos(model,a[j],b[j])
         X[j].ub = M[j]
         # for i in I:
-        #     model.addConstr(
+        #     model.addCons(
         #         x[i,j] <= \
         #         quicksum(min(d[i],a[j][k+1]) * (z[j][k] + z[j][k+1])\
         #                  for k in range(len(a[j])-1)),
@@ -397,17 +395,16 @@ def flp_nonlinear_sos(I,J,d,M,f,c,K):
 
     # constraints for customer's demand satisfaction
     for i in I:
-        model.addConstr(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
+        model.addCons(quicksum(x[i,j] for j in J) == d[i], "Demand(%s)"%i)
 
     for j in J:
-        model.addConstr(quicksum(x[i,j] for i in I) == X[j], "Capacity(%s)"%j)
+        model.addCons(quicksum(x[i,j] for i in I) == X[j], "Capacity(%s)"%j)
 
     model.setObjective(quicksum(F[j] for j in J) +\
                        quicksum(c[i,j]*x[i,j] for j in J for i in I),\
-                       GRB.MINIMIZE)
-
-    model.update()
-    model.__data = x,X,F
+                       "minimize")
+    
+    model.data = x,X,F
     return model
 
 
@@ -453,10 +450,10 @@ def make_data(n,m,same=True):
         total_cap += M[j]
     for j in J:
         M[j] = int(M[j] * total_demand / total_cap + 1) + random.randint(0,r[j])
-        # print "%s\t%s\t%s" % (j,f[j],M[j])
+        # print("%s\t%s\t%s" % (j,f[j],M[j])
 
-    # print "demand:",total_demand
-    # print "capacity:",sum([M[j] for j in J])
+    # print("demand:",total_demand
+    # print("capacity:",sum([M[j] for j in J])
 
     return I,J,d,M,f,c,x,y
 
@@ -487,61 +484,61 @@ if __name__ == "__main__":
     # I,J,d,M,f,c,x_pos,y_pos = read_cortinhal("DATA/8_25/A8_25_11.DAT")
     # I,J,d,M,f,c,x_pos,y_pos = example()
     K = 4
-    print "demand:",d
-    print "cost:",c
-    print "fixed:",f
-    print "capacity:",M
-    # print "x:",x_pos
-    # print "y:",y_pos
-    print "number of intervals:",K
+    print("demand:",d)
+    print("cost:",c)
+    print("fixed:",f)
+    print("capacity:",M)
+    # print("x:",x_pos
+    # print("y:",y_pos
+    print("number of intervals:",K)
 
-    print "\n\n\nflp: multiple selection"
+    print("\n\n\nflp: multiple selection")
     model = flp_nonlinear_mselect(I,J,d,M,f,c,K)
-    x,X,F = model.__data
-    model.Params.OutputFlag = 1 # silent/verbose mode
+    x,X,F = model.data
+    model.hideOutput() # silent/verbose mode
     model.optimize()
-    objMS = model.ObjVal
-    print "obj:",objMS
+    objMS = model.getObjVal()
+    print("Obj.",objMS)
 
-    print "\n\n\nflp: convex combination with binary variables"
+    print("\n\n\nflp: convex combination with binary variables")
     model = flp_nonlinear_cc_dis(I,J,d,M,f,c,K)
-    x,X,F = model.__data
-    model.Params.OutputFlag = 1 # silent/verbose mode
+    x,X,F = model.data
+    model.hideOutput() # silent/verbose mode
     model.optimize()
-    objCC = model.ObjVal
-    print "obj:",objCC
+    objCC = model.getObjVal()
+    print("Obj.",objCC)
 
-    print "\n\n\nflp: convex combination with logarithmic number of binary variables"
+    print("\n\n\nflp: convex combination with logarithmic number of binary variables")
     model = flp_nonlinear_cc_dis_log(I,J,d,M,f,c,K)
-    x,X,F = model.__data
-    model.Params.OutputFlag = 1 # silent/verbose mode
+    x,X,F = model.data
+    model.hideOutput() # silent/verbose mode
     model.optimize()
-    objLOG = model.ObjVal
-    print "obj:",objLOG
+    objLOG = model.getObjVal()
+    print("Obj.",objLOG)
 
-    print "\n\n\nflp: model with SOS constraints"
+    print("\n\n\nflp: model with SOS constraints")
     model = flp_nonlinear_sos(I,J,d,M,f,c,K)
-    x,X,F = model.__data
-    model.Params.OutputFlag = 1 # silent/verbose mode
+    x,X,F = model.data
+    model.hideOutput() # silent/verbose mode
     model.optimize()
-    objSOS = model.ObjVal
-    print "obj:",objSOS
+    objSOS = model.getObjVal()
+    print("Obj.",objSOS)
 
-    print "\n\n\nflp: aggregated CC model"
+    print("\n\n\nflp: aggregated CC model")
     model = flp_nonlinear_cc_agg(I,J,d,M,f,c,K)
-    x,X,F = model.__data
-    model.Params.OutputFlag = 1 # silent/verbose mode
+    x,X,F = model.data
+    model.hideOutput() # silent/verbose mode
     model.optimize()
-    objND = model.ObjVal
-    print "obj:",objND
+    objND = model.getObjVal()
+    print("Obj.",objND)
 
-    print "\n\n\nflp: aggregated CC model, log number variables"
+    print("\n\n\nflp: aggregated CC model, log number variables")
     model = flp_nonlinear_cc_agg_log(I,J,d,M,f,c,K)
-    x,X,F = model.__data
-    model.Params.OutputFlag = 1 # silent/verbose mode
+    x,X,F = model.data
+    model.hideOutput() # silent/verbose mode
     model.optimize()
-    objNDlog = model.ObjVal
-    print "obj:",objNDlog
+    objNDlog = model.getObjVal()
+    print("Obj.",objNDlog)
 
     EPS = 1.e-4
     assert abs(objCC-objMS)<EPS and abs(objLOG-objMS)<EPS and abs(objSOS-objMS)<EPS\
@@ -549,12 +546,12 @@ if __name__ == "__main__":
     edges = []
     flow = {}
     for (i,j) in sorted(x):
-        if x[i,j].X > EPS:
+        if model.getVal(x[i,j]) > EPS:
            edges.append((i,j))
-           flow[(i,j)] = x[i,j].X
-    print "\n\n\nflp: model with piecewise linear approximation of cost function"
-    print "obj:",model.ObjVal,"\nedges",sorted(edges)
-    print "flows:",flow
+           flow[(i,j)] = model.getVal(x[i,j])
+    print("\n\n\nflp: model with piecewise linear approximation of cost function")
+    print("Obj.",model.getObjVal(),"\nedges",sorted(edges))
+    print("flows:",flow)
 
     if x_pos == None:
         exit(0)
@@ -580,4 +577,4 @@ if __name__ == "__main__":
         NX.draw(G,position,node_color="y",nodelist=facilities)
         P.show()
     except ImportError:
-        print "install 'networkx' and 'matplotlib' for plotting"
+        print("install 'networkx' and 'matplotlib' for plotting")
