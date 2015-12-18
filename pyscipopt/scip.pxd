@@ -210,3 +210,35 @@ cdef extern from "scip/cons_linear.h":
 
     SCIP_Real SCIPgetDualsolLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real SCIPgetDualfarkasLinear(SCIP* scip, SCIP_CONS* cons)
+
+cdef extern from "scip/cons_quadratic.h":
+    SCIP_RETCODE SCIPcreateConsQuadratic(SCIP* scip,
+                                         SCIP_CONS** cons,
+                                         const char* name,
+                                         int nlinvars,
+                                         SCIP_VAR** linvars,
+                                         SCIP_Real* lincoefs,
+                                         int nquadterms,
+                                         SCIP_VAR** quadvars1,
+                                         SCIP_VAR** quadvars2,
+                                         SCIP_Real* quadcoeffs,
+                                         SCIP_Real lhs,
+                                         SCIP_Real rhs,
+                                         SCIP_Bool initial,
+                                         SCIP_Bool separate,
+                                         SCIP_Bool enforce,
+                                         SCIP_Bool check,
+                                         SCIP_Bool propagate,
+                                         SCIP_Bool local,
+                                         SCIP_Bool modifiable,
+                                         SCIP_Bool dynamic,
+                                         SCIP_Bool removable)
+    SCIP_RETCODE SCIPaddLinearVarQuadratic(SCIP* scip,
+                                           SCIP_CONS* cons,
+                                           SCIP_VAR* var,
+                                           SCIP_Real coef)
+    SCIP_RETCODE SCIPaddBilinTermQuadratic(SCIP* scip,
+                                           SCIP_CONS* cons,
+                                           SCIP_VAR* var1,
+                                           SCIP_VAR* var2,
+                                           SCIP_Real coef)
