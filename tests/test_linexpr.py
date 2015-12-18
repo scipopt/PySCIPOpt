@@ -78,6 +78,9 @@ def test_operations_quadratic():
     else:
         assert expr[(y,x)] == 1.0
 
+    with pytest.raises(TypeError):
+        expr = x**2 + x + 1
+
 def test_operations_poly():
     expr = x*x*x + 2*y*y
     assert isinstance(expr, LinExpr)
