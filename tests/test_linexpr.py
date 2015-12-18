@@ -11,7 +11,7 @@ z = m.addVar("z")
 def test_variable():
     assert x < y or y < x
 
-def test_operations():
+def test_operations_linear():
     expr = x + y
     assert isinstance(expr, LinExpr)
     assert expr[x] == 1.0
@@ -50,11 +50,42 @@ def test_operations():
     assert expr[y] == 0.0
     assert expr[()] == 1.0
 
-    with pytest.raises(NotImplementedError):
-        expr = x*y
+def test_operations_quadratic():
+    expr = x*x
+    assert isinstance(expr, LinExpr)
+    assert expr[x] == 0.0
+    assert expr[y] == 0.0
+    assert expr[()] == 0.0
+    assert expr[(x,x)] == 1.0
 
-    with pytest.raises(NotImplementedError):
-        expr = x*(1 + y)
+    expr = x*y
+    assert isinstance(expr, LinExpr)
+    assert expr[x] == 0.0
+    assert expr[y] == 0.0
+    assert expr[()] == 0.0
+    if x < y:
+        assert expr[(x,y)] == 1.0
+    else:
+        assert expr[(y,x)] == 1.0
+
+    expr = (x - 1)*(y + 1)
+    assert isinstance(expr, LinExpr)
+    assert expr[x] == 1.0
+    assert expr[y] == -1.0
+    assert expr[()] == -1.0
+    if x < y:
+        assert expr[(x,y)] == 1.0
+    else:
+        assert expr[(y,x)] == 1.0
+
+def test_operations_poly():
+    expr = x*x*x + 2*y*y
+    assert isinstance(expr, LinExpr)
+    assert expr[x] == 0.0
+    assert expr[y] == 0.0
+    assert expr[()] == 0.0
+    assert expr[(x,x,x)] == 1.0
+    assert expr[(y,y)] == 2.0
 
 def test_inequality():
     expr = x + 2*y

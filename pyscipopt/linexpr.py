@@ -43,6 +43,13 @@ class LinExpr(object):
         if _is_number(other):
             f = float(other)
             return LinExpr({v:f*c for v,c in self.terms.items()})
+        elif isinstance(other, LinExpr):
+            terms = {}
+            for v1, c1 in self.terms.items():
+                for v2, c2 in other.terms.items():
+                    v = tuple(sorted(v1 + v2))
+                    terms[v] = terms.get(v, 0.0) + c1 * c2
+            return LinExpr(terms)
         else:
             raise NotImplementedError
 
