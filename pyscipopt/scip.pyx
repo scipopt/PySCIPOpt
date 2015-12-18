@@ -355,7 +355,13 @@ cdef class Model:
                           check=check, propagate=propagate, local=local,
                           modifiable=modifiable, dynamic=dynamic,
                           removable=removable, stickingatnode=stickingatnode)
-            return self._addLinCons(coeffs, **kwargs)
+            deg = coeffs.expr.degree()
+            if deg <= 1:
+                return self._addLinCons(coeffs, **kwargs)
+            elif deg <= 2:
+                return self._addQuadCons(coeffs, **kwargs)
+            else:
+                raise NotImplementedError('Constraints of degree %d!' % deg)
 
         if lhs is None:
             lhs = -scip.SCIPinfinity(self._scip)
@@ -384,10 +390,56 @@ cdef class Model:
         assert isinstance(lincons, LinCons)
         kwargs['lhs'], kwargs['rhs'] = lincons.lb, lincons.ub
         terms = lincons.expr.terms
+        assert lincons.expr.degree() <= 1
         assert terms[()] == 0.0
         coeffs = {t[0]:c for t, c in terms.items() if c != 0.0}
 
         return self.addCons(coeffs, **kwargs)
+
+    def _addQuadCons(self, quadcons, **kwargs):
+        '''add object of class LinCons'''
+        assert isinstance(quadcons, LinCons) # TODO
+        kwargs['lhs'] = -scip.SCIPinfinity(self._scip) if quadcons.lb is None else quadcons.lb
+        kwargs['rhs'] =  scip.SCIPinfinity(self._scip) if quadcons.ub is None else quadcons.ub
+        terms = quadcons.expr.terms
+        assert quadcons.expr.degree() <= 2
+        assert terms[()] == 0.0
+
+        name = str_conversion("quadcons") # TODO
+
+        cdef scip.SCIP_CONS* scip_cons
+        PY_SCIP_CALL(scip.SCIPcreateConsQuadratic(
+            self._scip, &scip_cons, name,
+            0, NULL, NULL,        # linear
+            0, NULL, NULL, NULL,  # quadratc
+            kwargs['lhs'], kwargs['rhs'],
+            kwargs['initial'], kwargs['separate'], kwargs['enforce'],
+            kwargs['check'], kwargs['propagate'], kwargs['local'],
+            kwargs['modifiable'], kwargs['dynamic'], kwargs['removable']))
+
+        cdef Var var1
+        cdef Var var2
+        cdef scip.SCIP_VAR* _var1
+        cdef scip.SCIP_VAR* _var2
+        for v, c in terms.items():
+            if len(v) == 0: # constant
+                assert c == 0.0
+            elif len(v) == 1: # linear
+                var1 = <Var>v[0].var
+                _var1 = <scip.SCIP_VAR*>var1._var
+                PY_SCIP_CALL(SCIPaddLinearVarQuadratic(self._scip, scip_cons, _var1, c))
+            else: # quadratic
+                assert len(v) == 2, 'term: %s' % v
+                var1 = <Var>v[0].var
+                _var1 = <scip.SCIP_VAR*>var1._var
+                var2 = <Var>v[1].var
+                _var2 = <scip.SCIP_VAR*>var2._var
+                PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, _var1, _var2, c))
+
+        self._addCons(scip_cons)
+        cons = Cons()
+        cons._cons = scip_cons
+        return cons
 
     def addConsCoeff(self, Cons cons, var, coeff):
         cdef scip.SCIP_CONS* _cons
