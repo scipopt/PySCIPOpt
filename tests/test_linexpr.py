@@ -87,6 +87,22 @@ def test_operations_poly():
     assert expr[(x,x,x)] == 1.0
     assert expr[(y,y)] == 2.0
 
+def test_degree():
+    expr = LinExpr()
+    assert expr.degree() == 0
+
+    expr = LinExpr() + 3.0
+    assert expr.degree() == 0
+
+    expr = x + 1
+    assert expr.degree() == 1
+
+    expr = x*x + y - 2
+    assert expr.degree() == 2
+
+    expr = (x + 1)*(y + 1)*(x - 1)
+    assert expr.degree() == 3
+
 def test_inequality():
     expr = x + 2*y
     cons = expr <= 0

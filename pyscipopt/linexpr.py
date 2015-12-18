@@ -21,6 +21,9 @@ class LinExpr(object):
         The empty tuple is used as key for the constant term.'''
         self.terms = {} if terms is None else terms
 
+        if len(self.terms) == 0:
+            self.terms[()] = 0.0
+
     def __getitem__(self, key):
         if not isinstance(key, tuple):
             key = (key,)
@@ -97,6 +100,10 @@ class LinExpr(object):
 
     def __repr__(self):
         return 'LinExpr(%s)' % repr(self.terms)
+
+    def degree(self):
+        '''computes highest degree of terms'''
+        return max(len(v) for v in self.terms)
 
 
 class LinCons(object):
