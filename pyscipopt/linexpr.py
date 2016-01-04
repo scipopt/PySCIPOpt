@@ -56,6 +56,17 @@ class LinExpr(object):
         else:
             raise NotImplementedError
 
+    def __pow__(self, other):
+        if float(other).is_integer() and other >= 0:
+            exp = int(other)
+        else:
+            raise NotImplementedError
+
+        res = 1
+        for _ in range(exp):
+            res *= self
+        return res
+
     def __neg__(self):
         return LinExpr({v:-c for v,c in self.terms.items()})
 

@@ -78,8 +78,16 @@ def test_operations_quadratic():
     else:
         assert expr[(y,x)] == 1.0
 
-    with pytest.raises(TypeError):
-        expr = x**2 + x + 1
+def test_power_for_quadratic():
+    expr = x**2 + x + 1
+    assert isinstance(expr, LinExpr)
+    assert expr[(x,x)] == 1.0
+    assert expr[x] == 1.0
+    assert expr[()] == 1.0
+    assert len(expr.terms) == 3
+
+    assert x**2 == x*x
+    assert (x + 3)**2 == x**2 + 6*x + 9
 
 def test_operations_poly():
     expr = x*x*x + 2*y*y
@@ -89,6 +97,16 @@ def test_operations_poly():
     assert expr[()] == 0.0
     assert expr[(x,x,x)] == 1.0
     assert expr[(y,y)] == 2.0
+    assert expr == x**3 + 2*y**2
+
+def test_invalid_power():
+    assert x + (y + 1)**0 == x + 1
+
+    with pytest.raises(NotImplementedError):
+        expr = (x + 1)**0.5
+
+    with pytest.raises(NotImplementedError):
+        expr = (x + 1)**(-1)
 
 def test_degree():
     expr = LinExpr()
