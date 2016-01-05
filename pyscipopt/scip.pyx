@@ -160,12 +160,9 @@ class Constraint(LinExpr): #todo
         return id(self) > id(other)
 
     def __repr__(self):
-        return self.name    
+        return self.name
 
-        
-# - remove create(), includeDefaultPlugins(), createProbBasic() methods
-# - replace free() by "destructor"
-# - interface SCIPfreeProb()
+
 cdef class Model:
     cdef scip.SCIP* _scip
     # store best solution to get the solution values easier
@@ -469,7 +466,8 @@ cdef class Model:
     # Problem solving functions
     # todo: define optimize() as a copy of solve() for Gurobi compatibility
     def optimize(self):
-        PY_SCIP_CALL( scip.SCIPsolve(self._scip) )
+        PY_SCIP_CALL(scip.SCIPsolve(self._scip))
+        self.freeTransform()
         self._bestSol = scip.SCIPgetBestSol(self._scip)
 
 

@@ -9,7 +9,7 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 import math
 import random
-import networkx 
+import networkx
 from pyscipopt.scip import *
 from pyscipopt.linexpr import *
 
@@ -30,7 +30,7 @@ def solve_vrp(V,c,m,q,Q):
         """addcut: add constraint to eliminate infeasible solutions
         Parameters:
             - cut_edges: list of edges in the current solution, except connections to depot
-        Returns True is a cut was added, False otherwise
+        Returns True if a cut was added, False otherwise
         """
         G = networkx.Graph()
         G.add_edges_from(cut_edges)
@@ -63,7 +63,7 @@ def solve_vrp(V,c,m,q,Q):
 
     model.setObjective(quicksum(c[i,j]*x[i,j] for i in V for j in V if j>i), "minimize")
 
-    # model.Params.OutputFlag = 0 # silent mode
+    model.hideOutput()
 
     EPS = 1.e-6
     while True:
@@ -76,7 +76,7 @@ def solve_vrp(V,c,m,q,Q):
         if addcut(edges) == False:
             break
 
-    return model.ObjVal,edges
+    return model.getObjVal(),edges
 
 
 def distance(x1,y1,x2,y2):

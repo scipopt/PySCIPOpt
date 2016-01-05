@@ -11,7 +11,7 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 import math
 import time
 import random
-#import networkx todo
+import networkx
 from pyscipopt.scip import *
 from pyscipopt.linexpr import *
 
