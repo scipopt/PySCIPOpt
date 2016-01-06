@@ -80,7 +80,7 @@ def solveCuttingStock(w,q,B):
         pi = [c.Pi for c in relax.getConstrs()] # keep dual variables
 
         knapsack = Model("KP")     # knapsack sub-problem
-        knapsack.ModelSense = -1   # maximize
+        knapsack.setMaximize       # maximize
         y = {}
         
         for i in range(m):
@@ -94,7 +94,7 @@ def solveCuttingStock(w,q,B):
         knapsack.optimize()
         # if LOG:
         #     print "objective of knapsack problem:", knapsack.ObjVal
-        if knapsack.ObjVal < 1+EPS: # break if no more columns
+        if knapsack.getObjVal() < 1+EPS: # break if no more columns
             break
 
         pat = [int(y[i].X+0.5) for i in y]      # new pattern

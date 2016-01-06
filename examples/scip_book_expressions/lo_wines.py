@@ -56,9 +56,10 @@ model.optimize()
 
 if model.getStatus() == "optimal":
     print("Optimal value:", model.getObjVal())
+
     for j in x:
         print(x[j].name, model.getVal(x[j]))
     for i in c:
-        print("dual:", model.getDualsolLinear(c[i])) # c[i].name, 
+        print("dual:", c[i].name, model.getDualsolLinear(c[i]))
 else:
     print("Problem could not be solved to optimality")

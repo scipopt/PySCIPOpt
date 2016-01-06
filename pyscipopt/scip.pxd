@@ -141,6 +141,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPreleaseVar(SCIP* scip, SCIP_VAR** var)
     SCIP_RETCODE SCIPtransformVar(SCIP* scip, SCIP_VAR* var, SCIP_VAR** transvar) 
     SCIP_VAR** SCIPgetVars(SCIP* scip)
+    const char* SCIPvarGetName(SCIP_VAR* var)
+    int SCIPgetNVars(SCIP* scip)   
 
     # Constraint Methods
     SCIP_RETCODE SCIPcaptureCons(SCIP* scip, SCIP_CONS* cons)

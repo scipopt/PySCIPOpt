@@ -142,26 +142,12 @@ class Variable(LinExpr):
 cdef class Cons:
     cdef scip.SCIP_CONS* _cons
 
-class Constraint(LinExpr): #todo
-    '''Is a linear expression and has SCIP_CONS*'''
+class Constraint: 
 
     def __init__(self, name=None):
         self.cons = Cons()
-        self.name = name
-        LinExpr.__init__(self, {(self,) : 1.0})
-
-    def __hash__(self):
-        return hash(id(self))
-
-    def __lt__(self, other):
-        return id(self) < id(other)
-
-    def __gt__(self, other):
-        return id(self) > id(other)
-
-    def __repr__(self):
-        return self.name
-
+        self.name = name   
+        
 
 cdef class Model:
     cdef scip.SCIP* _scip
@@ -338,6 +324,28 @@ cdef class Model:
             scip.SCIPtransformVar(self._scip, _var, &_tvar))
         return transvar
 
+    # Get variables
+    def getVars(self):
+        cdef scip.SCIP_VAR** _vars
+        cdef scip.SCIP_VAR* _var
+        cdef Var v
+        cdef const char* _name
+        cdef int _nvars
+        vars = {}
+
+        _vars = SCIPgetVars(self._scip)
+        _nvars = SCIPgetNVars(self._scip)
+
+        for i in range(_nvars):
+            _var = _vars[i];
+            _name = SCIPvarGetName(_var)
+            var = Variable(_name)
+            v = var.var
+            v._var = _var
+            vars[i] = var
+        
+        return vars    
+
     # Constraint functions
     # Adding a linear constraint. By default the lhs is set to 0.0.
     # If the lhs is to be unbounded, then you set lhs to None.
@@ -376,9 +384,13 @@ cdef class Model:
             v = <Var>k.var
             _var = <scip.SCIP_VAR*>v._var
             self._addCoefLinear(scip_cons, _var, coeff)
+        cdef Cons c     
         self._addCons(scip_cons)
-        cons = Cons()
-        cons._cons = scip_cons
+        cons = Constraint(name)
+        c = cons.cons
+        c._cons = scip_cons
+     #   cons = Cons(name)
+     #   cons._cons = scip_cons
         
         return cons
 
@@ -455,8 +467,10 @@ cdef class Model:
         return transcons
 
     # Retrieving the dual solution for a linear constraint
-    def getDualsolLinear(self, Cons cons):
-        return scip.SCIPgetDualsolLinear(self._scip, cons._cons)
+    def getDualsolLinear(self, cons):
+        cdef Cons c
+        c = cons.cons
+        return scip.SCIPgetDualsolLinear(self._scip, c._cons)
 
     # Retrieving the dual farkas value for a linear constraint
     def getDualfarkasLinear(self, Cons cons):

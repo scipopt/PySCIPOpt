@@ -75,7 +75,7 @@ def solve_tsp(V,c):
         model.optimize()
         edges = []
         for (i,j) in x:
-            if x[i,j].X > EPS:
+            if model.getVal(x[i,j]) > EPS:
                 edges.append( (i,j) )
 
         if addcut(edges) == False:

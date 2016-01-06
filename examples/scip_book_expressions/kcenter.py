@@ -93,7 +93,7 @@ if __name__ == "__main__":
         P.clf()
         G = NX.Graph()
 
-        facilities = set(j for j in J if y[j].X > EPS)
+        facilities = set(j for j in J if model.getVal(y[j]) > EPS)
         other = set(j for j in J if j not in facilities)
         client = set(i for i in I if i not in facilities and i not in other)
         G.add_nodes_from(facilities)
