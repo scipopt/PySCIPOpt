@@ -181,6 +181,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetCharParam(SCIP* scip, char* name, char value)
     SCIP_RETCODE SCIPsetStringParam(SCIP* scip, char* name, char* value)
     SCIP_RETCODE SCIPreadParams(SCIP* scip, char* file)
+    SCIP_RETCODE SCIPreadProb(SCIP* scip, char* file, char* extension)
 
 
 cdef extern from "scip/scipdefplugins.h":

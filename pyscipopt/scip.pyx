@@ -589,3 +589,10 @@ cdef class Model:
     def readParams(self, file):
         absfile = abspath(file)
         PY_SCIP_CALL(scip.SCIPreadParams(self._scip, absfile))
+
+    def readProblem(self, file, extension = None):
+        absfile = abspath(file)
+        if extension is None:
+            PY_SCIP_CALL(scip.SCIPreadProb(self._scip, absfile, NULL))
+        else:
+            PY_SCIP_CALL(scip.SCIPreadProb(self._scip, absfile, extension))
