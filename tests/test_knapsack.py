@@ -1,8 +1,8 @@
-import pyscipopt.scip as scip
+from pyscipopt import Model
 
 def test_knapsack():
     # create solver instance
-    s = scip.Model()
+    s = Model()
     s.create()
     s.includeDefaultPlugins()
     s.createProbBasic("Knapsack")

@@ -1,8 +1,8 @@
-import pyscipopt.scip as scip
+from pyscipopt import Model
 
 def test_simplelp():
     # create solver instance
-    s = scip.Model()
+    s = Model()
 
     # add some variables
     x = s.addVar("x", vtype='C', obj=1.0)
@@ -27,7 +27,7 @@ def test_simplelp():
 
 def test_nicelp():
     # create solver instance
-    s = scip.Model()
+    s = Model()
 
     # add some variables
     x = s.addVar("x", obj=1.0)

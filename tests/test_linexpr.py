@@ -1,6 +1,6 @@
 import pytest
 
-from pyscipopt.scip import Model
+from pyscipopt import Model
 from pyscipopt.linexpr import LinExpr, LinCons
 
 m = Model()

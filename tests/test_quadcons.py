@@ -1,7 +1,7 @@
-import pyscipopt.scip as scip
+from pyscipopt import Model
 
 def test_niceqp():
-    s = scip.Model()
+    s = Model()
 
     x = s.addVar("x")
     y = s.addVar("y")
@@ -17,7 +17,7 @@ def test_niceqp():
     s.free()
 
 def test_niceqcqp():
-    s = scip.Model()
+    s = Model()
 
     x = s.addVar("x")
     y = s.addVar("y")
