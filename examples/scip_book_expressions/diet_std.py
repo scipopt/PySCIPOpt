@@ -87,7 +87,7 @@ if __name__ == "__main__":
         for i in z:
             print((i,model.getVal(z[i])))
         exit(0)
-    if status == "unbounded": or status == "infeasible":
+    if status == "unbounded" or status == "infeasible":
         model.setObjective(0, "maximize")
         model.optimize()
         status = model.getStatus()
