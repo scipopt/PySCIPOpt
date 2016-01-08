@@ -10,8 +10,7 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 import math
 import random
 import networkx
-from pyscipopt.scip import *
-from pyscipopt.linexpr import *
+from pyscipopt import Model, quicksum, multidict
 
 def vrp(V,c,m,q,Q):
     """solve_vrp -- solve the vehicle routing problem.

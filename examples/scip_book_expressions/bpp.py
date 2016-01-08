@@ -11,8 +11,7 @@ extensions with tie-breaking and SOS constraints.
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 
-from pyscipopt.scip import *
-from pyscipopt.linexpr import *
+from pyscipopt import Model, quicksum
 
 def FFD(s,B):
     """First Fit Decreasing heuristics for the Bin Packing Problem.

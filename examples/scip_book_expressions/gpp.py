@@ -4,8 +4,7 @@ gpp.py: model for the graph partitioning problem
 Copyright (c) by Joao Pedro PEDROSO, Masahiro MURAMATSU and Mikio KUBO, 2012
 """
 
-from pyscipopt.scip import *
-from pyscipopt.linexpr import *
+from pyscipopt import Model, quicksum, multidict
 
 def gpp(V,E):
     """gpp -- model for the graph partitioning problem

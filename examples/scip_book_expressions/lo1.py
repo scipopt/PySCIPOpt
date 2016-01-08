@@ -9,7 +9,7 @@ subject to 2 x1+ x2+ x3 <= 60
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt.scip import *
+from pyscipopt import Model
 
 model = Model("lo1")
 

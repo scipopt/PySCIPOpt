@@ -13,8 +13,7 @@ Constraints correspond to the inventory of pure-grape wines.
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt.scip import *
-from pyscipopt.linexpr import *
+from pyscipopt import Model, quicksum, multidict
 
 #Initialize model
 model = Model("Wine blending")

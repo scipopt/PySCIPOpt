@@ -3,8 +3,7 @@ weber_soco.py:  model for solving the weber problem using soco.
 
 Copyright (c) by Joao Pedro PEDROSO, Masahiro MURAMATSU and Mikio KUBO, 2012
 """
-from pyscipopt.scip import *
-from pyscipopt.linexpr import *
+from pyscipopt import Model, quicksum, multidict
 
 def weber(I,x,y,w):
     """weber: model for solving the single source weber problem using soco.

@@ -5,9 +5,7 @@ Approach: use second-order cone optimization.
 
 Copyright (c) by Joao Pedro PEDROSO, Masahiro MURAMATSU and Mikio KUBO, 2012
 """
-from pyscipopt.scip import *
-from pyscipopt.linexpr import *
-from pyscipopt.multidict import *
+from pyscipopt import Model, quicksum, multidict
 
 def eoq_soco(I,F,h,d,w,W):
     """eoq_soco --  multi-item capacitated economic ordering quantity model using soco

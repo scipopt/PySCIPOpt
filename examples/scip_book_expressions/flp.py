@@ -6,9 +6,7 @@ to some facilities with fixed costs and capacities.
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt.scip import *
-from pyscipopt.linexpr import *
-from pyscipopt.multidict import *
+from pyscipopt import Model, quicksum, multidict
 
 def flp(I,J,d,M,f,c):
     """flp -- model for the capacitated facility location problem

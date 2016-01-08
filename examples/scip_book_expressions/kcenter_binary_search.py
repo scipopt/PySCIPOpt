@@ -7,7 +7,7 @@ by a small amount delta would leave some uncovered.
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt.scip import *
+from pyscipopt import Model, quicksum, multidict
 
 def kcover(I,J,c,k):
     """kcover -- minimize the number of uncovered customers from k facilities.

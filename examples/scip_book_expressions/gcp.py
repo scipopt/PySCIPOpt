@@ -4,8 +4,7 @@ gcp.py: model for the graph coloring problem
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 
-from pyscipopt.scip import *
-from pyscipopt.linexpr import *
+from pyscipopt import Model, quicksum, multidict
 
 def gcp(V,E,K):
     """gcp -- model for minimizing the number of colors in a graph

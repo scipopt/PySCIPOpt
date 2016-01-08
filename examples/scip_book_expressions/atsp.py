@@ -9,8 +9,7 @@ formulations implemented:
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt.scip import *
-from pyscipopt.linexpr import *
+from pyscipopt import Model, quicksum, multidict
 
 def mtz(n,c):
     """mtz: Miller-Tucker-Zemlin's model for the (asymmetric) traveling salesman problem

@@ -7,7 +7,7 @@ What are the minimum numbers of turtles and octopuses, respectively?
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt.scip import *
+from pyscipopt import Model
 
 model = Model("puzzle")
 x = model.addVar(vtype="I", name="octopusses")

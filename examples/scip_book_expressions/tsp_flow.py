@@ -13,8 +13,7 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 import math
 import random
 #import networkx todo
-from pyscipopt.scip import *
-from pyscipopt.linexpr import *
+from pyscipopt import Model, quicksum, multidict
 
 EPS = 1.e-6
 

@@ -3,9 +3,7 @@ rcs.py: model for the resource constrained scheduling problem
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt.scip import *
-from pyscipopt.linexpr import *
-from pyscipopt.multidict import *
+from pyscipopt import Model, quicksum, multidict
 
 def rcs(J,P,R,T,p,c,a,RUB):
     """rcs -- model for the resource constrained scheduling problem

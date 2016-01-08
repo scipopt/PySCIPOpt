@@ -12,8 +12,7 @@ import math
 import time
 import random
 import networkx
-from pyscipopt.scip import *
-from pyscipopt.linexpr import *
+from pyscipopt import Model, quicksum, multidict
 
 def solve_tsp(V,c):
     """solve_tsp -- solve the traveling salesman problem

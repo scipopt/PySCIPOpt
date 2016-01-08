@@ -7,9 +7,7 @@ customers, from capacitated facilities.
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt.scip import *
-from pyscipopt.linexpr import *
-from pyscipopt.multidict import *
+from pyscipopt import Model, quicksum, multidict
 
 def transp(I,J,c,d,M):
     """transp -- model for solving the transportation problem

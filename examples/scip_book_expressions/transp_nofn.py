@@ -15,8 +15,7 @@ Data:
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 
-from pyscipopt.scip import *
-from pyscipopt.linexpr import *
+from pyscipopt import Model, quicksum, multidict
 
 d = {1:80, 2:270, 3:250 , 4:160, 5:180}  # demand
 I = d.keys() 

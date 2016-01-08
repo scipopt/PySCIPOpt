@@ -3,9 +3,7 @@ prodmix_soco.py:  product mix model using soco.
 
 Copyright (c) by Joao Pedro PEDROSO, Masahiro MURAMATSU and Mikio KUBO, 2012
 """
-from pyscipopt.scip import *
-from pyscipopt.linexpr import *
-from pyscipopt.multidict import *
+from pyscipopt import Model, quicksum, multidict
 
 def prodmix(I,K,a,p,epsilon,LB):
     """prodmix:  robust production planning using soco
