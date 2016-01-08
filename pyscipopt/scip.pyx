@@ -331,7 +331,7 @@ cdef class Model:
         cdef Var v
         cdef const char* _name
         cdef int _nvars
-        vars = {}
+        vars = []
 
         _vars = SCIPgetVars(self._scip)
         _nvars = SCIPgetNVars(self._scip)
@@ -342,7 +342,7 @@ cdef class Model:
             var = Variable(_name)
             v = var.var
             v._var = _var
-            vars[i] = var
+            vars.append(var)
         
         return vars    
 
