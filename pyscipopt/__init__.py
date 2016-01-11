@@ -1,4 +1,4 @@
 # export user-relevant objects:
-from scip import Model
-from linexpr import quicksum
-from Multidict import multidict
+from pyscipopt.scip import Model
+from pyscipopt.linexpr import quicksum
+from pyscipopt.Multidict import multidict
