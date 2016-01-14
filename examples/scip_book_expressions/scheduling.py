@@ -158,7 +158,7 @@ def scheduling_cutting_plane(J,p,r,w):
 
     sumP = sum([p[j] for j in J])
     sumP2 = sum([p[j]**2 for j in J])
-    model.addCons(C[j]*p[j] >= sumP2/2 + (sumP**2)/2, "AllJobs")
+    model.addCons(C[j]*p[j] >= sumP2*0.5 + (sumP**2)*0.5, "AllJobs")
 
     model.setObjective(quicksum(w[j]*C[j] for j in J), "minimize")
 
@@ -197,7 +197,7 @@ def scheduling_cutting_plane(J,p,r,w):
             break
 
         cut += 1
-        model.addCons(quicksum(C[j]*p[j] for j in S) >= sumP2/2.0 + (sumP**2)/2.0, "Cut(%s)"%cut) #todo
+        model.addCons(quicksum(C[j]*p[j] for j in S) >= sumP2*0.5 + (sumP**2)*0.5, "Cut(%s)"%cut) #todo: /2.0
 
     return bestC,bestobj,best
 

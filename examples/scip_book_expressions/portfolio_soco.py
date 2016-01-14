@@ -46,7 +46,7 @@ def p_portfolio(I,sigma,r,alpha,beta):
     model.addCons(rho == quicksum(r[i]*x[i] for i in I))
     model.addCons(quicksum(x[i] for i in I) == 1)
 
-    model.addCons(rhoaux == (alpha - rho)/phi_inv(beta)) #todo
+    model.addCons(rhoaux == (alpha - rho)*(1/phi_inv(beta))) #todo
     model.addCons(quicksum(sigma[i]**2 * x[i] * x[i] for i in I) <=  rhoaux * rhoaux)
 
     model.setObjective(rho, "maximize")

@@ -55,4 +55,4 @@ if __name__ == "__main__":
     for i in x:
         v = x[i]
         if model.getVal(v) > EPS:
-            print(v.name, model.getVal(v))
+            print(v.name, "=", model.getVal(v))

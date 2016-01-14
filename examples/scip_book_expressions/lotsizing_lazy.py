@@ -132,7 +132,7 @@ if __name__ == "__main__":
     y,x,I = model.data
     model.optimize()
     print("\nOptimal value [standard]=",model.getObjVal())
-    print("%8s%8s%8s%8s%8s%8s%12s%12s" % ("t","fix","var","h","dem","y","x","I")
+    print("%8s%8s%8s%8s%8s%8s%12s%12s" % ("t","fix","var","h","dem","y","x","I"))
     for t in range(1,T+1):
         print("%8s%8s%8s%8s%8s%8s%12s%12s" % (t,f[t],c[t],h[t],d[t],model.getVal(y[t]),model.getVal(x[t]),model.getVal(I[t])))
 

@@ -193,11 +193,13 @@ if __name__ == "__main__":
     model.hideOutput() # silent mode
     model.optimize()
     cost = model.getObjVal()
-    print("Optimal value=", cost)
+    print()
+    print("Miller-Tucker-Zemlin's model:")
+    print("Optimal value:", cost)
     #model.printAttr("X")
     for v in model.getVars():
         if model.getVal(v) > 0.001:
-            print(v.name,model.getVal(v))
+            print(v.name, "=", model.getVal(v))
 
     x,u = model.data
     sol = [i for (p,i) in sorted([(int(model.getVal(u[i])+.5),i) for i in range(1,n+1)])]
@@ -207,15 +209,17 @@ if __name__ == "__main__":
     print(sol)
     # assert cost == 5
 
-    model = mtz2(n,c)
+    model = mtz_strong(n,c)
     model.hideOutput() # silent mode
     model.optimize()
     cost = model.getObjVal()
-    print("Optimal value=",cost)
+    print()
+    print("Miller-Tucker-Zemlin's model with stronger constraints:")
+    print("Optimal value:",cost)
     #model.printAttr("X")
     for v in model.getVars():
         if model.getVal(v) > 0.001:
-            print(v.name,model.getVal(v))
+            print(v.name, "=", model.getVal(v))
 
     x,u = model.data
     sol = [i for (p,i) in sorted([(int(model.getVal(u[i])+.5),i) for i in range(1,n+1)])]
@@ -229,11 +233,13 @@ if __name__ == "__main__":
     model.hideOutput() # silent mode
     model.optimize()
     cost = model.getObjVal()
-    print("Optimal value=",cost)
+    print()
+    print("Single-commodity flow formulation:")
+    print("Optimal value:",cost)
     #model.printAttr("X")
     for v in model.getVars():
         if model.getVal(v) > 0.001:
-            print(v.name,model.getVal(v))
+            print(v.name, "=", model.getVal(v))
 
     x,f = model.data
     arcs = [(i,j) for (i,j) in x if model.getVal(x[i,j]) > .5]
@@ -245,11 +251,13 @@ if __name__ == "__main__":
     model.hideOutput() # silent mode
     model.optimize()
     cost = model.getObjVal()
-    print("Optimal value=",cost)
+    print()
+    print("Multi-commodity flow formulation:")
+    print("Optimal value:",cost)
     #model.printAttr("X")
     for v in model.getVars():
         if model.getVal(v)>0.001:
-            print(v.name,model.getVal(v))
+            print(v.name, "=", model.getVal(v))
 
     x,f = model.data
     arcs = [(i,j) for (i,j) in x if model.getVal(x[i,j]) > .5]

@@ -50,5 +50,5 @@ if __name__ == "__main__":
     print("Optimal value:", model.getObjVal())
     
     x = model.data
-    print("maximum stable set:")
+    print("Maximum stable set:")
     print([i for i in V if model.getVal(x[i]) > 0.5])

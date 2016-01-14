@@ -113,11 +113,11 @@ if __name__ == "__main__":
     model.optimize()
     x,s = model.data
 
-    print("Optimal value=",model.getObjVal())
+    print("Optimal value:",model.getObjVal())
     for (j,t) in x:
         if model.getVal(x[j,t]) > 0.5:
-            print(x[j,t].name,model.getVal(x[j,t]))
+            print(x[j,t].name,"=",model.getVal(x[j,t]))
 
     for j in s:
         if model.getVal(s[j]) > 0.:
-            print(s[j].name,model.getVal(s[j]))
+            print(s[j].name,"=",model.getVal(s[j]))

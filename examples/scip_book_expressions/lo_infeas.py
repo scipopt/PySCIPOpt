@@ -43,6 +43,4 @@ elif status == "infeasible":
    #     if c.IISConstr:
     #        print(c.ConstrName)
 else:
-    print("Error: Solver finished with non-optimal status",status)
-#    from grbcodes import grbcodes todo
-#    print(grbcodes[status])
+    print("Error: Solver finished with non-optimal status", status)

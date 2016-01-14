@@ -5,7 +5,7 @@ gcp_fixed_k.py: solve the graph coloring problem with fixed-k model
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 
-from gurobipy import *
+from pyscipopt import Model, quicksum, multidict
 
 def gcp_fixed_k(V,E,K):
     """gcp_fixed_k -- model for minimizing number of bad edges in coloring a graph
@@ -48,17 +48,17 @@ def solve_gcp(V,E):
     UB = len(V)
     color = {}
     while UB-LB > 1:
-        K = (UB+LB) / 2
+        K = int((UB+LB) / 2)
         gcp = gcp_fixed_k(V,E,K)
         # gcp.Params.OutputFlag = 0 # silent mode
-        gcp.Params.Cutoff = .1
+        #gcp.Params.Cutoff = .1 todo
         gcp.optimize()
         status = gcp.getStatus()
         if status == "optimal":
             x,z = gcp.data
             for i in V:
                 for k in range(K):
-                    if x[i,k].X > 0.5:
+                    if gcp.getVal(x[i,k]) > 0.5:
                         color[i] = k
                         break
                 # else:
@@ -88,5 +88,5 @@ if __name__ == "__main__":
     V,E = make_data(75,.25)
 
     K,color = solve_gcp(V,E)
-    print "minimum number of colors:",K
-    print "solution:",color
+    print("minimum number of colors:",K)
+    print("solution:",color)

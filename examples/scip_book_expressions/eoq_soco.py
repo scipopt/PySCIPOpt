@@ -30,7 +30,7 @@ def eoq_soco(I,F,h,d,w,W):
 
     model.addCons(quicksum(w[i]*d[i]*T[i] for i in I) <= W)
 
-    model.setObjective(quicksum(c[i] + h[i]*d[i]*T[i]/2. for i in I), "minimize")
+    model.setObjective(quicksum(c[i] + h[i]*d[i]*T[i]*0.5 for i in I), "minimize")
 
     model.data = T,c
     return model

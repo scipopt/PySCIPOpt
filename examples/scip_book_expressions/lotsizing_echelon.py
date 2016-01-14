@@ -428,7 +428,7 @@ if __name__ == "__main__":
 
     status = model.getStatus()
     if status == "unbounded":
-        print("The model cannot be solved because it is unbounded"
+        print("The model cannot be solved because it is unbounded")
     elif status == "optimal":
         print("Opt.value=",model.getObjVal())
         y,x,E = model.data

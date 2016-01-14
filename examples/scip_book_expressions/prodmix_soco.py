@@ -51,7 +51,7 @@ if __name__ == "__main__":
     I,K,a,p,epsilon,LB  = make_data()
     model = prodmix(I,K,a,p,epsilon,LB)
     model.optimize()
-    print("Obj.",model.getObjVal())
+    print("Objective value:",model.getObjVal())
     x,rhs = model.data
     for i in I:
-        print(i,model.getVal(x[i]))
+        print(i,": ",model.getVal(x[i]))

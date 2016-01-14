@@ -21,13 +21,13 @@ def staff(I,T,N,J,S,c,b):
     """
     Ts = range(1,T+1)
     model = Model("staff scheduling")
-    
+
     x = {}
     for t in Ts:
         for j in J:
             for i in I:
                 x[i,t,j] = model.addVar(vtype="B", name="x(%s,%s,%s)" % (i,t,j))
-    
+
 
     model.setObjective(quicksum(c[i,t,j]*x[i,t,j] for i in I for t in Ts for j in J if j != 0),
                        "minimize")
@@ -49,7 +49,7 @@ def staff(I,T,N,J,S,c,b):
             for j in S:
                 model.addCons(x[i,t-1,j] + x[i,t+1,j] >= x[i,t,j], "SameShift(%s,%s,%s)" % (i,t,j))
 
-    
+
     model.data = x
     return model
 
@@ -149,6 +149,6 @@ if __name__ == "__main__":
 
     elif status == "unbounded" or status == "infeasible":
         print("Unbounded instance")
-        
+
     else:
         print("Error: Solver finished with non-optimal status",status)
