@@ -16,14 +16,14 @@ def weber(I,x,y,w):
     """
 
     model = Model("weber")
-    
+
     X,Y,z,xaux,yaux = {},{},{},{},{}
-    X = model.addVar(lb=-GRB.INFINITY, vtype="C", name="X")
-    Y = model.addVar(lb=-GRB.INFINITY, vtype="C", name="Y")
+    X = model.addVar(lb=-model.infinity(), vtype="C", name="X")
+    Y = model.addVar(lb=-model.infinity(), vtype="C", name="Y")
     for i in I:
         z[i] = model.addVar(vtype="C", name="z(%s)"%(i))
-        xaux[i] = model.addVar(lb=-GRB.INFINITY, vtype="C", name="xaux(%s)"%(i))
-        yaux[i] = model.addVar(lb=-GRB.INFINITY, vtype="C", name="yaux(%s)"%(i))
+        xaux[i] = model.addVar(lb=-model.infinity(), vtype="C", name="xaux(%s)"%(i))
+        yaux[i] = model.addVar(lb=-model.infinity(), vtype="C", name="yaux(%s)"%(i))
 
     for i in I:
         model.addCons(xaux[i]*xaux[i] + yaux[i]*yaux[i] <= z[i]*z[i], "MinDist(%s)"%(i))
@@ -113,13 +113,13 @@ def weber_MS(I,J,x,y,w):
     X,Y,v,u = {},{},{},{}
     xaux,yaux,uaux = {},{},{}
     for j in J:
-        X[j] = model.addVar(lb=-GRB.INFINITY, vtype="C", name="X(%s)"%j)
-        Y[j] = model.addVar(lb=-GRB.INFINITY, vtype="C", name="Y(%s)"%j)
+        X[j] = model.addVar(lb=-model.infinity(), vtype="C", name="X(%s)"%j)
+        Y[j] = model.addVar(lb=-model.infinity(), vtype="C", name="Y(%s)"%j)
         for i in I:
             v[i,j] = model.addVar(vtype="C", name="v(%s,%s)"%(i,j))
             u[i,j] = model.addVar(vtype="B", name="u(%s,%s)"%(i,j))
-            xaux[i,j] = model.addVar(lb=-GRB.INFINITY, vtype="C", name="xaux(%s,%s)"%(i,j))
-            yaux[i,j] = model.addVar(lb=-GRB.INFINITY, vtype="C", name="yaux(%s,%s)"%(i,j))
+            xaux[i,j] = model.addVar(lb=-model.infinity(), vtype="C", name="xaux(%s,%s)"%(i,j))
+            yaux[i,j] = model.addVar(lb=-model.infinity(), vtype="C", name="yaux(%s,%s)"%(i,j))
             uaux[i,j] = model.addVar(vtype="C", name="uaux(%s,%s)"%(i,j))
 
 
@@ -132,7 +132,7 @@ def weber_MS(I,J,x,y,w):
             model.addCons(yaux[i,j] == (y[i]-Y[j]), "yAux(%s,%s)"%(i,j))
             model.addCons(uaux[i,j] >= v[i,j] - M*(1-u[i,j]), "uAux(%s,%s)"%(i,j))
 
-    model.setObjective(quicksum(w[i]*uaux[i,j] for i in I for j in J), GRB.MINIMIZE)
+    model.setObjective(quicksum(w[i]*uaux[i,j] for i in I for j in J), "minimize")
 
 
     model.data = X,Y,v,u
@@ -147,7 +147,7 @@ if __name__ == "__main__":
     model = weber_MS(I,J,x,y,w)
     model.optimize()
     X,Y,w,z = model.data
-    print("Optimal value=",model.getObjVal())
+    print("Optimal value:",model.getObjVal())
     print("Selected positions:")
     for j in J:
         print("\t",(model.getVal(X[j]),model.getVal(Y[j])))

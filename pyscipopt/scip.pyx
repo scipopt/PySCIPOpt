@@ -142,13 +142,17 @@ class Variable(LinExpr):
 cdef class Cons:
     cdef scip.SCIP_CONS* _cons
 
-class Constraint: 
+class Constraint:
 
     def __init__(self, name=None):
         self.cons = Cons()
-        self.name = name   
-        
+        self.name = name
 
+
+
+# - remove create(), includeDefaultPlugins(), createProbBasic() methods
+# - replace free() by "destructor"
+# - interface SCIPfreeProb()
 cdef class Model:
     cdef scip.SCIP* _scip
     # store best solution to get the solution values easier
@@ -276,7 +280,7 @@ cdef class Model:
 
     # Variable Functions
     # Create a new variable
-    def addVar(self, name, vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar = False):
+    def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar = False):
         if ub is None:
             ub = scip.SCIPinfinity(self._scip)
         cdef scip.SCIP_VAR* scip_var
@@ -343,8 +347,8 @@ cdef class Model:
             v = var.var
             v._var = _var
             vars.append(var)
-        
-        return vars    
+
+        return vars
 
     # Constraint functions
     # Adding a linear constraint. By default the lhs is set to 0.0.
@@ -384,14 +388,14 @@ cdef class Model:
             v = <Var>k.var
             _var = <scip.SCIP_VAR*>v._var
             self._addCoefLinear(scip_cons, _var, coeff)
-        cdef Cons c     
+        cdef Cons c
         self._addCons(scip_cons)
         cons = Constraint(name)
         c = cons.cons
         c._cons = scip_cons
      #   cons = Cons(name)
      #   cons._cons = scip_cons
-        
+
         return cons
 
     def _addLinCons(self, lincons, **kwargs):
@@ -484,8 +488,12 @@ cdef class Model:
         self.freeTransform()
         self._bestSol = scip.SCIPgetBestSol(self._scip)
 
+    # Numerical methods
+    def infinity(self):
+         inf = scip.SCIPinfinity(self._scip)
+         return inf
 
-    # Pricer Functions
+    # Pricer functions
     def includePricer(self, Pricer pricer, name, desc):
         PY_SCIP_CALL(scip.SCIPincludePricerBasic(self._scip, &(pricer._pricer), name, desc, 1, True, scipPricerRedcost, scipPricerFarkas, pricer._pricerdata))
         PY_SCIP_CALL(scip.SCIPactivatePricer(self._scip, pricer._pricer))

@@ -15,7 +15,7 @@ def staff(I,T,N,J,S,c,b):
         - N: number of working periods required for staff's elements in a cycle
         - J: set of shifts in each period (shift 0 == rest)
         - S: subset of shifts that must be kept at least consecutive days
-        - c[i,t,j]: cost of a shit j of staff's element i on period t
+        - c[i,t,j]: cost of a shift j of staff's element i on period t
         - b[t,j]: number of staff elements required in period t, shift j
     Returns a model, ready to be solved.
     """
@@ -129,7 +129,7 @@ if __name__ == "__main__":
             s = "worker %s:\t" % i
             for t in range(1,T+1):
                 for j in J:
-                    if x[i,t,j].X > .5:
+                    if model.getVal(x[i,t,j]) > .5:
                         s += str(j)
             print(s)
         print("\n\nuncovered shifts:")

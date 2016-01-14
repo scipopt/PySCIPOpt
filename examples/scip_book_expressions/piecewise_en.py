@@ -27,10 +27,10 @@ def mult_selection(model,a,b):
     K = len(a)-1
     w,z = {},{}
     for k in range(K):
-        w[k] = model.addVar(lb=-GRB.INFINITY) # do not name variables for avoiding clash
+        w[k] = model.addVar(lb=-model.infinity()) # do not name variables for avoiding clash
         z[k] = model.addVar(vtype="B")
     X = model.addVar(lb=a[0], ub=a[K], vtype="C")
-    Y = model.addVar(lb=-GRB.INFINITY)
+    Y = model.addVar(lb=-model.infinity())
 
     for k in range(K):
         model.addCons(w[k] >= a[k]*z[k])
@@ -60,7 +60,7 @@ def convex_comb_sos(model,a,b):
     for k in range(K+1):
         z[k] = model.addVar(lb=0, ub=1, vtype="C") # do not name variables for avoiding clash
     X = model.addVar(lb=a[0], ub=a[K], vtype="C")
-    Y = model.addVar(lb=-GRB.INFINITY, vtype="C")
+    Y = model.addVar(lb=-model.infinity(), vtype="C")
 
     model.addCons(X == quicksum(a[k]*z[k] for k in range(K+1)))
     model.addCons(Y == quicksum(b[k]*z[k] for k in range(K+1)))
@@ -87,7 +87,7 @@ def convex_comb_dis(model,a,b):
         wR[k] = model.addVar(lb=0, ub=1, vtype="C")
         z[k] = model.addVar(vtype="B")
     X = model.addVar(lb=a[0], ub=a[K], vtype="C")
-    Y = model.addVar(lb=-GRB.INFINITY, vtype="C")
+    Y = model.addVar(lb=-model.infinity(), vtype="C")
 
     model.addCons(X == quicksum(a[k]*wL[k] + a[k+1]*wR[k] for k in range(K)))
     model.addCons(Y == quicksum(b[k]*wL[k] + b[k+1]*wR[k] for k in range(K)))
@@ -123,7 +123,7 @@ def convex_comb_dis_log(model,a,b):
         wL[k] = model.addVar(lb=0, ub=1, vtype="C") # do not name variables for avoiding clash
         wR[k] = model.addVar(lb=0, ub=1, vtype="C")
     X = model.addVar(lb=a[0], ub=a[K], vtype="C")
-    Y = model.addVar(lb=-GRB.INFINITY, vtype="C")
+    Y = model.addVar(lb=-model.infinity(), vtype="C")
 
     g = {}
     for j in range(G):
@@ -164,8 +164,8 @@ def convex_comb_agg(model,a,b):
     for k in range(K):
         z[k] = model.addVar(vtype="B")
     X = model.addVar(lb=a[0], ub=a[K], vtype="C")
-    Y = model.addVar(lb=-GRB.INFINITY, vtype="C")
-   
+    Y = model.addVar(lb=-model.infinity(), vtype="C")
+
     model.addCons(X == quicksum(a[k]*w[k] for k in range(K+1)))
     model.addCons(Y == quicksum(b[k]*w[k] for k in range(K+1)))
     model.addCons(w[0] <= z[0])
@@ -195,7 +195,7 @@ def convex_comb_agg_log(model,a,b):
     for j in range(G):
         g[j] = model.addVar(vtype="B")
     X = model.addVar(lb=a[0], ub=a[K], vtype="C")
-    Y = model.addVar(lb=-GRB.INFINITY, vtype="C")
+    Y = model.addVar(lb=-model.infinity(), vtype="C")
 
     model.addCons(X == quicksum(a[k]*w[k]  for k in range(K+1)))
     model.addCons(Y == quicksum(b[k]*w[k]  for k in range(K+1)))
@@ -231,7 +231,7 @@ if __name__ == "__main__":
     X,Y,z = mult_selection(model,a,b) # X,Y --> piecewise linear replacement of x,f(x) based on points a,b
     # model using X and Y (and possibly other variables)
     u = model.addVar(vtype="C", name="u")
-   
+
     A = model.addCons(3*X + 4*Y <= 250, "A")
     B = model.addCons(7*X - 2*Y + 3*u == 170, "B")
     model.setObjective(2*X + 15*Y + 5*u, "maximize")
@@ -244,7 +244,7 @@ if __name__ == "__main__":
     model = Model("disaggregated convex combination")
     X,Y,z = convex_comb_dis(model,a,b)
     u = model.addVar(vtype="C", name="u")
-   
+
     A = model.addCons(3*X + 4*Y <= 250, "A")
     B = model.addCons(7*X - 2*Y + 3*u == 170, "B")
     model.setObjective(2*X + 15*Y + 5*u, "maximize")
@@ -257,7 +257,7 @@ if __name__ == "__main__":
     model = Model("disaggregated convex combination (log)")
     X,Y,z = convex_comb_dis(model,a,b)
     u = model.addVar(vtype="C", name="u")
-   
+
     A = model.addCons(3*X + 4*Y <= 250, "A")
     B = model.addCons(7*X - 2*Y + 3*u == 170, "B")
     model.setObjective(2*X + 15*Y + 5*u, "maximize")
@@ -270,7 +270,7 @@ if __name__ == "__main__":
     model = Model("SOS2")
     X,Y,w = convex_comb_sos(model,a,b)
     u = model.addVar(vtype="C", name="u")
-   
+
     A = model.addCons(3*X + 4*Y <= 250, "A")
     B = model.addCons(7*X - 2*Y + 3*u == 170, "B")
     model.setObjective(2*X + 15*Y + 5*u, "maximize")
@@ -283,7 +283,7 @@ if __name__ == "__main__":
     model = Model("aggregated convex combination")
     X,Y,z = convex_comb_agg(model,a,b)
     u = model.addVar(vtype="C", name="u")
-   
+
     A = model.addCons(3*X + 4*Y <= 250, "A")
     B = model.addCons(7*X - 2*Y + 3*u == 170, "B")
     model.setObjective(2*X + 15*Y + 5*u, "maximize")
@@ -296,7 +296,7 @@ if __name__ == "__main__":
     model = Model("aggregated convex combination (log)")
     X,Y,w = convex_comb_agg_log(model,a,b)
     u = model.addVar(vtype="C", name="u")
-   
+
     A = model.addCons(3*X + 4*Y <= 250, "A")
     B = model.addCons(7*X - 2*Y + 3*u == 170, "B")
     model.setObjective(2*X + 15*Y + 5*u, "maximize")

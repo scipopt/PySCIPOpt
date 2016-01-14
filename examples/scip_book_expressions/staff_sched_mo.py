@@ -26,7 +26,7 @@ def staff_mo(I,T,N,J,S,c,b):
 
     Ts = range(1,T+1)
     model = Model("staff scheduling -- multiobjective version")
-    
+
     x,y = {},{}
     for t in Ts:
         for j in J:
@@ -36,7 +36,7 @@ def staff_mo(I,T,N,J,S,c,b):
 
     C = model.addVar(vtype="C", name="cost")
     U = model.addVar(vtype="C", name="uncovered")
-    
+
     model.addCons(C >= quicksum(c[i,t,j]*x[i,t,j] for i in I for t in Ts for j in J if j != 0), "Cost")
     model.addCons(U >= quicksum(y[t,j] for t in Ts for j in J if j != 0), "Uncovered")
 
@@ -57,7 +57,7 @@ def staff_mo(I,T,N,J,S,c,b):
             for j in S:
                 model.addCons(x[i,t-1,j] + x[i,t+1,j] >= x[i,t,j], "SameShift(%s,%s,%s)" % (i,t,j))
 
-    
+
     model.data = x,y,C,U
     return model
 
@@ -73,14 +73,14 @@ def optimize(model,cand,obj):
     """
     # model.Params.OutputFlag = 0 # silent mode
     model.setObjective(obj,"minimize")
-    
+
     model.optimize()
     x,y,C,U = model.data
-    status = model.Status
-    if status == GRB.Status.OPTIMAL or status == GRB.Status.SUBOPTIMAL:
+    status = model.getStatus()
+    if status == "optimal" or status == "bestsollimit": # todo GRB.Status.SUBOPTIMAL:
         for k in range(model.SolCount):
             model.Params.SolutionNumber = k
-            cand.append((U.X,C.X))
+            cand.append(model.getVal(U),model.getVal(C))
     return status
 
 
@@ -100,7 +100,7 @@ def solve_segment(I,T,N,J,S,c,b):
     """
     model = staff_mo(I,T,N,J,S,c,b)     # model for minimizing time
     x,y,C,U = model.data
-    model.Params.TimeLimit = 60
+    model.setRealParam("limits/time", 60)
 
     # store the set of solutions for plotting
     cand = []
@@ -109,7 +109,7 @@ def solve_segment(I,T,N,J,S,c,b):
     stat1 = optimize(model,cand,C)
     stat2 = optimize(model,cand,U)
 
-    if stat1 != GRB.Status.OPTIMAL or stat1 != GRB.Status.OPTIMAL:
+    if stat1 != "optimal" or stat2 != "optimal":
         return []
 
     ulist = [int(ui+.5) for (ui,ci) in cand]
@@ -118,7 +118,7 @@ def solve_segment(I,T,N,J,S,c,b):
 
     # add a time upper bound constraint, moving between min and max values
     UConstr = model.addCons(U <= max_u, "UConstr")
-    
+
 
     for u_lim in range(max_u-1, min_u, -1):
         print("limiting u to",u_lim)

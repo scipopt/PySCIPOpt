@@ -73,7 +73,7 @@ def solve_kcenter(I,J,c,k,delta):
         model.Params.Cutoff = .1
         model.optimize()
 
-        if model.status == GRB.Status.OPTIMAL: # todo
+        if model.getStatus == "optimal":
             # infeasibility = sum([z[i].X for i in I])
             # print "infeasibility=",infeasibility
             UB = theta
