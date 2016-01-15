@@ -2,10 +2,8 @@ from pyscipopt import Model
 
 def test_knapsack():
     # create solver instance
-    s = Model()
-    s.create()
-    s.includeDefaultPlugins()
-    s.createProbBasic("Knapsack")
+    s = Model("Knapsack")
+    s.hideOutput()
 
     # setting the objective sense to maximise
     s.setMaximize()
