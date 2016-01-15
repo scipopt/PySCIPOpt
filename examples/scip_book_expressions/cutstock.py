@@ -52,7 +52,7 @@ def solveCuttingStock(w,q,B):
     K = len(t)
     master = Model("master LP") # master LP problem
     x = {}
-    
+
     for k in range(K):
         x[k] = master.addVar(vtype="I", name="x(%s)"%k)
 
@@ -61,7 +61,7 @@ def solveCuttingStock(w,q,B):
     for i in range(m):
         orders[i] = master.addCons(
             quicksum(t[k][i]*x[k] for k in range(K) if t[k][i] > 0) >= q[i], "Order(%s)"%i)
-   
+
     master.setObjective(quicksum(x[k] for k in range(K)), "minimize")
 
     # master.Params.OutputFlag = 0 # silent mode
@@ -76,17 +76,17 @@ def solveCuttingStock(w,q,B):
         # iter += 1
         relax = master.relax()
         relax.optimize()
-        pi = [c.Pi for c in relax.getConstrs()] # keep dual variables
+        pi = [relax.getDualsolLinear(c) for c in relax.getConss()] # keep dual variables
 
         knapsack = Model("KP")     # knapsack sub-problem
         knapsack.setMaximize       # maximize
         y = {}
-        
+
         for i in range(m):
             y[i] = knapsack.addVar(lb=0, ub=q[i], vtype="I", name="y(%s)"%i)
 
         knapsack.addCons(quicksum(w[i]*y[i] for i in range(m)) <= B, "Width")
-        
+
         knapsack.setObjective(quicksum(pi[i]*y[i] for i in range(m)), "maximize")
 
         knapsack.hideOutput() # silent mode

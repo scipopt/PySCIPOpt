@@ -20,7 +20,7 @@ def gcp(V,E,K):
         y[k] = model.addVar(vtype="B", name="y(%s)"%k)
         for i in V:
             x[i,k] = model.addVar(vtype="B", name="x(%s,%s)"%(i,k))
-    
+
     for i in V:
         model.addCons(quicksum(x[i,k] for k in range(K)) == 1, "AssignColor(%s)"%i)
 
@@ -49,7 +49,7 @@ def gcp_low(V,E,K):
         y[k] = model.addVar(vtype="B", name="y(%s)"%k)
         for i in V:
             x[i,k] = model.addVar(vtype="B", name="x(%s,%s)"%(i,k))
-    
+
 
     for i in V:
         model.addCons(quicksum(x[i,k] for k in range(K)) == 1, "AssignColor(%s)" % i)
@@ -62,7 +62,7 @@ def gcp_low(V,E,K):
         model.addCons(y[k] >= y[k+1], "LowColor(%s)"%k)
 
     model.setObjective(quicksum(y[k] for k in range(K)), "minimize")
-    
+
     model.data = x
     return model
 
@@ -96,7 +96,7 @@ def gcp_sos(V,E,K):
         model.addCons(y[k] >= y[k+1], "LowColor(%s)"%k)
 
     model.setObjective(quicksum(y[k] for k in range(K)), "minimize")
-    
+
     model.data = x
     return model
 
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     model.optimize()
     print("Optimal value:", model.getObjVal())
     x = model.data
-    
+
     color = {}
     for i in V:
         for k in range(K):
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     print("colors:",color)
 
     import time,sys
-    setParam(GRB.Param.Threads,1) #todo
+    model.setIntParam("lp/threads", 1) # setParam(GRB.Param.Threads,1) todo
     models = [gcp,gcp_low,gcp_sos]
     cpu = {}
     N = 25      # number of observations

@@ -33,7 +33,7 @@ def eoq(I,F,h,d,w,W,a0,aK,K):
 
     model = Model("multi-item, capacitated EOQ")
 
-    x,c,W = {},{},{}
+    x,c,w_ = {},{},{}
     for i in I:
         x[i] = model.addVar(vtype="C", name="x(%s)"%i)  # cycle time for item i
         c[i] = model.addVar(vtype="C", name="c(%s)"%i)  # total cost for item i
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     x,w = model.data
     EPS = 1.e-6
     for v in x:
-        if x[v].X >= EPS:
-            print(x[v].name,model.getVal(x[v]))
+        if model.getVal(x[v]) >= EPS:
+            print(x[v].name,"=",model.getVal(x[v]))
 
     print("Optimal value:", model.getObjVal())

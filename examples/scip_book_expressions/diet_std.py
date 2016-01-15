@@ -28,7 +28,7 @@ def diet(F,N,a,b,c,d):
 
     # Constraints:
     for i in N:
-        model.addCons(quicksum(d[j][i]*x[j] for j in F) == z[i], "Nutr(%s)" % i)
+        model.addCons(quicksum(d[j][i]*x[j] for j in F) == z[i], name="Nutr(%s)" % i)
 
     model.setObjective(quicksum(c[j]*x[j]  for j in F), "minimize")
 
@@ -36,7 +36,6 @@ def diet(F,N,a,b,c,d):
     return model
 
 
-inf = GRB.INFINITY
 def make_inst():
     """make_inst: prepare data for the diet model"""
     F,c,d = multidict({       # cost # composition
@@ -92,18 +91,18 @@ if __name__ == "__main__":
     if status == "optimal":
         print("Instance unbounded")
     elif status == "infeasible":
-        print("Infeasible instance: violated constraints are:")
-        model.computeIIS()
-        model.writeProblem("diet.lp")
-        for c in model.getConstrs():
-            if c.IISConstr:
-                print(c.ConstrName
-        model.feasRelaxS(1,False,False,True)
-        model.optimize()
-        model.writeProblem("diet-feasiblity.lp")
-        status = model.Status
-        if status == "optimal":
-            print("Optimal Value=",model.getObjVal())
-            for v in model.getVars():
-                print(v.name,model.getVal(v))
-            exit(0)
+        print("Infeasible instance")
+#        model.computeIIS()
+#        model.writeProblem("diet.lp")
+#        for c in model.getConss():
+#            if c.IISConstr:
+#                print(c.name)
+ #       model.feasRelaxS(1,False,False,True)
+  #      model.optimize()
+   #     model.writeProblem("diet-feasiblity.lp")
+  #      status = model.Status
+ #       if status == "optimal":
+ #           print("Optimal Value=",model.getObjVal())
+ #           for v in model.getVars():
+ #               print(v.name,"=",model.getVal(v))
+ #           exit(0)

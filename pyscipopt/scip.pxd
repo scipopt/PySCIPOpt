@@ -140,15 +140,18 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPcaptureVar(SCIP* scip, SCIP_VAR* var)
     SCIP_RETCODE SCIPaddPricedVar(SCIP* scip, SCIP_VAR* var, SCIP_Real score)
     SCIP_RETCODE SCIPreleaseVar(SCIP* scip, SCIP_VAR** var)
-    SCIP_RETCODE SCIPtransformVar(SCIP* scip, SCIP_VAR* var, SCIP_VAR** transvar) 
+    SCIP_RETCODE SCIPtransformVar(SCIP* scip, SCIP_VAR* var, SCIP_VAR** transvar)
     SCIP_VAR** SCIPgetVars(SCIP* scip)
     const char* SCIPvarGetName(SCIP_VAR* var)
-    int SCIPgetNVars(SCIP* scip)   
+    int SCIPgetNVars(SCIP* scip)
 
     # Constraint Methods
     SCIP_RETCODE SCIPcaptureCons(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPreleaseCons(SCIP* scip, SCIP_CONS** cons)
     SCIP_RETCODE SCIPtransformCons(SCIP* scip, SCIP_CONS* cons, SCIP_CONS** transcons)
+    SCIP_CONS** SCIPgetConss(SCIP* scip)
+    const char* SCIPconsGetName(SCIP_CONS* cons)
+    int SCIPgetNConss(SCIP* scip)
 
     # Primal Solution Methods
     SCIP_SOL* SCIPgetBestSol(SCIP* scip)

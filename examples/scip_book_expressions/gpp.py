@@ -42,7 +42,7 @@ def gpp_qo(V,E):
     Returns a model, ready to be solved.
     """
     model = Model("gpp")
-    
+
     x = {}
     for i in V:
         x[i] = model.addVar(vtype="B", name="x(%s)"%i)
@@ -175,8 +175,8 @@ if __name__ == "__main__":
         print([i for i in V if model.getVal(x[i]) >= .5])
         print([i for i in V if model.getVal(x[i]) < .5])
 
-        #for (i,j) in s:
-        #    print("(%s,%s)\t%s\t%s" % (i,j,s[i,j].X,z[i,j].X)
+        for (i,j) in s:
+            print("(%s,%s)\t%s\t%s" % (i,j,model.getVal(s[i,j]),model.getVal(z[i,j])))
 #    else: todo
   #      model.computeIIS()
    #     for c in model.getConstrs():

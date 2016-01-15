@@ -124,12 +124,13 @@ if __name__ == "__main__":
     print("bin size:", B)
 
     ffd = FFD(s,B)
-    print("\n\n\n Solution by FFD heuristic:")
+    print("\n\n\n FFD heuristic:")
+    print("Solution:")
     print(ffd)
     print(len(ffd), "bins")
 
-    print("\n\n\n Using IP formulation: \n")
+    print("\n\n\n IP formulation:")
     bins = solveBinPacking(s,B)
-    print("\n Solution:")
+    print("Solution:")
     print(bins)
     print(len(bins), "bins")

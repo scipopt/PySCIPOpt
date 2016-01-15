@@ -470,6 +470,28 @@ cdef class Model:
         PY_SCIP_CALL(scip.SCIPtransformCons(self._scip, cons._cons, &transcons._cons))
         return transcons
 
+    # Get constraints
+    def getConss(self):
+        cdef scip.SCIP_CONS** _conss
+        cdef scip.SCIP_CONS* _cons
+        cdef Cons c
+        cdef const char* _name
+        cdef int _nconss
+        conss = []
+
+        _conss = SCIPgetConss(self._scip)
+        _nconss = SCIPgetNConss(self._scip)
+
+        for i in range(_nconss):
+            _cons = _conss[i];
+            _name = SCIPconsGetName(_cons)
+            cons = Constraint(_name)
+            c = cons.cons
+            c._cons = _cons
+            conss.append(cons)
+
+        return conss
+
     # Retrieving the dual solution for a linear constraint
     def getDualsolLinear(self, cons):
         cdef Cons c
