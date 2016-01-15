@@ -119,6 +119,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPaddCons(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPdelCons(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPsetObjsense(SCIP* scip, SCIP_OBJSENSE objsense)
+    SCIP_OBJSENSE SCIPgetObjsense(SCIP* scip)
     SCIP_RETCODE SCIPsetPresolving(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)
     SCIP_RETCODE SCIPwriteOrigProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
     SCIP_STATUS SCIPgetStatus(SCIP* scip)
@@ -155,6 +156,9 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPwriteVarName(SCIP* scip, FILE* outfile, SCIP_VAR* var, SCIP_Bool vartype)
     SCIP_Real SCIPgetSolOrigObj(SCIP* scip, SCIP_SOL* sol)
     SCIP_Real SCIPgetSolTransObj(SCIP* scip, SCIP_SOL* sol)
+
+    # Dual Solution Methods
+    SCIP_Real SCIPgetDualbound(SCIP* scip)
 
     # Variable pricer functions
     SCIP_RETCODE SCIPincludePricerBasic(SCIP* scip, SCIP_PRICER** pricerptr, char* name, char* desc, int priority,

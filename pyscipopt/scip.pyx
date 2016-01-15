@@ -526,6 +526,10 @@ cdef class Model:
             objval = scip.SCIPgetSolTransObj(self._scip, self._bestSol)
         return objval
 
+    # Get best dual bound
+    def getDualbound(self):
+        return scip.SCIPgetDualbound(self._scip)
+
     # Retrieve the value of the variable in the final solution
     def getVal(self, var, Solution solution=None):
         cdef scip.SCIP_SOL* _sol
@@ -558,6 +562,16 @@ cdef class Model:
             return "infeasible"
         elif stat == scip.SCIP_STATUS_UNBOUNDED:
             return "unbounded"
+        else:
+            return "unknown"
+
+    # return objective sense
+    def getObjectiveSense(self):
+        cdef scip.SCIP_OBJSENSE sense = scip.SCIPgetObjsense(self._scip)
+        if sense == scip.SCIP_OBJSENSE_MAXIMIZE:
+            return "maximize"
+        elif sense == scip.SCIP_OBJSENSE_MINIMIZE:
+            return "minimize"
         else:
             return "unknown"
 
@@ -595,12 +609,13 @@ cdef class Model:
         PY_SCIP_CALL(scip.SCIPsetStringParam(self._scip, name1, value))
 
     def readParams(self, file):
-        absfile = abspath(file)
+        absfile = bytes(abspath(file), 'utf-8')
         PY_SCIP_CALL(scip.SCIPreadParams(self._scip, absfile))
 
     def readProblem(self, file, extension = None):
-        absfile = abspath(file)
+        absfile = bytes(abspath(file), 'utf-8')
         if extension is None:
             PY_SCIP_CALL(scip.SCIPreadProb(self._scip, absfile, NULL))
         else:
+            extension = bytes(extension, 'utf-8')
             PY_SCIP_CALL(scip.SCIPreadProb(self._scip, absfile, extension))
