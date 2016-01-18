@@ -13,6 +13,9 @@ infinity = 1e20
 testsetpath = 'tests/check/testset/short.test'
 solufilepath = 'tests/check/testset/short.solu'
 
+if not all(os.path.isfile(fn) for fn in [testsetpath, solufilepath]):
+    pytest.skip("Files for testset `short` not found (symlink missing?)")
+
 with open(testsetpath, 'r') as f:
     for line in f.readlines():
         testset.append('tests/check/'+line.rstrip('\n'))
