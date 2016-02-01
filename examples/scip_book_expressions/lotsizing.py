@@ -58,7 +58,7 @@ def mils(T,P,f,g,c,d,h,M):
             x[t,p] = model.addVar(vtype="C", name="x(%s,%s)"%(t,p))
             I[t,p] = model.addVar(vtype="C", name="I(%s,%s)"%(t,p))
         I[0,p] = 0
-    
+
     for t in Ts:
         # time capacity constraints
         model.addCons(quicksum(g[t,p]*y[t,p] + x[t,p] for p in P) <= M[t], "TimeUB(%s)"%(t))
@@ -119,7 +119,7 @@ def mils_fl(T,P,f,g,c,d,h,M):
             y[t,p] = model.addVar(vtype="B", name="y(%s,%s)"%(t,p))
             for s in range(1,t+1):
                 X[s,t,p] = model.addVar(name="X(%s,%s,%s)"%(s,t,p))
-    
+
 
     for t in Ts:
         # capacity constraints
@@ -147,7 +147,7 @@ def mils_fl(T,P,f,g,c,d,h,M):
                        quicksum(C[s,t,p]*X[s,t,p] for t in Ts for p in P for s in range(1,t+1)),
                        "minimize")
 
-    
+
     model.data = y,X
     model.write("tmp.lp")
     return model
@@ -209,7 +209,8 @@ if __name__ == "__main__":
     P,f,g,c,d,h,M = trigeiro(T,N,factor)
     print("\n\n\nStandard formulation + cutting plane ======================")
     model,mils_callback = mils(T,P,f,g,c,d,h,M)
-    model.params.DualReductions = 0
+    #model.params.DualReductions = 0
+    model.setBoolParam("misc/allowdualreds", 0)
     model.optimize(mils_callback)
     y,x,I = model.data
 

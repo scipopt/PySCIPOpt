@@ -58,7 +58,7 @@ def tsp(V,c):
                         quicksum(x[i,j] for j in V if j > i) == 2, "Degree(%s)"%i)
 
     model.setObjective(quicksum(c[i,j]*x[i,j] for i in V for j in V if j > i), "minimize")
-    
+
     model.data = x
     return model,tsp_callback
 
@@ -81,7 +81,8 @@ def make_data(n):
 
 def solve_tsp(V,c):
     model,tsp_callback = tsp(V,c)
-    model.params.DualReductions = 0
+    #model.params.DualReductions = 0
+    model.setBoolParam("misc/allowdualreds", 0)
     model.optimize(tsp_callback)
     x = model.data
 

@@ -104,7 +104,8 @@ if __name__ == "__main__":
     model,vrp_callback = vrp(V,c,m,q,Q)
 
     # model.Params.OutputFlag = 0 # silent mode
-    model.params.DualReductions = 0
+    #model.params.DualReductions = 0
+    model.setBoolParam("misc/allowdualreds", 0)
     model.optimize(vrp_callback)
     x = model.data
 

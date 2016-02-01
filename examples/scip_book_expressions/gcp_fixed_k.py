@@ -16,14 +16,14 @@ def gcp_fixed_k(V,E,K):
     Returns a model, ready to be solved.
     """
     model = Model("gcp - fixed k")
-    
+
     x,z = {},{}
     for i in V:
         for k in range(K):
             x[i,k] = model.addVar(vtype="B", name="x(%s,%s)"%(i,k))
     for (i,j) in E:
         z[i,j] = model.addVar(vtype="B", name="z(%s,%s)"%(i,j))
-   
+
     for i in V:
         model.addCons(quicksum(x[i,k] for k in range(K)) == 1, "AssignColor(%s)" % i)
 
@@ -32,7 +32,7 @@ def gcp_fixed_k(V,E,K):
             model.addCons(x[i,k] + x[j,k] <= 1 + z[i,j], "BadEdge(%s,%s,%s)"%(i,j,k))
 
     model.setObjective(quicksum(z[i,j] for (i,j) in E), "minimize")
-   
+
     model.data = x,z
     return model
 
@@ -51,7 +51,8 @@ def solve_gcp(V,E):
         K = int((UB+LB) / 2)
         gcp = gcp_fixed_k(V,E,K)
         # gcp.Params.OutputFlag = 0 # silent mode
-        #gcp.Params.Cutoff = .1 todo
+        #gcp.Params.Cutoff = .1
+        gcp.setObjlimit(0.1)
         gcp.optimize()
         status = gcp.getStatus()
         if status == "optimal":

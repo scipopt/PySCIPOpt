@@ -242,7 +242,11 @@ cdef class Model:
     def setMaximize(self):
         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))
 
-    # set objective function, either as variable dictionary or as linear expression
+    # Set limit on objective function, only solutions with objective value better than this limit are accepted
+    def setObjlimit(self, objlimit):
+        PY_SCIP_CALL(scip.SCIPsetObjlimit(self._scip, objlimit))
+
+    # Set objective function, either as variable dictionary or as linear expression
     def setObjective(self, coeffs, sense = 'minimize'):
         cdef scip.SCIP_Real coeff
         cdef Var v
@@ -327,6 +331,31 @@ cdef class Model:
         PY_SCIP_CALL(
             scip.SCIPtransformVar(self._scip, _var, &_tvar))
         return transvar
+
+    # changes lower bound of variable
+    def chgVarLb(self, var, lb="None"):
+        cdef scip.SCIP_VAR* _var
+  #      cdef scip.SCIP_Real _var
+        cdef Var v
+        v = <Var>var.var
+        _var = <scip.SCIP_VAR*>v._var
+
+        if lb is None:
+           lb = -scip.SCIPinfinity(self._scip)
+
+        PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, lb))
+
+    # changes upper bound of variable
+    def chgVarUb(self, var, ub="None"):
+        cdef scip.SCIP_VAR* _var
+        cdef Var v
+        v = <Var>var.var
+        _var = <scip.SCIP_VAR*>v._var
+
+        if ub is None:
+           ub = scip.SCIPinfinity(self._scip)
+
+        PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, ub))
 
     # Get variables
     def getVars(self):

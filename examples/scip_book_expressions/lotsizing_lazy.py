@@ -137,7 +137,7 @@ if __name__ == "__main__":
         print("%8s%8s%8s%8s%8s%8s%12s%12s" % (t,f[t],c[t],h[t],d[t],model.getVal(y[t]),model.getVal(x[t]),model.getVal(I[t])))
 
     model,sils_callback = sils_cut(T,f,c,d,h)
-    model.params.DualReductions = 0
+    model.setBoolParam("misc/allowdualreds", 0)
     model.optimize(sils_callback)
     y,x,I = model.data
     print("\nOptimal value [cutting planes]:",model.getObjVal())
