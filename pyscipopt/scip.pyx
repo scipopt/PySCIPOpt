@@ -222,11 +222,47 @@ cdef class Model:
                                                     check, propagate, local, modifiable,
                                                     dynamic, removable, stickingatnode) )
 
+    cdef _createConsSOS1(self, scip.SCIP_CONS** cons, name, nvars,
+                              SCIP_VAR** vars, SCIP_Real* weights,
+                              initial=True, separate=True, enforce=True, check=True,
+                              propagate=True, local=False, dynamic=False, removable=False,
+                              stickingatnode=False):
+        name1 = str_conversion(name)
+        PY_SCIP_CALL(scip.SCIPcreateConsSOS1(self._scip, cons,
+                                                    name1, nvars, vars, weights,
+                                                    initial, separate, enforce,
+                                                    check, propagate, local, dynamic, removable,
+                                                    stickingatnode) )
+
+    cdef _createConsSOS2(self, scip.SCIP_CONS** cons, name, nvars,
+                              SCIP_VAR** vars, SCIP_Real* weights,
+                              initial=True, separate=True, enforce=True, check=True,
+                              propagate=True, local=False, dynamic=False, removable=False,
+                              stickingatnode=False):
+        name1 = str_conversion(name)
+        PY_SCIP_CALL(scip.SCIPcreateConsSOS2(self._scip, cons,
+                                                    name1, nvars, vars, weights,
+                                                    initial, separate, enforce,
+                                                    check, propagate, local, dynamic, removable,
+                                                    stickingatnode) )
+
     cdef _addCoefLinear(self, scip.SCIP_CONS* cons, SCIP_VAR* var, val):
         PY_SCIP_CALL(scip.SCIPaddCoefLinear(self._scip, cons, var, val))
 
     cdef _addCons(self, scip.SCIP_CONS* cons):
         PY_SCIP_CALL(scip.SCIPaddCons(self._scip, cons))
+
+    cdef _addVarSOS1(self, scip.SCIP_CONS* cons, SCIP_VAR* var, weight):
+        PY_SCIP_CALL(scip.SCIPaddVarSOS1(self._scip, cons, var, weight))
+
+    cdef _appendVarSOS1(self, scip.SCIP_CONS* cons, SCIP_VAR* var):
+        PY_SCIP_CALL(scip.SCIPappendVarSOS1(self._scip, cons, var))
+
+    cdef _addVarSOS2(self, scip.SCIP_CONS* cons, SCIP_VAR* var, weight):
+        PY_SCIP_CALL(scip.SCIPaddVarSOS2(self._scip, cons, var, weight))
+
+    cdef _appendVarSOS2(self, scip.SCIP_CONS* cons, SCIP_VAR* var):
+        PY_SCIP_CALL(scip.SCIPappendVarSOS2(self._scip, cons, var))
 
     cdef _writeVarName(self, scip.SCIP_VAR* var):
         PY_SCIP_CALL(scip.SCIPwriteVarName(self._scip, NULL, var, False))
@@ -237,17 +273,31 @@ cdef class Model:
 
     # Setting the objective sense
     def setMinimize(self):
+        """Set the objective sense to maximization."""
         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MINIMIZE))
 
     def setMaximize(self):
+        """Set the objective sense to minimization."""
         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))
 
-    # Set limit on objective function, only solutions with objective value better than this limit are accepted
+    # Set limit on objective function
     def setObjlimit(self, objlimit):
+        """Set a limit on the objective function.
+        Only solutions with objective value better than this limit are accepted.
+
+        Keyword arguments:
+        objlimit -- limit on objective function
+        """
         PY_SCIP_CALL(scip.SCIPsetObjlimit(self._scip, objlimit))
 
     # Set objective function, either as variable dictionary or as linear expression
     def setObjective(self, coeffs, sense = 'minimize'):
+        """Establish the objective function, either as a variable dictionary or as a linear expression.
+
+        Keyword arguments:
+        coeffs -- the coefficients
+        sense -- the objective sense (default 'minimize')
+        """
         cdef scip.SCIP_Real coeff
         cdef Var v
         cdef scip.SCIP_VAR* _var
@@ -269,10 +319,20 @@ cdef class Model:
 
     # Setting parameters
     def setPresolve(self, setting):
+        """Set presolving parameter settings.
+
+        Keyword arguments:
+        setting -- the parameter settings
+        """
         PY_SCIP_CALL(scip.SCIPsetPresolving(self._scip, setting, True))
 
     # Write original problem to file
     def writeProblem(self, filename='origprob.cip'):
+        """Write original problem to a file.
+
+        Keyword arguments:
+        filename -- the name of the file to be used (default 'origprob.cip')
+        """
         if filename.find('.') < 0:
             filename = filename + '.cip'
             ext = str_conversion('cip')
@@ -285,6 +345,16 @@ cdef class Model:
     # Variable Functions
     # Create a new variable
     def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar = False):
+        """Create a new variable.
+
+        Keyword arguments:
+        name -- the name of the variable (default '')
+        vtype -- the typ of the variable (default 'C')
+        lb -- the lower bound of the variable (default 0.0)
+        ub -- the upper bound of the variable (default None)
+        obj -- the objective value of the variable (default 0.0)
+        pricedVar -- is the variable a pricing candidate? (default False)
+        """
         if ub is None:
             ub = scip.SCIPinfinity(self._scip)
         cdef scip.SCIP_VAR* scip_var
@@ -492,6 +562,141 @@ cdef class Model:
         _var = <scip.SCIP_VAR*>v._var
         PY_SCIP_CALL(scip.SCIPaddCoefLinear(self._scip, _cons, _var, coeff))
 
+    #add SOS1 cons
+    def addConsSOS1(self, vars, weights="None", name="cons",
+                initial=True, separate=True, enforce=True, check=True,
+                propagate=True, local=False, dynamic=False,
+                removable=False, stickingatnode=False):
+
+        cdef scip.SCIP_CONS* scip_cons
+        cdef Var v
+        cdef scip.SCIP_VAR* _var
+        cdef int _nvars
+
+
+
+        self._createConsSOS1(&scip_cons, name, 0, NULL, NULL,
+                                initial, separate, enforce, check, propagate,
+                                local, dynamic, removable, stickingatnode)
+
+        if weights is None:
+            for k in vars:
+                v = <Var>k.var
+                _var = <scip.SCIP_VAR*>v._var
+                self._appendVarSOS1(scip_cons, _var)
+        else:
+            nvars = len(vars)
+            for k in range(nvars):
+                v = <Var>vars[k].var
+                _var = <scip.SCIP_VAR*>v._var
+                weight = weights[k]
+                self._addVarSOS1(scip_cons, _var, weight)
+
+        cdef Cons c
+        self._addCons(scip_cons)
+        cons = Constraint(name)
+        c = cons.cons
+        c._cons = scip_cons
+
+        return cons
+
+    #add SOS2 cons
+    def addConsSOS2(self, vars, weights="None", name="cons",
+                initial=True, separate=True, enforce=True, check=True,
+                propagate=True, local=False, dynamic=False,
+                removable=False, stickingatnode=False):
+
+        cdef scip.SCIP_CONS* scip_cons
+        cdef Var v
+        cdef scip.SCIP_VAR* _var
+        cdef int _nvars
+
+
+
+        self._createConsSOS2(&scip_cons, name, 0, NULL, NULL,
+                                initial, separate, enforce, check, propagate,
+                                local, dynamic, removable, stickingatnode)
+
+        if weights is None:
+            for k in vars:
+                v = <Var>k.var
+                _var = <scip.SCIP_VAR*>v._var
+                self._appendVarSOS2(scip_cons, _var)
+        else:
+            nvars = len(vars)
+            for k in range(nvars):
+                v = <Var>vars[k].var
+                _var = <scip.SCIP_VAR*>v._var
+                weight = weights[k]
+                self._addVarSOS2(scip_cons, _var, weight)
+
+        cdef Cons c
+        self._addCons(scip_cons)
+        cons = Constraint(name)
+        c = cons.cons
+        c._cons = scip_cons
+
+        return cons
+
+    # add SOS1 var
+    def addVarSOS1(self, Cons cons, var, weight):
+        cdef scip.SCIP_CONS* _cons
+        cdef scip.SCIP_VAR* _var
+        cdef Var v
+        _cons = <scip.SCIP_CONS*>cons._cons
+        v = <Var>var.var
+        _var = <scip.SCIP_VAR*>v._var
+        PY_SCIP_CALL(scip.SCIPaddVarSOS1(self._scip, _cons, _var, weight))
+
+    # append SOS1 var
+    def appendVarSOS1(self, Cons cons, var):
+        cdef scip.SCIP_CONS* _cons
+        cdef scip.SCIP_VAR* _var
+        cdef Var v
+        _cons = <scip.SCIP_CONS*>cons._cons
+        v = <Var>var.var
+        _var = <scip.SCIP_VAR*>v._var
+        PY_SCIP_CALL(scip.SCIPappendVarSOS1(self._scip, _cons, _var))
+
+    # add SOS1 var
+    def addVarSOS1(self, Cons cons, var, weight):
+        cdef scip.SCIP_CONS* _cons
+        cdef scip.SCIP_VAR* _var
+        cdef Var v
+        _cons = <scip.SCIP_CONS*>cons._cons
+        v = <Var>var.var
+        _var = <scip.SCIP_VAR*>v._var
+        PY_SCIP_CALL(scip.SCIPaddVarSOS1(self._scip, _cons, _var, weight))
+
+    # append SOS1 var
+    def appendVarSOS1(self, Cons cons, var):
+        cdef scip.SCIP_CONS* _cons
+        cdef scip.SCIP_VAR* _var
+        cdef Var v
+        _cons = <scip.SCIP_CONS*>cons._cons
+        v = <Var>var.var
+        _var = <scip.SCIP_VAR*>v._var
+        PY_SCIP_CALL(scip.SCIPappendVarSOS2(self._scip, _cons, _var))
+
+    # add SOS2 var
+    def addVarSOS2(self, Cons cons, var, weight):
+        cdef scip.SCIP_CONS* _cons
+        cdef scip.SCIP_VAR* _var
+        cdef Var v
+        _cons = <scip.SCIP_CONS*>cons._cons
+        v = <Var>var.var
+        _var = <scip.SCIP_VAR*>v._var
+        PY_SCIP_CALL(scip.SCIPaddVarSOS2(self._scip, _cons, _var, weight))
+
+    # append SOS2 var
+    def appendVarSOS2(self, Cons cons, var):
+        cdef scip.SCIP_CONS* _cons
+        cdef scip.SCIP_VAR* _var
+        cdef Var v
+        _cons = <scip.SCIP_CONS*>cons._cons
+        v = <Var>var.var
+        _var = <scip.SCIP_VAR*>v._var
+        PY_SCIP_CALL(scip.SCIPappendVarSOS2(self._scip, _cons, _var))
 
     # Retrieving the pointer for the transformed constraint
     def getTransformedCons(self, Cons cons):

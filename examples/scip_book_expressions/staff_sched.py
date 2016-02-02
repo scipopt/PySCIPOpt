@@ -142,10 +142,10 @@ if __name__ == "__main__":
 
     elif status == "infeasible":
         print("Infeasible instance...")
-        model.computeIIS()
-        for c in model.getConstrs():
-            if c.IISConstr:
-                print(c.ConstrName)
+    #    model.computeIIS()
+     #   for c in model.getConss():
+      #      if c.IISConstr:
+       #         print(c.ConstrName)
 
     elif status == "unbounded" or status == "infeasible":
         print("Unbounded instance")

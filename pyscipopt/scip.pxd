@@ -255,3 +255,56 @@ cdef extern from "scip/cons_quadratic.h":
                                            SCIP_VAR* var1,
                                            SCIP_VAR* var2,
                                            SCIP_Real coef)
+
+cdef extern from "scip/cons_sos1.h":
+    SCIP_RETCODE SCIPcreateConsSOS1(SCIP* scip,
+                                    SCIP_CONS** cons,
+                                    const char* name,
+                                    int nvars,
+                                    SCIP_VAR** vars,
+                                    SCIP_Real* weights,
+                                    SCIP_Bool initial,
+                                    SCIP_Bool separate,
+                                    SCIP_Bool enforce,
+                                    SCIP_Bool check,
+                                    SCIP_Bool propagate,
+                                    SCIP_Bool local,
+                                    SCIP_Bool dynamic,
+                                    SCIP_Bool removable,
+                                    SCIP_Bool stickingatnode)
+
+    SCIP_RETCODE SCIPaddVarSOS1(SCIP* scip,
+                                SCIP_CONS* cons,
+                                SCIP_VAR* var,
+                                SCIP_Real weight)
+
+    SCIP_RETCODE SCIPappendVarSOS1(SCIP* scip,
+                                   SCIP_CONS* cons,
+                                   SCIP_VAR* var)
+
+
+cdef extern from "scip/cons_sos2.h":
+    SCIP_RETCODE SCIPcreateConsSOS2(SCIP* scip,
+                                    SCIP_CONS** cons,
+                                    const char* name,
+                                    int nvars,
+                                    SCIP_VAR** vars,
+                                    SCIP_Real* weights,
+                                    SCIP_Bool initial,
+                                    SCIP_Bool separate,
+                                    SCIP_Bool enforce,
+                                    SCIP_Bool check,
+                                    SCIP_Bool propagate,
+                                    SCIP_Bool local,
+                                    SCIP_Bool dynamic,
+                                    SCIP_Bool removable,
+                                    SCIP_Bool stickingatnode)
+
+    SCIP_RETCODE SCIPaddVarSOS2(SCIP* scip,
+                                SCIP_CONS* cons,
+                                SCIP_VAR* var,
+                                SCIP_Real weight)
+
+    SCIP_RETCODE SCIPappendVarSOS2(SCIP* scip,
+                                   SCIP_CONS* cons,
+                                   SCIP_VAR* var)

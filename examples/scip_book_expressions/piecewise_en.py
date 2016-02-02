@@ -66,7 +66,8 @@ def convex_comb_sos(model,a,b):
     model.addCons(Y == quicksum(b[k]*z[k] for k in range(K+1)))
 
     model.addCons(quicksum(z[k] for k in range(K+1)) == 1)
-    model.addSOS(GRB.SOS_TYPE2, [z[k] for k in range(K+1)])
+    #model.addSOS(GRB.SOS_TYPE2, [z[k] for k in range(K+1)])
+    model.addConsSOS2([z[k] for k in range(K+1)])
 
     return X,Y,z
 
@@ -101,7 +102,7 @@ def convex_comb_dis(model,a,b):
 
 
 def gray(i):
-    return i^i/2
+    return i^(i/2) # todo what is ^ supposed to do? error
 
 
 
@@ -292,15 +293,16 @@ if __name__ == "__main__":
     print("Y:",model.getVal(Y))
     print("u:",model.getVal(u))
 
-    print("\n\n\npiecewise: aggregated convex combination, logarithmic number of variables")
-    model = Model("aggregated convex combination (log)")
-    X,Y,w = convex_comb_agg_log(model,a,b)
-    u = model.addVar(vtype="C", name="u")
-
-    A = model.addCons(3*X + 4*Y <= 250, "A")
-    B = model.addCons(7*X - 2*Y + 3*u == 170, "B")
-    model.setObjective(2*X + 15*Y + 5*u, "maximize")
-    model.optimize()
-    print("X:",model.getVal(X))
-    print("Y:",model.getVal(Y))
-    print("u:",model.getVal(u))
+ # todo: gray does not work, no idea what ^ is supposed to to
+ #   print("\n\n\npiecewise: aggregated convex combination, logarithmic number of variables")
+ #   model = Model("aggregated convex combination (log)")
+ #   X,Y,w = convex_comb_agg_log(model,a,b)
+ #   u = model.addVar(vtype="C", name="u")
+ #
+ #   A = model.addCons(3*X + 4*Y <= 250, "A")
+ #   B = model.addCons(7*X - 2*Y + 3*u == 170, "B")
+ #   model.setObjective(2*X + 15*Y + 5*u, "maximize")
+ #   model.optimize()
+ #   print("X:",model.getVal(X))
+ #   print("Y:",model.getVal(Y))
+ #   print("u:",model.getVal(u))
