@@ -78,9 +78,13 @@ def optimize(model,cand,obj):
     x,y,C,U = model.data
     status = model.getStatus()
     if status == "optimal" or status == "bestsollimit": # todo GRB.Status.SUBOPTIMAL:
-        for k in range(model.SolCount):
-            model.Params.SolutionNumber = k
-            cand.append(model.getVal(U),model.getVal(C))
+        sols = model.getSols()
+        for sol in sols:
+            cand.append((model.getVal(var=U,solution=sol),model.getVal(var=C,solution=sol)))
+
+     #   for k in range(model.SolCount):
+     #       model.Params.SolutionNumber = k
+     #       cand.append(model.getVal(U),model.getVal(C))
     return status
 
 

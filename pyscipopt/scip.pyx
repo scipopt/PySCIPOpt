@@ -114,12 +114,12 @@ cdef class Solution:
 
 
 cdef class Var:
-    '''Base class holding a pointer to corresponding SCIP_VAR'''
+    """Base class holding a pointer to corresponding SCIP_VAR"""
     cdef scip.SCIP_VAR* _var
 
 
 class Variable(LinExpr):
-    '''Is a linear expression and has SCIP_VAR*'''
+    """Is a linear expression and has SCIP_VAR*"""
 
     def __init__(self, name=None):
         self.var = Var()
@@ -271,7 +271,8 @@ cdef class Model:
         PY_SCIP_CALL(scip.SCIPreleaseVar(self._scip, &var))
 
 
-    # Setting the objective sense
+    # Objective function
+
     def setMinimize(self):
         """Set the objective sense to maximization."""
         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MINIMIZE))
@@ -280,7 +281,6 @@ cdef class Model:
         """Set the objective sense to minimization."""
         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))
 
-    # Set limit on objective function
     def setObjlimit(self, objlimit):
         """Set a limit on the objective function.
         Only solutions with objective value better than this limit are accepted.
@@ -290,7 +290,6 @@ cdef class Model:
         """
         PY_SCIP_CALL(scip.SCIPsetObjlimit(self._scip, objlimit))
 
-    # Set objective function, either as variable dictionary or as linear expression
     def setObjective(self, coeffs, sense = 'minimize'):
         """Establish the objective function, either as a variable dictionary or as a linear expression.
 
@@ -343,7 +342,7 @@ cdef class Model:
         print('wrote original problem to file ' + filename)
 
     # Variable Functions
-    # Create a new variable
+
     def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar = False):
         """Create a new variable.
 
@@ -379,16 +378,24 @@ cdef class Model:
         self._releaseVar(scip_var)
         return var
 
-    # Release the variable
     def releaseVar(self, var):
+        """Release the variable.
+
+        Keyword arguments:
+        var -- the variable
+        """
         cdef scip.SCIP_VAR* _var
         cdef Var v
         v = <Var>var.var
         _var = <scip.SCIP_VAR*>v._var
         self._releaseVar(_var)
 
-    # Retrieving the pointer for the transformed variable
     def getTransformedVar(self, var):
+        """Retrive the transformed variable.
+
+        Keyword arguments:
+        var -- the variable
+        """
         cdef scip.SCIP_VAR* _var
         cdef scip.SCIP_VAR* _tvar
         cdef Var v
@@ -402,10 +409,14 @@ cdef class Model:
             scip.SCIPtransformVar(self._scip, _var, &_tvar))
         return transvar
 
-    # changes lower bound of variable
     def chgVarLb(self, var, lb="None"):
+        """Changes the lower bound of the specified variable.
+
+        Keyword arguments:
+        var -- the variable
+        lb -- the lower bound (default None)
+        """
         cdef scip.SCIP_VAR* _var
-  #      cdef scip.SCIP_Real _var
         cdef Var v
         v = <Var>var.var
         _var = <scip.SCIP_VAR*>v._var
@@ -415,8 +426,13 @@ cdef class Model:
 
         PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, lb))
 
-    # changes upper bound of variable
     def chgVarUb(self, var, ub="None"):
+        """Changes the upper bound of the specified variable.
+
+        Keyword arguments:
+        var -- the variable
+        ub -- the upper bound (default None)
+        """
         cdef scip.SCIP_VAR* _var
         cdef Var v
         v = <Var>var.var
@@ -427,8 +443,8 @@ cdef class Model:
 
         PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, ub))
 
-    # Get variables
     def getVars(self):
+        """Retrive all variables."""
         cdef scip.SCIP_VAR** _vars
         cdef scip.SCIP_VAR* _var
         cdef Var v
@@ -492,13 +508,11 @@ cdef class Model:
         cons = Constraint(name)
         c = cons.cons
         c._cons = scip_cons
-     #   cons = Cons(name)
-     #   cons._cons = scip_cons
 
         return cons
 
     def _addLinCons(self, lincons, **kwargs):
-        '''add object of class LinCons'''
+        """add object of class LinCons"""
         assert isinstance(lincons, LinCons)
         kwargs['lhs'], kwargs['rhs'] = lincons.lb, lincons.ub
         terms = lincons.expr.terms
@@ -509,7 +523,7 @@ cdef class Model:
         return self.addCons(coeffs, **kwargs)
 
     def _addQuadCons(self, quadcons, **kwargs):
-        '''add object of class LinCons'''
+        """add object of class LinCons"""
         assert isinstance(quadcons, LinCons) # TODO
         kwargs['lhs'] = -scip.SCIPinfinity(self._scip) if quadcons.lb is None else quadcons.lb
         kwargs['rhs'] =  scip.SCIPinfinity(self._scip) if quadcons.ub is None else quadcons.ub
@@ -704,8 +718,8 @@ cdef class Model:
         PY_SCIP_CALL(scip.SCIPtransformCons(self._scip, cons._cons, &transcons._cons))
         return transcons
 
-    # Get constraints
     def getConss(self):
+        """Retrive all constraints."""
         cdef scip.SCIP_CONS** _conss
         cdef scip.SCIP_CONS* _cons
         cdef Cons c
@@ -726,26 +740,35 @@ cdef class Model:
 
         return conss
 
-    # Retrieving the dual solution for a linear constraint
     def getDualsolLinear(self, cons):
+         """Retrive the dual solution to a linear constraint.
+
+        Keyword arguments:
+        cons -- the linear constraint
+        """
         cdef Cons c
         c = cons.cons
         return scip.SCIPgetDualsolLinear(self._scip, c._cons)
 
-    # Retrieving the dual farkas value for a linear constraint
     def getDualfarkasLinear(self, Cons cons):
+        """Retrive the dual farkas value to a linear constraint.
+
+        Keyword arguments:
+        cons -- the linear constraint
+        """
         return scip.SCIPgetDualfarkasLinear(self._scip, cons._cons)
 
 
     # Problem solving functions
     # todo: define optimize() as a copy of solve() for Gurobi compatibility
     def optimize(self):
+        """Optimize the problem."""
         PY_SCIP_CALL(scip.SCIPsolve(self._scip))
-        self.freeTransform()
         self._bestSol = scip.SCIPgetBestSol(self._scip)
 
     # Numerical methods
     def infinity(self):
+         """Retrive 'infinity' value."""
          inf = scip.SCIPinfinity(self._scip)
          return inf
 
@@ -758,14 +781,36 @@ cdef class Model:
 
 
     # Solution functions
-    # Retrieve the current best solution
+
+    def getSols(self):
+        """Retrive list of all feasible primal solutions stored in the solution storage."""
+        cdef scip.SCIP_SOL** _sols
+        cdef scip.SCIP_SOL* _sol
+        _sols = scip.SCIPgetSols(self._scip)
+        nsols = scip.SCIPgetNSols(self._scip)
+        sols = []
+
+        for i in range(nsols):
+            _sol = _sols[i]
+            solution = Solution()
+            solution._solution = _sol
+            sols.append(solution)
+
+        return sols
+
     def getBestSol(self):
+        """Retrive currently best known feasible primal solution."""
         solution = Solution()
         solution._solution = scip.SCIPgetBestSol(self._scip)
         return solution
 
-    # Get problem objective value
     def getSolObjVal(self, Solution solution, original=True):
+        """Retrive the objective value of the solution.
+
+        Keyword arguments:
+        solution -- the solution
+        original -- retrive the solution of the original problem? (default True)
+        """
         cdef scip.SCIP_SOL* _solution
         _solution = <scip.SCIP_SOL*>solution._solution
         if original:
@@ -774,8 +819,8 @@ cdef class Model:
             objval = scip.SCIPgetSolTransObj(self._scip, _solution)
         return objval
 
-    # Get objective value of best solution
     def getObjVal(self, original=True):
+        """Retrive the objective value of value of best solution"""
         if original:
             objval = scip.SCIPgetSolOrigObj(self._scip, self._bestSol)
         else:
@@ -784,10 +829,17 @@ cdef class Model:
 
     # Get best dual bound
     def getDualbound(self):
+        """Retrive the best dual bound."""
         return scip.SCIPgetDualbound(self._scip)
 
-    # Retrieve the value of the variable in the final solution
     def getVal(self, var, Solution solution=None):
+        """Retrieve the value of the variable in the specified solution. If no solution is specified,
+        the best known solution is used.
+
+        Keyword arguments:
+        var -- the variable
+        solution -- the solution (default None)
+        """
         cdef scip.SCIP_SOL* _sol
         if solution is None:
             _sol = self._bestSol
@@ -799,16 +851,16 @@ cdef class Model:
         _var = <scip.SCIP_VAR*>v._var
         return scip.SCIPgetSolVal(self._scip, _sol, _var)
 
-    # Write the names of the variable to the std out.
     def writeName(self, var):
+        """Write the name of the variable to the std out."""
         cdef scip.SCIP_VAR* _var
         cdef Var v
         v = <Var>var.var
         _var = <scip.SCIP_VAR*>v._var
         self._writeVarName(_var)
 
-    # return solution status
     def getStatus(self):
+        """Retrive solution status."""
         cdef scip.SCIP_STATUS stat = scip.SCIPgetStatus(self._scip)
         if stat == scip.SCIP_STATUS_OPTIMAL:
             return "optimal"
@@ -821,8 +873,8 @@ cdef class Model:
         else:
             return "unknown"
 
-    # return objective sense
     def getObjectiveSense(self):
+         """Retrive objective sense."""
         cdef scip.SCIP_OBJSENSE sense = scip.SCIPgetObjsense(self._scip)
         if sense == scip.SCIP_OBJSENSE_MAXIMIZE:
             return "maximize"
@@ -832,43 +884,99 @@ cdef class Model:
             return "unknown"
 
     # Statistic Methods
+
     def printStatistics(self):
+        """Print statistics."""
         PY_SCIP_CALL(scip.SCIPprintStatistics(self._scip, NULL))
 
     # Verbosity Methods
+
     def hideOutput(self, quiet = True):
+        """Hide the output.
+
+        Keyword arguments:
+        quiet -- hide output? (default True)
+        """
         scip.SCIPsetMessagehdlrQuiet(self._scip, quiet)
 
     # Parameter Methods
+
     def setBoolParam(self, name, value):
+        """Set a boolean-valued parameter.
+
+        Keyword arguments:
+        name -- the name of the parameter
+        value -- the value of the parameter
+        """
         name1 = str_conversion(name)
         PY_SCIP_CALL(scip.SCIPsetBoolParam(self._scip, name1, value))
 
     def setIntParam(self, name, value):
+        """Set an int-valued parameter.
+
+        Keyword arguments:
+        name -- the name of the parameter
+        value -- the value of the parameter
+        """
         name1 = str_conversion(name)
         PY_SCIP_CALL(scip.SCIPsetIntParam(self._scip, name1, value))
 
     def setLongintParam(self, name, value):
+        """Set a long-valued parameter.
+
+        Keyword arguments:
+        name -- the name of the parameter
+        value -- the value of the parameter
+        """
         name1 = str_conversion(name)
         PY_SCIP_CALL(scip.SCIPsetLongintParam(self._scip, name1, value))
 
     def setRealParam(self, name, value):
+        """Set a real-valued parameter.
+
+        Keyword arguments:
+        name -- the name of the parameter
+        value -- the value of the parameter
+        """
         name1 = str_conversion(name)
         PY_SCIP_CALL(scip.SCIPsetRealParam(self._scip, name1, value))
 
     def setCharParam(self, name, value):
+        """Set a char-valued parameter.
+
+        Keyword arguments:
+        name -- the name of the parameter
+        value -- the value of the parameter
+        """
         name1 = str_conversion(name)
         PY_SCIP_CALL(scip.SCIPsetCharParam(self._scip, name1, value))
 
     def setStringParam(self, name, value):
+        """Set a string-valued parameter.
+
+        Keyword arguments:
+        name -- the name of the parameter
+        value -- the value of the parameter
+        """
         name1 = str_conversion(name)
         PY_SCIP_CALL(scip.SCIPsetStringParam(self._scip, name1, value))
 
     def readParams(self, file):
+        """Read an external parameter file.
+
+        Keyword arguments:
+        file -- the file to be read
+        """
         absfile = bytes(abspath(file), 'utf-8')
         PY_SCIP_CALL(scip.SCIPreadParams(self._scip, absfile))
 
     def readProblem(self, file, extension = None):
+        """Read a problem instance from an external file.
+
+        Keyword arguments:
+        file -- the file to be read
+        extension -- specifies extensions (default None)
+        """
         absfile = bytes(abspath(file), 'utf-8')
         if extension is None:
             PY_SCIP_CALL(scip.SCIPreadProb(self._scip, absfile, NULL))

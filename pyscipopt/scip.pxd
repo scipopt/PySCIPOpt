@@ -157,6 +157,8 @@ cdef extern from "scip/scip.h":
     int SCIPgetNConss(SCIP* scip)
 
     # Primal Solution Methods
+    SCIP_SOL** SCIPgetSols(SCIP* scip)
+    int SCIPgetNSols(SCIP* scip)
     SCIP_SOL* SCIPgetBestSol(SCIP* scip)
     SCIP_Real SCIPgetSolVal(SCIP* scip, SCIP_SOL* sol, SCIP_VAR* var)
     SCIP_RETCODE SCIPwriteVarName(SCIP* scip, FILE* outfile, SCIP_VAR* var, SCIP_Bool vartype)
