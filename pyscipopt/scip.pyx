@@ -503,9 +503,9 @@ cdef class Model:
             v = <Var>k.var
             _var = <scip.SCIP_VAR*>v._var
             self._addCoefLinear(scip_cons, _var, coeff)
-        cdef Cons c
         self._addCons(scip_cons)
         cons = Constraint(name)
+        cdef Cons c
         c = cons.cons
         c._cons = scip_cons
 
@@ -747,7 +747,7 @@ cdef class Model:
         cons -- the linear constraint
         """
         cdef Cons c
-        c = cons.cons
+        c = cons
         return scip.SCIPgetDualsolLinear(self._scip, c._cons)
 
     def getDualfarkasLinear(self, Cons cons):
@@ -774,7 +774,9 @@ cdef class Model:
 
     # Pricer functions
     def includePricer(self, Pricer pricer, name, desc):
-        PY_SCIP_CALL(scip.SCIPincludePricerBasic(self._scip, &(pricer._pricer), name, desc, 1, True, scipPricerRedcost, scipPricerFarkas, pricer._pricerdata))
+        name1 = str_conversion(name)
+        desc1 = str_conversion(desc)
+        PY_SCIP_CALL(scip.SCIPincludePricerBasic(self._scip, &(pricer._pricer), name1, desc1, 1, True, scipPricerRedcost, scipPricerFarkas, pricer._pricerdata))
         PY_SCIP_CALL(scip.SCIPactivatePricer(self._scip, pricer._pricer))
         PY_SCIP_CALL(scip.SCIPsetPricerInit(self._scip, pricer._pricer, scipPricerInit))
 
