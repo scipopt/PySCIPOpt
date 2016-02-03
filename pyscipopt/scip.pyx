@@ -741,7 +741,7 @@ cdef class Model:
         return conss
 
     def getDualsolLinear(self, cons):
-         """Retrive the dual solution to a linear constraint.
+        """Retrive the dual solution to a linear constraint.
 
         Keyword arguments:
         cons -- the linear constraint
@@ -768,9 +768,9 @@ cdef class Model:
 
     # Numerical methods
     def infinity(self):
-         """Retrive 'infinity' value."""
-         inf = scip.SCIPinfinity(self._scip)
-         return inf
+        """Retrive 'infinity' value."""
+        inf = scip.SCIPinfinity(self._scip)
+        return inf
 
     # Pricer functions
     def includePricer(self, Pricer pricer, name, desc):
@@ -874,7 +874,7 @@ cdef class Model:
             return "unknown"
 
     def getObjectiveSense(self):
-         """Retrive objective sense."""
+        """Retrive objective sense."""
         cdef scip.SCIP_OBJSENSE sense = scip.SCIPgetObjsense(self._scip)
         if sense == scip.SCIP_OBJSENSE_MAXIMIZE:
             return "maximize"
