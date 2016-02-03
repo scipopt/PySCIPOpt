@@ -391,7 +391,7 @@ cdef class Model:
         self._releaseVar(_var)
 
     def getTransformedVar(self, var):
-        """Retrive the transformed variable.
+        """Retrieve the transformed variable.
 
         Keyword arguments:
         var -- the variable
@@ -444,7 +444,7 @@ cdef class Model:
         PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, ub))
 
     def getVars(self):
-        """Retrive all variables."""
+        """Retrieve all variables."""
         cdef scip.SCIP_VAR** _vars
         cdef scip.SCIP_VAR* _var
         cdef Var v
@@ -719,7 +719,7 @@ cdef class Model:
         return transcons
 
     def getConss(self):
-        """Retrive all constraints."""
+        """Retrieve all constraints."""
         cdef scip.SCIP_CONS** _conss
         cdef scip.SCIP_CONS* _cons
         cdef Cons c
@@ -741,7 +741,7 @@ cdef class Model:
         return conss
 
     def getDualsolLinear(self, cons):
-        """Retrive the dual solution to a linear constraint.
+        """Retrieve the dual solution to a linear constraint.
 
         Keyword arguments:
         cons -- the linear constraint
@@ -751,7 +751,7 @@ cdef class Model:
         return scip.SCIPgetDualsolLinear(self._scip, c._cons)
 
     def getDualfarkasLinear(self, Cons cons):
-        """Retrive the dual farkas value to a linear constraint.
+        """Retrieve the dual farkas value to a linear constraint.
 
         Keyword arguments:
         cons -- the linear constraint
@@ -768,7 +768,7 @@ cdef class Model:
 
     # Numerical methods
     def infinity(self):
-        """Retrive 'infinity' value."""
+        """Retrieve 'infinity' value."""
         inf = scip.SCIPinfinity(self._scip)
         return inf
 
@@ -785,7 +785,7 @@ cdef class Model:
     # Solution functions
 
     def getSols(self):
-        """Retrive list of all feasible primal solutions stored in the solution storage."""
+        """Retrieve list of all feasible primal solutions stored in the solution storage."""
         cdef scip.SCIP_SOL** _sols
         cdef scip.SCIP_SOL* _sol
         _sols = scip.SCIPgetSols(self._scip)
@@ -801,17 +801,17 @@ cdef class Model:
         return sols
 
     def getBestSol(self):
-        """Retrive currently best known feasible primal solution."""
+        """Retrieve currently best known feasible primal solution."""
         solution = Solution()
         solution._solution = scip.SCIPgetBestSol(self._scip)
         return solution
 
     def getSolObjVal(self, Solution solution, original=True):
-        """Retrive the objective value of the solution.
+        """Retrieve the objective value of the solution.
 
         Keyword arguments:
         solution -- the solution
-        original -- retrive the solution of the original problem? (default True)
+        original -- retrieve the solution of the original problem? (default True)
         """
         cdef scip.SCIP_SOL* _solution
         _solution = <scip.SCIP_SOL*>solution._solution
@@ -822,7 +822,7 @@ cdef class Model:
         return objval
 
     def getObjVal(self, original=True):
-        """Retrive the objective value of value of best solution"""
+        """Retrieve the objective value of value of best solution"""
         if original:
             objval = scip.SCIPgetSolOrigObj(self._scip, self._bestSol)
         else:
@@ -831,7 +831,7 @@ cdef class Model:
 
     # Get best dual bound
     def getDualbound(self):
-        """Retrive the best dual bound."""
+        """Retrieve the best dual bound."""
         return scip.SCIPgetDualbound(self._scip)
 
     def getVal(self, var, Solution solution=None):
@@ -862,7 +862,7 @@ cdef class Model:
         self._writeVarName(_var)
 
     def getStatus(self):
-        """Retrive solution status."""
+        """Retrieve solution status."""
         cdef scip.SCIP_STATUS stat = scip.SCIPgetStatus(self._scip)
         if stat == scip.SCIP_STATUS_OPTIMAL:
             return "optimal"
@@ -876,7 +876,7 @@ cdef class Model:
             return "unknown"
 
     def getObjectiveSense(self):
-        """Retrive objective sense."""
+        """Retrieve objective sense."""
         cdef scip.SCIP_OBJSENSE sense = scip.SCIPgetObjsense(self._scip)
         if sense == scip.SCIP_OBJSENSE_MAXIMIZE:
             return "maximize"
