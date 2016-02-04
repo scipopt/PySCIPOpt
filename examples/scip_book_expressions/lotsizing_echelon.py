@@ -125,7 +125,7 @@ def mils_echelon(T,K,P,f,g,c,d,h,a,M,UB,phi):
     rho = calc_rho(phi) # rho[(i,j)]: units of i required to produce a unit of j (j ancestor of i)
 
     model = Model("multi-stage lotsizing -- echelon formulation")
-    
+
     y,x,E,H = {},{},{},{}
     Ts = range(1,T+1)
     for p in P:
@@ -407,22 +407,21 @@ if __name__ == "__main__":
         print("\n")
         for k in K:
             for t in range(1,T+1):
-                print("resource %3s used in period %s: %12s / %-9s" % (k,t,sum(a[t,k,p]*model.getVal([t,p])+g[t,p]*model.getVal(y[t,p]) for p in P),M[t,k]))
-
+                print("resource %3s used in period %s: %12s / %-9s" % (k,t,sum(a[t,k,p]*model.getVal(x[t,p])+g[t,p]*model.getVal(y[t,p]) for p in P),M[t,k]))
     elif status != "unbounded" and status != "infeasible":
         print("Optimization was stopped with status",status)
     else:
-        print("The model is infeasible; computing IIS")
-        model.computeIIS()
-        print("\nThe following constraint(s) cannot be satisfied:")
-        for cnstr in model.getConstrs():
-          if cnstr.IISConstr:
-            print(cnstr.ConstrName)
+        print("The model is infeasible")
+    #    model.computeIIS()
+    #    print("\nThe following constraint(s) cannot be satisfied:")
+    #    for cnstr in model.getConstrs():
+    #      if cnstr.IISConstr:
+    #        print(cnstr.ConstrName)
 
 
     print("\n\nechelon model")
     model = mils_echelon(T,K,P,f,g,c,d,h,a,M,UB,phi)
-    model.setParam("MIPGap",0.0)
+    model.setRealParam("limits/gap", 0.0)
     # model.write("lotsize_echelon.lp")
     model.optimize()
 
@@ -443,13 +442,14 @@ if __name__ == "__main__":
             for t in range(1,T+1):
                 print("resource %3s used in period %s: %12s / %-9s" % \
                       (k,t,sum(a[t,k,p]*model.getVal(x[t,p]) + g[t,p]*model.getVal(y[t,p]) for p in P),M[t,k]))
+        print(model.getObjVal() - standard)
         assert abs(model.getObjVal() - standard) < 1.e-6
     elif status != "unbounded" and status != "infeasible":
         print("Optimization was stopped with status",status)
     else:
-        print("The model is infeasible; computing IIS")
-        model.computeIIS()
-        print("\nThe following constraint(s) cannot be satisfied:")
-        for cnstr in model.getConstrs():
-          if cnstr.IISConstr:
-            print(cnstr.ConstrName)
+        print("The model is infeasible")
+     #   model.computeIIS()
+     #   print("\nThe following constraint(s) cannot be satisfied:")
+     #   for cnstr in model.getConstrs():
+     #     if cnstr.IISConstr:
+     #       print(cnstr.ConstrName)

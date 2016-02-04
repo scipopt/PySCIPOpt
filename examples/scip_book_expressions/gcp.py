@@ -86,7 +86,7 @@ def gcp_sos(V,E,K):
 
     for i in V:
         model.addCons(quicksum(x[i,k] for k in range(K)) == 1, "AssignColor(%s)" % i)
-        model.addSOS(1, [x[i,k] for k in range(K)])
+        model.addConsSOS1([x[i,k] for k in range(K)])
 
     for (i,j) in E:
         for k in range(K):
@@ -144,7 +144,7 @@ if __name__ == "__main__":
         for prob in [0.1]:
             for m in models:
                 name = m.__name__
-                if not cpu.has_key((name,size-1,prob)) or cpu[name,size-1,prob] < 100:
+                if not (name,size-1,prob) in cpu or cpu[name,size-1,prob] < 100: #cpu.has_key((name,size-1,prob))
                     cpu[name,size,prob] = 0.
                     for t in range(N):
                         tinit = time.clock()
@@ -153,12 +153,12 @@ if __name__ == "__main__":
                         model = m(V,E,K)
                         model.hideOutput()     # silent mode
                         model.optimize()
-                        assert model.ObjVal >= 0 and model.ObjVal <= K
+                        assert model.getObjVal() >= 0 and model.getObjVal() <= K
                         tend = time.clock()
                         cpu[name,size,prob] += tend - tinit
                     cpu[name,size,prob] /= N
                 else:
                     cpu[name,size,prob] = "-"
                 print(cpu[name,size,prob],"\t",)
-        print
+        print()
         sys.stdout.flush()

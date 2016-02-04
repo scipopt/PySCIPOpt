@@ -161,6 +161,11 @@ cdef class Model:
     cdef public object data
 
     def __init__(self, problemName='model', defaultPlugins=True):
+        """
+        Keyword arguments:
+        problemName -- the name of the problem (default 'model')
+        defaultPlugins -- use default plugins? (default True)
+        """
         self.create()
         if defaultPlugins:
             self.includeDefaultPlugins()
@@ -286,7 +291,7 @@ cdef class Model:
         Only solutions with objective value better than this limit are accepted.
 
         Keyword arguments:
-        objlimit -- limit on objective function
+        objlimit -- limit on the objective function
         """
         PY_SCIP_CALL(scip.SCIPsetObjlimit(self._scip, objlimit))
 
@@ -409,7 +414,7 @@ cdef class Model:
             scip.SCIPtransformVar(self._scip, _var, &_tvar))
         return transvar
 
-    def chgVarLb(self, var, lb="None"):
+    def chgVarLb(self, var, lb=None):
         """Changes the lower bound of the specified variable.
 
         Keyword arguments:
@@ -426,7 +431,7 @@ cdef class Model:
 
         PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, lb))
 
-    def chgVarUb(self, var, ub="None"):
+    def chgVarUb(self, var, ub=None):
         """Changes the upper bound of the specified variable.
 
         Keyword arguments:
@@ -466,13 +471,31 @@ cdef class Model:
         return vars
 
     # Constraint functions
-    # Adding a linear constraint. By default the lhs is set to 0.0.
+    # . By default the lhs is set to 0.0.
     # If the lhs is to be unbounded, then you set lhs to None.
     # By default the rhs is unbounded.
     def addCons(self, coeffs, lhs=0.0, rhs=None, name="cons",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, modifiable=False, dynamic=False,
                 removable=False, stickingatnode=False):
+        """Add a linear or quadratic constraint.
+
+        Keyword arguments:
+        coeffs -- list of coefficients
+        lhs -- the left hand side (default 0.0)
+        rhs -- the right hand side (default None)
+        name -- the name of the constraint (default 'cons')
+        initial -- should the LP relaxation of constraint be in the initial LP? (default True)
+        separate -- should the constraint be separated during LP processing? (default True)
+        enforce -- should the constraint be enforced during node processing? (default True)
+        check -- should the constraint be checked for feasibility? (default True)
+        propagate -- should the constraint be propagated during node processing? (default True)
+        local -- is the constraint only valid locally? (default False)
+        modifiable -- is the constraint modifiable (subject to column generation)? (default False)
+        dynamic -- is the constraint subject to aging? (default False)
+        removable -- hould the relaxation be removed from the LP due to aging or cleanup? (default False)
+        stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
+        """
         if isinstance(coeffs, LinCons):
             kwargs = dict(lhs=lhs, rhs=rhs, name=name,
                           initial=initial, separate=separate, enforce=enforce,
@@ -512,7 +535,7 @@ cdef class Model:
         return cons
 
     def _addLinCons(self, lincons, **kwargs):
-        """add object of class LinCons"""
+        """Add object of class LinCons."""
         assert isinstance(lincons, LinCons)
         kwargs['lhs'], kwargs['rhs'] = lincons.lb, lincons.ub
         terms = lincons.expr.terms
@@ -523,7 +546,7 @@ cdef class Model:
         return self.addCons(coeffs, **kwargs)
 
     def _addQuadCons(self, quadcons, **kwargs):
-        """add object of class LinCons"""
+        """Add object of class LinCons."""
         assert isinstance(quadcons, LinCons) # TODO
         kwargs['lhs'] = -scip.SCIPinfinity(self._scip) if quadcons.lb is None else quadcons.lb
         kwargs['rhs'] =  scip.SCIPinfinity(self._scip) if quadcons.ub is None else quadcons.ub
@@ -568,6 +591,12 @@ cdef class Model:
         return cons
 
     def addConsCoeff(self, Cons cons, var, coeff):
+        """Add coefficient to the linear constraint (if non-zero).
+
+        Keyword arguments:
+        cons -- the constraint
+        coeff -- the coefficient
+        """
         cdef scip.SCIP_CONS* _cons
         cdef scip.SCIP_VAR* _var
         cdef Var v
@@ -576,18 +605,30 @@ cdef class Model:
         _var = <scip.SCIP_VAR*>v._var
         PY_SCIP_CALL(scip.SCIPaddCoefLinear(self._scip, _cons, _var, coeff))
 
-    #add SOS1 cons
-    def addConsSOS1(self, vars, weights="None", name="cons",
+    def addConsSOS1(self, vars, weights=None, name="SOS1cons",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
+        """Add an SOS1 constraint.
 
+        Keyword arguments:
+        vars -- list of variables to be included
+        weights -- list of weights (default None)
+        name -- the name of the constraint (default 'SOS1cons')
+        initial -- should the LP relaxation of constraint be in the initial LP? (default True)
+        separate -- should the constraint be separated during LP processing? (default True)
+        enforce -- should the constraint be enforced during node processing? (default True)
+        check -- should the constraint be checked for feasibility? (default True)
+        propagate -- should the constraint be propagated during node processing? (default True)
+        local -- is the constraint only valid locally? (default False)
+        dynamic -- is the constraint subject to aging? (default False)
+        removable -- hould the relaxation be removed from the LP due to aging or cleanup? (default False)
+        stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
+        """
         cdef scip.SCIP_CONS* scip_cons
         cdef Var v
         cdef scip.SCIP_VAR* _var
         cdef int _nvars
-
-
 
         self._createConsSOS1(&scip_cons, name, 0, NULL, NULL,
                                 initial, separate, enforce, check, propagate,
@@ -614,18 +655,30 @@ cdef class Model:
 
         return cons
 
-    #add SOS2 cons
-    def addConsSOS2(self, vars, weights="None", name="cons",
+    def addConsSOS2(self, vars, weights=None, name="SOS2cons",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
+        """Add an SOS2 constraint.
 
+        Keyword arguments:
+        vars -- list of variables to be included
+        weights -- list of weights (default None)
+        name -- the name of the constraint (default 'SOS2cons')
+        initial -- should the LP relaxation of constraint be in the initial LP? (default True)
+        separate -- should the constraint be separated during LP processing? (default True)
+        enforce -- should the constraint be enforced during node processing? (default True)
+        check -- should the constraint be checked for feasibility? (default True)
+        propagate -- should the constraint be propagated during node processing? (default True)
+        local -- is the constraint only valid locally? (default False)
+        dynamic -- is the constraint subject to aging? (default False)
+        removable -- hould the relaxation be removed from the LP due to aging or cleanup? (default False)
+        stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
+        """
         cdef scip.SCIP_CONS* scip_cons
         cdef Var v
         cdef scip.SCIP_VAR* _var
         cdef int _nvars
-
-
 
         self._createConsSOS2(&scip_cons, name, 0, NULL, NULL,
                                 initial, separate, enforce, check, propagate,
@@ -652,8 +705,14 @@ cdef class Model:
 
         return cons
 
-    # add SOS1 var
     def addVarSOS1(self, Cons cons, var, weight):
+        """Add variable to SOS1 constraint.
+
+        Keyword arguments:
+        cons -- the SOS1 constraint
+        vars -- the variable
+        weight -- the weight
+        """
         cdef scip.SCIP_CONS* _cons
         cdef scip.SCIP_VAR* _var
         cdef Var v
@@ -662,8 +721,13 @@ cdef class Model:
         _var = <scip.SCIP_VAR*>v._var
         PY_SCIP_CALL(scip.SCIPaddVarSOS1(self._scip, _cons, _var, weight))
 
-    # append SOS1 var
     def appendVarSOS1(self, Cons cons, var):
+        """Append variable to SOS1 constraint.
+
+        Keyword arguments:
+        cons -- the SOS1 constraint
+        vars -- the variable
+        """
         cdef scip.SCIP_CONS* _cons
         cdef scip.SCIP_VAR* _var
         cdef Var v
@@ -672,28 +736,14 @@ cdef class Model:
         _var = <scip.SCIP_VAR*>v._var
         PY_SCIP_CALL(scip.SCIPappendVarSOS1(self._scip, _cons, _var))
 
-    # add SOS1 var
-    def addVarSOS1(self, Cons cons, var, weight):
-        cdef scip.SCIP_CONS* _cons
-        cdef scip.SCIP_VAR* _var
-        cdef Var v
-        _cons = <scip.SCIP_CONS*>cons._cons
-        v = <Var>var.var
-        _var = <scip.SCIP_VAR*>v._var
-        PY_SCIP_CALL(scip.SCIPaddVarSOS1(self._scip, _cons, _var, weight))
-
-    # append SOS1 var
-    def appendVarSOS1(self, Cons cons, var):
-        cdef scip.SCIP_CONS* _cons
-        cdef scip.SCIP_VAR* _var
-        cdef Var v
-        _cons = <scip.SCIP_CONS*>cons._cons
-        v = <Var>var.var
-        _var = <scip.SCIP_VAR*>v._var
-        PY_SCIP_CALL(scip.SCIPappendVarSOS2(self._scip, _cons, _var))
-
-    # add SOS2 var
     def addVarSOS2(self, Cons cons, var, weight):
+        """Add variable to SOS2 constraint.
+
+        Keyword arguments:
+        cons -- the SOS2 constraint
+        vars -- the variable
+        weight -- the weight
+        """
         cdef scip.SCIP_CONS* _cons
         cdef scip.SCIP_VAR* _var
         cdef Var v
@@ -702,8 +752,13 @@ cdef class Model:
         _var = <scip.SCIP_VAR*>v._var
         PY_SCIP_CALL(scip.SCIPaddVarSOS2(self._scip, _cons, _var, weight))
 
-    # append SOS2 var
     def appendVarSOS2(self, Cons cons, var):
+        """Append variable to SOS2 constraint.
+
+        Keyword arguments:
+        cons -- the SOS2 constraint
+        vars -- the variable
+        """
         cdef scip.SCIP_CONS* _cons
         cdef scip.SCIP_VAR* _var
         cdef Var v
@@ -712,10 +767,19 @@ cdef class Model:
         _var = <scip.SCIP_VAR*>v._var
         PY_SCIP_CALL(scip.SCIPappendVarSOS2(self._scip, _cons, _var))
 
-    # Retrieving the pointer for the transformed constraint
-    def getTransformedCons(self, Cons cons):
-        transcons = Cons()
-        PY_SCIP_CALL(scip.SCIPtransformCons(self._scip, cons._cons, &transcons._cons))
+    def getTransformedCons(self, cons):
+        """Retrieve transformed constraint.
+
+        Keyword arguments:
+        cons -- the constraint
+        """
+        cdef Cons c
+        cdef Cons ctrans
+        c = cons.cons
+        transcons = Constraint("t-"+cons.name)
+        ctrans = transcons.cons
+
+        PY_SCIP_CALL(scip.SCIPtransformCons(self._scip, c._cons, &ctrans._cons))
         return transcons
 
     def getConss(self):
@@ -747,16 +811,18 @@ cdef class Model:
         cons -- the linear constraint
         """
         cdef Cons c
-        c = cons
+        c = cons.cons
         return scip.SCIPgetDualsolLinear(self._scip, c._cons)
 
-    def getDualfarkasLinear(self, Cons cons):
+    def getDualfarkasLinear(self, cons):
         """Retrieve the dual farkas value to a linear constraint.
 
         Keyword arguments:
         cons -- the linear constraint
         """
-        return scip.SCIPgetDualfarkasLinear(self._scip, cons._cons)
+        cdef Cons c
+        c = cons.cons
+        return scip.SCIPgetDualfarkasLinear(self._scip, c._cons)
 
 
     # Problem solving functions
@@ -767,13 +833,22 @@ cdef class Model:
         self._bestSol = scip.SCIPgetBestSol(self._scip)
 
     # Numerical methods
+
     def infinity(self):
         """Retrieve 'infinity' value."""
         inf = scip.SCIPinfinity(self._scip)
         return inf
 
     # Pricer functions
+
     def includePricer(self, Pricer pricer, name, desc):
+        """Include a pricer.
+
+        Keyword arguments:
+        pricer -- the pricer
+        name -- the name
+        desc -- the description
+        """
         name1 = str_conversion(name)
         desc1 = str_conversion(desc)
         PY_SCIP_CALL(scip.SCIPincludePricerBasic(self._scip, &(pricer._pricer), name1, desc1, 1, True, scipPricerRedcost, scipPricerFarkas, pricer._pricerdata))

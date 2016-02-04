@@ -71,7 +71,7 @@ def solve_kcenter(I,J,c,k,delta):
                     model.chgVarUb(x[i,j], 1.0)
 
         # model.Params.OutputFlag = 0 # silent mode
-        #model.Params.Cutoff = .1
+        model.setObjlimit(.1)
 
         model.optimize()
 

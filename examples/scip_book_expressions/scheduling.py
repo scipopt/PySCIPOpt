@@ -49,7 +49,7 @@ def scheduling_linear_ordering(J,p,d,w):
 
     model.setObjective(quicksum(w[j]*T[j] for j in J), "minimize")
 
-    
+
     model.data = x,T
     return model
 
@@ -85,7 +85,7 @@ def scheduling_time_index(J,p,r,w):
             model.addCons(quicksum(X[j,t2] for (j,t2) in ind) <= 1, "MachineUB(%s)"%t)
 
     model.setObjective(quicksum((w[j] * (t - 1 + p[j])) * X[j,t] for (j,t) in X), "minimize")
-    
+
     model.data = X
     return model
 
@@ -106,7 +106,7 @@ def scheduling_disjunctive(J,p,r,w):
     Returns a model, ready to be solved.
     """
     model = Model("scheduling: disjunctive")
-    
+
     M = max(r.values()) + sum(p.values())       # big M
     s,x = {},{}      # start time variable, x[j,k] = 1 if job j precedes job k, 0 otherwise
     for j in J:
@@ -114,7 +114,7 @@ def scheduling_disjunctive(J,p,r,w):
         for k in J:
             if j != k:
                 x[j,k] = model.addVar(vtype="B", name="x(%s,%s)"%(j,k))
-    
+
 
     for j in J:
         for k in J:
@@ -154,7 +154,7 @@ def scheduling_cutting_plane(J,p,r,w):
     C = {}   # completion time variable
     for j in J:
         C[j] = model.addVar(lb=r[j]+p[j], obj=w[j], vtype="C", name="C(%s)"%j)
-    
+
 
     sumP = sum([p[j] for j in J])
     sumP2 = sum([p[j]**2 for j in J])
@@ -197,7 +197,7 @@ def scheduling_cutting_plane(J,p,r,w):
             break
 
         cut += 1
-        model.addCons(quicksum(C[j]*p[j] for j in S) >= sumP2*0.5 + (sumP**2)*0.5, "Cut(%s)"%cut) #todo: /2.0
+        model.addCons(quicksum(C[j]*p[j] for j in S) >= sumP2*0.5 + (sumP**2)*0.5, "Cut(%s)"%cut)
 
     return bestC,bestobj,best
 
