@@ -155,6 +155,8 @@ def test_cuttingstock():
 
     print('\t\t\tTotal Output:','\t'.join(str(e) for e in widthOutput))
 
+    s.printStatistics()
+
 
 if __name__ == '__main__':
     test_cuttingstock()
