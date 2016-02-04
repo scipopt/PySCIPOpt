@@ -2,6 +2,7 @@
 #   see file 'LICENSE' for details.
 
 include "pricer.pyx"
+include "separator.pyx"
 
 from os.path import abspath
 import sys
@@ -855,6 +856,11 @@ cdef class Model:
         PY_SCIP_CALL(scip.SCIPactivatePricer(self._scip, pricer._pricer))
         PY_SCIP_CALL(scip.SCIPsetPricerInit(self._scip, pricer._pricer, scipPricerInit))
 
+    # Separator functions
+    def includeSeparator(self, Separator sepa, name, desc):
+        name1 = str_conversion(name)
+        desc1 = str_conversion(desc)
+        PY_SCIP_CALL(scip.SCIPincludeSepaBasic(self._scip, &(sepa._sepa), name1, desc1, 1, 1, 1.0, False, False, scipSepaExecLP, scipSepaExecSol, sepa._sepadata))
 
 
     # Solution functions

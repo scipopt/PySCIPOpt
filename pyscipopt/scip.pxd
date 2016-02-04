@@ -103,6 +103,12 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_PRICERDATA:
         pass
 
+    ctypedef struct SCIP_SEPA:
+        pass
+
+    ctypedef struct SCIP_SEPADATA:
+        pass
+
     ctypedef struct SCIP_CONSDATA:
         pass
 
@@ -177,6 +183,21 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPactivatePricer(SCIP* scip, SCIP_PRICER* pricer)
     SCIP_RETCODE SCIPsetPricerInit(SCIP* scip, SCIP_PRICER* pricer, SCIP_RETCODE (*scipPricerInit)(SCIP*, SCIP_PRICER*))
     SCIP_PRICERDATA* SCIPpricerGetData(SCIP_PRICER* pricer)
+
+    # Separator Methods
+    SCIP_RETCODE SCIPincludeSepaBasic(SCIP* scip,
+                                      SCIP_SEPA** sepa,
+                                      const char* name,
+                                      const char* desc,
+                                      int priority,
+                                      int freq,
+                                      SCIP_Real maxbounddist,
+                                      SCIP_Bool usessubscip,
+                                      SCIP_Bool delay,
+                                      SCIP_RETCODE (*sepaexeclp) (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result),
+                                      SCIP_RETCODE (*sepaexecsol) (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result),
+                                      SCIP_SEPADATA* sepadata)
+
 
     # Numerical Methods
     SCIP_Real SCIPinfinity(SCIP* scip)
