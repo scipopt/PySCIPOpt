@@ -146,12 +146,13 @@ def test_cuttingstock():
         rollUsage = 0
         solValue = round(s.getVal(scip.py_pricerdata.var[i]))
         if solValue > 0:
-            print('Pattern_' + str(i) + ':\t', solValue, '\t\tCuts:\t', end=' ')
+            outline = 'Pattern_' + str(i) + ':\t' + str(solValue) + '\t\tCuts:\t'
             for j in range(len(widths)):
                 rollUsage += scip.py_pricerdata.patterns[i][j]*widths[j]
                 widthOutput[j] += scip.py_pricerdata.patterns[i][j]*solValue
-                print(scip.py_pricerdata.patterns[i][j], '\t', end=' ')
-            print('Usage:', rollUsage)
+                outline += str(scip.py_pricerdata.patterns[i][j]) + '\t'
+            outline += 'Usage:' + str(rollUsage)
+            print(outline)
 
     print('\t\t\tTotal Output:','\t'.join(str(e) for e in widthOutput))
 
