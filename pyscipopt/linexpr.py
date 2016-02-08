@@ -1,8 +1,5 @@
 CONST = ()
 
-# TODO this needs a proper implementation; is just a placeholder
-quicksum = sum
-
 def _is_number(e):
     try:
         f = float(e)
@@ -41,6 +38,16 @@ class LinExpr(object):
         else:
             raise NotImplementedError
         return LinExpr(terms)
+
+    def __iadd__(self, other):
+        if isinstance(other, LinExpr):
+            self.terms.update(other.terms)
+        elif _is_number(other):
+            c = float(other)
+            self.terms[CONST] = self.terms.get(CONST, 0.0) + c
+        else:
+            raise NotImplementedError
+        return self
 
     def __mul__(self, other):
         if _is_number(other):
@@ -163,3 +170,13 @@ class LinCons(object):
 
     def __repr__(self):
         return 'LinCons(%s, %s, %s)' % (self.expr, self.lb, self.ub)
+
+
+def quicksum(termlist):
+    '''add linear expressions and constants much faster than Python's sum
+    by avoiding intermediate data structures and adding terms inplace
+    '''
+    result = LinExpr()
+    for term in termlist:
+        result += term
+    return result
