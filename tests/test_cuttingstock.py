@@ -47,7 +47,7 @@ def py_scip_redcost(solver, pricer):
         newPattern = []
         for i, c in enumerate(pricerdata.cons):
             coeff = round(subMIP.getVal(cutWidthVars[i]))
-            solver.addConsCoeff(c, newVar, coeff)
+            solver.addConsCoeff(c.cons, newVar, coeff)
 
             newPattern.append(coeff)
 
@@ -70,7 +70,7 @@ def py_scip_init(solver, pricer):
 # A user defined function to retrieve the transformed constraints of the problem
 def transformProbCons(solver, cons, pricerdata):
     for i, c in enumerate(cons):
-        pricerdata.cons[i] = solver.getTransformedCons(c.cons)
+        pricerdata.cons[i] = solver.getTransformedCons(c)
 
 
 def test_cuttingstock():
@@ -156,6 +156,7 @@ def test_cuttingstock():
 
     print('\t\t\tTotal Output:','\t'.join(str(e) for e in widthOutput))
 
+    print('\n')
     s.printStatistics()
 
 
