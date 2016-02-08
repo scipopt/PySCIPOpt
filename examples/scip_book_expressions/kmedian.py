@@ -4,8 +4,10 @@ kmedian.py:  model for solving the k-median problem.
 minimize the total (weighted) travel cost for servicing
 a set of customers from k facilities.
 
-Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012 
+Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
+import math
+import random
 from pyscipopt import Model, quicksum, multidict
 
 def kmedian(I,J,c,k):
@@ -38,8 +40,6 @@ def kmedian(I,J,c,k):
     return model
 
 
-import math
-import random
 def distance(x1,y1,x2,y2):
     return math.sqrt((x2-x1)**2 + (y2-y1)**2)
 
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     x,y = model.data
     edges = [(i,j) for (i,j) in x if model.getVal(x[i,j]) > EPS]
     facilities = [j for j in y if model.getVal(y[j]) > EPS]
-    
+
     print("Optimal value:",model.getObjVal())
     print("Selected facilities:", facilities)
     print("Edges:", edges)
