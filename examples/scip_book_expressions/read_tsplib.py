@@ -11,7 +11,7 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 import gzip
 import math
 
-def distL2((x1,y1),(x2,y2)):
+def distL2(x1,y1,x2,y2):
     """Compute the L2-norm (Euclidean) distance between two points.
 
     The distance is rounded to the closest integer, for compatibility
@@ -24,7 +24,7 @@ def distL2((x1,y1),(x2,y2)):
     return int(math.sqrt(xdiff*xdiff + ydiff*ydiff) + .5)
 
 
-def distL1((x1,y1),(x2,y2)):
+def distL1(x1,y1,x2,y2):
     """Compute the L1-norm (Manhattan) distance between two points.
 
     The distance is rounded to the closest integer, for compatibility
@@ -35,11 +35,11 @@ def distL1((x1,y1),(x2,y2)):
     return int(abs(x2-x1) + abs(y2-y1)+.5)
 
 
-def distLinf((x1,y1),(x2,y2)):
+def distLinf(x1,y1,x2,y2):
     """Compute the Linfty distance between two points (see TSPLIB documentation)"""
     return int(max(abs(x2-x1),abs(y2-y1)))
 
-def distATT((x1,y1),(x2,y2)):
+def distATT(x1,y1,x2,y2):
     """Compute the ATT distance between two points (see TSPLIB documentation)"""
     xd = x2 - x1
     yd = y2 - y1
@@ -50,12 +50,12 @@ def distATT((x1,y1),(x2,y2)):
     else:
         return tij
 
-def distCEIL2D((x1,y1),(x2,y2)):
+def distCEIL2D(x1,y1,x2,y2):
     xdiff = x2 - x1
     ydiff = y2 - y1
     return int(math.ceil(math.sqrt(xdiff*xdiff + ydiff*ydiff)))
 
-def distGEO((x1,y1),(x2,y2)):
+def distGEO(x1,y1,x2,y2):
     print("Implementation is wrong")
     assert False
     PI = 3.141592
@@ -206,7 +206,7 @@ def read_tsplib(filename):
     c = {}      # dictionary to hold n times n matrix
     for i in V:
         for j in V:
-            c[i,j] = dist((x[i],y[i]),(x[j],y[j]))
+            c[i,j] = dist(x[i],y[i],x[j],y[j])
 
     return V,c,x,y
 
