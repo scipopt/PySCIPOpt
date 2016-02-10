@@ -12,10 +12,11 @@ cdef class Separator:
         return py_sepadata
 
 def py_scip_execlp(Model model, Separator sepa):
-    pass
+    print("scip_execlp: This needs to be implemented!")
+    return scip.scip_result.didnotrun
 
 def py_scip_execsol(Model model, Separator sepa):
-    pass
+    return scip.scip_result.didnotrun
 
 cdef SCIP_RETCODE scipSepaExecLP(SCIP* _scip,
                                  SCIP_SEPA* _sepa,
