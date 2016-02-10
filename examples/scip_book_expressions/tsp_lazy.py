@@ -11,7 +11,7 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 import math
 import random
 import networkx
-from pyscipopt import Model, quicksum, multidict
+from pyscipopt import Model, quicksum, scip
 
 def tsp(V,c):
     """tsp -- model for solving the traveling salesman problem with callbacks
@@ -24,13 +24,11 @@ def tsp(V,c):
     """
 
     EPS = 1.e-6
-    def tsp_callback(model,where):
-        if where != GRB.Callback.MIPSOL:
-            return
+    def py_sepa_execlp():
 
         edges = []
         for (i,j) in x:
-            if model.cbGetSolution(x[i,j]) > EPS:
+            if model.getVal(x[i,j]) > EPS:
                 edges.append( (i,j) )
 
         G = networkx.Graph()
@@ -41,12 +39,15 @@ def tsp(V,c):
             return
         for S in Components:
             model.cbLazy(quicksum(x[i,j] for i in S for j in S if j>i) <= len(S)-1)
-            # print "cut: len(%s) <= %s" % (S,len(S)-1)
+            print("cut: len(%s) <= %s" % (S,len(S)-1))
         return
 
 
     model = Model("tsp")
-    # model.Params.OutputFlag = 0 # silent/verbose mode
+    model.hideOutput()
+
+    sepa = scip.Separator()
+
     x = {}
     for i in V:
         for j in V:
@@ -60,7 +61,7 @@ def tsp(V,c):
     model.setObjective(quicksum(c[i,j]*x[i,j] for i in V for j in V if j > i), "minimize")
 
     model.data = x
-    return model,tsp_callback
+    return model,sepa
 
 
 def distance(x1,y1,x2,y2):
@@ -80,14 +81,14 @@ def make_data(n):
     return V,c
 
 def solve_tsp(V,c):
-    model,tsp_callback = tsp(V,c)
-    #model.params.DualReductions = 0
+    model,separator = tsp(V,c)
+    model.includeSeparator(separator, "TSP", "TSP subtour eliminator")
     model.setBoolParam("misc/allowdualreds", 0)
-    model.optimize(tsp_callback)
+    model.optimize()
     x = model.data
 
-    if model.status == GRB.Status.TIME_LIMIT:
-        return None,None
+    #if model.status == GRB.Status.TIME_LIMIT:
+        #return None,None
 
     EPS = 1.e-6
     edges = []
