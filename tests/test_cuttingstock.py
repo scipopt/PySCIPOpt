@@ -1,7 +1,7 @@
 import pyscipopt.scip as scip
 
 # The reduced cost function for the variable pricer
-def py_scip_redcost(solver, pricer):
+def redcost(solver, pricer):
     pricerdata = pricer.getPricerData()
 
     # Retreiving the dual solutions
@@ -62,7 +62,7 @@ def py_scip_redcost(solver, pricer):
 
 
 # The initialisation function for the variable pricer
-def py_scip_init(solver, pricer):
+def init(solver, pricer):
     pricerdata = pricer.getPricerData()
     transformProbCons(solver, pricerdata.cons, pricerdata)
 
@@ -82,11 +82,11 @@ def test_cuttingstock():
     # creating a pricer
     pricer = scip.Pricer()
     s.includePricer(pricer, "CuttingStockPricer", "Pricer to identify new cutting stock patterns")
-    scip.py_pricerdata.name = "Testing"
+    scip.pricerdata.name = "Testing"
 
     # this links the user defined reduced cost function to the functions defined with cython
-    scip.py_scip_redcost = py_scip_redcost
-    scip.py_scip_init = py_scip_init
+    scip.redcost = redcost
+    scip.init = init
 
     # item widths
     widths = [14, 31, 36, 45]
@@ -118,13 +118,13 @@ def test_cuttingstock():
         patterns.append(newPattern)
 
     # Setting the pricer_data for use in the init and redcost functions
-    scip.py_pricerdata.var = cutPatternVars
-    scip.py_pricerdata.cons = demandCons
-    scip.py_pricerdata.transcons = []
-    scip.py_pricerdata.widths = widths
-    scip.py_pricerdata.demand = demand
-    scip.py_pricerdata.rollLength = rollLength
-    scip.py_pricerdata.patterns = patterns
+    scip.pricerdata.var = cutPatternVars
+    scip.pricerdata.cons = demandCons
+    scip.pricerdata.transcons = []
+    scip.pricerdata.widths = widths
+    scip.pricerdata.demand = demand
+    scip.pricerdata.rollLength = rollLength
+    scip.pricerdata.patterns = patterns
 
     # solve problem
     s.optimize()
@@ -142,15 +142,15 @@ def test_cuttingstock():
     print('\nResult')
     print('======')
     print('\t\tSol Value', '\tWidths\t', printWidths)
-    for i in range(len(scip.py_pricerdata.var)):
+    for i in range(len(scip.pricerdata.var)):
         rollUsage = 0
-        solValue = round(s.getVal(scip.py_pricerdata.var[i]))
+        solValue = round(s.getVal(scip.pricerdata.var[i]))
         if solValue > 0:
             outline = 'Pattern_' + str(i) + ':\t' + str(solValue) + '\t\tCuts:\t'
             for j in range(len(widths)):
-                rollUsage += scip.py_pricerdata.patterns[i][j]*widths[j]
-                widthOutput[j] += scip.py_pricerdata.patterns[i][j]*solValue
-                outline += str(scip.py_pricerdata.patterns[i][j]) + '\t'
+                rollUsage += scip.pricerdata.patterns[i][j]*widths[j]
+                widthOutput[j] += scip.pricerdata.patterns[i][j]*solValue
+                outline += str(scip.pricerdata.patterns[i][j]) + '\t'
             outline += 'Usage:' + str(rollUsage)
             print(outline)
 
