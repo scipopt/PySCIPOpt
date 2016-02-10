@@ -32,6 +32,12 @@ if 'cleanlib' in args:
         os.remove(includescip)
     quit()
 
+if 'clean' in args:
+    compiledcode = 'pyscipopt/scip.c'
+    if os.path.exists(compiledcode):
+        print('removing '+compiledcode)
+        os.remove(compiledcode)
+
 # always use build_ext --inplace
 if args.count("build_ext") > 0 and args.count("--inplace") == 0:
     sys.argv.insert(sys.argv.index("build_ext")+1, "--inplace")
