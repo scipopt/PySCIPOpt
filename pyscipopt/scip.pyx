@@ -3,6 +3,7 @@
 
 include "pricer.pyx"
 include "separator.pyx"
+include "conshandler.pyx"
 
 from os.path import abspath
 import sys
@@ -187,8 +188,8 @@ cdef class Model:
 
     @scipErrorHandler
     def createProbBasic(self, problemName='model'):
-        name1 = str_conversion(problemName)
-        return scip.SCIPcreateProbBasic(self._scip, name1)
+        n = str_conversion(problemName)
+        return scip.SCIPcreateProbBasic(self._scip, n)
 
     @scipErrorHandler
     def free(self):
@@ -206,9 +207,9 @@ cdef class Model:
     #                        interface the relevant classes (SCIP_VAR, ...)
     cdef _createVarBasic(self, scip.SCIP_VAR** scip_var, name,
                         lb, ub, obj, scip.SCIP_VARTYPE varType):
-        name1 = str_conversion(name)
+        n = str_conversion(name)
         PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, scip_var,
-                           name1, lb, ub, obj, varType))
+                           n, lb, ub, obj, varType))
 
     cdef _addVar(self, scip.SCIP_VAR* scip_var):
         PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
@@ -221,9 +222,9 @@ cdef class Model:
                                 initial=True, separate=True, enforce=True, check=True,
                                 propagate=True, local=False, modifiable=False, dynamic=False,
                                 removable=False, stickingatnode=False):
-        name1 = str_conversion(name)
+        n = str_conversion(name)
         PY_SCIP_CALL(scip.SCIPcreateConsLinear(self._scip, cons,
-                                                    name1, nvars, vars, vals,
+                                                    n, nvars, vars, vals,
                                                     lhs, rhs, initial, separate, enforce,
                                                     check, propagate, local, modifiable,
                                                     dynamic, removable, stickingatnode) )
@@ -233,9 +234,9 @@ cdef class Model:
                               initial=True, separate=True, enforce=True, check=True,
                               propagate=True, local=False, dynamic=False, removable=False,
                               stickingatnode=False):
-        name1 = str_conversion(name)
+        n = str_conversion(name)
         PY_SCIP_CALL(scip.SCIPcreateConsSOS1(self._scip, cons,
-                                                    name1, nvars, vars, weights,
+                                                    n, nvars, vars, weights,
                                                     initial, separate, enforce,
                                                     check, propagate, local, dynamic, removable,
                                                     stickingatnode) )
@@ -245,9 +246,9 @@ cdef class Model:
                               initial=True, separate=True, enforce=True, check=True,
                               propagate=True, local=False, dynamic=False, removable=False,
                               stickingatnode=False):
-        name1 = str_conversion(name)
+        n = str_conversion(name)
         PY_SCIP_CALL(scip.SCIPcreateConsSOS2(self._scip, cons,
-                                                    name1, nvars, vars, weights,
+                                                    n, nvars, vars, weights,
                                                     initial, separate, enforce,
                                                     check, propagate, local, dynamic, removable,
                                                     stickingatnode) )
@@ -825,43 +826,77 @@ cdef class Model:
         c = cons.cons
         return scip.SCIPgetDualfarkasLinear(self._scip, c._cons)
 
-
-    # Problem solving functions
-    # todo: define optimize() as a copy of solve() for Gurobi compatibility
     def optimize(self):
         """Optimize the problem."""
         PY_SCIP_CALL(scip.SCIPsolve(self._scip))
         self._bestSol = scip.SCIPgetBestSol(self._scip)
-
-    # Numerical methods
 
     def infinity(self):
         """Retrieve 'infinity' value."""
         inf = scip.SCIPinfinity(self._scip)
         return inf
 
-    # Pricer functions
-
-    def includePricer(self, Pricer pricer, name, desc):
+    def includePricer(self, Pricer pricer, name, desc, priority=1, delay=True):
         """Include a pricer.
 
         Keyword arguments:
         pricer -- the pricer
         name -- the name
         desc -- the description
+        priority -- priority of the variable pricer
+        delay -- should the pricer be delayed until no other pricers or already
+                 existing problem variables with negative reduced costs are found?
         """
-        name1 = str_conversion(name)
-        desc1 = str_conversion(desc)
-        PY_SCIP_CALL(scip.SCIPincludePricerBasic(self._scip, &(pricer._pricer), name1, desc1, 1, True, scipPricerRedcost, scipPricerFarkas, pricer._pricerdata))
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(scip.SCIPincludePricerBasic(self._scip, &(pricer._pricer), n, d,
+                                                 priority, delay,
+                                                 scipPricerRedcost, scipPricerFarkas,
+                                                 pricer._pricerdata))
         PY_SCIP_CALL(scip.SCIPactivatePricer(self._scip, pricer._pricer))
         PY_SCIP_CALL(scip.SCIPsetPricerInit(self._scip, pricer._pricer, scipPricerInit))
 
-    # Separator functions
-    def includeSeparator(self, Separator sepa, name, desc):
-        name1 = str_conversion(name)
-        desc1 = str_conversion(desc)
-        PY_SCIP_CALL(scip.SCIPincludeSepaBasic(self._scip, &(sepa._sepa), name1, desc1, 1, 1, 1.0, False, False, scipSepaExecLP, scipSepaExecSol, sepa._sepadata))
+    def includeSeparator(self, Separator sepa, name, desc,
+                         priority=1, freq=1, maxbounddist=1.0, usesubscip=False, delay=False):
+        """Include a separator.
 
+        Keyword arguments:
+        sepa -- the separator
+        name -- name of the separator
+        desc -- description of the separator
+        priority -- priority of separator (>= 0: before, < 0: after constraint handlers)
+        freq -- frequency for calling separator
+        maxbounddist -- maximal relative distance from current node's dual bound to primal bound
+                        compared to best node's dual bound for applying separation
+        usesubscip -- does the separator use a secondary SCIP instance?
+        delay -- should separator be delayed, if other separators found cuts?
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(scip.SCIPincludeSepaBasic(self._scip, &(sepa._sepa), n, d,
+                                               priority, freq, maxbounddist, usesubscip, delay,
+                                               scipSepaExecLP, scipSepaExecSol,
+                                               sepa._sepadata))
+
+    def includeConshandler(self, Conshandler conshandler, name, desc, enfopriority=1, chckpriority=1, eagerfreg=-1, needscons=True):
+        """Include a constraint handler
+
+        Keyword arguments:
+        conshandler -- the constraint handler
+        name -- name of the constraint handler
+        desc -- description of the constraint handler
+        enfopriority -- priority of the constraint handler for constraint enforcing
+        chckpriority -- priority of the constraint handler for checking feasibility (and propagation)
+        eagerfreq -- frequency for using all instead of only the useful constraints in separation,
+                     propagation and enforcement, -1 for no eager evaluations, 0 for first only
+        needscons -- should the constraint handler be skipped, if no constraints are available?
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(scip.SCIPincludeConshdlrBasic(self._scip, &(conshandler._conshandler), n, d,
+                                                   enfopriority, chckpriority, eagerfreg, needscons,
+                                                   scipConshandlerEnfoLP, scipConshandlerEnfoPS, scipConshandlerCheck, scipConshandlerLock,
+                                                   conshandler._conshandlerdata))
 
     # Solution functions
 
@@ -991,8 +1026,8 @@ cdef class Model:
         name -- the name of the parameter
         value -- the value of the parameter
         """
-        name1 = str_conversion(name)
-        PY_SCIP_CALL(scip.SCIPsetBoolParam(self._scip, name1, value))
+        n = str_conversion(name)
+        PY_SCIP_CALL(scip.SCIPsetBoolParam(self._scip, n, value))
 
     def setIntParam(self, name, value):
         """Set an int-valued parameter.
@@ -1001,8 +1036,8 @@ cdef class Model:
         name -- the name of the parameter
         value -- the value of the parameter
         """
-        name1 = str_conversion(name)
-        PY_SCIP_CALL(scip.SCIPsetIntParam(self._scip, name1, value))
+        n = str_conversion(name)
+        PY_SCIP_CALL(scip.SCIPsetIntParam(self._scip, n, value))
 
     def setLongintParam(self, name, value):
         """Set a long-valued parameter.
@@ -1011,8 +1046,8 @@ cdef class Model:
         name -- the name of the parameter
         value -- the value of the parameter
         """
-        name1 = str_conversion(name)
-        PY_SCIP_CALL(scip.SCIPsetLongintParam(self._scip, name1, value))
+        n = str_conversion(name)
+        PY_SCIP_CALL(scip.SCIPsetLongintParam(self._scip, n, value))
 
     def setRealParam(self, name, value):
         """Set a real-valued parameter.
@@ -1021,8 +1056,8 @@ cdef class Model:
         name -- the name of the parameter
         value -- the value of the parameter
         """
-        name1 = str_conversion(name)
-        PY_SCIP_CALL(scip.SCIPsetRealParam(self._scip, name1, value))
+        n = str_conversion(name)
+        PY_SCIP_CALL(scip.SCIPsetRealParam(self._scip, n, value))
 
     def setCharParam(self, name, value):
         """Set a char-valued parameter.
@@ -1031,8 +1066,8 @@ cdef class Model:
         name -- the name of the parameter
         value -- the value of the parameter
         """
-        name1 = str_conversion(name)
-        PY_SCIP_CALL(scip.SCIPsetCharParam(self._scip, name1, value))
+        n = str_conversion(name)
+        PY_SCIP_CALL(scip.SCIPsetCharParam(self._scip, n, value))
 
     def setStringParam(self, name, value):
         """Set a string-valued parameter.
@@ -1041,8 +1076,8 @@ cdef class Model:
         name -- the name of the parameter
         value -- the value of the parameter
         """
-        name1 = str_conversion(name)
-        PY_SCIP_CALL(scip.SCIPsetStringParam(self._scip, name1, value))
+        n = str_conversion(name)
+        PY_SCIP_CALL(scip.SCIPsetStringParam(self._scip, n, value))
 
     def readParams(self, file):
         """Read an external parameter file.
