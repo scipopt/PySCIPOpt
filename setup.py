@@ -4,15 +4,23 @@ from distutils.extension import Extension
 from Cython.Distutils import build_ext
 from Cython.Build import cythonize
 
+# defines whether the python interface should link againt a static (.a)
+# or a shared (.so) scipopt library
+usesharedlib = True
+
+includescip = 'include/scip'
+
+if usesharedlib:
+    libscipopt = 'lib/libscipopt.so'
+else:
+    libscipopt = 'lib/libscipopt.a'
+
 def complete(text, state):
     return (glob.glob(text+'*')+[None])[state]
 
 readline.set_completer_delims(' \t\n;')
 readline.parse_and_bind("tab: complete")
 readline.set_completer(complete)
-
-libscipopt = 'lib/libscipopt.so'
-includescip = 'include/scip'
 
 args = sys.argv[1:]
 
@@ -32,8 +40,13 @@ if 'cleanlib' in args:
         os.remove(includescip)
     quit()
 
+# completely remove compiled code
 if 'clean' in args:
     compiledcode = 'pyscipopt/scip.c'
+    if os.path.exists(compiledcode):
+        print('removing '+compiledcode)
+        os.remove(compiledcode)
+    compiledcode = 'pyscipopt/scip.cpp'
     if os.path.exists(compiledcode):
         print('removing '+compiledcode)
         os.remove(compiledcode)
@@ -44,7 +57,7 @@ if args.count("build_ext") > 0 and args.count("--inplace") == 0:
 
 # check for missing scipopt library
 if not os.path.lexists(libscipopt):
-    pathToLib = os.path.abspath(my_input('Please enter path to scipopt library (scipoptsuite/lib/libscipopt.so):\n'))
+    pathToLib = os.path.abspath(my_input('Please enter path to scipopt library (scipoptsuite/lib/libscipopt.so or .a):\n'))
     print(pathToLib)
 
     # create lib directory if necessary
@@ -64,7 +77,7 @@ if not os.path.lexists(includescip):
     if not os.path.exists('include'):
         os.makedirs('include')
 
-    if not os.path.exists(pathToScip): 
+    if not os.path.exists(pathToScip):
         print('Sorry, the path to scip src directory does not exist')
         quit()
 
@@ -77,13 +90,21 @@ if not os.path.lexists(includescip):
 
 ext_modules = []
 
-ext_modules += [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip.pyx')],
+if usesharedlib:
+    ext_modules += [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip.pyx')],
                           #extra_compile_args=['-g', '-O0', '-UNDEBUG'],
+                          language='c++',
                           include_dirs=[includescip],
                           library_dirs=['lib'],
                           runtime_library_dirs=[os.path.abspath('lib')],
                           libraries=['scipopt', 'readline', 'z', 'gmp', 'ncurses', 'm'])]
-
+else:
+    ext_modules += [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip.pyx')],
+                          #extra_compile_args=['-g', '-O0', '-UNDEBUG'],
+                          language='c++',
+                          include_dirs=[includescip],
+                          extra_objects=[libscipopt],
+                          libraries=['readline', 'z', 'gmp', 'ncurses', 'm'])]
 
 #ext_modules += cythonize(extensions)
 
