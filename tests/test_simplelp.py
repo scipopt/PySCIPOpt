@@ -44,3 +44,7 @@ def test_nicelp():
     assert round(s.getVal(y)) == 0.0
 
     s.free()
+
+if __name__ == "__main__":
+    test_simple()
+    test_nicelp()
