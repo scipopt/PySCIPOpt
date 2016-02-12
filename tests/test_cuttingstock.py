@@ -1,92 +1,89 @@
-import pyscipopt.scip as scip
+from pyscipopt import Model, Pricer, scip
 
-# The reduced cost function for the variable pricer
-def redcost(solver, pricer):
-    pricerdata = pricer.getPricerData()
+class CutPricer(Pricer):
 
-    # Retreiving the dual solutions
-    dualSolutions = []
-    for i, c in enumerate(pricerdata.cons):
-        dualSolutions.append(solver.getDualsolLinear(c))
+    # The reduced cost function for the variable pricer
+    def redcost(self):
 
-    # Building a MIP to solve the subproblem
-    subMIP = scip.Model("CuttingStock-Sub")
+        # Retreiving the dual solutions
+        dualSolutions = []
+        for i, c in enumerate(self.data['cons']):
+            dualSolutions.append(self.model.getDualsolLinear(c))
 
-    # Turning off presolve
-    subMIP.setPresolve(scip.scip_paramsetting.off)
+        # Building a MIP to solve the subproblem
+        subMIP = Model("CuttingStock-Sub")
 
-    # Setting the verbosity level to 0
-    subMIP.hideOutput()
+        # Turning off presolve
+        subMIP.setPresolve(3)
 
-    cutWidthVars = []
-    varNames = []
-    varBaseName = "CutWidth"
+        # Setting the verbosity level to 0
+        subMIP.hideOutput()
 
-    # Variables for the subMIP
-    for i in range(len(dualSolutions)):
-        varNames.append(varBaseName + "_" + str(i))
-        cutWidthVars.append(subMIP.addVar(varNames[i], vtype = "I", obj = -1.0 * dualSolutions[i]))
+        cutWidthVars = []
+        varNames = []
+        varBaseName = "CutWidth"
 
-    # Adding the knapsack constraint
-    knapsackCoeffs = {cutWidthVars[i] : pricerdata.widths[i] for i in range(len(pricerdata.widths))}
-    knapsackCons = subMIP.addCons(knapsackCoeffs, lhs = None, rhs = pricerdata.rollLength)
+        # Variables for the subMIP
+        for i in range(len(dualSolutions)):
+            varNames.append(varBaseName + "_" + str(i))
+            cutWidthVars.append(subMIP.addVar(varNames[i], vtype = "I", obj = -1.0 * dualSolutions[i]))
 
-    # Solving the subMIP to generate the most negative reduced cost pattern
-    subMIP.optimize()
+        # Adding the knapsack constraint
+        knapsackCoeffs = {cutWidthVars[i] : self.data['widths'][i] for i in range(len(self.data['widths']))}
+        knapsackCons = subMIP.addCons(knapsackCoeffs, lhs = None, rhs = self.data['rollLength'])
 
-    objval = 1 + subMIP.getObjVal()
+        # Solving the subMIP to generate the most negative reduced cost pattern
+        subMIP.optimize()
 
-    # Adding the column to the master problem
-    if objval < -1e-08:
-        currentNumVar = len(pricerdata.var)
+        objval = 1 + subMIP.getObjVal()
 
-        # Creating new var; must set pricedVar to True
-        newVar = solver.addVar("NewPattern_" + str(currentNumVar), vtype = "C", obj = 1.0, pricedVar = True)
+        # Adding the column to the master problem
+        if objval < -1e-08:
+            currentNumVar = len(self.data['var'])
 
-        # Adding the new variable to the constraints of the master problem
-        newPattern = []
-        for i, c in enumerate(pricerdata.cons):
-            coeff = round(subMIP.getVal(cutWidthVars[i]))
-            solver.addConsCoeff(c.cons, newVar, coeff)
+            # Creating new var; must set pricedVar to True
+            newVar = self.model.addVar("NewPattern_" + str(currentNumVar), vtype = "C", obj = 1.0, pricedVar = True)
 
-            newPattern.append(coeff)
+            # Adding the new variable to the constraints of the master problem
+            newPattern = []
+            for i, c in enumerate(self.data['cons']):
+                coeff = round(subMIP.getVal(cutWidthVars[i]))
+                self.model.addConsCoeff(c.cons, newVar, coeff)
 
-        # Storing the new variable in the pricer data.
-        pricerdata.patterns.append(newPattern)
-        pricerdata.var.append(newVar)
+                newPattern.append(coeff)
 
-    # Freeing the subMIP
-    subMIP.free()
+            # Storing the new variable in the pricer data.
+            self.data['patterns'].append(newPattern)
+            self.data['var'].append(newVar)
 
-    return scip.scip_result.success
+        # Freeing the subMIP
+        subMIP.free()
 
+        print(self.data['var'])
+        print(self.data['cons'])
+        print(self.data['transcons'])
+        print(self.data['widths'])
+        print(self.data['demand'])
+        print(self.data['rollLength'])
+        print(self.data['patterns'])
 
-# The initialisation function for the variable pricer
-def init(solver, pricer):
-    pricerdata = pricer.getPricerData()
-    transformProbCons(solver, pricerdata.cons, pricerdata)
+        return {'result':scip.scip_result.success}
 
-
-# A user defined function to retrieve the transformed constraints of the problem
-def transformProbCons(solver, cons, pricerdata):
-    for i, c in enumerate(cons):
-        pricerdata.cons[i] = solver.getTransformedCons(c)
+    # The initialisation function for the variable pricer to retrieve the transformed constraints of the problem
+    def init(self):
+        for i, c in enumerate(self.data['cons']):
+            self.data['cons'][i] = self.model.getTransformedCons(c)
 
 
 def test_cuttingstock():
     # create solver instance
-    s = scip.Model("CuttingStock")
+    s = Model("CuttingStock")
 
     s.setPresolve(0)
 
     # creating a pricer
-    pricer = scip.Pricer()
+    pricer = CutPricer()
     s.includePricer(pricer, "CuttingStockPricer", "Pricer to identify new cutting stock patterns")
-    scip.pricerdata.name = "Testing"
-
-    # this links the user defined reduced cost function to the functions defined with cython
-    scip.redcost = redcost
-    scip.init = init
 
     # item widths
     widths = [14, 31, 36, 45]
@@ -118,13 +115,14 @@ def test_cuttingstock():
         patterns.append(newPattern)
 
     # Setting the pricer_data for use in the init and redcost functions
-    scip.pricerdata.var = cutPatternVars
-    scip.pricerdata.cons = demandCons
-    scip.pricerdata.transcons = []
-    scip.pricerdata.widths = widths
-    scip.pricerdata.demand = demand
-    scip.pricerdata.rollLength = rollLength
-    scip.pricerdata.patterns = patterns
+    pricer.data = {}
+    pricer.data['var'] = cutPatternVars
+    pricer.data['cons'] = demandCons
+    pricer.data['transcons'] = []
+    pricer.data['widths'] = widths
+    pricer.data['demand'] = demand
+    pricer.data['rollLength'] = rollLength
+    pricer.data['patterns'] = patterns
 
     # solve problem
     s.optimize()
@@ -142,23 +140,22 @@ def test_cuttingstock():
     print('\nResult')
     print('======')
     print('\t\tSol Value', '\tWidths\t', printWidths)
-    for i in range(len(scip.pricerdata.var)):
+    for i in range(len(pricer.data['var'])):
         rollUsage = 0
-        solValue = round(s.getVal(scip.pricerdata.var[i]))
+        solValue = round(s.getVal(pricer.data['var'][i]))
         if solValue > 0:
             outline = 'Pattern_' + str(i) + ':\t' + str(solValue) + '\t\tCuts:\t'
             for j in range(len(widths)):
-                rollUsage += scip.pricerdata.patterns[i][j]*widths[j]
-                widthOutput[j] += scip.pricerdata.patterns[i][j]*solValue
-                outline += str(scip.pricerdata.patterns[i][j]) + '\t'
+                rollUsage += pricer.data['patterns'][i][j]*widths[j]
+                widthOutput[j] += pricer.data['patterns'][i][j]*solValue
+                outline += str(pricer.data['patterns'][i][j]) + '\t'
             outline += 'Usage:' + str(rollUsage)
             print(outline)
 
     print('\t\t\tTotal Output:','\t'.join(str(e) for e in widthOutput))
 
-    print('\n')
-    s.printStatistics()
-
+    #print('\n')
+    #s.printStatistics()
 
 if __name__ == '__main__':
     test_cuttingstock()

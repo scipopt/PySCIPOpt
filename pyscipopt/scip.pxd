@@ -183,44 +183,24 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetDualbound(SCIP* scip)
 
     # Variable pricer functions
-    SCIP_RETCODE SCIPincludePricerBasic(SCIP* scip, SCIP_PRICER** pricerptr, char* name, char* desc,
-                                        int priority, SCIP_Bool delay,
-                                        SCIP_RETCODE (*scipPricerRedcost)(SCIP*, SCIP_PRICER*, SCIP_Real*, SCIP_Bool*, SCIP_RESULT*),
-                                        SCIP_RETCODE (*scipPricerFarkas)(SCIP*, SCIP_PRICER*, SCIP_RESULT*),
-                                        SCIP_PRICERDATA* pricerdata)
+    SCIP_RETCODE SCIPincludePricer(SCIP* scip,
+                                   const char*  name,
+                                   const char*  desc,
+                                   int priority,
+                                   SCIP_Bool delay,
+                                   SCIP_RETCODE (*pricercopy) (SCIP* scip, SCIP_PRICER* pricer, SCIP_Bool* valid),
+                                   SCIP_RETCODE (*pricerfree) (SCIP* scip, SCIP_PRICER* pricer),
+                                   SCIP_RETCODE (*pricerinit) (SCIP* scip, SCIP_PRICER* pricer),
+                                   SCIP_RETCODE (*pricerexit) (SCIP* scip, SCIP_PRICER* pricer),
+                                   SCIP_RETCODE (*pricerinitsol) (SCIP* scip, SCIP_PRICER* pricer),
+                                   SCIP_RETCODE (*pricerexitsol) (SCIP* scip, SCIP_PRICER* pricer),
+                                   SCIP_RETCODE (*pricerredcost) (SCIP* scip, SCIP_PRICER* pricer, SCIP_Real* lowerbound, SCIP_Bool* stopearly, SCIP_RESULT* result),
+                                   SCIP_RETCODE (*pricerfarkas) (SCIP* scip, SCIP_PRICER* pricer, SCIP_RESULT* result),
+                                   SCIP_PRICERDATA* pricerdata)
 
+    SCIP_PRICER* SCIPfindPricer(SCIP* scip, const char* name)
     SCIP_RETCODE SCIPactivatePricer(SCIP* scip, SCIP_PRICER* pricer)
-    SCIP_RETCODE SCIPsetPricerInit(SCIP* scip, SCIP_PRICER* pricer, SCIP_RETCODE (*scipPricerInit)(SCIP*, SCIP_PRICER*))
     SCIP_PRICERDATA* SCIPpricerGetData(SCIP_PRICER* pricer)
-
-    # Separator Methods
-    SCIP_RETCODE SCIPincludeSepaBasic(SCIP* scip,
-                                      SCIP_SEPA** sepa,
-                                      const char* name,
-                                      const char* desc,
-                                      int priority,
-                                      int freq,
-                                      SCIP_Real maxbounddist,
-                                      SCIP_Bool usessubscip,
-                                      SCIP_Bool delay,
-                                      SCIP_RETCODE (*sepaexeclp) (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result),
-                                      SCIP_RETCODE (*sepaexecsol) (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result),
-                                      SCIP_SEPADATA* sepadata)
-
-    # Constraint Handler Methods
-    SCIP_RETCODE SCIPincludeConshdlrBasic(SCIP* scip,
-                                          SCIP_CONSHDLR** conshdlrptr,
-                                          const char* name,
-                                          const char* desc,
-                                          int enfopriority,
-                                          int chckpriority,
-                                          int eagerfreq,
-                                          SCIP_Bool needscons,
-                                          SCIP_RETCODE (*scipConshandlerEnfoLP) (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, SCIP_Bool solinfeasible, SCIP_RESULT* result),
-                                          SCIP_RETCODE (*scipConshandlerEnfoPS) (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, SCIP_Bool solinfeasible, SCIP_Bool objinfeasible, SCIP_RESULT* result),
-                                          SCIP_RETCODE (*scipConshandlercheck) (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, SCIP_SOL* sol, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool printreason, SCIP_RESULT* result),
-                                          SCIP_RETCODE (*scipConshandlerLock) (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, int nlockspos, int nlocksneg),
-                                          SCIP_CONSHDLRDATA* conshdlrdata)
 
     # Numerical Methods
     SCIP_Real SCIPinfinity(SCIP* scip)

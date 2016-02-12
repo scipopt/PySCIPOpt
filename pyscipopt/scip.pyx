@@ -1,15 +1,13 @@
 # Copyright (C) 2012-2013 Robert Schwarz
 #   see file 'LICENSE' for details.
 
-include "pricer.pyx"
-include "separator.pyx"
-include "conshandler.pyx"
-
 from os.path import abspath
 import sys
 
 cimport pyscipopt.scip as scip
 from pyscipopt.linexpr import LinExpr, LinCons
+
+include "pricer.pxi"
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
@@ -849,54 +847,14 @@ cdef class Model:
         """
         n = str_conversion(name)
         d = str_conversion(desc)
-        PY_SCIP_CALL(scip.SCIPincludePricerBasic(self._scip, &(pricer._pricer), n, d,
-                                                 priority, delay,
-                                                 scipPricerRedcost, scipPricerFarkas,
-                                                 pricer._pricerdata))
-        PY_SCIP_CALL(scip.SCIPactivatePricer(self._scip, pricer._pricer))
-        PY_SCIP_CALL(scip.SCIPsetPricerInit(self._scip, pricer._pricer, scipPricerInit))
-
-    def includeSeparator(self, Separator sepa, name, desc,
-                         priority=1, freq=1, maxbounddist=1.0, usesubscip=False, delay=False):
-        """Include a separator.
-
-        Keyword arguments:
-        sepa -- the separator
-        name -- name of the separator
-        desc -- description of the separator
-        priority -- priority of separator (>= 0: before, < 0: after constraint handlers)
-        freq -- frequency for calling separator
-        maxbounddist -- maximal relative distance from current node's dual bound to primal bound
-                        compared to best node's dual bound for applying separation
-        usesubscip -- does the separator use a secondary SCIP instance?
-        delay -- should separator be delayed, if other separators found cuts?
-        """
-        n = str_conversion(name)
-        d = str_conversion(desc)
-        PY_SCIP_CALL(scip.SCIPincludeSepaBasic(self._scip, &(sepa._sepa), n, d,
-                                               priority, freq, maxbounddist, usesubscip, delay,
-                                               scipSepaExecLP, scipSepaExecSol,
-                                               sepa._sepadata))
-
-    def includeConshandler(self, Conshandler conshandler, name, desc, enfopriority=1, chckpriority=1, eagerfreg=-1, needscons=True):
-        """Include a constraint handler
-
-        Keyword arguments:
-        conshandler -- the constraint handler
-        name -- name of the constraint handler
-        desc -- description of the constraint handler
-        enfopriority -- priority of the constraint handler for constraint enforcing
-        chckpriority -- priority of the constraint handler for checking feasibility (and propagation)
-        eagerfreq -- frequency for using all instead of only the useful constraints in separation,
-                     propagation and enforcement, -1 for no eager evaluations, 0 for first only
-        needscons -- should the constraint handler be skipped, if no constraints are available?
-        """
-        n = str_conversion(name)
-        d = str_conversion(desc)
-        PY_SCIP_CALL(scip.SCIPincludeConshdlrBasic(self._scip, &(conshandler._conshandler), n, d,
-                                                   enfopriority, chckpriority, eagerfreg, needscons,
-                                                   scipConshandlerEnfoLP, scipConshandlerEnfoPS, scipConshandlerCheck, scipConshandlerLock,
-                                                   conshandler._conshandlerdata))
+        PY_SCIP_CALL(scip.SCIPincludePricer(self._scip, n, d,
+                                            priority, delay,
+                                            PyPricerCopy, PyPricerFree, PyPricerInit, PyPricerExit, PyPricerInitsol, PyPricerExitsol, PyPricerRedcost, PyPricerFarkas,
+                                            <SCIP_PRICERDATA*><void*>pricer))
+        cdef SCIP_PRICER* scip_pricer
+        scip_pricer = scip.SCIPfindPricer(self._scip, n)
+        PY_SCIP_CALL(scip.SCIPactivatePricer(self._scip, scip_pricer))
+        pricer.model = self
 
     # Solution functions
 
