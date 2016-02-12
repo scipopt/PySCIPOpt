@@ -93,7 +93,7 @@ ext_modules = []
 if usesharedlib:
     ext_modules += [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip.pyx')],
                           #extra_compile_args=['-g', '-O0', '-UNDEBUG'],
-                          language='c++',
+                          #language='c++',
                           include_dirs=[includescip],
                           library_dirs=['lib'],
                           runtime_library_dirs=[os.path.abspath('lib')],
@@ -101,7 +101,7 @@ if usesharedlib:
 else:
     ext_modules += [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip.pyx')],
                           #extra_compile_args=['-g', '-O0', '-UNDEBUG'],
-                          language='c++',
+                          #language='c++',
                           include_dirs=[includescip],
                           extra_objects=[libscipopt],
                           libraries=['readline', 'z', 'gmp', 'ncurses', 'm'])]
