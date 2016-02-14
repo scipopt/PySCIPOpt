@@ -59,14 +59,6 @@ class CutPricer(Pricer):
         # Freeing the subMIP
         subMIP.free()
 
-        print(self.data['var'])
-        print(self.data['cons'])
-        print(self.data['transcons'])
-        print(self.data['widths'])
-        print(self.data['demand'])
-        print(self.data['rollLength'])
-        print(self.data['patterns'])
-
         return {'result':scip.scip_result.success}
 
     # The initialisation function for the variable pricer to retrieve the transformed constraints of the problem
@@ -118,7 +110,6 @@ def test_cuttingstock():
     pricer.data = {}
     pricer.data['var'] = cutPatternVars
     pricer.data['cons'] = demandCons
-    pricer.data['transcons'] = []
     pricer.data['widths'] = widths
     pricer.data['demand'] = demand
     pricer.data['rollLength'] = rollLength
