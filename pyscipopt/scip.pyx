@@ -201,6 +201,9 @@ cdef class Model:
     def freeTransform(self):
         return scip.SCIPfreeTransform(self._scip)
 
+    def printVersion(self):
+        scip.SCIPprintVersion(self._scip, NULL)
+
     #@scipErrorHandler       We'll be able to use decorators when we
     #                        interface the relevant classes (SCIP_VAR, ...)
     cdef _createVarBasic(self, scip.SCIP_VAR** scip_var, name,
