@@ -1,14 +1,17 @@
 import sys, os, readline, glob, platform
 from distutils.core import setup
 from distutils.extension import Extension
-from Cython.Distutils import build_ext
-from Cython.Build import cythonize
+
+cythonize = True
+
+try:
+    from Cython.Distutils import build_ext
+    from Cython.Build import cythonize
+except ImportError:
+    cythonize = False
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
-BASEDIR = os.path.dirname(BASEDIR)
-BASEDIR = os.path.dirname(BASEDIR)
-INCLUDEDIR = os.path.join(BASEDIR,'src')
-BASEDIR = os.path.dirname(BASEDIR)
+INCLUDEDIR = os.path.join(BASEDIR,'../../src')
 
 #identify compiler version
 prefix = "MSC v."
@@ -35,38 +38,27 @@ readline.set_completer_delims(' \t\n;')
 readline.parse_and_bind("tab: complete")
 readline.set_completer(complete)
 
-libscipopt = 'lib/libscipopt.so'
-includescip = 'include/scip'
+extensions = []
+ext = '.pyx' if cythonize else '.c'
 
-
-ext_modules = []
-
-#extensions =  [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip.pyx')],
-                          ## extra_compile_args=['-g', '-O0', '-UNDEBUG'],
-                          #include_dirs=[includescip],
-                          #library_dirs=['lib'],
-                          #runtime_library_dirs=[os.path.abspath('lib')],
-                          #libraries=['scipopt', 'readline', 'z', 'gmp', 'ncurses', 'm'])]
-
-ext_modules += [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip.pyx')],
-                          #extra_compile_args=['-g', '-O0', '-UNDEBUG'],
+extensions = [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip'+ext)],
+                          extra_compile_args=['-UNDEBUG'],
                           include_dirs=[INCLUDEDIR],
                           library_dirs=[LIBDIR],
                           #runtime_library_dirs=[os.path.abspath('lib')],
                           libraries=['spx', 'scip_spx'])]
                           #libraries=['scipopt', 'readline', 'z', 'gmp', 'ncurses', 'm'])]
 
-
-#ext_modules += cythonize(extensions)
+if cythonize:
+    extensions = cythonize(extensions)
 
 setup(
     name = 'pyscipopt',
-    version = '0.2',
+    version = '1.0',
     description = 'wrapper for SCIP in Python',
     author = 'Zuse Institute Berlin',
     author_email = 'scip@zib.de',
-    license = 'MIT',
-    cmdclass = {'build_ext' : build_ext},
-    ext_modules = ext_modules,
+    license = 'ZIB',
+    ext_modules = extensions,
     packages=['pyscipopt']
 )

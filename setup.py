@@ -1,19 +1,24 @@
 import sys, os, readline, glob
 from distutils.core import setup
 from distutils.extension import Extension
-from Cython.Distutils import build_ext
-from Cython.Build import cythonize
+
+cythonize = True
+
+try:
+    from Cython.Distutils import build_ext
+    from Cython.Build import cythonize
+except ImportError:
+    cythonize = False
 
 # defines whether the python interface should link againt a static (.a)
 # or a shared (.so) scipopt library
 usesharedlib = True
-
-includescip = 'include/scip'
-
 if usesharedlib:
     libscipopt = 'lib/libscipopt.so'
 else:
     libscipopt = 'lib/libscipopt.a'
+
+includescip = '../../src'
 
 def complete(text, state):
     return (glob.glob(text+'*')+[None])[state]
@@ -35,18 +40,11 @@ if 'cleanlib' in args:
     if os.path.lexists(libscipopt):
         print('removing '+libscipopt)
         os.remove(libscipopt)
-    if os.path.lexists(includescip):
-        print('removing '+includescip)
-        os.remove(includescip)
     quit()
 
 # completely remove compiled code
 if 'clean' in args:
     compiledcode = 'pyscipopt/scip.c'
-    if os.path.exists(compiledcode):
-        print('removing '+compiledcode)
-        os.remove(compiledcode)
-    compiledcode = 'pyscipopt/scip.cpp'
     if os.path.exists(compiledcode):
         print('removing '+compiledcode)
         os.remove(compiledcode)
@@ -70,52 +68,44 @@ if not os.path.lexists(libscipopt):
 
 # check for missing scip src directory
 if not os.path.lexists(includescip):
-    pathToScip = os.path.abspath(my_input('Please enter path to scip src directory (scipoptsuite/scip/src):\n'))
-    print(pathToScip)
+    includescip = os.path.abspath(my_input('Please enter path to scip src directory (scipoptsuite/scip/src):\n'))
+    print(includescip)
 
-    # create lib directory if necessary
-    if not os.path.exists('include'):
-        os.makedirs('include')
-
-    if not os.path.exists(pathToScip):
-        print('Sorry, the path to scip src directory does not exist')
+    if not os.path.exists(includescip):
+        print('Sorry, the path to SCIP src/ directory does not exist')
         quit()
 
 # create symbolic links to SCIP
 if not os.path.lexists(libscipopt):
     os.symlink(pathToLib, libscipopt)
-if not os.path.lexists(includescip):
-    os.symlink(pathToScip, includescip)
 
-
-ext_modules = []
+extensions = []
+ext = '.pyx' if cythonize else '.c'
 
 if usesharedlib:
-    ext_modules += [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip.pyx')],
-                          #extra_compile_args=['-g', '-O0', '-UNDEBUG'],
-                          #language='c++',
+    extensions = [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip'+ext)],
+                          extra_compile_args=['-UNDEBUG'],
                           include_dirs=[includescip],
                           library_dirs=['lib'],
                           runtime_library_dirs=[os.path.abspath('lib')],
                           libraries=['scipopt', 'readline', 'z', 'gmp', 'ncurses', 'm'])]
 else:
-    ext_modules += [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip.pyx')],
-                          #extra_compile_args=['-g', '-O0', '-UNDEBUG'],
-                          #language='c++',
+    extensions = [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip'+ext)],
+                          extra_compile_args=['-UNDEBUG'],
                           include_dirs=[includescip],
                           extra_objects=[libscipopt],
                           libraries=['readline', 'z', 'gmp', 'ncurses', 'm'])]
 
-#ext_modules += cythonize(extensions)
+if cythonize:
+    extensions = cythonize(extensions)
 
 setup(
     name = 'pyscipopt',
-    version = '0.2',
+    version = '1.0',
     description = 'wrapper for SCIP in Python',
     author = 'Zuse Institute Berlin',
     author_email = 'scip@zib.de',
-    license = 'MIT',
-    cmdclass = {'build_ext' : build_ext},
-    ext_modules = ext_modules,
+    license = 'ZIB',
+    ext_modules = extensions,
     packages=['pyscipopt']
 )
