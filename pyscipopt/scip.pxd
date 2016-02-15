@@ -99,6 +99,15 @@ cdef extern from "scip/scip.h":
     ctypedef struct FILE:
         pass
 
+    ctypedef struct SCIP_READER:
+        pass
+
+    ctypedef struct SCIP_READERDATA:
+        pass
+
+    ctypedef struct SCIP_PROBDATA:
+        pass
+
     ctypedef struct SCIP_PRICER:
         pass
 
@@ -183,7 +192,26 @@ cdef extern from "scip/scip.h":
     # Dual Solution Methods
     SCIP_Real SCIPgetDualbound(SCIP* scip)
 
-    # Variable pricer functions
+    # Reader plugin
+    SCIP_RETCODE SCIPincludeReader(SCIP* scip,
+                                   const char* name,
+                                   const char* desc,
+                                   const char* extension,
+                                   SCIP_RETCODE PyReaderCopy (SCIP* scip, SCIP_READER* reader),
+                                   SCIP_RETCODE PyReaderFree (SCIP* scip, SCIP_READER* reader),
+                                   SCIP_RETCODE PyReaderRead (SCIP* scip, SCIP_READER* reader, const char* file, SCIP_RESULT* result),
+                                   SCIP_RETCODE PyReaderWrite (SCIP* scip, SCIP_READER* reader, FILE* file,
+                                                               const char* name, SCIP_PROBDATA* probdata, SCIP_Bool transformed,
+                                                               SCIP_OBJSENSE objsense, SCIP_Real objscale, SCIP_Real objoffset,
+                                                               SCIP_VAR** vars, int nvars, int nbinvars, int nintvars, int nimplvars, int ncontvars,
+                                                               SCIP_VAR** fixedvars, int nfixedvars, int startnvars,
+                                                               SCIP_CONS** conss, int nconss, int maxnconss, int startnconss,
+                                                               SCIP_Bool genericnames, SCIP_RESULT* result),
+                                   SCIP_READERDATA* readerdata)
+    SCIP_READER* SCIPfindReader(SCIP* scip, const char* name)
+    SCIP_READERDATA* SCIPreaderGetData(SCIP_READER* reader)
+
+    # Variable pricer plugin
     SCIP_RETCODE SCIPincludePricer(SCIP* scip,
                                    const char*  name,
                                    const char*  desc,
@@ -198,7 +226,6 @@ cdef extern from "scip/scip.h":
                                    SCIP_RETCODE (*pricerredcost) (SCIP* scip, SCIP_PRICER* pricer, SCIP_Real* lowerbound, SCIP_Bool* stopearly, SCIP_RESULT* result),
                                    SCIP_RETCODE (*pricerfarkas) (SCIP* scip, SCIP_PRICER* pricer, SCIP_RESULT* result),
                                    SCIP_PRICERDATA* pricerdata)
-
     SCIP_PRICER* SCIPfindPricer(SCIP* scip, const char* name)
     SCIP_RETCODE SCIPactivatePricer(SCIP* scip, SCIP_PRICER* pricer)
     SCIP_PRICERDATA* SCIPpricerGetData(SCIP_PRICER* pricer)

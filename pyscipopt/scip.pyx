@@ -7,7 +7,9 @@ import sys
 cimport pyscipopt.scip as scip
 from pyscipopt.linexpr import LinExpr, LinCons
 
+include "reader.pxi"
 include "pricer.pxi"
+
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
@@ -858,6 +860,21 @@ cdef class Model:
         scip_pricer = scip.SCIPfindPricer(self._scip, n)
         PY_SCIP_CALL(scip.SCIPactivatePricer(self._scip, scip_pricer))
         pricer.model = self
+
+    def includeReader(self, Reader reader, name, desc, extension):
+        """"include a reader.
+
+        Keyword arguments:
+        reader -- the reader
+        name -- the name
+        desc -- the description
+        extension -- file extension that reader processes
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        ext = str_conversion(extension)
+        PY_SCIP_CALL(scip.SCIPincludeReader(self._scip, n, d, ext, PyReaderCopy, PyReaderFree, PyReaderRead, PyReaderWrite, <SCIP_READERDATA*><void*>reader))
+        reader.model = self
 
     # Solution functions
 
