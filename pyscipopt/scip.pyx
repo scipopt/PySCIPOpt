@@ -856,7 +856,7 @@ cdef class Model:
         PY_SCIP_CALL(scip.SCIPincludePricer(self._scip, n, d,
                                             priority, delay,
                                             PyPricerCopy, PyPricerFree, PyPricerInit, PyPricerExit, PyPricerInitsol, PyPricerExitsol, PyPricerRedcost, PyPricerFarkas,
-                                            <SCIP_PRICERDATA*><void*>pricer))
+                                            <SCIP_PRICERDATA*>pricer))
         cdef SCIP_PRICER* scip_pricer
         scip_pricer = scip.SCIPfindPricer(self._scip, n)
         PY_SCIP_CALL(scip.SCIPactivatePricer(self._scip, scip_pricer))
@@ -874,7 +874,7 @@ cdef class Model:
         n = str_conversion(name)
         d = str_conversion(desc)
         ext = str_conversion(extension)
-        PY_SCIP_CALL(scip.SCIPincludeReader(self._scip, n, d, ext, PyReaderCopy, PyReaderFree, PyReaderRead, PyReaderWrite, <SCIP_READERDATA*><void*>reader))
+        PY_SCIP_CALL(scip.SCIPincludeReader(self._scip, n, d, ext, PyReaderCopy, PyReaderFree, PyReaderRead, PyReaderWrite, <SCIP_READERDATA*>reader))
         reader.model = self
 
     def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority, enfopriority, chckpriority, sepafreq, propfreq, eagerfreq,
@@ -907,7 +907,7 @@ cdef class Model:
                                               PyConsEnfolp, PyConsEnfops, PyConsCheck, PyConsProp, PyConsPresol, PyConsResprop, PyConsLock,
                                               PyConsActive, PyConsDeactive, PyConsEnable, PyConsDisable, PyConsDelvars, PyConsPrint, PyConsCopy,
                                               PyConsParse, PyConsGetvars, PyConsGetnvars, PyConsGetdivebdchgs,
-                                              <SCIP_CONSHDLRDATA*><void*>conshdlr))
+                                              <SCIP_CONSHDLRDATA*>conshdlr))
         conshdlr.model = self
 
 
