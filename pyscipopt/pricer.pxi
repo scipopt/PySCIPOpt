@@ -1,4 +1,3 @@
-
 cdef SCIP_RETCODE PyPricerCopy (SCIP* scip, SCIP_PRICER* pricer, SCIP_Bool* valid):
     return SCIP_OKAY
 
@@ -76,7 +75,7 @@ cdef class Pricer:
 
     def redcost(self):
         # this method needs to be implemented by the user
-        return {"result": SCIP_SUCCESS}
+        return {"result": SCIP_DIDNOTRUN}
 
     def farkas(self):
         pass

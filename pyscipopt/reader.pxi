@@ -1,4 +1,3 @@
-
 cdef SCIP_RETCODE PyReaderCopy (SCIP* scip, SCIP_READER* reader):
     return SCIP_OKAY
 

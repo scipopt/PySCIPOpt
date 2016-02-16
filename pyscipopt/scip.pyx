@@ -862,7 +862,7 @@ cdef class Model:
         pricer.model = self
 
     def includeReader(self, Reader reader, name, desc, extension):
-        """"include a reader.
+        """"Include a reader.
 
         Keyword arguments:
         reader -- the reader
