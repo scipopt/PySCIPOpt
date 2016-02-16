@@ -143,7 +143,11 @@ cdef SCIP_RETCODE PyConsLock (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* co
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    PyConshdlr.lock()
+    pyconstraint = Constraint()
+    cdef Cons pycons
+    pycons = pyconstraint.cons
+    pycons._cons = cons
+    PyConshdlr.lock(pyconstraint)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsActive (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):
@@ -293,7 +297,7 @@ cdef class Conshdlr:
     def resprop(self):
         pass
 
-    def lock(self):
+    def lock(self, constraint):
         # this method needs to be implemented by the user
         return {"result": SCIP_DIDNOTRUN}
 
