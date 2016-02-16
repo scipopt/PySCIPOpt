@@ -9,6 +9,7 @@ from pyscipopt.linexpr import LinExpr, LinCons
 
 include "reader.pxi"
 include "pricer.pxi"
+include "conshdlr.pxi"
 
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
@@ -875,6 +876,40 @@ cdef class Model:
         ext = str_conversion(extension)
         PY_SCIP_CALL(scip.SCIPincludeReader(self._scip, n, d, ext, PyReaderCopy, PyReaderFree, PyReaderRead, PyReaderWrite, <SCIP_READERDATA*><void*>reader))
         reader.model = self
+
+    def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority, enfopriority, chckpriority, sepafreq, propfreq, eagerfreq,
+                        maxprerounds, delaysepa, delayprop, needscons, proptiming, presoltiming):
+        """Include a constraint handler
+
+        Keyword arguments:
+        name -- name of constraint handler
+        desc -- description of constraint handler
+        sepapriority -- priority of the constraint handler for separation
+        enfopriority -- priority of the constraint handler for constraint enforcing
+        chckpriority -- priority of the constraint handler for checking feasibility (and propagation)
+        sepafreq -- frequency for separating cuts; zero means to separate only in the root node
+        propfreq -- frequency for propagating domains; zero means only preprocessing propagation
+        eagerfreq -- frequency for using all instead of only the useful constraints in separation,
+                     propagation and enforcement, -1 for no eager evaluations, 0 for first only
+        maxprerounds -- maximal number of presolving rounds the constraint handler participates in (-1: no limit)
+        delaysepa -- should separation method be delayed, if other separators found cuts?
+        delayprop -- should propagation method be delayed, if other propagators found reductions?
+        needscons -- should the constraint handler be skipped, if no constraints are available?
+        proptiming -- positions in the node solving loop where propagation method of constraint handlers should be executed
+        presoltiming -- timing mask of the constraint handler's presolving method
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(scip.SCIPincludeConshdlr(self._scip, n, d, sepapriority, enfopriority, chckpriority, sepafreq, propfreq, eagerfreq,
+                                              maxprerounds, delaysepa, delayprop, needscons, proptiming, presoltiming,
+                                              PyConshdlrCopy, PyConsFree, PyConsInit, PyConsExit, PyConsInitpre, PyConsExitpre,
+                                              PyConsInitsol, PyConsExitsol, PyConsDelete, PyConsTrans, PyConsInitlp, PyConsSepalp, PyConsSepasol,
+                                              PyConsEnfolp, PyConsEnfops, PyConsCheck, PyConsProp, PyConsPresol, PyConsResprop, PyConsLock,
+                                              PyConsActive, PyConsDeactive, PyConsEnable, PyConsDisable, PyConsDelvars, PyConsPrint, PyConsCopy,
+                                              PyConsParse, PyConsGetvars, PyConsGetnvars, PyConsGetdivebdchgs,
+                                              <SCIP_CONSHDLRDATA*><void*>conshdlr))
+        conshdlr.model = self
+
 
     # Solution functions
 

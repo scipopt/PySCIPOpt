@@ -70,10 +70,22 @@ cdef extern from "scip/scip.h":
         SCIP_STATUS_INFORUNBD      = 14
 
     ctypedef enum SCIP_PARAMSETTING:
-        SCIP_PARAMSETTING_DEFAULT = 0
+        SCIP_PARAMSETTING_DEFAULT    = 0
         SCIP_PARAMSETTING_AGGRESSIVE = 1
-        SCIP_PARAMSETTING_FAST = 2
-        SCIP_PARAMSETTING_OFF = 3
+        SCIP_PARAMSETTING_FAST       = 2
+        SCIP_PARAMSETTING_OFF        = 3
+
+    ctypedef enum SCIP_PROPTIMING:
+        SCIP_PROPTIMING_BEFORELP     = 0x001u
+        SCIP_PROPTIMING_DURINGLPLOOP = 0x002u
+        SCIP_PROPTIMING_AFTERLPLOOP  = 0x004u
+        SCIP_PROPTIMING_AFTERLPNODE  = 0x008u
+
+    ctypedef enum SCIP_PRESOLTIMING:
+        SCIP_PRESOLTIMING_NONE       = 0x000u
+        SCIP_PRESOLTIMING_FAST       = 0x002u
+        SCIP_PRESOLTIMING_MEDIUM     = 0x004u
+        SCIP_PRESOLTIMING_EXHAUSTIVE = 0x008u
 
     ctypedef bint SCIP_Bool
 
@@ -127,6 +139,18 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_CONSDATA:
+        pass
+
+    ctypedef struct SCIP_DIVESET:
+        pass
+
+    ctypedef struct SCIP_HASHMAP:
+        pass
+
+    ctypedef struct SCIP_BOUNDTYPE:
+        pass
+
+    ctypedef struct SCIP_BDCHGIDX:
         pass
 
     # General SCIP Methods
@@ -229,6 +253,76 @@ cdef extern from "scip/scip.h":
     SCIP_PRICER* SCIPfindPricer(SCIP* scip, const char* name)
     SCIP_RETCODE SCIPactivatePricer(SCIP* scip, SCIP_PRICER* pricer)
     SCIP_PRICERDATA* SCIPpricerGetData(SCIP_PRICER* pricer)
+
+    # Constraint handler plugin
+    SCIP_RETCODE SCIPincludeConshdlr(SCIP* scip,
+                                     const char* name,
+                                     const char* desc,
+                                     int sepapriority,
+                                     int enfopriority,
+                                     int chckpriority,
+                                     int sepafreq,
+                                     int propfreq,
+                                     int eagerfreq,
+                                     int maxprerounds,
+                                     SCIP_Bool delaysepa,
+                                     SCIP_Bool delayprop,
+                                     SCIP_Bool needscons,
+                                     SCIP_PROPTIMING proptiming,
+                                     SCIP_PRESOLTIMING presoltiming,
+                                     SCIP_RETCODE PyConshdlrCopy (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_Bool* valid),
+                                     SCIP_RETCODE PyConsFree (SCIP* scip, SCIP_CONSHDLR* conshdlr),
+                                     SCIP_RETCODE PyConsInit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss),
+                                     SCIP_RETCODE PyConsExit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss),
+                                     SCIP_RETCODE PyConsInitpre (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss),
+                                     SCIP_RETCODE PyConsExitpre (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss),
+                                     SCIP_RETCODE PyConsInitsol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss),
+                                     SCIP_RETCODE PyConsExitsol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, SCIP_Bool restart),
+                                     SCIP_RETCODE PyConsDelete (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SCIP_CONSDATA** consdata),
+                                     SCIP_RETCODE PyConsTrans (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* sourcecons, SCIP_CONS** targetcons),
+                                     SCIP_RETCODE PyConsInitlp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss),
+                                     SCIP_RETCODE PyConsSepalp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss,
+                                                                SCIP_RESULT* result),
+                                     SCIP_RETCODE PyConsSepasol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, SCIP_SOL* sol,
+                                                                 SCIP_RESULT* result),
+                                     SCIP_RETCODE PyConsEnfolp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss,
+                                                                SCIP_Bool solinfeasible, SCIP_RESULT* result),
+                                     SCIP_RETCODE PyConsEnfops (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss,
+                                                                SCIP_Bool solinfeasible, SCIP_Bool objinfeasible, SCIP_RESULT* result),
+                                     SCIP_RETCODE PyConsCheck (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, SCIP_SOL* sol, SCIP_Bool checkintegrality,
+                                                               SCIP_Bool checklprows, SCIP_Bool printreason, SCIP_RESULT* result),
+                                     SCIP_RETCODE PyConsProp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, int nmarkedconss,
+                                                              SCIP_PROPTIMING proptiming, SCIP_RESULT* result),
+                                     SCIP_RETCODE PyConsPresol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nrounds,
+                                                                SCIP_PRESOLTIMING presoltiming, int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes,
+                                                                int nnewchgbds, int nnewholes, int nnewdelconss, int nnewaddconss, int nnewupgdconss,
+                                                                int nnewchgcoefs, int nnewchgsides, int* nfixedvars, int* naggrvars, int* nchgvartypes,
+                                                                int* nchgbds, int* naddholes, int* ndelconss, int* naddconss, int* nupgdconss, int* nchgcoefs,
+                                                                int* nchgsides, SCIP_RESULT* result),
+                                     SCIP_RETCODE PyConsResprop (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SCIP_VAR* infervar, int inferinfo,
+                                                                 SCIP_BOUNDTYPE boundtype, SCIP_BDCHGIDX* bdchgidx, SCIP_Real relaxedbd, SCIP_RESULT* result),
+                                     SCIP_RETCODE PyConsLock (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, int nlockspos, int nlocksneg),
+                                     SCIP_RETCODE PyConsActive (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons),
+                                     SCIP_RETCODE PyConsDeactive (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons),
+                                     SCIP_RETCODE PyConsEnable (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons),
+                                     SCIP_RETCODE PyConsDisable (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons),
+                                     SCIP_RETCODE PyConsDelvars (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss),
+                                     SCIP_RETCODE PyConsPrint (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, FILE* file),
+                                     SCIP_RETCODE PyConsCopy (SCIP* scip, SCIP_CONS** cons, const char* name, SCIP* sourcescip, SCIP_CONSHDLR* sourceconshdlr,
+                                                              SCIP_CONS* sourcecons, SCIP_HASHMAP* varmap, SCIP_HASHMAP* consmap, SCIP_Bool initial,
+                                                              SCIP_Bool separate, SCIP_Bool enforce, SCIP_Bool check, SCIP_Bool propagate, SCIP_Bool local,
+                                                              SCIP_Bool modifiable, SCIP_Bool dynamic, SCIP_Bool removable, SCIP_Bool stickingatnode,
+                                                              SCIP_Bool isglobal, SCIP_Bool* valid),
+                                     SCIP_RETCODE PyConsParse (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** cons, const char* name, const char* str,
+                                                               SCIP_Bool initial, SCIP_Bool separate, SCIP_Bool enforce, SCIP_Bool check, SCIP_Bool propagate,
+                                                               SCIP_Bool local, SCIP_Bool modifiable, SCIP_Bool dynamic, SCIP_Bool removable,
+                                                               SCIP_Bool stickingatnode, SCIP_Bool* success),
+                                     SCIP_RETCODE PyConsGetvars (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SCIP_VAR** vars, int varssize, SCIP_Bool* success),
+                                     SCIP_RETCODE PyConsGetnvars (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, int* nvars, SCIP_Bool* success),
+                                     SCIP_RETCODE PyConsGetdivebdchgs (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_DIVESET* diveset, SCIP_SOL* sol,
+                                                                       SCIP_Bool* success, SCIP_Bool* infeasible),
+                                     SCIP_CONSHDLRDATA* conshdlrdata)
+    SCIP_CONSHDLRDATA* SCIPconshdlrGetData(SCIP_CONSHDLR* conshdlr)
 
     # Numerical Methods
     SCIP_Real SCIPinfinity(SCIP* scip)
