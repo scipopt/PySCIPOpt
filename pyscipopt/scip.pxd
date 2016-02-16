@@ -126,6 +126,18 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_PRICERDATA:
         pass
 
+    ctypedef struct SCIP_PROP:
+        pass
+
+    ctypedef struct SCIP_PROPDATA:
+        pass
+
+    ctypedef struct SCIP_PROPTIMING:
+        pass
+
+    ctypedef struct SCIP_PRESOLTIMING:
+        pass
+
     ctypedef struct SCIP_SEPA:
         pass
 
@@ -303,6 +315,37 @@ cdef extern from "scip/scip.h":
                                      SCIP_RETCODE (*consgetdivebdchgs) (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_DIVESET* diveset, SCIP_SOL* sol, SCIP_Bool* success, SCIP_Bool* infeasible),
                                      SCIP_CONSHDLRDATA* conshdlrdata)
     SCIP_CONSHDLRDATA* SCIPconshdlrGetData(SCIP_CONSHDLR* conshdlr)
+
+    # Propagator plugin
+    SCIP_RETCODE SCIPincludeProp(SCIP* scip,
+                                 const char*  name,
+                                 const char*  desc,
+                                 int priority,
+                                 int freq,
+                                 SCIP_Bool delay,
+                                 SCIP_PROPTIMING timingmask,
+                                 int presolpriority,
+                                 int presolmaxrounds,
+                                 SCIP_PRESOLTIMING presoltiming,
+                                 SCIP_RETCODE (*propcopy) (SCIP* scip, SCIP_PROP* prop),
+                                 SCIP_RETCODE (*propfree) (SCIP* scip, SCIP_PROP* prop),
+                                 SCIP_RETCODE (*propinit) (SCIP* scip, SCIP_PROP* prop),
+                                 SCIP_RETCODE (*propexit) (SCIP* scip, SCIP_PROP* prop),
+                                 SCIP_RETCODE (*propinitpre) (SCIP* scip, SCIP_PROP* prop),
+                                 SCIP_RETCODE (*propexitpre) (SCIP* scip, SCIP_PROP* prop),
+                                 SCIP_RETCODE (*propinitsol) (SCIP* scip, SCIP_PROP* prop),
+                                 SCIP_RETCODE (*propexitsol) (SCIP* scip, SCIP_PROP* prop, SCIP_Bool restart),
+                                 SCIP_RETCODE (*proppresol)  (SCIP* scip, SCIP_PROP* prop, int nrounds, SCIP_PRESOLTIMING presoltiming,
+                                                               int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes, int nnewchgbds, int nnewholes,
+                                                               int nnewdelconss, int nnewaddconss, int nnewupgdconss, int nnewchgcoefs, int nnewchgsides,
+                                                               int* nfixedvars, int* naggrvars, int* nchgvartypes, int* nchgbds, int* naddholes,
+                                                               int* ndelconss, int* naddconss, int* nupgdconss, int* nchgcoefs, int* nchgsides, SCIP_RESULT* result),
+                                 SCIP_RETCODE (*propexec) (SCIP* scip, SCIP_PROP* prop, SCIP_PROPTIMING proptiming, SCIP_RESULT* result),
+                                 SCIP_RETCODE (*propresprop) (SCIP* scip, SCIP_PROP* prop, SCIP_VAR* infervar, int inferinfo,
+                                                               SCIP_BOUNDTYPE boundtype, SCIP_BDCHGIDX* bdchgidx, SCIP_Real relaxedbd, SCIP_RESULT* result),
+                                 SCIP_PROPDATA*  propdata)
+
+    SCIP_PROPDATA* SCIPpropGetData (SCIP_PROP* prop)
 
     # Numerical Methods
     SCIP_Real SCIPinfinity(SCIP* scip)

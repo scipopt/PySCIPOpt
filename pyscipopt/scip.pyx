@@ -10,7 +10,7 @@ from pyscipopt.linexpr import LinExpr, LinCons
 include "reader.pxi"
 include "pricer.pxi"
 include "conshdlr.pxi"
-
+include "propagator.pxi"
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
@@ -910,6 +910,32 @@ cdef class Model:
                                               <SCIP_CONSHDLRDATA*>conshdlr))
         conshdlr.model = self
 
+    def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
+                    proptiming, presoltiming, priority=1, freq=1, delay=True):
+        """Include a propagator.
+
+        Keyword arguments:
+        prop -- the propagator
+        name -- the name
+        desc -- the description
+        priority -- priority of the propagator
+        freq -- frequency for calling propagator
+        delay -- should propagator be delayed if other propagators have found reductions?
+        presolpriority -- presolving priority of the propagator (>= 0: before, < 0: after constraint handlers)
+        presolmaxrounds --maximal number of presolving rounds the propagator participates in (-1: no limit)
+        proptiming -- positions in the node solving loop where propagation method of constraint handlers should be executed
+        presoltiming -- timing mask of the constraint handler's presolving method
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(scip.SCIPincludeProp(self._scip, n, d,
+                                          priority, freq, delay,
+                                          proptiming, presolpriority, presolmaxrounds,
+                                          presoltiming, PyPropCopy, PyPropFree, PyPropInit, PyPropExit,
+                                          PyPropInitpre, PyPropExitpre, PyPropInitsol, PyPropExitsol,
+                                          PyPropPresol, PyPropExec, PyPropResProp,
+                                          <SCIP_PROPDATA*> prop))
+        prop.model = self
 
     # Solution functions
 
