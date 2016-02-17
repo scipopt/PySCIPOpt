@@ -123,7 +123,6 @@ cdef class Var:
 
 class Variable(LinExpr):
     """Is a linear expression and has SCIP_VAR*"""
-
     def __init__(self, name=None):
         self.var = Var()
         self.name = name
@@ -141,17 +140,27 @@ class Variable(LinExpr):
     def __repr__(self):
         return self.name
 
+cdef pythonizeVar(scip.SCIP_VAR* scip_var, name):
+    var = Variable(name)
+    cdef Var v
+    v = var.var
+    v._var = scip_var
+    return var
 
 cdef class Cons:
     cdef scip.SCIP_CONS* _cons
 
 class Constraint:
-
     def __init__(self, name=None):
         self.cons = Cons()
         self.name = name
 
-
+cdef pythonizeCons(scip.SCIP_CONS* scip_cons, name):
+    cons = Constraint(name)
+    cdef Cons c
+    c = cons.cons
+    c._cons = scip_cons
+    return cons
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
@@ -281,6 +290,9 @@ cdef class Model:
     cdef _releaseVar(self, scip.SCIP_VAR* var):
         PY_SCIP_CALL(scip.SCIPreleaseVar(self._scip, &var))
 
+    cdef _releaseCons(self, scip.SCIP_CONS* cons):
+        PY_SCIP_CALL(scip.SCIPreleaseCons(self._scip, &cons))
+
 
     # Objective function
 
@@ -368,7 +380,6 @@ cdef class Model:
         if ub is None:
             ub = scip.SCIPinfinity(self._scip)
         cdef scip.SCIP_VAR* scip_var
-        cdef Var v
         if vtype in ['C', 'CONTINUOUS']:
             self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_CONTINUOUS)
         elif vtype in ['B', 'BINARY']:
@@ -382,12 +393,9 @@ cdef class Model:
             self._addPricedVar(scip_var)
         else:
             self._addVar(scip_var)
-        var = Variable(name)
-        v = var.var
-        v._var = scip_var
 
         self._releaseVar(scip_var)
-        return var
+        return pythonizeVar(scip_var, name)
 
     def releaseVar(self, var):
         """Release the variable.
@@ -533,12 +541,9 @@ cdef class Model:
             _var = <scip.SCIP_VAR*>v._var
             self._addCoefLinear(scip_cons, _var, coeff)
         self._addCons(scip_cons)
-        cons = Constraint(name)
-        cdef Cons c
-        c = cons.cons
-        c._cons = scip_cons
+        self._releaseCons(scip_cons)
 
-        return cons
+        return pythonizeCons(scip_cons, name)
 
     def _addLinCons(self, lincons, **kwargs):
         """Add object of class LinCons."""
