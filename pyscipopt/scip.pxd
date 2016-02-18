@@ -329,13 +329,13 @@ cdef extern from "scip/scip.h":
                                    int priority,
                                    int maxrounds,
                                    SCIP_PRESOLTIMING timing,
-                                   SCIP_RETCODE PyPresolCopy (SCIP* scip, SCIP_PRESOL* presol),
-                                   SCIP_RETCODE PyPresolFree (SCIP* scip, SCIP_PRESOL* presol),
-                                   SCIP_RETCODE PyPresolInit (SCIP* scip, SCIP_PRESOL* presol),
-                                   SCIP_RETCODE PyPresolExit (SCIP* scip, SCIP_PRESOL* presol),
-                                   SCIP_RETCODE PyPresolInitpre (SCIP* scip, SCIP_PRESOL* presol),
-                                   SCIP_RETCODE PyPresolExitpre (SCIP* scip, SCIP_PRESOL* presol),
-                                   SCIP_RETCODE PyPresolExec (SCIP* scip, SCIP_PRESOL* presol, int nrounds, SCIP_PRESOLTIMING presoltiming, int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes, int nnewchgbds, int nnewholes, int nnewdelconss, int nnewaddconss, int nnewupgdconss, int nnewchgcoefs, int nnewchgsides, int* nfixedvars, int* naggrvars, int* nchgvartypes, int* nchgbds, int* naddholes, int* ndelconss, int* naddconss, int* nupgdconss, int* nchgcoefs, int* nchgsides, SCIP_RESULT* result),
+                                   SCIP_RETCODE (*presolcopy) (SCIP* scip, SCIP_PRESOL* presol),
+                                   SCIP_RETCODE (*presolfree) (SCIP* scip, SCIP_PRESOL* presol),
+                                   SCIP_RETCODE (*presolinit) (SCIP* scip, SCIP_PRESOL* presol),
+                                   SCIP_RETCODE (*presolexit) (SCIP* scip, SCIP_PRESOL* presol),
+                                   SCIP_RETCODE (*presolinitpre) (SCIP* scip, SCIP_PRESOL* presol),
+                                   SCIP_RETCODE (*presolexitpre) (SCIP* scip, SCIP_PRESOL* presol),
+                                   SCIP_RETCODE (*presolexec) (SCIP* scip, SCIP_PRESOL* presol, int nrounds, SCIP_PRESOLTIMING presoltiming, int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes, int nnewchgbds, int nnewholes, int nnewdelconss, int nnewaddconss, int nnewupgdconss, int nnewchgcoefs, int nnewchgsides, int* nfixedvars, int* naggrvars, int* nchgvartypes, int* nchgbds, int* naddholes, int* ndelconss, int* naddconss, int* nupgdconss, int* nchgcoefs, int* nchgsides, SCIP_RESULT* result),
                                    SCIP_PRESOLDATA* presoldata)
     SCIP_PRESOLDATA* SCIPpresolGetData(SCIP_PRESOL* presol)
 
@@ -348,14 +348,14 @@ cdef extern from "scip/scip.h":
                                  SCIP_Real maxbounddist,
                                  SCIP_Bool usessubscip,
                                  SCIP_Bool delay,
-                                 SCIP_RETCODE PySepaCopy (SCIP* scip, SCIP_SEPA* sepa),
-                                 SCIP_RETCODE PySepaFree (SCIP* scip, SCIP_SEPA* sepa),
-                                 SCIP_RETCODE PySepaInit (SCIP* scip, SCIP_SEPA* sepa),
-                                 SCIP_RETCODE PySepaExit (SCIP* scip, SCIP_SEPA* sepa),
-                                 SCIP_RETCODE PySepaInitsol (SCIP* scip, SCIP_SEPA* sepa),
-                                 SCIP_RETCODE PySepaExitsol (SCIP* scip, SCIP_SEPA* sepa),
-                                 SCIP_RETCODE PySepaExeclp (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result),
-                                 SCIP_RETCODE PySepaExecsol (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result),
+                                 SCIP_RETCODE (*sepacopy) (SCIP* scip, SCIP_SEPA* sepa),
+                                 SCIP_RETCODE (*sepafree) (SCIP* scip, SCIP_SEPA* sepa),
+                                 SCIP_RETCODE (*sepainit) (SCIP* scip, SCIP_SEPA* sepa),
+                                 SCIP_RETCODE (*sepaexit) (SCIP* scip, SCIP_SEPA* sepa),
+                                 SCIP_RETCODE (*sepainitsol) (SCIP* scip, SCIP_SEPA* sepa),
+                                 SCIP_RETCODE (*sepaexitsol) (SCIP* scip, SCIP_SEPA* sepa),
+                                 SCIP_RETCODE (*sepaexeclp) (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result),
+                                 SCIP_RETCODE (*sepaexecsol) (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result),
                                  SCIP_SEPADATA* sepadata)
     SCIP_SEPADATA* SCIPsepaGetData(SCIP_SEPA* sepa)
 
