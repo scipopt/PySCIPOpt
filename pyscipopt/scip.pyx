@@ -10,7 +10,10 @@ from pyscipopt.linexpr import LinExpr, LinCons
 include "reader.pxi"
 include "pricer.pxi"
 include "conshdlr.pxi"
+include "presol.pxi"
+include "sepa.pxi"
 include "propagator.pxi"
+
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
@@ -914,6 +917,41 @@ cdef class Model:
                                               PyConsParse, PyConsGetvars, PyConsGetnvars, PyConsGetdivebdchgs,
                                               <SCIP_CONSHDLRDATA*>conshdlr))
         conshdlr.model = self
+
+    def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing):
+        """Include a presolver
+
+        Keyword arguments:
+        name         -- name of presolver
+        desc         -- description of presolver
+        priority     -- priority of the presolver (>= 0: before, < 0: after constraint handlers)
+        maxrounds    -- maximal number of presolving rounds the presolver participates in (-1: no limit)
+        timing       -- timing mask of the presolver
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(scip.SCIPincludePresol(self._scip, n, d, priority, maxrounds, timing,
+           PyPresolCopy, PyPresolFree, PyPresolInit, PyPresolExit, PyPresolInitpre, PyPresolExitpre, PyPresolExec, <SCIP_PRESOLDATA*>presol))
+        presol.model = self
+
+    def includeSepa(self, Sepa sepa, name, desc, priority, freq, maxbounddist, usessubscip, delay):
+        """Include a separator
+
+        Keyword arguments:
+        name         -- name of separator
+        desc         -- description of separator
+        priority     -- priority of separator (>= 0: before, < 0: after constraint handlers)
+        freq         -- frequency for calling separator
+        maxbounddist -- maximal relative distance from current node's dual bound to primal bound compared
+                        to best node's dual bound for applying separation
+        usessubscip  -- does the separator use a secondary SCIP instance?
+        delay        -- should separator be delayed, if other separators found cuts?
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(scip.SCIPincludeSepa(self._scip, n, d, priority, freq, maxbounddist, usessubscip, delay,
+PySepaCopy, PySepaFree, PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, PySepaExeclp, PySepaExecsol, <SCIP_SEPADATA*>sepa))
+        sepa.model = self
 
     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
                     proptiming, presoltiming, priority=1, freq=1, delay=True):

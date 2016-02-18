@@ -138,6 +138,12 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_PRESOLTIMING:
         pass
 
+    ctypedef struct SCIP_PRESOL:
+        pass
+
+    ctypedef struct SCIP_PRESOLDATA:
+        pass
+
     ctypedef struct SCIP_SEPA:
         pass
 
@@ -315,6 +321,43 @@ cdef extern from "scip/scip.h":
                                      SCIP_RETCODE (*consgetdivebdchgs) (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_DIVESET* diveset, SCIP_SOL* sol, SCIP_Bool* success, SCIP_Bool* infeasible),
                                      SCIP_CONSHDLRDATA* conshdlrdata)
     SCIP_CONSHDLRDATA* SCIPconshdlrGetData(SCIP_CONSHDLR* conshdlr)
+
+    # Presolve plugin
+    SCIP_RETCODE SCIPincludePresol(SCIP* scip,
+                                   const char* name,
+                                   const char* desc,
+                                   int priority,
+                                   int maxrounds,
+                                   SCIP_PRESOLTIMING timing,
+                                   SCIP_RETCODE PyPresolCopy (SCIP* scip, SCIP_PRESOL* presol),
+                                   SCIP_RETCODE PyPresolFree (SCIP* scip, SCIP_PRESOL* presol),
+                                   SCIP_RETCODE PyPresolInit (SCIP* scip, SCIP_PRESOL* presol),
+                                   SCIP_RETCODE PyPresolExit (SCIP* scip, SCIP_PRESOL* presol),
+                                   SCIP_RETCODE PyPresolInitpre (SCIP* scip, SCIP_PRESOL* presol),
+                                   SCIP_RETCODE PyPresolExitpre (SCIP* scip, SCIP_PRESOL* presol),
+                                   SCIP_RETCODE PyPresolExec (SCIP* scip, SCIP_PRESOL* presol, int nrounds, SCIP_PRESOLTIMING presoltiming, int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes, int nnewchgbds, int nnewholes, int nnewdelconss, int nnewaddconss, int nnewupgdconss, int nnewchgcoefs, int nnewchgsides, int* nfixedvars, int* naggrvars, int* nchgvartypes, int* nchgbds, int* naddholes, int* ndelconss, int* naddconss, int* nupgdconss, int* nchgcoefs, int* nchgsides, SCIP_RESULT* result),
+                                   SCIP_PRESOLDATA* presoldata)
+    SCIP_PRESOLDATA* SCIPpresolGetData(SCIP_PRESOL* presol)
+
+    # Separator plugin
+    SCIP_RETCODE SCIPincludeSepa(SCIP* scip,
+                                 const char* name,
+                                 const char* desc,
+                                 int priority,
+                                 int freq,
+                                 SCIP_Real maxbounddist,
+                                 SCIP_Bool usessubscip,
+                                 SCIP_Bool delay,
+                                 SCIP_RETCODE PySepaCopy (SCIP* scip, SCIP_SEPA* sepa),
+                                 SCIP_RETCODE PySepaFree (SCIP* scip, SCIP_SEPA* sepa),
+                                 SCIP_RETCODE PySepaInit (SCIP* scip, SCIP_SEPA* sepa),
+                                 SCIP_RETCODE PySepaExit (SCIP* scip, SCIP_SEPA* sepa),
+                                 SCIP_RETCODE PySepaInitsol (SCIP* scip, SCIP_SEPA* sepa),
+                                 SCIP_RETCODE PySepaExitsol (SCIP* scip, SCIP_SEPA* sepa),
+                                 SCIP_RETCODE PySepaExeclp (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result),
+                                 SCIP_RETCODE PySepaExecsol (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result),
+                                 SCIP_SEPADATA* sepadata)
+    SCIP_SEPADATA* SCIPsepaGetData(SCIP_SEPA* sepa)
 
     # Propagator plugin
     SCIP_RETCODE SCIPincludeProp(SCIP* scip,
