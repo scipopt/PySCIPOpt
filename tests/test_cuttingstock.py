@@ -48,7 +48,7 @@ class CutPricer(Pricer):
             newPattern = []
             for i, c in enumerate(self.data['cons']):
                 coeff = round(subMIP.getVal(cutWidthVars[i]))
-                self.model.addConsCoeff(c.cons, newVar, coeff)
+                self.model.addConsCoeff(c, newVar, coeff)
 
                 newPattern.append(coeff)
 
