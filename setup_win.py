@@ -11,7 +11,7 @@ except ImportError:
     cythonize = False
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
-INCLUDEDIR = os.path.join(BASEDIR,'../../src')
+INCLUDEDIR = os.path.join(BASEDIR,'..\..\src')
 
 #identify compiler version
 prefix = "MSC v."
@@ -24,9 +24,9 @@ majorVersion = int(s[:-2]) - 6
 minorVersion = int(s[2:3]) / 10.0
 
 if platform.architecture()[0].find('64')>=0:
-    LIBDIR  = os.path.join(BASEDIR,'vc'+str(majorVersion),'scip_spx','x64','Release')
+    LIBDIR  = os.path.join(BASEDIR,'..','..','build','Release')
 else:
-    LIBDIR  = os.path.join(BASEDIR,'vc'+str(majorVersion),'scip_spx','Release')
+    LIBDIR  = os.path.join(BASEDIR,'..','..','build','Release')
 print('BASEDIR='+ BASEDIR)
 print('INCLUDEDIR='+ INCLUDEDIR)
 print('LIBDIR='+ LIBDIR)
@@ -46,7 +46,7 @@ extensions = [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip'+ext)
                           include_dirs=[INCLUDEDIR],
                           library_dirs=[LIBDIR],
                           #runtime_library_dirs=[os.path.abspath('lib')],
-                          libraries=['spx', 'scip_spx'])]
+                          libraries=['soplex', 'scipopt'])]
                           #libraries=['scipopt', 'readline', 'z', 'gmp', 'ncurses', 'm'])]
 
 if cythonize:
