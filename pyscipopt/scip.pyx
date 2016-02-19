@@ -14,6 +14,8 @@ include "presol.pxi"
 include "sepa.pxi"
 include "propagator.pxi"
 include "heuristic.pxi"
+include "nodesel.pxi"
+include "branchrule.pxi"
 
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
@@ -982,7 +984,7 @@ PySepaCopy, PySepaFree, PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, Py
         prop.model = self
 
     def includeHeur(self, Heur heur, name, desc, dispchar, priority, freqofs,
-                    maxdepth, timingmask, usessubscip, heurdata, freq=1):
+                    maxdepth, timingmask, usessubscip, freq=1):
         """Include a primal heuristic.
 
         Keyword arguments:
@@ -996,7 +998,6 @@ PySepaCopy, PySepaFree, PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, Py
         maxdepth -- maximal depth level to call heuristic at (-1: no limit)
         timingmask -- positions in the node solving loop where heuristic should be executed; see definition of SCIP_HeurTiming for possible values
         usessubscip -- does the heuristic use a secondary SCIP instance?
-        heurdata -- primal heuristic data
         """
         nam = str_conversion(name)
         des = str_conversion(desc)
@@ -1008,6 +1009,48 @@ PySepaCopy, PySepaFree, PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, Py
                                           PyHeurInitsol, PyHeurExitsol, PyHeurExec,
                                           <SCIP_HEURDATA*> heur))
         heur.model = self
+
+
+    def includeNodesel(self, Nodesel nodesel, name, desc, stdpriority, memsavepriority):
+        """Include a node selector.
+
+        Keyword arguments:
+        nodesel -- the node selector
+        name -- the name of the node selector
+        desc -- the description
+        stdpriority -- priority of the node selector in standard mode
+        memsavepriority -- priority of the node selector in memory saving mode
+        """
+
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        PY_SCIP_CALL(scip.SCIPincludeNodesel(self._scip, nam, des,
+                                             stdpriority, memsavepriority,
+                                             PyNodeselCopy, PyNodeselFree, PyNodeselInit, PyNodeselExit,
+                                             PyNodeselInitsol, PyNodeselExitsol, PyNodeselSelect, PyNodeselComp,
+                                             <SCIP_NODESELDATA*> nodesel))
+        nodesel.model = self
+
+    def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
+        """Include a branching rule.
+
+        Keyword arguments:
+        branchrule -- the branching rule
+        name -- name of branching rule
+        desc --description of branching rule
+        priority --priority of the branching rule
+        maxdepth -- maximal depth level, up to which this branching rule should be used (or -1)
+        maxbounddist -- maximal relative distance from current node's dual bound to primal bound compared to best node's dual bound for applying branching rule (0.0: only on current best node, 1.0: on all nodes)
+        """
+
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        PY_SCIP_CALL(scip.SCIPincludeBranchrule(self._scip, nam, des,
+                                          maxdepth, maxdepth, maxbounddist,
+                                          PyBranchruleCopy, PyBranchruleFree, PyBranchruleInit, PyBranchruleExit,
+                                          PyBranchruleInitsol, PyBranchruleExitsol, PyBranchruleExeclp, PyBranchruleExecext,
+                                          PyBranchruleExecps, <SCIP_BRANCHRULEDATA*> branchrule))
+        branchrule.model = self
 
     # Solution functions
 

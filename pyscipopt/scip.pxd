@@ -150,6 +150,24 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_HEURDATA:
         pass
 
+    ctypedef struct SCIP_NODE:
+        pass
+
+    ctypedef struct SCIP_NODESEL:
+        pass
+
+    ctypedef struct SCIP_NODESELDATA:
+        pass
+
+    ctypedef struct SCIP_BRANCHRULE:
+        pass
+
+    ctypedef struct SCIP_BRANCHRULEDATA:
+        pass
+
+    ctypedef struct SCIP_PRESOL:
+        pass
+
     ctypedef struct SCIP_HEURTIMING:
         pass
 
@@ -420,6 +438,41 @@ cdef extern from "scip/scip.h":
                                  SCIP_HEURDATA* heurdata)
     SCIP_HEURDATA* SCIPheurGetData(SCIP_HEUR* heur)
 
+    # Node selection plugin
+    SCIP_RETCODE SCIPincludeNodesel(SCIP* scip,
+                                    const char* name,
+                                    const char* desc,
+                                    int stdpriority,
+                                    int memsavepriority,
+                                    SCIP_RETCODE (*nodeselcopy) (SCIP* scip, SCIP_NODESEL* nodesel),
+                                    SCIP_RETCODE (*nodeselfree) (SCIP* scip, SCIP_NODESEL* nodesel),
+                                    SCIP_RETCODE (*nodeselinit) (SCIP* scip, SCIP_NODESEL* nodesel),
+                                    SCIP_RETCODE (*nodeselexit) (SCIP* scip, SCIP_NODESEL* nodesel),
+                                    SCIP_RETCODE (*nodeselinitsol) (SCIP* scip, SCIP_NODESEL* nodesel),
+                                    SCIP_RETCODE (*nodeselexitsol) (SCIP* scip, SCIP_NODESEL* nodesel),
+                                    SCIP_RETCODE (*nodeselselect) (SCIP* scip, SCIP_NODESEL* nodesel, SCIP_NODE** selnode),
+                                    int (*nodeselcomp) (SCIP* scip, SCIP_NODESEL* nodesel,  SCIP_NODE* node1, SCIP_NODE* node2),
+                                    SCIP_NODESELDATA* nodeseldata)
+    SCIP_NODESELDATA* SCIPnodeselGetData(SCIP_NODESEL* nodesel)
+
+    # Branching rule plugin
+    SCIP_RETCODE SCIPincludeBranchrule(SCIP* scip,
+                                       const char* name,
+                                       const char* desc,
+                                       int priority,
+                                       int maxdepth,
+                                       SCIP_Real maxbounddist,
+                                       SCIP_RETCODE (*branchrulecopy) (SCIP* scip, SCIP_BRANCHRULE* branchrule),
+                                       SCIP_RETCODE (*branchrulefree) (SCIP* scip, SCIP_BRANCHRULE* branchrule),
+                                       SCIP_RETCODE (*branchruleinit) (SCIP* scip, SCIP_BRANCHRULE* branchrule),
+                                       SCIP_RETCODE (*branchruleexit) (SCIP* scip, SCIP_BRANCHRULE* branchrule),
+                                       SCIP_RETCODE (*branchruleinitsol) (SCIP* scip, SCIP_BRANCHRULE* branchrule),
+                                       SCIP_RETCODE (*branchruleexitsol) (SCIP* scip, SCIP_BRANCHRULE* branchrule),
+                                       SCIP_RETCODE (*branchruleexeclp) (SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result),
+                                       SCIP_RETCODE (*branchruleexecext) (SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result),
+                                       SCIP_RETCODE (*branchruleexecps) (SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result),
+                                       SCIP_BRANCHRULEDATA* branchruledata)
+    SCIP_BRANCHRULEDATA* SCIPbranchruleGetData(SCIP_BRANCHRULE* branchrule)
 
     # Numerical Methods
     SCIP_Real SCIPinfinity(SCIP* scip)
