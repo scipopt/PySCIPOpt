@@ -13,6 +13,7 @@ include "conshdlr.pxi"
 include "presol.pxi"
 include "sepa.pxi"
 include "propagator.pxi"
+include "heuristic.pxi"
 
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
@@ -979,6 +980,34 @@ PySepaCopy, PySepaFree, PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, Py
                                           PyPropPresol, PyPropExec, PyPropResProp,
                                           <SCIP_PROPDATA*> prop))
         prop.model = self
+
+    def includeHeur(self, Heur heur, name, desc, dispchar, priority, freqofs,
+                    maxdepth, timingmask, usessubscip, heurdata, freq=1):
+        """Include a primal heuristic.
+
+        Keyword arguments:
+        heur -- the heuristic
+        name -- the name of the heuristic
+        desc -- the description
+        dispchar -- display character of primal heuristic
+        priority -- priority of the heuristic
+        freq -- frequency offset for calling heuristic
+        freqofs -- frequency offset for calling heuristic
+        maxdepth -- maximal depth level to call heuristic at (-1: no limit)
+        timingmask -- positions in the node solving loop where heuristic should be executed; see definition of SCIP_HeurTiming for possible values
+        usessubscip -- does the heuristic use a secondary SCIP instance?
+        heurdata -- primal heuristic data
+        """
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        dis = str_conversion(dispchar)
+        PY_SCIP_CALL(scip.SCIPincludeHeur(self._scip, nam, des, dis,
+                                          priority, freq, freqofs,
+                                          maxdepth, timingmask, usessubscip,
+                                          PyHeurCopy, PyHeurFree, PyHeurInit, PyHeurExit,
+                                          PyHeurInitsol, PyHeurExitsol, PyHeurExec,
+                                          <SCIP_HEURDATA*> heur))
+        heur.model = self
 
     # Solution functions
 

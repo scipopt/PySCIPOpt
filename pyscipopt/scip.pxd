@@ -144,6 +144,15 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_PRESOLDATA:
         pass
 
+    ctypedef struct SCIP_HEUR:
+        pass
+
+    ctypedef struct SCIP_HEURDATA:
+        pass
+
+    ctypedef struct SCIP_HEURTIMING:
+        pass
+
     ctypedef struct SCIP_SEPA:
         pass
 
@@ -389,6 +398,28 @@ cdef extern from "scip/scip.h":
                                  SCIP_PROPDATA*  propdata)
 
     SCIP_PROPDATA* SCIPpropGetData (SCIP_PROP* prop)
+
+    # Heuristics plugin
+    SCIP_RETCODE SCIPincludeHeur(SCIP* scip,
+                                 const char* name,
+                                 const char* desc,
+                                 char dispchar,
+                                 int priority,
+                                 int freq,
+                                 int freqofs,
+                                 int maxdepth,
+                                 unsigned int timingmask,
+                                 SCIP_Bool usessubscip,
+                                 SCIP_RETCODE (*heurcopy) (SCIP* scip, SCIP_HEUR* heur),
+                                 SCIP_RETCODE (*heurfree) (SCIP* scip, SCIP_HEUR* heur),
+                                 SCIP_RETCODE (*heurinit) (SCIP* scip, SCIP_HEUR* heur),
+                                 SCIP_RETCODE (*heurexit) (SCIP* scip, SCIP_HEUR* heur),
+                                 SCIP_RETCODE (*heurinitsol) (SCIP* scip, SCIP_HEUR* heur),
+                                 SCIP_RETCODE (*heurexitsol) (SCIP* scip, SCIP_HEUR* heur),
+                                 SCIP_RETCODE (*heurexec) (SCIP* scip, SCIP_HEUR* heur, SCIP_HEURTIMING heurtiming, SCIP_Bool nodeinfeasible, SCIP_RESULT* result),
+                                 SCIP_HEURDATA* heurdata)
+    SCIP_HEURDATA* SCIPheurGetData(SCIP_HEUR* heur)
+
 
     # Numerical Methods
     SCIP_Real SCIPinfinity(SCIP* scip)
