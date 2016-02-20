@@ -13,12 +13,23 @@ except ImportError:
 # defines whether the python interface should link againt a static (.a)
 # or a shared (.so) scipopt library
 usesharedlib = True
+pathToScipoptsuite = os.path.abspath('../../../')
 if usesharedlib:
     libscipopt = 'lib/libscipopt.so'
 else:
     libscipopt = 'lib/libscipopt.a'
 
-includescip = '../../src'
+# create lib directory if necessary
+if not os.path.exists('lib'):
+    os.makedirs('lib')
+
+# try to find library automatically
+if os.path.exists(os.path.join(pathToScipoptsuite,libscipopt)):
+    # create symbolic links to SCIP
+    if not os.path.lexists(libscipopt):
+        os.symlink(os.path.join(pathToScipoptsuite,libscipopt), libscipopt)
+
+includescip = os.path.abspath('../../src')
 
 def complete(text, state):
     return (glob.glob(text+'*')+[None])[state]
@@ -57,11 +68,6 @@ if args.count("build_ext") > 0 and args.count("--inplace") == 0:
 if not os.path.lexists(libscipopt):
     pathToLib = os.path.abspath(my_input('Please enter path to scipopt library (scipoptsuite/lib/libscipopt.so or .a):\n'))
     print(pathToLib)
-
-    # create lib directory if necessary
-    if not os.path.exists('lib'):
-        os.makedirs('lib')
-
     if not os.path.exists(pathToLib):
         print('Sorry, the path to scipopt library does not exist')
         quit()
@@ -70,7 +76,6 @@ if not os.path.lexists(libscipopt):
 if not os.path.lexists(includescip):
     includescip = os.path.abspath(my_input('Please enter path to scip src directory (scipoptsuite/scip/src):\n'))
     print(includescip)
-
     if not os.path.exists(includescip):
         print('Sorry, the path to SCIP src/ directory does not exist')
         quit()
