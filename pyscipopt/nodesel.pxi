@@ -73,7 +73,7 @@ cdef class Nodesel:
     def select(self):
         # this method needs to be implemented by the user
         cdef SCIP_NODE* selnode #@todo
-        selnode = NULL;
+        selnode = NULL
 
         return {"selnode": 0}
 

@@ -341,9 +341,9 @@ cdef class Model:
             _var = <scip.SCIP_VAR*>v._var
             PY_SCIP_CALL(scip.SCIPchgVarObj(self._scip, _var, coeff))
         if sense == 'maximize':
-            self.setMaximize();
+            self.setMaximize()
         else:
-            self.setMinimize();
+            self.setMinimize()
 
     # Setting parameters
     def setPresolve(self, setting):
@@ -481,7 +481,7 @@ cdef class Model:
         _nvars = SCIPgetNVars(self._scip)
 
         for i in range(_nvars):
-            _var = _vars[i];
+            _var = _vars[i]
             _name = SCIPvarGetName(_var)
             var = Variable(_name)
             v = var.var
@@ -812,7 +812,7 @@ cdef class Model:
         _nconss = SCIPgetNConss(self._scip)
 
         for i in range(_nconss):
-            _cons = _conss[i];
+            _cons = _conss[i]
             _name = SCIPconsGetName(_cons)
             cons = Constraint(_name)
             c = cons.cons

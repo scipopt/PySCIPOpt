@@ -2,15 +2,15 @@ cdef SCIP_RETCODE PyPropCopy (SCIP* scip, SCIP_PROP* prop):
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPropFree (SCIP* scip, SCIP_PROP* prop):
-    cdef SCIP_PROPDATA* propdata;
-    propdata = SCIPpropGetData(prop);
+    cdef SCIP_PROPDATA* propdata
+    propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
     PyProp.free()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPropInit (SCIP* scip, SCIP_PROP* prop):
-    cdef SCIP_PROPDATA* propdata;
-    propdata = SCIPpropGetData(prop);
+    cdef SCIP_PROPDATA* propdata
+    propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
     PyProp.init()
     return SCIP_OKAY
