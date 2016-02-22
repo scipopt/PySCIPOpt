@@ -41,7 +41,8 @@ class LinExpr(object):
 
     def __iadd__(self, other):
         if isinstance(other, LinExpr):
-            self.terms.update(other.terms)
+            for v,c in other.terms.items():
+                self.terms[v] = self.terms.get(v, 0.0) + c
         elif _is_number(other):
             c = float(other)
             self.terms[CONST] = self.terms.get(CONST, 0.0) + c
