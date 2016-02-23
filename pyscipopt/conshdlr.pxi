@@ -108,7 +108,9 @@ cdef SCIP_RETCODE PyConsCheck (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** 
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    PyConshdlr.check()
+    solution = Solution()
+    solution._solution = sol
+    PyConshdlr.check(solution)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsProp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, int nmarkedconss,
@@ -284,7 +286,7 @@ cdef class Conshdlr:
         # this method needs to be implemented by the user
         return {"result": SCIP_DIDNOTRUN}
 
-    def check(self):
+    def check(self, solution):
         # this method needs to be implemented by the user
         return {"result": SCIP_DIDNOTRUN}
 

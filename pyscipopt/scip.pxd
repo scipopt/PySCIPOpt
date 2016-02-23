@@ -241,6 +241,9 @@ cdef extern from "scip/scip.h":
     const char* SCIPvarGetName(SCIP_VAR* var)
     int SCIPgetNVars(SCIP* scip)
 
+    # TODO this is defined in var.h - so not a public method
+    SCIP_RETCODE SCIPvarChgType(SCIP_VAR* var, SCIP_VARTYPE vartype)
+
     # Constraint Methods
     SCIP_RETCODE SCIPcaptureCons(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPreleaseCons(SCIP* scip, SCIP_CONS** cons)

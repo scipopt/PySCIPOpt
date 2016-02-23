@@ -28,7 +28,6 @@ def solve_tsp(V,c):
         G = networkx.Graph()
         G.add_edges_from(cut_edges)
         Components = networkx.connected_components(G)
-
         if len(Components) == 1:
             return False
         for S in Components:
@@ -77,11 +76,12 @@ def solve_tsp(V,c):
             if model.getVal(x[i,j]) > EPS:
                 edges.append( (i,j) )
 
+        model.freeTransform()
         if addcut(edges) == False:
-            if model.IsMIP:     # integer variables, components connected: solution found
-                break
+            #if model.IsMIP:     # integer variables, components connected: solution found
+                #break
             for (i,j) in x:     # all components connected, switch to integer model
-                x[i,j].VType = "B"
+                chgVarType(x[i,j], "B")
 
     return model.ObjVal,edges
 

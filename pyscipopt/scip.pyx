@@ -465,6 +465,18 @@ cdef class Model:
 
         PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, ub))
 
+    def chgVarType(var, vtype):
+        cdef scip.SCIP_VAR* _var
+        _var = <scip.SCIP_VAR*>var.var._var
+        if vtype in ['C', 'CONTINUOUS']:
+            PY_SCIP_CALL(scip.SCIPvarChgType(_var, scip.SCIP_VARTYPE_CONTINUOUS))
+        elif vtype in ['B', 'BINARY']:
+            PY_SCIP_CALL(scip.SCIPvarChgType(_var, scip.SCIP_VARTYPE_BINARY))
+        elif vtype in ['I', 'INTEGER']:
+            PY_SCIP_CALL(scip.SCIPvarChgType(_var, scip.SCIP_VARTYPE_INTEGER))
+        else:
+            print('wrong variable type: ',vtype)
+
     def getVars(self):
         """Retrieve all variables."""
         cdef scip.SCIP_VAR** _vars
