@@ -92,7 +92,8 @@ cdef SCIP_RETCODE PyConsEnfolp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS**
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    PyConshdlr.enfolp()
+    resultdict = PyConshdlr.enfolp(solinfeasible)
+    result[0] = resultdict.get("result", SCIP_DIDNOTRUN)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsEnfops (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss,
@@ -110,7 +111,8 @@ cdef SCIP_RETCODE PyConsCheck (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** 
     PyConshdlr = <Conshdlr>conshdlrdata
     solution = Solution()
     solution._solution = sol
-    PyConshdlr.check(solution)
+    resultdict = PyConshdlr.check(solution)
+    result[0] = resultdict.get("result", SCIP_DIDNOTRUN)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsProp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, int nmarkedconss,
@@ -278,7 +280,7 @@ cdef class Conshdlr:
     def sepasol(self):
         pass
 
-    def enfolp(self):
+    def enfolp(self, solinfeasible):
         # this method needs to be implemented by the user
         return {"result": SCIP_DIDNOTRUN}
 
