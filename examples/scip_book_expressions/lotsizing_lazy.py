@@ -7,7 +7,45 @@ Approaches:
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt import Model, quicksum, multidict
+from pyscipopt import Model, Conshdlr, quicksum, multidict, scip
+
+class Conshdlr_sils(Conshdlr):
+
+    def addcut(self):
+        D,Ts = self.data
+        y,x,I = self.model.data
+
+        cutsadded = False
+
+        for ell in Ts:
+            lhs = 0
+            S,L = [],[]
+            for t in range(1,ell+1):
+                yt = self.model.getVal(y[t])
+                xt = self.model.getVal(x[t])
+                if D[t,ell]*yt < xt:
+                    S.append(t)
+                    lhs += D[t,ell]*yt
+                else:
+                    L.append(t)
+                    lhs += xt
+            if lhs < D[1,ell]:
+                # add cutting plane constraint
+                self.model.addCons(quicksum([x[t] for t in L]) +\
+                    quicksum(D[t,ell] * y[t] for t in S)
+                    >= D[1,ell], removable=True)
+                cutsadded = True
+        return cutsadded
+
+    def check(self, solution):
+        return {"result": scip.scip_result.infeasible}
+
+    def enfolp(self, solinfeasible):
+        if self.addcut():
+            return {"result": scip.scip_result.consadded}
+        else:
+            return {"result": scip.scip_result.feasible}
+
 
 def sils(T,f,c,d,h):
     """sils -- LP lotsizing for the single item lot sizing problem
@@ -42,7 +80,7 @@ def sils(T,f,c,d,h):
     return model
 
 
-def sils_cut(T,f,c,d,h):
+def sils_cut(T,f,c,d,h, conshdlr):
     """solve_sils -- solve the lot sizing problem with cutting planes
        - start with a relaxed model
        - used lazy constraints to elimitate fractional setup variables with cutting planes
@@ -57,46 +95,12 @@ def sils_cut(T,f,c,d,h):
     """
     Ts = range(1,T+1)
 
-    def sils_callback(model,where):
-        # remember to set     model.params.DualReductions = 0     before using!
-        if where != GRB.Callback.MIPSOL and where != GRB.Callback.MIPNODE:
-            return
-
-        if where == GRB.Callback.MIPSOL:
-            getsol = model.cbGetSolution
-            cut = model.cbLazy
-        elif where == GRB.Callback.MIPNODE:
-            getsol = model.cbGetNodeRel
-            cut = model.cbCut
-        else:
-            return
-
-        for ell in Ts:
-            lhs = 0
-            S,L = [],[]
-            for t in range(1,ell+1):
-                yt = model.getsol(y[t])
-                xt = model.getsol(x[t])
-                if D[t,ell]*yt < xt:
-                    S.append(t)
-                    lhs += D[t,ell]*yt
-                else:
-                    L.append(t)
-                    lhs += xt
-            if lhs < D[1,ell]:
-                # add cutting plane constraint
-                cut(quicksum([x[t] for t in L]) +\
-                    quicksum(D[t,ell] * y[t] for t in S)
-                    >= D[1,ell])
-        return
-
-
     model = sils(T,f,c,d,h)
     y,x,I = model.data
 
     # relax integer variables
     for t in Ts:
-        y[t].vtype = "C"
+        model.chgVarType(y[t], "C")
     model.addVar(vtype="B", name="fake")        # for making the problem MIP
 
     # compute D[i,j] = sum_{t=i}^j d[t]
@@ -107,8 +111,14 @@ def sils_cut(T,f,c,d,h):
             s += d[j]
             D[t,j] = s
 
+    #include the lot sizing constraint handler
+    model.includeConshdlr(conshdlr, "SILS", "Constraint handler for single item lot sizing",
+                          sepapriority=0, enfopriority=0, chckpriority=0, sepafreq=1, propfreq=-1,
+                          eagerfreq=-1, maxprerounds=0, delaysepa=False, delayprop=False, needscons=False)
+    conshdlr.data = D,Ts
+
     model.data = y,x,I
-    return model,sils_callback
+    return model
 
 
 def mk_example():
@@ -134,13 +144,14 @@ if __name__ == "__main__":
     print("\nOptimal value [standard]:",model.getObjVal())
     print("%8s%8s%8s%8s%8s%8s%12s%12s" % ("t","fix","var","h","dem","y","x","I"))
     for t in range(1,T+1):
-        print("%8s%8s%8s%8s%8s%8s%12s%12s" % (t,f[t],c[t],h[t],d[t],model.getVal(y[t]),model.getVal(x[t]),model.getVal(I[t])))
+        print("%8d%8d%8d%8d%8d%8.1f%12.1f%12.1f" % (t,f[t],c[t],h[t],d[t],model.getVal(y[t]),model.getVal(x[t]),model.getVal(I[t])))
 
-    model,sils_callback = sils_cut(T,f,c,d,h)
+    conshdlr = Conshdlr_sils()
+    model = sils_cut(T,f,c,d,h, conshdlr)
     model.setBoolParam("misc/allowdualreds", 0)
-    model.optimize(sils_callback)
+    model.optimize()
     y,x,I = model.data
-    print("\nOptimal value [cutting planes]:",model.getObjVal())
+    print("\nOptimal value [cutting plan es]:",model.getObjVal())
     print("%8s%8s%8s%8s%8s%8s%12s%12s" % ("t","fix","var","h","dem","y","x","I"))
     for t in range(1,T+1):
-        print("%8s%8s%8s%8s%8s%8s%12s%12s" % (t,f[t],c[t],h[t],d[t],model.getVal(y[t]),model.getVal(x[t]),model.getVal(I[t])))
+        print("%8d%8d%8d%8d%8d%8.1f%12.1f%12.1f" % (t,f[t],c[t],h[t],d[t],model.getVal(y[t]),model.getVal(x[t]),model.getVal(I[t])))

@@ -893,7 +893,7 @@ cdef class Model:
         reader.model = self
 
     def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority, enfopriority, chckpriority, sepafreq, propfreq, eagerfreq,
-                        maxprerounds, delaysepa, delayprop, needscons, proptiming, presoltiming):
+                        maxprerounds, delaysepa, delayprop, needscons, proptiming=SCIP_PROPTIMING_AFTERLPNODE, presoltiming=SCIP_PRESOLTIMING_FAST):
         """Include a constraint handler
 
         Keyword arguments:
