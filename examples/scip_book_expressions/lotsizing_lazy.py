@@ -7,7 +7,7 @@ Approaches:
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt import Model, Conshdlr, quicksum, multidict, scip
+from pyscipopt import Model, Conshdlr, quicksum, multidict, scip_result
 
 class Conshdlr_sils(Conshdlr):
 
@@ -38,13 +38,13 @@ class Conshdlr_sils(Conshdlr):
         return cutsadded
 
     def check(self, solution):
-        return {"result": scip.scip_result.infeasible}
+        return {"result": scip_result.infeasible}
 
     def enfolp(self, solinfeasible):
         if self.addcut():
-            return {"result": scip.scip_result.consadded}
+            return {"result": scip_result.consadded}
         else:
-            return {"result": scip.scip_result.feasible}
+            return {"result": scip_result.feasible}
 
 
 def sils(T,f,c,d,h):

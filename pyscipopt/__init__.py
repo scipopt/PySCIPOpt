@@ -11,3 +11,6 @@ from pyscipopt.scip import Pricer
 from pyscipopt.scip import Prop
 from pyscipopt.scip import Reader
 from pyscipopt.scip import Sepa
+from pyscipopt.scip import scip_result
+from pyscipopt.scip import scip_paramsetting
+from pyscipopt.scip import scip_status

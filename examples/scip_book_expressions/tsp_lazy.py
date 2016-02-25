@@ -11,7 +11,7 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 import math
 import random
 import networkx
-from pyscipopt import Model, quicksum, scip
+from pyscipopt import Model, Sepa, quicksum, scip_result
 
 def tsp(V,c):
     """tsp -- model for solving the traveling salesman problem with callbacks
@@ -46,7 +46,7 @@ def tsp(V,c):
     model = Model("tsp")
     model.hideOutput()
 
-    sepa = scip.Separator()
+    sepa = Sepa()
 
     x = {}
     for i in V:

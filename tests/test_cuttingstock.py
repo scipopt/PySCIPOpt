@@ -1,4 +1,4 @@
-from pyscipopt import Model, Pricer, scip
+from pyscipopt import Model, Pricer, scip_result
 
 class CutPricer(Pricer):
 
@@ -59,7 +59,7 @@ class CutPricer(Pricer):
         # Freeing the subMIP
         subMIP.free()
 
-        return {'result':scip.scip_result.success}
+        return {'result':scip_result.success}
 
     # The initialisation function for the variable pricer to retrieve the transformed constraints of the problem
     def init(self):
