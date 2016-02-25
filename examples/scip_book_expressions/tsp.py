@@ -51,6 +51,11 @@ def solve_tsp(V,c):
             print("cut: %s <--> %s >= 2" % (S,T), [(i,j) for i in S for j in T if j>i])
         return True
 
+    def isMIP(x):
+        for var in x:
+            if var.vtype == "CONTINUOUS":
+                return False
+        return True
 
     # main part of the solution process:
     model = Model("tsp")
@@ -78,12 +83,12 @@ def solve_tsp(V,c):
 
         model.freeTransform()
         if addcut(edges) == False:
-            #if model.IsMIP:     # integer variables, components connected: solution found
-                #break
+            if isMIP():     # integer variables, components connected: solution found
+                break
             for (i,j) in x:     # all components connected, switch to integer model
-                chgVarType(x[i,j], "B")
+                model.chgVarType(x[i,j], "B")
 
-    return model.ObjVal,edges
+    return model.getObjVal(),edges
 
 
 def distance(x1,y1,x2,y2):

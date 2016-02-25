@@ -82,6 +82,11 @@ def solve_tsp(V,c):
         print("mflow:",mflow.getObjVal(),"cut:",[(i,j) for i in CutA for j in CutB if j>i],"+",[(j,i) for i in CutA for j in CutB if j<i],">= 2")
         return True
 
+    def isMIP(x):
+        for var in x:
+            if var.vtype == "CONTINUOUS":
+                return False
+        return True
 
     # main part of the solution process:
     main = Model("tsp")
@@ -106,10 +111,10 @@ def solve_tsp(V,c):
                 X[i,j] = main.getVal(x[i,j])
 
         if addcut(X) == False:  # i.e., components are connected
-            if main.IsMIP:      # integer variables, components connected: solution found
+            if isMIP():      # integer variables, components connected: solution found
                 break
             for (i,j) in x:     # all components connected, switch to integer model
-                x[i,j].VType = "B"
+                main.chgVarType(x[i,j], "BINARY")
 
     # process solution
     edges = []
