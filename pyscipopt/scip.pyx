@@ -146,6 +146,19 @@ class Variable(LinExpr):
     def __repr__(self):
         return self.name
 
+    def vtype(self):
+        cdef Var v
+        cdef scip.SCIP_VAR* _var
+        v = self.var
+        _var = v._var
+        vartype = scip.SCIPvarGetType(_var)
+        if vartype == scip.SCIP_VARTYPE_BINARY:
+            return "BINARY"
+        elif vartype == scip.SCIP_VARTYPE_INTEGER:
+            return "INTEGER"
+        elif vartype == scip.SCIP_VARTYPE_CONTINUOUS or vartype == scip.SCIP_VARTYPE_IMPLINT:
+            return "CONTINUOUS"
+
 cdef pythonizeVar(scip.SCIP_VAR* scip_var, name):
     var = Variable(name)
     cdef Var v
@@ -465,17 +478,22 @@ cdef class Model:
 
         PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, ub))
 
-    def chgVarType(var, vtype):
+    def chgVarType(self, var, vtype):
         cdef scip.SCIP_VAR* _var
-        _var = <scip.SCIP_VAR*>var.var._var
+        cdef Var v
+        cdef SCIP_Bool infeasible
+        v = var.var
+        _var = <scip.SCIP_VAR*>v._var
         if vtype in ['C', 'CONTINUOUS']:
-            PY_SCIP_CALL(scip.SCIPvarChgType(_var, scip.SCIP_VARTYPE_CONTINUOUS))
+            PY_SCIP_CALL(scip.SCIPchgVarType(self._scip, _var, scip.SCIP_VARTYPE_CONTINUOUS, &infeasible))
         elif vtype in ['B', 'BINARY']:
-            PY_SCIP_CALL(scip.SCIPvarChgType(_var, scip.SCIP_VARTYPE_BINARY))
+            PY_SCIP_CALL(scip.SCIPchgVarType(self._scip, _var, scip.SCIP_VARTYPE_BINARY, &infeasible))
         elif vtype in ['I', 'INTEGER']:
-            PY_SCIP_CALL(scip.SCIPvarChgType(_var, scip.SCIP_VARTYPE_INTEGER))
+            PY_SCIP_CALL(scip.SCIPchgVarType(self._scip, _var, scip.SCIP_VARTYPE_INTEGER, &infeasible))
         else:
             print('wrong variable type: ',vtype)
+        if infeasible:
+            print('could not change variable type of variable ',<bytes> scip.SCIPvarGetName(_var))
 
     def getVars(self):
         """Retrieve all variables."""

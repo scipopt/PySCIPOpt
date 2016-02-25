@@ -233,6 +233,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPchgVarObj(SCIP* scip, SCIP_VAR* var, SCIP_Real newobj)
     SCIP_RETCODE SCIPchgVarLb(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
     SCIP_RETCODE SCIPchgVarUb(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
+    SCIP_RETCODE SCIPchgVarType(SCIP* scip, SCIP_VAR* var, SCIP_VARTYPE vartype, SCIP_Bool* infeasible)
     SCIP_RETCODE SCIPcaptureVar(SCIP* scip, SCIP_VAR* var)
     SCIP_RETCODE SCIPaddPricedVar(SCIP* scip, SCIP_VAR* var, SCIP_Real score)
     SCIP_RETCODE SCIPreleaseVar(SCIP* scip, SCIP_VAR** var)
@@ -240,9 +241,7 @@ cdef extern from "scip/scip.h":
     SCIP_VAR** SCIPgetVars(SCIP* scip)
     const char* SCIPvarGetName(SCIP_VAR* var)
     int SCIPgetNVars(SCIP* scip)
-
-    # TODO this is defined in var.h - so not a public method
-    SCIP_RETCODE SCIPvarChgType(SCIP_VAR* var, SCIP_VARTYPE vartype)
+    SCIP_VARTYPE SCIPvarGetType(SCIP_VAR* var)
 
     # Constraint Methods
     SCIP_RETCODE SCIPcaptureCons(SCIP* scip, SCIP_CONS* cons)
