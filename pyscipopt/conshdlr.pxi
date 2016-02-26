@@ -111,8 +111,8 @@ cdef SCIP_RETCODE PyConsCheck (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** 
     PyConshdlr = <Conshdlr>conshdlrdata
     solution = Solution()
     solution._solution = sol
-    resultdict = PyConshdlr.check(solution)
-    result[0] = resultdict.get("result", SCIP_DIDNOTRUN)
+    result_dict = PyConshdlr.check(constraints, solution, checkintegrality, checklprows, printreason)
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsProp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, int nmarkedconss,
@@ -267,9 +267,9 @@ cdef class Conshdlr:
     def delete(self):
         pass
 
-    def trans(self):
-        # this method needs to be implemented by the user
-        return {"result": SCIP_DIDNOTRUN}
+    def constrans(self):
+        print("python error in constrans: this method needs to be implemented")
+        return {}
 
     def initlp(self):
         pass
@@ -280,17 +280,17 @@ cdef class Conshdlr:
     def sepasol(self):
         pass
 
-    def enfolp(self, solinfeasible):
-        # this method needs to be implemented by the user
-        return {"result": SCIP_DIDNOTRUN}
+    def consenfolp(self, solinfeasible):
+        print("python error in consenfolp: this method needs to be implemented")
+        return {}
 
-    def enfops(self):
-        # this method needs to be implemented by the user
-        return {"result": SCIP_DIDNOTRUN}
+    def consenfops(self):
+        print("python error in consenfops: this method needs to be implemented")
+        return {}
 
-    def check(self, solution):
-        # this method needs to be implemented by the user
-        return {"result": SCIP_DIDNOTRUN}
+    def conscheck(self, solution):
+        print("python error in conscheck: this method needs to be implemented")
+        return {}
 
     def prop(self):
         pass
@@ -302,8 +302,8 @@ cdef class Conshdlr:
         pass
 
     def lock(self, constraint):
-        # this method needs to be implemented by the user
-        return {"result": SCIP_DIDNOTRUN}
+        print("python error in conslock: this method needs to be implemented")
+        return {}
 
     def active(self):
         pass

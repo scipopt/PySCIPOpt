@@ -5,77 +5,76 @@ cdef SCIP_RETCODE PyPricerFree (SCIP* scip, SCIP_PRICER* pricer):
     cdef SCIP_PRICERDATA* pricerdata
     pricerdata = SCIPpricerGetData(pricer)
     PyPricer = <Pricer>pricerdata
-    PyPricer.free()
+    PyPricer.pricerfree()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPricerInit (SCIP* scip, SCIP_PRICER* pricer):
     cdef SCIP_PRICERDATA* pricerdata
     pricerdata = SCIPpricerGetData(pricer)
     PyPricer = <Pricer>pricerdata
-    PyPricer.init()
+    PyPricer.pricerinit()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPricerExit (SCIP* scip, SCIP_PRICER* pricer):
     cdef SCIP_PRICERDATA* pricerdata
     pricerdata = SCIPpricerGetData(pricer)
     PyPricer = <Pricer>pricerdata
-    PyPricer.exit()
+    PyPricer.pricerexit()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPricerInitsol (SCIP* scip, SCIP_PRICER* pricer):
     cdef SCIP_PRICERDATA* pricerdata
     pricerdata = SCIPpricerGetData(pricer)
     PyPricer = <Pricer>pricerdata
-    PyPricer.initsol()
+    PyPricer.pricerinitsol()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPricerExitsol (SCIP* scip, SCIP_PRICER* pricer):
     cdef SCIP_PRICERDATA* pricerdata
     pricerdata = SCIPpricerGetData(pricer)
     PyPricer = <Pricer>pricerdata
-    PyPricer.exitsol()
+    PyPricer.pricerexitsol()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPricerRedcost (SCIP* scip, SCIP_PRICER* pricer, SCIP_Real* lowerbound, SCIP_Bool* stopearly, SCIP_RESULT* result):
     cdef SCIP_PRICERDATA* pricerdata
     pricerdata = SCIPpricerGetData(pricer)
     PyPricer = <Pricer>pricerdata
-    returnvalues = PyPricer.redcost()
-    result_dict = returnvalues
-    result[0] = result_dict.get("result", SCIP_SUCCESS)
-    lowerbound[0] = result_dict.get("lowerbound", -1e20)
-    stopearly[0] = result_dict.get("stopearly", False)
+    result_dict = PyPricer.pricerredcost()
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
+    lowerbound[0] = result_dict.get("lowerbound", <SCIP_Real>lowerbound[0])
+    stopearly[0] = result_dict.get("stopearly", <SCIP_Bool>stopearly[0])
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPricerFarkas (SCIP* scip, SCIP_PRICER* pricer, SCIP_RESULT* result):
     cdef SCIP_PRICERDATA* pricerdata
     pricerdata = SCIPpricerGetData(pricer)
     PyPricer = <Pricer>pricerdata
-    result[0] = PyPricer.farkas()
+    result[0] = PyPricer.pricerfarkas().get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
 cdef class Pricer:
     cdef public object data     # storage for the python user
     cdef public Model model
 
-    def free(self):
+    def pricerfree(self):
         pass
 
-    def init(self):
+    def pricerinit(self):
         pass
 
-    def exit(self):
+    def pricerexit(self):
         pass
 
-    def initsol(self):
+    def pricerinitsol(self):
         pass
 
-    def exitsol(self):
+    def pricerexitsol(self):
         pass
 
-    def redcost(self):
-        # this method needs to be implemented by the user
-        return {"result": SCIP_DIDNOTRUN}
+    def pricerredcost(self):
+        print("python error in pricerredcost: this method needs to be implemented")
+        return {}
 
-    def farkas(self):
-        pass
+    def pricerfarkas(self):
+        return {}

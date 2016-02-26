@@ -5,28 +5,28 @@ cdef SCIP_RETCODE PyHeurFree (SCIP* scip, SCIP_HEUR* heur):
     cdef SCIP_HEURDATA* heurdata
     heurdata = SCIPheurGetData(heur)
     PyHeur = <Heur>heurdata
-    PyHeur.free()
+    PyHeur.heurfree()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyHeurInit (SCIP* scip, SCIP_HEUR* heur):
     cdef SCIP_HEURDATA* heurdata
     heurdata = SCIPheurGetData(heur)
     PyHeur = <Heur>heurdata
-    PyHeur.init()
+    PyHeur.heurinit()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyHeurExit (SCIP* scip, SCIP_HEUR* heur):
     cdef SCIP_HEURDATA* heurdata
     heurdata = SCIPheurGetData(heur)
     PyHeur = <Heur>heurdata
-    PyHeur.exit()
+    PyHeur.heurexit()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyHeurInitsol (SCIP* scip, SCIP_HEUR* heur):
     cdef SCIP_HEURDATA* heurdata
     heurdata = SCIPheurGetData(heur)
     PyHeur = <Heur>heurdata
-    PyHeur.initsol()
+    PyHeur.heurinitsol()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyHeurExitsol (SCIP* scip, SCIP_HEUR* heur):
@@ -40,30 +40,30 @@ cdef SCIP_RETCODE PyHeurExec (SCIP* scip, SCIP_HEUR* heur, SCIP_HEURTIMING heurt
     cdef SCIP_HEURDATA* heurdata
     heurdata = SCIPheurGetData(heur)
     PyHeur = <Heur>heurdata
-    returnvalues = PyHeur.heurexec()
+    returnvalues = PyHeur.heurexec(heurtiming, nodeinfeasible)
     result_dict = returnvalues
-    result[0] = result_dict.get("result", SCIP_DIDNOTFIND)
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
 cdef class Heur:
     cdef public object data     # storage for the python user
     cdef public Model model
 
-    def free(self):
+    def heurfree(self):
         pass
 
-    def init(self):
+    def heurinit(self):
         pass
 
-    def exit(self):
+    def heurexit(self):
         pass
 
-    def initsol(self):
+    def heurinitsol(self):
         pass
 
-    def exitsol(self):
+    def heurexitsol(self):
         pass
 
-    def heurexec(self):
-        # this method needs to be implemented by the user
-        return {"result": SCIP_DIDNOTRUN}
+    def heurexec(self, heurtiming, nodeinfeasible):
+        print("python error in heurexec: this method needs to be implemented")
+        return {}

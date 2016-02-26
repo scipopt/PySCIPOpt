@@ -1,10 +1,11 @@
-from pyscipopt import Model, Pricer, scip_result
+from pyscipopt import Model, Pricer, SCIP_RESULT
 
 class CutPricer(Pricer):
 
     # The reduced cost function for the variable pricer
-    def redcost(self):
+    def pricerredcost(self, dicci):
 
+        dicci['bla'] = 1
         # Retreiving the dual solutions
         dualSolutions = []
         for i, c in enumerate(self.data['cons']):
@@ -59,10 +60,10 @@ class CutPricer(Pricer):
         # Freeing the subMIP
         subMIP.free()
 
-        return {'result':scip_result.success}
+        return {'result':SCIP_RESULT.SUCCESS}
 
     # The initialisation function for the variable pricer to retrieve the transformed constraints of the problem
-    def init(self):
+    def pricerinit(self):
         for i, c in enumerate(self.data['cons']):
             self.data['cons'][i] = self.model.getTransformedCons(c)
 

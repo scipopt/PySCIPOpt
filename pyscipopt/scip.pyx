@@ -33,48 +33,75 @@ def scipErrorHandler(function):
 
 # Mapping the SCIP_RESULT enum to a python class
 # This is required to return SCIP_RESULT in the python code
-cdef class scip_result:
-    didnotrun   =   1
-    delayed     =   2
-    didnotfind  =   3
-    feasible    =   4
-    infeasible  =   5
-    unbounded   =   6
-    cutoff      =   7
-    separated   =   8
-    newround    =   9
-    reducedom   =  10
-    consadded   =  11
-    consshanged =  12
-    branched    =  13
-    solvelp     =  14
-    foundsol    =  15
-    suspended   =  16
-    success     =  17
+# In __init__.py this is imported as SCIP_RESULT to keep the
+# original naming scheme using capital letters
+cdef class PY_SCIP_RESULT:
+    DIDNOTRUN   =   1
+    DELAYED     =   2
+    DIDNOTFIND  =   3
+    FEASIBLE    =   4
+    INFEASIBLE  =   5
+    UNBOUNDED   =   6
+    CUTOFF      =   7
+    SEPARATED   =   8
+    NEWROUND    =   9
+    REDUCEDOM   =  10
+    CONSADDED   =  11
+    CONSSHANGED =  12
+    BRANCHED    =  13
+    SOLVELP     =  14
+    FOUNDSOL    =  15
+    SUSPENDED   =  16
+    SUCCESS     =  17
 
 
-cdef class scip_paramsetting:
-    default     = 0
-    agressive   = 1
-    fast        = 2
-    off         = 3
+cdef class PY_SCIP_PARAMSETTING:
+    DEFAULT     = 0
+    AGRESSIVE   = 1
+    FAST        = 2
+    OFF         = 3
 
-cdef class scip_status:
-    unknown        =  0
-    userinterrupt  =  1
-    nodelimit      =  2
-    totalnodelimit =  3
-    stallnodelimit =  4
-    timelimit      =  5
-    memlimit       =  6
-    gaplimit       =  7
-    sollimit       =  8
-    bestsollimit   =  9
-    restartlimit   = 10
-    optimal        = 11
-    infeasible     = 12
-    unbounded      = 13
-    inforunbd      = 14
+cdef class PY_SCIP_STATUS:
+    UNKNOWN        =  0
+    USERINTERRUPT  =  1
+    NODELIMIT      =  2
+    TOTALNODELIMIT =  3
+    STALLNODELIMIT =  4
+    TIMELIMIT      =  5
+    MEMLIMIT       =  6
+    GAPLIMIT       =  7
+    SOLLIMIT       =  8
+    BESTSOLLIMIT   =  9
+    RESTARTLIMIT   = 10
+    OPTIMAL        = 11
+    INFEASIBLE     = 12
+    UNBOUNDED      = 13
+    INFORUNBD      = 14
+
+cdef class PY_SCIP_PROPTIMING:
+    BEFORELP     = 0X001U
+    DURINGLPLOOP = 0X002U
+    AFTERLPLOOP  = 0X004U
+    AFTERLPNODE  = 0X008U
+
+cdef class PY_SCIP_PRESOLTIMING:
+    NONE       = 0x000u
+    FAST       = 0x002u
+    MEDIUM     = 0x004u
+    EXHAUSTIVE = 0x008u
+
+cdef class PY_SCIP_HEURTIMING:
+    BEFORENODE        = 0x001u
+    DURINGLPLOOP      = 0x002u
+    AFTERLPLOOP       = 0x004u
+    AFTERLPNODE       = 0x008u
+    AFTERPSEUDONODE   = 0x010u
+    AFTERLPPLUNGE     = 0x020u
+    AFTERPSEUDOPLUNGE = 0x040u
+    DURINGPRICINGLOOP = 0x080u
+    BEFOREPRESOL      = 0x100u
+    DURINGPRESOLLOOP  = 0x200u
+    AFTERPROPLOOP     = 0x400u
 
 def PY_SCIP_CALL(scip.SCIP_RETCODE rc):
     if rc == scip.SCIP_OKAY:
@@ -925,7 +952,7 @@ cdef class Model:
                                               <SCIP_CONSHDLRDATA*>conshdlr))
         conshdlr.model = self
 
-    def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing):
+    def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing=SCIP_PRESOLTIMING_FAST):
         """Include a presolver
 
         Keyword arguments:
@@ -941,7 +968,7 @@ cdef class Model:
                                             PyPresolExit, PyPresolInitpre, PyPresolExitpre, PyPresolExec, <SCIP_PRESOLDATA*>presol))
         presol.model = self
 
-    def includeSepa(self, Sepa sepa, name, desc, priority, freq, maxbounddist, usessubscip, delay):
+    def includeSepa(self, Sepa sepa, name, desc, priority, freq, maxbounddist, usessubscip=False, delay=False):
         """Include a separator
 
         Keyword arguments:
@@ -961,7 +988,7 @@ cdef class Model:
         sepa.model = self
 
     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
-                    proptiming, presoltiming, priority=1, freq=1, delay=True):
+                    proptiming, presoltiming=SCIP_PRESOLTIMING_FAST, priority=1, freq=1, delay=True):
         """Include a propagator.
 
         Keyword arguments:

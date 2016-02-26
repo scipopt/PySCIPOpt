@@ -5,49 +5,49 @@ cdef SCIP_RETCODE PyPropFree (SCIP* scip, SCIP_PROP* prop):
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
-    PyProp.free()
+    PyProp.propfree()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPropInit (SCIP* scip, SCIP_PROP* prop):
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
-    PyProp.init()
+    PyProp.propinit()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPropExit (SCIP* scip, SCIP_PROP* prop):
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
-    PyProp.exit()
+    PyProp.propexit()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPropInitpre (SCIP* scip, SCIP_PROP* prop):
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
-    PyProp.initpre()
+    PyProp.propinitpre()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPropExitpre (SCIP* scip, SCIP_PROP* prop):
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
-    PyProp.exitpre()
+    PyProp.propexitpre()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPropInitsol (SCIP* scip, SCIP_PROP* prop):
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
-    PyProp.initsol()
+    PyProp.propinitsol()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPropExitsol (SCIP* scip, SCIP_PROP* prop, SCIP_Bool restart):
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
-    PyProp.exitsol()
+    PyProp.propexitsol(restart)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPropPresol (SCIP* scip, SCIP_PROP* prop, int nrounds, SCIP_PRESOLTIMING presoltiming,
@@ -58,9 +58,19 @@ cdef SCIP_RETCODE PyPropPresol (SCIP* scip, SCIP_PROP* prop, int nrounds, SCIP_P
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
-    returnvalues = PyProp.presol()
-    result_dict = returnvalues
-    result[0] = result_dict.get("result", SCIP_SUCCESS)
+    result_dict = {}
+    result_dict = PyProp.proppresol(nrounds, presoltiming)
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
+    nfixedvars[0] += result_dict.get("nnewfixedvars", 0)
+    naggrvars[0] += result_dict.get("nnewaggrvars", 0)
+    nchgvartypes[0] += result_dict.get("nnewchgvartypes", 0)
+    nchgbds[0] += result_dict.get("nnewchgbds", 0)
+    naddholes[0] += result_dict.get("nnewaddholes", 0)
+    ndelconss[0] += result_dict.get("nnewdelconss", 0)
+    naddconss[0] += result_dict.get("nnewaddconss", 0)
+    nupgdconss[0] += result_dict.get("nnewupgdconss", 0)
+    nchgcoefs[0] += result_dict.get("nnewchgcoefs", 0)
+    nchgsides[0] += result_dict.get("nnewchgsides", 0)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPropExec (SCIP* scip, SCIP_PROP* prop, SCIP_PROPTIMING proptiming, SCIP_RESULT* result):
@@ -86,35 +96,35 @@ cdef class Prop:
     cdef public object data     # storage for the python user
     cdef public Model model
 
-    def free(self):
+    def propfree(self):
         pass
 
-    def init(self):
+    def propinit(self):
         pass
 
-    def exit(self):
+    def propexit(self):
         pass
 
-    def initsol(self):
+    def propinitsol(self):
         pass
 
-    def exitsol(self):
+    def propexitsol(self, restart):
         pass
 
-    def initpre(self):
+    def propinitpre(self):
         pass
 
-    def exitpre(self):
+    def propexitpre(self):
         pass
 
-    def presol(self):
+    def proppresol(self, nrounds, presoltiming):
         # this method needs to be implemented by the user
-        return {"result": SCIP_DIDNOTRUN}
+        return {}
 
     def propexec(self):
         # this method needs to be implemented by the user
         return {"result": SCIP_DIDNOTRUN}
 
-    def resprop(self):
+    def propresprop(self):
         # this method needs to be implemented by the user
         return {"result": SCIP_DIDNOTRUN}

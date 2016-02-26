@@ -7,7 +7,7 @@ Approaches:
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt import Model, Conshdlr, quicksum, multidict, scip_result
+from pyscipopt import Model, Conshdlr, quicksum, multidict, SCIP_RESULT, SCIP_PRESOLTIMING, SCIP_PROPTIMING
 
 class Conshdlr_sils(Conshdlr):
 
@@ -38,13 +38,13 @@ class Conshdlr_sils(Conshdlr):
         return cutsadded
 
     def check(self, solution):
-        return {"result": scip_result.infeasible}
+        return {"result": SCIP_RESULT.INFEASIBLE}
 
     def enfolp(self, solinfeasible):
         if self.addcut():
-            return {"result": scip_result.consadded}
+            return {"result": SCIP_RESULT.CONSADDED}
         else:
-            return {"result": scip_result.feasible}
+            return {"result": SCIP_RESULT.FEASIBLE}
 
 
 def sils(T,f,c,d,h):
@@ -114,7 +114,7 @@ def sils_cut(T,f,c,d,h, conshdlr):
     #include the lot sizing constraint handler
     model.includeConshdlr(conshdlr, "SILS", "Constraint handler for single item lot sizing",
                           sepapriority=0, enfopriority=0, chckpriority=0, sepafreq=1, propfreq=-1,
-                          eagerfreq=-1, maxprerounds=0, delaysepa=False, delayprop=False, needscons=False)
+                          eagerfreq=-1, maxprerounds=0, delaysepa=False, delayprop=False, needscons=False, presoltiming=SCIP_PRESOLTIMING.FAST, proptiming=SCIP_PROPTIMING.BEFORELP)
     conshdlr.data = D,Ts
 
     model.data = y,x,I
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     model.setBoolParam("misc/allowdualreds", 0)
     model.optimize()
     y,x,I = model.data
-    print("\nOptimal value [cutting plan es]:",model.getObjVal())
+    print("\nOptimal value [cutting planes]:",model.getObjVal())
     print("%8s%8s%8s%8s%8s%8s%12s%12s" % ("t","fix","var","h","dem","y","x","I"))
     for t in range(1,T+1):
         print("%8d%8d%8d%8d%8d%8.1f%12.1f%12.1f" % (t,f[t],c[t],h[t],d[t],model.getVal(y[t]),model.getVal(x[t]),model.getVal(I[t])))
