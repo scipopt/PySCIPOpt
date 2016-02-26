@@ -58,19 +58,33 @@ cdef SCIP_RETCODE PyPropPresol (SCIP* scip, SCIP_PROP* prop, int nrounds, SCIP_P
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
+    # dictionary for input/output parameters
     result_dict = {}
-    result_dict = PyProp.proppresol(nrounds, presoltiming)
-    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
-    nfixedvars[0] += result_dict.get("nnewfixedvars", 0)
-    naggrvars[0] += result_dict.get("nnewaggrvars", 0)
-    nchgvartypes[0] += result_dict.get("nnewchgvartypes", 0)
-    nchgbds[0] += result_dict.get("nnewchgbds", 0)
-    naddholes[0] += result_dict.get("nnewaddholes", 0)
-    ndelconss[0] += result_dict.get("nnewdelconss", 0)
-    naddconss[0] += result_dict.get("nnewaddconss", 0)
-    nupgdconss[0] += result_dict.get("nnewupgdconss", 0)
-    nchgcoefs[0] += result_dict.get("nnewchgcoefs", 0)
-    nchgsides[0] += result_dict.get("nnewchgsides", 0)
+    result_dict["nfixedvars"]   = nfixedvars[0]
+    result_dict["naggrvars"]    = naggrvars[0]
+    result_dict["nchgvartypes"] = nchgvartypes[0]
+    result_dict["nchgbds"]      = nchgbds[0]
+    result_dict["naddholes"]    = naddholes[0]
+    result_dict["ndelconss"]    = ndelconss[0]
+    result_dict["naddconss"]    = naddconss[0]
+    result_dict["nupgdconss"]   = nupgdconss[0]
+    result_dict["nchgcoefs"]    = nchgcoefs[0]
+    result_dict["nchgsides"]    = nchgsides[0]
+    result_dict["result"]       = result[0]
+    PyProp.proppresol(nrounds, presoltiming,
+                      nnewfixedvars, nnewaggrvars, nnewchgvartypes, nnewchgbds, nnewholes,
+                      nnewdelconss, nnewaddconss, nnewupgdconss, nnewchgcoefs, nnewchgsides, result_dict)
+    result[0]       = result_dict["result"]
+    nfixedvars[0]   = result_dict["nfixedvars"]
+    naggrvars[0]    = result_dict["naggrvars"]
+    nchgvartypes[0] = result_dict["nchgvartypes"]
+    nchgbds[0]      = result_dict["nchgbds"]
+    naddholes[0]    = result_dict["naddholes"]
+    ndelconss[0]    = result_dict["ndelconss"]
+    naddconss[0]    = result_dict["naddconss"]
+    nupgdconss[0]   = result_dict["nupgdconss"]
+    nchgcoefs[0]    = result_dict["nchgcoefs"]
+    nchgsides[0]    = result_dict["nchgsides"]
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPropExec (SCIP* scip, SCIP_PROP* prop, SCIP_PROPTIMING proptiming, SCIP_RESULT* result):
@@ -79,7 +93,7 @@ cdef SCIP_RETCODE PyPropExec (SCIP* scip, SCIP_PROP* prop, SCIP_PROPTIMING propt
     PyProp = <Prop>propdata
     returnvalues = PyProp.propexec()
     result_dict = returnvalues
-    result[0] = result_dict.get("result", SCIP_DIDNOTFIND)
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPropResProp (SCIP* scip, SCIP_PROP* prop, SCIP_VAR* infervar, int inferinfo,
@@ -89,7 +103,7 @@ cdef SCIP_RETCODE PyPropResProp (SCIP* scip, SCIP_PROP* prop, SCIP_VAR* infervar
     PyProp = <Prop>propdata
     returnvalues = PyProp.resprop()
     result_dict = returnvalues
-    result[0] = result_dict.get("result", SCIP_SUCCESS)
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
 cdef class Prop:
@@ -117,14 +131,14 @@ cdef class Prop:
     def propexitpre(self):
         pass
 
-    def proppresol(self, nrounds, presoltiming):
+    def proppresol(self, nrounds, presoltiming, result_dict):
         # this method needs to be implemented by the user
-        return {}
+        pass
 
     def propexec(self):
         # this method needs to be implemented by the user
-        return {"result": SCIP_DIDNOTRUN}
+        return {}
 
     def propresprop(self):
         # this method needs to be implemented by the user
-        return {"result": SCIP_DIDNOTRUN}
+        return {}
