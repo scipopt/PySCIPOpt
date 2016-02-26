@@ -14,7 +14,6 @@ include "presol.pxi"
 include "sepa.pxi"
 include "propagator.pxi"
 include "heuristic.pxi"
-include "nodesel.pxi"
 include "branchrule.pxi"
 
 
@@ -1041,26 +1040,6 @@ cdef class Model:
                                           <SCIP_HEURDATA*> heur))
         heur.model = self
 
-
-    def includeNodesel(self, Nodesel nodesel, name, desc, stdpriority, memsavepriority):
-        """Include a node selector.
-
-        Keyword arguments:
-        nodesel -- the node selector
-        name -- the name of the node selector
-        desc -- the description
-        stdpriority -- priority of the node selector in standard mode
-        memsavepriority -- priority of the node selector in memory saving mode
-        """
-
-        nam = str_conversion(name)
-        des = str_conversion(desc)
-        PY_SCIP_CALL(scip.SCIPincludeNodesel(self._scip, nam, des,
-                                             stdpriority, memsavepriority,
-                                             PyNodeselCopy, PyNodeselFree, PyNodeselInit, PyNodeselExit,
-                                             PyNodeselInitsol, PyNodeselExitsol, PyNodeselSelect, PyNodeselComp,
-                                             <SCIP_NODESELDATA*> nodesel))
-        nodesel.model = self
 
     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
         """Include a branching rule.

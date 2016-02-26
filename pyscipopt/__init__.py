@@ -5,7 +5,6 @@ from pyscipopt.scip      import Model
 from pyscipopt.scip      import Branchrule
 from pyscipopt.scip      import Conshdlr
 from pyscipopt.scip      import Heur
-from pyscipopt.scip      import Nodesel
 from pyscipopt.scip      import Presol
 from pyscipopt.scip      import Pricer
 from pyscipopt.scip      import Prop
