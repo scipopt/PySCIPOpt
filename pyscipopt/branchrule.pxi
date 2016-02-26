@@ -79,15 +79,15 @@ cdef class Branchrule:
     def branchexitsol(self):
         pass
 
-    def branchexeclp(self):
+    def branchexeclp(self, allowaddcons):
         # this method needs to be implemented by the user
         return {}
 
-    def branchexecext(self):
+    def branchexecext(self, allowaddcons):
         # this method needs to be implemented by the user
         return {}
 
-    def branchexecps(self):
+    def branchexecps(self, allowaddcons):
         # this method needs to be implemented by the user
         return {}
 
