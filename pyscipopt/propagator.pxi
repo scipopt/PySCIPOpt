@@ -101,7 +101,7 @@ cdef SCIP_RETCODE PyPropResProp (SCIP* scip, SCIP_PROP* prop, SCIP_VAR* infervar
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
-    returnvalues = PyProp.resprop()
+    returnvalues = PyProp.propresprop()
     result_dict = returnvalues
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
