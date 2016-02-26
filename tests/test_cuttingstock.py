@@ -3,9 +3,8 @@ from pyscipopt import Model, Pricer, SCIP_RESULT
 class CutPricer(Pricer):
 
     # The reduced cost function for the variable pricer
-    def pricerredcost(self, dicci):
+    def pricerredcost(self):
 
-        dicci['bla'] = 1
         # Retreiving the dual solutions
         dualSolutions = []
         for i, c in enumerate(self.data['cons']):

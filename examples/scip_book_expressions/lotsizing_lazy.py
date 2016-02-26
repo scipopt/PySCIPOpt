@@ -37,10 +37,10 @@ class Conshdlr_sils(Conshdlr):
                 cutsadded = True
         return cutsadded
 
-    def check(self, solution):
+    def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason):
         return {"result": SCIP_RESULT.INFEASIBLE}
 
-    def enfolp(self, solinfeasible):
+    def consenfolp(self, constraints, nusefulconss, solinfeasible):
         if self.addcut():
             return {"result": SCIP_RESULT.CONSADDED}
         else:
