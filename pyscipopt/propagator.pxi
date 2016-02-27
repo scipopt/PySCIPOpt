@@ -91,7 +91,7 @@ cdef SCIP_RETCODE PyPropExec (SCIP* scip, SCIP_PROP* prop, SCIP_PROPTIMING propt
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
-    returnvalues = PyProp.propexec()
+    returnvalues = PyProp.propexec(proptiming)
     result_dict = returnvalues
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
@@ -100,8 +100,12 @@ cdef SCIP_RETCODE PyPropResProp (SCIP* scip, SCIP_PROP* prop, SCIP_VAR* infervar
                                  SCIP_BOUNDTYPE boundtype, SCIP_BDCHGIDX* bdchgidx, SCIP_Real relaxedbd, SCIP_RESULT* result):
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
+    confvar = pythonizeVar(infervar, "conflictvar")
+
+#TODO: parse bdchgidx?
+
     PyProp = <Prop>propdata
-    returnvalues = PyProp.propresprop()
+    returnvalues = PyProp.propresprop(confvar, inferinfo, boundtype, relaxedbd)
     result_dict = returnvalues
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
@@ -132,13 +136,12 @@ cdef class Prop:
         pass
 
     def proppresol(self, nrounds, presoltiming, result_dict):
-        # this method needs to be implemented by the user
         pass
 
-    def propexec(self):
-        # this method needs to be implemented by the user
+    def propexec(self, proptiming):
+        print("python error in propexec: this method needs to be implemented")
         return {}
 
-    def propresprop(self):
-        # this method needs to be implemented by the user
+    def propresprop(self, confvar, inferinfo, bdtype, relaxedbd):
+        print("python error in propresprop: this method needs to be implemented")
         return {}

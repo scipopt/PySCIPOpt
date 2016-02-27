@@ -33,6 +33,10 @@ cdef extern from "scip/scip.h":
         SCIP_OBJSENSE_MAXIMIZE = -1
         SCIP_OBJSENSE_MINIMIZE =  1
 
+    ctypedef enum SCIP_BOUNDTYPE:
+        SCIP_BOUNDTYPE_LOWER = 0
+        SCIP_BOUNDTYPE_UPPER = 1
+
     ctypedef enum SCIP_RESULT:
         SCIP_DIDNOTRUN   =   1
         SCIP_DELAYED     =   2
