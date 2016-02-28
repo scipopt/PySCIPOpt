@@ -229,11 +229,12 @@ cdef class Cons:
     cdef scip.SCIP_CONS* _cons
 
 class Constraint:
-    cdef public object data
-
     def __init__(self, name=None):
         self.cons = Cons()
         self.name = name
+
+    def __repr__(self):
+        return self.name
 
     def isOriginal(self):
         cdef Cons c
@@ -315,6 +316,18 @@ cdef class Model:
 
     def getPresolvingTime(self):
         return scip.SCIPgetPresolvingTime(self._scip)
+
+    def infinity(self):
+        """Retrieve 'infinity' value."""
+        return scip.SCIPinfinity(self._scip)
+
+    def epsilon(self):
+        """Return epsilon for e.g. equality checks"""
+        return scip.SCIPepsilon(self._scip)
+
+    def feastol(self):
+        """Return feasibility tolerance"""
+        return scip.SCIPfeastol(self._scip)
 
     #@scipErrorHandler       We'll be able to use decorators when we
     #                        interface the relevant classes (SCIP_VAR, ...)
@@ -584,8 +597,6 @@ cdef class Model:
         """
         cdef scip.SCIP_VAR** _vars
         cdef scip.SCIP_VAR* _var
-        cdef Var v
-        cdef const char* _name
         cdef int _nvars
         vars = []
 
@@ -899,7 +910,6 @@ cdef class Model:
         cdef scip.SCIP_CONS** _conss
         cdef scip.SCIP_CONS* _cons
         cdef Cons c
-        cdef const char* _name
         cdef int _nconss
         conss = []
 
@@ -908,11 +918,7 @@ cdef class Model:
 
         for i in range(_nconss):
             _cons = _conss[i]
-            _name = SCIPconsGetName(_cons)
-            cons = Constraint(_name)
-            c = cons.cons
-            c._cons = _cons
-            conss.append(cons)
+            conss.append(pythonizeCons(_cons, SCIPconsGetName(_cons).decode("utf-8")))
 
         return conss
 
@@ -940,11 +946,6 @@ cdef class Model:
         """Optimize the problem."""
         PY_SCIP_CALL(scip.SCIPsolve(self._scip))
         self._bestSol = scip.SCIPgetBestSol(self._scip)
-
-    def infinity(self):
-        """Retrieve 'infinity' value."""
-        inf = scip.SCIPinfinity(self._scip)
-        return inf
 
     def includePricer(self, Pricer pricer, name, desc, priority=1, delay=True):
         """Include a pricer.

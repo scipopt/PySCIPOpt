@@ -238,6 +238,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetPresolving(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)
     SCIP_RETCODE SCIPwriteOrigProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
     SCIP_STATUS SCIPgetStatus(SCIP* scip)
+    SCIP_Real SCIPepsilon(SCIP* scip)
+    SCIP_Real SCIPfeastol(SCIP* scip)
 
     # Solve Methods
     SCIP_RETCODE SCIPsolve(SCIP* scip)
