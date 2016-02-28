@@ -229,6 +229,8 @@ cdef class Cons:
     cdef scip.SCIP_CONS* _cons
 
 class Constraint:
+    cdef public object data
+
     def __init__(self, name=None):
         self.cons = Cons()
         self.name = name
