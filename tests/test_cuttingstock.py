@@ -1,4 +1,4 @@
-from pyscipopt import Model, Pricer, SCIP_RESULT
+from pyscipopt import Model, Pricer, SCIP_RESULT, SCIP_PARAMSETTING
 
 class CutPricer(Pricer):
 
@@ -14,7 +14,7 @@ class CutPricer(Pricer):
         subMIP = Model("CuttingStock-Sub")
 
         # Turning off presolve
-        subMIP.setPresolve(3)
+        subMIP.setPresolve(SCIP_PARAMSETTING.OFF)
 
         # Setting the verbosity level to 0
         subMIP.hideOutput()
