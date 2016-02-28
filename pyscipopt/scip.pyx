@@ -7,7 +7,6 @@ import sys
 cimport pyscipopt.scip as scip
 from pyscipopt.linexpr import LinExpr, LinCons
 
-include "reader.pxi"
 include "pricer.pxi"
 include "conshdlr.pxi"
 include "presol.pxi"
@@ -941,20 +940,6 @@ cdef class Model:
         PY_SCIP_CALL(scip.SCIPactivatePricer(self._scip, scip_pricer))
         pricer.model = self
 
-    def includeReader(self, Reader reader, name, desc, extension):
-        """"Include a reader.
-
-        Keyword arguments:
-        reader -- the reader
-        name -- the name
-        desc -- the description
-        extension -- file extension that reader processes
-        """
-        n = str_conversion(name)
-        d = str_conversion(desc)
-        ext = str_conversion(extension)
-        PY_SCIP_CALL(scip.SCIPincludeReader(self._scip, n, d, ext, PyReaderCopy, PyReaderFree, PyReaderRead, PyReaderWrite, <SCIP_READERDATA*>reader))
-        reader.model = self
 
     def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority, enfopriority, chckpriority, sepafreq, propfreq, eagerfreq,
                         maxprerounds, delaysepa, delayprop, needscons, proptiming=SCIP_PROPTIMING_AFTERLPNODE, presoltiming=SCIP_PRESOLTIMING_FAST):
