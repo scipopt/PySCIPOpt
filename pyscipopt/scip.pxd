@@ -1,6 +1,3 @@
-# Copyright (C) 2012-2013 Robert Schwarz
-#   see file 'LICENSE' for details.
-
 cdef extern from "scip/scip.h":
     # SCIP internal types
     ctypedef enum SCIP_RETCODE:
@@ -120,6 +117,9 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_ROW:
+        pass
+
+    ctypedef struct SCIP_COL:
         pass
 
     ctypedef struct SCIP_SOL:
@@ -267,6 +267,8 @@ cdef extern from "scip/scip.h":
     SCIP_VARTYPE SCIPvarGetType(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
+    SCIP_COL* SCIPvarGetCol(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsInLP(SCIP_VAR* var)
 
     # Constraint Methods
     SCIP_RETCODE SCIPcaptureCons(SCIP* scip, SCIP_CONS* cons)
@@ -291,6 +293,12 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPtrySolFree(SCIP* scip, SCIP_SOL** sol, SCIP_Bool printreason, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* stored)
     SCIP_RETCODE SCIPtrySol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool printreason, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* stored)
     SCIP_RETCODE SCIPfreeSol(SCIP* scip, SCIP_SOL** sol)
+
+    # Row Methods
+    SCIP_RETCODE SCIPcreateRow(SCIP* scip, SCIP_ROW** row, const char* name, int len, SCIP_COL** cols, SCIP_Real* vals,
+                               SCIP_Real lhs, SCIP_Real rhs, SCIP_Bool local, SCIP_Bool modifiable, SCIP_Bool removable)
+    SCIP_RETCODE SCIPaddCut(SCIP* scip, SCIP_SOL* sol, SCIP_ROW* row, SCIP_Bool forcecut, SCIP_Bool* infeasible)
+
 
     # Dual Solution Methods
     SCIP_Real SCIPgetDualbound(SCIP* scip)

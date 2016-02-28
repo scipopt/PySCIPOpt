@@ -1,4 +1,4 @@
-from pyscipopt import Model, Heur, SCIP_RESULT, SCIP_PARAMSETTING
+from pyscipopt import Model, Heur, SCIP_RESULT, SCIP_PARAMSETTING, SCIP_HEURTIMING
 
 
 class MyHeur(Heur):
@@ -10,8 +10,6 @@ class MyHeur(Heur):
 
         self.model.setSolVal(sol, vars[0], 5.0)
         self.model.setSolVal(sol, vars[1], 0.0)
-
-        print(vars[0])
 
         accepted = self.model.trySol(sol)
 
@@ -25,7 +23,7 @@ def test_heur():
     # create solver instance
     s = Model()
     heuristic = MyHeur()
-    s.includeHeur(heuristic, "PyHeur", "custom heuristic implemented in python", "Y")
+    s.includeHeur(heuristic, "PyHeur", "custom heuristic implemented in python", "Y", timingmask=SCIP_HEURTIMING.BEFORENODE)
     s.setPresolve(SCIP_PARAMSETTING.OFF)
 
     # add some variables

@@ -372,6 +372,7 @@ cdef SCIP_RETCODE PyConsGetdivebdchgs (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP
 cdef class Conshdlr:
     cdef public object data     # storage for the python user
     cdef public Model model
+    cdef public str name
 
     def consfree(self):
         pass

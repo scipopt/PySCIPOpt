@@ -1,6 +1,3 @@
-# Copyright (C) 2012-2013 Robert Schwarz
-#   see file 'LICENSE' for details.
-
 from os.path import abspath
 import sys
 
@@ -144,6 +141,16 @@ def PY_SCIP_CALL(scip.SCIP_RETCODE rc):
     return rc
 
 
+cdef class Col:
+    """Base class holding a pointer to corresponding SCIP_COL"""
+    cdef scip.SCIP_COL* _col
+
+
+cdef class Row:
+    """Base class holding a pointer to corresponding SCIP_ROW"""
+    cdef scip.SCIP_ROW* _row
+
+
 cdef class Solution:
     """Base class holding a pointer to corresponding SCIP_SOL"""
     cdef scip.SCIP_SOL* _solution
@@ -192,6 +199,24 @@ class Variable(LinExpr):
         v = self.var
         _var = v._var
         return scip.SCIPvarIsOriginal(_var)
+
+    def isInLP(self):
+        cdef Var v
+        cdef scip.SCIP_VAR* _var
+        v = self.var
+        _var = v._var
+        return scip.SCIPvarIsInLP(_var)
+
+    def getCol(self):
+        cdef Var v
+        cdef scip.SCIP_VAR* _var
+        v = self.var
+        _var = v._var
+        col = Col()
+        cdef scip.SCIP_COL* _col
+        _col = col._col
+        _col = scip.SCIPvarGetCol(_var)
+        return col
 
 cdef pythonizeVar(scip.SCIP_VAR* scip_var, name):
     var = Variable(name)
@@ -797,6 +822,7 @@ cdef class Model:
         self._addCons(scip_cons)
         return pythonizeCons(scip_cons, name)
 
+
     def addVarSOS1(self, cons, var, weight):
         """Add variable to SOS1 constraint.
 
@@ -973,6 +999,20 @@ cdef class Model:
                                               PyConsParse, PyConsGetvars, PyConsGetnvars, PyConsGetdivebdchgs,
                                               <SCIP_CONSHDLRDATA*>conshdlr))
         conshdlr.model = self
+        conshdlr.name = name
+
+    def createCons(self, Conshdlr conshdlr, name, initial=True, separate=True, enforce=True, check=True, propagate=True,
+                   local=False, modifiable=False, dynamic=False, removable=False, stickingatnode=False):
+
+        n = str_conversion(name)
+        cdef SCIP_CONSHDLR* _conshdlr
+        _conshdlr = scip.SCIPfindConshdlr(self._scip, str_conversion(conshdlr.name))
+        constraint = Constraint(name)
+        cdef SCIP_CONS* _cons
+        _cons = <SCIP_CONS*>constraint._constraint
+        PY_SCIP_CALL(SCIPcreateCons(self._scip, &_cons, n, _conshdlr, NULL,
+                                initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
+        return constraint
 
     def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing=SCIP_PRESOLTIMING_FAST):
         """Include a presolver
