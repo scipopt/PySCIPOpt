@@ -256,8 +256,10 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPreleaseVar(SCIP* scip, SCIP_VAR** var)
     SCIP_RETCODE SCIPtransformVar(SCIP* scip, SCIP_VAR* var, SCIP_VAR** transvar)
     SCIP_VAR** SCIPgetVars(SCIP* scip)
+    SCIP_VAR** SCIPgetOrigVars(SCIP* scip)
     const char* SCIPvarGetName(SCIP_VAR* var)
     int SCIPgetNVars(SCIP* scip)
+    int SCIPgetNOrigVars(SCIP* scip)
     SCIP_VARTYPE SCIPvarGetType(SCIP_VAR* var)
 
     # Constraint Methods
@@ -276,6 +278,11 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPwriteVarName(SCIP* scip, FILE* outfile, SCIP_VAR* var, SCIP_Bool vartype)
     SCIP_Real SCIPgetSolOrigObj(SCIP* scip, SCIP_SOL* sol)
     SCIP_Real SCIPgetSolTransObj(SCIP* scip, SCIP_SOL* sol)
+    SCIP_RETCODE SCIPcreateSol(SCIP* scip, SCIP_SOL** sol, SCIP_HEUR* heur)
+    SCIP_RETCODE SCIPsetSolVal(SCIP* scip, SCIP_SOL* sol, SCIP_VAR* var, SCIP_Real val)
+    SCIP_RETCODE SCIPtrySolFree(SCIP* scip, SCIP_SOL** sol, SCIP_Bool printreason, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* stored)
+    SCIP_RETCODE SCIPtrySol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool printreason, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* stored)
+    SCIP_RETCODE SCIPfreeSol(SCIP* scip, SCIP_SOL** sol)
 
     # Dual Solution Methods
     SCIP_Real SCIPgetDualbound(SCIP* scip)
@@ -460,6 +467,7 @@ cdef extern from "scip/scip.h":
                                  SCIP_RETCODE (*heurexec) (SCIP* scip, SCIP_HEUR* heur, SCIP_HEURTIMING heurtiming, SCIP_Bool nodeinfeasible, SCIP_RESULT* result),
                                  SCIP_HEURDATA* heurdata)
     SCIP_HEURDATA* SCIPheurGetData(SCIP_HEUR* heur)
+    SCIP_HEUR* SCIPfindHeur(SCIP* scip, const char* name)
 
     # Node selection plugin
     SCIP_RETCODE SCIPincludeNodesel(SCIP* scip,

@@ -47,6 +47,7 @@ cdef SCIP_RETCODE PyHeurExec (SCIP* scip, SCIP_HEUR* heur, SCIP_HEURTIMING heurt
 cdef class Heur:
     cdef public object data     # storage for the python user
     cdef public Model model
+    cdef public str name
 
     def heurfree(self):
         pass

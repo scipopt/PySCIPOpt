@@ -144,7 +144,9 @@ def PY_SCIP_CALL(scip.SCIP_RETCODE rc):
         raise Exception('SCIP: unknown return code!')
     return rc
 
+
 cdef class Solution:
+    """Base class holding a pointer to corresponding SCIP_SOL"""
     cdef scip.SCIP_SOL* _solution
 
 
@@ -521,8 +523,12 @@ cdef class Model:
         if infeasible:
             print('could not change variable type of variable ',<bytes> scip.SCIPvarGetName(_var))
 
-    def getVars(self):
-        """Retrieve all variables."""
+    def getVars(self, transformed=False):
+        """Retrieve all variables.
+
+        Keyword arguments:
+        transformed -- get transformed variables instead of original
+        """
         cdef scip.SCIP_VAR** _vars
         cdef scip.SCIP_VAR* _var
         cdef Var v
@@ -530,12 +536,16 @@ cdef class Model:
         cdef int _nvars
         vars = []
 
-        _vars = SCIPgetVars(self._scip)
-        _nvars = SCIPgetNVars(self._scip)
+        if transformed:
+            _vars = SCIPgetVars(self._scip)
+            _nvars = SCIPgetNVars(self._scip)
+        else:
+            _vars = SCIPgetOrigVars(self._scip)
+            _nvars = SCIPgetNOrigVars(self._scip)
 
         for i in range(_nvars):
             _var = _vars[i]
-            name = <bytes> scip.SCIPvarGetName(_var)
+            name = scip.SCIPvarGetName(_var).decode("utf-8")
             vars.append(pythonizeVar(_var, name))
 
         return vars
@@ -1013,8 +1023,8 @@ cdef class Model:
                                           <SCIP_PROPDATA*> prop))
         prop.model = self
 
-    def includeHeur(self, Heur heur, name, desc, dispchar, priority, freqofs,
-                    maxdepth, timingmask, usessubscip, freq=1):
+    def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,
+                    maxdepth=-1, timingmask=SCIP_HEURTIMING_BEFORENODE, usessubscip=False):
         """Include a primal heuristic.
 
         Keyword arguments:
@@ -1031,7 +1041,7 @@ cdef class Model:
         """
         nam = str_conversion(name)
         des = str_conversion(desc)
-        dis = str_conversion(dispchar)
+        dis = ord(str_conversion(dispchar))
         PY_SCIP_CALL(scip.SCIPincludeHeur(self._scip, nam, des, dis,
                                           priority, freq, freqofs,
                                           maxdepth, timingmask, usessubscip,
@@ -1039,7 +1049,52 @@ cdef class Model:
                                           PyHeurInitsol, PyHeurExitsol, PyHeurExec,
                                           <SCIP_HEURDATA*> heur))
         heur.model = self
+        heur.name = name
 
+    def createSol(self, Heur heur):
+        """Create a new primal solution.
+
+        Keyword arguments:
+        solution -- the new solution
+        heur -- the heuristic that found the solution
+        """
+        n = str_conversion(heur.name)
+        cdef SCIP_HEUR* _heur
+        _heur = scip.SCIPfindHeur(self._scip, n)
+        solution = Solution()
+        PY_SCIP_CALL(scip.SCIPcreateSol(self._scip, &solution._solution, _heur))
+        return solution
+
+
+    def setSolVal(self, Solution solution, variable, val):
+        """Set a variable in a solution.
+
+        Keyword arguments:
+        solution -- the solution to be modified
+        variable -- the variable in the solution
+        val -- the value of the variable in the solution
+        """
+        cdef SCIP_SOL* _sol
+        cdef SCIP_VAR* _var
+        cdef Var var
+        var = <Var>variable.var
+        _var = <SCIP_VAR*>var._var
+        _sol = <SCIP_SOL*>solution._solution
+        PY_SCIP_CALL(scip.SCIPsetSolVal(self._scip, _sol, _var, val))
+
+    def trySol(self, Solution solution, printreason=True, checkbounds=True, checkintegrality=True, checklprows=True):
+        """Try to add a solution to the storage.
+
+        Keyword arguments:
+        solution -- the solution to store
+        printreason -- should all reasons of violations be printed?
+        checkbounds -- should the bounds of the variables be checked?
+        checkintegrality -- has integrality to be checked?
+        checklprows -- have current LP rows (both local and global) to be checked?
+        """
+        cdef SCIP_Bool stored
+        PY_SCIP_CALL(scip.SCIPtrySolFree(self._scip, &solution._solution, printreason, checkbounds, checkintegrality, checklprows, &stored))
+        return stored
 
     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
         """Include a branching rule.
