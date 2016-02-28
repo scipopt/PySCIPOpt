@@ -278,6 +278,18 @@ cdef class Model:
     def printVersion(self):
         scip.SCIPprintVersion(self._scip, NULL)
 
+    def getTotalTime(self):
+        return scip.SCIPgetTotalTime(self._scip)
+
+    def getSolvingTime(self):
+        return scip.SCIPgetSolvingTime(self._scip)
+
+    def getReadingTime(self):
+        return scip.SCIPgetReadingTime(self._scip)
+
+    def getPresolvingTime(self):
+        return scip.SCIPgetPresolvingTime(self._scip)
+
     #@scipErrorHandler       We'll be able to use decorators when we
     #                        interface the relevant classes (SCIP_VAR, ...)
     cdef _createVarBasic(self, scip.SCIP_VAR** scip_var, name,

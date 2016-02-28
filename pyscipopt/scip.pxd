@@ -220,6 +220,10 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPfree(SCIP** scip)
     void SCIPsetMessagehdlrQuiet(SCIP* scip, SCIP_Bool quiet)
     void SCIPprintVersion(SCIP* scip, FILE* outfile)
+    SCIP_Real SCIPgetTotalTime(SCIP* scip)
+    SCIP_Real SCIPgetSolvingTime(SCIP* scip)
+    SCIP_Real SCIPgetReadingTime(SCIP* scip)
+    SCIP_Real SCIPgetPresolvingTime(SCIP* scip)
 
     # Global Problem Methods
     SCIP_RETCODE SCIPcreateProbBasic(SCIP* scip, char* name)
