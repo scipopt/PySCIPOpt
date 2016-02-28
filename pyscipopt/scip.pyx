@@ -187,6 +187,13 @@ class Variable(LinExpr):
         elif vartype == scip.SCIP_VARTYPE_CONTINUOUS or vartype == scip.SCIP_VARTYPE_IMPLINT:
             return "CONTINUOUS"
 
+    def isOriginal(self):
+        cdef Var v
+        cdef scip.SCIP_VAR* _var
+        v = self.var
+        _var = v._var
+        return scip.SCIPvarIsOriginal(_var)
+
 cdef pythonizeVar(scip.SCIP_VAR* scip_var, name):
     var = Variable(name)
     cdef Var v
@@ -549,6 +556,7 @@ cdef class Model:
             vars.append(pythonizeVar(_var, name))
 
         return vars
+
 
     # Constraint functions
     # . By default the lhs is set to 0.0.

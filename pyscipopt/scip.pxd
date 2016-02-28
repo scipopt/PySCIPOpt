@@ -261,6 +261,8 @@ cdef extern from "scip/scip.h":
     int SCIPgetNVars(SCIP* scip)
     int SCIPgetNOrigVars(SCIP* scip)
     SCIP_VARTYPE SCIPvarGetType(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsOriginal(SCIP* scip)
+    SCIP_Bool SCIPvarIsTransformed(SCIP* scip)
 
     # Constraint Methods
     SCIP_RETCODE SCIPcaptureCons(SCIP* scip, SCIP_CONS* cons)
