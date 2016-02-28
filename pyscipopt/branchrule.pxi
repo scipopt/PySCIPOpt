@@ -5,86 +5,89 @@ cdef SCIP_RETCODE PyBranchruleFree (SCIP* scip, SCIP_BRANCHRULE* branchrule):
     cdef SCIP_BRANCHRULEDATA* branchruledata
     branchruledata = SCIPbranchruleGetData(branchrule)
     PyBranchrule = <Branchrule>branchruledata
-    PyBranchrule.free()
+    PyBranchrule.branchfree()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyBranchruleInit (SCIP* scip, SCIP_BRANCHRULE* branchrule):
     cdef SCIP_BRANCHRULEDATA* branchruledata
     branchruledata = SCIPbranchruleGetData(branchrule)
     PyBranchrule = <Branchrule>branchruledata
-    PyBranchrule.init()
+    PyBranchrule.branchinit()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyBranchruleExit (SCIP* scip, SCIP_BRANCHRULE* branchrule):
     cdef SCIP_BRANCHRULEDATA* branchruledata
     branchruledata = SCIPbranchruleGetData(branchrule)
     PyBranchrule = <Branchrule>branchruledata
-    PyBranchrule.exit()
+    PyBranchrule.branchexit()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyBranchruleInitsol (SCIP* scip, SCIP_BRANCHRULE* branchrule):
     cdef SCIP_BRANCHRULEDATA* branchruledata
     branchruledata = SCIPbranchruleGetData(branchrule)
     PyBranchrule = <Branchrule>branchruledata
-    PyBranchrule.initsol()
+    PyBranchrule.branchinitsol()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyBranchruleExitsol (SCIP* scip, SCIP_BRANCHRULE* branchrule):
     cdef SCIP_BRANCHRULEDATA* branchruledata
     branchruledata = SCIPbranchruleGetData(branchrule)
     PyBranchrule = <Branchrule>branchruledata
-    PyBranchrule.exitsol()
+    PyBranchrule.branchexitsol()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyBranchruleExeclp (SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result):
     cdef SCIP_BRANCHRULEDATA* branchruledata
     branchruledata = SCIPbranchruleGetData(branchrule)
     PyBranchrule = <Branchrule>branchruledata
-    result[0] = PyBranchrule.execlp()
+    result_dict = PyBranchrule.branchexeclp(allowaddcons)
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyBranchruleExecext(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result):
     cdef SCIP_BRANCHRULEDATA* branchruledata
     branchruledata = SCIPbranchruleGetData(branchrule)
     PyBranchrule = <Branchrule>branchruledata
-    result[0] = PyBranchrule.execext()
+    result_dict = PyBranchrule.branchexecext(allowaddcons)
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyBranchruleExecps(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result):
     cdef SCIP_BRANCHRULEDATA* branchruledata
     branchruledata = SCIPbranchruleGetData(branchrule)
     PyBranchrule = <Branchrule>branchruledata
-    result[0] = PyBranchrule.execps()
+    result_dict = PyBranchrule.branchexecps(allowaddcons)
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
 cdef class Branchrule:
     cdef public object data     # storage for the python user
     cdef public Model model
 
-    def free(self):
+    def branchfree(self):
         pass
 
-    def init(self):
+    def branchinit(self):
         pass
 
-    def exit(self):
+    def branchexit(self):
         pass
 
-    def initsol(self):
+    def branchinitsol(self):
         pass
 
-    def exitsol(self):
+    def branchexitsol(self):
         pass
 
-    def execlp(self):
+    def branchexeclp(self, allowaddcons):
         # this method needs to be implemented by the user
-        return {"result": SCIP_DIDNOTRUN}
+        return {}
 
-    def execext(self):
+    def branchexecext(self, allowaddcons):
         # this method needs to be implemented by the user
-        return {"result": SCIP_DIDNOTRUN}
+        return {}
 
-    def execps(self):
+    def branchexecps(self, allowaddcons):
         # this method needs to be implemented by the user
-        return {"result": SCIP_DIDNOTRUN}
+        return {}
 

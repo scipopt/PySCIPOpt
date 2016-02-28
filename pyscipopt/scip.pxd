@@ -1,6 +1,3 @@
-# Copyright (C) 2012-2013 Robert Schwarz
-#   see file 'LICENSE' for details.
-
 cdef extern from "scip/scip.h":
     # SCIP internal types
     ctypedef enum SCIP_RETCODE:
@@ -32,6 +29,10 @@ cdef extern from "scip/scip.h":
     ctypedef enum SCIP_OBJSENSE:
         SCIP_OBJSENSE_MAXIMIZE = -1
         SCIP_OBJSENSE_MINIMIZE =  1
+
+    ctypedef enum SCIP_BOUNDTYPE:
+        SCIP_BOUNDTYPE_LOWER = 0
+        SCIP_BOUNDTYPE_UPPER = 1
 
     ctypedef enum SCIP_RESULT:
         SCIP_DIDNOTRUN   =   1
@@ -87,6 +88,19 @@ cdef extern from "scip/scip.h":
         SCIP_PRESOLTIMING_MEDIUM     = 0x004u
         SCIP_PRESOLTIMING_EXHAUSTIVE = 0x008u
 
+    ctypedef enum SCIP_HEURTIMING:
+        SCIP_HEURTIMING_BEFORENODE        = 0x001u
+        SCIP_HEURTIMING_DURINGLPLOOP      = 0x002u
+        SCIP_HEURTIMING_AFTERLPLOOP       = 0x004u
+        SCIP_HEURTIMING_AFTERLPNODE       = 0x008u
+        SCIP_HEURTIMING_AFTERPSEUDONODE   = 0x010u
+        SCIP_HEURTIMING_AFTERLPPLUNGE     = 0x020u
+        SCIP_HEURTIMING_AFTERPSEUDOPLUNGE = 0x040u
+        SCIP_HEURTIMING_DURINGPRICINGLOOP = 0x080u
+        SCIP_HEURTIMING_BEFOREPRESOL      = 0x100u
+        SCIP_HEURTIMING_DURINGPRESOLLOOP  = 0x200u
+        SCIP_HEURTIMING_AFTERPROPLOOP     = 0x400u
+
     ctypedef bint SCIP_Bool
 
     ctypedef long SCIP_Longint
@@ -103,6 +117,9 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_ROW:
+        pass
+
+    ctypedef struct SCIP_COL:
         pass
 
     ctypedef struct SCIP_SOL:
@@ -203,6 +220,10 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPfree(SCIP** scip)
     void SCIPsetMessagehdlrQuiet(SCIP* scip, SCIP_Bool quiet)
     void SCIPprintVersion(SCIP* scip, FILE* outfile)
+    SCIP_Real SCIPgetTotalTime(SCIP* scip)
+    SCIP_Real SCIPgetSolvingTime(SCIP* scip)
+    SCIP_Real SCIPgetReadingTime(SCIP* scip)
+    SCIP_Real SCIPgetPresolvingTime(SCIP* scip)
 
     # Global Problem Methods
     SCIP_RETCODE SCIPcreateProbBasic(SCIP* scip, char* name)
@@ -217,6 +238,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetPresolving(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)
     SCIP_RETCODE SCIPwriteOrigProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
     SCIP_STATUS SCIPgetStatus(SCIP* scip)
+    SCIP_Real SCIPepsilon(SCIP* scip)
+    SCIP_Real SCIPfeastol(SCIP* scip)
 
     # Solve Methods
     SCIP_RETCODE SCIPsolve(SCIP* scip)
@@ -239,9 +262,15 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPreleaseVar(SCIP* scip, SCIP_VAR** var)
     SCIP_RETCODE SCIPtransformVar(SCIP* scip, SCIP_VAR* var, SCIP_VAR** transvar)
     SCIP_VAR** SCIPgetVars(SCIP* scip)
+    SCIP_VAR** SCIPgetOrigVars(SCIP* scip)
     const char* SCIPvarGetName(SCIP_VAR* var)
     int SCIPgetNVars(SCIP* scip)
+    int SCIPgetNOrigVars(SCIP* scip)
     SCIP_VARTYPE SCIPvarGetType(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
+    SCIP_COL* SCIPvarGetCol(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsInLP(SCIP_VAR* var)
 
     # Constraint Methods
     SCIP_RETCODE SCIPcaptureCons(SCIP* scip, SCIP_CONS* cons)
@@ -250,6 +279,8 @@ cdef extern from "scip/scip.h":
     SCIP_CONS** SCIPgetConss(SCIP* scip)
     const char* SCIPconsGetName(SCIP_CONS* cons)
     int SCIPgetNConss(SCIP* scip)
+    SCIP_Bool SCIPconsIsOriginal(SCIP_CONS* cons)
+    SCIP_Bool SCIPconsIsTransformed(SCIP_CONS* cons)
 
     # Primal Solution Methods
     SCIP_SOL** SCIPgetSols(SCIP* scip)
@@ -259,6 +290,17 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPwriteVarName(SCIP* scip, FILE* outfile, SCIP_VAR* var, SCIP_Bool vartype)
     SCIP_Real SCIPgetSolOrigObj(SCIP* scip, SCIP_SOL* sol)
     SCIP_Real SCIPgetSolTransObj(SCIP* scip, SCIP_SOL* sol)
+    SCIP_RETCODE SCIPcreateSol(SCIP* scip, SCIP_SOL** sol, SCIP_HEUR* heur)
+    SCIP_RETCODE SCIPsetSolVal(SCIP* scip, SCIP_SOL* sol, SCIP_VAR* var, SCIP_Real val)
+    SCIP_RETCODE SCIPtrySolFree(SCIP* scip, SCIP_SOL** sol, SCIP_Bool printreason, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* stored)
+    SCIP_RETCODE SCIPtrySol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool printreason, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* stored)
+    SCIP_RETCODE SCIPfreeSol(SCIP* scip, SCIP_SOL** sol)
+
+    # Row Methods
+    SCIP_RETCODE SCIPcreateRow(SCIP* scip, SCIP_ROW** row, const char* name, int len, SCIP_COL** cols, SCIP_Real* vals,
+                               SCIP_Real lhs, SCIP_Real rhs, SCIP_Bool local, SCIP_Bool modifiable, SCIP_Bool removable)
+    SCIP_RETCODE SCIPaddCut(SCIP* scip, SCIP_SOL* sol, SCIP_ROW* row, SCIP_Bool forcecut, SCIP_Bool* infeasible)
+
 
     # Dual Solution Methods
     SCIP_Real SCIPgetDualbound(SCIP* scip)
@@ -443,6 +485,7 @@ cdef extern from "scip/scip.h":
                                  SCIP_RETCODE (*heurexec) (SCIP* scip, SCIP_HEUR* heur, SCIP_HEURTIMING heurtiming, SCIP_Bool nodeinfeasible, SCIP_RESULT* result),
                                  SCIP_HEURDATA* heurdata)
     SCIP_HEURDATA* SCIPheurGetData(SCIP_HEUR* heur)
+    SCIP_HEUR* SCIPfindHeur(SCIP* scip, const char* name)
 
     # Node selection plugin
     SCIP_RETCODE SCIPincludeNodesel(SCIP* scip,

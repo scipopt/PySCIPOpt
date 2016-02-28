@@ -1,20 +1,15 @@
-# Copyright (C) 2012-2013 Robert Schwarz
-#   see file 'LICENSE' for details.
-
 from os.path import abspath
 import sys
 
 cimport pyscipopt.scip as scip
 from pyscipopt.linexpr import LinExpr, LinCons
 
-include "reader.pxi"
 include "pricer.pxi"
 include "conshdlr.pxi"
 include "presol.pxi"
 include "sepa.pxi"
 include "propagator.pxi"
 include "heuristic.pxi"
-include "nodesel.pxi"
 include "branchrule.pxi"
 
 
@@ -33,48 +28,75 @@ def scipErrorHandler(function):
 
 # Mapping the SCIP_RESULT enum to a python class
 # This is required to return SCIP_RESULT in the python code
-cdef class scip_result:
-    didnotrun   =   1
-    delayed     =   2
-    didnotfind  =   3
-    feasible    =   4
-    infeasible  =   5
-    unbounded   =   6
-    cutoff      =   7
-    separated   =   8
-    newround    =   9
-    reducedom   =  10
-    consadded   =  11
-    consshanged =  12
-    branched    =  13
-    solvelp     =  14
-    foundsol    =  15
-    suspended   =  16
-    success     =  17
+# In __init__.py this is imported as SCIP_RESULT to keep the
+# original naming scheme using capital letters
+cdef class PY_SCIP_RESULT:
+    DIDNOTRUN   =   1
+    DELAYED     =   2
+    DIDNOTFIND  =   3
+    FEASIBLE    =   4
+    INFEASIBLE  =   5
+    UNBOUNDED   =   6
+    CUTOFF      =   7
+    SEPARATED   =   8
+    NEWROUND    =   9
+    REDUCEDOM   =  10
+    CONSADDED   =  11
+    CONSSHANGED =  12
+    BRANCHED    =  13
+    SOLVELP     =  14
+    FOUNDSOL    =  15
+    SUSPENDED   =  16
+    SUCCESS     =  17
 
 
-cdef class scip_paramsetting:
-    default     = 0
-    agressive   = 1
-    fast        = 2
-    off         = 3
+cdef class PY_SCIP_PARAMSETTING:
+    DEFAULT     = 0
+    AGRESSIVE   = 1
+    FAST        = 2
+    OFF         = 3
 
-cdef class scip_status:
-    unknown        =  0
-    userinterrupt  =  1
-    nodelimit      =  2
-    totalnodelimit =  3
-    stallnodelimit =  4
-    timelimit      =  5
-    memlimit       =  6
-    gaplimit       =  7
-    sollimit       =  8
-    bestsollimit   =  9
-    restartlimit   = 10
-    optimal        = 11
-    infeasible     = 12
-    unbounded      = 13
-    inforunbd      = 14
+cdef class PY_SCIP_STATUS:
+    UNKNOWN        =  0
+    USERINTERRUPT  =  1
+    NODELIMIT      =  2
+    TOTALNODELIMIT =  3
+    STALLNODELIMIT =  4
+    TIMELIMIT      =  5
+    MEMLIMIT       =  6
+    GAPLIMIT       =  7
+    SOLLIMIT       =  8
+    BESTSOLLIMIT   =  9
+    RESTARTLIMIT   = 10
+    OPTIMAL        = 11
+    INFEASIBLE     = 12
+    UNBOUNDED      = 13
+    INFORUNBD      = 14
+
+cdef class PY_SCIP_PROPTIMING:
+    BEFORELP     = 0X001U
+    DURINGLPLOOP = 0X002U
+    AFTERLPLOOP  = 0X004U
+    AFTERLPNODE  = 0X008U
+
+cdef class PY_SCIP_PRESOLTIMING:
+    NONE       = 0x000u
+    FAST       = 0x002u
+    MEDIUM     = 0x004u
+    EXHAUSTIVE = 0x008u
+
+cdef class PY_SCIP_HEURTIMING:
+    BEFORENODE        = 0x001u
+    DURINGLPLOOP      = 0x002u
+    AFTERLPLOOP       = 0x004u
+    AFTERLPNODE       = 0x008u
+    AFTERPSEUDONODE   = 0x010u
+    AFTERLPPLUNGE     = 0x020u
+    AFTERPSEUDOPLUNGE = 0x040u
+    DURINGPRICINGLOOP = 0x080u
+    BEFOREPRESOL      = 0x100u
+    DURINGPRESOLLOOP  = 0x200u
+    AFTERPROPLOOP     = 0x400u
 
 def PY_SCIP_CALL(scip.SCIP_RETCODE rc):
     if rc == scip.SCIP_OKAY:
@@ -118,7 +140,19 @@ def PY_SCIP_CALL(scip.SCIP_RETCODE rc):
         raise Exception('SCIP: unknown return code!')
     return rc
 
+
+cdef class Col:
+    """Base class holding a pointer to corresponding SCIP_COL"""
+    cdef scip.SCIP_COL* _col
+
+
+cdef class Row:
+    """Base class holding a pointer to corresponding SCIP_ROW"""
+    cdef scip.SCIP_ROW* _row
+
+
 cdef class Solution:
+    """Base class holding a pointer to corresponding SCIP_SOL"""
     cdef scip.SCIP_SOL* _solution
 
 
@@ -159,6 +193,31 @@ class Variable(LinExpr):
         elif vartype == scip.SCIP_VARTYPE_CONTINUOUS or vartype == scip.SCIP_VARTYPE_IMPLINT:
             return "CONTINUOUS"
 
+    def isOriginal(self):
+        cdef Var v
+        cdef scip.SCIP_VAR* _var
+        v = self.var
+        _var = v._var
+        return scip.SCIPvarIsOriginal(_var)
+
+    def isInLP(self):
+        cdef Var v
+        cdef scip.SCIP_VAR* _var
+        v = self.var
+        _var = v._var
+        return scip.SCIPvarIsInLP(_var)
+
+    def getCol(self):
+        cdef Var v
+        cdef scip.SCIP_VAR* _var
+        v = self.var
+        _var = v._var
+        col = Col()
+        cdef scip.SCIP_COL* _col
+        _col = col._col
+        _col = scip.SCIPvarGetCol(_var)
+        return col
+
 cdef pythonizeVar(scip.SCIP_VAR* scip_var, name):
     var = Variable(name)
     cdef Var v
@@ -173,6 +232,17 @@ class Constraint:
     def __init__(self, name=None):
         self.cons = Cons()
         self.name = name
+
+    def __repr__(self):
+        return self.name
+
+    def isOriginal(self):
+        cdef Cons c
+        cdef scip.SCIP_CONS* _cons
+        c = self.cons
+        _cons = c._cons
+        return scip.SCIPconsIsOriginal(_cons)
+
 
 cdef pythonizeCons(scip.SCIP_CONS* scip_cons, name):
     cons = Constraint(name)
@@ -234,6 +304,30 @@ cdef class Model:
 
     def printVersion(self):
         scip.SCIPprintVersion(self._scip, NULL)
+
+    def getTotalTime(self):
+        return scip.SCIPgetTotalTime(self._scip)
+
+    def getSolvingTime(self):
+        return scip.SCIPgetSolvingTime(self._scip)
+
+    def getReadingTime(self):
+        return scip.SCIPgetReadingTime(self._scip)
+
+    def getPresolvingTime(self):
+        return scip.SCIPgetPresolvingTime(self._scip)
+
+    def infinity(self):
+        """Retrieve 'infinity' value."""
+        return scip.SCIPinfinity(self._scip)
+
+    def epsilon(self):
+        """Return epsilon for e.g. equality checks"""
+        return scip.SCIPepsilon(self._scip)
+
+    def feastol(self):
+        """Return feasibility tolerance"""
+        return scip.SCIPfeastol(self._scip)
 
     #@scipErrorHandler       We'll be able to use decorators when we
     #                        interface the relevant classes (SCIP_VAR, ...)
@@ -495,24 +589,31 @@ cdef class Model:
         if infeasible:
             print('could not change variable type of variable ',<bytes> scip.SCIPvarGetName(_var))
 
-    def getVars(self):
-        """Retrieve all variables."""
+    def getVars(self, transformed=False):
+        """Retrieve all variables.
+
+        Keyword arguments:
+        transformed -- get transformed variables instead of original
+        """
         cdef scip.SCIP_VAR** _vars
         cdef scip.SCIP_VAR* _var
-        cdef Var v
-        cdef const char* _name
         cdef int _nvars
         vars = []
 
-        _vars = SCIPgetVars(self._scip)
-        _nvars = SCIPgetNVars(self._scip)
+        if transformed:
+            _vars = SCIPgetVars(self._scip)
+            _nvars = SCIPgetNVars(self._scip)
+        else:
+            _vars = SCIPgetOrigVars(self._scip)
+            _nvars = SCIPgetNOrigVars(self._scip)
 
         for i in range(_nvars):
             _var = _vars[i]
-            name = <bytes> scip.SCIPvarGetName(_var)
+            name = scip.SCIPvarGetName(_var).decode("utf-8")
             vars.append(pythonizeVar(_var, name))
 
         return vars
+
 
     # Constraint functions
     # . By default the lhs is set to 0.0.
@@ -734,6 +835,7 @@ cdef class Model:
         self._addCons(scip_cons)
         return pythonizeCons(scip_cons, name)
 
+
     def addVarSOS1(self, cons, var, weight):
         """Add variable to SOS1 constraint.
 
@@ -808,7 +910,6 @@ cdef class Model:
         cdef scip.SCIP_CONS** _conss
         cdef scip.SCIP_CONS* _cons
         cdef Cons c
-        cdef const char* _name
         cdef int _nconss
         conss = []
 
@@ -817,11 +918,7 @@ cdef class Model:
 
         for i in range(_nconss):
             _cons = _conss[i]
-            _name = SCIPconsGetName(_cons)
-            cons = Constraint(_name)
-            c = cons.cons
-            c._cons = _cons
-            conss.append(cons)
+            conss.append(pythonizeCons(_cons, SCIPconsGetName(_cons).decode("utf-8")))
 
         return conss
 
@@ -850,11 +947,6 @@ cdef class Model:
         PY_SCIP_CALL(scip.SCIPsolve(self._scip))
         self._bestSol = scip.SCIPgetBestSol(self._scip)
 
-    def infinity(self):
-        """Retrieve 'infinity' value."""
-        inf = scip.SCIPinfinity(self._scip)
-        return inf
-
     def includePricer(self, Pricer pricer, name, desc, priority=1, delay=True):
         """Include a pricer.
 
@@ -877,20 +969,6 @@ cdef class Model:
         PY_SCIP_CALL(scip.SCIPactivatePricer(self._scip, scip_pricer))
         pricer.model = self
 
-    def includeReader(self, Reader reader, name, desc, extension):
-        """"Include a reader.
-
-        Keyword arguments:
-        reader -- the reader
-        name -- the name
-        desc -- the description
-        extension -- file extension that reader processes
-        """
-        n = str_conversion(name)
-        d = str_conversion(desc)
-        ext = str_conversion(extension)
-        PY_SCIP_CALL(scip.SCIPincludeReader(self._scip, n, d, ext, PyReaderCopy, PyReaderFree, PyReaderRead, PyReaderWrite, <SCIP_READERDATA*>reader))
-        reader.model = self
 
     def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority, enfopriority, chckpriority, sepafreq, propfreq, eagerfreq,
                         maxprerounds, delaysepa, delayprop, needscons, proptiming=SCIP_PROPTIMING_AFTERLPNODE, presoltiming=SCIP_PRESOLTIMING_FAST):
@@ -924,8 +1002,22 @@ cdef class Model:
                                               PyConsParse, PyConsGetvars, PyConsGetnvars, PyConsGetdivebdchgs,
                                               <SCIP_CONSHDLRDATA*>conshdlr))
         conshdlr.model = self
+        conshdlr.name = name
 
-    def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing):
+    def createCons(self, Conshdlr conshdlr, name, initial=True, separate=True, enforce=True, check=True, propagate=True,
+                   local=False, modifiable=False, dynamic=False, removable=False, stickingatnode=False):
+
+        n = str_conversion(name)
+        cdef SCIP_CONSHDLR* _conshdlr
+        _conshdlr = scip.SCIPfindConshdlr(self._scip, str_conversion(conshdlr.name))
+        constraint = Constraint(name)
+        cdef SCIP_CONS* _cons
+        _cons = <SCIP_CONS*>constraint._constraint
+        PY_SCIP_CALL(SCIPcreateCons(self._scip, &_cons, n, _conshdlr, NULL,
+                                initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
+        return constraint
+
+    def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing=SCIP_PRESOLTIMING_FAST):
         """Include a presolver
 
         Keyword arguments:
@@ -941,7 +1033,7 @@ cdef class Model:
                                             PyPresolExit, PyPresolInitpre, PyPresolExitpre, PyPresolExec, <SCIP_PRESOLDATA*>presol))
         presol.model = self
 
-    def includeSepa(self, Sepa sepa, name, desc, priority, freq, maxbounddist, usessubscip, delay):
+    def includeSepa(self, Sepa sepa, name, desc, priority, freq, maxbounddist, usessubscip=False, delay=False):
         """Include a separator
 
         Keyword arguments:
@@ -961,7 +1053,7 @@ cdef class Model:
         sepa.model = self
 
     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
-                    proptiming, presoltiming, priority=1, freq=1, delay=True):
+                    proptiming, presoltiming=SCIP_PRESOLTIMING_FAST, priority=1, freq=1, delay=True):
         """Include a propagator.
 
         Keyword arguments:
@@ -987,8 +1079,8 @@ cdef class Model:
                                           <SCIP_PROPDATA*> prop))
         prop.model = self
 
-    def includeHeur(self, Heur heur, name, desc, dispchar, priority, freqofs,
-                    maxdepth, timingmask, usessubscip, freq=1):
+    def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,
+                    maxdepth=-1, timingmask=SCIP_HEURTIMING_BEFORENODE, usessubscip=False):
         """Include a primal heuristic.
 
         Keyword arguments:
@@ -1005,7 +1097,7 @@ cdef class Model:
         """
         nam = str_conversion(name)
         des = str_conversion(desc)
-        dis = str_conversion(dispchar)
+        dis = ord(str_conversion(dispchar))
         PY_SCIP_CALL(scip.SCIPincludeHeur(self._scip, nam, des, dis,
                                           priority, freq, freqofs,
                                           maxdepth, timingmask, usessubscip,
@@ -1013,27 +1105,52 @@ cdef class Model:
                                           PyHeurInitsol, PyHeurExitsol, PyHeurExec,
                                           <SCIP_HEURDATA*> heur))
         heur.model = self
+        heur.name = name
 
-
-    def includeNodesel(self, Nodesel nodesel, name, desc, stdpriority, memsavepriority):
-        """Include a node selector.
+    def createSol(self, Heur heur):
+        """Create a new primal solution.
 
         Keyword arguments:
-        nodesel -- the node selector
-        name -- the name of the node selector
-        desc -- the description
-        stdpriority -- priority of the node selector in standard mode
-        memsavepriority -- priority of the node selector in memory saving mode
+        solution -- the new solution
+        heur -- the heuristic that found the solution
         """
+        n = str_conversion(heur.name)
+        cdef SCIP_HEUR* _heur
+        _heur = scip.SCIPfindHeur(self._scip, n)
+        solution = Solution()
+        PY_SCIP_CALL(scip.SCIPcreateSol(self._scip, &solution._solution, _heur))
+        return solution
 
-        nam = str_conversion(name)
-        des = str_conversion(desc)
-        PY_SCIP_CALL(scip.SCIPincludeNodesel(self._scip, nam, des,
-                                             stdpriority, memsavepriority,
-                                             PyNodeselCopy, PyNodeselFree, PyNodeselInit, PyNodeselExit,
-                                             PyNodeselInitsol, PyNodeselExitsol, PyNodeselSelect, PyNodeselComp,
-                                             <SCIP_NODESELDATA*> nodesel))
-        nodesel.model = self
+
+    def setSolVal(self, Solution solution, variable, val):
+        """Set a variable in a solution.
+
+        Keyword arguments:
+        solution -- the solution to be modified
+        variable -- the variable in the solution
+        val -- the value of the variable in the solution
+        """
+        cdef SCIP_SOL* _sol
+        cdef SCIP_VAR* _var
+        cdef Var var
+        var = <Var>variable.var
+        _var = <SCIP_VAR*>var._var
+        _sol = <SCIP_SOL*>solution._solution
+        PY_SCIP_CALL(scip.SCIPsetSolVal(self._scip, _sol, _var, val))
+
+    def trySol(self, Solution solution, printreason=True, checkbounds=True, checkintegrality=True, checklprows=True):
+        """Try to add a solution to the storage.
+
+        Keyword arguments:
+        solution -- the solution to store
+        printreason -- should all reasons of violations be printed?
+        checkbounds -- should the bounds of the variables be checked?
+        checkintegrality -- has integrality to be checked?
+        checklprows -- have current LP rows (both local and global) to be checked?
+        """
+        cdef SCIP_Bool stored
+        PY_SCIP_CALL(scip.SCIPtrySolFree(self._scip, &solution._solution, printreason, checkbounds, checkintegrality, checklprows, &stored))
+        return stored
 
     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
         """Include a branching rule.

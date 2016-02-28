@@ -8,7 +8,7 @@ Approaches:
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 import random
-from pyscipopt import Model, quicksum, multidict
+from pyscipopt import Model, quicksum
 
 def mils(T,P,f,g,c,d,h,M):
     """
@@ -209,7 +209,6 @@ if __name__ == "__main__":
     P,f,g,c,d,h,M = trigeiro(T,N,factor)
     print("\n\n\nStandard formulation + cutting plane ======================")
     model,mils_callback = mils(T,P,f,g,c,d,h,M)
-    #model.params.DualReductions = 0
     model.setBoolParam("misc/allowdualreds", 0)
     model.optimize(mils_callback)
     y,x,I = model.data
@@ -269,12 +268,7 @@ if __name__ == "__main__":
                 elif status != "unbounded" and status != "infeasible":
                     print("Optimization stopped with status",status)
                 else:
-                    print("Instance infeasible; computing IIS")
-                    model.computeIIS()
-                    print("\nThe following constraint(s) cannot be satisfied:")
-                    for i in model.getConstrs():
-                      if i.IISConstr:
-                        print(i.ConstrName)
+                    print("Instance infeasible")
 
 
                 # standard formulation + cutting plane
@@ -299,13 +293,7 @@ if __name__ == "__main__":
                 elif status != "unbounded" and status != "infeasible":
                     print("Optimization stopped with status",status)
                 else:
-                    print("Instance infeasible; computing IIS")
-                    model.computeIIS()
-                    print("\nThe following constraint(s) cannot be satisfied:")
-                    for i in model.getConstrs():
-                      if i.IISConstr:
-                        print(i.ConstrName)
-
+                    print("Instance infeasible")
 
 
                 #  facility location formulation
@@ -330,9 +318,4 @@ if __name__ == "__main__":
                 elif status != "unbounded" and status != "infeasible":
                     print("Optimization stopped with status",status)
                 else:
-                    print("Instance infeasible; computing IIS")
-                    model.computeIIS()
-                    print("\nThe following constraint(s) cannot be satisfied:")
-                    for i in model.getConstrs():
-                      if i.IISConstr:
-                        print(i.ConstrName)
+                    print("Instance infeasible")

@@ -41,7 +41,8 @@ cdef SCIP_RETCODE PySepaExeclp (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result
     cdef SCIP_SEPADATA* sepadata
     sepadata = SCIPsepaGetData(sepa)
     PySepa = <Sepa>sepadata
-    result[0] = PySepa.sepaexeclp()
+    result_dict = PySepa.sepaexeclp()
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PySepaExecsol (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result):
@@ -50,7 +51,8 @@ cdef SCIP_RETCODE PySepaExecsol (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCI
     solution = Solution()
     solution._solution = sol
     PySepa = <Sepa>sepadata
-    result[0] = PySepa.sepaexecsol(solution)
+    result_dict = PySepa.sepaexecsol(solution)
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
 cdef class Sepa:
@@ -73,7 +75,7 @@ cdef class Sepa:
         pass
 
     def sepaexeclp(self):
-        pass
+        return {}
 
     def sepaexecsol(self, solution):
-        pass
+        return {}

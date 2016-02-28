@@ -12,7 +12,8 @@ cdef SCIP_RETCODE PyReaderRead (SCIP* scip, SCIP_READER* reader, const char* fil
     cdef SCIP_READERDATA* readerdata
     readerdata = SCIPreaderGetData(reader)
     PyReader = <Reader>readerdata
-    result[0] = PyReader.read(file)
+    result_dict = PyReader.read(file)
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyReaderWrite (SCIP* scip, SCIP_READER* reader, FILE* file,
@@ -36,17 +37,17 @@ cdef class Reader:
     cdef public object data     # storage for the python user
     cdef public Model model
 
-    def free(self):
+    def readerfree(self):
         pass
 
-    def init(self):
+    def readerinit(self):
         pass
 
-    def read(self, file):
-        return SCIP_DIDNOTRUN
+    def readerread(self, file):
+        return {}
 
-    def write(self, file, name, probdata, transformed, objsense, objscale, objoffset,
+    def readerwrite(self, file, name, probdata, transformed, objsense, objscale, objoffset,
               vars, nvars, nbinvars, nintvars, nimplvars, ncontvars,
               fixedvars, nfixedvars, startvars, conss, nconss, maxnconss, startnconss,
               genericnames):
-        return SCIP_DIDNOTRUN
+        return {}

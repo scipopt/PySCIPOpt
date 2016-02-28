@@ -40,7 +40,6 @@ def test_knapsack():
     solution = s.getBestSol()
 
     # print solution
-    print()
     varSolutions = []
     for i in range(len(weights)):
         solValue = round(s.getVal(knapsackVars[i], solution))
@@ -51,9 +50,9 @@ def test_knapsack():
 
         s.releaseVar(knapsackVars[i])
 
-
-
     includedWeight = sum([weights[i]*varSolutions[i] for i in range(len(weights))])
     assert includedWeight > 0 and includedWeight <= knapsackSize
-
-    s.free()
+    
+    
+if __name__ == "__main__":
+    test_knapsack()

@@ -1,59 +1,34 @@
-Building python-scip
-====================
+Building the Python interface
+=============================
 
-Before building the python-scip wrapper, you need to download the SCIP
-Optimization Suite from http://scip.zib.de.
-After extracting the archive, build the shared library with
+The SCIP Python interface uses the shared library of the SCIP Optimization Suite.
+Therefore you have to run
 
     make SHARED=true scipoptlib
 
-This will result in the creation of the directory "<path_to_scipopt/lib>" and
-the shared library will be created there.
+from the root of the SCIP Optimization directory. This will result in the creation
+of the directory "<path_to_scipopt/lib>" and the shared library "libscipopt.so".
 
-There are several ways to install/build python-scip:
+From within the directory "interfaces/python", please execute the following command:
 
-a) In the python-scip directory, execute
+    python setup.py install
 
-      python setup.py build_ext --inplace
+You may use the additional options "--user" or "--prefix=<custom-python-path>",
+to build the interface locally.
 
-   Additionally, it is necessary to append the path to the python-scip directory to
-   your PYTHONPATH. This is achieved with the following command,
-
-      export PYTHONPATH=$PYTHONPATH:<path_to_python-scip>
-
-   The result of this script is the production of the file pyscipopt/scip.so in the pyscipopt directory.
-   the file can then be imported directly in your Python code to interface with SCIP.
-
-b) In the python-scip directory, execute
-
-      python setup.py install [--prefix=<path-to-custom-python-packages>]
-
-   This will perform a global installation or put the compiled package into the directory
-   specified by --prefix.
-
-When running the setup.py script, you will be prompted for the path to the shared library,
-which will be similar to
-
-   <path_to_scipopt/lib>/libscipopt-3.2.0.linux.x86_64.gnu.opt.so
-
-additionally, you will be prompted for the path to the scip source code, which
-will be similar to
-
-   <path_to_scipopt>/scip-3.2.0/src
-
-To test the library, simply run "py.test".
-
+The interface is written in Cython. If you have Cython installed on your system,
+the interface will be built from scratch. Otherwise the included pre-built C-code
+will be used.
 
 TROUBLESHOOTING
 ===============
 
-In case you input the wrong paths after running
+The installation routine tries to generate symbolic links to the "scipopt" library as
+well as to the "src" directory of SCIP. In case of installation problems you should
+verify the correctness of the links in hte directories "lib" and "include".
 
-   python setup.py build_ext --inplace
-
-you can delete the link by running
-
-   python setup.py cleanlib
-
-If this does not work, it is possible to manually delete the links
-in the folders "include" and "lib".
+Note:
+-----
+You cannot use the interface module from within the "interface/python" directory. This
+is because Python will try to import the pyscipopt module locally instead of using
+the installed one.

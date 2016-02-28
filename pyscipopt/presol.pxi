@@ -37,12 +37,26 @@ cdef SCIP_RETCODE PyPresolExitpre (SCIP* scip, SCIP_PRESOL* presol):
     PyPresol.presolexitpre()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPresolExec (SCIP* scip, SCIP_PRESOL* presol, int nrounds, SCIP_PRESOLTIMING presoltiming, int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes, int nnewchgbds, int nnewholes, int nnewdelconss, int nnewaddconss, int nnewupgdconss, int nnewchgcoefs, int nnewchgsides, int* nfixedvars, int* naggrvars, int* nchgvartypes, int* nchgbds, int* naddholes, int* ndelconss, int* naddconss, int* nupgdconss, int* nchgcoefs, int* nchgsides, SCIP_RESULT* result):
+cdef SCIP_RETCODE PyPresolExec (SCIP* scip, SCIP_PRESOL* presol, int nrounds, SCIP_PRESOLTIMING presoltiming,
+                                int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes, int nnewchgbds, int nnewholes,
+                                int nnewdelconss, int nnewaddconss, int nnewupgdconss, int nnewchgcoefs, int nnewchgsides,
+                                int* nfixedvars, int* naggrvars, int* nchgvartypes, int* nchgbds, int* naddholes,
+                                int* ndelconss, int* naddconss, int* nupgdconss, int* nchgcoefs, int* nchgsides, SCIP_RESULT* result):
     cdef SCIP_PRESOLDATA* presoldata
     presoldata = SCIPpresolGetData(presol)
     PyPresol = <Presol>presoldata
-    returnvalues = PyPresol.presolexec()
-    result[0] = returnvalues.get("result", result[0])
+    result_dict = PyPresol.presolexec(nrounds, presoltiming)
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
+    nfixedvars[0] += result_dict.get("nnewfixedvars", 0)
+    naggrvars[0] += result_dict.get("nnewaggrvars", 0)
+    nchgvartypes[0] += result_dict.get("nnewchgvartypes", 0)
+    nchgbds[0] += result_dict.get("nnewchgbds", 0)
+    naddholes[0] += result_dict.get("nnewaddholes", 0)
+    ndelconss[0] += result_dict.get("nnewdelconss", 0)
+    naddconss[0] += result_dict.get("nnewaddconss", 0)
+    nupgdconss[0] += result_dict.get("nnewupgdconss", 0)
+    nchgcoefs[0] += result_dict.get("nnewchgcoefs", 0)
+    nchgsides[0] += result_dict.get("nnewchgsides", 0)
     return SCIP_OKAY
 
 cdef class Presol:
@@ -64,7 +78,7 @@ cdef class Presol:
     def presolexitpre(self):
         pass
 
-    def presolexec(self):
-        # this method needs to be implemented by the user
-        return {"result": SCIP_DIDNOTRUN}
+    def presolexec(self, nrounds, presoltiming):
+        print("python error in presolexec: this method needs to be implemented")
+        return {}
 
