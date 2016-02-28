@@ -209,6 +209,14 @@ class Constraint:
         self.cons = Cons()
         self.name = name
 
+    def isOriginal(self):
+        cdef Cons c
+        cdef scip.SCIP_CONS* _cons
+        c = self.cons
+        _cons = c._cons
+        return scip.SCIPconsIsOriginal(_cons)
+
+
 cdef pythonizeCons(scip.SCIP_CONS* scip_cons, name):
     cons = Constraint(name)
     cdef Cons c

@@ -261,8 +261,8 @@ cdef extern from "scip/scip.h":
     int SCIPgetNVars(SCIP* scip)
     int SCIPgetNOrigVars(SCIP* scip)
     SCIP_VARTYPE SCIPvarGetType(SCIP_VAR* var)
-    SCIP_Bool SCIPvarIsOriginal(SCIP* scip)
-    SCIP_Bool SCIPvarIsTransformed(SCIP* scip)
+    SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
 
     # Constraint Methods
     SCIP_RETCODE SCIPcaptureCons(SCIP* scip, SCIP_CONS* cons)
@@ -271,6 +271,8 @@ cdef extern from "scip/scip.h":
     SCIP_CONS** SCIPgetConss(SCIP* scip)
     const char* SCIPconsGetName(SCIP_CONS* cons)
     int SCIPgetNConss(SCIP* scip)
+    SCIP_Bool SCIPconsIsOriginal(SCIP_CONS* cons)
+    SCIP_Bool SCIPconsIsTransformed(SCIP_CONS* cons)
 
     # Primal Solution Methods
     SCIP_SOL** SCIPgetSols(SCIP* scip)
