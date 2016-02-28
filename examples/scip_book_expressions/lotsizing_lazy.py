@@ -11,6 +11,8 @@ from pyscipopt import Model, Conshdlr, quicksum, multidict, SCIP_RESULT, SCIP_PR
 
 class Conshdlr_sils(Conshdlr):
 
+    anycutsadded = False
+
     def addcut(self):
         D,Ts = self.data
         y,x,I = self.model.data
@@ -35,10 +37,14 @@ class Conshdlr_sils(Conshdlr):
                     quicksum(D[t,ell] * y[t] for t in S)
                     >= D[1,ell], removable=True)
                 cutsadded = True
+                self.anycutsadded = True
         return cutsadded
 
     def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason):
-        return {"result": SCIP_RESULT.INFEASIBLE}
+        if not self.anycutsadded:
+            return {"result": SCIP_RESULT.INFEASIBLE}
+        else:
+            return {"result": SCIP_RESULT.FEASIBLE}
 
     def consenfolp(self, constraints, nusefulconss, solinfeasible):
         if self.addcut():
