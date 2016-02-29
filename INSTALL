@@ -25,10 +25,10 @@ TROUBLESHOOTING
 
 The installation routine tries to generate symbolic links to the "scipopt" library as
 well as to the "src" directory of SCIP. In case of installation problems you should
-verify the correctness of the links in hte directories "lib" and "include".
+verify the correctness of the links in the directories "lib" and "include".
 
 Note:
 -----
-You cannot use the interface module from within the "interface/python" directory. This
+You cannot use the interface module from within the "interfaces/python" directory. This
 is because Python will try to import the pyscipopt module locally instead of using
 the installed one.

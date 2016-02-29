@@ -1,7 +1,7 @@
 How to build a model using python-scip
 ======================================
 
-There are several examples provided in the tests folder. These display some functionality of
+There are several examples provided in the "tests" folder. These display some functionality of
 the interface and can serve as an entry point for writing more complex code. The following
 steps are always required when using the interface:
 
@@ -13,7 +13,7 @@ steps are always required when using the interface:
 
     model = Model("Example")    # the name is optional
 
-This is equivalent to creating a SCIP* scip variable in your C code.
+This is equivalent to calling "SCIPcreate(&scip); SCIPcreateProbBasic(scip, "Example")" in C.
 
 3)  Access the methods in the scip.pyx file using the solver/model instance "model", e.g.:
 
@@ -24,22 +24,23 @@ This is equivalent to creating a SCIP* scip variable in your C code.
     model.optimize()
 
 
-Using the plugins
-=================
+Writing new plugins
+===================
 
 The Python interface can be used to define custom plugins to extend the functionality
 of SCIP. You may write a pricer, heuristic or even constraint handler using pure Python code
 and SCIP can call their methods using the callback system.
 Every available plugin has a base class that you need to extend, overwriting the predefined
-but emty callbacks.
-"test_pricer.py" and "test_heur" are two simple examples of you to implement this.
+but empty callbacks.
+Please see "test_pricer.py" and "test_heur.py" for two simple examples.
 
 
 How to extend the interface
 ===========================
 
-It is possible to extend python-scip to increase the functionality of this interface.
-The following will provide some directions on how this can be achieved.
+The interface python-scip already provides many of the SCIP callable library methods.
+You may also extend python-scip to increase the functionality of this interface.
+The following will provide some directions on how this can be achieved:
 
 The two most important files in python-scip are the scip.pxd and scip.pyx. These two files specify
 the public functions of SCIP that can be accessed from your python code.
@@ -52,6 +53,5 @@ python-scip.
    2) Add the prototype of the public function you wish to access to scip.pxd
 
 After following the previous two steps, it is then possible to create functions in python that
-reference the SCIP public functions included in scip.pxd. This is completed by modifying the
-scip.pyx file to add the functionality you require. To better explain this a small example from the
-current scip.pyx file will be provided.
+reference the SCIP public functions included in scip.pxd. This is achieved by modifying the
+scip.pyx file to add the functionality you require.
