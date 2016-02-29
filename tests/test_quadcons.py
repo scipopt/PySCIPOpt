@@ -30,3 +30,7 @@ def test_niceqcqp():
     assert round(s.getVal(y)) == 1.0
 
     s.free()
+
+if __name__ == "__main__":
+    test_niceqp()
+    test_niceqcqp()
