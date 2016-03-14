@@ -230,7 +230,7 @@ class LP:
         """Adds a single column to the LP.
 
         Keyword arguments:
-        inds  -- row indicies of the column
+        inds  -- row indices of the column
         coefs -- row coefficients of the column
         obj   -- objective coefficient (default 0.0)
         lb    -- lower bound (default 0.0)
@@ -265,7 +265,7 @@ class LP:
 
         Keyword arguments:
         beg   -- a set of columns to the inds- and coefs- array
-        inds  -- row indicies of each column column
+        inds  -- row indices of each column column
         coefs -- row coefficients of the column
         objs  -- objective coefficient (default 0.0)
         lbs   -- lower bounds (default 0.0)
@@ -318,7 +318,7 @@ class LP:
         """Adds a single row to the LP.
 
         Keyword arguments:
-        inds  -- row indicies of the column
+        inds  -- row indices of the column
         coefs -- row coefficients of the column
         lhs   -- left-hand side of the row (default 0.0)
         rhs    -- right-hand side of the row (default infinity)
@@ -351,7 +351,7 @@ class LP:
 
         Keyword arguments:
         beg   -- a set of columns to the inds- and coefs- array
-        inds  -- row indicies of each column column
+        inds  -- row indices of each column column
         coefs -- row coefficients of the column
         lhss  -- left-hand side of the row (default 0.0)
         rhss  -- right-hand side of the row (default infinity)
