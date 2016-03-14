@@ -215,6 +215,12 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_BDCHGIDX:
         pass
 
+    ctypedef struct SCIP_MESSAGEHDLR:
+        pass
+
+    ctypedef struct SCIP_LPI:
+        pass
+
     # General SCIP Methods
     SCIP_RETCODE SCIPcreate(SCIP** scip)
     SCIP_RETCODE SCIPfree(SCIP** scip)
@@ -540,6 +546,35 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPreadParams(SCIP* scip, char* file)
     SCIP_RETCODE SCIPreadProb(SCIP* scip, char* file, char* extension)
 
+    # LPI Functions
+    SCIP_RETCODE SCIPlpiCreate(SCIP_LPI** lpi, SCIP_MESSAGEHDLR* messagehdlr, const char* name, SCIP_OBJSENSE objsen)
+    SCIP_RETCODE SCIPlpiFree(SCIP_LPI** lpi)
+    SCIP_RETCODE SCIPlpiWriteLP(SCIP_LPI* lpi, const char* fname)
+    SCIP_RETCODE SCIPlpiReadLP(SCIP_LPI* lpi, const char* fname)
+    SCIP_RETCODE SCIPlpiAddCols(SCIP_LPI* lpi, int ncols, const SCIP_Real* obj, const SCIP_Real* lb, const SCIP_Real* ub, char** colnames, int nnonz, const int* beg, const int* ind, const SCIP_Real* val)
+    SCIP_RETCODE SCIPlpiDelCols(SCIP_LPI* lpi, int firstcol, int lastcol)
+    SCIP_RETCODE SCIPlpiAddRows(SCIP_LPI* lpi, int nrows, const SCIP_Real* lhs, const SCIP_Real* rhs, char** rownames, int nnonz, const int* beg, const int* ind, const SCIP_Real* val)
+    SCIP_RETCODE SCIPlpiDelRows(SCIP_LPI* lpi, int firstrow, int lastrow)
+    SCIP_RETCODE SCIPlpiGetBounds(SCIP_LPI* lpi, int firstrow, int lastrow, SCIP_Real* lhss, SCIP_Real* rhss)
+    SCIP_RETCODE SCIPlpiGetSides(SCIP_LPI* lpi, int firstcol, int lastcol, SCIP_Real* lbs, SCIP_Real* ubs)
+    SCIP_RETCODE SCIPlpiChgObj(SCIP_LPI* lpi, int ncols, int* ind, SCIP_Real* obj)
+    SCIP_RETCODE SCIPlpiChgCoef(SCIP_LPI* lpi, int row, int col, SCIP_Real newval)
+    SCIP_RETCODE SCIPlpiChgBounds(SCIP_LPI* lpi, int nrows, const int* ind, const SCIP_Real* lhs, const SCIP_Real* rhs)
+    SCIP_RETCODE SCIPlpiChgSides(SCIP_LPI* lpi, int ncols, const int* ind, const SCIP_Real* lbs, const SCIP_Real* ubs)
+    SCIP_RETCODE SCIPlpiClear(SCIP_LPI* lpi)
+    SCIP_RETCODE SCIPlpiGetNRows(SCIP_LPI* lpi, int* nrows)
+    SCIP_RETCODE SCIPlpiGetNCols(SCIP_LPI* lpi, int* ncols)
+    SCIP_RETCODE SCIPlpiSolveDual(SCIP_LPI* lpi)
+    SCIP_RETCODE SCIPlpiSolvePrimal(SCIP_LPI* lpi)
+    SCIP_RETCODE SCIPlpiGetObjval(SCIP_LPI* lpi, SCIP_Real* objval)
+    SCIP_RETCODE SCIPlpiGetSol(SCIP_LPI* lpi, SCIP_Real* objval, SCIP_Real* primsol, SCIP_Real* dualsol, SCIP_Real* activity, SCIP_Real* redcost)
+    SCIP_RETCODE SCIPlpiGetIterations(SCIP_LPI* lpi, int* iterations)
+    SCIP_RETCODE SCIPlpiGetPrimalRay(SCIP_LPI* lpi, SCIP_Real* ray)
+    SCIP_RETCODE SCIPlpiGetDualfarkas(SCIP_LPI* lpi, SCIP_Real* dualfarkas)
+    SCIP_Bool    SCIPlpiHasPrimalRay(SCIP_LPI* lpi)
+    SCIP_Bool    SCIPlpiHasDualRay(SCIP_LPI* lpi)
+    SCIP_Real    SCIPlpiInfinity(SCIP_LPI* lpi)
+    SCIP_Bool    SCIPlpiIsInfinity(SCIP_LPI* lpi, SCIP_Real val)
 
 cdef extern from "scip/scipdefplugins.h":
     SCIP_RETCODE SCIPincludeDefaultPlugins(SCIP* scip)

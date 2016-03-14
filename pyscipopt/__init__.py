@@ -9,6 +9,7 @@ from pyscipopt.scip      import Presol
 from pyscipopt.scip      import Pricer
 from pyscipopt.scip      import Prop
 from pyscipopt.scip      import Sepa
+from pyscipopt.scip      import LP
 from pyscipopt.scip      import PY_SCIP_RESULT       as SCIP_RESULT
 from pyscipopt.scip      import PY_SCIP_PARAMSETTING as SCIP_PARAMSETTING
 from pyscipopt.scip      import PY_SCIP_STATUS       as SCIP_STATUS

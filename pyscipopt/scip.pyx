@@ -4,6 +4,8 @@ import sys
 cimport pyscipopt.scip as scip
 from pyscipopt.linexpr import LinExpr, LinCons
 
+from libc.stdlib cimport malloc, free
+
 include "pricer.pxi"
 include "conshdlr.pxi"
 include "presol.pxi"
@@ -160,6 +162,489 @@ cdef class Var:
     """Base class holding a pointer to corresponding SCIP_VAR"""
     cdef scip.SCIP_VAR* _var
 
+cdef class Lpi:
+    """Base class holding a pointer to corresponding SCIP_LPI"""
+    cdef scip.SCIP_LPI* _lpi
+
+class LP:
+    def __init__(self, name="LP", objsen=scip.SCIP_OBJSENSE_MINIMIZE):
+        """
+        Keyword arguments:
+        name -- the name of the problem (default 'LP')
+        objsen -- objective sense (default minimize)
+        """
+        self.lpi = Lpi()
+        self.name = name
+        cdef Lpi lpi
+        lpi = self.lpi
+        PY_SCIP_CALL(scip.SCIPlpiCreate(&(lpi._lpi), NULL, name, objsen))
+
+    def __del__(self):
+        cdef Lpi lpi
+        cdef scip.SCIP_LPI* _lpi
+        lpi = self.lpi
+        _lpi = lpi._lpi
+        PY_SCIP_CALL(scip.SCIPlpiFree(&_lpi))
+
+    def __repr__(self):
+        return self.name
+
+    def writeLP(self, filename):
+        """Writes LP to a file.
+
+        Keyword arguments:
+        filename -- the name of the file to be used
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+        PY_SCIP_CALL(scip.SCIPlpiWriteLP(lpi._lpi, filename))
+
+    def readLP(self, filename):
+        """Reads LP from a file.
+
+        Keyword arguments:
+        filename -- the name of the file to be used
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+        PY_SCIP_CALL(scip.SCIPlpiReadLP(lpi._lpi, filename))
+
+    def infinity(self):
+        """Returns infinity value of the LP.
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+        return scip.SCIPlpiInfinity(lpi._lpi)
+
+    def isInfinity(self, val):
+        """Checks if a given value is equal to the infinity value of the LP.
+
+        Keyword arguments:
+        val -- value that should be checked
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+        return scip.SCIPlpiIsInfinity(lpi._lpi, val)
+
+    def addCol(self, inds, coefs, obj = 0.0, lb = 0.0, ub = None):
+        """Adds a single column to the LP.
+
+        Keyword arguments:
+        inds  -- row indicies of the column
+        coefs -- row coefficients of the column
+        obj   -- objective coefficient (default 0.0)
+        lb    -- lower bound (default 0.0)
+        ub    -- upper bound (default infinity)
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(len(coefs) * sizeof(scip.SCIP_Real))
+        cdef int* c_inds = <int*>malloc(len(inds) * sizeof(int))
+        cdef scip.SCIP_Real c_obj
+        cdef scip.SCIP_Real c_lb
+        cdef scip.SCIP_Real c_ub
+        cdef int c_beg
+
+        c_obj = obj
+        c_lb = lb
+        c_ub = ub if ub != None else self.infinity()
+        c_beg = 0
+
+        for i in range(len(inds)):
+            c_inds[i] = inds[i]
+            c_coefs[i] = coefs[i]
+
+        PY_SCIP_CALL(scip.SCIPlpiAddCols(lpi._lpi, 1, &c_obj, &c_lb, &c_ub, NULL, len(inds), &c_beg, c_inds, c_coefs))
+
+        free(c_coefs)
+        free(c_inds)
+
+    def addCols(self, beg, inds, coefs, objs = None, lbs = None, ubs = None):
+        """Adds multiple columns to the LP.
+
+        Keyword arguments:
+        beg   -- a set of columns to the inds- and coefs- array
+        inds  -- row indicies of each column column
+        coefs -- row coefficients of the column
+        objs  -- objective coefficient (default 0.0)
+        lbs   -- lower bounds (default 0.0)
+        ubs   -- upper bounds (default infinity)
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        ncols = len(beg)
+        nnonz = len(coefs)
+
+        cdef scip.SCIP_Real* c_objs    = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
+        cdef scip.SCIP_Real* c_lbs     = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
+        cdef scip.SCIP_Real* c_ubs     = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
+        cdef scip.SCIP_Real* c_coefs   = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
+        cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
+        cdef int* c_beg  = <int*>malloc(ncols * sizeof(int))
+
+        for i in range(ncols):
+            c_objs[i] = objs[i] if objs != None else 0.0
+            c_lbs[i] = lbs[i] if lbs != None else 0.0
+            c_ubs[i] = ubs[i] if ubs != None else self.infinity()
+            c_beg[i] = beg[i]
+
+        for i in range(nnonz):
+            c_coefs[i] = coefs[i]
+            c_inds[i] = inds[i]
+
+        PY_SCIP_CALL(scip.SCIPlpiAddCols(lpi._lpi, ncols, c_objs, c_lbs, c_ubs, NULL, nnonz, c_beg, c_inds, c_coefs))
+
+        free(c_beg)
+        free(c_inds)
+        free(c_coefs)
+        free(c_ubs)
+        free(c_lbs)
+        free(c_objs)
+
+    def delCols(self, firstcol, lastcol):
+        """Deletes a range of columns from the LP.
+
+        Keyword arguments:
+        firstcol -- first column to delete
+        lastcol  -- last column to delete
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+        PY_SCIP_CALL(scip.SCIPlpiDelCols(lpi._lpi, firstcol, lastcol))
+
+    def addRow(self, inds, coefs, lhs=0.0, rhs=None):
+        """Adds a single row to the LP.
+
+        Keyword arguments:
+        inds  -- row indicies of the column
+        coefs -- row coefficients of the column
+        lhs   -- left-hand side of the row (default 0.0)
+        rhs    -- right-hand side of the row (default infinity)
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+        beg = 0
+
+        cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(len(inds) * sizeof(scip.SCIP_Real))
+        cdef int* c_inds = <int*>malloc(len(inds) * sizeof(int))
+        cdef scip.SCIP_Real c_lhs
+        cdef scip.SCIP_Real c_rhs
+        cdef int c_beg
+
+        c_lhs = lhs
+        c_rhs = rhs if rhs != None else self.infinity()
+        c_beg = 0
+
+        for i in range(len(inds)):
+            c_inds[i] = inds[i]
+            c_coefs[i] = coefs[i]
+
+        PY_SCIP_CALL(scip.SCIPlpiAddRows(lpi._lpi, 1, &c_lhs, &c_rhs, NULL, len(inds), &c_beg, c_inds, c_coefs))
+
+        free(c_coefs)
+        free(c_inds)
+
+    def addRows(self, beg, inds, coefs, lhss = None, rhss = None):
+        """Adds multiple rows to the LP.
+
+        Keyword arguments:
+        beg   -- a set of columns to the inds- and coefs- array
+        inds  -- row indicies of each column column
+        coefs -- row coefficients of the column
+        lhss  -- left-hand side of the row (default 0.0)
+        rhss  -- right-hand side of the row (default infinity)
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        nrows = len(beg)
+        nnonz = len(coefs)
+
+        cdef scip.SCIP_Real* c_lhss    = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
+        cdef scip.SCIP_Real* c_rhss    = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
+        cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
+        cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
+        cdef int* c_beg  = <int*>malloc(nrows * sizeof(int))
+
+        for i in range(nrows):
+            c_lhss[i] = lhss[i] if lhss != None else 0.0
+            c_rhss[i] = rhss[i] if rhss != None else self.infinity()
+            c_beg[i] = beg[i]
+
+        for i in range(nnonz):
+            c_coefs[i] = coefs[i]
+            c_inds[i] = inds[i]
+
+        PY_SCIP_CALL(scip.SCIPlpiAddRows(lpi._lpi, nrows, c_lhss, c_rhss, NULL, nnonz, c_beg, c_inds, c_coefs))
+
+        free(c_beg)
+        free(c_inds)
+        free(c_coefs)
+        free(c_lhss)
+        free(c_rhss)
+
+    def delRows(self, firstrow, lastrow):
+        """Deletes a range of rows from the LP.
+
+        Keyword arguments:
+        firstrow -- first row to delete
+        lastrow  -- last row to delete
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+        PY_SCIP_CALL(scip.SCIPlpiDelRows(lpi._lpi, firstrow, lastrow))
+
+    def getBounds(self, firstcol = 0, lastcol = None):
+        """Returns all lower and upper bounds for a range of columns.
+
+        Keyword arguments:
+        firstcol -- first column (default 0)
+        lastcol  -- last column (default ncols - 1)
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        lastcol = lastcol if lastcol != None else self.ncols() - 1
+
+        if firstcol > lastcol:
+            return None
+
+        ncols = lastcol - firstcol + 1
+        cdef SCIP_Real* c_lbs = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
+        cdef SCIP_Real* c_ubs = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
+        PY_SCIP_CALL(scip.SCIPlpiGetBounds(lpi._lpi, firstcol, lastcol, c_lbs, c_ubs))
+
+        lbs = []
+        ubs = []
+
+        for i in range(ncols):
+            lbs.append(c_lbs[i])
+            ubs.append(c_ubs[i])
+
+        free(c_ubs)
+        free(c_lbs)
+
+        return lbs, ubs
+
+    def getSides(self, firstrow = 0, lastrow = None):
+        """Returns all left- and right-hand sides for a range of rows.
+
+        Keyword arguments:
+        firstrow -- first row (default 0)
+        lastrow  -- last row (default nrows - 1)
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        lastrow = lastrow if lastrow != None else self.nrows() - 1
+
+        if firstrow > lastrow:
+            return None
+
+        nrows = lastrow - firstrow + 1
+        cdef SCIP_Real* c_lhss = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
+        cdef SCIP_Real* c_rhss = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
+        PY_SCIP_CALL(scip.SCIPlpiGetSides(lpi._lpi, firstrow, lastrow, c_lhss, c_rhss))
+
+        lhss = []
+        rhss = []
+
+        for i in range(firstrow, lastrow + 1):
+            lhss.append(c_lhss[i])
+            rhss.append(c_rhss[i])
+
+        free(c_rhss)
+        free(c_lhss)
+
+        return lhss, rhss
+
+    def chgObj(self, col, obj):
+        """Changes objective coefficient of a single column.
+
+        Keyword arguments:
+        col -- column to change
+        obj -- new objective coefficient
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        cdef int c_col = col
+        cdef SCIP_Real c_obj = obj
+        PY_SCIP_CALL(scip.SCIPlpiChgObj(lpi._lpi, 1, &c_col, &c_obj))
+
+    def chgCoef(self, row, col, newval):
+        """Changes a single coefficient in the LP.
+
+        Keyword arguments:
+        row -- row to change
+        col -- column to change
+        newval -- new coefficient
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        PY_SCIP_CALL(scip.SCIPlpiChgCoef(lpi._lpi, row, col, newval))
+
+    def chgBound(self, col, lb, ub):
+        """Changes the lower and upper bound of a single column.
+
+        Keyword arguments:
+        col -- column to change
+        lb  -- new lower bound
+        ub  -- new upper bound
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        cdef int c_col = col
+        cdef SCIP_Real c_lb = lb
+        cdef SCIP_Real c_ub = ub
+        PY_SCIP_CALL(scip.SCIPlpiChgBounds(lpi._lpi, 1, &c_col, &c_lb, &c_ub))
+
+    def chgSide(self, row, lhs, rhs):
+        """Changes the left- and right-hand side of a single row.
+
+        Keyword arguments:
+        row -- row to change
+        lhs -- new left-hand side
+        rhs -- new right-hand side
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        cdef int c_row = row
+        cdef SCIP_Real c_lhs = lhs
+        cdef SCIP_Real c_rhs = rhs
+        PY_SCIP_CALL(scip.SCIPlpiChgSides(lpi._lpi, 1, &c_row, &c_lhs, &c_rhs))
+
+    def clear(self):
+        """Clears the whole LP."""
+        cdef Lpi lpi
+        lpi = self.lpi
+        PY_SCIP_CALL(scip.SCIPlpiClear(lpi._lpi))
+
+    def nrows(self):
+        """Returns the number of rows."""
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        cdef int nrows
+        PY_SCIP_CALL(scip.SCIPlpiGetNRows(lpi._lpi, &nrows))
+        return nrows
+
+    def ncols(self):
+        """Returns the number of columns."""
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        cdef int ncols
+        PY_SCIP_CALL(scip.SCIPlpiGetNCols(lpi._lpi, &ncols))
+        return ncols
+
+    def solve(self, dual=True):
+        """Solves the current LP.
+
+        Keyword arguments:
+        dual -- use the dual or primal Simplex method (default: dual)
+        """
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        if dual:
+            PY_SCIP_CALL(scip.SCIPlpiSolveDual(lpi._lpi))
+        else:
+            PY_SCIP_CALL(scip.SCIPlpiSolvePrimal(lpi._lpi))
+
+        cdef scip.SCIP_Real objval
+        PY_SCIP_CALL(scip.SCIPlpiGetObjval(lpi._lpi, &objval))
+        return objval
+
+    def getPrimal(self):
+        """Returns the primal solution of the last LP solve."""
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        ncols = self.ncols()
+
+        cdef scip.SCIP_Real* c_primalsol = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
+        PY_SCIP_CALL(scip.SCIPlpiGetSol(lpi._lpi, NULL, c_primalsol, NULL, NULL, NULL))
+
+        primalsol = [0.0] * ncols
+        for i in range(ncols):
+            primalsol[i] = c_primalsol[i]
+
+        free(c_primalsol)
+
+        return primalsol
+
+    def getDual(self):
+        """Returns the dual solution of the last LP solve."""
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        nrows = self.nrows()
+
+        cdef scip.SCIP_Real* c_dualsol = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
+        PY_SCIP_CALL(scip.SCIPlpiGetSol(lpi._lpi, NULL, NULL, c_dualsol, NULL, NULL))
+
+        dualsol = [0.0] * nrows
+        for i in range(nrows):
+            dualsol[i] = c_dualsol[i]
+
+        free(c_dualsol)
+
+        return dualsol
+
+    def getPrimalRay(self):
+        """Returns a primal ray if possible, None otherwise."""
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        if not scip.SCIPlpiHasPrimalRay(lpi._lpi):
+            return None
+
+        ncols = self.ncols()
+        cdef scip.SCIP_Real* c_ray  = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
+        PY_SCIP_CALL(scip.SCIPlpiGetPrimalRay(lpi._lpi, c_ray))
+
+        ray = [0.0] * ncols
+        for i in range(ncols):
+            ray[i] = c_ray[i]
+
+        free(c_ray)
+
+        return ray
+
+    def getDualRay(self):
+        """Returns a dual ray if possible, None otherwise."""
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        if not scip.SCIPlpiHasDualRay(lpi._lpi):
+            return None
+
+        nrows = self.nrows()
+        cdef scip.SCIP_Real* c_ray  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
+        PY_SCIP_CALL(scip.SCIPlpiGetDualfarkas(lpi._lpi, c_ray))
+
+        ray = [0.0] * nrows
+        for i in range(nrows):
+            ray[i] = c_ray[i]
+
+        free(c_ray)
+
+        return ray
+
+    def getNIterations(self):
+        """Returns a the number of LP iterations of the last LP solve."""
+        cdef Lpi lpi
+        lpi = self.lpi
+
+        cdef int niters
+        PY_SCIP_CALL(scip.SCIPlpiGetIterations(lpi._lpi, &niters))
+        return niters
 
 class Variable(LinExpr):
     """Is a linear expression and has SCIP_VAR*"""
