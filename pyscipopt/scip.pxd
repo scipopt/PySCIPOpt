@@ -103,9 +103,9 @@ cdef extern from "scip/scip.h":
 
     ctypedef bint SCIP_Bool
 
-    ctypedef long SCIP_Longint
+    ctypedef long long SCIP_Longint
 
-    ctypedef float SCIP_Real
+    ctypedef double SCIP_Real
 
     ctypedef struct SCIP:
         pass
