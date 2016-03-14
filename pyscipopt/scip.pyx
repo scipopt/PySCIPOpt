@@ -226,21 +226,22 @@ class LP:
         lpi = self.lpi
         return scip.SCIPlpiIsInfinity(lpi._lpi, val)
 
-    def addCol(self, inds, coefs, obj = 0.0, lb = 0.0, ub = None):
+    def addCol(self, entries, obj = 0.0, lb = 0.0, ub = None):
         """Adds a single column to the LP.
 
         Keyword arguments:
-        inds  -- row indices of the column
-        coefs -- row coefficients of the column
-        obj   -- objective coefficient (default 0.0)
-        lb    -- lower bound (default 0.0)
-        ub    -- upper bound (default infinity)
+        entries -- list of tuples, each tuple consists of a coefficient and a row index
+        obj     -- objective coefficient (default 0.0)
+        lb      -- lower bound (default 0.0)
+        ub      -- upper bound (default infinity)
         """
         cdef Lpi lpi
         lpi = self.lpi
 
-        cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(len(coefs) * sizeof(scip.SCIP_Real))
-        cdef int* c_inds = <int*>malloc(len(inds) * sizeof(int))
+        nnonz = len(entries)
+
+        cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
+        cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
         cdef scip.SCIP_Real c_obj
         cdef scip.SCIP_Real c_lb
         cdef scip.SCIP_Real c_ub
@@ -251,22 +252,20 @@ class LP:
         c_ub = ub if ub != None else self.infinity()
         c_beg = 0
 
-        for i in range(len(inds)):
-            c_inds[i] = inds[i]
-            c_coefs[i] = coefs[i]
+        for i,entry in enumerate(entries):
+            c_inds[i] = entry[0]
+            c_coefs[i] = entry[1]
 
-        PY_SCIP_CALL(scip.SCIPlpiAddCols(lpi._lpi, 1, &c_obj, &c_lb, &c_ub, NULL, len(inds), &c_beg, c_inds, c_coefs))
+        PY_SCIP_CALL(scip.SCIPlpiAddCols(lpi._lpi, 1, &c_obj, &c_lb, &c_ub, NULL, nnonz, &c_beg, c_inds, c_coefs))
 
         free(c_coefs)
         free(c_inds)
 
-    def addCols(self, beg, inds, coefs, objs = None, lbs = None, ubs = None):
+    def addCols(self, entrieslist, objs = None, lbs = None, ubs = None):
         """Adds multiple columns to the LP.
 
         Keyword arguments:
-        beg   -- a set of columns to the inds- and coefs- array
-        inds  -- row indices of each column column
-        coefs -- row coefficients of the column
+        entrieslist -- list containing lists of tuples, each tuple contains a coefficient and a row index
         objs  -- objective coefficient (default 0.0)
         lbs   -- lower bounds (default 0.0)
         ubs   -- upper bounds (default infinity)
@@ -274,25 +273,27 @@ class LP:
         cdef Lpi lpi
         lpi = self.lpi
 
-        ncols = len(beg)
-        nnonz = len(coefs)
+        ncols = len(entrieslist)
+        nnonz = sum(len(entries) for entries in entrieslist)
 
-        cdef scip.SCIP_Real* c_objs    = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
-        cdef scip.SCIP_Real* c_lbs     = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
-        cdef scip.SCIP_Real* c_ubs     = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
-        cdef scip.SCIP_Real* c_coefs   = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
+        cdef scip.SCIP_Real* c_objs   = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
+        cdef scip.SCIP_Real* c_lbs    = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
+        cdef scip.SCIP_Real* c_ubs    = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
+        cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
         cdef int* c_beg  = <int*>malloc(ncols * sizeof(int))
 
-        for i in range(ncols):
+        tmp = 0
+        for i,entries in enumerate(entrieslist):
             c_objs[i] = objs[i] if objs != None else 0.0
             c_lbs[i] = lbs[i] if lbs != None else 0.0
             c_ubs[i] = ubs[i] if ubs != None else self.infinity()
-            c_beg[i] = beg[i]
+            c_beg[i] = tmp
 
-        for i in range(nnonz):
-            c_coefs[i] = coefs[i]
-            c_inds[i] = inds[i]
+            for entry in entries:
+                c_inds[tmp] = entry[0]
+                c_coefs[tmp] = entry[1]
+                tmp += 1
 
         PY_SCIP_CALL(scip.SCIPlpiAddCols(lpi._lpi, ncols, c_objs, c_lbs, c_ubs, NULL, nnonz, c_beg, c_inds, c_coefs))
 
@@ -314,21 +315,22 @@ class LP:
         lpi = self.lpi
         PY_SCIP_CALL(scip.SCIPlpiDelCols(lpi._lpi, firstcol, lastcol))
 
-    def addRow(self, inds, coefs, lhs=0.0, rhs=None):
+    def addRow(self, entries, lhs=0.0, rhs=None):
         """Adds a single row to the LP.
 
         Keyword arguments:
-        inds  -- row indices of the column
-        coefs -- row coefficients of the column
-        lhs   -- left-hand side of the row (default 0.0)
-        rhs    -- right-hand side of the row (default infinity)
+        entries -- list of tuples, each tuple contains a coefficient and a column index
+        lhs     -- left-hand side of the row (default 0.0)
+        rhs     -- right-hand side of the row (default infinity)
         """
         cdef Lpi lpi
         lpi = self.lpi
-        beg = 0
 
-        cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(len(inds) * sizeof(scip.SCIP_Real))
-        cdef int* c_inds = <int*>malloc(len(inds) * sizeof(int))
+        beg = 0
+        nnonz = len(entries)
+
+        cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
+        cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
         cdef scip.SCIP_Real c_lhs
         cdef scip.SCIP_Real c_rhs
         cdef int c_beg
@@ -337,45 +339,45 @@ class LP:
         c_rhs = rhs if rhs != None else self.infinity()
         c_beg = 0
 
-        for i in range(len(inds)):
-            c_inds[i] = inds[i]
-            c_coefs[i] = coefs[i]
+        for i,entry in enumerate(entries):
+            c_inds[i] = entry[0]
+            c_coefs[i] = entry[1]
 
-        PY_SCIP_CALL(scip.SCIPlpiAddRows(lpi._lpi, 1, &c_lhs, &c_rhs, NULL, len(inds), &c_beg, c_inds, c_coefs))
+        PY_SCIP_CALL(scip.SCIPlpiAddRows(lpi._lpi, 1, &c_lhs, &c_rhs, NULL, nnonz, &c_beg, c_inds, c_coefs))
 
         free(c_coefs)
         free(c_inds)
 
-    def addRows(self, beg, inds, coefs, lhss = None, rhss = None):
+    def addRows(self, entrieslist, lhss = None, rhss = None):
         """Adds multiple rows to the LP.
 
         Keyword arguments:
-        beg   -- a set of columns to the inds- and coefs- array
-        inds  -- row indices of each column column
-        coefs -- row coefficients of the column
-        lhss  -- left-hand side of the row (default 0.0)
-        rhss  -- right-hand side of the row (default infinity)
+        entrieslist -- list containing lists of tuples, each tuple contains a coefficient and a column index
+        lhss        -- left-hand side of the row (default 0.0)
+        rhss        -- right-hand side of the row (default infinity)
         """
         cdef Lpi lpi
         lpi = self.lpi
 
-        nrows = len(beg)
-        nnonz = len(coefs)
+        nrows = len(entrieslist)
+        nnonz = sum(len(entries) for entries in entrieslist)
 
-        cdef scip.SCIP_Real* c_lhss    = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
-        cdef scip.SCIP_Real* c_rhss    = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
-        cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
+        cdef scip.SCIP_Real* c_lhss  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
+        cdef scip.SCIP_Real* c_rhss  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
+        cdef scip.SCIP_Real* c_coefs = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
         cdef int* c_beg  = <int*>malloc(nrows * sizeof(int))
 
-        for i in range(nrows):
+        tmp = 0
+        for i,entries in enumerate(entrieslist):
             c_lhss[i] = lhss[i] if lhss != None else 0.0
             c_rhss[i] = rhss[i] if rhss != None else self.infinity()
-            c_beg[i] = beg[i]
+            c_beg[i]  = tmp
 
-        for i in range(nnonz):
-            c_coefs[i] = coefs[i]
-            c_inds[i] = inds[i]
+            for entry in entries:
+                c_inds[tmp] = entry[0]
+                c_coefs[tmp] = entry[1]
+                tmp += 1
 
         PY_SCIP_CALL(scip.SCIPlpiAddRows(lpi._lpi, nrows, c_lhss, c_rhss, NULL, nnonz, c_beg, c_inds, c_coefs))
 
