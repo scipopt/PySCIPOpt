@@ -410,11 +410,11 @@ cdef class Model:
     # Objective function
 
     def setMinimize(self):
-        """Set the objective sense to maximization."""
+        """Set the objective sense to minimization."""
         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MINIMIZE))
 
     def setMaximize(self):
-        """Set the objective sense to minimization."""
+        """Set the objective sense to maximization."""
         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))
 
     def setObjlimit(self, objlimit):
