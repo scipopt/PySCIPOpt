@@ -112,7 +112,7 @@ cdef SCIP_RETCODE PyConsTrans (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* s
     PyConshdlr.constrans(sourceconstraint)
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyConsInitlp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):
+cdef SCIP_RETCODE PyConsInitlp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, SCIP_Bool* infeasible):
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
