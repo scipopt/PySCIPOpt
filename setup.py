@@ -103,6 +103,7 @@ else:
 
 if cythonize:
     extensions = cythonize(extensions)
+    os.system("sed -i 's/[ ]*$//' pyscipopt/scip.c")
 
 setup(
     name = 'pyscipopt',

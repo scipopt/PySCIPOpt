@@ -4,32 +4,32 @@
 {
     "distutils": {
         "depends": [
-            "/nfs/optimi/kombadon/bzfmuelb/projects/scip/src/scip/cons_linear.h", 
-            "/nfs/optimi/kombadon/bzfmuelb/projects/scip/src/scip/cons_quadratic.h", 
-            "/nfs/optimi/kombadon/bzfmuelb/projects/scip/src/scip/cons_sos1.h", 
-            "/nfs/optimi/kombadon/bzfmuelb/projects/scip/src/scip/cons_sos2.h", 
-            "/nfs/optimi/kombadon/bzfmuelb/projects/scip/src/scip/scip.h", 
-            "/nfs/optimi/kombadon/bzfmuelb/projects/scip/src/scip/scipdefplugins.h"
-        ], 
+            "/local/tmp/bzfmilte/projects/scip/src/scip/cons_linear.h",
+            "/local/tmp/bzfmilte/projects/scip/src/scip/cons_quadratic.h",
+            "/local/tmp/bzfmilte/projects/scip/src/scip/cons_sos1.h",
+            "/local/tmp/bzfmilte/projects/scip/src/scip/cons_sos2.h",
+            "/local/tmp/bzfmilte/projects/scip/src/scip/scip.h",
+            "/local/tmp/bzfmilte/projects/scip/src/scip/scipdefplugins.h"
+        ],
         "extra_compile_args": [
             "-UNDEBUG"
-        ], 
+        ],
         "include_dirs": [
-            "/nfs/optimi/kombadon/bzfmuelb/projects/scip/src"
-        ], 
+            "/local/tmp/bzfmilte/projects/scip/src"
+        ],
         "libraries": [
-            "scipopt", 
-            "readline", 
-            "z", 
-            "gmp", 
-            "ncurses", 
+            "scipopt",
+            "readline",
+            "z",
+            "gmp",
+            "ncurses",
             "m"
-        ], 
+        ],
         "library_dirs": [
             "lib"
-        ], 
+        ],
         "runtime_library_dirs": [
-            "/nfs/optimi/kombadon/bzfmuelb/projects/scip/interfaces/python/lib"
+            "/local/tmp/bzfmilte/projects/scip/interfaces/python/lib"
         ]
     }
 }
@@ -531,7 +531,7 @@ typedef struct __pyx_defaults __pyx_defaults;
 
 /* "pyscipopt/scip.pyx":833
  *         PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, 1.0))
- * 
+ *
  *     cdef _createConsLinear(self, scip.SCIP_CONS** cons, name, nvars,             # <<<<<<<<<<<<<<
  *                                 SCIP_VAR** vars, SCIP_Real* vals, lhs, rhs,
  *                                 initial=True, separate=True, enforce=True, check=True,
@@ -552,7 +552,7 @@ struct __pyx_opt_args_9pyscipopt_4scip_5Model__createConsLinear {
 
 /* "pyscipopt/scip.pyx":845
  *                                                     dynamic, removable, stickingatnode) )
- * 
+ *
  *     cdef _createConsSOS1(self, scip.SCIP_CONS** cons, name, nvars,             # <<<<<<<<<<<<<<
  *                               SCIP_VAR** vars, SCIP_Real* weights,
  *                               initial=True, separate=True, enforce=True, check=True,
@@ -572,7 +572,7 @@ struct __pyx_opt_args_9pyscipopt_4scip_5Model__createConsSOS1 {
 
 /* "pyscipopt/scip.pyx":857
  *                                                     stickingatnode) )
- * 
+ *
  *     cdef _createConsSOS2(self, scip.SCIP_CONS** cons, name, nvars,             # <<<<<<<<<<<<<<
  *                               SCIP_VAR** vars, SCIP_Real* weights,
  *                               initial=True, separate=True, enforce=True, check=True,
@@ -595,7 +595,7 @@ struct __pyx_defaults {
 
 /* "pyscipopt/pricer.pxi":56
  *     return SCIP_OKAY
- * 
+ *
  * cdef class Pricer:             # <<<<<<<<<<<<<<
  *     cdef public object data     # storage for the python user
  *     cdef public Model model
@@ -609,7 +609,7 @@ struct __pyx_obj_9pyscipopt_4scip_Pricer {
 
 /* "pyscipopt/conshdlr.pxi":372
  *     return SCIP_OKAY
- * 
+ *
  * cdef class Conshdlr:             # <<<<<<<<<<<<<<
  *     cdef public object data     # storage for the python user
  *     cdef public Model model
@@ -624,7 +624,7 @@ struct __pyx_obj_9pyscipopt_4scip_Conshdlr {
 
 /* "pyscipopt/presol.pxi":62
  *     return SCIP_OKAY
- * 
+ *
  * cdef class Presol:             # <<<<<<<<<<<<<<
  *     cdef public object data     # storage for the python user
  *     cdef public Model model
@@ -638,7 +638,7 @@ struct __pyx_obj_9pyscipopt_4scip_Presol {
 
 /* "pyscipopt/sepa.pxi":58
  *     return SCIP_OKAY
- * 
+ *
  * cdef class Sepa:             # <<<<<<<<<<<<<<
  *     cdef public object data     # storage for the python user
  *     cdef public Model model
@@ -652,7 +652,7 @@ struct __pyx_obj_9pyscipopt_4scip_Sepa {
 
 /* "pyscipopt/propagator.pxi":116
  *     return SCIP_OKAY
- * 
+ *
  * cdef class Prop:             # <<<<<<<<<<<<<<
  *     cdef public object data     # storage for the python user
  *     cdef public Model model
@@ -666,7 +666,7 @@ struct __pyx_obj_9pyscipopt_4scip_Prop {
 
 /* "pyscipopt/heuristic.pxi":47
  *     return SCIP_OKAY
- * 
+ *
  * cdef class Heur:             # <<<<<<<<<<<<<<
  *     cdef public object data     # storage for the python user
  *     cdef public Model model
@@ -681,7 +681,7 @@ struct __pyx_obj_9pyscipopt_4scip_Heur {
 
 /* "pyscipopt/branchrule.pxi":63
  *     return SCIP_OKAY
- * 
+ *
  * cdef class Branchrule:             # <<<<<<<<<<<<<<
  *     cdef public object data     # storage for the python user
  *     cdef public Model model
@@ -706,8 +706,8 @@ struct __pyx_obj_9pyscipopt_4scip_PY_SCIP_RESULT {
 
 
 /* "pyscipopt/scip.pyx":55
- * 
- * 
+ *
+ *
  * cdef class PY_SCIP_PARAMSETTING:             # <<<<<<<<<<<<<<
  *     DEFAULT     = 0
  *     AGRESSIVE   = 1
@@ -719,7 +719,7 @@ struct __pyx_obj_9pyscipopt_4scip_PY_SCIP_PARAMSETTING {
 
 /* "pyscipopt/scip.pyx":61
  *     OFF         = 3
- * 
+ *
  * cdef class PY_SCIP_STATUS:             # <<<<<<<<<<<<<<
  *     UNKNOWN        =  0
  *     USERINTERRUPT  =  1
@@ -731,7 +731,7 @@ struct __pyx_obj_9pyscipopt_4scip_PY_SCIP_STATUS {
 
 /* "pyscipopt/scip.pyx":78
  *     INFORUNBD      = 14
- * 
+ *
  * cdef class PY_SCIP_PROPTIMING:             # <<<<<<<<<<<<<<
  *     BEFORELP     = 0X001U
  *     DURINGLPLOOP = 0X002U
@@ -743,7 +743,7 @@ struct __pyx_obj_9pyscipopt_4scip_PY_SCIP_PROPTIMING {
 
 /* "pyscipopt/scip.pyx":84
  *     AFTERLPNODE  = 0X008U
- * 
+ *
  * cdef class PY_SCIP_PRESOLTIMING:             # <<<<<<<<<<<<<<
  *     NONE       = 0x000u
  *     FAST       = 0x002u
@@ -755,7 +755,7 @@ struct __pyx_obj_9pyscipopt_4scip_PY_SCIP_PRESOLTIMING {
 
 /* "pyscipopt/scip.pyx":90
  *     EXHAUSTIVE = 0x008u
- * 
+ *
  * cdef class PY_SCIP_HEURTIMING:             # <<<<<<<<<<<<<<
  *     BEFORENODE        = 0x001u
  *     DURINGLPLOOP      = 0x002u
@@ -766,8 +766,8 @@ struct __pyx_obj_9pyscipopt_4scip_PY_SCIP_HEURTIMING {
 
 
 /* "pyscipopt/scip.pyx":146
- * 
- * 
+ *
+ *
  * cdef class Col:             # <<<<<<<<<<<<<<
  *     """Base class holding a pointer to corresponding SCIP_COL"""
  *     cdef scip.SCIP_COL* _col
@@ -779,8 +779,8 @@ struct __pyx_obj_9pyscipopt_4scip_Col {
 
 
 /* "pyscipopt/scip.pyx":151
- * 
- * 
+ *
+ *
  * cdef class Row:             # <<<<<<<<<<<<<<
  *     """Base class holding a pointer to corresponding SCIP_ROW"""
  *     cdef scip.SCIP_ROW* _row
@@ -792,8 +792,8 @@ struct __pyx_obj_9pyscipopt_4scip_Row {
 
 
 /* "pyscipopt/scip.pyx":156
- * 
- * 
+ *
+ *
  * cdef class Solution:             # <<<<<<<<<<<<<<
  *     """Base class holding a pointer to corresponding SCIP_SOL"""
  *     cdef scip.SCIP_SOL* _solution
@@ -805,8 +805,8 @@ struct __pyx_obj_9pyscipopt_4scip_Solution {
 
 
 /* "pyscipopt/scip.pyx":161
- * 
- * 
+ *
+ *
  * cdef class Var:             # <<<<<<<<<<<<<<
  *     """Base class holding a pointer to corresponding SCIP_VAR"""
  *     cdef scip.SCIP_VAR* _var
@@ -819,7 +819,7 @@ struct __pyx_obj_9pyscipopt_4scip_Var {
 
 /* "pyscipopt/scip.pyx":165
  *     cdef scip.SCIP_VAR* _var
- * 
+ *
  * cdef class Lpi:             # <<<<<<<<<<<<<<
  *     """Base class holding a pointer to corresponding SCIP_LPI"""
  *     cdef scip.SCIP_LPI* _lpi
@@ -832,10 +832,10 @@ struct __pyx_obj_9pyscipopt_4scip_Lpi {
 
 /* "pyscipopt/scip.pyx":715
  *     return var
- * 
+ *
  * cdef class Cons:             # <<<<<<<<<<<<<<
  *     cdef scip.SCIP_CONS* _cons
- * 
+ *
  */
 struct __pyx_obj_9pyscipopt_4scip_Cons {
   PyObject_HEAD
@@ -861,7 +861,7 @@ struct __pyx_obj_9pyscipopt_4scip_Model {
 
 /* "pyscipopt/scip.pyx":26
  *     str_conversion = lambda x:x
- * 
+ *
  * def scipErrorHandler(function):             # <<<<<<<<<<<<<<
  *     def wrapper(*args, **kwargs):
  *         return PY_SCIP_CALL(function(*args, **kwargs))
@@ -874,10 +874,10 @@ struct __pyx_obj_9pyscipopt_4scip___pyx_scope_struct__scipErrorHandler {
 
 /* "pyscipopt/scip.pyx":264
  *         free(c_inds)
- * 
+ *
  *     def addCols(self, entrieslist, objs = None, lbs = None, ubs = None):             # <<<<<<<<<<<<<<
  *         """Adds multiple columns to the LP.
- * 
+ *
  */
 struct __pyx_obj_9pyscipopt_4scip___pyx_scope_struct_1_addCols {
   PyObject_HEAD
@@ -886,10 +886,10 @@ struct __pyx_obj_9pyscipopt_4scip___pyx_scope_struct_1_addCols {
 
 
 /* "pyscipopt/scip.pyx":277
- * 
+ *
  *         ncols = len(entrieslist)
  *         nnonz = sum(len(entries) for entries in entrieslist)             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef scip.SCIP_Real* c_objs   = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
  */
 struct __pyx_obj_9pyscipopt_4scip___pyx_scope_struct_2_genexpr {
@@ -904,10 +904,10 @@ struct __pyx_obj_9pyscipopt_4scip___pyx_scope_struct_2_genexpr {
 
 /* "pyscipopt/scip.pyx":351
  *         free(c_inds)
- * 
+ *
  *     def addRows(self, entrieslist, lhss = None, rhss = None):             # <<<<<<<<<<<<<<
  *         """Adds multiple rows to the LP.
- * 
+ *
  */
 struct __pyx_obj_9pyscipopt_4scip___pyx_scope_struct_3_addRows {
   PyObject_HEAD
@@ -916,10 +916,10 @@ struct __pyx_obj_9pyscipopt_4scip___pyx_scope_struct_3_addRows {
 
 
 /* "pyscipopt/scip.pyx":363
- * 
+ *
  *         nrows = len(entrieslist)
  *         nnonz = sum(len(entries) for entries in entrieslist)             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef scip.SCIP_Real* c_lhss  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
  */
 struct __pyx_obj_9pyscipopt_4scip___pyx_scope_struct_4_genexpr {
@@ -2030,7 +2030,7 @@ static char __pyx_k_SCIP_insufficient_memory_error[] = "SCIP: insufficient memor
 static char __pyx_k_wrote_original_problem_to_file[] = "wrote original problem to file ";
 static char __pyx_k_SCIP_method_cannot_be_called_at[] = "SCIP: method cannot be called at this time";
 static char __pyx_k_SCIP_method_returned_an_invalid[] = "SCIP: method returned an invalid result code!";
-static char __pyx_k_nfs_optimi_kombadon_bzfmuelb_pr[] = "/nfs/optimi/kombadon/bzfmuelb/projects/scip/interfaces/python/pyscipopt/scip.pyx";
+static char __pyx_k_local_tmp_bzfmilte_projects_sci[] = "/local/tmp/bzfmilte/projects/scip/interfaces/python/pyscipopt/scip.pyx";
 static char __pyx_k_python_error_in_consenfolp_this[] = "python error in consenfolp: this method needs to be implemented";
 static char __pyx_k_python_error_in_consenfops_this[] = "python error in consenfops: this method needs to be implemented";
 static char __pyx_k_python_error_in_presolexec_this[] = "python error in presolexec: this method needs to be implemented";
@@ -2361,6 +2361,7 @@ static PyObject *__pyx_n_s_lhs;
 static PyObject *__pyx_n_s_lhss;
 static PyObject *__pyx_n_s_lincons;
 static PyObject *__pyx_n_s_local;
+static PyObject *__pyx_kp_s_local_tmp_bzfmilte_projects_sci;
 static PyObject *__pyx_n_s_lowerbound;
 static PyObject *__pyx_n_s_lpi;
 static PyObject *__pyx_n_s_lpi_2;
@@ -2389,7 +2390,6 @@ static PyObject *__pyx_n_s_ndelconss;
 static PyObject *__pyx_n_s_needscons;
 static PyObject *__pyx_n_s_newval;
 static PyObject *__pyx_n_s_nfixedvars;
-static PyObject *__pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr;
 static PyObject *__pyx_n_s_niters;
 static PyObject *__pyx_n_s_nlocksneg;
 static PyObject *__pyx_n_s_nlockspos;
@@ -2983,7 +2983,7 @@ static PyObject *__pyx_codeobj__133;
 static PyObject *__pyx_codeobj__135;
 
 /* "pyscipopt/scip.pyx":22
- * 
+ *
  * if sys.version_info >= (3, 0):
  *     str_conversion = lambda x:bytes(x,'utf-8')             # <<<<<<<<<<<<<<
  * else:
@@ -3045,7 +3045,7 @@ static PyObject *__pyx_lambda_funcdef_9pyscipopt_4scip_lambda(CYTHON_UNUSED PyOb
  *     str_conversion = lambda x:bytes(x,'utf-8')
  * else:
  *     str_conversion = lambda x:x             # <<<<<<<<<<<<<<
- * 
+ *
  * def scipErrorHandler(function):
  */
 
@@ -3082,7 +3082,7 @@ static PyObject *__pyx_lambda_funcdef_9pyscipopt_4scip_lambda1(CYTHON_UNUSED PyO
 /* "pyscipopt/pricer.pxi":1
  * cdef SCIP_RETCODE PyPricerCopy (SCIP* scip, SCIP_PRICER* pricer, SCIP_Bool* valid):             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
 
 static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerCopy(CYTHON_UNUSED SCIP *__pyx_v_scip, CYTHON_UNUSED SCIP_PRICER *__pyx_v_pricer, CYTHON_UNUSED SCIP_Bool *__pyx_v_valid) {
@@ -3093,7 +3093,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerCopy(CYTHON_UNUSED SCIP *__
   /* "pyscipopt/pricer.pxi":2
  * cdef SCIP_RETCODE PyPricerCopy (SCIP* scip, SCIP_PRICER* pricer, SCIP_Bool* valid):
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPricerFree (SCIP* scip, SCIP_PRICER* pricer):
  */
   __pyx_r = SCIP_OKAY;
@@ -3102,7 +3102,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerCopy(CYTHON_UNUSED SCIP *__
   /* "pyscipopt/pricer.pxi":1
  * cdef SCIP_RETCODE PyPricerCopy (SCIP* scip, SCIP_PRICER* pricer, SCIP_Bool* valid):             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
 
   /* function exit code */
@@ -3113,7 +3113,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerCopy(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/pricer.pxi":4
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPricerFree (SCIP* scip, SCIP_PRICER* pricer):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRICERDATA* pricerdata
  *     pricerdata = SCIPpricerGetData(pricer)
@@ -3158,7 +3158,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerFree(CYTHON_UNUSED SCIP *__
  *     PyPricer = <Pricer>pricerdata
  *     PyPricer.pricerfree()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyPricer), __pyx_n_s_pricerfree); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 8; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -3186,7 +3186,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerFree(CYTHON_UNUSED SCIP *__
  *     PyPricer = <Pricer>pricerdata
  *     PyPricer.pricerfree()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPricerInit (SCIP* scip, SCIP_PRICER* pricer):
  */
   __pyx_r = SCIP_OKAY;
@@ -3194,7 +3194,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerFree(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/pricer.pxi":4
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPricerFree (SCIP* scip, SCIP_PRICER* pricer):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRICERDATA* pricerdata
  *     pricerdata = SCIPpricerGetData(pricer)
@@ -3215,7 +3215,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerFree(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/pricer.pxi":11
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPricerInit (SCIP* scip, SCIP_PRICER* pricer):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRICERDATA* pricerdata
  *     pricerdata = SCIPpricerGetData(pricer)
@@ -3260,7 +3260,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerInit(CYTHON_UNUSED SCIP *__
  *     PyPricer = <Pricer>pricerdata
  *     PyPricer.pricerinit()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyPricer), __pyx_n_s_pricerinit); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -3288,7 +3288,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerInit(CYTHON_UNUSED SCIP *__
  *     PyPricer = <Pricer>pricerdata
  *     PyPricer.pricerinit()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPricerExit (SCIP* scip, SCIP_PRICER* pricer):
  */
   __pyx_r = SCIP_OKAY;
@@ -3296,7 +3296,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerInit(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/pricer.pxi":11
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPricerInit (SCIP* scip, SCIP_PRICER* pricer):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRICERDATA* pricerdata
  *     pricerdata = SCIPpricerGetData(pricer)
@@ -3317,7 +3317,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerInit(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/pricer.pxi":18
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPricerExit (SCIP* scip, SCIP_PRICER* pricer):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRICERDATA* pricerdata
  *     pricerdata = SCIPpricerGetData(pricer)
@@ -3362,7 +3362,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerExit(CYTHON_UNUSED SCIP *__
  *     PyPricer = <Pricer>pricerdata
  *     PyPricer.pricerexit()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyPricer), __pyx_n_s_pricerexit); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -3390,7 +3390,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerExit(CYTHON_UNUSED SCIP *__
  *     PyPricer = <Pricer>pricerdata
  *     PyPricer.pricerexit()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPricerInitsol (SCIP* scip, SCIP_PRICER* pricer):
  */
   __pyx_r = SCIP_OKAY;
@@ -3398,7 +3398,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerExit(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/pricer.pxi":18
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPricerExit (SCIP* scip, SCIP_PRICER* pricer):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRICERDATA* pricerdata
  *     pricerdata = SCIPpricerGetData(pricer)
@@ -3419,7 +3419,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerExit(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/pricer.pxi":25
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPricerInitsol (SCIP* scip, SCIP_PRICER* pricer):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRICERDATA* pricerdata
  *     pricerdata = SCIPpricerGetData(pricer)
@@ -3464,7 +3464,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerInitsol(CYTHON_UNUSED SCIP 
  *     PyPricer = <Pricer>pricerdata
  *     PyPricer.pricerinitsol()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyPricer), __pyx_n_s_pricerinitsol); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -3492,7 +3492,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerInitsol(CYTHON_UNUSED SCIP 
  *     PyPricer = <Pricer>pricerdata
  *     PyPricer.pricerinitsol()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPricerExitsol (SCIP* scip, SCIP_PRICER* pricer):
  */
   __pyx_r = SCIP_OKAY;
@@ -3500,7 +3500,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerInitsol(CYTHON_UNUSED SCIP 
 
   /* "pyscipopt/pricer.pxi":25
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPricerInitsol (SCIP* scip, SCIP_PRICER* pricer):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRICERDATA* pricerdata
  *     pricerdata = SCIPpricerGetData(pricer)
@@ -3521,7 +3521,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerInitsol(CYTHON_UNUSED SCIP 
 
 /* "pyscipopt/pricer.pxi":32
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPricerExitsol (SCIP* scip, SCIP_PRICER* pricer):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRICERDATA* pricerdata
  *     pricerdata = SCIPpricerGetData(pricer)
@@ -3566,7 +3566,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerExitsol(CYTHON_UNUSED SCIP 
  *     PyPricer = <Pricer>pricerdata
  *     PyPricer.pricerexitsol()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyPricer), __pyx_n_s_pricerexitsol); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -3594,7 +3594,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerExitsol(CYTHON_UNUSED SCIP 
  *     PyPricer = <Pricer>pricerdata
  *     PyPricer.pricerexitsol()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPricerRedcost (SCIP* scip, SCIP_PRICER* pricer, SCIP_Real* lowerbound, SCIP_Bool* stopearly, SCIP_RESULT* result):
  */
   __pyx_r = SCIP_OKAY;
@@ -3602,7 +3602,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerExitsol(CYTHON_UNUSED SCIP 
 
   /* "pyscipopt/pricer.pxi":32
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPricerExitsol (SCIP* scip, SCIP_PRICER* pricer):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRICERDATA* pricerdata
  *     pricerdata = SCIPpricerGetData(pricer)
@@ -3623,7 +3623,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerExitsol(CYTHON_UNUSED SCIP 
 
 /* "pyscipopt/pricer.pxi":39
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPricerRedcost (SCIP* scip, SCIP_PRICER* pricer, SCIP_Real* lowerbound, SCIP_Bool* stopearly, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRICERDATA* pricerdata
  *     pricerdata = SCIPpricerGetData(pricer)
@@ -3789,7 +3789,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerRedcost(CYTHON_UNUSED SCIP 
  *     lowerbound[0] = result_dict.get("lowerbound", <SCIP_Real>lowerbound[0])
  *     stopearly[0] = result_dict.get("stopearly", <SCIP_Bool>stopearly[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_result_dict, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -3830,7 +3830,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerRedcost(CYTHON_UNUSED SCIP 
  *     lowerbound[0] = result_dict.get("lowerbound", <SCIP_Real>lowerbound[0])
  *     stopearly[0] = result_dict.get("stopearly", <SCIP_Bool>stopearly[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPricerFarkas (SCIP* scip, SCIP_PRICER* pricer, SCIP_RESULT* result):
  */
   __pyx_r = SCIP_OKAY;
@@ -3838,7 +3838,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerRedcost(CYTHON_UNUSED SCIP 
 
   /* "pyscipopt/pricer.pxi":39
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPricerRedcost (SCIP* scip, SCIP_PRICER* pricer, SCIP_Real* lowerbound, SCIP_Bool* stopearly, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRICERDATA* pricerdata
  *     pricerdata = SCIPpricerGetData(pricer)
@@ -3862,7 +3862,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerRedcost(CYTHON_UNUSED SCIP 
 
 /* "pyscipopt/pricer.pxi":49
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPricerFarkas (SCIP* scip, SCIP_PRICER* pricer, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRICERDATA* pricerdata
  *     pricerdata = SCIPpricerGetData(pricer)
@@ -3911,7 +3911,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerFarkas(CYTHON_UNUSED SCIP *
  *     PyPricer = <Pricer>pricerdata
  *     result[0] = PyPricer.pricerfarkas().get("result", <SCIP_RESULT>result[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_3 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyPricer), __pyx_n_s_pricerfarkas); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 53; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
@@ -3973,7 +3973,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerFarkas(CYTHON_UNUSED SCIP *
  *     PyPricer = <Pricer>pricerdata
  *     result[0] = PyPricer.pricerfarkas().get("result", <SCIP_RESULT>result[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef class Pricer:
  */
   __pyx_r = SCIP_OKAY;
@@ -3981,7 +3981,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerFarkas(CYTHON_UNUSED SCIP *
 
   /* "pyscipopt/pricer.pxi":49
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPricerFarkas (SCIP* scip, SCIP_PRICER* pricer, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRICERDATA* pricerdata
  *     pricerdata = SCIPpricerGetData(pricer)
@@ -4004,10 +4004,10 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPricerFarkas(CYTHON_UNUSED SCIP *
 
 /* "pyscipopt/pricer.pxi":60
  *     cdef public Model model
- * 
+ *
  *     def pricerfree(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -4037,10 +4037,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Pricer_pricerfree(CYTHON_UNUSED stru
 
 /* "pyscipopt/pricer.pxi":63
  *         pass
- * 
+ *
  *     def pricerinit(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -4070,10 +4070,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Pricer_2pricerinit(CYTHON_UNUSED str
 
 /* "pyscipopt/pricer.pxi":66
  *         pass
- * 
+ *
  *     def pricerexit(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -4103,10 +4103,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Pricer_4pricerexit(CYTHON_UNUSED str
 
 /* "pyscipopt/pricer.pxi":69
  *         pass
- * 
+ *
  *     def pricerinitsol(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -4136,10 +4136,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Pricer_6pricerinitsol(CYTHON_UNUSED 
 
 /* "pyscipopt/pricer.pxi":72
  *         pass
- * 
+ *
  *     def pricerexitsol(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -4169,7 +4169,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Pricer_8pricerexitsol(CYTHON_UNUSED 
 
 /* "pyscipopt/pricer.pxi":75
  *         pass
- * 
+ *
  *     def pricerredcost(self):             # <<<<<<<<<<<<<<
  *         print("python error in pricerredcost: this method needs to be implemented")
  *         return {}
@@ -4198,11 +4198,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Pricer_10pricerredcost(CYTHON_UNUSED
   __Pyx_RefNannySetupContext("pricerredcost", 0);
 
   /* "pyscipopt/pricer.pxi":76
- * 
+ *
  *     def pricerredcost(self):
  *         print("python error in pricerredcost: this method needs to be implemented")             # <<<<<<<<<<<<<<
  *         return {}
- * 
+ *
  */
   if (__Pyx_PrintOne(0, __pyx_kp_s_python_error_in_pricerredcost_th) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 76; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -4210,7 +4210,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Pricer_10pricerredcost(CYTHON_UNUSED
  *     def pricerredcost(self):
  *         print("python error in pricerredcost: this method needs to be implemented")
  *         return {}             # <<<<<<<<<<<<<<
- * 
+ *
  *     def pricerfarkas(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -4222,7 +4222,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Pricer_10pricerredcost(CYTHON_UNUSED
 
   /* "pyscipopt/pricer.pxi":75
  *         pass
- * 
+ *
  *     def pricerredcost(self):             # <<<<<<<<<<<<<<
  *         print("python error in pricerredcost: this method needs to be implemented")
  *         return {}
@@ -4241,7 +4241,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Pricer_10pricerredcost(CYTHON_UNUSED
 
 /* "pyscipopt/pricer.pxi":79
  *         return {}
- * 
+ *
  *     def pricerfarkas(self):             # <<<<<<<<<<<<<<
  *         return {}
  */
@@ -4269,7 +4269,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Pricer_12pricerfarkas(CYTHON_UNUSED 
   __Pyx_RefNannySetupContext("pricerfarkas", 0);
 
   /* "pyscipopt/pricer.pxi":80
- * 
+ *
  *     def pricerfarkas(self):
  *         return {}             # <<<<<<<<<<<<<<
  */
@@ -4282,7 +4282,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Pricer_12pricerfarkas(CYTHON_UNUSED 
 
   /* "pyscipopt/pricer.pxi":79
  *         return {}
- * 
+ *
  *     def pricerfarkas(self):             # <<<<<<<<<<<<<<
  *         return {}
  */
@@ -4299,11 +4299,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Pricer_12pricerfarkas(CYTHON_UNUSED 
 }
 
 /* "pyscipopt/pricer.pxi":57
- * 
+ *
  * cdef class Pricer:
  *     cdef public object data     # storage for the python user             # <<<<<<<<<<<<<<
  *     cdef public Model model
- * 
+ *
  */
 
 /* Python wrapper */
@@ -4397,7 +4397,7 @@ static int __pyx_pf_9pyscipopt_4scip_6Pricer_4data_4__del__(struct __pyx_obj_9py
  * cdef class Pricer:
  *     cdef public object data     # storage for the python user
  *     cdef public Model model             # <<<<<<<<<<<<<<
- * 
+ *
  *     def pricerfree(self):
  */
 
@@ -4504,7 +4504,7 @@ static int __pyx_pf_9pyscipopt_4scip_6Pricer_5model_4__del__(struct __pyx_obj_9p
 /* "pyscipopt/conshdlr.pxi":1
  * cdef SCIP_RETCODE PyConshdlrCopy (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_Bool* valid):             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
 
 static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConshdlrCopy(CYTHON_UNUSED SCIP *__pyx_v_scip, CYTHON_UNUSED SCIP_CONSHDLR *__pyx_v_conshdlr, CYTHON_UNUSED SCIP_Bool *__pyx_v_valid) {
@@ -4515,7 +4515,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConshdlrCopy(CYTHON_UNUSED SCIP *
   /* "pyscipopt/conshdlr.pxi":2
  * cdef SCIP_RETCODE PyConshdlrCopy (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_Bool* valid):
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsFree (SCIP* scip, SCIP_CONSHDLR* conshdlr):
  */
   __pyx_r = SCIP_OKAY;
@@ -4524,7 +4524,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConshdlrCopy(CYTHON_UNUSED SCIP *
   /* "pyscipopt/conshdlr.pxi":1
  * cdef SCIP_RETCODE PyConshdlrCopy (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_Bool* valid):             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
 
   /* function exit code */
@@ -4535,7 +4535,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConshdlrCopy(CYTHON_UNUSED SCIP *
 
 /* "pyscipopt/conshdlr.pxi":4
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsFree (SCIP* scip, SCIP_CONSHDLR* conshdlr):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -4580,7 +4580,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsFree(CYTHON_UNUSED SCIP *__py
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consfree()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consfree); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 8; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -4608,7 +4608,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsFree(CYTHON_UNUSED SCIP *__py
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consfree()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsInit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):
  */
   __pyx_r = SCIP_OKAY;
@@ -4616,7 +4616,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsFree(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/conshdlr.pxi":4
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsFree (SCIP* scip, SCIP_CONSHDLR* conshdlr):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -4637,7 +4637,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsFree(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/conshdlr.pxi":11
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsInit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -4786,7 +4786,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInit(CYTHON_UNUSED SCIP *__py
  *         constraints.append(cons)
  *     PyConshdlr.consinit(constraints)             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consinit); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -4821,7 +4821,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInit(CYTHON_UNUSED SCIP *__py
  *         constraints.append(cons)
  *     PyConshdlr.consinit(constraints)
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsExit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):
  */
   __pyx_r = SCIP_OKAY;
@@ -4829,7 +4829,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInit(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/conshdlr.pxi":11
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsInit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -4855,7 +4855,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInit(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/conshdlr.pxi":25
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsExit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -5004,7 +5004,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsExit(CYTHON_UNUSED SCIP *__py
  *         constraints.append(cons)
  *     PyConshdlr.consexit(constraints)             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consexit); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -5039,7 +5039,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsExit(CYTHON_UNUSED SCIP *__py
  *         constraints.append(cons)
  *     PyConshdlr.consexit(constraints)
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsInitpre (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):
  */
   __pyx_r = SCIP_OKAY;
@@ -5047,7 +5047,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsExit(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/conshdlr.pxi":25
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsExit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -5073,7 +5073,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsExit(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/conshdlr.pxi":39
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsInitpre (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -5222,7 +5222,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInitpre(CYTHON_UNUSED SCIP *_
  *         constraints.append(cons)
  *     PyConshdlr.consinitpre(constraints)             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consinitpre); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -5257,7 +5257,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInitpre(CYTHON_UNUSED SCIP *_
  *         constraints.append(cons)
  *     PyConshdlr.consinitpre(constraints)
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsExitpre (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):
  */
   __pyx_r = SCIP_OKAY;
@@ -5265,7 +5265,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInitpre(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/conshdlr.pxi":39
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsInitpre (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -5291,7 +5291,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInitpre(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/conshdlr.pxi":53
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsExitpre (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -5440,7 +5440,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsExitpre(CYTHON_UNUSED SCIP *_
  *         constraints.append(cons)
  *     PyConshdlr.consexitpre(constraints)             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consexitpre); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -5475,7 +5475,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsExitpre(CYTHON_UNUSED SCIP *_
  *         constraints.append(cons)
  *     PyConshdlr.consexitpre(constraints)
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsInitsol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):
  */
   __pyx_r = SCIP_OKAY;
@@ -5483,7 +5483,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsExitpre(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/conshdlr.pxi":53
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsExitpre (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -5509,7 +5509,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsExitpre(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/conshdlr.pxi":67
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsInitsol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -5658,7 +5658,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInitsol(CYTHON_UNUSED SCIP *_
  *         constraints.append(cons)
  *     PyConshdlr.consinitsol(constraints)             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consinitsol); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 78; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -5693,7 +5693,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInitsol(CYTHON_UNUSED SCIP *_
  *         constraints.append(cons)
  *     PyConshdlr.consinitsol(constraints)
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsExitsol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, SCIP_Bool restart):
  */
   __pyx_r = SCIP_OKAY;
@@ -5701,7 +5701,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInitsol(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/conshdlr.pxi":67
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsInitsol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -5727,7 +5727,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInitsol(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/conshdlr.pxi":81
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsExitsol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, SCIP_Bool restart):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -5877,7 +5877,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsExitsol(CYTHON_UNUSED SCIP *_
  *         constraints.append(cons)
  *     PyConshdlr.consexitsol(constraints, restart)             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consexitsol); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 92; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -5916,7 +5916,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsExitsol(CYTHON_UNUSED SCIP *_
  *         constraints.append(cons)
  *     PyConshdlr.consexitsol(constraints, restart)
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsDelete (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SCIP_CONSDATA** consdata):
  */
   __pyx_r = SCIP_OKAY;
@@ -5924,7 +5924,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsExitsol(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/conshdlr.pxi":81
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsExitsol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, SCIP_Bool restart):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -5950,7 +5950,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsExitsol(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/conshdlr.pxi":95
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsDelete (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SCIP_CONSDATA** consdata):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -5995,7 +5995,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDelete(CYTHON_UNUSED SCIP *__
  *     # TODO
  *     PyConshdlr.consdelete()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consdelete); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -6023,7 +6023,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDelete(CYTHON_UNUSED SCIP *__
  *     # TODO
  *     PyConshdlr.consdelete()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsTrans (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* sourcecons, SCIP_CONS** targetcons):
  */
   __pyx_r = SCIP_OKAY;
@@ -6031,7 +6031,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDelete(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/conshdlr.pxi":95
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsDelete (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SCIP_CONSDATA** consdata):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -6052,7 +6052,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDelete(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/conshdlr.pxi":103
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsTrans (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* sourcecons, SCIP_CONS** targetcons):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -6163,7 +6163,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsTrans(CYTHON_UNUSED SCIP *__p
  *     # TODO
  *     PyConshdlr.constrans(sourceconstraint)             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_constrans); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -6198,7 +6198,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsTrans(CYTHON_UNUSED SCIP *__p
  *     # TODO
  *     PyConshdlr.constrans(sourceconstraint)
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsInitlp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):
  */
   __pyx_r = SCIP_OKAY;
@@ -6206,7 +6206,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsTrans(CYTHON_UNUSED SCIP *__p
 
   /* "pyscipopt/conshdlr.pxi":103
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsTrans (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* sourcecons, SCIP_CONS** targetcons):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -6231,7 +6231,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsTrans(CYTHON_UNUSED SCIP *__p
 
 /* "pyscipopt/conshdlr.pxi":115
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsInitlp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -6276,7 +6276,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInitlp(CYTHON_UNUSED SCIP *__
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consinitlp()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consinitlp); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 119; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -6304,7 +6304,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInitlp(CYTHON_UNUSED SCIP *__
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consinitlp()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsSepalp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, SCIP_RESULT* result):
  */
   __pyx_r = SCIP_OKAY;
@@ -6312,7 +6312,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInitlp(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/conshdlr.pxi":115
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsInitlp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -6333,7 +6333,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsInitlp(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/conshdlr.pxi":122
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsSepalp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -6526,7 +6526,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsSepalp(CYTHON_UNUSED SCIP *__
  *     result_dict = PyConshdlr.conssepalp(constraints, nusefulconss)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_result_dict, __pyx_n_s_get); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 134; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -6567,7 +6567,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsSepalp(CYTHON_UNUSED SCIP *__
  *     result_dict = PyConshdlr.conssepalp(constraints, nusefulconss)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsSepasol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss,
  */
   __pyx_r = SCIP_OKAY;
@@ -6575,7 +6575,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsSepalp(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/conshdlr.pxi":122
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsSepalp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -6602,7 +6602,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsSepalp(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/conshdlr.pxi":137
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsSepasol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss,             # <<<<<<<<<<<<<<
  *                                  SCIP_SOL* sol, SCIP_RESULT* result):
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
@@ -6820,7 +6820,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsSepasol(CYTHON_UNUSED SCIP *_
  *     result_dict = PyConshdlr.conssepasol(constraints, nusefulconss, solution)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_result_dict, __pyx_n_s_get); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 152; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -6861,7 +6861,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsSepasol(CYTHON_UNUSED SCIP *_
  *     result_dict = PyConshdlr.conssepasol(constraints, nusefulconss, solution)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsEnfolp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss,
  */
   __pyx_r = SCIP_OKAY;
@@ -6869,7 +6869,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsSepasol(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/conshdlr.pxi":137
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsSepasol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss,             # <<<<<<<<<<<<<<
  *                                  SCIP_SOL* sol, SCIP_RESULT* result):
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
@@ -6897,7 +6897,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsSepasol(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/conshdlr.pxi":155
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsEnfolp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss,             # <<<<<<<<<<<<<<
  *                                 SCIP_Bool solinfeasible, SCIP_RESULT* result):
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
@@ -7096,7 +7096,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsEnfolp(CYTHON_UNUSED SCIP *__
  *     result_dict = PyConshdlr.consenfolp(constraints, nusefulconss, solinfeasible)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_result_dict, __pyx_n_s_get); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -7137,7 +7137,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsEnfolp(CYTHON_UNUSED SCIP *__
  *     result_dict = PyConshdlr.consenfolp(constraints, nusefulconss, solinfeasible)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsEnfops (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss,
  */
   __pyx_r = SCIP_OKAY;
@@ -7145,7 +7145,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsEnfolp(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/conshdlr.pxi":155
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsEnfolp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss,             # <<<<<<<<<<<<<<
  *                                 SCIP_Bool solinfeasible, SCIP_RESULT* result):
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
@@ -7173,7 +7173,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsEnfolp(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/conshdlr.pxi":171
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsEnfops (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss,             # <<<<<<<<<<<<<<
  *                                 SCIP_Bool solinfeasible, SCIP_Bool objinfeasible, SCIP_RESULT* result):
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
@@ -7378,7 +7378,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsEnfops(CYTHON_UNUSED SCIP *__
  *     result_dict = PyConshdlr.consenfops(constraints, nusefulconss, solinfeasible, objinfeasible)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_result_dict, __pyx_n_s_get); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 184; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -7419,7 +7419,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsEnfops(CYTHON_UNUSED SCIP *__
  *     result_dict = PyConshdlr.consenfops(constraints, nusefulconss, solinfeasible, objinfeasible)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsCheck (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, SCIP_SOL* sol, SCIP_Bool checkintegrality,
  */
   __pyx_r = SCIP_OKAY;
@@ -7427,7 +7427,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsEnfops(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/conshdlr.pxi":171
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsEnfops (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss,             # <<<<<<<<<<<<<<
  *                                 SCIP_Bool solinfeasible, SCIP_Bool objinfeasible, SCIP_RESULT* result):
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
@@ -7456,7 +7456,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsEnfops(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/conshdlr.pxi":187
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsCheck (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, SCIP_SOL* sol, SCIP_Bool checkintegrality,             # <<<<<<<<<<<<<<
  *                                SCIP_Bool checklprows, SCIP_Bool printreason, SCIP_RESULT* result):
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
@@ -7707,7 +7707,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsCheck(CYTHON_UNUSED SCIP *__p
  *     result_dict = PyConshdlr.conscheck(constraints, solution, checkintegrality, checklprows, printreason)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_result_dict, __pyx_n_s_get); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 204; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -7748,7 +7748,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsCheck(CYTHON_UNUSED SCIP *__p
  *     result_dict = PyConshdlr.conscheck(constraints, solution, checkintegrality, checklprows, printreason)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsProp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, int nmarkedconss,
  */
   __pyx_r = SCIP_OKAY;
@@ -7756,7 +7756,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsCheck(CYTHON_UNUSED SCIP *__p
 
   /* "pyscipopt/conshdlr.pxi":187
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsCheck (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, SCIP_SOL* sol, SCIP_Bool checkintegrality,             # <<<<<<<<<<<<<<
  *                                SCIP_Bool checklprows, SCIP_Bool printreason, SCIP_RESULT* result):
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
@@ -7786,7 +7786,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsCheck(CYTHON_UNUSED SCIP *__p
 
 /* "pyscipopt/conshdlr.pxi":207
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsProp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, int nmarkedconss,             # <<<<<<<<<<<<<<
  *                               SCIP_PROPTIMING proptiming, SCIP_RESULT* result):
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
@@ -7991,7 +7991,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsProp(CYTHON_UNUSED SCIP *__py
  *     result_dict = PyConshdlr.consprop(constraints, nusefulconss, nmarkedconss, proptiming)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_result_dict, __pyx_n_s_get); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -8032,7 +8032,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsProp(CYTHON_UNUSED SCIP *__py
  *     result_dict = PyConshdlr.consprop(constraints, nusefulconss, nmarkedconss, proptiming)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsPresol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nrounds, SCIP_PRESOLTIMING presoltiming,
  */
   __pyx_r = SCIP_OKAY;
@@ -8040,7 +8040,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsProp(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/conshdlr.pxi":207
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsProp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, int nmarkedconss,             # <<<<<<<<<<<<<<
  *                               SCIP_PROPTIMING proptiming, SCIP_RESULT* result):
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
@@ -8069,7 +8069,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsProp(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/conshdlr.pxi":223
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsPresol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nrounds, SCIP_PRESOLTIMING presoltiming,             # <<<<<<<<<<<<<<
  *                                 int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes, int nnewchgbds, int nnewholes,
  *                                 int nnewdelconss, int nnewaddconss, int nnewupgdconss, int nnewchgcoefs, int nnewchgsides,
@@ -8620,7 +8620,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsPresol(CYTHON_UNUSED SCIP *__
  *     nchgcoefs[0]    = result_dict["nchgcoefs"]
  *     nchgsides[0]    = result_dict["nchgsides"]             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_result_dict, __pyx_n_s_nchgsides); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 264; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
@@ -8632,7 +8632,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsPresol(CYTHON_UNUSED SCIP *__
  *     nchgcoefs[0]    = result_dict["nchgcoefs"]
  *     nchgsides[0]    = result_dict["nchgsides"]
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsResprop (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SCIP_VAR* infervar, int inferinfo,
  */
   __pyx_r = SCIP_OKAY;
@@ -8640,7 +8640,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsPresol(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/conshdlr.pxi":223
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsPresol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nrounds, SCIP_PRESOLTIMING presoltiming,             # <<<<<<<<<<<<<<
  *                                 int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes, int nnewchgbds, int nnewholes,
  *                                 int nnewdelconss, int nnewaddconss, int nnewupgdconss, int nnewchgcoefs, int nnewchgsides,
@@ -8678,7 +8678,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsPresol(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/conshdlr.pxi":267
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsResprop (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SCIP_VAR* infervar, int inferinfo,             # <<<<<<<<<<<<<<
  *                                  SCIP_BOUNDTYPE boundtype, SCIP_BDCHGIDX* bdchgidx, SCIP_Real relaxedbd, SCIP_RESULT* result):
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
@@ -8723,7 +8723,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsResprop(CYTHON_UNUSED SCIP *_
  *     # TODO
  *     PyConshdlr.consresprop()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consresprop); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 273; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -8751,7 +8751,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsResprop(CYTHON_UNUSED SCIP *_
  *     # TODO
  *     PyConshdlr.consresprop()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsLock (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, int nlockspos, int nlocksneg):
  */
   __pyx_r = SCIP_OKAY;
@@ -8759,7 +8759,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsResprop(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/conshdlr.pxi":267
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsResprop (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SCIP_VAR* infervar, int inferinfo,             # <<<<<<<<<<<<<<
  *                                  SCIP_BOUNDTYPE boundtype, SCIP_BDCHGIDX* bdchgidx, SCIP_Real relaxedbd, SCIP_RESULT* result):
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
@@ -8780,7 +8780,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsResprop(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/conshdlr.pxi":276
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsLock (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, int nlockspos, int nlocksneg):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -8883,7 +8883,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsLock(CYTHON_UNUSED SCIP *__py
  *     pycons._cons = cons
  *     PyConshdlr.conslock(constraint, nlockspos, nlocksneg)             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_conslock); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 284; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -8927,7 +8927,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsLock(CYTHON_UNUSED SCIP *__py
  *     pycons._cons = cons
  *     PyConshdlr.conslock(constraint, nlockspos, nlocksneg)
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsActive (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):
  */
   __pyx_r = SCIP_OKAY;
@@ -8935,7 +8935,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsLock(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/conshdlr.pxi":276
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsLock (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, int nlockspos, int nlocksneg):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -8961,7 +8961,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsLock(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/conshdlr.pxi":287
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsActive (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9006,7 +9006,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsActive(CYTHON_UNUSED SCIP *__
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consactive()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consactive); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 291; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -9034,7 +9034,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsActive(CYTHON_UNUSED SCIP *__
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consactive()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsDeactive (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):
  */
   __pyx_r = SCIP_OKAY;
@@ -9042,7 +9042,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsActive(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/conshdlr.pxi":287
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsActive (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9063,7 +9063,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsActive(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/conshdlr.pxi":294
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsDeactive (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9108,7 +9108,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDeactive(CYTHON_UNUSED SCIP *
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consdeactive()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consdeactive); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 298; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -9136,7 +9136,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDeactive(CYTHON_UNUSED SCIP *
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consdeactive()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsEnable (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):
  */
   __pyx_r = SCIP_OKAY;
@@ -9144,7 +9144,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDeactive(CYTHON_UNUSED SCIP *
 
   /* "pyscipopt/conshdlr.pxi":294
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsDeactive (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9165,7 +9165,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDeactive(CYTHON_UNUSED SCIP *
 
 /* "pyscipopt/conshdlr.pxi":301
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsEnable (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9210,7 +9210,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsEnable(CYTHON_UNUSED SCIP *__
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consenable()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consenable); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 305; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -9238,7 +9238,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsEnable(CYTHON_UNUSED SCIP *__
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consenable()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsDisable (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):
  */
   __pyx_r = SCIP_OKAY;
@@ -9246,7 +9246,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsEnable(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/conshdlr.pxi":301
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsEnable (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9267,7 +9267,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsEnable(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/conshdlr.pxi":308
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsDisable (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9312,7 +9312,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDisable(CYTHON_UNUSED SCIP *_
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consdisable()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consdisable); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 312; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -9340,7 +9340,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDisable(CYTHON_UNUSED SCIP *_
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consdisable()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsDelvars (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):
  */
   __pyx_r = SCIP_OKAY;
@@ -9348,7 +9348,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDisable(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/conshdlr.pxi":308
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsDisable (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9369,7 +9369,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDisable(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/conshdlr.pxi":315
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsDelvars (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9414,7 +9414,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDelvars(CYTHON_UNUSED SCIP *_
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consdelvars()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consdelvars); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 319; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -9442,7 +9442,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDelvars(CYTHON_UNUSED SCIP *_
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consdelvars()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsPrint (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, FILE* file):
  */
   __pyx_r = SCIP_OKAY;
@@ -9450,7 +9450,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDelvars(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/conshdlr.pxi":315
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsDelvars (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9471,7 +9471,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsDelvars(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/conshdlr.pxi":322
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsPrint (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, FILE* file):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9516,7 +9516,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsPrint(CYTHON_UNUSED SCIP *__p
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consprint()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consprint); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 326; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -9544,7 +9544,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsPrint(CYTHON_UNUSED SCIP *__p
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consprint()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsCopy (SCIP* scip, SCIP_CONS** cons, const char* name, SCIP* sourcescip, SCIP_CONSHDLR* sourceconshdlr,
  */
   __pyx_r = SCIP_OKAY;
@@ -9552,7 +9552,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsPrint(CYTHON_UNUSED SCIP *__p
 
   /* "pyscipopt/conshdlr.pxi":322
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsPrint (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, FILE* file):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9573,7 +9573,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsPrint(CYTHON_UNUSED SCIP *__p
 
 /* "pyscipopt/conshdlr.pxi":329
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsCopy (SCIP* scip, SCIP_CONS** cons, const char* name, SCIP* sourcescip, SCIP_CONSHDLR* sourceconshdlr,             # <<<<<<<<<<<<<<
  *                               SCIP_CONS* sourcecons, SCIP_HASHMAP* varmap, SCIP_HASHMAP* consmap, SCIP_Bool initial,
  *                               SCIP_Bool separate, SCIP_Bool enforce, SCIP_Bool check, SCIP_Bool propagate, SCIP_Bool local,
@@ -9618,7 +9618,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsCopy(CYTHON_UNUSED SCIP *__py
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.conscopy()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_conscopy); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 337; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -9646,7 +9646,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsCopy(CYTHON_UNUSED SCIP *__py
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.conscopy()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsParse (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** cons, const char* name, const char* str,
  */
   __pyx_r = SCIP_OKAY;
@@ -9654,7 +9654,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsCopy(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/conshdlr.pxi":329
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsCopy (SCIP* scip, SCIP_CONS** cons, const char* name, SCIP* sourcescip, SCIP_CONSHDLR* sourceconshdlr,             # <<<<<<<<<<<<<<
  *                               SCIP_CONS* sourcecons, SCIP_HASHMAP* varmap, SCIP_HASHMAP* consmap, SCIP_Bool initial,
  *                               SCIP_Bool separate, SCIP_Bool enforce, SCIP_Bool check, SCIP_Bool propagate, SCIP_Bool local,
@@ -9675,7 +9675,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsCopy(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/conshdlr.pxi":340
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsParse (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** cons, const char* name, const char* str,             # <<<<<<<<<<<<<<
  *                                SCIP_Bool initial, SCIP_Bool separate, SCIP_Bool enforce, SCIP_Bool check, SCIP_Bool propagate,
  *                                SCIP_Bool local, SCIP_Bool modifiable, SCIP_Bool dynamic, SCIP_Bool removable,
@@ -9720,7 +9720,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsParse(CYTHON_UNUSED SCIP *__p
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consparse()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consparse); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -9748,7 +9748,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsParse(CYTHON_UNUSED SCIP *__p
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consparse()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsGetvars (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SCIP_VAR** vars, int varssize, SCIP_Bool* success):
  */
   __pyx_r = SCIP_OKAY;
@@ -9756,7 +9756,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsParse(CYTHON_UNUSED SCIP *__p
 
   /* "pyscipopt/conshdlr.pxi":340
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsParse (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** cons, const char* name, const char* str,             # <<<<<<<<<<<<<<
  *                                SCIP_Bool initial, SCIP_Bool separate, SCIP_Bool enforce, SCIP_Bool check, SCIP_Bool propagate,
  *                                SCIP_Bool local, SCIP_Bool modifiable, SCIP_Bool dynamic, SCIP_Bool removable,
@@ -9777,7 +9777,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsParse(CYTHON_UNUSED SCIP *__p
 
 /* "pyscipopt/conshdlr.pxi":350
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsGetvars (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SCIP_VAR** vars, int varssize, SCIP_Bool* success):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9822,7 +9822,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsGetvars(CYTHON_UNUSED SCIP *_
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consgetvars()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consgetvars); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 354; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -9850,7 +9850,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsGetvars(CYTHON_UNUSED SCIP *_
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consgetvars()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsGetnvars (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, int* nvars, SCIP_Bool* success):
  */
   __pyx_r = SCIP_OKAY;
@@ -9858,7 +9858,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsGetvars(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/conshdlr.pxi":350
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsGetvars (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SCIP_VAR** vars, int varssize, SCIP_Bool* success):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9879,7 +9879,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsGetvars(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/conshdlr.pxi":357
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsGetnvars (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, int* nvars, SCIP_Bool* success):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9924,7 +9924,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsGetnvars(CYTHON_UNUSED SCIP *
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consgetnvars()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consgetnvars); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 361; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -9952,7 +9952,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsGetnvars(CYTHON_UNUSED SCIP *
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consgetnvars()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyConsGetdivebdchgs (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_DIVESET* diveset, SCIP_SOL* sol,
  */
   __pyx_r = SCIP_OKAY;
@@ -9960,7 +9960,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsGetnvars(CYTHON_UNUSED SCIP *
 
   /* "pyscipopt/conshdlr.pxi":357
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsGetnvars (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, int* nvars, SCIP_Bool* success):             # <<<<<<<<<<<<<<
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
  *     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -9981,7 +9981,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsGetnvars(CYTHON_UNUSED SCIP *
 
 /* "pyscipopt/conshdlr.pxi":364
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsGetdivebdchgs (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_DIVESET* diveset, SCIP_SOL* sol,             # <<<<<<<<<<<<<<
  *                                        SCIP_Bool* success, SCIP_Bool* infeasible):
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
@@ -10026,7 +10026,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsGetdivebdchgs(CYTHON_UNUSED S
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consgetdivebdchgs()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyConshdlr), __pyx_n_s_consgetdivebdchgs); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 369; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -10054,7 +10054,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsGetdivebdchgs(CYTHON_UNUSED S
  *     PyConshdlr = <Conshdlr>conshdlrdata
  *     PyConshdlr.consgetdivebdchgs()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef class Conshdlr:
  */
   __pyx_r = SCIP_OKAY;
@@ -10062,7 +10062,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsGetdivebdchgs(CYTHON_UNUSED S
 
   /* "pyscipopt/conshdlr.pxi":364
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyConsGetdivebdchgs (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_DIVESET* diveset, SCIP_SOL* sol,             # <<<<<<<<<<<<<<
  *                                        SCIP_Bool* success, SCIP_Bool* infeasible):
  *     cdef SCIP_CONSHDLRDATA* conshdlrdata
@@ -10083,10 +10083,10 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyConsGetdivebdchgs(CYTHON_UNUSED S
 
 /* "pyscipopt/conshdlr.pxi":377
  *     cdef public str name
- * 
+ *
  *     def consfree(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -10116,10 +10116,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_consfree(CYTHON_UNUSED stru
 
 /* "pyscipopt/conshdlr.pxi":380
  *         pass
- * 
+ *
  *     def consinit(self, constraints):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -10149,10 +10149,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_2consinit(CYTHON_UNUSED str
 
 /* "pyscipopt/conshdlr.pxi":383
  *         pass
- * 
+ *
  *     def consexit(self, constraints):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -10182,10 +10182,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_4consexit(CYTHON_UNUSED str
 
 /* "pyscipopt/conshdlr.pxi":386
  *         pass
- * 
+ *
  *     def consinitpre(self, constraints):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -10215,10 +10215,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_6consinitpre(CYTHON_UNUSED 
 
 /* "pyscipopt/conshdlr.pxi":389
  *         pass
- * 
+ *
  *     def consexitpre(self, constraints):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -10248,10 +10248,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_8consexitpre(CYTHON_UNUSED 
 
 /* "pyscipopt/conshdlr.pxi":392
  *         pass
- * 
+ *
  *     def consinitsol(self, constraints):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -10281,10 +10281,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_10consinitsol(CYTHON_UNUSED
 
 /* "pyscipopt/conshdlr.pxi":395
  *         pass
- * 
+ *
  *     def consexitsol(self, constraints, restart):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -10362,10 +10362,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_12consexitsol(CYTHON_UNUSED
 
 /* "pyscipopt/conshdlr.pxi":398
  *         pass
- * 
+ *
  *     def consdelete(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -10395,7 +10395,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_14consdelete(CYTHON_UNUSED 
 
 /* "pyscipopt/conshdlr.pxi":401
  *         pass
- * 
+ *
  *     def constrans(self, sourceconstraint):             # <<<<<<<<<<<<<<
  *         print("python error in constrans: this method needs to be implemented")
  *         return {}
@@ -10424,11 +10424,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_16constrans(CYTHON_UNUSED s
   __Pyx_RefNannySetupContext("constrans", 0);
 
   /* "pyscipopt/conshdlr.pxi":402
- * 
+ *
  *     def constrans(self, sourceconstraint):
  *         print("python error in constrans: this method needs to be implemented")             # <<<<<<<<<<<<<<
  *         return {}
- * 
+ *
  */
   if (__Pyx_PrintOne(0, __pyx_kp_s_python_error_in_constrans_this_m) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 402; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -10436,7 +10436,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_16constrans(CYTHON_UNUSED s
  *     def constrans(self, sourceconstraint):
  *         print("python error in constrans: this method needs to be implemented")
  *         return {}             # <<<<<<<<<<<<<<
- * 
+ *
  *     def consinitlp(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -10448,7 +10448,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_16constrans(CYTHON_UNUSED s
 
   /* "pyscipopt/conshdlr.pxi":401
  *         pass
- * 
+ *
  *     def constrans(self, sourceconstraint):             # <<<<<<<<<<<<<<
  *         print("python error in constrans: this method needs to be implemented")
  *         return {}
@@ -10467,10 +10467,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_16constrans(CYTHON_UNUSED s
 
 /* "pyscipopt/conshdlr.pxi":405
  *         return {}
- * 
+ *
  *     def consinitlp(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -10500,10 +10500,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_18consinitlp(CYTHON_UNUSED 
 
 /* "pyscipopt/conshdlr.pxi":408
  *         pass
- * 
+ *
  *     def conssepalp(self, constraints, nusefulconss):             # <<<<<<<<<<<<<<
  *         return {}
- * 
+ *
  */
 
 /* Python wrapper */
@@ -10577,10 +10577,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_20conssepalp(CYTHON_UNUSED 
   __Pyx_RefNannySetupContext("conssepalp", 0);
 
   /* "pyscipopt/conshdlr.pxi":409
- * 
+ *
  *     def conssepalp(self, constraints, nusefulconss):
  *         return {}             # <<<<<<<<<<<<<<
- * 
+ *
  *     def conssepasol(self, constraints, nusefulconss, solution):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -10592,10 +10592,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_20conssepalp(CYTHON_UNUSED 
 
   /* "pyscipopt/conshdlr.pxi":408
  *         pass
- * 
+ *
  *     def conssepalp(self, constraints, nusefulconss):             # <<<<<<<<<<<<<<
  *         return {}
- * 
+ *
  */
 
   /* function exit code */
@@ -10611,10 +10611,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_20conssepalp(CYTHON_UNUSED 
 
 /* "pyscipopt/conshdlr.pxi":411
  *         return {}
- * 
+ *
  *     def conssepasol(self, constraints, nusefulconss, solution):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -10701,7 +10701,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_22conssepasol(CYTHON_UNUSED
 
 /* "pyscipopt/conshdlr.pxi":414
  *         pass
- * 
+ *
  *     def consenfolp(self, constraints, nusefulconss, solinfeasible):             # <<<<<<<<<<<<<<
  *         print("python error in consenfolp: this method needs to be implemented")
  *         return {}
@@ -10787,11 +10787,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_24consenfolp(CYTHON_UNUSED 
   __Pyx_RefNannySetupContext("consenfolp", 0);
 
   /* "pyscipopt/conshdlr.pxi":415
- * 
+ *
  *     def consenfolp(self, constraints, nusefulconss, solinfeasible):
  *         print("python error in consenfolp: this method needs to be implemented")             # <<<<<<<<<<<<<<
  *         return {}
- * 
+ *
  */
   if (__Pyx_PrintOne(0, __pyx_kp_s_python_error_in_consenfolp_this) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 415; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -10799,7 +10799,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_24consenfolp(CYTHON_UNUSED 
  *     def consenfolp(self, constraints, nusefulconss, solinfeasible):
  *         print("python error in consenfolp: this method needs to be implemented")
  *         return {}             # <<<<<<<<<<<<<<
- * 
+ *
  *     def consenfops(self, constraints, nusefulconss, solinfeasible, objinfeasible):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -10811,7 +10811,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_24consenfolp(CYTHON_UNUSED 
 
   /* "pyscipopt/conshdlr.pxi":414
  *         pass
- * 
+ *
  *     def consenfolp(self, constraints, nusefulconss, solinfeasible):             # <<<<<<<<<<<<<<
  *         print("python error in consenfolp: this method needs to be implemented")
  *         return {}
@@ -10830,7 +10830,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_24consenfolp(CYTHON_UNUSED 
 
 /* "pyscipopt/conshdlr.pxi":418
  *         return {}
- * 
+ *
  *     def consenfops(self, constraints, nusefulconss, solinfeasible, objinfeasible):             # <<<<<<<<<<<<<<
  *         print("python error in consenfops: this method needs to be implemented")
  *         return {}
@@ -10925,11 +10925,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_26consenfops(CYTHON_UNUSED 
   __Pyx_RefNannySetupContext("consenfops", 0);
 
   /* "pyscipopt/conshdlr.pxi":419
- * 
+ *
  *     def consenfops(self, constraints, nusefulconss, solinfeasible, objinfeasible):
  *         print("python error in consenfops: this method needs to be implemented")             # <<<<<<<<<<<<<<
  *         return {}
- * 
+ *
  */
   if (__Pyx_PrintOne(0, __pyx_kp_s_python_error_in_consenfops_this) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 419; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -10937,7 +10937,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_26consenfops(CYTHON_UNUSED 
  *     def consenfops(self, constraints, nusefulconss, solinfeasible, objinfeasible):
  *         print("python error in consenfops: this method needs to be implemented")
  *         return {}             # <<<<<<<<<<<<<<
- * 
+ *
  *     def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -10949,7 +10949,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_26consenfops(CYTHON_UNUSED 
 
   /* "pyscipopt/conshdlr.pxi":418
  *         return {}
- * 
+ *
  *     def consenfops(self, constraints, nusefulconss, solinfeasible, objinfeasible):             # <<<<<<<<<<<<<<
  *         print("python error in consenfops: this method needs to be implemented")
  *         return {}
@@ -10968,7 +10968,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_26consenfops(CYTHON_UNUSED 
 
 /* "pyscipopt/conshdlr.pxi":422
  *         return {}
- * 
+ *
  *     def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason):             # <<<<<<<<<<<<<<
  *         print("python error in conscheck: this method needs to be implemented")
  *         return {}
@@ -11072,11 +11072,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_28conscheck(CYTHON_UNUSED s
   __Pyx_RefNannySetupContext("conscheck", 0);
 
   /* "pyscipopt/conshdlr.pxi":423
- * 
+ *
  *     def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason):
  *         print("python error in conscheck: this method needs to be implemented")             # <<<<<<<<<<<<<<
  *         return {}
- * 
+ *
  */
   if (__Pyx_PrintOne(0, __pyx_kp_s_python_error_in_conscheck_this_m) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 423; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -11084,7 +11084,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_28conscheck(CYTHON_UNUSED s
  *     def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason):
  *         print("python error in conscheck: this method needs to be implemented")
  *         return {}             # <<<<<<<<<<<<<<
- * 
+ *
  *     def consprop(self, constraints, nusefulconss, nmarkedconss, proptiming):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -11096,7 +11096,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_28conscheck(CYTHON_UNUSED s
 
   /* "pyscipopt/conshdlr.pxi":422
  *         return {}
- * 
+ *
  *     def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason):             # <<<<<<<<<<<<<<
  *         print("python error in conscheck: this method needs to be implemented")
  *         return {}
@@ -11115,10 +11115,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_28conscheck(CYTHON_UNUSED s
 
 /* "pyscipopt/conshdlr.pxi":426
  *         return {}
- * 
+ *
  *     def consprop(self, constraints, nusefulconss, nmarkedconss, proptiming):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -11214,7 +11214,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_30consprop(CYTHON_UNUSED st
 
 /* "pyscipopt/conshdlr.pxi":429
  *         pass
- * 
+ *
  *     def conspresol(self, constraints, nrounds, presoltiming,             # <<<<<<<<<<<<<<
  *                    nnewfixedvars, nnewaggrvars, nnewchgvartypes, nnewchgbds, nnewholes,
  *                    nnewdelconss, nnewaddconss, nnewupgdconss, nnewchgcoefs, nnewchgsides, result_dict):
@@ -11403,10 +11403,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_32conspresol(CYTHON_UNUSED 
 
 /* "pyscipopt/conshdlr.pxi":434
  *         pass
- * 
+ *
  *     def consresprop(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -11436,7 +11436,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_34consresprop(CYTHON_UNUSED
 
 /* "pyscipopt/conshdlr.pxi":437
  *         pass
- * 
+ *
  *     def conslock(self, constraint, nlockspos, nlocksneg):             # <<<<<<<<<<<<<<
  *         print("python error in conslock: this method needs to be implemented")
  *         return {}
@@ -11522,11 +11522,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_36conslock(CYTHON_UNUSED st
   __Pyx_RefNannySetupContext("conslock", 0);
 
   /* "pyscipopt/conshdlr.pxi":438
- * 
+ *
  *     def conslock(self, constraint, nlockspos, nlocksneg):
  *         print("python error in conslock: this method needs to be implemented")             # <<<<<<<<<<<<<<
  *         return {}
- * 
+ *
  */
   if (__Pyx_PrintOne(0, __pyx_kp_s_python_error_in_conslock_this_me) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 438; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -11534,7 +11534,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_36conslock(CYTHON_UNUSED st
  *     def conslock(self, constraint, nlockspos, nlocksneg):
  *         print("python error in conslock: this method needs to be implemented")
  *         return {}             # <<<<<<<<<<<<<<
- * 
+ *
  *     def consactive(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -11546,7 +11546,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_36conslock(CYTHON_UNUSED st
 
   /* "pyscipopt/conshdlr.pxi":437
  *         pass
- * 
+ *
  *     def conslock(self, constraint, nlockspos, nlocksneg):             # <<<<<<<<<<<<<<
  *         print("python error in conslock: this method needs to be implemented")
  *         return {}
@@ -11565,10 +11565,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_36conslock(CYTHON_UNUSED st
 
 /* "pyscipopt/conshdlr.pxi":441
  *         return {}
- * 
+ *
  *     def consactive(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -11598,10 +11598,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_38consactive(CYTHON_UNUSED 
 
 /* "pyscipopt/conshdlr.pxi":444
  *         pass
- * 
+ *
  *     def consdeactive(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -11631,10 +11631,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_40consdeactive(CYTHON_UNUSE
 
 /* "pyscipopt/conshdlr.pxi":447
  *         pass
- * 
+ *
  *     def consenable(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -11664,10 +11664,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_42consenable(CYTHON_UNUSED 
 
 /* "pyscipopt/conshdlr.pxi":450
  *         pass
- * 
+ *
  *     def consdisable(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -11697,10 +11697,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_44consdisable(CYTHON_UNUSED
 
 /* "pyscipopt/conshdlr.pxi":453
  *         pass
- * 
+ *
  *     def consdelvars(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -11730,10 +11730,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_46consdelvars(CYTHON_UNUSED
 
 /* "pyscipopt/conshdlr.pxi":456
  *         pass
- * 
+ *
  *     def consconsprint(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -11763,10 +11763,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_48consconsprint(CYTHON_UNUS
 
 /* "pyscipopt/conshdlr.pxi":459
  *         pass
- * 
+ *
  *     def conscopy(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -11796,10 +11796,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_50conscopy(CYTHON_UNUSED st
 
 /* "pyscipopt/conshdlr.pxi":462
  *         pass
- * 
+ *
  *     def consparse(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -11829,10 +11829,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_52consparse(CYTHON_UNUSED s
 
 /* "pyscipopt/conshdlr.pxi":465
  *         pass
- * 
+ *
  *     def consgetvars(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -11862,10 +11862,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_54consgetvars(CYTHON_UNUSED
 
 /* "pyscipopt/conshdlr.pxi":468
  *         pass
- * 
+ *
  *     def consgetnvars(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -11895,7 +11895,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_56consgetnvars(CYTHON_UNUSE
 
 /* "pyscipopt/conshdlr.pxi":471
  *         pass
- * 
+ *
  *     def consgetdivebdchgs(self):             # <<<<<<<<<<<<<<
  *         pass
  */
@@ -11926,7 +11926,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Conshdlr_58consgetdivebdchgs(CYTHON_
 }
 
 /* "pyscipopt/conshdlr.pxi":373
- * 
+ *
  * cdef class Conshdlr:
  *     cdef public object data     # storage for the python user             # <<<<<<<<<<<<<<
  *     cdef public Model model
@@ -12025,7 +12025,7 @@ static int __pyx_pf_9pyscipopt_4scip_8Conshdlr_4data_4__del__(struct __pyx_obj_9
  *     cdef public object data     # storage for the python user
  *     cdef public Model model             # <<<<<<<<<<<<<<
  *     cdef public str name
- * 
+ *
  */
 
 /* Python wrapper */
@@ -12132,7 +12132,7 @@ static int __pyx_pf_9pyscipopt_4scip_8Conshdlr_5model_4__del__(struct __pyx_obj_
  *     cdef public object data     # storage for the python user
  *     cdef public Model model
  *     cdef public str name             # <<<<<<<<<<<<<<
- * 
+ *
  *     def consfree(self):
  */
 
@@ -12239,7 +12239,7 @@ static int __pyx_pf_9pyscipopt_4scip_8Conshdlr_4name_4__del__(struct __pyx_obj_9
 /* "pyscipopt/presol.pxi":1
  * cdef SCIP_RETCODE PyPresolCopy (SCIP* scip, SCIP_PRESOL* presol):             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
 
 static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolCopy(CYTHON_UNUSED SCIP *__pyx_v_scip, CYTHON_UNUSED SCIP_PRESOL *__pyx_v_presol) {
@@ -12250,7 +12250,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolCopy(CYTHON_UNUSED SCIP *__
   /* "pyscipopt/presol.pxi":2
  * cdef SCIP_RETCODE PyPresolCopy (SCIP* scip, SCIP_PRESOL* presol):
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPresolFree (SCIP* scip, SCIP_PRESOL* presol):
  */
   __pyx_r = SCIP_OKAY;
@@ -12259,7 +12259,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolCopy(CYTHON_UNUSED SCIP *__
   /* "pyscipopt/presol.pxi":1
  * cdef SCIP_RETCODE PyPresolCopy (SCIP* scip, SCIP_PRESOL* presol):             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
 
   /* function exit code */
@@ -12270,7 +12270,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolCopy(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/presol.pxi":4
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPresolFree (SCIP* scip, SCIP_PRESOL* presol):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRESOLDATA* presoldata
  *     presoldata = SCIPpresolGetData(presol)
@@ -12315,7 +12315,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolFree(CYTHON_UNUSED SCIP *__
  *     PyPresol = <Presol>presoldata
  *     PyPresol.presolfree()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyPresol), __pyx_n_s_presolfree); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[3]; __pyx_lineno = 8; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -12343,7 +12343,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolFree(CYTHON_UNUSED SCIP *__
  *     PyPresol = <Presol>presoldata
  *     PyPresol.presolfree()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPresolInit (SCIP* scip, SCIP_PRESOL* presol):
  */
   __pyx_r = SCIP_OKAY;
@@ -12351,7 +12351,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolFree(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/presol.pxi":4
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPresolFree (SCIP* scip, SCIP_PRESOL* presol):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRESOLDATA* presoldata
  *     presoldata = SCIPpresolGetData(presol)
@@ -12372,7 +12372,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolFree(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/presol.pxi":11
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPresolInit (SCIP* scip, SCIP_PRESOL* presol):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRESOLDATA* presoldata
  *     presoldata = SCIPpresolGetData(presol)
@@ -12417,7 +12417,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolInit(CYTHON_UNUSED SCIP *__
  *     PyPresol = <Presol>presoldata
  *     PyPresol.presolinit()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyPresol), __pyx_n_s_presolinit); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[3]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -12445,7 +12445,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolInit(CYTHON_UNUSED SCIP *__
  *     PyPresol = <Presol>presoldata
  *     PyPresol.presolinit()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPresolExit (SCIP* scip, SCIP_PRESOL* presol):
  */
   __pyx_r = SCIP_OKAY;
@@ -12453,7 +12453,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolInit(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/presol.pxi":11
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPresolInit (SCIP* scip, SCIP_PRESOL* presol):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRESOLDATA* presoldata
  *     presoldata = SCIPpresolGetData(presol)
@@ -12474,7 +12474,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolInit(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/presol.pxi":18
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPresolExit (SCIP* scip, SCIP_PRESOL* presol):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRESOLDATA* presoldata
  *     presoldata = SCIPpresolGetData(presol)
@@ -12519,7 +12519,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolExit(CYTHON_UNUSED SCIP *__
  *     PyPresol = <Presol>presoldata
  *     PyPresol.presolexit()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyPresol), __pyx_n_s_presolexit); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[3]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -12547,15 +12547,15 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolExit(CYTHON_UNUSED SCIP *__
  *     PyPresol = <Presol>presoldata
  *     PyPresol.presolexit()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = SCIP_OKAY;
   goto __pyx_L0;
 
   /* "pyscipopt/presol.pxi":18
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPresolExit (SCIP* scip, SCIP_PRESOL* presol):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRESOLDATA* presoldata
  *     presoldata = SCIPpresolGetData(presol)
@@ -12575,8 +12575,8 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolExit(CYTHON_UNUSED SCIP *__
 }
 
 /* "pyscipopt/presol.pxi":26
- * 
- * 
+ *
+ *
  * cdef SCIP_RETCODE PyPresolInitpre (SCIP* scip, SCIP_PRESOL* presol):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRESOLDATA* presoldata
  *     presoldata = SCIPpresolGetData(presol)
@@ -12621,7 +12621,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolInitpre(CYTHON_UNUSED SCIP 
  *     PyPresol = <Presol>presoldata
  *     PyPresol.presolinitpre()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyPresol), __pyx_n_s_presolinitpre); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[3]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -12649,15 +12649,15 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolInitpre(CYTHON_UNUSED SCIP 
  *     PyPresol = <Presol>presoldata
  *     PyPresol.presolinitpre()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPresolExitpre (SCIP* scip, SCIP_PRESOL* presol):
  */
   __pyx_r = SCIP_OKAY;
   goto __pyx_L0;
 
   /* "pyscipopt/presol.pxi":26
- * 
- * 
+ *
+ *
  * cdef SCIP_RETCODE PyPresolInitpre (SCIP* scip, SCIP_PRESOL* presol):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRESOLDATA* presoldata
  *     presoldata = SCIPpresolGetData(presol)
@@ -12678,7 +12678,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolInitpre(CYTHON_UNUSED SCIP 
 
 /* "pyscipopt/presol.pxi":33
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPresolExitpre (SCIP* scip, SCIP_PRESOL* presol):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRESOLDATA* presoldata
  *     presoldata = SCIPpresolGetData(presol)
@@ -12723,7 +12723,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolExitpre(CYTHON_UNUSED SCIP 
  *     PyPresol = <Presol>presoldata
  *     PyPresol.presolexitpre()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyPresol), __pyx_n_s_presolexitpre); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[3]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -12751,7 +12751,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolExitpre(CYTHON_UNUSED SCIP 
  *     PyPresol = <Presol>presoldata
  *     PyPresol.presolexitpre()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPresolExec (SCIP* scip, SCIP_PRESOL* presol, int nrounds, SCIP_PRESOLTIMING presoltiming,
  */
   __pyx_r = SCIP_OKAY;
@@ -12759,7 +12759,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolExitpre(CYTHON_UNUSED SCIP 
 
   /* "pyscipopt/presol.pxi":33
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPresolExitpre (SCIP* scip, SCIP_PRESOL* presol):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PRESOLDATA* presoldata
  *     presoldata = SCIPpresolGetData(presol)
@@ -12780,7 +12780,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolExitpre(CYTHON_UNUSED SCIP 
 
 /* "pyscipopt/presol.pxi":40
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPresolExec (SCIP* scip, SCIP_PRESOL* presol, int nrounds, SCIP_PRESOLTIMING presoltiming,             # <<<<<<<<<<<<<<
  *                                 int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes, int nnewchgbds, int nnewholes,
  *                                 int nnewdelconss, int nnewaddconss, int nnewupgdconss, int nnewchgcoefs, int nnewchgsides,
@@ -13125,7 +13125,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolExec(CYTHON_UNUSED SCIP *__
  *     nchgcoefs[0] += result_dict.get("nnewchgcoefs", 0)
  *     nchgsides[0] += result_dict.get("nnewchgsides", 0)             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_9 = 0;
   __pyx_t_1 = __Pyx_PyInt_From_int((__pyx_v_nchgsides[__pyx_t_9])); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[3]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -13147,7 +13147,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolExec(CYTHON_UNUSED SCIP *__
  *     nchgcoefs[0] += result_dict.get("nnewchgcoefs", 0)
  *     nchgsides[0] += result_dict.get("nnewchgsides", 0)
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef class Presol:
  */
   __pyx_r = SCIP_OKAY;
@@ -13155,7 +13155,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolExec(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/presol.pxi":40
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPresolExec (SCIP* scip, SCIP_PRESOL* presol, int nrounds, SCIP_PRESOLTIMING presoltiming,             # <<<<<<<<<<<<<<
  *                                 int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes, int nnewchgbds, int nnewholes,
  *                                 int nnewdelconss, int nnewaddconss, int nnewupgdconss, int nnewchgcoefs, int nnewchgsides,
@@ -13180,10 +13180,10 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPresolExec(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/presol.pxi":66
  *     cdef public Model model
- * 
+ *
  *     def presolfree(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -13213,10 +13213,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Presol_presolfree(CYTHON_UNUSED stru
 
 /* "pyscipopt/presol.pxi":69
  *         pass
- * 
+ *
  *     def presolinit(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -13246,10 +13246,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Presol_2presolinit(CYTHON_UNUSED str
 
 /* "pyscipopt/presol.pxi":72
  *         pass
- * 
+ *
  *     def presolexit(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -13279,10 +13279,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Presol_4presolexit(CYTHON_UNUSED str
 
 /* "pyscipopt/presol.pxi":75
  *         pass
- * 
+ *
  *     def presolinitpre(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -13312,10 +13312,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Presol_6presolinitpre(CYTHON_UNUSED 
 
 /* "pyscipopt/presol.pxi":78
  *         pass
- * 
+ *
  *     def presolexitpre(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -13345,7 +13345,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Presol_8presolexitpre(CYTHON_UNUSED 
 
 /* "pyscipopt/presol.pxi":81
  *         pass
- * 
+ *
  *     def presolexec(self, nrounds, presoltiming):             # <<<<<<<<<<<<<<
  *         print("python error in presolexec: this method needs to be implemented")
  *         return {}
@@ -13422,11 +13422,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Presol_10presolexec(CYTHON_UNUSED st
   __Pyx_RefNannySetupContext("presolexec", 0);
 
   /* "pyscipopt/presol.pxi":82
- * 
+ *
  *     def presolexec(self, nrounds, presoltiming):
  *         print("python error in presolexec: this method needs to be implemented")             # <<<<<<<<<<<<<<
  *         return {}
- * 
+ *
  */
   if (__Pyx_PrintOne(0, __pyx_kp_s_python_error_in_presolexec_this) < 0) {__pyx_filename = __pyx_f[3]; __pyx_lineno = 82; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -13434,7 +13434,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Presol_10presolexec(CYTHON_UNUSED st
  *     def presolexec(self, nrounds, presoltiming):
  *         print("python error in presolexec: this method needs to be implemented")
  *         return {}             # <<<<<<<<<<<<<<
- * 
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[3]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -13445,7 +13445,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Presol_10presolexec(CYTHON_UNUSED st
 
   /* "pyscipopt/presol.pxi":81
  *         pass
- * 
+ *
  *     def presolexec(self, nrounds, presoltiming):             # <<<<<<<<<<<<<<
  *         print("python error in presolexec: this method needs to be implemented")
  *         return {}
@@ -13463,11 +13463,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_6Presol_10presolexec(CYTHON_UNUSED st
 }
 
 /* "pyscipopt/presol.pxi":63
- * 
+ *
  * cdef class Presol:
  *     cdef public object data     # storage for the python user             # <<<<<<<<<<<<<<
  *     cdef public Model model
- * 
+ *
  */
 
 /* Python wrapper */
@@ -13561,7 +13561,7 @@ static int __pyx_pf_9pyscipopt_4scip_6Presol_4data_4__del__(struct __pyx_obj_9py
  * cdef class Presol:
  *     cdef public object data     # storage for the python user
  *     cdef public Model model             # <<<<<<<<<<<<<<
- * 
+ *
  *     def presolfree(self):
  */
 
@@ -13668,7 +13668,7 @@ static int __pyx_pf_9pyscipopt_4scip_6Presol_5model_4__del__(struct __pyx_obj_9p
 /* "pyscipopt/sepa.pxi":1
  * cdef SCIP_RETCODE PySepaCopy (SCIP* scip, SCIP_SEPA* sepa):             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
 
 static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaCopy(CYTHON_UNUSED SCIP *__pyx_v_scip, CYTHON_UNUSED SCIP_SEPA *__pyx_v_sepa) {
@@ -13679,7 +13679,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaCopy(CYTHON_UNUSED SCIP *__py
   /* "pyscipopt/sepa.pxi":2
  * cdef SCIP_RETCODE PySepaCopy (SCIP* scip, SCIP_SEPA* sepa):
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PySepaFree (SCIP* scip, SCIP_SEPA* sepa):
  */
   __pyx_r = SCIP_OKAY;
@@ -13688,7 +13688,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaCopy(CYTHON_UNUSED SCIP *__py
   /* "pyscipopt/sepa.pxi":1
  * cdef SCIP_RETCODE PySepaCopy (SCIP* scip, SCIP_SEPA* sepa):             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
 
   /* function exit code */
@@ -13699,7 +13699,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaCopy(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/sepa.pxi":4
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PySepaFree (SCIP* scip, SCIP_SEPA* sepa):             # <<<<<<<<<<<<<<
  *     cdef SCIP_SEPADATA* sepadata
  *     sepadata = SCIPsepaGetData(sepa)
@@ -13744,7 +13744,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaFree(CYTHON_UNUSED SCIP *__py
  *     PySepa = <Sepa>sepadata
  *     PySepa.sepafree()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PySepa), __pyx_n_s_sepafree); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 8; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -13772,7 +13772,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaFree(CYTHON_UNUSED SCIP *__py
  *     PySepa = <Sepa>sepadata
  *     PySepa.sepafree()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PySepaInit (SCIP* scip, SCIP_SEPA* sepa):
  */
   __pyx_r = SCIP_OKAY;
@@ -13780,7 +13780,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaFree(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/sepa.pxi":4
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PySepaFree (SCIP* scip, SCIP_SEPA* sepa):             # <<<<<<<<<<<<<<
  *     cdef SCIP_SEPADATA* sepadata
  *     sepadata = SCIPsepaGetData(sepa)
@@ -13801,7 +13801,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaFree(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/sepa.pxi":11
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PySepaInit (SCIP* scip, SCIP_SEPA* sepa):             # <<<<<<<<<<<<<<
  *     cdef SCIP_SEPADATA* sepadata
  *     sepadata = SCIPsepaGetData(sepa)
@@ -13846,7 +13846,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaInit(CYTHON_UNUSED SCIP *__py
  *     PySepa = <Sepa>sepadata
  *     PySepa.sepainit()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PySepa), __pyx_n_s_sepainit); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -13874,7 +13874,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaInit(CYTHON_UNUSED SCIP *__py
  *     PySepa = <Sepa>sepadata
  *     PySepa.sepainit()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PySepaExit (SCIP* scip, SCIP_SEPA* sepa):
  */
   __pyx_r = SCIP_OKAY;
@@ -13882,7 +13882,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaInit(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/sepa.pxi":11
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PySepaInit (SCIP* scip, SCIP_SEPA* sepa):             # <<<<<<<<<<<<<<
  *     cdef SCIP_SEPADATA* sepadata
  *     sepadata = SCIPsepaGetData(sepa)
@@ -13903,7 +13903,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaInit(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/sepa.pxi":18
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PySepaExit (SCIP* scip, SCIP_SEPA* sepa):             # <<<<<<<<<<<<<<
  *     cdef SCIP_SEPADATA* sepadata
  *     sepadata = SCIPsepaGetData(sepa)
@@ -13948,7 +13948,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaExit(CYTHON_UNUSED SCIP *__py
  *     PySepa = <Sepa>sepadata
  *     PySepa.sepaexit()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PySepa), __pyx_n_s_sepaexit); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -13976,15 +13976,15 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaExit(CYTHON_UNUSED SCIP *__py
  *     PySepa = <Sepa>sepadata
  *     PySepa.sepaexit()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = SCIP_OKAY;
   goto __pyx_L0;
 
   /* "pyscipopt/sepa.pxi":18
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PySepaExit (SCIP* scip, SCIP_SEPA* sepa):             # <<<<<<<<<<<<<<
  *     cdef SCIP_SEPADATA* sepadata
  *     sepadata = SCIPsepaGetData(sepa)
@@ -14004,8 +14004,8 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaExit(CYTHON_UNUSED SCIP *__py
 }
 
 /* "pyscipopt/sepa.pxi":26
- * 
- * 
+ *
+ *
  * cdef SCIP_RETCODE PySepaInitsol (SCIP* scip, SCIP_SEPA* sepa):             # <<<<<<<<<<<<<<
  *     cdef SCIP_SEPADATA* sepadata
  *     sepadata = SCIPsepaGetData(sepa)
@@ -14050,7 +14050,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaInitsol(CYTHON_UNUSED SCIP *_
  *     PySepa = <Sepa>sepadata
  *     PySepa.sepainitsol()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PySepa), __pyx_n_s_sepainitsol); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -14078,15 +14078,15 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaInitsol(CYTHON_UNUSED SCIP *_
  *     PySepa = <Sepa>sepadata
  *     PySepa.sepainitsol()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PySepaExitsol (SCIP* scip, SCIP_SEPA* sepa):
  */
   __pyx_r = SCIP_OKAY;
   goto __pyx_L0;
 
   /* "pyscipopt/sepa.pxi":26
- * 
- * 
+ *
+ *
  * cdef SCIP_RETCODE PySepaInitsol (SCIP* scip, SCIP_SEPA* sepa):             # <<<<<<<<<<<<<<
  *     cdef SCIP_SEPADATA* sepadata
  *     sepadata = SCIPsepaGetData(sepa)
@@ -14107,7 +14107,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaInitsol(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/sepa.pxi":33
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PySepaExitsol (SCIP* scip, SCIP_SEPA* sepa):             # <<<<<<<<<<<<<<
  *     cdef SCIP_SEPADATA* sepadata
  *     sepadata = SCIPsepaGetData(sepa)
@@ -14152,7 +14152,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaExitsol(CYTHON_UNUSED SCIP *_
  *     PySepa = <Sepa>sepadata
  *     PySepa.sepaexitsol()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PySepa), __pyx_n_s_sepaexitsol); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -14180,7 +14180,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaExitsol(CYTHON_UNUSED SCIP *_
  *     PySepa = <Sepa>sepadata
  *     PySepa.sepaexitsol()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PySepaExeclp (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result):
  */
   __pyx_r = SCIP_OKAY;
@@ -14188,7 +14188,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaExitsol(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/sepa.pxi":33
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PySepaExitsol (SCIP* scip, SCIP_SEPA* sepa):             # <<<<<<<<<<<<<<
  *     cdef SCIP_SEPADATA* sepadata
  *     sepadata = SCIPsepaGetData(sepa)
@@ -14209,7 +14209,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaExitsol(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/sepa.pxi":40
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PySepaExeclp (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_SEPADATA* sepadata
  *     sepadata = SCIPsepaGetData(sepa)
@@ -14289,7 +14289,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaExeclp(CYTHON_UNUSED SCIP *__
  *     result_dict = PySepa.sepaexeclp()
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_result_dict, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -14330,7 +14330,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaExeclp(CYTHON_UNUSED SCIP *__
  *     result_dict = PySepa.sepaexeclp()
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PySepaExecsol (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result):
  */
   __pyx_r = SCIP_OKAY;
@@ -14338,7 +14338,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaExeclp(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/sepa.pxi":40
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PySepaExeclp (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_SEPADATA* sepadata
  *     sepadata = SCIPsepaGetData(sepa)
@@ -14362,7 +14362,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaExeclp(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/sepa.pxi":48
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PySepaExecsol (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_SEPADATA* sepadata
  *     sepadata = SCIPsepaGetData(sepa)
@@ -14471,7 +14471,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaExecsol(CYTHON_UNUSED SCIP *_
  *     result_dict = PySepa.sepaexecsol(solution)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_result_dict, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -14512,7 +14512,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaExecsol(CYTHON_UNUSED SCIP *_
  *     result_dict = PySepa.sepaexecsol(solution)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef class Sepa:
  */
   __pyx_r = SCIP_OKAY;
@@ -14520,7 +14520,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaExecsol(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/sepa.pxi":48
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PySepaExecsol (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_SEPADATA* sepadata
  *     sepadata = SCIPsepaGetData(sepa)
@@ -14545,10 +14545,10 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PySepaExecsol(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/sepa.pxi":62
  *     cdef public Model model
- * 
+ *
  *     def sepafree(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -14578,10 +14578,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Sepa_sepafree(CYTHON_UNUSED struct _
 
 /* "pyscipopt/sepa.pxi":65
  *         pass
- * 
+ *
  *     def sepainit(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -14611,10 +14611,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Sepa_2sepainit(CYTHON_UNUSED struct 
 
 /* "pyscipopt/sepa.pxi":68
  *         pass
- * 
+ *
  *     def sepaexit(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -14644,10 +14644,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Sepa_4sepaexit(CYTHON_UNUSED struct 
 
 /* "pyscipopt/sepa.pxi":71
  *         pass
- * 
+ *
  *     def sepainitsol(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -14677,10 +14677,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Sepa_6sepainitsol(CYTHON_UNUSED stru
 
 /* "pyscipopt/sepa.pxi":74
  *         pass
- * 
+ *
  *     def sepaexitsol(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -14710,10 +14710,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Sepa_8sepaexitsol(CYTHON_UNUSED stru
 
 /* "pyscipopt/sepa.pxi":77
  *         pass
- * 
+ *
  *     def sepaexeclp(self):             # <<<<<<<<<<<<<<
  *         return {}
- * 
+ *
  */
 
 /* Python wrapper */
@@ -14739,10 +14739,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Sepa_10sepaexeclp(CYTHON_UNUSED stru
   __Pyx_RefNannySetupContext("sepaexeclp", 0);
 
   /* "pyscipopt/sepa.pxi":78
- * 
+ *
  *     def sepaexeclp(self):
  *         return {}             # <<<<<<<<<<<<<<
- * 
+ *
  *     def sepaexecsol(self, solution):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -14754,10 +14754,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Sepa_10sepaexeclp(CYTHON_UNUSED stru
 
   /* "pyscipopt/sepa.pxi":77
  *         pass
- * 
+ *
  *     def sepaexeclp(self):             # <<<<<<<<<<<<<<
  *         return {}
- * 
+ *
  */
 
   /* function exit code */
@@ -14773,7 +14773,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Sepa_10sepaexeclp(CYTHON_UNUSED stru
 
 /* "pyscipopt/sepa.pxi":80
  *         return {}
- * 
+ *
  *     def sepaexecsol(self, solution):             # <<<<<<<<<<<<<<
  *         return {}
  */
@@ -14801,7 +14801,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Sepa_12sepaexecsol(CYTHON_UNUSED str
   __Pyx_RefNannySetupContext("sepaexecsol", 0);
 
   /* "pyscipopt/sepa.pxi":81
- * 
+ *
  *     def sepaexecsol(self, solution):
  *         return {}             # <<<<<<<<<<<<<<
  */
@@ -14814,7 +14814,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Sepa_12sepaexecsol(CYTHON_UNUSED str
 
   /* "pyscipopt/sepa.pxi":80
  *         return {}
- * 
+ *
  *     def sepaexecsol(self, solution):             # <<<<<<<<<<<<<<
  *         return {}
  */
@@ -14831,11 +14831,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Sepa_12sepaexecsol(CYTHON_UNUSED str
 }
 
 /* "pyscipopt/sepa.pxi":59
- * 
+ *
  * cdef class Sepa:
  *     cdef public object data     # storage for the python user             # <<<<<<<<<<<<<<
  *     cdef public Model model
- * 
+ *
  */
 
 /* Python wrapper */
@@ -14929,7 +14929,7 @@ static int __pyx_pf_9pyscipopt_4scip_4Sepa_4data_4__del__(struct __pyx_obj_9pysc
  * cdef class Sepa:
  *     cdef public object data     # storage for the python user
  *     cdef public Model model             # <<<<<<<<<<<<<<
- * 
+ *
  *     def sepafree(self):
  */
 
@@ -15036,7 +15036,7 @@ static int __pyx_pf_9pyscipopt_4scip_4Sepa_5model_4__del__(struct __pyx_obj_9pys
 /* "pyscipopt/propagator.pxi":1
  * cdef SCIP_RETCODE PyPropCopy (SCIP* scip, SCIP_PROP* prop):             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
 
 static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropCopy(CYTHON_UNUSED SCIP *__pyx_v_scip, CYTHON_UNUSED SCIP_PROP *__pyx_v_prop) {
@@ -15047,7 +15047,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropCopy(CYTHON_UNUSED SCIP *__py
   /* "pyscipopt/propagator.pxi":2
  * cdef SCIP_RETCODE PyPropCopy (SCIP* scip, SCIP_PROP* prop):
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPropFree (SCIP* scip, SCIP_PROP* prop):
  */
   __pyx_r = SCIP_OKAY;
@@ -15056,7 +15056,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropCopy(CYTHON_UNUSED SCIP *__py
   /* "pyscipopt/propagator.pxi":1
  * cdef SCIP_RETCODE PyPropCopy (SCIP* scip, SCIP_PROP* prop):             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
 
   /* function exit code */
@@ -15067,7 +15067,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropCopy(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/propagator.pxi":4
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropFree (SCIP* scip, SCIP_PROP* prop):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -15112,7 +15112,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropFree(CYTHON_UNUSED SCIP *__py
  *     PyProp = <Prop>propdata
  *     PyProp.propfree()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyProp), __pyx_n_s_propfree); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 8; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -15140,7 +15140,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropFree(CYTHON_UNUSED SCIP *__py
  *     PyProp = <Prop>propdata
  *     PyProp.propfree()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPropInit (SCIP* scip, SCIP_PROP* prop):
  */
   __pyx_r = SCIP_OKAY;
@@ -15148,7 +15148,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropFree(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/propagator.pxi":4
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropFree (SCIP* scip, SCIP_PROP* prop):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -15169,7 +15169,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropFree(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/propagator.pxi":11
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropInit (SCIP* scip, SCIP_PROP* prop):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -15214,7 +15214,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropInit(CYTHON_UNUSED SCIP *__py
  *     PyProp = <Prop>propdata
  *     PyProp.propinit()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyProp), __pyx_n_s_propinit); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -15242,7 +15242,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropInit(CYTHON_UNUSED SCIP *__py
  *     PyProp = <Prop>propdata
  *     PyProp.propinit()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPropExit (SCIP* scip, SCIP_PROP* prop):
  */
   __pyx_r = SCIP_OKAY;
@@ -15250,7 +15250,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropInit(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/propagator.pxi":11
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropInit (SCIP* scip, SCIP_PROP* prop):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -15271,7 +15271,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropInit(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/propagator.pxi":18
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropExit (SCIP* scip, SCIP_PROP* prop):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -15316,7 +15316,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExit(CYTHON_UNUSED SCIP *__py
  *     PyProp = <Prop>propdata
  *     PyProp.propexit()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyProp), __pyx_n_s_propexit); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -15344,7 +15344,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExit(CYTHON_UNUSED SCIP *__py
  *     PyProp = <Prop>propdata
  *     PyProp.propexit()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPropInitpre (SCIP* scip, SCIP_PROP* prop):
  */
   __pyx_r = SCIP_OKAY;
@@ -15352,7 +15352,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExit(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/propagator.pxi":18
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropExit (SCIP* scip, SCIP_PROP* prop):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -15373,7 +15373,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExit(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/propagator.pxi":25
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropInitpre (SCIP* scip, SCIP_PROP* prop):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -15418,7 +15418,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropInitpre(CYTHON_UNUSED SCIP *_
  *     PyProp = <Prop>propdata
  *     PyProp.propinitpre()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyProp), __pyx_n_s_propinitpre); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -15446,7 +15446,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropInitpre(CYTHON_UNUSED SCIP *_
  *     PyProp = <Prop>propdata
  *     PyProp.propinitpre()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPropExitpre (SCIP* scip, SCIP_PROP* prop):
  */
   __pyx_r = SCIP_OKAY;
@@ -15454,7 +15454,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropInitpre(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/propagator.pxi":25
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropInitpre (SCIP* scip, SCIP_PROP* prop):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -15475,7 +15475,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropInitpre(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/propagator.pxi":32
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropExitpre (SCIP* scip, SCIP_PROP* prop):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -15520,7 +15520,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExitpre(CYTHON_UNUSED SCIP *_
  *     PyProp = <Prop>propdata
  *     PyProp.propexitpre()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyProp), __pyx_n_s_propexitpre); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -15548,7 +15548,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExitpre(CYTHON_UNUSED SCIP *_
  *     PyProp = <Prop>propdata
  *     PyProp.propexitpre()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPropInitsol (SCIP* scip, SCIP_PROP* prop):
  */
   __pyx_r = SCIP_OKAY;
@@ -15556,7 +15556,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExitpre(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/propagator.pxi":32
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropExitpre (SCIP* scip, SCIP_PROP* prop):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -15577,7 +15577,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExitpre(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/propagator.pxi":39
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropInitsol (SCIP* scip, SCIP_PROP* prop):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -15622,7 +15622,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropInitsol(CYTHON_UNUSED SCIP *_
  *     PyProp = <Prop>propdata
  *     PyProp.propinitsol()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyProp), __pyx_n_s_propinitsol); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 43; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -15650,7 +15650,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropInitsol(CYTHON_UNUSED SCIP *_
  *     PyProp = <Prop>propdata
  *     PyProp.propinitsol()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPropExitsol (SCIP* scip, SCIP_PROP* prop, SCIP_Bool restart):
  */
   __pyx_r = SCIP_OKAY;
@@ -15658,7 +15658,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropInitsol(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/propagator.pxi":39
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropInitsol (SCIP* scip, SCIP_PROP* prop):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -15679,7 +15679,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropInitsol(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/propagator.pxi":46
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropExitsol (SCIP* scip, SCIP_PROP* prop, SCIP_Bool restart):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -15726,7 +15726,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExitsol(CYTHON_UNUSED SCIP *_
  *     PyProp = <Prop>propdata
  *     PyProp.propexitsol(restart)             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyProp), __pyx_n_s_propexitsol); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -15764,7 +15764,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExitsol(CYTHON_UNUSED SCIP *_
  *     PyProp = <Prop>propdata
  *     PyProp.propexitsol(restart)
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPropPresol (SCIP* scip, SCIP_PROP* prop, int nrounds, SCIP_PRESOLTIMING presoltiming,
  */
   __pyx_r = SCIP_OKAY;
@@ -15772,7 +15772,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExitsol(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/propagator.pxi":46
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropExitsol (SCIP* scip, SCIP_PROP* prop, SCIP_Bool restart):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -15795,7 +15795,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExitsol(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/propagator.pxi":53
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropPresol (SCIP* scip, SCIP_PROP* prop, int nrounds, SCIP_PRESOLTIMING presoltiming,             # <<<<<<<<<<<<<<
  *                                 int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes, int nnewchgbds, int nnewholes,
  *                                 int nnewdelconss, int nnewaddconss, int nnewupgdconss, int nnewchgcoefs, int nnewchgsides,
@@ -16242,7 +16242,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropPresol(CYTHON_UNUSED SCIP *__
  *     nchgcoefs[0]    = result_dict["nchgcoefs"]
  *     nchgsides[0]    = result_dict["nchgsides"]             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_result_dict, __pyx_n_s_nchgsides); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
@@ -16254,7 +16254,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropPresol(CYTHON_UNUSED SCIP *__
  *     nchgcoefs[0]    = result_dict["nchgcoefs"]
  *     nchgsides[0]    = result_dict["nchgsides"]
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPropExec (SCIP* scip, SCIP_PROP* prop, SCIP_PROPTIMING proptiming, SCIP_RESULT* result):
  */
   __pyx_r = SCIP_OKAY;
@@ -16262,7 +16262,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropPresol(CYTHON_UNUSED SCIP *__
 
   /* "pyscipopt/propagator.pxi":53
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropPresol (SCIP* scip, SCIP_PROP* prop, int nrounds, SCIP_PRESOLTIMING presoltiming,             # <<<<<<<<<<<<<<
  *                                 int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes, int nnewchgbds, int nnewholes,
  *                                 int nnewdelconss, int nnewaddconss, int nnewupgdconss, int nnewchgcoefs, int nnewchgsides,
@@ -16297,7 +16297,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropPresol(CYTHON_UNUSED SCIP *__
 
 /* "pyscipopt/propagator.pxi":90
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropExec (SCIP* scip, SCIP_PROP* prop, SCIP_PROPTIMING proptiming, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -16398,7 +16398,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExec(CYTHON_UNUSED SCIP *__py
  *     result_dict = returnvalues
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_result_dict, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -16439,7 +16439,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExec(CYTHON_UNUSED SCIP *__py
  *     result_dict = returnvalues
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyPropResProp (SCIP* scip, SCIP_PROP* prop, SCIP_VAR* infervar, int inferinfo,
  */
   __pyx_r = SCIP_OKAY;
@@ -16447,7 +16447,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExec(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/propagator.pxi":90
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropExec (SCIP* scip, SCIP_PROP* prop, SCIP_PROPTIMING proptiming, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_PROPDATA* propdata
  *     propdata = SCIPpropGetData(prop)
@@ -16472,7 +16472,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropExec(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/propagator.pxi":99
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropResProp (SCIP* scip, SCIP_PROP* prop, SCIP_VAR* infervar, int inferinfo,             # <<<<<<<<<<<<<<
  *                                  SCIP_BOUNDTYPE boundtype, SCIP_BDCHGIDX* bdchgidx, SCIP_Real relaxedbd, SCIP_RESULT* result):
  *     cdef Var v
@@ -16530,7 +16530,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropResProp(CYTHON_UNUSED SCIP *_
  *     confvar = Variable("conflictvar")
  *     v = confvar.var             # <<<<<<<<<<<<<<
  *     v._var = <SCIP_VAR*> infervar
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_confvar, __pyx_n_s_var); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 105; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -16542,14 +16542,14 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropResProp(CYTHON_UNUSED SCIP *_
  *     confvar = Variable("conflictvar")
  *     v = confvar.var
  *     v._var = <SCIP_VAR*> infervar             # <<<<<<<<<<<<<<
- * 
+ *
  * #TODO: parse bdchgidx?
  */
   __pyx_v_v->_var = ((SCIP_VAR *)__pyx_v_infervar);
 
   /* "pyscipopt/propagator.pxi":110
  * #TODO: parse bdchgidx?
- * 
+ *
  *     PyProp = <Prop>propdata             # <<<<<<<<<<<<<<
  *     returnvalues = PyProp.propresprop(confvar, inferinfo, boundtype, relaxedbd)
  *     result_dict = returnvalues
@@ -16560,7 +16560,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropResProp(CYTHON_UNUSED SCIP *_
   __pyx_t_2 = 0;
 
   /* "pyscipopt/propagator.pxi":111
- * 
+ *
  *     PyProp = <Prop>propdata
  *     returnvalues = PyProp.propresprop(confvar, inferinfo, boundtype, relaxedbd)             # <<<<<<<<<<<<<<
  *     result_dict = returnvalues
@@ -16625,7 +16625,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropResProp(CYTHON_UNUSED SCIP *_
  *     result_dict = returnvalues
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_result_dict, __pyx_n_s_get); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 113; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -16666,7 +16666,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropResProp(CYTHON_UNUSED SCIP *_
  *     result_dict = returnvalues
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef class Prop:
  */
   __pyx_r = SCIP_OKAY;
@@ -16674,7 +16674,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropResProp(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/propagator.pxi":99
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyPropResProp (SCIP* scip, SCIP_PROP* prop, SCIP_VAR* infervar, int inferinfo,             # <<<<<<<<<<<<<<
  *                                  SCIP_BOUNDTYPE boundtype, SCIP_BDCHGIDX* bdchgidx, SCIP_Real relaxedbd, SCIP_RESULT* result):
  *     cdef Var v
@@ -16703,10 +16703,10 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyPropResProp(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/propagator.pxi":120
  *     cdef public Model model
- * 
+ *
  *     def propfree(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -16736,10 +16736,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Prop_propfree(CYTHON_UNUSED struct _
 
 /* "pyscipopt/propagator.pxi":123
  *         pass
- * 
+ *
  *     def propinit(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -16769,10 +16769,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Prop_2propinit(CYTHON_UNUSED struct 
 
 /* "pyscipopt/propagator.pxi":126
  *         pass
- * 
+ *
  *     def propexit(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -16802,10 +16802,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Prop_4propexit(CYTHON_UNUSED struct 
 
 /* "pyscipopt/propagator.pxi":129
  *         pass
- * 
+ *
  *     def propinitsol(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -16835,10 +16835,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Prop_6propinitsol(CYTHON_UNUSED stru
 
 /* "pyscipopt/propagator.pxi":132
  *         pass
- * 
+ *
  *     def propexitsol(self, restart):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -16868,10 +16868,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Prop_8propexitsol(CYTHON_UNUSED stru
 
 /* "pyscipopt/propagator.pxi":135
  *         pass
- * 
+ *
  *     def propinitpre(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -16901,10 +16901,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Prop_10propinitpre(CYTHON_UNUSED str
 
 /* "pyscipopt/propagator.pxi":138
  *         pass
- * 
+ *
  *     def propexitpre(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -16934,10 +16934,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Prop_12propexitpre(CYTHON_UNUSED str
 
 /* "pyscipopt/propagator.pxi":141
  *         pass
- * 
+ *
  *     def proppresol(self, nrounds, presoltiming, result_dict):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -17024,7 +17024,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Prop_14proppresol(CYTHON_UNUSED stru
 
 /* "pyscipopt/propagator.pxi":144
  *         pass
- * 
+ *
  *     def propexec(self, proptiming):             # <<<<<<<<<<<<<<
  *         print("python error in propexec: this method needs to be implemented")
  *         return {}
@@ -17053,11 +17053,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Prop_16propexec(CYTHON_UNUSED struct
   __Pyx_RefNannySetupContext("propexec", 0);
 
   /* "pyscipopt/propagator.pxi":145
- * 
+ *
  *     def propexec(self, proptiming):
  *         print("python error in propexec: this method needs to be implemented")             # <<<<<<<<<<<<<<
  *         return {}
- * 
+ *
  */
   if (__Pyx_PrintOne(0, __pyx_kp_s_python_error_in_propexec_this_me) < 0) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -17065,7 +17065,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Prop_16propexec(CYTHON_UNUSED struct
  *     def propexec(self, proptiming):
  *         print("python error in propexec: this method needs to be implemented")
  *         return {}             # <<<<<<<<<<<<<<
- * 
+ *
  *     def propresprop(self, confvar, inferinfo, bdtype, relaxedbd):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -17077,7 +17077,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Prop_16propexec(CYTHON_UNUSED struct
 
   /* "pyscipopt/propagator.pxi":144
  *         pass
- * 
+ *
  *     def propexec(self, proptiming):             # <<<<<<<<<<<<<<
  *         print("python error in propexec: this method needs to be implemented")
  *         return {}
@@ -17096,7 +17096,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Prop_16propexec(CYTHON_UNUSED struct
 
 /* "pyscipopt/propagator.pxi":148
  *         return {}
- * 
+ *
  *     def propresprop(self, confvar, inferinfo, bdtype, relaxedbd):             # <<<<<<<<<<<<<<
  *         print("python error in propresprop: this method needs to be implemented")
  *         return {}
@@ -17191,7 +17191,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Prop_18propresprop(CYTHON_UNUSED str
   __Pyx_RefNannySetupContext("propresprop", 0);
 
   /* "pyscipopt/propagator.pxi":149
- * 
+ *
  *     def propresprop(self, confvar, inferinfo, bdtype, relaxedbd):
  *         print("python error in propresprop: this method needs to be implemented")             # <<<<<<<<<<<<<<
  *         return {}
@@ -17212,7 +17212,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Prop_18propresprop(CYTHON_UNUSED str
 
   /* "pyscipopt/propagator.pxi":148
  *         return {}
- * 
+ *
  *     def propresprop(self, confvar, inferinfo, bdtype, relaxedbd):             # <<<<<<<<<<<<<<
  *         print("python error in propresprop: this method needs to be implemented")
  *         return {}
@@ -17230,11 +17230,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Prop_18propresprop(CYTHON_UNUSED str
 }
 
 /* "pyscipopt/propagator.pxi":117
- * 
+ *
  * cdef class Prop:
  *     cdef public object data     # storage for the python user             # <<<<<<<<<<<<<<
  *     cdef public Model model
- * 
+ *
  */
 
 /* Python wrapper */
@@ -17328,7 +17328,7 @@ static int __pyx_pf_9pyscipopt_4scip_4Prop_4data_4__del__(struct __pyx_obj_9pysc
  * cdef class Prop:
  *     cdef public object data     # storage for the python user
  *     cdef public Model model             # <<<<<<<<<<<<<<
- * 
+ *
  *     def propfree(self):
  */
 
@@ -17435,7 +17435,7 @@ static int __pyx_pf_9pyscipopt_4scip_4Prop_5model_4__del__(struct __pyx_obj_9pys
 /* "pyscipopt/heuristic.pxi":1
  * cdef SCIP_RETCODE PyHeurCopy (SCIP* scip, SCIP_HEUR* heur):             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
 
 static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurCopy(CYTHON_UNUSED SCIP *__pyx_v_scip, CYTHON_UNUSED SCIP_HEUR *__pyx_v_heur) {
@@ -17446,7 +17446,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurCopy(CYTHON_UNUSED SCIP *__py
   /* "pyscipopt/heuristic.pxi":2
  * cdef SCIP_RETCODE PyHeurCopy (SCIP* scip, SCIP_HEUR* heur):
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyHeurFree (SCIP* scip, SCIP_HEUR* heur):
  */
   __pyx_r = SCIP_OKAY;
@@ -17455,7 +17455,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurCopy(CYTHON_UNUSED SCIP *__py
   /* "pyscipopt/heuristic.pxi":1
  * cdef SCIP_RETCODE PyHeurCopy (SCIP* scip, SCIP_HEUR* heur):             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
 
   /* function exit code */
@@ -17466,7 +17466,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurCopy(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/heuristic.pxi":4
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyHeurFree (SCIP* scip, SCIP_HEUR* heur):             # <<<<<<<<<<<<<<
  *     cdef SCIP_HEURDATA* heurdata
  *     heurdata = SCIPheurGetData(heur)
@@ -17511,7 +17511,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurFree(CYTHON_UNUSED SCIP *__py
  *     PyHeur = <Heur>heurdata
  *     PyHeur.heurfree()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyHeur), __pyx_n_s_heurfree); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[6]; __pyx_lineno = 8; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -17539,7 +17539,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurFree(CYTHON_UNUSED SCIP *__py
  *     PyHeur = <Heur>heurdata
  *     PyHeur.heurfree()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyHeurInit (SCIP* scip, SCIP_HEUR* heur):
  */
   __pyx_r = SCIP_OKAY;
@@ -17547,7 +17547,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurFree(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/heuristic.pxi":4
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyHeurFree (SCIP* scip, SCIP_HEUR* heur):             # <<<<<<<<<<<<<<
  *     cdef SCIP_HEURDATA* heurdata
  *     heurdata = SCIPheurGetData(heur)
@@ -17568,7 +17568,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurFree(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/heuristic.pxi":11
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyHeurInit (SCIP* scip, SCIP_HEUR* heur):             # <<<<<<<<<<<<<<
  *     cdef SCIP_HEURDATA* heurdata
  *     heurdata = SCIPheurGetData(heur)
@@ -17613,7 +17613,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurInit(CYTHON_UNUSED SCIP *__py
  *     PyHeur = <Heur>heurdata
  *     PyHeur.heurinit()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyHeur), __pyx_n_s_heurinit); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[6]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -17641,7 +17641,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurInit(CYTHON_UNUSED SCIP *__py
  *     PyHeur = <Heur>heurdata
  *     PyHeur.heurinit()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyHeurExit (SCIP* scip, SCIP_HEUR* heur):
  */
   __pyx_r = SCIP_OKAY;
@@ -17649,7 +17649,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurInit(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/heuristic.pxi":11
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyHeurInit (SCIP* scip, SCIP_HEUR* heur):             # <<<<<<<<<<<<<<
  *     cdef SCIP_HEURDATA* heurdata
  *     heurdata = SCIPheurGetData(heur)
@@ -17670,7 +17670,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurInit(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/heuristic.pxi":18
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyHeurExit (SCIP* scip, SCIP_HEUR* heur):             # <<<<<<<<<<<<<<
  *     cdef SCIP_HEURDATA* heurdata
  *     heurdata = SCIPheurGetData(heur)
@@ -17715,7 +17715,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurExit(CYTHON_UNUSED SCIP *__py
  *     PyHeur = <Heur>heurdata
  *     PyHeur.heurexit()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyHeur), __pyx_n_s_heurexit); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[6]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -17743,7 +17743,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurExit(CYTHON_UNUSED SCIP *__py
  *     PyHeur = <Heur>heurdata
  *     PyHeur.heurexit()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyHeurInitsol (SCIP* scip, SCIP_HEUR* heur):
  */
   __pyx_r = SCIP_OKAY;
@@ -17751,7 +17751,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurExit(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/heuristic.pxi":18
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyHeurExit (SCIP* scip, SCIP_HEUR* heur):             # <<<<<<<<<<<<<<
  *     cdef SCIP_HEURDATA* heurdata
  *     heurdata = SCIPheurGetData(heur)
@@ -17772,7 +17772,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurExit(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/heuristic.pxi":25
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyHeurInitsol (SCIP* scip, SCIP_HEUR* heur):             # <<<<<<<<<<<<<<
  *     cdef SCIP_HEURDATA* heurdata
  *     heurdata = SCIPheurGetData(heur)
@@ -17817,7 +17817,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurInitsol(CYTHON_UNUSED SCIP *_
  *     PyHeur = <Heur>heurdata
  *     PyHeur.heurinitsol()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyHeur), __pyx_n_s_heurinitsol); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[6]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -17845,7 +17845,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurInitsol(CYTHON_UNUSED SCIP *_
  *     PyHeur = <Heur>heurdata
  *     PyHeur.heurinitsol()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyHeurExitsol (SCIP* scip, SCIP_HEUR* heur):
  */
   __pyx_r = SCIP_OKAY;
@@ -17853,7 +17853,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurInitsol(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/heuristic.pxi":25
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyHeurInitsol (SCIP* scip, SCIP_HEUR* heur):             # <<<<<<<<<<<<<<
  *     cdef SCIP_HEURDATA* heurdata
  *     heurdata = SCIPheurGetData(heur)
@@ -17874,7 +17874,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurInitsol(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/heuristic.pxi":32
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyHeurExitsol (SCIP* scip, SCIP_HEUR* heur):             # <<<<<<<<<<<<<<
  *     cdef SCIP_HEURDATA* heurdata
  *     heurdata = SCIPheurGetData(heur)
@@ -17919,7 +17919,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurExitsol(CYTHON_UNUSED SCIP *_
  *     PyHeur = <Heur>heurdata
  *     PyHeur.exitsol()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyHeur), __pyx_n_s_exitsol); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[6]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -17947,7 +17947,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurExitsol(CYTHON_UNUSED SCIP *_
  *     PyHeur = <Heur>heurdata
  *     PyHeur.exitsol()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyHeurExec (SCIP* scip, SCIP_HEUR* heur, SCIP_HEURTIMING heurtiming, SCIP_Bool nodeinfeasible, SCIP_RESULT* result):
  */
   __pyx_r = SCIP_OKAY;
@@ -17955,7 +17955,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurExitsol(CYTHON_UNUSED SCIP *_
 
   /* "pyscipopt/heuristic.pxi":32
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyHeurExitsol (SCIP* scip, SCIP_HEUR* heur):             # <<<<<<<<<<<<<<
  *     cdef SCIP_HEURDATA* heurdata
  *     heurdata = SCIPheurGetData(heur)
@@ -17976,7 +17976,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurExitsol(CYTHON_UNUSED SCIP *_
 
 /* "pyscipopt/heuristic.pxi":39
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyHeurExec (SCIP* scip, SCIP_HEUR* heur, SCIP_HEURTIMING heurtiming, SCIP_Bool nodeinfeasible, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_HEURDATA* heurdata
  *     heurdata = SCIPheurGetData(heur)
@@ -18070,7 +18070,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurExec(CYTHON_UNUSED SCIP *__py
  *     result_dict = PyHeur.heurexec(heurtiming, nodeinfeasible)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_result_dict, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[6]; __pyx_lineno = 44; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -18111,7 +18111,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurExec(CYTHON_UNUSED SCIP *__py
  *     result_dict = PyHeur.heurexec(heurtiming, nodeinfeasible)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef class Heur:
  */
   __pyx_r = SCIP_OKAY;
@@ -18119,7 +18119,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurExec(CYTHON_UNUSED SCIP *__py
 
   /* "pyscipopt/heuristic.pxi":39
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyHeurExec (SCIP* scip, SCIP_HEUR* heur, SCIP_HEURTIMING heurtiming, SCIP_Bool nodeinfeasible, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_HEURDATA* heurdata
  *     heurdata = SCIPheurGetData(heur)
@@ -18144,10 +18144,10 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyHeurExec(CYTHON_UNUSED SCIP *__py
 
 /* "pyscipopt/heuristic.pxi":52
  *     cdef public str name
- * 
+ *
  *     def heurfree(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -18177,10 +18177,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Heur_heurfree(CYTHON_UNUSED struct _
 
 /* "pyscipopt/heuristic.pxi":55
  *         pass
- * 
+ *
  *     def heurinit(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -18210,10 +18210,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Heur_2heurinit(CYTHON_UNUSED struct 
 
 /* "pyscipopt/heuristic.pxi":58
  *         pass
- * 
+ *
  *     def heurexit(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -18243,10 +18243,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Heur_4heurexit(CYTHON_UNUSED struct 
 
 /* "pyscipopt/heuristic.pxi":61
  *         pass
- * 
+ *
  *     def heurinitsol(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -18276,10 +18276,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Heur_6heurinitsol(CYTHON_UNUSED stru
 
 /* "pyscipopt/heuristic.pxi":64
  *         pass
- * 
+ *
  *     def heurexitsol(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -18309,7 +18309,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Heur_8heurexitsol(CYTHON_UNUSED stru
 
 /* "pyscipopt/heuristic.pxi":67
  *         pass
- * 
+ *
  *     def heurexec(self, heurtiming, nodeinfeasible):             # <<<<<<<<<<<<<<
  *         print("python error in heurexec: this method needs to be implemented")
  *         return {}
@@ -18386,7 +18386,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Heur_10heurexec(CYTHON_UNUSED struct
   __Pyx_RefNannySetupContext("heurexec", 0);
 
   /* "pyscipopt/heuristic.pxi":68
- * 
+ *
  *     def heurexec(self, heurtiming, nodeinfeasible):
  *         print("python error in heurexec: this method needs to be implemented")             # <<<<<<<<<<<<<<
  *         return {}
@@ -18407,7 +18407,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Heur_10heurexec(CYTHON_UNUSED struct
 
   /* "pyscipopt/heuristic.pxi":67
  *         pass
- * 
+ *
  *     def heurexec(self, heurtiming, nodeinfeasible):             # <<<<<<<<<<<<<<
  *         print("python error in heurexec: this method needs to be implemented")
  *         return {}
@@ -18425,7 +18425,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_4Heur_10heurexec(CYTHON_UNUSED struct
 }
 
 /* "pyscipopt/heuristic.pxi":48
- * 
+ *
  * cdef class Heur:
  *     cdef public object data     # storage for the python user             # <<<<<<<<<<<<<<
  *     cdef public Model model
@@ -18524,7 +18524,7 @@ static int __pyx_pf_9pyscipopt_4scip_4Heur_4data_4__del__(struct __pyx_obj_9pysc
  *     cdef public object data     # storage for the python user
  *     cdef public Model model             # <<<<<<<<<<<<<<
  *     cdef public str name
- * 
+ *
  */
 
 /* Python wrapper */
@@ -18631,7 +18631,7 @@ static int __pyx_pf_9pyscipopt_4scip_4Heur_5model_4__del__(struct __pyx_obj_9pys
  *     cdef public object data     # storage for the python user
  *     cdef public Model model
  *     cdef public str name             # <<<<<<<<<<<<<<
- * 
+ *
  *     def heurfree(self):
  */
 
@@ -18738,7 +18738,7 @@ static int __pyx_pf_9pyscipopt_4scip_4Heur_4name_4__del__(struct __pyx_obj_9pysc
 /* "pyscipopt/branchrule.pxi":1
  * cdef SCIP_RETCODE PyBranchruleCopy (SCIP* scip, SCIP_BRANCHRULE* branchrule):             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
 
 static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleCopy(CYTHON_UNUSED SCIP *__pyx_v_scip, CYTHON_UNUSED SCIP_BRANCHRULE *__pyx_v_branchrule) {
@@ -18749,7 +18749,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleCopy(CYTHON_UNUSED SCIP
   /* "pyscipopt/branchrule.pxi":2
  * cdef SCIP_RETCODE PyBranchruleCopy (SCIP* scip, SCIP_BRANCHRULE* branchrule):
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleFree (SCIP* scip, SCIP_BRANCHRULE* branchrule):
  */
   __pyx_r = SCIP_OKAY;
@@ -18758,7 +18758,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleCopy(CYTHON_UNUSED SCIP
   /* "pyscipopt/branchrule.pxi":1
  * cdef SCIP_RETCODE PyBranchruleCopy (SCIP* scip, SCIP_BRANCHRULE* branchrule):             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
 
   /* function exit code */
@@ -18769,7 +18769,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleCopy(CYTHON_UNUSED SCIP
 
 /* "pyscipopt/branchrule.pxi":4
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleFree (SCIP* scip, SCIP_BRANCHRULE* branchrule):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -18814,7 +18814,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleFree(CYTHON_UNUSED SCIP
  *     PyBranchrule = <Branchrule>branchruledata
  *     PyBranchrule.branchfree()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyBranchrule), __pyx_n_s_branchfree); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[7]; __pyx_lineno = 8; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -18842,7 +18842,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleFree(CYTHON_UNUSED SCIP
  *     PyBranchrule = <Branchrule>branchruledata
  *     PyBranchrule.branchfree()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleInit (SCIP* scip, SCIP_BRANCHRULE* branchrule):
  */
   __pyx_r = SCIP_OKAY;
@@ -18850,7 +18850,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleFree(CYTHON_UNUSED SCIP
 
   /* "pyscipopt/branchrule.pxi":4
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleFree (SCIP* scip, SCIP_BRANCHRULE* branchrule):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -18871,7 +18871,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleFree(CYTHON_UNUSED SCIP
 
 /* "pyscipopt/branchrule.pxi":11
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleInit (SCIP* scip, SCIP_BRANCHRULE* branchrule):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -18916,7 +18916,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleInit(CYTHON_UNUSED SCIP
  *     PyBranchrule = <Branchrule>branchruledata
  *     PyBranchrule.branchinit()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyBranchrule), __pyx_n_s_branchinit); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[7]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -18944,7 +18944,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleInit(CYTHON_UNUSED SCIP
  *     PyBranchrule = <Branchrule>branchruledata
  *     PyBranchrule.branchinit()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleExit (SCIP* scip, SCIP_BRANCHRULE* branchrule):
  */
   __pyx_r = SCIP_OKAY;
@@ -18952,7 +18952,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleInit(CYTHON_UNUSED SCIP
 
   /* "pyscipopt/branchrule.pxi":11
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleInit (SCIP* scip, SCIP_BRANCHRULE* branchrule):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -18973,7 +18973,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleInit(CYTHON_UNUSED SCIP
 
 /* "pyscipopt/branchrule.pxi":18
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleExit (SCIP* scip, SCIP_BRANCHRULE* branchrule):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -19018,7 +19018,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExit(CYTHON_UNUSED SCIP
  *     PyBranchrule = <Branchrule>branchruledata
  *     PyBranchrule.branchexit()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyBranchrule), __pyx_n_s_branchexit); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[7]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -19046,7 +19046,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExit(CYTHON_UNUSED SCIP
  *     PyBranchrule = <Branchrule>branchruledata
  *     PyBranchrule.branchexit()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleInitsol (SCIP* scip, SCIP_BRANCHRULE* branchrule):
  */
   __pyx_r = SCIP_OKAY;
@@ -19054,7 +19054,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExit(CYTHON_UNUSED SCIP
 
   /* "pyscipopt/branchrule.pxi":18
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleExit (SCIP* scip, SCIP_BRANCHRULE* branchrule):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -19075,7 +19075,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExit(CYTHON_UNUSED SCIP
 
 /* "pyscipopt/branchrule.pxi":25
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleInitsol (SCIP* scip, SCIP_BRANCHRULE* branchrule):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -19120,7 +19120,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleInitsol(CYTHON_UNUSED S
  *     PyBranchrule = <Branchrule>branchruledata
  *     PyBranchrule.branchinitsol()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyBranchrule), __pyx_n_s_branchinitsol); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[7]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -19148,7 +19148,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleInitsol(CYTHON_UNUSED S
  *     PyBranchrule = <Branchrule>branchruledata
  *     PyBranchrule.branchinitsol()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleExitsol (SCIP* scip, SCIP_BRANCHRULE* branchrule):
  */
   __pyx_r = SCIP_OKAY;
@@ -19156,7 +19156,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleInitsol(CYTHON_UNUSED S
 
   /* "pyscipopt/branchrule.pxi":25
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleInitsol (SCIP* scip, SCIP_BRANCHRULE* branchrule):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -19177,7 +19177,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleInitsol(CYTHON_UNUSED S
 
 /* "pyscipopt/branchrule.pxi":32
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleExitsol (SCIP* scip, SCIP_BRANCHRULE* branchrule):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -19222,7 +19222,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExitsol(CYTHON_UNUSED S
  *     PyBranchrule = <Branchrule>branchruledata
  *     PyBranchrule.branchexitsol()             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_PyBranchrule), __pyx_n_s_branchexitsol); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[7]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -19250,7 +19250,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExitsol(CYTHON_UNUSED S
  *     PyBranchrule = <Branchrule>branchruledata
  *     PyBranchrule.branchexitsol()
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleExeclp (SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result):
  */
   __pyx_r = SCIP_OKAY;
@@ -19258,7 +19258,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExitsol(CYTHON_UNUSED S
 
   /* "pyscipopt/branchrule.pxi":32
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleExitsol (SCIP* scip, SCIP_BRANCHRULE* branchrule):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -19279,7 +19279,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExitsol(CYTHON_UNUSED S
 
 /* "pyscipopt/branchrule.pxi":39
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleExeclp (SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -19369,7 +19369,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExeclp(CYTHON_UNUSED SC
  *     result_dict = PyBranchrule.branchexeclp(allowaddcons)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_result_dict, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[7]; __pyx_lineno = 44; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -19410,7 +19410,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExeclp(CYTHON_UNUSED SC
  *     result_dict = PyBranchrule.branchexeclp(allowaddcons)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleExecext(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result):
  */
   __pyx_r = SCIP_OKAY;
@@ -19418,7 +19418,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExeclp(CYTHON_UNUSED SC
 
   /* "pyscipopt/branchrule.pxi":39
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleExeclp (SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -19442,7 +19442,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExeclp(CYTHON_UNUSED SC
 
 /* "pyscipopt/branchrule.pxi":47
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleExecext(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -19532,7 +19532,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExecext(CYTHON_UNUSED S
  *     result_dict = PyBranchrule.branchexecext(allowaddcons)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_result_dict, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[7]; __pyx_lineno = 52; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -19573,7 +19573,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExecext(CYTHON_UNUSED S
  *     result_dict = PyBranchrule.branchexecext(allowaddcons)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleExecps(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result):
  */
   __pyx_r = SCIP_OKAY;
@@ -19581,7 +19581,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExecext(CYTHON_UNUSED S
 
   /* "pyscipopt/branchrule.pxi":47
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleExecext(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -19605,7 +19605,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExecext(CYTHON_UNUSED S
 
 /* "pyscipopt/branchrule.pxi":55
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleExecps(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -19695,7 +19695,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExecps(CYTHON_UNUSED SC
  *     result_dict = PyBranchrule.branchexecps(allowaddcons)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_result_dict, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[7]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -19736,7 +19736,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExecps(CYTHON_UNUSED SC
  *     result_dict = PyBranchrule.branchexecps(allowaddcons)
  *     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
  *     return SCIP_OKAY             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef class Branchrule:
  */
   __pyx_r = SCIP_OKAY;
@@ -19744,7 +19744,7 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExecps(CYTHON_UNUSED SC
 
   /* "pyscipopt/branchrule.pxi":55
  *     return SCIP_OKAY
- * 
+ *
  * cdef SCIP_RETCODE PyBranchruleExecps(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result):             # <<<<<<<<<<<<<<
  *     cdef SCIP_BRANCHRULEDATA* branchruledata
  *     branchruledata = SCIPbranchruleGetData(branchrule)
@@ -19768,10 +19768,10 @@ static SCIP_RETCODE __pyx_f_9pyscipopt_4scip_PyBranchruleExecps(CYTHON_UNUSED SC
 
 /* "pyscipopt/branchrule.pxi":67
  *     cdef public Model model
- * 
+ *
  *     def branchfree(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -19801,10 +19801,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Branchrule_branchfree(CYTHON_UNUSED
 
 /* "pyscipopt/branchrule.pxi":70
  *         pass
- * 
+ *
  *     def branchinit(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -19834,10 +19834,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Branchrule_2branchinit(CYTHON_UNUSE
 
 /* "pyscipopt/branchrule.pxi":73
  *         pass
- * 
+ *
  *     def branchexit(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -19867,10 +19867,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Branchrule_4branchexit(CYTHON_UNUSE
 
 /* "pyscipopt/branchrule.pxi":76
  *         pass
- * 
+ *
  *     def branchinitsol(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -19900,10 +19900,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Branchrule_6branchinitsol(CYTHON_UN
 
 /* "pyscipopt/branchrule.pxi":79
  *         pass
- * 
+ *
  *     def branchexitsol(self):             # <<<<<<<<<<<<<<
  *         pass
- * 
+ *
  */
 
 /* Python wrapper */
@@ -19933,7 +19933,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Branchrule_8branchexitsol(CYTHON_UN
 
 /* "pyscipopt/branchrule.pxi":82
  *         pass
- * 
+ *
  *     def branchexeclp(self, allowaddcons):             # <<<<<<<<<<<<<<
  *         # this method needs to be implemented by the user
  *         return {}
@@ -19965,7 +19965,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Branchrule_10branchexeclp(CYTHON_UN
  *     def branchexeclp(self, allowaddcons):
  *         # this method needs to be implemented by the user
  *         return {}             # <<<<<<<<<<<<<<
- * 
+ *
  *     def branchexecext(self, allowaddcons):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -19977,7 +19977,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Branchrule_10branchexeclp(CYTHON_UN
 
   /* "pyscipopt/branchrule.pxi":82
  *         pass
- * 
+ *
  *     def branchexeclp(self, allowaddcons):             # <<<<<<<<<<<<<<
  *         # this method needs to be implemented by the user
  *         return {}
@@ -19996,7 +19996,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Branchrule_10branchexeclp(CYTHON_UN
 
 /* "pyscipopt/branchrule.pxi":86
  *         return {}
- * 
+ *
  *     def branchexecext(self, allowaddcons):             # <<<<<<<<<<<<<<
  *         # this method needs to be implemented by the user
  *         return {}
@@ -20028,7 +20028,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Branchrule_12branchexecext(CYTHON_U
  *     def branchexecext(self, allowaddcons):
  *         # this method needs to be implemented by the user
  *         return {}             # <<<<<<<<<<<<<<
- * 
+ *
  *     def branchexecps(self, allowaddcons):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -20040,7 +20040,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Branchrule_12branchexecext(CYTHON_U
 
   /* "pyscipopt/branchrule.pxi":86
  *         return {}
- * 
+ *
  *     def branchexecext(self, allowaddcons):             # <<<<<<<<<<<<<<
  *         # this method needs to be implemented by the user
  *         return {}
@@ -20059,7 +20059,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Branchrule_12branchexecext(CYTHON_U
 
 /* "pyscipopt/branchrule.pxi":90
  *         return {}
- * 
+ *
  *     def branchexecps(self, allowaddcons):             # <<<<<<<<<<<<<<
  *         # this method needs to be implemented by the user
  *         return {}
@@ -20091,7 +20091,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Branchrule_14branchexecps(CYTHON_UN
  *     def branchexecps(self, allowaddcons):
  *         # this method needs to be implemented by the user
  *         return {}             # <<<<<<<<<<<<<<
- * 
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[7]; __pyx_lineno = 92; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -20102,7 +20102,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Branchrule_14branchexecps(CYTHON_UN
 
   /* "pyscipopt/branchrule.pxi":90
  *         return {}
- * 
+ *
  *     def branchexecps(self, allowaddcons):             # <<<<<<<<<<<<<<
  *         # this method needs to be implemented by the user
  *         return {}
@@ -20120,11 +20120,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Branchrule_14branchexecps(CYTHON_UN
 }
 
 /* "pyscipopt/branchrule.pxi":64
- * 
+ *
  * cdef class Branchrule:
  *     cdef public object data     # storage for the python user             # <<<<<<<<<<<<<<
  *     cdef public Model model
- * 
+ *
  */
 
 /* Python wrapper */
@@ -20218,7 +20218,7 @@ static int __pyx_pf_9pyscipopt_4scip_10Branchrule_4data_4__del__(struct __pyx_ob
  * cdef class Branchrule:
  *     cdef public object data     # storage for the python user
  *     cdef public Model model             # <<<<<<<<<<<<<<
- * 
+ *
  *     def branchfree(self):
  */
 
@@ -20324,7 +20324,7 @@ static int __pyx_pf_9pyscipopt_4scip_10Branchrule_5model_4__del__(struct __pyx_o
 
 /* "pyscipopt/scip.pyx":26
  *     str_conversion = lambda x:x
- * 
+ *
  * def scipErrorHandler(function):             # <<<<<<<<<<<<<<
  *     def wrapper(*args, **kwargs):
  *         return PY_SCIP_CALL(function(*args, **kwargs))
@@ -20345,7 +20345,7 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_1scipErrorHandler(PyObject *__pyx_sel
 }
 
 /* "pyscipopt/scip.pyx":27
- * 
+ *
  * def scipErrorHandler(function):
  *     def wrapper(*args, **kwargs):             # <<<<<<<<<<<<<<
  *         return PY_SCIP_CALL(function(*args, **kwargs))
@@ -20401,7 +20401,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_16scipErrorHandler_wrapper(PyObject *
  *     def wrapper(*args, **kwargs):
  *         return PY_SCIP_CALL(function(*args, **kwargs))             # <<<<<<<<<<<<<<
  *     return wrapper
- * 
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -20440,7 +20440,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_16scipErrorHandler_wrapper(PyObject *
   goto __pyx_L0;
 
   /* "pyscipopt/scip.pyx":27
- * 
+ *
  * def scipErrorHandler(function):
  *     def wrapper(*args, **kwargs):             # <<<<<<<<<<<<<<
  *         return PY_SCIP_CALL(function(*args, **kwargs))
@@ -20464,7 +20464,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_16scipErrorHandler_wrapper(PyObject *
 
 /* "pyscipopt/scip.pyx":26
  *     str_conversion = lambda x:x
- * 
+ *
  * def scipErrorHandler(function):             # <<<<<<<<<<<<<<
  *     def wrapper(*args, **kwargs):
  *         return PY_SCIP_CALL(function(*args, **kwargs))
@@ -20491,7 +20491,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_scipErrorHandler(CYTHON_UNUSED PyObje
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_function);
 
   /* "pyscipopt/scip.pyx":27
- * 
+ *
  * def scipErrorHandler(function):
  *     def wrapper(*args, **kwargs):             # <<<<<<<<<<<<<<
  *         return PY_SCIP_CALL(function(*args, **kwargs))
@@ -20506,7 +20506,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_scipErrorHandler(CYTHON_UNUSED PyObje
  *     def wrapper(*args, **kwargs):
  *         return PY_SCIP_CALL(function(*args, **kwargs))
  *     return wrapper             # <<<<<<<<<<<<<<
- * 
+ *
  * # Mapping the SCIP_RESULT enum to a python class
  */
   __Pyx_XDECREF(__pyx_r);
@@ -20516,7 +20516,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_scipErrorHandler(CYTHON_UNUSED PyObje
 
   /* "pyscipopt/scip.pyx":26
  *     str_conversion = lambda x:x
- * 
+ *
  * def scipErrorHandler(function):             # <<<<<<<<<<<<<<
  *     def wrapper(*args, **kwargs):
  *         return PY_SCIP_CALL(function(*args, **kwargs))
@@ -20537,7 +20537,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_scipErrorHandler(CYTHON_UNUSED PyObje
 
 /* "pyscipopt/scip.pyx":103
  *     AFTERPROPLOOP     = 0x400u
- * 
+ *
  * def PY_SCIP_CALL(scip.SCIP_RETCODE rc):             # <<<<<<<<<<<<<<
  *     if rc == scip.SCIP_OKAY:
  *         pass
@@ -20581,7 +20581,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2PY_SCIP_CALL(CYTHON_UNUSED PyObject 
   __Pyx_RefNannySetupContext("PY_SCIP_CALL", 0);
 
   /* "pyscipopt/scip.pyx":104
- * 
+ *
  * def PY_SCIP_CALL(scip.SCIP_RETCODE rc):
  *     if rc == scip.SCIP_OKAY:             # <<<<<<<<<<<<<<
  *         pass
@@ -21140,7 +21140,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2PY_SCIP_CALL(CYTHON_UNUSED PyObject 
  *     else:
  *         raise Exception('SCIP: unknown return code!')             # <<<<<<<<<<<<<<
  *     return rc
- * 
+ *
  */
     __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_Exception, __pyx_tuple__30, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
@@ -21154,8 +21154,8 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2PY_SCIP_CALL(CYTHON_UNUSED PyObject 
  *     else:
  *         raise Exception('SCIP: unknown return code!')
  *     return rc             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __Pyx_PyInt_From_SCIP_RETCODE(__pyx_v_rc); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 143; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -21166,7 +21166,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2PY_SCIP_CALL(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":103
  *     AFTERPROPLOOP     = 0x400u
- * 
+ *
  * def PY_SCIP_CALL(scip.SCIP_RETCODE rc):             # <<<<<<<<<<<<<<
  *     if rc == scip.SCIP_OKAY:
  *         pass
@@ -21185,7 +21185,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2PY_SCIP_CALL(CYTHON_UNUSED PyObject 
 }
 
 /* "pyscipopt/scip.pyx":170
- * 
+ *
  * class LP:
  *     def __init__(self, name="LP", objsen=scip.SCIP_OBJSENSE_MINIMIZE):             # <<<<<<<<<<<<<<
  *         """
@@ -21353,7 +21353,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP___init__(CYTHON_UNUSED PyObject *
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiCreate(&(lpi._lpi), NULL, name, objsen))
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 179; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -21365,7 +21365,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP___init__(CYTHON_UNUSED PyObject *
  *         cdef Lpi lpi
  *         lpi = self.lpi
  *         PY_SCIP_CALL(scip.SCIPlpiCreate(&(lpi._lpi), NULL, name, objsen))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def __del__(self):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -21403,7 +21403,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP___init__(CYTHON_UNUSED PyObject *
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "pyscipopt/scip.pyx":170
- * 
+ *
  * class LP:
  *     def __init__(self, name="LP", objsen=scip.SCIP_OBJSENSE_MINIMIZE):             # <<<<<<<<<<<<<<
  *         """
@@ -21430,7 +21430,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP___init__(CYTHON_UNUSED PyObject *
 
 /* "pyscipopt/scip.pyx":182
  *         PY_SCIP_CALL(scip.SCIPlpiCreate(&(lpi._lpi), NULL, name, objsen))
- * 
+ *
  *     def __del__(self):             # <<<<<<<<<<<<<<
  *         cdef Lpi lpi
  *         cdef scip.SCIP_LPI* _lpi
@@ -21484,7 +21484,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_2__del__(CYTHON_UNUSED PyObject *
  *         lpi = self.lpi
  *         _lpi = lpi._lpi             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiFree(&_lpi))
- * 
+ *
  */
   __pyx_t_2 = __pyx_v_lpi->_lpi;
   __pyx_v__lpi = __pyx_t_2;
@@ -21493,7 +21493,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_2__del__(CYTHON_UNUSED PyObject *
  *         lpi = self.lpi
  *         _lpi = lpi._lpi
  *         PY_SCIP_CALL(scip.SCIPlpiFree(&_lpi))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def __repr__(self):
  */
   __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 187; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -21530,7 +21530,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_2__del__(CYTHON_UNUSED PyObject *
 
   /* "pyscipopt/scip.pyx":182
  *         PY_SCIP_CALL(scip.SCIPlpiCreate(&(lpi._lpi), NULL, name, objsen))
- * 
+ *
  *     def __del__(self):             # <<<<<<<<<<<<<<
  *         cdef Lpi lpi
  *         cdef scip.SCIP_LPI* _lpi
@@ -21556,10 +21556,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_2__del__(CYTHON_UNUSED PyObject *
 
 /* "pyscipopt/scip.pyx":189
  *         PY_SCIP_CALL(scip.SCIPlpiFree(&_lpi))
- * 
+ *
  *     def __repr__(self):             # <<<<<<<<<<<<<<
  *         return self.name
- * 
+ *
  */
 
 /* Python wrapper */
@@ -21586,10 +21586,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_4__repr__(CYTHON_UNUSED PyObject 
   __Pyx_RefNannySetupContext("__repr__", 0);
 
   /* "pyscipopt/scip.pyx":190
- * 
+ *
  *     def __repr__(self):
  *         return self.name             # <<<<<<<<<<<<<<
- * 
+ *
  *     def writeLP(self, filename):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -21601,10 +21601,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_4__repr__(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":189
  *         PY_SCIP_CALL(scip.SCIPlpiFree(&_lpi))
- * 
+ *
  *     def __repr__(self):             # <<<<<<<<<<<<<<
  *         return self.name
- * 
+ *
  */
 
   /* function exit code */
@@ -21620,10 +21620,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_4__repr__(CYTHON_UNUSED PyObject 
 
 /* "pyscipopt/scip.pyx":192
  *         return self.name
- * 
+ *
  *     def writeLP(self, filename):             # <<<<<<<<<<<<<<
  *         """Writes LP to a file.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -21709,7 +21709,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_6writeLP(CYTHON_UNUSED PyObject *
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiWriteLP(lpi._lpi, filename))
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 199; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -21721,7 +21721,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_6writeLP(CYTHON_UNUSED PyObject *
  *         cdef Lpi lpi
  *         lpi = self.lpi
  *         PY_SCIP_CALL(scip.SCIPlpiWriteLP(lpi._lpi, filename))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def readLP(self, filename):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 200; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -21759,10 +21759,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_6writeLP(CYTHON_UNUSED PyObject *
 
   /* "pyscipopt/scip.pyx":192
  *         return self.name
- * 
+ *
  *     def writeLP(self, filename):             # <<<<<<<<<<<<<<
  *         """Writes LP to a file.
- * 
+ *
  */
 
   /* function exit code */
@@ -21785,10 +21785,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_6writeLP(CYTHON_UNUSED PyObject *
 
 /* "pyscipopt/scip.pyx":202
  *         PY_SCIP_CALL(scip.SCIPlpiWriteLP(lpi._lpi, filename))
- * 
+ *
  *     def readLP(self, filename):             # <<<<<<<<<<<<<<
  *         """Reads LP from a file.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -21874,7 +21874,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_8readLP(CYTHON_UNUSED PyObject *_
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiReadLP(lpi._lpi, filename))
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 209; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -21886,7 +21886,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_8readLP(CYTHON_UNUSED PyObject *_
  *         cdef Lpi lpi
  *         lpi = self.lpi
  *         PY_SCIP_CALL(scip.SCIPlpiReadLP(lpi._lpi, filename))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def infinity(self):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 210; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -21924,10 +21924,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_8readLP(CYTHON_UNUSED PyObject *_
 
   /* "pyscipopt/scip.pyx":202
  *         PY_SCIP_CALL(scip.SCIPlpiWriteLP(lpi._lpi, filename))
- * 
+ *
  *     def readLP(self, filename):             # <<<<<<<<<<<<<<
  *         """Reads LP from a file.
- * 
+ *
  */
 
   /* function exit code */
@@ -21950,7 +21950,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_8readLP(CYTHON_UNUSED PyObject *_
 
 /* "pyscipopt/scip.pyx":212
  *         PY_SCIP_CALL(scip.SCIPlpiReadLP(lpi._lpi, filename))
- * 
+ *
  *     def infinity(self):             # <<<<<<<<<<<<<<
  *         """Returns infinity value of the LP.
  *         """
@@ -21986,7 +21986,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_10infinity(CYTHON_UNUSED PyObject
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
  *         return scip.SCIPlpiInfinity(lpi._lpi)
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 216; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -21998,7 +21998,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_10infinity(CYTHON_UNUSED PyObject
  *         cdef Lpi lpi
  *         lpi = self.lpi
  *         return scip.SCIPlpiInfinity(lpi._lpi)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def isInfinity(self, val):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -22010,7 +22010,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_10infinity(CYTHON_UNUSED PyObject
 
   /* "pyscipopt/scip.pyx":212
  *         PY_SCIP_CALL(scip.SCIPlpiReadLP(lpi._lpi, filename))
- * 
+ *
  *     def infinity(self):             # <<<<<<<<<<<<<<
  *         """Returns infinity value of the LP.
  *         """
@@ -22030,10 +22030,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_10infinity(CYTHON_UNUSED PyObject
 
 /* "pyscipopt/scip.pyx":219
  *         return scip.SCIPlpiInfinity(lpi._lpi)
- * 
+ *
  *     def isInfinity(self, val):             # <<<<<<<<<<<<<<
  *         """Checks if a given value is equal to the infinity value of the LP.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -22115,7 +22115,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_12isInfinity(CYTHON_UNUSED PyObje
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
  *         return scip.SCIPlpiIsInfinity(lpi._lpi, val)
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -22127,7 +22127,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_12isInfinity(CYTHON_UNUSED PyObje
  *         cdef Lpi lpi
  *         lpi = self.lpi
  *         return scip.SCIPlpiIsInfinity(lpi._lpi, val)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def addCol(self, entries, obj = 0.0, lb = 0.0, ub = None):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -22140,10 +22140,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_12isInfinity(CYTHON_UNUSED PyObje
 
   /* "pyscipopt/scip.pyx":219
  *         return scip.SCIPlpiInfinity(lpi._lpi)
- * 
+ *
  *     def isInfinity(self, val):             # <<<<<<<<<<<<<<
  *         """Checks if a given value is equal to the infinity value of the LP.
- * 
+ *
  */
 
   /* function exit code */
@@ -22160,10 +22160,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_12isInfinity(CYTHON_UNUSED PyObje
 
 /* "pyscipopt/scip.pyx":229
  *         return scip.SCIPlpiIsInfinity(lpi._lpi, val)
- * 
+ *
  *     def addCol(self, entries, obj = 0.0, lb = 0.0, ub = None):             # <<<<<<<<<<<<<<
  *         """Adds a single column to the LP.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -22296,7 +22296,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_14addCol(CYTHON_UNUSED PyObject *
  *         """
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         nnonz = len(entries)
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 239; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -22307,9 +22307,9 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_14addCol(CYTHON_UNUSED PyObject *
 
   /* "pyscipopt/scip.pyx":241
  *         lpi = self.lpi
- * 
+ *
  *         nnonz = len(entries)             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
  */
   __pyx_t_2 = PyObject_Length(__pyx_v_entries); if (unlikely(__pyx_t_2 == -1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -22320,7 +22320,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_14addCol(CYTHON_UNUSED PyObject *
 
   /* "pyscipopt/scip.pyx":243
  *         nnonz = len(entries)
- * 
+ *
  *         cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))             # <<<<<<<<<<<<<<
  *         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
  *         cdef scip.SCIP_Real c_obj
@@ -22335,7 +22335,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_14addCol(CYTHON_UNUSED PyObject *
   __pyx_v_c_coefs = ((SCIP_Real *)malloc(__pyx_t_4));
 
   /* "pyscipopt/scip.pyx":244
- * 
+ *
  *         cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
  *         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))             # <<<<<<<<<<<<<<
  *         cdef scip.SCIP_Real c_obj
@@ -22352,7 +22352,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_14addCol(CYTHON_UNUSED PyObject *
 
   /* "pyscipopt/scip.pyx":250
  *         cdef int c_beg
- * 
+ *
  *         c_obj = obj             # <<<<<<<<<<<<<<
  *         c_lb = lb
  *         c_ub = ub if ub != None else self.infinity()
@@ -22361,7 +22361,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_14addCol(CYTHON_UNUSED PyObject *
   __pyx_v_c_obj = __pyx_t_5;
 
   /* "pyscipopt/scip.pyx":251
- * 
+ *
  *         c_obj = obj
  *         c_lb = lb             # <<<<<<<<<<<<<<
  *         c_ub = ub if ub != None else self.infinity()
@@ -22375,7 +22375,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_14addCol(CYTHON_UNUSED PyObject *
  *         c_lb = lb
  *         c_ub = ub if ub != None else self.infinity()             # <<<<<<<<<<<<<<
  *         c_beg = 0
- * 
+ *
  */
   __pyx_t_1 = PyObject_RichCompare(__pyx_v_ub, Py_None, Py_NE); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 252; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_6 < 0)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 252; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -22414,14 +22414,14 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_14addCol(CYTHON_UNUSED PyObject *
  *         c_lb = lb
  *         c_ub = ub if ub != None else self.infinity()
  *         c_beg = 0             # <<<<<<<<<<<<<<
- * 
+ *
  *         for i,entry in enumerate(entries):
  */
   __pyx_v_c_beg = 0;
 
   /* "pyscipopt/scip.pyx":255
  *         c_beg = 0
- * 
+ *
  *         for i,entry in enumerate(entries):             # <<<<<<<<<<<<<<
  *             c_inds[i] = entry[0]
  *             c_coefs[i] = entry[1]
@@ -22478,11 +22478,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_14addCol(CYTHON_UNUSED PyObject *
     __pyx_t_8 = 0;
 
     /* "pyscipopt/scip.pyx":256
- * 
+ *
  *         for i,entry in enumerate(entries):
  *             c_inds[i] = entry[0]             # <<<<<<<<<<<<<<
  *             c_coefs[i] = entry[1]
- * 
+ *
  */
     __pyx_t_8 = __Pyx_GetItemInt(__pyx_v_entry, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(__pyx_t_8 == NULL)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 256; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_8);
@@ -22495,7 +22495,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_14addCol(CYTHON_UNUSED PyObject *
  *         for i,entry in enumerate(entries):
  *             c_inds[i] = entry[0]
  *             c_coefs[i] = entry[1]             # <<<<<<<<<<<<<<
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPlpiAddCols(lpi._lpi, 1, &c_obj, &c_lb, &c_ub, NULL, nnonz, &c_beg, c_inds, c_coefs))
  */
     __pyx_t_8 = __Pyx_GetItemInt(__pyx_v_entry, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(__pyx_t_8 == NULL)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
@@ -22507,7 +22507,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_14addCol(CYTHON_UNUSED PyObject *
 
     /* "pyscipopt/scip.pyx":255
  *         c_beg = 0
- * 
+ *
  *         for i,entry in enumerate(entries):             # <<<<<<<<<<<<<<
  *             c_inds[i] = entry[0]
  *             c_coefs[i] = entry[1]
@@ -22518,9 +22518,9 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_14addCol(CYTHON_UNUSED PyObject *
 
   /* "pyscipopt/scip.pyx":259
  *             c_coefs[i] = entry[1]
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPlpiAddCols(lpi._lpi, 1, &c_obj, &c_lb, &c_ub, NULL, nnonz, &c_beg, c_inds, c_coefs))             # <<<<<<<<<<<<<<
- * 
+ *
  *         free(c_coefs)
  */
   __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -22558,28 +22558,28 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_14addCol(CYTHON_UNUSED PyObject *
 
   /* "pyscipopt/scip.pyx":261
  *         PY_SCIP_CALL(scip.SCIPlpiAddCols(lpi._lpi, 1, &c_obj, &c_lb, &c_ub, NULL, nnonz, &c_beg, c_inds, c_coefs))
- * 
+ *
  *         free(c_coefs)             # <<<<<<<<<<<<<<
  *         free(c_inds)
- * 
+ *
  */
   free(__pyx_v_c_coefs);
 
   /* "pyscipopt/scip.pyx":262
- * 
+ *
  *         free(c_coefs)
  *         free(c_inds)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def addCols(self, entrieslist, objs = None, lbs = None, ubs = None):
  */
   free(__pyx_v_c_inds);
 
   /* "pyscipopt/scip.pyx":229
  *         return scip.SCIPlpiIsInfinity(lpi._lpi, val)
- * 
+ *
  *     def addCol(self, entries, obj = 0.0, lb = 0.0, ub = None):             # <<<<<<<<<<<<<<
  *         """Adds a single column to the LP.
- * 
+ *
  */
 
   /* function exit code */
@@ -22605,10 +22605,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_14addCol(CYTHON_UNUSED PyObject *
 
 /* "pyscipopt/scip.pyx":264
  *         free(c_inds)
- * 
+ *
  *     def addCols(self, entrieslist, objs = None, lbs = None, ubs = None):             # <<<<<<<<<<<<<<
  *         """Adds multiple columns to the LP.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -22708,10 +22708,10 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_2LP_17addCols(PyObject *__pyx_self, P
 static PyObject *__pyx_gb_9pyscipopt_4scip_2LP_7addCols_2generator(__pyx_CoroutineObject *__pyx_generator, PyObject *__pyx_sent_value); /* proto */
 
 /* "pyscipopt/scip.pyx":277
- * 
+ *
  *         ncols = len(entrieslist)
  *         nnonz = sum(len(entries) for entries in entrieslist)             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef scip.SCIP_Real* c_objs   = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
  */
 
@@ -22857,10 +22857,10 @@ static PyObject *__pyx_gb_9pyscipopt_4scip_2LP_7addCols_2generator(__pyx_Corouti
 
 /* "pyscipopt/scip.pyx":264
  *         free(c_inds)
- * 
+ *
  *     def addCols(self, entrieslist, objs = None, lbs = None, ubs = None):             # <<<<<<<<<<<<<<
  *         """Adds multiple columns to the LP.
- * 
+ *
  */
 
 static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_entrieslist, PyObject *__pyx_v_objs, PyObject *__pyx_v_lbs, PyObject *__pyx_v_ubs) {
@@ -22914,7 +22914,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
  *         """
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         ncols = len(entrieslist)
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 274; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -22925,10 +22925,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":276
  *         lpi = self.lpi
- * 
+ *
  *         ncols = len(entrieslist)             # <<<<<<<<<<<<<<
  *         nnonz = sum(len(entries) for entries in entrieslist)
- * 
+ *
  */
   __pyx_t_1 = __pyx_cur_scope->__pyx_v_entrieslist;
   __Pyx_INCREF(__pyx_t_1);
@@ -22940,10 +22940,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
   __pyx_t_1 = 0;
 
   /* "pyscipopt/scip.pyx":277
- * 
+ *
  *         ncols = len(entrieslist)
  *         nnonz = sum(len(entries) for entries in entrieslist)             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef scip.SCIP_Real* c_objs   = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
  */
   __pyx_t_1 = __pyx_pf_9pyscipopt_4scip_2LP_7addCols_genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 277; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -22961,7 +22961,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":279
  *         nnonz = sum(len(entries) for entries in entrieslist)
- * 
+ *
  *         cdef scip.SCIP_Real* c_objs   = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))             # <<<<<<<<<<<<<<
  *         cdef scip.SCIP_Real* c_lbs    = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
  *         cdef scip.SCIP_Real* c_ubs    = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
@@ -22976,7 +22976,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
   __pyx_v_c_objs = ((SCIP_Real *)malloc(__pyx_t_4));
 
   /* "pyscipopt/scip.pyx":280
- * 
+ *
  *         cdef scip.SCIP_Real* c_objs   = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
  *         cdef scip.SCIP_Real* c_lbs    = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))             # <<<<<<<<<<<<<<
  *         cdef scip.SCIP_Real* c_ubs    = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
@@ -23028,7 +23028,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
  *         cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
  *         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))             # <<<<<<<<<<<<<<
  *         cdef int* c_beg  = <int*>malloc(ncols * sizeof(int))
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyInt_FromSize_t((sizeof(int))); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 283; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -23043,7 +23043,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
  *         cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
  *         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
  *         cdef int* c_beg  = <int*>malloc(ncols * sizeof(int))             # <<<<<<<<<<<<<<
- * 
+ *
  *         tmp = 0
  */
   __pyx_t_3 = __Pyx_PyInt_FromSize_t((sizeof(int))); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 284; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -23057,7 +23057,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":286
  *         cdef int* c_beg  = <int*>malloc(ncols * sizeof(int))
- * 
+ *
  *         tmp = 0             # <<<<<<<<<<<<<<
  *         for i,entries in enumerate(entrieslist):
  *             c_objs[i] = objs[i] if objs != None else 0.0
@@ -23066,7 +23066,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
   __pyx_v_tmp = __pyx_int_0;
 
   /* "pyscipopt/scip.pyx":287
- * 
+ *
  *         tmp = 0
  *         for i,entries in enumerate(entrieslist):             # <<<<<<<<<<<<<<
  *             c_objs[i] = objs[i] if objs != None else 0.0
@@ -23172,7 +23172,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
  *             c_lbs[i] = lbs[i] if lbs != None else 0.0
  *             c_ubs[i] = ubs[i] if ubs != None else self.infinity()             # <<<<<<<<<<<<<<
  *             c_beg[i] = tmp
- * 
+ *
  */
     __pyx_t_6 = PyObject_RichCompare(__pyx_v_ubs, Py_None, Py_NE); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 290; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_8 < 0)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 290; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -23215,7 +23215,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
  *             c_lbs[i] = lbs[i] if lbs != None else 0.0
  *             c_ubs[i] = ubs[i] if ubs != None else self.infinity()
  *             c_beg[i] = tmp             # <<<<<<<<<<<<<<
- * 
+ *
  *             for entry in entries:
  */
     __pyx_t_13 = __Pyx_PyInt_As_int(__pyx_v_tmp); if (unlikely((__pyx_t_13 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 291; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -23224,7 +23224,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
 
     /* "pyscipopt/scip.pyx":293
  *             c_beg[i] = tmp
- * 
+ *
  *             for entry in entries:             # <<<<<<<<<<<<<<
  *                 c_inds[tmp] = entry[0]
  *                 c_coefs[tmp] = entry[1]
@@ -23272,7 +23272,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
       __pyx_t_11 = 0;
 
       /* "pyscipopt/scip.pyx":294
- * 
+ *
  *             for entry in entries:
  *                 c_inds[tmp] = entry[0]             # <<<<<<<<<<<<<<
  *                 c_coefs[tmp] = entry[1]
@@ -23290,7 +23290,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
  *                 c_inds[tmp] = entry[0]
  *                 c_coefs[tmp] = entry[1]             # <<<<<<<<<<<<<<
  *                 tmp += 1
- * 
+ *
  */
       __pyx_t_11 = __Pyx_GetItemInt(__pyx_v_entry, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(__pyx_t_11 == NULL)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 295; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
       __Pyx_GOTREF(__pyx_t_11);
@@ -23303,7 +23303,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
  *                 c_inds[tmp] = entry[0]
  *                 c_coefs[tmp] = entry[1]
  *                 tmp += 1             # <<<<<<<<<<<<<<
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPlpiAddCols(lpi._lpi, ncols, c_objs, c_lbs, c_ubs, NULL, nnonz, c_beg, c_inds, c_coefs))
  */
       __pyx_t_11 = __Pyx_PyInt_AddObjC(__pyx_v_tmp, __pyx_int_1, 1, 1); if (unlikely(!__pyx_t_11)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 296; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -23313,7 +23313,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
 
       /* "pyscipopt/scip.pyx":293
  *             c_beg[i] = tmp
- * 
+ *
  *             for entry in entries:             # <<<<<<<<<<<<<<
  *                 c_inds[tmp] = entry[0]
  *                 c_coefs[tmp] = entry[1]
@@ -23322,7 +23322,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
     /* "pyscipopt/scip.pyx":287
- * 
+ *
  *         tmp = 0
  *         for i,entries in enumerate(entrieslist):             # <<<<<<<<<<<<<<
  *             c_objs[i] = objs[i] if objs != None else 0.0
@@ -23334,9 +23334,9 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":298
  *                 tmp += 1
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPlpiAddCols(lpi._lpi, ncols, c_objs, c_lbs, c_ubs, NULL, nnonz, c_beg, c_inds, c_coefs))             # <<<<<<<<<<<<<<
- * 
+ *
  *         free(c_beg)
  */
   __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 298; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -23375,7 +23375,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":300
  *         PY_SCIP_CALL(scip.SCIPlpiAddCols(lpi._lpi, ncols, c_objs, c_lbs, c_ubs, NULL, nnonz, c_beg, c_inds, c_coefs))
- * 
+ *
  *         free(c_beg)             # <<<<<<<<<<<<<<
  *         free(c_inds)
  *         free(c_coefs)
@@ -23383,7 +23383,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
   free(__pyx_v_c_beg);
 
   /* "pyscipopt/scip.pyx":301
- * 
+ *
  *         free(c_beg)
  *         free(c_inds)             # <<<<<<<<<<<<<<
  *         free(c_coefs)
@@ -23414,7 +23414,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
  *         free(c_ubs)
  *         free(c_lbs)             # <<<<<<<<<<<<<<
  *         free(c_objs)
- * 
+ *
  */
   free(__pyx_v_c_lbs);
 
@@ -23422,17 +23422,17 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
  *         free(c_ubs)
  *         free(c_lbs)
  *         free(c_objs)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def delCols(self, firstcol, lastcol):
  */
   free(__pyx_v_c_objs);
 
   /* "pyscipopt/scip.pyx":264
  *         free(c_inds)
- * 
+ *
  *     def addCols(self, entrieslist, objs = None, lbs = None, ubs = None):             # <<<<<<<<<<<<<<
  *         """Adds multiple columns to the LP.
- * 
+ *
  */
 
   /* function exit code */
@@ -23462,10 +23462,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_16addCols(CYTHON_UNUSED PyObject 
 
 /* "pyscipopt/scip.pyx":307
  *         free(c_objs)
- * 
+ *
  *     def delCols(self, firstcol, lastcol):             # <<<<<<<<<<<<<<
  *         """Deletes a range of columns from the LP.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -23561,7 +23561,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_18delCols(CYTHON_UNUSED PyObject 
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiDelCols(lpi._lpi, firstcol, lastcol))
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 315; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -23573,7 +23573,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_18delCols(CYTHON_UNUSED PyObject 
  *         cdef Lpi lpi
  *         lpi = self.lpi
  *         PY_SCIP_CALL(scip.SCIPlpiDelCols(lpi._lpi, firstcol, lastcol))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def addRow(self, entries, lhs=0.0, rhs=None):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 316; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -23612,10 +23612,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_18delCols(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":307
  *         free(c_objs)
- * 
+ *
  *     def delCols(self, firstcol, lastcol):             # <<<<<<<<<<<<<<
  *         """Deletes a range of columns from the LP.
- * 
+ *
  */
 
   /* function exit code */
@@ -23638,10 +23638,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_18delCols(CYTHON_UNUSED PyObject 
 
 /* "pyscipopt/scip.pyx":318
  *         PY_SCIP_CALL(scip.SCIPlpiDelCols(lpi._lpi, firstcol, lastcol))
- * 
+ *
  *     def addRow(self, entries, lhs=0.0, rhs=None):             # <<<<<<<<<<<<<<
  *         """Adds a single row to the LP.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -23764,7 +23764,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_20addRow(CYTHON_UNUSED PyObject *
  *         """
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         beg = 0
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 327; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -23775,18 +23775,18 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_20addRow(CYTHON_UNUSED PyObject *
 
   /* "pyscipopt/scip.pyx":329
  *         lpi = self.lpi
- * 
+ *
  *         beg = 0             # <<<<<<<<<<<<<<
  *         nnonz = len(entries)
- * 
+ *
  */
   __pyx_v_beg = 0;
 
   /* "pyscipopt/scip.pyx":330
- * 
+ *
  *         beg = 0
  *         nnonz = len(entries)             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
  */
   __pyx_t_2 = PyObject_Length(__pyx_v_entries); if (unlikely(__pyx_t_2 == -1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 330; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -23797,7 +23797,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_20addRow(CYTHON_UNUSED PyObject *
 
   /* "pyscipopt/scip.pyx":332
  *         nnonz = len(entries)
- * 
+ *
  *         cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))             # <<<<<<<<<<<<<<
  *         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
  *         cdef scip.SCIP_Real c_lhs
@@ -23812,7 +23812,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_20addRow(CYTHON_UNUSED PyObject *
   __pyx_v_c_coefs = ((SCIP_Real *)malloc(__pyx_t_4));
 
   /* "pyscipopt/scip.pyx":333
- * 
+ *
  *         cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
  *         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))             # <<<<<<<<<<<<<<
  *         cdef scip.SCIP_Real c_lhs
@@ -23829,7 +23829,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_20addRow(CYTHON_UNUSED PyObject *
 
   /* "pyscipopt/scip.pyx":338
  *         cdef int c_beg
- * 
+ *
  *         c_lhs = lhs             # <<<<<<<<<<<<<<
  *         c_rhs = rhs if rhs != None else self.infinity()
  *         c_beg = 0
@@ -23838,11 +23838,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_20addRow(CYTHON_UNUSED PyObject *
   __pyx_v_c_lhs = __pyx_t_5;
 
   /* "pyscipopt/scip.pyx":339
- * 
+ *
  *         c_lhs = lhs
  *         c_rhs = rhs if rhs != None else self.infinity()             # <<<<<<<<<<<<<<
  *         c_beg = 0
- * 
+ *
  */
   __pyx_t_1 = PyObject_RichCompare(__pyx_v_rhs, Py_None, Py_NE); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 339; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_6 < 0)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 339; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -23881,14 +23881,14 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_20addRow(CYTHON_UNUSED PyObject *
  *         c_lhs = lhs
  *         c_rhs = rhs if rhs != None else self.infinity()
  *         c_beg = 0             # <<<<<<<<<<<<<<
- * 
+ *
  *         for i,entry in enumerate(entries):
  */
   __pyx_v_c_beg = 0;
 
   /* "pyscipopt/scip.pyx":342
  *         c_beg = 0
- * 
+ *
  *         for i,entry in enumerate(entries):             # <<<<<<<<<<<<<<
  *             c_inds[i] = entry[0]
  *             c_coefs[i] = entry[1]
@@ -23945,11 +23945,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_20addRow(CYTHON_UNUSED PyObject *
     __pyx_t_8 = 0;
 
     /* "pyscipopt/scip.pyx":343
- * 
+ *
  *         for i,entry in enumerate(entries):
  *             c_inds[i] = entry[0]             # <<<<<<<<<<<<<<
  *             c_coefs[i] = entry[1]
- * 
+ *
  */
     __pyx_t_8 = __Pyx_GetItemInt(__pyx_v_entry, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(__pyx_t_8 == NULL)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 343; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_8);
@@ -23962,7 +23962,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_20addRow(CYTHON_UNUSED PyObject *
  *         for i,entry in enumerate(entries):
  *             c_inds[i] = entry[0]
  *             c_coefs[i] = entry[1]             # <<<<<<<<<<<<<<
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPlpiAddRows(lpi._lpi, 1, &c_lhs, &c_rhs, NULL, nnonz, &c_beg, c_inds, c_coefs))
  */
     __pyx_t_8 = __Pyx_GetItemInt(__pyx_v_entry, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(__pyx_t_8 == NULL)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
@@ -23974,7 +23974,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_20addRow(CYTHON_UNUSED PyObject *
 
     /* "pyscipopt/scip.pyx":342
  *         c_beg = 0
- * 
+ *
  *         for i,entry in enumerate(entries):             # <<<<<<<<<<<<<<
  *             c_inds[i] = entry[0]
  *             c_coefs[i] = entry[1]
@@ -23985,9 +23985,9 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_20addRow(CYTHON_UNUSED PyObject *
 
   /* "pyscipopt/scip.pyx":346
  *             c_coefs[i] = entry[1]
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPlpiAddRows(lpi._lpi, 1, &c_lhs, &c_rhs, NULL, nnonz, &c_beg, c_inds, c_coefs))             # <<<<<<<<<<<<<<
- * 
+ *
  *         free(c_coefs)
  */
   __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -24025,28 +24025,28 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_20addRow(CYTHON_UNUSED PyObject *
 
   /* "pyscipopt/scip.pyx":348
  *         PY_SCIP_CALL(scip.SCIPlpiAddRows(lpi._lpi, 1, &c_lhs, &c_rhs, NULL, nnonz, &c_beg, c_inds, c_coefs))
- * 
+ *
  *         free(c_coefs)             # <<<<<<<<<<<<<<
  *         free(c_inds)
- * 
+ *
  */
   free(__pyx_v_c_coefs);
 
   /* "pyscipopt/scip.pyx":349
- * 
+ *
  *         free(c_coefs)
  *         free(c_inds)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def addRows(self, entrieslist, lhss = None, rhss = None):
  */
   free(__pyx_v_c_inds);
 
   /* "pyscipopt/scip.pyx":318
  *         PY_SCIP_CALL(scip.SCIPlpiDelCols(lpi._lpi, firstcol, lastcol))
- * 
+ *
  *     def addRow(self, entries, lhs=0.0, rhs=None):             # <<<<<<<<<<<<<<
  *         """Adds a single row to the LP.
- * 
+ *
  */
 
   /* function exit code */
@@ -24072,10 +24072,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_20addRow(CYTHON_UNUSED PyObject *
 
 /* "pyscipopt/scip.pyx":351
  *         free(c_inds)
- * 
+ *
  *     def addRows(self, entrieslist, lhss = None, rhss = None):             # <<<<<<<<<<<<<<
  *         """Adds multiple rows to the LP.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -24165,10 +24165,10 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_2LP_23addRows(PyObject *__pyx_self, P
 static PyObject *__pyx_gb_9pyscipopt_4scip_2LP_7addRows_2generator1(__pyx_CoroutineObject *__pyx_generator, PyObject *__pyx_sent_value); /* proto */
 
 /* "pyscipopt/scip.pyx":363
- * 
+ *
  *         nrows = len(entrieslist)
  *         nnonz = sum(len(entries) for entries in entrieslist)             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef scip.SCIP_Real* c_lhss  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
  */
 
@@ -24314,10 +24314,10 @@ static PyObject *__pyx_gb_9pyscipopt_4scip_2LP_7addRows_2generator1(__pyx_Corout
 
 /* "pyscipopt/scip.pyx":351
  *         free(c_inds)
- * 
+ *
  *     def addRows(self, entrieslist, lhss = None, rhss = None):             # <<<<<<<<<<<<<<
  *         """Adds multiple rows to the LP.
- * 
+ *
  */
 
 static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_entrieslist, PyObject *__pyx_v_lhss, PyObject *__pyx_v_rhss) {
@@ -24370,7 +24370,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
  *         """
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         nrows = len(entrieslist)
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 360; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -24381,10 +24381,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":362
  *         lpi = self.lpi
- * 
+ *
  *         nrows = len(entrieslist)             # <<<<<<<<<<<<<<
  *         nnonz = sum(len(entries) for entries in entrieslist)
- * 
+ *
  */
   __pyx_t_1 = __pyx_cur_scope->__pyx_v_entrieslist;
   __Pyx_INCREF(__pyx_t_1);
@@ -24396,10 +24396,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
   __pyx_t_1 = 0;
 
   /* "pyscipopt/scip.pyx":363
- * 
+ *
  *         nrows = len(entrieslist)
  *         nnonz = sum(len(entries) for entries in entrieslist)             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef scip.SCIP_Real* c_lhss  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
  */
   __pyx_t_1 = __pyx_pf_9pyscipopt_4scip_2LP_7addRows_genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 363; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -24417,7 +24417,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":365
  *         nnonz = sum(len(entries) for entries in entrieslist)
- * 
+ *
  *         cdef scip.SCIP_Real* c_lhss  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))             # <<<<<<<<<<<<<<
  *         cdef scip.SCIP_Real* c_rhss  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
  *         cdef scip.SCIP_Real* c_coefs = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
@@ -24432,7 +24432,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
   __pyx_v_c_lhss = ((SCIP_Real *)malloc(__pyx_t_4));
 
   /* "pyscipopt/scip.pyx":366
- * 
+ *
  *         cdef scip.SCIP_Real* c_lhss  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
  *         cdef scip.SCIP_Real* c_rhss  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))             # <<<<<<<<<<<<<<
  *         cdef scip.SCIP_Real* c_coefs = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
@@ -24468,7 +24468,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
  *         cdef scip.SCIP_Real* c_coefs = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
  *         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))             # <<<<<<<<<<<<<<
  *         cdef int* c_beg  = <int*>malloc(nrows * sizeof(int))
- * 
+ *
  */
   __pyx_t_3 = __Pyx_PyInt_FromSize_t((sizeof(int))); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 368; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
@@ -24483,7 +24483,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
  *         cdef scip.SCIP_Real* c_coefs = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
  *         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
  *         cdef int* c_beg  = <int*>malloc(nrows * sizeof(int))             # <<<<<<<<<<<<<<
- * 
+ *
  *         tmp = 0
  */
   __pyx_t_1 = __Pyx_PyInt_FromSize_t((sizeof(int))); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 369; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -24497,7 +24497,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":371
  *         cdef int* c_beg  = <int*>malloc(nrows * sizeof(int))
- * 
+ *
  *         tmp = 0             # <<<<<<<<<<<<<<
  *         for i,entries in enumerate(entrieslist):
  *             c_lhss[i] = lhss[i] if lhss != None else 0.0
@@ -24506,7 +24506,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
   __pyx_v_tmp = __pyx_int_0;
 
   /* "pyscipopt/scip.pyx":372
- * 
+ *
  *         tmp = 0
  *         for i,entries in enumerate(entrieslist):             # <<<<<<<<<<<<<<
  *             c_lhss[i] = lhss[i] if lhss != None else 0.0
@@ -24590,7 +24590,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
  *             c_lhss[i] = lhss[i] if lhss != None else 0.0
  *             c_rhss[i] = rhss[i] if rhss != None else self.infinity()             # <<<<<<<<<<<<<<
  *             c_beg[i]  = tmp
- * 
+ *
  */
     __pyx_t_6 = PyObject_RichCompare(__pyx_v_rhss, Py_None, Py_NE); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 374; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_8 < 0)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 374; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -24633,7 +24633,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
  *             c_lhss[i] = lhss[i] if lhss != None else 0.0
  *             c_rhss[i] = rhss[i] if rhss != None else self.infinity()
  *             c_beg[i]  = tmp             # <<<<<<<<<<<<<<
- * 
+ *
  *             for entry in entries:
  */
     __pyx_t_13 = __Pyx_PyInt_As_int(__pyx_v_tmp); if (unlikely((__pyx_t_13 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 375; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -24642,7 +24642,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
 
     /* "pyscipopt/scip.pyx":377
  *             c_beg[i]  = tmp
- * 
+ *
  *             for entry in entries:             # <<<<<<<<<<<<<<
  *                 c_inds[tmp] = entry[0]
  *                 c_coefs[tmp] = entry[1]
@@ -24690,7 +24690,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
       __pyx_t_11 = 0;
 
       /* "pyscipopt/scip.pyx":378
- * 
+ *
  *             for entry in entries:
  *                 c_inds[tmp] = entry[0]             # <<<<<<<<<<<<<<
  *                 c_coefs[tmp] = entry[1]
@@ -24708,7 +24708,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
  *                 c_inds[tmp] = entry[0]
  *                 c_coefs[tmp] = entry[1]             # <<<<<<<<<<<<<<
  *                 tmp += 1
- * 
+ *
  */
       __pyx_t_11 = __Pyx_GetItemInt(__pyx_v_entry, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(__pyx_t_11 == NULL)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 379; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
       __Pyx_GOTREF(__pyx_t_11);
@@ -24721,7 +24721,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
  *                 c_inds[tmp] = entry[0]
  *                 c_coefs[tmp] = entry[1]
  *                 tmp += 1             # <<<<<<<<<<<<<<
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPlpiAddRows(lpi._lpi, nrows, c_lhss, c_rhss, NULL, nnonz, c_beg, c_inds, c_coefs))
  */
       __pyx_t_11 = __Pyx_PyInt_AddObjC(__pyx_v_tmp, __pyx_int_1, 1, 1); if (unlikely(!__pyx_t_11)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 380; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -24731,7 +24731,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
 
       /* "pyscipopt/scip.pyx":377
  *             c_beg[i]  = tmp
- * 
+ *
  *             for entry in entries:             # <<<<<<<<<<<<<<
  *                 c_inds[tmp] = entry[0]
  *                 c_coefs[tmp] = entry[1]
@@ -24740,7 +24740,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
     /* "pyscipopt/scip.pyx":372
- * 
+ *
  *         tmp = 0
  *         for i,entries in enumerate(entrieslist):             # <<<<<<<<<<<<<<
  *             c_lhss[i] = lhss[i] if lhss != None else 0.0
@@ -24752,9 +24752,9 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":382
  *                 tmp += 1
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPlpiAddRows(lpi._lpi, nrows, c_lhss, c_rhss, NULL, nnonz, c_beg, c_inds, c_coefs))             # <<<<<<<<<<<<<<
- * 
+ *
  *         free(c_beg)
  */
   __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 382; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -24793,7 +24793,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":384
  *         PY_SCIP_CALL(scip.SCIPlpiAddRows(lpi._lpi, nrows, c_lhss, c_rhss, NULL, nnonz, c_beg, c_inds, c_coefs))
- * 
+ *
  *         free(c_beg)             # <<<<<<<<<<<<<<
  *         free(c_inds)
  *         free(c_coefs)
@@ -24801,7 +24801,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
   free(__pyx_v_c_beg);
 
   /* "pyscipopt/scip.pyx":385
- * 
+ *
  *         free(c_beg)
  *         free(c_inds)             # <<<<<<<<<<<<<<
  *         free(c_coefs)
@@ -24823,7 +24823,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
  *         free(c_coefs)
  *         free(c_lhss)             # <<<<<<<<<<<<<<
  *         free(c_rhss)
- * 
+ *
  */
   free(__pyx_v_c_lhss);
 
@@ -24831,17 +24831,17 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
  *         free(c_coefs)
  *         free(c_lhss)
  *         free(c_rhss)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def delRows(self, firstrow, lastrow):
  */
   free(__pyx_v_c_rhss);
 
   /* "pyscipopt/scip.pyx":351
  *         free(c_inds)
- * 
+ *
  *     def addRows(self, entrieslist, lhss = None, rhss = None):             # <<<<<<<<<<<<<<
  *         """Adds multiple rows to the LP.
- * 
+ *
  */
 
   /* function exit code */
@@ -24871,10 +24871,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_22addRows(CYTHON_UNUSED PyObject 
 
 /* "pyscipopt/scip.pyx":390
  *         free(c_rhss)
- * 
+ *
  *     def delRows(self, firstrow, lastrow):             # <<<<<<<<<<<<<<
  *         """Deletes a range of rows from the LP.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -24970,7 +24970,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_24delRows(CYTHON_UNUSED PyObject 
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiDelRows(lpi._lpi, firstrow, lastrow))
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 398; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -24982,7 +24982,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_24delRows(CYTHON_UNUSED PyObject 
  *         cdef Lpi lpi
  *         lpi = self.lpi
  *         PY_SCIP_CALL(scip.SCIPlpiDelRows(lpi._lpi, firstrow, lastrow))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getBounds(self, firstcol = 0, lastcol = None):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 399; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25021,10 +25021,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_24delRows(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":390
  *         free(c_rhss)
- * 
+ *
  *     def delRows(self, firstrow, lastrow):             # <<<<<<<<<<<<<<
  *         """Deletes a range of rows from the LP.
- * 
+ *
  */
 
   /* function exit code */
@@ -25047,10 +25047,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_24delRows(CYTHON_UNUSED PyObject 
 
 /* "pyscipopt/scip.pyx":401
  *         PY_SCIP_CALL(scip.SCIPlpiDelRows(lpi._lpi, firstrow, lastrow))
- * 
+ *
  *     def getBounds(self, firstcol = 0, lastcol = None):             # <<<<<<<<<<<<<<
  *         """Returns all lower and upper bounds for a range of columns.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -25162,7 +25162,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
  *         """
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         lastcol = lastcol if lastcol != None else self.ncols() - 1
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 409; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25173,9 +25173,9 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
 
   /* "pyscipopt/scip.pyx":411
  *         lpi = self.lpi
- * 
+ *
  *         lastcol = lastcol if lastcol != None else self.ncols() - 1             # <<<<<<<<<<<<<<
- * 
+ *
  *         if firstcol > lastcol:
  */
   __pyx_t_2 = PyObject_RichCompare(__pyx_v_lastcol, Py_None, Py_NE); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 411; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25216,10 +25216,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
 
   /* "pyscipopt/scip.pyx":413
  *         lastcol = lastcol if lastcol != None else self.ncols() - 1
- * 
+ *
  *         if firstcol > lastcol:             # <<<<<<<<<<<<<<
  *             return None
- * 
+ *
  */
   __pyx_t_1 = PyObject_RichCompare(__pyx_v_firstcol, __pyx_v_lastcol, Py_GT); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 413; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_3 < 0)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 413; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25227,10 +25227,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
   if (__pyx_t_3) {
 
     /* "pyscipopt/scip.pyx":414
- * 
+ *
  *         if firstcol > lastcol:
  *             return None             # <<<<<<<<<<<<<<
- * 
+ *
  *         ncols = lastcol - firstcol + 1
  */
     __Pyx_XDECREF(__pyx_r);
@@ -25240,16 +25240,16 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
 
     /* "pyscipopt/scip.pyx":413
  *         lastcol = lastcol if lastcol != None else self.ncols() - 1
- * 
+ *
  *         if firstcol > lastcol:             # <<<<<<<<<<<<<<
  *             return None
- * 
+ *
  */
   }
 
   /* "pyscipopt/scip.pyx":416
  *             return None
- * 
+ *
  *         ncols = lastcol - firstcol + 1             # <<<<<<<<<<<<<<
  *         cdef SCIP_Real* c_lbs = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
  *         cdef SCIP_Real* c_ubs = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
@@ -25263,7 +25263,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
   __pyx_t_4 = 0;
 
   /* "pyscipopt/scip.pyx":417
- * 
+ *
  *         ncols = lastcol - firstcol + 1
  *         cdef SCIP_Real* c_lbs = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))             # <<<<<<<<<<<<<<
  *         cdef SCIP_Real* c_ubs = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
@@ -25283,7 +25283,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
  *         cdef SCIP_Real* c_lbs = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
  *         cdef SCIP_Real* c_ubs = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiGetBounds(lpi._lpi, firstcol, lastcol, c_lbs, c_ubs))
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyInt_FromSize_t((sizeof(SCIP_Real))); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 418; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -25298,7 +25298,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
  *         cdef SCIP_Real* c_lbs = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
  *         cdef SCIP_Real* c_ubs = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
  *         PY_SCIP_CALL(scip.SCIPlpiGetBounds(lpi._lpi, firstcol, lastcol, c_lbs, c_ubs))             # <<<<<<<<<<<<<<
- * 
+ *
  *         lbs = []
  */
   __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 419; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25337,10 +25337,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
 
   /* "pyscipopt/scip.pyx":421
  *         PY_SCIP_CALL(scip.SCIPlpiGetBounds(lpi._lpi, firstcol, lastcol, c_lbs, c_ubs))
- * 
+ *
  *         lbs = []             # <<<<<<<<<<<<<<
  *         ubs = []
- * 
+ *
  */
   __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 421; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -25348,10 +25348,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
   __pyx_t_4 = 0;
 
   /* "pyscipopt/scip.pyx":422
- * 
+ *
  *         lbs = []
  *         ubs = []             # <<<<<<<<<<<<<<
- * 
+ *
  *         for i in range(ncols):
  */
   __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 422; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25361,7 +25361,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
 
   /* "pyscipopt/scip.pyx":424
  *         ubs = []
- * 
+ *
  *         for i in range(ncols):             # <<<<<<<<<<<<<<
  *             lbs.append(c_lbs[i])
  *             ubs.append(c_ubs[i])
@@ -25418,11 +25418,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
     __pyx_t_1 = 0;
 
     /* "pyscipopt/scip.pyx":425
- * 
+ *
  *         for i in range(ncols):
  *             lbs.append(c_lbs[i])             # <<<<<<<<<<<<<<
  *             ubs.append(c_ubs[i])
- * 
+ *
  */
     __pyx_t_12 = __Pyx_PyIndex_AsSsize_t(__pyx_v_i); if (unlikely((__pyx_t_12 == (Py_ssize_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 425; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_t_1 = PyFloat_FromDouble((__pyx_v_c_lbs[__pyx_t_12])); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 425; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25434,7 +25434,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
  *         for i in range(ncols):
  *             lbs.append(c_lbs[i])
  *             ubs.append(c_ubs[i])             # <<<<<<<<<<<<<<
- * 
+ *
  *         free(c_ubs)
  */
     __pyx_t_12 = __Pyx_PyIndex_AsSsize_t(__pyx_v_i); if (unlikely((__pyx_t_12 == (Py_ssize_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 426; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25445,7 +25445,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
 
     /* "pyscipopt/scip.pyx":424
  *         ubs = []
- * 
+ *
  *         for i in range(ncols):             # <<<<<<<<<<<<<<
  *             lbs.append(c_lbs[i])
  *             ubs.append(c_ubs[i])
@@ -25455,27 +25455,27 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
 
   /* "pyscipopt/scip.pyx":428
  *             ubs.append(c_ubs[i])
- * 
+ *
  *         free(c_ubs)             # <<<<<<<<<<<<<<
  *         free(c_lbs)
- * 
+ *
  */
   free(__pyx_v_c_ubs);
 
   /* "pyscipopt/scip.pyx":429
- * 
+ *
  *         free(c_ubs)
  *         free(c_lbs)             # <<<<<<<<<<<<<<
- * 
+ *
  *         return lbs, ubs
  */
   free(__pyx_v_c_lbs);
 
   /* "pyscipopt/scip.pyx":431
  *         free(c_lbs)
- * 
+ *
  *         return lbs, ubs             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getSides(self, firstrow = 0, lastrow = None):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -25493,10 +25493,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
 
   /* "pyscipopt/scip.pyx":401
  *         PY_SCIP_CALL(scip.SCIPlpiDelRows(lpi._lpi, firstrow, lastrow))
- * 
+ *
  *     def getBounds(self, firstcol = 0, lastcol = None):             # <<<<<<<<<<<<<<
  *         """Returns all lower and upper bounds for a range of columns.
- * 
+ *
  */
 
   /* function exit code */
@@ -25522,10 +25522,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_26getBounds(CYTHON_UNUSED PyObjec
 
 /* "pyscipopt/scip.pyx":433
  *         return lbs, ubs
- * 
+ *
  *     def getSides(self, firstrow = 0, lastrow = None):             # <<<<<<<<<<<<<<
  *         """Returns all left- and right-hand sides for a range of rows.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -25637,7 +25637,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
  *         """
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         lastrow = lastrow if lastrow != None else self.nrows() - 1
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 441; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25648,9 +25648,9 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
 
   /* "pyscipopt/scip.pyx":443
  *         lpi = self.lpi
- * 
+ *
  *         lastrow = lastrow if lastrow != None else self.nrows() - 1             # <<<<<<<<<<<<<<
- * 
+ *
  *         if firstrow > lastrow:
  */
   __pyx_t_2 = PyObject_RichCompare(__pyx_v_lastrow, Py_None, Py_NE); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 443; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25691,10 +25691,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
 
   /* "pyscipopt/scip.pyx":445
  *         lastrow = lastrow if lastrow != None else self.nrows() - 1
- * 
+ *
  *         if firstrow > lastrow:             # <<<<<<<<<<<<<<
  *             return None
- * 
+ *
  */
   __pyx_t_1 = PyObject_RichCompare(__pyx_v_firstrow, __pyx_v_lastrow, Py_GT); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 445; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_3 < 0)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 445; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25702,10 +25702,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
   if (__pyx_t_3) {
 
     /* "pyscipopt/scip.pyx":446
- * 
+ *
  *         if firstrow > lastrow:
  *             return None             # <<<<<<<<<<<<<<
- * 
+ *
  *         nrows = lastrow - firstrow + 1
  */
     __Pyx_XDECREF(__pyx_r);
@@ -25715,16 +25715,16 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
 
     /* "pyscipopt/scip.pyx":445
  *         lastrow = lastrow if lastrow != None else self.nrows() - 1
- * 
+ *
  *         if firstrow > lastrow:             # <<<<<<<<<<<<<<
  *             return None
- * 
+ *
  */
   }
 
   /* "pyscipopt/scip.pyx":448
  *             return None
- * 
+ *
  *         nrows = lastrow - firstrow + 1             # <<<<<<<<<<<<<<
  *         cdef SCIP_Real* c_lhss = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
  *         cdef SCIP_Real* c_rhss = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
@@ -25738,7 +25738,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
   __pyx_t_4 = 0;
 
   /* "pyscipopt/scip.pyx":449
- * 
+ *
  *         nrows = lastrow - firstrow + 1
  *         cdef SCIP_Real* c_lhss = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))             # <<<<<<<<<<<<<<
  *         cdef SCIP_Real* c_rhss = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
@@ -25758,7 +25758,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
  *         cdef SCIP_Real* c_lhss = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
  *         cdef SCIP_Real* c_rhss = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiGetSides(lpi._lpi, firstrow, lastrow, c_lhss, c_rhss))
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyInt_FromSize_t((sizeof(SCIP_Real))); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 450; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -25773,7 +25773,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
  *         cdef SCIP_Real* c_lhss = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
  *         cdef SCIP_Real* c_rhss = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
  *         PY_SCIP_CALL(scip.SCIPlpiGetSides(lpi._lpi, firstrow, lastrow, c_lhss, c_rhss))             # <<<<<<<<<<<<<<
- * 
+ *
  *         lhss = []
  */
   __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 451; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25812,10 +25812,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
 
   /* "pyscipopt/scip.pyx":453
  *         PY_SCIP_CALL(scip.SCIPlpiGetSides(lpi._lpi, firstrow, lastrow, c_lhss, c_rhss))
- * 
+ *
  *         lhss = []             # <<<<<<<<<<<<<<
  *         rhss = []
- * 
+ *
  */
   __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 453; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -25823,10 +25823,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
   __pyx_t_4 = 0;
 
   /* "pyscipopt/scip.pyx":454
- * 
+ *
  *         lhss = []
  *         rhss = []             # <<<<<<<<<<<<<<
- * 
+ *
  *         for i in range(firstrow, lastrow + 1):
  */
   __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 454; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25836,7 +25836,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
 
   /* "pyscipopt/scip.pyx":456
  *         rhss = []
- * 
+ *
  *         for i in range(firstrow, lastrow + 1):             # <<<<<<<<<<<<<<
  *             lhss.append(c_lhss[i])
  *             rhss.append(c_rhss[i])
@@ -25898,11 +25898,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
     __pyx_t_4 = 0;
 
     /* "pyscipopt/scip.pyx":457
- * 
+ *
  *         for i in range(firstrow, lastrow + 1):
  *             lhss.append(c_lhss[i])             # <<<<<<<<<<<<<<
  *             rhss.append(c_rhss[i])
- * 
+ *
  */
     __pyx_t_12 = __Pyx_PyIndex_AsSsize_t(__pyx_v_i); if (unlikely((__pyx_t_12 == (Py_ssize_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 457; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __pyx_t_4 = PyFloat_FromDouble((__pyx_v_c_lhss[__pyx_t_12])); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 457; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25914,7 +25914,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
  *         for i in range(firstrow, lastrow + 1):
  *             lhss.append(c_lhss[i])
  *             rhss.append(c_rhss[i])             # <<<<<<<<<<<<<<
- * 
+ *
  *         free(c_rhss)
  */
     __pyx_t_12 = __Pyx_PyIndex_AsSsize_t(__pyx_v_i); if (unlikely((__pyx_t_12 == (Py_ssize_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 458; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25925,7 +25925,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
 
     /* "pyscipopt/scip.pyx":456
  *         rhss = []
- * 
+ *
  *         for i in range(firstrow, lastrow + 1):             # <<<<<<<<<<<<<<
  *             lhss.append(c_lhss[i])
  *             rhss.append(c_rhss[i])
@@ -25935,27 +25935,27 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
 
   /* "pyscipopt/scip.pyx":460
  *             rhss.append(c_rhss[i])
- * 
+ *
  *         free(c_rhss)             # <<<<<<<<<<<<<<
  *         free(c_lhss)
- * 
+ *
  */
   free(__pyx_v_c_rhss);
 
   /* "pyscipopt/scip.pyx":461
- * 
+ *
  *         free(c_rhss)
  *         free(c_lhss)             # <<<<<<<<<<<<<<
- * 
+ *
  *         return lhss, rhss
  */
   free(__pyx_v_c_lhss);
 
   /* "pyscipopt/scip.pyx":463
  *         free(c_lhss)
- * 
+ *
  *         return lhss, rhss             # <<<<<<<<<<<<<<
- * 
+ *
  *     def chgObj(self, col, obj):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -25973,10 +25973,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
 
   /* "pyscipopt/scip.pyx":433
  *         return lbs, ubs
- * 
+ *
  *     def getSides(self, firstrow = 0, lastrow = None):             # <<<<<<<<<<<<<<
  *         """Returns all left- and right-hand sides for a range of rows.
- * 
+ *
  */
 
   /* function exit code */
@@ -26002,10 +26002,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_28getSides(CYTHON_UNUSED PyObject
 
 /* "pyscipopt/scip.pyx":465
  *         return lhss, rhss
- * 
+ *
  *     def chgObj(self, col, obj):             # <<<<<<<<<<<<<<
  *         """Changes objective coefficient of a single column.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -26102,7 +26102,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_30chgObj(CYTHON_UNUSED PyObject *
  *         """
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef int c_col = col
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 473; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -26113,7 +26113,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_30chgObj(CYTHON_UNUSED PyObject *
 
   /* "pyscipopt/scip.pyx":475
  *         lpi = self.lpi
- * 
+ *
  *         cdef int c_col = col             # <<<<<<<<<<<<<<
  *         cdef SCIP_Real c_obj = obj
  *         PY_SCIP_CALL(scip.SCIPlpiChgObj(lpi._lpi, 1, &c_col, &c_obj))
@@ -26122,11 +26122,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_30chgObj(CYTHON_UNUSED PyObject *
   __pyx_v_c_col = __pyx_t_2;
 
   /* "pyscipopt/scip.pyx":476
- * 
+ *
  *         cdef int c_col = col
  *         cdef SCIP_Real c_obj = obj             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiChgObj(lpi._lpi, 1, &c_col, &c_obj))
- * 
+ *
  */
   __pyx_t_3 = __pyx_PyFloat_AsDouble(__pyx_v_obj); if (unlikely((__pyx_t_3 == (SCIP_Real)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 476; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_c_obj = __pyx_t_3;
@@ -26135,7 +26135,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_30chgObj(CYTHON_UNUSED PyObject *
  *         cdef int c_col = col
  *         cdef SCIP_Real c_obj = obj
  *         PY_SCIP_CALL(scip.SCIPlpiChgObj(lpi._lpi, 1, &c_col, &c_obj))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def chgCoef(self, row, col, newval):
  */
   __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 477; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -26172,10 +26172,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_30chgObj(CYTHON_UNUSED PyObject *
 
   /* "pyscipopt/scip.pyx":465
  *         return lhss, rhss
- * 
+ *
  *     def chgObj(self, col, obj):             # <<<<<<<<<<<<<<
  *         """Changes objective coefficient of a single column.
- * 
+ *
  */
 
   /* function exit code */
@@ -26198,10 +26198,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_30chgObj(CYTHON_UNUSED PyObject *
 
 /* "pyscipopt/scip.pyx":479
  *         PY_SCIP_CALL(scip.SCIPlpiChgObj(lpi._lpi, 1, &c_col, &c_obj))
- * 
+ *
  *     def chgCoef(self, row, col, newval):             # <<<<<<<<<<<<<<
  *         """Changes a single coefficient in the LP.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -26306,7 +26306,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_32chgCoef(CYTHON_UNUSED PyObject 
  *         """
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPlpiChgCoef(lpi._lpi, row, col, newval))
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 488; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -26317,9 +26317,9 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_32chgCoef(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":490
  *         lpi = self.lpi
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPlpiChgCoef(lpi._lpi, row, col, newval))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def chgBound(self, col, lb, ub):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 490; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -26359,10 +26359,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_32chgCoef(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":479
  *         PY_SCIP_CALL(scip.SCIPlpiChgObj(lpi._lpi, 1, &c_col, &c_obj))
- * 
+ *
  *     def chgCoef(self, row, col, newval):             # <<<<<<<<<<<<<<
  *         """Changes a single coefficient in the LP.
- * 
+ *
  */
 
   /* function exit code */
@@ -26385,10 +26385,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_32chgCoef(CYTHON_UNUSED PyObject 
 
 /* "pyscipopt/scip.pyx":492
  *         PY_SCIP_CALL(scip.SCIPlpiChgCoef(lpi._lpi, row, col, newval))
- * 
+ *
  *     def chgBound(self, col, lb, ub):             # <<<<<<<<<<<<<<
  *         """Changes the lower and upper bound of a single column.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -26495,7 +26495,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_34chgBound(CYTHON_UNUSED PyObject
  *         """
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef int c_col = col
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 501; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -26506,7 +26506,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_34chgBound(CYTHON_UNUSED PyObject
 
   /* "pyscipopt/scip.pyx":503
  *         lpi = self.lpi
- * 
+ *
  *         cdef int c_col = col             # <<<<<<<<<<<<<<
  *         cdef SCIP_Real c_lb = lb
  *         cdef SCIP_Real c_ub = ub
@@ -26515,7 +26515,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_34chgBound(CYTHON_UNUSED PyObject
   __pyx_v_c_col = __pyx_t_2;
 
   /* "pyscipopt/scip.pyx":504
- * 
+ *
  *         cdef int c_col = col
  *         cdef SCIP_Real c_lb = lb             # <<<<<<<<<<<<<<
  *         cdef SCIP_Real c_ub = ub
@@ -26529,7 +26529,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_34chgBound(CYTHON_UNUSED PyObject
  *         cdef SCIP_Real c_lb = lb
  *         cdef SCIP_Real c_ub = ub             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiChgBounds(lpi._lpi, 1, &c_col, &c_lb, &c_ub))
- * 
+ *
  */
   __pyx_t_3 = __pyx_PyFloat_AsDouble(__pyx_v_ub); if (unlikely((__pyx_t_3 == (SCIP_Real)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 505; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_c_ub = __pyx_t_3;
@@ -26538,7 +26538,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_34chgBound(CYTHON_UNUSED PyObject
  *         cdef SCIP_Real c_lb = lb
  *         cdef SCIP_Real c_ub = ub
  *         PY_SCIP_CALL(scip.SCIPlpiChgBounds(lpi._lpi, 1, &c_col, &c_lb, &c_ub))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def chgSide(self, row, lhs, rhs):
  */
   __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 506; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -26575,10 +26575,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_34chgBound(CYTHON_UNUSED PyObject
 
   /* "pyscipopt/scip.pyx":492
  *         PY_SCIP_CALL(scip.SCIPlpiChgCoef(lpi._lpi, row, col, newval))
- * 
+ *
  *     def chgBound(self, col, lb, ub):             # <<<<<<<<<<<<<<
  *         """Changes the lower and upper bound of a single column.
- * 
+ *
  */
 
   /* function exit code */
@@ -26601,10 +26601,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_34chgBound(CYTHON_UNUSED PyObject
 
 /* "pyscipopt/scip.pyx":508
  *         PY_SCIP_CALL(scip.SCIPlpiChgBounds(lpi._lpi, 1, &c_col, &c_lb, &c_ub))
- * 
+ *
  *     def chgSide(self, row, lhs, rhs):             # <<<<<<<<<<<<<<
  *         """Changes the left- and right-hand side of a single row.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -26711,7 +26711,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_36chgSide(CYTHON_UNUSED PyObject 
  *         """
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef int c_row = row
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 517; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -26722,7 +26722,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_36chgSide(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":519
  *         lpi = self.lpi
- * 
+ *
  *         cdef int c_row = row             # <<<<<<<<<<<<<<
  *         cdef SCIP_Real c_lhs = lhs
  *         cdef SCIP_Real c_rhs = rhs
@@ -26731,7 +26731,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_36chgSide(CYTHON_UNUSED PyObject 
   __pyx_v_c_row = __pyx_t_2;
 
   /* "pyscipopt/scip.pyx":520
- * 
+ *
  *         cdef int c_row = row
  *         cdef SCIP_Real c_lhs = lhs             # <<<<<<<<<<<<<<
  *         cdef SCIP_Real c_rhs = rhs
@@ -26745,7 +26745,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_36chgSide(CYTHON_UNUSED PyObject 
  *         cdef SCIP_Real c_lhs = lhs
  *         cdef SCIP_Real c_rhs = rhs             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiChgSides(lpi._lpi, 1, &c_row, &c_lhs, &c_rhs))
- * 
+ *
  */
   __pyx_t_3 = __pyx_PyFloat_AsDouble(__pyx_v_rhs); if (unlikely((__pyx_t_3 == (SCIP_Real)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 521; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v_c_rhs = __pyx_t_3;
@@ -26754,7 +26754,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_36chgSide(CYTHON_UNUSED PyObject 
  *         cdef SCIP_Real c_lhs = lhs
  *         cdef SCIP_Real c_rhs = rhs
  *         PY_SCIP_CALL(scip.SCIPlpiChgSides(lpi._lpi, 1, &c_row, &c_lhs, &c_rhs))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def clear(self):
  */
   __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 522; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -26791,10 +26791,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_36chgSide(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":508
  *         PY_SCIP_CALL(scip.SCIPlpiChgBounds(lpi._lpi, 1, &c_col, &c_lb, &c_ub))
- * 
+ *
  *     def chgSide(self, row, lhs, rhs):             # <<<<<<<<<<<<<<
  *         """Changes the left- and right-hand side of a single row.
- * 
+ *
  */
 
   /* function exit code */
@@ -26817,7 +26817,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_36chgSide(CYTHON_UNUSED PyObject 
 
 /* "pyscipopt/scip.pyx":524
  *         PY_SCIP_CALL(scip.SCIPlpiChgSides(lpi._lpi, 1, &c_row, &c_lhs, &c_rhs))
- * 
+ *
  *     def clear(self):             # <<<<<<<<<<<<<<
  *         """Clears the whole LP."""
  *         cdef Lpi lpi
@@ -26857,7 +26857,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_38clear(CYTHON_UNUSED PyObject *_
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiClear(lpi._lpi))
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 527; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -26869,7 +26869,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_38clear(CYTHON_UNUSED PyObject *_
  *         cdef Lpi lpi
  *         lpi = self.lpi
  *         PY_SCIP_CALL(scip.SCIPlpiClear(lpi._lpi))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def nrows(self):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 528; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -26906,7 +26906,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_38clear(CYTHON_UNUSED PyObject *_
 
   /* "pyscipopt/scip.pyx":524
  *         PY_SCIP_CALL(scip.SCIPlpiChgSides(lpi._lpi, 1, &c_row, &c_lhs, &c_rhs))
- * 
+ *
  *     def clear(self):             # <<<<<<<<<<<<<<
  *         """Clears the whole LP."""
  *         cdef Lpi lpi
@@ -26932,7 +26932,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_38clear(CYTHON_UNUSED PyObject *_
 
 /* "pyscipopt/scip.pyx":530
  *         PY_SCIP_CALL(scip.SCIPlpiClear(lpi._lpi))
- * 
+ *
  *     def nrows(self):             # <<<<<<<<<<<<<<
  *         """Returns the number of rows."""
  *         cdef Lpi lpi
@@ -26972,7 +26972,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_40nrows(CYTHON_UNUSED PyObject *_
  *         """Returns the number of rows."""
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef int nrows
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 533; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -26982,11 +26982,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_40nrows(CYTHON_UNUSED PyObject *_
   __pyx_t_1 = 0;
 
   /* "pyscipopt/scip.pyx":536
- * 
+ *
  *         cdef int nrows
  *         PY_SCIP_CALL(scip.SCIPlpiGetNRows(lpi._lpi, &nrows))             # <<<<<<<<<<<<<<
  *         return nrows
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 536; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -27024,7 +27024,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_40nrows(CYTHON_UNUSED PyObject *_
  *         cdef int nrows
  *         PY_SCIP_CALL(scip.SCIPlpiGetNRows(lpi._lpi, &nrows))
  *         return nrows             # <<<<<<<<<<<<<<
- * 
+ *
  *     def ncols(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -27036,7 +27036,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_40nrows(CYTHON_UNUSED PyObject *_
 
   /* "pyscipopt/scip.pyx":530
  *         PY_SCIP_CALL(scip.SCIPlpiClear(lpi._lpi))
- * 
+ *
  *     def nrows(self):             # <<<<<<<<<<<<<<
  *         """Returns the number of rows."""
  *         cdef Lpi lpi
@@ -27060,7 +27060,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_40nrows(CYTHON_UNUSED PyObject *_
 
 /* "pyscipopt/scip.pyx":539
  *         return nrows
- * 
+ *
  *     def ncols(self):             # <<<<<<<<<<<<<<
  *         """Returns the number of columns."""
  *         cdef Lpi lpi
@@ -27100,7 +27100,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_42ncols(CYTHON_UNUSED PyObject *_
  *         """Returns the number of columns."""
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef int ncols
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 542; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -27110,11 +27110,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_42ncols(CYTHON_UNUSED PyObject *_
   __pyx_t_1 = 0;
 
   /* "pyscipopt/scip.pyx":545
- * 
+ *
  *         cdef int ncols
  *         PY_SCIP_CALL(scip.SCIPlpiGetNCols(lpi._lpi, &ncols))             # <<<<<<<<<<<<<<
  *         return ncols
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 545; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -27152,7 +27152,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_42ncols(CYTHON_UNUSED PyObject *_
  *         cdef int ncols
  *         PY_SCIP_CALL(scip.SCIPlpiGetNCols(lpi._lpi, &ncols))
  *         return ncols             # <<<<<<<<<<<<<<
- * 
+ *
  *     def solve(self, dual=True):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -27164,7 +27164,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_42ncols(CYTHON_UNUSED PyObject *_
 
   /* "pyscipopt/scip.pyx":539
  *         return nrows
- * 
+ *
  *     def ncols(self):             # <<<<<<<<<<<<<<
  *         """Returns the number of columns."""
  *         cdef Lpi lpi
@@ -27188,10 +27188,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_42ncols(CYTHON_UNUSED PyObject *_
 
 /* "pyscipopt/scip.pyx":548
  *         return ncols
- * 
+ *
  *     def solve(self, dual=True):             # <<<<<<<<<<<<<<
  *         """Solves the current LP.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -27280,7 +27280,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_44solve(CYTHON_UNUSED PyObject *_
  *         """
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         if dual:
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 555; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -27291,7 +27291,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_44solve(CYTHON_UNUSED PyObject *_
 
   /* "pyscipopt/scip.pyx":557
  *         lpi = self.lpi
- * 
+ *
  *         if dual:             # <<<<<<<<<<<<<<
  *             PY_SCIP_CALL(scip.SCIPlpiSolveDual(lpi._lpi))
  *         else:
@@ -27300,7 +27300,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_44solve(CYTHON_UNUSED PyObject *_
   if (__pyx_t_2) {
 
     /* "pyscipopt/scip.pyx":558
- * 
+ *
  *         if dual:
  *             PY_SCIP_CALL(scip.SCIPlpiSolveDual(lpi._lpi))             # <<<<<<<<<<<<<<
  *         else:
@@ -27340,7 +27340,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_44solve(CYTHON_UNUSED PyObject *_
 
     /* "pyscipopt/scip.pyx":557
  *         lpi = self.lpi
- * 
+ *
  *         if dual:             # <<<<<<<<<<<<<<
  *             PY_SCIP_CALL(scip.SCIPlpiSolveDual(lpi._lpi))
  *         else:
@@ -27352,7 +27352,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_44solve(CYTHON_UNUSED PyObject *_
  *             PY_SCIP_CALL(scip.SCIPlpiSolveDual(lpi._lpi))
  *         else:
  *             PY_SCIP_CALL(scip.SCIPlpiSolvePrimal(lpi._lpi))             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef scip.SCIP_Real objval
  */
   /*else*/ {
@@ -27391,11 +27391,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_44solve(CYTHON_UNUSED PyObject *_
   __pyx_L3:;
 
   /* "pyscipopt/scip.pyx":563
- * 
+ *
  *         cdef scip.SCIP_Real objval
  *         PY_SCIP_CALL(scip.SCIPlpiGetObjval(lpi._lpi, &objval))             # <<<<<<<<<<<<<<
  *         return objval
- * 
+ *
  */
   __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 563; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
@@ -27433,7 +27433,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_44solve(CYTHON_UNUSED PyObject *_
  *         cdef scip.SCIP_Real objval
  *         PY_SCIP_CALL(scip.SCIPlpiGetObjval(lpi._lpi, &objval))
  *         return objval             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getPrimal(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -27445,10 +27445,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_44solve(CYTHON_UNUSED PyObject *_
 
   /* "pyscipopt/scip.pyx":548
  *         return ncols
- * 
+ *
  *     def solve(self, dual=True):             # <<<<<<<<<<<<<<
  *         """Solves the current LP.
- * 
+ *
  */
 
   /* function exit code */
@@ -27469,7 +27469,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_44solve(CYTHON_UNUSED PyObject *_
 
 /* "pyscipopt/scip.pyx":566
  *         return objval
- * 
+ *
  *     def getPrimal(self):             # <<<<<<<<<<<<<<
  *         """Returns the primal solution of the last LP solve."""
  *         cdef Lpi lpi
@@ -27516,7 +27516,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_46getPrimal(CYTHON_UNUSED PyObjec
  *         """Returns the primal solution of the last LP solve."""
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         ncols = self.ncols()
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 569; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -27527,9 +27527,9 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_46getPrimal(CYTHON_UNUSED PyObjec
 
   /* "pyscipopt/scip.pyx":571
  *         lpi = self.lpi
- * 
+ *
  *         ncols = self.ncols()             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef scip.SCIP_Real* c_primalsol = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_ncols); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 571; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -27557,10 +27557,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_46getPrimal(CYTHON_UNUSED PyObjec
 
   /* "pyscipopt/scip.pyx":573
  *         ncols = self.ncols()
- * 
+ *
  *         cdef scip.SCIP_Real* c_primalsol = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiGetSol(lpi._lpi, NULL, c_primalsol, NULL, NULL, NULL))
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyInt_FromSize_t((sizeof(SCIP_Real))); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 573; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -27572,10 +27572,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_46getPrimal(CYTHON_UNUSED PyObjec
   __pyx_v_c_primalsol = ((SCIP_Real *)malloc(__pyx_t_4));
 
   /* "pyscipopt/scip.pyx":574
- * 
+ *
  *         cdef scip.SCIP_Real* c_primalsol = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
  *         PY_SCIP_CALL(scip.SCIPlpiGetSol(lpi._lpi, NULL, c_primalsol, NULL, NULL, NULL))             # <<<<<<<<<<<<<<
- * 
+ *
  *         primalsol = [0.0] * ncols
  */
   __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 574; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -27612,7 +27612,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_46getPrimal(CYTHON_UNUSED PyObjec
 
   /* "pyscipopt/scip.pyx":576
  *         PY_SCIP_CALL(scip.SCIPlpiGetSol(lpi._lpi, NULL, c_primalsol, NULL, NULL, NULL))
- * 
+ *
  *         primalsol = [0.0] * ncols             # <<<<<<<<<<<<<<
  *         for i in range(ncols):
  *             primalsol[i] = c_primalsol[i]
@@ -27631,11 +27631,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_46getPrimal(CYTHON_UNUSED PyObjec
   __pyx_t_2 = 0;
 
   /* "pyscipopt/scip.pyx":577
- * 
+ *
  *         primalsol = [0.0] * ncols
  *         for i in range(ncols):             # <<<<<<<<<<<<<<
  *             primalsol[i] = c_primalsol[i]
- * 
+ *
  */
   __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 577; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -27692,7 +27692,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_46getPrimal(CYTHON_UNUSED PyObjec
  *         primalsol = [0.0] * ncols
  *         for i in range(ncols):
  *             primalsol[i] = c_primalsol[i]             # <<<<<<<<<<<<<<
- * 
+ *
  *         free(c_primalsol)
  */
     __pyx_t_9 = __Pyx_PyIndex_AsSsize_t(__pyx_v_i); if (unlikely((__pyx_t_9 == (Py_ssize_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 578; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -27702,29 +27702,29 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_46getPrimal(CYTHON_UNUSED PyObjec
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
     /* "pyscipopt/scip.pyx":577
- * 
+ *
  *         primalsol = [0.0] * ncols
  *         for i in range(ncols):             # <<<<<<<<<<<<<<
  *             primalsol[i] = c_primalsol[i]
- * 
+ *
  */
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "pyscipopt/scip.pyx":580
  *             primalsol[i] = c_primalsol[i]
- * 
+ *
  *         free(c_primalsol)             # <<<<<<<<<<<<<<
- * 
+ *
  *         return primalsol
  */
   free(__pyx_v_c_primalsol);
 
   /* "pyscipopt/scip.pyx":582
  *         free(c_primalsol)
- * 
+ *
  *         return primalsol             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getDual(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -27734,7 +27734,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_46getPrimal(CYTHON_UNUSED PyObjec
 
   /* "pyscipopt/scip.pyx":566
  *         return objval
- * 
+ *
  *     def getPrimal(self):             # <<<<<<<<<<<<<<
  *         """Returns the primal solution of the last LP solve."""
  *         cdef Lpi lpi
@@ -27761,7 +27761,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_46getPrimal(CYTHON_UNUSED PyObjec
 
 /* "pyscipopt/scip.pyx":584
  *         return primalsol
- * 
+ *
  *     def getDual(self):             # <<<<<<<<<<<<<<
  *         """Returns the dual solution of the last LP solve."""
  *         cdef Lpi lpi
@@ -27808,7 +27808,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_48getDual(CYTHON_UNUSED PyObject 
  *         """Returns the dual solution of the last LP solve."""
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         nrows = self.nrows()
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 587; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -27819,9 +27819,9 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_48getDual(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":589
  *         lpi = self.lpi
- * 
+ *
  *         nrows = self.nrows()             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef scip.SCIP_Real* c_dualsol = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_nrows); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 589; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -27849,10 +27849,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_48getDual(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":591
  *         nrows = self.nrows()
- * 
+ *
  *         cdef scip.SCIP_Real* c_dualsol = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiGetSol(lpi._lpi, NULL, NULL, c_dualsol, NULL, NULL))
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyInt_FromSize_t((sizeof(SCIP_Real))); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 591; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -27864,10 +27864,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_48getDual(CYTHON_UNUSED PyObject 
   __pyx_v_c_dualsol = ((SCIP_Real *)malloc(__pyx_t_4));
 
   /* "pyscipopt/scip.pyx":592
- * 
+ *
  *         cdef scip.SCIP_Real* c_dualsol = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
  *         PY_SCIP_CALL(scip.SCIPlpiGetSol(lpi._lpi, NULL, NULL, c_dualsol, NULL, NULL))             # <<<<<<<<<<<<<<
- * 
+ *
  *         dualsol = [0.0] * nrows
  */
   __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 592; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -27904,7 +27904,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_48getDual(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":594
  *         PY_SCIP_CALL(scip.SCIPlpiGetSol(lpi._lpi, NULL, NULL, c_dualsol, NULL, NULL))
- * 
+ *
  *         dualsol = [0.0] * nrows             # <<<<<<<<<<<<<<
  *         for i in range(nrows):
  *             dualsol[i] = c_dualsol[i]
@@ -27923,11 +27923,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_48getDual(CYTHON_UNUSED PyObject 
   __pyx_t_2 = 0;
 
   /* "pyscipopt/scip.pyx":595
- * 
+ *
  *         dualsol = [0.0] * nrows
  *         for i in range(nrows):             # <<<<<<<<<<<<<<
  *             dualsol[i] = c_dualsol[i]
- * 
+ *
  */
   __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 595; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -27984,7 +27984,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_48getDual(CYTHON_UNUSED PyObject 
  *         dualsol = [0.0] * nrows
  *         for i in range(nrows):
  *             dualsol[i] = c_dualsol[i]             # <<<<<<<<<<<<<<
- * 
+ *
  *         free(c_dualsol)
  */
     __pyx_t_9 = __Pyx_PyIndex_AsSsize_t(__pyx_v_i); if (unlikely((__pyx_t_9 == (Py_ssize_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 596; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -27994,29 +27994,29 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_48getDual(CYTHON_UNUSED PyObject 
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
     /* "pyscipopt/scip.pyx":595
- * 
+ *
  *         dualsol = [0.0] * nrows
  *         for i in range(nrows):             # <<<<<<<<<<<<<<
  *             dualsol[i] = c_dualsol[i]
- * 
+ *
  */
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "pyscipopt/scip.pyx":598
  *             dualsol[i] = c_dualsol[i]
- * 
+ *
  *         free(c_dualsol)             # <<<<<<<<<<<<<<
- * 
+ *
  *         return dualsol
  */
   free(__pyx_v_c_dualsol);
 
   /* "pyscipopt/scip.pyx":600
  *         free(c_dualsol)
- * 
+ *
  *         return dualsol             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getPrimalRay(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -28026,7 +28026,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_48getDual(CYTHON_UNUSED PyObject 
 
   /* "pyscipopt/scip.pyx":584
  *         return primalsol
- * 
+ *
  *     def getDual(self):             # <<<<<<<<<<<<<<
  *         """Returns the dual solution of the last LP solve."""
  *         cdef Lpi lpi
@@ -28053,7 +28053,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_48getDual(CYTHON_UNUSED PyObject 
 
 /* "pyscipopt/scip.pyx":602
  *         return dualsol
- * 
+ *
  *     def getPrimalRay(self):             # <<<<<<<<<<<<<<
  *         """Returns a primal ray if possible, None otherwise."""
  *         cdef Lpi lpi
@@ -28101,7 +28101,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_50getPrimalRay(CYTHON_UNUSED PyOb
  *         """Returns a primal ray if possible, None otherwise."""
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         if not scip.SCIPlpiHasPrimalRay(lpi._lpi):
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 605; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -28112,19 +28112,19 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_50getPrimalRay(CYTHON_UNUSED PyOb
 
   /* "pyscipopt/scip.pyx":607
  *         lpi = self.lpi
- * 
+ *
  *         if not scip.SCIPlpiHasPrimalRay(lpi._lpi):             # <<<<<<<<<<<<<<
  *             return None
- * 
+ *
  */
   __pyx_t_2 = ((!(SCIPlpiHasPrimalRay(__pyx_v_lpi->_lpi) != 0)) != 0);
   if (__pyx_t_2) {
 
     /* "pyscipopt/scip.pyx":608
- * 
+ *
  *         if not scip.SCIPlpiHasPrimalRay(lpi._lpi):
  *             return None             # <<<<<<<<<<<<<<
- * 
+ *
  *         ncols = self.ncols()
  */
     __Pyx_XDECREF(__pyx_r);
@@ -28134,16 +28134,16 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_50getPrimalRay(CYTHON_UNUSED PyOb
 
     /* "pyscipopt/scip.pyx":607
  *         lpi = self.lpi
- * 
+ *
  *         if not scip.SCIPlpiHasPrimalRay(lpi._lpi):             # <<<<<<<<<<<<<<
  *             return None
- * 
+ *
  */
   }
 
   /* "pyscipopt/scip.pyx":610
  *             return None
- * 
+ *
  *         ncols = self.ncols()             # <<<<<<<<<<<<<<
  *         cdef scip.SCIP_Real* c_ray  = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
  *         PY_SCIP_CALL(scip.SCIPlpiGetPrimalRay(lpi._lpi, c_ray))
@@ -28172,11 +28172,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_50getPrimalRay(CYTHON_UNUSED PyOb
   __pyx_t_1 = 0;
 
   /* "pyscipopt/scip.pyx":611
- * 
+ *
  *         ncols = self.ncols()
  *         cdef scip.SCIP_Real* c_ray  = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiGetPrimalRay(lpi._lpi, c_ray))
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyInt_FromSize_t((sizeof(SCIP_Real))); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 611; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -28191,7 +28191,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_50getPrimalRay(CYTHON_UNUSED PyOb
  *         ncols = self.ncols()
  *         cdef scip.SCIP_Real* c_ray  = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
  *         PY_SCIP_CALL(scip.SCIPlpiGetPrimalRay(lpi._lpi, c_ray))             # <<<<<<<<<<<<<<
- * 
+ *
  *         ray = [0.0] * ncols
  */
   __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 612; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -28228,7 +28228,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_50getPrimalRay(CYTHON_UNUSED PyOb
 
   /* "pyscipopt/scip.pyx":614
  *         PY_SCIP_CALL(scip.SCIPlpiGetPrimalRay(lpi._lpi, c_ray))
- * 
+ *
  *         ray = [0.0] * ncols             # <<<<<<<<<<<<<<
  *         for i in range(ncols):
  *             ray[i] = c_ray[i]
@@ -28247,11 +28247,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_50getPrimalRay(CYTHON_UNUSED PyOb
   __pyx_t_3 = 0;
 
   /* "pyscipopt/scip.pyx":615
- * 
+ *
  *         ray = [0.0] * ncols
  *         for i in range(ncols):             # <<<<<<<<<<<<<<
  *             ray[i] = c_ray[i]
- * 
+ *
  */
   __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 615; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
@@ -28308,7 +28308,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_50getPrimalRay(CYTHON_UNUSED PyOb
  *         ray = [0.0] * ncols
  *         for i in range(ncols):
  *             ray[i] = c_ray[i]             # <<<<<<<<<<<<<<
- * 
+ *
  *         free(c_ray)
  */
     __pyx_t_10 = __Pyx_PyIndex_AsSsize_t(__pyx_v_i); if (unlikely((__pyx_t_10 == (Py_ssize_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 616; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -28318,29 +28318,29 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_50getPrimalRay(CYTHON_UNUSED PyOb
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
     /* "pyscipopt/scip.pyx":615
- * 
+ *
  *         ray = [0.0] * ncols
  *         for i in range(ncols):             # <<<<<<<<<<<<<<
  *             ray[i] = c_ray[i]
- * 
+ *
  */
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
   /* "pyscipopt/scip.pyx":618
  *             ray[i] = c_ray[i]
- * 
+ *
  *         free(c_ray)             # <<<<<<<<<<<<<<
- * 
+ *
  *         return ray
  */
   free(__pyx_v_c_ray);
 
   /* "pyscipopt/scip.pyx":620
  *         free(c_ray)
- * 
+ *
  *         return ray             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getDualRay(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -28350,7 +28350,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_50getPrimalRay(CYTHON_UNUSED PyOb
 
   /* "pyscipopt/scip.pyx":602
  *         return dualsol
- * 
+ *
  *     def getPrimalRay(self):             # <<<<<<<<<<<<<<
  *         """Returns a primal ray if possible, None otherwise."""
  *         cdef Lpi lpi
@@ -28377,7 +28377,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_50getPrimalRay(CYTHON_UNUSED PyOb
 
 /* "pyscipopt/scip.pyx":622
  *         return ray
- * 
+ *
  *     def getDualRay(self):             # <<<<<<<<<<<<<<
  *         """Returns a dual ray if possible, None otherwise."""
  *         cdef Lpi lpi
@@ -28425,7 +28425,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_52getDualRay(CYTHON_UNUSED PyObje
  *         """Returns a dual ray if possible, None otherwise."""
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         if not scip.SCIPlpiHasDualRay(lpi._lpi):
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 625; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -28436,19 +28436,19 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_52getDualRay(CYTHON_UNUSED PyObje
 
   /* "pyscipopt/scip.pyx":627
  *         lpi = self.lpi
- * 
+ *
  *         if not scip.SCIPlpiHasDualRay(lpi._lpi):             # <<<<<<<<<<<<<<
  *             return None
- * 
+ *
  */
   __pyx_t_2 = ((!(SCIPlpiHasDualRay(__pyx_v_lpi->_lpi) != 0)) != 0);
   if (__pyx_t_2) {
 
     /* "pyscipopt/scip.pyx":628
- * 
+ *
  *         if not scip.SCIPlpiHasDualRay(lpi._lpi):
  *             return None             # <<<<<<<<<<<<<<
- * 
+ *
  *         nrows = self.nrows()
  */
     __Pyx_XDECREF(__pyx_r);
@@ -28458,16 +28458,16 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_52getDualRay(CYTHON_UNUSED PyObje
 
     /* "pyscipopt/scip.pyx":627
  *         lpi = self.lpi
- * 
+ *
  *         if not scip.SCIPlpiHasDualRay(lpi._lpi):             # <<<<<<<<<<<<<<
  *             return None
- * 
+ *
  */
   }
 
   /* "pyscipopt/scip.pyx":630
  *             return None
- * 
+ *
  *         nrows = self.nrows()             # <<<<<<<<<<<<<<
  *         cdef scip.SCIP_Real* c_ray  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
  *         PY_SCIP_CALL(scip.SCIPlpiGetDualfarkas(lpi._lpi, c_ray))
@@ -28496,11 +28496,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_52getDualRay(CYTHON_UNUSED PyObje
   __pyx_t_1 = 0;
 
   /* "pyscipopt/scip.pyx":631
- * 
+ *
  *         nrows = self.nrows()
  *         cdef scip.SCIP_Real* c_ray  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPlpiGetDualfarkas(lpi._lpi, c_ray))
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyInt_FromSize_t((sizeof(SCIP_Real))); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 631; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -28515,7 +28515,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_52getDualRay(CYTHON_UNUSED PyObje
  *         nrows = self.nrows()
  *         cdef scip.SCIP_Real* c_ray  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
  *         PY_SCIP_CALL(scip.SCIPlpiGetDualfarkas(lpi._lpi, c_ray))             # <<<<<<<<<<<<<<
- * 
+ *
  *         ray = [0.0] * nrows
  */
   __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 632; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -28552,7 +28552,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_52getDualRay(CYTHON_UNUSED PyObje
 
   /* "pyscipopt/scip.pyx":634
  *         PY_SCIP_CALL(scip.SCIPlpiGetDualfarkas(lpi._lpi, c_ray))
- * 
+ *
  *         ray = [0.0] * nrows             # <<<<<<<<<<<<<<
  *         for i in range(nrows):
  *             ray[i] = c_ray[i]
@@ -28571,11 +28571,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_52getDualRay(CYTHON_UNUSED PyObje
   __pyx_t_3 = 0;
 
   /* "pyscipopt/scip.pyx":635
- * 
+ *
  *         ray = [0.0] * nrows
  *         for i in range(nrows):             # <<<<<<<<<<<<<<
  *             ray[i] = c_ray[i]
- * 
+ *
  */
   __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 635; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
@@ -28632,7 +28632,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_52getDualRay(CYTHON_UNUSED PyObje
  *         ray = [0.0] * nrows
  *         for i in range(nrows):
  *             ray[i] = c_ray[i]             # <<<<<<<<<<<<<<
- * 
+ *
  *         free(c_ray)
  */
     __pyx_t_10 = __Pyx_PyIndex_AsSsize_t(__pyx_v_i); if (unlikely((__pyx_t_10 == (Py_ssize_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 636; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -28642,29 +28642,29 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_52getDualRay(CYTHON_UNUSED PyObje
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
     /* "pyscipopt/scip.pyx":635
- * 
+ *
  *         ray = [0.0] * nrows
  *         for i in range(nrows):             # <<<<<<<<<<<<<<
  *             ray[i] = c_ray[i]
- * 
+ *
  */
   }
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
   /* "pyscipopt/scip.pyx":638
  *             ray[i] = c_ray[i]
- * 
+ *
  *         free(c_ray)             # <<<<<<<<<<<<<<
- * 
+ *
  *         return ray
  */
   free(__pyx_v_c_ray);
 
   /* "pyscipopt/scip.pyx":640
  *         free(c_ray)
- * 
+ *
  *         return ray             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getNIterations(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -28674,7 +28674,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_52getDualRay(CYTHON_UNUSED PyObje
 
   /* "pyscipopt/scip.pyx":622
  *         return ray
- * 
+ *
  *     def getDualRay(self):             # <<<<<<<<<<<<<<
  *         """Returns a dual ray if possible, None otherwise."""
  *         cdef Lpi lpi
@@ -28701,7 +28701,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_52getDualRay(CYTHON_UNUSED PyObje
 
 /* "pyscipopt/scip.pyx":642
  *         return ray
- * 
+ *
  *     def getNIterations(self):             # <<<<<<<<<<<<<<
  *         """Returns a the number of LP iterations of the last LP solve."""
  *         cdef Lpi lpi
@@ -28741,7 +28741,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_54getNIterations(CYTHON_UNUSED Py
  *         """Returns a the number of LP iterations of the last LP solve."""
  *         cdef Lpi lpi
  *         lpi = self.lpi             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef int niters
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_lpi); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 645; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -28751,11 +28751,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_54getNIterations(CYTHON_UNUSED Py
   __pyx_t_1 = 0;
 
   /* "pyscipopt/scip.pyx":648
- * 
+ *
  *         cdef int niters
  *         PY_SCIP_CALL(scip.SCIPlpiGetIterations(lpi._lpi, &niters))             # <<<<<<<<<<<<<<
  *         return niters
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 648; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -28793,7 +28793,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_54getNIterations(CYTHON_UNUSED Py
  *         cdef int niters
  *         PY_SCIP_CALL(scip.SCIPlpiGetIterations(lpi._lpi, &niters))
  *         return niters             # <<<<<<<<<<<<<<
- * 
+ *
  * class Variable(LinExpr):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -28805,7 +28805,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_2LP_54getNIterations(CYTHON_UNUSED Py
 
   /* "pyscipopt/scip.pyx":642
  *         return ray
- * 
+ *
  *     def getNIterations(self):             # <<<<<<<<<<<<<<
  *         """Returns a the number of LP iterations of the last LP solve."""
  *         cdef Lpi lpi
@@ -28931,7 +28931,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable___init__(CYTHON_UNUSED PyOb
  *         self.var = Var()
  *         self.name = name             # <<<<<<<<<<<<<<
  *         LinExpr.__init__(self, {(self,) : 1.0})
- * 
+ *
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_name, __pyx_v_name) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 655; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -28939,7 +28939,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable___init__(CYTHON_UNUSED PyOb
  *         self.var = Var()
  *         self.name = name
  *         LinExpr.__init__(self, {(self,) : 1.0})             # <<<<<<<<<<<<<<
- * 
+ *
  *     def __hash__(self):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_LinExpr); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 656; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -29012,10 +29012,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable___init__(CYTHON_UNUSED PyOb
 
 /* "pyscipopt/scip.pyx":658
  *         LinExpr.__init__(self, {(self,) : 1.0})
- * 
+ *
  *     def __hash__(self):             # <<<<<<<<<<<<<<
  *         return hash(id(self))
- * 
+ *
  */
 
 /* Python wrapper */
@@ -29044,10 +29044,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_2__hash__(CYTHON_UNUSED PyO
   __Pyx_RefNannySetupContext("__hash__", 0);
 
   /* "pyscipopt/scip.pyx":659
- * 
+ *
  *     def __hash__(self):
  *         return hash(id(self))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def __lt__(self, other):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -29069,10 +29069,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_2__hash__(CYTHON_UNUSED PyO
 
   /* "pyscipopt/scip.pyx":658
  *         LinExpr.__init__(self, {(self,) : 1.0})
- * 
+ *
  *     def __hash__(self):             # <<<<<<<<<<<<<<
  *         return hash(id(self))
- * 
+ *
  */
 
   /* function exit code */
@@ -29089,10 +29089,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_2__hash__(CYTHON_UNUSED PyO
 
 /* "pyscipopt/scip.pyx":661
  *         return hash(id(self))
- * 
+ *
  *     def __lt__(self, other):             # <<<<<<<<<<<<<<
  *         return id(self) < id(other)
- * 
+ *
  */
 
 /* Python wrapper */
@@ -29169,10 +29169,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_4__lt__(CYTHON_UNUSED PyObj
   __Pyx_RefNannySetupContext("__lt__", 0);
 
   /* "pyscipopt/scip.pyx":662
- * 
+ *
  *     def __lt__(self, other):
  *         return id(self) < id(other)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def __gt__(self, other):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -29201,10 +29201,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_4__lt__(CYTHON_UNUSED PyObj
 
   /* "pyscipopt/scip.pyx":661
  *         return hash(id(self))
- * 
+ *
  *     def __lt__(self, other):             # <<<<<<<<<<<<<<
  *         return id(self) < id(other)
- * 
+ *
  */
 
   /* function exit code */
@@ -29222,10 +29222,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_4__lt__(CYTHON_UNUSED PyObj
 
 /* "pyscipopt/scip.pyx":664
  *         return id(self) < id(other)
- * 
+ *
  *     def __gt__(self, other):             # <<<<<<<<<<<<<<
  *         return id(self) > id(other)
- * 
+ *
  */
 
 /* Python wrapper */
@@ -29302,10 +29302,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_6__gt__(CYTHON_UNUSED PyObj
   __Pyx_RefNannySetupContext("__gt__", 0);
 
   /* "pyscipopt/scip.pyx":665
- * 
+ *
  *     def __gt__(self, other):
  *         return id(self) > id(other)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def __repr__(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -29334,10 +29334,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_6__gt__(CYTHON_UNUSED PyObj
 
   /* "pyscipopt/scip.pyx":664
  *         return id(self) < id(other)
- * 
+ *
  *     def __gt__(self, other):             # <<<<<<<<<<<<<<
  *         return id(self) > id(other)
- * 
+ *
  */
 
   /* function exit code */
@@ -29355,10 +29355,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_6__gt__(CYTHON_UNUSED PyObj
 
 /* "pyscipopt/scip.pyx":667
  *         return id(self) > id(other)
- * 
+ *
  *     def __repr__(self):             # <<<<<<<<<<<<<<
  *         return self.name
- * 
+ *
  */
 
 /* Python wrapper */
@@ -29385,10 +29385,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_8__repr__(CYTHON_UNUSED PyO
   __Pyx_RefNannySetupContext("__repr__", 0);
 
   /* "pyscipopt/scip.pyx":668
- * 
+ *
  *     def __repr__(self):
  *         return self.name             # <<<<<<<<<<<<<<
- * 
+ *
  *     def vtype(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -29400,10 +29400,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_8__repr__(CYTHON_UNUSED PyO
 
   /* "pyscipopt/scip.pyx":667
  *         return id(self) > id(other)
- * 
+ *
  *     def __repr__(self):             # <<<<<<<<<<<<<<
  *         return self.name
- * 
+ *
  */
 
   /* function exit code */
@@ -29419,7 +29419,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_8__repr__(CYTHON_UNUSED PyO
 
 /* "pyscipopt/scip.pyx":670
  *         return self.name
- * 
+ *
  *     def vtype(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -29550,7 +29550,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_10vtype(CYTHON_UNUSED PyObj
  *             return "INTEGER"
  *         elif vartype == scip.SCIP_VARTYPE_CONTINUOUS or vartype == scip.SCIP_VARTYPE_IMPLINT:             # <<<<<<<<<<<<<<
  *             return "CONTINUOUS"
- * 
+ *
  */
     case SCIP_VARTYPE_CONTINUOUS:
     case SCIP_VARTYPE_IMPLINT:
@@ -29559,7 +29559,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_10vtype(CYTHON_UNUSED PyObj
  *             return "INTEGER"
  *         elif vartype == scip.SCIP_VARTYPE_CONTINUOUS or vartype == scip.SCIP_VARTYPE_IMPLINT:
  *             return "CONTINUOUS"             # <<<<<<<<<<<<<<
- * 
+ *
  *     def isOriginal(self):
  */
     __Pyx_XDECREF(__pyx_r);
@@ -29572,7 +29572,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_10vtype(CYTHON_UNUSED PyObj
  *             return "INTEGER"
  *         elif vartype == scip.SCIP_VARTYPE_CONTINUOUS or vartype == scip.SCIP_VARTYPE_IMPLINT:             # <<<<<<<<<<<<<<
  *             return "CONTINUOUS"
- * 
+ *
  */
     break;
     default: break;
@@ -29580,7 +29580,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_10vtype(CYTHON_UNUSED PyObj
 
   /* "pyscipopt/scip.pyx":670
  *         return self.name
- * 
+ *
  *     def vtype(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -29602,7 +29602,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_10vtype(CYTHON_UNUSED PyObj
 
 /* "pyscipopt/scip.pyx":683
  *             return "CONTINUOUS"
- * 
+ *
  *     def isOriginal(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -29652,7 +29652,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_12isOriginal(CYTHON_UNUSED 
  *         v = self.var
  *         _var = v._var             # <<<<<<<<<<<<<<
  *         return scip.SCIPvarIsOriginal(_var)
- * 
+ *
  */
   __pyx_t_2 = __pyx_v_v->_var;
   __pyx_v__var = __pyx_t_2;
@@ -29661,7 +29661,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_12isOriginal(CYTHON_UNUSED 
  *         v = self.var
  *         _var = v._var
  *         return scip.SCIPvarIsOriginal(_var)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def isInLP(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -29673,7 +29673,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_12isOriginal(CYTHON_UNUSED 
 
   /* "pyscipopt/scip.pyx":683
  *             return "CONTINUOUS"
- * 
+ *
  *     def isOriginal(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -29693,7 +29693,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_12isOriginal(CYTHON_UNUSED 
 
 /* "pyscipopt/scip.pyx":690
  *         return scip.SCIPvarIsOriginal(_var)
- * 
+ *
  *     def isInLP(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -29743,7 +29743,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_14isInLP(CYTHON_UNUSED PyOb
  *         v = self.var
  *         _var = v._var             # <<<<<<<<<<<<<<
  *         return scip.SCIPvarIsInLP(_var)
- * 
+ *
  */
   __pyx_t_2 = __pyx_v_v->_var;
   __pyx_v__var = __pyx_t_2;
@@ -29752,7 +29752,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_14isInLP(CYTHON_UNUSED PyOb
  *         v = self.var
  *         _var = v._var
  *         return scip.SCIPvarIsInLP(_var)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getCol(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -29764,7 +29764,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_14isInLP(CYTHON_UNUSED PyOb
 
   /* "pyscipopt/scip.pyx":690
  *         return scip.SCIPvarIsOriginal(_var)
- * 
+ *
  *     def isInLP(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -29784,7 +29784,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_14isInLP(CYTHON_UNUSED PyOb
 
 /* "pyscipopt/scip.pyx":697
  *         return scip.SCIPvarIsInLP(_var)
- * 
+ *
  *     def getCol(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -29869,7 +29869,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_16getCol(CYTHON_UNUSED PyOb
  *         _col = col._col
  *         _col = scip.SCIPvarGetCol(_var)             # <<<<<<<<<<<<<<
  *         return col
- * 
+ *
  */
   __pyx_v__col = SCIPvarGetCol(__pyx_v__var);
 
@@ -29877,7 +29877,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_16getCol(CYTHON_UNUSED PyOb
  *         _col = col._col
  *         _col = scip.SCIPvarGetCol(_var)
  *         return col             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef pythonizeVar(scip.SCIP_VAR* scip_var, name):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -29887,7 +29887,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_16getCol(CYTHON_UNUSED PyOb
 
   /* "pyscipopt/scip.pyx":697
  *         return scip.SCIPvarIsInLP(_var)
- * 
+ *
  *     def getCol(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -29908,7 +29908,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_8Variable_16getCol(CYTHON_UNUSED PyOb
 
 /* "pyscipopt/scip.pyx":708
  *         return col
- * 
+ *
  * cdef pythonizeVar(scip.SCIP_VAR* scip_var, name):             # <<<<<<<<<<<<<<
  *     var = Variable(name)
  *     cdef Var v
@@ -29929,7 +29929,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_pythonizeVar(SCIP_VAR *__pyx_v_scip_va
   __Pyx_RefNannySetupContext("pythonizeVar", 0);
 
   /* "pyscipopt/scip.pyx":709
- * 
+ *
  * cdef pythonizeVar(scip.SCIP_VAR* scip_var, name):
  *     var = Variable(name)             # <<<<<<<<<<<<<<
  *     cdef Var v
@@ -29983,7 +29983,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_pythonizeVar(SCIP_VAR *__pyx_v_scip_va
  *     v = var.var
  *     v._var = scip_var             # <<<<<<<<<<<<<<
  *     return var
- * 
+ *
  */
   __pyx_v_v->_var = __pyx_v_scip_var;
 
@@ -29991,7 +29991,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_pythonizeVar(SCIP_VAR *__pyx_v_scip_va
  *     v = var.var
  *     v._var = scip_var
  *     return var             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef class Cons:
  */
   __Pyx_XDECREF(__pyx_r);
@@ -30001,7 +30001,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_pythonizeVar(SCIP_VAR *__pyx_v_scip_va
 
   /* "pyscipopt/scip.pyx":708
  *         return col
- * 
+ *
  * cdef pythonizeVar(scip.SCIP_VAR* scip_var, name):             # <<<<<<<<<<<<<<
  *     var = Variable(name)
  *     cdef Var v
@@ -30024,7 +30024,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_pythonizeVar(SCIP_VAR *__pyx_v_scip_va
 }
 
 /* "pyscipopt/scip.pyx":719
- * 
+ *
  * class Constraint:
  *     def __init__(self, name=None):             # <<<<<<<<<<<<<<
  *         self.cons = Cons()
@@ -30110,7 +30110,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Constraint___init__(CYTHON_UNUSED P
  *     def __init__(self, name=None):
  *         self.cons = Cons()             # <<<<<<<<<<<<<<
  *         self.name = name
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)__pyx_ptype_9pyscipopt_4scip_Cons), __pyx_empty_tuple, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 720; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -30121,13 +30121,13 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Constraint___init__(CYTHON_UNUSED P
  *     def __init__(self, name=None):
  *         self.cons = Cons()
  *         self.name = name             # <<<<<<<<<<<<<<
- * 
+ *
  *     def __repr__(self):
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_name, __pyx_v_name) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 721; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":719
- * 
+ *
  * class Constraint:
  *     def __init__(self, name=None):             # <<<<<<<<<<<<<<
  *         self.cons = Cons()
@@ -30149,10 +30149,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Constraint___init__(CYTHON_UNUSED P
 
 /* "pyscipopt/scip.pyx":723
  *         self.name = name
- * 
+ *
  *     def __repr__(self):             # <<<<<<<<<<<<<<
  *         return self.name
- * 
+ *
  */
 
 /* Python wrapper */
@@ -30179,10 +30179,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Constraint_2__repr__(CYTHON_UNUSED 
   __Pyx_RefNannySetupContext("__repr__", 0);
 
   /* "pyscipopt/scip.pyx":724
- * 
+ *
  *     def __repr__(self):
  *         return self.name             # <<<<<<<<<<<<<<
- * 
+ *
  *     def isOriginal(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -30194,10 +30194,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Constraint_2__repr__(CYTHON_UNUSED 
 
   /* "pyscipopt/scip.pyx":723
  *         self.name = name
- * 
+ *
  *     def __repr__(self):             # <<<<<<<<<<<<<<
  *         return self.name
- * 
+ *
  */
 
   /* function exit code */
@@ -30213,7 +30213,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Constraint_2__repr__(CYTHON_UNUSED 
 
 /* "pyscipopt/scip.pyx":726
  *         return self.name
- * 
+ *
  *     def isOriginal(self):             # <<<<<<<<<<<<<<
  *         cdef Cons c
  *         cdef scip.SCIP_CONS* _cons
@@ -30263,7 +30263,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Constraint_4isOriginal(CYTHON_UNUSE
  *         c = self.cons
  *         _cons = c._cons             # <<<<<<<<<<<<<<
  *         return scip.SCIPconsIsOriginal(_cons)
- * 
+ *
  */
   __pyx_t_2 = __pyx_v_c->_cons;
   __pyx_v__cons = __pyx_t_2;
@@ -30272,8 +30272,8 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Constraint_4isOriginal(CYTHON_UNUSE
  *         c = self.cons
  *         _cons = c._cons
  *         return scip.SCIPconsIsOriginal(_cons)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __Pyx_PyBool_FromLong(SCIPconsIsOriginal(__pyx_v__cons)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 731; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -30284,7 +30284,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Constraint_4isOriginal(CYTHON_UNUSE
 
   /* "pyscipopt/scip.pyx":726
  *         return self.name
- * 
+ *
  *     def isOriginal(self):             # <<<<<<<<<<<<<<
  *         cdef Cons c
  *         cdef scip.SCIP_CONS* _cons
@@ -30303,8 +30303,8 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_10Constraint_4isOriginal(CYTHON_UNUSE
 }
 
 /* "pyscipopt/scip.pyx":734
- * 
- * 
+ *
+ *
  * cdef pythonizeCons(scip.SCIP_CONS* scip_cons, name):             # <<<<<<<<<<<<<<
  *     cons = Constraint(name)
  *     cdef Cons c
@@ -30325,7 +30325,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_pythonizeCons(SCIP_CONS *__pyx_v_scip_
   __Pyx_RefNannySetupContext("pythonizeCons", 0);
 
   /* "pyscipopt/scip.pyx":735
- * 
+ *
  * cdef pythonizeCons(scip.SCIP_CONS* scip_cons, name):
  *     cons = Constraint(name)             # <<<<<<<<<<<<<<
  *     cdef Cons c
@@ -30379,7 +30379,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_pythonizeCons(SCIP_CONS *__pyx_v_scip_
  *     c = cons.cons
  *     c._cons = scip_cons             # <<<<<<<<<<<<<<
  *     return cons
- * 
+ *
  */
   __pyx_v_c->_cons = __pyx_v_scip_cons;
 
@@ -30387,7 +30387,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_pythonizeCons(SCIP_CONS *__pyx_v_scip_
  *     c = cons.cons
  *     c._cons = scip_cons
  *     return cons             # <<<<<<<<<<<<<<
- * 
+ *
  * # - remove create(), includeDefaultPlugins(), createProbBasic() methods
  */
   __Pyx_XDECREF(__pyx_r);
@@ -30396,8 +30396,8 @@ static PyObject *__pyx_f_9pyscipopt_4scip_pythonizeCons(SCIP_CONS *__pyx_v_scip_
   goto __pyx_L0;
 
   /* "pyscipopt/scip.pyx":734
- * 
- * 
+ *
+ *
  * cdef pythonizeCons(scip.SCIP_CONS* scip_cons, name):             # <<<<<<<<<<<<<<
  *     cons = Constraint(name)
  *     cdef Cons c
@@ -30421,7 +30421,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_pythonizeCons(SCIP_CONS *__pyx_v_scip_
 
 /* "pyscipopt/scip.pyx":751
  *     cdef public object data
- * 
+ *
  *     def __init__(self, problemName='model', defaultPlugins=True):             # <<<<<<<<<<<<<<
  *         """
  *         Keyword arguments:
@@ -30555,7 +30555,7 @@ static int __pyx_pf_9pyscipopt_4scip_5Model___init__(struct __pyx_obj_9pyscipopt
  *         if defaultPlugins:
  *             self.includeDefaultPlugins()             # <<<<<<<<<<<<<<
  *         self.createProbBasic(problemName)
- * 
+ *
  */
     __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_includeDefaultPlugins); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 759; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
@@ -30592,7 +30592,7 @@ static int __pyx_pf_9pyscipopt_4scip_5Model___init__(struct __pyx_obj_9pyscipopt
  *         if defaultPlugins:
  *             self.includeDefaultPlugins()
  *         self.createProbBasic(problemName)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def __del__(self):
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_createProbBasic); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 760; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -30626,7 +30626,7 @@ static int __pyx_pf_9pyscipopt_4scip_5Model___init__(struct __pyx_obj_9pyscipopt
 
   /* "pyscipopt/scip.pyx":751
  *     cdef public object data
- * 
+ *
  *     def __init__(self, problemName='model', defaultPlugins=True):             # <<<<<<<<<<<<<<
  *         """
  *         Keyword arguments:
@@ -30649,7 +30649,7 @@ static int __pyx_pf_9pyscipopt_4scip_5Model___init__(struct __pyx_obj_9pyscipopt
 
 /* "pyscipopt/scip.pyx":762
  *         self.createProbBasic(problemName)
- * 
+ *
  *     def __del__(self):             # <<<<<<<<<<<<<<
  *         self.freeTransform()
  *         self.freeProb()
@@ -30680,7 +30680,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_2__del__(struct __pyx_obj_9pys
   __Pyx_RefNannySetupContext("__del__", 0);
 
   /* "pyscipopt/scip.pyx":763
- * 
+ *
  *     def __del__(self):
  *         self.freeTransform()             # <<<<<<<<<<<<<<
  *         self.freeProb()
@@ -30713,7 +30713,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_2__del__(struct __pyx_obj_9pys
  *         self.freeTransform()
  *         self.freeProb()             # <<<<<<<<<<<<<<
  *         self.free()
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_freeProb); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 764; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -30741,7 +30741,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_2__del__(struct __pyx_obj_9pys
  *         self.freeTransform()
  *         self.freeProb()
  *         self.free()             # <<<<<<<<<<<<<<
- * 
+ *
  *     @scipErrorHandler
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_free); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 765; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -30768,7 +30768,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_2__del__(struct __pyx_obj_9pys
 
   /* "pyscipopt/scip.pyx":762
  *         self.createProbBasic(problemName)
- * 
+ *
  *     def __del__(self):             # <<<<<<<<<<<<<<
  *         self.freeTransform()
  *         self.freeProb()
@@ -30790,11 +30790,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_2__del__(struct __pyx_obj_9pys
 }
 
 /* "pyscipopt/scip.pyx":768
- * 
+ *
  *     @scipErrorHandler
  *     def create(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPcreate(&self._scip)
- * 
+ *
  */
 
 /* Python wrapper */
@@ -30823,7 +30823,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_4create(struct __pyx_obj_9pysc
  *     @scipErrorHandler
  *     def create(self):
  *         return scip.SCIPcreate(&self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *     @scipErrorHandler
  */
   __Pyx_XDECREF(__pyx_r);
@@ -30834,11 +30834,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_4create(struct __pyx_obj_9pysc
   goto __pyx_L0;
 
   /* "pyscipopt/scip.pyx":768
- * 
+ *
  *     @scipErrorHandler
  *     def create(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPcreate(&self._scip)
- * 
+ *
  */
 
   /* function exit code */
@@ -30853,11 +30853,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_4create(struct __pyx_obj_9pysc
 }
 
 /* "pyscipopt/scip.pyx":772
- * 
+ *
  *     @scipErrorHandler
  *     def includeDefaultPlugins(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPincludeDefaultPlugins(self._scip)
- * 
+ *
  */
 
 /* Python wrapper */
@@ -30886,7 +30886,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_6includeDefaultPlugins(struct 
  *     @scipErrorHandler
  *     def includeDefaultPlugins(self):
  *         return scip.SCIPincludeDefaultPlugins(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *     @scipErrorHandler
  */
   __Pyx_XDECREF(__pyx_r);
@@ -30897,11 +30897,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_6includeDefaultPlugins(struct 
   goto __pyx_L0;
 
   /* "pyscipopt/scip.pyx":772
- * 
+ *
  *     @scipErrorHandler
  *     def includeDefaultPlugins(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPincludeDefaultPlugins(self._scip)
- * 
+ *
  */
 
   /* function exit code */
@@ -30916,7 +30916,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_6includeDefaultPlugins(struct 
 }
 
 /* "pyscipopt/scip.pyx":776
- * 
+ *
  *     @scipErrorHandler
  *     def createProbBasic(self, problemName='model'):             # <<<<<<<<<<<<<<
  *         n = str_conversion(problemName)
@@ -30999,7 +30999,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_8createProbBasic(struct __pyx_
  *     def createProbBasic(self, problemName='model'):
  *         n = str_conversion(problemName)             # <<<<<<<<<<<<<<
  *         return scip.SCIPcreateProbBasic(self._scip, n)
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_str_conversion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 777; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -31035,7 +31035,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_8createProbBasic(struct __pyx_
  *     def createProbBasic(self, problemName='model'):
  *         n = str_conversion(problemName)
  *         return scip.SCIPcreateProbBasic(self._scip, n)             # <<<<<<<<<<<<<<
- * 
+ *
  *     @scipErrorHandler
  */
   __Pyx_XDECREF(__pyx_r);
@@ -31047,7 +31047,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_8createProbBasic(struct __pyx_
   goto __pyx_L0;
 
   /* "pyscipopt/scip.pyx":776
- * 
+ *
  *     @scipErrorHandler
  *     def createProbBasic(self, problemName='model'):             # <<<<<<<<<<<<<<
  *         n = str_conversion(problemName)
@@ -31070,11 +31070,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_8createProbBasic(struct __pyx_
 }
 
 /* "pyscipopt/scip.pyx":781
- * 
+ *
  *     @scipErrorHandler
  *     def free(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPfree(&self._scip)
- * 
+ *
  */
 
 /* Python wrapper */
@@ -31103,7 +31103,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_10free(struct __pyx_obj_9pysci
  *     @scipErrorHandler
  *     def free(self):
  *         return scip.SCIPfree(&self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *     @scipErrorHandler
  */
   __Pyx_XDECREF(__pyx_r);
@@ -31114,11 +31114,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_10free(struct __pyx_obj_9pysci
   goto __pyx_L0;
 
   /* "pyscipopt/scip.pyx":781
- * 
+ *
  *     @scipErrorHandler
  *     def free(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPfree(&self._scip)
- * 
+ *
  */
 
   /* function exit code */
@@ -31133,11 +31133,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_10free(struct __pyx_obj_9pysci
 }
 
 /* "pyscipopt/scip.pyx":785
- * 
+ *
  *     @scipErrorHandler
  *     def freeProb(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPfreeProb(self._scip)
- * 
+ *
  */
 
 /* Python wrapper */
@@ -31166,7 +31166,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_12freeProb(struct __pyx_obj_9p
  *     @scipErrorHandler
  *     def freeProb(self):
  *         return scip.SCIPfreeProb(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *     @scipErrorHandler
  */
   __Pyx_XDECREF(__pyx_r);
@@ -31177,11 +31177,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_12freeProb(struct __pyx_obj_9p
   goto __pyx_L0;
 
   /* "pyscipopt/scip.pyx":785
- * 
+ *
  *     @scipErrorHandler
  *     def freeProb(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPfreeProb(self._scip)
- * 
+ *
  */
 
   /* function exit code */
@@ -31196,11 +31196,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_12freeProb(struct __pyx_obj_9p
 }
 
 /* "pyscipopt/scip.pyx":789
- * 
+ *
  *     @scipErrorHandler
  *     def freeTransform(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPfreeTransform(self._scip)
- * 
+ *
  */
 
 /* Python wrapper */
@@ -31229,7 +31229,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_14freeTransform(struct __pyx_o
  *     @scipErrorHandler
  *     def freeTransform(self):
  *         return scip.SCIPfreeTransform(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def printVersion(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -31240,11 +31240,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_14freeTransform(struct __pyx_o
   goto __pyx_L0;
 
   /* "pyscipopt/scip.pyx":789
- * 
+ *
  *     @scipErrorHandler
  *     def freeTransform(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPfreeTransform(self._scip)
- * 
+ *
  */
 
   /* function exit code */
@@ -31260,10 +31260,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_14freeTransform(struct __pyx_o
 
 /* "pyscipopt/scip.pyx":792
  *         return scip.SCIPfreeTransform(self._scip)
- * 
+ *
  *     def printVersion(self):             # <<<<<<<<<<<<<<
  *         scip.SCIPprintVersion(self._scip, NULL)
- * 
+ *
  */
 
 /* Python wrapper */
@@ -31285,20 +31285,20 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_16printVersion(struct __pyx_ob
   __Pyx_RefNannySetupContext("printVersion", 0);
 
   /* "pyscipopt/scip.pyx":793
- * 
+ *
  *     def printVersion(self):
  *         scip.SCIPprintVersion(self._scip, NULL)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getTotalTime(self):
  */
   SCIPprintVersion(__pyx_v_self->_scip, NULL);
 
   /* "pyscipopt/scip.pyx":792
  *         return scip.SCIPfreeTransform(self._scip)
- * 
+ *
  *     def printVersion(self):             # <<<<<<<<<<<<<<
  *         scip.SCIPprintVersion(self._scip, NULL)
- * 
+ *
  */
 
   /* function exit code */
@@ -31310,10 +31310,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_16printVersion(struct __pyx_ob
 
 /* "pyscipopt/scip.pyx":795
  *         scip.SCIPprintVersion(self._scip, NULL)
- * 
+ *
  *     def getTotalTime(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPgetTotalTime(self._scip)
- * 
+ *
  */
 
 /* Python wrapper */
@@ -31339,10 +31339,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_18getTotalTime(struct __pyx_ob
   __Pyx_RefNannySetupContext("getTotalTime", 0);
 
   /* "pyscipopt/scip.pyx":796
- * 
+ *
  *     def getTotalTime(self):
  *         return scip.SCIPgetTotalTime(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getSolvingTime(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -31354,10 +31354,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_18getTotalTime(struct __pyx_ob
 
   /* "pyscipopt/scip.pyx":795
  *         scip.SCIPprintVersion(self._scip, NULL)
- * 
+ *
  *     def getTotalTime(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPgetTotalTime(self._scip)
- * 
+ *
  */
 
   /* function exit code */
@@ -31373,10 +31373,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_18getTotalTime(struct __pyx_ob
 
 /* "pyscipopt/scip.pyx":798
  *         return scip.SCIPgetTotalTime(self._scip)
- * 
+ *
  *     def getSolvingTime(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPgetSolvingTime(self._scip)
- * 
+ *
  */
 
 /* Python wrapper */
@@ -31402,10 +31402,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_20getSolvingTime(struct __pyx_
   __Pyx_RefNannySetupContext("getSolvingTime", 0);
 
   /* "pyscipopt/scip.pyx":799
- * 
+ *
  *     def getSolvingTime(self):
  *         return scip.SCIPgetSolvingTime(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getReadingTime(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -31417,10 +31417,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_20getSolvingTime(struct __pyx_
 
   /* "pyscipopt/scip.pyx":798
  *         return scip.SCIPgetTotalTime(self._scip)
- * 
+ *
  *     def getSolvingTime(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPgetSolvingTime(self._scip)
- * 
+ *
  */
 
   /* function exit code */
@@ -31436,10 +31436,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_20getSolvingTime(struct __pyx_
 
 /* "pyscipopt/scip.pyx":801
  *         return scip.SCIPgetSolvingTime(self._scip)
- * 
+ *
  *     def getReadingTime(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPgetReadingTime(self._scip)
- * 
+ *
  */
 
 /* Python wrapper */
@@ -31465,10 +31465,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_22getReadingTime(struct __pyx_
   __Pyx_RefNannySetupContext("getReadingTime", 0);
 
   /* "pyscipopt/scip.pyx":802
- * 
+ *
  *     def getReadingTime(self):
  *         return scip.SCIPgetReadingTime(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getPresolvingTime(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -31480,10 +31480,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_22getReadingTime(struct __pyx_
 
   /* "pyscipopt/scip.pyx":801
  *         return scip.SCIPgetSolvingTime(self._scip)
- * 
+ *
  *     def getReadingTime(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPgetReadingTime(self._scip)
- * 
+ *
  */
 
   /* function exit code */
@@ -31499,10 +31499,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_22getReadingTime(struct __pyx_
 
 /* "pyscipopt/scip.pyx":804
  *         return scip.SCIPgetReadingTime(self._scip)
- * 
+ *
  *     def getPresolvingTime(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPgetPresolvingTime(self._scip)
- * 
+ *
  */
 
 /* Python wrapper */
@@ -31528,10 +31528,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_24getPresolvingTime(struct __p
   __Pyx_RefNannySetupContext("getPresolvingTime", 0);
 
   /* "pyscipopt/scip.pyx":805
- * 
+ *
  *     def getPresolvingTime(self):
  *         return scip.SCIPgetPresolvingTime(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def infinity(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -31543,10 +31543,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_24getPresolvingTime(struct __p
 
   /* "pyscipopt/scip.pyx":804
  *         return scip.SCIPgetReadingTime(self._scip)
- * 
+ *
  *     def getPresolvingTime(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPgetPresolvingTime(self._scip)
- * 
+ *
  */
 
   /* function exit code */
@@ -31562,7 +31562,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_24getPresolvingTime(struct __p
 
 /* "pyscipopt/scip.pyx":807
  *         return scip.SCIPgetPresolvingTime(self._scip)
- * 
+ *
  *     def infinity(self):             # <<<<<<<<<<<<<<
  *         """Retrieve 'infinity' value."""
  *         return scip.SCIPinfinity(self._scip)
@@ -31595,7 +31595,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_26infinity(struct __pyx_obj_9p
  *     def infinity(self):
  *         """Retrieve 'infinity' value."""
  *         return scip.SCIPinfinity(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def epsilon(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -31607,7 +31607,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_26infinity(struct __pyx_obj_9p
 
   /* "pyscipopt/scip.pyx":807
  *         return scip.SCIPgetPresolvingTime(self._scip)
- * 
+ *
  *     def infinity(self):             # <<<<<<<<<<<<<<
  *         """Retrieve 'infinity' value."""
  *         return scip.SCIPinfinity(self._scip)
@@ -31626,7 +31626,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_26infinity(struct __pyx_obj_9p
 
 /* "pyscipopt/scip.pyx":811
  *         return scip.SCIPinfinity(self._scip)
- * 
+ *
  *     def epsilon(self):             # <<<<<<<<<<<<<<
  *         """Return epsilon for e.g. equality checks"""
  *         return scip.SCIPepsilon(self._scip)
@@ -31659,7 +31659,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_28epsilon(struct __pyx_obj_9py
  *     def epsilon(self):
  *         """Return epsilon for e.g. equality checks"""
  *         return scip.SCIPepsilon(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def feastol(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -31671,7 +31671,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_28epsilon(struct __pyx_obj_9py
 
   /* "pyscipopt/scip.pyx":811
  *         return scip.SCIPinfinity(self._scip)
- * 
+ *
  *     def epsilon(self):             # <<<<<<<<<<<<<<
  *         """Return epsilon for e.g. equality checks"""
  *         return scip.SCIPepsilon(self._scip)
@@ -31690,7 +31690,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_28epsilon(struct __pyx_obj_9py
 
 /* "pyscipopt/scip.pyx":815
  *         return scip.SCIPepsilon(self._scip)
- * 
+ *
  *     def feastol(self):             # <<<<<<<<<<<<<<
  *         """Return feasibility tolerance"""
  *         return scip.SCIPfeastol(self._scip)
@@ -31723,7 +31723,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_30feastol(struct __pyx_obj_9py
  *     def feastol(self):
  *         """Return feasibility tolerance"""
  *         return scip.SCIPfeastol(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *     #@scipErrorHandler       We'll be able to use decorators when we
  */
   __Pyx_XDECREF(__pyx_r);
@@ -31735,7 +31735,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_30feastol(struct __pyx_obj_9py
 
   /* "pyscipopt/scip.pyx":815
  *         return scip.SCIPepsilon(self._scip)
- * 
+ *
  *     def feastol(self):             # <<<<<<<<<<<<<<
  *         """Return feasibility tolerance"""
  *         return scip.SCIPfeastol(self._scip)
@@ -31820,7 +31820,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createVarBasic(struct __pyx_ob
  *         n = str_conversion(name)
  *         PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, scip_var,             # <<<<<<<<<<<<<<
  *                            n, lb, ub, obj, varType))
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 824; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -31829,7 +31829,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createVarBasic(struct __pyx_ob
  *         n = str_conversion(name)
  *         PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, scip_var,
  *                            n, lb, ub, obj, varType))             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef _addVar(self, scip.SCIP_VAR* scip_var):
  */
   __pyx_t_5 = __Pyx_PyObject_AsString(__pyx_v_n); if (unlikely((!__pyx_t_5) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 825; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -31842,7 +31842,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createVarBasic(struct __pyx_ob
  *         n = str_conversion(name)
  *         PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, scip_var,             # <<<<<<<<<<<<<<
  *                            n, lb, ub, obj, varType))
- * 
+ *
  */
   __pyx_t_4 = __Pyx_PyInt_From_SCIP_RETCODE(SCIPcreateVarBasic(__pyx_v_self->_scip, __pyx_v_scip_var, __pyx_t_5, __pyx_t_6, __pyx_t_7, __pyx_t_8, __pyx_v_varType)); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 824; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -31902,10 +31902,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createVarBasic(struct __pyx_ob
 
 /* "pyscipopt/scip.pyx":827
  *                            n, lb, ub, obj, varType))
- * 
+ *
  *     cdef _addVar(self, scip.SCIP_VAR* scip_var):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
- * 
+ *
  */
 
 static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addVar(struct __pyx_obj_9pyscipopt_4scip_Model *__pyx_v_self, SCIP_VAR *__pyx_v_scip_var) {
@@ -31922,10 +31922,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addVar(struct __pyx_obj_9pysci
   __Pyx_RefNannySetupContext("_addVar", 0);
 
   /* "pyscipopt/scip.pyx":828
- * 
+ *
  *     cdef _addVar(self, scip.SCIP_VAR* scip_var):
  *         PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef _addPricedVar(self, scip.SCIP_VAR* scip_var):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 828; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -31962,10 +31962,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addVar(struct __pyx_obj_9pysci
 
   /* "pyscipopt/scip.pyx":827
  *                            n, lb, ub, obj, varType))
- * 
+ *
  *     cdef _addVar(self, scip.SCIP_VAR* scip_var):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
- * 
+ *
  */
 
   /* function exit code */
@@ -31987,10 +31987,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addVar(struct __pyx_obj_9pysci
 
 /* "pyscipopt/scip.pyx":830
  *         PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
- * 
+ *
  *     cdef _addPricedVar(self, scip.SCIP_VAR* scip_var):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, 1.0))
- * 
+ *
  */
 
 static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addPricedVar(struct __pyx_obj_9pyscipopt_4scip_Model *__pyx_v_self, SCIP_VAR *__pyx_v_scip_var) {
@@ -32007,10 +32007,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addPricedVar(struct __pyx_obj_
   __Pyx_RefNannySetupContext("_addPricedVar", 0);
 
   /* "pyscipopt/scip.pyx":831
- * 
+ *
  *     cdef _addPricedVar(self, scip.SCIP_VAR* scip_var):
  *         PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, 1.0))             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef _createConsLinear(self, scip.SCIP_CONS** cons, name, nvars,
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 831; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -32047,10 +32047,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addPricedVar(struct __pyx_obj_
 
   /* "pyscipopt/scip.pyx":830
  *         PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
- * 
+ *
  *     cdef _addPricedVar(self, scip.SCIP_VAR* scip_var):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, 1.0))
- * 
+ *
  */
 
   /* function exit code */
@@ -32072,7 +32072,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addPricedVar(struct __pyx_obj_
 
 /* "pyscipopt/scip.pyx":833
  *         PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, 1.0))
- * 
+ *
  *     cdef _createConsLinear(self, scip.SCIP_CONS** cons, name, nvars,             # <<<<<<<<<<<<<<
  *                                 SCIP_VAR** vars, SCIP_Real* vals, lhs, rhs,
  *                                 initial=True, separate=True, enforce=True, check=True,
@@ -32247,7 +32247,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createConsLinear(struct __pyx_
  *                                                     lhs, rhs, initial, separate, enforce,
  *                                                     check, propagate, local, modifiable,             # <<<<<<<<<<<<<<
  *                                                     dynamic, removable, stickingatnode) )
- * 
+ *
  */
   __pyx_t_12 = __Pyx_PyObject_IsTrue(__pyx_v_check); if (unlikely((__pyx_t_12 == (SCIP_Bool)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 842; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_v_propagate); if (unlikely((__pyx_t_13 == (SCIP_Bool)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 842; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -32258,7 +32258,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createConsLinear(struct __pyx_
  *                                                     lhs, rhs, initial, separate, enforce,
  *                                                     check, propagate, local, modifiable,
  *                                                     dynamic, removable, stickingatnode) )             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef _createConsSOS1(self, scip.SCIP_CONS** cons, name, nvars,
  */
   __pyx_t_16 = __Pyx_PyObject_IsTrue(__pyx_v_dynamic); if (unlikely((__pyx_t_16 == (SCIP_Bool)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 843; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -32304,7 +32304,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createConsLinear(struct __pyx_
 
   /* "pyscipopt/scip.pyx":833
  *         PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, 1.0))
- * 
+ *
  *     cdef _createConsLinear(self, scip.SCIP_CONS** cons, name, nvars,             # <<<<<<<<<<<<<<
  *                                 SCIP_VAR** vars, SCIP_Real* vals, lhs, rhs,
  *                                 initial=True, separate=True, enforce=True, check=True,
@@ -32330,7 +32330,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createConsLinear(struct __pyx_
 
 /* "pyscipopt/scip.pyx":845
  *                                                     dynamic, removable, stickingatnode) )
- * 
+ *
  *     cdef _createConsSOS1(self, scip.SCIP_CONS** cons, name, nvars,             # <<<<<<<<<<<<<<
  *                               SCIP_VAR** vars, SCIP_Real* weights,
  *                               initial=True, separate=True, enforce=True, check=True,
@@ -32496,7 +32496,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createConsSOS1(struct __pyx_ob
  *                                                     initial, separate, enforce,
  *                                                     check, propagate, local, dynamic, removable,             # <<<<<<<<<<<<<<
  *                                                     stickingatnode) )
- * 
+ *
  */
   __pyx_t_10 = __Pyx_PyObject_IsTrue(__pyx_v_check); if (unlikely((__pyx_t_10 == (SCIP_Bool)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 854; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_v_propagate); if (unlikely((__pyx_t_11 == (SCIP_Bool)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 854; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -32508,7 +32508,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createConsSOS1(struct __pyx_ob
  *                                                     initial, separate, enforce,
  *                                                     check, propagate, local, dynamic, removable,
  *                                                     stickingatnode) )             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef _createConsSOS2(self, scip.SCIP_CONS** cons, name, nvars,
  */
   __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_v_stickingatnode); if (unlikely((__pyx_t_15 == (SCIP_Bool)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 855; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -32552,7 +32552,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createConsSOS1(struct __pyx_ob
 
   /* "pyscipopt/scip.pyx":845
  *                                                     dynamic, removable, stickingatnode) )
- * 
+ *
  *     cdef _createConsSOS1(self, scip.SCIP_CONS** cons, name, nvars,             # <<<<<<<<<<<<<<
  *                               SCIP_VAR** vars, SCIP_Real* weights,
  *                               initial=True, separate=True, enforce=True, check=True,
@@ -32578,7 +32578,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createConsSOS1(struct __pyx_ob
 
 /* "pyscipopt/scip.pyx":857
  *                                                     stickingatnode) )
- * 
+ *
  *     cdef _createConsSOS2(self, scip.SCIP_CONS** cons, name, nvars,             # <<<<<<<<<<<<<<
  *                               SCIP_VAR** vars, SCIP_Real* weights,
  *                               initial=True, separate=True, enforce=True, check=True,
@@ -32744,7 +32744,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createConsSOS2(struct __pyx_ob
  *                                                     initial, separate, enforce,
  *                                                     check, propagate, local, dynamic, removable,             # <<<<<<<<<<<<<<
  *                                                     stickingatnode) )
- * 
+ *
  */
   __pyx_t_10 = __Pyx_PyObject_IsTrue(__pyx_v_check); if (unlikely((__pyx_t_10 == (SCIP_Bool)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 866; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_v_propagate); if (unlikely((__pyx_t_11 == (SCIP_Bool)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 866; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -32756,7 +32756,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createConsSOS2(struct __pyx_ob
  *                                                     initial, separate, enforce,
  *                                                     check, propagate, local, dynamic, removable,
  *                                                     stickingatnode) )             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef _addCoefLinear(self, scip.SCIP_CONS* cons, SCIP_VAR* var, val):
  */
   __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_v_stickingatnode); if (unlikely((__pyx_t_15 == (SCIP_Bool)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 867; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -32800,7 +32800,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createConsSOS2(struct __pyx_ob
 
   /* "pyscipopt/scip.pyx":857
  *                                                     stickingatnode) )
- * 
+ *
  *     cdef _createConsSOS2(self, scip.SCIP_CONS** cons, name, nvars,             # <<<<<<<<<<<<<<
  *                               SCIP_VAR** vars, SCIP_Real* weights,
  *                               initial=True, separate=True, enforce=True, check=True,
@@ -32826,10 +32826,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__createConsSOS2(struct __pyx_ob
 
 /* "pyscipopt/scip.pyx":869
  *                                                     stickingatnode) )
- * 
+ *
  *     cdef _addCoefLinear(self, scip.SCIP_CONS* cons, SCIP_VAR* var, val):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPaddCoefLinear(self._scip, cons, var, val))
- * 
+ *
  */
 
 static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addCoefLinear(struct __pyx_obj_9pyscipopt_4scip_Model *__pyx_v_self, SCIP_CONS *__pyx_v_cons, SCIP_VAR *__pyx_v_var, PyObject *__pyx_v_val) {
@@ -32847,10 +32847,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addCoefLinear(struct __pyx_obj
   __Pyx_RefNannySetupContext("_addCoefLinear", 0);
 
   /* "pyscipopt/scip.pyx":870
- * 
+ *
  *     cdef _addCoefLinear(self, scip.SCIP_CONS* cons, SCIP_VAR* var, val):
  *         PY_SCIP_CALL(scip.SCIPaddCoefLinear(self._scip, cons, var, val))             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef _addCons(self, scip.SCIP_CONS* cons):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 870; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -32888,10 +32888,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addCoefLinear(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":869
  *                                                     stickingatnode) )
- * 
+ *
  *     cdef _addCoefLinear(self, scip.SCIP_CONS* cons, SCIP_VAR* var, val):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPaddCoefLinear(self._scip, cons, var, val))
- * 
+ *
  */
 
   /* function exit code */
@@ -32913,10 +32913,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addCoefLinear(struct __pyx_obj
 
 /* "pyscipopt/scip.pyx":872
  *         PY_SCIP_CALL(scip.SCIPaddCoefLinear(self._scip, cons, var, val))
- * 
+ *
  *     cdef _addCons(self, scip.SCIP_CONS* cons):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPaddCons(self._scip, cons))
- * 
+ *
  */
 
 static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addCons(struct __pyx_obj_9pyscipopt_4scip_Model *__pyx_v_self, SCIP_CONS *__pyx_v_cons) {
@@ -32933,10 +32933,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addCons(struct __pyx_obj_9pysc
   __Pyx_RefNannySetupContext("_addCons", 0);
 
   /* "pyscipopt/scip.pyx":873
- * 
+ *
  *     cdef _addCons(self, scip.SCIP_CONS* cons):
  *         PY_SCIP_CALL(scip.SCIPaddCons(self._scip, cons))             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef _addVarSOS1(self, scip.SCIP_CONS* cons, SCIP_VAR* var, weight):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 873; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -32973,10 +32973,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addCons(struct __pyx_obj_9pysc
 
   /* "pyscipopt/scip.pyx":872
  *         PY_SCIP_CALL(scip.SCIPaddCoefLinear(self._scip, cons, var, val))
- * 
+ *
  *     cdef _addCons(self, scip.SCIP_CONS* cons):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPaddCons(self._scip, cons))
- * 
+ *
  */
 
   /* function exit code */
@@ -32998,10 +32998,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addCons(struct __pyx_obj_9pysc
 
 /* "pyscipopt/scip.pyx":875
  *         PY_SCIP_CALL(scip.SCIPaddCons(self._scip, cons))
- * 
+ *
  *     cdef _addVarSOS1(self, scip.SCIP_CONS* cons, SCIP_VAR* var, weight):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPaddVarSOS1(self._scip, cons, var, weight))
- * 
+ *
  */
 
 static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addVarSOS1(struct __pyx_obj_9pyscipopt_4scip_Model *__pyx_v_self, SCIP_CONS *__pyx_v_cons, SCIP_VAR *__pyx_v_var, PyObject *__pyx_v_weight) {
@@ -33019,10 +33019,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addVarSOS1(struct __pyx_obj_9p
   __Pyx_RefNannySetupContext("_addVarSOS1", 0);
 
   /* "pyscipopt/scip.pyx":876
- * 
+ *
  *     cdef _addVarSOS1(self, scip.SCIP_CONS* cons, SCIP_VAR* var, weight):
  *         PY_SCIP_CALL(scip.SCIPaddVarSOS1(self._scip, cons, var, weight))             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef _appendVarSOS1(self, scip.SCIP_CONS* cons, SCIP_VAR* var):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 876; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -33060,10 +33060,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addVarSOS1(struct __pyx_obj_9p
 
   /* "pyscipopt/scip.pyx":875
  *         PY_SCIP_CALL(scip.SCIPaddCons(self._scip, cons))
- * 
+ *
  *     cdef _addVarSOS1(self, scip.SCIP_CONS* cons, SCIP_VAR* var, weight):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPaddVarSOS1(self._scip, cons, var, weight))
- * 
+ *
  */
 
   /* function exit code */
@@ -33085,10 +33085,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addVarSOS1(struct __pyx_obj_9p
 
 /* "pyscipopt/scip.pyx":878
  *         PY_SCIP_CALL(scip.SCIPaddVarSOS1(self._scip, cons, var, weight))
- * 
+ *
  *     cdef _appendVarSOS1(self, scip.SCIP_CONS* cons, SCIP_VAR* var):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPappendVarSOS1(self._scip, cons, var))
- * 
+ *
  */
 
 static PyObject *__pyx_f_9pyscipopt_4scip_5Model__appendVarSOS1(struct __pyx_obj_9pyscipopt_4scip_Model *__pyx_v_self, SCIP_CONS *__pyx_v_cons, SCIP_VAR *__pyx_v_var) {
@@ -33105,10 +33105,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__appendVarSOS1(struct __pyx_obj
   __Pyx_RefNannySetupContext("_appendVarSOS1", 0);
 
   /* "pyscipopt/scip.pyx":879
- * 
+ *
  *     cdef _appendVarSOS1(self, scip.SCIP_CONS* cons, SCIP_VAR* var):
  *         PY_SCIP_CALL(scip.SCIPappendVarSOS1(self._scip, cons, var))             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef _addVarSOS2(self, scip.SCIP_CONS* cons, SCIP_VAR* var, weight):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 879; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -33145,10 +33145,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__appendVarSOS1(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":878
  *         PY_SCIP_CALL(scip.SCIPaddVarSOS1(self._scip, cons, var, weight))
- * 
+ *
  *     cdef _appendVarSOS1(self, scip.SCIP_CONS* cons, SCIP_VAR* var):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPappendVarSOS1(self._scip, cons, var))
- * 
+ *
  */
 
   /* function exit code */
@@ -33170,10 +33170,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__appendVarSOS1(struct __pyx_obj
 
 /* "pyscipopt/scip.pyx":881
  *         PY_SCIP_CALL(scip.SCIPappendVarSOS1(self._scip, cons, var))
- * 
+ *
  *     cdef _addVarSOS2(self, scip.SCIP_CONS* cons, SCIP_VAR* var, weight):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPaddVarSOS2(self._scip, cons, var, weight))
- * 
+ *
  */
 
 static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addVarSOS2(struct __pyx_obj_9pyscipopt_4scip_Model *__pyx_v_self, SCIP_CONS *__pyx_v_cons, SCIP_VAR *__pyx_v_var, PyObject *__pyx_v_weight) {
@@ -33191,10 +33191,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addVarSOS2(struct __pyx_obj_9p
   __Pyx_RefNannySetupContext("_addVarSOS2", 0);
 
   /* "pyscipopt/scip.pyx":882
- * 
+ *
  *     cdef _addVarSOS2(self, scip.SCIP_CONS* cons, SCIP_VAR* var, weight):
  *         PY_SCIP_CALL(scip.SCIPaddVarSOS2(self._scip, cons, var, weight))             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef _appendVarSOS2(self, scip.SCIP_CONS* cons, SCIP_VAR* var):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 882; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -33232,10 +33232,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addVarSOS2(struct __pyx_obj_9p
 
   /* "pyscipopt/scip.pyx":881
  *         PY_SCIP_CALL(scip.SCIPappendVarSOS1(self._scip, cons, var))
- * 
+ *
  *     cdef _addVarSOS2(self, scip.SCIP_CONS* cons, SCIP_VAR* var, weight):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPaddVarSOS2(self._scip, cons, var, weight))
- * 
+ *
  */
 
   /* function exit code */
@@ -33257,10 +33257,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__addVarSOS2(struct __pyx_obj_9p
 
 /* "pyscipopt/scip.pyx":884
  *         PY_SCIP_CALL(scip.SCIPaddVarSOS2(self._scip, cons, var, weight))
- * 
+ *
  *     cdef _appendVarSOS2(self, scip.SCIP_CONS* cons, SCIP_VAR* var):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPappendVarSOS2(self._scip, cons, var))
- * 
+ *
  */
 
 static PyObject *__pyx_f_9pyscipopt_4scip_5Model__appendVarSOS2(struct __pyx_obj_9pyscipopt_4scip_Model *__pyx_v_self, SCIP_CONS *__pyx_v_cons, SCIP_VAR *__pyx_v_var) {
@@ -33277,10 +33277,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__appendVarSOS2(struct __pyx_obj
   __Pyx_RefNannySetupContext("_appendVarSOS2", 0);
 
   /* "pyscipopt/scip.pyx":885
- * 
+ *
  *     cdef _appendVarSOS2(self, scip.SCIP_CONS* cons, SCIP_VAR* var):
  *         PY_SCIP_CALL(scip.SCIPappendVarSOS2(self._scip, cons, var))             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef _writeVarName(self, scip.SCIP_VAR* var):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 885; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -33317,10 +33317,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__appendVarSOS2(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":884
  *         PY_SCIP_CALL(scip.SCIPaddVarSOS2(self._scip, cons, var, weight))
- * 
+ *
  *     cdef _appendVarSOS2(self, scip.SCIP_CONS* cons, SCIP_VAR* var):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPappendVarSOS2(self._scip, cons, var))
- * 
+ *
  */
 
   /* function exit code */
@@ -33342,10 +33342,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__appendVarSOS2(struct __pyx_obj
 
 /* "pyscipopt/scip.pyx":887
  *         PY_SCIP_CALL(scip.SCIPappendVarSOS2(self._scip, cons, var))
- * 
+ *
  *     cdef _writeVarName(self, scip.SCIP_VAR* var):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPwriteVarName(self._scip, NULL, var, False))
- * 
+ *
  */
 
 static PyObject *__pyx_f_9pyscipopt_4scip_5Model__writeVarName(struct __pyx_obj_9pyscipopt_4scip_Model *__pyx_v_self, SCIP_VAR *__pyx_v_var) {
@@ -33362,10 +33362,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__writeVarName(struct __pyx_obj_
   __Pyx_RefNannySetupContext("_writeVarName", 0);
 
   /* "pyscipopt/scip.pyx":888
- * 
+ *
  *     cdef _writeVarName(self, scip.SCIP_VAR* var):
  *         PY_SCIP_CALL(scip.SCIPwriteVarName(self._scip, NULL, var, False))             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef _releaseVar(self, scip.SCIP_VAR* var):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 888; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -33402,10 +33402,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__writeVarName(struct __pyx_obj_
 
   /* "pyscipopt/scip.pyx":887
  *         PY_SCIP_CALL(scip.SCIPappendVarSOS2(self._scip, cons, var))
- * 
+ *
  *     cdef _writeVarName(self, scip.SCIP_VAR* var):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPwriteVarName(self._scip, NULL, var, False))
- * 
+ *
  */
 
   /* function exit code */
@@ -33427,10 +33427,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__writeVarName(struct __pyx_obj_
 
 /* "pyscipopt/scip.pyx":890
  *         PY_SCIP_CALL(scip.SCIPwriteVarName(self._scip, NULL, var, False))
- * 
+ *
  *     cdef _releaseVar(self, scip.SCIP_VAR* var):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPreleaseVar(self._scip, &var))
- * 
+ *
  */
 
 static PyObject *__pyx_f_9pyscipopt_4scip_5Model__releaseVar(struct __pyx_obj_9pyscipopt_4scip_Model *__pyx_v_self, SCIP_VAR *__pyx_v_var) {
@@ -33447,10 +33447,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__releaseVar(struct __pyx_obj_9p
   __Pyx_RefNannySetupContext("_releaseVar", 0);
 
   /* "pyscipopt/scip.pyx":891
- * 
+ *
  *     cdef _releaseVar(self, scip.SCIP_VAR* var):
  *         PY_SCIP_CALL(scip.SCIPreleaseVar(self._scip, &var))             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef _releaseCons(self, scip.SCIP_CONS* cons):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 891; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -33487,10 +33487,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__releaseVar(struct __pyx_obj_9p
 
   /* "pyscipopt/scip.pyx":890
  *         PY_SCIP_CALL(scip.SCIPwriteVarName(self._scip, NULL, var, False))
- * 
+ *
  *     cdef _releaseVar(self, scip.SCIP_VAR* var):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPreleaseVar(self._scip, &var))
- * 
+ *
  */
 
   /* function exit code */
@@ -33512,10 +33512,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__releaseVar(struct __pyx_obj_9p
 
 /* "pyscipopt/scip.pyx":893
  *         PY_SCIP_CALL(scip.SCIPreleaseVar(self._scip, &var))
- * 
+ *
  *     cdef _releaseCons(self, scip.SCIP_CONS* cons):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPreleaseCons(self._scip, &cons))
- * 
+ *
  */
 
 static PyObject *__pyx_f_9pyscipopt_4scip_5Model__releaseCons(struct __pyx_obj_9pyscipopt_4scip_Model *__pyx_v_self, SCIP_CONS *__pyx_v_cons) {
@@ -33532,11 +33532,11 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__releaseCons(struct __pyx_obj_9
   __Pyx_RefNannySetupContext("_releaseCons", 0);
 
   /* "pyscipopt/scip.pyx":894
- * 
+ *
  *     cdef _releaseCons(self, scip.SCIP_CONS* cons):
  *         PY_SCIP_CALL(scip.SCIPreleaseCons(self._scip, &cons))             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 894; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -33572,10 +33572,10 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__releaseCons(struct __pyx_obj_9
 
   /* "pyscipopt/scip.pyx":893
  *         PY_SCIP_CALL(scip.SCIPreleaseVar(self._scip, &var))
- * 
+ *
  *     cdef _releaseCons(self, scip.SCIP_CONS* cons):             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPreleaseCons(self._scip, &cons))
- * 
+ *
  */
 
   /* function exit code */
@@ -33597,7 +33597,7 @@ static PyObject *__pyx_f_9pyscipopt_4scip_5Model__releaseCons(struct __pyx_obj_9
 
 /* "pyscipopt/scip.pyx":899
  *     # Objective function
- * 
+ *
  *     def setMinimize(self):             # <<<<<<<<<<<<<<
  *         """Set the objective sense to maximization."""
  *         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MINIMIZE))
@@ -33634,7 +33634,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_32setMinimize(struct __pyx_obj
  *     def setMinimize(self):
  *         """Set the objective sense to maximization."""
  *         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MINIMIZE))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def setMaximize(self):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 901; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -33671,7 +33671,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_32setMinimize(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":899
  *     # Objective function
- * 
+ *
  *     def setMinimize(self):             # <<<<<<<<<<<<<<
  *         """Set the objective sense to maximization."""
  *         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MINIMIZE))
@@ -33696,7 +33696,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_32setMinimize(struct __pyx_obj
 
 /* "pyscipopt/scip.pyx":903
  *         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MINIMIZE))
- * 
+ *
  *     def setMaximize(self):             # <<<<<<<<<<<<<<
  *         """Set the objective sense to minimization."""
  *         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))
@@ -33733,7 +33733,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_34setMaximize(struct __pyx_obj
  *     def setMaximize(self):
  *         """Set the objective sense to minimization."""
  *         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def setObjlimit(self, objlimit):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 905; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -33770,7 +33770,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_34setMaximize(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":903
  *         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MINIMIZE))
- * 
+ *
  *     def setMaximize(self):             # <<<<<<<<<<<<<<
  *         """Set the objective sense to minimization."""
  *         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))
@@ -33795,7 +33795,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_34setMaximize(struct __pyx_obj
 
 /* "pyscipopt/scip.pyx":907
  *         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))
- * 
+ *
  *     def setObjlimit(self, objlimit):             # <<<<<<<<<<<<<<
  *         """Set a limit on the objective function.
  *         Only solutions with objective value better than this limit are accepted.
@@ -33833,7 +33833,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_36setObjlimit(struct __pyx_obj
  *         objlimit -- limit on the objective function
  *         """
  *         PY_SCIP_CALL(scip.SCIPsetObjlimit(self._scip, objlimit))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def setObjective(self, coeffs, sense = 'minimize'):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 914; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -33871,7 +33871,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_36setObjlimit(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":907
  *         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))
- * 
+ *
  *     def setObjlimit(self, objlimit):             # <<<<<<<<<<<<<<
  *         """Set a limit on the objective function.
  *         Only solutions with objective value better than this limit are accepted.
@@ -33896,10 +33896,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_36setObjlimit(struct __pyx_obj
 
 /* "pyscipopt/scip.pyx":916
  *         PY_SCIP_CALL(scip.SCIPsetObjlimit(self._scip, objlimit))
- * 
+ *
  *     def setObjective(self, coeffs, sense = 'minimize'):             # <<<<<<<<<<<<<<
  *         """Establish the objective function, either as a variable dictionary or as a linear expression.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -34104,11 +34104,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_38setObjective(struct __pyx_ob
           }
           #if CYTHON_COMPILING_IN_CPYTHON
           if (likely(PyTuple_CheckExact(sequence))) {
-            __pyx_t_6 = PyTuple_GET_ITEM(sequence, 0); 
-            __pyx_t_9 = PyTuple_GET_ITEM(sequence, 1); 
+            __pyx_t_6 = PyTuple_GET_ITEM(sequence, 0);
+            __pyx_t_9 = PyTuple_GET_ITEM(sequence, 1);
           } else {
-            __pyx_t_6 = PyList_GET_ITEM(sequence, 0); 
-            __pyx_t_9 = PyList_GET_ITEM(sequence, 1); 
+            __pyx_t_6 = PyList_GET_ITEM(sequence, 0);
+            __pyx_t_9 = PyList_GET_ITEM(sequence, 1);
           }
           __Pyx_INCREF(__pyx_t_6);
           __Pyx_INCREF(__pyx_t_9);
@@ -34389,7 +34389,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_38setObjective(struct __pyx_ob
  *             self.setMaximize()
  *         else:
  *             self.setMinimize()             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Setting parameters
  */
   /*else*/ {
@@ -34419,10 +34419,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_38setObjective(struct __pyx_ob
 
   /* "pyscipopt/scip.pyx":916
  *         PY_SCIP_CALL(scip.SCIPsetObjlimit(self._scip, objlimit))
- * 
+ *
  *     def setObjective(self, coeffs, sense = 'minimize'):             # <<<<<<<<<<<<<<
  *         """Establish the objective function, either as a variable dictionary or as a linear expression.
- * 
+ *
  */
 
   /* function exit code */
@@ -34448,11 +34448,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_38setObjective(struct __pyx_ob
 }
 
 /* "pyscipopt/scip.pyx":942
- * 
+ *
  *     # Setting parameters
  *     def setPresolve(self, setting):             # <<<<<<<<<<<<<<
  *         """Set presolving parameter settings.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -34487,7 +34487,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_40setPresolve(struct __pyx_obj
  *         setting -- the parameter settings
  *         """
  *         PY_SCIP_CALL(scip.SCIPsetPresolving(self._scip, setting, True))             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Write original problem to file
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 948; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -34524,11 +34524,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_40setPresolve(struct __pyx_obj
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "pyscipopt/scip.pyx":942
- * 
+ *
  *     # Setting parameters
  *     def setPresolve(self, setting):             # <<<<<<<<<<<<<<
  *         """Set presolving parameter settings.
- * 
+ *
  */
 
   /* function exit code */
@@ -34549,11 +34549,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_40setPresolve(struct __pyx_obj
 }
 
 /* "pyscipopt/scip.pyx":951
- * 
+ *
  *     # Write original problem to file
  *     def writeProblem(self, filename='origprob.cip'):             # <<<<<<<<<<<<<<
  *         """Write original problem to a file.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -34779,7 +34779,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_42writeProblem(struct __pyx_ob
  *         fn = str_conversion(filename)
  *         PY_SCIP_CALL(scip.SCIPwriteOrigProblem(self._scip, fn, ext, False))             # <<<<<<<<<<<<<<
  *         print('wrote original problem to file ' + filename)
- * 
+ *
  */
   __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 963; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -34819,7 +34819,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_42writeProblem(struct __pyx_ob
  *         fn = str_conversion(filename)
  *         PY_SCIP_CALL(scip.SCIPwriteOrigProblem(self._scip, fn, ext, False))
  *         print('wrote original problem to file ' + filename)             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Variable Functions
  */
   __pyx_t_2 = PyNumber_Add(__pyx_kp_s_wrote_original_problem_to_file, __pyx_v_filename); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 964; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -34828,11 +34828,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_42writeProblem(struct __pyx_ob
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "pyscipopt/scip.pyx":951
- * 
+ *
  *     # Write original problem to file
  *     def writeProblem(self, filename='origprob.cip'):             # <<<<<<<<<<<<<<
  *         """Write original problem to a file.
- * 
+ *
  */
 
   /* function exit code */
@@ -34857,10 +34857,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_42writeProblem(struct __pyx_ob
 
 /* "pyscipopt/scip.pyx":968
  *     # Variable Functions
- * 
+ *
  *     def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar = False):             # <<<<<<<<<<<<<<
  *         """Create a new variable.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -35128,7 +35128,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_44addVar(struct __pyx_obj_9pys
  *             self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_BINARY)
  *         elif vtype in ['I', 'INTEGER']:             # <<<<<<<<<<<<<<
  *             self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_INTEGER)
- * 
+ *
  */
   __Pyx_INCREF(__pyx_v_vtype);
   __pyx_t_3 = __pyx_v_vtype;
@@ -35149,7 +35149,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_44addVar(struct __pyx_obj_9pys
  *             self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_BINARY)
  *         elif vtype in ['I', 'INTEGER']:
  *             self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_INTEGER)             # <<<<<<<<<<<<<<
- * 
+ *
  *         if pricedVar:
  */
     __pyx_t_3 = ((struct __pyx_vtabstruct_9pyscipopt_4scip_Model *)__pyx_v_self->__pyx_vtab)->_createVarBasic(__pyx_v_self, (&__pyx_v_scip_var), __pyx_v_name, __pyx_v_lb, __pyx_v_ub, __pyx_v_obj, SCIP_VARTYPE_INTEGER); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 989; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -35161,14 +35161,14 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_44addVar(struct __pyx_obj_9pys
  *             self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_BINARY)
  *         elif vtype in ['I', 'INTEGER']:             # <<<<<<<<<<<<<<
  *             self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_INTEGER)
- * 
+ *
  */
   }
   __pyx_L4:;
 
   /* "pyscipopt/scip.pyx":991
  *             self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_INTEGER)
- * 
+ *
  *         if pricedVar:             # <<<<<<<<<<<<<<
  *             self._addPricedVar(scip_var)
  *         else:
@@ -35177,7 +35177,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_44addVar(struct __pyx_obj_9pys
   if (__pyx_t_1) {
 
     /* "pyscipopt/scip.pyx":992
- * 
+ *
  *         if pricedVar:
  *             self._addPricedVar(scip_var)             # <<<<<<<<<<<<<<
  *         else:
@@ -35189,7 +35189,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_44addVar(struct __pyx_obj_9pys
 
     /* "pyscipopt/scip.pyx":991
  *             self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_INTEGER)
- * 
+ *
  *         if pricedVar:             # <<<<<<<<<<<<<<
  *             self._addPricedVar(scip_var)
  *         else:
@@ -35201,7 +35201,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_44addVar(struct __pyx_obj_9pys
  *             self._addPricedVar(scip_var)
  *         else:
  *             self._addVar(scip_var)             # <<<<<<<<<<<<<<
- * 
+ *
  *         self._releaseVar(scip_var)
  */
   /*else*/ {
@@ -35213,20 +35213,20 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_44addVar(struct __pyx_obj_9pys
 
   /* "pyscipopt/scip.pyx":996
  *             self._addVar(scip_var)
- * 
+ *
  *         self._releaseVar(scip_var)             # <<<<<<<<<<<<<<
  *         return pythonizeVar(scip_var, name)
- * 
+ *
  */
   __pyx_t_3 = ((struct __pyx_vtabstruct_9pyscipopt_4scip_Model *)__pyx_v_self->__pyx_vtab)->_releaseVar(__pyx_v_self, __pyx_v_scip_var); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 996; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
   /* "pyscipopt/scip.pyx":997
- * 
+ *
  *         self._releaseVar(scip_var)
  *         return pythonizeVar(scip_var, name)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def releaseVar(self, var):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -35238,10 +35238,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_44addVar(struct __pyx_obj_9pys
 
   /* "pyscipopt/scip.pyx":968
  *     # Variable Functions
- * 
+ *
  *     def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar = False):             # <<<<<<<<<<<<<<
  *         """Create a new variable.
- * 
+ *
  */
 
   /* function exit code */
@@ -35259,10 +35259,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_44addVar(struct __pyx_obj_9pys
 
 /* "pyscipopt/scip.pyx":999
  *         return pythonizeVar(scip_var, name)
- * 
+ *
  *     def releaseVar(self, var):             # <<<<<<<<<<<<<<
  *         """Release the variable.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -35309,7 +35309,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_46releaseVar(struct __pyx_obj_
  *         v = var.var
  *         _var = v._var             # <<<<<<<<<<<<<<
  *         self._releaseVar(_var)
- * 
+ *
  */
   __pyx_t_2 = __pyx_v_v->_var;
   __pyx_v__var = __pyx_t_2;
@@ -35318,7 +35318,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_46releaseVar(struct __pyx_obj_
  *         v = var.var
  *         _var = v._var
  *         self._releaseVar(_var)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getTransformedVar(self, var):
  */
   __pyx_t_1 = ((struct __pyx_vtabstruct_9pyscipopt_4scip_Model *)__pyx_v_self->__pyx_vtab)->_releaseVar(__pyx_v_self, __pyx_v__var); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1009; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -35327,10 +35327,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_46releaseVar(struct __pyx_obj_
 
   /* "pyscipopt/scip.pyx":999
  *         return pythonizeVar(scip_var, name)
- * 
+ *
  *     def releaseVar(self, var):             # <<<<<<<<<<<<<<
  *         """Release the variable.
- * 
+ *
  */
 
   /* function exit code */
@@ -35349,10 +35349,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_46releaseVar(struct __pyx_obj_
 
 /* "pyscipopt/scip.pyx":1011
  *         self._releaseVar(_var)
- * 
+ *
  *     def getTransformedVar(self, var):             # <<<<<<<<<<<<<<
  *         """Retrieve the transformed variable.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -35467,7 +35467,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_48getTransformedVar(struct __p
  *         PY_SCIP_CALL(scip.SCIPtransformVar(self._scip, v._var, &_tvar))
  *         name = <bytes> scip.SCIPvarGetName(_tvar)             # <<<<<<<<<<<<<<
  *         return pythonizeVar(_tvar, name)
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyBytes_FromString(SCIPvarGetName(__pyx_v__tvar)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1024; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -35481,8 +35481,8 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_48getTransformedVar(struct __p
  *         PY_SCIP_CALL(scip.SCIPtransformVar(self._scip, v._var, &_tvar))
  *         name = <bytes> scip.SCIPvarGetName(_tvar)
  *         return pythonizeVar(_tvar, name)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_3 = __pyx_f_9pyscipopt_4scip_pythonizeVar(__pyx_v__tvar, __pyx_v_name); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1025; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -35493,10 +35493,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_48getTransformedVar(struct __p
 
   /* "pyscipopt/scip.pyx":1011
  *         self._releaseVar(_var)
- * 
+ *
  *     def getTransformedVar(self, var):             # <<<<<<<<<<<<<<
  *         """Retrieve the transformed variable.
- * 
+ *
  */
 
   /* function exit code */
@@ -35518,11 +35518,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_48getTransformedVar(struct __p
 }
 
 /* "pyscipopt/scip.pyx":1028
- * 
- * 
+ *
+ *
  *     def chgVarLb(self, var, lb=None):             # <<<<<<<<<<<<<<
  *         """Changes the lower bound of the specified variable.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -35614,7 +35614,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_50chgVarLb(struct __pyx_obj_9p
  *         cdef Var v
  *         v = <Var>var.var             # <<<<<<<<<<<<<<
  *         _var = <scip.SCIP_VAR*>v._var
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_var, __pyx_n_s_var); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1037; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -35628,27 +35628,27 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_50chgVarLb(struct __pyx_obj_9p
  *         cdef Var v
  *         v = <Var>var.var
  *         _var = <scip.SCIP_VAR*>v._var             # <<<<<<<<<<<<<<
- * 
+ *
  *         if lb is None:
  */
   __pyx_v__var = ((SCIP_VAR *)__pyx_v_v->_var);
 
   /* "pyscipopt/scip.pyx":1040
  *         _var = <scip.SCIP_VAR*>v._var
- * 
+ *
  *         if lb is None:             # <<<<<<<<<<<<<<
  *            lb = -scip.SCIPinfinity(self._scip)
- * 
+ *
  */
   __pyx_t_3 = (__pyx_v_lb == Py_None);
   __pyx_t_4 = (__pyx_t_3 != 0);
   if (__pyx_t_4) {
 
     /* "pyscipopt/scip.pyx":1041
- * 
+ *
  *         if lb is None:
  *            lb = -scip.SCIPinfinity(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, lb))
  */
     __pyx_t_2 = PyFloat_FromDouble((-SCIPinfinity(__pyx_v_self->_scip))); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1041; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -35658,18 +35658,18 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_50chgVarLb(struct __pyx_obj_9p
 
     /* "pyscipopt/scip.pyx":1040
  *         _var = <scip.SCIP_VAR*>v._var
- * 
+ *
  *         if lb is None:             # <<<<<<<<<<<<<<
  *            lb = -scip.SCIPinfinity(self._scip)
- * 
+ *
  */
   }
 
   /* "pyscipopt/scip.pyx":1043
  *            lb = -scip.SCIPinfinity(self._scip)
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, lb))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def chgVarUb(self, var, ub=None):
  */
   __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1043; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -35706,11 +35706,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_50chgVarLb(struct __pyx_obj_9p
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "pyscipopt/scip.pyx":1028
- * 
- * 
+ *
+ *
  *     def chgVarLb(self, var, lb=None):             # <<<<<<<<<<<<<<
  *         """Changes the lower bound of the specified variable.
- * 
+ *
  */
 
   /* function exit code */
@@ -35734,10 +35734,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_50chgVarLb(struct __pyx_obj_9p
 
 /* "pyscipopt/scip.pyx":1045
  *         PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, lb))
- * 
+ *
  *     def chgVarUb(self, var, ub=None):             # <<<<<<<<<<<<<<
  *         """Changes the upper bound of the specified variable.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -35829,7 +35829,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_52chgVarUb(struct __pyx_obj_9p
  *         cdef Var v
  *         v = <Var>var.var             # <<<<<<<<<<<<<<
  *         _var = <scip.SCIP_VAR*>v._var
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_var, __pyx_n_s_var); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1054; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -35843,27 +35843,27 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_52chgVarUb(struct __pyx_obj_9p
  *         cdef Var v
  *         v = <Var>var.var
  *         _var = <scip.SCIP_VAR*>v._var             # <<<<<<<<<<<<<<
- * 
+ *
  *         if ub is None:
  */
   __pyx_v__var = ((SCIP_VAR *)__pyx_v_v->_var);
 
   /* "pyscipopt/scip.pyx":1057
  *         _var = <scip.SCIP_VAR*>v._var
- * 
+ *
  *         if ub is None:             # <<<<<<<<<<<<<<
  *            ub = scip.SCIPinfinity(self._scip)
- * 
+ *
  */
   __pyx_t_3 = (__pyx_v_ub == Py_None);
   __pyx_t_4 = (__pyx_t_3 != 0);
   if (__pyx_t_4) {
 
     /* "pyscipopt/scip.pyx":1058
- * 
+ *
  *         if ub is None:
  *            ub = scip.SCIPinfinity(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, ub))
  */
     __pyx_t_2 = PyFloat_FromDouble(SCIPinfinity(__pyx_v_self->_scip)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1058; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -35873,18 +35873,18 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_52chgVarUb(struct __pyx_obj_9p
 
     /* "pyscipopt/scip.pyx":1057
  *         _var = <scip.SCIP_VAR*>v._var
- * 
+ *
  *         if ub is None:             # <<<<<<<<<<<<<<
  *            ub = scip.SCIPinfinity(self._scip)
- * 
+ *
  */
   }
 
   /* "pyscipopt/scip.pyx":1060
  *            ub = scip.SCIPinfinity(self._scip)
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, ub))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def chgVarType(self, var, vtype):
  */
   __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1060; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -35922,10 +35922,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_52chgVarUb(struct __pyx_obj_9p
 
   /* "pyscipopt/scip.pyx":1045
  *         PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, lb))
- * 
+ *
  *     def chgVarUb(self, var, ub=None):             # <<<<<<<<<<<<<<
  *         """Changes the upper bound of the specified variable.
- * 
+ *
  */
 
   /* function exit code */
@@ -35949,7 +35949,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_52chgVarUb(struct __pyx_obj_9p
 
 /* "pyscipopt/scip.pyx":1062
  *         PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, ub))
- * 
+ *
  *     def chgVarType(self, var, vtype):             # <<<<<<<<<<<<<<
  *         cdef scip.SCIP_VAR* _var
  *         cdef Var v
@@ -36295,7 +36295,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_54chgVarType(struct __pyx_obj_
  *             print('wrong variable type: ',vtype)
  *         if infeasible:             # <<<<<<<<<<<<<<
  *             print('could not change variable type of variable ',<bytes> scip.SCIPvarGetName(_var))
- * 
+ *
  */
   __pyx_t_3 = (__pyx_v_infeasible != 0);
   if (__pyx_t_3) {
@@ -36304,7 +36304,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_54chgVarType(struct __pyx_obj_
  *             print('wrong variable type: ',vtype)
  *         if infeasible:
  *             print('could not change variable type of variable ',<bytes> scip.SCIPvarGetName(_var))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getVars(self, transformed=False):
  */
     __pyx_t_1 = __Pyx_PyBytes_FromString(SCIPvarGetName(__pyx_v__var)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1077; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -36326,13 +36326,13 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_54chgVarType(struct __pyx_obj_
  *             print('wrong variable type: ',vtype)
  *         if infeasible:             # <<<<<<<<<<<<<<
  *             print('could not change variable type of variable ',<bytes> scip.SCIPvarGetName(_var))
- * 
+ *
  */
   }
 
   /* "pyscipopt/scip.pyx":1062
  *         PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, ub))
- * 
+ *
  *     def chgVarType(self, var, vtype):             # <<<<<<<<<<<<<<
  *         cdef scip.SCIP_VAR* _var
  *         cdef Var v
@@ -36358,10 +36358,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_54chgVarType(struct __pyx_obj_
 
 /* "pyscipopt/scip.pyx":1079
  *             print('could not change variable type of variable ',<bytes> scip.SCIPvarGetName(_var))
- * 
+ *
  *     def getVars(self, transformed=False):             # <<<<<<<<<<<<<<
  *         """Retrieve all variables.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -36446,7 +36446,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_56getVars(struct __pyx_obj_9py
  *         cdef scip.SCIP_VAR* _var
  *         cdef int _nvars
  *         vars = []             # <<<<<<<<<<<<<<
- * 
+ *
  *         if transformed:
  */
   __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1088; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -36456,7 +36456,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_56getVars(struct __pyx_obj_9py
 
   /* "pyscipopt/scip.pyx":1090
  *         vars = []
- * 
+ *
  *         if transformed:             # <<<<<<<<<<<<<<
  *             _vars = SCIPgetVars(self._scip)
  *             _nvars = SCIPgetNVars(self._scip)
@@ -36465,7 +36465,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_56getVars(struct __pyx_obj_9py
   if (__pyx_t_2) {
 
     /* "pyscipopt/scip.pyx":1091
- * 
+ *
  *         if transformed:
  *             _vars = SCIPgetVars(self._scip)             # <<<<<<<<<<<<<<
  *             _nvars = SCIPgetNVars(self._scip)
@@ -36484,7 +36484,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_56getVars(struct __pyx_obj_9py
 
     /* "pyscipopt/scip.pyx":1090
  *         vars = []
- * 
+ *
  *         if transformed:             # <<<<<<<<<<<<<<
  *             _vars = SCIPgetVars(self._scip)
  *             _nvars = SCIPgetNVars(self._scip)
@@ -36497,7 +36497,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_56getVars(struct __pyx_obj_9py
  *         else:
  *             _vars = SCIPgetOrigVars(self._scip)             # <<<<<<<<<<<<<<
  *             _nvars = SCIPgetNOrigVars(self._scip)
- * 
+ *
  */
   /*else*/ {
     __pyx_v__vars = SCIPgetOrigVars(__pyx_v_self->_scip);
@@ -36506,7 +36506,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_56getVars(struct __pyx_obj_9py
  *         else:
  *             _vars = SCIPgetOrigVars(self._scip)
  *             _nvars = SCIPgetNOrigVars(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *         for i in range(_nvars):
  */
     __pyx_v__nvars = SCIPgetNOrigVars(__pyx_v_self->_scip);
@@ -36515,7 +36515,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_56getVars(struct __pyx_obj_9py
 
   /* "pyscipopt/scip.pyx":1097
  *             _nvars = SCIPgetNOrigVars(self._scip)
- * 
+ *
  *         for i in range(_nvars):             # <<<<<<<<<<<<<<
  *             _var = _vars[i]
  *             name = scip.SCIPvarGetName(_var).decode("utf-8")
@@ -36525,7 +36525,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_56getVars(struct __pyx_obj_9py
     __pyx_v_i = __pyx_t_4;
 
     /* "pyscipopt/scip.pyx":1098
- * 
+ *
  *         for i in range(_nvars):
  *             _var = _vars[i]             # <<<<<<<<<<<<<<
  *             name = scip.SCIPvarGetName(_var).decode("utf-8")
@@ -36538,7 +36538,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_56getVars(struct __pyx_obj_9py
  *             _var = _vars[i]
  *             name = scip.SCIPvarGetName(_var).decode("utf-8")             # <<<<<<<<<<<<<<
  *             vars.append(pythonizeVar(_var, name))
- * 
+ *
  */
     __pyx_t_5 = SCIPvarGetName(__pyx_v__var);
     __pyx_t_1 = __Pyx_decode_c_string(__pyx_t_5, 0, strlen(__pyx_t_5), NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1099; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -36551,7 +36551,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_56getVars(struct __pyx_obj_9py
  *             _var = _vars[i]
  *             name = scip.SCIPvarGetName(_var).decode("utf-8")
  *             vars.append(pythonizeVar(_var, name))             # <<<<<<<<<<<<<<
- * 
+ *
  *         return vars
  */
     __pyx_t_1 = __pyx_f_9pyscipopt_4scip_pythonizeVar(__pyx_v__var, __pyx_v_name); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -36562,10 +36562,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_56getVars(struct __pyx_obj_9py
 
   /* "pyscipopt/scip.pyx":1102
  *             vars.append(pythonizeVar(_var, name))
- * 
+ *
  *         return vars             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_INCREF(__pyx_v_vars);
@@ -36574,10 +36574,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_56getVars(struct __pyx_obj_9py
 
   /* "pyscipopt/scip.pyx":1079
  *             print('could not change variable type of variable ',<bytes> scip.SCIPvarGetName(_var))
- * 
+ *
  *     def getVars(self, transformed=False):             # <<<<<<<<<<<<<<
  *         """Retrieve all variables.
- * 
+ *
  */
 
   /* function exit code */
@@ -36661,7 +36661,7 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_5Model_59addCons(PyObject *__pyx_v_se
  *                 propagate=True, local=False, modifiable=False, dynamic=False,
  *                 removable=False, stickingatnode=False):             # <<<<<<<<<<<<<<
  *         """Add a linear or quadratic constraint.
- * 
+ *
  */
     values[12] = ((PyObject *)Py_False);
     values[13] = ((PyObject *)Py_False);
@@ -37040,7 +37040,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_58addCons(struct __pyx_obj_9py
  *                 return self._addQuadCons(coeffs, **kwargs)
  *             else:
  *                 raise NotImplementedError('Constraints of degree %d!' % deg)             # <<<<<<<<<<<<<<
- * 
+ *
  *         if lhs is None:
  */
     /*else*/ {
@@ -37070,7 +37070,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_58addCons(struct __pyx_obj_9py
 
   /* "pyscipopt/scip.pyx":1145
  *                 raise NotImplementedError('Constraints of degree %d!' % deg)
- * 
+ *
  *         if lhs is None:             # <<<<<<<<<<<<<<
  *             lhs = -scip.SCIPinfinity(self._scip)
  *         if rhs is None:
@@ -37080,7 +37080,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_58addCons(struct __pyx_obj_9py
   if (__pyx_t_2) {
 
     /* "pyscipopt/scip.pyx":1146
- * 
+ *
  *         if lhs is None:
  *             lhs = -scip.SCIPinfinity(self._scip)             # <<<<<<<<<<<<<<
  *         if rhs is None:
@@ -37093,7 +37093,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_58addCons(struct __pyx_obj_9py
 
     /* "pyscipopt/scip.pyx":1145
  *                 raise NotImplementedError('Constraints of degree %d!' % deg)
- * 
+ *
  *         if lhs is None:             # <<<<<<<<<<<<<<
  *             lhs = -scip.SCIPinfinity(self._scip)
  *         if rhs is None:
@@ -37269,7 +37269,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_58addCons(struct __pyx_obj_9py
  *             self._addCoefLinear(scip_cons, _var, coeff)
  *         self._addCons(scip_cons)             # <<<<<<<<<<<<<<
  *         self._releaseCons(scip_cons)
- * 
+ *
  */
   __pyx_t_1 = ((struct __pyx_vtabstruct_9pyscipopt_4scip_Model *)__pyx_v_self->__pyx_vtab)->_addCons(__pyx_v_self, __pyx_v_scip_cons); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -37279,7 +37279,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_58addCons(struct __pyx_obj_9py
  *             self._addCoefLinear(scip_cons, _var, coeff)
  *         self._addCons(scip_cons)
  *         self._releaseCons(scip_cons)             # <<<<<<<<<<<<<<
- * 
+ *
  *         return pythonizeCons(scip_cons, name)
  */
   __pyx_t_1 = ((struct __pyx_vtabstruct_9pyscipopt_4scip_Model *)__pyx_v_self->__pyx_vtab)->_releaseCons(__pyx_v_self, __pyx_v_scip_cons); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1162; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -37288,9 +37288,9 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_58addCons(struct __pyx_obj_9py
 
   /* "pyscipopt/scip.pyx":1164
  *         self._releaseCons(scip_cons)
- * 
+ *
  *         return pythonizeCons(scip_cons, name)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def _addLinCons(self, lincons, **kwargs):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -37329,7 +37329,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_58addCons(struct __pyx_obj_9py
 
 /* "pyscipopt/scip.pyx":1166
  *         return pythonizeCons(scip_cons, name)
- * 
+ *
  *     def _addLinCons(self, lincons, **kwargs):             # <<<<<<<<<<<<<<
  *         """Add object of class LinCons."""
  *         assert isinstance(lincons, LinCons)
@@ -37512,7 +37512,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_60_addLinCons(struct __pyx_obj
  *         assert lincons.expr.degree() <= 1
  *         assert terms[()] == 0.0             # <<<<<<<<<<<<<<
  *         coeffs = {t[0]:c for t, c in terms.items() if c != 0.0}
- * 
+ *
  */
   #ifndef CYTHON_WITHOUT_ASSERTIONS
   if (unlikely(!Py_OptimizeFlag)) {
@@ -37534,7 +37534,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_60_addLinCons(struct __pyx_obj
  *         assert lincons.expr.degree() <= 1
  *         assert terms[()] == 0.0
  *         coeffs = {t[0]:c for t, c in terms.items() if c != 0.0}             # <<<<<<<<<<<<<<
- * 
+ *
  *         return self.addCons(coeffs, **kwargs)
  */
   { /* enter inner scope */
@@ -37616,11 +37616,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_60_addLinCons(struct __pyx_obj
         }
         #if CYTHON_COMPILING_IN_CPYTHON
         if (likely(PyTuple_CheckExact(sequence))) {
-          __pyx_t_5 = PyTuple_GET_ITEM(sequence, 0); 
-          __pyx_t_8 = PyTuple_GET_ITEM(sequence, 1); 
+          __pyx_t_5 = PyTuple_GET_ITEM(sequence, 0);
+          __pyx_t_8 = PyTuple_GET_ITEM(sequence, 1);
         } else {
-          __pyx_t_5 = PyList_GET_ITEM(sequence, 0); 
-          __pyx_t_8 = PyList_GET_ITEM(sequence, 1); 
+          __pyx_t_5 = PyList_GET_ITEM(sequence, 0);
+          __pyx_t_8 = PyList_GET_ITEM(sequence, 1);
         }
         __Pyx_INCREF(__pyx_t_5);
         __Pyx_INCREF(__pyx_t_8);
@@ -37681,9 +37681,9 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_60_addLinCons(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":1175
  *         coeffs = {t[0]:c for t, c in terms.items() if c != 0.0}
- * 
+ *
  *         return self.addCons(coeffs, **kwargs)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def _addQuadCons(self, quadcons, **kwargs):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -37704,7 +37704,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_60_addLinCons(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":1166
  *         return pythonizeCons(scip_cons, name)
- * 
+ *
  *     def _addLinCons(self, lincons, **kwargs):             # <<<<<<<<<<<<<<
  *         """Add object of class LinCons."""
  *         assert isinstance(lincons, LinCons)
@@ -37730,7 +37730,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_60_addLinCons(struct __pyx_obj
 
 /* "pyscipopt/scip.pyx":1177
  *         return self.addCons(coeffs, **kwargs)
- * 
+ *
  *     def _addQuadCons(self, quadcons, **kwargs):             # <<<<<<<<<<<<<<
  *         """Add object of class LinCons."""
  *         assert isinstance(quadcons, LinCons) # TODO
@@ -37925,7 +37925,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
  *         terms = quadcons.expr.terms
  *         assert quadcons.expr.degree() <= 2             # <<<<<<<<<<<<<<
  *         assert terms[()] == 0.0
- * 
+ *
  */
   #ifndef CYTHON_WITHOUT_ASSERTIONS
   if (unlikely(!Py_OptimizeFlag)) {
@@ -37967,7 +37967,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
  *         terms = quadcons.expr.terms
  *         assert quadcons.expr.degree() <= 2
  *         assert terms[()] == 0.0             # <<<<<<<<<<<<<<
- * 
+ *
  *         name = str_conversion("quadcons") # TODO
  */
   #ifndef CYTHON_WITHOUT_ASSERTIONS
@@ -37988,9 +37988,9 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
 
   /* "pyscipopt/scip.pyx":1186
  *         assert terms[()] == 0.0
- * 
+ *
  *         name = str_conversion("quadcons") # TODO             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef scip.SCIP_CONS* scip_cons
  */
   __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_str_conversion); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -38002,7 +38002,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
   __pyx_t_4 = 0;
 
   /* "pyscipopt/scip.pyx":1189
- * 
+ *
  *         cdef scip.SCIP_CONS* scip_cons
  *         PY_SCIP_CALL(scip.SCIPcreateConsQuadratic(             # <<<<<<<<<<<<<<
  *             self._scip, &scip_cons, name,
@@ -38061,7 +38061,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
  *             kwargs['initial'], kwargs['separate'], kwargs['enforce'],
  *             kwargs['check'], kwargs['propagate'], kwargs['local'],             # <<<<<<<<<<<<<<
  *             kwargs['modifiable'], kwargs['dynamic'], kwargs['removable']))
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_kwargs, __pyx_n_s_check); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1195; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
@@ -38080,7 +38080,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
  *             kwargs['initial'], kwargs['separate'], kwargs['enforce'],
  *             kwargs['check'], kwargs['propagate'], kwargs['local'],
  *             kwargs['modifiable'], kwargs['dynamic'], kwargs['removable']))             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef Var var1
  */
   __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_kwargs, __pyx_n_s_modifiable); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1196; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
@@ -38097,7 +38097,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "pyscipopt/scip.pyx":1189
- * 
+ *
  *         cdef scip.SCIP_CONS* scip_cons
  *         PY_SCIP_CALL(scip.SCIPcreateConsQuadratic(             # <<<<<<<<<<<<<<
  *             self._scip, &scip_cons, name,
@@ -38214,11 +38214,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
       }
       #if CYTHON_COMPILING_IN_CPYTHON
       if (likely(PyTuple_CheckExact(sequence))) {
-        __pyx_t_18 = PyTuple_GET_ITEM(sequence, 0); 
-        __pyx_t_1 = PyTuple_GET_ITEM(sequence, 1); 
+        __pyx_t_18 = PyTuple_GET_ITEM(sequence, 0);
+        __pyx_t_1 = PyTuple_GET_ITEM(sequence, 1);
       } else {
-        __pyx_t_18 = PyList_GET_ITEM(sequence, 0); 
-        __pyx_t_1 = PyList_GET_ITEM(sequence, 1); 
+        __pyx_t_18 = PyList_GET_ITEM(sequence, 0);
+        __pyx_t_1 = PyList_GET_ITEM(sequence, 1);
       }
       __Pyx_INCREF(__pyx_t_18);
       __Pyx_INCREF(__pyx_t_1);
@@ -38455,7 +38455,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
  *                 var2 = <Var>v[1].var
  *                 _var2 = <scip.SCIP_VAR*>var2._var             # <<<<<<<<<<<<<<
  *                 PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, _var1, _var2, c))
- * 
+ *
  */
       __pyx_v__var2 = ((SCIP_VAR *)__pyx_v_var2->_var);
 
@@ -38463,7 +38463,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
  *                 var2 = <Var>v[1].var
  *                 _var2 = <scip.SCIP_VAR*>var2._var
  *                 PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, _var1, _var2, c))             # <<<<<<<<<<<<<<
- * 
+ *
  *         self._addCons(scip_cons)
  */
       __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -38513,7 +38513,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
 
   /* "pyscipopt/scip.pyx":1217
  *                 PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, _var1, _var2, c))
- * 
+ *
  *         self._addCons(scip_cons)             # <<<<<<<<<<<<<<
  *         cons = Cons()
  *         cons._cons = scip_cons
@@ -38523,7 +38523,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
   /* "pyscipopt/scip.pyx":1218
- * 
+ *
  *         self._addCons(scip_cons)
  *         cons = Cons()             # <<<<<<<<<<<<<<
  *         cons._cons = scip_cons
@@ -38539,7 +38539,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
  *         cons = Cons()
  *         cons._cons = scip_cons             # <<<<<<<<<<<<<<
  *         return cons
- * 
+ *
  */
   __pyx_v_cons->_cons = __pyx_v_scip_cons;
 
@@ -38547,7 +38547,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
  *         cons = Cons()
  *         cons._cons = scip_cons
  *         return cons             # <<<<<<<<<<<<<<
- * 
+ *
  *     def addConsCoeff(self, cons, var, coeff):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -38557,7 +38557,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
 
   /* "pyscipopt/scip.pyx":1177
  *         return self.addCons(coeffs, **kwargs)
- * 
+ *
  *     def _addQuadCons(self, quadcons, **kwargs):             # <<<<<<<<<<<<<<
  *         """Add object of class LinCons."""
  *         assert isinstance(quadcons, LinCons) # TODO
@@ -38588,10 +38588,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_62_addQuadCons(struct __pyx_ob
 
 /* "pyscipopt/scip.pyx":1222
  *         return cons
- * 
+ *
  *     def addConsCoeff(self, cons, var, coeff):             # <<<<<<<<<<<<<<
  *         """Add coefficient to the linear constraint (if non-zero).
- * 
+ *
  */
 
 /* Python wrapper */
@@ -38694,7 +38694,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_64addConsCoeff(struct __pyx_ob
  *         c = cons.cons
  *         v = var.var             # <<<<<<<<<<<<<<
  *         self._addCoefLinear(c._cons, v._var, coeff)
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_var, __pyx_n_s_var); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1232; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -38706,7 +38706,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_64addConsCoeff(struct __pyx_ob
  *         c = cons.cons
  *         v = var.var
  *         self._addCoefLinear(c._cons, v._var, coeff)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def addConsSOS1(self, vars, weights=None, name="SOS1cons",
  */
   __pyx_t_1 = ((struct __pyx_vtabstruct_9pyscipopt_4scip_Model *)__pyx_v_self->__pyx_vtab)->_addCoefLinear(__pyx_v_self, __pyx_v_c->_cons, __pyx_v_v->_var, __pyx_v_coeff); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1233; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -38715,10 +38715,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_64addConsCoeff(struct __pyx_ob
 
   /* "pyscipopt/scip.pyx":1222
  *         return cons
- * 
+ *
  *     def addConsCoeff(self, cons, var, coeff):             # <<<<<<<<<<<<<<
  *         """Add coefficient to the linear constraint (if non-zero).
- * 
+ *
  */
 
   /* function exit code */
@@ -38738,7 +38738,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_64addConsCoeff(struct __pyx_ob
 
 /* "pyscipopt/scip.pyx":1235
  *         self._addCoefLinear(c._cons, v._var, coeff)
- * 
+ *
  *     def addConsSOS1(self, vars, weights=None, name="SOS1cons",             # <<<<<<<<<<<<<<
  *                 initial=True, separate=True, enforce=True, check=True,
  *                 propagate=True, local=False, dynamic=False,
@@ -38773,7 +38773,7 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_5Model_67addConsSOS1(PyObject *__pyx_
     values[2] = ((PyObject *)__pyx_n_s_SOS1cons);
 
     /* "pyscipopt/scip.pyx":1236
- * 
+ *
  *     def addConsSOS1(self, vars, weights=None, name="SOS1cons",
  *                 initial=True, separate=True, enforce=True, check=True,             # <<<<<<<<<<<<<<
  *                 propagate=True, local=False, dynamic=False,
@@ -38800,7 +38800,7 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_5Model_67addConsSOS1(PyObject *__pyx_
  *                 propagate=True, local=False, dynamic=False,
  *                 removable=False, stickingatnode=False):             # <<<<<<<<<<<<<<
  *         """Add an SOS1 constraint.
- * 
+ *
  */
     values[10] = ((PyObject *)Py_False);
     values[11] = ((PyObject *)Py_False);
@@ -38930,7 +38930,7 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_5Model_67addConsSOS1(PyObject *__pyx_
 
   /* "pyscipopt/scip.pyx":1235
  *         self._addCoefLinear(c._cons, v._var, coeff)
- * 
+ *
  *     def addConsSOS1(self, vars, weights=None, name="SOS1cons",             # <<<<<<<<<<<<<<
  *                 initial=True, separate=True, enforce=True, check=True,
  *                 propagate=True, local=False, dynamic=False,
@@ -38965,7 +38965,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_66addConsSOS1(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":1260
  *         cdef int _nvars
- * 
+ *
  *         self._createConsSOS1(&scip_cons, name, 0, NULL, NULL,             # <<<<<<<<<<<<<<
  *                                 initial, separate, enforce, check, propagate,
  *                                 local, dynamic, removable, stickingatnode)
@@ -38986,7 +38986,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_66addConsSOS1(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":1264
  *                                 local, dynamic, removable, stickingatnode)
- * 
+ *
  *         if weights is None:             # <<<<<<<<<<<<<<
  *             for k in vars:
  *                 v = <Var>k.var
@@ -38996,7 +38996,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_66addConsSOS1(struct __pyx_obj
   if (__pyx_t_4) {
 
     /* "pyscipopt/scip.pyx":1265
- * 
+ *
  *         if weights is None:
  *             for k in vars:             # <<<<<<<<<<<<<<
  *                 v = <Var>k.var
@@ -39080,7 +39080,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_66addConsSOS1(struct __pyx_obj
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
       /* "pyscipopt/scip.pyx":1265
- * 
+ *
  *         if weights is None:
  *             for k in vars:             # <<<<<<<<<<<<<<
  *                 v = <Var>k.var
@@ -39091,7 +39091,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_66addConsSOS1(struct __pyx_obj
 
     /* "pyscipopt/scip.pyx":1264
  *                                 local, dynamic, removable, stickingatnode)
- * 
+ *
  *         if weights is None:             # <<<<<<<<<<<<<<
  *             for k in vars:
  *                 v = <Var>k.var
@@ -39202,7 +39202,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_66addConsSOS1(struct __pyx_obj
  *                 _var = <scip.SCIP_VAR*>v._var
  *                 weight = weights[k]             # <<<<<<<<<<<<<<
  *                 self._addVarSOS1(scip_cons, _var, weight)
- * 
+ *
  */
       __pyx_t_1 = PyObject_GetItem(__pyx_v_weights, __pyx_v_k); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1274; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
       __Pyx_GOTREF(__pyx_t_1);
@@ -39213,7 +39213,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_66addConsSOS1(struct __pyx_obj
  *                 _var = <scip.SCIP_VAR*>v._var
  *                 weight = weights[k]
  *                 self._addVarSOS1(scip_cons, _var, weight)             # <<<<<<<<<<<<<<
- * 
+ *
  *         self._addCons(scip_cons)
  */
       __pyx_t_1 = ((struct __pyx_vtabstruct_9pyscipopt_4scip_Model *)__pyx_v_self->__pyx_vtab)->_addVarSOS1(__pyx_v_self, __pyx_v_scip_cons, __pyx_v__var, __pyx_v_weight); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1275; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -39234,20 +39234,20 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_66addConsSOS1(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":1277
  *                 self._addVarSOS1(scip_cons, _var, weight)
- * 
+ *
  *         self._addCons(scip_cons)             # <<<<<<<<<<<<<<
  *         return pythonizeCons(scip_cons, name)
- * 
+ *
  */
   __pyx_t_8 = ((struct __pyx_vtabstruct_9pyscipopt_4scip_Model *)__pyx_v_self->__pyx_vtab)->_addCons(__pyx_v_self, __pyx_v_scip_cons); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1277; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
   /* "pyscipopt/scip.pyx":1278
- * 
+ *
  *         self._addCons(scip_cons)
  *         return pythonizeCons(scip_cons, name)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def addConsSOS2(self, vars, weights=None, name="SOS2cons",
  */
   __Pyx_XDECREF(__pyx_r);
@@ -39259,7 +39259,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_66addConsSOS1(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":1235
  *         self._addCoefLinear(c._cons, v._var, coeff)
- * 
+ *
  *     def addConsSOS1(self, vars, weights=None, name="SOS1cons",             # <<<<<<<<<<<<<<
  *                 initial=True, separate=True, enforce=True, check=True,
  *                 propagate=True, local=False, dynamic=False,
@@ -39283,7 +39283,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_66addConsSOS1(struct __pyx_obj
 
 /* "pyscipopt/scip.pyx":1280
  *         return pythonizeCons(scip_cons, name)
- * 
+ *
  *     def addConsSOS2(self, vars, weights=None, name="SOS2cons",             # <<<<<<<<<<<<<<
  *                 initial=True, separate=True, enforce=True, check=True,
  *                 propagate=True, local=False, dynamic=False,
@@ -39318,7 +39318,7 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_5Model_69addConsSOS2(PyObject *__pyx_
     values[2] = ((PyObject *)__pyx_n_s_SOS2cons);
 
     /* "pyscipopt/scip.pyx":1281
- * 
+ *
  *     def addConsSOS2(self, vars, weights=None, name="SOS2cons",
  *                 initial=True, separate=True, enforce=True, check=True,             # <<<<<<<<<<<<<<
  *                 propagate=True, local=False, dynamic=False,
@@ -39345,7 +39345,7 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_5Model_69addConsSOS2(PyObject *__pyx_
  *                 propagate=True, local=False, dynamic=False,
  *                 removable=False, stickingatnode=False):             # <<<<<<<<<<<<<<
  *         """Add an SOS2 constraint.
- * 
+ *
  */
     values[10] = ((PyObject *)Py_False);
     values[11] = ((PyObject *)Py_False);
@@ -39475,7 +39475,7 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_5Model_69addConsSOS2(PyObject *__pyx_
 
   /* "pyscipopt/scip.pyx":1280
  *         return pythonizeCons(scip_cons, name)
- * 
+ *
  *     def addConsSOS2(self, vars, weights=None, name="SOS2cons",             # <<<<<<<<<<<<<<
  *                 initial=True, separate=True, enforce=True, check=True,
  *                 propagate=True, local=False, dynamic=False,
@@ -39510,7 +39510,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_68addConsSOS2(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":1305
  *         cdef int _nvars
- * 
+ *
  *         self._createConsSOS2(&scip_cons, name, 0, NULL, NULL,             # <<<<<<<<<<<<<<
  *                                 initial, separate, enforce, check, propagate,
  *                                 local, dynamic, removable, stickingatnode)
@@ -39531,7 +39531,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_68addConsSOS2(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":1309
  *                                 local, dynamic, removable, stickingatnode)
- * 
+ *
  *         if weights is None:             # <<<<<<<<<<<<<<
  *             for k in vars:
  *                 v = <Var>k.var
@@ -39541,7 +39541,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_68addConsSOS2(struct __pyx_obj
   if (__pyx_t_4) {
 
     /* "pyscipopt/scip.pyx":1310
- * 
+ *
  *         if weights is None:
  *             for k in vars:             # <<<<<<<<<<<<<<
  *                 v = <Var>k.var
@@ -39625,7 +39625,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_68addConsSOS2(struct __pyx_obj
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
       /* "pyscipopt/scip.pyx":1310
- * 
+ *
  *         if weights is None:
  *             for k in vars:             # <<<<<<<<<<<<<<
  *                 v = <Var>k.var
@@ -39636,7 +39636,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_68addConsSOS2(struct __pyx_obj
 
     /* "pyscipopt/scip.pyx":1309
  *                                 local, dynamic, removable, stickingatnode)
- * 
+ *
  *         if weights is None:             # <<<<<<<<<<<<<<
  *             for k in vars:
  *                 v = <Var>k.var
@@ -39747,7 +39747,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_68addConsSOS2(struct __pyx_obj
  *                 _var = <scip.SCIP_VAR*>v._var
  *                 weight = weights[k]             # <<<<<<<<<<<<<<
  *                 self._addVarSOS2(scip_cons, _var, weight)
- * 
+ *
  */
       __pyx_t_1 = PyObject_GetItem(__pyx_v_weights, __pyx_v_k); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1319; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
       __Pyx_GOTREF(__pyx_t_1);
@@ -39758,7 +39758,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_68addConsSOS2(struct __pyx_obj
  *                 _var = <scip.SCIP_VAR*>v._var
  *                 weight = weights[k]
  *                 self._addVarSOS2(scip_cons, _var, weight)             # <<<<<<<<<<<<<<
- * 
+ *
  *         self._addCons(scip_cons)
  */
       __pyx_t_1 = ((struct __pyx_vtabstruct_9pyscipopt_4scip_Model *)__pyx_v_self->__pyx_vtab)->_addVarSOS2(__pyx_v_self, __pyx_v_scip_cons, __pyx_v__var, __pyx_v_weight); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1320; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -39779,21 +39779,21 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_68addConsSOS2(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":1322
  *                 self._addVarSOS2(scip_cons, _var, weight)
- * 
+ *
  *         self._addCons(scip_cons)             # <<<<<<<<<<<<<<
  *         return pythonizeCons(scip_cons, name)
- * 
+ *
  */
   __pyx_t_8 = ((struct __pyx_vtabstruct_9pyscipopt_4scip_Model *)__pyx_v_self->__pyx_vtab)->_addCons(__pyx_v_self, __pyx_v_scip_cons); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1322; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
   /* "pyscipopt/scip.pyx":1323
- * 
+ *
  *         self._addCons(scip_cons)
  *         return pythonizeCons(scip_cons, name)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_8 = __pyx_f_9pyscipopt_4scip_pythonizeCons(__pyx_v_scip_cons, __pyx_v_name); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1323; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -39804,7 +39804,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_68addConsSOS2(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":1280
  *         return pythonizeCons(scip_cons, name)
- * 
+ *
  *     def addConsSOS2(self, vars, weights=None, name="SOS2cons",             # <<<<<<<<<<<<<<
  *                 initial=True, separate=True, enforce=True, check=True,
  *                 propagate=True, local=False, dynamic=False,
@@ -39827,11 +39827,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_68addConsSOS2(struct __pyx_obj
 }
 
 /* "pyscipopt/scip.pyx":1326
- * 
- * 
+ *
+ *
  *     def addVarSOS1(self, cons, var, weight):             # <<<<<<<<<<<<<<
  *         """Add variable to SOS1 constraint.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -39934,7 +39934,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_70addVarSOS1(struct __pyx_obj_
  *         c = cons.cons
  *         v = var.var             # <<<<<<<<<<<<<<
  *         self._addVarSOS1(c._cons, v._var, weight)
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_var, __pyx_n_s_var); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1337; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -39946,7 +39946,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_70addVarSOS1(struct __pyx_obj_
  *         c = cons.cons
  *         v = var.var
  *         self._addVarSOS1(c._cons, v._var, weight)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def appendVarSOS1(self, cons, var):
  */
   __pyx_t_1 = ((struct __pyx_vtabstruct_9pyscipopt_4scip_Model *)__pyx_v_self->__pyx_vtab)->_addVarSOS1(__pyx_v_self, __pyx_v_c->_cons, __pyx_v_v->_var, __pyx_v_weight); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1338; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -39954,11 +39954,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_70addVarSOS1(struct __pyx_obj_
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "pyscipopt/scip.pyx":1326
- * 
- * 
+ *
+ *
  *     def addVarSOS1(self, cons, var, weight):             # <<<<<<<<<<<<<<
  *         """Add variable to SOS1 constraint.
- * 
+ *
  */
 
   /* function exit code */
@@ -39978,10 +39978,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_70addVarSOS1(struct __pyx_obj_
 
 /* "pyscipopt/scip.pyx":1340
  *         self._addVarSOS1(c._cons, v._var, weight)
- * 
+ *
  *     def appendVarSOS1(self, cons, var):             # <<<<<<<<<<<<<<
  *         """Append variable to SOS1 constraint.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -40075,7 +40075,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_72appendVarSOS1(struct __pyx_o
  *         c = cons.cons
  *         v = var.var             # <<<<<<<<<<<<<<
  *         self._appendVarSOS1(c._cons, v._var)
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_var, __pyx_n_s_var); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1350; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -40087,7 +40087,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_72appendVarSOS1(struct __pyx_o
  *         c = cons.cons
  *         v = var.var
  *         self._appendVarSOS1(c._cons, v._var)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def addVarSOS2(self, cons, var, weight):
  */
   __pyx_t_1 = ((struct __pyx_vtabstruct_9pyscipopt_4scip_Model *)__pyx_v_self->__pyx_vtab)->_appendVarSOS1(__pyx_v_self, __pyx_v_c->_cons, __pyx_v_v->_var); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -40096,10 +40096,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_72appendVarSOS1(struct __pyx_o
 
   /* "pyscipopt/scip.pyx":1340
  *         self._addVarSOS1(c._cons, v._var, weight)
- * 
+ *
  *     def appendVarSOS1(self, cons, var):             # <<<<<<<<<<<<<<
  *         """Append variable to SOS1 constraint.
- * 
+ *
  */
 
   /* function exit code */
@@ -40119,10 +40119,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_72appendVarSOS1(struct __pyx_o
 
 /* "pyscipopt/scip.pyx":1353
  *         self._appendVarSOS1(c._cons, v._var)
- * 
+ *
  *     def addVarSOS2(self, cons, var, weight):             # <<<<<<<<<<<<<<
  *         """Add variable to SOS2 constraint.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -40225,7 +40225,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_74addVarSOS2(struct __pyx_obj_
  *         c = cons.cons
  *         v = var.var             # <<<<<<<<<<<<<<
  *         self._addVarSOS2(c._cons, v._var, weight)
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_var, __pyx_n_s_var); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1364; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -40237,7 +40237,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_74addVarSOS2(struct __pyx_obj_
  *         c = cons.cons
  *         v = var.var
  *         self._addVarSOS2(c._cons, v._var, weight)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def appendVarSOS2(self, cons, var):
  */
   __pyx_t_1 = ((struct __pyx_vtabstruct_9pyscipopt_4scip_Model *)__pyx_v_self->__pyx_vtab)->_addVarSOS2(__pyx_v_self, __pyx_v_c->_cons, __pyx_v_v->_var, __pyx_v_weight); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1365; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -40246,10 +40246,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_74addVarSOS2(struct __pyx_obj_
 
   /* "pyscipopt/scip.pyx":1353
  *         self._appendVarSOS1(c._cons, v._var)
- * 
+ *
  *     def addVarSOS2(self, cons, var, weight):             # <<<<<<<<<<<<<<
  *         """Add variable to SOS2 constraint.
- * 
+ *
  */
 
   /* function exit code */
@@ -40269,10 +40269,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_74addVarSOS2(struct __pyx_obj_
 
 /* "pyscipopt/scip.pyx":1367
  *         self._addVarSOS2(c._cons, v._var, weight)
- * 
+ *
  *     def appendVarSOS2(self, cons, var):             # <<<<<<<<<<<<<<
  *         """Append variable to SOS2 constraint.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -40366,7 +40366,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_76appendVarSOS2(struct __pyx_o
  *         c = cons.cons
  *         v = var.var             # <<<<<<<<<<<<<<
  *         self._appendVarSOS2(c._cons, v._var)
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_var, __pyx_n_s_var); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1377; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -40378,7 +40378,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_76appendVarSOS2(struct __pyx_o
  *         c = cons.cons
  *         v = var.var
  *         self._appendVarSOS2(c._cons, v._var)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getTransformedCons(self, cons):
  */
   __pyx_t_1 = ((struct __pyx_vtabstruct_9pyscipopt_4scip_Model *)__pyx_v_self->__pyx_vtab)->_appendVarSOS2(__pyx_v_self, __pyx_v_c->_cons, __pyx_v_v->_var); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1378; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -40387,10 +40387,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_76appendVarSOS2(struct __pyx_o
 
   /* "pyscipopt/scip.pyx":1367
  *         self._addVarSOS2(c._cons, v._var, weight)
- * 
+ *
  *     def appendVarSOS2(self, cons, var):             # <<<<<<<<<<<<<<
  *         """Append variable to SOS2 constraint.
- * 
+ *
  */
 
   /* function exit code */
@@ -40410,10 +40410,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_76appendVarSOS2(struct __pyx_o
 
 /* "pyscipopt/scip.pyx":1380
  *         self._appendVarSOS2(c._cons, v._var)
- * 
+ *
  *     def getTransformedCons(self, cons):             # <<<<<<<<<<<<<<
  *         """Retrieve transformed constraint.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -40464,7 +40464,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_78getTransformedCons(struct __
  *         c = cons.cons
  *         transcons = Constraint("t-"+cons.name)             # <<<<<<<<<<<<<<
  *         ctrans = transcons.cons
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_Constraint); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1389; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -40506,7 +40506,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_78getTransformedCons(struct __
  *         c = cons.cons
  *         transcons = Constraint("t-"+cons.name)
  *         ctrans = transcons.cons             # <<<<<<<<<<<<<<
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPtransformCons(self._scip, c._cons, &ctrans._cons))
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_transcons, __pyx_n_s_cons); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1390; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -40517,10 +40517,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_78getTransformedCons(struct __
 
   /* "pyscipopt/scip.pyx":1392
  *         ctrans = transcons.cons
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPtransformCons(self._scip, c._cons, &ctrans._cons))             # <<<<<<<<<<<<<<
  *         return transcons
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1392; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -40555,10 +40555,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_78getTransformedCons(struct __
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "pyscipopt/scip.pyx":1393
- * 
+ *
  *         PY_SCIP_CALL(scip.SCIPtransformCons(self._scip, c._cons, &ctrans._cons))
  *         return transcons             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getConss(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -40568,10 +40568,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_78getTransformedCons(struct __
 
   /* "pyscipopt/scip.pyx":1380
  *         self._appendVarSOS2(c._cons, v._var)
- * 
+ *
  *     def getTransformedCons(self, cons):             # <<<<<<<<<<<<<<
  *         """Retrieve transformed constraint.
- * 
+ *
  */
 
   /* function exit code */
@@ -40594,7 +40594,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_78getTransformedCons(struct __
 
 /* "pyscipopt/scip.pyx":1395
  *         return transcons
- * 
+ *
  *     def getConss(self):             # <<<<<<<<<<<<<<
  *         """Retrieve all constraints."""
  *         cdef scip.SCIP_CONS** _conss
@@ -40637,7 +40637,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_80getConss(struct __pyx_obj_9p
  *         cdef Cons c
  *         cdef int _nconss
  *         conss = []             # <<<<<<<<<<<<<<
- * 
+ *
  *         _conss = SCIPgetConss(self._scip)
  */
   __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1401; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -40647,25 +40647,25 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_80getConss(struct __pyx_obj_9p
 
   /* "pyscipopt/scip.pyx":1403
  *         conss = []
- * 
+ *
  *         _conss = SCIPgetConss(self._scip)             # <<<<<<<<<<<<<<
  *         _nconss = SCIPgetNConss(self._scip)
- * 
+ *
  */
   __pyx_v__conss = SCIPgetConss(__pyx_v_self->_scip);
 
   /* "pyscipopt/scip.pyx":1404
- * 
+ *
  *         _conss = SCIPgetConss(self._scip)
  *         _nconss = SCIPgetNConss(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *         for i in range(_nconss):
  */
   __pyx_v__nconss = SCIPgetNConss(__pyx_v_self->_scip);
 
   /* "pyscipopt/scip.pyx":1406
  *         _nconss = SCIPgetNConss(self._scip)
- * 
+ *
  *         for i in range(_nconss):             # <<<<<<<<<<<<<<
  *             _cons = _conss[i]
  *             conss.append(pythonizeCons(_cons, SCIPconsGetName(_cons).decode("utf-8")))
@@ -40675,11 +40675,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_80getConss(struct __pyx_obj_9p
     __pyx_v_i = __pyx_t_3;
 
     /* "pyscipopt/scip.pyx":1407
- * 
+ *
  *         for i in range(_nconss):
  *             _cons = _conss[i]             # <<<<<<<<<<<<<<
  *             conss.append(pythonizeCons(_cons, SCIPconsGetName(_cons).decode("utf-8")))
- * 
+ *
  */
     __pyx_v__cons = (__pyx_v__conss[__pyx_v_i]);
 
@@ -40687,7 +40687,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_80getConss(struct __pyx_obj_9p
  *         for i in range(_nconss):
  *             _cons = _conss[i]
  *             conss.append(pythonizeCons(_cons, SCIPconsGetName(_cons).decode("utf-8")))             # <<<<<<<<<<<<<<
- * 
+ *
  *         return conss
  */
     __pyx_t_4 = SCIPconsGetName(__pyx_v__cons);
@@ -40702,9 +40702,9 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_80getConss(struct __pyx_obj_9p
 
   /* "pyscipopt/scip.pyx":1410
  *             conss.append(pythonizeCons(_cons, SCIPconsGetName(_cons).decode("utf-8")))
- * 
+ *
  *         return conss             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getDualsolLinear(self, cons):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -40714,7 +40714,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_80getConss(struct __pyx_obj_9p
 
   /* "pyscipopt/scip.pyx":1395
  *         return transcons
- * 
+ *
  *     def getConss(self):             # <<<<<<<<<<<<<<
  *         """Retrieve all constraints."""
  *         cdef scip.SCIP_CONS** _conss
@@ -40735,10 +40735,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_80getConss(struct __pyx_obj_9p
 
 /* "pyscipopt/scip.pyx":1412
  *         return conss
- * 
+ *
  *     def getDualsolLinear(self, cons):             # <<<<<<<<<<<<<<
  *         """Retrieve the dual solution to a linear constraint.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -40770,7 +40770,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_82getDualsolLinear(struct __py
  *         cdef Cons c
  *         c = cons.cons             # <<<<<<<<<<<<<<
  *         return scip.SCIPgetDualsolLinear(self._scip, c._cons)
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_cons, __pyx_n_s_cons); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1419; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -40782,7 +40782,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_82getDualsolLinear(struct __py
  *         cdef Cons c
  *         c = cons.cons
  *         return scip.SCIPgetDualsolLinear(self._scip, c._cons)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getDualfarkasLinear(self, cons):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -40794,10 +40794,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_82getDualsolLinear(struct __py
 
   /* "pyscipopt/scip.pyx":1412
  *         return conss
- * 
+ *
  *     def getDualsolLinear(self, cons):             # <<<<<<<<<<<<<<
  *         """Retrieve the dual solution to a linear constraint.
- * 
+ *
  */
 
   /* function exit code */
@@ -40814,10 +40814,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_82getDualsolLinear(struct __py
 
 /* "pyscipopt/scip.pyx":1422
  *         return scip.SCIPgetDualsolLinear(self._scip, c._cons)
- * 
+ *
  *     def getDualfarkasLinear(self, cons):             # <<<<<<<<<<<<<<
  *         """Retrieve the dual farkas value to a linear constraint.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -40849,7 +40849,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_84getDualfarkasLinear(struct _
  *         cdef Cons c
  *         c = cons.cons             # <<<<<<<<<<<<<<
  *         return scip.SCIPgetDualfarkasLinear(self._scip, c._cons)
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_cons, __pyx_n_s_cons); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1429; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -40861,7 +40861,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_84getDualfarkasLinear(struct _
  *         cdef Cons c
  *         c = cons.cons
  *         return scip.SCIPgetDualfarkasLinear(self._scip, c._cons)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def optimize(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -40873,10 +40873,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_84getDualfarkasLinear(struct _
 
   /* "pyscipopt/scip.pyx":1422
  *         return scip.SCIPgetDualsolLinear(self._scip, c._cons)
- * 
+ *
  *     def getDualfarkasLinear(self, cons):             # <<<<<<<<<<<<<<
  *         """Retrieve the dual farkas value to a linear constraint.
- * 
+ *
  */
 
   /* function exit code */
@@ -40893,7 +40893,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_84getDualfarkasLinear(struct _
 
 /* "pyscipopt/scip.pyx":1432
  *         return scip.SCIPgetDualfarkasLinear(self._scip, c._cons)
- * 
+ *
  *     def optimize(self):             # <<<<<<<<<<<<<<
  *         """Optimize the problem."""
  *         PY_SCIP_CALL(scip.SCIPsolve(self._scip))
@@ -40931,7 +40931,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_86optimize(struct __pyx_obj_9p
  *         """Optimize the problem."""
  *         PY_SCIP_CALL(scip.SCIPsolve(self._scip))             # <<<<<<<<<<<<<<
  *         self._bestSol = scip.SCIPgetBestSol(self._scip)
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1434; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -40969,14 +40969,14 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_86optimize(struct __pyx_obj_9p
  *         """Optimize the problem."""
  *         PY_SCIP_CALL(scip.SCIPsolve(self._scip))
  *         self._bestSol = scip.SCIPgetBestSol(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def includePricer(self, Pricer pricer, name, desc, priority=1, delay=True):
  */
   __pyx_v_self->_bestSol = SCIPgetBestSol(__pyx_v_self->_scip);
 
   /* "pyscipopt/scip.pyx":1432
  *         return scip.SCIPgetDualfarkasLinear(self._scip, c._cons)
- * 
+ *
  *     def optimize(self):             # <<<<<<<<<<<<<<
  *         """Optimize the problem."""
  *         PY_SCIP_CALL(scip.SCIPsolve(self._scip))
@@ -41001,10 +41001,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_86optimize(struct __pyx_obj_9p
 
 /* "pyscipopt/scip.pyx":1437
  *         self._bestSol = scip.SCIPgetBestSol(self._scip)
- * 
+ *
  *     def includePricer(self, Pricer pricer, name, desc, priority=1, delay=True):             # <<<<<<<<<<<<<<
  *         """Include a pricer.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -41274,7 +41274,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_88includePricer(struct __pyx_o
  *         scip_pricer = scip.SCIPfindPricer(self._scip, n)
  *         PY_SCIP_CALL(scip.SCIPactivatePricer(self._scip, scip_pricer))             # <<<<<<<<<<<<<<
  *         pricer.model = self
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1456; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -41312,8 +41312,8 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_88includePricer(struct __pyx_o
  *         scip_pricer = scip.SCIPfindPricer(self._scip, n)
  *         PY_SCIP_CALL(scip.SCIPactivatePricer(self._scip, scip_pricer))
  *         pricer.model = self             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_INCREF(((PyObject *)__pyx_v_self));
   __Pyx_GIVEREF(((PyObject *)__pyx_v_self));
@@ -41323,10 +41323,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_88includePricer(struct __pyx_o
 
   /* "pyscipopt/scip.pyx":1437
  *         self._bestSol = scip.SCIPgetBestSol(self._scip)
- * 
+ *
  *     def includePricer(self, Pricer pricer, name, desc, priority=1, delay=True):             # <<<<<<<<<<<<<<
  *         """Include a pricer.
- * 
+ *
  */
 
   /* function exit code */
@@ -41349,8 +41349,8 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_88includePricer(struct __pyx_o
 }
 
 /* "pyscipopt/scip.pyx":1460
- * 
- * 
+ *
+ *
  *     def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority, enfopriority, chckpriority, sepafreq, propfreq, eagerfreq,             # <<<<<<<<<<<<<<
  *                         maxprerounds, delaysepa, delayprop, needscons, proptiming=SCIP_PROPTIMING_AFTERLPNODE, presoltiming=SCIP_PRESOLTIMING_FAST):
  *         """Include a constraint handler
@@ -41721,7 +41721,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_90includeConshdlr(struct __pyx
  *                                               <SCIP_CONSHDLRDATA*>conshdlr))
  *         conshdlr.model = self             # <<<<<<<<<<<<<<
  *         conshdlr.name = name
- * 
+ *
  */
   __Pyx_INCREF(((PyObject *)__pyx_v_self));
   __Pyx_GIVEREF(((PyObject *)__pyx_v_self));
@@ -41733,7 +41733,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_90includeConshdlr(struct __pyx
  *                                               <SCIP_CONSHDLRDATA*>conshdlr))
  *         conshdlr.model = self
  *         conshdlr.name = name             # <<<<<<<<<<<<<<
- * 
+ *
  *     def createCons(self, Conshdlr conshdlr, name, initial=True, separate=True, enforce=True, check=True, propagate=True,
  */
   if (!(likely(PyString_CheckExact(__pyx_v_name))||((__pyx_v_name) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "str", Py_TYPE(__pyx_v_name)->tp_name), 0))) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1492; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -41746,8 +41746,8 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_90includeConshdlr(struct __pyx
   __pyx_t_1 = 0;
 
   /* "pyscipopt/scip.pyx":1460
- * 
- * 
+ *
+ *
  *     def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority, enfopriority, chckpriority, sepafreq, propfreq, eagerfreq,             # <<<<<<<<<<<<<<
  *                         maxprerounds, delaysepa, delayprop, needscons, proptiming=SCIP_PROPTIMING_AFTERLPNODE, presoltiming=SCIP_PRESOLTIMING_FAST):
  *         """Include a constraint handler
@@ -41774,10 +41774,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_90includeConshdlr(struct __pyx
 
 /* "pyscipopt/scip.pyx":1494
  *         conshdlr.name = name
- * 
+ *
  *     def createCons(self, Conshdlr conshdlr, name, initial=True, separate=True, enforce=True, check=True, propagate=True,             # <<<<<<<<<<<<<<
  *                    local=False, modifiable=False, dynamic=False, removable=False, stickingatnode=False):
- * 
+ *
  */
 
 /* Python wrapper */
@@ -41811,10 +41811,10 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_5Model_93createCons(PyObject *__pyx_v
     values[6] = ((PyObject *)Py_True);
 
     /* "pyscipopt/scip.pyx":1495
- * 
+ *
  *     def createCons(self, Conshdlr conshdlr, name, initial=True, separate=True, enforce=True, check=True, propagate=True,
  *                    local=False, modifiable=False, dynamic=False, removable=False, stickingatnode=False):             # <<<<<<<<<<<<<<
- * 
+ *
  *         n = str_conversion(name)
  */
     values[7] = ((PyObject *)Py_False);
@@ -41949,10 +41949,10 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_5Model_93createCons(PyObject *__pyx_v
 
   /* "pyscipopt/scip.pyx":1494
  *         conshdlr.name = name
- * 
+ *
  *     def createCons(self, Conshdlr conshdlr, name, initial=True, separate=True, enforce=True, check=True, propagate=True,             # <<<<<<<<<<<<<<
  *                    local=False, modifiable=False, dynamic=False, removable=False, stickingatnode=False):
- * 
+ *
  */
 
   /* function exit code */
@@ -41995,7 +41995,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_92createCons(struct __pyx_obj_
 
   /* "pyscipopt/scip.pyx":1497
  *                    local=False, modifiable=False, dynamic=False, removable=False, stickingatnode=False):
- * 
+ *
  *         n = str_conversion(name)             # <<<<<<<<<<<<<<
  *         cdef SCIP_CONSHDLR* _conshdlr
  *         _conshdlr = scip.SCIPfindConshdlr(self._scip, str_conversion(conshdlr.name))
@@ -42133,7 +42133,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_92createCons(struct __pyx_obj_
  *         PY_SCIP_CALL(SCIPcreateCons(self._scip, &_cons, n, _conshdlr, NULL,
  *                                 initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))             # <<<<<<<<<<<<<<
  *         return constraint
- * 
+ *
  */
   __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_v_initial); if (unlikely((__pyx_t_7 == (SCIP_Bool)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1504; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_v_separate); if (unlikely((__pyx_t_8 == (SCIP_Bool)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1504; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -42187,7 +42187,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_92createCons(struct __pyx_obj_
  *         PY_SCIP_CALL(SCIPcreateCons(self._scip, &_cons, n, _conshdlr, NULL,
  *                                 initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
  *         return constraint             # <<<<<<<<<<<<<<
- * 
+ *
  *     def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing=SCIP_PRESOLTIMING_FAST):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -42197,10 +42197,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_92createCons(struct __pyx_obj_
 
   /* "pyscipopt/scip.pyx":1494
  *         conshdlr.name = name
- * 
+ *
  *     def createCons(self, Conshdlr conshdlr, name, initial=True, separate=True, enforce=True, check=True, propagate=True,             # <<<<<<<<<<<<<<
  *                    local=False, modifiable=False, dynamic=False, removable=False, stickingatnode=False):
- * 
+ *
  */
 
   /* function exit code */
@@ -42222,10 +42222,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_92createCons(struct __pyx_obj_
 
 /* "pyscipopt/scip.pyx":1507
  *         return constraint
- * 
+ *
  *     def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing=SCIP_PRESOLTIMING_FAST):             # <<<<<<<<<<<<<<
  *         """Include a presolver
- * 
+ *
  */
 
 /* Python wrapper */
@@ -42448,7 +42448,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_94includePresol(struct __pyx_o
  *         PY_SCIP_CALL(scip.SCIPincludePresol(self._scip, n, d, priority, maxrounds, timing, PyPresolCopy, PyPresolFree, PyPresolInit,
  *                                             PyPresolExit, PyPresolInitpre, PyPresolExitpre, PyPresolExec, <SCIP_PRESOLDATA*>presol))             # <<<<<<<<<<<<<<
  *         presol.model = self
- * 
+ *
  */
   __pyx_t_3 = __Pyx_PyInt_From_SCIP_RETCODE(SCIPincludePresol(__pyx_v_self->_scip, __pyx_t_5, __pyx_t_6, __pyx_t_7, __pyx_t_8, __pyx_t_9, __pyx_f_9pyscipopt_4scip_PyPresolCopy, __pyx_f_9pyscipopt_4scip_PyPresolFree, __pyx_f_9pyscipopt_4scip_PyPresolInit, __pyx_f_9pyscipopt_4scip_PyPresolExit, __pyx_f_9pyscipopt_4scip_PyPresolInitpre, __pyx_f_9pyscipopt_4scip_PyPresolExitpre, __pyx_f_9pyscipopt_4scip_PyPresolExec, ((SCIP_PRESOLDATA *)__pyx_v_presol))); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1519; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
@@ -42484,7 +42484,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_94includePresol(struct __pyx_o
  *         PY_SCIP_CALL(scip.SCIPincludePresol(self._scip, n, d, priority, maxrounds, timing, PyPresolCopy, PyPresolFree, PyPresolInit,
  *                                             PyPresolExit, PyPresolInitpre, PyPresolExitpre, PyPresolExec, <SCIP_PRESOLDATA*>presol))
  *         presol.model = self             # <<<<<<<<<<<<<<
- * 
+ *
  *     def includeSepa(self, Sepa sepa, name, desc, priority, freq, maxbounddist, usessubscip=False, delay=False):
  */
   __Pyx_INCREF(((PyObject *)__pyx_v_self));
@@ -42495,10 +42495,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_94includePresol(struct __pyx_o
 
   /* "pyscipopt/scip.pyx":1507
  *         return constraint
- * 
+ *
  *     def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing=SCIP_PRESOLTIMING_FAST):             # <<<<<<<<<<<<<<
  *         """Include a presolver
- * 
+ *
  */
 
   /* function exit code */
@@ -42522,10 +42522,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_94includePresol(struct __pyx_o
 
 /* "pyscipopt/scip.pyx":1523
  *         presol.model = self
- * 
+ *
  *     def includeSepa(self, Sepa sepa, name, desc, priority, freq, maxbounddist, usessubscip=False, delay=False):             # <<<<<<<<<<<<<<
  *         """Include a separator
- * 
+ *
  */
 
 /* Python wrapper */
@@ -42771,7 +42771,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_96includeSepa(struct __pyx_obj
  *         PY_SCIP_CALL(scip.SCIPincludeSepa(self._scip, n, d, priority, freq, maxbounddist, usessubscip, delay, PySepaCopy, PySepaFree,
  *                                           PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, PySepaExeclp, PySepaExecsol, <SCIP_SEPADATA*>sepa))             # <<<<<<<<<<<<<<
  *         sepa.model = self
- * 
+ *
  */
   __pyx_t_3 = __Pyx_PyInt_From_SCIP_RETCODE(SCIPincludeSepa(__pyx_v_self->_scip, __pyx_t_5, __pyx_t_6, __pyx_t_7, __pyx_t_8, __pyx_t_9, __pyx_t_10, __pyx_t_11, __pyx_f_9pyscipopt_4scip_PySepaCopy, __pyx_f_9pyscipopt_4scip_PySepaFree, __pyx_f_9pyscipopt_4scip_PySepaInit, __pyx_f_9pyscipopt_4scip_PySepaExit, __pyx_f_9pyscipopt_4scip_PySepaInitsol, __pyx_f_9pyscipopt_4scip_PySepaExitsol, __pyx_f_9pyscipopt_4scip_PySepaExeclp, __pyx_f_9pyscipopt_4scip_PySepaExecsol, ((SCIP_SEPADATA *)__pyx_v_sepa))); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1538; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
@@ -42807,7 +42807,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_96includeSepa(struct __pyx_obj
  *         PY_SCIP_CALL(scip.SCIPincludeSepa(self._scip, n, d, priority, freq, maxbounddist, usessubscip, delay, PySepaCopy, PySepaFree,
  *                                           PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, PySepaExeclp, PySepaExecsol, <SCIP_SEPADATA*>sepa))
  *         sepa.model = self             # <<<<<<<<<<<<<<
- * 
+ *
  *     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
  */
   __Pyx_INCREF(((PyObject *)__pyx_v_self));
@@ -42818,10 +42818,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_96includeSepa(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":1523
  *         presol.model = self
- * 
+ *
  *     def includeSepa(self, Sepa sepa, name, desc, priority, freq, maxbounddist, usessubscip=False, delay=False):             # <<<<<<<<<<<<<<
  *         """Include a separator
- * 
+ *
  */
 
   /* function exit code */
@@ -42845,7 +42845,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_96includeSepa(struct __pyx_obj
 
 /* "pyscipopt/scip.pyx":1542
  *         sepa.model = self
- * 
+ *
  *     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,             # <<<<<<<<<<<<<<
  *                     proptiming, presoltiming=SCIP_PRESOLTIMING_FAST, priority=1, freq=1, delay=True):
  *         """Include a propagator.
@@ -42879,11 +42879,11 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_5Model_99includeProp(PyObject *__pyx_
     values[8] = ((PyObject *)__pyx_int_1);
 
     /* "pyscipopt/scip.pyx":1543
- * 
+ *
  *     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
  *                     proptiming, presoltiming=SCIP_PRESOLTIMING_FAST, priority=1, freq=1, delay=True):             # <<<<<<<<<<<<<<
  *         """Include a propagator.
- * 
+ *
  */
     values[9] = ((PyObject *)Py_True);
     if (unlikely(__pyx_kwds)) {
@@ -42997,7 +42997,7 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_5Model_99includeProp(PyObject *__pyx_
 
   /* "pyscipopt/scip.pyx":1542
  *         sepa.model = self
- * 
+ *
  *     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,             # <<<<<<<<<<<<<<
  *                     proptiming, presoltiming=SCIP_PRESOLTIMING_FAST, priority=1, freq=1, delay=True):
  *         """Include a propagator.
@@ -43194,7 +43194,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_98includeProp(struct __pyx_obj
  *                                           PyPropPresol, PyPropExec, PyPropResProp,
  *                                           <SCIP_PROPDATA*> prop))
  *         prop.model = self             # <<<<<<<<<<<<<<
- * 
+ *
  *     def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,
  */
   __Pyx_INCREF(((PyObject *)__pyx_v_self));
@@ -43205,7 +43205,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_98includeProp(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":1542
  *         sepa.model = self
- * 
+ *
  *     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,             # <<<<<<<<<<<<<<
  *                     proptiming, presoltiming=SCIP_PRESOLTIMING_FAST, priority=1, freq=1, delay=True):
  *         """Include a propagator.
@@ -43232,7 +43232,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_98includeProp(struct __pyx_obj
 
 /* "pyscipopt/scip.pyx":1569
  *         prop.model = self
- * 
+ *
  *     def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,             # <<<<<<<<<<<<<<
  *                     maxdepth=-1, timingmask=SCIP_HEURTIMING_BEFORENODE, usessubscip=False):
  *         """Include a primal heuristic.
@@ -43268,11 +43268,11 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_5Model_101includeHeur(PyObject *__pyx
     values[8] = __pyx_k__41;
 
     /* "pyscipopt/scip.pyx":1570
- * 
+ *
  *     def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,
  *                     maxdepth=-1, timingmask=SCIP_HEURTIMING_BEFORENODE, usessubscip=False):             # <<<<<<<<<<<<<<
  *         """Include a primal heuristic.
- * 
+ *
  */
     values[9] = ((PyObject *)Py_False);
     if (unlikely(__pyx_kwds)) {
@@ -43386,7 +43386,7 @@ static PyObject *__pyx_pw_9pyscipopt_4scip_5Model_101includeHeur(PyObject *__pyx
 
   /* "pyscipopt/scip.pyx":1569
  *         prop.model = self
- * 
+ *
  *     def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,             # <<<<<<<<<<<<<<
  *                     maxdepth=-1, timingmask=SCIP_HEURTIMING_BEFORENODE, usessubscip=False):
  *         """Include a primal heuristic.
@@ -43614,7 +43614,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_100includeHeur(struct __pyx_ob
  *                                           <SCIP_HEURDATA*> heur))
  *         heur.model = self             # <<<<<<<<<<<<<<
  *         heur.name = name
- * 
+ *
  */
   __Pyx_INCREF(((PyObject *)__pyx_v_self));
   __Pyx_GIVEREF(((PyObject *)__pyx_v_self));
@@ -43626,7 +43626,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_100includeHeur(struct __pyx_ob
  *                                           <SCIP_HEURDATA*> heur))
  *         heur.model = self
  *         heur.name = name             # <<<<<<<<<<<<<<
- * 
+ *
  *     def createSol(self, Heur heur):
  */
   if (!(likely(PyString_CheckExact(__pyx_v_name))||((__pyx_v_name) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "str", Py_TYPE(__pyx_v_name)->tp_name), 0))) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1595; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -43640,7 +43640,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_100includeHeur(struct __pyx_ob
 
   /* "pyscipopt/scip.pyx":1569
  *         prop.model = self
- * 
+ *
  *     def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,             # <<<<<<<<<<<<<<
  *                     maxdepth=-1, timingmask=SCIP_HEURTIMING_BEFORENODE, usessubscip=False):
  *         """Include a primal heuristic.
@@ -43667,10 +43667,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_100includeHeur(struct __pyx_ob
 
 /* "pyscipopt/scip.pyx":1597
  *         heur.name = name
- * 
+ *
  *     def createSol(self, Heur heur):             # <<<<<<<<<<<<<<
  *         """Create a new primal solution.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -43776,7 +43776,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_102createSol(struct __pyx_obj_
  *         solution = Solution()
  *         PY_SCIP_CALL(scip.SCIPcreateSol(self._scip, &solution._solution, _heur))             # <<<<<<<<<<<<<<
  *         return solution
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1608; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -43814,8 +43814,8 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_102createSol(struct __pyx_obj_
  *         solution = Solution()
  *         PY_SCIP_CALL(scip.SCIPcreateSol(self._scip, &solution._solution, _heur))
  *         return solution             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_INCREF(((PyObject *)__pyx_v_solution));
@@ -43824,10 +43824,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_102createSol(struct __pyx_obj_
 
   /* "pyscipopt/scip.pyx":1597
  *         heur.name = name
- * 
+ *
  *     def createSol(self, Heur heur):             # <<<<<<<<<<<<<<
  *         """Create a new primal solution.
- * 
+ *
  */
 
   /* function exit code */
@@ -43848,11 +43848,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_102createSol(struct __pyx_obj_
 }
 
 /* "pyscipopt/scip.pyx":1612
- * 
- * 
+ *
+ *
  *     def setSolVal(self, Solution solution, variable, val):             # <<<<<<<<<<<<<<
  *         """Set a variable in a solution.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -43977,7 +43977,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_104setSolVal(struct __pyx_obj_
  *         _var = <SCIP_VAR*>var._var
  *         _sol = <SCIP_SOL*>solution._solution             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPsetSolVal(self._scip, _sol, _var, val))
- * 
+ *
  */
   __pyx_v__sol = ((SCIP_SOL *)__pyx_v_solution->_solution);
 
@@ -43985,7 +43985,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_104setSolVal(struct __pyx_obj_
  *         _var = <SCIP_VAR*>var._var
  *         _sol = <SCIP_SOL*>solution._solution
  *         PY_SCIP_CALL(scip.SCIPsetSolVal(self._scip, _sol, _var, val))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def trySol(self, Solution solution, printreason=True, checkbounds=True, checkintegrality=True, checklprows=True):
  */
   __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1626; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -44022,11 +44022,11 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_104setSolVal(struct __pyx_obj_
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "pyscipopt/scip.pyx":1612
- * 
- * 
+ *
+ *
  *     def setSolVal(self, Solution solution, variable, val):             # <<<<<<<<<<<<<<
  *         """Set a variable in a solution.
- * 
+ *
  */
 
   /* function exit code */
@@ -44049,10 +44049,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_104setSolVal(struct __pyx_obj_
 
 /* "pyscipopt/scip.pyx":1628
  *         PY_SCIP_CALL(scip.SCIPsetSolVal(self._scip, _sol, _var, val))
- * 
+ *
  *     def trySol(self, Solution solution, printreason=True, checkbounds=True, checkintegrality=True, checklprows=True):             # <<<<<<<<<<<<<<
  *         """Try to add a solution to the storage.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -44178,7 +44178,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_106trySol(struct __pyx_obj_9py
  *         cdef SCIP_Bool stored
  *         PY_SCIP_CALL(scip.SCIPtrySolFree(self._scip, &solution._solution, printreason, checkbounds, checkintegrality, checklprows, &stored))             # <<<<<<<<<<<<<<
  *         return stored
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1639; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -44220,7 +44220,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_106trySol(struct __pyx_obj_9py
  *         cdef SCIP_Bool stored
  *         PY_SCIP_CALL(scip.SCIPtrySolFree(self._scip, &solution._solution, printreason, checkbounds, checkintegrality, checklprows, &stored))
  *         return stored             # <<<<<<<<<<<<<<
- * 
+ *
  *     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -44232,10 +44232,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_106trySol(struct __pyx_obj_9py
 
   /* "pyscipopt/scip.pyx":1628
  *         PY_SCIP_CALL(scip.SCIPsetSolVal(self._scip, _sol, _var, val))
- * 
+ *
  *     def trySol(self, Solution solution, printreason=True, checkbounds=True, checkintegrality=True, checklprows=True):             # <<<<<<<<<<<<<<
  *         """Try to add a solution to the storage.
- * 
+ *
  */
 
   /* function exit code */
@@ -44255,10 +44255,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_106trySol(struct __pyx_obj_9py
 
 /* "pyscipopt/scip.pyx":1642
  *         return stored
- * 
+ *
  *     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):             # <<<<<<<<<<<<<<
  *         """Include a branching rule.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -44386,7 +44386,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_108includeBranchrule(struct __
 
   /* "pyscipopt/scip.pyx":1654
  *         """
- * 
+ *
  *         nam = str_conversion(name)             # <<<<<<<<<<<<<<
  *         des = str_conversion(desc)
  *         PY_SCIP_CALL(scip.SCIPincludeBranchrule(self._scip, nam, des,
@@ -44422,7 +44422,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_108includeBranchrule(struct __
   __pyx_t_1 = 0;
 
   /* "pyscipopt/scip.pyx":1655
- * 
+ *
  *         nam = str_conversion(name)
  *         des = str_conversion(desc)             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPincludeBranchrule(self._scip, nam, des,
@@ -44522,7 +44522,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_108includeBranchrule(struct __
  *                                           PyBranchruleInitsol, PyBranchruleExitsol, PyBranchruleExeclp, PyBranchruleExecext,
  *                                           PyBranchruleExecps, <SCIP_BRANCHRULEDATA*> branchrule))
  *         branchrule.model = self             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Solution functions
  */
   __Pyx_INCREF(((PyObject *)__pyx_v_self));
@@ -44533,10 +44533,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_108includeBranchrule(struct __
 
   /* "pyscipopt/scip.pyx":1642
  *         return stored
- * 
+ *
  *     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):             # <<<<<<<<<<<<<<
  *         """Include a branching rule.
- * 
+ *
  */
 
   /* function exit code */
@@ -44560,7 +44560,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_108includeBranchrule(struct __
 
 /* "pyscipopt/scip.pyx":1665
  *     # Solution functions
- * 
+ *
  *     def getSols(self):             # <<<<<<<<<<<<<<
  *         """Retrieve list of all feasible primal solutions stored in the solution storage."""
  *         cdef scip.SCIP_SOL** _sols
@@ -44612,7 +44612,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_110getSols(struct __pyx_obj_9p
  *         _sols = scip.SCIPgetSols(self._scip)
  *         nsols = scip.SCIPgetNSols(self._scip)             # <<<<<<<<<<<<<<
  *         sols = []
- * 
+ *
  */
   __pyx_v_nsols = SCIPgetNSols(__pyx_v_self->_scip);
 
@@ -44620,7 +44620,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_110getSols(struct __pyx_obj_9p
  *         _sols = scip.SCIPgetSols(self._scip)
  *         nsols = scip.SCIPgetNSols(self._scip)
  *         sols = []             # <<<<<<<<<<<<<<
- * 
+ *
  *         for i in range(nsols):
  */
   __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1671; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -44630,7 +44630,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_110getSols(struct __pyx_obj_9p
 
   /* "pyscipopt/scip.pyx":1673
  *         sols = []
- * 
+ *
  *         for i in range(nsols):             # <<<<<<<<<<<<<<
  *             _sol = _sols[i]
  *             solution = Solution()
@@ -44640,7 +44640,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_110getSols(struct __pyx_obj_9p
     __pyx_v_i = __pyx_t_3;
 
     /* "pyscipopt/scip.pyx":1674
- * 
+ *
  *         for i in range(nsols):
  *             _sol = _sols[i]             # <<<<<<<<<<<<<<
  *             solution = Solution()
@@ -44665,7 +44665,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_110getSols(struct __pyx_obj_9p
  *             solution = Solution()
  *             solution._solution = _sol             # <<<<<<<<<<<<<<
  *             sols.append(solution)
- * 
+ *
  */
     __pyx_v_solution->_solution = __pyx_v__sol;
 
@@ -44673,7 +44673,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_110getSols(struct __pyx_obj_9p
  *             solution = Solution()
  *             solution._solution = _sol
  *             sols.append(solution)             # <<<<<<<<<<<<<<
- * 
+ *
  *         return sols
  */
     __pyx_t_4 = __Pyx_PyList_Append(__pyx_v_sols, ((PyObject *)__pyx_v_solution)); if (unlikely(__pyx_t_4 == -1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1677; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -44681,9 +44681,9 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_110getSols(struct __pyx_obj_9p
 
   /* "pyscipopt/scip.pyx":1679
  *             sols.append(solution)
- * 
+ *
  *         return sols             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getBestSol(self):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -44693,7 +44693,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_110getSols(struct __pyx_obj_9p
 
   /* "pyscipopt/scip.pyx":1665
  *     # Solution functions
- * 
+ *
  *     def getSols(self):             # <<<<<<<<<<<<<<
  *         """Retrieve list of all feasible primal solutions stored in the solution storage."""
  *         cdef scip.SCIP_SOL** _sols
@@ -44714,7 +44714,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_110getSols(struct __pyx_obj_9p
 
 /* "pyscipopt/scip.pyx":1681
  *         return sols
- * 
+ *
  *     def getBestSol(self):             # <<<<<<<<<<<<<<
  *         """Retrieve currently best known feasible primal solution."""
  *         solution = Solution()
@@ -44761,7 +44761,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_112getBestSol(struct __pyx_obj
  *         solution = Solution()
  *         solution._solution = scip.SCIPgetBestSol(self._scip)             # <<<<<<<<<<<<<<
  *         return solution
- * 
+ *
  */
   __pyx_v_solution->_solution = SCIPgetBestSol(__pyx_v_self->_scip);
 
@@ -44769,7 +44769,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_112getBestSol(struct __pyx_obj
  *         solution = Solution()
  *         solution._solution = scip.SCIPgetBestSol(self._scip)
  *         return solution             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getSolObjVal(self, Solution solution, original=True):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -44779,7 +44779,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_112getBestSol(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":1681
  *         return sols
- * 
+ *
  *     def getBestSol(self):             # <<<<<<<<<<<<<<
  *         """Retrieve currently best known feasible primal solution."""
  *         solution = Solution()
@@ -44799,10 +44799,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_112getBestSol(struct __pyx_obj
 
 /* "pyscipopt/scip.pyx":1687
  *         return solution
- * 
+ *
  *     def getSolObjVal(self, Solution solution, original=True):             # <<<<<<<<<<<<<<
  *         """Retrieve the objective value of the solution.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -44933,7 +44933,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_114getSolObjVal(struct __pyx_o
  *         else:
  *             objval = scip.SCIPgetSolTransObj(self._scip, _solution)             # <<<<<<<<<<<<<<
  *         return objval
- * 
+ *
  */
   /*else*/ {
     __pyx_t_2 = PyFloat_FromDouble(SCIPgetSolTransObj(__pyx_v_self->_scip, __pyx_v__solution)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1699; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -44947,7 +44947,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_114getSolObjVal(struct __pyx_o
  *         else:
  *             objval = scip.SCIPgetSolTransObj(self._scip, _solution)
  *         return objval             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getObjVal(self, original=True):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -44957,10 +44957,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_114getSolObjVal(struct __pyx_o
 
   /* "pyscipopt/scip.pyx":1687
  *         return solution
- * 
+ *
  *     def getSolObjVal(self, Solution solution, original=True):             # <<<<<<<<<<<<<<
  *         """Retrieve the objective value of the solution.
- * 
+ *
  */
 
   /* function exit code */
@@ -44977,7 +44977,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_114getSolObjVal(struct __pyx_o
 
 /* "pyscipopt/scip.pyx":1702
  *         return objval
- * 
+ *
  *     def getObjVal(self, original=True):             # <<<<<<<<<<<<<<
  *         """Retrieve the objective value of value of best solution"""
  *         if original:
@@ -45089,7 +45089,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_116getObjVal(struct __pyx_obj_
  *         else:
  *             objval = scip.SCIPgetSolTransObj(self._scip, self._bestSol)             # <<<<<<<<<<<<<<
  *         return objval
- * 
+ *
  */
   /*else*/ {
     __pyx_t_2 = PyFloat_FromDouble(SCIPgetSolTransObj(__pyx_v_self->_scip, __pyx_v_self->_bestSol)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1707; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -45103,7 +45103,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_116getObjVal(struct __pyx_obj_
  *         else:
  *             objval = scip.SCIPgetSolTransObj(self._scip, self._bestSol)
  *         return objval             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Get best dual bound
  */
   __Pyx_XDECREF(__pyx_r);
@@ -45113,7 +45113,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_116getObjVal(struct __pyx_obj_
 
   /* "pyscipopt/scip.pyx":1702
  *         return objval
- * 
+ *
  *     def getObjVal(self, original=True):             # <<<<<<<<<<<<<<
  *         """Retrieve the objective value of value of best solution"""
  *         if original:
@@ -45132,7 +45132,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_116getObjVal(struct __pyx_obj_
 }
 
 /* "pyscipopt/scip.pyx":1711
- * 
+ *
  *     # Get best dual bound
  *     def getDualbound(self):             # <<<<<<<<<<<<<<
  *         """Retrieve the best dual bound."""
@@ -45166,7 +45166,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_118getDualbound(struct __pyx_o
  *     def getDualbound(self):
  *         """Retrieve the best dual bound."""
  *         return scip.SCIPgetDualbound(self._scip)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getVal(self, var, Solution solution=None):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -45177,7 +45177,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_118getDualbound(struct __pyx_o
   goto __pyx_L0;
 
   /* "pyscipopt/scip.pyx":1711
- * 
+ *
  *     # Get best dual bound
  *     def getDualbound(self):             # <<<<<<<<<<<<<<
  *         """Retrieve the best dual bound."""
@@ -45197,7 +45197,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_118getDualbound(struct __pyx_o
 
 /* "pyscipopt/scip.pyx":1715
  *         return scip.SCIPgetDualbound(self._scip)
- * 
+ *
  *     def getVal(self, var, Solution solution=None):             # <<<<<<<<<<<<<<
  *         """Retrieve the value of the variable in the specified solution. If no solution is specified,
  *         the best known solution is used.
@@ -45352,7 +45352,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_120getVal(struct __pyx_obj_9py
  *         v = <Var>var.var
  *         _var = <scip.SCIP_VAR*>v._var             # <<<<<<<<<<<<<<
  *         return scip.SCIPgetSolVal(self._scip, _sol, _var)
- * 
+ *
  */
   __pyx_v__var = ((SCIP_VAR *)__pyx_v_v->_var);
 
@@ -45360,7 +45360,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_120getVal(struct __pyx_obj_9py
  *         v = <Var>var.var
  *         _var = <scip.SCIP_VAR*>v._var
  *         return scip.SCIPgetSolVal(self._scip, _sol, _var)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def writeName(self, var):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -45372,7 +45372,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_120getVal(struct __pyx_obj_9py
 
   /* "pyscipopt/scip.pyx":1715
  *         return scip.SCIPgetDualbound(self._scip)
- * 
+ *
  *     def getVal(self, var, Solution solution=None):             # <<<<<<<<<<<<<<
  *         """Retrieve the value of the variable in the specified solution. If no solution is specified,
  *         the best known solution is used.
@@ -45393,7 +45393,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_120getVal(struct __pyx_obj_9py
 
 /* "pyscipopt/scip.pyx":1734
  *         return scip.SCIPgetSolVal(self._scip, _sol, _var)
- * 
+ *
  *     def writeName(self, var):             # <<<<<<<<<<<<<<
  *         """Write the name of the variable to the std out."""
  *         cdef scip.SCIP_VAR* _var
@@ -45445,7 +45445,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_122writeName(struct __pyx_obj_
  *         v = <Var>var.var
  *         _var = <scip.SCIP_VAR*>v._var             # <<<<<<<<<<<<<<
  *         self._writeVarName(_var)
- * 
+ *
  */
   __pyx_v__var = ((SCIP_VAR *)__pyx_v_v->_var);
 
@@ -45453,7 +45453,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_122writeName(struct __pyx_obj_
  *         v = <Var>var.var
  *         _var = <scip.SCIP_VAR*>v._var
  *         self._writeVarName(_var)             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getStatus(self):
  */
   __pyx_t_2 = ((struct __pyx_vtabstruct_9pyscipopt_4scip_Model *)__pyx_v_self->__pyx_vtab)->_writeVarName(__pyx_v_self, __pyx_v__var); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1740; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -45462,7 +45462,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_122writeName(struct __pyx_obj_
 
   /* "pyscipopt/scip.pyx":1734
  *         return scip.SCIPgetSolVal(self._scip, _sol, _var)
- * 
+ *
  *     def writeName(self, var):             # <<<<<<<<<<<<<<
  *         """Write the name of the variable to the std out."""
  *         cdef scip.SCIP_VAR* _var
@@ -45485,7 +45485,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_122writeName(struct __pyx_obj_
 
 /* "pyscipopt/scip.pyx":1742
  *         self._writeVarName(_var)
- * 
+ *
  *     def getStatus(self):             # <<<<<<<<<<<<<<
  *         """Retrieve solution status."""
  *         cdef scip.SCIP_STATUS stat = scip.SCIPgetStatus(self._scip)
@@ -45646,7 +45646,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_124getStatus(struct __pyx_obj_
  *             return "unbounded"
  *         else:
  *             return "unknown"             # <<<<<<<<<<<<<<
- * 
+ *
  *     def getObjectiveSense(self):
  */
     __Pyx_XDECREF(__pyx_r);
@@ -45658,7 +45658,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_124getStatus(struct __pyx_obj_
 
   /* "pyscipopt/scip.pyx":1742
  *         self._writeVarName(_var)
- * 
+ *
  *     def getStatus(self):             # <<<<<<<<<<<<<<
  *         """Retrieve solution status."""
  *         cdef scip.SCIP_STATUS stat = scip.SCIPgetStatus(self._scip)
@@ -45673,7 +45673,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_124getStatus(struct __pyx_obj_
 
 /* "pyscipopt/scip.pyx":1756
  *             return "unknown"
- * 
+ *
  *     def getObjectiveSense(self):             # <<<<<<<<<<<<<<
  *         """Retrieve objective sense."""
  *         cdef scip.SCIP_OBJSENSE sense = scip.SCIPgetObjsense(self._scip)
@@ -45774,7 +45774,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_126getObjectiveSense(struct __
  *             return "minimize"
  *         else:
  *             return "unknown"             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Statistic Methods
  */
     __Pyx_XDECREF(__pyx_r);
@@ -45786,7 +45786,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_126getObjectiveSense(struct __
 
   /* "pyscipopt/scip.pyx":1756
  *             return "unknown"
- * 
+ *
  *     def getObjectiveSense(self):             # <<<<<<<<<<<<<<
  *         """Retrieve objective sense."""
  *         cdef scip.SCIP_OBJSENSE sense = scip.SCIPgetObjsense(self._scip)
@@ -45801,7 +45801,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_126getObjectiveSense(struct __
 
 /* "pyscipopt/scip.pyx":1768
  *     # Statistic Methods
- * 
+ *
  *     def printStatistics(self):             # <<<<<<<<<<<<<<
  *         """Print statistics."""
  *         PY_SCIP_CALL(scip.SCIPprintStatistics(self._scip, NULL))
@@ -45838,7 +45838,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_128printStatistics(struct __py
  *     def printStatistics(self):
  *         """Print statistics."""
  *         PY_SCIP_CALL(scip.SCIPprintStatistics(self._scip, NULL))             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Verbosity Methods
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1770; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -45875,7 +45875,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_128printStatistics(struct __py
 
   /* "pyscipopt/scip.pyx":1768
  *     # Statistic Methods
- * 
+ *
  *     def printStatistics(self):             # <<<<<<<<<<<<<<
  *         """Print statistics."""
  *         PY_SCIP_CALL(scip.SCIPprintStatistics(self._scip, NULL))
@@ -45900,10 +45900,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_128printStatistics(struct __py
 
 /* "pyscipopt/scip.pyx":1774
  *     # Verbosity Methods
- * 
+ *
  *     def hideOutput(self, quiet = True):             # <<<<<<<<<<<<<<
  *         """Hide the output.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -45977,7 +45977,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_130hideOutput(struct __pyx_obj
  *         quiet -- hide output? (default True)
  *         """
  *         scip.SCIPsetMessagehdlrQuiet(self._scip, quiet)             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Parameter Methods
  */
   __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_quiet); if (unlikely((__pyx_t_1 == (SCIP_Bool)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1780; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -45985,10 +45985,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_130hideOutput(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":1774
  *     # Verbosity Methods
- * 
+ *
  *     def hideOutput(self, quiet = True):             # <<<<<<<<<<<<<<
  *         """Hide the output.
- * 
+ *
  */
 
   /* function exit code */
@@ -46005,10 +46005,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_130hideOutput(struct __pyx_obj
 
 /* "pyscipopt/scip.pyx":1784
  *     # Parameter Methods
- * 
+ *
  *     def setBoolParam(self, name, value):             # <<<<<<<<<<<<<<
  *         """Set a boolean-valued parameter.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -46094,7 +46094,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_132setBoolParam(struct __pyx_o
  *         """
  *         n = str_conversion(name)             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPsetBoolParam(self._scip, n, value))
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_str_conversion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1791; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -46130,7 +46130,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_132setBoolParam(struct __pyx_o
  *         """
  *         n = str_conversion(name)
  *         PY_SCIP_CALL(scip.SCIPsetBoolParam(self._scip, n, value))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def setIntParam(self, name, value):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1792; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -46169,10 +46169,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_132setBoolParam(struct __pyx_o
 
   /* "pyscipopt/scip.pyx":1784
  *     # Parameter Methods
- * 
+ *
  *     def setBoolParam(self, name, value):             # <<<<<<<<<<<<<<
  *         """Set a boolean-valued parameter.
- * 
+ *
  */
 
   /* function exit code */
@@ -46195,10 +46195,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_132setBoolParam(struct __pyx_o
 
 /* "pyscipopt/scip.pyx":1794
  *         PY_SCIP_CALL(scip.SCIPsetBoolParam(self._scip, n, value))
- * 
+ *
  *     def setIntParam(self, name, value):             # <<<<<<<<<<<<<<
  *         """Set an int-valued parameter.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -46284,7 +46284,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_134setIntParam(struct __pyx_ob
  *         """
  *         n = str_conversion(name)             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPsetIntParam(self._scip, n, value))
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_str_conversion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1801; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -46320,7 +46320,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_134setIntParam(struct __pyx_ob
  *         """
  *         n = str_conversion(name)
  *         PY_SCIP_CALL(scip.SCIPsetIntParam(self._scip, n, value))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def setLongintParam(self, name, value):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1802; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -46359,10 +46359,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_134setIntParam(struct __pyx_ob
 
   /* "pyscipopt/scip.pyx":1794
  *         PY_SCIP_CALL(scip.SCIPsetBoolParam(self._scip, n, value))
- * 
+ *
  *     def setIntParam(self, name, value):             # <<<<<<<<<<<<<<
  *         """Set an int-valued parameter.
- * 
+ *
  */
 
   /* function exit code */
@@ -46385,10 +46385,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_134setIntParam(struct __pyx_ob
 
 /* "pyscipopt/scip.pyx":1804
  *         PY_SCIP_CALL(scip.SCIPsetIntParam(self._scip, n, value))
- * 
+ *
  *     def setLongintParam(self, name, value):             # <<<<<<<<<<<<<<
  *         """Set a long-valued parameter.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -46474,7 +46474,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_136setLongintParam(struct __py
  *         """
  *         n = str_conversion(name)             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPsetLongintParam(self._scip, n, value))
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_str_conversion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1811; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -46510,7 +46510,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_136setLongintParam(struct __py
  *         """
  *         n = str_conversion(name)
  *         PY_SCIP_CALL(scip.SCIPsetLongintParam(self._scip, n, value))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def setRealParam(self, name, value):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1812; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -46549,10 +46549,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_136setLongintParam(struct __py
 
   /* "pyscipopt/scip.pyx":1804
  *         PY_SCIP_CALL(scip.SCIPsetIntParam(self._scip, n, value))
- * 
+ *
  *     def setLongintParam(self, name, value):             # <<<<<<<<<<<<<<
  *         """Set a long-valued parameter.
- * 
+ *
  */
 
   /* function exit code */
@@ -46575,10 +46575,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_136setLongintParam(struct __py
 
 /* "pyscipopt/scip.pyx":1814
  *         PY_SCIP_CALL(scip.SCIPsetLongintParam(self._scip, n, value))
- * 
+ *
  *     def setRealParam(self, name, value):             # <<<<<<<<<<<<<<
  *         """Set a real-valued parameter.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -46664,7 +46664,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_138setRealParam(struct __pyx_o
  *         """
  *         n = str_conversion(name)             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPsetRealParam(self._scip, n, value))
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_str_conversion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1821; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -46700,7 +46700,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_138setRealParam(struct __pyx_o
  *         """
  *         n = str_conversion(name)
  *         PY_SCIP_CALL(scip.SCIPsetRealParam(self._scip, n, value))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def setCharParam(self, name, value):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1822; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -46739,10 +46739,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_138setRealParam(struct __pyx_o
 
   /* "pyscipopt/scip.pyx":1814
  *         PY_SCIP_CALL(scip.SCIPsetLongintParam(self._scip, n, value))
- * 
+ *
  *     def setRealParam(self, name, value):             # <<<<<<<<<<<<<<
  *         """Set a real-valued parameter.
- * 
+ *
  */
 
   /* function exit code */
@@ -46765,10 +46765,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_138setRealParam(struct __pyx_o
 
 /* "pyscipopt/scip.pyx":1824
  *         PY_SCIP_CALL(scip.SCIPsetRealParam(self._scip, n, value))
- * 
+ *
  *     def setCharParam(self, name, value):             # <<<<<<<<<<<<<<
  *         """Set a char-valued parameter.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -46854,7 +46854,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_140setCharParam(struct __pyx_o
  *         """
  *         n = str_conversion(name)             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPsetCharParam(self._scip, n, value))
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_str_conversion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1831; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -46890,7 +46890,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_140setCharParam(struct __pyx_o
  *         """
  *         n = str_conversion(name)
  *         PY_SCIP_CALL(scip.SCIPsetCharParam(self._scip, n, value))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def setStringParam(self, name, value):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1832; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -46929,10 +46929,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_140setCharParam(struct __pyx_o
 
   /* "pyscipopt/scip.pyx":1824
  *         PY_SCIP_CALL(scip.SCIPsetRealParam(self._scip, n, value))
- * 
+ *
  *     def setCharParam(self, name, value):             # <<<<<<<<<<<<<<
  *         """Set a char-valued parameter.
- * 
+ *
  */
 
   /* function exit code */
@@ -46955,10 +46955,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_140setCharParam(struct __pyx_o
 
 /* "pyscipopt/scip.pyx":1834
  *         PY_SCIP_CALL(scip.SCIPsetCharParam(self._scip, n, value))
- * 
+ *
  *     def setStringParam(self, name, value):             # <<<<<<<<<<<<<<
  *         """Set a string-valued parameter.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -47044,7 +47044,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_142setStringParam(struct __pyx
  *         """
  *         n = str_conversion(name)             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPsetStringParam(self._scip, n, value))
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_str_conversion); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1841; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -47080,7 +47080,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_142setStringParam(struct __pyx
  *         """
  *         n = str_conversion(name)
  *         PY_SCIP_CALL(scip.SCIPsetStringParam(self._scip, n, value))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def readParams(self, file):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1842; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -47119,10 +47119,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_142setStringParam(struct __pyx
 
   /* "pyscipopt/scip.pyx":1834
  *         PY_SCIP_CALL(scip.SCIPsetCharParam(self._scip, n, value))
- * 
+ *
  *     def setStringParam(self, name, value):             # <<<<<<<<<<<<<<
  *         """Set a string-valued parameter.
- * 
+ *
  */
 
   /* function exit code */
@@ -47145,10 +47145,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_142setStringParam(struct __pyx
 
 /* "pyscipopt/scip.pyx":1844
  *         PY_SCIP_CALL(scip.SCIPsetStringParam(self._scip, n, value))
- * 
+ *
  *     def readParams(self, file):             # <<<<<<<<<<<<<<
  *         """Read an external parameter file.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -47185,7 +47185,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_144readParams(struct __pyx_obj
  *         """
  *         absfile = bytes(abspath(file), 'utf-8')             # <<<<<<<<<<<<<<
  *         PY_SCIP_CALL(scip.SCIPreadParams(self._scip, absfile))
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_abspath); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1850; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -47232,7 +47232,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_144readParams(struct __pyx_obj
  *         """
  *         absfile = bytes(abspath(file), 'utf-8')
  *         PY_SCIP_CALL(scip.SCIPreadParams(self._scip, absfile))             # <<<<<<<<<<<<<<
- * 
+ *
  *     def readProblem(self, file, extension = None):
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_PY_SCIP_CALL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1851; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -47270,10 +47270,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_144readParams(struct __pyx_obj
 
   /* "pyscipopt/scip.pyx":1844
  *         PY_SCIP_CALL(scip.SCIPsetStringParam(self._scip, n, value))
- * 
+ *
  *     def readParams(self, file):             # <<<<<<<<<<<<<<
  *         """Read an external parameter file.
- * 
+ *
  */
 
   /* function exit code */
@@ -47296,10 +47296,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_144readParams(struct __pyx_obj
 
 /* "pyscipopt/scip.pyx":1853
  *         PY_SCIP_CALL(scip.SCIPreadParams(self._scip, absfile))
- * 
+ *
  *     def readProblem(self, file, extension = None):             # <<<<<<<<<<<<<<
  *         """Read a problem instance from an external file.
- * 
+ *
  */
 
 /* Python wrapper */
@@ -47559,10 +47559,10 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_146readProblem(struct __pyx_ob
 
   /* "pyscipopt/scip.pyx":1853
  *         PY_SCIP_CALL(scip.SCIPreadParams(self._scip, absfile))
- * 
+ *
  *     def readProblem(self, file, extension = None):             # <<<<<<<<<<<<<<
  *         """Read a problem instance from an external file.
- * 
+ *
  */
 
   /* function exit code */
@@ -47588,7 +47588,7 @@ static PyObject *__pyx_pf_9pyscipopt_4scip_5Model_146readProblem(struct __pyx_ob
  *     cdef scip.SCIP_SOL* _bestSol
  *     # can be used to store problem data
  *     cdef public object data             # <<<<<<<<<<<<<<
- * 
+ *
  *     def __init__(self, problemName='model', defaultPlugins=True):
  */
 
@@ -50824,6 +50824,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_lhss, __pyx_k_lhss, sizeof(__pyx_k_lhss), 0, 0, 1, 1},
   {&__pyx_n_s_lincons, __pyx_k_lincons, sizeof(__pyx_k_lincons), 0, 0, 1, 1},
   {&__pyx_n_s_local, __pyx_k_local, sizeof(__pyx_k_local), 0, 0, 1, 1},
+  {&__pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_k_local_tmp_bzfmilte_projects_sci, sizeof(__pyx_k_local_tmp_bzfmilte_projects_sci), 0, 0, 1, 0},
   {&__pyx_n_s_lowerbound, __pyx_k_lowerbound, sizeof(__pyx_k_lowerbound), 0, 0, 1, 1},
   {&__pyx_n_s_lpi, __pyx_k_lpi, sizeof(__pyx_k_lpi), 0, 0, 1, 1},
   {&__pyx_n_s_lpi_2, __pyx_k_lpi_2, sizeof(__pyx_k_lpi_2), 0, 0, 1, 1},
@@ -50852,7 +50853,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_needscons, __pyx_k_needscons, sizeof(__pyx_k_needscons), 0, 0, 1, 1},
   {&__pyx_n_s_newval, __pyx_k_newval, sizeof(__pyx_k_newval), 0, 0, 1, 1},
   {&__pyx_n_s_nfixedvars, __pyx_k_nfixedvars, sizeof(__pyx_k_nfixedvars), 0, 0, 1, 1},
-  {&__pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_k_nfs_optimi_kombadon_bzfmuelb_pr, sizeof(__pyx_k_nfs_optimi_kombadon_bzfmuelb_pr), 0, 0, 1, 0},
   {&__pyx_n_s_niters, __pyx_k_niters, sizeof(__pyx_k_niters), 0, 0, 1, 1},
   {&__pyx_n_s_nlocksneg, __pyx_k_nlocksneg, sizeof(__pyx_k_nlocksneg), 0, 0, 1, 1},
   {&__pyx_n_s_nlockspos, __pyx_k_nlockspos, sizeof(__pyx_k_nlockspos), 0, 0, 1, 1},
@@ -51138,7 +51138,7 @@ static int __Pyx_InitCachedConstants(void) {
  *     nchgcoefs[0] += result_dict.get("nnewchgcoefs", 0)
  *     nchgsides[0] += result_dict.get("nnewchgsides", 0)             # <<<<<<<<<<<<<<
  *     return SCIP_OKAY
- * 
+ *
  */
   __pyx_tuple__10 = PyTuple_Pack(2, __pyx_n_s_nnewchgsides, __pyx_int_0); if (unlikely(!__pyx_tuple__10)) {__pyx_filename = __pyx_f[3]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__10);
@@ -51156,7 +51156,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__11);
 
   /* "pyscipopt/scip.pyx":27
- * 
+ *
  * def scipErrorHandler(function):
  *     def wrapper(*args, **kwargs):             # <<<<<<<<<<<<<<
  *         return PY_SCIP_CALL(function(*args, **kwargs))
@@ -51165,7 +51165,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__12 = PyTuple_Pack(2, __pyx_n_s_args, __pyx_n_s_kwargs); if (unlikely(!__pyx_tuple__12)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__12);
   __Pyx_GIVEREF(__pyx_tuple__12);
-  __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(0, 0, 2, 0, CO_VARARGS|CO_VARKEYWORDS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_wrapper, 27, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(0, 0, 2, 0, CO_VARARGS|CO_VARKEYWORDS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_wrapper, 27, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":107
  *         pass
@@ -51348,7 +51348,7 @@ static int __Pyx_InitCachedConstants(void) {
  *     else:
  *         raise Exception('SCIP: unknown return code!')             # <<<<<<<<<<<<<<
  *     return rc
- * 
+ *
  */
   __pyx_tuple__30 = PyTuple_Pack(1, __pyx_kp_s_SCIP_unknown_return_code); if (unlikely(!__pyx_tuple__30)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__30);
@@ -51389,9 +51389,9 @@ static int __Pyx_InitCachedConstants(void) {
 
   /* "pyscipopt/scip.pyx":1186
  *         assert terms[()] == 0.0
- * 
+ *
  *         name = str_conversion("quadcons") # TODO             # <<<<<<<<<<<<<<
- * 
+ *
  *         cdef scip.SCIP_CONS* scip_cons
  */
   __pyx_tuple__36 = PyTuple_Pack(1, __pyx_n_s_quadcons); if (unlikely(!__pyx_tuple__36)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -51400,7 +51400,7 @@ static int __Pyx_InitCachedConstants(void) {
 
   /* "pyscipopt/scip.pyx":21
  * # todo: check whether this is currently done like this
- * 
+ *
  * if sys.version_info >= (3, 0):             # <<<<<<<<<<<<<<
  *     str_conversion = lambda x:bytes(x,'utf-8')
  * else:
@@ -51411,7 +51411,7 @@ static int __Pyx_InitCachedConstants(void) {
 
   /* "pyscipopt/scip.pyx":26
  *     str_conversion = lambda x:x
- * 
+ *
  * def scipErrorHandler(function):             # <<<<<<<<<<<<<<
  *     def wrapper(*args, **kwargs):
  *         return PY_SCIP_CALL(function(*args, **kwargs))
@@ -51419,11 +51419,11 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__43 = PyTuple_Pack(3, __pyx_n_s_function, __pyx_n_s_wrapper, __pyx_n_s_wrapper); if (unlikely(!__pyx_tuple__43)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__43);
   __Pyx_GIVEREF(__pyx_tuple__43);
-  __pyx_codeobj__44 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__43, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_scipErrorHandler, 26, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__44)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__44 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__43, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_scipErrorHandler, 26, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__44)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":103
  *     AFTERPROPLOOP     = 0x400u
- * 
+ *
  * def PY_SCIP_CALL(scip.SCIP_RETCODE rc):             # <<<<<<<<<<<<<<
  *     if rc == scip.SCIP_OKAY:
  *         pass
@@ -51431,10 +51431,10 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__45 = PyTuple_Pack(2, __pyx_n_s_rc, __pyx_n_s_rc); if (unlikely(!__pyx_tuple__45)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 103; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__45);
   __Pyx_GIVEREF(__pyx_tuple__45);
-  __pyx_codeobj__46 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__45, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_PY_SCIP_CALL, 103, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__46)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 103; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__46 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__45, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_PY_SCIP_CALL, 103, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__46)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 103; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":170
- * 
+ *
  * class LP:
  *     def __init__(self, name="LP", objsen=scip.SCIP_OBJSENSE_MINIMIZE):             # <<<<<<<<<<<<<<
  *         """
@@ -51443,11 +51443,11 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__47 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_name, __pyx_n_s_objsen, __pyx_n_s_lpi); if (unlikely(!__pyx_tuple__47)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__47);
   __Pyx_GIVEREF(__pyx_tuple__47);
-  __pyx_codeobj__48 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__47, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_init, 170, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__48)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__48 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__47, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_init, 170, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__48)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":182
  *         PY_SCIP_CALL(scip.SCIPlpiCreate(&(lpi._lpi), NULL, name, objsen))
- * 
+ *
  *     def __del__(self):             # <<<<<<<<<<<<<<
  *         cdef Lpi lpi
  *         cdef scip.SCIP_LPI* _lpi
@@ -51455,47 +51455,47 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__49 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_lpi, __pyx_n_s_lpi_2); if (unlikely(!__pyx_tuple__49)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__49);
   __Pyx_GIVEREF(__pyx_tuple__49);
-  __pyx_codeobj__50 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__49, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_del, 182, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__50)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__50 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__49, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_del, 182, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__50)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":189
  *         PY_SCIP_CALL(scip.SCIPlpiFree(&_lpi))
- * 
+ *
  *     def __repr__(self):             # <<<<<<<<<<<<<<
  *         return self.name
- * 
+ *
  */
   __pyx_tuple__51 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__51)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 189; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__51);
   __Pyx_GIVEREF(__pyx_tuple__51);
-  __pyx_codeobj__52 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__51, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_repr, 189, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__52)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 189; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__52 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__51, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_repr, 189, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__52)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 189; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":192
  *         return self.name
- * 
+ *
  *     def writeLP(self, filename):             # <<<<<<<<<<<<<<
  *         """Writes LP to a file.
- * 
+ *
  */
   __pyx_tuple__53 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_filename, __pyx_n_s_lpi); if (unlikely(!__pyx_tuple__53)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 192; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__53);
   __Pyx_GIVEREF(__pyx_tuple__53);
-  __pyx_codeobj__54 = (PyObject*)__Pyx_PyCode_New(2, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__53, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_writeLP, 192, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__54)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 192; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__54 = (PyObject*)__Pyx_PyCode_New(2, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__53, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_writeLP, 192, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__54)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 192; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":202
  *         PY_SCIP_CALL(scip.SCIPlpiWriteLP(lpi._lpi, filename))
- * 
+ *
  *     def readLP(self, filename):             # <<<<<<<<<<<<<<
  *         """Reads LP from a file.
- * 
+ *
  */
   __pyx_tuple__55 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_filename, __pyx_n_s_lpi); if (unlikely(!__pyx_tuple__55)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 202; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__55);
   __Pyx_GIVEREF(__pyx_tuple__55);
-  __pyx_codeobj__56 = (PyObject*)__Pyx_PyCode_New(2, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__55, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_readLP, 202, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__56)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 202; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__56 = (PyObject*)__Pyx_PyCode_New(2, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__55, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_readLP, 202, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__56)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 202; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":212
  *         PY_SCIP_CALL(scip.SCIPlpiReadLP(lpi._lpi, filename))
- * 
+ *
  *     def infinity(self):             # <<<<<<<<<<<<<<
  *         """Returns infinity value of the LP.
  *         """
@@ -51503,185 +51503,185 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__57 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_lpi); if (unlikely(!__pyx_tuple__57)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 212; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__57);
   __Pyx_GIVEREF(__pyx_tuple__57);
-  __pyx_codeobj__58 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__57, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_infinity, 212, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__58)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 212; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__58 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__57, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_infinity, 212, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__58)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 212; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":219
  *         return scip.SCIPlpiInfinity(lpi._lpi)
- * 
+ *
  *     def isInfinity(self, val):             # <<<<<<<<<<<<<<
  *         """Checks if a given value is equal to the infinity value of the LP.
- * 
+ *
  */
   __pyx_tuple__59 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_val, __pyx_n_s_lpi); if (unlikely(!__pyx_tuple__59)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__59);
   __Pyx_GIVEREF(__pyx_tuple__59);
-  __pyx_codeobj__60 = (PyObject*)__Pyx_PyCode_New(2, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__59, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_isInfinity, 219, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__60)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__60 = (PyObject*)__Pyx_PyCode_New(2, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__59, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_isInfinity, 219, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__60)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":229
  *         return scip.SCIPlpiIsInfinity(lpi._lpi, val)
- * 
+ *
  *     def addCol(self, entries, obj = 0.0, lb = 0.0, ub = None):             # <<<<<<<<<<<<<<
  *         """Adds a single column to the LP.
- * 
+ *
  */
   __pyx_tuple__61 = PyTuple_Pack(15, __pyx_n_s_self, __pyx_n_s_entries, __pyx_n_s_obj, __pyx_n_s_lb, __pyx_n_s_ub, __pyx_n_s_lpi, __pyx_n_s_nnonz, __pyx_n_s_c_coefs, __pyx_n_s_c_inds, __pyx_n_s_c_obj, __pyx_n_s_c_lb, __pyx_n_s_c_ub, __pyx_n_s_c_beg, __pyx_n_s_i, __pyx_n_s_entry); if (unlikely(!__pyx_tuple__61)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__61);
   __Pyx_GIVEREF(__pyx_tuple__61);
-  __pyx_codeobj__62 = (PyObject*)__Pyx_PyCode_New(5, 0, 15, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__61, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_addCol, 229, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__62)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__62 = (PyObject*)__Pyx_PyCode_New(5, 0, 15, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__61, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_addCol, 229, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__62)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_tuple__63 = PyTuple_Pack(3, ((PyObject*)__pyx_float_0_0), ((PyObject*)__pyx_float_0_0), ((PyObject *)Py_None)); if (unlikely(!__pyx_tuple__63)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__63);
   __Pyx_GIVEREF(__pyx_tuple__63);
 
   /* "pyscipopt/scip.pyx":264
  *         free(c_inds)
- * 
+ *
  *     def addCols(self, entrieslist, objs = None, lbs = None, ubs = None):             # <<<<<<<<<<<<<<
  *         """Adds multiple columns to the LP.
- * 
+ *
  */
   __pyx_tuple__64 = PyTuple_Pack(20, __pyx_n_s_self, __pyx_n_s_entrieslist, __pyx_n_s_objs, __pyx_n_s_lbs, __pyx_n_s_ubs, __pyx_n_s_lpi, __pyx_n_s_ncols, __pyx_n_s_nnonz, __pyx_n_s_c_objs, __pyx_n_s_c_lbs, __pyx_n_s_c_ubs, __pyx_n_s_c_coefs, __pyx_n_s_c_inds, __pyx_n_s_c_beg, __pyx_n_s_tmp, __pyx_n_s_i, __pyx_n_s_entries, __pyx_n_s_entry, __pyx_n_s_genexpr, __pyx_n_s_genexpr); if (unlikely(!__pyx_tuple__64)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 264; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__64);
   __Pyx_GIVEREF(__pyx_tuple__64);
-  __pyx_codeobj__65 = (PyObject*)__Pyx_PyCode_New(5, 0, 20, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__64, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_addCols, 264, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__65)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 264; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__65 = (PyObject*)__Pyx_PyCode_New(5, 0, 20, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__64, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_addCols, 264, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__65)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 264; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_tuple__66 = PyTuple_Pack(3, ((PyObject *)Py_None), ((PyObject *)Py_None), ((PyObject *)Py_None)); if (unlikely(!__pyx_tuple__66)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 264; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__66);
   __Pyx_GIVEREF(__pyx_tuple__66);
 
   /* "pyscipopt/scip.pyx":307
  *         free(c_objs)
- * 
+ *
  *     def delCols(self, firstcol, lastcol):             # <<<<<<<<<<<<<<
  *         """Deletes a range of columns from the LP.
- * 
+ *
  */
   __pyx_tuple__67 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_firstcol, __pyx_n_s_lastcol, __pyx_n_s_lpi); if (unlikely(!__pyx_tuple__67)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 307; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__67);
   __Pyx_GIVEREF(__pyx_tuple__67);
-  __pyx_codeobj__68 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__67, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_delCols, 307, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__68)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 307; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__68 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__67, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_delCols, 307, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__68)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 307; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":318
  *         PY_SCIP_CALL(scip.SCIPlpiDelCols(lpi._lpi, firstcol, lastcol))
- * 
+ *
  *     def addRow(self, entries, lhs=0.0, rhs=None):             # <<<<<<<<<<<<<<
  *         """Adds a single row to the LP.
- * 
+ *
  */
   __pyx_tuple__69 = PyTuple_Pack(14, __pyx_n_s_self, __pyx_n_s_entries, __pyx_n_s_lhs, __pyx_n_s_rhs, __pyx_n_s_lpi, __pyx_n_s_beg, __pyx_n_s_nnonz, __pyx_n_s_c_coefs, __pyx_n_s_c_inds, __pyx_n_s_c_lhs, __pyx_n_s_c_rhs, __pyx_n_s_c_beg, __pyx_n_s_i, __pyx_n_s_entry); if (unlikely(!__pyx_tuple__69)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 318; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__69);
   __Pyx_GIVEREF(__pyx_tuple__69);
-  __pyx_codeobj__70 = (PyObject*)__Pyx_PyCode_New(4, 0, 14, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__69, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_addRow, 318, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__70)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 318; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__70 = (PyObject*)__Pyx_PyCode_New(4, 0, 14, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__69, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_addRow, 318, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__70)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 318; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_tuple__71 = PyTuple_Pack(2, ((PyObject*)__pyx_float_0_0), ((PyObject *)Py_None)); if (unlikely(!__pyx_tuple__71)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 318; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__71);
   __Pyx_GIVEREF(__pyx_tuple__71);
 
   /* "pyscipopt/scip.pyx":351
  *         free(c_inds)
- * 
+ *
  *     def addRows(self, entrieslist, lhss = None, rhss = None):             # <<<<<<<<<<<<<<
  *         """Adds multiple rows to the LP.
- * 
+ *
  */
   __pyx_tuple__72 = PyTuple_Pack(18, __pyx_n_s_self, __pyx_n_s_entrieslist, __pyx_n_s_lhss, __pyx_n_s_rhss, __pyx_n_s_lpi, __pyx_n_s_nrows, __pyx_n_s_nnonz, __pyx_n_s_c_lhss, __pyx_n_s_c_rhss, __pyx_n_s_c_coefs, __pyx_n_s_c_inds, __pyx_n_s_c_beg, __pyx_n_s_tmp, __pyx_n_s_i, __pyx_n_s_entries, __pyx_n_s_entry, __pyx_n_s_genexpr, __pyx_n_s_genexpr); if (unlikely(!__pyx_tuple__72)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__72);
   __Pyx_GIVEREF(__pyx_tuple__72);
-  __pyx_codeobj__73 = (PyObject*)__Pyx_PyCode_New(4, 0, 18, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__72, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_addRows, 351, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__73)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__73 = (PyObject*)__Pyx_PyCode_New(4, 0, 18, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__72, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_addRows, 351, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__73)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_tuple__74 = PyTuple_Pack(2, ((PyObject *)Py_None), ((PyObject *)Py_None)); if (unlikely(!__pyx_tuple__74)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__74);
   __Pyx_GIVEREF(__pyx_tuple__74);
 
   /* "pyscipopt/scip.pyx":390
  *         free(c_rhss)
- * 
+ *
  *     def delRows(self, firstrow, lastrow):             # <<<<<<<<<<<<<<
  *         """Deletes a range of rows from the LP.
- * 
+ *
  */
   __pyx_tuple__75 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_firstrow, __pyx_n_s_lastrow, __pyx_n_s_lpi); if (unlikely(!__pyx_tuple__75)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 390; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__75);
   __Pyx_GIVEREF(__pyx_tuple__75);
-  __pyx_codeobj__76 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__75, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_delRows, 390, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__76)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 390; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__76 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__75, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_delRows, 390, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__76)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 390; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":401
  *         PY_SCIP_CALL(scip.SCIPlpiDelRows(lpi._lpi, firstrow, lastrow))
- * 
+ *
  *     def getBounds(self, firstcol = 0, lastcol = None):             # <<<<<<<<<<<<<<
  *         """Returns all lower and upper bounds for a range of columns.
- * 
+ *
  */
   __pyx_tuple__77 = PyTuple_Pack(10, __pyx_n_s_self, __pyx_n_s_firstcol, __pyx_n_s_lastcol, __pyx_n_s_lpi, __pyx_n_s_ncols, __pyx_n_s_c_lbs, __pyx_n_s_c_ubs, __pyx_n_s_lbs, __pyx_n_s_ubs, __pyx_n_s_i); if (unlikely(!__pyx_tuple__77)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 401; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__77);
   __Pyx_GIVEREF(__pyx_tuple__77);
-  __pyx_codeobj__78 = (PyObject*)__Pyx_PyCode_New(3, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__77, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_getBounds, 401, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__78)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 401; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__78 = (PyObject*)__Pyx_PyCode_New(3, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__77, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_getBounds, 401, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__78)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 401; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_tuple__79 = PyTuple_Pack(2, ((PyObject *)__pyx_int_0), ((PyObject *)Py_None)); if (unlikely(!__pyx_tuple__79)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 401; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__79);
   __Pyx_GIVEREF(__pyx_tuple__79);
 
   /* "pyscipopt/scip.pyx":433
  *         return lbs, ubs
- * 
+ *
  *     def getSides(self, firstrow = 0, lastrow = None):             # <<<<<<<<<<<<<<
  *         """Returns all left- and right-hand sides for a range of rows.
- * 
+ *
  */
   __pyx_tuple__80 = PyTuple_Pack(10, __pyx_n_s_self, __pyx_n_s_firstrow, __pyx_n_s_lastrow, __pyx_n_s_lpi, __pyx_n_s_nrows, __pyx_n_s_c_lhss, __pyx_n_s_c_rhss, __pyx_n_s_lhss, __pyx_n_s_rhss, __pyx_n_s_i); if (unlikely(!__pyx_tuple__80)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 433; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__80);
   __Pyx_GIVEREF(__pyx_tuple__80);
-  __pyx_codeobj__81 = (PyObject*)__Pyx_PyCode_New(3, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__80, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_getSides, 433, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__81)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 433; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__81 = (PyObject*)__Pyx_PyCode_New(3, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__80, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_getSides, 433, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__81)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 433; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_tuple__82 = PyTuple_Pack(2, ((PyObject *)__pyx_int_0), ((PyObject *)Py_None)); if (unlikely(!__pyx_tuple__82)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 433; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__82);
   __Pyx_GIVEREF(__pyx_tuple__82);
 
   /* "pyscipopt/scip.pyx":465
  *         return lhss, rhss
- * 
+ *
  *     def chgObj(self, col, obj):             # <<<<<<<<<<<<<<
  *         """Changes objective coefficient of a single column.
- * 
+ *
  */
   __pyx_tuple__83 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_col, __pyx_n_s_obj, __pyx_n_s_lpi, __pyx_n_s_c_col, __pyx_n_s_c_obj); if (unlikely(!__pyx_tuple__83)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 465; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__83);
   __Pyx_GIVEREF(__pyx_tuple__83);
-  __pyx_codeobj__84 = (PyObject*)__Pyx_PyCode_New(3, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__83, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_chgObj, 465, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__84)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 465; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__84 = (PyObject*)__Pyx_PyCode_New(3, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__83, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_chgObj, 465, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__84)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 465; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":479
  *         PY_SCIP_CALL(scip.SCIPlpiChgObj(lpi._lpi, 1, &c_col, &c_obj))
- * 
+ *
  *     def chgCoef(self, row, col, newval):             # <<<<<<<<<<<<<<
  *         """Changes a single coefficient in the LP.
- * 
+ *
  */
   __pyx_tuple__85 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_row, __pyx_n_s_col, __pyx_n_s_newval, __pyx_n_s_lpi); if (unlikely(!__pyx_tuple__85)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 479; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__85);
   __Pyx_GIVEREF(__pyx_tuple__85);
-  __pyx_codeobj__86 = (PyObject*)__Pyx_PyCode_New(4, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__85, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_chgCoef, 479, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__86)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 479; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__86 = (PyObject*)__Pyx_PyCode_New(4, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__85, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_chgCoef, 479, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__86)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 479; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":492
  *         PY_SCIP_CALL(scip.SCIPlpiChgCoef(lpi._lpi, row, col, newval))
- * 
+ *
  *     def chgBound(self, col, lb, ub):             # <<<<<<<<<<<<<<
  *         """Changes the lower and upper bound of a single column.
- * 
+ *
  */
   __pyx_tuple__87 = PyTuple_Pack(8, __pyx_n_s_self, __pyx_n_s_col, __pyx_n_s_lb, __pyx_n_s_ub, __pyx_n_s_lpi, __pyx_n_s_c_col, __pyx_n_s_c_lb, __pyx_n_s_c_ub); if (unlikely(!__pyx_tuple__87)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 492; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__87);
   __Pyx_GIVEREF(__pyx_tuple__87);
-  __pyx_codeobj__88 = (PyObject*)__Pyx_PyCode_New(4, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__87, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_chgBound, 492, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__88)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 492; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__88 = (PyObject*)__Pyx_PyCode_New(4, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__87, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_chgBound, 492, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__88)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 492; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":508
  *         PY_SCIP_CALL(scip.SCIPlpiChgBounds(lpi._lpi, 1, &c_col, &c_lb, &c_ub))
- * 
+ *
  *     def chgSide(self, row, lhs, rhs):             # <<<<<<<<<<<<<<
  *         """Changes the left- and right-hand side of a single row.
- * 
+ *
  */
   __pyx_tuple__89 = PyTuple_Pack(8, __pyx_n_s_self, __pyx_n_s_row, __pyx_n_s_lhs, __pyx_n_s_rhs, __pyx_n_s_lpi, __pyx_n_s_c_row, __pyx_n_s_c_lhs, __pyx_n_s_c_rhs); if (unlikely(!__pyx_tuple__89)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 508; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__89);
   __Pyx_GIVEREF(__pyx_tuple__89);
-  __pyx_codeobj__90 = (PyObject*)__Pyx_PyCode_New(4, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__89, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_chgSide, 508, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__90)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 508; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__90 = (PyObject*)__Pyx_PyCode_New(4, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__89, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_chgSide, 508, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__90)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 508; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":524
  *         PY_SCIP_CALL(scip.SCIPlpiChgSides(lpi._lpi, 1, &c_row, &c_lhs, &c_rhs))
- * 
+ *
  *     def clear(self):             # <<<<<<<<<<<<<<
  *         """Clears the whole LP."""
  *         cdef Lpi lpi
@@ -51689,11 +51689,11 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__91 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_lpi); if (unlikely(!__pyx_tuple__91)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 524; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__91);
   __Pyx_GIVEREF(__pyx_tuple__91);
-  __pyx_codeobj__92 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__91, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_clear, 524, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__92)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 524; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__92 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__91, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_clear, 524, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__92)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 524; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":530
  *         PY_SCIP_CALL(scip.SCIPlpiClear(lpi._lpi))
- * 
+ *
  *     def nrows(self):             # <<<<<<<<<<<<<<
  *         """Returns the number of rows."""
  *         cdef Lpi lpi
@@ -51701,11 +51701,11 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__93 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_lpi, __pyx_n_s_nrows); if (unlikely(!__pyx_tuple__93)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 530; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__93);
   __Pyx_GIVEREF(__pyx_tuple__93);
-  __pyx_codeobj__94 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__93, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_nrows, 530, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__94)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 530; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__94 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__93, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_nrows, 530, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__94)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 530; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":539
  *         return nrows
- * 
+ *
  *     def ncols(self):             # <<<<<<<<<<<<<<
  *         """Returns the number of columns."""
  *         cdef Lpi lpi
@@ -51713,26 +51713,26 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__95 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_lpi, __pyx_n_s_ncols); if (unlikely(!__pyx_tuple__95)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__95);
   __Pyx_GIVEREF(__pyx_tuple__95);
-  __pyx_codeobj__96 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__95, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_ncols, 539, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__96)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__96 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__95, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_ncols, 539, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__96)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 539; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":548
  *         return ncols
- * 
+ *
  *     def solve(self, dual=True):             # <<<<<<<<<<<<<<
  *         """Solves the current LP.
- * 
+ *
  */
   __pyx_tuple__97 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_dual, __pyx_n_s_lpi, __pyx_n_s_objval); if (unlikely(!__pyx_tuple__97)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 548; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__97);
   __Pyx_GIVEREF(__pyx_tuple__97);
-  __pyx_codeobj__98 = (PyObject*)__Pyx_PyCode_New(2, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__97, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_solve, 548, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__98)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 548; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__98 = (PyObject*)__Pyx_PyCode_New(2, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__97, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_solve, 548, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__98)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 548; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_tuple__99 = PyTuple_Pack(1, ((PyObject *)Py_True)); if (unlikely(!__pyx_tuple__99)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 548; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__99);
   __Pyx_GIVEREF(__pyx_tuple__99);
 
   /* "pyscipopt/scip.pyx":566
  *         return objval
- * 
+ *
  *     def getPrimal(self):             # <<<<<<<<<<<<<<
  *         """Returns the primal solution of the last LP solve."""
  *         cdef Lpi lpi
@@ -51740,11 +51740,11 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__100 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_lpi, __pyx_n_s_ncols, __pyx_n_s_c_primalsol, __pyx_n_s_primalsol, __pyx_n_s_i); if (unlikely(!__pyx_tuple__100)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 566; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__100);
   __Pyx_GIVEREF(__pyx_tuple__100);
-  __pyx_codeobj__101 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__100, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_getPrimal, 566, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__101)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 566; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__101 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__100, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_getPrimal, 566, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__101)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 566; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":584
  *         return primalsol
- * 
+ *
  *     def getDual(self):             # <<<<<<<<<<<<<<
  *         """Returns the dual solution of the last LP solve."""
  *         cdef Lpi lpi
@@ -51752,11 +51752,11 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__102 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_lpi, __pyx_n_s_nrows, __pyx_n_s_c_dualsol, __pyx_n_s_dualsol, __pyx_n_s_i); if (unlikely(!__pyx_tuple__102)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 584; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__102);
   __Pyx_GIVEREF(__pyx_tuple__102);
-  __pyx_codeobj__103 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__102, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_getDual, 584, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__103)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 584; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__103 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__102, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_getDual, 584, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__103)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 584; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":602
  *         return dualsol
- * 
+ *
  *     def getPrimalRay(self):             # <<<<<<<<<<<<<<
  *         """Returns a primal ray if possible, None otherwise."""
  *         cdef Lpi lpi
@@ -51764,11 +51764,11 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__104 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_lpi, __pyx_n_s_ncols, __pyx_n_s_c_ray, __pyx_n_s_ray, __pyx_n_s_i); if (unlikely(!__pyx_tuple__104)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 602; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__104);
   __Pyx_GIVEREF(__pyx_tuple__104);
-  __pyx_codeobj__105 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__104, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_getPrimalRay, 602, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__105)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 602; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__105 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__104, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_getPrimalRay, 602, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__105)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 602; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":622
  *         return ray
- * 
+ *
  *     def getDualRay(self):             # <<<<<<<<<<<<<<
  *         """Returns a dual ray if possible, None otherwise."""
  *         cdef Lpi lpi
@@ -51776,11 +51776,11 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__106 = PyTuple_Pack(6, __pyx_n_s_self, __pyx_n_s_lpi, __pyx_n_s_nrows, __pyx_n_s_c_ray, __pyx_n_s_ray, __pyx_n_s_i); if (unlikely(!__pyx_tuple__106)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 622; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__106);
   __Pyx_GIVEREF(__pyx_tuple__106);
-  __pyx_codeobj__107 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__106, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_getDualRay, 622, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__107)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 622; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__107 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__106, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_getDualRay, 622, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__107)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 622; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":642
  *         return ray
- * 
+ *
  *     def getNIterations(self):             # <<<<<<<<<<<<<<
  *         """Returns a the number of LP iterations of the last LP solve."""
  *         cdef Lpi lpi
@@ -51788,7 +51788,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__108 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_lpi, __pyx_n_s_niters); if (unlikely(!__pyx_tuple__108)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 642; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__108);
   __Pyx_GIVEREF(__pyx_tuple__108);
-  __pyx_codeobj__109 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__108, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_getNIterations, 642, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__109)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 642; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__109 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__108, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_getNIterations, 642, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__109)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 642; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":653
  * class Variable(LinExpr):
@@ -51800,62 +51800,62 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__110 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_name); if (unlikely(!__pyx_tuple__110)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 653; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__110);
   __Pyx_GIVEREF(__pyx_tuple__110);
-  __pyx_codeobj__111 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__110, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_init, 653, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__111)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 653; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__111 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__110, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_init, 653, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__111)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 653; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_tuple__112 = PyTuple_Pack(1, ((PyObject *)Py_None)); if (unlikely(!__pyx_tuple__112)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 653; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__112);
   __Pyx_GIVEREF(__pyx_tuple__112);
 
   /* "pyscipopt/scip.pyx":658
  *         LinExpr.__init__(self, {(self,) : 1.0})
- * 
+ *
  *     def __hash__(self):             # <<<<<<<<<<<<<<
  *         return hash(id(self))
- * 
+ *
  */
   __pyx_tuple__113 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__113)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 658; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__113);
   __Pyx_GIVEREF(__pyx_tuple__113);
-  __pyx_codeobj__114 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__113, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_hash, 658, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__114)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 658; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__114 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__113, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_hash, 658, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__114)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 658; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":661
  *         return hash(id(self))
- * 
+ *
  *     def __lt__(self, other):             # <<<<<<<<<<<<<<
  *         return id(self) < id(other)
- * 
+ *
  */
   __pyx_tuple__115 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_other); if (unlikely(!__pyx_tuple__115)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 661; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__115);
   __Pyx_GIVEREF(__pyx_tuple__115);
-  __pyx_codeobj__116 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__115, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_lt, 661, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__116)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 661; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__116 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__115, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_lt, 661, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__116)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 661; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":664
  *         return id(self) < id(other)
- * 
+ *
  *     def __gt__(self, other):             # <<<<<<<<<<<<<<
  *         return id(self) > id(other)
- * 
+ *
  */
   __pyx_tuple__117 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_other); if (unlikely(!__pyx_tuple__117)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 664; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__117);
   __Pyx_GIVEREF(__pyx_tuple__117);
-  __pyx_codeobj__118 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__117, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_gt, 664, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__118)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 664; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__118 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__117, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_gt, 664, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__118)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 664; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":667
  *         return id(self) > id(other)
- * 
+ *
  *     def __repr__(self):             # <<<<<<<<<<<<<<
  *         return self.name
- * 
+ *
  */
   __pyx_tuple__119 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__119)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 667; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__119);
   __Pyx_GIVEREF(__pyx_tuple__119);
-  __pyx_codeobj__120 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__119, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_repr, 667, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__120)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 667; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__120 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__119, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_repr, 667, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__120)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 667; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":670
  *         return self.name
- * 
+ *
  *     def vtype(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -51863,11 +51863,11 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__121 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_v, __pyx_n_s_var_2, __pyx_n_s_vartype); if (unlikely(!__pyx_tuple__121)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 670; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__121);
   __Pyx_GIVEREF(__pyx_tuple__121);
-  __pyx_codeobj__122 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__121, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_vtype, 670, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__122)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 670; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__122 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__121, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_vtype, 670, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__122)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 670; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":683
  *             return "CONTINUOUS"
- * 
+ *
  *     def isOriginal(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -51875,11 +51875,11 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__123 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_v, __pyx_n_s_var_2); if (unlikely(!__pyx_tuple__123)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 683; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__123);
   __Pyx_GIVEREF(__pyx_tuple__123);
-  __pyx_codeobj__124 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__123, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_isOriginal, 683, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__124)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 683; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__124 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__123, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_isOriginal, 683, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__124)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 683; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":690
  *         return scip.SCIPvarIsOriginal(_var)
- * 
+ *
  *     def isInLP(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -51887,11 +51887,11 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__125 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_v, __pyx_n_s_var_2); if (unlikely(!__pyx_tuple__125)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 690; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__125);
   __Pyx_GIVEREF(__pyx_tuple__125);
-  __pyx_codeobj__126 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__125, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_isInLP, 690, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__126)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 690; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__126 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__125, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_isInLP, 690, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__126)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 690; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":697
  *         return scip.SCIPvarIsInLP(_var)
- * 
+ *
  *     def getCol(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -51899,10 +51899,10 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__127 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_v, __pyx_n_s_var_2, __pyx_n_s_col, __pyx_n_s_col_2); if (unlikely(!__pyx_tuple__127)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 697; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__127);
   __Pyx_GIVEREF(__pyx_tuple__127);
-  __pyx_codeobj__128 = (PyObject*)__Pyx_PyCode_New(1, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__127, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_getCol, 697, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__128)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 697; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__128 = (PyObject*)__Pyx_PyCode_New(1, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__127, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_getCol, 697, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__128)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 697; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":719
- * 
+ *
  * class Constraint:
  *     def __init__(self, name=None):             # <<<<<<<<<<<<<<
  *         self.cons = Cons()
@@ -51911,26 +51911,26 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__129 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_name); if (unlikely(!__pyx_tuple__129)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 719; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__129);
   __Pyx_GIVEREF(__pyx_tuple__129);
-  __pyx_codeobj__130 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__129, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_init, 719, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__130)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 719; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__130 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__129, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_init, 719, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__130)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 719; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_tuple__131 = PyTuple_Pack(1, ((PyObject *)Py_None)); if (unlikely(!__pyx_tuple__131)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 719; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__131);
   __Pyx_GIVEREF(__pyx_tuple__131);
 
   /* "pyscipopt/scip.pyx":723
  *         self.name = name
- * 
+ *
  *     def __repr__(self):             # <<<<<<<<<<<<<<
  *         return self.name
- * 
+ *
  */
   __pyx_tuple__132 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__132)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 723; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__132);
   __Pyx_GIVEREF(__pyx_tuple__132);
-  __pyx_codeobj__133 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__132, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_repr, 723, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__133)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 723; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__133 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__132, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_repr, 723, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__133)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 723; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "pyscipopt/scip.pyx":726
  *         return self.name
- * 
+ *
  *     def isOriginal(self):             # <<<<<<<<<<<<<<
  *         cdef Cons c
  *         cdef scip.SCIP_CONS* _cons
@@ -51938,7 +51938,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__134 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_c, __pyx_n_s_cons_2); if (unlikely(!__pyx_tuple__134)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 726; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__134);
   __Pyx_GIVEREF(__pyx_tuple__134);
-  __pyx_codeobj__135 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__134, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_nfs_optimi_kombadon_bzfmuelb_pr, __pyx_n_s_isOriginal, 726, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__135)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 726; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_codeobj__135 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__134, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_local_tmp_bzfmilte_projects_sci, __pyx_n_s_isOriginal, 726, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__135)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 726; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -52205,7 +52205,7 @@ PyMODINIT_FUNC PyInit_scip(void)
   /* "pyscipopt/scip.pyx":1
  * from os.path import abspath             # <<<<<<<<<<<<<<
  * import sys
- * 
+ *
  */
   __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -52224,7 +52224,7 @@ PyMODINIT_FUNC PyInit_scip(void)
   /* "pyscipopt/scip.pyx":2
  * from os.path import abspath
  * import sys             # <<<<<<<<<<<<<<
- * 
+ *
  * cimport pyscipopt.scip as scip
  */
   __pyx_t_2 = __Pyx_Import(__pyx_n_s_sys, 0, -1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 2; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -52233,10 +52233,10 @@ PyMODINIT_FUNC PyInit_scip(void)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "pyscipopt/scip.pyx":5
- * 
+ *
  * cimport pyscipopt.scip as scip
  * from pyscipopt.linexpr import LinExpr, LinCons             # <<<<<<<<<<<<<<
- * 
+ *
  * from libc.stdlib cimport malloc, free
  */
   __pyx_t_2 = PyList_New(2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 5; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -52262,7 +52262,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":21
  * # todo: check whether this is currently done like this
- * 
+ *
  * if sys.version_info >= (3, 0):             # <<<<<<<<<<<<<<
  *     str_conversion = lambda x:bytes(x,'utf-8')
  * else:
@@ -52279,7 +52279,7 @@ PyMODINIT_FUNC PyInit_scip(void)
   if (__pyx_t_3) {
 
     /* "pyscipopt/scip.pyx":22
- * 
+ *
  * if sys.version_info >= (3, 0):
  *     str_conversion = lambda x:bytes(x,'utf-8')             # <<<<<<<<<<<<<<
  * else:
@@ -52292,7 +52292,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
     /* "pyscipopt/scip.pyx":21
  * # todo: check whether this is currently done like this
- * 
+ *
  * if sys.version_info >= (3, 0):             # <<<<<<<<<<<<<<
  *     str_conversion = lambda x:bytes(x,'utf-8')
  * else:
@@ -52304,7 +52304,7 @@ PyMODINIT_FUNC PyInit_scip(void)
  *     str_conversion = lambda x:bytes(x,'utf-8')
  * else:
  *     str_conversion = lambda x:x             # <<<<<<<<<<<<<<
- * 
+ *
  * def scipErrorHandler(function):
  */
   /*else*/ {
@@ -52317,7 +52317,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":26
  *     str_conversion = lambda x:x
- * 
+ *
  * def scipErrorHandler(function):             # <<<<<<<<<<<<<<
  *     def wrapper(*args, **kwargs):
  *         return PY_SCIP_CALL(function(*args, **kwargs))
@@ -52482,7 +52482,7 @@ PyMODINIT_FUNC PyInit_scip(void)
  *     FOUNDSOL    =  15
  *     SUSPENDED   =  16             # <<<<<<<<<<<<<<
  *     SUCCESS     =  17
- * 
+ *
  */
   if (PyDict_SetItem((PyObject *)__pyx_ptype_9pyscipopt_4scip_PY_SCIP_RESULT->tp_dict, __pyx_n_s_SUSPENDED, __pyx_int_16) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   PyType_Modified(__pyx_ptype_9pyscipopt_4scip_PY_SCIP_RESULT);
@@ -52491,14 +52491,14 @@ PyMODINIT_FUNC PyInit_scip(void)
  *     FOUNDSOL    =  15
  *     SUSPENDED   =  16
  *     SUCCESS     =  17             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   if (PyDict_SetItem((PyObject *)__pyx_ptype_9pyscipopt_4scip_PY_SCIP_RESULT->tp_dict, __pyx_n_s_SUCCESS, __pyx_int_17) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 52; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   PyType_Modified(__pyx_ptype_9pyscipopt_4scip_PY_SCIP_RESULT);
 
   /* "pyscipopt/scip.pyx":56
- * 
+ *
  * cdef class PY_SCIP_PARAMSETTING:
  *     DEFAULT     = 0             # <<<<<<<<<<<<<<
  *     AGRESSIVE   = 1
@@ -52522,7 +52522,7 @@ PyMODINIT_FUNC PyInit_scip(void)
  *     AGRESSIVE   = 1
  *     FAST        = 2             # <<<<<<<<<<<<<<
  *     OFF         = 3
- * 
+ *
  */
   if (PyDict_SetItem((PyObject *)__pyx_ptype_9pyscipopt_4scip_PY_SCIP_PARAMSETTING->tp_dict, __pyx_n_s_FAST, __pyx_int_2) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   PyType_Modified(__pyx_ptype_9pyscipopt_4scip_PY_SCIP_PARAMSETTING);
@@ -52531,14 +52531,14 @@ PyMODINIT_FUNC PyInit_scip(void)
  *     AGRESSIVE   = 1
  *     FAST        = 2
  *     OFF         = 3             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef class PY_SCIP_STATUS:
  */
   if (PyDict_SetItem((PyObject *)__pyx_ptype_9pyscipopt_4scip_PY_SCIP_PARAMSETTING->tp_dict, __pyx_n_s_OFF, __pyx_int_3) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   PyType_Modified(__pyx_ptype_9pyscipopt_4scip_PY_SCIP_PARAMSETTING);
 
   /* "pyscipopt/scip.pyx":62
- * 
+ *
  * cdef class PY_SCIP_STATUS:
  *     UNKNOWN        =  0             # <<<<<<<<<<<<<<
  *     USERINTERRUPT  =  1
@@ -52672,7 +52672,7 @@ PyMODINIT_FUNC PyInit_scip(void)
  *     INFEASIBLE     = 12
  *     UNBOUNDED      = 13             # <<<<<<<<<<<<<<
  *     INFORUNBD      = 14
- * 
+ *
  */
   if (PyDict_SetItem((PyObject *)__pyx_ptype_9pyscipopt_4scip_PY_SCIP_STATUS->tp_dict, __pyx_n_s_UNBOUNDED, __pyx_int_13) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 75; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   PyType_Modified(__pyx_ptype_9pyscipopt_4scip_PY_SCIP_STATUS);
@@ -52681,14 +52681,14 @@ PyMODINIT_FUNC PyInit_scip(void)
  *     INFEASIBLE     = 12
  *     UNBOUNDED      = 13
  *     INFORUNBD      = 14             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef class PY_SCIP_PROPTIMING:
  */
   if (PyDict_SetItem((PyObject *)__pyx_ptype_9pyscipopt_4scip_PY_SCIP_STATUS->tp_dict, __pyx_n_s_INFORUNBD, __pyx_int_14) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 76; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   PyType_Modified(__pyx_ptype_9pyscipopt_4scip_PY_SCIP_STATUS);
 
   /* "pyscipopt/scip.pyx":79
- * 
+ *
  * cdef class PY_SCIP_PROPTIMING:
  *     BEFORELP     = 0X001U             # <<<<<<<<<<<<<<
  *     DURINGLPLOOP = 0X002U
@@ -52712,7 +52712,7 @@ PyMODINIT_FUNC PyInit_scip(void)
  *     DURINGLPLOOP = 0X002U
  *     AFTERLPLOOP  = 0X004U             # <<<<<<<<<<<<<<
  *     AFTERLPNODE  = 0X008U
- * 
+ *
  */
   if (PyDict_SetItem((PyObject *)__pyx_ptype_9pyscipopt_4scip_PY_SCIP_PROPTIMING->tp_dict, __pyx_n_s_AFTERLPLOOP, __pyx_int_4) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   PyType_Modified(__pyx_ptype_9pyscipopt_4scip_PY_SCIP_PROPTIMING);
@@ -52721,14 +52721,14 @@ PyMODINIT_FUNC PyInit_scip(void)
  *     DURINGLPLOOP = 0X002U
  *     AFTERLPLOOP  = 0X004U
  *     AFTERLPNODE  = 0X008U             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef class PY_SCIP_PRESOLTIMING:
  */
   if (PyDict_SetItem((PyObject *)__pyx_ptype_9pyscipopt_4scip_PY_SCIP_PROPTIMING->tp_dict, __pyx_n_s_AFTERLPNODE, __pyx_int_8) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 82; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   PyType_Modified(__pyx_ptype_9pyscipopt_4scip_PY_SCIP_PROPTIMING);
 
   /* "pyscipopt/scip.pyx":85
- * 
+ *
  * cdef class PY_SCIP_PRESOLTIMING:
  *     NONE       = 0x000u             # <<<<<<<<<<<<<<
  *     FAST       = 0x002u
@@ -52752,7 +52752,7 @@ PyMODINIT_FUNC PyInit_scip(void)
  *     FAST       = 0x002u
  *     MEDIUM     = 0x004u             # <<<<<<<<<<<<<<
  *     EXHAUSTIVE = 0x008u
- * 
+ *
  */
   if (PyDict_SetItem((PyObject *)__pyx_ptype_9pyscipopt_4scip_PY_SCIP_PRESOLTIMING->tp_dict, __pyx_n_s_MEDIUM, __pyx_int_4) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   PyType_Modified(__pyx_ptype_9pyscipopt_4scip_PY_SCIP_PRESOLTIMING);
@@ -52761,14 +52761,14 @@ PyMODINIT_FUNC PyInit_scip(void)
  *     FAST       = 0x002u
  *     MEDIUM     = 0x004u
  *     EXHAUSTIVE = 0x008u             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef class PY_SCIP_HEURTIMING:
  */
   if (PyDict_SetItem((PyObject *)__pyx_ptype_9pyscipopt_4scip_PY_SCIP_PRESOLTIMING->tp_dict, __pyx_n_s_EXHAUSTIVE, __pyx_int_8) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 88; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   PyType_Modified(__pyx_ptype_9pyscipopt_4scip_PY_SCIP_PRESOLTIMING);
 
   /* "pyscipopt/scip.pyx":91
- * 
+ *
  * cdef class PY_SCIP_HEURTIMING:
  *     BEFORENODE        = 0x001u             # <<<<<<<<<<<<<<
  *     DURINGLPLOOP      = 0x002u
@@ -52862,7 +52862,7 @@ PyMODINIT_FUNC PyInit_scip(void)
  *     BEFOREPRESOL      = 0x100u
  *     DURINGPRESOLLOOP  = 0x200u             # <<<<<<<<<<<<<<
  *     AFTERPROPLOOP     = 0x400u
- * 
+ *
  */
   if (PyDict_SetItem((PyObject *)__pyx_ptype_9pyscipopt_4scip_PY_SCIP_HEURTIMING->tp_dict, __pyx_n_s_DURINGPRESOLLOOP, __pyx_int_512) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   PyType_Modified(__pyx_ptype_9pyscipopt_4scip_PY_SCIP_HEURTIMING);
@@ -52871,7 +52871,7 @@ PyMODINIT_FUNC PyInit_scip(void)
  *     BEFOREPRESOL      = 0x100u
  *     DURINGPRESOLLOOP  = 0x200u
  *     AFTERPROPLOOP     = 0x400u             # <<<<<<<<<<<<<<
- * 
+ *
  * def PY_SCIP_CALL(scip.SCIP_RETCODE rc):
  */
   if (PyDict_SetItem((PyObject *)__pyx_ptype_9pyscipopt_4scip_PY_SCIP_HEURTIMING->tp_dict, __pyx_n_s_AFTERPROPLOOP, __pyx_int_1024) < 0) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 101; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -52879,7 +52879,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":103
  *     AFTERPROPLOOP     = 0x400u
- * 
+ *
  * def PY_SCIP_CALL(scip.SCIP_RETCODE rc):             # <<<<<<<<<<<<<<
  *     if rc == scip.SCIP_OKAY:
  *         pass
@@ -52891,7 +52891,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":169
  *     cdef scip.SCIP_LPI* _lpi
- * 
+ *
  * class LP:             # <<<<<<<<<<<<<<
  *     def __init__(self, name="LP", objsen=scip.SCIP_OBJSENSE_MINIMIZE):
  *         """
@@ -52900,7 +52900,7 @@ PyMODINIT_FUNC PyInit_scip(void)
   __Pyx_GOTREF(__pyx_t_1);
 
   /* "pyscipopt/scip.pyx":170
- * 
+ *
  * class LP:
  *     def __init__(self, name="LP", objsen=scip.SCIP_OBJSENSE_MINIMIZE):             # <<<<<<<<<<<<<<
  *         """
@@ -52920,7 +52920,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":182
  *         PY_SCIP_CALL(scip.SCIPlpiCreate(&(lpi._lpi), NULL, name, objsen))
- * 
+ *
  *     def __del__(self):             # <<<<<<<<<<<<<<
  *         cdef Lpi lpi
  *         cdef scip.SCIP_LPI* _lpi
@@ -52932,10 +52932,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":189
  *         PY_SCIP_CALL(scip.SCIPlpiFree(&_lpi))
- * 
+ *
  *     def __repr__(self):             # <<<<<<<<<<<<<<
  *         return self.name
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_5__repr__, 0, __pyx_n_s_LP___repr, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__52)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 189; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -52944,10 +52944,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":192
  *         return self.name
- * 
+ *
  *     def writeLP(self, filename):             # <<<<<<<<<<<<<<
  *         """Writes LP to a file.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_7writeLP, 0, __pyx_n_s_LP_writeLP, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__54)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 192; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -52956,10 +52956,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":202
  *         PY_SCIP_CALL(scip.SCIPlpiWriteLP(lpi._lpi, filename))
- * 
+ *
  *     def readLP(self, filename):             # <<<<<<<<<<<<<<
  *         """Reads LP from a file.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_9readLP, 0, __pyx_n_s_LP_readLP, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__56)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 202; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -52968,7 +52968,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":212
  *         PY_SCIP_CALL(scip.SCIPlpiReadLP(lpi._lpi, filename))
- * 
+ *
  *     def infinity(self):             # <<<<<<<<<<<<<<
  *         """Returns infinity value of the LP.
  *         """
@@ -52980,10 +52980,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":219
  *         return scip.SCIPlpiInfinity(lpi._lpi)
- * 
+ *
  *     def isInfinity(self, val):             # <<<<<<<<<<<<<<
  *         """Checks if a given value is equal to the infinity value of the LP.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_13isInfinity, 0, __pyx_n_s_LP_isInfinity, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__60)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -52992,10 +52992,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":229
  *         return scip.SCIPlpiIsInfinity(lpi._lpi, val)
- * 
+ *
  *     def addCol(self, entries, obj = 0.0, lb = 0.0, ub = None):             # <<<<<<<<<<<<<<
  *         """Adds a single column to the LP.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_15addCol, 0, __pyx_n_s_LP_addCol, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__62)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 229; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53005,10 +53005,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":264
  *         free(c_inds)
- * 
+ *
  *     def addCols(self, entrieslist, objs = None, lbs = None, ubs = None):             # <<<<<<<<<<<<<<
  *         """Adds multiple columns to the LP.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_17addCols, 0, __pyx_n_s_LP_addCols, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__65)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 264; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53018,10 +53018,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":307
  *         free(c_objs)
- * 
+ *
  *     def delCols(self, firstcol, lastcol):             # <<<<<<<<<<<<<<
  *         """Deletes a range of columns from the LP.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_19delCols, 0, __pyx_n_s_LP_delCols, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__68)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 307; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53030,10 +53030,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":318
  *         PY_SCIP_CALL(scip.SCIPlpiDelCols(lpi._lpi, firstcol, lastcol))
- * 
+ *
  *     def addRow(self, entries, lhs=0.0, rhs=None):             # <<<<<<<<<<<<<<
  *         """Adds a single row to the LP.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_21addRow, 0, __pyx_n_s_LP_addRow, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__70)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 318; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53043,10 +53043,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":351
  *         free(c_inds)
- * 
+ *
  *     def addRows(self, entrieslist, lhss = None, rhss = None):             # <<<<<<<<<<<<<<
  *         """Adds multiple rows to the LP.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_23addRows, 0, __pyx_n_s_LP_addRows, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__73)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 351; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53056,10 +53056,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":390
  *         free(c_rhss)
- * 
+ *
  *     def delRows(self, firstrow, lastrow):             # <<<<<<<<<<<<<<
  *         """Deletes a range of rows from the LP.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_25delRows, 0, __pyx_n_s_LP_delRows, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__76)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 390; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53068,10 +53068,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":401
  *         PY_SCIP_CALL(scip.SCIPlpiDelRows(lpi._lpi, firstrow, lastrow))
- * 
+ *
  *     def getBounds(self, firstcol = 0, lastcol = None):             # <<<<<<<<<<<<<<
  *         """Returns all lower and upper bounds for a range of columns.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_27getBounds, 0, __pyx_n_s_LP_getBounds, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__78)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 401; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53081,10 +53081,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":433
  *         return lbs, ubs
- * 
+ *
  *     def getSides(self, firstrow = 0, lastrow = None):             # <<<<<<<<<<<<<<
  *         """Returns all left- and right-hand sides for a range of rows.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_29getSides, 0, __pyx_n_s_LP_getSides, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__81)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 433; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53094,10 +53094,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":465
  *         return lhss, rhss
- * 
+ *
  *     def chgObj(self, col, obj):             # <<<<<<<<<<<<<<
  *         """Changes objective coefficient of a single column.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_31chgObj, 0, __pyx_n_s_LP_chgObj, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__84)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 465; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53106,10 +53106,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":479
  *         PY_SCIP_CALL(scip.SCIPlpiChgObj(lpi._lpi, 1, &c_col, &c_obj))
- * 
+ *
  *     def chgCoef(self, row, col, newval):             # <<<<<<<<<<<<<<
  *         """Changes a single coefficient in the LP.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_33chgCoef, 0, __pyx_n_s_LP_chgCoef, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__86)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 479; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53118,10 +53118,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":492
  *         PY_SCIP_CALL(scip.SCIPlpiChgCoef(lpi._lpi, row, col, newval))
- * 
+ *
  *     def chgBound(self, col, lb, ub):             # <<<<<<<<<<<<<<
  *         """Changes the lower and upper bound of a single column.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_35chgBound, 0, __pyx_n_s_LP_chgBound, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__88)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 492; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53130,10 +53130,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":508
  *         PY_SCIP_CALL(scip.SCIPlpiChgBounds(lpi._lpi, 1, &c_col, &c_lb, &c_ub))
- * 
+ *
  *     def chgSide(self, row, lhs, rhs):             # <<<<<<<<<<<<<<
  *         """Changes the left- and right-hand side of a single row.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_37chgSide, 0, __pyx_n_s_LP_chgSide, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__90)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 508; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53142,7 +53142,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":524
  *         PY_SCIP_CALL(scip.SCIPlpiChgSides(lpi._lpi, 1, &c_row, &c_lhs, &c_rhs))
- * 
+ *
  *     def clear(self):             # <<<<<<<<<<<<<<
  *         """Clears the whole LP."""
  *         cdef Lpi lpi
@@ -53154,7 +53154,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":530
  *         PY_SCIP_CALL(scip.SCIPlpiClear(lpi._lpi))
- * 
+ *
  *     def nrows(self):             # <<<<<<<<<<<<<<
  *         """Returns the number of rows."""
  *         cdef Lpi lpi
@@ -53166,7 +53166,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":539
  *         return nrows
- * 
+ *
  *     def ncols(self):             # <<<<<<<<<<<<<<
  *         """Returns the number of columns."""
  *         cdef Lpi lpi
@@ -53178,10 +53178,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":548
  *         return ncols
- * 
+ *
  *     def solve(self, dual=True):             # <<<<<<<<<<<<<<
  *         """Solves the current LP.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_2LP_45solve, 0, __pyx_n_s_LP_solve, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__98)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 548; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53191,7 +53191,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":566
  *         return objval
- * 
+ *
  *     def getPrimal(self):             # <<<<<<<<<<<<<<
  *         """Returns the primal solution of the last LP solve."""
  *         cdef Lpi lpi
@@ -53203,7 +53203,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":584
  *         return primalsol
- * 
+ *
  *     def getDual(self):             # <<<<<<<<<<<<<<
  *         """Returns the dual solution of the last LP solve."""
  *         cdef Lpi lpi
@@ -53215,7 +53215,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":602
  *         return dualsol
- * 
+ *
  *     def getPrimalRay(self):             # <<<<<<<<<<<<<<
  *         """Returns a primal ray if possible, None otherwise."""
  *         cdef Lpi lpi
@@ -53227,7 +53227,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":622
  *         return ray
- * 
+ *
  *     def getDualRay(self):             # <<<<<<<<<<<<<<
  *         """Returns a dual ray if possible, None otherwise."""
  *         cdef Lpi lpi
@@ -53239,7 +53239,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":642
  *         return ray
- * 
+ *
  *     def getNIterations(self):             # <<<<<<<<<<<<<<
  *         """Returns a the number of LP iterations of the last LP solve."""
  *         cdef Lpi lpi
@@ -53251,7 +53251,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":169
  *     cdef scip.SCIP_LPI* _lpi
- * 
+ *
  * class LP:             # <<<<<<<<<<<<<<
  *     def __init__(self, name="LP", objsen=scip.SCIP_OBJSENSE_MINIMIZE):
  *         """
@@ -53264,7 +53264,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":651
  *         return niters
- * 
+ *
  * class Variable(LinExpr):             # <<<<<<<<<<<<<<
  *     """Is a linear expression and has SCIP_VAR*"""
  *     def __init__(self, name=None):
@@ -53296,10 +53296,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":658
  *         LinExpr.__init__(self, {(self,) : 1.0})
- * 
+ *
  *     def __hash__(self):             # <<<<<<<<<<<<<<
  *         return hash(id(self))
- * 
+ *
  */
   __pyx_t_5 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_8Variable_3__hash__, 0, __pyx_n_s_Variable___hash, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__114)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 658; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
@@ -53308,10 +53308,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":661
  *         return hash(id(self))
- * 
+ *
  *     def __lt__(self, other):             # <<<<<<<<<<<<<<
  *         return id(self) < id(other)
- * 
+ *
  */
   __pyx_t_5 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_8Variable_5__lt__, 0, __pyx_n_s_Variable___lt, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__116)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 661; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
@@ -53320,10 +53320,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":664
  *         return id(self) < id(other)
- * 
+ *
  *     def __gt__(self, other):             # <<<<<<<<<<<<<<
  *         return id(self) > id(other)
- * 
+ *
  */
   __pyx_t_5 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_8Variable_7__gt__, 0, __pyx_n_s_Variable___gt, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__118)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 664; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
@@ -53332,10 +53332,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":667
  *         return id(self) > id(other)
- * 
+ *
  *     def __repr__(self):             # <<<<<<<<<<<<<<
  *         return self.name
- * 
+ *
  */
   __pyx_t_5 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_8Variable_9__repr__, 0, __pyx_n_s_Variable___repr, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__120)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 667; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
@@ -53344,7 +53344,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":670
  *         return self.name
- * 
+ *
  *     def vtype(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -53356,7 +53356,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":683
  *             return "CONTINUOUS"
- * 
+ *
  *     def isOriginal(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -53368,7 +53368,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":690
  *         return scip.SCIPvarIsOriginal(_var)
- * 
+ *
  *     def isInLP(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -53380,7 +53380,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":697
  *         return scip.SCIPvarIsInLP(_var)
- * 
+ *
  *     def getCol(self):             # <<<<<<<<<<<<<<
  *         cdef Var v
  *         cdef scip.SCIP_VAR* _var
@@ -53392,7 +53392,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":651
  *         return niters
- * 
+ *
  * class Variable(LinExpr):             # <<<<<<<<<<<<<<
  *     """Is a linear expression and has SCIP_VAR*"""
  *     def __init__(self, name=None):
@@ -53407,7 +53407,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":718
  *     cdef scip.SCIP_CONS* _cons
- * 
+ *
  * class Constraint:             # <<<<<<<<<<<<<<
  *     def __init__(self, name=None):
  *         self.cons = Cons()
@@ -53416,7 +53416,7 @@ PyMODINIT_FUNC PyInit_scip(void)
   __Pyx_GOTREF(__pyx_t_2);
 
   /* "pyscipopt/scip.pyx":719
- * 
+ *
  * class Constraint:
  *     def __init__(self, name=None):             # <<<<<<<<<<<<<<
  *         self.cons = Cons()
@@ -53430,10 +53430,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":723
  *         self.name = name
- * 
+ *
  *     def __repr__(self):             # <<<<<<<<<<<<<<
  *         return self.name
- * 
+ *
  */
   __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_9pyscipopt_4scip_10Constraint_3__repr__, 0, __pyx_n_s_Constraint___repr, NULL, __pyx_n_s_pyscipopt_scip, __pyx_d, ((PyObject *)__pyx_codeobj__133)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 723; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -53442,7 +53442,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":726
  *         return self.name
- * 
+ *
  *     def isOriginal(self):             # <<<<<<<<<<<<<<
  *         cdef Cons c
  *         cdef scip.SCIP_CONS* _cons
@@ -53454,7 +53454,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":718
  *     cdef scip.SCIP_CONS* _cons
- * 
+ *
  * class Constraint:             # <<<<<<<<<<<<<<
  *     def __init__(self, name=None):
  *         self.cons = Cons()
@@ -53467,7 +53467,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":767
  *         self.free()
- * 
+ *
  *     @scipErrorHandler             # <<<<<<<<<<<<<<
  *     def create(self):
  *         return scip.SCIPcreate(&self._scip)
@@ -53476,11 +53476,11 @@ PyMODINIT_FUNC PyInit_scip(void)
   __Pyx_GOTREF(__pyx_t_1);
 
   /* "pyscipopt/scip.pyx":768
- * 
+ *
  *     @scipErrorHandler
  *     def create(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPcreate(&self._scip)
- * 
+ *
  */
   __pyx_t_4 = __Pyx_GetNameInClass((PyObject *)__pyx_ptype_9pyscipopt_4scip_Model, __pyx_n_s_create); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 768; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -53516,7 +53516,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":771
  *         return scip.SCIPcreate(&self._scip)
- * 
+ *
  *     @scipErrorHandler             # <<<<<<<<<<<<<<
  *     def includeDefaultPlugins(self):
  *         return scip.SCIPincludeDefaultPlugins(self._scip)
@@ -53525,11 +53525,11 @@ PyMODINIT_FUNC PyInit_scip(void)
   __Pyx_GOTREF(__pyx_t_1);
 
   /* "pyscipopt/scip.pyx":772
- * 
+ *
  *     @scipErrorHandler
  *     def includeDefaultPlugins(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPincludeDefaultPlugins(self._scip)
- * 
+ *
  */
   __pyx_t_6 = __Pyx_GetNameInClass((PyObject *)__pyx_ptype_9pyscipopt_4scip_Model, __pyx_n_s_includeDefaultPlugins); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 772; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
@@ -53565,7 +53565,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":775
  *         return scip.SCIPincludeDefaultPlugins(self._scip)
- * 
+ *
  *     @scipErrorHandler             # <<<<<<<<<<<<<<
  *     def createProbBasic(self, problemName='model'):
  *         n = str_conversion(problemName)
@@ -53574,7 +53574,7 @@ PyMODINIT_FUNC PyInit_scip(void)
   __Pyx_GOTREF(__pyx_t_1);
 
   /* "pyscipopt/scip.pyx":776
- * 
+ *
  *     @scipErrorHandler
  *     def createProbBasic(self, problemName='model'):             # <<<<<<<<<<<<<<
  *         n = str_conversion(problemName)
@@ -53614,7 +53614,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":780
  *         return scip.SCIPcreateProbBasic(self._scip, n)
- * 
+ *
  *     @scipErrorHandler             # <<<<<<<<<<<<<<
  *     def free(self):
  *         return scip.SCIPfree(&self._scip)
@@ -53623,11 +53623,11 @@ PyMODINIT_FUNC PyInit_scip(void)
   __Pyx_GOTREF(__pyx_t_1);
 
   /* "pyscipopt/scip.pyx":781
- * 
+ *
  *     @scipErrorHandler
  *     def free(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPfree(&self._scip)
- * 
+ *
  */
   __pyx_t_4 = __Pyx_GetNameInClass((PyObject *)__pyx_ptype_9pyscipopt_4scip_Model, __pyx_n_s_free); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 781; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -53663,7 +53663,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":784
  *         return scip.SCIPfree(&self._scip)
- * 
+ *
  *     @scipErrorHandler             # <<<<<<<<<<<<<<
  *     def freeProb(self):
  *         return scip.SCIPfreeProb(self._scip)
@@ -53672,11 +53672,11 @@ PyMODINIT_FUNC PyInit_scip(void)
   __Pyx_GOTREF(__pyx_t_1);
 
   /* "pyscipopt/scip.pyx":785
- * 
+ *
  *     @scipErrorHandler
  *     def freeProb(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPfreeProb(self._scip)
- * 
+ *
  */
   __pyx_t_6 = __Pyx_GetNameInClass((PyObject *)__pyx_ptype_9pyscipopt_4scip_Model, __pyx_n_s_freeProb); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 785; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
@@ -53712,7 +53712,7 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":788
  *         return scip.SCIPfreeProb(self._scip)
- * 
+ *
  *     @scipErrorHandler             # <<<<<<<<<<<<<<
  *     def freeTransform(self):
  *         return scip.SCIPfreeTransform(self._scip)
@@ -53721,11 +53721,11 @@ PyMODINIT_FUNC PyInit_scip(void)
   __Pyx_GOTREF(__pyx_t_1);
 
   /* "pyscipopt/scip.pyx":789
- * 
+ *
  *     @scipErrorHandler
  *     def freeTransform(self):             # <<<<<<<<<<<<<<
  *         return scip.SCIPfreeTransform(self._scip)
- * 
+ *
  */
   __pyx_t_5 = __Pyx_GetNameInClass((PyObject *)__pyx_ptype_9pyscipopt_4scip_Model, __pyx_n_s_freeTransform); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 789; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
@@ -53760,11 +53760,11 @@ PyMODINIT_FUNC PyInit_scip(void)
   PyType_Modified(__pyx_ptype_9pyscipopt_4scip_Model);
 
   /* "pyscipopt/scip.pyx":1461
- * 
+ *
  *     def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority, enfopriority, chckpriority, sepafreq, propfreq, eagerfreq,
  *                         maxprerounds, delaysepa, delayprop, needscons, proptiming=SCIP_PROPTIMING_AFTERLPNODE, presoltiming=SCIP_PRESOLTIMING_FAST):             # <<<<<<<<<<<<<<
  *         """Include a constraint handler
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyInt_From_SCIP_PROPTIMING(SCIP_PROPTIMING_AFTERLPNODE); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1461; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53779,10 +53779,10 @@ PyMODINIT_FUNC PyInit_scip(void)
 
   /* "pyscipopt/scip.pyx":1507
  *         return constraint
- * 
+ *
  *     def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing=SCIP_PRESOLTIMING_FAST):             # <<<<<<<<<<<<<<
  *         """Include a presolver
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyInt_From_SCIP_PRESOLTIMING(SCIP_PRESOLTIMING_FAST); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1507; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53791,11 +53791,11 @@ PyMODINIT_FUNC PyInit_scip(void)
   __pyx_t_2 = 0;
 
   /* "pyscipopt/scip.pyx":1543
- * 
+ *
  *     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
  *                     proptiming, presoltiming=SCIP_PRESOLTIMING_FAST, priority=1, freq=1, delay=True):             # <<<<<<<<<<<<<<
  *         """Include a propagator.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyInt_From_SCIP_PRESOLTIMING(SCIP_PRESOLTIMING_FAST); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1543; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53804,11 +53804,11 @@ PyMODINIT_FUNC PyInit_scip(void)
   __pyx_t_2 = 0;
 
   /* "pyscipopt/scip.pyx":1570
- * 
+ *
  *     def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,
  *                     maxdepth=-1, timingmask=SCIP_HEURTIMING_BEFORENODE, usessubscip=False):             # <<<<<<<<<<<<<<
  *         """Include a primal heuristic.
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyInt_From_SCIP_HEURTIMING(SCIP_HEURTIMING_BEFORENODE); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1570; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -53819,7 +53819,7 @@ PyMODINIT_FUNC PyInit_scip(void)
   /* "pyscipopt/scip.pyx":1
  * from os.path import abspath             # <<<<<<<<<<<<<<
  * import sys
- * 
+ *
  */
   __pyx_t_2 = PyDict_New(); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
