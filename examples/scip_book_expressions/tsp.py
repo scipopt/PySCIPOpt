@@ -47,7 +47,8 @@ def solve_tsp(V,c):
             T = set(V) - set(S)
             print("S:",S)
             print("T:",T)
-            model.addCons(quicksum(x[i,j] for i in S for j in T if j>i) >= 2)
+            model.addCons(quicksum(x[i,j] for i in S for j in T if j>i)
+                          + quicksum(x[i,j] for i in T for j in S if j>i) >= 2)
             print("cut: %s <--> %s >= 2" % (S,T), [(i,j) for i in S for j in T if j>i])
         return True
 
