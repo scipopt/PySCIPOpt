@@ -1,8 +1,9 @@
 from os.path import abspath
 import sys
 
-cimport pyscipopt.scip as scip
-from pyscipopt.linexpr import LinExpr, LinCons
+#cimport pyscipopt.scip as scip
+cimport pyscipopt.linexpr
+from pyscipopt.linexpr cimport LinExpr, LinCons
 
 from libc.stdlib cimport malloc, free
 
@@ -100,43 +101,43 @@ cdef class PY_SCIP_HEURTIMING:
     DURINGPRESOLLOOP  = 0x200u
     AFTERPROPLOOP     = 0x400u
 
-def PY_SCIP_CALL(scip.SCIP_RETCODE rc):
-    if rc == scip.SCIP_OKAY:
+def PY_SCIP_CALL(SCIP_RETCODE rc):
+    if rc == SCIP_OKAY:
         pass
-    elif rc == scip.SCIP_ERROR:
+    elif rc == SCIP_ERROR:
         raise Exception('SCIP: unspecified error!')
-    elif rc == scip.SCIP_NOMEMORY:
+    elif rc == SCIP_NOMEMORY:
         raise MemoryError('SCIP: insufficient memory error!')
-    elif rc == scip.SCIP_READERROR:
+    elif rc == SCIP_READERROR:
         raise IOError('SCIP: read error!')
-    elif rc == scip.SCIP_WRITEERROR:
+    elif rc == SCIP_WRITEERROR:
         raise IOError('SCIP: write error!')
-    elif rc == scip.SCIP_NOFILE:
+    elif rc == SCIP_NOFILE:
         raise IOError('SCIP: file not found error!')
-    elif rc == scip.SCIP_FILECREATEERROR:
+    elif rc == SCIP_FILECREATEERROR:
         raise IOError('SCIP: cannot create file!')
-    elif rc == scip.SCIP_LPERROR:
+    elif rc == SCIP_LPERROR:
         raise Exception('SCIP: error in LP solver!')
-    elif rc == scip.SCIP_NOPROBLEM:
+    elif rc == SCIP_NOPROBLEM:
         raise Exception('SCIP: no problem exists!')
-    elif rc == scip.SCIP_INVALIDCALL:
+    elif rc == SCIP_INVALIDCALL:
         raise Exception('SCIP: method cannot be called at this time'
                             + ' in solution process!')
-    elif rc == scip.SCIP_INVALIDDATA:
+    elif rc == SCIP_INVALIDDATA:
         raise Exception('SCIP: error in input data!')
-    elif rc == scip.SCIP_INVALIDRESULT:
+    elif rc == SCIP_INVALIDRESULT:
         raise Exception('SCIP: method returned an invalid result code!')
-    elif rc == scip.SCIP_PLUGINNOTFOUND:
+    elif rc == SCIP_PLUGINNOTFOUND:
         raise Exception('SCIP: a required plugin was not found !')
-    elif rc == scip.SCIP_PARAMETERUNKNOWN:
+    elif rc == SCIP_PARAMETERUNKNOWN:
         raise KeyError('SCIP: the parameter with the given name was not found!')
-    elif rc == scip.SCIP_PARAMETERWRONGTYPE:
+    elif rc == SCIP_PARAMETERWRONGTYPE:
         raise LookupError('SCIP: the parameter is not of the expected type!')
-    elif rc == scip.SCIP_PARAMETERWRONGVAL:
+    elif rc == SCIP_PARAMETERWRONGVAL:
         raise ValueError('SCIP: the value is invalid for the given parameter!')
-    elif rc == scip.SCIP_KEYALREADYEXISTING:
+    elif rc == SCIP_KEYALREADYEXISTING:
         raise KeyError('SCIP: the given key is already existing in table!')
-    elif rc == scip.SCIP_MAXDEPTHLEVEL:
+    elif rc == SCIP_MAXDEPTHLEVEL:
         raise Exception('SCIP: maximal branching depth level exceeded!')
     else:
         raise Exception('SCIP: unknown return code!')
@@ -145,29 +146,29 @@ def PY_SCIP_CALL(scip.SCIP_RETCODE rc):
 
 cdef class Col:
     """Base class holding a pointer to corresponding SCIP_COL"""
-    cdef scip.SCIP_COL* _col
+    cdef SCIP_COL* _col
 
 
 cdef class Row:
     """Base class holding a pointer to corresponding SCIP_ROW"""
-    cdef scip.SCIP_ROW* _row
+    cdef SCIP_ROW* _row
 
 
 cdef class Solution:
     """Base class holding a pointer to corresponding SCIP_SOL"""
-    cdef scip.SCIP_SOL* _solution
+    cdef SCIP_SOL* _solution
 
 
 cdef class Var:
     """Base class holding a pointer to corresponding SCIP_VAR"""
-    cdef scip.SCIP_VAR* _var
+    cdef SCIP_VAR* _var
 
 cdef class Lpi:
     """Base class holding a pointer to corresponding SCIP_LPI"""
-    cdef scip.SCIP_LPI* _lpi
+    cdef SCIP_LPI* _lpi
 
 class LP:
-    def __init__(self, name="LP", objsen=scip.SCIP_OBJSENSE_MINIMIZE):
+    def __init__(self, name="LP", objsen=SCIP_OBJSENSE_MINIMIZE):
         """
         Keyword arguments:
         name -- the name of the problem (default 'LP')
@@ -177,14 +178,14 @@ class LP:
         self.name = name
         cdef Lpi lpi
         lpi = self.lpi
-        PY_SCIP_CALL(scip.SCIPlpiCreate(&(lpi._lpi), NULL, name, objsen))
+        PY_SCIP_CALL(SCIPlpiCreate(&(lpi._lpi), NULL, name, objsen))
 
     def __del__(self):
         cdef Lpi lpi
-        cdef scip.SCIP_LPI* _lpi
+        cdef SCIP_LPI* _lpi
         lpi = self.lpi
         _lpi = lpi._lpi
-        PY_SCIP_CALL(scip.SCIPlpiFree(&_lpi))
+        PY_SCIP_CALL(SCIPlpiFree(&_lpi))
 
     def __repr__(self):
         return self.name
@@ -197,7 +198,7 @@ class LP:
         """
         cdef Lpi lpi
         lpi = self.lpi
-        PY_SCIP_CALL(scip.SCIPlpiWriteLP(lpi._lpi, filename))
+        PY_SCIP_CALL(SCIPlpiWriteLP(lpi._lpi, filename))
 
     def readLP(self, filename):
         """Reads LP from a file.
@@ -207,14 +208,14 @@ class LP:
         """
         cdef Lpi lpi
         lpi = self.lpi
-        PY_SCIP_CALL(scip.SCIPlpiReadLP(lpi._lpi, filename))
+        PY_SCIP_CALL(SCIPlpiReadLP(lpi._lpi, filename))
 
     def infinity(self):
         """Returns infinity value of the LP.
         """
         cdef Lpi lpi
         lpi = self.lpi
-        return scip.SCIPlpiInfinity(lpi._lpi)
+        return SCIPlpiInfinity(lpi._lpi)
 
     def isInfinity(self, val):
         """Checks if a given value is equal to the infinity value of the LP.
@@ -224,7 +225,7 @@ class LP:
         """
         cdef Lpi lpi
         lpi = self.lpi
-        return scip.SCIPlpiIsInfinity(lpi._lpi, val)
+        return SCIPlpiIsInfinity(lpi._lpi, val)
 
     def addCol(self, entries, obj = 0.0, lb = 0.0, ub = None):
         """Adds a single column to the LP.
@@ -240,11 +241,11 @@ class LP:
 
         nnonz = len(entries)
 
-        cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
+        cdef SCIP_Real* c_coefs  = <SCIP_Real*> malloc(nnonz * sizeof(SCIP_Real))
         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
-        cdef scip.SCIP_Real c_obj
-        cdef scip.SCIP_Real c_lb
-        cdef scip.SCIP_Real c_ub
+        cdef SCIP_Real c_obj
+        cdef SCIP_Real c_lb
+        cdef SCIP_Real c_ub
         cdef int c_beg
 
         c_obj = obj
@@ -256,7 +257,7 @@ class LP:
             c_inds[i] = entry[0]
             c_coefs[i] = entry[1]
 
-        PY_SCIP_CALL(scip.SCIPlpiAddCols(lpi._lpi, 1, &c_obj, &c_lb, &c_ub, NULL, nnonz, &c_beg, c_inds, c_coefs))
+        PY_SCIP_CALL(SCIPlpiAddCols(lpi._lpi, 1, &c_obj, &c_lb, &c_ub, NULL, nnonz, &c_beg, c_inds, c_coefs))
 
         free(c_coefs)
         free(c_inds)
@@ -276,10 +277,10 @@ class LP:
         ncols = len(entrieslist)
         nnonz = sum(len(entries) for entries in entrieslist)
 
-        cdef scip.SCIP_Real* c_objs   = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
-        cdef scip.SCIP_Real* c_lbs    = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
-        cdef scip.SCIP_Real* c_ubs    = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
-        cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
+        cdef SCIP_Real* c_objs   = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
+        cdef SCIP_Real* c_lbs    = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
+        cdef SCIP_Real* c_ubs    = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
+        cdef SCIP_Real* c_coefs  = <SCIP_Real*> malloc(nnonz * sizeof(SCIP_Real))
         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
         cdef int* c_beg  = <int*>malloc(ncols * sizeof(int))
 
@@ -295,7 +296,7 @@ class LP:
                 c_coefs[tmp] = entry[1]
                 tmp += 1
 
-        PY_SCIP_CALL(scip.SCIPlpiAddCols(lpi._lpi, ncols, c_objs, c_lbs, c_ubs, NULL, nnonz, c_beg, c_inds, c_coefs))
+        PY_SCIP_CALL(SCIPlpiAddCols(lpi._lpi, ncols, c_objs, c_lbs, c_ubs, NULL, nnonz, c_beg, c_inds, c_coefs))
 
         free(c_beg)
         free(c_inds)
@@ -313,7 +314,7 @@ class LP:
         """
         cdef Lpi lpi
         lpi = self.lpi
-        PY_SCIP_CALL(scip.SCIPlpiDelCols(lpi._lpi, firstcol, lastcol))
+        PY_SCIP_CALL(SCIPlpiDelCols(lpi._lpi, firstcol, lastcol))
 
     def addRow(self, entries, lhs=0.0, rhs=None):
         """Adds a single row to the LP.
@@ -329,10 +330,10 @@ class LP:
         beg = 0
         nnonz = len(entries)
 
-        cdef scip.SCIP_Real* c_coefs  = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
+        cdef SCIP_Real* c_coefs  = <SCIP_Real*> malloc(nnonz * sizeof(SCIP_Real))
         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
-        cdef scip.SCIP_Real c_lhs
-        cdef scip.SCIP_Real c_rhs
+        cdef SCIP_Real c_lhs
+        cdef SCIP_Real c_rhs
         cdef int c_beg
 
         c_lhs = lhs
@@ -343,7 +344,7 @@ class LP:
             c_inds[i] = entry[0]
             c_coefs[i] = entry[1]
 
-        PY_SCIP_CALL(scip.SCIPlpiAddRows(lpi._lpi, 1, &c_lhs, &c_rhs, NULL, nnonz, &c_beg, c_inds, c_coefs))
+        PY_SCIP_CALL(SCIPlpiAddRows(lpi._lpi, 1, &c_lhs, &c_rhs, NULL, nnonz, &c_beg, c_inds, c_coefs))
 
         free(c_coefs)
         free(c_inds)
@@ -362,9 +363,9 @@ class LP:
         nrows = len(entrieslist)
         nnonz = sum(len(entries) for entries in entrieslist)
 
-        cdef scip.SCIP_Real* c_lhss  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
-        cdef scip.SCIP_Real* c_rhss  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
-        cdef scip.SCIP_Real* c_coefs = <scip.SCIP_Real*> malloc(nnonz * sizeof(scip.SCIP_Real))
+        cdef SCIP_Real* c_lhss  = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
+        cdef SCIP_Real* c_rhss  = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
+        cdef SCIP_Real* c_coefs = <SCIP_Real*> malloc(nnonz * sizeof(SCIP_Real))
         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
         cdef int* c_beg  = <int*>malloc(nrows * sizeof(int))
 
@@ -379,7 +380,7 @@ class LP:
                 c_coefs[tmp] = entry[1]
                 tmp += 1
 
-        PY_SCIP_CALL(scip.SCIPlpiAddRows(lpi._lpi, nrows, c_lhss, c_rhss, NULL, nnonz, c_beg, c_inds, c_coefs))
+        PY_SCIP_CALL(SCIPlpiAddRows(lpi._lpi, nrows, c_lhss, c_rhss, NULL, nnonz, c_beg, c_inds, c_coefs))
 
         free(c_beg)
         free(c_inds)
@@ -396,7 +397,7 @@ class LP:
         """
         cdef Lpi lpi
         lpi = self.lpi
-        PY_SCIP_CALL(scip.SCIPlpiDelRows(lpi._lpi, firstrow, lastrow))
+        PY_SCIP_CALL(SCIPlpiDelRows(lpi._lpi, firstrow, lastrow))
 
     def getBounds(self, firstcol = 0, lastcol = None):
         """Returns all lower and upper bounds for a range of columns.
@@ -414,9 +415,9 @@ class LP:
             return None
 
         ncols = lastcol - firstcol + 1
-        cdef SCIP_Real* c_lbs = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
-        cdef SCIP_Real* c_ubs = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
-        PY_SCIP_CALL(scip.SCIPlpiGetBounds(lpi._lpi, firstcol, lastcol, c_lbs, c_ubs))
+        cdef SCIP_Real* c_lbs = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
+        cdef SCIP_Real* c_ubs = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
+        PY_SCIP_CALL(SCIPlpiGetBounds(lpi._lpi, firstcol, lastcol, c_lbs, c_ubs))
 
         lbs = []
         ubs = []
@@ -446,9 +447,9 @@ class LP:
             return None
 
         nrows = lastrow - firstrow + 1
-        cdef SCIP_Real* c_lhss = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
-        cdef SCIP_Real* c_rhss = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
-        PY_SCIP_CALL(scip.SCIPlpiGetSides(lpi._lpi, firstrow, lastrow, c_lhss, c_rhss))
+        cdef SCIP_Real* c_lhss = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
+        cdef SCIP_Real* c_rhss = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
+        PY_SCIP_CALL(SCIPlpiGetSides(lpi._lpi, firstrow, lastrow, c_lhss, c_rhss))
 
         lhss = []
         rhss = []
@@ -474,7 +475,7 @@ class LP:
 
         cdef int c_col = col
         cdef SCIP_Real c_obj = obj
-        PY_SCIP_CALL(scip.SCIPlpiChgObj(lpi._lpi, 1, &c_col, &c_obj))
+        PY_SCIP_CALL(SCIPlpiChgObj(lpi._lpi, 1, &c_col, &c_obj))
 
     def chgCoef(self, row, col, newval):
         """Changes a single coefficient in the LP.
@@ -487,7 +488,7 @@ class LP:
         cdef Lpi lpi
         lpi = self.lpi
 
-        PY_SCIP_CALL(scip.SCIPlpiChgCoef(lpi._lpi, row, col, newval))
+        PY_SCIP_CALL(SCIPlpiChgCoef(lpi._lpi, row, col, newval))
 
     def chgBound(self, col, lb, ub):
         """Changes the lower and upper bound of a single column.
@@ -503,7 +504,7 @@ class LP:
         cdef int c_col = col
         cdef SCIP_Real c_lb = lb
         cdef SCIP_Real c_ub = ub
-        PY_SCIP_CALL(scip.SCIPlpiChgBounds(lpi._lpi, 1, &c_col, &c_lb, &c_ub))
+        PY_SCIP_CALL(SCIPlpiChgBounds(lpi._lpi, 1, &c_col, &c_lb, &c_ub))
 
     def chgSide(self, row, lhs, rhs):
         """Changes the left- and right-hand side of a single row.
@@ -519,13 +520,13 @@ class LP:
         cdef int c_row = row
         cdef SCIP_Real c_lhs = lhs
         cdef SCIP_Real c_rhs = rhs
-        PY_SCIP_CALL(scip.SCIPlpiChgSides(lpi._lpi, 1, &c_row, &c_lhs, &c_rhs))
+        PY_SCIP_CALL(SCIPlpiChgSides(lpi._lpi, 1, &c_row, &c_lhs, &c_rhs))
 
     def clear(self):
         """Clears the whole LP."""
         cdef Lpi lpi
         lpi = self.lpi
-        PY_SCIP_CALL(scip.SCIPlpiClear(lpi._lpi))
+        PY_SCIP_CALL(SCIPlpiClear(lpi._lpi))
 
     def nrows(self):
         """Returns the number of rows."""
@@ -533,7 +534,7 @@ class LP:
         lpi = self.lpi
 
         cdef int nrows
-        PY_SCIP_CALL(scip.SCIPlpiGetNRows(lpi._lpi, &nrows))
+        PY_SCIP_CALL(SCIPlpiGetNRows(lpi._lpi, &nrows))
         return nrows
 
     def ncols(self):
@@ -542,7 +543,7 @@ class LP:
         lpi = self.lpi
 
         cdef int ncols
-        PY_SCIP_CALL(scip.SCIPlpiGetNCols(lpi._lpi, &ncols))
+        PY_SCIP_CALL(SCIPlpiGetNCols(lpi._lpi, &ncols))
         return ncols
 
     def solve(self, dual=True):
@@ -555,12 +556,12 @@ class LP:
         lpi = self.lpi
 
         if dual:
-            PY_SCIP_CALL(scip.SCIPlpiSolveDual(lpi._lpi))
+            PY_SCIP_CALL(SCIPlpiSolveDual(lpi._lpi))
         else:
-            PY_SCIP_CALL(scip.SCIPlpiSolvePrimal(lpi._lpi))
+            PY_SCIP_CALL(SCIPlpiSolvePrimal(lpi._lpi))
 
-        cdef scip.SCIP_Real objval
-        PY_SCIP_CALL(scip.SCIPlpiGetObjval(lpi._lpi, &objval))
+        cdef SCIP_Real objval
+        PY_SCIP_CALL(SCIPlpiGetObjval(lpi._lpi, &objval))
         return objval
 
     def getPrimal(self):
@@ -570,8 +571,8 @@ class LP:
 
         ncols = self.ncols()
 
-        cdef scip.SCIP_Real* c_primalsol = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
-        PY_SCIP_CALL(scip.SCIPlpiGetSol(lpi._lpi, NULL, c_primalsol, NULL, NULL, NULL))
+        cdef SCIP_Real* c_primalsol = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
+        PY_SCIP_CALL(SCIPlpiGetSol(lpi._lpi, NULL, c_primalsol, NULL, NULL, NULL))
 
         primalsol = [0.0] * ncols
         for i in range(ncols):
@@ -588,8 +589,8 @@ class LP:
 
         nrows = self.nrows()
 
-        cdef scip.SCIP_Real* c_dualsol = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
-        PY_SCIP_CALL(scip.SCIPlpiGetSol(lpi._lpi, NULL, NULL, c_dualsol, NULL, NULL))
+        cdef SCIP_Real* c_dualsol = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
+        PY_SCIP_CALL(SCIPlpiGetSol(lpi._lpi, NULL, NULL, c_dualsol, NULL, NULL))
 
         dualsol = [0.0] * nrows
         for i in range(nrows):
@@ -604,12 +605,12 @@ class LP:
         cdef Lpi lpi
         lpi = self.lpi
 
-        if not scip.SCIPlpiHasPrimalRay(lpi._lpi):
+        if not SCIPlpiHasPrimalRay(lpi._lpi):
             return None
 
         ncols = self.ncols()
-        cdef scip.SCIP_Real* c_ray  = <scip.SCIP_Real*> malloc(ncols * sizeof(scip.SCIP_Real))
-        PY_SCIP_CALL(scip.SCIPlpiGetPrimalRay(lpi._lpi, c_ray))
+        cdef SCIP_Real* c_ray  = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
+        PY_SCIP_CALL(SCIPlpiGetPrimalRay(lpi._lpi, c_ray))
 
         ray = [0.0] * ncols
         for i in range(ncols):
@@ -624,12 +625,12 @@ class LP:
         cdef Lpi lpi
         lpi = self.lpi
 
-        if not scip.SCIPlpiHasDualRay(lpi._lpi):
+        if not SCIPlpiHasDualRay(lpi._lpi):
             return None
 
         nrows = self.nrows()
-        cdef scip.SCIP_Real* c_ray  = <scip.SCIP_Real*> malloc(nrows * sizeof(scip.SCIP_Real))
-        PY_SCIP_CALL(scip.SCIPlpiGetDualfarkas(lpi._lpi, c_ray))
+        cdef SCIP_Real* c_ray  = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
+        PY_SCIP_CALL(SCIPlpiGetDualfarkas(lpi._lpi, c_ray))
 
         ray = [0.0] * nrows
         for i in range(nrows):
@@ -645,11 +646,14 @@ class LP:
         lpi = self.lpi
 
         cdef int niters
-        PY_SCIP_CALL(scip.SCIPlpiGetIterations(lpi._lpi, &niters))
+        PY_SCIP_CALL(SCIPlpiGetIterations(lpi._lpi, &niters))
         return niters
 
-class Variable(LinExpr):
+cdef class Variable(LinExpr):
     """Is a linear expression and has SCIP_VAR*"""
+    cdef public var
+    cdef public name
+
     def __init__(self, name=None):
         self.var = Var()
         self.name = name
@@ -658,54 +662,54 @@ class Variable(LinExpr):
     def __hash__(self):
         return hash(id(self))
 
-    def __lt__(self, other):
-        return id(self) < id(other)
-
-    def __gt__(self, other):
-        return id(self) > id(other)
+    def __richcmp__(self, other, op):
+        if op == 0: # <
+            return id(self) < id(other)
+        elif op == 4: # > 
+            return id(self) > id(other)
 
     def __repr__(self):
         return self.name
 
     def vtype(self):
         cdef Var v
-        cdef scip.SCIP_VAR* _var
+        cdef SCIP_VAR* _var
         v = self.var
         _var = v._var
-        vartype = scip.SCIPvarGetType(_var)
-        if vartype == scip.SCIP_VARTYPE_BINARY:
+        vartype = SCIPvarGetType(_var)
+        if vartype == SCIP_VARTYPE_BINARY:
             return "BINARY"
-        elif vartype == scip.SCIP_VARTYPE_INTEGER:
+        elif vartype == SCIP_VARTYPE_INTEGER:
             return "INTEGER"
-        elif vartype == scip.SCIP_VARTYPE_CONTINUOUS or vartype == scip.SCIP_VARTYPE_IMPLINT:
+        elif vartype == SCIP_VARTYPE_CONTINUOUS or vartype == SCIP_VARTYPE_IMPLINT:
             return "CONTINUOUS"
 
     def isOriginal(self):
         cdef Var v
-        cdef scip.SCIP_VAR* _var
+        cdef SCIP_VAR* _var
         v = self.var
         _var = v._var
-        return scip.SCIPvarIsOriginal(_var)
+        return SCIPvarIsOriginal(_var)
 
     def isInLP(self):
         cdef Var v
-        cdef scip.SCIP_VAR* _var
+        cdef SCIP_VAR* _var
         v = self.var
         _var = v._var
-        return scip.SCIPvarIsInLP(_var)
+        return SCIPvarIsInLP(_var)
 
     def getCol(self):
         cdef Var v
-        cdef scip.SCIP_VAR* _var
+        cdef SCIP_VAR* _var
         v = self.var
         _var = v._var
         col = Col()
-        cdef scip.SCIP_COL* _col
+        cdef SCIP_COL* _col
         _col = col._col
-        _col = scip.SCIPvarGetCol(_var)
+        _col = SCIPvarGetCol(_var)
         return col
 
-cdef pythonizeVar(scip.SCIP_VAR* scip_var, name):
+cdef pythonizeVar(SCIP_VAR* scip_var, name):
     var = Variable(name)
     cdef Var v
     v = var.var
@@ -713,7 +717,7 @@ cdef pythonizeVar(scip.SCIP_VAR* scip_var, name):
     return var
 
 cdef class Cons:
-    cdef scip.SCIP_CONS* _cons
+    cdef SCIP_CONS* _cons
 
 class Constraint:
     def __init__(self, name=None):
@@ -725,13 +729,13 @@ class Constraint:
 
     def isOriginal(self):
         cdef Cons c
-        cdef scip.SCIP_CONS* _cons
+        cdef SCIP_CONS* _cons
         c = self.cons
         _cons = c._cons
-        return scip.SCIPconsIsOriginal(_cons)
+        return SCIPconsIsOriginal(_cons)
 
 
-cdef pythonizeCons(scip.SCIP_CONS* scip_cons, name):
+cdef pythonizeCons(SCIP_CONS* scip_cons, name):
     cons = Constraint(name)
     cdef Cons c
     c = cons.cons
@@ -742,9 +746,9 @@ cdef pythonizeCons(scip.SCIP_CONS* scip_cons, name):
 # - replace free() by "destructor"
 # - interface SCIPfreeProb()
 cdef class Model:
-    cdef scip.SCIP* _scip
+    cdef SCIP* _scip
     # store best solution to get the solution values easier
-    cdef scip.SCIP_SOL* _bestSol
+    cdef SCIP_SOL* _bestSol
     # can be used to store problem data
     cdef public object data
 
@@ -766,143 +770,143 @@ cdef class Model:
 
     @scipErrorHandler
     def create(self):
-        return scip.SCIPcreate(&self._scip)
+        return SCIPcreate(&self._scip)
 
     @scipErrorHandler
     def includeDefaultPlugins(self):
-        return scip.SCIPincludeDefaultPlugins(self._scip)
+        return SCIPincludeDefaultPlugins(self._scip)
 
     @scipErrorHandler
     def createProbBasic(self, problemName='model'):
         n = str_conversion(problemName)
-        return scip.SCIPcreateProbBasic(self._scip, n)
+        return SCIPcreateProbBasic(self._scip, n)
 
     @scipErrorHandler
     def free(self):
-        return scip.SCIPfree(&self._scip)
+        return SCIPfree(&self._scip)
 
     @scipErrorHandler
     def freeProb(self):
-        return scip.SCIPfreeProb(self._scip)
+        return SCIPfreeProb(self._scip)
 
     @scipErrorHandler
     def freeTransform(self):
-        return scip.SCIPfreeTransform(self._scip)
+        return SCIPfreeTransform(self._scip)
 
     def printVersion(self):
-        scip.SCIPprintVersion(self._scip, NULL)
+        SCIPprintVersion(self._scip, NULL)
 
     def getTotalTime(self):
-        return scip.SCIPgetTotalTime(self._scip)
+        return SCIPgetTotalTime(self._scip)
 
     def getSolvingTime(self):
-        return scip.SCIPgetSolvingTime(self._scip)
+        return SCIPgetSolvingTime(self._scip)
 
     def getReadingTime(self):
-        return scip.SCIPgetReadingTime(self._scip)
+        return SCIPgetReadingTime(self._scip)
 
     def getPresolvingTime(self):
-        return scip.SCIPgetPresolvingTime(self._scip)
+        return SCIPgetPresolvingTime(self._scip)
 
     def infinity(self):
         """Retrieve 'infinity' value."""
-        return scip.SCIPinfinity(self._scip)
+        return SCIPinfinity(self._scip)
 
     def epsilon(self):
         """Return epsilon for e.g. equality checks"""
-        return scip.SCIPepsilon(self._scip)
+        return SCIPepsilon(self._scip)
 
     def feastol(self):
         """Return feasibility tolerance"""
-        return scip.SCIPfeastol(self._scip)
+        return SCIPfeastol(self._scip)
 
     #@scipErrorHandler       We'll be able to use decorators when we
     #                        interface the relevant classes (SCIP_VAR, ...)
-    cdef _createVarBasic(self, scip.SCIP_VAR** scip_var, name,
-                        lb, ub, obj, scip.SCIP_VARTYPE varType):
+    cdef _createVarBasic(self, SCIP_VAR** scip_var, name,
+                        lb, ub, obj, SCIP_VARTYPE varType):
         n = str_conversion(name)
         PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, scip_var,
                            n, lb, ub, obj, varType))
 
-    cdef _addVar(self, scip.SCIP_VAR* scip_var):
+    cdef _addVar(self, SCIP_VAR* scip_var):
         PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
 
-    cdef _addPricedVar(self, scip.SCIP_VAR* scip_var):
+    cdef _addPricedVar(self, SCIP_VAR* scip_var):
         PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, 1.0))
 
-    cdef _createConsLinear(self, scip.SCIP_CONS** cons, name, nvars,
+    cdef _createConsLinear(self, SCIP_CONS** cons, name, nvars,
                                 SCIP_VAR** vars, SCIP_Real* vals, lhs, rhs,
                                 initial=True, separate=True, enforce=True, check=True,
                                 propagate=True, local=False, modifiable=False, dynamic=False,
                                 removable=False, stickingatnode=False):
         n = str_conversion(name)
-        PY_SCIP_CALL(scip.SCIPcreateConsLinear(self._scip, cons,
+        PY_SCIP_CALL(SCIPcreateConsLinear(self._scip, cons,
                                                     n, nvars, vars, vals,
                                                     lhs, rhs, initial, separate, enforce,
                                                     check, propagate, local, modifiable,
                                                     dynamic, removable, stickingatnode) )
 
-    cdef _createConsSOS1(self, scip.SCIP_CONS** cons, name, nvars,
+    cdef _createConsSOS1(self, SCIP_CONS** cons, name, nvars,
                               SCIP_VAR** vars, SCIP_Real* weights,
                               initial=True, separate=True, enforce=True, check=True,
                               propagate=True, local=False, dynamic=False, removable=False,
                               stickingatnode=False):
         n = str_conversion(name)
-        PY_SCIP_CALL(scip.SCIPcreateConsSOS1(self._scip, cons,
+        PY_SCIP_CALL(SCIPcreateConsSOS1(self._scip, cons,
                                                     n, nvars, vars, weights,
                                                     initial, separate, enforce,
                                                     check, propagate, local, dynamic, removable,
                                                     stickingatnode) )
 
-    cdef _createConsSOS2(self, scip.SCIP_CONS** cons, name, nvars,
+    cdef _createConsSOS2(self, SCIP_CONS** cons, name, nvars,
                               SCIP_VAR** vars, SCIP_Real* weights,
                               initial=True, separate=True, enforce=True, check=True,
                               propagate=True, local=False, dynamic=False, removable=False,
                               stickingatnode=False):
         n = str_conversion(name)
-        PY_SCIP_CALL(scip.SCIPcreateConsSOS2(self._scip, cons,
+        PY_SCIP_CALL(SCIPcreateConsSOS2(self._scip, cons,
                                                     n, nvars, vars, weights,
                                                     initial, separate, enforce,
                                                     check, propagate, local, dynamic, removable,
                                                     stickingatnode) )
 
-    cdef _addCoefLinear(self, scip.SCIP_CONS* cons, SCIP_VAR* var, val):
-        PY_SCIP_CALL(scip.SCIPaddCoefLinear(self._scip, cons, var, val))
+    cdef _addCoefLinear(self, SCIP_CONS* cons, SCIP_VAR* var, val):
+        PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, cons, var, val))
 
-    cdef _addCons(self, scip.SCIP_CONS* cons):
-        PY_SCIP_CALL(scip.SCIPaddCons(self._scip, cons))
+    cdef _addCons(self, SCIP_CONS* cons):
+        PY_SCIP_CALL(SCIPaddCons(self._scip, cons))
 
-    cdef _addVarSOS1(self, scip.SCIP_CONS* cons, SCIP_VAR* var, weight):
-        PY_SCIP_CALL(scip.SCIPaddVarSOS1(self._scip, cons, var, weight))
+    cdef _addVarSOS1(self, SCIP_CONS* cons, SCIP_VAR* var, weight):
+        PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, cons, var, weight))
 
-    cdef _appendVarSOS1(self, scip.SCIP_CONS* cons, SCIP_VAR* var):
-        PY_SCIP_CALL(scip.SCIPappendVarSOS1(self._scip, cons, var))
+    cdef _appendVarSOS1(self, SCIP_CONS* cons, SCIP_VAR* var):
+        PY_SCIP_CALL(SCIPappendVarSOS1(self._scip, cons, var))
 
-    cdef _addVarSOS2(self, scip.SCIP_CONS* cons, SCIP_VAR* var, weight):
-        PY_SCIP_CALL(scip.SCIPaddVarSOS2(self._scip, cons, var, weight))
+    cdef _addVarSOS2(self, SCIP_CONS* cons, SCIP_VAR* var, weight):
+        PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, cons, var, weight))
 
-    cdef _appendVarSOS2(self, scip.SCIP_CONS* cons, SCIP_VAR* var):
-        PY_SCIP_CALL(scip.SCIPappendVarSOS2(self._scip, cons, var))
+    cdef _appendVarSOS2(self, SCIP_CONS* cons, SCIP_VAR* var):
+        PY_SCIP_CALL(SCIPappendVarSOS2(self._scip, cons, var))
 
-    cdef _writeVarName(self, scip.SCIP_VAR* var):
-        PY_SCIP_CALL(scip.SCIPwriteVarName(self._scip, NULL, var, False))
+    cdef _writeVarName(self, SCIP_VAR* var):
+        PY_SCIP_CALL(SCIPwriteVarName(self._scip, NULL, var, False))
 
-    cdef _releaseVar(self, scip.SCIP_VAR* var):
-        PY_SCIP_CALL(scip.SCIPreleaseVar(self._scip, &var))
+    cdef _releaseVar(self, SCIP_VAR* var):
+        PY_SCIP_CALL(SCIPreleaseVar(self._scip, &var))
 
-    cdef _releaseCons(self, scip.SCIP_CONS* cons):
-        PY_SCIP_CALL(scip.SCIPreleaseCons(self._scip, &cons))
+    cdef _releaseCons(self, SCIP_CONS* cons):
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &cons))
 
 
     # Objective function
 
     def setMinimize(self):
         """Set the objective sense to maximization."""
-        PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MINIMIZE))
+        PY_SCIP_CALL(SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MINIMIZE))
 
     def setMaximize(self):
         """Set the objective sense to minimization."""
-        PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))
+        PY_SCIP_CALL(SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))
 
     def setObjlimit(self, objlimit):
         """Set a limit on the objective function.
@@ -911,7 +915,7 @@ cdef class Model:
         Keyword arguments:
         objlimit -- limit on the objective function
         """
-        PY_SCIP_CALL(scip.SCIPsetObjlimit(self._scip, objlimit))
+        PY_SCIP_CALL(SCIPsetObjlimit(self._scip, objlimit))
 
     def setObjective(self, coeffs, sense = 'minimize'):
         """Establish the objective function, either as a variable dictionary or as a linear expression.
@@ -920,9 +924,9 @@ cdef class Model:
         coeffs -- the coefficients
         sense -- the objective sense (default 'minimize')
         """
-        cdef scip.SCIP_Real coeff
+        cdef SCIP_Real coeff
         cdef Var v
-        cdef scip.SCIP_VAR* _var
+        cdef SCIP_VAR* _var
         if isinstance(coeffs, LinExpr):
             # transform linear expression into variable dictionary
             terms = coeffs.terms
@@ -930,9 +934,9 @@ cdef class Model:
         elif coeffs == 0:
             coeffs = {}
         for k in coeffs:
-            coeff = <scip.SCIP_Real>coeffs[k]
+            coeff = <SCIP_Real>coeffs[k]
             v = k.var
-            PY_SCIP_CALL(scip.SCIPchgVarObj(self._scip, v._var, coeff))
+            PY_SCIP_CALL(SCIPchgVarObj(self._scip, v._var, coeff))
         if sense == 'maximize':
             self.setMaximize()
         else:
@@ -945,7 +949,7 @@ cdef class Model:
         Keyword arguments:
         setting -- the parameter settings
         """
-        PY_SCIP_CALL(scip.SCIPsetPresolving(self._scip, setting, True))
+        PY_SCIP_CALL(SCIPsetPresolving(self._scip, setting, True))
 
     # Write original problem to file
     def writeProblem(self, filename='origprob.cip'):
@@ -960,7 +964,7 @@ cdef class Model:
         else:
             ext = str_conversion(filename.split('.')[1])
         fn = str_conversion(filename)
-        PY_SCIP_CALL(scip.SCIPwriteOrigProblem(self._scip, fn, ext, False))
+        PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, fn, ext, False))
         print('wrote original problem to file ' + filename)
 
     # Variable Functions
@@ -977,16 +981,16 @@ cdef class Model:
         pricedVar -- is the variable a pricing candidate? (default False)
         """
         if ub is None:
-            ub = scip.SCIPinfinity(self._scip)
-        cdef scip.SCIP_VAR* scip_var
+            ub = SCIPinfinity(self._scip)
+        cdef SCIP_VAR* scip_var
         if vtype in ['C', 'CONTINUOUS']:
-            self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_CONTINUOUS)
+            self._createVarBasic(&scip_var, name, lb, ub, obj, SCIP_VARTYPE_CONTINUOUS)
         elif vtype in ['B', 'BINARY']:
             lb = 0.0
             ub = 1.0
-            self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_BINARY)
+            self._createVarBasic(&scip_var, name, lb, ub, obj, SCIP_VARTYPE_BINARY)
         elif vtype in ['I', 'INTEGER']:
-            self._createVarBasic(&scip_var, name, lb, ub, obj, scip.SCIP_VARTYPE_INTEGER)
+            self._createVarBasic(&scip_var, name, lb, ub, obj, SCIP_VARTYPE_INTEGER)
 
         if pricedVar:
             self._addPricedVar(scip_var)
@@ -1002,7 +1006,7 @@ cdef class Model:
         Keyword arguments:
         var -- the variable
         """
-        cdef scip.SCIP_VAR* _var
+        cdef SCIP_VAR* _var
         cdef Var v
         v = var.var
         _var = v._var
@@ -1014,14 +1018,14 @@ cdef class Model:
         Keyword arguments:
         var -- the variable
         """
-        cdef scip.SCIP_VAR* _tvar
+        cdef SCIP_VAR* _tvar
         cdef Var v
         cdef Var tv
         v = var.var
         tv = var.var
         _tvar = tv._var
-        PY_SCIP_CALL(scip.SCIPtransformVar(self._scip, v._var, &_tvar))
-        name = <bytes> scip.SCIPvarGetName(_tvar)
+        PY_SCIP_CALL(SCIPtransformVar(self._scip, v._var, &_tvar))
+        name = <bytes> SCIPvarGetName(_tvar)
         return pythonizeVar(_tvar, name)
 
 
@@ -1032,15 +1036,15 @@ cdef class Model:
         var -- the variable
         lb -- the lower bound (default None)
         """
-        cdef scip.SCIP_VAR* _var
+        cdef SCIP_VAR* _var
         cdef Var v
         v = <Var>var.var
-        _var = <scip.SCIP_VAR*>v._var
+        _var = <SCIP_VAR*>v._var
 
         if lb is None:
-           lb = -scip.SCIPinfinity(self._scip)
+           lb = -SCIPinfinity(self._scip)
 
-        PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, lb))
+        PY_SCIP_CALL(SCIPchgVarLb(self._scip, _var, lb))
 
     def chgVarUb(self, var, ub=None):
         """Changes the upper bound of the specified variable.
@@ -1049,32 +1053,32 @@ cdef class Model:
         var -- the variable
         ub -- the upper bound (default None)
         """
-        cdef scip.SCIP_VAR* _var
+        cdef SCIP_VAR* _var
         cdef Var v
         v = <Var>var.var
-        _var = <scip.SCIP_VAR*>v._var
+        _var = <SCIP_VAR*>v._var
 
         if ub is None:
-           ub = scip.SCIPinfinity(self._scip)
+           ub = SCIPinfinity(self._scip)
 
-        PY_SCIP_CALL(scip.SCIPchgVarLb(self._scip, _var, ub))
+        PY_SCIP_CALL(SCIPchgVarLb(self._scip, _var, ub))
 
     def chgVarType(self, var, vtype):
-        cdef scip.SCIP_VAR* _var
+        cdef SCIP_VAR* _var
         cdef Var v
         cdef SCIP_Bool infeasible
         v = var.var
-        _var = <scip.SCIP_VAR*>v._var
+        _var = <SCIP_VAR*>v._var
         if vtype in ['C', 'CONTINUOUS']:
-            PY_SCIP_CALL(scip.SCIPchgVarType(self._scip, _var, scip.SCIP_VARTYPE_CONTINUOUS, &infeasible))
+            PY_SCIP_CALL(SCIPchgVarType(self._scip, _var, SCIP_VARTYPE_CONTINUOUS, &infeasible))
         elif vtype in ['B', 'BINARY']:
-            PY_SCIP_CALL(scip.SCIPchgVarType(self._scip, _var, scip.SCIP_VARTYPE_BINARY, &infeasible))
+            PY_SCIP_CALL(SCIPchgVarType(self._scip, _var, SCIP_VARTYPE_BINARY, &infeasible))
         elif vtype in ['I', 'INTEGER']:
-            PY_SCIP_CALL(scip.SCIPchgVarType(self._scip, _var, scip.SCIP_VARTYPE_INTEGER, &infeasible))
+            PY_SCIP_CALL(SCIPchgVarType(self._scip, _var, SCIP_VARTYPE_INTEGER, &infeasible))
         else:
             print('wrong variable type: ',vtype)
         if infeasible:
-            print('could not change variable type of variable ',<bytes> scip.SCIPvarGetName(_var))
+            print('could not change variable type of variable ',<bytes> SCIPvarGetName(_var))
 
     def getVars(self, transformed=False):
         """Retrieve all variables.
@@ -1082,8 +1086,8 @@ cdef class Model:
         Keyword arguments:
         transformed -- get transformed variables instead of original
         """
-        cdef scip.SCIP_VAR** _vars
-        cdef scip.SCIP_VAR* _var
+        cdef SCIP_VAR** _vars
+        cdef SCIP_VAR* _var
         cdef int _nvars
         vars = []
 
@@ -1096,7 +1100,7 @@ cdef class Model:
 
         for i in range(_nvars):
             _var = _vars[i]
-            name = scip.SCIPvarGetName(_var).decode("utf-8")
+            name = SCIPvarGetName(_var).decode("utf-8")
             vars.append(pythonizeVar(_var, name))
 
         return vars
@@ -1143,20 +1147,20 @@ cdef class Model:
                 raise NotImplementedError('Constraints of degree %d!' % deg)
 
         if lhs is None:
-            lhs = -scip.SCIPinfinity(self._scip)
+            lhs = -SCIPinfinity(self._scip)
         if rhs is None:
-            rhs = scip.SCIPinfinity(self._scip)
-        cdef scip.SCIP_CONS* scip_cons
+            rhs = SCIPinfinity(self._scip)
+        cdef SCIP_CONS* scip_cons
         self._createConsLinear(&scip_cons, name, 0, NULL, NULL, lhs, rhs,
                                 initial, separate, enforce, check, propagate,
                                 local, modifiable, dynamic, removable, stickingatnode)
-        cdef scip.SCIP_Real coeff
+        cdef SCIP_Real coeff
         cdef Var v
-        cdef scip.SCIP_VAR* _var
+        cdef SCIP_VAR* _var
         for k in coeffs:
-            coeff = <scip.SCIP_Real>coeffs[k]
+            coeff = <SCIP_Real>coeffs[k]
             v = <Var>k.var
-            _var = <scip.SCIP_VAR*>v._var
+            _var = <SCIP_VAR*>v._var
             self._addCoefLinear(scip_cons, _var, coeff)
         self._addCons(scip_cons)
         self._releaseCons(scip_cons)
@@ -1177,16 +1181,16 @@ cdef class Model:
     def _addQuadCons(self, quadcons, **kwargs):
         """Add object of class LinCons."""
         assert isinstance(quadcons, LinCons) # TODO
-        kwargs['lhs'] = -scip.SCIPinfinity(self._scip) if quadcons.lb is None else quadcons.lb
-        kwargs['rhs'] =  scip.SCIPinfinity(self._scip) if quadcons.ub is None else quadcons.ub
+        kwargs['lhs'] = -SCIPinfinity(self._scip) if quadcons.lb is None else quadcons.lb
+        kwargs['rhs'] =  SCIPinfinity(self._scip) if quadcons.ub is None else quadcons.ub
         terms = quadcons.expr.terms
         assert quadcons.expr.degree() <= 2
         assert terms[()] == 0.0
 
         name = str_conversion("quadcons") # TODO
 
-        cdef scip.SCIP_CONS* scip_cons
-        PY_SCIP_CALL(scip.SCIPcreateConsQuadratic(
+        cdef SCIP_CONS* scip_cons
+        PY_SCIP_CALL(SCIPcreateConsQuadratic(
             self._scip, &scip_cons, name,
             0, NULL, NULL,        # linear
             0, NULL, NULL, NULL,  # quadratc
@@ -1197,21 +1201,21 @@ cdef class Model:
 
         cdef Var var1
         cdef Var var2
-        cdef scip.SCIP_VAR* _var1
-        cdef scip.SCIP_VAR* _var2
+        cdef SCIP_VAR* _var1
+        cdef SCIP_VAR* _var2
         for v, c in terms.items():
             if len(v) == 0: # constant
                 assert c == 0.0
             elif len(v) == 1: # linear
                 var1 = <Var>v[0].var
-                _var1 = <scip.SCIP_VAR*>var1._var
+                _var1 = <SCIP_VAR*>var1._var
                 PY_SCIP_CALL(SCIPaddLinearVarQuadratic(self._scip, scip_cons, _var1, c))
             else: # quadratic
                 assert len(v) == 2, 'term: %s' % v
                 var1 = <Var>v[0].var
-                _var1 = <scip.SCIP_VAR*>var1._var
+                _var1 = <SCIP_VAR*>var1._var
                 var2 = <Var>v[1].var
-                _var2 = <scip.SCIP_VAR*>var2._var
+                _var2 = <SCIP_VAR*>var2._var
                 PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, _var1, _var2, c))
 
         self._addCons(scip_cons)
@@ -1252,9 +1256,9 @@ cdef class Model:
         removable -- hould the relaxation be removed from the LP due to aging or cleanup? (default False)
         stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
         """
-        cdef scip.SCIP_CONS* scip_cons
+        cdef SCIP_CONS* scip_cons
         cdef Var v
-        cdef scip.SCIP_VAR* _var
+        cdef SCIP_VAR* _var
         cdef int _nvars
 
         self._createConsSOS1(&scip_cons, name, 0, NULL, NULL,
@@ -1264,13 +1268,13 @@ cdef class Model:
         if weights is None:
             for k in vars:
                 v = <Var>k.var
-                _var = <scip.SCIP_VAR*>v._var
+                _var = <SCIP_VAR*>v._var
                 self._appendVarSOS1(scip_cons, _var)
         else:
             nvars = len(vars)
             for k in range(nvars):
                 v = <Var>vars[k].var
-                _var = <scip.SCIP_VAR*>v._var
+                _var = <SCIP_VAR*>v._var
                 weight = weights[k]
                 self._addVarSOS1(scip_cons, _var, weight)
 
@@ -1297,9 +1301,9 @@ cdef class Model:
         removable -- hould the relaxation be removed from the LP due to aging or cleanup? (default False)
         stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
         """
-        cdef scip.SCIP_CONS* scip_cons
+        cdef SCIP_CONS* scip_cons
         cdef Var v
-        cdef scip.SCIP_VAR* _var
+        cdef SCIP_VAR* _var
         cdef int _nvars
 
         self._createConsSOS2(&scip_cons, name, 0, NULL, NULL,
@@ -1309,13 +1313,13 @@ cdef class Model:
         if weights is None:
             for k in vars:
                 v = <Var>k.var
-                _var = <scip.SCIP_VAR*>v._var
+                _var = <SCIP_VAR*>v._var
                 self._appendVarSOS2(scip_cons, _var)
         else:
             nvars = len(vars)
             for k in range(nvars):
                 v = <Var>vars[k].var
-                _var = <scip.SCIP_VAR*>v._var
+                _var = <SCIP_VAR*>v._var
                 weight = weights[k]
                 self._addVarSOS2(scip_cons, _var, weight)
 
@@ -1389,13 +1393,13 @@ cdef class Model:
         transcons = Constraint("t-"+cons.name)
         ctrans = transcons.cons
 
-        PY_SCIP_CALL(scip.SCIPtransformCons(self._scip, c._cons, &ctrans._cons))
+        PY_SCIP_CALL(SCIPtransformCons(self._scip, c._cons, &ctrans._cons))
         return transcons
 
     def getConss(self):
         """Retrieve all constraints."""
-        cdef scip.SCIP_CONS** _conss
-        cdef scip.SCIP_CONS* _cons
+        cdef SCIP_CONS** _conss
+        cdef SCIP_CONS* _cons
         cdef Cons c
         cdef int _nconss
         conss = []
@@ -1417,7 +1421,7 @@ cdef class Model:
         """
         cdef Cons c
         c = cons.cons
-        return scip.SCIPgetDualsolLinear(self._scip, c._cons)
+        return SCIPgetDualsolLinear(self._scip, c._cons)
 
     def getDualfarkasLinear(self, cons):
         """Retrieve the dual farkas value to a linear constraint.
@@ -1427,12 +1431,12 @@ cdef class Model:
         """
         cdef Cons c
         c = cons.cons
-        return scip.SCIPgetDualfarkasLinear(self._scip, c._cons)
+        return SCIPgetDualfarkasLinear(self._scip, c._cons)
 
     def optimize(self):
         """Optimize the problem."""
-        PY_SCIP_CALL(scip.SCIPsolve(self._scip))
-        self._bestSol = scip.SCIPgetBestSol(self._scip)
+        PY_SCIP_CALL(SCIPsolve(self._scip))
+        self._bestSol = SCIPgetBestSol(self._scip)
 
     def includePricer(self, Pricer pricer, name, desc, priority=1, delay=True):
         """Include a pricer.
@@ -1447,13 +1451,13 @@ cdef class Model:
         """
         n = str_conversion(name)
         d = str_conversion(desc)
-        PY_SCIP_CALL(scip.SCIPincludePricer(self._scip, n, d,
+        PY_SCIP_CALL(SCIPincludePricer(self._scip, n, d,
                                             priority, delay,
                                             PyPricerCopy, PyPricerFree, PyPricerInit, PyPricerExit, PyPricerInitsol, PyPricerExitsol, PyPricerRedcost, PyPricerFarkas,
                                             <SCIP_PRICERDATA*>pricer))
         cdef SCIP_PRICER* scip_pricer
-        scip_pricer = scip.SCIPfindPricer(self._scip, n)
-        PY_SCIP_CALL(scip.SCIPactivatePricer(self._scip, scip_pricer))
+        scip_pricer = SCIPfindPricer(self._scip, n)
+        PY_SCIP_CALL(SCIPactivatePricer(self._scip, scip_pricer))
         pricer.model = self
 
 
@@ -1480,7 +1484,7 @@ cdef class Model:
         """
         n = str_conversion(name)
         d = str_conversion(desc)
-        PY_SCIP_CALL(scip.SCIPincludeConshdlr(self._scip, n, d, sepapriority, enfopriority, chckpriority, sepafreq, propfreq, eagerfreq,
+        PY_SCIP_CALL(SCIPincludeConshdlr(self._scip, n, d, sepapriority, enfopriority, chckpriority, sepafreq, propfreq, eagerfreq,
                                               maxprerounds, delaysepa, delayprop, needscons, proptiming, presoltiming,
                                               PyConshdlrCopy, PyConsFree, PyConsInit, PyConsExit, PyConsInitpre, PyConsExitpre,
                                               PyConsInitsol, PyConsExitsol, PyConsDelete, PyConsTrans, PyConsInitlp, PyConsSepalp, PyConsSepasol,
@@ -1496,7 +1500,7 @@ cdef class Model:
 
         n = str_conversion(name)
         cdef SCIP_CONSHDLR* _conshdlr
-        _conshdlr = scip.SCIPfindConshdlr(self._scip, str_conversion(conshdlr.name))
+        _conshdlr = SCIPfindConshdlr(self._scip, str_conversion(conshdlr.name))
         constraint = Constraint(name)
         cdef SCIP_CONS* _cons
         _cons = <SCIP_CONS*>constraint._constraint
@@ -1516,7 +1520,7 @@ cdef class Model:
         """
         n = str_conversion(name)
         d = str_conversion(desc)
-        PY_SCIP_CALL(scip.SCIPincludePresol(self._scip, n, d, priority, maxrounds, timing, PyPresolCopy, PyPresolFree, PyPresolInit,
+        PY_SCIP_CALL(SCIPincludePresol(self._scip, n, d, priority, maxrounds, timing, PyPresolCopy, PyPresolFree, PyPresolInit,
                                             PyPresolExit, PyPresolInitpre, PyPresolExitpre, PyPresolExec, <SCIP_PRESOLDATA*>presol))
         presol.model = self
 
@@ -1535,7 +1539,7 @@ cdef class Model:
         """
         n = str_conversion(name)
         d = str_conversion(desc)
-        PY_SCIP_CALL(scip.SCIPincludeSepa(self._scip, n, d, priority, freq, maxbounddist, usessubscip, delay, PySepaCopy, PySepaFree,
+        PY_SCIP_CALL(SCIPincludeSepa(self._scip, n, d, priority, freq, maxbounddist, usessubscip, delay, PySepaCopy, PySepaFree,
                                           PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, PySepaExeclp, PySepaExecsol, <SCIP_SEPADATA*>sepa))
         sepa.model = self
 
@@ -1557,7 +1561,7 @@ cdef class Model:
         """
         n = str_conversion(name)
         d = str_conversion(desc)
-        PY_SCIP_CALL(scip.SCIPincludeProp(self._scip, n, d,
+        PY_SCIP_CALL(SCIPincludeProp(self._scip, n, d,
                                           priority, freq, delay,
                                           proptiming, presolpriority, presolmaxrounds,
                                           presoltiming, PyPropCopy, PyPropFree, PyPropInit, PyPropExit,
@@ -1585,7 +1589,7 @@ cdef class Model:
         nam = str_conversion(name)
         des = str_conversion(desc)
         dis = ord(str_conversion(dispchar))
-        PY_SCIP_CALL(scip.SCIPincludeHeur(self._scip, nam, des, dis,
+        PY_SCIP_CALL(SCIPincludeHeur(self._scip, nam, des, dis,
                                           priority, freq, freqofs,
                                           maxdepth, timingmask, usessubscip,
                                           PyHeurCopy, PyHeurFree, PyHeurInit, PyHeurExit,
@@ -1603,9 +1607,9 @@ cdef class Model:
         """
         n = str_conversion(heur.name)
         cdef SCIP_HEUR* _heur
-        _heur = scip.SCIPfindHeur(self._scip, n)
+        _heur = SCIPfindHeur(self._scip, n)
         solution = Solution()
-        PY_SCIP_CALL(scip.SCIPcreateSol(self._scip, &solution._solution, _heur))
+        PY_SCIP_CALL(SCIPcreateSol(self._scip, &solution._solution, _heur))
         return solution
 
 
@@ -1623,7 +1627,7 @@ cdef class Model:
         var = <Var>variable.var
         _var = <SCIP_VAR*>var._var
         _sol = <SCIP_SOL*>solution._solution
-        PY_SCIP_CALL(scip.SCIPsetSolVal(self._scip, _sol, _var, val))
+        PY_SCIP_CALL(SCIPsetSolVal(self._scip, _sol, _var, val))
 
     def trySol(self, Solution solution, printreason=True, checkbounds=True, checkintegrality=True, checklprows=True):
         """Try to add a solution to the storage.
@@ -1636,7 +1640,7 @@ cdef class Model:
         checklprows -- have current LP rows (both local and global) to be checked?
         """
         cdef SCIP_Bool stored
-        PY_SCIP_CALL(scip.SCIPtrySolFree(self._scip, &solution._solution, printreason, checkbounds, checkintegrality, checklprows, &stored))
+        PY_SCIP_CALL(SCIPtrySolFree(self._scip, &solution._solution, printreason, checkbounds, checkintegrality, checklprows, &stored))
         return stored
 
     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
@@ -1653,7 +1657,7 @@ cdef class Model:
 
         nam = str_conversion(name)
         des = str_conversion(desc)
-        PY_SCIP_CALL(scip.SCIPincludeBranchrule(self._scip, nam, des,
+        PY_SCIP_CALL(SCIPincludeBranchrule(self._scip, nam, des,
                                           maxdepth, maxdepth, maxbounddist,
                                           PyBranchruleCopy, PyBranchruleFree, PyBranchruleInit, PyBranchruleExit,
                                           PyBranchruleInitsol, PyBranchruleExitsol, PyBranchruleExeclp, PyBranchruleExecext,
@@ -1664,10 +1668,10 @@ cdef class Model:
 
     def getSols(self):
         """Retrieve list of all feasible primal solutions stored in the solution storage."""
-        cdef scip.SCIP_SOL** _sols
-        cdef scip.SCIP_SOL* _sol
-        _sols = scip.SCIPgetSols(self._scip)
-        nsols = scip.SCIPgetNSols(self._scip)
+        cdef SCIP_SOL** _sols
+        cdef SCIP_SOL* _sol
+        _sols = SCIPgetSols(self._scip)
+        nsols = SCIPgetNSols(self._scip)
         sols = []
 
         for i in range(nsols):
@@ -1681,7 +1685,7 @@ cdef class Model:
     def getBestSol(self):
         """Retrieve currently best known feasible primal solution."""
         solution = Solution()
-        solution._solution = scip.SCIPgetBestSol(self._scip)
+        solution._solution = SCIPgetBestSol(self._scip)
         return solution
 
     def getSolObjVal(self, Solution solution, original=True):
@@ -1691,26 +1695,26 @@ cdef class Model:
         solution -- the solution
         original -- retrieve the solution of the original problem? (default True)
         """
-        cdef scip.SCIP_SOL* _solution
-        _solution = <scip.SCIP_SOL*>solution._solution
+        cdef SCIP_SOL* _solution
+        _solution = <SCIP_SOL*>solution._solution
         if original:
-            objval = scip.SCIPgetSolOrigObj(self._scip, _solution)
+            objval = SCIPgetSolOrigObj(self._scip, _solution)
         else:
-            objval = scip.SCIPgetSolTransObj(self._scip, _solution)
+            objval = SCIPgetSolTransObj(self._scip, _solution)
         return objval
 
     def getObjVal(self, original=True):
         """Retrieve the objective value of value of best solution"""
         if original:
-            objval = scip.SCIPgetSolOrigObj(self._scip, self._bestSol)
+            objval = SCIPgetSolOrigObj(self._scip, self._bestSol)
         else:
-            objval = scip.SCIPgetSolTransObj(self._scip, self._bestSol)
+            objval = SCIPgetSolTransObj(self._scip, self._bestSol)
         return objval
 
     # Get best dual bound
     def getDualbound(self):
         """Retrieve the best dual bound."""
-        return scip.SCIPgetDualbound(self._scip)
+        return SCIPgetDualbound(self._scip)
 
     def getVal(self, var, Solution solution=None):
         """Retrieve the value of the variable in the specified solution. If no solution is specified,
@@ -1720,45 +1724,45 @@ cdef class Model:
         var -- the variable
         solution -- the solution (default None)
         """
-        cdef scip.SCIP_SOL* _sol
+        cdef SCIP_SOL* _sol
         if solution is None:
             _sol = self._bestSol
         else:
-            _sol = <scip.SCIP_SOL*>solution._solution
-        cdef scip.SCIP_VAR* _var
+            _sol = <SCIP_SOL*>solution._solution
+        cdef SCIP_VAR* _var
         cdef Var v
         v = <Var>var.var
-        _var = <scip.SCIP_VAR*>v._var
-        return scip.SCIPgetSolVal(self._scip, _sol, _var)
+        _var = <SCIP_VAR*>v._var
+        return SCIPgetSolVal(self._scip, _sol, _var)
 
     def writeName(self, var):
         """Write the name of the variable to the std out."""
-        cdef scip.SCIP_VAR* _var
+        cdef SCIP_VAR* _var
         cdef Var v
         v = <Var>var.var
-        _var = <scip.SCIP_VAR*>v._var
+        _var = <SCIP_VAR*>v._var
         self._writeVarName(_var)
 
     def getStatus(self):
         """Retrieve solution status."""
-        cdef scip.SCIP_STATUS stat = scip.SCIPgetStatus(self._scip)
-        if stat == scip.SCIP_STATUS_OPTIMAL:
+        cdef SCIP_STATUS stat = SCIPgetStatus(self._scip)
+        if stat == SCIP_STATUS_OPTIMAL:
             return "optimal"
-        elif stat == scip.SCIP_STATUS_TIMELIMIT:
+        elif stat == SCIP_STATUS_TIMELIMIT:
             return "timelimit"
-        elif stat == scip.SCIP_STATUS_INFEASIBLE:
+        elif stat == SCIP_STATUS_INFEASIBLE:
             return "infeasible"
-        elif stat == scip.SCIP_STATUS_UNBOUNDED:
+        elif stat == SCIP_STATUS_UNBOUNDED:
             return "unbounded"
         else:
             return "unknown"
 
     def getObjectiveSense(self):
         """Retrieve objective sense."""
-        cdef scip.SCIP_OBJSENSE sense = scip.SCIPgetObjsense(self._scip)
-        if sense == scip.SCIP_OBJSENSE_MAXIMIZE:
+        cdef SCIP_OBJSENSE sense = SCIPgetObjsense(self._scip)
+        if sense == SCIP_OBJSENSE_MAXIMIZE:
             return "maximize"
-        elif sense == scip.SCIP_OBJSENSE_MINIMIZE:
+        elif sense == SCIP_OBJSENSE_MINIMIZE:
             return "minimize"
         else:
             return "unknown"
@@ -1767,7 +1771,7 @@ cdef class Model:
 
     def printStatistics(self):
         """Print statistics."""
-        PY_SCIP_CALL(scip.SCIPprintStatistics(self._scip, NULL))
+        PY_SCIP_CALL(SCIPprintStatistics(self._scip, NULL))
 
     # Verbosity Methods
 
@@ -1777,7 +1781,7 @@ cdef class Model:
         Keyword arguments:
         quiet -- hide output? (default True)
         """
-        scip.SCIPsetMessagehdlrQuiet(self._scip, quiet)
+        SCIPsetMessagehdlrQuiet(self._scip, quiet)
 
     # Parameter Methods
 
@@ -1789,7 +1793,7 @@ cdef class Model:
         value -- the value of the parameter
         """
         n = str_conversion(name)
-        PY_SCIP_CALL(scip.SCIPsetBoolParam(self._scip, n, value))
+        PY_SCIP_CALL(SCIPsetBoolParam(self._scip, n, value))
 
     def setIntParam(self, name, value):
         """Set an int-valued parameter.
@@ -1799,7 +1803,7 @@ cdef class Model:
         value -- the value of the parameter
         """
         n = str_conversion(name)
-        PY_SCIP_CALL(scip.SCIPsetIntParam(self._scip, n, value))
+        PY_SCIP_CALL(SCIPsetIntParam(self._scip, n, value))
 
     def setLongintParam(self, name, value):
         """Set a long-valued parameter.
@@ -1809,7 +1813,7 @@ cdef class Model:
         value -- the value of the parameter
         """
         n = str_conversion(name)
-        PY_SCIP_CALL(scip.SCIPsetLongintParam(self._scip, n, value))
+        PY_SCIP_CALL(SCIPsetLongintParam(self._scip, n, value))
 
     def setRealParam(self, name, value):
         """Set a real-valued parameter.
@@ -1819,7 +1823,7 @@ cdef class Model:
         value -- the value of the parameter
         """
         n = str_conversion(name)
-        PY_SCIP_CALL(scip.SCIPsetRealParam(self._scip, n, value))
+        PY_SCIP_CALL(SCIPsetRealParam(self._scip, n, value))
 
     def setCharParam(self, name, value):
         """Set a char-valued parameter.
@@ -1829,7 +1833,7 @@ cdef class Model:
         value -- the value of the parameter
         """
         n = str_conversion(name)
-        PY_SCIP_CALL(scip.SCIPsetCharParam(self._scip, n, value))
+        PY_SCIP_CALL(SCIPsetCharParam(self._scip, n, value))
 
     def setStringParam(self, name, value):
         """Set a string-valued parameter.
@@ -1839,7 +1843,7 @@ cdef class Model:
         value -- the value of the parameter
         """
         n = str_conversion(name)
-        PY_SCIP_CALL(scip.SCIPsetStringParam(self._scip, n, value))
+        PY_SCIP_CALL(SCIPsetStringParam(self._scip, n, value))
 
     def readParams(self, file):
         """Read an external parameter file.
@@ -1848,7 +1852,7 @@ cdef class Model:
         file -- the file to be read
         """
         absfile = bytes(abspath(file), 'utf-8')
-        PY_SCIP_CALL(scip.SCIPreadParams(self._scip, absfile))
+        PY_SCIP_CALL(SCIPreadParams(self._scip, absfile))
 
     def readProblem(self, file, extension = None):
         """Read a problem instance from an external file.
@@ -1859,7 +1863,7 @@ cdef class Model:
         """
         absfile = bytes(abspath(file), 'utf-8')
         if extension is None:
-            PY_SCIP_CALL(scip.SCIPreadProb(self._scip, absfile, NULL))
+            PY_SCIP_CALL(SCIPreadProb(self._scip, absfile, NULL))
         else:
             extension = bytes(extension, 'utf-8')
-            PY_SCIP_CALL(scip.SCIPreadProb(self._scip, absfile, extension))
+            PY_SCIP_CALL(SCIPreadProb(self._scip, absfile, extension))

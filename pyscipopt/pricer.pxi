@@ -54,7 +54,7 @@ cdef SCIP_RETCODE PyPricerFarkas (SCIP* scip, SCIP_PRICER* pricer, SCIP_RESULT* 
     return SCIP_OKAY
 
 cdef class Pricer:
-    cdef public object data     # storage for the python user
+    #cdef public object data     # storage for the python user
     cdef public Model model
 
     def pricerfree(self):

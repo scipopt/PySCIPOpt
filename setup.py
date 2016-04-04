@@ -87,23 +87,35 @@ if not os.path.lexists(libscipopt):
 extensions = []
 ext = '.pyx' if cythonize else '.c'
 
+FNAMES = [
+    'scip',
+    'linexpr',
+]
+
+#if usesharedlib:
+#    extensions = [Extension('pyscipopt.scip', [os.path.join('pyscipopt', fn+ext) for fn in FNAMES],
+#                          extra_compile_args=['-UNDEBUG'],
+#                          include_dirs=[includescip],
+#                          library_dirs=['lib'],
+#                          runtime_library_dirs=[os.path.abspath('lib')],
+#                          libraries=['scipopt', 'readline', 'z', 'gmp', 'ncurses', 'm'])]
+#else:
+#    extensions = [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip'+ext)],
+#                          extra_compile_args=['-UNDEBUG'],
+#                          include_dirs=[includescip],
+#                          extra_objects=[libscipopt],
+#                          libraries=['readline', 'z', 'gmp', 'ncurses', 'm'])]
 if usesharedlib:
-    extensions = [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip'+ext)],
+    extensions = [Extension('*', ['pyscipopt/*.pyx'],
                           extra_compile_args=['-UNDEBUG'],
                           include_dirs=[includescip],
                           library_dirs=['lib'],
                           runtime_library_dirs=[os.path.abspath('lib')],
                           libraries=['scipopt', 'readline', 'z', 'gmp', 'ncurses', 'm'])]
-else:
-    extensions = [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip'+ext)],
-                          extra_compile_args=['-UNDEBUG'],
-                          include_dirs=[includescip],
-                          extra_objects=[libscipopt],
-                          libraries=['readline', 'z', 'gmp', 'ncurses', 'm'])]
 
 if cythonize:
     extensions = cythonize(extensions)
-    os.system("sed -i 's/[ ]*$//' pyscipopt/scip.c")
+    os.system("sed -i 's/[ ]*$//' pyscipopt/*.c")
 
 setup(
     name = 'pyscipopt',
