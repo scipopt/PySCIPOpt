@@ -105,7 +105,6 @@ cdef class LinExpr:
 
     def __richcmp__(self, other, op):
         '''turn it into a constraint'''
-        print(self, other, op)
         if op == 1: # <=
             if isinstance(other, LinExpr):
                 return (self - other) <= 0.0
@@ -114,7 +113,6 @@ cdef class LinExpr:
             else:
                 raise NotImplementedError
         elif op == 5: # >=
-            print("applying richmap, with op >=")
             if isinstance(other, LinExpr):
                 return (self - other) >= 0.0
             elif _is_number(other):
