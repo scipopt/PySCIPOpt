@@ -12,7 +12,6 @@ include "propagator.pxi"
 include "heuristic.pxi"
 include "branchrule.pxi"
 
-
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
 
@@ -154,11 +153,6 @@ cdef class Row:
 cdef class Solution:
     """Base class holding a pointer to corresponding SCIP_SOL"""
     cdef SCIP_SOL* _solution
-
-
-cdef class Var:
-    """Base class holding a pointer to corresponding SCIP_VAR"""
-    cdef SCIP_VAR* _var
 
 cdef class Lpi:
     """Base class holding a pointer to corresponding SCIP_LPI"""
@@ -649,12 +643,17 @@ class LP:
 
 cdef class Variable(LinExpr):
     """Is a linear expression and has SCIP_VAR*"""
-    cdef public var
-    cdef public name
+    cdef SCIP_VAR* var
+    cdef readonly str name
 
-    def __init__(self, name=None):
-        self.var = Var()
-        self.name = name
+    @staticmethod
+    cdef create(SCIP_VAR* scipvar, str name):
+        var = Variable()
+        var.var = scipvar
+        var.name = name
+        return var
+
+    def __init__(self):
         LinExpr.__init__(self, {(self,) : 1.0})
 
     def __hash__(self):
@@ -674,11 +673,7 @@ cdef class Variable(LinExpr):
         return self.name
 
     def vtype(self):
-        cdef Var v
-        cdef SCIP_VAR* _var
-        v = self.var
-        _var = v._var
-        vartype = SCIPvarGetType(_var)
+        vartype = SCIPvarGetType(self.var)
         if vartype == SCIP_VARTYPE_BINARY:
             return "BINARY"
         elif vartype == SCIP_VARTYPE_INTEGER:
@@ -687,36 +682,17 @@ cdef class Variable(LinExpr):
             return "CONTINUOUS"
 
     def isOriginal(self):
-        cdef Var v
-        cdef SCIP_VAR* _var
-        v = self.var
-        _var = v._var
-        return SCIPvarIsOriginal(_var)
+        return SCIPvarIsOriginal(self.var)
 
     def isInLP(self):
-        cdef Var v
-        cdef SCIP_VAR* _var
-        v = self.var
-        _var = v._var
-        return SCIPvarIsInLP(_var)
+        return SCIPvarIsInLP(self.var)
 
     def getCol(self):
-        cdef Var v
-        cdef SCIP_VAR* _var
-        v = self.var
-        _var = v._var
         col = Col()
         cdef SCIP_COL* _col
         _col = col._col
-        _col = SCIPvarGetCol(_var)
+        _col = SCIPvarGetCol(self.var)
         return col
-
-cdef pythonizeVar(SCIP_VAR* scip_var, name):
-    var = Variable(name)
-    cdef Var v
-    v = var.var
-    v._var = scip_var
-    return var
 
 cdef class Cons:
     cdef SCIP_CONS* _cons
@@ -927,8 +903,6 @@ cdef class Model:
         sense -- the objective sense (default 'minimize')
         """
         cdef SCIP_Real coeff
-        cdef Var v
-        cdef SCIP_VAR* _var
         if isinstance(coeffs, LinExpr):
             # transform linear expression into variable dictionary
             terms = coeffs.terms
@@ -936,9 +910,8 @@ cdef class Model:
         elif coeffs == 0:
             coeffs = {}
         for k in coeffs:
-            coeff = <SCIP_Real>coeffs[k]
-            v = k.var
-            PY_SCIP_CALL(SCIPchgVarObj(self._scip, v._var, coeff))
+            var = <Variable>k
+            PY_SCIP_CALL(SCIPchgVarObj(self._scip, <SCIP_VAR*>var.var, <SCIP_Real>coeffs[k]))
         if sense == 'maximize':
             self.setMaximize()
         else:
@@ -1000,36 +973,26 @@ cdef class Model:
             self._addVar(scip_var)
 
         self._releaseVar(scip_var)
-        return pythonizeVar(scip_var, name)
+        return Variable.create(scip_var, name)
 
-    def releaseVar(self, var):
+    def releaseVar(self, Variable var):
         """Release the variable.
 
         Keyword arguments:
         var -- the variable
         """
-        cdef SCIP_VAR* _var
-        cdef Var v
-        v = var.var
-        _var = v._var
-        self._releaseVar(_var)
+        self._releaseVar(<SCIP_VAR*>var.var)
 
-    def getTransformedVar(self, var):
+    def getTransformedVar(self, Variable var):
         """Retrieve the transformed variable.
 
         Keyword arguments:
         var -- the variable
         """
         cdef SCIP_VAR* _tvar
-        cdef Var v
-        cdef Var tv
-        v = var.var
-        tv = var.var
-        _tvar = tv._var
-        PY_SCIP_CALL(SCIPtransformVar(self._scip, v._var, &_tvar))
-        name = <bytes> SCIPvarGetName(_tvar)
-        return pythonizeVar(_tvar, name)
-
+        PY_SCIP_CALL(SCIPtransformVar(self._scip, <SCIP_VAR*>var.var, &_tvar))
+        name = str(SCIPvarGetName(_tvar))
+        return Variable.create(_tvar, name)
 
     def chgVarLb(self, var, lb=None):
         """Changes the lower bound of the specified variable.
@@ -1038,15 +1001,9 @@ cdef class Model:
         var -- the variable
         lb -- the lower bound (default None)
         """
-        cdef SCIP_VAR* _var
-        cdef Var v
-        v = <Var>var.var
-        _var = <SCIP_VAR*>v._var
-
         if lb is None:
            lb = -SCIPinfinity(self._scip)
-
-        PY_SCIP_CALL(SCIPchgVarLb(self._scip, _var, lb))
+        PY_SCIP_CALL(SCIPchgVarLb(self._scip, <SCIP_VAR*>var.var, lb))
 
     def chgVarUb(self, var, ub=None):
         """Changes the upper bound of the specified variable.
@@ -1055,32 +1012,22 @@ cdef class Model:
         var -- the variable
         ub -- the upper bound (default None)
         """
-        cdef SCIP_VAR* _var
-        cdef Var v
-        v = <Var>var.var
-        _var = <SCIP_VAR*>v._var
-
         if ub is None:
            ub = SCIPinfinity(self._scip)
-
-        PY_SCIP_CALL(SCIPchgVarLb(self._scip, _var, ub))
+        PY_SCIP_CALL(SCIPchgVarLb(self._scip, <SCIP_VAR*>var.var, ub))
 
     def chgVarType(self, var, vtype):
-        cdef SCIP_VAR* _var
-        cdef Var v
         cdef SCIP_Bool infeasible
-        v = var.var
-        _var = <SCIP_VAR*>v._var
         if vtype in ['C', 'CONTINUOUS']:
-            PY_SCIP_CALL(SCIPchgVarType(self._scip, _var, SCIP_VARTYPE_CONTINUOUS, &infeasible))
+            PY_SCIP_CALL(SCIPchgVarType(self._scip, <SCIP_VAR*>var.var, SCIP_VARTYPE_CONTINUOUS, &infeasible))
         elif vtype in ['B', 'BINARY']:
-            PY_SCIP_CALL(SCIPchgVarType(self._scip, _var, SCIP_VARTYPE_BINARY, &infeasible))
+            PY_SCIP_CALL(SCIPchgVarType(self._scip, <SCIP_VAR*>var.var, SCIP_VARTYPE_BINARY, &infeasible))
         elif vtype in ['I', 'INTEGER']:
-            PY_SCIP_CALL(SCIPchgVarType(self._scip, _var, SCIP_VARTYPE_INTEGER, &infeasible))
+            PY_SCIP_CALL(SCIPchgVarType(self._scip, <SCIP_VAR*>var.var, SCIP_VARTYPE_INTEGER, &infeasible))
         else:
-            print('wrong variable type: ',vtype)
+            print('wrong variable type: ', vtype)
         if infeasible:
-            print('could not change variable type of variable ',<bytes> SCIPvarGetName(_var))
+            print('could not change variable type of variable ', var.name)
 
     def getVars(self, transformed=False):
         """Retrieve all variables.
@@ -1103,7 +1050,7 @@ cdef class Model:
         for i in range(_nvars):
             _var = _vars[i]
             name = SCIPvarGetName(_var).decode("utf-8")
-            vars.append(pythonizeVar(_var, name))
+            vars.append(Variable.create(_var, name))
 
         return vars
 
@@ -1156,14 +1103,9 @@ cdef class Model:
         self._createConsLinear(&scip_cons, name, 0, NULL, NULL, lhs, rhs,
                                 initial, separate, enforce, check, propagate,
                                 local, modifiable, dynamic, removable, stickingatnode)
-        cdef SCIP_Real coeff
-        cdef Var v
-        cdef SCIP_VAR* _var
         for k in coeffs:
-            coeff = <SCIP_Real>coeffs[k]
-            v = <Var>k.var
-            _var = <SCIP_VAR*>v._var
-            self._addCoefLinear(scip_cons, _var, coeff)
+            var = <Variable>k
+            self._addCoefLinear(scip_cons, <SCIP_VAR*>var.var, <SCIP_Real>coeffs[k])
         self._addCons(scip_cons)
         self._releaseCons(scip_cons)
 
@@ -1201,31 +1143,23 @@ cdef class Model:
             kwargs['check'], kwargs['propagate'], kwargs['local'],
             kwargs['modifiable'], kwargs['dynamic'], kwargs['removable']))
 
-        cdef Var var1
-        cdef Var var2
-        cdef SCIP_VAR* _var1
-        cdef SCIP_VAR* _var2
         for v, c in terms.items():
             if len(v) == 0: # constant
                 assert c == 0.0
             elif len(v) == 1: # linear
-                var1 = <Var>v[0].var
-                _var1 = <SCIP_VAR*>var1._var
-                PY_SCIP_CALL(SCIPaddLinearVarQuadratic(self._scip, scip_cons, _var1, c))
+                var = <Variable>v[0]
+                PY_SCIP_CALL(SCIPaddLinearVarQuadratic(self._scip, scip_cons, <SCIP_VAR*>var.var, c))
             else: # quadratic
                 assert len(v) == 2, 'term: %s' % v
-                var1 = <Var>v[0].var
-                _var1 = <SCIP_VAR*>var1._var
-                var2 = <Var>v[1].var
-                _var2 = <SCIP_VAR*>var2._var
-                PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, _var1, _var2, c))
+                var1, var2 = <Variable>v[0], <Variable>v[1]
+                PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, <SCIP_VAR*>var1.var, <SCIP_VAR*>var2.var, c))
 
         self._addCons(scip_cons)
         cons = Cons()
         cons._cons = scip_cons
         return cons
 
-    def addConsCoeff(self, cons, var, coeff):
+    def addConsCoeff(self, cons, Variable var, coeff):
         """Add coefficient to the linear constraint (if non-zero).
 
         Keyword arguments:
@@ -1233,10 +1167,8 @@ cdef class Model:
         coeff -- the coefficient
         """
         cdef Cons c
-        cdef Var v
         c = cons.cons
-        v = var.var
-        self._addCoefLinear(c._cons, v._var, coeff)
+        self._addCoefLinear(c._cons, <SCIP_VAR*>var.var, coeff)
 
     def addConsSOS1(self, vars, weights=None, name="SOS1cons",
                 initial=True, separate=True, enforce=True, check=True,
@@ -1259,8 +1191,6 @@ cdef class Model:
         stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
         """
         cdef SCIP_CONS* scip_cons
-        cdef Var v
-        cdef SCIP_VAR* _var
         cdef int _nvars
 
         self._createConsSOS1(&scip_cons, name, 0, NULL, NULL,
@@ -1268,17 +1198,14 @@ cdef class Model:
                                 local, dynamic, removable, stickingatnode)
 
         if weights is None:
-            for k in vars:
-                v = <Var>k.var
-                _var = <SCIP_VAR*>v._var
-                self._appendVarSOS1(scip_cons, _var)
+            for v in vars:
+                var = <Variable>v
+                self._appendVarSOS1(scip_cons, <SCIP_VAR*>var.var)
         else:
             nvars = len(vars)
-            for k in range(nvars):
-                v = <Var>vars[k].var
-                _var = <SCIP_VAR*>v._var
-                weight = weights[k]
-                self._addVarSOS1(scip_cons, _var, weight)
+            for i in range(nvars):
+                var = <Variable>vars[i]
+                self._addVarSOS1(scip_cons, <SCIP_VAR*>var.var, weights[i])
 
         self._addCons(scip_cons)
         return pythonizeCons(scip_cons, name)
@@ -1304,8 +1231,6 @@ cdef class Model:
         stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
         """
         cdef SCIP_CONS* scip_cons
-        cdef Var v
-        cdef SCIP_VAR* _var
         cdef int _nvars
 
         self._createConsSOS2(&scip_cons, name, 0, NULL, NULL,
@@ -1313,17 +1238,14 @@ cdef class Model:
                                 local, dynamic, removable, stickingatnode)
 
         if weights is None:
-            for k in vars:
-                v = <Var>k.var
-                _var = <SCIP_VAR*>v._var
-                self._appendVarSOS2(scip_cons, _var)
+            for v in vars:
+                var = <Variable>v
+                self._appendVarSOS2(scip_cons, <SCIP_VAR*>var.var)
         else:
             nvars = len(vars)
-            for k in range(nvars):
-                v = <Var>vars[k].var
-                _var = <SCIP_VAR*>v._var
-                weight = weights[k]
-                self._addVarSOS2(scip_cons, _var, weight)
+            for i in range(nvars):
+                var = <Variable>vars[i]
+                self._addVarSOS2(scip_cons, <SCIP_VAR*>var.var, weights[i])
 
         self._addCons(scip_cons)
         return pythonizeCons(scip_cons, name)
@@ -1338,10 +1260,8 @@ cdef class Model:
         weight -- the weight
         """
         cdef Cons c
-        cdef Var v
         c = cons.cons
-        v = var.var
-        self._addVarSOS1(c._cons, v._var, weight)
+        self._addVarSOS1(c._cons, <SCIP_VAR*>var.var, weight)
 
     def appendVarSOS1(self, cons, var):
         """Append variable to SOS1 constraint.
@@ -1351,10 +1271,8 @@ cdef class Model:
         vars -- the variable
         """
         cdef Cons c
-        cdef Var v
         c = cons.cons
-        v = var.var
-        self._appendVarSOS1(c._cons, v._var)
+        self._appendVarSOS1(c._cons, <SCIP_VAR*>var.var)
 
     def addVarSOS2(self, cons, var, weight):
         """Add variable to SOS2 constraint.
@@ -1365,10 +1283,8 @@ cdef class Model:
         weight -- the weight
         """
         cdef Cons c
-        cdef Var v
         c = cons.cons
-        v = var.var
-        self._addVarSOS2(c._cons, v._var, weight)
+        self._addVarSOS2(c._cons, <SCIP_VAR*>var.var, weight)
 
     def appendVarSOS2(self, cons, var):
         """Append variable to SOS2 constraint.
@@ -1378,10 +1294,8 @@ cdef class Model:
         vars -- the variable
         """
         cdef Cons c
-        cdef Var v
         c = cons.cons
-        v = var.var
-        self._appendVarSOS2(c._cons, v._var)
+        self._appendVarSOS2(c._cons, <SCIP_VAR*>var.var)
 
     def getTransformedCons(self, cons):
         """Retrieve transformed constraint.
@@ -1615,21 +1529,17 @@ cdef class Model:
         return solution
 
 
-    def setSolVal(self, Solution solution, variable, val):
+    def setSolVal(self, Solution solution, Variable var, val):
         """Set a variable in a solution.
 
         Keyword arguments:
         solution -- the solution to be modified
-        variable -- the variable in the solution
+        var -- the variable in the solution
         val -- the value of the variable in the solution
         """
         cdef SCIP_SOL* _sol
-        cdef SCIP_VAR* _var
-        cdef Var var
-        var = <Var>variable.var
-        _var = <SCIP_VAR*>var._var
         _sol = <SCIP_SOL*>solution._solution
-        PY_SCIP_CALL(SCIPsetSolVal(self._scip, _sol, _var, val))
+        PY_SCIP_CALL(SCIPsetSolVal(self._scip, _sol, <SCIP_VAR*>var.var, val))
 
     def trySol(self, Solution solution, printreason=True, checkbounds=True, checkintegrality=True, checklprows=True):
         """Try to add a solution to the storage.
@@ -1718,7 +1628,7 @@ cdef class Model:
         """Retrieve the best dual bound."""
         return SCIPgetDualbound(self._scip)
 
-    def getVal(self, var, Solution solution=None):
+    def getVal(self, Variable var, Solution solution=None):
         """Retrieve the value of the variable in the specified solution. If no solution is specified,
         the best known solution is used.
 
@@ -1731,19 +1641,11 @@ cdef class Model:
             _sol = self._bestSol
         else:
             _sol = <SCIP_SOL*>solution._solution
-        cdef SCIP_VAR* _var
-        cdef Var v
-        v = <Var>var.var
-        _var = <SCIP_VAR*>v._var
-        return SCIPgetSolVal(self._scip, _sol, _var)
+        return SCIPgetSolVal(self._scip, _sol, <SCIP_VAR*>var.var)
 
-    def writeName(self, var):
+    def writeName(self, Variable var):
         """Write the name of the variable to the std out."""
-        cdef SCIP_VAR* _var
-        cdef Var v
-        v = <Var>var.var
-        _var = <SCIP_VAR*>v._var
-        self._writeVarName(_var)
+        self._writeVarName(<SCIP_VAR*>var.var)
 
     def getStatus(self):
         """Retrieve solution status."""
