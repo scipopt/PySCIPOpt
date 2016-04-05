@@ -664,6 +664,32 @@ cdef class Variable(LinExpr):
             return id(self) < id(other)
         elif op == 4: # > 
             return id(self) > id(other)
+        else: # interpret variable as expression
+            # would like to do this, but doesn't work :-\
+            # return super(Variable, self).__richcmp__(self, other, op)
+            if op == 1:
+                if isinstance(other, LinExpr):
+                    return (self - other) <= 0.0
+                elif _is_number(other):
+                    return LinCons(self, ub=float(other))
+                else:
+                    raise NotImplementedError
+            elif op == 5:
+                if isinstance(other, LinExpr):
+                    return (self - other) >= 0.0
+                elif _is_number(other):
+                    return LinCons(self, lb=float(other))
+                else:
+                    raise NotImplementedError
+            elif op == 2:
+                if isinstance(other, LinExpr):
+                    return (self - other) == 0.0
+                elif _is_number(other):
+                    return LinCons(self, lb=float(other), ub=float(other))
+                else:
+                    raise NotImplementedError
+            else:
+                raise NotImplementedError
 
     def __repr__(self):
         return self.name
