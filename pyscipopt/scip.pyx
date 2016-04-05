@@ -1,14 +1,11 @@
 from os.path import abspath
 import sys
 
-#cimport pyscipopt.scip as scip
-cimport pyscipopt.linexpr
-from pyscipopt.linexpr cimport LinExpr, LinCons
-
 from libc.stdlib cimport malloc, free
 
 include "pricer.pxi"
 include "conshdlr.pxi"
+include "linexpr.pxi"
 include "presol.pxi"
 include "sepa.pxi"
 include "propagator.pxi"
@@ -1867,3 +1864,13 @@ cdef class Model:
         else:
             extension = bytes(extension, 'utf-8')
             PY_SCIP_CALL(SCIPreadProb(self._scip, absfile, extension))
+
+
+def quicksum(termlist):
+    '''add linear expressions and constants much faster than Python's sum
+    by avoiding intermediate data structures and adding terms inplace
+    '''
+    result = LinExpr()
+    for term in termlist:
+        result += term
+    return result

@@ -11,6 +11,7 @@ def _is_number(e):
 
 cdef class LinExpr:
     '''Linear expressions of variables with operator overloading.'''
+    cdef public terms
 
     def __init__(self, terms=None):
         '''terms is a dict of variables to coefficients.
@@ -140,6 +141,9 @@ cdef class LinExpr:
 
 cdef class LinCons:
     '''Constraints with a linear expressions and lower/upper bounds.'''
+    cdef public expr
+    cdef public lb
+    cdef public ub
 
     def __init__(self, expr, lb=None, ub=None):
         self.expr = expr

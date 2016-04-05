@@ -1,7 +1,7 @@
 import pytest
 
 from pyscipopt import Model
-from pyscipopt.linexpr import LinExpr, LinCons
+from pyscipopt.scip import LinExpr, LinCons
 
 m = Model()
 x = m.addVar("x")
