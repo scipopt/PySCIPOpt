@@ -7,7 +7,7 @@ class CutPricer(Pricer):
 
         # Retreiving the dual solutions
         dualSolutions = []
-        for i, c in enumerate(self.robert['cons']):
+        for i, c in enumerate(self.data['cons']):
             dualSolutions.append(self.model.getDualsolLinear(c))
 
         # Building a MIP to solve the subproblem
@@ -29,8 +29,8 @@ class CutPricer(Pricer):
             cutWidthVars.append(subMIP.addVar(varNames[i], vtype = "I", obj = -1.0 * dualSolutions[i]))
 
         # Adding the knapsack constraint
-        knapsackCoeffs = {cutWidthVars[i] : self.robert['widths'][i] for i in range(len(self.robert['widths']))}
-        knapsackCons = subMIP.addCons(knapsackCoeffs, lhs = None, rhs = self.robert['rollLength'])
+        knapsackCoeffs = {cutWidthVars[i] : self.data['widths'][i] for i in range(len(self.data['widths']))}
+        knapsackCons = subMIP.addCons(knapsackCoeffs, lhs = None, rhs = self.data['rollLength'])
 
         # Solving the subMIP to generate the most negative reduced cost pattern
         subMIP.optimize()
@@ -39,22 +39,22 @@ class CutPricer(Pricer):
 
         # Adding the column to the master problem
         if objval < -1e-08:
-            currentNumVar = len(self.robert['var'])
+            currentNumVar = len(self.data['var'])
 
             # Creating new var; must set pricedVar to True
             newVar = self.model.addVar("NewPattern_" + str(currentNumVar), vtype = "C", obj = 1.0, pricedVar = True)
 
             # Adding the new variable to the constraints of the master problem
             newPattern = []
-            for i, c in enumerate(self.robert['cons']):
+            for i, c in enumerate(self.data['cons']):
                 coeff = round(subMIP.getVal(cutWidthVars[i]))
                 self.model.addConsCoeff(c, newVar, coeff)
 
                 newPattern.append(coeff)
 
             # Storing the new variable in the pricer data.
-            self.robert['patterns'].append(newPattern)
-            self.robert['var'].append(newVar)
+            self.data['patterns'].append(newPattern)
+            self.data['var'].append(newVar)
 
         # Freeing the subMIP
         subMIP.free()
@@ -63,8 +63,8 @@ class CutPricer(Pricer):
 
     # The initialisation function for the variable pricer to retrieve the transformed constraints of the problem
     def pricerinit(self):
-        for i, c in enumerate(self.robert['cons']):
-            self.robert['cons'][i] = self.model.getTransformedCons(c)
+        for i, c in enumerate(self.data['cons']):
+            self.data['cons'][i] = self.model.getTransformedCons(c)
 
 
 def test_cuttingstock():
@@ -107,13 +107,13 @@ def test_cuttingstock():
         patterns.append(newPattern)
 
     # Setting the pricer_data for use in the init and redcost functions
-    pricer.robert = {}
-    pricer.robert['var'] = cutPatternVars
-    pricer.robert['cons'] = demandCons
-    pricer.robert['widths'] = widths
-    pricer.robert['demand'] = demand
-    pricer.robert['rollLength'] = rollLength
-    pricer.robert['patterns'] = patterns
+    pricer.data = {}
+    pricer.data['var'] = cutPatternVars
+    pricer.data['cons'] = demandCons
+    pricer.data['widths'] = widths
+    pricer.data['demand'] = demand
+    pricer.data['rollLength'] = rollLength
+    pricer.data['patterns'] = patterns
 
     # solve problem
     s.optimize()
@@ -131,15 +131,15 @@ def test_cuttingstock():
     print('\nResult')
     print('======')
     print('\t\tSol Value', '\tWidths\t', printWidths)
-    for i in range(len(pricer.robert['var'])):
+    for i in range(len(pricer.data['var'])):
         rollUsage = 0
-        solValue = round(s.getVal(pricer.robert['var'][i]))
+        solValue = round(s.getVal(pricer.data['var'][i]))
         if solValue > 0:
             outline = 'Pattern_' + str(i) + ':\t' + str(solValue) + '\t\tCuts:\t'
             for j in range(len(widths)):
-                rollUsage += pricer.robert['patterns'][i][j]*widths[j]
-                widthOutput[j] += pricer.robert['patterns'][i][j]*solValue
-                outline += str(pricer.robert['patterns'][i][j]) + '\t'
+                rollUsage += pricer.data['patterns'][i][j]*widths[j]
+                widthOutput[j] += pricer.data['patterns'][i][j]*solValue
+                outline += str(pricer.data['patterns'][i][j]) + '\t'
             outline += 'Usage:' + str(rollUsage)
             print(outline)
 
