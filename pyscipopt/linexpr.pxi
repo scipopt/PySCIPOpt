@@ -17,11 +17,9 @@ cdef class LinExpr:
         '''terms is a dict of variables to coefficients.
 
         The empty tuple is used as key for the constant term.'''
-        print("probably being called from Variable, terms? ", terms)
         self.terms = {} if terms is None else terms
 
         if len(self.terms) == 0:
-            print("creating empty linexpr")
             self.terms[()] = 0.0
 
     def __getitem__(self, key):
