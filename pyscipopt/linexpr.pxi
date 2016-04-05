@@ -9,6 +9,33 @@ def _is_number(e):
     except TypeError: # for other types (Variable, LinExpr)
         return False
 
+
+def _expr_richcmp(self, other, op):
+    if op == 1: # <=
+        if isinstance(other, LinExpr):
+            return (self - other) <= 0.0
+        elif _is_number(other):
+            return LinCons(self, ub=float(other))
+        else:
+            raise NotImplementedError
+    elif op == 5: # >=
+        if isinstance(other, LinExpr):
+            return (self - other) >= 0.0
+        elif _is_number(other):
+            return LinCons(self, lb=float(other))
+        else:
+            raise NotImplementedError
+    elif op == 2: # ==
+        if isinstance(other, LinExpr):
+            return (self - other) == 0.0
+        elif _is_number(other):
+            return LinCons(self, lb=float(other), ub=float(other))
+        else:
+            raise NotImplementedError
+    else:
+        raise NotImplementedError
+
+
 cdef class LinExpr:
     '''Linear expressions of variables with operator overloading.'''
     cdef public terms
@@ -103,29 +130,7 @@ cdef class LinExpr:
 
     def __richcmp__(self, other, op):
         '''turn it into a constraint'''
-        if op == 1: # <=
-            if isinstance(other, LinExpr):
-                return (self - other) <= 0.0
-            elif _is_number(other):
-                return LinCons(self, ub=float(other))
-            else:
-                raise NotImplementedError
-        elif op == 5: # >=
-            if isinstance(other, LinExpr):
-                return (self - other) >= 0.0
-            elif _is_number(other):
-                return LinCons(self, lb=float(other))
-            else:
-                raise NotImplementedError
-        elif op == 2: # ==
-            if isinstance(other, LinExpr):
-                return (self - other) == 0.0
-            elif _is_number(other):
-                return LinCons(self, lb=float(other), ub=float(other))
-            else:
-                raise NotImplementedError
-        else:
-            raise TypeError
+        return _expr_richcmp(self, other, op)
 
     def __repr__(self):
         return 'LinExpr(%s)' % repr(self.terms)
