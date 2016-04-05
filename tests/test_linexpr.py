@@ -91,8 +91,8 @@ def test_power_for_quadratic():
     assert expr[()] == 1.0
     assert len(expr.terms) == 3
 
-    #assert x**2 == x*x
-    #assert (x + 3)**2 == x**2 + 6*x + 9
+    assert (x**2).terms == (x*x).terms
+    assert ((x + 3)**2).terms == (x**2 + 6*x + 9).terms
 
 def test_operations_poly():
     expr = x*x*x + 2*y*y
@@ -102,13 +102,10 @@ def test_operations_poly():
     assert expr[()] == 0.0
     assert expr[(x,x,x)] == 1.0
     assert expr[(y,y)] == 2.0
-    #assert expr == x**3 + 2*y**2
+    assert expr.terms == (x**3 + 2*y**2).terms
 
 def test_invalid_power():
-    #cons = x + (y + 1)**0 == x + 1
-    #assert cons.expr.terms == {}
-    #assert cons.lb == cons.ub
-    #assert cons.lb == 0
+    assert (x + (y + 1)**0).terms == (x + 1).terms
 
     with pytest.raises(NotImplementedError):
         expr = (x + 1)**0.5
@@ -178,13 +175,13 @@ def test_ranged():
     assert ranged.ub == 5.0
     assert ranged.expr[y] == 2.0
     assert ranged.expr[()] == 0.0
-    # we must use the paranthesis, because
+    # we must use the parenthesis, because
     #     x <= y <= z
     # is a "chained comparison", which will be interpreted by Python
     # to be equivalent to
     #     (x <= y) and (y <= z)
     # where "and" can not be overloaded and the expressions in
-    # paranthesis are coerced to booleans.
+    # parenthesis are coerced to booleans.
 
     with pytest.raises(TypeError):
         ranged = (x + 2*y <= 5) <= 3

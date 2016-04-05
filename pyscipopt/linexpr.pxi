@@ -191,4 +191,6 @@ cdef class LinCons:
     def __repr__(self):
         return 'LinCons(%s, %s, %s)' % (self.expr, self.lb, self.ub)
 
-
+    def __nonzero__(self):
+        '''Make sure that equality of expressions is not asserted with =='''
+        raise TypeError("Can't evaluate constraints as booleans.")
