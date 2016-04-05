@@ -911,7 +911,7 @@ cdef class Model:
             coeffs = {}
         for k in coeffs:
             var = <Variable>k
-            PY_SCIP_CALL(SCIPchgVarObj(self._scip, <SCIP_VAR*>var.var, <SCIP_Real>coeffs[k]))
+            PY_SCIP_CALL(SCIPchgVarObj(self._scip, var.var, <SCIP_Real>coeffs[k]))
         if sense == 'maximize':
             self.setMaximize()
         else:
@@ -981,7 +981,7 @@ cdef class Model:
         Keyword arguments:
         var -- the variable
         """
-        self._releaseVar(<SCIP_VAR*>var.var)
+        self._releaseVar(var.var)
 
     def getTransformedVar(self, Variable var):
         """Retrieve the transformed variable.
@@ -990,11 +990,11 @@ cdef class Model:
         var -- the variable
         """
         cdef SCIP_VAR* _tvar
-        PY_SCIP_CALL(SCIPtransformVar(self._scip, <SCIP_VAR*>var.var, &_tvar))
+        PY_SCIP_CALL(SCIPtransformVar(self._scip, var.var, &_tvar))
         name = str(SCIPvarGetName(_tvar))
         return Variable.create(_tvar, name)
 
-    def chgVarLb(self, var, lb=None):
+    def chgVarLb(self, Variable var, lb=None):
         """Changes the lower bound of the specified variable.
 
         Keyword arguments:
@@ -1003,9 +1003,9 @@ cdef class Model:
         """
         if lb is None:
            lb = -SCIPinfinity(self._scip)
-        PY_SCIP_CALL(SCIPchgVarLb(self._scip, <SCIP_VAR*>var.var, lb))
+        PY_SCIP_CALL(SCIPchgVarLb(self._scip, var.var, lb))
 
-    def chgVarUb(self, var, ub=None):
+    def chgVarUb(self, Variable var, ub=None):
         """Changes the upper bound of the specified variable.
 
         Keyword arguments:
@@ -1014,16 +1014,16 @@ cdef class Model:
         """
         if ub is None:
            ub = SCIPinfinity(self._scip)
-        PY_SCIP_CALL(SCIPchgVarLb(self._scip, <SCIP_VAR*>var.var, ub))
+        PY_SCIP_CALL(SCIPchgVarLb(self._scip, var.var, ub))
 
-    def chgVarType(self, var, vtype):
+    def chgVarType(self, Variable var, vtype):
         cdef SCIP_Bool infeasible
         if vtype in ['C', 'CONTINUOUS']:
-            PY_SCIP_CALL(SCIPchgVarType(self._scip, <SCIP_VAR*>var.var, SCIP_VARTYPE_CONTINUOUS, &infeasible))
+            PY_SCIP_CALL(SCIPchgVarType(self._scip, var.var, SCIP_VARTYPE_CONTINUOUS, &infeasible))
         elif vtype in ['B', 'BINARY']:
-            PY_SCIP_CALL(SCIPchgVarType(self._scip, <SCIP_VAR*>var.var, SCIP_VARTYPE_BINARY, &infeasible))
+            PY_SCIP_CALL(SCIPchgVarType(self._scip, var.var, SCIP_VARTYPE_BINARY, &infeasible))
         elif vtype in ['I', 'INTEGER']:
-            PY_SCIP_CALL(SCIPchgVarType(self._scip, <SCIP_VAR*>var.var, SCIP_VARTYPE_INTEGER, &infeasible))
+            PY_SCIP_CALL(SCIPchgVarType(self._scip, var.var, SCIP_VARTYPE_INTEGER, &infeasible))
         else:
             print('wrong variable type: ', vtype)
         if infeasible:
@@ -1105,7 +1105,7 @@ cdef class Model:
                                 local, modifiable, dynamic, removable, stickingatnode)
         for k in coeffs:
             var = <Variable>k
-            self._addCoefLinear(scip_cons, <SCIP_VAR*>var.var, <SCIP_Real>coeffs[k])
+            self._addCoefLinear(scip_cons, var.var, <SCIP_Real>coeffs[k])
         self._addCons(scip_cons)
         self._releaseCons(scip_cons)
 
@@ -1148,11 +1148,11 @@ cdef class Model:
                 assert c == 0.0
             elif len(v) == 1: # linear
                 var = <Variable>v[0]
-                PY_SCIP_CALL(SCIPaddLinearVarQuadratic(self._scip, scip_cons, <SCIP_VAR*>var.var, c))
+                PY_SCIP_CALL(SCIPaddLinearVarQuadratic(self._scip, scip_cons, var.var, c))
             else: # quadratic
                 assert len(v) == 2, 'term: %s' % v
                 var1, var2 = <Variable>v[0], <Variable>v[1]
-                PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, <SCIP_VAR*>var1.var, <SCIP_VAR*>var2.var, c))
+                PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, var1.var, var2.var, c))
 
         self._addCons(scip_cons)
         cons = Cons()
@@ -1168,7 +1168,7 @@ cdef class Model:
         """
         cdef Cons c
         c = cons.cons
-        self._addCoefLinear(c._cons, <SCIP_VAR*>var.var, coeff)
+        self._addCoefLinear(c._cons, var.var, coeff)
 
     def addConsSOS1(self, vars, weights=None, name="SOS1cons",
                 initial=True, separate=True, enforce=True, check=True,
@@ -1200,12 +1200,12 @@ cdef class Model:
         if weights is None:
             for v in vars:
                 var = <Variable>v
-                self._appendVarSOS1(scip_cons, <SCIP_VAR*>var.var)
+                self._appendVarSOS1(scip_cons, var.var)
         else:
             nvars = len(vars)
             for i in range(nvars):
                 var = <Variable>vars[i]
-                self._addVarSOS1(scip_cons, <SCIP_VAR*>var.var, weights[i])
+                self._addVarSOS1(scip_cons, var.var, weights[i])
 
         self._addCons(scip_cons)
         return pythonizeCons(scip_cons, name)
@@ -1240,18 +1240,18 @@ cdef class Model:
         if weights is None:
             for v in vars:
                 var = <Variable>v
-                self._appendVarSOS2(scip_cons, <SCIP_VAR*>var.var)
+                self._appendVarSOS2(scip_cons, var.var)
         else:
             nvars = len(vars)
             for i in range(nvars):
                 var = <Variable>vars[i]
-                self._addVarSOS2(scip_cons, <SCIP_VAR*>var.var, weights[i])
+                self._addVarSOS2(scip_cons, var.var, weights[i])
 
         self._addCons(scip_cons)
         return pythonizeCons(scip_cons, name)
 
 
-    def addVarSOS1(self, cons, var, weight):
+    def addVarSOS1(self, cons, Variable var, weight):
         """Add variable to SOS1 constraint.
 
         Keyword arguments:
@@ -1261,9 +1261,9 @@ cdef class Model:
         """
         cdef Cons c
         c = cons.cons
-        self._addVarSOS1(c._cons, <SCIP_VAR*>var.var, weight)
+        self._addVarSOS1(c._cons, var.var, weight)
 
-    def appendVarSOS1(self, cons, var):
+    def appendVarSOS1(self, cons, Variable var):
         """Append variable to SOS1 constraint.
 
         Keyword arguments:
@@ -1272,9 +1272,9 @@ cdef class Model:
         """
         cdef Cons c
         c = cons.cons
-        self._appendVarSOS1(c._cons, <SCIP_VAR*>var.var)
+        self._appendVarSOS1(c._cons, var.var)
 
-    def addVarSOS2(self, cons, var, weight):
+    def addVarSOS2(self, cons, Variable var, weight):
         """Add variable to SOS2 constraint.
 
         Keyword arguments:
@@ -1284,9 +1284,9 @@ cdef class Model:
         """
         cdef Cons c
         c = cons.cons
-        self._addVarSOS2(c._cons, <SCIP_VAR*>var.var, weight)
+        self._addVarSOS2(c._cons, var.var, weight)
 
-    def appendVarSOS2(self, cons, var):
+    def appendVarSOS2(self, cons, Variable var):
         """Append variable to SOS2 constraint.
 
         Keyword arguments:
@@ -1295,7 +1295,7 @@ cdef class Model:
         """
         cdef Cons c
         c = cons.cons
-        self._appendVarSOS2(c._cons, <SCIP_VAR*>var.var)
+        self._appendVarSOS2(c._cons, var.var)
 
     def getTransformedCons(self, cons):
         """Retrieve transformed constraint.
@@ -1539,7 +1539,7 @@ cdef class Model:
         """
         cdef SCIP_SOL* _sol
         _sol = <SCIP_SOL*>solution._solution
-        PY_SCIP_CALL(SCIPsetSolVal(self._scip, _sol, <SCIP_VAR*>var.var, val))
+        PY_SCIP_CALL(SCIPsetSolVal(self._scip, _sol, var.var, val))
 
     def trySol(self, Solution solution, printreason=True, checkbounds=True, checkintegrality=True, checklprows=True):
         """Try to add a solution to the storage.
@@ -1641,11 +1641,11 @@ cdef class Model:
             _sol = self._bestSol
         else:
             _sol = <SCIP_SOL*>solution._solution
-        return SCIPgetSolVal(self._scip, _sol, <SCIP_VAR*>var.var)
+        return SCIPgetSolVal(self._scip, _sol, var.var)
 
     def writeName(self, Variable var):
         """Write the name of the variable to the std out."""
-        self._writeVarName(<SCIP_VAR*>var.var)
+        self._writeVarName(var.var)
 
     def getStatus(self):
         """Retrieve solution status."""
