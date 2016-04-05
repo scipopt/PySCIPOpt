@@ -175,7 +175,8 @@ class LP:
         self.name = name
         cdef Lpi lpi
         lpi = self.lpi
-        PY_SCIP_CALL(SCIPlpiCreate(&(lpi._lpi), NULL, name, objsen))
+        n = str_conversion(name)
+        PY_SCIP_CALL(SCIPlpiCreate(&(lpi._lpi), NULL, n, objsen))
 
     def __del__(self):
         cdef Lpi lpi
