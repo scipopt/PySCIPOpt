@@ -897,11 +897,11 @@ cdef class Model:
     # Objective function
 
     def setMinimize(self):
-        """Set the objective sense to maximization."""
+        """Set the objective sense to minimization."""
         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MINIMIZE))
 
     def setMaximize(self):
-        """Set the objective sense to minimization."""
+        """Set the objective sense to maximization."""
         PY_SCIP_CALL(scip.SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))
 
     def setObjlimit(self, objlimit):
@@ -926,7 +926,7 @@ cdef class Model:
         if isinstance(coeffs, LinExpr):
             # transform linear expression into variable dictionary
             terms = coeffs.terms
-            coeffs = {t[0]:c for t, c in terms.items() if c != 0.0}
+            coeffs = {t:c for t, c in terms.items() if c != 0.0}
         elif coeffs == 0:
             coeffs = {}
         for k in coeffs:
