@@ -12,13 +12,9 @@ cdef SCIP_RETCODE PyConsInit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** c
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    cdef Cons c
     cdef constraints = []
     for i in range(nconss):
-        cons = Constraint(SCIPconsGetName(conss[i]))
-        c = cons.cons
-        c._cons = <SCIP_CONS*>conss[i]
-        constraints.append(cons)
+        constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
     PyConshdlr.consinit(constraints)
     return SCIP_OKAY
 
@@ -26,13 +22,9 @@ cdef SCIP_RETCODE PyConsExit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** c
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    cdef Cons c
     cdef constraints = []
     for i in range(nconss):
-        cons = Constraint(SCIPconsGetName(conss[i]))
-        c = cons.cons
-        c._cons = <SCIP_CONS*>conss[i]
-        constraints.append(cons)
+        constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
     PyConshdlr.consexit(constraints)
     return SCIP_OKAY
 
@@ -40,13 +32,9 @@ cdef SCIP_RETCODE PyConsInitpre (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS*
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    cdef Cons c
     cdef constraints = []
     for i in range(nconss):
-        cons = Constraint(SCIPconsGetName(conss[i]))
-        c = cons.cons
-        c._cons = <SCIP_CONS*>conss[i]
-        constraints.append(cons)
+        constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
     PyConshdlr.consinitpre(constraints)
     return SCIP_OKAY
 
@@ -54,13 +42,9 @@ cdef SCIP_RETCODE PyConsExitpre (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS*
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    cdef Cons c
     cdef constraints = []
     for i in range(nconss):
-        cons = Constraint(SCIPconsGetName(conss[i]))
-        c = cons.cons
-        c._cons = <SCIP_CONS*>conss[i]
-        constraints.append(cons)
+        constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
     PyConshdlr.consexitpre(constraints)
     return SCIP_OKAY
 
@@ -68,13 +52,9 @@ cdef SCIP_RETCODE PyConsInitsol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS*
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    cdef Cons c
     cdef constraints = []
     for i in range(nconss):
-        cons = Constraint(SCIPconsGetName(conss[i]))
-        c = cons.cons
-        c._cons = <SCIP_CONS*>conss[i]
-        constraints.append(cons)
+        constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
     PyConshdlr.consinitsol(constraints)
     return SCIP_OKAY
 
@@ -82,13 +62,9 @@ cdef SCIP_RETCODE PyConsExitsol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS*
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    cdef Cons c
     cdef constraints = []
     for i in range(nconss):
-        cons = Constraint(SCIPconsGetName(conss[i]))
-        c = cons.cons
-        c._cons = <SCIP_CONS*>conss[i]
-        constraints.append(cons)
+        constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
     PyConshdlr.consexitsol(constraints, restart)
     return SCIP_OKAY
 
@@ -104,10 +80,7 @@ cdef SCIP_RETCODE PyConsTrans (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* s
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    cdef Cons c
-    sourceconstraint = Constraint(SCIPconsGetName(sourcecons))
-    c = sourceconstraint.cons
-    c._cons = <SCIP_CONS*>sourcecons
+    sourceconstraint = Constraint.create(sourcecons, SCIPconsGetName(sourcecons).decode("utf-8"))
     # TODO
     PyConshdlr.constrans(sourceconstraint)
     return SCIP_OKAY
@@ -123,13 +96,9 @@ cdef SCIP_RETCODE PyConsSepalp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS**
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    cdef Cons c
     cdef constraints = []
     for i in range(nconss):
-        cons = Constraint(SCIPconsGetName(conss[i]))
-        c = cons.cons
-        c._cons = <SCIP_CONS*>conss[i]
-        constraints.append(cons)
+        constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
     result_dict = PyConshdlr.conssepalp(constraints, nusefulconss)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
@@ -139,13 +108,9 @@ cdef SCIP_RETCODE PyConsSepasol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS*
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    cdef Cons c
     cdef constraints = []
     for i in range(nconss):
-        cons = Constraint(SCIPconsGetName(conss[i]))
-        c = cons.cons
-        c._cons = <SCIP_CONS*>conss[i]
-        constraints.append(cons)
+        constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
     solution = Solution()
     solution._solution = sol
     result_dict = PyConshdlr.conssepasol(constraints, nusefulconss, solution)
@@ -157,13 +122,9 @@ cdef SCIP_RETCODE PyConsEnfolp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS**
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    cdef Cons c
     cdef constraints = []
     for i in range(nconss):
-        cons = Constraint(SCIPconsGetName(conss[i]))
-        c = cons.cons
-        c._cons = <SCIP_CONS*>conss[i]
-        constraints.append(cons)
+        constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
     result_dict = PyConshdlr.consenfolp(constraints, nusefulconss, solinfeasible)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
@@ -173,13 +134,9 @@ cdef SCIP_RETCODE PyConsEnfops (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS**
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    cdef Cons c
     cdef constraints = []
     for i in range(nconss):
-        cons = Constraint(SCIPconsGetName(conss[i]))
-        c = cons.cons
-        c._cons = <SCIP_CONS*>conss[i]
-        constraints.append(cons)
+        constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
     result_dict = PyConshdlr.consenfops(constraints, nusefulconss, solinfeasible, objinfeasible)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
@@ -191,13 +148,9 @@ cdef SCIP_RETCODE PyConsCheck (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** 
     PyConshdlr = <Conshdlr>conshdlrdata
     solution = Solution()
     solution._solution = sol
-    cdef Cons c
     cdef constraints = []
     for i in range(nconss):
-        cons = Constraint(SCIPconsGetName(conss[i]))
-        c = cons.cons
-        c._cons = <SCIP_CONS*>conss[i]
-        constraints.append(cons)
+        constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
     solution = Solution()
     solution._solution = sol
     result_dict = PyConshdlr.conscheck(constraints, solution, checkintegrality, checklprows, printreason)
@@ -209,13 +162,9 @@ cdef SCIP_RETCODE PyConsProp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** c
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    cdef Cons c
     cdef constraints = []
     for i in range(nconss):
-        cons = Constraint(SCIPconsGetName(conss[i]))
-        c = cons.cons
-        c._cons = <SCIP_CONS*>conss[i]
-        constraints.append(cons)
+        constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
     result_dict = PyConshdlr.consprop(constraints, nusefulconss, nmarkedconss, proptiming)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
@@ -228,13 +177,9 @@ cdef SCIP_RETCODE PyConsPresol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS**
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    cdef Cons c
     cdef constraints = []
     for i in range(nconss):
-        cons = Constraint(SCIPconsGetName(conss[i]))
-        c = cons.cons
-        c._cons = <SCIP_CONS*>conss[i]
-        constraints.append(cons)
+        constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
     # dictionary for input/output parameters
     result_dict = {}
     result_dict["nfixedvars"]   = nfixedvars[0]
@@ -277,10 +222,7 @@ cdef SCIP_RETCODE PyConsLock (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* co
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    constraint = Constraint()
-    cdef Cons pycons
-    pycons = constraint.cons
-    pycons._cons = cons
+    constraint = (Constraint.create(cons, SCIPconsGetName(cons).decode("utf-8")))
     PyConshdlr.conslock(constraint, nlockspos, nlocksneg)
     return SCIP_OKAY
 

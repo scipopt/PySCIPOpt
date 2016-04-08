@@ -694,31 +694,26 @@ cdef class Variable(LinExpr):
         _col = SCIPvarGetCol(self.var)
         return col
 
-cdef class Cons:
-    cdef SCIP_CONS* _cons
+cdef class Constraint:
+    cdef SCIP_CONS* cons
+    cdef readonly str name
 
-class Constraint:
+    @staticmethod
+    cdef create(SCIP_CONS* scipcons, str name):
+        cons = Constraint()
+        cons.cons = scipcons
+        cons.name = name
+        return cons
+
     def __init__(self, name=None):
-        self.cons = Cons()
         self.name = name
 
     def __repr__(self):
         return self.name
 
     def isOriginal(self):
-        cdef Cons c
-        cdef SCIP_CONS* _cons
-        c = self.cons
-        _cons = c._cons
-        return SCIPconsIsOriginal(_cons)
+        return SCIPconsIsOriginal(self.cons)
 
-
-cdef pythonizeCons(SCIP_CONS* scip_cons, name):
-    cons = Constraint(name)
-    cdef Cons c
-    c = cons.cons
-    c._cons = scip_cons
-    return cons
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
@@ -850,9 +845,6 @@ cdef class Model:
 
     cdef _addCoefLinear(self, SCIP_CONS* cons, SCIP_VAR* var, val):
         PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, cons, var, val))
-
-    cdef _addCons(self, SCIP_CONS* cons):
-        PY_SCIP_CALL(SCIPaddCons(self._scip, cons))
 
     cdef _addVarSOS1(self, SCIP_CONS* cons, SCIP_VAR* var, weight):
         PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, cons, var, weight))
@@ -1106,12 +1098,12 @@ cdef class Model:
         for k in coeffs:
             var = <Variable>k
             self._addCoefLinear(scip_cons, var.var, <SCIP_Real>coeffs[k])
-        self._addCons(scip_cons)
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         self._releaseCons(scip_cons)
 
-        return pythonizeCons(scip_cons, name)
+        return Constraint.create(scip_cons, name)
 
-    def _addLinCons(self, lincons, **kwargs):
+    def _addLinCons(self, LinCons lincons, **kwargs):
         """Add object of class LinCons."""
         assert isinstance(lincons, LinCons)
         kwargs['lhs'], kwargs['rhs'] = lincons.lb, lincons.ub
@@ -1122,9 +1114,7 @@ cdef class Model:
 
         return self.addCons(coeffs, **kwargs)
 
-    def _addQuadCons(self, quadcons, **kwargs):
-        """Add object of class LinCons."""
-        assert isinstance(quadcons, LinCons) # TODO
+    def _addQuadCons(self, LinCons quadcons, **kwargs):
         kwargs['lhs'] = -SCIPinfinity(self._scip) if quadcons.lb is None else quadcons.lb
         kwargs['rhs'] =  SCIPinfinity(self._scip) if quadcons.ub is None else quadcons.ub
         terms = quadcons.expr.terms
@@ -1154,21 +1144,18 @@ cdef class Model:
                 var1, var2 = <Variable>v[0], <Variable>v[1]
                 PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, var1.var, var2.var, c))
 
-        self._addCons(scip_cons)
-        cons = Cons()
-        cons._cons = scip_cons
-        return cons
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
 
-    def addConsCoeff(self, cons, Variable var, coeff):
+        return Constraint.create(scip_cons, SCIPconsGetName(scip_cons).decode("utf-8"))
+
+    def addConsCoeff(self, Constraint cons, Variable var, coeff):
         """Add coefficient to the linear constraint (if non-zero).
 
         Keyword arguments:
         cons -- the constraint
         coeff -- the coefficient
         """
-        cdef Cons c
-        c = cons.cons
-        self._addCoefLinear(c._cons, var.var, coeff)
+        self._addCoefLinear(cons.cons, var.var, coeff)
 
     def addConsSOS1(self, vars, weights=None, name="SOS1cons",
                 initial=True, separate=True, enforce=True, check=True,
@@ -1207,8 +1194,8 @@ cdef class Model:
                 var = <Variable>vars[i]
                 self._addVarSOS1(scip_cons, var.var, weights[i])
 
-        self._addCons(scip_cons)
-        return pythonizeCons(scip_cons, name)
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        return Constraint.create(scip_cons, name)
 
     def addConsSOS2(self, vars, weights=None, name="SOS2cons",
                 initial=True, separate=True, enforce=True, check=True,
@@ -1247,11 +1234,11 @@ cdef class Model:
                 var = <Variable>vars[i]
                 self._addVarSOS2(scip_cons, var.var, weights[i])
 
-        self._addCons(scip_cons)
-        return pythonizeCons(scip_cons, name)
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        return Constraint.create(scip_cons, name)
 
 
-    def addVarSOS1(self, cons, Variable var, weight):
+    def addVarSOS1(self, Constraint cons, Variable var, weight):
         """Add variable to SOS1 constraint.
 
         Keyword arguments:
@@ -1259,22 +1246,18 @@ cdef class Model:
         vars -- the variable
         weight -- the weight
         """
-        cdef Cons c
-        c = cons.cons
-        self._addVarSOS1(c._cons, var.var, weight)
+        self._addVarSOS1(cons.cons, var.var, weight)
 
-    def appendVarSOS1(self, cons, Variable var):
+    def appendVarSOS1(self, Constraint cons, Variable var):
         """Append variable to SOS1 constraint.
 
         Keyword arguments:
         cons -- the SOS1 constraint
         vars -- the variable
         """
-        cdef Cons c
-        c = cons.cons
-        self._appendVarSOS1(c._cons, var.var)
+        self._appendVarSOS1(cons.cons, var.var)
 
-    def addVarSOS2(self, cons, Variable var, weight):
+    def addVarSOS2(self, Constraint cons, Variable var, weight):
         """Add variable to SOS2 constraint.
 
         Keyword arguments:
@@ -1282,41 +1265,33 @@ cdef class Model:
         vars -- the variable
         weight -- the weight
         """
-        cdef Cons c
-        c = cons.cons
-        self._addVarSOS2(c._cons, var.var, weight)
+        self._addVarSOS2(cons.cons, var.var, weight)
 
-    def appendVarSOS2(self, cons, Variable var):
+    def appendVarSOS2(self, Constraint cons, Variable var):
         """Append variable to SOS2 constraint.
 
         Keyword arguments:
         cons -- the SOS2 constraint
         vars -- the variable
         """
-        cdef Cons c
-        c = cons.cons
-        self._appendVarSOS2(c._cons, var.var)
+        self._appendVarSOS2(cons.cons, var.var)
 
-    def getTransformedCons(self, cons):
+    def getTransformedCons(self, Constraint cons):
         """Retrieve transformed constraint.
 
         Keyword arguments:
         cons -- the constraint
         """
-        cdef Cons c
-        cdef Cons ctrans
-        c = cons.cons
+        cdef Constraint transcons
         transcons = Constraint("t-"+cons.name)
-        ctrans = transcons.cons
 
-        PY_SCIP_CALL(SCIPtransformCons(self._scip, c._cons, &ctrans._cons))
+        PY_SCIP_CALL(SCIPtransformCons(self._scip, cons.cons, &transcons.cons))
         return transcons
 
     def getConss(self):
         """Retrieve all constraints."""
         cdef SCIP_CONS** _conss
         cdef SCIP_CONS* _cons
-        cdef Cons c
         cdef int _nconss
         conss = []
 
@@ -1325,29 +1300,25 @@ cdef class Model:
 
         for i in range(_nconss):
             _cons = _conss[i]
-            conss.append(pythonizeCons(_cons, SCIPconsGetName(_cons).decode("utf-8")))
+            conss.append(Constraint.create(_cons, SCIPconsGetName(_cons).decode("utf-8")))
 
         return conss
 
-    def getDualsolLinear(self, cons):
+    def getDualsolLinear(self, Constraint cons):
         """Retrieve the dual solution to a linear constraint.
 
         Keyword arguments:
         cons -- the linear constraint
         """
-        cdef Cons c
-        c = cons.cons
-        return SCIPgetDualsolLinear(self._scip, c._cons)
+        return SCIPgetDualsolLinear(self._scip, cons.cons)
 
-    def getDualfarkasLinear(self, cons):
+    def getDualfarkasLinear(self, Constraint cons):
         """Retrieve the dual farkas value to a linear constraint.
 
         Keyword arguments:
         cons -- the linear constraint
         """
-        cdef Cons c
-        c = cons.cons
-        return SCIPgetDualfarkasLinear(self._scip, c._cons)
+        return SCIPgetDualfarkasLinear(self._scip, cons.cons)
 
     def optimize(self):
         """Optimize the problem."""
@@ -1415,12 +1386,10 @@ cdef class Model:
                    local=False, modifiable=False, dynamic=False, removable=False, stickingatnode=False):
 
         n = str_conversion(name)
-        cdef SCIP_CONSHDLR* _conshdlr
-        _conshdlr = SCIPfindConshdlr(self._scip, str_conversion(conshdlr.name))
+        cdef SCIP_CONSHDLR* scip_conshdlr
+        scip_conshdlr = SCIPfindConshdlr(self._scip, str_conversion(conshdlr.name))
         constraint = Constraint(name)
-        cdef SCIP_CONS* _cons
-        _cons = <SCIP_CONS*>constraint._constraint
-        PY_SCIP_CALL(SCIPcreateCons(self._scip, &_cons, n, _conshdlr, NULL,
+        PY_SCIP_CALL(SCIPcreateCons(self._scip, &(constraint.cons), n, scip_conshdlr, NULL,
                                 initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
         return constraint
 
