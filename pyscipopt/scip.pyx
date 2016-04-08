@@ -793,55 +793,6 @@ cdef class Model:
         """Return feasibility tolerance"""
         return SCIPfeastol(self._scip)
 
-    #@scipErrorHandler       We'll be able to use decorators when we
-    #                        interface the relevant classes (SCIP_VAR, ...)
-    cdef _createVarBasic(self, SCIP_VAR** scip_var, name,
-                        lb, ub, obj, SCIP_VARTYPE varType):
-        n = str_conversion(name)
-        PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, scip_var,
-                           n, lb, ub, obj, varType))
-
-    cdef _addPricedVar(self, SCIP_VAR* scip_var):
-        PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, 1.0))
-
-    cdef _createConsLinear(self, SCIP_CONS** cons, name, nvars,
-                                SCIP_VAR** vars, SCIP_Real* vals, lhs, rhs,
-                                initial=True, separate=True, enforce=True, check=True,
-                                propagate=True, local=False, modifiable=False, dynamic=False,
-                                removable=False, stickingatnode=False):
-        n = str_conversion(name)
-        PY_SCIP_CALL(SCIPcreateConsLinear(self._scip, cons,
-                                                    n, nvars, vars, vals,
-                                                    lhs, rhs, initial, separate, enforce,
-                                                    check, propagate, local, modifiable,
-                                                    dynamic, removable, stickingatnode) )
-
-    cdef _createConsSOS1(self, SCIP_CONS** cons, name, nvars,
-                              SCIP_VAR** vars, SCIP_Real* weights,
-                              initial=True, separate=True, enforce=True, check=True,
-                              propagate=True, local=False, dynamic=False, removable=False,
-                              stickingatnode=False):
-        n = str_conversion(name)
-        PY_SCIP_CALL(SCIPcreateConsSOS1(self._scip, cons,
-                                                    n, nvars, vars, weights,
-                                                    initial, separate, enforce,
-                                                    check, propagate, local, dynamic, removable,
-                                                    stickingatnode) )
-
-    cdef _createConsSOS2(self, SCIP_CONS** cons, name, nvars,
-                              SCIP_VAR** vars, SCIP_Real* weights,
-                              initial=True, separate=True, enforce=True, check=True,
-                              propagate=True, local=False, dynamic=False, removable=False,
-                              stickingatnode=False):
-        n = str_conversion(name)
-        PY_SCIP_CALL(SCIPcreateConsSOS2(self._scip, cons,
-                                                    n, nvars, vars, weights,
-                                                    initial, separate, enforce,
-                                                    check, propagate, local, dynamic, removable,
-                                                    stickingatnode) )
-
-    cdef _addCoefLinear(self, SCIP_CONS* cons, SCIP_VAR* var, val):
-        PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, cons, var, val))
 
     cdef _addVarSOS1(self, SCIP_CONS* cons, SCIP_VAR* var, weight):
         PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, cons, var, weight))
@@ -944,20 +895,21 @@ cdef class Model:
         obj -- the objective value of the variable (default 0.0)
         pricedVar -- is the variable a pricing candidate? (default False)
         """
+        cname = str_conversion(name)
         if ub is None:
             ub = SCIPinfinity(self._scip)
         cdef SCIP_VAR* scip_var
         if vtype in ['C', 'CONTINUOUS']:
-            self._createVarBasic(&scip_var, name, lb, ub, obj, SCIP_VARTYPE_CONTINUOUS)
+            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_CONTINUOUS))
         elif vtype in ['B', 'BINARY']:
             lb = 0.0
             ub = 1.0
-            self._createVarBasic(&scip_var, name, lb, ub, obj, SCIP_VARTYPE_BINARY)
+            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_BINARY))
         elif vtype in ['I', 'INTEGER']:
-            self._createVarBasic(&scip_var, name, lb, ub, obj, SCIP_VARTYPE_INTEGER)
+            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_INTEGER))
 
         if pricedVar:
-            self._addPricedVar(scip_var)
+            PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, 1.0))
         else:
             PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
 
@@ -1089,12 +1041,12 @@ cdef class Model:
         if rhs is None:
             rhs = SCIPinfinity(self._scip)
         cdef SCIP_CONS* scip_cons
-        self._createConsLinear(&scip_cons, name, 0, NULL, NULL, lhs, rhs,
-                                initial, separate, enforce, check, propagate,
-                                local, modifiable, dynamic, removable, stickingatnode)
+        PY_SCIP_CALL(SCIPcreateConsLinear(self._scip, &scip_cons, str_conversion(name), 0, NULL, NULL, lhs, rhs,
+            initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
+
         for k in coeffs:
             var = <Variable>k
-            self._addCoefLinear(scip_cons, var.var, <SCIP_Real>coeffs[k])
+            PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, scip_cons, var.var, <SCIP_Real>coeffs[k]))
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         self._releaseCons(scip_cons)
 
@@ -1152,7 +1104,7 @@ cdef class Model:
         cons -- the constraint
         coeff -- the coefficient
         """
-        self._addCoefLinear(cons.cons, var.var, coeff)
+        PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, cons.cons, var.var, coeff))
 
     def addConsSOS1(self, vars, weights=None, name="SOS1cons",
                 initial=True, separate=True, enforce=True, check=True,
@@ -1177,9 +1129,8 @@ cdef class Model:
         cdef SCIP_CONS* scip_cons
         cdef int _nvars
 
-        self._createConsSOS1(&scip_cons, name, 0, NULL, NULL,
-                                initial, separate, enforce, check, propagate,
-                                local, dynamic, removable, stickingatnode)
+        PY_SCIP_CALL(SCIPcreateConsSOS1(self._scip, &scip_cons, str_conversion(name), 0, NULL, NULL,
+            initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
 
         if weights is None:
             for v in vars:
@@ -1217,9 +1168,8 @@ cdef class Model:
         cdef SCIP_CONS* scip_cons
         cdef int _nvars
 
-        self._createConsSOS2(&scip_cons, name, 0, NULL, NULL,
-                                initial, separate, enforce, check, propagate,
-                                local, dynamic, removable, stickingatnode)
+        PY_SCIP_CALL(SCIPcreateConsSOS2(self._scip, &scip_cons, str_conversion(name), 0, NULL, NULL,
+            initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
 
         if weights is None:
             for v in vars:
