@@ -222,8 +222,11 @@ cdef SCIP_RETCODE PyConsLock (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* co
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    constraint = (Constraint.create(cons, SCIPconsGetName(cons).decode("utf-8")))
-    PyConshdlr.conslock(constraint, nlockspos, nlocksneg)
+    if cons == NULL:
+        PyConshdlr.conslock(None, nlockspos, nlocksneg)
+    else:
+        constraint = (Constraint.create(cons, SCIPconsGetName(cons).decode("utf-8")))
+        PyConshdlr.conslock(constraint, nlockspos, nlocksneg)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsActive (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):
