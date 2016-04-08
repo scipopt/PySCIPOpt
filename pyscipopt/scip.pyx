@@ -801,9 +801,6 @@ cdef class Model:
         PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, scip_var,
                            n, lb, ub, obj, varType))
 
-    cdef _addVar(self, SCIP_VAR* scip_var):
-        PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
-
     cdef _addPricedVar(self, SCIP_VAR* scip_var):
         PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, 1.0))
 
@@ -962,7 +959,7 @@ cdef class Model:
         if pricedVar:
             self._addPricedVar(scip_var)
         else:
-            self._addVar(scip_var)
+            PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
 
         self._releaseVar(scip_var)
         return Variable.create(scip_var, name)
