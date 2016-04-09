@@ -794,28 +794,6 @@ cdef class Model:
         return SCIPfeastol(self._scip)
 
 
-    cdef _addVarSOS1(self, SCIP_CONS* cons, SCIP_VAR* var, weight):
-        PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, cons, var, weight))
-
-    cdef _appendVarSOS1(self, SCIP_CONS* cons, SCIP_VAR* var):
-        PY_SCIP_CALL(SCIPappendVarSOS1(self._scip, cons, var))
-
-    cdef _addVarSOS2(self, SCIP_CONS* cons, SCIP_VAR* var, weight):
-        PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, cons, var, weight))
-
-    cdef _appendVarSOS2(self, SCIP_CONS* cons, SCIP_VAR* var):
-        PY_SCIP_CALL(SCIPappendVarSOS2(self._scip, cons, var))
-
-    cdef _writeVarName(self, SCIP_VAR* var):
-        PY_SCIP_CALL(SCIPwriteVarName(self._scip, NULL, var, False))
-
-    cdef _releaseVar(self, SCIP_VAR* var):
-        PY_SCIP_CALL(SCIPreleaseVar(self._scip, &var))
-
-    cdef _releaseCons(self, SCIP_CONS* cons):
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &cons))
-
-
     # Objective function
 
     def setMinimize(self):
@@ -913,8 +891,9 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
 
-        self._releaseVar(scip_var)
-        return Variable.create(scip_var, name)
+        pyVar = Variable.create(scip_var, name)
+        PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
+        return pyVar
 
     def releaseVar(self, Variable var):
         """Release the variable.
@@ -922,7 +901,7 @@ cdef class Model:
         Keyword arguments:
         var -- the variable
         """
-        self._releaseVar(var.var)
+        PY_SCIP_CALL(SCIPreleaseVar(self._scip, &var.var))
 
     def getTransformedVar(self, Variable var):
         """Retrieve the transformed variable.
@@ -1047,10 +1026,13 @@ cdef class Model:
         for k in coeffs:
             var = <Variable>k
             PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, scip_cons, var.var, <SCIP_Real>coeffs[k]))
-        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        self._releaseCons(scip_cons)
 
-        return Constraint.create(scip_cons, name)
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        PyCons = Constraint.create(scip_cons, name)
+
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        return PyCons
 
     def _addLinCons(self, LinCons lincons, **kwargs):
         """Add object of class LinCons."""
@@ -1135,12 +1117,12 @@ cdef class Model:
         if weights is None:
             for v in vars:
                 var = <Variable>v
-                self._appendVarSOS1(scip_cons, var.var)
+                PY_SCIP_CALL(SCIPappendVarSOS1(self._scip, scip_cons, var.var))
         else:
             nvars = len(vars)
             for i in range(nvars):
                 var = <Variable>vars[i]
-                self._addVarSOS1(scip_cons, var.var, weights[i])
+                PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, scip_cons, var.var, weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         return Constraint.create(scip_cons, name)
@@ -1174,12 +1156,12 @@ cdef class Model:
         if weights is None:
             for v in vars:
                 var = <Variable>v
-                self._appendVarSOS2(scip_cons, var.var)
+                PY_SCIP_CALL(SCIPappendVarSOS2(self._scip, scip_cons, var.var))
         else:
             nvars = len(vars)
             for i in range(nvars):
                 var = <Variable>vars[i]
-                self._addVarSOS2(scip_cons, var.var, weights[i])
+                PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, scip_cons, var.var, weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         return Constraint.create(scip_cons, name)
@@ -1193,7 +1175,7 @@ cdef class Model:
         vars -- the variable
         weight -- the weight
         """
-        self._addVarSOS1(cons.cons, var.var, weight)
+        PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, cons.cons, var.var, weight))
 
     def appendVarSOS1(self, Constraint cons, Variable var):
         """Append variable to SOS1 constraint.
@@ -1202,7 +1184,7 @@ cdef class Model:
         cons -- the SOS1 constraint
         vars -- the variable
         """
-        self._appendVarSOS1(cons.cons, var.var)
+        PY_SCIP_CALL(SCIPappendVarSOS1(self._scip, cons.cons, var.var))
 
     def addVarSOS2(self, Constraint cons, Variable var, weight):
         """Add variable to SOS2 constraint.
@@ -1212,7 +1194,7 @@ cdef class Model:
         vars -- the variable
         weight -- the weight
         """
-        self._addVarSOS2(cons.cons, var.var, weight)
+        PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, cons.cons, var.var, weight))
 
     def appendVarSOS2(self, Constraint cons, Variable var):
         """Append variable to SOS2 constraint.
@@ -1221,7 +1203,7 @@ cdef class Model:
         cons -- the SOS2 constraint
         vars -- the variable
         """
-        self._appendVarSOS2(cons.cons, var.var)
+        PY_SCIP_CALL(SCIPappendVarSOS2(self._scip, cons.cons, var.var))
 
     def getTransformedCons(self, Constraint cons):
         """Retrieve transformed constraint.
@@ -1229,11 +1211,10 @@ cdef class Model:
         Keyword arguments:
         cons -- the constraint
         """
-        cdef Constraint transcons
-        transcons = Constraint("t-"+cons.name)
+        cdef SCIP_CONS* transcons
+        PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.cons, &transcons))
 
-        PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.cons, &transcons.cons))
-        return transcons
+        return Constraint.create(transcons, SCIPconsGetName(transcons).decode("utf-8"))
 
     def getConss(self):
         """Retrieve all constraints."""
@@ -1561,7 +1542,7 @@ cdef class Model:
 
     def writeName(self, Variable var):
         """Write the name of the variable to the std out."""
-        self._writeVarName(var.var)
+        PY_SCIP_CALL(SCIPwriteVarName(self._scip, NULL, var.var, False))
 
     def getStatus(self):
         """Retrieve solution status."""
