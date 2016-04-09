@@ -1232,7 +1232,7 @@ cdef class Model:
         cdef Constraint transcons
         transcons = Constraint("t-"+cons.name)
 
-        PY_SCIP_CALL(SCIPtransformCons(self._scip, cons.cons, &transcons.cons))
+        PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.cons, &transcons.cons))
         return transcons
 
     def getConss(self):
