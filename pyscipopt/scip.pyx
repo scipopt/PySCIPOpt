@@ -48,7 +48,6 @@ cdef class PY_SCIP_RESULT:
     SUSPENDED   =  16
     SUCCESS     =  17
 
-
 cdef class PY_SCIP_PARAMSETTING:
     DEFAULT     = 0
     AGRESSIVE   = 1
@@ -139,45 +138,57 @@ def PY_SCIP_CALL(SCIP_RETCODE rc):
         raise Exception('SCIP: unknown return code!')
     return rc
 
-
-cdef class Col:
+cdef class Column:
     """Base class holding a pointer to corresponding SCIP_COL"""
-    cdef SCIP_COL* _col
+    cdef SCIP_COL* col
 
+    @staticmethod
+    cdef create(SCIP_COL* scip_col):
+        col = Column()
+        col.col = scip_col
+        return col
 
 cdef class Row:
     """Base class holding a pointer to corresponding SCIP_ROW"""
-    cdef SCIP_ROW* _row
+    cdef SCIP_ROW* row
 
+    @staticmethod
+    cdef create(SCIP_ROW* scip_row):
+        row = Row()
+        row.row = scip_row
+        return row
 
 cdef class Solution:
     """Base class holding a pointer to corresponding SCIP_SOL"""
-    cdef SCIP_SOL* _solution
+    cdef SCIP_SOL* sol
 
-cdef class Lpi:
-    """Base class holding a pointer to corresponding SCIP_LPI"""
-    cdef SCIP_LPI* _lpi
+    @staticmethod
+    cdef create(SCIP_SOL* scip_sol):
+        sol = Solution()
+        sol.sol = scip_sol
+        return sol
 
-class LP:
-    def __init__(self, name="LP", objsen=SCIP_OBJSENSE_MINIMIZE):
+cdef class LP:
+    cdef SCIP_LPI* lpi
+    cdef readonly str name
+
+    def __init__(self, name="LP", sense="minimize"):
         """
         Keyword arguments:
         name -- the name of the problem (default 'LP')
-        objsen -- objective sense (default minimize)
+        sense -- objective sense (default minimize)
         """
-        self.lpi = Lpi()
         self.name = name
-        cdef Lpi lpi
-        lpi = self.lpi
         n = str_conversion(name)
-        PY_SCIP_CALL(SCIPlpiCreate(&(lpi._lpi), NULL, n, objsen))
+        if sense == "minimize":
+            PY_SCIP_CALL(SCIPlpiCreate(&(self.lpi), NULL, n, SCIP_OBJSENSE_MINIMIZE))
+        elif sense == "maximize":
+            PY_SCIP_CALL(SCIPlpiCreate(&(self.lpi), NULL, n, SCIP_OBJSENSE_MAXIMIZE))
+        else:
+            raise Warning("unrecognized objective sense")
 
     def __del__(self):
-        cdef Lpi lpi
-        cdef SCIP_LPI* _lpi
-        lpi = self.lpi
-        _lpi = lpi._lpi
-        PY_SCIP_CALL(SCIPlpiFree(&_lpi))
+        PY_SCIP_CALL(SCIPlpiFree(&(self.lpi)))
 
     def __repr__(self):
         return self.name
@@ -188,9 +199,7 @@ class LP:
         Keyword arguments:
         filename -- the name of the file to be used
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-        PY_SCIP_CALL(SCIPlpiWriteLP(lpi._lpi, filename))
+        PY_SCIP_CALL(SCIPlpiWriteLP(self.lpi, filename))
 
     def readLP(self, filename):
         """Reads LP from a file.
@@ -198,16 +207,12 @@ class LP:
         Keyword arguments:
         filename -- the name of the file to be used
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-        PY_SCIP_CALL(SCIPlpiReadLP(lpi._lpi, filename))
+        PY_SCIP_CALL(SCIPlpiReadLP(self.lpi, filename))
 
     def infinity(self):
         """Returns infinity value of the LP.
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-        return SCIPlpiInfinity(lpi._lpi)
+        return SCIPlpiInfinity(self.lpi)
 
     def isInfinity(self, val):
         """Checks if a given value is equal to the infinity value of the LP.
@@ -215,9 +220,7 @@ class LP:
         Keyword arguments:
         val -- value that should be checked
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-        return SCIPlpiIsInfinity(lpi._lpi, val)
+        return SCIPlpiIsInfinity(self.lpi, val)
 
     def addCol(self, entries, obj = 0.0, lb = 0.0, ub = None):
         """Adds a single column to the LP.
@@ -228,9 +231,6 @@ class LP:
         lb      -- lower bound (default 0.0)
         ub      -- upper bound (default infinity)
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-
         nnonz = len(entries)
 
         cdef SCIP_Real* c_coefs  = <SCIP_Real*> malloc(nnonz * sizeof(SCIP_Real))
@@ -249,7 +249,7 @@ class LP:
             c_inds[i] = entry[0]
             c_coefs[i] = entry[1]
 
-        PY_SCIP_CALL(SCIPlpiAddCols(lpi._lpi, 1, &c_obj, &c_lb, &c_ub, NULL, nnonz, &c_beg, c_inds, c_coefs))
+        PY_SCIP_CALL(SCIPlpiAddCols(self.lpi, 1, &c_obj, &c_lb, &c_ub, NULL, nnonz, &c_beg, c_inds, c_coefs))
 
         free(c_coefs)
         free(c_inds)
@@ -263,9 +263,6 @@ class LP:
         lbs   -- lower bounds (default 0.0)
         ubs   -- upper bounds (default infinity)
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-
         ncols = len(entrieslist)
         nnonz = sum(len(entries) for entries in entrieslist)
 
@@ -288,7 +285,7 @@ class LP:
                 c_coefs[tmp] = entry[1]
                 tmp += 1
 
-        PY_SCIP_CALL(SCIPlpiAddCols(lpi._lpi, ncols, c_objs, c_lbs, c_ubs, NULL, nnonz, c_beg, c_inds, c_coefs))
+        PY_SCIP_CALL(SCIPlpiAddCols(self.lpi, ncols, c_objs, c_lbs, c_ubs, NULL, nnonz, c_beg, c_inds, c_coefs))
 
         free(c_beg)
         free(c_inds)
@@ -304,9 +301,7 @@ class LP:
         firstcol -- first column to delete
         lastcol  -- last column to delete
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-        PY_SCIP_CALL(SCIPlpiDelCols(lpi._lpi, firstcol, lastcol))
+        PY_SCIP_CALL(SCIPlpiDelCols(self.lpi, firstcol, lastcol))
 
     def addRow(self, entries, lhs=0.0, rhs=None):
         """Adds a single row to the LP.
@@ -316,9 +311,6 @@ class LP:
         lhs     -- left-hand side of the row (default 0.0)
         rhs     -- right-hand side of the row (default infinity)
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-
         beg = 0
         nnonz = len(entries)
 
@@ -336,7 +328,7 @@ class LP:
             c_inds[i] = entry[0]
             c_coefs[i] = entry[1]
 
-        PY_SCIP_CALL(SCIPlpiAddRows(lpi._lpi, 1, &c_lhs, &c_rhs, NULL, nnonz, &c_beg, c_inds, c_coefs))
+        PY_SCIP_CALL(SCIPlpiAddRows(self.lpi, 1, &c_lhs, &c_rhs, NULL, nnonz, &c_beg, c_inds, c_coefs))
 
         free(c_coefs)
         free(c_inds)
@@ -349,9 +341,6 @@ class LP:
         lhss        -- left-hand side of the row (default 0.0)
         rhss        -- right-hand side of the row (default infinity)
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-
         nrows = len(entrieslist)
         nnonz = sum(len(entries) for entries in entrieslist)
 
@@ -372,7 +361,7 @@ class LP:
                 c_coefs[tmp] = entry[1]
                 tmp += 1
 
-        PY_SCIP_CALL(SCIPlpiAddRows(lpi._lpi, nrows, c_lhss, c_rhss, NULL, nnonz, c_beg, c_inds, c_coefs))
+        PY_SCIP_CALL(SCIPlpiAddRows(self.lpi, nrows, c_lhss, c_rhss, NULL, nnonz, c_beg, c_inds, c_coefs))
 
         free(c_beg)
         free(c_inds)
@@ -387,9 +376,7 @@ class LP:
         firstrow -- first row to delete
         lastrow  -- last row to delete
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-        PY_SCIP_CALL(SCIPlpiDelRows(lpi._lpi, firstrow, lastrow))
+        PY_SCIP_CALL(SCIPlpiDelRows(self.lpi, firstrow, lastrow))
 
     def getBounds(self, firstcol = 0, lastcol = None):
         """Returns all lower and upper bounds for a range of columns.
@@ -398,9 +385,6 @@ class LP:
         firstcol -- first column (default 0)
         lastcol  -- last column (default ncols - 1)
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-
         lastcol = lastcol if lastcol != None else self.ncols() - 1
 
         if firstcol > lastcol:
@@ -409,7 +393,7 @@ class LP:
         ncols = lastcol - firstcol + 1
         cdef SCIP_Real* c_lbs = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
         cdef SCIP_Real* c_ubs = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
-        PY_SCIP_CALL(SCIPlpiGetBounds(lpi._lpi, firstcol, lastcol, c_lbs, c_ubs))
+        PY_SCIP_CALL(SCIPlpiGetBounds(self.lpi, firstcol, lastcol, c_lbs, c_ubs))
 
         lbs = []
         ubs = []
@@ -430,9 +414,6 @@ class LP:
         firstrow -- first row (default 0)
         lastrow  -- last row (default nrows - 1)
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-
         lastrow = lastrow if lastrow != None else self.nrows() - 1
 
         if firstrow > lastrow:
@@ -441,7 +422,7 @@ class LP:
         nrows = lastrow - firstrow + 1
         cdef SCIP_Real* c_lhss = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
         cdef SCIP_Real* c_rhss = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
-        PY_SCIP_CALL(SCIPlpiGetSides(lpi._lpi, firstrow, lastrow, c_lhss, c_rhss))
+        PY_SCIP_CALL(SCIPlpiGetSides(self.lpi, firstrow, lastrow, c_lhss, c_rhss))
 
         lhss = []
         rhss = []
@@ -462,12 +443,9 @@ class LP:
         col -- column to change
         obj -- new objective coefficient
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-
         cdef int c_col = col
         cdef SCIP_Real c_obj = obj
-        PY_SCIP_CALL(SCIPlpiChgObj(lpi._lpi, 1, &c_col, &c_obj))
+        PY_SCIP_CALL(SCIPlpiChgObj(self.lpi, 1, &c_col, &c_obj))
 
     def chgCoef(self, row, col, newval):
         """Changes a single coefficient in the LP.
@@ -477,10 +455,7 @@ class LP:
         col -- column to change
         newval -- new coefficient
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-
-        PY_SCIP_CALL(SCIPlpiChgCoef(lpi._lpi, row, col, newval))
+        PY_SCIP_CALL(SCIPlpiChgCoef(self.lpi, row, col, newval))
 
     def chgBound(self, col, lb, ub):
         """Changes the lower and upper bound of a single column.
@@ -490,13 +465,10 @@ class LP:
         lb  -- new lower bound
         ub  -- new upper bound
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-
         cdef int c_col = col
         cdef SCIP_Real c_lb = lb
         cdef SCIP_Real c_ub = ub
-        PY_SCIP_CALL(SCIPlpiChgBounds(lpi._lpi, 1, &c_col, &c_lb, &c_ub))
+        PY_SCIP_CALL(SCIPlpiChgBounds(self.lpi, 1, &c_col, &c_lb, &c_ub))
 
     def chgSide(self, row, lhs, rhs):
         """Changes the left- and right-hand side of a single row.
@@ -506,36 +478,25 @@ class LP:
         lhs -- new left-hand side
         rhs -- new right-hand side
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-
         cdef int c_row = row
         cdef SCIP_Real c_lhs = lhs
         cdef SCIP_Real c_rhs = rhs
-        PY_SCIP_CALL(SCIPlpiChgSides(lpi._lpi, 1, &c_row, &c_lhs, &c_rhs))
+        PY_SCIP_CALL(SCIPlpiChgSides(self.lpi, 1, &c_row, &c_lhs, &c_rhs))
 
     def clear(self):
         """Clears the whole LP."""
-        cdef Lpi lpi
-        lpi = self.lpi
-        PY_SCIP_CALL(SCIPlpiClear(lpi._lpi))
+        PY_SCIP_CALL(SCIPlpiClear(self.lpi))
 
     def nrows(self):
         """Returns the number of rows."""
-        cdef Lpi lpi
-        lpi = self.lpi
-
         cdef int nrows
-        PY_SCIP_CALL(SCIPlpiGetNRows(lpi._lpi, &nrows))
+        PY_SCIP_CALL(SCIPlpiGetNRows(self.lpi, &nrows))
         return nrows
 
     def ncols(self):
         """Returns the number of columns."""
-        cdef Lpi lpi
-        lpi = self.lpi
-
         cdef int ncols
-        PY_SCIP_CALL(SCIPlpiGetNCols(lpi._lpi, &ncols))
+        PY_SCIP_CALL(SCIPlpiGetNCols(self.lpi, &ncols))
         return ncols
 
     def solve(self, dual=True):
@@ -544,101 +505,71 @@ class LP:
         Keyword arguments:
         dual -- use the dual or primal Simplex method (default: dual)
         """
-        cdef Lpi lpi
-        lpi = self.lpi
-
         if dual:
-            PY_SCIP_CALL(SCIPlpiSolveDual(lpi._lpi))
+            PY_SCIP_CALL(SCIPlpiSolveDual(self.lpi))
         else:
-            PY_SCIP_CALL(SCIPlpiSolvePrimal(lpi._lpi))
+            PY_SCIP_CALL(SCIPlpiSolvePrimal(self.lpi))
 
         cdef SCIP_Real objval
-        PY_SCIP_CALL(SCIPlpiGetObjval(lpi._lpi, &objval))
+        PY_SCIP_CALL(SCIPlpiGetObjval(self.lpi, &objval))
         return objval
 
     def getPrimal(self):
         """Returns the primal solution of the last LP solve."""
-        cdef Lpi lpi
-        lpi = self.lpi
-
         ncols = self.ncols()
-
         cdef SCIP_Real* c_primalsol = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
-        PY_SCIP_CALL(SCIPlpiGetSol(lpi._lpi, NULL, c_primalsol, NULL, NULL, NULL))
-
+        PY_SCIP_CALL(SCIPlpiGetSol(self.lpi, NULL, c_primalsol, NULL, NULL, NULL))
         primalsol = [0.0] * ncols
         for i in range(ncols):
             primalsol[i] = c_primalsol[i]
-
         free(c_primalsol)
 
         return primalsol
 
     def getDual(self):
         """Returns the dual solution of the last LP solve."""
-        cdef Lpi lpi
-        lpi = self.lpi
-
         nrows = self.nrows()
-
         cdef SCIP_Real* c_dualsol = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
-        PY_SCIP_CALL(SCIPlpiGetSol(lpi._lpi, NULL, NULL, c_dualsol, NULL, NULL))
-
+        PY_SCIP_CALL(SCIPlpiGetSol(self.lpi, NULL, NULL, c_dualsol, NULL, NULL))
         dualsol = [0.0] * nrows
         for i in range(nrows):
             dualsol[i] = c_dualsol[i]
-
         free(c_dualsol)
 
         return dualsol
 
     def getPrimalRay(self):
         """Returns a primal ray if possible, None otherwise."""
-        cdef Lpi lpi
-        lpi = self.lpi
-
-        if not SCIPlpiHasPrimalRay(lpi._lpi):
+        if not SCIPlpiHasPrimalRay(self.lpi):
             return None
-
         ncols = self.ncols()
         cdef SCIP_Real* c_ray  = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
-        PY_SCIP_CALL(SCIPlpiGetPrimalRay(lpi._lpi, c_ray))
-
+        PY_SCIP_CALL(SCIPlpiGetPrimalRay(self.lpi, c_ray))
         ray = [0.0] * ncols
         for i in range(ncols):
             ray[i] = c_ray[i]
-
         free(c_ray)
 
         return ray
 
     def getDualRay(self):
         """Returns a dual ray if possible, None otherwise."""
-        cdef Lpi lpi
-        lpi = self.lpi
-
-        if not SCIPlpiHasDualRay(lpi._lpi):
+        if not SCIPlpiHasDualRay(self.lpi):
             return None
-
         nrows = self.nrows()
         cdef SCIP_Real* c_ray  = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
-        PY_SCIP_CALL(SCIPlpiGetDualfarkas(lpi._lpi, c_ray))
-
+        PY_SCIP_CALL(SCIPlpiGetDualfarkas(self.lpi, c_ray))
         ray = [0.0] * nrows
         for i in range(nrows):
             ray[i] = c_ray[i]
-
         free(c_ray)
 
         return ray
 
     def getNIterations(self):
-        """Returns a the number of LP iterations of the last LP solve."""
-        cdef Lpi lpi
-        lpi = self.lpi
-
+        """Returns the number of LP iterations of the last LP solve."""
         cdef int niters
-        PY_SCIP_CALL(SCIPlpiGetIterations(lpi._lpi, &niters))
+        PY_SCIP_CALL(SCIPlpiGetIterations(self.lpi, &niters))
         return niters
 
 cdef class Variable(LinExpr):
@@ -688,11 +619,9 @@ cdef class Variable(LinExpr):
         return SCIPvarIsInLP(self.var)
 
     def getCol(self):
-        col = Col()
-        cdef SCIP_COL* _col
-        _col = col._col
-        _col = SCIPvarGetCol(self.var)
-        return col
+        cdef SCIP_COL* scip_col
+        scip_col = SCIPvarGetCol(self.var)
+        return Column.create(scip_col)
 
 cdef class Constraint:
     cdef SCIP_CONS* cons
@@ -1422,9 +1351,8 @@ cdef class Model:
         cdef SCIP_HEUR* _heur
         _heur = SCIPfindHeur(self._scip, n)
         solution = Solution()
-        PY_SCIP_CALL(SCIPcreateSol(self._scip, &solution._solution, _heur))
+        PY_SCIP_CALL(SCIPcreateSol(self._scip, &solution.sol, _heur))
         return solution
-
 
     def setSolVal(self, Solution solution, Variable var, val):
         """Set a variable in a solution.
@@ -1435,7 +1363,7 @@ cdef class Model:
         val -- the value of the variable in the solution
         """
         cdef SCIP_SOL* _sol
-        _sol = <SCIP_SOL*>solution._solution
+        _sol = <SCIP_SOL*>solution.sol
         PY_SCIP_CALL(SCIPsetSolVal(self._scip, _sol, var.var, val))
 
     def trySol(self, Solution solution, printreason=True, checkbounds=True, checkintegrality=True, checklprows=True):
@@ -1449,7 +1377,7 @@ cdef class Model:
         checklprows -- have current LP rows (both local and global) to be checked?
         """
         cdef SCIP_Bool stored
-        PY_SCIP_CALL(SCIPtrySolFree(self._scip, &solution._solution, printreason, checkbounds, checkintegrality, checklprows, &stored))
+        PY_SCIP_CALL(SCIPtrySolFree(self._scip, &solution.sol, printreason, checkbounds, checkintegrality, checklprows, &stored))
         return stored
 
     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
@@ -1463,7 +1391,6 @@ cdef class Model:
         maxdepth -- maximal depth level, up to which this branching rule should be used (or -1)
         maxbounddist -- maximal relative distance from current node's dual bound to primal bound compared to best node's dual bound for applying branching rule (0.0: only on current best node, 1.0: on all nodes)
         """
-
         nam = str_conversion(name)
         des = str_conversion(desc)
         PY_SCIP_CALL(SCIPincludeBranchrule(self._scip, nam, des,
@@ -1486,7 +1413,7 @@ cdef class Model:
         for i in range(nsols):
             _sol = _sols[i]
             solution = Solution()
-            solution._solution = _sol
+            solution.sol = _sol
             sols.append(solution)
 
         return sols
@@ -1494,7 +1421,7 @@ cdef class Model:
     def getBestSol(self):
         """Retrieve currently best known feasible primal solution."""
         solution = Solution()
-        solution._solution = SCIPgetBestSol(self._scip)
+        solution.sol = SCIPgetBestSol(self._scip)
         return solution
 
     def getSolObjVal(self, Solution solution, original=True):
@@ -1504,12 +1431,10 @@ cdef class Model:
         solution -- the solution
         original -- retrieve the solution of the original problem? (default True)
         """
-        cdef SCIP_SOL* _solution
-        _solution = <SCIP_SOL*>solution._solution
         if original:
-            objval = SCIPgetSolOrigObj(self._scip, _solution)
+            objval = SCIPgetSolOrigObj(self._scip, solution.sol)
         else:
-            objval = SCIPgetSolTransObj(self._scip, _solution)
+            objval = SCIPgetSolTransObj(self._scip, solution.sol)
         return objval
 
     def getObjVal(self, original=True):
@@ -1520,7 +1445,6 @@ cdef class Model:
             objval = SCIPgetSolTransObj(self._scip, self._bestSol)
         return objval
 
-    # Get best dual bound
     def getDualbound(self):
         """Retrieve the best dual bound."""
         return SCIPgetDualbound(self._scip)
@@ -1533,12 +1457,12 @@ cdef class Model:
         var -- the variable
         solution -- the solution (default None)
         """
-        cdef SCIP_SOL* _sol
+        cdef SCIP_SOL* sol
         if solution is None:
-            _sol = self._bestSol
+            sol = self._bestSol
         else:
-            _sol = <SCIP_SOL*>solution._solution
-        return SCIPgetSolVal(self._scip, _sol, var.var)
+            sol = solution.sol
+        return SCIPgetSolVal(self._scip, sol, var.var)
 
     def writeName(self, Variable var):
         """Write the name of the variable to the std out."""

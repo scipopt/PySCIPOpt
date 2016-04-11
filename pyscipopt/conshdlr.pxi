@@ -112,7 +112,7 @@ cdef SCIP_RETCODE PyConsSepasol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS*
     for i in range(nconss):
         constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
     solution = Solution()
-    solution._solution = sol
+    solution.sol = sol
     result_dict = PyConshdlr.conssepasol(constraints, nusefulconss, solution)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
@@ -147,12 +147,12 @@ cdef SCIP_RETCODE PyConsCheck (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** 
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
     solution = Solution()
-    solution._solution = sol
+    solution.sol = sol
     cdef constraints = []
     for i in range(nconss):
         constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
     solution = Solution()
-    solution._solution = sol
+    solution.sol = sol
     result_dict = PyConshdlr.conscheck(constraints, solution, checkintegrality, checklprows, printreason)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
