@@ -194,3 +194,12 @@ cdef class LinCons:
     def __nonzero__(self):
         '''Make sure that equality of expressions is not asserted with =='''
         raise TypeError("Can't evaluate constraints as booleans.")
+
+def quicksum(termlist):
+    '''add linear expressions and constants much faster than Python's sum
+    by avoiding intermediate data structures and adding terms inplace
+    '''
+    result = LinExpr()
+    for term in termlist:
+        result += term
+    return result
