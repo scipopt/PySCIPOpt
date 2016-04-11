@@ -245,7 +245,7 @@ cdef class Constraint:
 cdef class Model:
     cdef SCIP* _scip
     # store best solution to get the solution values easier
-    cdef SCIP_SOL* _bestSol
+    cdef Solution _bestSol
     # can be used to store problem data
     cdef public object data
 
@@ -256,6 +256,7 @@ cdef class Model:
         defaultPlugins -- use default plugins? (default True)
         """
         self.create()
+        self._bestSol = None
         if defaultPlugins:
             self.includeDefaultPlugins()
         self.createProbBasic(problemName)
@@ -354,10 +355,12 @@ cdef class Model:
         for k in coeffs:
             var = <Variable>k
             PY_SCIP_CALL(SCIPchgVarObj(self._scip, var.var, <SCIP_Real>coeffs[k]))
-        if sense == 'maximize':
+        if sense == "minimize":
+            self.setMinimize()
+        elif sense == "maximize":
             self.setMaximize()
         else:
-            self.setMinimize()
+            raise Warning("unrecognized objective sense")
 
     # Setting parameters
     def setPresolve(self, setting):
@@ -409,6 +412,8 @@ cdef class Model:
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_BINARY))
         elif vtype in ['I', 'INTEGER']:
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_INTEGER))
+        else:
+            raise Warning("unrecognized variable type")
 
         if pricedVar:
             PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, 1.0))
@@ -435,8 +440,7 @@ cdef class Model:
         """
         cdef SCIP_VAR* _tvar
         PY_SCIP_CALL(SCIPtransformVar(self._scip, var.var, &_tvar))
-        name = str(SCIPvarGetName(_tvar))
-        return Variable.create(_tvar, name)
+        return Variable.create(_tvar, SCIPvarGetName(_tvar).decode("utf-8"))
 
     def chgVarLb(self, Variable var, lb=None):
         """Changes the lower bound of the specified variable.
@@ -469,7 +473,7 @@ cdef class Model:
         elif vtype in ['I', 'INTEGER']:
             PY_SCIP_CALL(SCIPchgVarType(self._scip, var.var, SCIP_VARTYPE_INTEGER, &infeasible))
         else:
-            print('wrong variable type: ', vtype)
+            raise Warning("unrecognized variable type")
         if infeasible:
             print('could not change variable type of variable ', var.name)
 
@@ -775,7 +779,7 @@ cdef class Model:
     def optimize(self):
         """Optimize the problem."""
         PY_SCIP_CALL(SCIPsolve(self._scip))
-        self._bestSol = SCIPgetBestSol(self._scip)
+        self._bestSol = Solution.create(SCIPgetBestSol(self._scip))
 
     def includePricer(self, Pricer pricer, name, desc, priority=1, delay=True):
         """Include a pricer.
@@ -1006,18 +1010,19 @@ cdef class Model:
         sols = []
 
         for i in range(nsols):
-            _sol = _sols[i]
-            solution = Solution()
-            solution.sol = _sol
-            sols.append(solution)
+            sols.append(Solution.create(_sols[i]))
 
         return sols
 
     def getBestSol(self):
         """Retrieve currently best known feasible primal solution."""
-        solution = Solution()
-        solution.sol = SCIPgetBestSol(self._scip)
-        return solution
+        cdef SCIP_SOL* sol
+        sol = SCIPgetBestSol(self._scip)
+        if sol is not NULL:
+            self._bestSol = Solution.create(sol)
+        else:
+            raise Warning("no solution available")
+        return self._bestSol
 
     def getSolObjVal(self, Solution solution, original=True):
         """Retrieve the objective value of the solution.
@@ -1034,10 +1039,13 @@ cdef class Model:
 
     def getObjVal(self, original=True):
         """Retrieve the objective value of value of best solution"""
-        if original:
-            objval = SCIPgetSolOrigObj(self._scip, self._bestSol)
+        if self._bestSol is not None:
+            if original:
+                objval = SCIPgetSolOrigObj(self._scip, self._bestSol.sol)
+            else:
+                objval = SCIPgetSolTransObj(self._scip, self._bestSol.sol)
         else:
-            objval = SCIPgetSolTransObj(self._scip, self._bestSol)
+            raise Warning("no solution available")
         return objval
 
     def getDualbound(self):
@@ -1054,7 +1062,7 @@ cdef class Model:
         """
         cdef SCIP_SOL* sol
         if solution is None:
-            sol = self._bestSol
+            sol = self._bestSol.sol
         else:
             sol = solution.sol
         return SCIPgetSolVal(self._scip, sol, var.var)
