@@ -305,6 +305,17 @@ cdef extern from "scip/scip.h":
     int SCIPgetNConss(SCIP* scip)
     SCIP_Bool SCIPconsIsOriginal(SCIP_CONS* cons)
     SCIP_Bool SCIPconsIsTransformed(SCIP_CONS* cons)
+    SCIP_Bool SCIPconsIsInitial(SCIP_CONS* cons)
+    SCIP_Bool SCIPconsIsSeparated(SCIP_CONS* cons)
+    SCIP_Bool SCIPconsIsEnforced(SCIP_CONS* cons)
+    SCIP_Bool SCIPconsIsChecked(SCIP_CONS* cons)
+    SCIP_Bool SCIPconsIsPropagated(SCIP_CONS* cons)
+    SCIP_Bool SCIPconsIsLocal(SCIP_CONS* cons)
+    SCIP_Bool SCIPconsIsModifiable(SCIP_CONS* cons)
+    SCIP_Bool SCIPconsIsDynamic(SCIP_CONS* cons)
+    SCIP_Bool SCIPconsIsRemovable(SCIP_CONS* cons)
+    SCIP_Bool SCIPconsIsStickingAtNode(SCIP_CONS* cons)
+    SCIP_CONSDATA* SCIPconsGetData(SCIP_CONS* cons)
 
     # Primal Solution Methods
     SCIP_SOL** SCIPgetSols(SCIP* scip)

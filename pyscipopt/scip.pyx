@@ -238,6 +238,7 @@ cdef class Variable(LinExpr):
 cdef class Constraint:
     cdef SCIP_CONS* cons
     cdef readonly str name
+    cdef public object data #storage for python user
 
     @staticmethod
     cdef create(SCIP_CONS* scipcons, str name):
@@ -254,6 +255,36 @@ cdef class Constraint:
 
     def isOriginal(self):
         return SCIPconsIsOriginal(self.cons)
+
+    def isInitial(self):
+        return SCIPconsIsInitial(self.cons)
+
+    def isSeparated(self):
+        return SCIPconsIsSeparated(self.cons)
+
+    def isEnforced(self):
+        return SCIPconsIsEnforced(self.cons)
+
+    def isChecked(self):
+        return SCIPconsIsChecked(self.cons)
+
+    def isPropagated(self):
+        return SCIPconsIsPropagated(self.cons)
+
+    def isLocal(self):
+        return SCIPconsIsLocal(self.cons)
+
+    def isModifiable(self):
+        return SCIPconsIsModifiable(self.cons)
+
+    def isDynamic(self):
+        return SCIPconsIsDynamic(self.cons)
+
+    def isRemovable(self):
+        return SCIPconsIsRemovable(self.cons)
+
+    def isStickingAtNode(self):
+        return SCIPconsIsStickingAtNode(self.cons)
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
@@ -711,6 +742,14 @@ cdef class Model:
         return Constraint.create(scip_cons, name)
 
 
+    def addPyCons(self, Constraint cons):
+        """Adds a customly created cons.
+
+        Keyword arguments:
+        cons -- the Python constraint
+        """
+        PY_SCIP_CALL(SCIPaddCons(self._scip, cons.cons))
+
     def addVarSOS1(self, Constraint cons, Variable var, weight):
         """Add variable to SOS1 constraint.
 
@@ -861,7 +900,7 @@ cdef class Model:
         cdef SCIP_CONSHDLR* scip_conshdlr
         scip_conshdlr = SCIPfindConshdlr(self._scip, str_conversion(conshdlr.name))
         constraint = Constraint(name)
-        PY_SCIP_CALL(SCIPcreateCons(self._scip, &(constraint.cons), n, scip_conshdlr, NULL,
+        PY_SCIP_CALL(SCIPcreateCons(self._scip, &(constraint.cons), n, scip_conshdlr, <SCIP_CONSDATA*>constraint,
                                 initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
         return constraint
 

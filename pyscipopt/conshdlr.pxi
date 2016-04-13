@@ -1,3 +1,13 @@
+cdef Conshdlr getPyConshdlr(SCIP_CONSHDLR* conshdlr):
+    cdef SCIP_CONSHDLRDATA* conshdlrdata
+    conshdlrdata = SCIPconshdlrGetData(conshdlr)
+    return <Conshdlr>conshdlrdata
+
+cdef Constraint getPyCons(SCIP_CONS* cons):
+    cdef SCIP_CONSDATA* consdata
+    consdata = SCIPconsGetData(cons)
+    return <Constraint>consdata
+
 cdef SCIP_RETCODE PyConshdlrCopy (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_Bool* valid):
     return SCIP_OKAY
 
@@ -77,12 +87,23 @@ cdef SCIP_RETCODE PyConsDelete (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* 
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsTrans (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* sourcecons, SCIP_CONS** targetcons):
-    cdef SCIP_CONSHDLRDATA* conshdlrdata
-    conshdlrdata = SCIPconshdlrGetData(conshdlr)
-    PyConshdlr = <Conshdlr>conshdlrdata
-    sourceconstraint = Constraint.create(sourcecons, SCIPconsGetName(sourcecons).decode("utf-8"))
-    # TODO
-    PyConshdlr.constrans(sourceconstraint)
+    cdef Constraint PyTargetCons
+    PyConshdlr = getPyConshdlr(conshdlr)
+    PySourceCons = getPyCons(sourcecons)
+
+    # get the python target constraint
+    result_dict = PyConshdlr.constrans(PySourceCons)
+
+    # create target (transform) constraint: if user doesn't return a constraint, copy PySourceCons
+    # otherwise use the created cons
+    if "targetcons" in result_dict:
+        PyTargetCons = result_dict.get("targetcons", PySourceCons)
+        targetcons = &PyTargetCons.cons
+    else:
+        PY_SCIP_CALL(SCIPcreateCons(scip, targetcons, str_conversion(PySourceCons.name), conshdlr, <SCIP_CONSDATA*>PySourceCons,
+            PySourceCons.isInitial(), PySourceCons.isSeparated(), PySourceCons.isEnforced(), PySourceCons.isChecked(),
+            PySourceCons.isPropagated(), PySourceCons.isLocal(), PySourceCons.isModifiable(), PySourceCons.isDynamic(),
+            PySourceCons.isRemovable(), PySourceCons.isStickingAtNode()))
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsInitlp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, SCIP_Bool* infeasible):
@@ -143,16 +164,19 @@ cdef SCIP_RETCODE PyConsEnfops (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS**
 
 cdef SCIP_RETCODE PyConsCheck (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, SCIP_SOL* sol, SCIP_Bool checkintegrality,
                                SCIP_Bool checklprows, SCIP_Bool printreason, SCIP_RESULT* result):
-    cdef SCIP_CONSHDLRDATA* conshdlrdata
-    conshdlrdata = SCIPconshdlrGetData(conshdlr)
-    PyConshdlr = <Conshdlr>conshdlrdata
-    solution = Solution()
-    solution.sol = sol
+    # get the python constraints
     cdef constraints = []
     for i in range(nconss):
-        constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
+        constraints.append(getPyCons(conss[i]))
+
+    # wrap the SCIP_SOL
     solution = Solution()
     solution.sol = sol
+
+    # get the python conshdlr
+    PyConshdlr = getPyConshdlr(conshdlr)
+
+    # call python conshdlr's conscheck method
     result_dict = PyConshdlr.conscheck(constraints, solution, checkintegrality, checklprows, printreason)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
@@ -344,7 +368,6 @@ cdef class Conshdlr:
         pass
 
     def constrans(self, sourceconstraint):
-        print("python error in constrans: this method needs to be implemented")
         return {}
 
     def consinitlp(self):
