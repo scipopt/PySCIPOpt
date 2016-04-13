@@ -11,20 +11,17 @@ from pyscipopt import Model, Conshdlr, quicksum, multidict, SCIP_RESULT, SCIP_PR
 
 class Conshdlr_sils(Conshdlr):
 
-    anycutsadded = False
-
-    def addcut(self):
+    def addcut(self, checkonly, sol):
         D,Ts = self.data
         y,x,I = self.model.data
-
         cutsadded = False
 
         for ell in Ts:
             lhs = 0
             S,L = [],[]
             for t in range(1,ell+1):
-                yt = self.model.getVal(y[t])
-                xt = self.model.getVal(x[t])
+                yt = self.model.getSolVal(sol, y[t])
+                xt = self.model.getSolVal(sol, x[t])
                 if D[t,ell]*yt < xt:
                     S.append(t)
                     lhs += D[t,ell]*yt
@@ -32,26 +29,30 @@ class Conshdlr_sils(Conshdlr):
                     L.append(t)
                     lhs += xt
             if lhs < D[1,ell]:
-                # add cutting plane constraint
-                self.model.addCons(quicksum([x[t] for t in L]) +\
-                    quicksum(D[t,ell] * y[t] for t in S)
-                    >= D[1,ell], removable=True)
+                if checkonly:
+                    return True
+                else:
+                    # add cutting plane constraint
+                    self.model.addCons(quicksum([x[t] for t in L]) + \
+                                       quicksum(D[t, ell] * y[t] for t in S)
+                                       >= D[1, ell], removable = True)
                 cutsadded = True
-                self.anycutsadded = True
         return cutsadded
 
     def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason):
-        if not self.anycutsadded:
+        if not self.addcut(checkonly = True, sol = solution):
             return {"result": SCIP_RESULT.INFEASIBLE}
         else:
             return {"result": SCIP_RESULT.FEASIBLE}
 
     def consenfolp(self, constraints, nusefulconss, solinfeasible):
-        if self.addcut():
+        if self.addcut(checkonly = False):
             return {"result": SCIP_RESULT.CONSADDED}
         else:
             return {"result": SCIP_RESULT.FEASIBLE}
 
+    def conslock(self, constraint, nlockspos, nlocksneg):
+        pass
 
 def sils(T,f,c,d,h):
     """sils -- LP lotsizing for the single item lot sizing problem
@@ -84,7 +85,6 @@ def sils(T,f,c,d,h):
 
     model.data = y,x,I
     return model
-
 
 def sils_cut(T,f,c,d,h, conshdlr):
     """solve_sils -- solve the lot sizing problem with cutting planes
@@ -119,13 +119,13 @@ def sils_cut(T,f,c,d,h, conshdlr):
 
     #include the lot sizing constraint handler
     model.includeConshdlr(conshdlr, "SILS", "Constraint handler for single item lot sizing",
-                          sepapriority=0, enfopriority=0, chckpriority=0, sepafreq=1, propfreq=-1,
-                          eagerfreq=-1, maxprerounds=0, delaysepa=False, delayprop=False, needscons=False, presoltiming=SCIP_PRESOLTIMING.FAST, proptiming=SCIP_PROPTIMING.BEFORELP)
+                          sepapriority = 0, enfopriority = -1, chckpriority = -1, sepafreq = -1, propfreq = -1,
+                          eagerfreq = -1, maxprerounds = 0, delaysepa = False, delayprop = False, needscons = False,
+                          presoltiming = SCIP_PRESOLTIMING.FAST, proptiming = SCIP_PROPTIMING.BEFORELP)
     conshdlr.data = D,Ts
 
     model.data = y,x,I
     return model
-
 
 def mk_example():
     """mk_example: book example for the single item lot sizing"""
@@ -139,7 +139,6 @@ def mk_example():
         })
 
     return T,f,c,d,h
-
 
 if __name__ == "__main__":
     T,f,c,d,h = mk_example()

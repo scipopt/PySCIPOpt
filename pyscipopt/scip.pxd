@@ -70,6 +70,22 @@ cdef extern from "scip/scip.h":
         SCIP_STATUS_UNBOUNDED      = 13
         SCIP_STATUS_INFORUNBD      = 14
 
+    ctypedef enum SCIP_STAGE:
+        SCIP_STAGE_INIT         =  0
+        SCIP_STAGE_PROBLEM      =  1
+        SCIP_STAGE_TRANSFORMING =  2
+        SCIP_STAGE_TRANSFORMED  =  3
+        SCIP_STAGE_INITPRESOLVE =  4
+        SCIP_STAGE_PRESOLVING   =  5
+        SCIP_STAGE_EXITPRESOLVE =  6
+        SCIP_STAGE_PRESOLVED    =  7
+        SCIP_STAGE_INITSOLVE    =  8
+        SCIP_STAGE_SOLVING      =  9
+        SCIP_STAGE_SOLVED       = 10
+        SCIP_STAGE_EXITSOLVE    = 11
+        SCIP_STAGE_FREETRANS    = 12
+        SCIP_STAGE_FREE         = 13
+
     ctypedef enum SCIP_PARAMSETTING:
         SCIP_PARAMSETTING_DEFAULT    = 0
         SCIP_PARAMSETTING_AGGRESSIVE = 1
@@ -230,6 +246,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetSolvingTime(SCIP* scip)
     SCIP_Real SCIPgetReadingTime(SCIP* scip)
     SCIP_Real SCIPgetPresolvingTime(SCIP* scip)
+    SCIP_STAGE SCIPgetStage(SCIP* scip)
 
     # Global Problem Methods
     SCIP_RETCODE SCIPcreateProbBasic(SCIP* scip, char* name)

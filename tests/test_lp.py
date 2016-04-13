@@ -15,12 +15,13 @@ def test_lp():
     # solve problem
     s.optimize()
 
-    # retrieving the best solution
     solution = s.getBestSol()
 
     # print solution
-    assert round(s.getVal(x, solution)) == 5.0
-    assert round(s.getVal(y, solution)) == 0.0
+    assert (s.getVal(x) == s.getSolVal(solution, x))
+    assert (s.getVal(y) == s.getSolVal(solution, y))
+    assert round(s.getVal(x)) == 5.0
+    assert round(s.getVal(y)) == 0.0
 
     s.free()
 

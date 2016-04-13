@@ -11,17 +11,16 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 import math
 import random
 import networkx
-from pyscipopt import Model, Conshdlr, quicksum, SCIP_RESULT, SCIP_PRESOLTIMING, SCIP_PROPTIMING
+from pyscipopt import Model, Conshdlr, quicksum, SCIP_RESULT, SCIP_PRESOLTIMING, SCIP_PROPTIMING, SCIP_PARAMSETTING
 
 class TSPconshdlr(Conshdlr):
 
-
-    def findSubtours(self, checkonly):
+    def findSubtours(self, checkonly, sol):
         EPS = 1.e-6
         edges = []
         x = self.model.data
-        for (i,j) in x:
-            if self.model.getVal(x[i,j]) > EPS:
+        for (i, j) in x:
+            if self.model.getSolVal(sol, x[i, j]) > EPS:
                 edges.append((i,j))
 
         G = networkx.Graph()
@@ -35,18 +34,18 @@ class TSPconshdlr(Conshdlr):
 
         for S in Components:
             self.model.addCons(quicksum(x[i, j] for i in S for j in S if j > i) <= len(S) - 1)
-            # print("cut: len(%s) <= %s" % (S, len(S) - 1))
+            print("cut: len(%s) <= %s" % (S, len(S) - 1))
 
         return True
 
     def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason):
-        if self.findSubtours(checkonly = True):
+        if self.findSubtours(checkonly = True, sol = solution):
             return {"result": SCIP_RESULT.INFEASIBLE}
         else:
             return {"result": SCIP_RESULT.FEASIBLE}
 
     def consenfolp(self, constraints, nusefulconss, solinfeasible):
-        if self.findSubtours(checkonly = False):
+        if self.findSubtours(checkonly = False, sol = None):
             return {"result": SCIP_RESULT.CONSADDED}
         else:
             return {"result": SCIP_RESULT.FEASIBLE}
@@ -63,10 +62,7 @@ def tsp(V,c):
         - c[i,j]: cost for traversing edge (i,j)
     Returns the optimum objective value and the list of edges used.
     """
-
     model = Model("TSP_lazy")
-    model.hideOutput()
-
     conshdlr = TSPconshdlr()
 
     x = {}
@@ -83,7 +79,6 @@ def tsp(V,c):
 
     model.data = x
     return model, conshdlr
-
 
 def distance(x1,y1,x2,y2):
     """distance: euclidean distance between (x1,y1) and (x2,y2)"""
@@ -104,12 +99,12 @@ def make_data(n):
 def solve_tsp(V,c):
     model, conshdlr = tsp(V, c)
     model.includeConshdlr(conshdlr, "TSP", "TSP subtour eliminator",
-                          sepapriority = 0, enfopriority = 1, chckpriority = 1, sepafreq = -1, propfreq = -1,
+                          sepapriority = -1, enfopriority = -1, chckpriority = -1, sepafreq = -1, propfreq = -1,
                           eagerfreq = -1, maxprerounds = 0, delaysepa = False, delayprop = False, needscons = False,
                           presoltiming = SCIP_PRESOLTIMING.FAST, proptiming = SCIP_PROPTIMING.BEFORELP)
     model.setBoolParam("misc/allowdualreds", 0)
+    model.writeProblem("tsp.cip")
     model.optimize()
-#     model.printStatistics()
     x = model.data
 
     EPS = 1.e-6

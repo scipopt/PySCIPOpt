@@ -36,13 +36,10 @@ def test_knapsack():
 
     s.printStatistics()
 
-    # retrieving the best solution
-    solution = s.getBestSol()
-
     # print solution
     varSolutions = []
     for i in range(len(weights)):
-        solValue = round(s.getVal(knapsackVars[i], solution))
+        solValue = round(s.getVal(knapsackVars[i]))
         varSolutions.append(solValue)
         if solValue > 0:
             print (varNames[i], "Times Selected:", solValue)

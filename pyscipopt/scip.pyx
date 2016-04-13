@@ -71,6 +71,22 @@ cdef class PY_SCIP_STATUS:
     UNBOUNDED      = 13
     INFORUNBD      = 14
 
+cdef class PY_SCIP_STAGE:
+    STAGE_INIT         =  0
+    STAGE_PROBLEM      =  1
+    STAGE_TRANSFORMING =  2
+    STAGE_TRANSFORMED  =  3
+    STAGE_INITPRESOLVE =  4
+    STAGE_PRESOLVING   =  5
+    STAGE_EXITPRESOLVE =  6
+    STAGE_PRESOLVED    =  7
+    STAGE_INITSOLVE    =  8
+    STAGE_SOLVING      =  9
+    STAGE_SOLVED       = 10
+    STAGE_EXITSOLVE    = 11
+    STAGE_FREETRANS    = 12
+    STAGE_FREE         = 13
+
 cdef class PY_SCIP_PROPTIMING:
     BEFORELP     = 0X001U
     DURINGLPLOOP = 0X002U
@@ -1016,60 +1032,68 @@ cdef class Model:
 
     def getBestSol(self):
         """Retrieve currently best known feasible primal solution."""
-        cdef SCIP_SOL* sol
-        sol = SCIPgetBestSol(self._scip)
-        if sol is not NULL:
-            self._bestSol = Solution.create(sol)
-        else:
-            raise Warning("no solution available")
+        self._bestSol = Solution.create(SCIPgetBestSol(self._scip))
         return self._bestSol
 
-    def getSolObjVal(self, Solution solution, original=True):
+    def getSolObjVal(self, Solution sol, original=True):
         """Retrieve the objective value of the solution.
 
         Keyword arguments:
-        solution -- the solution
-        original -- retrieve the solution of the original problem? (default True)
+        sol -- the solution
+        original -- objective value in original or transformed space (default True)
         """
+        if sol == None:
+            sol = Solution.create(NULL)
         if original:
-            objval = SCIPgetSolOrigObj(self._scip, solution.sol)
+            objval = SCIPgetSolOrigObj(self._scip, sol.sol)
         else:
-            objval = SCIPgetSolTransObj(self._scip, solution.sol)
+            objval = SCIPgetSolTransObj(self._scip, sol.sol)
         return objval
 
     def getObjVal(self, original=True):
-        """Retrieve the objective value of value of best solution"""
-        if self._bestSol is not None:
-            if original:
-                objval = SCIPgetSolOrigObj(self._scip, self._bestSol.sol)
-            else:
-                objval = SCIPgetSolTransObj(self._scip, self._bestSol.sol)
-        else:
-            raise Warning("no solution available")
-        return objval
+        """Retrieve the objective value of value of best solution.
+        Can only be called after solving is completed.
+
+        Keyword arguments:
+        original -- objective value in original or transformed space (default True)
+        """
+        if not self.getStage() == SCIP_STAGE_SOLVED:
+            raise Warning("method cannot be called before problem is solved")
+        return self.getSolObjVal(self._bestSol, original)
+
+    def getSolVal(self, Solution sol, Variable var):
+        """Retrieve value of given variable in the given solution.
+
+        Keyword arguments:
+        sol -- the solution
+        var -- the variable to query the value of
+        """
+        if sol == None:
+            sol = Solution.create(NULL)
+        return SCIPgetSolVal(self._scip, sol.sol, var.var)
+
+    def getVal(self, Variable var):
+        """Retrieve the value of the best known solution.
+        Can only be called after solving is completed.
+
+        Keyword arguments:
+        var -- the variable to query the value of
+        """
+        if not self.getStage() == SCIP_STAGE_SOLVED:
+            raise Warning("method cannot be called before problem is solved")
+        return self.getSolVal(self._bestSol, var)
 
     def getDualbound(self):
         """Retrieve the best dual bound."""
         return SCIPgetDualbound(self._scip)
 
-    def getVal(self, Variable var, Solution solution=None):
-        """Retrieve the value of the variable in the specified solution. If no solution is specified,
-        the best known solution is used.
-
-        Keyword arguments:
-        var -- the variable
-        solution -- the solution (default None)
-        """
-        cdef SCIP_SOL* sol
-        if solution is None:
-            sol = self._bestSol.sol
-        else:
-            sol = solution.sol
-        return SCIPgetSolVal(self._scip, sol, var.var)
-
     def writeName(self, Variable var):
         """Write the name of the variable to the std out."""
         PY_SCIP_CALL(SCIPwriteVarName(self._scip, NULL, var.var, False))
+
+    def getStage(self):
+        """Return current SCIP stage"""
+        return SCIPgetStage(self._scip)
 
     def getStatus(self):
         """Retrieve solution status."""
