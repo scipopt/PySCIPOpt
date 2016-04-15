@@ -858,9 +858,12 @@ cdef class Model:
         PY_SCIP_CALL(SCIPactivatePricer(self._scip, scip_pricer))
         pricer.model = self
 
-
-    def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority, enfopriority, chckpriority, sepafreq, propfreq, eagerfreq,
-                        maxprerounds, delaysepa, delayprop, needscons, proptiming=SCIP_PROPTIMING_AFTERLPNODE, presoltiming=SCIP_PRESOLTIMING_FAST):
+    def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority=0,
+                        enfopriority=0, chckpriority=0, sepafreq=-1, propfreq=-1,
+                        eagerfreq=100, maxprerounds=-1, delaysepa=False,
+                        delayprop=False, needscons=True,
+                        proptiming=PY_SCIP_PROPTIMING.BEFORELP,
+                        presoltiming=PY_SCIP_PRESOLTIMING.MEDIUM):
         """Include a constraint handler
 
         Keyword arguments:
