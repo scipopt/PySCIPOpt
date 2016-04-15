@@ -68,12 +68,8 @@ def solve_tsp(V,c):
   model = create_tsp(V,c)
   conshdlr = TSPconshdlr()
   model.includeConshdlr(conshdlr, "TSP", "TSP subtour eliminator",
-    sepapriority = 0, enfopriority = -1, chckpriority = -1,
-    sepafreq = -1, propfreq = -1, eagerfreq = -1, maxprerounds = 0,
-    delaysepa = False, delayprop = False, needscons = False,
-    presoltiming = SCIP_PRESOLTIMING.FAST,
-    proptiming = SCIP_PROPTIMING.BEFORELP)
-  model.setBoolParam("misc/allowdualreds", 0)
+                        needscons=False)
+  model.setBoolParam("misc/allowdualreds", False)
   model.optimize()
   x = model.data
   edges = []
@@ -81,7 +77,6 @@ def solve_tsp(V,c):
     if model.getVal(x[i,j]) > 1.e-6:
       edges.append((i,j))
   return model.getObjVal(), edges
-
 
 def test_main():
   V = [1, 2, 3, 4, 5, 6]
