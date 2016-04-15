@@ -291,6 +291,8 @@ cdef class Constraint:
 # - interface SCIPfreeProb()
 cdef class Model:
     cdef SCIP* _scip
+    # store all user plugins so they don't get garbage-collected
+    cdef _stuff
     # store best solution to get the solution values easier
     cdef Solution _bestSol
     # can be used to store problem data
@@ -303,6 +305,7 @@ cdef class Model:
         defaultPlugins -- use default plugins? (default True)
         """
         self.create()
+        self._stuff = []
         self._bestSol = None
         if defaultPlugins:
             self.includeDefaultPlugins()
@@ -749,6 +752,7 @@ cdef class Model:
         cons -- the Python constraint
         """
         PY_SCIP_CALL(SCIPaddCons(self._scip, cons.cons))
+        self._stuff.append(cons)
 
     def addVarSOS1(self, Constraint cons, Variable var, weight):
         """Add variable to SOS1 constraint.
@@ -895,6 +899,7 @@ cdef class Model:
                                               <SCIP_CONSHDLRDATA*>conshdlr))
         conshdlr.model = self
         conshdlr.name = name
+        self._stuff.append(conshdlr)
 
     def createCons(self, Conshdlr conshdlr, name, initial=True, separate=True, enforce=True, check=True, propagate=True,
                    local=False, modifiable=False, dynamic=False, removable=False, stickingatnode=False):
