@@ -1,3 +1,4 @@
+import itertools
 import networkx
 from pyscipopt import Model, Conshdlr, quicksum, SCIP_RESULT
 
@@ -81,10 +82,7 @@ def solve_tsp(vertices, distance):
   return model.getObjVal(), edges
 
 def pairs(vertices):
-  for i in vertices:
-    for j in vertices:
-      if i < j:
-        yield (i,j)
+    return itertools.combinations(vertices, 2)
 
 def test_main():
   vertices = [1, 2, 3, 4, 5, 6]
