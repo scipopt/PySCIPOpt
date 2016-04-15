@@ -57,6 +57,11 @@ def create_tsp(V,c):
       quicksum(x[j,i] for j in V if j < i) +
       quicksum(x[i,j] for j in V if j > i) == 2, "Degree(%s)" % i)
 
+  conshdlr = TSPconshdlr()
+  model.includeConshdlr(conshdlr, "TSP", "TSP subtour eliminator",
+                        needscons=False)
+  model.setBoolParam("misc/allowdualreds", False)
+
   model.setObjective(
     quicksum(c[i,j] * x[i,j] for i in V for j in V if j > i),
     "minimize")
@@ -66,10 +71,6 @@ def create_tsp(V,c):
 
 def solve_tsp(V,c):
   model = create_tsp(V,c)
-  conshdlr = TSPconshdlr()
-  model.includeConshdlr(conshdlr, "TSP", "TSP subtour eliminator",
-                        needscons=False)
-  model.setBoolParam("misc/allowdualreds", False)
   model.optimize()
   x = model.data
   edges = []
