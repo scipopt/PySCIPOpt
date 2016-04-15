@@ -4,9 +4,12 @@ from pyscipopt import Model, Conshdlr, quicksum,  \
 
 class TSPconshdlr(Conshdlr):
 
+  def __init__(self, variables):
+    self.variables = variables
+
   def findSubtours(self, checkonly, solution):
     edges = []
-    x = self.model.data
+    x = self.variables
     for (i,j) in x:
       if self.model.getSolVal(solution, x[i,j]) > 1.e-6:
         edges.append((i,j))
@@ -57,7 +60,7 @@ def create_tsp(V,c):
       quicksum(x[j,i] for j in V if j < i) +
       quicksum(x[i,j] for j in V if j > i) == 2, "Degree(%s)" % i)
 
-  conshdlr = TSPconshdlr()
+  conshdlr = TSPconshdlr(x)
   model.includeConshdlr(conshdlr, "TSP", "TSP subtour eliminator",
                         needscons=False)
   model.setBoolParam("misc/allowdualreds", False)
@@ -66,13 +69,11 @@ def create_tsp(V,c):
     quicksum(c[i,j] * x[i,j] for i in V for j in V if j > i),
     "minimize")
 
-  model.data = x
-  return model
+  return model, x
 
 def solve_tsp(V,c):
-  model = create_tsp(V,c)
+  model, x = create_tsp(V,c)
   model.optimize()
-  x = model.data
   edges = []
   for (i,j) in x:
     if model.getVal(x[i,j]) > 1.e-6:
