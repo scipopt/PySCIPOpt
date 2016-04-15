@@ -94,10 +94,10 @@ cdef class PY_SCIP_PROPTIMING:
     AFTERLPNODE  = 0X008U
 
 cdef class PY_SCIP_PRESOLTIMING:
-    NONE       = 0x000u
-    FAST       = 0x002u
-    MEDIUM     = 0x004u
-    EXHAUSTIVE = 0x008u
+    NONE       = 0x002u
+    FAST       = 0x004u
+    MEDIUM     = 0x008u
+    EXHAUSTIVE = 0x010u
 
 cdef class PY_SCIP_HEURTIMING:
     BEFORENODE        = 0x001u
