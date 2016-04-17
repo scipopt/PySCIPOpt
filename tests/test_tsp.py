@@ -4,11 +4,14 @@ from pyscipopt import Model, Conshdlr, quicksum, SCIP_RESULT
 
 EPS = 1.e-6
 
+# subtour elimination constraint handler
 class TSPconshdlr(Conshdlr):
 
   def __init__(self, variables):
     self.variables = variables
 
+  # find subtours in the graph induced by the edges {i,j} for which x[i,j] is positive
+  # at the given solution; when solution is None, then the LP solution is used
   def find_subtours(self, solution=None):
     edges = []
     x = self.variables
@@ -25,6 +28,9 @@ class TSPconshdlr(Conshdlr):
     else:
       return components
 
+  # checks whether solution is feasible, ie, if there are no subtours;
+  # since the checkpriority is < 0, we are only called if the integrality
+  # constraint handler didn't find infeasibility, so solution is integral
   def conscheck(self, constraints, solution, check_integrality,
                 check_lp_rows, print_reason, **results):
     if self.find_subtours(solution):
@@ -32,6 +38,7 @@ class TSPconshdlr(Conshdlr):
     else:
       return {"result": SCIP_RESULT.FEASIBLE}
 
+  # enforces LP solution
   def consenfolp(self, constraints, n_useful_conss, sol_infeasible):
     subtours = self.find_subtours()
     if subtours:
@@ -47,6 +54,7 @@ class TSPconshdlr(Conshdlr):
   def conslock(self, constraint, nlockspos, nlocksneg):
     pass
 
+# builds tsp model; adds variables, degree constraint and the subtour elimination constaint handler
 def create_tsp(vertices, distance):
   model = Model("TSP")
 
@@ -60,8 +68,9 @@ def create_tsp(vertices, distance):
       quicksum(x[i,j] for j in vertices if j > i) == 2, "Degree(%s)" % i)
 
   conshdlr = TSPconshdlr(x)
+
   model.includeConshdlr(conshdlr, "TSP", "TSP subtour eliminator",
-                        needscons=False)
+                        chckpriority = -10, needscons=False)
   model.setBoolParam("misc/allowdualreds", False)
 
   model.setObjective(
@@ -81,6 +90,7 @@ def solve_tsp(vertices, distance):
 
   return model.getObjVal(), edges
 
+# returns all undirected edges between vertices
 def pairs(vertices):
     return itertools.combinations(vertices, 2)
 
