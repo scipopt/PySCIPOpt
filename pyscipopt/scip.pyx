@@ -492,6 +492,16 @@ cdef class Model:
         PY_SCIP_CALL(SCIPtransformVar(self._scip, var.var, &_tvar))
         return Variable.create(_tvar, SCIPvarGetName(_tvar).decode("utf-8"))
 
+    def addVarLocks(self, Variable var, nlocksdown, nlocksup):
+        """adds given values to lock numbers of variable for rounding
+
+        Keyword arguments:
+        var -- the variable to adjust the locks for
+        nlocksdown -- modification number of down locks
+        nlocksup -- modification number of up locks
+        """
+        PY_SCIP_CALL(SCIPaddVarLocks(self._scip, var.var, nlocksdown, nlocksup))
+
     def chgVarLb(self, Variable var, lb=None):
         """Changes the lower bound of the specified variable.
 
