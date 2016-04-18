@@ -33,7 +33,7 @@ cdef SCIP_RETCODE PyHeurExitsol (SCIP* scip, SCIP_HEUR* heur):
     cdef SCIP_HEURDATA* heurdata
     heurdata = SCIPheurGetData(heur)
     PyHeur = <Heur>heurdata
-    PyHeur.exitsol()
+    PyHeur.heurexitsol()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyHeurExec (SCIP* scip, SCIP_HEUR* heur, SCIP_HEURTIMING heurtiming, SCIP_Bool nodeinfeasible, SCIP_RESULT* result):
