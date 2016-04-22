@@ -1,6 +1,8 @@
 from os.path import abspath
 import sys
 
+from cpython cimport Py_INCREF, Py_DECREF
+
 include "linexpr.pxi"
 include "lp.pxi"
 
@@ -306,6 +308,7 @@ cdef class Model:
         """
         self.create()
         self._stuff = []
+        Py_INCREF(self._stuff)
         self._bestSol = None
         if defaultPlugins:
             self.includeDefaultPlugins()
@@ -315,6 +318,7 @@ cdef class Model:
         # call C function directly, because we can no longer call this object's methods, according to
         # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
         PY_SCIP_CALL( SCIPfree(&self._scip) )
+        Py_DECREF(self._stuff)
 
     @scipErrorHandler
     def create(self):
