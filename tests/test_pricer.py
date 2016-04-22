@@ -56,9 +56,6 @@ class CutPricer(Pricer):
             self.data['patterns'].append(newPattern)
             self.data['var'].append(newVar)
 
-        # Freeing the subMIP
-        subMIP.free()
-
         return {'result':SCIP_RESULT.SUCCESS}
 
     # The initialisation function for the variable pricer to retrieve the transformed constraints of the problem

@@ -23,8 +23,6 @@ def test_lp():
     assert round(s.getVal(x)) == 5.0
     assert round(s.getVal(y)) == 0.0
 
-    s.free()
-
 
 def test_lpi():
 

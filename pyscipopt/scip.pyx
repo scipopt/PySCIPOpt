@@ -311,10 +311,10 @@ cdef class Model:
             self.includeDefaultPlugins()
         self.createProbBasic(problemName)
 
-    def __del__(self):
-        self.freeTransform()
-        self.freeProb()
-        self.free()
+    def __dealloc__(self):
+        # call C function directly, because we can no longer call this object's methods, according to
+        # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
+        PY_SCIP_CALL( SCIPfree(&self._scip) )
 
     @scipErrorHandler
     def create(self):
@@ -328,10 +328,6 @@ cdef class Model:
     def createProbBasic(self, problemName='model'):
         n = str_conversion(problemName)
         return SCIPcreateProbBasic(self._scip, n)
-
-    @scipErrorHandler
-    def free(self):
-        return SCIPfree(&self._scip)
 
     @scipErrorHandler
     def freeProb(self):
