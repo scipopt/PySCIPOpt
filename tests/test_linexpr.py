@@ -3,15 +3,20 @@ import pytest
 from pyscipopt import Model
 from pyscipopt.scip import LinExpr, LinCons
 
-m = Model()
-x = m.addVar("x")
-y = m.addVar("y")
-z = m.addVar("z")
+@pytest.fixture(scope="module")
+def model():
+    m = Model()
+    x = m.addVar("x")
+    y = m.addVar("y")
+    z = m.addVar("z")
+    return m, x, y, z
 
-def test_variable():
+def test_variable(model):
+    m, x, y, z = model
     assert x < y or y < x
 
-def test_operations_linear():
+def test_operations_linear(model):
+    m, x, y, z = model
     expr = x + y
     assert isinstance(expr, LinExpr)
     assert expr[x] == 1.0
@@ -55,7 +60,8 @@ def test_operations_linear():
     assert expr[y] == 0.0
     assert expr[()] == 1.0
 
-def test_operations_quadratic():
+def test_operations_quadratic(model):
+    m, x, y, z = model
     expr = x*x
     assert isinstance(expr, LinExpr)
     assert expr[x] == 0.0
@@ -83,7 +89,8 @@ def test_operations_quadratic():
     else:
         assert expr[(y,x)] == 1.0
 
-def test_power_for_quadratic():
+def test_power_for_quadratic(model):
+    m, x, y, z = model
     expr = x**2 + x + 1
     assert isinstance(expr, LinExpr)
     assert expr[(x,x)] == 1.0
@@ -94,7 +101,8 @@ def test_power_for_quadratic():
     assert (x**2).terms == (x*x).terms
     assert ((x + 3)**2).terms == (x**2 + 6*x + 9).terms
 
-def test_operations_poly():
+def test_operations_poly(model):
+    m, x, y, z = model
     expr = x*x*x + 2*y*y
     assert isinstance(expr, LinExpr)
     assert expr[x] == 0.0
@@ -104,7 +112,8 @@ def test_operations_poly():
     assert expr[(y,y)] == 2.0
     assert expr.terms == (x**3 + 2*y**2).terms
 
-def test_invalid_power():
+def test_invalid_power(model):
+    m, x, y, z = model
     assert (x + (y + 1)**0).terms == (x + 1).terms
 
     with pytest.raises(NotImplementedError):
@@ -113,7 +122,8 @@ def test_invalid_power():
     with pytest.raises(NotImplementedError):
         expr = (x + 1)**(-1)
 
-def test_degree():
+def test_degree(model):
+    m, x, y, z = model
     expr = LinExpr()
     assert expr.degree() == 0
 
@@ -129,7 +139,8 @@ def test_degree():
     expr = (x + 1)*(y + 1)*(x - 1)
     assert expr.degree() == 3
 
-def test_inequality():
+def test_inequality(model):
+    m, x, y, z = model
     expr = x + 2*y
     cons = expr <= 0
     assert isinstance(cons, LinCons)
@@ -158,7 +169,8 @@ def test_inequality():
     assert cons.expr[z] == 0.0
     assert cons.expr[()] == 0.0
 
-def test_ranged():
+def test_ranged(model):
+    m, x, y, z = model
     expr = x + 2*y
     cons = expr >= 3
     ranged = cons <= 5
@@ -189,7 +201,8 @@ def test_ranged():
     with pytest.raises(TypeError):
         ranged = 3 >= (x + 2*y <= 5)
 
-def test_equation():
+def test_equation(model):
+    m, x, y, z = model
     equat = 2*x - 3*y == 1
     assert isinstance(equat, LinCons)
     assert equat.lb == equat.ub
