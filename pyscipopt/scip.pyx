@@ -1282,3 +1282,10 @@ cdef class Model:
         else:
             extension = bytes(extension, 'utf-8')
             PY_SCIP_CALL(SCIPreadProb(self._scip, absfile, extension))
+
+# debugging memory management
+def is_memory_freed():
+    return BMSgetMemoryUsed() == 0
+
+def print_memory_in_use():
+    BMScheckEmptyMemory()

@@ -720,3 +720,7 @@ cdef extern from "scip/cons_sos2.h":
     SCIP_RETCODE SCIPappendVarSOS2(SCIP* scip,
                                    SCIP_CONS* cons,
                                    SCIP_VAR* var)
+
+cdef extern from "blockmemshell/memory.h":
+    void BMScheckEmptyMemory()
+    long long BMSgetMemoryUsed()
