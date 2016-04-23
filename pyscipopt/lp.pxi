@@ -19,7 +19,7 @@ cdef class LP:
         else:
             raise Warning("unrecognized objective sense")
 
-    def __del__(self):
+    def __dealloc__(self):
         PY_SCIP_CALL(SCIPlpiFree(&(self.lpi)))
 
     def __repr__(self):
