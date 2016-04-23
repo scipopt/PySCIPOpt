@@ -84,6 +84,7 @@ cdef SCIP_RETCODE PyConsDelete (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* 
     PyConshdlr = <Conshdlr>conshdlrdata
     # TODO
     PyConshdlr.consdelete()
+    consdata[0] = NULL
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsTrans (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* sourcecons, SCIP_CONS** targetcons):
