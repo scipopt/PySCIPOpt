@@ -1,3 +1,4 @@
+import weakref
 from os.path import abspath
 import sys
 
@@ -299,6 +300,8 @@ cdef class Model:
     cdef Solution _bestSol
     # can be used to store problem data
     cdef public object data
+    # make Model weak referentiable
+    cdef object __weakref__
 
     def __init__(self, problemName='model', defaultPlugins=True):
         """
@@ -870,8 +873,7 @@ cdef class Model:
         cdef SCIP_PRICER* scip_pricer
         scip_pricer = SCIPfindPricer(self._scip, n)
         PY_SCIP_CALL(SCIPactivatePricer(self._scip, scip_pricer))
-        pricer.model = self
-        Py_DECREF(self)
+        pricer.model = <Model>weakref.proxy(self)
         self._stuff.append(pricer)
 
     def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority=0,
@@ -909,8 +911,7 @@ cdef class Model:
                                               PyConsActive, PyConsDeactive, PyConsEnable, PyConsDisable, PyConsDelvars, PyConsPrint, PyConsCopy,
                                               PyConsParse, PyConsGetvars, PyConsGetnvars, PyConsGetdivebdchgs,
                                               <SCIP_CONSHDLRDATA*>conshdlr))
-        conshdlr.model = self
-        Py_DECREF(self)
+        conshdlr.model = <Model>weakref.proxy(self)
         conshdlr.name = name
         self._stuff.append(conshdlr)
 
@@ -939,8 +940,7 @@ cdef class Model:
         d = str_conversion(desc)
         PY_SCIP_CALL(SCIPincludePresol(self._scip, n, d, priority, maxrounds, timing, PyPresolCopy, PyPresolFree, PyPresolInit,
                                             PyPresolExit, PyPresolInitpre, PyPresolExitpre, PyPresolExec, <SCIP_PRESOLDATA*>presol))
-        presol.model = self
-        Py_DECREF(self)
+        presol.model = <Model>weakref.proxy(self)
         self._stuff.append(presol)
 
     def includeSepa(self, Sepa sepa, name, desc, priority, freq, maxbounddist, usessubscip=False, delay=False):
@@ -960,8 +960,7 @@ cdef class Model:
         d = str_conversion(desc)
         PY_SCIP_CALL(SCIPincludeSepa(self._scip, n, d, priority, freq, maxbounddist, usessubscip, delay, PySepaCopy, PySepaFree,
                                           PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, PySepaExeclp, PySepaExecsol, <SCIP_SEPADATA*>sepa))
-        sepa.model = self
-        Py_DECREF(self)
+        sepa.model = <Model>weakref.proxy(self)
         self._stuff.append(sepa)
 
     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
@@ -989,8 +988,7 @@ cdef class Model:
                                           PyPropInitpre, PyPropExitpre, PyPropInitsol, PyPropExitsol,
                                           PyPropPresol, PyPropExec, PyPropResProp,
                                           <SCIP_PROPDATA*> prop))
-        prop.model = self
-        Py_DECREF(self)
+        prop.model = <Model>weakref.proxy(self)
         self._stuff.append(prop)
 
     def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,
@@ -1018,8 +1016,7 @@ cdef class Model:
                                           PyHeurCopy, PyHeurFree, PyHeurInit, PyHeurExit,
                                           PyHeurInitsol, PyHeurExitsol, PyHeurExec,
                                           <SCIP_HEURDATA*> heur))
-        heur.model = self
-        Py_DECREF(self)
+        heur.model = <Model>weakref.proxy(self)
         heur.name = name
         self._stuff.append(heur)
 
@@ -1081,8 +1078,7 @@ cdef class Model:
                                           PyBranchruleCopy, PyBranchruleFree, PyBranchruleInit, PyBranchruleExit,
                                           PyBranchruleInitsol, PyBranchruleExitsol, PyBranchruleExeclp, PyBranchruleExecext,
                                           PyBranchruleExecps, <SCIP_BRANCHRULEDATA*> branchrule))
-        branchrule.model = self
-        Py_DECREF(self)
+        branchrule.model = <Model>weakref.proxy(self)
         self._stuff.append(branchrule)
 
     # Solution functions
