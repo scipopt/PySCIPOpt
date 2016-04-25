@@ -1,5 +1,11 @@
+import gc
+import weakref
+
+import pytest
+
 from pyscipopt import Model, Heur, SCIP_RESULT, SCIP_PARAMSETTING, SCIP_HEURTIMING
 from pyscipopt.scip import is_memory_freed
+
 from util import is_optimized_mode
 
 class MyHeur(Heur):
@@ -43,7 +49,18 @@ def test_heur():
 def test_heur_memory():
     if is_optimized_mode():
        pytest.skip()
-    test_heur()
+
+    def inner():
+        s = Model()
+        heuristic = MyHeur()
+        s.includeHeur(heuristic, "PyHeur", "custom heuristic implemented in python", "Y", timingmask=SCIP_HEURTIMING.BEFORENODE)
+        return weakref.proxy(heuristic)
+
+    heur_prox = inner()
+    gc.collect() # necessary?
+    with pytest.raises(ReferenceError):
+        heur_prox.name
+
     assert is_memory_freed()
 
 if __name__ == "__main__":
