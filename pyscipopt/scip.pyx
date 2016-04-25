@@ -294,8 +294,6 @@ cdef class Constraint:
 # - interface SCIPfreeProb()
 cdef class Model:
     cdef SCIP* _scip
-    # store all user plugins so they don't get garbage-collected
-    cdef _stuff
     # store best solution to get the solution values easier
     cdef Solution _bestSol
     # can be used to store problem data
@@ -310,8 +308,6 @@ cdef class Model:
         defaultPlugins -- use default plugins? (default True)
         """
         self.create()
-        self._stuff = []
-        Py_INCREF(self._stuff)
         self._bestSol = None
         if defaultPlugins:
             self.includeDefaultPlugins()
@@ -321,7 +317,6 @@ cdef class Model:
         # call C function directly, because we can no longer call this object's methods, according to
         # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
         PY_SCIP_CALL( SCIPfree(&self._scip) )
-        Py_DECREF(self._stuff)
 
     @scipErrorHandler
     def create(self):
@@ -765,7 +760,7 @@ cdef class Model:
         cons -- the Python constraint
         """
         PY_SCIP_CALL(SCIPaddCons(self._scip, cons.cons))
-        self._stuff.append(cons)
+        Py_INCREF(cons)
 
     def addVarSOS1(self, Constraint cons, Variable var, weight):
         """Add variable to SOS1 constraint.
@@ -874,7 +869,7 @@ cdef class Model:
         scip_pricer = SCIPfindPricer(self._scip, n)
         PY_SCIP_CALL(SCIPactivatePricer(self._scip, scip_pricer))
         pricer.model = <Model>weakref.proxy(self)
-        self._stuff.append(pricer)
+        Py_INCREF(pricer)
 
     def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority=0,
                         enfopriority=0, chckpriority=0, sepafreq=-1, propfreq=-1,
@@ -913,7 +908,7 @@ cdef class Model:
                                               <SCIP_CONSHDLRDATA*>conshdlr))
         conshdlr.model = <Model>weakref.proxy(self)
         conshdlr.name = name
-        self._stuff.append(conshdlr)
+        Py_INCREF(conshdlr)
 
     def createCons(self, Conshdlr conshdlr, name, initial=True, separate=True, enforce=True, check=True, propagate=True,
                    local=False, modifiable=False, dynamic=False, removable=False, stickingatnode=False):
@@ -941,7 +936,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPincludePresol(self._scip, n, d, priority, maxrounds, timing, PyPresolCopy, PyPresolFree, PyPresolInit,
                                             PyPresolExit, PyPresolInitpre, PyPresolExitpre, PyPresolExec, <SCIP_PRESOLDATA*>presol))
         presol.model = <Model>weakref.proxy(self)
-        self._stuff.append(presol)
+        Py_INCREF(presol)
 
     def includeSepa(self, Sepa sepa, name, desc, priority, freq, maxbounddist, usessubscip=False, delay=False):
         """Include a separator
@@ -961,7 +956,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPincludeSepa(self._scip, n, d, priority, freq, maxbounddist, usessubscip, delay, PySepaCopy, PySepaFree,
                                           PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, PySepaExeclp, PySepaExecsol, <SCIP_SEPADATA*>sepa))
         sepa.model = <Model>weakref.proxy(self)
-        self._stuff.append(sepa)
+        Py_INCREF(sepa)
 
     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
                     proptiming, presoltiming=SCIP_PRESOLTIMING_FAST, priority=1, freq=1, delay=True):
@@ -989,7 +984,7 @@ cdef class Model:
                                           PyPropPresol, PyPropExec, PyPropResProp,
                                           <SCIP_PROPDATA*> prop))
         prop.model = <Model>weakref.proxy(self)
-        self._stuff.append(prop)
+        Py_INCREF(prop)
 
     def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,
                     maxdepth=-1, timingmask=SCIP_HEURTIMING_BEFORENODE, usessubscip=False):
@@ -1019,7 +1014,6 @@ cdef class Model:
         heur.model = <Model>weakref.proxy(self)
         heur.name = name
         Py_INCREF(heur)
-        #self._stuff.append(heur)
 
     def createSol(self, Heur heur):
         """Create a new primal solution.
@@ -1080,7 +1074,7 @@ cdef class Model:
                                           PyBranchruleInitsol, PyBranchruleExitsol, PyBranchruleExeclp, PyBranchruleExecext,
                                           PyBranchruleExecps, <SCIP_BRANCHRULEDATA*> branchrule))
         branchrule.model = <Model>weakref.proxy(self)
-        self._stuff.append(branchrule)
+        Py_INCREF(branchrule)
 
     # Solution functions
 
