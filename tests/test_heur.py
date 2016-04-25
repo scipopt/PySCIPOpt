@@ -1,5 +1,6 @@
 from pyscipopt import Model, Heur, SCIP_RESULT, SCIP_PARAMSETTING, SCIP_HEURTIMING
-
+from pyscipopt.scip import is_memory_freed
+from util import is_optimized_mode
 
 class MyHeur(Heur):
 
@@ -17,7 +18,6 @@ class MyHeur(Heur):
             return {"result": SCIP_RESULT.FOUNDSOL}
         else:
             return {"result": SCIP_RESULT.DIDNOTFIND}
-
 
 def test_heur():
     # create solver instance
@@ -40,7 +40,11 @@ def test_heur():
     assert round(s.getVal(x)) == 5.0
     assert round(s.getVal(y)) == 0.0
 
-    s.printStatistics()
+def test_heur_memory():
+    if is_optimized_mode():
+       pytest.skip()
+    test_heur()
+    assert is_memory_freed()
 
 if __name__ == "__main__":
     test_heur()
