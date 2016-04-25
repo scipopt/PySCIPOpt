@@ -1018,7 +1018,8 @@ cdef class Model:
                                           <SCIP_HEURDATA*> heur))
         heur.model = <Model>weakref.proxy(self)
         heur.name = name
-        self._stuff.append(heur)
+        Py_INCREF(heur)
+        #self._stuff.append(heur)
 
     def createSol(self, Heur heur):
         """Create a new primal solution.
