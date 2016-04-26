@@ -85,7 +85,6 @@ cdef SCIP_RETCODE PyConsDelete (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* 
     PyConshdlr = <Conshdlr>conshdlrdata
     PyCons = getPyCons(cons)
     assert <Constraint>consdata[0] == PyCons
-    print("Assert is passed")
     PyConshdlr.consdelete()
     consdata[0] = NULL
     Py_DECREF(PyCons)
