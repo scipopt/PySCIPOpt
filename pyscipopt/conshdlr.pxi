@@ -83,10 +83,12 @@ cdef SCIP_RETCODE PyConsDelete (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* 
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    # TODO: do something on the SCIP side, per constraint?
+    PyCons = getPyCons(cons)
+    assert <Constraint>consdata[0] == PyCons
+    print("Assert is passed")
     PyConshdlr.consdelete()
     consdata[0] = NULL
-    # TODO: call Py_DECREF on the Python object for the CONSDATA
+    Py_DECREF(PyCons)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsTrans (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* sourcecons, SCIP_CONS** targetcons):
