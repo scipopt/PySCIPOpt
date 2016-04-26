@@ -16,6 +16,7 @@ cdef SCIP_RETCODE PyConsFree (SCIP* scip, SCIP_CONSHDLR* conshdlr):
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
     PyConshdlr.consfree()
+    Py_DECREF(PyConshdlr)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsInit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss):
@@ -82,9 +83,10 @@ cdef SCIP_RETCODE PyConsDelete (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* 
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
     PyConshdlr = <Conshdlr>conshdlrdata
-    # TODO
+    # TODO: do something on the SCIP side, per constraint?
     PyConshdlr.consdelete()
     consdata[0] = NULL
+    # TODO: call Py_DECREF on the Python object for the CONSDATA
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsTrans (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* sourcecons, SCIP_CONS** targetcons):

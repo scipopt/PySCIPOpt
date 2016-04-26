@@ -6,6 +6,7 @@ cdef SCIP_RETCODE PySepaFree (SCIP* scip, SCIP_SEPA* sepa):
     sepadata = SCIPsepaGetData(sepa)
     PySepa = <Sepa>sepadata
     PySepa.sepafree()
+    Py_DECREF(PySepa)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PySepaInit (SCIP* scip, SCIP_SEPA* sepa):

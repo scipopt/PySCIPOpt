@@ -6,6 +6,7 @@ cdef SCIP_RETCODE PyReaderFree (SCIP* scip, SCIP_READER* reader):
     readerdata = SCIPreaderGetData(reader)
     PyReader = <Reader>readerdata
     PyReader.free()
+    Py_DECREF(PyReader)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyReaderRead (SCIP* scip, SCIP_READER* reader, const char* file, SCIP_RESULT* result):

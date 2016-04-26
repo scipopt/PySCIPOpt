@@ -6,6 +6,7 @@ cdef SCIP_RETCODE PyNodeselFree (SCIP* scip, SCIP_NODESEL* nodesel):
     nodeseldata = SCIPnodeselGetData(nodesel)
     PyNodesel = <Nodesel>nodeseldata
     PyNodesel.free()
+    Py_DECREF(PyNodesel)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyNodeselInit (SCIP* scip, SCIP_NODESEL* nodesel):

@@ -6,6 +6,7 @@ cdef SCIP_RETCODE PyBranchruleFree (SCIP* scip, SCIP_BRANCHRULE* branchrule):
     branchruledata = SCIPbranchruleGetData(branchrule)
     PyBranchrule = <Branchrule>branchruledata
     PyBranchrule.branchfree()
+    Py_DECREF(PyBranchrule)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyBranchruleInit (SCIP* scip, SCIP_BRANCHRULE* branchrule):
