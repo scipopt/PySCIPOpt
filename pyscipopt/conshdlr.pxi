@@ -187,12 +187,10 @@ cdef SCIP_RETCODE PyConsCheck (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** 
 
 cdef SCIP_RETCODE PyConsProp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, int nmarkedconss,
                               SCIP_PROPTIMING proptiming, SCIP_RESULT* result):
-    cdef SCIP_CONSHDLRDATA* conshdlrdata
-    conshdlrdata = SCIPconshdlrGetData(conshdlr)
-    PyConshdlr = <Conshdlr>conshdlrdata
+    PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
     for i in range(nconss):
-        constraints.append(Constraint.create(conss[i], SCIPconsGetName(conss[i]).decode("utf-8")))
+        constraints.append(getPyCons(conss[i]))
     result_dict = PyConshdlr.consprop(constraints, nusefulconss, nmarkedconss, proptiming)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
