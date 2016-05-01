@@ -250,6 +250,12 @@ cdef class Variable(LinExpr):
         scip_col = SCIPvarGetCol(self.var)
         return Column.create(scip_col)
 
+    def getLbLocal(self):
+        return SCIPvarGetLbLocal(self.var)
+
+    def getUbLocal(self):
+        return SCIPvarGetUbLocal(self.var)
+
 cdef class Constraint:
     cdef SCIP_CONS* cons
     cdef readonly str name

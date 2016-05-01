@@ -307,6 +307,8 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
     SCIP_COL* SCIPvarGetCol(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsInLP(SCIP_VAR* var)
+    SCIP_Real SCIPvarGetLbLocal(SCIP_VAR* var)
+    SCIP_Real SCIPvarGetUbLocal(SCIP_VAR* var)
 
     # Constraint Methods
     SCIP_RETCODE SCIPcaptureCons(SCIP* scip, SCIP_CONS* cons)
