@@ -532,7 +532,7 @@ cdef class Model:
         """
         if ub is None:
            ub = SCIPinfinity(self._scip)
-        PY_SCIP_CALL(SCIPchgVarLb(self._scip, var.var, ub))
+        PY_SCIP_CALL(SCIPchgVarUb(self._scip, var.var, ub))
 
     def chgVarType(self, Variable var, vtype):
         cdef SCIP_Bool infeasible
