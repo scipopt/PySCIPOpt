@@ -57,6 +57,18 @@ cdef class PY_SCIP_PARAMSETTING:
     FAST        = SCIP_PARAMSETTING_FAST
     OFF         = SCIP_PARAMSETTING_OFF
 
+cdef class PY_SCIP_PARAMEMPHASIS:
+    DEFAULT      = SCIP_PARAMEMPHASIS_DEFAULT
+    CPSOLVER     = SCIP_PARAMEMPHASIS_CPSOLVER
+    EASYCIP      = SCIP_PARAMEMPHASIS_EASYCIP
+    FEASIBILITY  = SCIP_PARAMEMPHASIS_FEASIBILITY
+    HARDLP       = SCIP_PARAMEMPHASIS_HARDLP
+    OPTIMALITY   = SCIP_PARAMEMPHASIS_OPTIMALITY
+    COUNTER      = SCIP_PARAMEMPHASIS_COUNTER
+    PHASEFEAS    = SCIP_PARAMEMPHASIS_PHASEFEAS
+    PHASEIMPROVE = SCIP_PARAMEMPHASIS_PHASEIMPROVE
+    PHASEPROOF   = SCIP_PARAMEMPHASIS_PHASEPROOF
+
 cdef class PY_SCIP_STATUS:
     UNKNOWN        = SCIP_STATUS_UNKNOWN
     USERINTERRUPT  = SCIP_STATUS_USERINTERRUPT
@@ -1266,6 +1278,15 @@ cdef class Model:
         """
         absfile = bytes(abspath(file), 'utf-8')
         PY_SCIP_CALL(SCIPreadParams(self._scip, absfile))
+
+    def setEmphasis(self, paraemphasis, quiet = True):
+        """Sets parameters to... #TODO
+
+        Keyword arguments:
+        paraemphasis -- emphasis to set
+        extension -- hide output? (default None)
+        """
+        PY_SCIP_CALL(SCIPsetEmphasis(self._scip, paraemphasis, quiet))
 
     def readProblem(self, file, extension = None):
         """Read a problem instance from an external file.

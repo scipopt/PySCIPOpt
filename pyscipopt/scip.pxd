@@ -92,6 +92,18 @@ cdef extern from "scip/scip.h":
         SCIP_PARAMSETTING_FAST       = 2
         SCIP_PARAMSETTING_OFF        = 3
 
+    ctypedef enum SCIP_PARAMEMPHASIS:
+        SCIP_PARAMEMPHASIS_DEFAULT      = 0
+        SCIP_PARAMEMPHASIS_CPSOLVER     = 1
+        SCIP_PARAMEMPHASIS_EASYCIP      = 2
+        SCIP_PARAMEMPHASIS_FEASIBILITY  = 3
+        SCIP_PARAMEMPHASIS_HARDLP       = 4
+        SCIP_PARAMEMPHASIS_OPTIMALITY   = 5
+        SCIP_PARAMEMPHASIS_COUNTER      = 6
+        SCIP_PARAMEMPHASIS_PHASEFEAS    = 7
+        SCIP_PARAMEMPHASIS_PHASEIMPROVE = 8
+        SCIP_PARAMEMPHASIS_PHASEPROOF   = 9
+
     ctypedef enum SCIP_PROPTIMING:
         SCIP_PROPTIMING_BEFORELP     = 0x001u
         SCIP_PROPTIMING_DURINGLPLOOP = 0x002u
@@ -575,6 +587,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetStringParam(SCIP* scip, char* name, char* value)
     SCIP_RETCODE SCIPreadParams(SCIP* scip, char* file)
     SCIP_RETCODE SCIPreadProb(SCIP* scip, char* file, char* extension)
+    SCIP_RETCODE SCIPsetEmphasis(SCIP* scip, SCIP_PARAMEMPHASIS paramemphasis, SCIP_Bool quiet);
 
     # LPI Functions
     SCIP_RETCODE SCIPlpiCreate(SCIP_LPI** lpi, SCIP_MESSAGEHDLR* messagehdlr, const char* name, SCIP_OBJSENSE objsen)
