@@ -247,14 +247,12 @@ cdef SCIP_RETCODE PyConsResprop (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS*
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsLock (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, int nlockspos, int nlocksneg):
-    cdef SCIP_CONSHDLRDATA* conshdlrdata
-    conshdlrdata = SCIPconshdlrGetData(conshdlr)
-    PyConshdlr = <Conshdlr>conshdlrdata
+    PyConshdlr = getPyConshdlr(conshdlr)
     if cons == NULL:
         PyConshdlr.conslock(None, nlockspos, nlocksneg)
     else:
-        constraint = (Constraint.create(cons, SCIPconsGetName(cons).decode("utf-8")))
-        PyConshdlr.conslock(constraint, nlockspos, nlocksneg)
+        PyCons = getPyCons(cons)
+        PyConshdlr.conslock(PyCons, nlockspos, nlocksneg)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsActive (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):
