@@ -128,19 +128,19 @@ class MyConshdlr(Conshdlr):
 
 
 def test_conshdlr():
-
     def create_model():
         # create solver instance
         s = Model()
 
         # add some variables
-        x = s.addVar("x", obj = 1.0, vtype = "I")
-        y = s.addVar("y", obj = 2.0, vtype = "I")
+        x = s.addVar("x", obj = -1.0, vtype = "I", lb=-10)
+        y = s.addVar("y", obj = 1.0, vtype = "I", lb=-1000)
+        z = s.addVar("z", obj = 1.0, vtype = "I", lb=-1000)
 
         # add some constraint
-        s.addCons(x + 2*y >= 5)
-        s.addCons(x + 2.1 * y >= 5)
-        s.addCons(x + 1.9 * y >= 5)
+        s.addCons(314*x + 867*y + 860*z == 363)
+        s.addCons(87*x + 875*y - 695*z == 423)
+
 
         # create conshdlr and include it to SCIP
         conshdlr = MyConshdlr()
@@ -159,7 +159,6 @@ def test_conshdlr():
         # add these constraints
         s.addPyCons(cons1)
         s.addPyCons(cons2)
-        print("constraints have been added!")
         return s
 
     s = create_model()
