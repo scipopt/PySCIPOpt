@@ -141,11 +141,10 @@ def test_conshdlr():
         s.addCons(314*x + 867*y + 860*z == 363)
         s.addCons(87*x + 875*y - 695*z == 423)
 
-
         # create conshdlr and include it to SCIP
         conshdlr = MyConshdlr()
         s.includeConshdlr(conshdlr, "PyCons", "custom constraint handler implemented in python",
-                          sepapriority = 1, enfopriority = 1, chckpriority = 1, sepafreq = 1, propfreq = 1,
+                          sepapriority = 1, enfopriority = -1, chckpriority = 1, sepafreq = 10, propfreq = 50,
                           eagerfreq = 1, maxprerounds = -1, delaysepa = False, delayprop = False, needscons = True,
                           presoltiming = SCIP_PRESOLTIMING.FAST, proptiming = SCIP_PROPTIMING.BEFORELP)
 
