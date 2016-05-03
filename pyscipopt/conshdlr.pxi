@@ -100,7 +100,7 @@ cdef SCIP_RETCODE PyConsInitlp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS**
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     result_dict = PyConshdlr.consinitlp(constraints)
-    infeasible[0] = result_dict.get("infeasible", infeasible[0])
+    #infeasible[0] = result_dict.get("infeasible", infeasible[0])
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsSepalp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, SCIP_RESULT* result):
