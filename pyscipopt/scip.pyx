@@ -415,7 +415,7 @@ cdef class Model:
         if isinstance(coeffs, LinExpr):
             # transform linear expression into variable dictionary
             terms = coeffs.terms
-            coeffs = {t:c for t, c in terms.items() if c != 0.0}
+            coeffs = {t[0]:c for t, c in terms.items() if c != 0.0}
         elif coeffs == 0:
             coeffs = {}
         for k in coeffs:
