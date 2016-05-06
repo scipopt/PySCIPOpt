@@ -129,6 +129,36 @@ cdef extern from "scip/scip.h":
         SCIP_HEURTIMING_DURINGPRESOLLOOP  = 0x200u
         SCIP_HEURTIMING_AFTERPROPLOOP     = 0x400u
 
+    ctypedef enum SCIP_EXPROP:
+        SCIP_EXPR_VARIDX    =  1
+        SCIP_EXPR_CONST     =  2
+        SCIP_EXPR_PARAM     =  3
+        SCIP_EXPR_PLUS      =  8
+        SCIP_EXPR_MINUS     =  9
+        SCIP_EXPR_MUL       = 10
+        SCIP_EXPR_DIV       = 11
+        SCIP_EXPR_SQUARE    = 12
+        SCIP_EXPR_SQRT      = 13
+        SCIP_EXPR_REALPOWER = 14
+        SCIP_EXPR_INTPOWER  = 15
+        SCIP_EXPR_SIGNPOWER = 16
+        SCIP_EXPR_EXP       = 17
+        SCIP_EXPR_LOG       = 18
+        SCIP_EXPR_SIN       = 19
+        SCIP_EXPR_COS       = 20
+        SCIP_EXPR_TAN       = 21
+        SCIP_EXPR_MIN       = 24
+        SCIP_EXPR_MAX       = 25
+        SCIP_EXPR_ABS       = 26
+        SCIP_EXPR_SIGN      = 27
+        SCIP_EXPR_SUM       = 64
+        SCIP_EXPR_PRODUCT   = 65
+        SCIP_EXPR_LINEAR    = 66
+        SCIP_EXPR_QUADRATIC = 67
+        SCIP_EXPR_POLYNOMIAL= 68
+        SCIP_EXPR_USER      = 69
+        SCIP_EXPR_LAST      = 70
+
     ctypedef bint SCIP_Bool
 
     ctypedef long long SCIP_Longint
@@ -247,6 +277,18 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_LPI:
+        pass
+
+    ctypedef struct BMS_BLKMEM:
+        pass
+
+    ctypedef struct SCIP_EXPR:
+        pass
+
+    ctypedef struct SCIP_EXPRTREE:
+        pass
+
+    ctypedef struct SCIP_EXPRDATA_MONOMIAL:
         pass
 
     # General SCIP Methods
@@ -621,6 +663,8 @@ cdef extern from "scip/scip.h":
     SCIP_Real    SCIPlpiInfinity(SCIP_LPI* lpi)
     SCIP_Bool    SCIPlpiIsInfinity(SCIP_LPI* lpi, SCIP_Real val)
 
+    BMS_BLKMEM* SCIPblkmem(SCIP* scip)
+
 cdef extern from "scip/scipdefplugins.h":
     SCIP_RETCODE SCIPincludeDefaultPlugins(SCIP* scip)
 
@@ -739,3 +783,58 @@ cdef extern from "scip/cons_sos2.h":
 cdef extern from "blockmemshell/memory.h":
     void BMScheckEmptyMemory()
     long long BMSgetMemoryUsed()
+
+cdef extern from "nlpi/pub_expr.h":
+    SCIP_RETCODE SCIPexprCreate(BMS_BLKMEM* blkmem,
+                                SCIP_EXPR** expr,
+                                SCIP_EXPROP op,
+                                ...)
+    SCIP_RETCODE SCIPexprCreateMonomial(BMS_BLKMEM* blkmem,
+                                        SCIP_EXPRDATA_MONOMIAL** monomial,
+                                        SCIP_Real coef,
+                                        int nfactors,
+                                        int* childidxs,
+                                        SCIP_Real* exponents)
+    SCIP_RETCODE SCIPexprCreatePolynomial(BMS_BLKMEM* blkmem,
+                                          SCIP_EXPR** expr,
+                                          int nchildren,
+                                          SCIP_EXPR** children,
+                                          int nmonomials,
+                                          SCIP_EXPRDATA_MONOMIAL** monomials,
+                                          SCIP_Real constant,
+                                          SCIP_Bool copymonomials)
+    SCIP_RETCODE SCIPexprtreeCreate(BMS_BLKMEM* blkmem,
+                                    SCIP_EXPRTREE** tree,
+                                    SCIP_EXPR* root,
+                                    int nvars,
+                                    int nparams,
+                                    SCIP_Real* params)
+    SCIP_RETCODE SCIPexprtreeFree(SCIP_EXPRTREE** tree)
+
+cdef extern from "scip/pub_nlp.h":
+    SCIP_RETCODE SCIPexprtreeSetVars(SCIP_EXPRTREE* tree,
+                                     int nvars,
+                                     SCIP_VAR** vars)
+
+cdef extern from "scip/cons_nonlinear.h":
+    SCIP_RETCODE SCIPcreateConsNonlinear(SCIP* scip,
+                                         SCIP_CONS** cons,
+                                         const char* name,
+                                         int nlinvars,
+                                         SCIP_VAR** linvars,
+                                         SCIP_Real* lincoefs,
+                                         int nexprtrees,
+                                         SCIP_EXPRTREE** exprtrees,
+                                         SCIP_Real* nonlincoefs,
+                                         SCIP_Real lhs,
+                                         SCIP_Real rhs,
+                                         SCIP_Bool initial,
+                                         SCIP_Bool separate,
+                                         SCIP_Bool enforce,
+                                         SCIP_Bool check,
+                                         SCIP_Bool propagate,
+                                         SCIP_Bool local,
+                                         SCIP_Bool modifiable,
+                                         SCIP_Bool dynamic,
+                                         SCIP_Bool removable,
+                                         SCIP_Bool stickingatnode)

@@ -1,6 +1,6 @@
 import pytest
 
-from pyscipopt import Model
+from pyscipopt import Model, quicksum
 from pyscipopt.scip import LinExpr, LinCons
 
 def test_string():
@@ -52,7 +52,7 @@ def test_string():
 
     m.addCons(quicksum(y) == 1, name='selectwire')
 
-    m.solve()
+    m.optimize()
 
 if __name__ == '__main__':
     test_string()

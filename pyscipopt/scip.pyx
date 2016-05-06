@@ -3,6 +3,7 @@ from os.path import abspath
 import sys
 
 from cpython cimport Py_INCREF, Py_DECREF
+from libc.stdlib cimport malloc, free
 
 include "linexpr.pxi"
 include "lp.pxi"
@@ -617,7 +618,7 @@ cdef class Model:
             elif deg <= 2:
                 return self._addQuadCons(coeffs, **kwargs)
             else:
-                raise NotImplementedError('Constraints of degree %d!' % deg)
+                return self._addNonlinearCons(coeffs, **kwargs)
 
         if lhs is None:
             lhs = -SCIPinfinity(self._scip)
@@ -682,6 +683,69 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
 
         return Constraint.create(scip_cons, SCIPconsGetName(scip_cons).decode("utf-8"))
+
+    def _addNonlinearCons(self, LinCons cons, **kwargs):
+        """Add object of class LinCons."""
+        cdef SCIP_EXPR* expr
+        cdef SCIP_EXPR** varexprs
+        cdef SCIP_EXPRDATA_MONOMIAL** monomials
+        cdef int* idxs
+        cdef SCIP_EXPRTREE* exprtree
+        cdef SCIP_VAR** vars
+        cdef SCIP_CONS* scip_cons
+
+        assert isinstance(cons, LinCons)
+        kwargs['lhs'], kwargs['rhs'] = cons.lb, cons.ub
+        terms = cons.expr.terms
+        assert terms[()] == 0.0
+
+        # collect variables
+        variables = list(set(var for term in terms for var in term))
+        varindex = {var:idx for (idx,var) in enumerate(variables)}
+
+        # create variable expressions
+        varexprs = <SCIP_EXPR**> malloc(len(varindex) * sizeof(SCIP_EXPR*))
+        for var, idx in varindex.items():
+            PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &expr, SCIP_EXPR_VARIDX, <int>idx) )
+            varexprs[idx] = expr
+
+        # create monomials for terms
+        monomials = <SCIP_EXPRDATA_MONOMIAL**> malloc(len(terms) * sizeof(SCIP_EXPRDATA_MONOMIAL*))
+        for i, (term, coef) in enumerate(terms.items()):
+            idxs = <int*> malloc(len(term) * sizeof(int))
+            for j, var in enumerate(term):
+                idxs[j] = varindex[var]
+            PY_SCIP_CALL( SCIPexprCreateMonomial(SCIPblkmem(self._scip), &monomials[i], <SCIP_Real>coef, <int>len(terms), idxs, NULL) );
+            free(idxs)
+
+        # create polynomial from monomials
+        PY_SCIP_CALL( SCIPexprCreatePolynomial(SCIPblkmem(self._scip), &expr, 0, NULL, <int>len(terms), monomials, 0.0, <SCIP_Bool>True) );
+
+        # create expression tree
+        PY_SCIP_CALL( SCIPexprtreeCreate(SCIPblkmem(self._scip), &exprtree, expr, <int>len(variables), 0, NULL) );
+        vars = <SCIP_VAR**> malloc(len(variables) * sizeof(SCIP_VAR*))
+        for idx, var in enumerate(variables): # same as varindex
+            vars[idx] = (<Variable>var).var
+        PY_SCIP_CALL( SCIPexprtreeSetVars(exprtree, <int>len(variables), vars) );
+
+        # create nonlinear constraint for exprtree
+        PY_SCIP_CALL( SCIPcreateConsNonlinear(
+            self._scip, &scip_cons, "nonlin",
+            0, NULL, NULL, # linear
+            1, &exprtree, NULL, # nonlinear
+            kwargs['lhs'], kwargs['rhs'],
+            kwargs['initial'], kwargs['separate'], kwargs['enforce'],
+            kwargs['check'], kwargs['propagate'], kwargs['local'],
+            kwargs['modifiable'], kwargs['dynamic'], kwargs['removable'],
+            kwargs['stickingatnode']) )
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        result = Constraint.create(scip_cons, SCIPconsGetName(scip_cons).decode("utf-8"))
+
+        PY_SCIP_CALL( SCIPexprtreeFree(&exprtree) )
+        free(vars)
+        free(monomials)
+        free(varexprs)
+        return result
 
     def addConsCoeff(self, Constraint cons, Variable var, coeff):
         """Add coefficient to the linear constraint (if non-zero).

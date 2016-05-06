@@ -1,5 +1,3 @@
-from libc.stdlib cimport malloc, free
-
 cdef class LP:
     cdef SCIP_LPI* lpi
     cdef readonly str name
