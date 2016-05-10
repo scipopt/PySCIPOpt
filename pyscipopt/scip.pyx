@@ -715,11 +715,13 @@ cdef class Model:
             idxs = <int*> malloc(len(term) * sizeof(int))
             for j, var in enumerate(term):
                 idxs[j] = varindex[var]
-            PY_SCIP_CALL( SCIPexprCreateMonomial(SCIPblkmem(self._scip), &monomials[i], <SCIP_Real>coef, <int>len(terms), idxs, NULL) );
+            PY_SCIP_CALL( SCIPexprCreateMonomial(SCIPblkmem(self._scip), &monomials[i], <SCIP_Real>coef, <int>len(term), idxs, NULL) );
             free(idxs)
 
         # create polynomial from monomials
-        PY_SCIP_CALL( SCIPexprCreatePolynomial(SCIPblkmem(self._scip), &expr, 0, NULL, <int>len(terms), monomials, 0.0, <SCIP_Bool>True) );
+        PY_SCIP_CALL( SCIPexprCreatePolynomial(SCIPblkmem(self._scip), &expr,
+                                               <int>len(varindex), varexprs,
+                                               <int>len(terms), monomials, 0.0, <SCIP_Bool>True) );
 
         # create expression tree
         PY_SCIP_CALL( SCIPexprtreeCreate(SCIPblkmem(self._scip), &exprtree, expr, <int>len(variables), 0, NULL) );
