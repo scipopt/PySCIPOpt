@@ -1,8 +1,12 @@
-import networkx
-from networkx.algorithms import bipartite
-from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PARAMEMPHASIS, SCIP_PARAMSETTING
-from types import SimpleNamespace
-import matplotlib.pyplot as plt
+try:
+    import networkx
+    from networkx.algorithms import bipartite
+    from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PARAMEMPHASIS, SCIP_PARAMSETTING
+    from types import SimpleNamespace
+    import matplotlib.pyplot as plt
+except:
+    import pytest
+    pytest.skip()
 
 #initial Sudoku values
 init = [5, 3, 0, 0, 7, 0, 0, 0, 0,
