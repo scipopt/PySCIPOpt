@@ -657,11 +657,9 @@ cdef class Model:
         assert quadcons.expr.degree() <= 2
         assert terms[()] == 0.0
 
-        name = str_conversion("quadcons") # TODO
-
         cdef SCIP_CONS* scip_cons
         PY_SCIP_CALL(SCIPcreateConsQuadratic(
-            self._scip, &scip_cons, name,
+            self._scip, &scip_cons, str_conversion(kwargs['name']),
             0, NULL, NULL,        # linear
             0, NULL, NULL, NULL,  # quadratc
             kwargs['lhs'], kwargs['rhs'],
