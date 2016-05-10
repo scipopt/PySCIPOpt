@@ -732,7 +732,7 @@ cdef class Model:
 
         # create nonlinear constraint for exprtree
         PY_SCIP_CALL( SCIPcreateConsNonlinear(
-            self._scip, &scip_cons, "nonlin",
+            self._scip, &scip_cons, str_conversion(kwargs['name']),
             0, NULL, NULL, # linear
             1, &exprtree, NULL, # nonlinear
             kwargs['lhs'], kwargs['rhs'],
