@@ -150,6 +150,7 @@ def test_inequality(model):
     assert cons.expr[y] == 2.0
     assert cons.expr[z] == 0.0
     assert cons.expr[()] == 0.0
+    assert () not in cons.expr.terms
 
     cons = expr >= 5
     assert isinstance(cons, LinCons)
@@ -159,6 +160,7 @@ def test_inequality(model):
     assert cons.expr[y] == 2.0
     assert cons.expr[z] == 0.0
     assert cons.expr[()] == 0.0
+    assert () not in cons.expr.terms
 
     cons = 5 <= x + 2*y - 3
     assert isinstance(cons, LinCons)
@@ -168,6 +170,7 @@ def test_inequality(model):
     assert cons.expr[y] == 2.0
     assert cons.expr[z] == 0.0
     assert cons.expr[()] == 0.0
+    assert () not in cons.expr.terms
 
 def test_ranged(model):
     m, x, y, z = model

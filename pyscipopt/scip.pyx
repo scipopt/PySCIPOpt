@@ -625,7 +625,6 @@ cdef class Model:
 
         assert lincons.expr.degree() <= 1
         terms = lincons.expr.terms
-        assert terms[()] == 0.0
 
         cdef SCIP_CONS* scip_cons
         PY_SCIP_CALL(SCIPcreateConsLinear(
@@ -636,9 +635,6 @@ cdef class Model:
             kwargs['dynamic'], kwargs['removable'], kwargs['stickingatnode']))
 
         for key, coeff in terms.items():
-            if coeff == 0.0:
-                continue
-            assert len(key) == 1
             var = <Variable>key[0]
             PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, scip_cons, var.var, <SCIP_Real>coeff))
 
@@ -651,7 +647,6 @@ cdef class Model:
     def _addQuadCons(self, LinCons quadcons, **kwargs):
         terms = quadcons.expr.terms
         assert quadcons.expr.degree() <= 2
-        assert terms[()] == 0.0
 
         cdef SCIP_CONS* scip_cons
         PY_SCIP_CALL(SCIPcreateConsQuadratic(
@@ -664,9 +659,7 @@ cdef class Model:
             kwargs['modifiable'], kwargs['dynamic'], kwargs['removable']))
 
         for v, c in terms.items():
-            if len(v) == 0: # constant
-                assert c == 0.0
-            elif len(v) == 1: # linear
+            if len(v) == 1: # linear
                 var = <Variable>v[0]
                 PY_SCIP_CALL(SCIPaddLinearVarQuadratic(self._scip, scip_cons, var.var, c))
             else: # quadratic
@@ -688,7 +681,6 @@ cdef class Model:
         cdef SCIP_CONS* scip_cons
 
         terms = cons.expr.terms
-        assert terms[()] == 0.0
 
         # collect variables
         variables = list(set(var for term in terms for var in term))

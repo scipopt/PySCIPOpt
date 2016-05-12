@@ -49,6 +49,9 @@ cdef class LinExpr:
         if len(self.terms) == 0:
             self.terms[()] = 0.0
 
+    def _normalize(self):
+        self.terms =  {t:c for (t,c) in self.terms.items() if c != 0.0}
+
     def __getitem__(self, key):
         if not isinstance(key, tuple):
             key = (key,)
@@ -156,12 +159,14 @@ cdef class LinCons:
     def _normalize(self):
         '''move constant terms in expression to bounds'''
         c = self.expr[CONST]
+        self.expr -= c
         if not self.lhs is None:
             self.lhs -= c
         if not self.rhs is None:
             self.rhs -= c
-        self.expr -= c
+
         assert self.expr[CONST] == 0.0
+        self.expr._normalize()
 
     def __richcmp__(self, other, op):
         '''turn it into a constraint'''
