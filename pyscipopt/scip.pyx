@@ -608,8 +608,8 @@ cdef class Model:
                       modifiable=modifiable, dynamic=dynamic,
                       removable=removable,
                       stickingatnode=stickingatnode)
-        kwargs['lhs'] = -SCIPinfinity(self._scip) if cons.lb is None else cons.lb
-        kwargs['rhs'] =  SCIPinfinity(self._scip) if cons.ub is None else cons.ub
+        kwargs['lhs'] = -SCIPinfinity(self._scip) if cons.lhs is None else cons.lhs
+        kwargs['rhs'] =  SCIPinfinity(self._scip) if cons.rhs is None else cons.rhs
 
         deg = cons.expr.degree()
         if deg <= 1:

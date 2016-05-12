@@ -15,21 +15,21 @@ def _expr_richcmp(self, other, op):
         if isinstance(other, LinExpr):
             return (self - other) <= 0.0
         elif _is_number(other):
-            return LinCons(self, ub=float(other))
+            return LinCons(self, rhs=float(other))
         else:
             raise NotImplementedError
     elif op == 5: # >=
         if isinstance(other, LinExpr):
             return (self - other) >= 0.0
         elif _is_number(other):
-            return LinCons(self, lb=float(other))
+            return LinCons(self, lhs=float(other))
         else:
             raise NotImplementedError
     elif op == 2: # ==
         if isinstance(other, LinExpr):
             return (self - other) == 0.0
         elif _is_number(other):
-            return LinCons(self, lb=float(other), ub=float(other))
+            return LinCons(self, lhs=float(other), rhs=float(other))
         else:
             raise NotImplementedError
     else:
@@ -143,53 +143,53 @@ cdef class LinExpr:
 cdef class LinCons:
     '''Constraints with a linear expressions and lower/upper bounds.'''
     cdef public expr
-    cdef public lb
-    cdef public ub
+    cdef public lhs
+    cdef public rhs
 
-    def __init__(self, expr, lb=None, ub=None):
+    def __init__(self, expr, lhs=None, rhs=None):
         self.expr = expr
-        self.lb = lb
-        self.ub = ub
-        assert not (lb is None and ub is None)
+        self.lhs = lhs
+        self.rhs = rhs
+        assert not (lhs is None and rhs is None)
         self._normalize()
 
     def _normalize(self):
         '''move constant terms in expression to bounds'''
         c = self.expr[CONST]
-        if not self.lb is None:
-            self.lb -= c
-        if not self.ub is None:
-            self.ub -= c
+        if not self.lhs is None:
+            self.lhs -= c
+        if not self.rhs is None:
+            self.rhs -= c
         self.expr -= c
         assert self.expr[CONST] == 0.0
 
     def __richcmp__(self, other, op):
         '''turn it into a constraint'''
         if op == 1: # <=
-           if not self.ub is None:
+           if not self.rhs is None:
                raise TypeError('LinCons already has upper bound')
-           assert self.ub is None
-           assert not self.lb is None
+           assert self.rhs is None
+           assert not self.lhs is None
 
            if not _is_number(other):
                raise TypeError('Ranged LinCons is not well defined!')
 
-           return LinCons(self.expr, lb=self.lb, ub=float(other))
+           return LinCons(self.expr, lhs=self.lhs, rhs=float(other))
         elif op == 5: # >=
-           if not self.lb is None:
+           if not self.lhs is None:
                raise TypeError('LinCons already has lower bound')
-           assert self.lb is None
-           assert not self.ub is None
+           assert self.lhs is None
+           assert not self.rhs is None
 
            if not _is_number(other):
                raise TypeError('Ranged LinCons is not well defined!')
 
-           return LinCons(self.expr, lb=float(other), ub=self.ub)
+           return LinCons(self.expr, lhs=float(other), rhs=self.rhs)
         else:
             raise TypeError
 
     def __repr__(self):
-        return 'LinCons(%s, %s, %s)' % (self.expr, self.lb, self.ub)
+        return 'LinCons(%s, %s, %s)' % (self.expr, self.lhs, self.rhs)
 
     def __nonzero__(self):
         '''Make sure that equality of expressions is not asserted with =='''
