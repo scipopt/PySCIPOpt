@@ -1,4 +1,4 @@
-from pyscipopt import Model
+from pyscipopt import Model, quicksum
 
 def test_knapsack():
     # create solver instance
@@ -28,8 +28,7 @@ def test_knapsack():
 
 
     # adding a linear constraint for the knapsack constraint
-    coeffs = {knapsackVars[i]: weights[i] for i in range(len(weights))}
-    s.addCons(coeffs, lhs=None, rhs=knapsackSize)
+    s.addCons(quicksum(w*v for (w, v) in zip(weights, knapsackVars)) <= knapsackSize)
 
     # solve problem
     s.optimize()

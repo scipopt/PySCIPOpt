@@ -9,8 +9,7 @@ def test_lp():
     y = s.addVar("y", vtype='C', obj=2.0)
 
     # add some constraint
-    coeffs = {x: 1.0, y: 2.0}
-    s.addCons(coeffs, 5.0)
+    s.addCons(x + 2*y >= 5.0)
 
     # solve problem
     s.optimize()
@@ -25,7 +24,6 @@ def test_lp():
 
 
 def test_lpi():
-
     # create LP instance
     myLP = LP()
 
@@ -58,3 +56,4 @@ def test_lpi():
 
 if __name__ == "__main__":
     test_lp()
+    test_lpi()
