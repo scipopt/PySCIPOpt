@@ -581,19 +581,14 @@ cdef class Model:
 
 
     # Constraint functions
-    # . By default the lhs is set to 0.0.
-    # If the lhs is to be unbounded, then you set lhs to None.
-    # By default the rhs is unbounded.
-    def addCons(self, coeffs, lhs=0.0, rhs=None, name="cons",
-                initial=True, separate=True, enforce=True, check=True,
-                propagate=True, local=False, modifiable=False, dynamic=False,
-                removable=False, stickingatnode=False):
+    def addCons(self, cons, name="cons", initial=True, separate=True,
+                enforce=True, check=True, propagate=True, local=False,
+                modifiable=False, dynamic=False, removable=False,
+                stickingatnode=False):
         """Add a linear or quadratic constraint.
 
         Keyword arguments:
-        coeffs -- list of coefficients
-        lhs -- the left hand side (default 0.0)
-        rhs -- the right hand side (default None)
+        cons -- list of coefficients
         name -- the name of the constraint (default 'cons')
         initial -- should the LP relaxation of constraint be in the initial LP? (default True)
         separate -- should the constraint be separated during LP processing? (default True)
@@ -606,53 +601,54 @@ cdef class Model:
         removable -- hould the relaxation be removed from the LP due to aging or cleanup? (default False)
         stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
         """
-        if isinstance(coeffs, LinCons):
-            kwargs = dict(lhs=lhs, rhs=rhs, name=name,
-                          initial=initial, separate=separate, enforce=enforce,
-                          check=check, propagate=propagate, local=local,
-                          modifiable=modifiable, dynamic=dynamic,
-                          removable=removable, stickingatnode=stickingatnode)
-            deg = coeffs.expr.degree()
-            if deg <= 1:
-                return self._addLinCons(coeffs, **kwargs)
-            elif deg <= 2:
-                return self._addQuadCons(coeffs, **kwargs)
-            else:
-                return self._addNonlinearCons(coeffs, **kwargs)
+        assert isinstance(cons, LinCons)
+        kwargs = dict(name=name, initial=initial, separate=separate,
+                      enforce=enforce, check=check,
+                      propagate=propagate, local=local,
+                      modifiable=modifiable, dynamic=dynamic,
+                      removable=removable,
+                      stickingatnode=stickingatnode)
+        kwargs['lhs'] = -SCIPinfinity(self._scip) if cons.lb is None else cons.lb
+        kwargs['rhs'] =  SCIPinfinity(self._scip) if cons.ub is None else cons.ub
 
-        if lhs is None:
-            lhs = -SCIPinfinity(self._scip)
-        if rhs is None:
-            rhs = SCIPinfinity(self._scip)
-        cdef SCIP_CONS* scip_cons
-        PY_SCIP_CALL(SCIPcreateConsLinear(self._scip, &scip_cons, str_conversion(name), 0, NULL, NULL, lhs, rhs,
-            initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
-
-        for k in coeffs:
-            var = <Variable>k
-            PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, scip_cons, var.var, <SCIP_Real>coeffs[k]))
-
-        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        PyCons = Constraint.create(scip_cons, name)
-
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-
-        return PyCons
+        deg = cons.expr.degree()
+        if deg <= 1:
+            return self._addLinCons(cons, **kwargs)
+        elif deg <= 2:
+            return self._addQuadCons(cons, **kwargs)
+        else:
+            return self._addNonlinearCons(cons, **kwargs)
 
     def _addLinCons(self, LinCons lincons, **kwargs):
         """Add object of class LinCons."""
         assert isinstance(lincons, LinCons)
-        kwargs['lhs'], kwargs['rhs'] = lincons.lb, lincons.ub
-        terms = lincons.expr.terms
-        assert lincons.expr.degree() <= 1
-        assert terms[()] == 0.0
-        coeffs = {t[0]:c for t, c in terms.items() if c != 0.0}
 
-        return self.addCons(coeffs, **kwargs)
+        assert lincons.expr.degree() <= 1
+        terms = lincons.expr.terms
+        assert terms[()] == 0.0
+
+        cdef SCIP_CONS* scip_cons
+        PY_SCIP_CALL(SCIPcreateConsLinear(
+            self._scip, &scip_cons, str_conversion(kwargs['name']), 0, NULL, NULL,
+            kwargs['lhs'], kwargs['rhs'], kwargs['initial'],
+            kwargs['separate'], kwargs['enforce'], kwargs['check'],
+            kwargs['propagate'], kwargs['local'], kwargs['modifiable'],
+            kwargs['dynamic'], kwargs['removable'], kwargs['stickingatnode']))
+
+        for key, coeff in terms.items():
+            if coeff == 0.0:
+                continue
+            assert len(key) == 1
+            var = <Variable>key[0]
+            PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, scip_cons, var.var, <SCIP_Real>coeff))
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        PyCons = Constraint.create(scip_cons, kwargs['name'])
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        return PyCons
 
     def _addQuadCons(self, LinCons quadcons, **kwargs):
-        kwargs['lhs'] = -SCIPinfinity(self._scip) if quadcons.lb is None else quadcons.lb
-        kwargs['rhs'] =  SCIPinfinity(self._scip) if quadcons.ub is None else quadcons.ub
         terms = quadcons.expr.terms
         assert quadcons.expr.degree() <= 2
         assert terms[()] == 0.0
@@ -679,7 +675,6 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, var1.var, var2.var, c))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-
         return Constraint.create(scip_cons, SCIPconsGetName(scip_cons).decode("utf-8"))
 
     def _addNonlinearCons(self, LinCons cons, **kwargs):
