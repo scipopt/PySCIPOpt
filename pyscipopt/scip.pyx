@@ -687,8 +687,6 @@ cdef class Model:
         cdef SCIP_VAR** vars
         cdef SCIP_CONS* scip_cons
 
-        assert isinstance(cons, LinCons)
-        kwargs['lhs'], kwargs['rhs'] = cons.lb, cons.ub
         terms = cons.expr.terms
         assert terms[()] == 0.0
 
