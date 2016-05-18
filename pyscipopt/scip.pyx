@@ -5,7 +5,7 @@ import sys
 from cpython cimport Py_INCREF, Py_DECREF
 from libc.stdlib cimport malloc, free
 
-include "linexpr.pxi"
+include "expr.pxi"
 include "lp.pxi"
 
 include "branchrule.pxi"
