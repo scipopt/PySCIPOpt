@@ -103,7 +103,7 @@ cdef SCIP_RETCODE PyPropResProp (SCIP* scip, SCIP_PROP* prop, SCIP_VAR* infervar
     cdef SCIP_VAR* tmp
     tmp = infervar
     propdata = SCIPpropGetData(prop)
-    confvar = Variable.create(tmp, "conflictvar")
+    confvar = Variable.create(tmp)
 
     #TODO: parse bdchgidx?
 

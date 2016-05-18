@@ -203,14 +203,17 @@ cdef class Solution:
 cdef class Variable(Expr):
     """Is a linear expression and has SCIP_VAR*"""
     cdef SCIP_VAR* var
-    cdef readonly str name
 
     @staticmethod
-    cdef create(SCIP_VAR* scipvar, str name):
+    cdef create(SCIP_VAR* scipvar):
         var = Variable()
         var.var = scipvar
-        var.name = name
         return var
+
+    property name:
+        def __get__(self):
+            cname = bytes( SCIPvarGetName(self.var) )
+            return cname.decode('utf-8')
 
     def __init__(self):
         Expr.__init__(self, {(self,) : 1.0})
@@ -259,18 +262,18 @@ cdef class Variable(Expr):
 
 cdef class Constraint:
     cdef SCIP_CONS* cons
-    cdef readonly str name
     cdef public object data #storage for python user
 
     @staticmethod
-    cdef create(SCIP_CONS* scipcons, str name):
+    cdef create(SCIP_CONS* scipcons):
         cons = Constraint()
         cons.cons = scipcons
-        cons.name = name
         return cons
 
-    def __init__(self, name=None):
-        self.name = name
+    property name:
+        def __get__(self):
+            cname = bytes( SCIPconsGetName(self.cons) )
+            return cname.decode('utf-8')
 
     def __repr__(self):
         return self.name
@@ -487,7 +490,7 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
 
-        pyVar = Variable.create(scip_var, name)
+        pyVar = Variable.create(scip_var)
         PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
         return pyVar
 
@@ -507,7 +510,7 @@ cdef class Model:
         """
         cdef SCIP_VAR* _tvar
         PY_SCIP_CALL(SCIPtransformVar(self._scip, var.var, &_tvar))
-        return Variable.create(_tvar, SCIPvarGetName(_tvar).decode("utf-8"))
+        return Variable.create(_tvar)
 
     def addVarLocks(self, Variable var, nlocksdown, nlocksup):
         """adds given values to lock numbers of variable for rounding
@@ -552,7 +555,7 @@ cdef class Model:
         else:
             raise Warning("unrecognized variable type")
         if infeasible:
-            print('could not change variable type of variable ', var.name)
+            print('could not change variable type of variable %s' % var)
 
     def getVars(self, transformed=False):
         """Retrieve all variables.
@@ -572,13 +575,7 @@ cdef class Model:
             _vars = SCIPgetOrigVars(self._scip)
             _nvars = SCIPgetNOrigVars(self._scip)
 
-        for i in range(_nvars):
-            _var = _vars[i]
-            name = SCIPvarGetName(_var).decode("utf-8")
-            vars.append(Variable.create(_var, name))
-
-        return vars
-
+        return [Variable.create(_vars[i]) for i in range(_nvars)]
 
     # Constraint functions
     def addCons(self, cons, name="cons", initial=True, separate=True,
@@ -639,7 +636,7 @@ cdef class Model:
             PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, scip_cons, var.var, <SCIP_Real>coeff))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        PyCons = Constraint.create(scip_cons, kwargs['name'])
+        PyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return PyCons
@@ -668,7 +665,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, var1.var, var2.var, c))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        return Constraint.create(scip_cons, SCIPconsGetName(scip_cons).decode("utf-8"))
+        return Constraint.create(scip_cons)
 
     def _addNonlinearCons(self, ExprCons cons, **kwargs):
         """Add object of class ExprCons."""
@@ -724,7 +721,7 @@ cdef class Model:
             kwargs['modifiable'], kwargs['dynamic'], kwargs['removable'],
             kwargs['stickingatnode']) )
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        result = Constraint.create(scip_cons, SCIPconsGetName(scip_cons).decode("utf-8"))
+        result = Constraint.create(scip_cons)
 
         PY_SCIP_CALL( SCIPexprtreeFree(&exprtree) )
         free(vars)
@@ -778,7 +775,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, scip_cons, var.var, weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        return Constraint.create(scip_cons, name)
+        return Constraint.create(scip_cons)
 
     def addConsSOS2(self, vars, weights=None, name="SOS2cons",
                 initial=True, separate=True, enforce=True, check=True,
@@ -817,7 +814,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, scip_cons, var.var, weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        return Constraint.create(scip_cons, name)
+        return Constraint.create(scip_cons)
 
 
     def addPyCons(self, Constraint cons):
@@ -876,7 +873,7 @@ cdef class Model:
         cdef SCIP_CONS* transcons
         PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.cons, &transcons))
 
-        return Constraint.create(transcons, SCIPconsGetName(transcons).decode("utf-8"))
+        return Constraint.create(transcons)
 
     def getConss(self):
         """Retrieve all constraints."""
@@ -887,12 +884,7 @@ cdef class Model:
 
         _conss = SCIPgetConss(self._scip)
         _nconss = SCIPgetNConss(self._scip)
-
-        for i in range(_nconss):
-            _cons = _conss[i]
-            conss.append(Constraint.create(_cons, SCIPconsGetName(_cons).decode("utf-8")))
-
-        return conss
+        return [Constraint.create(_conss[i]) for i in range(_nconss)]
 
     def getDualsolLinear(self, Constraint cons):
         """Retrieve the dual solution to a linear constraint.
@@ -983,7 +975,7 @@ cdef class Model:
         n = str_conversion(name)
         cdef SCIP_CONSHDLR* scip_conshdlr
         scip_conshdlr = SCIPfindConshdlr(self._scip, str_conversion(conshdlr.name))
-        constraint = Constraint(name)
+        constraint = Constraint()
         PY_SCIP_CALL(SCIPcreateCons(self._scip, &(constraint.cons), n, scip_conshdlr, <SCIP_CONSDATA*>constraint,
                                 initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
         return constraint
