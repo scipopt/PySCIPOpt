@@ -1,7 +1,7 @@
 import pytest
 
 from pyscipopt import Model
-from pyscipopt.scip import LinExpr, LinCons
+from pyscipopt.scip import Expr, ExprCons
 
 @pytest.fixture(scope="module")
 def model():
@@ -18,44 +18,44 @@ def test_variable(model):
 def test_operations_linear(model):
     m, x, y, z = model
     expr = x + y
-    assert isinstance(expr, LinExpr)
+    assert isinstance(expr, Expr)
     assert expr[x] == 1.0
     assert expr[y] == 1.0
     assert expr[z] == 0.0
 
     expr = -x
-    assert isinstance(expr, LinExpr)
+    assert isinstance(expr, Expr)
     assert expr[x] == -1.0
     assert expr[y] ==  0.0
 
     expr = x*4
-    assert isinstance(expr, LinExpr)
+    assert isinstance(expr, Expr)
     assert expr[x] == 4.0
     assert expr[y] == 0.0
 
     expr = 4*x
-    assert isinstance(expr, LinExpr)
+    assert isinstance(expr, Expr)
     assert expr[x] == 4.0
     assert expr[y] == 0.0
 
     expr = x + y + x
-    assert isinstance(expr, LinExpr)
+    assert isinstance(expr, Expr)
     assert expr[x] == 2.0
     assert expr[y] == 1.0
 
     expr = x + y - x
-    assert isinstance(expr, LinExpr)
+    assert isinstance(expr, Expr)
     assert expr[x] == 0.0
     assert expr[y] == 1.0
 
     expr = 3*x + 1.0
-    assert isinstance(expr, LinExpr)
+    assert isinstance(expr, Expr)
     assert expr[x] == 3.0
     assert expr[y] == 0.0
     assert expr[()] == 1.0
 
     expr = 1.0 + 3*x
-    assert isinstance(expr, LinExpr)
+    assert isinstance(expr, Expr)
     assert expr[x] == 3.0
     assert expr[y] == 0.0
     assert expr[()] == 1.0
@@ -63,14 +63,14 @@ def test_operations_linear(model):
 def test_operations_quadratic(model):
     m, x, y, z = model
     expr = x*x
-    assert isinstance(expr, LinExpr)
+    assert isinstance(expr, Expr)
     assert expr[x] == 0.0
     assert expr[y] == 0.0
     assert expr[()] == 0.0
     assert expr[(x,x)] == 1.0
 
     expr = x*y
-    assert isinstance(expr, LinExpr)
+    assert isinstance(expr, Expr)
     assert expr[x] == 0.0
     assert expr[y] == 0.0
     assert expr[()] == 0.0
@@ -80,7 +80,7 @@ def test_operations_quadratic(model):
         assert expr[(y,x)] == 1.0
 
     expr = (x - 1)*(y + 1)
-    assert isinstance(expr, LinExpr)
+    assert isinstance(expr, Expr)
     assert expr[x] == 1.0
     assert expr[y] == -1.0
     assert expr[()] == -1.0
@@ -92,7 +92,7 @@ def test_operations_quadratic(model):
 def test_power_for_quadratic(model):
     m, x, y, z = model
     expr = x**2 + x + 1
-    assert isinstance(expr, LinExpr)
+    assert isinstance(expr, Expr)
     assert expr[(x,x)] == 1.0
     assert expr[x] == 1.0
     assert expr[()] == 1.0
@@ -104,7 +104,7 @@ def test_power_for_quadratic(model):
 def test_operations_poly(model):
     m, x, y, z = model
     expr = x*x*x + 2*y*y
-    assert isinstance(expr, LinExpr)
+    assert isinstance(expr, Expr)
     assert expr[x] == 0.0
     assert expr[y] == 0.0
     assert expr[()] == 0.0
@@ -124,10 +124,10 @@ def test_invalid_power(model):
 
 def test_degree(model):
     m, x, y, z = model
-    expr = LinExpr()
+    expr = Expr()
     assert expr.degree() == 0
 
-    expr = LinExpr() + 3.0
+    expr = Expr() + 3.0
     assert expr.degree() == 0
 
     expr = x + 1
@@ -143,7 +143,7 @@ def test_inequality(model):
     m, x, y, z = model
     expr = x + 2*y
     cons = expr <= 0
-    assert isinstance(cons, LinCons)
+    assert isinstance(cons, ExprCons)
     assert cons.lhs is None
     assert cons.rhs == 0.0
     assert cons.expr[x] == 1.0
@@ -153,7 +153,7 @@ def test_inequality(model):
     assert () not in cons.expr.terms
 
     cons = expr >= 5
-    assert isinstance(cons, LinCons)
+    assert isinstance(cons, ExprCons)
     assert cons.lhs == 5.0
     assert cons.rhs is None
     assert cons.expr[x] == 1.0
@@ -163,7 +163,7 @@ def test_inequality(model):
     assert () not in cons.expr.terms
 
     cons = 5 <= x + 2*y - 3
-    assert isinstance(cons, LinCons)
+    assert isinstance(cons, ExprCons)
     assert cons.lhs == 8.0
     assert cons.rhs is None
     assert cons.expr[x] == 1.0
@@ -177,7 +177,7 @@ def test_ranged(model):
     expr = x + 2*y
     cons = expr >= 3
     ranged = cons <= 5
-    assert isinstance(ranged, LinCons)
+    assert isinstance(ranged, ExprCons)
     assert ranged.lhs == 3.0
     assert ranged.rhs == 5.0
     assert ranged.expr[y] == 2.0
@@ -185,7 +185,7 @@ def test_ranged(model):
 
     # again, more or less directly:
     ranged = 3 <= (x + 2*y <= 5)
-    assert isinstance(ranged, LinCons)
+    assert isinstance(ranged, ExprCons)
     assert ranged.lhs == 3.0
     assert ranged.rhs == 5.0
     assert ranged.expr[y] == 2.0
@@ -207,7 +207,7 @@ def test_ranged(model):
 def test_equation(model):
     m, x, y, z = model
     equat = 2*x - 3*y == 1
-    assert isinstance(equat, LinCons)
+    assert isinstance(equat, ExprCons)
     assert equat.lhs == equat.rhs
     assert equat.lhs == 1.0
     assert equat.expr[x] == 2.0

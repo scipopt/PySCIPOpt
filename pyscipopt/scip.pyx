@@ -200,7 +200,7 @@ cdef class Solution:
         sol.sol = scip_sol
         return sol
 
-cdef class Variable(LinExpr):
+cdef class Variable(Expr):
     """Is a linear expression and has SCIP_VAR*"""
     cdef SCIP_VAR* var
     cdef readonly str name
@@ -213,7 +213,7 @@ cdef class Variable(LinExpr):
         return var
 
     def __init__(self):
-        LinExpr.__init__(self, {(self,) : 1.0})
+        Expr.__init__(self, {(self,) : 1.0})
 
     def __hash__(self):
         return hash(id(self))
@@ -413,7 +413,7 @@ cdef class Model:
         sense -- the objective sense (default 'minimize')
         """
         cdef SCIP_Real coeff
-        if isinstance(coeffs, LinExpr):
+        if isinstance(coeffs, Expr):
             # transform linear expression into variable dictionary
             terms = coeffs.terms
             coeffs = {t[0]:c for t, c in terms.items() if c != 0.0}
@@ -601,7 +601,7 @@ cdef class Model:
         removable -- hould the relaxation be removed from the LP due to aging or cleanup? (default False)
         stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
         """
-        assert isinstance(cons, LinCons)
+        assert isinstance(cons, ExprCons)
         kwargs = dict(name=name, initial=initial, separate=separate,
                       enforce=enforce, check=check,
                       propagate=propagate, local=local,
@@ -619,9 +619,9 @@ cdef class Model:
         else:
             return self._addNonlinearCons(cons, **kwargs)
 
-    def _addLinCons(self, LinCons lincons, **kwargs):
-        """Add object of class LinCons."""
-        assert isinstance(lincons, LinCons)
+    def _addLinCons(self, ExprCons lincons, **kwargs):
+        """Add object of class ExprCons."""
+        assert isinstance(lincons, ExprCons)
 
         assert lincons.expr.degree() <= 1
         terms = lincons.expr.terms
@@ -644,7 +644,7 @@ cdef class Model:
 
         return PyCons
 
-    def _addQuadCons(self, LinCons quadcons, **kwargs):
+    def _addQuadCons(self, ExprCons quadcons, **kwargs):
         terms = quadcons.expr.terms
         assert quadcons.expr.degree() <= 2
 
@@ -670,8 +670,8 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         return Constraint.create(scip_cons, SCIPconsGetName(scip_cons).decode("utf-8"))
 
-    def _addNonlinearCons(self, LinCons cons, **kwargs):
-        """Add object of class LinCons."""
+    def _addNonlinearCons(self, ExprCons cons, **kwargs):
+        """Add object of class ExprCons."""
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR** varexprs
         cdef SCIP_EXPRDATA_MONOMIAL** monomials

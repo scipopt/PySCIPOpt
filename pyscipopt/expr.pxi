@@ -6,38 +6,38 @@ def _is_number(e):
         return True
     except ValueError: # for malformed strings
         return False
-    except TypeError: # for other types (Variable, LinExpr)
+    except TypeError: # for other types (Variable, Expr)
         return False
 
 
 def _expr_richcmp(self, other, op):
     if op == 1: # <=
-        if isinstance(other, LinExpr):
+        if isinstance(other, Expr):
             return (self - other) <= 0.0
         elif _is_number(other):
-            return LinCons(self, rhs=float(other))
+            return ExprCons(self, rhs=float(other))
         else:
             raise NotImplementedError
     elif op == 5: # >=
-        if isinstance(other, LinExpr):
+        if isinstance(other, Expr):
             return (self - other) >= 0.0
         elif _is_number(other):
-            return LinCons(self, lhs=float(other))
+            return ExprCons(self, lhs=float(other))
         else:
             raise NotImplementedError
     elif op == 2: # ==
-        if isinstance(other, LinExpr):
+        if isinstance(other, Expr):
             return (self - other) == 0.0
         elif _is_number(other):
-            return LinCons(self, lhs=float(other), rhs=float(other))
+            return ExprCons(self, lhs=float(other), rhs=float(other))
         else:
             raise NotImplementedError
     else:
         raise NotImplementedError
 
 
-cdef class LinExpr:
-    '''Linear expressions of variables with operator overloading.'''
+cdef class Expr:
+    '''Polynomial expressions of variables with operator overloading.'''
     cdef public terms
 
     def __init__(self, terms=None):
@@ -62,11 +62,11 @@ cdef class LinExpr:
         right = other
 
         if _is_number(self):
-            assert isinstance(other, LinExpr)
+            assert isinstance(other, Expr)
             left,right = right,left
         terms = left.terms.copy()
 
-        if isinstance(right, LinExpr):
+        if isinstance(right, Expr):
             # merge the terms by component-wise addition
             for v,c in right.terms.items():
                 terms[v] = terms.get(v, 0.0) + c
@@ -75,10 +75,10 @@ cdef class LinExpr:
             terms[CONST] = terms.get(CONST, 0.0) + c
         else:
             raise NotImplementedError
-        return LinExpr(terms)
+        return Expr(terms)
 
     def __iadd__(self, other):
-        if isinstance(other, LinExpr):
+        if isinstance(other, Expr):
             for v,c in other.terms.items():
                 self.terms[v] = self.terms.get(v, 0.0) + c
         elif _is_number(other):
@@ -91,17 +91,17 @@ cdef class LinExpr:
     def __mul__(self, other):
         if _is_number(other):
             f = float(other)
-            return LinExpr({v:f*c for v,c in self.terms.items()})
+            return Expr({v:f*c for v,c in self.terms.items()})
         elif _is_number(self):
             f = float(self)
-            return LinExpr({v:f*c for v,c in other.terms.items()})
-        elif isinstance(other, LinExpr):
+            return Expr({v:f*c for v,c in other.terms.items()})
+        elif isinstance(other, Expr):
             terms = {}
             for v1, c1 in self.terms.items():
                 for v2, c2 in other.terms.items():
                     v = tuple(sorted(v1 + v2))
                     terms[v] = terms.get(v, 0.0) + c1 * c2
-            return LinExpr(terms)
+            return Expr(terms)
         else:
             raise NotImplementedError
 
@@ -117,7 +117,7 @@ cdef class LinExpr:
         return res
 
     def __neg__(self):
-        return LinExpr({v:-c for v,c in self.terms.items()})
+        return Expr({v:-c for v,c in self.terms.items()})
 
     def __sub__(self, other):
         return self + (-other)
@@ -136,15 +136,15 @@ cdef class LinExpr:
         return _expr_richcmp(self, other, op)
 
     def __repr__(self):
-        return 'LinExpr(%s)' % repr(self.terms)
+        return 'Expr(%s)' % repr(self.terms)
 
     def degree(self):
         '''computes highest degree of terms'''
         return max(len(v) for v in self.terms)
 
 
-cdef class LinCons:
-    '''Constraints with a linear expressions and lower/upper bounds.'''
+cdef class ExprCons:
+    '''Constraints with a polynomial expressions and lower/upper bounds.'''
     cdef public expr
     cdef public lhs
     cdef public rhs
@@ -172,29 +172,29 @@ cdef class LinCons:
         '''turn it into a constraint'''
         if op == 1: # <=
            if not self.rhs is None:
-               raise TypeError('LinCons already has upper bound')
+               raise TypeError('ExprCons already has upper bound')
            assert self.rhs is None
            assert not self.lhs is None
 
            if not _is_number(other):
-               raise TypeError('Ranged LinCons is not well defined!')
+               raise TypeError('Ranged ExprCons is not well defined!')
 
-           return LinCons(self.expr, lhs=self.lhs, rhs=float(other))
+           return ExprCons(self.expr, lhs=self.lhs, rhs=float(other))
         elif op == 5: # >=
            if not self.lhs is None:
-               raise TypeError('LinCons already has lower bound')
+               raise TypeError('ExprCons already has lower bound')
            assert self.lhs is None
            assert not self.rhs is None
 
            if not _is_number(other):
-               raise TypeError('Ranged LinCons is not well defined!')
+               raise TypeError('Ranged ExprCons is not well defined!')
 
-           return LinCons(self.expr, lhs=float(other), rhs=self.rhs)
+           return ExprCons(self.expr, lhs=float(other), rhs=self.rhs)
         else:
             raise TypeError
 
     def __repr__(self):
-        return 'LinCons(%s, %s, %s)' % (self.expr, self.lhs, self.rhs)
+        return 'ExprCons(%s, %s, %s)' % (self.expr, self.lhs, self.rhs)
 
     def __nonzero__(self):
         '''Make sure that equality of expressions is not asserted with =='''
@@ -204,7 +204,7 @@ def quicksum(termlist):
     '''add linear expressions and constants much faster than Python's sum
     by avoiding intermediate data structures and adding terms inplace
     '''
-    result = LinExpr()
+    result = Expr()
     for term in termlist:
         result += term
     return result

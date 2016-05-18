@@ -1,7 +1,7 @@
 import pytest
 
 from pyscipopt import Model, quicksum
-from pyscipopt.scip import LinExpr, LinCons
+from pyscipopt.scip import Expr, ExprCons
 
 def test_string():
     PI = 3.141592653589793238462643
