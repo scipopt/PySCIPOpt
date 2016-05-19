@@ -1323,15 +1323,15 @@ cdef class Model:
         Keyword arguments:
         file -- the file to be read
         """
-        absfile = bytes(abspath(file), 'utf-8')
+        absfile = str_conversion(abspath(file))
         PY_SCIP_CALL(SCIPreadParams(self._scip, absfile))
 
     def setEmphasis(self, paraemphasis, quiet = True):
-        """Sets parameters to... #TODO
+        """Set emphasis settings
 
         Keyword arguments:
         paraemphasis -- emphasis to set
-        extension -- hide output? (default None)
+        quiet -- hide output? (default True)
         """
         PY_SCIP_CALL(SCIPsetEmphasis(self._scip, paraemphasis, quiet))
 
@@ -1342,11 +1342,11 @@ cdef class Model:
         file -- the file to be read
         extension -- specifies extensions (default None)
         """
-        absfile = bytes(abspath(file), 'utf-8')
+        absfile = str_conversion(abspath(file))
         if extension is None:
             PY_SCIP_CALL(SCIPreadProb(self._scip, absfile, NULL))
         else:
-            extension = bytes(extension, 'utf-8')
+            extension = str_conversion(extension)
             PY_SCIP_CALL(SCIPreadProb(self._scip, absfile, extension))
 
 # debugging memory management
