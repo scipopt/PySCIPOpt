@@ -5,11 +5,15 @@ ids = []
 
 class MyConshdlr(Conshdlr):
 
+    def __init__(self, shouldtrans, shouldcopy):
+        self.shouldtrans = shouldtrans
+        self.shouldcopy = shouldcopy
+
     def createData(self, constraint, nvars, othername):
         print("Creating data for my constraint: %s"%constraint.name)
         constraint.data = SimpleNamespace()
-        constraint.data._nvars = nvars
-        constraint.data._myothername = othername
+        constraint.data.nvars = nvars
+        constraint.data.myothername = othername
 
     def consenfolp(self, constraints, nusefulconss, solinfeasible):
         print("[consenfolp]")
@@ -30,6 +34,10 @@ class MyConshdlr(Conshdlr):
     def constrans(self, sourceconstraint):
         print("[constrans]")
         assert id(sourceconstraint) in ids
+        if self.shouldtrans:
+            transcons = self.model.createCons(self, "transformed_" + sourceconstraint.name)
+            ids.append(id(transcons))
+            return {"targetcons" : transcons}
         return {}
 
     def consprop(self, constraints, nusefulconss, nmarkedconss, proptiming):
@@ -142,7 +150,7 @@ def test_conshdlr():
         s.addCons(87*x + 875*y - 695*z == 423)
 
         # create conshdlr and include it to SCIP
-        conshdlr = MyConshdlr()
+        conshdlr = MyConshdlr(shouldtrans=True, shouldcopy=False)
         s.includeConshdlr(conshdlr, "PyCons", "custom constraint handler implemented in python",
                           sepapriority = 1, enfopriority = -1, chckpriority = 1, sepafreq = 10, propfreq = 50,
                           eagerfreq = 1, maxprerounds = -1, delaysepa = False, delayprop = False, needscons = True,

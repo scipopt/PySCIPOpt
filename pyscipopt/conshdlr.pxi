@@ -78,15 +78,14 @@ cdef SCIP_RETCODE PyConsTrans (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* s
     cdef Constraint PyTargetCons
     PyConshdlr = getPyConshdlr(conshdlr)
     PySourceCons = getPyCons(sourcecons)
-
-    # get the python target constraint
     result_dict = PyConshdlr.constrans(PySourceCons)
 
     # create target (transform) constraint: if user doesn't return a constraint, copy PySourceCons
     # otherwise use the created cons
     if "targetcons" in result_dict:
-        PyTargetCons = result_dict.get("targetcons", PySourceCons)
-        targetcons = &PyTargetCons.cons
+        PyTargetCons = result_dict.get("targetcons")
+        targetcons[0] = PyTargetCons.cons
+        Py_INCREF(PyTargetCons)
     else:
         PY_SCIP_CALL(SCIPcreateCons(scip, targetcons, str_conversion(PySourceCons.name), conshdlr, <SCIP_CONSDATA*>PySourceCons,
             PySourceCons.isInitial(), PySourceCons.isSeparated(), PySourceCons.isEnforced(), PySourceCons.isChecked(),
