@@ -19,6 +19,8 @@ if usesharedlib:
 else:
     libscipopt = 'lib/libscipopt.a'
 
+linkincludescip = 'lib/scip-src'
+
 # create lib directory if necessary
 if not os.path.exists('lib'):
     os.makedirs('lib')
@@ -28,8 +30,6 @@ if os.path.exists(os.path.join(pathToScipoptsuite,libscipopt)):
     # create symbolic links to SCIP
     if not os.path.lexists(libscipopt):
         os.symlink(os.path.join(pathToScipoptsuite,libscipopt), libscipopt)
-
-includescip = os.path.abspath('../../src')
 
 def complete(text, state):
     return (glob.glob(text+'*')+[None])[state]
@@ -73,7 +73,7 @@ if not os.path.lexists(libscipopt):
         quit()
 
 # check for missing scip src directory
-if not os.path.lexists(includescip):
+if not os.path.lexists(linkincludescip):
     includescip = os.path.abspath(my_input('Please enter path to scip src directory (scipoptsuite/scip/src):\n'))
     print(includescip)
     if not os.path.exists(includescip):
@@ -84,13 +84,16 @@ if not os.path.lexists(includescip):
 if not os.path.lexists(libscipopt):
     os.symlink(pathToLib, libscipopt)
 
+if not os.path.lexists(linkincludescip):
+    os.symlink(includescip, linkincludescip)
+
 extensions = []
 ext = '.pyx' if cythonize else '.c'
 
 if usesharedlib:
    extensions = [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip'+ext)],
                          extra_compile_args=['-UNDEBUG'],
-                         include_dirs=[includescip],
+                         include_dirs=[linkincludescip],
                          library_dirs=['lib'],
                          runtime_library_dirs=[os.path.abspath('lib')],
                          libraries=['scipopt', 'readline', 'z', 'gmp', 'ncurses', 'm'])]
