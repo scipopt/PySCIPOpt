@@ -162,8 +162,6 @@ def scheduling_cutting_plane(J,p,r,w):
 
     model.setObjective(quicksum(w[j]*C[j] for j in J), "minimize")
 
-    # model.Params.OutputFlag = 0 # silent/verbose mode
-
     cut = 0
     bestobj = float("inf")
     while True:

@@ -43,7 +43,7 @@ def mctransp(I,J,K,c,d,M):
     model.setObjective(quicksum(c[i,j,k]*x[i,j,k]  for (i,j,k) in x), "minimize")
 
     model.data = x
-    
+
     return model
 
 

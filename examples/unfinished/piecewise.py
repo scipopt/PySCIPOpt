@@ -46,7 +46,6 @@ def mult_selection(model,a,b):
     return X,Y,z
 
 
-
 def convex_comb_sos(model,a,b):
     """convex_comb_sos -- add piecewise relation with gurobi's SOS constraints
     Parameters:
@@ -58,7 +57,7 @@ def convex_comb_sos(model,a,b):
     K = len(a)-1
     z = {}
     for k in range(K+1):
-        z[k] = model.addVar(lb=0, ub=1, vtype="C") # do not name variables for avoiding clash
+        z[k] = model.addVar(lb=0, ub=1, vtype="C")
     X = model.addVar(lb=a[0], ub=a[K], vtype="C")
     Y = model.addVar(lb=-model.infinity(), vtype="C")
 
@@ -66,11 +65,9 @@ def convex_comb_sos(model,a,b):
     model.addCons(Y == quicksum(b[k]*z[k] for k in range(K+1)))
 
     model.addCons(quicksum(z[k] for k in range(K+1)) == 1)
-    #model.addSOS(GRB.SOS_TYPE2, [z[k] for k in range(K+1)])
     model.addConsSOS2([z[k] for k in range(K+1)])
 
     return X,Y,z
-
 
 
 def convex_comb_dis(model,a,b):
@@ -84,7 +81,7 @@ def convex_comb_dis(model,a,b):
     K = len(a)-1
     wL,wR,z = {},{},{}
     for k in range(K):
-        wL[k] = model.addVar(lb=0, ub=1, vtype="C") # do not name variables for avoiding clash
+        wL[k] = model.addVar(lb=0, ub=1, vtype="C")
         wR[k] = model.addVar(lb=0, ub=1, vtype="C")
         z[k] = model.addVar(vtype="B")
     X = model.addVar(lb=a[0], ub=a[K], vtype="C")
@@ -100,10 +97,8 @@ def convex_comb_dis(model,a,b):
     return X,Y,z
 
 
-
 def gray(i):
-    return i^(i/2) # todo what is ^ supposed to do? error
-
+    return i^(int(i/2))
 
 
 def convex_comb_dis_log(model,a,b):
@@ -121,7 +116,7 @@ def convex_comb_dis_log(model,a,b):
     # print("K,G,N:",K,G,N
     wL,wR,z = {},{},{}
     for k in range(N):
-        wL[k] = model.addVar(lb=0, ub=1, vtype="C") # do not name variables for avoiding clash
+        wL[k] = model.addVar(lb=0, ub=1, vtype="C")
         wR[k] = model.addVar(lb=0, ub=1, vtype="C")
     X = model.addVar(lb=a[0], ub=a[K], vtype="C")
     Y = model.addVar(lb=-model.infinity(), vtype="C")
@@ -161,7 +156,7 @@ def convex_comb_agg(model,a,b):
     K = len(a)-1
     w,z = {},{}
     for k in range(K+1):
-        w[k] = model.addVar(lb=0, ub=1, vtype="C") # do not name variables for avoiding clash
+        w[k] = model.addVar(lb=0, ub=1, vtype="C")
     for k in range(K):
         z[k] = model.addVar(vtype="B")
     X = model.addVar(lb=a[0], ub=a[K], vtype="C")
@@ -192,7 +187,7 @@ def convex_comb_agg_log(model,a,b):
     G = int(math.ceil((math.log(K)/math.log(2))))     # number of required bits
     w,g = {},{}
     for k in range(K+1):
-        w[k] = model.addVar(lb=0, ub=1, vtype="C") # do not name variables for avoiding clash
+        w[k] = model.addVar(lb=0, ub=1, vtype="C")
     for j in range(G):
         g[j] = model.addVar(vtype="B")
     X = model.addVar(lb=a[0], ub=a[K], vtype="C")
@@ -293,16 +288,15 @@ if __name__ == "__main__":
     print("Y:",model.getVal(Y))
     print("u:",model.getVal(u))
 
- # todo: gray does not work, no idea what ^ is supposed to to
- #   print("\n\n\npiecewise: aggregated convex combination, logarithmic number of variables")
- #   model = Model("aggregated convex combination (log)")
- #   X,Y,w = convex_comb_agg_log(model,a,b)
- #   u = model.addVar(vtype="C", name="u")
- #
- #   A = model.addCons(3*X + 4*Y <= 250, "A")
- #   B = model.addCons(7*X - 2*Y + 3*u == 170, "B")
- #   model.setObjective(2*X + 15*Y + 5*u, "maximize")
- #   model.optimize()
- #   print("X:",model.getVal(X))
- #   print("Y:",model.getVal(Y))
- #   print("u:",model.getVal(u))
+    print("\n\n\npiecewise: aggregated convex combination, logarithmic number of variables")
+    model = Model("aggregated convex combination (log)")
+    X,Y,w = convex_comb_agg_log(model,a,b)
+    u = model.addVar(vtype="C", name="u")
+
+    A = model.addCons(3*X + 4*Y <= 250, "A")
+    B = model.addCons(7*X - 2*Y + 3*u == 170, "B")
+    model.setObjective(2*X + 15*Y + 5*u, "maximize")
+    model.optimize()
+    print("X:",model.getVal(X))
+    print("Y:",model.getVal(Y))
+    print("u:",model.getVal(u))

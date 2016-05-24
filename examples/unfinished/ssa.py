@@ -85,11 +85,11 @@ if __name__ == "__main__":
     x,s,L = model.data
     for i in range(1,n+1):
         for k in range(K):
-            if s[i][k].X >= 0.001:
-                print(s[i][k].name,s[i][k].X,)
+            if model.getVal(s[i][k]) >= 0.001:
+                print(s[i][k].name,model.getVal(s[i][k]))
         print
     print("%10s%10s%10s%10s" % ("Period","x","L","T"))
     for i in range(1,n+1):
-        print("%10s%10s%10s%10s" % (i,x[i].X,L[i].X,T[i]))
+        print("%10s%10s%10s%10s" % (i,model.getVal(x[i]), model.getVal(L[i]), T[i]))
 
     print("Objective:",model.getObjVal())

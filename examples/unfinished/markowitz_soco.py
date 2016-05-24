@@ -17,11 +17,11 @@ def markowitz(I,sigma,r,alpha):
     Returns a model, ready to be solved.
     """
     model = Model("markowitz")
-    
+
     x = {}
     for i in I:
         x[i] = model.addVar(vtype="C", name="x(%s)"%i)  # quantity of i to buy
-   
+
     model.addCons(quicksum(r[i]*x[i] for i in I) >= alpha)
     model.addCons(quicksum(x[i] for i in I) == 1)
 

@@ -39,7 +39,7 @@ def transp(I,J,c,d,M):
 
     # Objective
     model.setObjective(quicksum(c[i,j]*x[i,j]  for (i,j) in x), "minimize")
-    
+
     model.optimize()
 
     model.data = x
@@ -73,7 +73,6 @@ if __name__ == "__main__":
     I,J,c,d,M = make_inst1();
     # I,J,c,d,M = make_inst2();
     model = transp(I,J,c,d,M)
-    # model.writeProblem("transp.lp")
     model.optimize()
 
     print("Optimal value:", model.getObjVal())

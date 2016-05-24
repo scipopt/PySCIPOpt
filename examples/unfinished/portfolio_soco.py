@@ -36,7 +36,7 @@ def p_portfolio(I,sigma,r,alpha,beta):
     """
 
     model = Model("p_portfolio")
-    
+
     x = {}
     for i in I:
         x[i] = model.addVar(vtype="C", name="x(%s)"%i)  # quantity of i to buy
@@ -50,7 +50,7 @@ def p_portfolio(I,sigma,r,alpha,beta):
     model.addCons(quicksum(sigma[i]**2 * x[i] * x[i] for i in I) <=  rhoaux * rhoaux)
 
     model.setObjective(rho, "maximize")
-   
+
     model.data = x
     return model
 

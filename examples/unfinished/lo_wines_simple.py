@@ -26,7 +26,6 @@ model.setMaximize()
 model.optimize()
 
 if model.getStatus() == "optimal":
-    model.writeProblem("lo_wines_simple.lp")
     print("Optimal value:", model.getObjVal())
     print((x.name, y.name, z.name), " = ", (model.getVal(x), model.getVal(y), model.getVal(z)))
 else:

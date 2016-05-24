@@ -65,13 +65,13 @@ def bpp(s,B):
         for i in range(n):
             model.addCons(x[i,j] <= y[j], "Strong(%s,%s)"%(i,j))
 
-##    # tie breaking constraints
-##    for j in range(U-1):
-##        model.addCons(y[j] >= y[j+1),"TieBrk(%s)"%j)
-##
-##    # SOS constraints
-##    for i in range(n):
-##        model.addSOS(1,[x[i,j] for j in range(U)])
+    # tie breaking constraints
+    for j in range(U-1):
+        model.addCons(y[j] >= y[j+1],"TieBrk(%s)"%j)
+
+    # SOS constraints
+    for i in range(n):
+        model.addConsSOS1([x[i,j] for j in range(U)])
 
     model.setObjective(quicksum(y[j] for j in range(U)), "minimize")
     model.data = x,y

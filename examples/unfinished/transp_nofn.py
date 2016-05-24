@@ -18,7 +18,7 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 from pyscipopt import Model, quicksum, multidict
 
 d = {1:80, 2:270, 3:250 , 4:160, 5:180}  # demand
-I = d.keys() 
+I = d.keys()
 
 M = {1:500, 2:500, 3:500}  # capacity
 J = M.keys()

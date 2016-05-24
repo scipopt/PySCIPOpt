@@ -19,7 +19,7 @@ def rcs(J,P,R,T,p,c,a,RUB):
     Returns a model, ready to be solved.
     """
     model = Model("resource constrained scheduling")
-    
+
     s,x = {},{}   # s - start time variable;  x=1 if job j starts on period t
     for j in J:
         s[j] = model.addVar(vtype="C", name="s(%s)"%j)
@@ -45,7 +45,7 @@ def rcs(J,P,R,T,p,c,a,RUB):
         model.addCons(s[k] - s[j] >= p[j], "Precedence(%s,%s)"%(j,k))
 
     model.setObjective(quicksum(c[j,t]*x[j,t] for (j,t) in x), "minimize")
-    
+
     model.data = x,s
     return model
 

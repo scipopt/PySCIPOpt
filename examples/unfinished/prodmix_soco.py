@@ -17,20 +17,20 @@ def prodmix(I,K,a,p,epsilon,LB):
     """
 
     model = Model("robust product mix")
-    
+
     x,rhs = {},{}
     for i in I:
         x[i] = model.addVar(vtype="C", name="x(%s)"%i)
     for k in K:
         rhs[k] = model.addVar(vtype="C", name="rhs(%s)"%k)
-    
+
     model.addCons(quicksum(x[i] for i in I) == 1)
     for k in K:
         model.addCons(rhs[k] == -LB[k]+ quicksum(a[i,k]*x[i] for i in I) )
         model.addCons(quicksum(epsilon*epsilon*x[i]*x[i] for i in I) <= rhs[k]*rhs[k])
 
     model.setObjective(quicksum(p[i]*x[i] for i in I), "minimize")
-  
+
     model.data = x,rhs
     return model
 

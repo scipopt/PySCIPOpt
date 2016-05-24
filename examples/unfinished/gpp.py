@@ -177,8 +177,3 @@ if __name__ == "__main__":
 
         for (i,j) in s:
             print("(%s,%s)\t%s\t%s" % (i,j,model.getVal(s[i,j]),model.getVal(z[i,j])))
-#    else: todo
-  #      model.computeIIS()
-   #     for c in model.getConstrs():
-    #        if c.IISConstr:
-     #           print(c.ConstrName)

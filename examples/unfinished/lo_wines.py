@@ -49,8 +49,6 @@ for i in Grapes:
 # Objective
 model.setObjective(quicksum(Profit[j]*x[j] for j in Blends), "maximize")
 
-model.writeProblem("lo_wines.lp")  # useful for debugging
-
 model.optimize()
 
 if model.getStatus() == "optimal":

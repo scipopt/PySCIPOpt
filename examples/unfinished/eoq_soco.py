@@ -19,7 +19,7 @@ def eoq_soco(I,F,h,d,w,W):
     Returns a model, ready to be solved.
     """
     model = Model("EOQ model using SOCO")
-    
+
     T,c = {},{}
     for i in I:
         T[i] = model.addVar(vtype="C", name="T(%s)"%i)  # cycle time for item i

@@ -48,7 +48,7 @@ if __name__ == "__main__":
     model = ssp(V,E)
     model.optimize()
     print("Optimal value:", model.getObjVal())
-    
+
     x = model.data
     print("Maximum stable set:")
     print([i for i in V if model.getVal(x[i]) > 0.5])

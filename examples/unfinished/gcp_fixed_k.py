@@ -78,7 +78,7 @@ def make_data(n,prob):
         - n: number of vertices
         - prob: probability of existence of an edge, for each pair of vertices
     Returns a tuple with a list of vertices and a list edges.
-       """
+    """
     V = range(1,n+1)
     E = [(i,j) for i in V for j in V if i < j and random.random() < prob]
     return V,E

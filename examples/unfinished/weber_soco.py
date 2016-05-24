@@ -88,13 +88,11 @@ if __name__ == "__main__":
 
         NX.draw(G,pos=position,node_size=200,node_color="g",nodelist=I)
         NX.draw(G,pos=position,node_size=400,node_color="w",nodelist=["D"],alpha=0.5)
-        P.savefig("weber.pdf",format="pdf",dpi=300)
+        #P.savefig("weber.pdf",format="pdf",dpi=300)
         P.show()
 
     except ImportError:
         print("install 'networkx' and 'matplotlib' for plotting")
-
-
 
 
 
