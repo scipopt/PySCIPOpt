@@ -1,0 +1,5 @@
+*~
+build/
+lib/
+pyscipopt/scip.c
+__pycache__
