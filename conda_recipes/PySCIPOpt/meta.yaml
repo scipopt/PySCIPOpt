@@ -1,0 +1,21 @@
+package:
+  name: pyscipopt
+  version: "0.0"
+
+source:
+  git_url: https://github.com/SCIP-Interfaces/PySCIPOpt
+  git_rev: master
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - cython
+    - scipoptlib
+  run:
+    - scipoptlib
+
+about:
+  home: http://scip.zib.de
+  license: ZIB academic license
