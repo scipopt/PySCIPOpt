@@ -38,6 +38,7 @@ The two most important files in PySCIPOpt are the `scip.pxd` and `scip.pyx`. The
 To make PySCIPOpt aware of the public functions you would like to access, you must add them to `scip.pxd`. There are two things that must be done in order to properly add the functions:
 
    1) Ensure any `enum`s, `struct`s or SCIP variable types are included in `scip.pxd`
+   
    2) Add the prototype of the public function you wish to access to `scip.pxd`
 
 After following the previous two steps, it is then possible to create functions in python that reference the SCIP public functions included in `scip.pxd`. This is achieved by modifying the `scip.pyx` file to add the functionality you require.
