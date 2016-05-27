@@ -14,9 +14,6 @@ build:
 requirements:
   build:
     - gcc # includes fortran
-    - mkl # for BLAS, Lapack
-  run:
-    - mkl
   
 about:
   home: https://projects.coin-or.org/Ipopt

@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # get some 3rd party code
-cd ThirdParty/Metis && ./get.Metis && cd ../../
-cd ThirdParty/Mumps && ./get.Mumps && cd ../../
+THIRDPARTY=(Blas Lapack Metis Mumps)
+for TP in ${THIRDPARTY[@]}
+do
+    cd ThirdParty/${TP} && ./get.${TP} && cd ../../
+done
 
-./configure --prefix=${PREFIX} \
-            --with-blas="-L${PREFIX} -lmkl_intel_ilp64 -lmkl_core -lmkl_sequential -lpthread -lm -ldl" \
-            --with-lapack="-L${PREFIX} -lmkl_intel_ilp64 -lmkl_core -lmkl_sequential -lpthread -lm -ldl"
+./configure --prefix=${PREFIX}
 # no HSL!
 
 make
