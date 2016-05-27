@@ -9,13 +9,16 @@ source:
   md5: c8e4d39a447ef651e3d49a3955c24450
 
 build:
-  number: 0
+  number: 1
 
 requirements:
   build:
+    - gcc
     - zlib
+    - ipoptlib
   run:
     - zlib
+    - ipoptlib
 
 about:
   home: http://scip.zib.de
