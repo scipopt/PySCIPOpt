@@ -9,7 +9,7 @@ extensions = [Extension('pyscipopt.scip', ['pyscipopt/scip.pyx'],
                         extra_compile_args=['-UNDEBUG'],
                         include_dirs=['lib/scip-src'],
                         library_dirs=['lib'],
-                        libraries=['m', 'scipopt', 'z'])]
+                        libraries=['m', 'scipopt', 'z', 'ipopt'])]
 
 setup(
     name = 'pyscipopt',
