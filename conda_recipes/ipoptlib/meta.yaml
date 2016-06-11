@@ -9,12 +9,8 @@ source:
   sha1: 3f63ddfff517235ead17af6cceb426ca858dda37
 
 build:
-  number: 0
+  number: 1
 
-requirements:
-  build:
-    - gcc # includes fortran
-  
 about:
   home: https://projects.coin-or.org/Ipopt
   license: Eclipse Public License (EPL)
