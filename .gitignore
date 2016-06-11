@@ -3,3 +3,4 @@ build/
 lib/
 pyscipopt/scip.c
 __pycache__
+.cache
