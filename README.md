@@ -1,3 +1,5 @@
+This project provides an interface from the Python programming language to the [SCIP](http://scip.zib.de) solver software.
+
 How to build a model using python-scip
 ======================================
 
