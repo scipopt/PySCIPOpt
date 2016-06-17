@@ -6,9 +6,9 @@ Therefore you have to run
 
     make SHARED=true scipoptlib
 
-from the root of the SCIP Optimization directory. This will result in the creation of the directory `<path_to_scipopt/lib>` and the shared library `libscipopt.so`.
+from the root of the SCIP Optimization Suite directory. This will result in the creation of the directory `<path_to_scipopt/lib>` and the shared library `libscipopt.so`.
 
-From within this directory, please execute the following command:
+From within the `PySCIPOpt` directory, please execute the following command:
 
     python setup.py install
 
