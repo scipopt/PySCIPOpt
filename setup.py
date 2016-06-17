@@ -96,7 +96,7 @@ if usesharedlib:
                          include_dirs=[linkincludescip],
                          library_dirs=['lib'],
                          runtime_library_dirs=[os.path.abspath('lib')],
-                         libraries=['scipopt', 'readline', 'z', 'gmp', 'ncurses', 'm'])]
+                         libraries=['scipopt'])]
 else:
    extensions = [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip'+ext)],
                          extra_compile_args=['-UNDEBUG'],
