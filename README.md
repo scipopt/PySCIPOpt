@@ -1,7 +1,7 @@
 This project provides an interface from the Python programming language to the [SCIP](http://scip.zib.de) solver software.
 
-How to build a model using python-scip
-======================================
+How to build a model using PySCIPOpt
+====================================
 
 There are several examples provided in the `tests` folder. These display some functionality of the interface and can serve as an entry point for writing more complex code. The following steps are always required when using the interface:
 
