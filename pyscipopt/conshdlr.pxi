@@ -1,3 +1,107 @@
+# This is the base class of the Constraint Handler plugin
+
+cdef class Conshdlr:
+    cdef public Model model
+    cdef public str name
+
+    def consfree(self):
+        pass
+
+    def consinit(self, constraints):
+        pass
+
+    def consexit(self, constraints):
+        pass
+
+    def consinitpre(self, constraints):
+        pass
+
+    def consexitpre(self, constraints):
+        pass
+
+    def consinitsol(self, constraints):
+        pass
+
+    def consexitsol(self, constraints, restart):
+        pass
+
+    def consdelete(self, constraint):
+        pass
+
+    def constrans(self, sourceconstraint):
+        return {}
+
+    def consinitlp(self, constraints):
+        return {}
+
+    def conssepalp(self, constraints, nusefulconss):
+        return {}
+
+    def conssepasol(self, constraints, nusefulconss, solution):
+        return {}
+
+    def consenfolp(self, constraints, nusefulconss, solinfeasible):
+        print("python error in consenfolp: this method needs to be implemented")
+        return {}
+
+    def consenfops(self, constraints, nusefulconss, solinfeasible, objinfeasible):
+        print("python error in consenfops: this method needs to be implemented")
+        return {}
+
+    def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason):
+        print("python error in conscheck: this method needs to be implemented")
+        return {}
+
+    def consprop(self, constraints, nusefulconss, nmarkedconss, proptiming):
+        return {}
+
+    def conspresol(self, constraints, nrounds, presoltiming,
+                   nnewfixedvars, nnewaggrvars, nnewchgvartypes, nnewchgbds, nnewholes,
+                   nnewdelconss, nnewaddconss, nnewupgdconss, nnewchgcoefs, nnewchgsides, result_dict):
+        return result_dict
+
+    def consresprop(self):
+        return {}
+
+    def conslock(self, constraint, nlockspos, nlocksneg):
+        print("python error in conslock: this method needs to be implemented")
+        return {}
+
+    def consactive(self, constraint):
+        pass
+
+    def consdeactive(self, constraint):
+        pass
+
+    def consenable(self, constraint):
+        pass
+
+    def consdisable(self, constraint):
+        pass
+
+    def consdelvars(self, constraints):
+        pass
+
+    def consprint(self, constraint):
+        pass
+
+    def conscopy(self):
+        pass
+
+    def consparse(self):
+        pass
+
+    def consgetvars(self, constraint):
+        pass
+
+    def consgetnvars(self, constraint):
+        pass
+
+    def consgetdivebdchgs(self):
+        pass
+
+
+
 cdef Conshdlr getPyConshdlr(SCIP_CONSHDLR* conshdlr):
     cdef SCIP_CONSHDLRDATA* conshdlrdata
     conshdlrdata = SCIPconshdlrGetData(conshdlr)
@@ -302,104 +406,3 @@ cdef SCIP_RETCODE PyConsGetdivebdchgs (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP
     success[0] = False
     infeasible[0] = False
     return SCIP_OKAY
-
-cdef class Conshdlr:
-    cdef public object data     # storage for the python user
-    cdef public Model model
-    cdef public str name
-
-    def consfree(self):
-        pass
-
-    def consinit(self, constraints):
-        pass
-
-    def consexit(self, constraints):
-        pass
-
-    def consinitpre(self, constraints):
-        pass
-
-    def consexitpre(self, constraints):
-        pass
-
-    def consinitsol(self, constraints):
-        pass
-
-    def consexitsol(self, constraints, restart):
-        pass
-
-    def consdelete(self, constraint):
-        pass
-
-    def constrans(self, sourceconstraint):
-        return {}
-
-    def consinitlp(self, constraints):
-        return {}
-
-    def conssepalp(self, constraints, nusefulconss):
-        return {}
-
-    def conssepasol(self, constraints, nusefulconss, solution):
-        return {}
-
-    def consenfolp(self, constraints, nusefulconss, solinfeasible):
-        print("python error in consenfolp: this method needs to be implemented")
-        return {}
-
-    def consenfops(self, constraints, nusefulconss, solinfeasible, objinfeasible):
-        print("python error in consenfops: this method needs to be implemented")
-        return {}
-
-    def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason):
-        print("python error in conscheck: this method needs to be implemented")
-        return {}
-
-    def consprop(self, constraints, nusefulconss, nmarkedconss, proptiming):
-        return {}
-
-    def conspresol(self, constraints, nrounds, presoltiming,
-                   nnewfixedvars, nnewaggrvars, nnewchgvartypes, nnewchgbds, nnewholes,
-                   nnewdelconss, nnewaddconss, nnewupgdconss, nnewchgcoefs, nnewchgsides, result_dict):
-        return result_dict
-
-    def consresprop(self):
-        return {}
-
-    def conslock(self, constraint, nlockspos, nlocksneg):
-        print("python error in conslock: this method needs to be implemented")
-        return {}
-
-    def consactive(self, constraint):
-        pass
-
-    def consdeactive(self, constraint):
-        pass
-
-    def consenable(self, constraint):
-        pass
-
-    def consdisable(self, constraint):
-        pass
-
-    def consdelvars(self, constraints):
-        pass
-
-    def consprint(self, constraint):
-        pass
-
-    def conscopy(self):
-        pass
-
-    def consparse(self):
-        pass
-
-    def consgetvars(self, constraint):
-        pass
-
-    def consgetnvars(self, constraint):
-        pass
-
-    def consgetdivebdchgs(self):
-        pass

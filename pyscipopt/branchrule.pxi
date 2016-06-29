@@ -1,3 +1,35 @@
+cdef class Branchrule:
+    cdef public Model model
+
+    def branchfree(self):
+        pass
+
+    def branchinit(self):
+        pass
+
+    def branchexit(self):
+        pass
+
+    def branchinitsol(self):
+        pass
+
+    def branchexitsol(self):
+        pass
+
+    def branchexeclp(self, allowaddcons):
+        # this method needs to be implemented by the user
+        return {}
+
+    def branchexecext(self, allowaddcons):
+        # this method needs to be implemented by the user
+        return {}
+
+    def branchexecps(self, allowaddcons):
+        # this method needs to be implemented by the user
+        return {}
+
+
+
 cdef SCIP_RETCODE PyBranchruleCopy (SCIP* scip, SCIP_BRANCHRULE* branchrule):
     return SCIP_OKAY
 
@@ -60,35 +92,3 @@ cdef SCIP_RETCODE PyBranchruleExecps(SCIP* scip, SCIP_BRANCHRULE* branchrule, SC
     result_dict = PyBranchrule.branchexecps(allowaddcons)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
-
-cdef class Branchrule:
-    cdef public object data     # storage for the python user
-    cdef public Model model
-
-    def branchfree(self):
-        pass
-
-    def branchinit(self):
-        pass
-
-    def branchexit(self):
-        pass
-
-    def branchinitsol(self):
-        pass
-
-    def branchexitsol(self):
-        pass
-
-    def branchexeclp(self, allowaddcons):
-        # this method needs to be implemented by the user
-        return {}
-
-    def branchexecext(self, allowaddcons):
-        # this method needs to be implemented by the user
-        return {}
-
-    def branchexecps(self, allowaddcons):
-        # this method needs to be implemented by the user
-        return {}
-

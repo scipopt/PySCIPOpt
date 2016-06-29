@@ -1,3 +1,30 @@
+cdef class Pricer:
+    cdef public Model model
+
+    def pricerfree(self):
+        pass
+
+    def pricerinit(self):
+        pass
+
+    def pricerexit(self):
+        pass
+
+    def pricerinitsol(self):
+        pass
+
+    def pricerexitsol(self):
+        pass
+
+    def pricerredcost(self):
+        print("python error in pricerredcost: this method needs to be implemented")
+        return {}
+
+    def pricerfarkas(self):
+        return {}
+
+
+
 cdef SCIP_RETCODE PyPricerCopy (SCIP* scip, SCIP_PRICER* pricer, SCIP_Bool* valid):
     return SCIP_OKAY
 
@@ -53,29 +80,3 @@ cdef SCIP_RETCODE PyPricerFarkas (SCIP* scip, SCIP_PRICER* pricer, SCIP_RESULT* 
     PyPricer = <Pricer>pricerdata
     result[0] = PyPricer.pricerfarkas().get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
-
-cdef class Pricer:
-    #cdef public object data     # storage for the python user
-    cdef public Model model
-
-    def pricerfree(self):
-        pass
-
-    def pricerinit(self):
-        pass
-
-    def pricerexit(self):
-        pass
-
-    def pricerinitsol(self):
-        pass
-
-    def pricerexitsol(self):
-        pass
-
-    def pricerredcost(self):
-        print("python error in pricerredcost: this method needs to be implemented")
-        return {}
-
-    def pricerfarkas(self):
-        return {}

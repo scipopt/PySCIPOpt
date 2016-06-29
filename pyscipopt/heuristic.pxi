@@ -1,3 +1,28 @@
+cdef class Heur:
+    cdef public Model model
+    cdef public str name
+
+    def heurfree(self):
+        pass
+
+    def heurinit(self):
+        pass
+
+    def heurexit(self):
+        pass
+
+    def heurinitsol(self):
+        pass
+
+    def heurexitsol(self):
+        pass
+
+    def heurexec(self, heurtiming, nodeinfeasible):
+        print("python error in heurexec: this method needs to be implemented")
+        return {}
+
+
+
 cdef SCIP_RETCODE PyHeurCopy (SCIP* scip, SCIP_HEUR* heur):
     return SCIP_OKAY
 
@@ -44,27 +69,3 @@ cdef SCIP_RETCODE PyHeurExec (SCIP* scip, SCIP_HEUR* heur, SCIP_HEURTIMING heurt
     result_dict = PyHeur.heurexec(heurtiming, nodeinfeasible)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
-
-cdef class Heur:
-    cdef public object data     # storage for the python user
-    cdef public Model model
-    cdef public str name
-
-    def heurfree(self):
-        pass
-
-    def heurinit(self):
-        pass
-
-    def heurexit(self):
-        pass
-
-    def heurinitsol(self):
-        pass
-
-    def heurexitsol(self):
-        pass
-
-    def heurexec(self, heurtiming, nodeinfeasible):
-        print("python error in heurexec: this method needs to be implemented")
-        return {}

@@ -1,3 +1,40 @@
+cdef class Prop:
+    cdef public Model model
+
+    def propfree(self):
+        pass
+
+    def propinit(self):
+        pass
+
+    def propexit(self):
+        pass
+
+    def propinitsol(self):
+        pass
+
+    def propexitsol(self, restart):
+        pass
+
+    def propinitpre(self):
+        pass
+
+    def propexitpre(self):
+        pass
+
+    def proppresol(self, nrounds, presoltiming, result_dict):
+        pass
+
+    def propexec(self, proptiming):
+        print("python error in propexec: this method needs to be implemented")
+        return {}
+
+    def propresprop(self, confvar, inferinfo, bdtype, relaxedbd):
+        print("python error in propresprop: this method needs to be implemented")
+        return {}
+
+
+
 cdef SCIP_RETCODE PyPropCopy (SCIP* scip, SCIP_PROP* prop):
     return SCIP_OKAY
 
@@ -112,39 +149,3 @@ cdef SCIP_RETCODE PyPropResProp (SCIP* scip, SCIP_PROP* prop, SCIP_VAR* infervar
     result_dict = returnvalues
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
-
-cdef class Prop:
-    cdef public object data     # storage for the python user
-    cdef public Model model
-
-    def propfree(self):
-        pass
-
-    def propinit(self):
-        pass
-
-    def propexit(self):
-        pass
-
-    def propinitsol(self):
-        pass
-
-    def propexitsol(self, restart):
-        pass
-
-    def propinitpre(self):
-        pass
-
-    def propexitpre(self):
-        pass
-
-    def proppresol(self, nrounds, presoltiming, result_dict):
-        pass
-
-    def propexec(self, proptiming):
-        print("python error in propexec: this method needs to be implemented")
-        return {}
-
-    def propresprop(self, confvar, inferinfo, bdtype, relaxedbd):
-        print("python error in propresprop: this method needs to be implemented")
-        return {}
