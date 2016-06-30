@@ -1,3 +1,27 @@
+cdef class Presol:
+    cdef public Model model
+
+    def presolfree(self):
+        pass
+
+    def presolinit(self):
+        pass
+
+    def presolexit(self):
+        pass
+
+    def presolinitpre(self):
+        pass
+
+    def presolexitpre(self):
+        pass
+
+    def presolexec(self, nrounds, presoltiming):
+        print("python error in presolexec: this method needs to be implemented")
+        return {}
+
+
+
 cdef SCIP_RETCODE PyPresolCopy (SCIP* scip, SCIP_PRESOL* presol):
     return SCIP_OKAY
 
@@ -59,27 +83,3 @@ cdef SCIP_RETCODE PyPresolExec (SCIP* scip, SCIP_PRESOL* presol, int nrounds, SC
     nchgcoefs[0] += result_dict.get("nnewchgcoefs", 0)
     nchgsides[0] += result_dict.get("nnewchgsides", 0)
     return SCIP_OKAY
-
-cdef class Presol:
-    cdef public object data     # storage for the python user
-    cdef public Model model
-
-    def presolfree(self):
-        pass
-
-    def presolinit(self):
-        pass
-
-    def presolexit(self):
-        pass
-
-    def presolinitpre(self):
-        pass
-
-    def presolexitpre(self):
-        pass
-
-    def presolexec(self, nrounds, presoltiming):
-        print("python error in presolexec: this method needs to be implemented")
-        return {}
-
