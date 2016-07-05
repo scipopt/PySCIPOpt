@@ -12,24 +12,20 @@ except ImportError:
 
 pathToSCIPOpt = os.path.abspath('../../../')
 pathToSCIPsrc = os.path.abspath('../../src')
-libscipopt = 'lib/libscipopt.so'
-includescip = 'lib/scip-src'
+lib = 'lib'
+include = 'include'
 
-# create lib directory if necessary
-if not os.path.exists('lib'):
-    os.makedirs('lib')
+# try to find library directory automatically
+if os.path.exists(os.path.join(pathToSCIPOpt, lib, 'libscipopt.so')):
+    # create symbolic link to SCIPOptSuite lib
+    if not os.path.lexists(lib):
+        os.symlink(os.path.join(pathToSCIPOpt, lib), lib)
 
-# try to find library automatically
-if os.path.exists(os.path.join(pathToSCIPOpt, libscipopt)):
-    # create symbolic links to SCIP
-    if not os.path.lexists(libscipopt):
-        os.symlink(os.path.join(pathToSCIPOpt, libscipopt), libscipopt)
-
-# try to find library automatically
-if os.path.exists(os.path.join(pathToSCIPsrc, 'scip/scip.h')):
-    # create symbolic links to SCIP
-    if not os.path.lexists(includescip):
-        os.symlink(pathToSCIPsrc, includescip)
+# try to find header directory automatically
+if os.path.exists(os.path.join(pathToSCIPsrc, 'scip', 'scip.h')):
+    # create symbolic link to SCIP src
+    if not os.path.lexists(include):
+        os.symlink(pathToSCIPsrc, include)
 
 def complete(text, state):
     return (glob.glob(text+'*')+[None])[state]
@@ -50,31 +46,39 @@ else:
 if args.count("build_ext") > 0 and args.count("--inplace") == 0:
     sys.argv.insert(sys.argv.index("build_ext")+1, "--inplace")
 
-# check for missing scipopt library and link it
-if not os.path.lexists(libscipopt):
-    pathToLib = os.path.abspath(my_input('Please enter path to scipopt library (scipoptsuite/lib/libscipopt.so or .a):\n'))
+# check for missing library directory and link it
+if not os.path.lexists(lib):
+    pathToLib = os.path.abspath(my_input('Please enter path to scipopt library (scipoptsuite/lib):\n'))
     print(pathToLib)
     if not os.path.exists(pathToLib):
         print('Sorry, the path to scipopt library does not exist')
         quit()
-    os.symlink(pathToLib, libscipopt)
+    os.symlink(pathToLib, lib)
 
 # check for missing scip src directory and link it
-if not os.path.lexists(includescip):
+if not os.path.lexists(include):
     pathToSrc = os.path.abspath(my_input('Please enter path to scip src directory (scipoptsuite/scip/src):\n'))
     print(pathToSrc)
     if not os.path.exists(pathToSrc):
         print('Sorry, the path to SCIP src/ directory does not exist')
         quit()
-    os.symlink(pathToSrc, includescip)
+    os.symlink(pathToSrc, include)
+
+# verify links
+if not os.path.exists(os.path.join(lib, 'libscipopt.so')):
+    print("ERROR: invalid path to libscipopt.so")
+    quit()
+if not os.path.exists(os.path.join(include, 'scip', 'scip.h')):
+    print("ERROR: invalid path to SCIP src directory")
+    quit()
 
 extensions = []
 ext = '.pyx' if cythonize else '.c'
 
 extensions = [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip'+ext)],
-                         include_dirs=[includescip],
-                         library_dirs=['lib'],
-                         runtime_library_dirs=[os.path.abspath('lib')],
+                         include_dirs=[include],
+                         library_dirs=[lib],
+                         runtime_library_dirs=[os.path.abspath(lib)],
                          libraries=['scipopt'])]
 
 if cythonize:
