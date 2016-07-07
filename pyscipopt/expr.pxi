@@ -49,9 +49,6 @@ cdef class Expr:
         if len(self.terms) == 0:
             self.terms[()] = 0.0
 
-    def _normalize(self):
-        self.terms =  {t:c for (t,c) in self.terms.items() if c != 0.0}
-
     def __getitem__(self, key):
         if not isinstance(key, tuple):
             key = (key,)
@@ -135,7 +132,12 @@ cdef class Expr:
         '''turn it into a constraint'''
         return _expr_richcmp(self, other, op)
 
+    def normalize(self):
+        '''remove terms with coefficient of 0'''
+        self.terms =  {t:c for (t,c) in self.terms.items() if c != 0.0}
+
     def __repr__(self):
+        self.normalize()
         return 'Expr(%s)' % repr(self.terms)
 
     def degree(self):
