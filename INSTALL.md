@@ -6,7 +6,7 @@ Therefore you have to run
 
     make SHARED=true scipoptlib
 
-from the root of the SCIP Optimization Suite directory. This will result in the creation of the directory `<path_to_scipopt/lib>` and the shared library `libscipopt.so`.
+from the root of the SCIP Optimization Suite directory. This will result in the creation of the directory `<path_to_scipopt/lib>` and the shared library `libscipopt.so`. **Beware** that you may not use the `OPT=dbg` option for the `scipoptlib` together with `PySCIPOpt`.
 
 From within the `PySCIPOpt` directory, please execute the following command:
 
