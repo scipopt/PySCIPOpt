@@ -235,7 +235,7 @@ cdef class Variable(Expr):
         return self.name
 
     def vtype(self):
-       """Return the variables type (BINARY, INTEGER or CONTINUOUS)"""
+        """Return the variables type (BINARY, INTEGER or CONTINUOUS)"""
         vartype = SCIPvarGetType(self.var)
         if vartype == SCIP_VARTYPE_BINARY:
             return "BINARY"
