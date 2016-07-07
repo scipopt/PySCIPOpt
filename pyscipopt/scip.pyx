@@ -266,6 +266,11 @@ cdef class Variable(Expr):
         """Returns current upper bound of variable"""
         return SCIPvarGetUbLocal(self.var)
 
+    def getObj(self):
+        """Returns current objective value of variable"""
+        return SCIPvarGetObj(self.var)
+
+
 cdef class Constraint:
     cdef SCIP_CONS* cons
     cdef public object data #storage for python user
@@ -458,6 +463,17 @@ cdef class Model:
             self.setMaximize()
         else:
             raise Warning("unrecognized objective sense")
+
+    def getObjective(self):
+        """Return objective function as Expr"""
+        variables = self.getVars()
+        objective = Expr()
+        for var in variables:
+            coeff = var.getObj()
+            if coeff != 0:
+                objective += coeff * var
+        objective.normalize()
+        return objective
 
     # Setting parameters
     def setPresolve(self, setting):
