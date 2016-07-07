@@ -137,7 +137,6 @@ cdef class Expr:
         self.terms =  {t:c for (t,c) in self.terms.items() if c != 0.0}
 
     def __repr__(self):
-        self.normalize()
         return 'Expr(%s)' % repr(self.terms)
 
     def degree(self):
