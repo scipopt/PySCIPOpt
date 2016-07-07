@@ -470,7 +470,9 @@ cdef class Model:
         objective = Expr()
         for var in variables:
             coeff = var.getObj()
-            objective += coeff * var
+            if coeff != 0:
+                objective += coeff * var
+        objective.normalize()
         return objective
 
     # Setting parameters

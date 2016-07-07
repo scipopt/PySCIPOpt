@@ -156,9 +156,9 @@ cdef class ExprCons:
         self.lhs = lhs
         self.rhs = rhs
         assert not (lhs is None and rhs is None)
-        self._normalize()
+        self.normalize()
 
-    def _normalize(self):
+    def normalize(self):
         '''move constant terms in expression to bounds'''
         c = self.expr[CONST]
         self.expr -= c
@@ -168,7 +168,7 @@ cdef class ExprCons:
             self.rhs -= c
 
         assert self.expr[CONST] == 0.0
-        self.expr._normalize()
+        self.expr.normalize()
 
     def __richcmp__(self, other, op):
         '''turn it into a constraint'''
