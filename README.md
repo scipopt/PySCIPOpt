@@ -29,6 +29,7 @@ Writing new plugins
 
 The Python interface can be used to define custom plugins to extend the functionality of SCIP. You may write a pricer, heuristic or even constraint handler using pure Python code and SCIP can call their methods using the callback system. Every available plugin has a base class that you need to extend, overwriting the predefined but empty callbacks. Please see `test_pricer.py` and `test_heur.py` for two simple examples.
 
+Please notice that in most cases one needs to use a `dictionary` to specify the return values needed by SCIP.
 
 How to extend the interface
 ===========================
