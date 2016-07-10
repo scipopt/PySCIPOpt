@@ -49,9 +49,6 @@ cdef class Expr:
         if len(self.terms) == 0:
             self.terms[()] = 0.0
 
-    def _normalize(self):
-        self.terms =  {t:c for (t,c) in self.terms.items() if c != 0.0}
-
     def __getitem__(self, key):
         if not isinstance(key, tuple):
             key = (key,)
@@ -135,6 +132,10 @@ cdef class Expr:
         '''turn it into a constraint'''
         return _expr_richcmp(self, other, op)
 
+    def normalize(self):
+        '''remove terms with coefficient of 0'''
+        self.terms =  {t:c for (t,c) in self.terms.items() if c != 0.0}
+
     def __repr__(self):
         return 'Expr(%s)' % repr(self.terms)
 
@@ -154,9 +155,9 @@ cdef class ExprCons:
         self.lhs = lhs
         self.rhs = rhs
         assert not (lhs is None and rhs is None)
-        self._normalize()
+        self.normalize()
 
-    def _normalize(self):
+    def normalize(self):
         '''move constant terms in expression to bounds'''
         c = self.expr[CONST]
         self.expr -= c
@@ -166,7 +167,7 @@ cdef class ExprCons:
             self.rhs -= c
 
         assert self.expr[CONST] == 0.0
-        self.expr._normalize()
+        self.expr.normalize()
 
     def __richcmp__(self, other, op):
         '''turn it into a constraint'''

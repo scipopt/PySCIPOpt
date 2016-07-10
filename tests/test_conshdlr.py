@@ -1,7 +1,26 @@
 from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PRESOLTIMING, SCIP_PROPTIMING
 from types import SimpleNamespace
 
+## callbacks which are not implemented yet:
+# PyConsGetdivebdchgs
+# PyConsGetvars
+# PyConsCopy
+
+## callbacks which are not tested here are:
+# consenfops
+# consresprop
+# conscopy
+# consparse
+# consgetvars
+# consgetdivebdchgs
+
+## callbacks which are not called are:
+# conssepasol
+# consdelvars
+# consprint
+
 ids = []
+calls = set([])
 
 class MyConshdlr(Conshdlr):
 
@@ -15,24 +34,65 @@ class MyConshdlr(Conshdlr):
         constraint.data.nvars = nvars
         constraint.data.myothername = othername
 
+    ## fundamental callbacks ##
     def consenfolp(self, constraints, nusefulconss, solinfeasible):
-        print("[consenfolp]")
+        calls.add("consenfolp")
         for constraint in constraints:
             assert id(constraint) in ids
         return {"result": SCIP_RESULT.FEASIBLE}
 
+    # consenfops
+
     def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason):
-        print("[conscheck]")
+        calls.add("conscheck")
         for constraint in constraints:
             assert id(constraint) in ids
         return {"result": SCIP_RESULT.FEASIBLE}
 
     def conslock(self, constraint, nlockspos, nlocksneg):
-        print("[conslock]")
+        calls.add("conslock")
+        assert id(constraint) in ids
+
+    ## callbacks ##
+    def consfree(self):
+        calls.add("consfree")
+
+    def consinit(self, constraints):
+        calls.add("consinit")
+        for constraint in constraints:
+            assert id(constraint) in ids
+
+    def consexit(self, constraints):
+        calls.add("consexit")
+        for constraint in constraints:
+            assert id(constraint) in ids
+
+    def consinitpre(self, constraints):
+        calls.add("consinitpre")
+        for constraint in constraints:
+            assert id(constraint) in ids
+
+    def consexitpre(self, constraints):
+        calls.add("consexitpre")
+        for constraint in constraints:
+            assert id(constraint) in ids
+
+    def consinitsol(self, constraints):
+        calls.add("consinitsol")
+        for constraint in constraints:
+            assert id(constraint) in ids
+
+    def consexitsol(self, constraints, restart):
+        calls.add("consexitsol")
+        for constraint in constraints:
+            assert id(constraint) in ids
+
+    def consdelete(self, constraint):
+        calls.add("consdelete")
         assert id(constraint) in ids
 
     def constrans(self, sourceconstraint):
-        print("[constrans]")
+        calls.add("constrans")
         assert id(sourceconstraint) in ids
         if self.shouldtrans:
             transcons = self.model.createCons(self, "transformed_" + sourceconstraint.name)
@@ -40,20 +100,26 @@ class MyConshdlr(Conshdlr):
             return {"targetcons" : transcons}
         return {}
 
-    def consprop(self, constraints, nusefulconss, nmarkedconss, proptiming):
-        print("[consprop]")
+    def consinitlp(self, constraints):
+        calls.add("consinitlp")
         for constraint in constraints:
             assert id(constraint) in ids
         return {}
 
     def conssepalp(self, constraints, nusefulconss):
-        print("[conssepalp]")
+        calls.add("conssepalp")
         for constraint in constraints:
             assert id(constraint) in ids
         return {}
 
     def conssepasol(self, constraints, nusefulconss, solution):
-        print("[conssepasol]")
+        calls.add("conssepasol")
+        for constraint in constraints:
+            assert id(constraint) in ids
+        return {}
+
+    def consprop(self, constraints, nusefulconss, nmarkedconss, proptiming):
+        calls.add("consprop")
         for constraint in constraints:
             assert id(constraint) in ids
         return {}
@@ -61,78 +127,46 @@ class MyConshdlr(Conshdlr):
     def conspresol(self, constraints, nrounds, presoltiming,
                    nnewfixedvars, nnewaggrvars, nnewchgvartypes, nnewchgbds, nnewholes,
                    nnewdelconss, nnewaddconss, nnewupgdconss, nnewchgcoefs, nnewchgsides, result_dict):
-        print("[conspresol]")
+        calls.add("conspresol")
         return result_dict
 
-    def consdelete(self, constraint):
-        print("[consdelete]")
-        assert id(constraint) in ids
-
-    def consinit(self, constraints):
-        print("[consinit]")
-        for constraint in constraints:
-            assert id(constraint) in ids
-
-    def consexit(self, constraints):
-        print("[consexit]")
-        for constraint in constraints:
-            assert id(constraint) in ids
-
-    def consinitpre(self, constraints):
-        print("[consinitpre]")
-        for constraint in constraints:
-            assert id(constraint) in ids
-
-    def consexitpre(self, constraints):
-        print("[consexitpre]")
-        for constraint in constraints:
-            assert id(constraint) in ids
-
-    def consinitsol(self, constraints):
-        print("[consinitsol]")
-        for constraint in constraints:
-            assert id(constraint) in ids
-
-    def consexitsol(self, constraints, restart):
-        print("[consexitsol]")
-        for constraint in constraints:
-            assert id(constraint) in ids
-
-    def consinitlp(self, constraints):
-        print("[consinitlp]")
-        for constraint in constraints:
-            assert id(constraint) in ids
-        return {}
+    # consresprop
 
     def consactive(self, constraint):
-        print("[consactive]")
+        calls.add("consactive")
         assert id(constraint) in ids
 
     def consdeactive(self, constraint):
-        print("[consdeactive]")
+        calls.add("consdeactive")
         assert id(constraint) in ids
 
     def consenable(self, constraint):
-        print("[consenable]")
+        calls.add("consenable")
         assert id(constraint) in ids
 
     def consdisable(self, constraint):
-        print("[consdisable]")
+        calls.add("consdisable")
         assert id(constraint) in ids
 
     def consdelvars(self, constraints):
-        print("[consdelvars]")
+        calls.add("consdelvars")
         for constraint in constraints:
             assert id(constraint) in ids
 
     def consprint(self, constraint):
-        print("[consprint]")
+        calls.add("consprint")
         assert id(constraint) in ids
 
+    # conscopy
+    # consparse
+    # consgetvars
+
     def consgetnvars(self, constraint):
-        print("[consgetnvars]")
+        calls.add("consgetnvars")
         assert id(constraint) in ids
-        return {}
+        return {"nvars": 1, "success": True}
+
+    # consgetdivebdchgs
 
 
 def test_conshdlr():
@@ -152,7 +186,7 @@ def test_conshdlr():
         # create conshdlr and include it to SCIP
         conshdlr = MyConshdlr(shouldtrans=True, shouldcopy=False)
         s.includeConshdlr(conshdlr, "PyCons", "custom constraint handler implemented in python",
-                          sepapriority = 1, enfopriority = -1, chckpriority = 1, sepafreq = 10, propfreq = 50,
+                          sepapriority = 1, enfopriority = 1, chckpriority = 1, sepafreq = 10, propfreq = 50,
                           eagerfreq = 1, maxprerounds = -1, delaysepa = False, delayprop = False, needscons = True,
                           presoltiming = SCIP_PRESOLTIMING.FAST, proptiming = SCIP_PROPTIMING.BEFORELP)
 
@@ -172,6 +206,35 @@ def test_conshdlr():
 
     # solve problem
     s.optimize()
+
+    # so that consfree gets called
+    del s
+
+    # check callbacks got called
+    assert "consenfolp" in calls
+    assert "conscheck" in calls
+    assert "conslock" in calls
+    assert "consfree" in calls
+    assert "consinit" in calls
+    assert "consexit" in calls
+    assert "consinitpre" in calls
+    assert "consexitpre" in calls
+    assert "consinitsol" in calls
+    assert "consexitsol" in calls
+    assert "consdelete" in calls
+    assert "constrans" in calls
+    assert "consinitlp" in calls
+    assert "conssepalp" in calls
+    #assert "conssepasol" in calls
+    assert "consprop" in calls
+    assert "conspresol" in calls
+    assert "consactive" in calls
+    assert "consdeactive" in calls
+    assert "consenable" in calls
+    assert "consdisable" in calls
+    #assert "consdelvars" in calls
+    #assert "consprint" in calls
+    assert "consgetnvars" in calls
 
 if __name__ == "__main__":
     test_conshdlr()

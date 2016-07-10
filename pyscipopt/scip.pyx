@@ -235,6 +235,7 @@ cdef class Variable(Expr):
         return self.name
 
     def vtype(self):
+        """Return the variables type (BINARY, INTEGER or CONTINUOUS)"""
         vartype = SCIPvarGetType(self.var)
         if vartype == SCIP_VARTYPE_BINARY:
             return "BINARY"
@@ -244,21 +245,31 @@ cdef class Variable(Expr):
             return "CONTINUOUS"
 
     def isOriginal(self):
+        """Returns whether the variable belongs to the original problem"""
         return SCIPvarIsOriginal(self.var)
 
     def isInLP(self):
+        """Returns whether the variable is a COLUMN variable that is member of the current LP"""
         return SCIPvarIsInLP(self.var)
 
     def getCol(self):
+        """Returns column of COLUMN variable"""
         cdef SCIP_COL* scip_col
         scip_col = SCIPvarGetCol(self.var)
         return Column.create(scip_col)
 
     def getLbLocal(self):
+        """Returns current lower bound of variable"""
         return SCIPvarGetLbLocal(self.var)
 
     def getUbLocal(self):
+        """Returns current upper bound of variable"""
         return SCIPvarGetUbLocal(self.var)
+
+    def getObj(self):
+        """Returns current objective value of variable"""
+        return SCIPvarGetObj(self.var)
+
 
 cdef class Constraint:
     cdef SCIP_CONS* cons
@@ -279,36 +290,47 @@ cdef class Constraint:
         return self.name
 
     def isOriginal(self):
+        """Returns whether the constraint belongs to the original problem"""
         return SCIPconsIsOriginal(self.cons)
 
     def isInitial(self):
+        """Returns True if the relaxation of the constraint should be in the initial LP"""
         return SCIPconsIsInitial(self.cons)
 
     def isSeparated(self):
+        """Returns True if constraint should be separated during LP processing"""
         return SCIPconsIsSeparated(self.cons)
 
     def isEnforced(self):
+        """Returns True if constraint should be enforced during node processing"""
         return SCIPconsIsEnforced(self.cons)
 
     def isChecked(self):
+        """Returns True if conestraint should be checked for feasibility"""
         return SCIPconsIsChecked(self.cons)
 
     def isPropagated(self):
+        """Returns True if constraint should be propagated during node processing"""
         return SCIPconsIsPropagated(self.cons)
 
     def isLocal(self):
+        """Returns True if constraint is only locally valid or not added to any (sub)problem"""
         return SCIPconsIsLocal(self.cons)
 
     def isModifiable(self):
+        """Returns True if constraint is modifiable (subject to column generation)"""
         return SCIPconsIsModifiable(self.cons)
 
     def isDynamic(self):
+        """Returns True if constraint is subject to aging"""
         return SCIPconsIsDynamic(self.cons)
 
     def isRemovable(self):
+        """Returns True if constraint's relaxation should be removed from the LP due to aging or cleanup"""
         return SCIPconsIsRemovable(self.cons)
 
     def isStickingAtNode(self):
+        """Returns True if constraint is only locally valid or not added to any (sub)problem"""
         return SCIPconsIsStickingAtNode(self.cons)
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
@@ -342,42 +364,52 @@ cdef class Model:
 
     @scipErrorHandler
     def create(self):
+        """Create a new SCIP instance"""
         return SCIPcreate(&self._scip)
 
     @scipErrorHandler
     def includeDefaultPlugins(self):
+        """Includes all default plug-ins into SCIP"""
         return SCIPincludeDefaultPlugins(self._scip)
 
     @scipErrorHandler
     def createProbBasic(self, problemName='model'):
+        """Create new problem iinstance with given name"""
         n = str_conversion(problemName)
         return SCIPcreateProbBasic(self._scip, n)
 
     @scipErrorHandler
     def freeProb(self):
+        """Frees problem and solution process data"""
         return SCIPfreeProb(self._scip)
 
     @scipErrorHandler
     def freeTransform(self):
+        """Frees all solution process data including presolving and transformed problem, only original problem is kept"""
         return SCIPfreeTransform(self._scip)
 
     def printVersion(self):
+        """Print version, copyright information and compile mode"""
         SCIPprintVersion(self._scip, NULL)
 
     def getTotalTime(self):
+        """Returns the current total SCIP time in seconds, i.e. the total time since the SCIP instance has been created"""
         return SCIPgetTotalTime(self._scip)
 
     def getSolvingTime(self):
+        """Returns the current solving time in seconds"""
         return SCIPgetSolvingTime(self._scip)
 
     def getReadingTime(self):
+        """Returns the current reading time in seconds"""
         return SCIPgetReadingTime(self._scip)
 
     def getPresolvingTime(self):
+        """Returns the curernt presolving time in seconds"""
         return SCIPgetPresolvingTime(self._scip)
 
     def infinity(self):
-        """Retrieve 'infinity' value."""
+        """Returns SCIP's infinity value"""
         return SCIPinfinity(self._scip)
 
     def epsilon(self):
@@ -431,6 +463,17 @@ cdef class Model:
             self.setMaximize()
         else:
             raise Warning("unrecognized objective sense")
+
+    def getObjective(self):
+        """Return objective function as Expr"""
+        variables = self.getVars()
+        objective = Expr()
+        for var in variables:
+            coeff = var.getObj()
+            if coeff != 0:
+                objective += coeff * var
+        objective.normalize()
+        return objective
 
     # Setting parameters
     def setPresolve(self, setting):
