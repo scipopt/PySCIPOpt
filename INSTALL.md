@@ -1,25 +1,25 @@
 Building the Python interface
 =============================
 
-The SCIP Python interface uses the shared library of the SCIP Optimization Suite.
+The SCIP Python interface uses the shared library of the [SCIP Optimization Suite](http://scip.zib.de/).
 Therefore you have to run
 
     make SHARED=true scipoptlib
 
-from the root of the SCIP Optimization Suite directory. This will result in the creation of the directory `<path_to_scipopt/lib>` and the shared library `libscipopt.so`. **Beware** that you may not use the `OPT=dbg` option for the `scipoptlib` together with `PySCIPOpt`.
+from the root of the SCIP Optimization Suite directory. This will result in the creation of the directory `<path/to/scipopt/lib>` and the shared library `libscipopt.so`.
 
 From within the `PySCIPOpt` directory, please execute the following command:
 
-    python setup.py install
+    SCIPOPTDIR=<path/to/scipopt> python setup.py install
 
 You may use the additional options `--user` or `--prefix=<custom-python-path>`, to build the interface locally.
 
-The interface is written in Cython. If you have Cython installed on your system, the interface will be built from scratch. Otherwise the included pre-built C-code will be used.
+PySCIPOpt requires [Cython](http://cython.org/) to be installed in your system.
 
 TROUBLESHOOTING
 ===============
 
-The installation routine tries to generate symbolic links to the `scipopt` library as well as to the `src` directory of SCIP. In case of installation problems you should verify the correctness of the links in the directories `lib` and `include`.
+The installation routine tries to generate symbolic links to the library directory `lib` as well as to the `src` directory of SCIP. In case of installation problems you should verify the correctness of the links in the directories `lib` and `include`.
 
 Note:
 -----
