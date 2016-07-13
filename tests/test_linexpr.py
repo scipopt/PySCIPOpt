@@ -204,6 +204,9 @@ def test_ranged(model):
     with pytest.raises(TypeError):
         ranged = 3 >= (x + 2*y <= 5)
 
+    with pytest.raises(TypeError):
+        ranged = (1 <= x + 2*y <= 5)
+
 def test_equation(model):
     m, x, y, z = model
     equat = 2*x - 3*y == 1
