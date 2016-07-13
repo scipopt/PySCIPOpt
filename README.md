@@ -45,3 +45,8 @@ To make PySCIPOpt aware of the public functions you would like to access, you mu
    2) Add the prototype of the public function you wish to access to `scip.pxd`
 
 After following the previous two steps, it is then possible to create functions in python that reference the SCIP public functions included in `scip.pxd`. This is achieved by modifying the `scip.pyx` file to add the functionality you require.
+
+Gotchas
+=======
+
+While ranged constraints of the form `lhs <= expression <= rhs` are supported, the Python syntax for [chained comparisons](https://docs.python.org/3.5/reference/expressions.html#comparisons) can't be hijacked with operator overloading. Instead, parenthesis must be used, e.g. `lhs <= (expression <= rhs)`.
