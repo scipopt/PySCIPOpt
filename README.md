@@ -49,4 +49,9 @@ After following the previous two steps, it is then possible to create functions 
 Gotchas
 =======
 
-While ranged constraints of the form `lhs <= expression <= rhs` are supported, the Python syntax for [chained comparisons](https://docs.python.org/3.5/reference/expressions.html#comparisons) can't be hijacked with operator overloading. Instead, parenthesis must be used, e.g. `lhs <= (expression <= rhs)`.
+While ranged constraints of the form
+
+    lhs <= expression <= rhs
+are supported, the Python syntax for [chained comparisons](https://docs.python.org/3.5/reference/expressions.html#comparisons) can't be hijacked with operator overloading. Instead, parenthesis must be used, e.g.,
+
+    lhs <= (expression <= rhs)
