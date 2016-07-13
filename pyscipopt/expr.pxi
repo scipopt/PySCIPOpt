@@ -199,7 +199,15 @@ cdef class ExprCons:
 
     def __nonzero__(self):
         '''Make sure that equality of expressions is not asserted with =='''
-        raise TypeError("Can't evaluate constraints as booleans.")
+
+        msg = """Can't evaluate constraints as booleans.
+
+If you want to add a ranged constraint of the form
+   lhs <= expression <= rhs
+you have to use parenthesis to break the Python syntax for chained comparisons:
+   lhs <= (expression <= rhs)
+"""
+        raise TypeError(msg)
 
 def quicksum(termlist):
     '''add linear expressions and constants much faster than Python's sum
