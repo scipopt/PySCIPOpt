@@ -356,6 +356,10 @@ cdef class LP:
 
         return primalsol
 
+    def isPrimalFeasible(self):
+        """Returns True iff LP is proven to be primal feasible."""
+        return SCIPlpiIsPrimalFeasible(self.lpi)
+
     def getDual(self):
         """Returns the dual solution of the last LP solve."""
         nrows = self.nrows()
@@ -367,6 +371,10 @@ cdef class LP:
         free(c_dualsol)
 
         return dualsol
+
+    def isDualFeasible(self):
+        """Returns True iff LP is proven to be dual feasible."""
+        return SCIPlpiIsDualFeasible(self.lpi)
 
     def getPrimalRay(self):
         """Returns a primal ray if possible, None otherwise."""
