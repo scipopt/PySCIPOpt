@@ -1,7 +1,7 @@
 import pytest
 
 from pyscipopt import Model
-from pyscipopt.scip import Expr, ExprCons
+from pyscipopt.scip import Expr, ExprCons, Term
 
 @pytest.fixture(scope="module")
 def model():
@@ -11,11 +11,12 @@ def model():
     z = m.addVar("z")
     return m, x, y, z
 
+CONST = Term()
+
 def test_term(model):
     m, x, y, z = model
     assert x[x] == 1.0
     assert x[y] == 0.0
-
 
 def test_operations_linear(model):
     m, x, y, z = model
@@ -54,13 +55,13 @@ def test_operations_linear(model):
     assert isinstance(expr, Expr)
     assert expr[x] == 3.0
     assert expr[y] == 0.0
-    assert expr[()] == 1.0
+    assert expr[CONST] == 1.0
 
     expr = 1.0 + 3*x
     assert isinstance(expr, Expr)
     assert expr[x] == 3.0
     assert expr[y] == 0.0
-    assert expr[()] == 1.0
+    assert expr[CONST] == 1.0
 
 def test_operations_quadratic(model):
     m, x, y, z = model
@@ -68,14 +69,14 @@ def test_operations_quadratic(model):
     assert isinstance(expr, Expr)
     assert expr[x] == 0.0
     assert expr[y] == 0.0
-    assert expr[()] == 0.0
+    assert expr[CONST] == 0.0
     assert expr[(x,x)] == 1.0
 
     expr = x*y
     assert isinstance(expr, Expr)
     assert expr[x] == 0.0
     assert expr[y] == 0.0
-    assert expr[()] == 0.0
+    assert expr[CONST] == 0.0
     if x < y:
         assert expr[(x,y)] == 1.0
     else:
@@ -85,7 +86,7 @@ def test_operations_quadratic(model):
     assert isinstance(expr, Expr)
     assert expr[x] == 1.0
     assert expr[y] == -1.0
-    assert expr[()] == -1.0
+    assert expr[CONST] == -1.0
     if x < y:
         assert expr[(x,y)] == 1.0
     else:
@@ -97,7 +98,7 @@ def test_power_for_quadratic(model):
     assert isinstance(expr, Expr)
     assert expr[(x,x)] == 1.0
     assert expr[x] == 1.0
-    assert expr[()] == 1.0
+    assert expr[CONST] == 1.0
     assert len(expr.terms) == 3
 
     assert (x**2).terms == (x*x).terms
@@ -109,7 +110,7 @@ def test_operations_poly(model):
     assert isinstance(expr, Expr)
     assert expr[x] == 0.0
     assert expr[y] == 0.0
-    assert expr[()] == 0.0
+    assert expr[CONST] == 0.0
     assert expr[(x,x,x)] == 1.0
     assert expr[(y,y)] == 2.0
     assert expr.terms == (x**3 + 2*y**2).terms
@@ -151,8 +152,8 @@ def test_inequality(model):
     assert cons.expr[x] == 1.0
     assert cons.expr[y] == 2.0
     assert cons.expr[z] == 0.0
-    assert cons.expr[()] == 0.0
-    assert () not in cons.expr.terms
+    assert cons.expr[CONST] == 0.0
+    assert CONST not in cons.expr.terms
 
     cons = expr >= 5
     assert isinstance(cons, ExprCons)
@@ -161,8 +162,8 @@ def test_inequality(model):
     assert cons.expr[x] == 1.0
     assert cons.expr[y] == 2.0
     assert cons.expr[z] == 0.0
-    assert cons.expr[()] == 0.0
-    assert () not in cons.expr.terms
+    assert cons.expr[CONST] == 0.0
+    assert CONST not in cons.expr.terms
 
     cons = 5 <= x + 2*y - 3
     assert isinstance(cons, ExprCons)
@@ -171,8 +172,8 @@ def test_inequality(model):
     assert cons.expr[x] == 1.0
     assert cons.expr[y] == 2.0
     assert cons.expr[z] == 0.0
-    assert cons.expr[()] == 0.0
-    assert () not in cons.expr.terms
+    assert cons.expr[CONST] == 0.0
+    assert CONST not in cons.expr.terms
 
 def test_ranged(model):
     m, x, y, z = model
@@ -183,7 +184,7 @@ def test_ranged(model):
     assert ranged.lhs == 3.0
     assert ranged.rhs == 5.0
     assert ranged.expr[y] == 2.0
-    assert ranged.expr[()] == 0.0
+    assert ranged.expr[CONST] == 0.0
 
     # again, more or less directly:
     ranged = 3 <= (x + 2*y <= 5)
@@ -191,7 +192,7 @@ def test_ranged(model):
     assert ranged.lhs == 3.0
     assert ranged.rhs == 5.0
     assert ranged.expr[y] == 2.0
-    assert ranged.expr[()] == 0.0
+    assert ranged.expr[CONST] == 0.0
     # we must use the parenthesis, because
     #     x <= y <= z
     # is a "chained comparison", which will be interpreted by Python
@@ -217,4 +218,4 @@ def test_equation(model):
     assert equat.lhs == 1.0
     assert equat.expr[x] == 2.0
     assert equat.expr[y] == -3.0
-    assert equat.expr[()] == 0.0
+    assert equat.expr[CONST] == 0.0
