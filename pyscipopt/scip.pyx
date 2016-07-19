@@ -969,17 +969,9 @@ cdef class Model:
         """
         return SCIPgetDualfarkasLinear(self._scip, cons.cons)
 
-    def optimize(self, printsol=False):
-        """
-        Optimize the problem.
-
-        Keyword arguments:
-        printsol -- whether to print the best solution (default: False)
-        """
+    def optimize(self):
+        """Optimize the problem."""
         PY_SCIP_CALL(SCIPsolve(self._scip))
-        self._bestSol = Solution.create(SCIPgetBestSol(self._scip))
-        if printsol:
-            PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, False));
 
     def includePricer(self, Pricer pricer, name, desc, priority=1, delay=True):
         """Include a pricer.
@@ -1228,6 +1220,11 @@ cdef class Model:
         """Retrieve currently best known feasible primal solution."""
         self._bestSol = Solution.create(SCIPgetBestSol(self._scip))
         return self._bestSol
+
+    def printBestSol(self):
+        """Prints the best feasible primal solution."""
+        self._bestSol = Solution.create(SCIPgetBestSol(self._scip))
+        PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, False));
 
     def getSolObjVal(self, Solution sol, original=True):
         """Retrieve the objective value of the solution.
