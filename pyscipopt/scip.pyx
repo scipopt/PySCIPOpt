@@ -216,20 +216,10 @@ cdef class Variable(Expr):
             return cname.decode('utf-8')
 
     def __init__(self):
-        Expr.__init__(self, {(self,) : 1.0})
+        Expr.__init__(self, {Term(self) : 1.0})
 
-    def __hash__(self):
-        return hash(id(self))
-
-    def __richcmp__(self, other, op):
-        if op == 0: # <
-            return id(self) < id(other)
-        elif op == 4: # > 
-            return id(self) > id(other)
-        else: # interpret variable as expression
-            # would like to do this, but doesn't work :-\
-            # return super(Variable, self).__richcmp__(self, other, op)
-            return _expr_richcmp(self, other, op)
+    def ptr(self):
+        return <size_t>(self.var)
 
     def __repr__(self):
         return self.name
@@ -557,6 +547,7 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
 
+        print("scip vars ", name, " size t is ", <size_t>scip_var)
         pyVar = Variable.create(scip_var)
         PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
         return pyVar
@@ -1253,7 +1244,7 @@ cdef class Model:
         return self.getSolObjVal(self._bestSol, original)
 
     def getSolVal(self, Solution sol, Variable var):
-        """Retrieve value of given variable in the given solution or in 
+        """Retrieve value of given variable in the given solution or in
         the LP/pseudo solution if sol == None
 
         Keyword arguments:
