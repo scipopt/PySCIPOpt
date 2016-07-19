@@ -38,21 +38,11 @@ def _expr_richcmp(self, other, op):
 class Term:
     '''This is a monomial term'''
 
-
     def __init__(self, *vartuple):
-        print("I am init ", vartuple.__str__())
         self.vartuple = tuple(sorted(vartuple, key=lambda v: v.ptr()))
-        print("I am out of init")
 
     def __hash__(self):
-        print("Inside hash")
-        if len(self.vartuple) == 0:
-            print("everything is bad")
-        print("computing hash of", self, " which is ", hash(sum(v.ptr() for v in self.vartuple)))
-        print(dir(self))
-        print(dir(self.vartuple))
-        print("Goodbye hash")
-        return hash(sum(v.ptr() for v in self.vartuple))
+        return sum(v.ptr() for v in self.vartuple)
 
     def __eq__(self, other):
         print("checking whether ", self, " is equal to ", other)

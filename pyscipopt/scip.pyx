@@ -545,7 +545,6 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
 
-        print("scip vars ", name, " size t is ", <size_t>scip_var)
         pyVar = Variable.create(scip_var)
         PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
         return pyVar
