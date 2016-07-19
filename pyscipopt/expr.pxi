@@ -1,4 +1,3 @@
-CONST = ()
 
 def _is_number(e):
     try:
@@ -36,6 +35,37 @@ def _expr_richcmp(self, other, op):
         raise NotImplementedError
 
 
+class Term:
+    '''This is a monomial term'''
+
+
+    def __init__(self, *vartuple):
+        print("I am init ", vartuple.__str__())
+        self.vartuple = tuple(sorted(vartuple, key=lambda v: v.ptr()))
+        print("I am out of init")
+
+    def __hash__(self):
+        print("Inside hash")
+        if len(self.vartuple) == 0:
+            print("everything is bad")
+        print("computing hash of", self, " which is ", hash(sum(v.ptr() for v in self.vartuple)))
+        print(dir(self))
+        print(dir(self.vartuple))
+        print("Goodbye hash")
+        return hash(sum(v.ptr() for v in self.vartuple))
+
+    def __eq__(self, other):
+        print("checking whether ", self, " is equal to ", other)
+        if len(self.vartuple) != len(other.vartuple):
+            return False
+        for v1, v2 in zip(self.vartuple, other.vartuple):
+            if v1.ptr() != v2.ptr():
+                return False
+        else:
+            return True
+
+CONST = Term()
+
 cdef class Expr:
     '''Polynomial expressions of variables with operator overloading.'''
     cdef public terms
@@ -50,8 +80,10 @@ cdef class Expr:
             self.terms[()] = 0.0
 
     def __getitem__(self, key):
-        if not isinstance(key, tuple):
-            key = (key,)
+        print(key)
+        if not isinstance(key, Term):
+            key = Term(key)
+            print(key)
         return self.terms.get(key, 0.0)
 
     def __add__(self, other):
