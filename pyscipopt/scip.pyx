@@ -972,6 +972,7 @@ cdef class Model:
     def optimize(self):
         """Optimize the problem."""
         PY_SCIP_CALL(SCIPsolve(self._scip))
+        self._bestSol = Solution.create(SCIPgetBestSol(self._scip))
 
     def includePricer(self, Pricer pricer, name, desc, priority=1, delay=True):
         """Include a pricer.
