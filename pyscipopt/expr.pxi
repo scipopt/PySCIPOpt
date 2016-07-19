@@ -41,6 +41,9 @@ class Term:
     def __init__(self, *vartuple):
         self.vartuple = tuple(sorted(vartuple, key=lambda v: v.ptr()))
 
+    def __getitem__(self, idx):
+        return self.vartuple[idx]
+
     def __hash__(self):
         return sum(v.ptr() for v in self.vartuple)
 

@@ -443,22 +443,17 @@ cdef class Model:
         coeffs -- the coefficients
         sense -- the objective sense (default 'minimize')
         """
-        cdef SCIP_Real coeff
-        if isinstance(coeffs, Expr):
-            # transform linear expression into variable dictionary
-            terms = coeffs.terms
-            coeffs = {t[0]:c for t, c in terms.items() if c != 0.0}
-        elif coeffs == 0:
-            coeffs = {}
-        for k in coeffs:
-            var = <Variable>k
-            PY_SCIP_CALL(SCIPchgVarObj(self._scip, var.var, <SCIP_Real>coeffs[k]))
+        assert isinstance(coeffs, Expr)
+        for term, coef in coeffs.terms.items():
+            var = <Variable>term[0]
+            PY_SCIP_CALL(SCIPchgVarObj(self._scip, var.var, coef))
+
         if sense == "minimize":
             self.setMinimize()
         elif sense == "maximize":
             self.setMaximize()
         else:
-            raise Warning("unrecognized objective sense")
+            raise Warning("unrecognized optimization sense: %s" % sense)
 
     def getObjective(self):
         """Return objective function as Expr"""
@@ -735,12 +730,13 @@ cdef class Model:
         terms = cons.expr.terms
 
         # collect variables
-        variables = list(set(var for term in terms for var in term))
-        varindex = {var:idx for (idx,var) in enumerate(variables)}
+        variables = {var.ptr():var for term in terms for var in term}
+        variables = list(variables.values())
+        varindex = {var.ptr():idx for (idx,var) in enumerate(variables)}
 
         # create variable expressions
         varexprs = <SCIP_EXPR**> malloc(len(varindex) * sizeof(SCIP_EXPR*))
-        for var, idx in varindex.items():
+        for idx in varindex.values():
             PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &expr, SCIP_EXPR_VARIDX, <int>idx) )
             varexprs[idx] = expr
 
@@ -749,7 +745,7 @@ cdef class Model:
         for i, (term, coef) in enumerate(terms.items()):
             idxs = <int*> malloc(len(term) * sizeof(int))
             for j, var in enumerate(term):
-                idxs[j] = varindex[var]
+                idxs[j] = varindex[var.ptr()]
             PY_SCIP_CALL( SCIPexprCreateMonomial(SCIPblkmem(self._scip), &monomials[i], <SCIP_Real>coef, <int>len(term), idxs, NULL) );
             free(idxs)
 

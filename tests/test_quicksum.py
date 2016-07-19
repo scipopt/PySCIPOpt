@@ -7,7 +7,7 @@ def test_quicksum():
     z = m.addVar("z")
     c = 2.3
 
-    q = quicksum([x,y,z,c])
-    s =      sum([x,y,z,c])
+    q = quicksum([x,y,z,c]) == 0.0
+    s =      sum([x,y,z,c]) == 0.0
 
-    assert(q.terms == s.terms)
+    assert(q.expr.terms == s.expr.terms)
