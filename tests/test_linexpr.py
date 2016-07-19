@@ -11,9 +11,11 @@ def model():
     z = m.addVar("z")
     return m, x, y, z
 
-def test_variable(model):
+def test_term(model):
     m, x, y, z = model
-    assert x < y or y < x
+    assert x[x] == 1.0
+    assert x[y] == 0.0
+
 
 def test_operations_linear(model):
     m, x, y, z = model
