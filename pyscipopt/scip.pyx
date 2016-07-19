@@ -408,6 +408,14 @@ cdef class Model:
         """Returns the curernt presolving time in seconds"""
         return SCIPgetPresolvingTime(self._scip)
 
+    def getNNodes(self):
+        """Retrieve the total number of processed nodes."""
+        return SCIPgetNNodes(self._scip)
+
+    def getGap(self):
+        """Retrieve the gap, i.e. |(primalbound - dualbound)/min(|primalbound|,|dualbound|)|."""
+        return SCIPgetGap(self._scip)
+
     def infinity(self):
         """Returns SCIP's infinity value"""
         return SCIPinfinity(self._scip)
@@ -483,6 +491,22 @@ cdef class Model:
         setting -- the parameter settings
         """
         PY_SCIP_CALL(SCIPsetPresolving(self._scip, setting, True))
+
+    def setSeparating(self, setting):
+        """Set separating parameter settings.
+
+        Keyword arguments:
+        setting -- the parameter settings
+        """
+        PY_SCIP_CALL(SCIPsetSeparating(self._scip, setting, True))
+
+    def setHeuristics(self, setting):
+        """Set heuristics parameter settings.
+
+        Keyword arguments:
+        setting -- the parameter settings
+        """
+        PY_SCIP_CALL(SCIPsetHeuristics(self._scip, setting, True))
 
     # Write original problem to file
     def writeProblem(self, filename='origprob.cip'):
@@ -1198,6 +1222,10 @@ cdef class Model:
         self._bestSol = Solution.create(SCIPgetBestSol(self._scip))
         return self._bestSol
 
+    def printBestSol(self):
+        """Prints the best feasible primal solution."""
+        PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, False));
+
     def getSolObjVal(self, Solution sol, original=True):
         """Retrieve the objective value of the solution.
 
@@ -1247,9 +1275,17 @@ cdef class Model:
             raise Warning("method cannot be called before problem is solved")
         return self.getSolVal(self._bestSol, var)
 
+    def getPrimalbound(self):
+        """Retrieve the best primal bound."""
+        return SCIPgetPrimalbound(self._scip)
+
     def getDualbound(self):
         """Retrieve the best dual bound."""
         return SCIPgetDualbound(self._scip)
+
+    def getDualboundRoot(self):
+        """Retrieve the best root dual bound."""
+        return SCIPgetDualboundRoot(self._scip)
 
     def writeName(self, Variable var):
         """Write the name of the variable to the std out."""

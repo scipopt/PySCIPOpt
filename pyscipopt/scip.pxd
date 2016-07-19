@@ -313,6 +313,8 @@ cdef extern from "scip/scip.h":
     SCIP_OBJSENSE SCIPgetObjsense(SCIP* scip)
     SCIP_RETCODE SCIPsetObjlimit(SCIP* scip, SCIP_Real objlimit)
     SCIP_RETCODE SCIPsetPresolving(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)
+    SCIP_RETCODE SCIPsetSeparating(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)
+    SCIP_RETCODE SCIPsetHeuristics(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)
     SCIP_RETCODE SCIPwriteOrigProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
     SCIP_STATUS SCIPgetStatus(SCIP* scip)
     SCIP_Real SCIPepsilon(SCIP* scip)
@@ -388,15 +390,18 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPtrySolFree(SCIP* scip, SCIP_SOL** sol, SCIP_Bool printreason, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* stored)
     SCIP_RETCODE SCIPtrySol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool printreason, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* stored)
     SCIP_RETCODE SCIPfreeSol(SCIP* scip, SCIP_SOL** sol)
+    SCIP_RETCODE SCIPprintBestSol(SCIP* scip, FILE* outfile, SCIP_Bool printzeros)
+    SCIP_Real SCIPgetPrimalbound(SCIP* scip)
+    SCIP_Real SCIPgetGap(SCIP* scip)
 
     # Row Methods
     SCIP_RETCODE SCIPcreateRow(SCIP* scip, SCIP_ROW** row, const char* name, int len, SCIP_COL** cols, SCIP_Real* vals,
                                SCIP_Real lhs, SCIP_Real rhs, SCIP_Bool local, SCIP_Bool modifiable, SCIP_Bool removable)
     SCIP_RETCODE SCIPaddCut(SCIP* scip, SCIP_SOL* sol, SCIP_ROW* row, SCIP_Bool forcecut, SCIP_Bool* infeasible)
 
-
     # Dual Solution Methods
     SCIP_Real SCIPgetDualbound(SCIP* scip)
+    SCIP_Real SCIPgetDualboundRoot(SCIP* scip)
 
     # Reader plugin
     SCIP_RETCODE SCIPincludeReader(SCIP* scip,
@@ -621,7 +626,7 @@ cdef extern from "scip/scip.h":
 
     # Statistic Methods
     SCIP_RETCODE SCIPprintStatistics(SCIP* scip, FILE* outfile)
-
+    SCIP_Longint SCIPgetNNodes(SCIP* scip)
 
     # Parameter Functions
     SCIP_RETCODE SCIPsetBoolParam(SCIP* scip, char* name, SCIP_Bool value)
@@ -663,6 +668,8 @@ cdef extern from "scip/scip.h":
     SCIP_Bool    SCIPlpiHasDualRay(SCIP_LPI* lpi)
     SCIP_Real    SCIPlpiInfinity(SCIP_LPI* lpi)
     SCIP_Bool    SCIPlpiIsInfinity(SCIP_LPI* lpi, SCIP_Real val)
+    SCIP_Bool    SCIPlpiIsPrimalFeasible(SCIP_LPI* lpi)
+    SCIP_Bool    SCIPlpiIsDualFeasible(SCIP_LPI* lpi)
 
     BMS_BLKMEM* SCIPblkmem(SCIP* scip)
 
