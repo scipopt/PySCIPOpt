@@ -208,15 +208,13 @@ cdef class Variable(Expr):
     cdef create(SCIP_VAR* scipvar):
         var = Variable()
         var.var = scipvar
+        Expr.__init__(var, {Term(var) : 1.0})
         return var
 
     property name:
         def __get__(self):
             cname = bytes( SCIPvarGetName(self.var) )
             return cname.decode('utf-8')
-
-    def __init__(self):
-        Expr.__init__(self, {Term(self) : 1.0})
 
     def ptr(self):
         return <size_t>(self.var)
