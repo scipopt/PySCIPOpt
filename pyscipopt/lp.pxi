@@ -417,9 +417,9 @@ cdef class LP:
         cdef SCIP_Real* c_redcost = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
         PY_SCIP_CALL(SCIPlpiGetSol(self.lpi, NULL, NULL, NULL, NULL, c_redcost))
 
-        redcost = [0.0] * ncols
+        redcost = []
         for i in range(ncols):
-            redcost[i] = c_redcost[i]
+            redcost[i].append(c_redcost[i])
 
         free(c_redcost)
         return redcost
