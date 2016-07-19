@@ -409,3 +409,31 @@ cdef class LP:
         cdef int niters
         PY_SCIP_CALL(SCIPlpiGetIterations(self.lpi, &niters))
         return niters
+
+    def getRedcost(self):
+        """Returns the reduced cost vector of the last LP solve."""
+        ncols = self.ncols()
+
+        cdef SCIP_Real* c_redcost = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
+        PY_SCIP_CALL(SCIPlpiGetSol(self.lpi, NULL, NULL, NULL, NULL, c_redcost))
+
+        redcost = [0.0] * ncols
+        for i in range(ncols):
+            redcost[i] = c_redcost[i]
+
+        free(c_redcost)
+        return redcost
+
+    def getBasisInds(self):
+        """Returns the indices of the basic columns and rows; index i >= 0 corresponds to column i, index i < 0 to row -i-1"""
+        nrows = self.nrows()
+        cdef int* c_binds  = <int*> malloc(nrows * sizeof(int))
+
+        PY_SCIP_CALL(SCIPlpiGetBasisInd(self.lpi, c_binds))
+
+        binds = []
+        for i in range(nrows):
+            binds.append(c_binds[i])
+
+        free(c_binds)
+        return binds
