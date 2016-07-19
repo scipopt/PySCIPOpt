@@ -1223,7 +1223,6 @@ cdef class Model:
 
     def printBestSol(self):
         """Prints the best feasible primal solution."""
-        self._bestSol = Solution.create(SCIPgetBestSol(self._scip))
         PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, False));
 
     def getSolObjVal(self, Solution sol, original=True):
