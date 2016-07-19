@@ -64,6 +64,9 @@ class Term:
         else:
             return True
 
+    def __repr__(self):
+        return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
+
 CONST = Term()
 
 cdef class Expr:
