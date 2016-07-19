@@ -45,7 +45,6 @@ class Term:
         return sum(v.ptr() for v in self.vartuple)
 
     def __eq__(self, other):
-        print("checking whether ", self, " is equal to ", other)
         if len(self.vartuple) != len(other.vartuple):
             return False
         for v1, v2 in zip(self.vartuple, other.vartuple):
@@ -53,6 +52,13 @@ class Term:
                 return False
         else:
             return True
+
+    def __len__(self):
+        return len(self.vartuple)
+
+    def __add__(self, other):
+        both = self.vartuple + other.vartuple
+        return Term(*both)
 
     def __repr__(self):
         return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
@@ -73,10 +79,8 @@ cdef class Expr:
             self.terms[()] = 0.0
 
     def __getitem__(self, key):
-        print(key)
         if not isinstance(key, Term):
             key = Term(key)
-            print(key)
         return self.terms.get(key, 0.0)
 
     def __add__(self, other):
@@ -121,7 +125,7 @@ cdef class Expr:
             terms = {}
             for v1, c1 in self.terms.items():
                 for v2, c2 in other.terms.items():
-                    v = tuple(sorted(v1 + v2))
+                    v = v1 + v2
                     terms[v] = terms.get(v, 0.0) + c1 * c2
             return Expr(terms)
         else:

@@ -70,33 +70,27 @@ def test_operations_quadratic(model):
     assert expr[x] == 0.0
     assert expr[y] == 0.0
     assert expr[CONST] == 0.0
-    assert expr[(x,x)] == 1.0
+    assert expr[Term(x,x)] == 1.0
 
     expr = x*y
     assert isinstance(expr, Expr)
     assert expr[x] == 0.0
     assert expr[y] == 0.0
     assert expr[CONST] == 0.0
-    if x < y:
-        assert expr[(x,y)] == 1.0
-    else:
-        assert expr[(y,x)] == 1.0
+    assert expr[Term(x,y)] == 1.0
 
     expr = (x - 1)*(y + 1)
     assert isinstance(expr, Expr)
     assert expr[x] == 1.0
     assert expr[y] == -1.0
     assert expr[CONST] == -1.0
-    if x < y:
-        assert expr[(x,y)] == 1.0
-    else:
-        assert expr[(y,x)] == 1.0
+    assert expr[Term(x,y)] == 1.0
 
 def test_power_for_quadratic(model):
     m, x, y, z = model
     expr = x**2 + x + 1
     assert isinstance(expr, Expr)
-    assert expr[(x,x)] == 1.0
+    assert expr[Term(x,x)] == 1.0
     assert expr[x] == 1.0
     assert expr[CONST] == 1.0
     assert len(expr.terms) == 3
@@ -111,8 +105,8 @@ def test_operations_poly(model):
     assert expr[x] == 0.0
     assert expr[y] == 0.0
     assert expr[CONST] == 0.0
-    assert expr[(x,x,x)] == 1.0
-    assert expr[(y,y)] == 2.0
+    assert expr[Term(x,x,x)] == 1.0
+    assert expr[Term(y,y)] == 2.0
     assert expr.terms == (x**3 + 2*y**2).terms
 
 def test_invalid_power(model):
