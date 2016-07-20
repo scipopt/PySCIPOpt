@@ -224,7 +224,7 @@ cdef class Variable(Expr):
     def __richcmp__(self, other, op):
         if op == 0: # <
             return id(self) < id(other)
-        elif op == 4: # > 
+        elif op == 4: # >
             return id(self) > id(other)
         else: # interpret variable as expression
             # would like to do this, but doesn't work :-\
@@ -939,7 +939,6 @@ cdef class Model:
         """
         cdef SCIP_CONS* transcons
         PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.cons, &transcons))
-
         return Constraint.create(transcons)
 
     def getConss(self):
@@ -959,7 +958,12 @@ cdef class Model:
         Keyword arguments:
         cons -- the linear constraint
         """
-        return SCIPgetDualsolLinear(self._scip, cons.cons)
+        # TODO this should ideally be handled on the SCIP side
+        if cons.isOriginal:
+            transcons = <Constraint>self.getTransformedCons(cons)
+            return SCIPgetDualsolLinear(self._scip, transcons.cons)
+        else:
+            return SCIPgetDualsolLinear(self._scip, cons.cons)
 
     def getDualfarkasLinear(self, Constraint cons):
         """Retrieve the dual farkas value to a linear constraint.
@@ -967,7 +971,12 @@ cdef class Model:
         Keyword arguments:
         cons -- the linear constraint
         """
-        return SCIPgetDualfarkasLinear(self._scip, cons.cons)
+        # TODO this should ideally be handled on the SCIP side
+        if cons.isOriginal:
+            transcons = <Constraint>self.getTransformedCons(cons)
+            return SCIPgetDualfarkasLinear(self._scip, transcons.cons)
+        else:
+            return SCIPgetDualfarkasLinear(self._scip, cons.cons)
 
     def optimize(self):
         """Optimize the problem."""
@@ -1253,7 +1262,7 @@ cdef class Model:
         return self.getSolObjVal(self._bestSol, original)
 
     def getSolVal(self, Solution sol, Variable var):
-        """Retrieve value of given variable in the given solution or in 
+        """Retrieve value of given variable in the given solution or in
         the LP/pseudo solution if sol == None
 
         Keyword arguments:
