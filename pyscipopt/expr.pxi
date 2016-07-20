@@ -38,23 +38,21 @@ def _expr_richcmp(self, other, op):
 class Term:
     '''This is a monomial term'''
 
+    __slots__ = ('vartuple', 'ptrtuple', 'hashval')
+
     def __init__(self, *vartuple):
         self.vartuple = tuple(sorted(vartuple, key=lambda v: v.ptr()))
+        self.ptrtuple = tuple(v.ptr() for v in self.vartuple)
+        self.hashval = sum(self.ptrtuple)
 
     def __getitem__(self, idx):
         return self.vartuple[idx]
 
     def __hash__(self):
-        return sum(v.ptr() for v in self.vartuple)
+        return self.hashval
 
     def __eq__(self, other):
-        if len(self.vartuple) != len(other.vartuple):
-            return False
-        for v1, v2 in zip(self.vartuple, other.vartuple):
-            if v1.ptr() != v2.ptr():
-                return False
-        else:
-            return True
+        return self.ptrtuple == other.ptrtuple
 
     def __len__(self):
         return len(self.vartuple)
