@@ -56,6 +56,7 @@ if error:
 extensions = [Extension(
     'pyscipopt.scip',
     [os.path.join('pyscipopt', 'scip.pyx')],
+    #extra_compile_args=['-UNDEBUG'],   # use this when linking to a dbg libscipopt.so
     include_dirs=[include],
     library_dirs=[lib],
     runtime_library_dirs=[os.path.abspath(lib)],
