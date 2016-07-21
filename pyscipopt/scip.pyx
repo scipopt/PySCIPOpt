@@ -24,11 +24,6 @@ if sys.version_info >= (3, 0):
 else:
     str_conversion = lambda x:x
 
-def scipErrorHandler(function):
-    def wrapper(*args, **kwargs):
-        return PY_SCIP_CALL(function(*args, **kwargs))
-    return wrapper
-
 # Mapping the SCIP_RESULT enum to a python class
 # This is required to return SCIP_RESULT in the python code
 # In __init__.py this is imported as SCIP_RESULT to keep the
@@ -168,7 +163,6 @@ def PY_SCIP_CALL(SCIP_RETCODE rc):
         raise Exception('SCIP: maximal branching depth level exceeded!')
     else:
         raise Exception('SCIP: unknown return code!')
-    return rc
 
 cdef class Column:
     """Base class holding a pointer to corresponding SCIP_COL"""
@@ -350,31 +344,26 @@ cdef class Model:
         # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
         PY_SCIP_CALL( SCIPfree(&self._scip) )
 
-    @scipErrorHandler
     def create(self):
         """Create a new SCIP instance"""
-        return SCIPcreate(&self._scip)
+        PY_SCIP_CALL(SCIPcreate(&self._scip))
 
-    @scipErrorHandler
     def includeDefaultPlugins(self):
         """Includes all default plug-ins into SCIP"""
-        return SCIPincludeDefaultPlugins(self._scip)
+        PY_SCIP_CALL(SCIPincludeDefaultPlugins(self._scip))
 
-    @scipErrorHandler
     def createProbBasic(self, problemName='model'):
         """Create new problem iinstance with given name"""
         n = str_conversion(problemName)
-        return SCIPcreateProbBasic(self._scip, n)
+        PY_SCIP_CALL(SCIPcreateProbBasic(self._scip, n))
 
-    @scipErrorHandler
     def freeProb(self):
         """Frees problem and solution process data"""
-        return SCIPfreeProb(self._scip)
+        PY_SCIP_CALL(SCIPfreeProb(self._scip))
 
-    @scipErrorHandler
     def freeTransform(self):
         """Frees all solution process data including presolving and transformed problem, only original problem is kept"""
-        return SCIPfreeTransform(self._scip)
+        PY_SCIP_CALL(SCIPfreeTransform(self._scip))
 
     def printVersion(self):
         """Print version, copyright information and compile mode"""
