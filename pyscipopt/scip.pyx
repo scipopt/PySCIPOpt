@@ -163,7 +163,6 @@ def PY_SCIP_CALL(SCIP_RETCODE rc):
         raise Exception('SCIP: maximal branching depth level exceeded!')
     else:
         raise Exception('SCIP: unknown return code!')
-    return rc
 
 cdef class Column:
     """Base class holding a pointer to corresponding SCIP_COL"""
@@ -359,24 +358,24 @@ cdef class Model:
 
     def create(self):
         """Create a new SCIP instance"""
-        return PY_SCIP_CALL(SCIPcreate(&self._scip))
+        PY_SCIP_CALL(SCIPcreate(&self._scip))
 
     def includeDefaultPlugins(self):
         """Includes all default plug-ins into SCIP"""
-        return PY_SCIP_CALL(SCIPincludeDefaultPlugins(self._scip))
+        PY_SCIP_CALL(SCIPincludeDefaultPlugins(self._scip))
 
     def createProbBasic(self, problemName='model'):
         """Create new problem iinstance with given name"""
         n = str_conversion(problemName)
-        return PY_SCIP_CALL(SCIPcreateProbBasic(self._scip, n))
+        PY_SCIP_CALL(SCIPcreateProbBasic(self._scip, n))
 
     def freeProb(self):
         """Frees problem and solution process data"""
-        return PY_SCIP_CALL(SCIPfreeProb(self._scip))
+        PY_SCIP_CALL(SCIPfreeProb(self._scip))
 
     def freeTransform(self):
         """Frees all solution process data including presolving and transformed problem, only original problem is kept"""
-        return PY_SCIP_CALL(SCIPfreeTransform(self._scip))
+        PY_SCIP_CALL(SCIPfreeTransform(self._scip))
 
     def printVersion(self):
         """Print version, copyright information and compile mode"""
