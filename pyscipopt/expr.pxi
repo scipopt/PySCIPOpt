@@ -1,4 +1,3 @@
-CONST = ()
 
 def _is_number(e):
     try:
@@ -36,6 +35,37 @@ def _expr_richcmp(self, other, op):
         raise NotImplementedError
 
 
+class Term:
+    '''This is a monomial term'''
+
+    __slots__ = ('vartuple', 'ptrtuple', 'hashval')
+
+    def __init__(self, *vartuple):
+        self.vartuple = tuple(sorted(vartuple, key=lambda v: v.ptr()))
+        self.ptrtuple = tuple(v.ptr() for v in self.vartuple)
+        self.hashval = sum(self.ptrtuple)
+
+    def __getitem__(self, idx):
+        return self.vartuple[idx]
+
+    def __hash__(self):
+        return self.hashval
+
+    def __eq__(self, other):
+        return self.ptrtuple == other.ptrtuple
+
+    def __len__(self):
+        return len(self.vartuple)
+
+    def __add__(self, other):
+        both = self.vartuple + other.vartuple
+        return Term(*both)
+
+    def __repr__(self):
+        return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
+
+CONST = Term()
+
 cdef class Expr:
     '''Polynomial expressions of variables with operator overloading.'''
     cdef public terms
@@ -50,8 +80,8 @@ cdef class Expr:
             self.terms[()] = 0.0
 
     def __getitem__(self, key):
-        if not isinstance(key, tuple):
-            key = (key,)
+        if not isinstance(key, Term):
+            key = Term(key)
         return self.terms.get(key, 0.0)
 
     def __add__(self, other):
@@ -96,7 +126,7 @@ cdef class Expr:
             terms = {}
             for v1, c1 in self.terms.items():
                 for v2, c2 in other.terms.items():
-                    v = tuple(sorted(v1 + v2))
+                    v = v1 + v2
                     terms[v] = terms.get(v, 0.0) + c1 * c2
             return Expr(terms)
         else:

@@ -49,9 +49,17 @@ After following the previous two steps, it is then possible to create functions 
 Gotchas
 =======
 
+Ranged constraints
+------------------
+
 While ranged constraints of the form
 
     lhs <= expression <= rhs
 are supported, the Python syntax for [chained comparisons](https://docs.python.org/3.5/reference/expressions.html#comparisons) can't be hijacked with operator overloading. Instead, parenthesis must be used, e.g.,
 
     lhs <= (expression <= rhs)
+
+Variable objects
+----------------
+
+You can't use `Variable` objects as elements of `set`s or as keys of `dict`s. They are not hashable and comparable. The issue is that comparisons such as `x == y` will be interpreted as linear constraints, since `Variable`s are also `Expr` objects.
