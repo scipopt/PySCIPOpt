@@ -1,4 +1,6 @@
 *~
+*.swp
+*.swo
 build/
 include
 lib
