@@ -664,6 +664,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPlpiGetIterations(SCIP_LPI* lpi, int* iterations)
     SCIP_RETCODE SCIPlpiGetPrimalRay(SCIP_LPI* lpi, SCIP_Real* ray)
     SCIP_RETCODE SCIPlpiGetDualfarkas(SCIP_LPI* lpi, SCIP_Real* dualfarkas)
+    SCIP_RETCODE SCIPlpiGetBasisInd(SCIP_LPI* lpi, int* bind)
     SCIP_Bool    SCIPlpiHasPrimalRay(SCIP_LPI* lpi)
     SCIP_Bool    SCIPlpiHasDualRay(SCIP_LPI* lpi)
     SCIP_Real    SCIPlpiInfinity(SCIP_LPI* lpi)
