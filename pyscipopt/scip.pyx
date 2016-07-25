@@ -433,6 +433,7 @@ cdef class Model:
         sense -- the objective sense (default 'minimize')
         """
         assert isinstance(coeffs, Expr)
+        self.freeTransform()
         for term, coef in coeffs.terms.items():
             var = <Variable>term[0]
             PY_SCIP_CALL(SCIPchgVarObj(self._scip, var.var, coef))
