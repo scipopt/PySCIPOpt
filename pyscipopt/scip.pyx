@@ -434,8 +434,10 @@ cdef class Model:
         """
         assert isinstance(coeffs, Expr)
         for term, coef in coeffs.terms.items():
-            var = <Variable>term[0]
-            PY_SCIP_CALL(SCIPchgVarObj(self._scip, var.var, coef))
+            # avoid CONST term of Expr
+            if coef != 0.0:
+                var = <Variable>term[0]
+                PY_SCIP_CALL(SCIPchgVarObj(self._scip, var.var, coef))
 
         if sense == "minimize":
             self.setMinimize()
