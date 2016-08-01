@@ -934,7 +934,7 @@ cdef class Model:
         cons -- the linear constraint
         """
         # TODO this should ideally be handled on the SCIP side
-        if cons.isOriginal:
+        if cons.isOriginal():
             transcons = <Constraint>self.getTransformedCons(cons)
             return SCIPgetDualsolLinear(self._scip, transcons.cons)
         else:
@@ -947,7 +947,7 @@ cdef class Model:
         cons -- the linear constraint
         """
         # TODO this should ideally be handled on the SCIP side
-        if cons.isOriginal:
+        if cons.isOriginal():
             transcons = <Constraint>self.getTransformedCons(cons)
             return SCIPgetDualfarkasLinear(self._scip, transcons.cons)
         else:
