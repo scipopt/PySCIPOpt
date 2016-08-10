@@ -433,6 +433,7 @@ cdef class Model:
         sense -- the objective sense (default 'minimize')
         """
         assert isinstance(coeffs, Expr)
+        self.freeTransform()
         for term, coef in coeffs.terms.items():
             # avoid CONST term of Expr
             if coef != 0.0:
