@@ -433,9 +433,14 @@ cdef class Model:
         sense -- the objective sense (default 'minimize')
         """
         assert isinstance(coeffs, Expr)
+        if coeffs.degree() > 1:
+            raise ValueError("Nonlinear objective functions are not supported!")
+        if coeffs[CONST] != 0.0:
+            raise ValueError("Constant offsets in objective are not supported!")
         for term, coef in coeffs.terms.items():
             # avoid CONST term of Expr
-            if coef != 0.0:
+            if term != CONST:
+                assert len(term) == 1
                 var = <Variable>term[0]
                 PY_SCIP_CALL(SCIPchgVarObj(self._scip, var.var, coef))
 

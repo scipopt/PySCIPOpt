@@ -213,3 +213,17 @@ def test_equation(model):
     assert equat.expr[x] == 2.0
     assert equat.expr[y] == -3.0
     assert equat.expr[CONST] == 0.0
+
+def test_objective(model):
+    m, x, y, z = model
+
+    # setting linear objective
+    m.setObjective(x + y)
+
+    # setting nonlinear objective
+    with pytest.raises(ValueError):
+        m.setObjective(x**2 - y*z)
+
+    # setting affine objective
+    with pytest.raises(ValueError):
+        m.setObjective(x + y + 1)
