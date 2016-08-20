@@ -73,11 +73,11 @@ cdef class Expr:
     def __init__(self, terms=None):
         '''terms is a dict of variables to coefficients.
 
-        The empty tuple is used as key for the constant term.'''
+        CONST is used as key for the constant term.'''
         self.terms = {} if terms is None else terms
 
         if len(self.terms) == 0:
-            self.terms[()] = 0.0
+            self.terms[CONST] = 0.0
 
     def __getitem__(self, key):
         if not isinstance(key, Term):

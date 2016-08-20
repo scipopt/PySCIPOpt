@@ -1,4 +1,5 @@
 from pyscipopt import Model, quicksum
+from pyscipopt.scip import CONST
 
 def test_quicksum():
     m = Model("quicksum")
@@ -11,6 +12,11 @@ def test_quicksum():
     s =      sum([x,y,z,c]) == 0.0
 
     assert(q.expr.terms == s.expr.terms)
+
+def test_quicksum():
+    empty = quicksum(1 for i in [])
+    assert len(empty.terms) == 1
+    assert CONST in empty.terms
 
 def test_largequadratic():
     # inspired from performance issue on

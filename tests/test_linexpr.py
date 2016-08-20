@@ -1,7 +1,7 @@
 import pytest
 
 from pyscipopt import Model
-from pyscipopt.scip import Expr, ExprCons, Term
+from pyscipopt.scip import Expr, ExprCons, Term, quicksum
 
 @pytest.fixture(scope="module")
 def model():
@@ -219,6 +219,9 @@ def test_objective(model):
 
     # setting linear objective
     m.setObjective(x + y)
+
+    # using quicksum
+    m.setObjective(quicksum(2*v for v in [x, y, z]))
 
     # setting nonlinear objective
     with pytest.raises(ValueError):
