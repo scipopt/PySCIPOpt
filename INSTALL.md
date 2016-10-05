@@ -24,4 +24,6 @@ The installation routine tries to generate symbolic links to the library directo
 Note:
 -----
 
-You cannot use the interface module from within this directory. This is because Python will try to import the `pyscipopt` package from the local directory instead of using the installed one.
+You cannot use the interface module from within the `PySCIPOpt` main directory. This is because Python will try to import the `pyscipopt` package from the local directory instead of using the installed one.
+
+Currently, Windows is not officially supported. You are invited to submit a pull request for working setup routines.
