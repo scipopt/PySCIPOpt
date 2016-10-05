@@ -4,9 +4,9 @@ Building the Python interface
 The SCIP Python interface uses the shared library of the [SCIP Optimization Suite](http://scip.zib.de/).
 Therefore you have to run
 
-    make SHARED=true scipoptlib
+    make SHARED=true GMP=false READLINE=false scipoptlib
 
-from the root of the SCIP Optimization Suite directory. This will result in the creation of the directory `<path/to/scipopt/lib>` and the shared library `libscipopt.so`.
+from the root of the SCIP Optimization Suite directory. This will result in the creation of the directory `<path/to/scipopt/lib>` and the shared library `libscipopt.so`. You may remove the `READLINE` and `GMP` flags if these tools are correctly installed in your environment.
 
 From within the `PySCIPOpt` directory, please execute the following command:
 
