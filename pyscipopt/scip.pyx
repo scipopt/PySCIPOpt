@@ -240,6 +240,22 @@ cdef class Variable(Expr):
         scip_col = SCIPvarGetCol(self.var)
         return Column.create(scip_col)
 
+    def getLbOriginal(self):
+        """Returns original lower bound of variable"""
+        return SCIPvarGetLbOriginal(self.var)
+
+    def getUbOriginal(self):
+        """Returns original upper bound of variable"""
+        return SCIPvarGetUbOriginal(self.var)
+
+    def getLbGlobal(self):
+        """Returns global lower bound of variable"""
+        return SCIPvarGetLbGlobal(self.var)
+
+    def getUbGlobal(self):
+        """Returns global upper bound of variable"""
+        return SCIPvarGetUbGlobal(self.var)
+
     def getLbLocal(self):
         """Returns current lower bound of variable"""
         return SCIPvarGetLbLocal(self.var)
