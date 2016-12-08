@@ -851,3 +851,8 @@ cdef extern from "scip/cons_nonlinear.h":
                                          SCIP_Bool dynamic,
                                          SCIP_Bool removable,
                                          SCIP_Bool stickingatnode)
+
+cdef extern from "scip/cons_countsols.h":
+    SCIP_RETCODE SCIPcount(SCIP* scip)
+    SCIP_RETCODE SCIPsetParamsCountsols(SCIP* scip)
+    SCIP_Longint SCIPgetNCountedSols(SCIP* scip, SCIP_Bool* valid)

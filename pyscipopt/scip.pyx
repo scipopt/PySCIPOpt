@@ -1434,6 +1434,26 @@ cdef class Model:
             extension = str_conversion(extension)
             PY_SCIP_CALL(SCIPreadProb(self._scip, absfile, extension))
 
+    # Counting functions
+
+    def count(self):
+        """Counts the number of feasible points of problem."""
+        PY_SCIP_CALL(SCIPcount(self._scip))
+
+    def getNCountedSols(self):
+        """Get number of feasible solution."""
+        cdef SCIP_Bool valid
+        cdef SCIP_Longint nsols
+
+        nsols = SCIPgetNCountedSols(self._scip, &valid)
+        if not valid:
+            print('total number of solutions found is not valid!')
+        return nsols
+
+    def setParamsCountsols(self):
+        """sets SCIP parameters such that a valid counting process is possible."""
+        PY_SCIP_CALL(SCIPsetParamsCountsols(self._scip))
+
 # debugging memory management
 def is_memory_freed():
     return BMSgetMemoryUsed() == 0
