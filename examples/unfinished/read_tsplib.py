@@ -141,7 +141,7 @@ def read_tsplib(filename):
     "data is stored in an upper triangular matrix"
     "NOTE: some distance types are not handled yet"
     if filename[-3:] == ".gz":
-        f = gzip.open(filename)
+        f = gzip.open(filename, "rt")
     else:
         f = open(filename)
 
