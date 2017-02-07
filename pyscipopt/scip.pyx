@@ -727,7 +727,9 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, var1.var, var2.var, c))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        return Constraint.create(scip_cons)
+        PyCons = Constraint.create(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+        return PyCons
 
     def _addNonlinearCons(self, ExprCons cons, **kwargs):
         """Add object of class ExprCons."""
@@ -784,13 +786,13 @@ cdef class Model:
             kwargs['modifiable'], kwargs['dynamic'], kwargs['removable'],
             kwargs['stickingatnode']) )
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        result = Constraint.create(scip_cons)
-
+        PyCons = Constraint.create(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
         PY_SCIP_CALL( SCIPexprtreeFree(&exprtree) )
         free(vars)
         free(monomials)
         free(varexprs)
-        return result
+        return PyCons
 
     def addConsCoeff(self, Constraint cons, Variable var, coeff):
         """Add coefficient to the linear constraint (if non-zero).
@@ -1033,7 +1035,7 @@ cdef class Model:
                                               maxprerounds, delaysepa, delayprop, needscons, proptiming, presoltiming,
                                               PyConshdlrCopy, PyConsFree, PyConsInit, PyConsExit, PyConsInitpre, PyConsExitpre,
                                               PyConsInitsol, PyConsExitsol, PyConsDelete, PyConsTrans, PyConsInitlp, PyConsSepalp, PyConsSepasol,
-                                              PyConsEnfolp, PyConsEnfops, PyConsCheck, PyConsProp, PyConsPresol, PyConsResprop, PyConsLock,
+                                              PyConsEnfolp, PyConsEnforelax, PyConsEnfops, PyConsCheck, PyConsProp, PyConsPresol, PyConsResprop, PyConsLock,
                                               PyConsActive, PyConsDeactive, PyConsEnable, PyConsDisable, PyConsDelvars, PyConsPrint, PyConsCopy,
                                               PyConsParse, PyConsGetvars, PyConsGetnvars, PyConsGetdivebdchgs,
                                               <SCIP_CONSHDLRDATA*>conshdlr))
@@ -1172,18 +1174,19 @@ cdef class Model:
         _sol = <SCIP_SOL*>solution.sol
         PY_SCIP_CALL(SCIPsetSolVal(self._scip, _sol, var.var, val))
 
-    def trySol(self, Solution solution, printreason=True, checkbounds=True, checkintegrality=True, checklprows=True):
+    def trySol(self, Solution solution, printreason=True, completely=False, checkbounds=True, checkintegrality=True, checklprows=True):
         """Try to add a solution to the storage.
 
         Keyword arguments:
         solution -- the solution to store
         printreason -- should all reasons of violations be printed?
+        completely -- should all violation be checked?
         checkbounds -- should the bounds of the variables be checked?
         checkintegrality -- has integrality to be checked?
         checklprows -- have current LP rows (both local and global) to be checked?
         """
         cdef SCIP_Bool stored
-        PY_SCIP_CALL(SCIPtrySolFree(self._scip, &solution.sol, printreason, checkbounds, checkintegrality, checklprows, &stored))
+        PY_SCIP_CALL(SCIPtrySolFree(self._scip, &solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
         return stored
 
     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):

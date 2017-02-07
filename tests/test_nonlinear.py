@@ -24,6 +24,7 @@ def test_string():
     const1 = m.addVar('const1')
     const2 = m.addVar('const2')
     volume = m.addVar('volume')
+
     y = [m.addVar('wire%d' % i, vtype='B') for i in range(NWIRES)]
 
     obj = 1.0 * volume
