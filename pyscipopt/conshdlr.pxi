@@ -415,7 +415,7 @@ cdef SCIP_RETCODE PyConsGetnvars (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS
     success[0] = result_dict.get("success", False)
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyConsGetdivebdchgs (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_DIVESET* diveset, SCIP_HEURDATA* heurdata, SCIP_SOL* sol,
+cdef SCIP_RETCODE PyConsGetdivebdchgs (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_DIVESET* diveset, SCIP_SOL* sol,
                                        SCIP_Bool* success, SCIP_Bool* infeasible):
     # TODO
     PyConshdlr = getPyConshdlr(conshdlr)
