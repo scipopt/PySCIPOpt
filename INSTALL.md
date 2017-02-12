@@ -10,11 +10,11 @@ from the root of the SCIP Optimization Suite directory. This will result in the 
 
 From within the `PySCIPOpt` directory, please execute the following command:
 
-    SCIPOPTDIR=<path/to/scipopt> python setup.py install
+    env SCIPOPTDIR=<path/to/scipopt> python setup.py install
 
 You may use the additional options `--user` or `--prefix=<custom-python-path>`, to build the interface locally.
 
-PySCIPOpt requires [Cython](http://cython.org/) to be installed in your system.
+PySCIPOpt requires [Cython](http://cython.org/) to be installed in your system. If the Cython compilation fails, upgrade your Cython version (confirmed that version 0.20.1 fails).
 
 TROUBLESHOOTING
 ===============
