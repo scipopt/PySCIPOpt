@@ -14,7 +14,11 @@ From within the `PySCIPOpt` directory, please execute the following command:
 
 You may use the additional options `--user` or `--prefix=<custom-python-path>`, to build the interface locally.
 
-PySCIPOpt requires [Cython](http://cython.org/) to be installed in your system. If the Cython compilation fails, upgrade your Cython version (confirmed that version 0.20.1 fails).
+PySCIPOpt requires [Cython](http://cython.org/) to be installed in your system. If the Cython compilation fails, upgrade your Cython version (confirmed that version 0.20.1 fails). Furthermore, you need to have the Python development files installed on your system (error message "Python.h not found"):
+
+    sudo apt-get install python-dev   # for Python 2
+    sudo apt-get install python3-dev  # for Python 3
+
 
 TROUBLESHOOTING
 ===============
