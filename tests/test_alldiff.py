@@ -4,8 +4,10 @@ try:
     import matplotlib.pyplot as plt
 except:
     import pytest
-    pytestmark = pytest.mark.skip
-    pytest.skip()
+    if pytest.__version__ < "3.0.0":
+        pytest.skip()
+    else:
+        pytestmark = pytest.mark.skip
 
 from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PARAMEMPHASIS, SCIP_PARAMSETTING
 
