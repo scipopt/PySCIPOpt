@@ -14,31 +14,35 @@ testsetpath = 'check/testset/short.test'
 solufilepath = 'check/testset/short.solu'
 
 if not all(os.path.isfile(fn) for fn in [testsetpath, solufilepath]):
-    pytest.skip("Files for testset `short` not found (symlink missing?)")
+    if pytest.__version__ < "3.0.0":
+        pytest.skip("Files for testset `short` not found (symlink missing?)")
+    else:
+        pytestmark = pytest.mark.skip
 
-with open(testsetpath, 'r') as f:
-    for line in f.readlines():
-        testset.append('check/'+line.rstrip('\n'))
+else:
+    with open(testsetpath, 'r') as f:
+        for line in f.readlines():
+            testset.append('check/' + line.rstrip('\n'))
 
-with open(solufilepath, 'r') as f:
-    for line in f.readlines():
+    with open(solufilepath, 'r') as f:
+        for line in f.readlines():
 
-        if len(line.split()) == 2:
-            [s, name] = line.split()
-        else:
-            [s, name, value] = line.split()
+            if len(line.split()) == 2:
+                [s, name] = line.split()
+            else:
+                [s, name, value] = line.split()
 
-        if   s == '=opt=':
-            primalsolutions[name] = float(value)
-            dualsolutions[name] = float(value)
-        elif s == '=inf=':
-            primalsolutions[name] = infinity
-            dualsolutions[name] = infinity
-        elif s == '=best=':
-            primalsolutions[name] = float(value)
-        elif s == '=best dual=':
-            dualsolutions[name] = float(value)
-        # status =unkn= needs no data
+            if   s == '=opt=':
+                primalsolutions[name] = float(value)
+                dualsolutions[name] = float(value)
+            elif s == '=inf=':
+                primalsolutions[name] = infinity
+                dualsolutions[name] = infinity
+            elif s == '=best=':
+                primalsolutions[name] = float(value)
+            elif s == '=best dual=':
+                dualsolutions[name] = float(value)
+            # status =unkn= needs no data
 
 def relGE(v1, v2, tol = tolerance):
     if v1 is None or v2 is None:
