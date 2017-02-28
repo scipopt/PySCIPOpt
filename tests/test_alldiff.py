@@ -1,13 +1,17 @@
-import networkx
-from networkx.algorithms import bipartite
+try:
+    import networkx
+    from networkx.algorithms import bipartite
+    import matplotlib.pyplot as plt
+except:
+    import pytest
+    pytestmark = pytest.mark.skip
+    pytest.skip()
+
 from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PARAMEMPHASIS, SCIP_PARAMSETTING
-import matplotlib.pyplot as plt
 
-from sys import version_info
-
-if version_info >= (3, 3):
+try:
     from types import SimpleNamespace
-else:
+except:
     class SimpleNamespace:
         def __init__(self, **kwargs):
             self.__dict__.update(kwargs)
