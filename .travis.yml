@@ -14,7 +14,7 @@ install:
   - cd scipoptsuite-3.2.1/
   - rm Makefile.doit
   - wget http://scip.zib.de/download/bugfixes/scip-3.2.1/Makefile.doit
-  - make COMP=clang SHARED=true GMP=false READLINE=false ZLIB=false scipoptlib
+  - make COMP=clang SHARED=true GMP=false READLINE=false ZIMPL=false scipoptlib
   - export SCIPOPTDIR=`pwd`
   - cd ..
   - python setup.py install
