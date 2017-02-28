@@ -9,7 +9,7 @@ notifications:
 
 install:
   - pip install cython
-  - wget http://www.zib.de/miltenberger/test/scip/download/release/scipoptsuite-4.0.0.tgz
+  - wget http://www.zib.de/miltenberger/test/scipoptsuite-4.0.0.tgz
   - tar xzf scipoptsuite-4.0.0.tgz
   - cd scipoptsuite-4.0.0/
   - make COMP=clang SHARED=true GMP=false READLINE=false ZIMPL=false scipoptlib
