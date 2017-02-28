@@ -14,6 +14,7 @@ testsetpath = 'check/testset/short.test'
 solufilepath = 'check/testset/short.solu'
 
 if not all(os.path.isfile(fn) for fn in [testsetpath, solufilepath]):
+    pytestmark = pytest.mark.skip
     pytest.skip("Files for testset `short` not found (symlink missing?)")
 
 with open(testsetpath, 'r') as f:

@@ -5,6 +5,7 @@ try:
   import networkx
 except:
   import pytest
+  pytestmark = pytest.mark.skip
   pytest.skip()
 
 EPS = 1.e-6
