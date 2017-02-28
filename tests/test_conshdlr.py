@@ -1,5 +1,20 @@
 from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PRESOLTIMING, SCIP_PROPTIMING
-from types import SimpleNamespace
+from sys import version_info
+
+if version_info >= (3, 3):
+    from types import SimpleNamespace
+else:
+    class SimpleNamespace:
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
+
+        def __repr__(self):
+            keys = sorted(self.__dict__)
+            items = ("{}={!r}".format(k, self.__dict__[k]) for k in keys)
+            return "{}({})".format(type(self).__name__, ", ".join(items))
+
+        def __eq__(self, other):
+            return self.__dict__ == other.__dict__
 
 ## callbacks which are not implemented yet:
 # PyConsGetdivebdchgs
