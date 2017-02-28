@@ -1,5 +1,7 @@
 This project provides an interface from the Python programming language to the [SCIP](http://scip.zib.de) solver software.
 
+[![Build Status](https://travis-ci.org/SCIP-Interfaces/PySCIPOpt.svg?branch=master)](https://travis-ci.org/SCIP-Interfaces/PySCIPOpt)
+
 How to install
 ==============
 See [INSTALL.md](INSTALL.md) for instructions.
