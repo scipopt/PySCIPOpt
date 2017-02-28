@@ -9,11 +9,9 @@ notifications:
 
 install:
   - pip install cython
-  - wget http://scip.zib.de/download/release/scipoptsuite-3.2.1.tgz
-  - tar xzf scipoptsuite-3.2.1.tgz
-  - cd scipoptsuite-3.2.1/
-  - rm Makefile.doit
-  - wget http://scip.zib.de/download/bugfixes/scip-3.2.1/Makefile.doit
+  - wget http://www.zib.de/miltenberger/test/scip/download/release/scipoptsuite-4.0.0.tgz
+  - tar xzf scipoptsuite-4.0.0.tgz
+  - cd scipoptsuite-4.0.0/
   - make COMP=clang SHARED=true GMP=false READLINE=false ZIMPL=false scipoptlib
   - export SCIPOPTDIR=`pwd`
   - cd ..
