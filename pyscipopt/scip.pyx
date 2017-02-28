@@ -1256,7 +1256,7 @@ cdef class Model:
         Keyword arguments:
         original -- objective value in original or transformed space (default True)
         """
-        if not self.getStage() == SCIP_STAGE_SOLVED:
+        if not self.getStage() >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
         return self.getSolObjVal(self._bestSol, original)
 
@@ -1279,7 +1279,7 @@ cdef class Model:
         Keyword arguments:
         var -- the variable to query the value of
         """
-        if not self.getStage() == SCIP_STAGE_SOLVED:
+        if not self.getStage() >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
         return self.getSolVal(self._bestSol, var)
 
