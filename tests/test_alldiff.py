@@ -1,13 +1,8 @@
-try:
-    import networkx
-    from networkx.algorithms import bipartite
-    import matplotlib.pyplot as plt
-except:
-    import pytest
-    if pytest.__version__ < "3.0.0":
-        pytest.skip()
-    else:
-        pytestmark = pytest.mark.skip
+import pytest
+
+networkx = pytest.importorskip("networkx")
+plt = pytest.importorskip("matplotlib.pyplot")
+bipartite = pytest.importorskip("networkx.algorithms").bipartite
 
 from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PARAMEMPHASIS, SCIP_PARAMSETTING
 

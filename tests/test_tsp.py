@@ -1,14 +1,9 @@
 from pyscipopt import Model, Conshdlr, quicksum, SCIP_RESULT
 
-try:
-  import itertools
-  import networkx
-except:
-  import pytest
-  if pytest.__version__ < "3.0.0":
-    pytest.skip()
-  else:
-    pytestmark = pytest.mark.skip
+import pytest
+
+itertools = pytest.importorskip("itertools")
+networkx = pytest.importorskip("networkx")
 
 EPS = 1.e-6
 
