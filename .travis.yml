@@ -9,8 +9,10 @@ notifications:
 
 addons:
   apt:
-    sources: [ 'ubuntu-toolchain-r-test']
+    sources: 
+      - ubuntu-toolchain-r-test
     packages:
+      - gcc-5
       - g++-5
 
 install:
@@ -19,6 +21,6 @@ install:
   - tar xzf scip-4.0.0-libs.tgz
   - ln -s scip-libs lib
   - ln -s scip-libs include
-  - python setup.py install
+  - CC=gcc-5 CXX=g++-5 python setup.py install
 
 script: py.test tests
