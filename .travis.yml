@@ -7,6 +7,11 @@ python:
 notifications:
   email: false
 
+addons:
+  apt:
+    sources: [ 'ubuntu-toolchain-r-test']
+    packages: ['libstdc++6']
+
 install:
   - pip install cython networkx
   - wget http://www.zib.de/miltenberger/test/scip-4.0.0-libs.tgz
