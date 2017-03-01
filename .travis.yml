@@ -7,6 +7,10 @@ python:
 notifications:
   email: false
 
+os:
+  - linux
+  - osx
+
 install:
   - pip install cython networkx
   - wget http://scip.zib.de/download/release/scipoptsuite-3.2.1.tgz
