@@ -13,7 +13,6 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - gcc-5
-      - g++-5
 
 install:
   - pip install cython networkx
@@ -21,6 +20,6 @@ install:
   - tar xzf scip-4.0.0-libs.tgz
   - ln -s scip-libs lib
   - ln -s scip-libs include
-  - CC=gcc-5 CXX=g++-5 python setup.py install
+  - env CC=gcc-5 python setup.py install
 
 script: py.test tests
