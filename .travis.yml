@@ -20,7 +20,7 @@ install:
   - tar xzf scip-4.0.0-libs.tgz
   - ln -s scip-libs lib
   - ln -s scip-libs include
-  - export CC=gcc-5
+  - alias gcc='gcc-5'
   - python setup.py install
 
 script: py.test tests
