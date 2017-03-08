@@ -1,12 +1,26 @@
+import pytest
+
+networkx = pytest.importorskip("networkx")
+plt = pytest.importorskip("matplotlib.pyplot")
+bipartite = pytest.importorskip("networkx.algorithms").bipartite
+
+from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PARAMEMPHASIS, SCIP_PARAMSETTING
+
 try:
-    import networkx
-    from networkx.algorithms import bipartite
-    from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PARAMEMPHASIS, SCIP_PARAMSETTING
     from types import SimpleNamespace
-    import matplotlib.pyplot as plt
 except:
-    import pytest
-    pytest.skip()
+    class SimpleNamespace:
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
+
+        def __repr__(self):
+            keys = sorted(self.__dict__)
+            items = ("{}={!r}".format(k, self.__dict__[k]) for k in keys)
+            return "{}({})".format(type(self).__name__, ", ".join(items))
+
+        def __eq__(self, other):
+            return self.__dict__ == other.__dict__
+
 
 #initial Sudoku values
 init = [5, 3, 0, 0, 7, 0, 0, 0, 0,
@@ -221,7 +235,7 @@ def create_sudoku():
         for col in range(9):
             var = x[row,col]
             vars.append(var)
-            vals = set(range(round(var.getLbLocal()), round(var.getUbLocal()) + 1))
+            vals = set(range(int(round(var.getLbLocal())), int(round(var.getUbLocal())) + 1))
             domains[var.ptr()] = vals
         # this is kind of ugly, isn't it?
         cons = scip.createCons(conshdlr, "row_%d" % row)

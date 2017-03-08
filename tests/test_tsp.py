@@ -1,11 +1,9 @@
-import itertools
 from pyscipopt import Model, Conshdlr, quicksum, SCIP_RESULT
 
-try:
-  import networkx
-except:
-  import pytest
-  pytest.skip()
+import pytest
+
+itertools = pytest.importorskip("itertools")
+networkx = pytest.importorskip("networkx")
 
 EPS = 1.e-6
 

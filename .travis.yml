@@ -1,0 +1,18 @@
+language: python
+
+python:
+  - "2.7"
+  - "3.6"
+
+notifications:
+  email: false
+
+install:
+  - pip install cython networkx
+  - wget http://www.zib.de/miltenberger/test/scip-4.0.0-libs.tgz
+  - tar xzf scip-4.0.0-libs.tgz
+  - ln -s scip-libs lib
+  - ln -s scip-libs include
+  - python setup.py install
+
+script: py.test tests
