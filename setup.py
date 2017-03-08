@@ -35,10 +35,10 @@ setup(
     name = 'PySCIPOpt',
     version = '1.0',
     description = 'Python interface and modeling environment for SCIP',
-    url = 'https://github.com/SCIP-Interfaces/PySCIPOpt'
+    url = 'https://github.com/SCIP-Interfaces/PySCIPOpt',
     author = 'Zuse Institute Berlin',
     author_email = 'scip@zib.de',
     license = 'MIT',
     ext_modules = extensions,
-    packages=['pyscipopt']
+    packages = ['pyscipopt']
 )
