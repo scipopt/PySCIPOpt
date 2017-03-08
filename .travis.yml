@@ -14,5 +14,6 @@ install:
   - ln -s scip-libs lib
   - ln -s scip-libs include
   - python setup.py install
+  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/lib
 
 script: py.test tests
