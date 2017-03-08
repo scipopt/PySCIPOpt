@@ -1,10 +1,15 @@
 from setuptools import setup, Extension
 import os
 
+# look for environment variable that specifies path to SCIP Opt lib and headers
+scipoptdir = os.environ.get('SCIPOPTDIR', '')
+
+includedir = os.path.join(scipoptdir, 'include')
+libdir = os.path.join(scipoptdir, 'lib')
+
+libname = 'libscipopt' if os.name == 'nt' else 'scipopt'
+
 cythonize = True
-dllname = 'libscip-4.0.0.mingw.x86_64.msvc.opt.spx2'
-includedir = 'include'
-libdir = 'lib'
 
 try:
     from Cython.Distutils import build_ext
@@ -21,18 +26,19 @@ ext = '.pyx' if cythonize else '.c'
 extensions = [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip'+ext)],
                           include_dirs=[includedir],
                           library_dirs=[libdir],
-                          libraries=[dllname])]
+                          libraries=[libname])]
 
 if cythonize:
     extensions = cythonize(extensions)
 
 setup(
-    name = 'pyscipopt',
+    name = 'PySCIPOpt',
     version = '1.0',
-    description = 'wrapper for SCIP in Python',
+    description = 'Python interface and modeling environment for SCIP',
+    url = 'https://github.com/SCIP-Interfaces/PySCIPOpt'
     author = 'Zuse Institute Berlin',
     author_email = 'scip@zib.de',
-    license = 'ZIB',
+    license = 'MIT',
     ext_modules = extensions,
     packages=['pyscipopt']
 )
