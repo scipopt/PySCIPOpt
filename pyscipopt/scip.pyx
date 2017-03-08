@@ -881,6 +881,117 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         return Constraint.create(scip_cons)
 
+    def addConsCardinality(self, consvars, cardval, indvars=None, weights=None, name="CardinalityCons",
+                initial=True, separate=True, enforce=True, check=True,
+                propagate=True, local=False, dynamic=False,
+                removable=False, stickingatnode=False):
+        """Add a cardinality constraint that allows at most 'cardval' many nonzero variables.
+
+        Keyword arguments:
+        consvars -- list of variables to be included
+        cardval -- nonnegative integer
+        indvars -- indicator variables indicating which variables may be treated as nonzero in cardinality constraint, or None
+                   if new indicator variables should be introduced automatically
+        weights -- weights determining the variable order, or None if variables should be ordered in the same way they were added to the constraint
+        name -- the name of the constraint (default 'CardinalityCons')
+        initial -- should the LP relaxation of constraint be in the initial LP? (default True)
+        separate -- should the constraint be separated during LP processing? (default True)
+        enforce -- should the constraint be enforced during node processing? (default True)
+        check -- should the constraint be checked for feasibility? (default True)
+        propagate -- should the constraint be propagated during node processing? (default True)
+        local -- is the constraint only valid locally? (default False)
+        dynamic -- is the constraint subject to aging? (default False)
+        removable -- hould the relaxation be removed from the LP due to aging or cleanup? (default False)
+        stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
+        """
+        cdef SCIP_CONS* scip_cons
+        cdef SCIP_VAR* indvar
+
+        PY_SCIP_CALL(SCIPcreateConsCardinality(self._scip, &scip_cons, str_conversion(name), 0, NULL, cardval, NULL, NULL,
+            initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
+        
+        # circumvent an annoying bug in SCIP 4.0.0 that does not allow uninitialized weights
+        if weights is None:
+            weights = list(range(1, len(consvars) + 1))
+
+        for i, v in enumerate(consvars):
+            var = <Variable>v
+            if indvars:
+                indvar = (<Variable>indvars[i]).var
+            else:
+                indvar = NULL
+            if weights is None:
+                PY_SCIP_CALL(SCIPappendVarCardinality(self._scip, scip_cons, var.var, indvar))
+            else:
+                PY_SCIP_CALL(SCIPaddVarCardinality(self._scip, scip_cons, var.var, indvar, <SCIP_Real>weights[i]))
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pyCons = Constraint.create(scip_cons)
+
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        return pyCons
+
+
+    def addConsIndicator(self, cons, binvar=None, name="CardinalityCons",
+                initial=True, separate=True, enforce=True, check=True,
+                propagate=True, local=False, dynamic=False,
+                removable=False, stickingatnode=False):
+        """Add an indicator constraint for the linear inequality 'cons'.
+
+        The 'binvar' argument models the redundancy of the linear constraint. A solution for which
+        'binvar' is 1 must satisfy the constraint.
+
+        Keyword arguments:
+        cons -- a linear inequality of the form "<="
+        binvar -- binary indicator variable, or None if it should be created
+        name -- the name of the constraint (default 'CardinalityCons')
+        initial -- should the LP relaxation of constraint be in the initial LP? (default True)
+        separate -- should the constraint be separated during LP processing? (default True)
+        enforce -- should the constraint be enforced during node processing? (default True)
+        check -- should the constraint be checked for feasibility? (default True)
+        propagate -- should the constraint be propagated during node processing? (default True)
+        local -- is the constraint only valid locally? (default False)
+        dynamic -- is the constraint subject to aging? (default False)
+        removable -- hould the relaxation be removed from the LP due to aging or cleanup? (default False)
+        stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
+        """
+        assert isinstance(cons, ExprCons)
+        cdef SCIP_CONS* scip_cons
+        cdef SCIP_VAR* _binVar
+        if cons.lhs is not None and cons.rhs is not None:
+            raise ValueError("expected inequality that has either only a left or right hand side")
+
+        if cons.expr.degree() > 1:
+            raise ValueError("expected linear inequality, expression has degree %d" % cons.expr.degree)
+
+        assert cons.expr.degree() <= 1
+
+        if cons.rhs is not None:
+            rhs =  cons.rhs
+            negate = False
+        else:
+            rhs = -cons.lhs
+            negate = True
+
+        _binVar = (<Variable>binvar).var if binvar is not None else NULL
+
+        PY_SCIP_CALL(SCIPcreateConsIndicator(self._scip, &scip_cons, str_conversion(name), _binVar, 0, NULL, NULL, rhs,
+            initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
+        terms = cons.expr.terms
+
+        for key, coeff in terms.items():
+            var = <Variable>key[0]
+            if negate:
+                coeff = -coeff
+            PY_SCIP_CALL(SCIPaddVarIndicator(self._scip, scip_cons, var.var, <SCIP_Real>coeff))
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pyCons = Constraint.create(scip_cons)
+
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        return pyCons
 
     def addPyCons(self, Constraint cons):
         """Adds a customly created cons.
