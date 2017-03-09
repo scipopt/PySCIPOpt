@@ -11,7 +11,7 @@ install:
   - pip install cython networkx
   - mkdir lib
   - cd lib
-  - wget http://scip.zib.de/download.php?fname=libscipopt-4.0.0.linux.x86_64.gnu.opt.so.zip
+  - wget http://scip.zib.de/download/release/libscipopt-4.0.0.linux.x86_64.gnu.opt.so.zip
   - unzip libscipopt-4.0.0.linux.x86_64.gnu.opt.so.zip
   - ln -s libscipopt-4.0.0.linux.x86_64.gnu.opt.so libscipopt.so
   - cd -
