@@ -9,15 +9,10 @@ notifications:
 
 install:
   - pip install cython networkx
-  - mkdir lib
-  - cd lib
-  - wget http://scip.zib.de/download/release/libscipopt-4.0.0.linux.x86_64.gnu.opt.so.zip
-  - unzip libscipopt-4.0.0.linux.x86_64.gnu.opt.so.zip
-  - ln -s libscipopt-4.0.0.linux.x86_64.gnu.opt.so libscipopt.so
-  - cd -
-  - wget http://scip.zib.de/download/release/scipoptheaders-4.0.0.tgz
-  - tar xf scipoptheaders-4.0.0.tgz
+  - wget http://scip.zib.de/download/release/scipoptsuite-4.0.0.tgz
+  - tar xzf scipoptsuite-4.0.0.tgz
+  - cd scipoptsuite-4.0.0/
+  - make COMP=clang SHARED=true GMP=false READLINE=false ZIMPL=false install
   - python setup.py install
-  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/lib
 
 script: py.test tests
