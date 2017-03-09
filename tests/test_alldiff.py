@@ -183,7 +183,7 @@ class ALLDIFFconshdlr(Conshdlr):
     # checks whether solution is feasible, ie, if they are all different
     # since the checkpriority is < 0, we are only called if the integrality
     # constraint handler didn't find infeasibility, so solution is integral
-    def conscheck(self, constraints, solution, check_integrality, check_lp_rows, print_reason):
+    def conscheck(self, constraints, solution, check_integrality, check_lp_rows, print_reason, completely):
         for cons in constraints:
             if not self.is_cons_feasible(cons, solution):
                 return {"result": SCIP_RESULT.INFEASIBLE}
@@ -238,7 +238,7 @@ def create_sudoku():
             vals = set(range(int(round(var.getLbLocal())), int(round(var.getUbLocal())) + 1))
             domains[var.ptr()] = vals
         # this is kind of ugly, isn't it?
-        cons = scip.createCons(conshdlr, "row_%d"%row)
+        cons = scip.createCons(conshdlr, "row_%d" % row)
         #print("in test: received a constraint with id ", id(cons)) ### DELETE
         cons.data = SimpleNamespace() # so that data behaves like an instance of a class (ie, cons.data.whatever is allowed)
         cons.data.vars = vars

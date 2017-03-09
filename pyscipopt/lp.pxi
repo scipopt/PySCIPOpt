@@ -56,7 +56,7 @@ cdef class LP:
         """Adds a single column to the LP.
 
         Keyword arguments:
-        entries -- list of tuples, each tuple consists of a coefficient and a row index
+        entries -- list of tuples, each tuple consists of a row index and a coefficient
         obj     -- objective coefficient (default 0.0)
         lb      -- lower bound (default 0.0)
         ub      -- upper bound (default infinity)
@@ -93,33 +93,48 @@ cdef class LP:
         lbs   -- lower bounds (default 0.0)
         ubs   -- upper bounds (default infinity)
         """
+
         ncols = len(entrieslist)
         nnonz = sum(len(entries) for entries in entrieslist)
 
         cdef SCIP_Real* c_objs   = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
         cdef SCIP_Real* c_lbs    = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
         cdef SCIP_Real* c_ubs    = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
-        cdef SCIP_Real* c_coefs  = <SCIP_Real*> malloc(nnonz * sizeof(SCIP_Real))
-        cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
-        cdef int* c_beg  = <int*>malloc(ncols * sizeof(int))
+        cdef SCIP_Real* c_coefs
+        cdef int* c_inds
+        cdef int* c_beg
 
-        tmp = 0
-        for i,entries in enumerate(entrieslist):
-            c_objs[i] = objs[i] if objs != None else 0.0
-            c_lbs[i] = lbs[i] if lbs != None else 0.0
-            c_ubs[i] = ubs[i] if ubs != None else self.infinity()
-            c_beg[i] = tmp
 
-            for entry in entries:
-                c_inds[tmp] = entry[0]
-                c_coefs[tmp] = entry[1]
-                tmp += 1
+        if nnonz > 0:
+            c_coefs  = <SCIP_Real*> malloc(nnonz * sizeof(SCIP_Real))
+            c_inds = <int*>malloc(nnonz * sizeof(int))
+            c_beg  = <int*>malloc(ncols * sizeof(int))
 
-        PY_SCIP_CALL(SCIPlpiAddCols(self.lpi, ncols, c_objs, c_lbs, c_ubs, NULL, nnonz, c_beg, c_inds, c_coefs))
+            tmp = 0
+            for i,entries in enumerate(entrieslist):
+                c_objs[i] = objs[i] if objs != None else 0.0
+                c_lbs[i] = lbs[i] if lbs != None else 0.0
+                c_ubs[i] = ubs[i] if ubs != None else self.infinity()
+                c_beg[i] = tmp
 
-        free(c_beg)
-        free(c_inds)
-        free(c_coefs)
+                for entry in entries:
+                    c_inds[tmp] = entry[0]
+                    c_coefs[tmp] = entry[1]
+                    tmp += 1
+
+            PY_SCIP_CALL(SCIPlpiAddCols(self.lpi, ncols, c_objs, c_lbs, c_ubs, NULL, nnonz, c_beg, c_inds, c_coefs))
+
+            free(c_beg)
+            free(c_inds)
+            free(c_coefs)
+        else:
+            for i in range(len(entrieslist)):
+                c_objs[i] = objs[i] if objs != None else 0.0
+                c_lbs[i] = lbs[i] if lbs != None else 0.0
+                c_ubs[i] = ubs[i] if ubs != None else self.infinity()
+
+            PY_SCIP_CALL(SCIPlpiAddCols(self.lpi, ncols, c_objs, c_lbs, c_ubs, NULL, 0, NULL, NULL, NULL))
+
         free(c_ubs)
         free(c_lbs)
         free(c_objs)

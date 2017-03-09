@@ -1,75 +1,50 @@
-import sys, os, glob
-from distutils.core import setup
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
-from Cython.Build import cythonize
+from setuptools import setup, Extension
+import os
 
-lib = 'lib'
-include = 'include'
-error = False
-args = sys.argv[1:]
+# look for environment variable that specifies path to SCIP Opt lib and headers
+scipoptdir = os.environ.get('SCIPOPTDIR', '')
 
-def symlink_force(target, link_name):
-    try:
-        os.symlink(target, link_name)
-    except:
-        os.remove(link_name)
-        os.symlink(target, link_name)
-    print("created link '"+link_name+"' pointing to '"+target+"'")
+includedir = os.path.join(scipoptdir, 'include')
+libdir = os.path.join(scipoptdir, 'lib')
 
-# always use build_ext --inplace
-if args.count("build_ext") > 0 and args.count("--inplace") == 0:
-    sys.argv.insert(sys.argv.index("build_ext")+1, "--inplace")
+libname = 'libscipopt' if os.name == 'nt' else 'scipopt'
 
-# check for SCIPOPTDIR variable and link it accordingly
-scipoptdir = os.environ.get('SCIPOPTDIR')
+cythonize = True
 
-if not scipoptdir is None:
-    scipsrcdir = glob.glob(os.path.join(scipoptdir,'scip-*','src'))
-    scipsrcdir = sorted(scipsrcdir)[-1]  # use the latest version
-    print("setting up links to SCIP Optimization Suite installation based on environment variable 'SCIPOPTDIR:'\n"+scipoptdir)
-    if not os.path.exists(os.path.join(scipoptdir,lib,'libscipopt.so')):
-        print("ERROR: invalid path to library 'libscipopt.so'")
-        error = True
-    else:
-        symlink_force(os.path.join(scipoptdir,lib), lib)
-    if not os.path.exists(os.path.join(scipsrcdir,'scip','scip.h')):
-        print("ERROR: invalid path to SCIP src directory")
-        error = True
-    else:
-        symlink_force(os.path.join(scipsrcdir), include)
+try:
+    from Cython.Distutils import build_ext
+    from Cython.Build import cythonize
+except ImportError:
+    cythonize = False
 
-# verify exiting links
-if not os.path.exists(os.path.join(lib, 'libscipopt.so')):
-    print("ERROR: 'libscipopt.so' not found")
-    print("Please create symbolic link (named 'lib') to 'lib/' directory of SCIP Opt Suite, containing 'libscipopt.so'")
-    error = True
-if not os.path.exists(os.path.join(include, 'scip', 'scip.h')):
-    print("ERROR: SCIP headers not found")
-    print("Please create symbolic link (named 'include') to 'src/' directory of SCIP in SCIP Opt Suite")
-    error = True
+if not os.path.exists(os.path.join('pyscipopt', 'scip.pyx')):
+    cythonize = False
 
-if error:
-    print("You may also set environment variable 'SCIPOPTDIR' to point to the installation directory of the SCIP Optimization Suite.")
-    quit()
+extensions = []
+ext = '.pyx' if cythonize else '.c'
 
-extensions = [Extension(
-    'pyscipopt.scip',
-    [os.path.join('pyscipopt', 'scip.pyx')],
-    #extra_compile_args=['-UNDEBUG'],   # use this when linking to a dbg libscipopt.so
-    include_dirs=[include],
-    library_dirs=[lib],
-    runtime_library_dirs=[os.path.abspath(lib)],
-    libraries=['scipopt']
-)]
+extensions = [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip'+ext)],
+                          include_dirs=[includedir],
+                          library_dirs=[libdir],
+                          libraries=[libname])]
+
+if cythonize:
+    extensions = cythonize(extensions)
 
 setup(
     name = 'PySCIPOpt',
-    version = '1.0',
+    version = '1.0.0',
     description = 'Python interface and modeling environment for SCIP',
+    url = 'https://github.com/SCIP-Interfaces/PySCIPOpt',
     author = 'Zuse Institute Berlin',
     author_email = 'scip@zib.de',
-    license = 'ZIB academic license',
-    ext_modules = cythonize(extensions),
-    packages=['pyscipopt']
+    license = 'MIT',
+    classifiers=[
+    'Development Status :: 4 - Beta',
+     'License :: OSI Approved :: MIT License',
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 3'
+    ],
+    ext_modules = extensions,
+    packages = ['pyscipopt']
 )

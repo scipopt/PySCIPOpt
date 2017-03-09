@@ -58,7 +58,7 @@ class MyConshdlr(Conshdlr):
 
     # consenfops
 
-    def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason):
+    def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason, completely):
         calls.add("conscheck")
         for constraint in constraints:
             assert id(constraint) in ids
