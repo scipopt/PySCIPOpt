@@ -33,12 +33,18 @@ if cythonize:
 
 setup(
     name = 'PySCIPOpt',
-    version = '1.0',
+    version = '1.0.0',
     description = 'Python interface and modeling environment for SCIP',
     url = 'https://github.com/SCIP-Interfaces/PySCIPOpt',
     author = 'Zuse Institute Berlin',
     author_email = 'scip@zib.de',
     license = 'MIT',
+    classifiers=[
+    'Development Status :: 4 - Beta',
+     'License :: OSI Approved :: MIT License',
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 3'
+    ],
     ext_modules = extensions,
     packages = ['pyscipopt']
 )
