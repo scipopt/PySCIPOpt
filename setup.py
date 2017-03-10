@@ -33,7 +33,7 @@ if cythonize:
 
 setup(
     name = 'PySCIPOpt',
-    version = '1.0.0',
+    version = '1.0.1',
     description = 'Python interface and modeling environment for SCIP',
     url = 'https://github.com/SCIP-Interfaces/PySCIPOpt',
     author = 'Zuse Institute Berlin',
