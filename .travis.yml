@@ -14,8 +14,9 @@ install:
   - tar xzf scipoptsuite-$VERSION.tgz
   - cd scipoptsuite-$VERSION
   - make COMP=clang SHARED=true GMP=false READLINE=false ZIMPL=false
-  - make install INSTALLDIR=~ COMP=clang SHARED=true GMP=false READLINE=false ZIMPL=false
-  - cd ~
+  - make install INSTALLDIR=.. COMP=clang SHARED=true GMP=false READLINE=false ZIMPL=false
+  - cd ..
+  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/lib
   - python setup.py install
 
 script: py.test tests
