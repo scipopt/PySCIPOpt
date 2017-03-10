@@ -5,11 +5,11 @@ PySCIPOpt uses the shared library of the [SCIP Optimization Suite](http://scip.z
 You need to have the library corresponding to your platform (Linux, Windows, OS X) available on your system.
 If the library is not installed in the global path you need to specify its location using the environment variable `SCIPOPTDIR`:
 
- - on Linux and OS X:
-    export SCIPOPTDIR=<absolut_path_to_directory>
+ - on Linux and OS X:   
+    `export SCIPOPTDIR=<absolut_path_to_directory>`
 
- - on Windows:
-    set SCIPOPTDIR=<absolut_path_to_directory>
+ - on Windows:   
+    `set SCIPOPTDIR=<absolut_path_to_directory>`
 
 `SCIPOPTDIR` needs to have a subdirectory `lib` that contains the library.
 
@@ -33,20 +33,20 @@ Installation from PyPI
 
 To be able to use PySCIPOpt with a library that is not located in the standard search path of your machine (`~/lib`, `/usr/local/lib`, etc.) you need to set it accordingly:
 
- - on Linux:
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SCIPOPTDIR/lib
+ - on Linux:  
+    `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SCIPOPTDIR/lib`
 
- - on Windows:
-    set PATH=%PATH%;%SCIPOPTDIR\lib
+ - on Windows:  
+    `set PATH=%PATH%;%SCIPOPTDIR%\lib`
 
- - on OS X:
-    export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$SCIPOPTDIR/lib
+ - on OS X:  
+    `export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$SCIPOPTDIR/lib`
 
 
 Building everything form source
 ===============================
 
-Please refer to installation instructions of the SCIP Optimization Suite for information on how to generate a shared library or download a precompiled one.
+Please refer to [installation instructions](http://scip.zib.de/doc/html/MAKE.php) of the SCIP Optimization Suite for information on how to generate a shared library or download a precompiled one.
 
 PySCIPOpt requires [Cython](http://cython.org/) to be installed in your system. If the Cython compilation fails, upgrade your Cython version (confirmed that version 0.20.1 fails). Furthermore, you need to have the Python development files installed on your system (error message "Python.h not found"):
 
