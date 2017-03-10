@@ -642,7 +642,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetStringParam(SCIP* scip, char* name, char* value)
     SCIP_RETCODE SCIPreadParams(SCIP* scip, char* file)
     SCIP_RETCODE SCIPreadProb(SCIP* scip, char* file, char* extension)
-    SCIP_RETCODE SCIPsetEmphasis(SCIP* scip, SCIP_PARAMEMPHASIS paramemphasis, SCIP_Bool quiet);
+    SCIP_RETCODE SCIPsetEmphasis(SCIP* scip, SCIP_PARAMEMPHASIS paramemphasis, SCIP_Bool quiet)
 
     # LPI Functions
     SCIP_RETCODE SCIPlpiCreate(SCIP_LPI** lpi, SCIP_MESSAGEHDLR* messagehdlr, const char* name, SCIP_OBJSENSE objsen)
@@ -852,6 +852,60 @@ cdef extern from "scip/cons_nonlinear.h":
                                          SCIP_Bool dynamic,
                                          SCIP_Bool removable,
                                          SCIP_Bool stickingatnode)
+
+cdef extern from "scip/cons_cardinality.h":
+    SCIP_RETCODE SCIPcreateConsCardinality(SCIP* scip,
+                                            SCIP_CONS** cons,
+                                            const char* name,
+                                            int nvars,
+                                            SCIP_VAR** vars,
+                                            int cardval,
+                                            SCIP_VAR** indvars,
+                                            SCIP_Real* weights,
+                                            SCIP_Bool initial,
+                                            SCIP_Bool separate,
+                                            SCIP_Bool enforce,
+                                            SCIP_Bool check,
+                                            SCIP_Bool propagate,
+                                            SCIP_Bool local,
+                                            SCIP_Bool dynamic,
+                                            SCIP_Bool removable,
+                                            SCIP_Bool stickingatnode)
+
+    SCIP_RETCODE SCIPaddVarCardinality(SCIP* scip,
+                                       SCIP_CONS* cons,
+                                       SCIP_VAR* var,
+                                       SCIP_VAR* indvar,
+                                       SCIP_Real weight)
+
+    SCIP_RETCODE SCIPappendVarCardinality(SCIP* scip,
+                                          SCIP_CONS* cons,
+                                          SCIP_VAR* var,
+                                          SCIP_VAR* indvar)
+
+cdef extern from "scip/cons_indicator.h":
+    SCIP_RETCODE SCIPcreateConsIndicator(SCIP* scip,
+                                         SCIP_CONS** cons,
+                                         const char* name,
+                                         SCIP_VAR* binvar,
+                                         int nvars,
+                                         SCIP_VAR** vars,
+                                         SCIP_Real* vals,
+                                         SCIP_Real rhs,
+                                         SCIP_Bool initial,
+                                         SCIP_Bool separate,
+                                         SCIP_Bool enforce,
+                                         SCIP_Bool check,
+                                         SCIP_Bool propagate,
+                                         SCIP_Bool local,
+                                         SCIP_Bool dynamic,
+                                         SCIP_Bool removable,
+                                         SCIP_Bool stickingatnode)
+
+    SCIP_RETCODE SCIPaddVarIndicator(SCIP* scip,
+                                     SCIP_CONS* cons,
+                                     SCIP_VAR* var,
+                                     SCIP_Real val)
 
 cdef extern from "scip/cons_countsols.h":
     SCIP_RETCODE SCIPcount(SCIP* scip)
