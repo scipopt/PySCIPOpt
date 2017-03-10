@@ -16,13 +16,13 @@ If the library is not installed in the global path you need to specify its locat
 Additionally, if you're building PySCIPOpt from source, i.e. not using the precompiled egg or wheel, you also need to place all SCIP header files into a directory `include` next to `lib`:
 
     SCIPOPTDIR
-    |- lib
-        |- libscipopt.so ...
-    |- include
-        |- scip
-        |- lpi
-        |- nlpi
-        |- ...
+      > lib
+        > libscipopt.so ...
+      > include
+        > scip
+        > lpi
+        > nlpi
+        > ...
 
 
 
