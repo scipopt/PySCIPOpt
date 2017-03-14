@@ -5,15 +5,15 @@ PySCIPOpt uses the shared library of the [SCIP Optimization Suite](http://scip.z
 You need to have the library corresponding to your platform (Linux, Windows, OS X) available on your system.
 If the library is not installed in the global path you need to specify its location using the environment variable `SCIPOPTDIR`:
 
- - on Linux and OS X:   
-    `export SCIPOPTDIR=<absolut_path_to_directory>`
+ - on Linux and OS X:  
+    `export SCIPOPTDIR=<path_to_install_dir>`
 
- - on Windows:   
-    `set SCIPOPTDIR=<absolut_path_to_directory>`
+ - on Windows:  
+    `set SCIPOPTDIR=<path_to_install_dir>`
 
 `SCIPOPTDIR` needs to have a subdirectory `lib` that contains the library.
 
-Additionally, if you're building PySCIPOpt from source, i.e. not using the precompiled egg or wheel, you also need to place all SCIP header files into a directory `include` next to `lib`:
+Additionally, if you're building PySCIPOpt from source, i.e. not using the precompiled egg or wheel, you also need to place all SCIP header files into a directory `include` next to `lib` (this is done automatically by `make install INSTALLDIR=$SCIPOPTDIR` of the SCIP Optimization Suite):
 
     SCIPOPTDIR
       > lib
@@ -31,16 +31,13 @@ Installation from PyPI
 
 `pip install pyscipopt`
 
-To be able to use PySCIPOpt with a library that is not located in the standard search path of your machine (`~/lib`, `/usr/local/lib`, etc.) you need to set it accordingly:
-
- - on Linux:  
-    `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SCIPOPTDIR/lib`
+On Windows you need to make sure that the `scipopt` library can be found at runtime by adjusting your `PATH` environment variable:
 
  - on Windows:  
     `set PATH=%PATH%;%SCIPOPTDIR%\lib`
 
- - on OS X:  
-    `export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$SCIPOPTDIR/lib`
+On Linux and OS X this is encoded in the generated PySCIPOpt library and therefore not necessary.
+
 
 
 Building everything form source

@@ -1,32 +1,44 @@
 from setuptools import setup, Extension
-import os
+import os, platform
 
 # look for environment variable that specifies path to SCIP Opt lib and headers
 scipoptdir = os.environ.get('SCIPOPTDIR', '')
 
-includedir = os.path.join(scipoptdir, 'include')
-libdir = os.path.join(scipoptdir, 'lib')
+includedir = os.path.abspath(os.path.join(scipoptdir, 'include'))
+libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
 
 libname = 'libscipopt' if os.name == 'nt' else 'scipopt'
 
 cythonize = True
 
 try:
-    from Cython.Distutils import build_ext
     from Cython.Build import cythonize
 except ImportError:
+    if not os.path.exists(os.path.join('pyscipopt', 'scip.c')):
+        print('Cython is required')
+        quit(1)
     cythonize = False
 
 if not os.path.exists(os.path.join('pyscipopt', 'scip.pyx')):
     cythonize = False
 
-extensions = []
 ext = '.pyx' if cythonize else '.c'
+
+# set runtime libraries
+runtime_library_dirs = []
+extra_link_args = []
+if platform.system() == 'Linux':
+    runtime_library_dirs.append(libdir)
+elif platform.system() == 'Darwin':
+    extra_link_args.append('-Wl,-rpath,'+libdir)
 
 extensions = [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip'+ext)],
                           include_dirs=[includedir],
                           library_dirs=[libdir],
-                          libraries=[libname])]
+                          libraries=[libname],
+                          runtime_library_dirs=runtime_library_dirs,
+                          extra_link_args=extra_link_args
+                          )]
 
 if cythonize:
     extensions = cythonize(extensions)
