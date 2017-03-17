@@ -13,7 +13,7 @@ If the library is not installed in the global path you need to specify its locat
 
 `SCIPOPTDIR` needs to have a subdirectory `lib` that contains the library.
 
-Additionally, if you're building PySCIPOpt from source, i.e. not using the precompiled egg or wheel, you also need to place all SCIP header files into a directory `include` next to `lib` (this is done automatically by `make install INSTALLDIR=$SCIPOPTDIR` of the SCIP Optimization Suite):
+Additionally, if you're building PySCIPOpt from source, i.e. not using the precompiled egg or wheel, you also need to place all SCIP header files into a directory `include` next to `lib` (this is done automatically by `make install INSTALLDIR=$SCIPOPTDIR SHARED=true` of the SCIP Optimization Suite):
 
     SCIPOPTDIR
       > lib
@@ -55,9 +55,3 @@ After setting up your environment variables as specified above, please execute t
     python setup.py install
 
 You may use the additional options `--user` or `--prefix=<custom-python-path>`, to build the interface locally.
-
-
-Note:
------
-
-You cannot use the interface module from within the `PySCIPOpt` main directory. This is because Python will try to import the `pyscipopt` package from the local directory instead of using the installed one.
