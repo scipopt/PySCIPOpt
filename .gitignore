@@ -2,8 +2,9 @@
 *.swp
 *.swo
 build/
+dist/
 include
 lib
-pyscipopt/scip.c
+src/pyscipopt/scip.c
 __pycache__
 .cache

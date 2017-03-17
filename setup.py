@@ -11,15 +11,17 @@ libname = 'libscipopt' if os.name == 'nt' else 'scipopt'
 
 cythonize = True
 
+packagedir = os.path.join('src', 'pyscipopt')
+
 try:
     from Cython.Build import cythonize
 except ImportError:
-    if not os.path.exists(os.path.join('pyscipopt', 'scip.c')):
+    if not os.path.exists(os.path.join(packagedir, 'scip.c')):
         print('Cython is required')
         quit(1)
     cythonize = False
 
-if not os.path.exists(os.path.join('pyscipopt', 'scip.pyx')):
+if not os.path.exists(os.path.join(packagedir, 'scip.pyx')):
     cythonize = False
 
 ext = '.pyx' if cythonize else '.c'
@@ -32,7 +34,7 @@ if platform.system() == 'Linux':
 elif platform.system() == 'Darwin':
     extra_link_args.append('-Wl,-rpath,'+libdir)
 
-extensions = [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip'+ext)],
+extensions = [Extension('pyscipopt.scip', [os.path.join(packagedir, 'scip'+ext)],
                           include_dirs=[includedir],
                           library_dirs=[libdir],
                           libraries=[libname],
@@ -55,8 +57,9 @@ setup(
     'Development Status :: 4 - Beta',
      'License :: OSI Approved :: MIT License',
     'Programming Language :: Python :: 2',
-    'Programming Language :: Python :: 3'
-    ],
+    'Programming Language :: Python :: 3'],
     ext_modules = extensions,
-    packages = ['pyscipopt']
+    packages = ['pyscipopt'],
+    package_dir = {'pyscipopt': packagedir},
+    package_data = {'pyscipopt': ['scip.pyx', 'scip.pxd', '*.pxi']}
 )
