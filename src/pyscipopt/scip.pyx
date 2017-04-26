@@ -441,18 +441,28 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPsetObjlimit(self._scip, objlimit))
 
-    def setObjective(self, coeffs, sense = 'minimize'):
-        """Establish the objective function, either as a variable dictionary or as a linear expression.
+    def setObjective(self, coeffs, sense = 'minimize', clear = 'true'):
+        """Establish the objective function as a linear expression.
 
         Keyword arguments:
         coeffs -- the coefficients
         sense -- the objective sense (default 'minimize')
+        clear -- set all other variables objective coefficient to zero (default 'true')
         """
         assert isinstance(coeffs, Expr)
         if coeffs.degree() > 1:
             raise ValueError("Nonlinear objective functions are not supported!")
         if coeffs[CONST] != 0.0:
             raise ValueError("Constant offsets in objective are not supported!")
+
+        # clear existing objective function
+        cdef SCIP_VAR** _vars
+        cdef int _nvars
+        _vars = SCIPgetOrigVars(self._scip)
+        _nvars = SCIPgetNOrigVars(self._scip)
+        for i in range(_nvars):
+            PY_SCIP_CALL(SCIPchgVarObj(self._scip, _vars[i], 0.0))
+
         for term, coef in coeffs.terms.items():
             # avoid CONST term of Expr
             if term != CONST:
