@@ -449,19 +449,21 @@ cdef class Model:
         sense -- the objective sense (default 'minimize')
         clear -- set all other variables objective coefficient to zero (default 'true')
         """
+        cdef SCIP_VAR** _vars
+        cdef int _nvars
         assert isinstance(coeffs, Expr)
+
         if coeffs.degree() > 1:
             raise ValueError("Nonlinear objective functions are not supported!")
         if coeffs[CONST] != 0.0:
             raise ValueError("Constant offsets in objective are not supported!")
 
-        # clear existing objective function
-        cdef SCIP_VAR** _vars
-        cdef int _nvars
-        _vars = SCIPgetOrigVars(self._scip)
-        _nvars = SCIPgetNOrigVars(self._scip)
-        for i in range(_nvars):
-            PY_SCIP_CALL(SCIPchgVarObj(self._scip, _vars[i], 0.0))
+        if clear:
+            # clear existing objective function
+            _vars = SCIPgetOrigVars(self._scip)
+            _nvars = SCIPgetNOrigVars(self._scip)
+            for i in range(_nvars):
+                PY_SCIP_CALL(SCIPchgVarObj(self._scip, _vars[i], 0.0))
 
         for term, coef in coeffs.terms.items():
             # avoid CONST term of Expr
