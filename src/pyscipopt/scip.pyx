@@ -921,7 +921,7 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPcreateConsCardinality(self._scip, &scip_cons, str_conversion(name), 0, NULL, cardval, NULL, NULL,
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
-        
+
         # circumvent an annoying bug in SCIP 4.0.0 that does not allow uninitialized weights
         if weights is None:
             weights = list(range(1, len(consvars) + 1))
@@ -1051,6 +1051,32 @@ cdef class Model:
         vars -- the variable
         """
         PY_SCIP_CALL(SCIPappendVarSOS2(self._scip, cons.cons, var.var))
+
+    def chgRhs(self, Constraint cons, rhs):
+        """Change right hand side value of a constraint.
+
+        Keyword arguments:
+        cons -- linear, or non-linear constraint
+        rhs -- new right hand side
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
+        if constype == 'linear':
+            PY_SCIP_CALL(SCIPchgRhsLinear(self._scip, cons.cons, rhs))
+        elif constype == 'quadratic':
+            PY_SCIP_CALL(SCIPchgRhsQuadratic(self._scip, cons.cons, rhs))
+
+    def chgLhs(self, Constraint cons, lhs):
+        """Change left hand side value of a constraint.
+
+        Keyword arguments:
+        cons -- linear, or non-linear constraint
+        lhs -- new left hand side
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
+        if constype == 'linear':
+            PY_SCIP_CALL(SCIPchgLhsLinear(self._scip, cons.cons, lhs))
+        elif constype == 'quadratic':
+            PY_SCIP_CALL(SCIPchgLhsQuadratic(self._scip, cons.cons, lhs))
 
     def getTransformedCons(self, Constraint cons):
         """Retrieve transformed constraint.

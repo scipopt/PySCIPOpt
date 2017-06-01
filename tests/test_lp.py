@@ -6,10 +6,19 @@ def test_lp():
 
     # add some variables
     x = s.addVar("x", vtype = 'C', obj = 1.0)
-    y = s.addVar("y", vtype = 'C', obj = 4.0)
+    y = s.addVar("y", vtype = 'C', obj = 2.0)
+
+    assert x.getObj() == 1.0
+    assert y.getObj() == 2.0
+
+    s.setObjective(4.0 * y, clear = False)
+    assert x.getObj() == 1.0
+    assert y.getObj() == 4.0
 
     # add some constraint
-    s.addCons(x + 2 * y >= 5.0)
+    c = s.addCons(x + 2 * y >= 1.0)
+    s.chgLhs(c, 5.0)
+    s.chgRhs(c, 5.0)
 
     # solve problem
     s.optimize()
