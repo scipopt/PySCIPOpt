@@ -1056,7 +1056,7 @@ cdef class Model:
         """Change right hand side value of a constraint.
 
         Keyword arguments:
-        cons -- linear, or non-linear constraint
+        cons -- linear or quadratic constraint
         rhs -- new right hand side
         """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
@@ -1064,12 +1064,14 @@ cdef class Model:
             PY_SCIP_CALL(SCIPchgRhsLinear(self._scip, cons.cons, rhs))
         elif constype == 'quadratic':
             PY_SCIP_CALL(SCIPchgRhsQuadratic(self._scip, cons.cons, rhs))
+        else:
+            raise Warning("method cannot be called for constraints of type " + constype)
 
     def chgLhs(self, Constraint cons, lhs):
         """Change left hand side value of a constraint.
 
         Keyword arguments:
-        cons -- linear, or non-linear constraint
+        cons -- linear or quadratic constraint
         lhs -- new left hand side
         """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
@@ -1077,6 +1079,8 @@ cdef class Model:
             PY_SCIP_CALL(SCIPchgLhsLinear(self._scip, cons.cons, lhs))
         elif constype == 'quadratic':
             PY_SCIP_CALL(SCIPchgLhsQuadratic(self._scip, cons.cons, lhs))
+        else:
+            raise Warning("method cannot be called for constraints of type " + constype)
 
     def getTransformedCons(self, Constraint cons):
         """Retrieve transformed constraint.
