@@ -275,6 +275,8 @@ cdef class Constraint:
 
     @staticmethod
     cdef create(SCIP_CONS* scipcons):
+        if scipcons == NULL:
+            raise Warning("cannot create Constraint with SCIP_CONS* == NULL")
         cons = Constraint()
         cons.cons = scipcons
         return cons
@@ -1080,11 +1082,18 @@ cdef class Model:
         cons -- the linear constraint
         """
         # TODO this should ideally be handled on the SCIP side
-        if cons.isOriginal():
-            transcons = <Constraint>self.getTransformedCons(cons)
-            return SCIPgetDualsolLinear(self._scip, transcons.cons)
-        else:
-            return SCIPgetDualsolLinear(self._scip, cons.cons)
+        dual = None
+        try:
+            if cons.isOriginal():
+                transcons = <Constraint>self.getTransformedCons(cons)
+                dual = SCIPgetDualsolLinear(self._scip, transcons.cons)
+            else:
+                dual = SCIPgetDualsolLinear(self._scip, cons.cons)
+            if self.getObjectiveSense() == "maximize":
+                dual = -dual
+        except:
+            raise Warning("no dual solution available for Constraint " + cons.name)
+        return dual
 
     def getDualfarkasLinear(self, Constraint cons):
         """Retrieve the dual farkas value to a linear constraint.
