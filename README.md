@@ -1,13 +1,16 @@
+PySCIPOpt
+=========
+
 This project provides an interface from the Python programming language to the [SCIP](http://scip.zib.de) solver software.
 
 [![Build Status](https://travis-ci.org/SCIP-Interfaces/PySCIPOpt.svg?branch=master)](https://travis-ci.org/SCIP-Interfaces/PySCIPOpt)
 
-How to install
+Installation
 ==============
 See [INSTALL.md](INSTALL.md) for instructions.
 
-How to build a model using PySCIPOpt
-====================================
+Building and solving a model
+============================
 
 There are several examples provided in the `tests` folder. These display some functionality of the interface and can serve as an entry point for writing more complex code. You might also want to have a look at this article about PySCIPOpt: https://opus4.kobv.de/opus4-zib/frontdoor/index/index/docId/6045. The following steps are always required when using the interface:
 
@@ -37,8 +40,8 @@ The Python interface can be used to define custom plugins to extend the function
 
 Please notice that in most cases one needs to use a `dictionary` to specify the return values needed by SCIP.
 
-How to extend the interface
-===========================
+Extend the interface
+====================
 
 The interface python-scip already provides many of the SCIP callable library methods. You may also extend python-scip to increase the functionality of this interface.The following will provide some directions on how this can be achieved:
 
