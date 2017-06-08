@@ -1,5 +1,5 @@
 from setuptools import setup, Extension
-import os, platform
+import os, platform, sys
 
 # look for environment variable that specifies path to SCIP Opt lib and headers
 scipoptdir = os.environ.get('SCIPOPTDIR', '')
@@ -34,11 +34,18 @@ if platform.system() == 'Linux':
 elif platform.system() == 'Darwin':
     extra_link_args.append('-Wl,-rpath,'+libdir)
 
+# enable debug mode if requested
+extra_compile_args = []
+if "--debug" in sys.argv:
+    extra_compile_args.append('-UNDEBUG')
+    sys.argv.remove("--debug")
+
 extensions = [Extension('pyscipopt.scip', [os.path.join(packagedir, 'scip'+ext)],
                           include_dirs=[includedir],
                           library_dirs=[libdir],
                           libraries=[libname],
                           runtime_library_dirs=runtime_library_dirs,
+                          extra_compile_args = extra_compile_args,
                           extra_link_args=extra_link_args
                           )]
 
