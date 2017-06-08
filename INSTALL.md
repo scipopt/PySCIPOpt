@@ -55,3 +55,13 @@ After setting up your environment variables as specified above, please execute t
     python setup.py install
 
 You may use the additional options `--user` or `--prefix=<custom-python-path>`, to build the interface locally.
+
+
+Building with debug information
+===============================
+
+To use debug mode in PySCIPOpt you need to build it like this:
+
+    python setup.py install --debug
+
+Be aware that you will need the debug library of the SCIP Optimization Suite for this to work.
