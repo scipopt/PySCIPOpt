@@ -380,6 +380,8 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPconsIsRemovable(SCIP_CONS* cons)
     SCIP_Bool SCIPconsIsStickingAtNode(SCIP_CONS* cons)
     SCIP_CONSDATA* SCIPconsGetData(SCIP_CONS* cons)
+    SCIP_CONSHDLR* SCIPconsGetHdlr(SCIP_CONS* cons)
+    const char* SCIPconshdlrGetName(SCIP_CONSHDLR* conshdlr)
 
     # Primal Solution Methods
     SCIP_SOL** SCIPgetSols(SCIP* scip)
@@ -708,6 +710,8 @@ cdef extern from "scip/cons_linear.h":
 
     SCIP_Real SCIPgetDualsolLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real SCIPgetDualfarkasLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RETCODE SCIPchgLhsLinear(SCIP* scip, SCIP_CONS* cons, SCIP_Real lhs)
+    SCIP_RETCODE SCIPchgRhsLinear(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
 
 cdef extern from "scip/cons_quadratic.h":
     SCIP_RETCODE SCIPcreateConsQuadratic(SCIP* scip,
@@ -740,6 +744,8 @@ cdef extern from "scip/cons_quadratic.h":
                                            SCIP_VAR* var1,
                                            SCIP_VAR* var2,
                                            SCIP_Real coef)
+    SCIP_RETCODE SCIPchgLhsQuadratic(SCIP* scip, SCIP_CONS* cons, SCIP_Real lhs)
+    SCIP_RETCODE SCIPchgRhsQuadratic(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
 
 cdef extern from "scip/cons_sos1.h":
     SCIP_RETCODE SCIPcreateConsSOS1(SCIP* scip,
