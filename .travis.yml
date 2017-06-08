@@ -1,21 +1,30 @@
 language: python
 
 python:
-  - "2.7"
-  - "3.6"
+- '2.7'
+- '3.6'
 
 notifications:
   email: false
 
 install:
-  - export VERSION=4.0.0
-  - pip install cython networkx
-  - wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz
-  - tar xzf scipoptsuite-$VERSION.tgz
-  - cd scipoptsuite-$VERSION
-  - make COMP=clang SHARED=true GMP=false READLINE=false ZIMPL=false
-  - make install INSTALLDIR=~/scipdir COMP=clang SHARED=true GMP=false READLINE=false ZIMPL=false
-  - cd ..
-  - env SCIPOPTDIR=~/scipdir python setup.py install
+- export VERSION=4.0.0
+- pip install cython networkx
+- wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz
+- tar xzf scipoptsuite-$VERSION.tgz
+- cd scipoptsuite-$VERSION
+- make COMP=clang SHARED=true GMP=false READLINE=false ZIMPL=false
+- make install INSTALLDIR=~/scipdir COMP=clang SHARED=true GMP=false READLINE=false
+  ZIMPL=false
+- cd ..
+- env SCIPOPTDIR=~/scipdir python setup.py install
 
 script: py.test tests
+
+deploy:
+  provider: pypi
+  user: pyscipopt
+  password:
+    secure: ePfiLq2vOJC4O5zYFChHk5wa+quza+m/lsCGPfKXBVpIyb7TvzTHaFDBYtYVZK7710LIKRIcHxvmJPELyKeK1l9QyLxi1x/jOHwk0VbKpf3f5fJjjPaYfXgAUKMMeUplrdhvzU6cgUMrsGhlUE1EIHxc97x5xOa2xlv3lis3j5yjdFUbP6e7MBCEb6c8yU88CclPU2BeHDATzOtMZp0dsyzFTjP9DI7fWbEvOfGy66e5uB/Cjk07mguBZVAUFoukkwKD0KUgBB7RlrAdE61uFVHG8nE5q+G9SZIhQcwULxPLz4v18osJf1aea0g/grZnnrgdG5F24rCA6dSBlvUhnA6aDJXDSgd/dCJ7FV/w3okwhsn18esnycBeM+i3O1pleHsmkq+yFCf2wTbZlm68Hxu+WSirKjie5AtzlSOHa82jQkTjkZI1AHE2syiShnWGvaWpPtoecJKr7aHdFylbJpKwyGvptsObRerWJH5GARXnOoH+FVJ4LrAKcahwCdx0CB63HU2s5p4JgYqAlQV+hFD6yfTDvcKO97/u+8BKlLe9Jnq+fSefEJW1ndOi4mJQ4xGG93sOCub13UCo6zGLvnFlO7R7vwHJeSMDL9Z0Jqmpo2sLhKmaYMr6PhyWvWpXauZOmLTaJEutcnJZ2cjXTU2VuULWwhNYzgXLu9rnVB0=
+  on:
+    tags: true
