@@ -1092,7 +1092,7 @@ cdef class Model:
             if self.getObjectiveSense() == "maximize":
                 dual = -dual
         except:
-            raise Warning("no dual solution available for Constraint " + cons.name)
+            raise Warning("no dual solution available for constraint " + cons.name)
         return dual
 
     def getDualfarkasLinear(self, Constraint cons):
@@ -1107,6 +1107,21 @@ cdef class Model:
             return SCIPgetDualfarkasLinear(self._scip, transcons.cons)
         else:
             return SCIPgetDualfarkasLinear(self._scip, cons.cons)
+
+    def getVarRedcost(self, Variable var):
+        """Retrieve the reduced cost of a variable.
+
+        Keyword arguments:
+        var -- variable to get the reduced cost of
+        """
+        redcost = None
+        try:
+            redcost = SCIPgetVarRedcost(self._scip, var.var)
+            if self.getObjectiveSense() == "maximize":
+                redcost = -redcost
+        except:
+            raise Warning("no reduced cost available for variable " + var.name)
+        return redcost
 
     def optimize(self):
         """Optimize the problem."""

@@ -406,6 +406,7 @@ cdef extern from "scip/scip.h":
     # Dual Solution Methods
     SCIP_Real SCIPgetDualbound(SCIP* scip)
     SCIP_Real SCIPgetDualboundRoot(SCIP* scip)
+    SCIP_Real SCIPgetVarRedcost(SCIP* scip, SCIP_VAR* var)
 
     # Reader plugin
     SCIP_RETCODE SCIPincludeReader(SCIP* scip,
