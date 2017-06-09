@@ -9,7 +9,7 @@ to the `SCIP <http://scip.zib.de>`__ solver software.
 Installation
 ============
 
-See `INSTALL.md <INSTALL.md>`__ for instructions.
+See `INSTALL.rst <INSTALL.rst>`__ for instructions.
 
 Building and solving a model
 ============================
