@@ -24,9 +24,13 @@ following steps are always required when using the interface:
 1) It is necessary to import python-scip in your code. This is achieved
    by including the line
 
+::
+
    from pyscipopt import Model
 
 2) Create a solver instance.
+
+::
 
    model = Model("Example") # the name is optional
 
@@ -35,6 +39,8 @@ This is equivalent to calling
 
 3) Access the methods in the ``scip.pyx`` file using the solver/model
    instance ``model``, e.g.:
+
+::
 
    x = model.addVar("x") y = model.addVar("y", vtype="INTEGER")
    model.setObjective(x + y) model.addCons(2\ *x - y*\ y >= 0)
