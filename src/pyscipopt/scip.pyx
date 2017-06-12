@@ -275,6 +275,8 @@ cdef class Constraint:
 
     @staticmethod
     cdef create(SCIP_CONS* scipcons):
+        if scipcons == NULL:
+            raise Warning("cannot create Constraint with SCIP_CONS* == NULL")
         cons = Constraint()
         cons.cons = scipcons
         return cons
@@ -1110,11 +1112,18 @@ cdef class Model:
         cons -- the linear constraint
         """
         # TODO this should ideally be handled on the SCIP side
-        if cons.isOriginal():
-            transcons = <Constraint>self.getTransformedCons(cons)
-            return SCIPgetDualsolLinear(self._scip, transcons.cons)
-        else:
-            return SCIPgetDualsolLinear(self._scip, cons.cons)
+        dual = None
+        try:
+            if cons.isOriginal():
+                transcons = <Constraint>self.getTransformedCons(cons)
+                dual = SCIPgetDualsolLinear(self._scip, transcons.cons)
+            else:
+                dual = SCIPgetDualsolLinear(self._scip, cons.cons)
+            if self.getObjectiveSense() == "maximize":
+                dual = -dual
+        except:
+            raise Warning("no dual solution available for constraint " + cons.name)
+        return dual
 
     def getDualfarkasLinear(self, Constraint cons):
         """Retrieve the dual farkas value to a linear constraint.
@@ -1128,6 +1137,21 @@ cdef class Model:
             return SCIPgetDualfarkasLinear(self._scip, transcons.cons)
         else:
             return SCIPgetDualfarkasLinear(self._scip, cons.cons)
+
+    def getVarRedcost(self, Variable var):
+        """Retrieve the reduced cost of a variable.
+
+        Keyword arguments:
+        var -- variable to get the reduced cost of
+        """
+        redcost = None
+        try:
+            redcost = SCIPgetVarRedcost(self._scip, var.var)
+            if self.getObjectiveSense() == "maximize":
+                redcost = -redcost
+        except:
+            raise Warning("no reduced cost available for variable " + var.name)
+        return redcost
 
     def optimize(self):
         """Optimize the problem."""

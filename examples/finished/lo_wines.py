@@ -13,10 +13,11 @@ Constraints correspond to the inventory of pure-grape wines.
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt import Model, quicksum, multidict
+from pyscipopt import Model, quicksum, SCIP_PARAMSETTING
 
 #Initialize model
 model = Model("Wine blending")
+model.setPresolve(SCIP_PARAMSETTING.OFF)
 
 Inventory = {"Alfrocheiro":60, "Baga":60, "Castelao":30}
 Grapes = Inventory.keys()
@@ -55,8 +56,12 @@ if model.getStatus() == "optimal":
     print("Optimal value:", model.getObjVal())
 
     for j in x:
-        print(x[j].name, "=", model.getVal(x[j]))
+        print(x[j].name, "=", model.getVal(x[j]), " (red. cost: ", model.getVarRedcost(x[j]), ")")
     for i in c:
-        print("dual of", c[i].name, ":", model.getDualsolLinear(c[i]))
+        try:
+            dual = model.getDualsolLinear(c[i])
+        except:
+            dual = None
+        print("dual of", c[i].name, ":", dual)
 else:
     print("Problem could not be solved to optimality")
