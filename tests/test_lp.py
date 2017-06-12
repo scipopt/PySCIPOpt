@@ -35,7 +35,7 @@ def test_lp():
     s = Model()
     x = s.addVar("x", vtype = 'C', obj = 1.0)
     y = s.addVar("y", vtype = 'C', obj = 2.0)
-    c = s.addCons(x + 2 * y >= 1.0)
+    c = s.addCons(x + 2 * y <= 1.0)
     s.setMaximize()
 
     s.delCons(c)
