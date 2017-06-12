@@ -1105,6 +1105,22 @@ cdef class Model:
         _nconss = SCIPgetNConss(self._scip)
         return [Constraint.create(_conss[i]) for i in range(_nconss)]
 
+    def delCons(self, Constraint cons):
+        """Delete constraint from the model
+
+        Keyword arguments:
+        cons -- constraint to be deleted
+        """
+        PY_SCIP_CALL(SCIPdelCons(self._scip, cons.cons))
+
+    def delConsLocal(self, Constraint cons):
+        """Delete constraint from the current node and it's children
+
+        Keyword arguments:
+        cons -- constraint to be deleted
+        """
+        PY_SCIP_CALL(SCIPdelConsLocal(self._scip, cons.cons))
+
     def getDualsolLinear(self, Constraint cons):
         """Retrieve the dual solution to a linear constraint.
 

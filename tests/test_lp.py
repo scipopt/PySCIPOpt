@@ -31,6 +31,19 @@ def test_lp():
     assert round(s.getVal(x)) == 5.0
     assert round(s.getVal(y)) == 0.0
 
+    s.freeProb()
+    s = Model()
+    x = s.addVar("x", vtype = 'C', obj = 1.0)
+    y = s.addVar("y", vtype = 'C', obj = 2.0)
+    c = s.addCons(x + 2 * y <= 1.0)
+    s.setMaximize()
+
+    s.delCons(c)
+
+    s.optimize()
+
+    assert s.getStatus() == 'unbounded'
+
 
 def test_lpi():
     # create LP instance, minimizing by default
