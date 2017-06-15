@@ -517,6 +517,16 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPsetHeuristics(self._scip, setting, True))
 
+    def disablePropagation(self, onlyroot=False):
+        """Disables propagation in SCIP to avoid modifying the original problem during transformation.
+
+        Keyword arguments:
+        onlyroot -- use propagation when root processing is finished
+        """
+        self.setIntParam("propagating/maxroundsroot", 0)
+        if not onlyroot:
+            self.setIntParam("propagating/maxrounds", 0)
+
     # Write original problem to file
     def writeProblem(self, filename='origprob.cip'):
         """Write original problem to a file.
