@@ -120,9 +120,9 @@ Dual values
 -----------
 
 While PySCIPOpt supports access to the dual values of a solution, there are some limitations involved:
-
-   - Can only be used when presolving and propagation is disabled to ensure that the LP solver - which is providing the dual information - actually solves the unmodified problem.
-   - Heuristics should also be disabled to avoid that the problem is solved before the LP solver is called.
+ 
+- Can only be used when presolving and propagation is disabled to ensure that the LP solver - which is providing the dual information - actually solves the unmodified problem.
+- Heuristics should also be disabled to avoid that the problem is solved before the LP solver is called.
 
 THerefore, you should use the following settings when trying to work with dual information:
 
