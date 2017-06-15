@@ -385,8 +385,8 @@ cdef extern from "scip/scip.h":
     const char* SCIPconshdlrGetName(SCIP_CONSHDLR* conshdlr)
     SCIP_RETCODE SCIPdelConsLocal(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPdelCons(SCIP* scip, SCIP_CONS* cons)
-    SCIP_RETCODE SCIPgetConsVars(SCIP* scip, SCIP_CONS* cons, SCIP_VAR** vars, int varssize, SCIP_Bool* success)
-    SCIP_RETCODE SCIPgetConsNVars(SCIP* scip, SCIP_CONS* cons, int* nvars, SCIP_Bool* success)
+    SCIP_VAR** SCIPgetVarsLinear(SCIP* scip, SCIP_CONS* cons)
+    int SCIPgetNVarsLinear(SCIP* scip, SCIP_CONS* cons)
 
     # Primal Solution Methods
     SCIP_SOL** SCIPgetSols(SCIP* scip)

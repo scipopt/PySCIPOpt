@@ -1174,8 +1174,13 @@ cdef class Model:
         cdef SCIP_VAR** _vars
         cdef SCIP_Bool _success
         dual = 0.0
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
+        if not constype == 'linear':
+            raise Warning("dual solution values not available for constraints of type ", constype)
+
         try:
-            PY_SCIP_CALL(SCIPgetConsNVars(self._scip, cons.cons, &_nvars, &_success))
+            _nvars = SCIPgetNVarsLinear(self._scip, cons.cons)
             if cons.isOriginal():
                 transcons = <Constraint>self.getTransformedCons(cons)
             else:
@@ -1183,16 +1188,12 @@ cdef class Model:
             if _nvars > 1:
                 dual = SCIPgetDualsolLinear(self._scip, transcons.cons)
             else:
-                _vars = <SCIP_VAR**> malloc(sizeof(SCIP_VAR*))
-                PY_SCIP_CALL(SCIPgetConsVars(self._scip, transcons.cons, _vars, _nvars, &_success))
+                _vars = SCIPgetVarsLinear(self._scip, transcons.cons)
                 LPsol = SCIPvarGetLPSol(_vars[0])
                 rhs = SCIPgetRhsLinear(self._scip, transcons.cons)
                 lhs = SCIPgetLhsLinear(self._scip, transcons.cons)
                 if (LPsol == rhs) or (LPsol == lhs):
                     dual = SCIPgetVarRedcost(self._scip, _vars[0])
-                    print(LPsol, rhs, lhs)
-                else:
-                    dual = 0
 
             if self.getObjectiveSense() == "maximize":
                 dual = -dual
