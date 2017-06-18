@@ -37,4 +37,4 @@ build_script:
   - python setup.py install
     
 test_script:
-- ps: py.test tests
+  - py.test tests
