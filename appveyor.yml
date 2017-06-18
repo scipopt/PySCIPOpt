@@ -6,9 +6,12 @@ branches:
   only:
   - appveyor
 
+environment:
+  PYTHON: C:\Python36-x64
+
 build_script:
 - ps: >-
-    pip3 install cython networkx pytest
+    $env:PYTHON\pip install cython networkx pytest
     
     mkdir scipoptdir
     
@@ -26,9 +29,9 @@ build_script:
     
     cd ..
     
-    python3 setup.py install
+    $env:PYTHON\python setup.py install
     
     $env:PATH += ";$env:SCIPOPTDIR\lib"
 
 test_script:
-- ps: py.test tests
+- ps: $env:PYTHON\py.test tests
