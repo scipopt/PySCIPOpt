@@ -14,7 +14,7 @@ build_script:
   - cmd: set PATH=%PYTHON%;%PATH%
   
   - cmd: %PIP% install cython networkx pytest
-     
+  
   - mkdir scipoptdir
     
   - cd scipoptdir
