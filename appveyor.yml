@@ -10,7 +10,7 @@ environment:
   PYTHON: C:\Python36-x64
   PIP: C:\Python36-x64\Scripts\pip
 
-build_script:
+install:
   - cmd: "set PATH=%PYTHON%;%PATH%"
   
   - cmd: "%PIP% install cython networkx pytest"
@@ -30,14 +30,13 @@ build_script:
   - set SCIPOPTDIR = %cd%
     
   - cd ..
-    
-  - cmd: "echo %SCIPOPTDIR%"
+
+  - set PATH=%SCIPOPTDIR%\lib;%PATH%"
   
-  - cmd: "echo %SCIPOPTDIR%\\include"
-  
+  - %SCIPOPTDIR%
+
+build_script:
   - python setup.py install
     
-  - set PATH=%SCIPOPTDIR%\lib;%PATH%"
-
 test_script:
 - ps: py.test tests
