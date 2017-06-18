@@ -33,7 +33,7 @@ build_script:
     
   - cmd: "echo %SCIPOPTDIR%"
   
-  - cmd: "echo %SCIPOPTDIR%\include"
+  - cmd: "echo %SCIPOPTDIR%\\include"
   
   - python setup.py install
     
