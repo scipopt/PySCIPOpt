@@ -10,28 +10,29 @@ environment:
   PYTHON: C:\Python36-x64
 
 build_script:
-- ps: >-
-    pip install cython networkx pytest
+  - set PATH=%PYTHON%;%PATH%
+  
+  - pip install cython networkx pytest
     
-    mkdir scipoptdir
+  - mkdir scipoptdir
     
-    cd scipoptdir
+  - cd scipoptdir
     
-    wget http://scip.zib.de/download/release/scip-4.0.0.win.x86_64.vc14.opt.spx2.lib.zip -outfile scipopt.zip
+  - ps: wget http://scip.zib.de/download/release/scip-4.0.0.win.x86_64.vc14.opt.spx2.lib.zip -outfile scipopt.zip
     
-    wget http://scip.zib.de/download/release/scipoptheaders-4.0.0.zip -outfile headers.zip
+  - ps: wget http://scip.zib.de/download/release/scipoptheaders-4.0.0.zip -outfile headers.zip
     
-    Expand-Archive .\scipopt.zip -DestinationPath lib
+  - ps: Expand-Archive .\scipopt.zip -DestinationPath lib
     
-    Expand-Archive .\headers.zip -DestinationPath .
+  - ps: Expand-Archive .\headers.zip -DestinationPath .
     
-    $env:SCIPOPTDIR = pwd
+  - set SCIPOPTDIR = %cd%
     
-    cd ..
+  - cd ..
     
-    python setup.py install
+  - python setup.py install
     
-    $env:PATH += ";$env:SCIPOPTDIR\lib"
+  - set PATH=%SCIPOPTDIR%\lib;%PATH%"
 
 test_script:
 - ps: py.test tests
