@@ -14,26 +14,16 @@ environment:
     secure: HEa8MAJyyfSv33snyK3Gleflk9SIfZBxbnTiS39hlWM=
 
 install:
-  - cmd: "set PATH=%PYTHON%;%PATH%"
-  
+  - cmd: "set PATH=%PYTHON%;%PATH%"  
   - cmd: "%PIP% install cython networkx pytest wheel"
-
-  - mkdir scipoptdir
-    
-  - cd scipoptdir
-    
-  - ps: wget http://scip.zib.de/download/release/scip-4.0.0.win.x86_64.vc14.opt.spx2.lib.zip -outfile scipopt.zip
-    
-  - ps: wget http://scip.zib.de/download/release/scipoptheaders-4.0.0.zip -outfile headers.zip
-    
-  - ps: Expand-Archive .\scipopt.zip -DestinationPath lib
-    
-  - ps: Expand-Archive .\headers.zip -DestinationPath .
-    
-  - set SCIPOPTDIR=%cd%
-    
+  - mkdir scipoptdir    
+  - cd scipoptdir    
+  - ps: wget http://scip.zib.de/download/release/scip-4.0.0.win.x86_64.vc14.opt.spx2.lib.zip -outfile scipopt.zip    
+  - ps: wget http://scip.zib.de/download/release/scipoptheaders-4.0.0.zip -outfile headers.zip    
+  - ps: Expand-Archive .\scipopt.zip -DestinationPath lib    
+  - ps: Expand-Archive .\headers.zip -DestinationPath .    
+  - set SCIPOPTDIR=%cd%    
   - cd ..
-
   - set PATH=%SCIPOPTDIR%\lib;%PATH%"
 
 build_script:
@@ -43,10 +33,8 @@ test_script:
   - cmd: "%PYTEST% tests"
   
 deploy_script:
-  - cmd: "echo [pypi] > %USERPROFILE%\\.pypirc"
-  
-  - cmd: "echo username: pyscipopt >> %USERPROFILE%\\.pypirc"
-  
-  - cmd: "echo password: %password% >> %USERPROFILE%\\.pypirc"
-  
+  - cmd: "echo [pypi] > %USERPROFILE%\\.pypirc"  
+  - cmd: "echo username: pyscipopt >> %USERPROFILE%\\.pypirc"  
+  - cmd: "echo password: %password% >> %USERPROFILE%\\.pypirc"  
   - python setup.py bdist_wheel upload
+  
