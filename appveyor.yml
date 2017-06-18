@@ -33,7 +33,7 @@ install:
 
   - set PATH=%SCIPOPTDIR%\lib;%PATH%"
   
-  - %SCIPOPTDIR%
+  - echo %SCIPOPTDIR%
 
 build_script:
   - python setup.py install
