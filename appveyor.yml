@@ -16,7 +16,7 @@ environment:
 install:
   - cmd: "set PATH=%PYTHON%;%PATH%"
   
-  - cmd: "%PIP% install cython networkx pytest"
+  - cmd: "%PIP% install cython networkx pytest wheel"
 
   - mkdir scipoptdir
     
@@ -46,4 +46,4 @@ deploy_script:
   - cmd: "echo [pypi] > %USERPROFILE%\\.pypirc"
   - cmd: "echo username: pyscipopt >> %USERPROFILE%\\.pypirc"
   - cmd: "echo password: %password% >> %USERPROFILE%\\.pypirc"
-  - python setup.py sdist bdist_wheel upload
+  - python setup.py bdist_wheel upload
