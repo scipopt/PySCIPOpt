@@ -8,6 +8,7 @@ branches:
 
 environment:
   PYTHON: C:\Python36-x64
+  
   PIP: C:\Python36-x64\Scripts\pip
 
 build_script:
