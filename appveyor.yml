@@ -8,7 +8,7 @@ branches:
 
 build_script:
 - ps: >-
-    pip install cython networkx
+    pip3 install cython networkx pytest
     
     mkdir scipoptdir
     
@@ -26,7 +26,7 @@ build_script:
     
     cd ..
     
-    python setup.py install
+    python3 setup.py install
     
     $env:PATH += ";$env:SCIPOPTDIR\lib"
 
