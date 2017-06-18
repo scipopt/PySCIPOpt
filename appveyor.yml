@@ -12,9 +12,9 @@ environment:
 build_script:
   - set PATH=%PYTHON%;%PATH%
   
-  - pip install cython networkx pytest
+  - pip3 install cython networkx pytest
   
-  - pip --version
+  - pip3 --version
   
   - python --version
   
