@@ -8,13 +8,12 @@ branches:
 
 environment:
   PYTHON: C:\Python36-x64
-  
   PIP: C:\Python36-x64\Scripts\pip
 
 build_script:
-  - set PATH=%PYTHON%;%PATH%
+  - cmd: set PATH=%PYTHON%;%PATH%
   
-  - %PIP% install cython networkx pytest
+  - cmd: %PIP% install cython networkx pytest
      
   - mkdir scipoptdir
     
@@ -28,7 +27,7 @@ build_script:
     
   - ps: Expand-Archive .\headers.zip -DestinationPath .
     
-  - set SCIPOPTDIR = %cd%
+  - cmd: set SCIPOPTDIR = %cd%
     
   - cd ..
     
