@@ -31,6 +31,10 @@ build_script:
     
   - cd ..
     
+  - echo %SCIPOPTDIR%
+  
+  - echo %SCIPOPTDIR%\include
+  
   - python setup.py install
     
   - set PATH=%SCIPOPTDIR%\lib;%PATH%"
