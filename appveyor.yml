@@ -11,7 +11,7 @@ environment:
 
 build_script:
 - ps: >-
-    $env:PYTHON\pip install cython networkx pytest
+    pip install cython networkx pytest
     
     mkdir scipoptdir
     
@@ -29,9 +29,9 @@ build_script:
     
     cd ..
     
-    $env:PYTHON\python setup.py install
+    python setup.py install
     
     $env:PATH += ";$env:SCIPOPTDIR\lib"
 
 test_script:
-- ps: $env:PYTHON\py.test tests
+- ps: py.test tests
