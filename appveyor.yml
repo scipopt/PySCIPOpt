@@ -27,13 +27,11 @@ install:
     
   - ps: Expand-Archive .\headers.zip -DestinationPath .
     
-  - set SCIPOPTDIR = %cd%
+  - set SCIPOPTDIR=%cd%
     
   - cd ..
 
   - set PATH=%SCIPOPTDIR%\lib;%PATH%"
-  
-  - echo %SCIPOPTDIR%
 
 build_script:
   - python setup.py install
