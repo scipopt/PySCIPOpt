@@ -11,10 +11,10 @@ environment:
   PIP: C:\Python36-x64\Scripts\pip
 
 build_script:
-  - cmd: set PATH=%PYTHON%;%PATH%
+  - cmd: "set PATH=%PYTHON%;%PATH%"
   
-  - cmd: %PIP% install cython networkx pytest
-  
+  - cmd: "%PIP% install cython networkx pytest"
+
   - mkdir scipoptdir
     
   - cd scipoptdir
@@ -27,7 +27,7 @@ build_script:
     
   - ps: Expand-Archive .\headers.zip -DestinationPath .
     
-  - cmd: set SCIPOPTDIR = %cd%
+  - set SCIPOPTDIR = %cd%
     
   - cd ..
     
