@@ -15,7 +15,7 @@ environment:
 
 install:
   - cmd: "set PATH=%PYTHON%;%PATH%"  
-  - cmd: "%PIP% install cython networkx pytest wheel"
+  - cmd: "%PIP% install cython networkx pytest wheel twine"
   - mkdir scipoptdir    
   - cd scipoptdir    
   - ps: wget http://scip.zib.de/download/release/scip-4.0.0.win.x86_64.vc14.opt.spx2.lib.zip -outfile scipopt.zip    
