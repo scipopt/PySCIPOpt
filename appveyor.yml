@@ -35,12 +35,12 @@ test_script:
 artifacts:
   - path: dist\*
 
-deploy:
-  provider: WebDeploy
-    server: https://pypi.python.org/pypi
-    username: pyscipopt
-    password:
-      secure: HEa8MAJyyfSv33snyK3Gleflk9SIfZBxbnTiS39hlWM=
+#deploy:
+#  provider: WebDeploy
+#    server: https://pypi.python.org/pypi
+#    username: pyscipopt
+#    password:
+#      secure: HEa8MAJyyfSv33snyK3Gleflk9SIfZBxbnTiS39hlWM=
 #    on:
 #      branch: release
 #      appveyor_repo_tag: true
@@ -50,4 +50,3 @@ deploy_script:
   - cmd: "echo username: pyscipopt >> %USERPROFILE%\\.pypirc"
   - cmd: "echo password: %password% >> %USERPROFILE%\\.pypirc"
   - python setup.py bdist_wheel upload
-  
