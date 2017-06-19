@@ -41,5 +41,5 @@ after_test:
   - cmd: "echo username: pyscipopt >> %USERPROFILE%\\.pypirc"
   - cmd: "echo password: %password% >> %USERPROFILE%\\.pypirc"
   - python setup.py bdist_wheel
-  - cmd: "if [%APPVEYOR_REPO_TAG_NAME%]==[true] %TWINE% upload dist\\*.whl"
-  - cmd: "if [%APPVEYOR_REPO_TAG_NAME%]==[false] echo no tag"
+  - cmd: "if [%APPVEYOR_REPO_TAG%]==[true] %TWINE% upload dist\\*.whl"
+  - cmd: "if [%APPVEYOR_REPO_TAG%]==[false] echo no tag"
