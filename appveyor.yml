@@ -37,6 +37,5 @@ deploy_script:
   - cmd: "echo repository: https://pypi.python.org/pypi >> %USERPROFILE%\\.pypirc"
   - cmd: "echo username: pyscipopt >> %USERPROFILE%\\.pypirc"
   - cmd: "echo password: %password% >> %USERPROFILE%\\.pypirc"
-  - cmd: "type %USERPROFILE%\\.pypirc"
-  - python setup.py bdist_wheel upload
+  - python setup.py bdist_wheel upload --show-response -v
   
