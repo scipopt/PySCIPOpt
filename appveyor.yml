@@ -1,10 +1,10 @@
-version: 1.1.2 - {build}
+version: {build}
 
 image: Visual Studio 2017
 
 branches:
   only:
-  - appveyor
+  - master
 
 environment:
   PYTHON: C:\Python36-x64
@@ -42,3 +42,4 @@ after_test:
   - cmd: "echo password: %password% >> %USERPROFILE%\\.pypirc"
   - python setup.py bdist_wheel
   - cmd: "if [%APPVEYOR_REPO_TAG_NAME%]==[true] %TWINE% upload dist\\*.whl"
+  - cmd: "if [%APPVEYOR_REPO_TAG_NAME%]==[false] echo no tag"
