@@ -40,4 +40,5 @@ after_test:
   - cmd: "echo username: pyscipopt >> %USERPROFILE%\\.pypirc"
   - cmd: "echo password: %password% >> %USERPROFILE%\\.pypirc"
   - python setup.py bdist_wheel
-  - python setup.py bdist_wheel upload
+  - twine upload dist\*.whl
+
