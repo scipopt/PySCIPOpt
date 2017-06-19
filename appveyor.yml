@@ -36,14 +36,14 @@ artifacts:
   - path: dist\*
 
 deploy:
-  - provider: WebDeploy
-      server: https://pypi.python.org/pypi
-      username: pyscipopt
-      password:
-        secure: HEa8MAJyyfSv33snyK3Gleflk9SIfZBxbnTiS39hlWM=
-#      on:
-#        branch: release
-#        appveyor_repo_tag: true
+  provider: WebDeploy
+    server: https://pypi.python.org/pypi
+    username: pyscipopt
+    password:
+      secure: HEa8MAJyyfSv33snyK3Gleflk9SIfZBxbnTiS39hlWM=
+#    on:
+#      branch: release
+#      appveyor_repo_tag: true
 
 deploy_script:
   - cmd: "echo [pypi] > %USERPROFILE%\\.pypirc"
