@@ -33,10 +33,9 @@ test_script:
   - cmd: "%PYTEST% tests"
   
 deploy_script:
-  - cmd: "echo %USERPROFILE%\\.pypirc"
   - cmd: "echo [pypi] > %USERPROFILE%\\.pypirc"
   - cmd: "echo username: pyscipopt >> %USERPROFILE%\\.pypirc"
   - cmd: "echo password: %password% >> %USERPROFILE%\\.pypirc"
-  - cmd: "print %USERPROFILE%\\.pypirc"
+  - cmd: "type %USERPROFILE%\\.pypirc"
   - python setup.py bdist_wheel upload
   
