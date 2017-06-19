@@ -1,4 +1,4 @@
-version: build: {build}
+version: '{build}'
 
 image: Visual Studio 2017
 
