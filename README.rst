@@ -4,7 +4,7 @@ PySCIPOpt
 This project provides an interface from the Python programming language
 to the `SCIP <http://scip.zib.de>`__ solver software.
 
-|Build Status|
+|Travis Status| |AppVeyor Status|
 
 Installation
 ============
@@ -132,5 +132,8 @@ THerefore, you should use the following settings when trying to work with dual i
    model.setHeuristics(scp.SCIP_PARAMSETTING.OFF)
    model.disablePropagation()
 
-.. |Build Status| image:: https://travis-ci.org/SCIP-Interfaces/PySCIPOpt.svg?branch=master
+.. |Travis Status| image:: https://travis-ci.org/SCIP-Interfaces/PySCIPOpt.svg?branch=master
    :target: https://travis-ci.org/SCIP-Interfaces/PySCIPOpt
+   
+.. |AppVeyor Status| image:: https://ci.appveyor.com/api/projects/status/fsa896vkl8be79j9?svg=true
+   :target: https://ci.appveyor.com/project/mattmilten/pyscipopt
