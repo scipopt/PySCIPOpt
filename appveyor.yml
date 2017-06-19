@@ -31,10 +31,23 @@ build_script:
     
 test_script:
   - cmd: "%PYTEST% tests"
-  
+
+artifacts:
+  - path: dist\*
+
+deploy:
+  - provider: WebDeploy
+      server: https://pypi.python.org/pypi
+      username: pyscipopt
+      password:
+        secure: HEa8MAJyyfSv33snyK3Gleflk9SIfZBxbnTiS39hlWM=
+#      on:
+#        branch: release
+#        appveyor_repo_tag: true
+
 deploy_script:
   - cmd: "echo [pypi] > %USERPROFILE%\\.pypirc"
   - cmd: "echo username: pyscipopt >> %USERPROFILE%\\.pypirc"
   - cmd: "echo password: %password% >> %USERPROFILE%\\.pypirc"
-  - python setup.py sdist bdist_wheel upload --show-response --dry-run
+  - python setup.py bdist_wheel upload
   
