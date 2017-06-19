@@ -10,6 +10,7 @@ environment:
   PYTHON: C:\Python36-x64
   PIP: C:\Python36-x64\Scripts\pip
   PYTEST: C:\Python36-x64\Scripts\pytest
+  TWINE: C:\Python36-x64\Scripts\twine
   password:
     secure: HEa8MAJyyfSv33snyK3Gleflk9SIfZBxbnTiS39hlWM=
 
@@ -40,5 +41,5 @@ after_test:
   - cmd: "echo username: pyscipopt >> %USERPROFILE%\\.pypirc"
   - cmd: "echo password: %password% >> %USERPROFILE%\\.pypirc"
   - python setup.py bdist_wheel
-  - twine upload dist\*.whl
+  - cmd: "%TWINE% upload dist\*.whl"
 
