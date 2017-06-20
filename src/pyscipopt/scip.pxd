@@ -358,6 +358,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPvarGetLbLocal(SCIP_VAR* var)
     SCIP_Real SCIPvarGetUbLocal(SCIP_VAR* var)
     SCIP_Real SCIPvarGetObj(SCIP_VAR* var)
+    SCIP_Real SCIPvarGetLPSol(SCIP_VAR* var)
 
     # Constraint Methods
     SCIP_RETCODE SCIPcaptureCons(SCIP* scip, SCIP_CONS* cons)
@@ -384,6 +385,8 @@ cdef extern from "scip/scip.h":
     const char* SCIPconshdlrGetName(SCIP_CONSHDLR* conshdlr)
     SCIP_RETCODE SCIPdelConsLocal(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPdelCons(SCIP* scip, SCIP_CONS* cons)
+    SCIP_VAR** SCIPgetVarsLinear(SCIP* scip, SCIP_CONS* cons)
+    int SCIPgetNVarsLinear(SCIP* scip, SCIP_CONS* cons)
 
     # Primal Solution Methods
     SCIP_SOL** SCIPgetSols(SCIP* scip)
@@ -401,6 +404,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPprintBestSol(SCIP* scip, FILE* outfile, SCIP_Bool printzeros)
     SCIP_Real SCIPgetPrimalbound(SCIP* scip)
     SCIP_Real SCIPgetGap(SCIP* scip)
+    
 
     # Row Methods
     SCIP_RETCODE SCIPcreateRow(SCIP* scip, SCIP_ROW** row, const char* name, int len, SCIP_COL** cols, SCIP_Real* vals,
@@ -715,6 +719,8 @@ cdef extern from "scip/cons_linear.h":
     SCIP_Real SCIPgetDualfarkasLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPchgLhsLinear(SCIP* scip, SCIP_CONS* cons, SCIP_Real lhs)
     SCIP_RETCODE SCIPchgRhsLinear(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
+    SCIP_Real SCIPgetLhsLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Real SCIPgetRhsLinear(SCIP* scip, SCIP_CONS* cons)
 
 cdef extern from "scip/cons_quadratic.h":
     SCIP_RETCODE SCIPcreateConsQuadratic(SCIP* scip,
@@ -749,6 +755,8 @@ cdef extern from "scip/cons_quadratic.h":
                                            SCIP_Real coef)
     SCIP_RETCODE SCIPchgLhsQuadratic(SCIP* scip, SCIP_CONS* cons, SCIP_Real lhs)
     SCIP_RETCODE SCIPchgRhsQuadratic(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
+    SCIP_Real SCIPgetLhsQuadratic(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Real SCIPgetRhsQuadratic(SCIP* scip, SCIP_CONS* cons)
 
 cdef extern from "scip/cons_sos1.h":
     SCIP_RETCODE SCIPcreateConsSOS1(SCIP* scip,

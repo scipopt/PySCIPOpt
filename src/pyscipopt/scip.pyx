@@ -268,6 +268,10 @@ cdef class Variable(Expr):
         """Returns current objective value of variable"""
         return SCIPvarGetObj(self.var)
 
+    def getLPSol(self):
+        """Returns the current LP solution value of variable"""
+        return SCIPvarGetLPSol(self.var)
+
 
 cdef class Constraint:
     cdef SCIP_CONS* cons
@@ -1094,6 +1098,34 @@ cdef class Model:
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
+    def getRhs(self, Constraint cons):
+        """Retrieve right hand side value of a constraint.
+
+        Keyword arguments:
+        cons -- linear or quadratic constraint
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
+        if constype == 'linear':
+            PY_SCIP_CALL(SCIPgetRhsLinear(self._scip, cons.cons))
+        elif constype == 'quadratic':
+            PY_SCIP_CALL(SCIPgetRhsQuadratic(self._scip, cons.cons))
+        else:
+            raise Warning("method cannot be called for constraints of type " + constype)
+
+    def getLhs(self, Constraint cons):
+        """Retrieve left hand side value of a constraint.
+
+        Keyword arguments:
+        cons -- linear or quadratic constraint
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
+        if constype == 'linear':
+            PY_SCIP_CALL(SCIPgetLhsLinear(self._scip, cons.cons))
+        elif constype == 'quadratic':
+            PY_SCIP_CALL(SCIPgetLhsQuadratic(self._scip, cons.cons))
+        else:
+            raise Warning("method cannot be called for constraints of type " + constype)
+
     def getTransformedCons(self, Constraint cons):
         """Retrieve transformed constraint.
 
@@ -1138,13 +1170,31 @@ cdef class Model:
         cons -- the linear constraint
         """
         # TODO this should ideally be handled on the SCIP side
-        dual = None
+        cdef int _nvars
+        cdef SCIP_VAR** _vars
+        cdef SCIP_Bool _success
+        dual = 0.0
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
+        if not constype == 'linear':
+            raise Warning("dual solution values not available for constraints of type ", constype)
+
         try:
+            _nvars = SCIPgetNVarsLinear(self._scip, cons.cons)
             if cons.isOriginal():
                 transcons = <Constraint>self.getTransformedCons(cons)
+            else:
+                transcons = cons
+            if _nvars > 1:
                 dual = SCIPgetDualsolLinear(self._scip, transcons.cons)
             else:
-                dual = SCIPgetDualsolLinear(self._scip, cons.cons)
+                _vars = SCIPgetVarsLinear(self._scip, transcons.cons)
+                LPsol = SCIPvarGetLPSol(_vars[0])
+                rhs = SCIPgetRhsLinear(self._scip, transcons.cons)
+                lhs = SCIPgetLhsLinear(self._scip, transcons.cons)
+                if (LPsol == rhs) or (LPsol == lhs):
+                    dual = SCIPgetVarRedcost(self._scip, _vars[0])
+
             if self.getObjectiveSense() == "maximize":
                 dual = -dual
         except:
