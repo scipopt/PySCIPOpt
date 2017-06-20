@@ -5,7 +5,11 @@ PySCIPOpt
 This project provides an interface from the Python programming language
 to the `SCIP Optimization Suite <http://scip.zib.de>`__.
 
-|Travis Status| |AppVeyor Status|
++-----------------+-------------------+
+| Linux           | Windows           |
++=================+===================+
+| |Travis Status| | |AppVeyor Status| |
++-----------------+-------------------+
 
 Installation
 ============
@@ -25,26 +29,32 @@ following steps are always required when using the interface:
 1) It is necessary to import python-scip in your code. This is achieved
    by including the line
 
-::
+.. code:: python
 
    from pyscipopt import Model
 
 2) Create a solver instance.
 
-::
+.. code:: python
 
-   model = Model("Example") # the name is optional
+   model = Model("Example")  # model name is optional
 
-This is equivalent to calling
-``SCIPcreate(&scip); SCIPcreateProbBasic(scip, "Example")`` in C.
+This is equivalent to calling (in C):
+
+.. code:: C
+
+   SCIPcreate(&scip);
+   SCIPcreateProbBasic(scip, "Example");
 
 3) Access the methods in the ``scip.pyx`` file using the solver/model
    instance ``model``, e.g.:
 
-::
+.. code:: python
 
-   x = model.addVar("x") y = model.addVar("y", vtype="INTEGER")
-   model.setObjective(x + y) model.addCons(2\ *x - y*\ y >= 0)
+   x = model.addVar("x")
+   y = model.addVar("y", vtype="INTEGER")
+   model.setObjective(x + y)
+   model.addCons(2*x - y*y >= 0)
    model.optimize()
 
 Writing new plugins
@@ -96,7 +106,7 @@ Ranged constraints
 
 While ranged constraints of the form
 
-::
+.. code::
 
     lhs <= expression <= rhs
 
@@ -105,7 +115,7 @@ comparisons <https://docs.python.org/3.5/reference/expressions.html#comparisons>
 can't be hijacked with operator overloading. Instead, parenthesis must
 be used, e.g.,
 
-::
+.. code::
 
     lhs <= (expression <= rhs)
 
@@ -125,9 +135,9 @@ While PySCIPOpt supports access to the dual values of a solution, there are some
 - Can only be used when presolving and propagation is disabled to ensure that the LP solver - which is providing the dual information - actually solves the unmodified problem.
 - Heuristics should also be disabled to avoid that the problem is solved before the LP solver is called.
 
-THerefore, you should use the following settings when trying to work with dual information:
+Therefore, you should use the following settings when trying to work with dual information:
 
-::
+.. code:: python
 
    model.setPresolve(scp.SCIP_PARAMSETTING.OFF)
    model.setHeuristics(scp.SCIP_PARAMSETTING.OFF)
