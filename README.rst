@@ -1,8 +1,9 @@
+=========
 PySCIPOpt
 =========
 
 This project provides an interface from the Python programming language
-to the `SCIP <http://scip.zib.de>`__ solver software.
+to the `SCIP Optimization Suite<http://scip.zib.de>`__.
 
 |Travis Status| |AppVeyor Status|
 
