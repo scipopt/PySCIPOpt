@@ -1,5 +1,5 @@
 =========
-PySCIPOpt
+PySCIPOpt |PyPI version|
 =========
 
 This project provides an interface from the Python programming language
@@ -148,3 +148,8 @@ Therefore, you should use the following settings when trying to work with dual i
    
 .. |AppVeyor Status| image:: https://ci.appveyor.com/api/projects/status/fsa896vkl8be79j9?svg=true
    :target: https://ci.appveyor.com/project/mattmilten/pyscipopt
+
+.. |PyPI version| image:: https://img.shields.io/pypi/v/pyscipopt.svg
+   :alt: PySCIPOpt on the Python Package Index (PyPI)
+   :target: https://pypi.python.org/pypi/pyscipopt
+
