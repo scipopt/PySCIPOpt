@@ -9,6 +9,7 @@ to the `SCIP Optimization Suite <http://scip.zib.de>`__.
 | Linux           | Windows           |
 +=================+===================+
 | |Travis Status| | |AppVeyor Status| |
+| |Coverage|      |                   |
 +-----------------+-------------------+
 
 Installation
@@ -145,7 +146,11 @@ Therefore, you should use the following settings when trying to work with dual i
 
 .. |Travis Status| image:: https://travis-ci.org/SCIP-Interfaces/PySCIPOpt.svg?branch=master
    :target: https://travis-ci.org/SCIP-Interfaces/PySCIPOpt
-   
+
+.. |Coverage| image:: https://img.shields.io/codecov/c/github/SCIP-Interfaces/PySCIPOpt/master.svg
+   :alt: TravisCI test coverage
+   :target: https://codecov.io/gh/SCIP-Interfaces/PySCIPOpt
+
 .. |AppVeyor Status| image:: https://ci.appveyor.com/api/projects/status/fsa896vkl8be79j9?svg=true
    :target: https://ci.appveyor.com/project/mattmilten/pyscipopt
 
