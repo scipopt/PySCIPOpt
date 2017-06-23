@@ -9,7 +9,7 @@ notifications:
 
 install:
 - export VERSION=4.0.0
-- pip install cython networkx
+- pip install cython networkx pytest-cov
 - wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz
 - tar xzf scipoptsuite-$VERSION.tgz
 - cd scipoptsuite-$VERSION
@@ -19,7 +19,10 @@ install:
 - cd ..
 - env SCIPOPTDIR=~/scipdir python setup.py install
 
-script: py.test tests
+script: py.test --cov tests
+
+after_success:
+- codecov
 
 deploy:
   provider: pypi
