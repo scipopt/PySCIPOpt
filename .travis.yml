@@ -9,7 +9,7 @@ notifications:
 
 install:
 - export VERSION=4.0.0
-- pip install cython networkx pytest-cov
+- pip install cython networkx pytest-cov codecov
 - wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz
 - tar xzf scipoptsuite-$VERSION.tgz
 - cd scipoptsuite-$VERSION
