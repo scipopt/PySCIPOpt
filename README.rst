@@ -1,16 +1,12 @@
 =========
-PySCIPOpt |PyPI version|
+PySCIPOpt
 =========
 
 This project provides an interface from the Python programming language
 to the `SCIP Optimization Suite <http://scip.zib.de>`__.
 
-+-----------------+-------------------+
-| Linux           | Windows           |
-+=================+===================+
-| |Travis Status| | |AppVeyor Status| |
-| |Coverage|      |                   |
-+-----------------+-------------------+
+|PyPI version| |Travis Status| |AppVeyor Status| |Coverage| |Health|
+
 
 Installation
 ============
@@ -145,16 +141,21 @@ Therefore, you should use the following settings when trying to work with dual i
    model.disablePropagation()
 
 .. |Travis Status| image:: https://travis-ci.org/SCIP-Interfaces/PySCIPOpt.svg?branch=master
+   :alt: TravisCI Status
    :target: https://travis-ci.org/SCIP-Interfaces/PySCIPOpt
 
 .. |Coverage| image:: https://img.shields.io/codecov/c/github/SCIP-Interfaces/PySCIPOpt/master.svg
-   :alt: TravisCI test coverage
+   :alt: TravisCI Test Coverage
    :target: https://codecov.io/gh/SCIP-Interfaces/PySCIPOpt
 
 .. |AppVeyor Status| image:: https://ci.appveyor.com/api/projects/status/fsa896vkl8be79j9?svg=true
+   :alt: AppVeyor Status
    :target: https://ci.appveyor.com/project/mattmilten/pyscipopt
 
 .. |PyPI version| image:: https://img.shields.io/pypi/v/pyscipopt.svg
-   :alt: PySCIPOpt on the Python Package Index (PyPI)
+   :alt: PySCIPOpt on PyPI
    :target: https://pypi.python.org/pypi/pyscipopt
 
+.. |Health| image:: https://landscape.io/github/SCIP-Interfaces/PySCIPOpt/master/landscape.svg?style=flat
+   :alt: Code Health
+   :target: https://landscape.io/github/SCIP-Interfaces/PySCIPOpt/master
