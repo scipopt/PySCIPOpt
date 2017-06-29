@@ -21,15 +21,15 @@ def optimize(model,cand):
         - cand: list of pairs of objective functions (for appending more solutions)
     Returns the solver's exit status
     """
-    model.Params.OutputFlag = 0 # silent mode
+    model.hideOutput()
     model.optimize()
     x,y,C,T = model.data
-    status = model.Status
-    if status == GRB.Status.OPTIMAL:
-        for k in range(model.SolCount):
-            model.Params.SolutionNumber = k
-            cand.append((T.Xn,C.Xn))
-            # print("Adding solution",k,"with objectives:",C.Xn,T.Xn
+    status = model.getStatus()
+    if status == "optimal":
+        # collect suboptimal solutions
+        solutions = model.getSols()
+        for sol in solutions:
+            cand.append((model.getSolVal(T, sol), model.getSolVal(C)))
     return status
 
 
@@ -50,7 +50,7 @@ def base_model(n,c,t):
     # some auxiliary information
     C = model.addVar(vtype="C", name="C")       # for computing solution cost
     T = model.addVar(vtype="C", name="T")       # for computing solution time
-    
+
     model.addCons(T == quicksum(t[i,j]*x[i,j] for (i,j) in x), "Time")
     model.addCons(C == quicksum(c[i,j]*x[i,j] for (i,j) in x), "Cost")
 
@@ -80,7 +80,7 @@ def solve_segment_time(n,c,t,segments):
     model.setObjective(C, "minimize")
     stat2 = optimize(model,cand)
 
-    if stat1 != GRB.Status.OPTIMAL or stat1 != GRB.Status.OPTIMAL:
+    if stat1 != "optimal" or stat2 != "optimal":
         return []
 
     times = [ti for (ti,ci) in cand]
@@ -90,11 +90,11 @@ def solve_segment_time(n,c,t,segments):
     # print("making time range from",min_time,"to",max_time
 
     # add a time upper bound constraint, moving between min and max values
-    TimeConstr = model.addCons(T <= max_time, "TimeConstr")
+    TimeCons = model.addCons(T <= max_time, "TimeCons")
 
     for i in range(segments+1):
         time_ub = max_time - delta*i
-        TimeConstr.setAttr("RHS",time_ub)
+        model.chgRhs(TimeCons, time_ub)
         # print("optimizing cost subject to time <=",time_ub
         optimize(model,cand)
 
@@ -115,14 +115,14 @@ def solve_ideal(n,c,t,segments):
     # store the set of solutions for plotting
     cand = []
     # print("optimizing time"
-    model.setObjective(T, "minimize"
+    model.setObjective(T, "minimize")
     stat1 = optimize(model,cand)
 
     # print("optimizing cost"
     model.setObjective(C, "minimize")
     stat2 = optimize(model,cand)    #find the minimum cost routes
 
-    if stat1 != GRB.Status.OPTIMAL or stat2 != GRB.Status.OPTIMAL:
+    if stat1 != "optimal" or stat2 != "optimal":
         return []
 
     times = [ti for (ti,ci) in cand]
@@ -143,8 +143,9 @@ def solve_ideal(n,c,t,segments):
     for i in range(segments+1):
         lambda_ = float(i)/segments
         # print(lambda_
-        Obj = QuadExpr(lambda_*f1*f1 + (1-lambda_)*f2*f2)
-        model.setObjective(Obj, "minimize")
+        z = model.addVar(name="z")
+        Obj = model.addCons(lambda_*f1*f1 + (1-lambda_)*f2*f2 == z)
+        model.setObjective(z, "minimize")
         optimize(model, cand)    #  find the minimum cost routes
     return cand
 
@@ -179,7 +180,8 @@ def solve_scalarization(n,c,t):
             # print("no points added, returning"
             return front
 
-        CM,TM = C.X,T.X
+        CM = model.getVal(C)
+        TM = model.getVal(T)
         # print("will explore %s,%s -- %s,%s and %s,%s -- %s,%s" % (C1,T1,CM,TM,CM,TM,C2,T2)
         if TM > T1:
             front = explore(C1,T1,CM,TM,front)
@@ -193,17 +195,19 @@ def solve_scalarization(n,c,t):
     model.setObjective(T, "minimize")
 
     stat = optimize(model,cand)
-    if stat != GRB.Status.OPTIMAL:
+    if stat != "optimal":
         return []
-    C1,T1 = C.X,T.X
+    C1 = model.getVal(C)
+    T1 = model.getVal(T)
 
     # change the objective function to minimize the travel cost
-    model.setObjective(C, "minimize"
-    
+    model.setObjective(C, "minimize")
+
     stat = optimize(model,cand)
-    if stat != GRB.Status.OPTIMAL:
+    if stat != "optimal":
         return []
-    C2,T2 = C.X,T.X
+    C2 = model.getVal(C)
+    T2 = model.getVal(T)
 
     front = pareto_front(cand)
     return explore(C1,T1,C2,T2,front)
@@ -271,7 +275,7 @@ if __name__ == "__main__":
     try:
         import matplotlib.pyplot as P
     except:
-        print("for graphics,install matplotlib")
+        print("for graphics, install matplotlib")
         exit(0)
 
     P.clf()

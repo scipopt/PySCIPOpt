@@ -30,7 +30,8 @@ def mctransp(I,J,K,c,d,M):
     x = {}
     for (i,j,k) in c:
         x[i,j,k] = model.addVar(vtype="C", name="x(%s,%s,%s)" % (i,j,k), obj=c[i,j,k])
-# todo
+
+    # tuplelist is a Gurobi data structure to manage lists of equal sized tuples - try itertools as alternative
     arcs = tuplelist([(i,j,k) for (i,j,k) in x])
 
     # Demand constraints
@@ -40,7 +41,7 @@ def mctransp(I,J,K,c,d,M):
 
     # Capacity constraints
     for j in J:
-        model.addConstr(sum(x[i,j,k] for (i,j,k) in arcs.select("*",j,"*")) <= M[j], "Capacity(%s)" % j)
+        model.addCons(sum(x[i,j,k] for (i,j,k) in arcs.select("*",j,"*")) <= M[j], "Capacity(%s)" % j)
 
     model.data = x
     return model
@@ -67,7 +68,7 @@ def make_inst1():
             (5,1):10, (5,2):8, (5,3):4
             }
     c = {}
-    
+
     for i in I:
         for j in J:
             for k in produce[j]:
@@ -94,7 +95,7 @@ def make_inst2():
             (4,1):9,    (4,2):7,    (4,3):5 ,
             }
     c = {}
- 
+
     for i in I:
         for j in J:
             for k in produce[j]:
@@ -113,7 +114,7 @@ if __name__ == "__main__":
 
     EPS = 1.e-6
     x = model.data
-    
+
     for (i,j,k) in x:
         if model.getVal(x[i,j,k]) > EPS:
             print("sending %10s units of %3s from plant %3s to customer %3s" % (model.getVal(x[i,j,k]),k,j,i))

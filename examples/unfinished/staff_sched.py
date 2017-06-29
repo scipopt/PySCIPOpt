@@ -133,12 +133,12 @@ if __name__ == "__main__":
                         s += str(j)
             print(s)
         print("\n\nuncovered shifts:")
-        for t in range(1,T+1):
-            s = "day %s:\t" % t
-            for j in J:
-                if y[t,j].X > .5:
-                        s += "%s:%s, " % (j,int(y[t,j].X+.5))
-            print(s)
+        # for t in range(1,T+1):
+            # s = "day %s:\t" % t
+            # for j in J:
+                # if y[t,j].X > .5:
+                        # s += "%s:%s, " % (j,int(y[t,j].X+.5))
+            # print(s)
 
     elif status == "infeasible":
         print("Infeasible instance...")

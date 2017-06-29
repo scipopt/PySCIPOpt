@@ -73,7 +73,7 @@ def eld_complete(U,p_min,p_max,d,brk):
         model.addCons(p[u] == quicksum(abrk[k]*z[k] for k in range(K+1)))
         model.addCons(F[u] == quicksum(bbrk[k]*z[k] for k in range(K+1)))
         model.addCons(quicksum(z[k] for k in range(K+1)) == 1)
-        model.addSOS(GRB.SOS_TYPE2, [z[k] for k in range(K+1)])
+        model.addConsSOS2([z[k] for k in range(K+1)])
 
     # demand satisfaction
     model.addCons(quicksum(p[u] for u in U) == d, "demand")
@@ -85,7 +85,6 @@ def eld_complete(U,p_min,p_max,d,brk):
     return model
 
 
-from piecewise import convex_comb_sos
 def eld_another(U,p_min,p_max,d,brk):
     """eld -- economic load dispatching in electricity generation
     Parameters:
@@ -194,11 +193,12 @@ if __name__ == "__main__":
     for u in U:
         brk[u] = lower_brkpts(a[u],b[u],c[u],e[u],f[u],p_min[u],p_max[u],n)
 
-    lower = eld(U,p_min,p_max,d,brk)
-    lower.Params.MIPGap = 1.e-12
-    lower.Params.MIPGapAbs = 1.e-12
-    lower.Params.IntFeasTol = 1.e-9
-    lower.Params.FeasibilityTol = 1.e-9
+    lower = eld_complete(U,p_min,p_max,d,brk)
+    # lower = eld_another(U,p_min,p_max,d,brk)
+
+    lower.setRealParam("limits/gap", 1e-12)
+    lower.setRealParam("limits/absgap", 1e-12)
+    lower.setRealParam("numerics/feastol", 1e-9)
 
     lower.optimize()
     p = lower.data
