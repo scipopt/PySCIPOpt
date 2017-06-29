@@ -1,0 +1,7 @@
+doc-warnings: true
+test-warnings: true
+ignore-paths:
+  - examples/unfinished
+python-targets:
+  - 2
+  - 3
