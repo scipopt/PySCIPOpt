@@ -119,7 +119,7 @@ class ALLDIFFconshdlr(Conshdlr):
 
         # perform breadth first search starting from free vertices and mark all visited edges as useful
         for v in V_free:
-            visited_edges = bfs_edges(D, v)
+            visited_edges = networkx.bfs_edges(D, v)
             G.remove_edges_from(visited_edges)
 
         # compute strongly connected components of D and mark edges on the cc as useful
