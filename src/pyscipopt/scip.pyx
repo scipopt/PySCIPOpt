@@ -617,23 +617,23 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPaddVarLocks(self._scip, var.var, nlocksdown, nlocksup))
 
-    def chgVarLb(self, Variable var, lb=None):
+    def chgVarLb(self, Variable var, lb):
         """Changes the lower bound of the specified variable.
 
         Keyword arguments:
         var -- the variable
-        lb -- the lower bound (default -infinity)
+        lb -- the lower bound (set to None for -infinity)
         """
         if lb is None:
            lb = -SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarLb(self._scip, var.var, lb))
 
-    def chgVarUb(self, Variable var, ub=None):
+    def chgVarUb(self, Variable var, ub):
         """Changes the upper bound of the specified variable.
 
         Keyword arguments:
         var -- the variable
-        ub -- the upper bound (default +infinity)
+        ub -- the upper bound (set to None for +infinity)
         """
         if ub is None:
            ub = SCIPinfinity(self._scip)
@@ -1078,12 +1078,12 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPappendVarSOS2(self._scip, cons.cons, var.var))
 
-    def chgRhs(self, Constraint cons, rhs=None):
+    def chgRhs(self, Constraint cons, rhs):
         """Change right hand side value of a constraint.
 
         Keyword arguments:
         cons -- linear or quadratic constraint
-        rhs -- new right hand side (default +infinity)
+        rhs -- new right hand side (set to None for +infinity)
         """
 
         if rhs is None:
@@ -1097,12 +1097,12 @@ cdef class Model:
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
-    def chgLhs(self, Constraint cons, lhs=None):
+    def chgLhs(self, Constraint cons, lhs):
         """Change left hand side value of a constraint.
 
         Keyword arguments:
         cons -- linear or quadratic constraint
-        lhs -- new left hand side (default -infinity)
+        lhs -- new left hand side (set to None for -infinity)
         """
 
         if lhs is None:
