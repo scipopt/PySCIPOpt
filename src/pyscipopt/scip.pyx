@@ -553,13 +553,18 @@ cdef class Model:
         """Create a new variable.
 
         Keyword arguments:
-        name -- the name of the variable (default '')
+        name -- the name of the variable (use generic name if empty)
         vtype -- the typ of the variable (default 'C')
         lb -- the lower bound of the variable (default 0.0)
         ub -- the upper bound of the variable (default None)
         obj -- the objective value of the variable (default 0.0)
         pricedVar -- is the variable a pricing candidate? (default False)
         """
+
+        # replace empty name with generic one
+        if name == '':
+            name = 'x'+str(SCIPgetNVars(self._scip)+1)
+
         cname = str_conversion(name)
         if ub is None:
             ub = SCIPinfinity(self._scip)
@@ -617,7 +622,7 @@ cdef class Model:
 
         Keyword arguments:
         var -- the variable
-        lb -- the lower bound (default None)
+        lb -- the lower bound (default -infinity)
         """
         if lb is None:
            lb = -SCIPinfinity(self._scip)
@@ -628,7 +633,7 @@ cdef class Model:
 
         Keyword arguments:
         var -- the variable
-        ub -- the upper bound (default None)
+        ub -- the upper bound (default +infinity)
         """
         if ub is None:
            ub = SCIPinfinity(self._scip)
@@ -668,7 +673,7 @@ cdef class Model:
         return [Variable.create(_vars[i]) for i in range(_nvars)]
 
     # Constraint functions
-    def addCons(self, cons, name="cons", initial=True, separate=True,
+    def addCons(self, cons, name='', initial=True, separate=True,
                 enforce=True, check=True, propagate=True, local=False,
                 modifiable=False, dynamic=False, removable=False,
                 stickingatnode=False):
@@ -676,7 +681,7 @@ cdef class Model:
 
         Keyword arguments:
         cons -- list of coefficients
-        name -- the name of the constraint (default 'cons')
+        name -- the name of the constraint (use generic name if empty)
         initial -- should the LP relaxation of constraint be in the initial LP? (default True)
         separate -- should the constraint be separated during LP processing? (default True)
         enforce -- should the constraint be enforced during node processing? (default True)
@@ -689,6 +694,11 @@ cdef class Model:
         stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
         """
         assert isinstance(cons, ExprCons)
+
+        # replace empty name with generic one
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+
         kwargs = dict(name=name, initial=initial, separate=separate,
                       enforce=enforce, check=check,
                       propagate=propagate, local=local,
@@ -1068,13 +1078,17 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPappendVarSOS2(self._scip, cons.cons, var.var))
 
-    def chgRhs(self, Constraint cons, rhs):
+    def chgRhs(self, Constraint cons, rhs=None):
         """Change right hand side value of a constraint.
 
         Keyword arguments:
         cons -- linear or quadratic constraint
-        rhs -- new right hand side
+        rhs -- new right hand side (default +infinity)
         """
+
+        if rhs is None:
+           rhs = SCIPinfinity(self._scip)
+
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
         if constype == 'linear':
             PY_SCIP_CALL(SCIPchgRhsLinear(self._scip, cons.cons, rhs))
@@ -1083,13 +1097,17 @@ cdef class Model:
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
-    def chgLhs(self, Constraint cons, lhs):
+    def chgLhs(self, Constraint cons, lhs=None):
         """Change left hand side value of a constraint.
 
         Keyword arguments:
         cons -- linear or quadratic constraint
-        lhs -- new left hand side
+        lhs -- new left hand side (default -infinity)
         """
+
+        if lhs is None:
+           lhs = -SCIPinfinity(self._scip)
+
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
         if constype == 'linear':
             PY_SCIP_CALL(SCIPchgLhsLinear(self._scip, cons.cons, lhs))
