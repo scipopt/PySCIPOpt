@@ -116,6 +116,8 @@ be used, e.g.,
 
     lhs <= (expression <= rhs)
 
+Alternatively, you may call ``model.chgRhs(cons, newrhs)`` or ``model.chgLhs(cons, newlhs)`` after the single-sided constraint has been created.
+
 Variable objects
 ----------------
 
