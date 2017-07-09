@@ -138,8 +138,8 @@ Therefore, you should use the following settings when trying to work with dual i
 
 .. code:: python
 
-   model.setPresolve(scp.SCIP_PARAMSETTING.OFF)
-   model.setHeuristics(scp.SCIP_PARAMSETTING.OFF)
+   model.setPresolve(pyscipopt.SCIP_PARAMSETTING.OFF)
+   model.setHeuristics(pyscipopt.SCIP_PARAMSETTING.OFF)
    model.disablePropagation()
 
 .. |Travis Status| image:: https://travis-ci.org/SCIP-Interfaces/PySCIPOpt.svg?branch=master
