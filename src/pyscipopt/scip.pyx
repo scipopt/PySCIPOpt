@@ -1484,16 +1484,20 @@ cdef class Model:
         heur.name = name
         Py_INCREF(heur)
 
-    def createSol(self, Heur heur):
+    def createSol(self, Heur heur = None):
         """Create a new primal solution.
 
         Keyword arguments:
         solution -- the new solution
         heur -- the heuristic that found the solution
         """
-        n = str_conversion(heur.name)
         cdef SCIP_HEUR* _heur
-        _heur = SCIPfindHeur(self._scip, n)
+
+        if isinstance(heur, Heur):
+            n = str_conversion(heur.name)
+            _heur = SCIPfindHeur(self._scip, n)
+        else:
+            _heur = NULL
         solution = Solution()
         PY_SCIP_CALL(SCIPcreateSol(self._scip, &solution.sol, _heur))
         return solution
