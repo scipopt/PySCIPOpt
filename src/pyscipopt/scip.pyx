@@ -1124,9 +1124,9 @@ cdef class Model:
         """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
         if constype == 'linear':
-            PY_SCIP_CALL(SCIPgetRhsLinear(self._scip, cons.cons))
+            return SCIPgetRhsLinear(self._scip, cons.cons)
         elif constype == 'quadratic':
-            PY_SCIP_CALL(SCIPgetRhsQuadratic(self._scip, cons.cons))
+            return SCIPgetRhsQuadratic(self._scip, cons.cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
@@ -1138,11 +1138,76 @@ cdef class Model:
         """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
         if constype == 'linear':
-            PY_SCIP_CALL(SCIPgetLhsLinear(self._scip, cons.cons))
+            return SCIPgetLhsLinear(self._scip, cons.cons)
         elif constype == 'quadratic':
-            PY_SCIP_CALL(SCIPgetLhsQuadratic(self._scip, cons.cons))
+            return SCIPgetLhsQuadratic(self._scip, cons.cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
+
+    def getActivity(self, Constraint cons, Solution sol = None):
+        """Retrieve slack of given contraint.
+
+        Keyword arguments:
+        cons -- linear or quadratic constraint to compute slack of
+        sol -- solution to compute slack of (default None to use current node's solution)
+        """
+        cdef SCIP_Real activity
+        cdef SCIP_SOL* scip_sol
+
+        if isinstance(sol, Solution):
+            scip_sol = sol.sol
+        else:
+            scip_sol = NULL
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
+        if constype == 'linear':
+            activity = SCIPgetActivityLinear(self._scip, cons.cons, scip_sol)
+        elif constype == 'quadratic':
+            PY_SCIP_CALL(SCIPgetActivityQuadratic(self._scip, cons.cons, scip_sol, &activity))
+        else:
+            raise Warning("method cannot be called for constraints of type " + constype)
+
+        return activity
+
+
+    def getSlack(self, Constraint cons, Solution sol = None, side = None):
+        """Retrieve slack of given contraint.
+
+        Keyword arguments:
+        cons -- linear or quadratic constraint to compute slack of
+        sol -- solution to compute slack of (default None to use current node's solution)
+        side -- whether to use lhs or rhs for ranged constraints ('lhs' or 'rhs'),
+                return minimum of left and right slack if not specified
+        """
+        cdef SCIP_Real activity
+        cdef SCIP_SOL* scip_sol
+
+        if isinstance(sol, Solution):
+            scip_sol = sol.sol
+        else:
+            scip_sol = NULL
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
+        if constype == 'linear':
+            lhs = SCIPgetLhsLinear(self._scip, cons.cons)
+            rhs = SCIPgetRhsLinear(self._scip, cons.cons)
+            activity = SCIPgetActivityLinear(self._scip, cons.cons, scip_sol)
+        elif constype == 'quadratic':
+            lhs = SCIPgetLhsQuadratic(self._scip, cons.cons)
+            rhs = SCIPgetRhsQuadratic(self._scip, cons.cons)
+            PY_SCIP_CALL(SCIPgetActivityQuadratic(self._scip, cons.cons, scip_sol, &activity))
+        else:
+            raise Warning("method cannot be called for constraints of type " + constype)
+
+        lhsslack = activity - lhs
+        rhsslack = rhs - activity
+
+        if side == 'lhs':
+            return lhsslack
+        elif side == 'rhs':
+            return rhsslack
+        else:
+            return min(lhsslack, rhsslack)
 
     def getTransformedCons(self, Constraint cons):
         """Retrieve transformed constraint.

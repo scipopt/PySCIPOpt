@@ -18,7 +18,10 @@ def test_lp():
     # add some constraint
     c = s.addCons(x + 2 * y >= 1.0)
     s.chgLhs(c, 5.0)
-    s.chgRhs(c, 5.0)
+    s.chgRhs(c, 6.0)
+
+    assert s.getLhs(c) == 5.0
+    assert s.getRhs(c) == 6.0
 
     # solve problem
     s.optimize()
@@ -30,6 +33,10 @@ def test_lp():
     assert (s.getVal(y) == s.getSolVal(solution, y))
     assert round(s.getVal(x)) == 5.0
     assert round(s.getVal(y)) == 0.0
+    assert s.getSlack(c, solution) == 0.0
+    assert s.getSlack(c, solution, 'lhs') == 0.0
+    assert s.getSlack(c, solution, 'rhs') == 1.0
+    assert s.getActivity(c, solution) == 5.0
 
     s.freeProb()
     s = Model()

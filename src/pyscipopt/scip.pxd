@@ -721,6 +721,7 @@ cdef extern from "scip/cons_linear.h":
     SCIP_RETCODE SCIPchgRhsLinear(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
     SCIP_Real SCIPgetLhsLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real SCIPgetRhsLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Real SCIPgetActivityLinear(SCIP* scip, SCIP_CONS* cons, SCIP_SOL* sol)
 
 cdef extern from "scip/cons_quadratic.h":
     SCIP_RETCODE SCIPcreateConsQuadratic(SCIP* scip,
@@ -757,6 +758,7 @@ cdef extern from "scip/cons_quadratic.h":
     SCIP_RETCODE SCIPchgRhsQuadratic(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
     SCIP_Real SCIPgetLhsQuadratic(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real SCIPgetRhsQuadratic(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RETCODE SCIPgetActivityQuadratic(SCIP* scip, SCIP_CONS* cons, SCIP_SOL* sol, SCIP_Real* activity)
 
 cdef extern from "scip/cons_sos1.h":
     SCIP_RETCODE SCIPcreateConsSOS1(SCIP* scip,
