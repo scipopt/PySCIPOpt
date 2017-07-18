@@ -23,6 +23,16 @@ def test_lp():
     assert s.getLhs(c) == 5.0
     assert s.getRhs(c) == 6.0
 
+    badsolution = s.createSol()
+    s.setSolVal(badsolution, x, 2.0)
+    s.setSolVal(badsolution, y, 2.0)
+    s.addSol(badsolution, free = False)
+    assert s.getSlack(c, badsolution) == 0.0
+    assert s.getSlack(c, badsolution, 'lhs') == 1.0
+    assert s.getSlack(c, badsolution, 'rhs') == 0.0
+    assert s.getActivity(c, badsolution) == 6.0
+    s.freeSol(badsolution)
+
     # solve problem
     s.optimize()
 

@@ -1484,6 +1484,29 @@ cdef class Model:
         heur.name = name
         Py_INCREF(heur)
 
+    def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
+        """Include a branching rule.
+
+        Keyword arguments:
+        branchrule -- the branching rule
+        name -- name of branching rule
+        desc --description of branching rule
+        priority --priority of the branching rule
+        maxdepth -- maximal depth level, up to which this branching rule should be used (or -1)
+        maxbounddist -- maximal relative distance from current node's dual bound to primal bound compared to best node's dual bound for applying branching rule (0.0: only on current best node, 1.0: on all nodes)
+        """
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeBranchrule(self._scip, nam, des,
+                                          maxdepth, maxdepth, maxbounddist,
+                                          PyBranchruleCopy, PyBranchruleFree, PyBranchruleInit, PyBranchruleExit,
+                                          PyBranchruleInitsol, PyBranchruleExitsol, PyBranchruleExeclp, PyBranchruleExecext,
+                                          PyBranchruleExecps, <SCIP_BRANCHRULEDATA*> branchrule))
+        branchrule.model = <Model>weakref.proxy(self)
+        Py_INCREF(branchrule)
+
+    # Solution functions
+
     def createSol(self, Heur heur = None):
         """Create a new primal solution.
 
@@ -1514,8 +1537,8 @@ cdef class Model:
         _sol = <SCIP_SOL*>solution.sol
         PY_SCIP_CALL(SCIPsetSolVal(self._scip, _sol, var.var, val))
 
-    def trySol(self, Solution solution, printreason=True, completely=False, checkbounds=True, checkintegrality=True, checklprows=True):
-        """Try to add a solution to the storage.
+    def trySol(self, Solution solution, printreason=True, completely=False, checkbounds=True, checkintegrality=True, checklprows=True, free=True):
+        """Check given primal solution for feasibility and try to add it to the storage.
 
         Keyword arguments:
         solution -- the solution to store
@@ -1524,33 +1547,36 @@ cdef class Model:
         checkbounds -- should the bounds of the variables be checked?
         checkintegrality -- has integrality to be checked?
         checklprows -- have current LP rows (both local and global) to be checked?
+        free -- should solution be freed (default True)
         """
         cdef SCIP_Bool stored
-        PY_SCIP_CALL(SCIPtrySolFree(self._scip, &solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
+        if free:
+            PY_SCIP_CALL(SCIPtrySolFree(self._scip, &solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
+        else:
+            PY_SCIP_CALL(SCIPtrySol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
         return stored
 
-    def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
-        """Include a branching rule.
+    def addSol(self, Solution solution, free=True):
+        """Try to add a solution to the storage.
 
         Keyword arguments:
-        branchrule -- the branching rule
-        name -- name of branching rule
-        desc --description of branching rule
-        priority --priority of the branching rule
-        maxdepth -- maximal depth level, up to which this branching rule should be used (or -1)
-        maxbounddist -- maximal relative distance from current node's dual bound to primal bound compared to best node's dual bound for applying branching rule (0.0: only on current best node, 1.0: on all nodes)
+        solution -- the solution to store
+        free -- should solution be free afterwards (default True)
         """
-        nam = str_conversion(name)
-        des = str_conversion(desc)
-        PY_SCIP_CALL(SCIPincludeBranchrule(self._scip, nam, des,
-                                          maxdepth, maxdepth, maxbounddist,
-                                          PyBranchruleCopy, PyBranchruleFree, PyBranchruleInit, PyBranchruleExit,
-                                          PyBranchruleInitsol, PyBranchruleExitsol, PyBranchruleExeclp, PyBranchruleExecext,
-                                          PyBranchruleExecps, <SCIP_BRANCHRULEDATA*> branchrule))
-        branchrule.model = <Model>weakref.proxy(self)
-        Py_INCREF(branchrule)
+        cdef SCIP_Bool stored
+        if free:
+            PY_SCIP_CALL(SCIPaddSolFree(self._scip, &solution.sol, &stored))
+        else:
+            PY_SCIP_CALL(SCIPaddSol(self._scip, solution.sol, &stored))
+        return stored
 
-    # Solution functions
+    def freeSol(self, Solution solution):
+        """Free given solution
+
+        Keyword arguments:
+        solution -- solution to be freed
+        """
+        PY_SCIP_CALL(SCIPfreeSol(self._scip, &solution.sol))
 
     def getSols(self):
         """Retrieve list of all feasible primal solutions stored in the solution storage."""
