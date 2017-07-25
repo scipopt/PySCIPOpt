@@ -26,7 +26,6 @@ def test_lp():
     badsolution = s.createSol()
     s.setSolVal(badsolution, x, 2.0)
     s.setSolVal(badsolution, y, 2.0)
-    s.addSol(badsolution, free = False)
     assert s.getSlack(c, badsolution) == 0.0
     assert s.getSlack(c, badsolution, 'lhs') == 1.0
     assert s.getSlack(c, badsolution, 'rhs') == 0.0
