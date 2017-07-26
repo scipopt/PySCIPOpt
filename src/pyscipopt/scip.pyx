@@ -1124,9 +1124,9 @@ cdef class Model:
         """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
         if constype == 'linear':
-            PY_SCIP_CALL(SCIPgetRhsLinear(self._scip, cons.cons))
+            return SCIPgetRhsLinear(self._scip, cons.cons)
         elif constype == 'quadratic':
-            PY_SCIP_CALL(SCIPgetRhsQuadratic(self._scip, cons.cons))
+            return SCIPgetRhsQuadratic(self._scip, cons.cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
@@ -1138,11 +1138,76 @@ cdef class Model:
         """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
         if constype == 'linear':
-            PY_SCIP_CALL(SCIPgetLhsLinear(self._scip, cons.cons))
+            return SCIPgetLhsLinear(self._scip, cons.cons)
         elif constype == 'quadratic':
-            PY_SCIP_CALL(SCIPgetLhsQuadratic(self._scip, cons.cons))
+            return SCIPgetLhsQuadratic(self._scip, cons.cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
+
+    def getActivity(self, Constraint cons, Solution sol = None):
+        """Retrieve slack of given contraint.
+
+        Keyword arguments:
+        cons -- linear or quadratic constraint to compute slack of
+        sol -- solution to compute slack of (default None to use current node's solution)
+        """
+        cdef SCIP_Real activity
+        cdef SCIP_SOL* scip_sol
+
+        if isinstance(sol, Solution):
+            scip_sol = sol.sol
+        else:
+            scip_sol = NULL
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
+        if constype == 'linear':
+            activity = SCIPgetActivityLinear(self._scip, cons.cons, scip_sol)
+        elif constype == 'quadratic':
+            PY_SCIP_CALL(SCIPgetActivityQuadratic(self._scip, cons.cons, scip_sol, &activity))
+        else:
+            raise Warning("method cannot be called for constraints of type " + constype)
+
+        return activity
+
+
+    def getSlack(self, Constraint cons, Solution sol = None, side = None):
+        """Retrieve slack of given contraint.
+
+        Keyword arguments:
+        cons -- linear or quadratic constraint to compute slack of
+        sol -- solution to compute slack of (default None to use current node's solution)
+        side -- whether to use lhs or rhs for ranged constraints ('lhs' or 'rhs'),
+                return minimum of left and right slack if not specified
+        """
+        cdef SCIP_Real activity
+        cdef SCIP_SOL* scip_sol
+
+        if isinstance(sol, Solution):
+            scip_sol = sol.sol
+        else:
+            scip_sol = NULL
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
+        if constype == 'linear':
+            lhs = SCIPgetLhsLinear(self._scip, cons.cons)
+            rhs = SCIPgetRhsLinear(self._scip, cons.cons)
+            activity = SCIPgetActivityLinear(self._scip, cons.cons, scip_sol)
+        elif constype == 'quadratic':
+            lhs = SCIPgetLhsQuadratic(self._scip, cons.cons)
+            rhs = SCIPgetRhsQuadratic(self._scip, cons.cons)
+            PY_SCIP_CALL(SCIPgetActivityQuadratic(self._scip, cons.cons, scip_sol, &activity))
+        else:
+            raise Warning("method cannot be called for constraints of type " + constype)
+
+        lhsslack = activity - lhs
+        rhsslack = rhs - activity
+
+        if side == 'lhs':
+            return lhsslack
+        elif side == 'rhs':
+            return rhsslack
+        else:
+            return min(lhsslack, rhsslack)
 
     def getTransformedCons(self, Constraint cons):
         """Retrieve transformed constraint.
@@ -1419,47 +1484,6 @@ cdef class Model:
         heur.name = name
         Py_INCREF(heur)
 
-    def createSol(self, Heur heur):
-        """Create a new primal solution.
-
-        Keyword arguments:
-        solution -- the new solution
-        heur -- the heuristic that found the solution
-        """
-        n = str_conversion(heur.name)
-        cdef SCIP_HEUR* _heur
-        _heur = SCIPfindHeur(self._scip, n)
-        solution = Solution()
-        PY_SCIP_CALL(SCIPcreateSol(self._scip, &solution.sol, _heur))
-        return solution
-
-    def setSolVal(self, Solution solution, Variable var, val):
-        """Set a variable in a solution.
-
-        Keyword arguments:
-        solution -- the solution to be modified
-        var -- the variable in the solution
-        val -- the value of the variable in the solution
-        """
-        cdef SCIP_SOL* _sol
-        _sol = <SCIP_SOL*>solution.sol
-        PY_SCIP_CALL(SCIPsetSolVal(self._scip, _sol, var.var, val))
-
-    def trySol(self, Solution solution, printreason=True, completely=False, checkbounds=True, checkintegrality=True, checklprows=True):
-        """Try to add a solution to the storage.
-
-        Keyword arguments:
-        solution -- the solution to store
-        printreason -- should all reasons of violations be printed?
-        completely -- should all violation be checked?
-        checkbounds -- should the bounds of the variables be checked?
-        checkintegrality -- has integrality to be checked?
-        checklprows -- have current LP rows (both local and global) to be checked?
-        """
-        cdef SCIP_Bool stored
-        PY_SCIP_CALL(SCIPtrySolFree(self._scip, &solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
-        return stored
-
     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
         """Include a branching rule.
 
@@ -1482,6 +1506,77 @@ cdef class Model:
         Py_INCREF(branchrule)
 
     # Solution functions
+
+    def createSol(self, Heur heur = None):
+        """Create a new primal solution.
+
+        Keyword arguments:
+        solution -- the new solution
+        heur -- the heuristic that found the solution
+        """
+        cdef SCIP_HEUR* _heur
+
+        if isinstance(heur, Heur):
+            n = str_conversion(heur.name)
+            _heur = SCIPfindHeur(self._scip, n)
+        else:
+            _heur = NULL
+        solution = Solution()
+        PY_SCIP_CALL(SCIPcreateSol(self._scip, &solution.sol, _heur))
+        return solution
+
+    def setSolVal(self, Solution solution, Variable var, val):
+        """Set a variable in a solution.
+
+        Keyword arguments:
+        solution -- the solution to be modified
+        var -- the variable in the solution
+        val -- the value of the variable in the solution
+        """
+        cdef SCIP_SOL* _sol
+        _sol = <SCIP_SOL*>solution.sol
+        PY_SCIP_CALL(SCIPsetSolVal(self._scip, _sol, var.var, val))
+
+    def trySol(self, Solution solution, printreason=True, completely=False, checkbounds=True, checkintegrality=True, checklprows=True, free=True):
+        """Check given primal solution for feasibility and try to add it to the storage.
+
+        Keyword arguments:
+        solution -- the solution to store
+        printreason -- should all reasons of violations be printed?
+        completely -- should all violation be checked?
+        checkbounds -- should the bounds of the variables be checked?
+        checkintegrality -- has integrality to be checked?
+        checklprows -- have current LP rows (both local and global) to be checked?
+        free -- should solution be freed (default True)
+        """
+        cdef SCIP_Bool stored
+        if free:
+            PY_SCIP_CALL(SCIPtrySolFree(self._scip, &solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
+        else:
+            PY_SCIP_CALL(SCIPtrySol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
+        return stored
+
+    def addSol(self, Solution solution, free=True):
+        """Try to add a solution to the storage.
+
+        Keyword arguments:
+        solution -- the solution to store
+        free -- should solution be free afterwards (default True)
+        """
+        cdef SCIP_Bool stored
+        if free:
+            PY_SCIP_CALL(SCIPaddSolFree(self._scip, &solution.sol, &stored))
+        else:
+            PY_SCIP_CALL(SCIPaddSol(self._scip, solution.sol, &stored))
+        return stored
+
+    def freeSol(self, Solution solution):
+        """Free given solution
+
+        Keyword arguments:
+        solution -- solution to be freed
+        """
+        PY_SCIP_CALL(SCIPfreeSol(self._scip, &solution.sol))
 
     def getSols(self):
         """Retrieve list of all feasible primal solutions stored in the solution storage."""

@@ -404,7 +404,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPprintBestSol(SCIP* scip, FILE* outfile, SCIP_Bool printzeros)
     SCIP_Real SCIPgetPrimalbound(SCIP* scip)
     SCIP_Real SCIPgetGap(SCIP* scip)
-    
+    SCIP_RETCODE SCIPaddSolFree(SCIP* scip, SCIP_SOL** sol, SCIP_Bool* stored)
+    SCIP_RETCODE SCIPaddSol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool* stored)
 
     # Row Methods
     SCIP_RETCODE SCIPcreateRow(SCIP* scip, SCIP_ROW** row, const char* name, int len, SCIP_COL** cols, SCIP_Real* vals,
@@ -721,6 +722,7 @@ cdef extern from "scip/cons_linear.h":
     SCIP_RETCODE SCIPchgRhsLinear(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
     SCIP_Real SCIPgetLhsLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real SCIPgetRhsLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Real SCIPgetActivityLinear(SCIP* scip, SCIP_CONS* cons, SCIP_SOL* sol)
 
 cdef extern from "scip/cons_quadratic.h":
     SCIP_RETCODE SCIPcreateConsQuadratic(SCIP* scip,
@@ -757,6 +759,7 @@ cdef extern from "scip/cons_quadratic.h":
     SCIP_RETCODE SCIPchgRhsQuadratic(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
     SCIP_Real SCIPgetLhsQuadratic(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real SCIPgetRhsQuadratic(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RETCODE SCIPgetActivityQuadratic(SCIP* scip, SCIP_CONS* cons, SCIP_SOL* sol, SCIP_Real* activity)
 
 cdef extern from "scip/cons_sos1.h":
     SCIP_RETCODE SCIPcreateConsSOS1(SCIP* scip,
