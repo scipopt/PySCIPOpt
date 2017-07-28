@@ -58,9 +58,6 @@ def test_lp():
 
     s.optimize()
 
-    s.writeParams('default.set')
-    s.readParams('default.set')
-
     assert s.getStatus() == 'unbounded'
 
 
