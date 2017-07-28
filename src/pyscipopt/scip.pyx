@@ -1780,6 +1780,18 @@ cdef class Model:
         absfile = str_conversion(abspath(file))
         PY_SCIP_CALL(SCIPreadParams(self._scip, absfile))
 
+    def writeParams(self, filename='param.set', comments = True, onlychanged = True):
+        """Write parameter settings to an external file.
+
+        Keyword arguments:
+        filename -- the file to be written
+        comments -- write parameter descriptions as comments? (default True)
+        onlychanged -- write only parameters that are changed from their default value? (default True)
+        """
+        fn = str_conversion(filename)
+        PY_SCIP_CALL(SCIPwriteParams(self._scip, fn, comments, onlychanged))
+        print('wrote parameter settings to file ' + filename)
+
     def setEmphasis(self, paraemphasis, quiet = True):
         """Set emphasis settings
 
