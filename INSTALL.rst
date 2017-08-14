@@ -26,7 +26,7 @@ the SCIP Optimization Suite):
 
     SCIPOPTDIR
       > lib
-        > libscipopt.so ...
+        > libscip.so ...
       > include
         > scip
         > lpi
