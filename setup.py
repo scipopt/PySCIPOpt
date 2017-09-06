@@ -3,6 +3,7 @@ import os, platform, sys
 
 # look for environment variable that specifies path to SCIP Opt lib and headers
 scipoptdir = os.environ.get('SCIPOPTDIR', '')
+print "Directory:", scipoptdir
 
 includedir = os.path.abspath(os.path.join(scipoptdir, 'include'))
 libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
