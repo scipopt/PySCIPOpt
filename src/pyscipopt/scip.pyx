@@ -541,6 +541,7 @@ cdef class Model:
 
         Keyword arguments:
         filename -- the name of the file to be used (default 'origprob.cip')
+        trans -- indicates whether the transformed problem is written to file (default False)
         """
         if filename.find('.') < 0:
             filename = filename + '.cip'
