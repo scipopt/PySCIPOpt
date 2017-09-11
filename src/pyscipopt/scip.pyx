@@ -415,6 +415,10 @@ cdef class Model:
         """Retrieve the gap, i.e. |(primalbound - dualbound)/min(|primalbound|,|dualbound|)|."""
         return SCIPgetGap(self._scip)
 
+    def getDepth(self):
+        """Retrieve the depth of the current node """
+        return SCIPgetDepth(self._scip)
+
     def infinity(self):
         """Returns SCIP's infinity value"""
         return SCIPinfinity(self._scip)
@@ -532,11 +536,12 @@ cdef class Model:
             self.setIntParam("propagating/maxrounds", 0)
 
     # Write original problem to file
-    def writeProblem(self, filename='origprob.cip'):
+    def writeProblem(self, filename='origprob.cip', trans=False):
         """Write original problem to a file.
 
         Keyword arguments:
         filename -- the name of the file to be used (default 'origprob.cip')
+        trans -- indicates whether the transformed problem is written to file (default False)
         """
         if filename.find('.') < 0:
             filename = filename + '.cip'
@@ -544,7 +549,10 @@ cdef class Model:
         else:
             ext = str_conversion(filename.split('.')[1])
         fn = str_conversion(filename)
-        PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, fn, ext, False))
+        if trans:
+            PY_SCIP_CALL(SCIPwriteTransProblem(self._scip, fn, ext, False))
+        else:
+            PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, fn, ext, False))
         print('wrote original problem to file ' + filename)
 
     # Variable Functions
