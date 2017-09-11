@@ -11,25 +11,20 @@ environment:
   PIP: C:\Python36-x64\Scripts\pip
   PYTEST: C:\Python36-x64\Scripts\pytest
   TWINE: C:\Python36-x64\Scripts\twine
+  SCIPOPTDIR: C:\scipoptdir
   password:
     secure: HEa8MAJyyfSv33snyK3Gleflk9SIfZBxbnTiS39hlWM=
 
 install:
-  - cmd: "set PATH=%PYTHON%;%PATH%"  
+  - cmd: "set PATH=%PYTHON%;%PATH%"
   - cmd: "%PIP% install cython networkx pytest wheel twine"
-  - mkdir scipoptdir    
-  - cd scipoptdir    
-  - ps: wget http://scip.zib.de/download/release/scip-4.0.0.win.x86_64.vc14.opt.spx2.lib.zip -outfile scipopt.zip    
-  - ps: wget http://scip.zib.de/download/release/scipoptheaders-4.0.0.zip -outfile headers.zip    
-  - ps: Expand-Archive .\scipopt.zip -DestinationPath lib    
-  - ps: Expand-Archive .\headers.zip -DestinationPath .    
-  - set SCIPOPTDIR=%cd%    
-  - cd ..
-  - set PATH=%SCIPOPTDIR%\lib;%PATH%"
+  - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-4.0.1-win64.exe -outfile scipopt-installer.exe
+  - scipopt-installer.exe /S /D=%SCIPOPTDIR%
+  - set PATH=%SCIPOPTDIR%\bin;%PATH%"
 
 build_script:
   - python setup.py install
-    
+
 test_script:
   - cmd: "%PYTEST% tests"
 

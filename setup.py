@@ -3,11 +3,12 @@ import os, platform, sys
 
 # look for environment variable that specifies path to SCIP Opt lib and headers
 scipoptdir = os.environ.get('SCIPOPTDIR', '')
-
+print("scipoptir: " + scipoptdir)
 includedir = os.path.abspath(os.path.join(scipoptdir, 'include'))
 libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
-
-libname = 'libscipopt' if os.name == 'nt' else 'scipopt'
+print("includedir: " + includedir)
+print("libdir: " + libdir)
+libname = 'scip'
 
 cythonize = True
 
@@ -54,7 +55,7 @@ if cythonize:
 
 setup(
     name = 'PySCIPOpt',
-    version = '1.1.3',
+    version = '1.2.0',
     description = 'Python interface and modeling environment for SCIP',
     url = 'https://github.com/SCIP-Interfaces/PySCIPOpt',
     author = 'Zuse Institute Berlin',
