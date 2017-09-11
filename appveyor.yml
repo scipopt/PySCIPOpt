@@ -20,7 +20,7 @@ install:
   - cmd: "%PIP% install cython networkx pytest wheel twine"
   - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-4.0.1-win64.exe -outfile scipopt-installer.exe
   - scipopt-installer.exe /S /D=%SCIPOPTDIR%
-  - set PATH=%SCIPOPTDIR%\lib;%PATH%"
+  - set PATH=%SCIPOPTDIR%\bin;%PATH%"
 
 build_script:
   - python setup.py install
