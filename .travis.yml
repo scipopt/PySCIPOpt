@@ -7,27 +7,18 @@ python:
 notifications:
   email: false
 
-addons:
-  apt:
-    sources:
-      - llvm-toolchain-precise
-      - ubuntu-toolchain-r-test
-    packages:
-      - g++-4.9
-      - gcc-4.9
-  env:
-    - export CC=gcc-4.9
-    - export CXX=g++-4.9
-
 before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y liblapack-dev
-  - wget http://scip.zib.de/download/release/SCIPOptSuite-4.0.1-Linux.deb
-  - sudo dpkg -i SCIPOptSuite-4.0.1-Linux.deb
+  - sudo apt-get install cmake
+  - export VERSION=4.0.1
+  - wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz
+  - tar xf scipoptsuite-$VERSION.tgz
+  - cd scipoptsuite-$VERSION
+  - mkdir build
+  - cd build; cmake .. -DCMAKE_INSTALL_PREFIX=~/scipopt; make install
 
 install:
   - pip install cython networkx pytest-cov codecov
-  - python setup.py install
+  - SCIPOPTDIR=~/scipopt python setup.py install
 
 script: py.test --cov tests
 
