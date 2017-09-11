@@ -13,8 +13,11 @@ addons:
       - llvm-toolchain-precise
       - ubuntu-toolchain-r-test
     packages:
-      - g++-6
-      - gcc-6
+      - g++-4.9
+      - gcc-4.9
+  env:
+    - export CC=gcc-4.9
+    - export CXX=g++-4.9
 
 before_install:
   - sudo apt-get -qq update
