@@ -13,8 +13,8 @@ addons:
       - llvm-toolchain-precise
       - ubuntu-toolchain-r-test
     packages:
-      - g++-5
-      - gcc-5
+      - g++-6
+      - gcc-6
 
 before_install:
   - sudo apt-get -qq update
