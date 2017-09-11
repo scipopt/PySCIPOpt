@@ -8,17 +8,17 @@ notifications:
   email: false
 
 before_install:
-  - sudo apt-get install cmake
   - export VERSION=4.0.1
   - wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz
   - tar xf scipoptsuite-$VERSION.tgz
   - cd scipoptsuite-$VERSION
   - mkdir build
-  - cd build; cmake .. -DCMAKE_INSTALL_PREFIX=~/scipopt; make install
+  - cd build; cmake .. -DCMAKE_INSTALL_PREFIX=~/scipdir; make -j8 install; cd ..
+  - cd ..
 
 install:
   - pip install cython networkx pytest-cov codecov
-  - SCIPOPTDIR=~/scipopt python setup.py install
+  - SCIPOPTDIR=~/scipdir python setup.py install
 
 script: py.test --cov tests
 
