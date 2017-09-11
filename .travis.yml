@@ -1,28 +1,24 @@
 language: python
 
 python:
-- '2.7'
-- '3.6'
+  - '2.7'
+  - '3.6'
 
 notifications:
   email: false
 
+before_install:
+  - wget http://scip.zib.de/download/release/SCIPOptSuite-4.0.1-Linux.deb
+  - sudo dpkg -i SCIPOptSuite-4.0.1-Linux.deb
+
 install:
-- export VERSION=4.0.0
-- pip install cython networkx pytest-cov codecov
-- wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz
-- tar xzf scipoptsuite-$VERSION.tgz
-- cd scipoptsuite-$VERSION
-- make COMP=clang SHARED=true GMP=false READLINE=false ZIMPL=false
-- make install INSTALLDIR=~/scipdir COMP=clang SHARED=true GMP=false READLINE=false
-  ZIMPL=false
-- cd ..
-- env SCIPOPTDIR=~/scipdir python setup.py install
+  - pip install cython networkx pytest-cov codecov
+  - python setup.py install
 
 script: py.test --cov tests
 
 after_success:
-- codecov
+  - codecov
 
 deploy:
   provider: pypi
