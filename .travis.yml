@@ -8,6 +8,8 @@ notifications:
   email: false
 
 before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y liblapack-dev
   - wget http://scip.zib.de/download/release/SCIPOptSuite-4.0.1-Linux.deb
   - sudo dpkg -i SCIPOptSuite-4.0.1-Linux.deb
 
