@@ -9,8 +9,7 @@ notifications:
 
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y liblapack-dev gcc-4.9
-  - sudo apt-get update libstdc++6
+  - sudo apt-get install -y liblapack-dev gcc-4.9 libstdc++6
   - wget http://scip.zib.de/download/release/SCIPOptSuite-4.0.1-Linux.deb
   - sudo dpkg -i SCIPOptSuite-4.0.1-Linux.deb
 
