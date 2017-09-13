@@ -3,11 +3,8 @@ import os, platform, sys
 
 # look for environment variable that specifies path to SCIP Opt lib and headers
 scipoptdir = os.environ.get('SCIPOPTDIR', '')
-print("scipoptir: " + scipoptdir)
 includedir = os.path.abspath(os.path.join(scipoptdir, 'include'))
 libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
-print("includedir: " + includedir)
-print("libdir: " + libdir)
 libname = 'scip'
 
 cythonize = True
