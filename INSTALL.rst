@@ -42,7 +42,7 @@ On Windows you need to make sure that the ``scipopt`` library can be
 found at runtime by adjusting your ``PATH`` environment variable:
 
 -  on Windows:
-   ``set PATH=%PATH%;%SCIPOPTDIR%\lib``
+   ``set PATH=%PATH%;%SCIPOPTDIR%\bin``
 
 On Linux and OS X this is encoded in the generated PySCIPOpt library and
 therefore not necessary.
@@ -51,7 +51,7 @@ Building everything form source
 ===============================
 
 Please refer to `installation
-instructions <http://scip.zib.de/doc/html/MAKE.php>`__ of the SCIP
+instructions <http://scip.zib.de/doc/html/CMAKE.php>`__ of the SCIP
 Optimization Suite for information on how to generate a shared library
 or download a precompiled one.
 
