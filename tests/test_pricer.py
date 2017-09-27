@@ -132,7 +132,7 @@ def test_cuttingstock():
         rollUsage = 0
         solValue = round(s.getVal(pricer.data['var'][i]))
         if solValue > 0:
-            outline = 'Pattern_' + str(i) + ':\t' + str(solValue) + '\t\tCuts:\t'
+            outline = 'Pattern_' + str(i) + ':\t' + str(solValue) + '\t\tCuts:\t '
             for j in range(len(widths)):
                 rollUsage += pricer.data['patterns'][i][j]*widths[j]
                 widthOutput[j] += pricer.data['patterns'][i][j]*solValue
@@ -140,7 +140,7 @@ def test_cuttingstock():
             outline += 'Usage:' + str(rollUsage)
             print(outline)
 
-    print('\t\t\tTotal Output:','\t'.join(str(e) for e in widthOutput))
+    print('\t\t\tTotal Output:\t', '\t'.join(str(e) for e in widthOutput))
 
     #print('\n')
     #s.printStatistics()
