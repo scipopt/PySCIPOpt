@@ -5,7 +5,7 @@ class CutPricer(Pricer):
     # The reduced cost function for the variable pricer
     def pricerredcost(self):
 
-        # Retreiving the dual solutions
+        # Retrieving the dual solutions
         dualSolutions = []
         for i, c in enumerate(self.data['cons']):
             dualSolutions.append(self.model.getDualsolLinear(c))
@@ -142,8 +142,7 @@ def test_cuttingstock():
 
     print('\t\t\tTotal Output:\t', '\t'.join(str(e) for e in widthOutput))
 
-    #print('\n')
-    #s.printStatistics()
+    assert s.getObjVal() == 452.25
 
 if __name__ == '__main__':
     test_cuttingstock()
