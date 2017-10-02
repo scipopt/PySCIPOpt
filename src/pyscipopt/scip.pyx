@@ -1276,9 +1276,8 @@ cdef class Model:
                 transcons = <Constraint>self.getTransformedCons(cons)
             else:
                 transcons = cons
-            if _nvars > 1:
-                dual = SCIPgetDualsolLinear(self._scip, transcons.cons)
-            else:
+            dual = SCIPgetDualsolLinear(self._scip, transcons.cons)
+            if dual == 0.0 and _nvars == 1:
                 _vars = SCIPgetVarsLinear(self._scip, transcons.cons)
                 LPsol = SCIPvarGetLPSol(_vars[0])
                 rhs = SCIPgetRhsLinear(self._scip, transcons.cons)
