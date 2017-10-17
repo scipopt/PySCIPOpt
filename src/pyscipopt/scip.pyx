@@ -1532,6 +1532,18 @@ cdef class Model:
         PY_SCIP_CALL(SCIPcreateSol(self._scip, &solution.sol, _heur))
         return solution
 
+    def printSol(self, Solution solution = None):
+      pass
+
+    def readSol(self, filename):
+        """Reads a given solution file, problem has to be transformed in advance.
+
+        Keyword arguments:
+        filename -- name of the input file
+        """"
+        fn = str_conversion(filename)
+        PY_SCIP_CALL(SCIPreadSol(self._scip, fn))
+
     def setSolVal(self, Solution solution, Variable var, val):
         """Set a variable in a solution.
 

@@ -408,6 +408,7 @@ cdef extern from "scip/scip.h":
     int SCIPgetDepth(SCIP* scip)
     SCIP_RETCODE SCIPaddSolFree(SCIP* scip, SCIP_SOL** sol, SCIP_Bool* stored)
     SCIP_RETCODE SCIPaddSol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool* stored)
+    SCIP_RETCODE SCIPreadSol(SCIP* scip, const char* filename)
 
     # Row Methods
     SCIP_RETCODE SCIPcreateRow(SCIP* scip, SCIP_ROW** row, const char* name, int len, SCIP_COL** cols, SCIP_Real* vals,
