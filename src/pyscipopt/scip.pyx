@@ -1776,6 +1776,18 @@ cdef class Model:
         """Print statistics."""
         PY_SCIP_CALL(SCIPprintStatistics(self._scip, NULL))
 
+    def writeStatistics(self, filename="origprob.stats"):
+      """Write statistics to a file.
+
+      Keyword arguments:
+      filename -- name of the output file
+      """
+      # use this doubled opening pattern to ensure that IOErrors are
+      #   triggered early and in Python not in C,Cython or SCIP.
+      with open(filename, "w") as f:
+          cfile = fdopen(f.fileno(), "w")
+          PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
+
     # Verbosity Methods
 
     def hideOutput(self, quiet = True):
