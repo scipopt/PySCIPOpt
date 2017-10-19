@@ -4,7 +4,7 @@ import sys
 
 from cpython cimport Py_INCREF, Py_DECREF
 from libc.stdlib cimport malloc, free
-from libc.stdio cimport FILE, fopen, fdopen, fclose
+from libc.stdio cimport fdopen
 
 include "expr.pxi"
 include "lp.pxi"
