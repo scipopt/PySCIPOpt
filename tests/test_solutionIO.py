@@ -64,14 +64,6 @@ def assert_equal_solutiondata(current, expected):
             assert val == approx(0), \
                 "variable '%s' was not in solutionfile even so its value is '%s' and not zero" % (name, val)
 
-def test_writeProblem(tmpdir):
-    model = create_model_with_one_optimum()
-    model.optimize()
-    assert model.getStatus() == "optimal", "model could not be optimized"
-
-    probfile = tmpdir.join("x.cip")
-    model.writeBestSol(str(probfile))
-    assert probfile.exists(), "no problem file was written"
 
 def test_writeBestSol(tmpdir):
     model = create_model_with_one_optimum()
