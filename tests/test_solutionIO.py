@@ -12,7 +12,7 @@ def create_model_with_one_optimum():
     return m
 
 def parse_solutionfile(filename):
-    with open(filename, "r") as f:
+    with open(str(filename), "r") as f:
         lines = f.readlines()
 
     solobj = lines[0].split(":")[1].strip()
@@ -64,6 +64,14 @@ def assert_equal_solutiondata(current, expected):
             assert val == approx(0), \
                 "variable '%s' was not in solutionfile even so its value is '%s' and not zero" % (name, val)
 
+def test_writeProblem(tmpdir):
+    model = create_model_with_one_optimum()
+    model.optimize()
+    assert model.getStatus() == "optimal", "model could not be optimized"
+
+    probfile = tmpdir.join("x.cip")
+    model.writeBestSol(str(probfile))
+    assert probfile.exists(), "no problem file was written"
 
 def test_writeBestSol(tmpdir):
     model = create_model_with_one_optimum()
@@ -134,8 +142,8 @@ def test_useReadSol(tmpdir):
     assert statfile2.exists(), "no statistics file was written"
 
     pattern = re.compile(r"Solutions\sfound\s+:\s+(\d+)\s+\((\d+)\s+improvements\)")
-    with open(statfile, "r") as f1:
-        with open(statfile2, "r") as f2:
+    with open(str(statfile), "r") as f1:
+        with open(str(statfile2), "r") as f2:
             match1 = pattern.search(f1.read())
             match2 = pattern.search(f2.read())
             assert match1 is not None and match2 is not None, "statistics files are incomplete"
