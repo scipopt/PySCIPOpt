@@ -16,5 +16,5 @@ def test_writeProblem(tmpdir):
     assert model.getStatus() == "optimal", "model could not be optimized"
 
     probfile = tmpdir.join("x.cip")
-    model.writeBestSol(str(probfile))
+    model.writeProblem(str(probfile))
     assert probfile.exists(), "no problem file was written"
