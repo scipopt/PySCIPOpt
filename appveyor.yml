@@ -16,6 +16,16 @@ environment:
       PYTEST: C:\Python27-x64\Scripts\pytest
       TWINE: C:\Python27-x64\Scripts\twine
       INCLUDE_REQUIRED: true
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      PYTHON: C:\Python35-x64
+      PIP: C:\Python35-x64\Scripts\pip
+      PYTEST: C:\Python35-x64\Scripts\pytest
+      TWINE: C:\Python35-x64\Scripts\twine
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      PYTHON: C:\Python36-x64
+      PIP: C:\Python36-x64\Scripts\pip
+      PYTEST: C:\Python36-x64\Scripts\pytest
+      TWINE: C:\Python36-x64\Scripts\twine
       
       
 install:
