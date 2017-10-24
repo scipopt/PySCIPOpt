@@ -20,6 +20,7 @@ environment:
       PIP: C:\Python27-x64\Scripts\pip
       PYTEST: C:\Python27-x64\Scripts\pytest
       TWINE: C:\Python27-x64\Scripts\twine
+      INCLUDE_REQUIRED: true
       
       
 install:
@@ -28,6 +29,7 @@ install:
   - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-4.0.1-win64.exe -outfile scipopt-installer.exe
   - scipopt-installer.exe /S /D=%SCIPOPTDIR%
   - set PATH=%SCIPOPTDIR%\bin;%PATH%"
+  - cmd: if [%INCLUDE_REQUIRED%]==[true] copy .\VC-include\* %SCIPOPTDIR%\include
 
 build_script:
   - python setup.py install
