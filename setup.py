@@ -2,7 +2,7 @@ from setuptools import setup, Extension
 import os, platform, sys
 
 # look for environment variable that specifies path to SCIP Opt lib and headers
-scipoptdir = os.environ.get('SCIPOPTDIR', '')
+scipoptdir = os.environ.get('SCIPOPTDIR', '/usr/local')  # assume SCIP shared library is in /usr/local if SCIOPTDIR not set
 includedir = os.path.abspath(os.path.join(scipoptdir, 'include'))
 libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
 libname = 'scip'
@@ -27,9 +27,8 @@ ext = '.pyx' if cythonize else '.c'
 # set runtime libraries
 runtime_library_dirs = []
 extra_link_args = []
-if platform.system() == 'Linux':
-    runtime_library_dirs.append(libdir)
-elif platform.system() == 'Darwin':
+
+if platform.system() in ['Darwin', 'Linux']:  # now both Linux and Darwin work like this:
     extra_link_args.append('-Wl,-rpath,'+libdir)
 
 # enable debug mode if requested
