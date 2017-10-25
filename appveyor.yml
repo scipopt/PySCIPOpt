@@ -34,7 +34,7 @@ install:
   - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-4.0.1-win64.exe -outfile scipopt-installer.exe
   - scipopt-installer.exe /S /D=%SCIPOPTDIR%
   - set PATH=%SCIPOPTDIR%\bin;%PATH%"
-  - cmd: if [%INCLUDE_REQUIRED%]==[true] copy .\VC-include\* %SCIPOPTDIR%\include
+  - cmd: if [%INCLUDE_REQUIRED%]==[true] copy .\VC9-include\* %SCIPOPTDIR%\include
 
 build_script:
   - python setup.py install
@@ -50,4 +50,6 @@ after_test:
   - cmd: "echo username: pyscipopt >> %USERPROFILE%\\.pypirc"
   - cmd: "echo password: %password% >> %USERPROFILE%\\.pypirc"
   - python setup.py bdist_wheel
+
+on_success:
   - cmd: "if [%APPVEYOR_REPO_TAG%]==[true] %TWINE% upload dist\\*.whl"
