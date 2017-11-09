@@ -30,16 +30,15 @@ environment:
 
 
 install:
-  - cmd: "set PATH=%PYTHON%;%PATH%"
-  - cmd: "%PIP% install cython networkx pytest wheel twine"
-  - ps: wget http://scip.zib.de/download/release/scipoptsuite-%VERSION%.tgz -outfile scipopt.tgz
+  - ps: wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz -outfile scipopt.tgz
   - ps: Install-Module -Name 7Zip4Powershell
   - ps: Expand-7Zip scipopt.tgz .
   - cd scipoptsuite-%VERSION%
   - cmake -Bbuild -H. -DCMAKE_INSTALL_PREFIX=%SCIPOPTDIR%
   - cmake --build build --config Release --target INSTALL
-  - set PATH=%SCIPOPTDIR%\bin;%PATH%"
-  - cmd: if [%INCLUDE_REQUIRED%]==[true] copy .\VC9-include\* %SCIPOPTDIR%\include
+  - set PATH=%SCIPOPTDIR%\bin;%PYTHON%;%PATH%
+  - %PIP% install cython networkx pytest wheel twine
+  - if [%INCLUDE_REQUIRED%]==[true] copy .\VC9-include\* %SCIPOPTDIR%\include
 
 build_script:
   - python setup.py install
