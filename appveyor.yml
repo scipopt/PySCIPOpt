@@ -31,7 +31,7 @@ environment:
 install:
   - ps: Install-Module -Name 7Zip4Powershell
   - ps: wget http://scip.zib.de/download/release/scip-4.0.1.tgz -outfile scip.tgz
-  - ps: wget http://soplex.zib.de/download/soplex-3.0.1.tgz -outfile soplex.tgz
+  - ps: wget http://soplex.zib.de/download/release/soplex-3.0.1.tgz -outfile soplex.tgz
   - ps: Expand-7Zip scip.tgz .
   - ps: Expand-7Zip scip.tar .
   - ps: Expand-7Zip soplex.tgz .
