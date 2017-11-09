@@ -26,13 +26,16 @@ environment:
       PIP: C:\Python36-x64\Scripts\pip
       PYTEST: C:\Python36-x64\Scripts\pytest
       TWINE: C:\Python36-x64\Scripts\twine
-      
-      
+
+
 install:
   - cmd: "set PATH=%PYTHON%;%PATH%"
   - cmd: "%PIP% install cython networkx pytest wheel twine"
-  - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-4.0.1-win64.exe -outfile scipopt-installer.exe
-  - scipopt-installer.exe /S /D=%SCIPOPTDIR%
+  - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-4.0.1.tgz -outfile scipopt.tgz
+  - Expand-Archive .\scipopt.tgz -DestinationPath scipopt
+  - cd scipopt
+  - cmake -Bbuild -H. -DCMAKE_INSTALL_PREFIX=%SCIPOPTDIR%
+  - cmake --build build --config Release --target INSTALL
   - set PATH=%SCIPOPTDIR%\bin;%PATH%"
   - cmd: if [%INCLUDE_REQUIRED%]==[true] copy .\VC9-include\* %SCIPOPTDIR%\include
 
