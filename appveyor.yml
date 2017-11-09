@@ -6,7 +6,6 @@ branches:
 
 environment:
   SCIPOPTDIR: C:\scipoptdir
-  VERSION: 4.0.1
   password:
     secure: HEa8MAJyyfSv33snyK3Gleflk9SIfZBxbnTiS39hlWM=
 
@@ -30,10 +29,10 @@ environment:
 
 
 install:
-  - ps: wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz -outfile scipopt.tgz
+  - ps: wget http://scip.zib.de/download/release/scipoptsuite-4.0.1.tgz -outfile scipopt.tgz
   - ps: Install-Module -Name 7Zip4Powershell
   - ps: Expand-7Zip scipopt.tgz .
-  - cd scipoptsuite-%VERSION%
+  - cd scipoptsuite-4.0.1
   - cmake -Bbuild -H. -DCMAKE_INSTALL_PREFIX=%SCIPOPTDIR%
   - cmake --build build --config Release --target INSTALL
   - set PATH=%SCIPOPTDIR%\bin;%PYTHON%;%PATH%
