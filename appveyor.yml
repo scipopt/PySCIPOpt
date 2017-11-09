@@ -29,13 +29,17 @@ environment:
 
 
 install:
-  - ps: wget http://scip.zib.de/download/release/scipoptsuite-4.0.1.tgz -outfile scipopt.tgz
   - ps: Install-Module -Name 7Zip4Powershell
-  - ps: Expand-7Zip scipopt.tgz .
-  - ps: Expand-7Zip scipopt.tar .
-  - cd scipoptsuite-4.0.1
-  - cmake -Bbuild -H. -DCMAKE_INSTALL_PREFIX=%SCIPOPTDIR% -DZIMPL=off
-  - cmake --build build --config Release --target INSTALL
+  - ps: wget http://scip.zib.de/download/release/scip-4.0.1.tgz -outfile scip.tgz
+  - ps: wget http://soplex.zib.de/download/soplex-3.0.1.tgz -outfile soplex.tgz
+  - ps: Expand-7Zip scip.tgz .
+  - ps: Expand-7Zip scip.tar .
+  - ps: Expand-7Zip soplex.tgz .
+  - ps: Expand-7Zip soplex.tar .
+  - cmake -Bsoplex-build -Hsoplex-3.0.1 -DCMAKE_INSTALL_PREFIX=%SCIPOPTDIR%
+  - cmake --build soplex-build --config Release --target INSTALL
+  - cmake -Bscip-build -Hscip-4.0.1 -DCMAKE_INSTALL_PREFIX=%SCIPOPTDIR%
+  - cmake --build scip-build --config Release --target INSTALL
   - set PATH=%SCIPOPTDIR%\bin;%PYTHON%;%PATH%
   - if [%INCLUDE_REQUIRED%]==[true] copy .\VC9-include\* %SCIPOPTDIR%\include
   - cmd: "%PIP% install cython networkx pytest wheel twine"
