@@ -31,7 +31,7 @@ environment:
 install:
   - cmd: "set PATH=%PYTHON%;%PATH%"
   - cmd: "%PIP% install cython networkx pytest wheel twine"
-  - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-4.0.1.tgz -outfile scipopt.tgz
+  - ps: wget http://scip.zib.de/download/release/scipoptsuite-4.0.1.tgz -outfile scipopt.tgz
   - Expand-Archive .\scipopt.tgz -DestinationPath scipopt
   - cd scipopt
   - cmake -Bbuild -H. -DCMAKE_INSTALL_PREFIX=%SCIPOPTDIR%
