@@ -37,8 +37,8 @@ install:
   - ps: Expand-7Zip soplex.tgz .
   - ps: Expand-7Zip soplex.tar .
   - cmake -Bsoplex-build -Hsoplex-3.0.1 -DCMAKE_INSTALL_PREFIX=%SCIPOPTDIR%
-  - cmake -Bscip-build -Hscip-4.0.1 -DCMAKE_INSTALL_PREFIX=%SCIPOPTDIR%
   - cmake --build soplex-build --config Release --target INSTALL
+  - cmake -Bscip-build -Hscip-4.0.1 -DCMAKE_INSTALL_PREFIX=%SCIPOPTDIR%
   - cmake --build scip-build --config Release --target INSTALL
   - set PATH=%SCIPOPTDIR%\bin;%PYTHON%;%PATH%
   - if [%INCLUDE_REQUIRED%]==[true] copy .\VC9-include\* %SCIPOPTDIR%\include
