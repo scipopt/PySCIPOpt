@@ -32,8 +32,8 @@ install:
   - cmd: "set PATH=%PYTHON%;%PATH%"
   - cmd: "%PIP% install cython networkx pytest wheel twine"
   - ps: wget http://scip.zib.de/download/release/scipoptsuite-4.0.1.tgz -outfile scipopt.tgz
-  - ps: Save-Module -Name 7Zip4Powershell -Path .
-  - ps: Expand-7Zip .\scipopt.tgz scipopt
+  - ps: Install-Module -Name 7Zip4Powershell
+  - ps: Expand-7Zip scipopt.tgz scipopt
   - cd scipopt
   - cmake -Bbuild -H. -DCMAKE_INSTALL_PREFIX=%SCIPOPTDIR%
   - cmake --build build --config Release --target INSTALL
