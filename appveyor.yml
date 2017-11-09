@@ -44,8 +44,8 @@ install:
   - if [%INCLUDE_REQUIRED%]==[true] copy .\VC9-include\* %SCIPOPTDIR%\include
   - cmd: "%PIP% install cython networkx pytest wheel twine"
   - dir %SCIPOPTDIR%
-  - dir %SCIPOPTDIR%/lib
-  - dir %SCIPOPTDIR%/bin
+  - dir %SCIPOPTDIR%\lib
+  - dir %SCIPOPTDIR%\bin
 
 build_script:
   - python setup.py install
