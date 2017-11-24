@@ -29,7 +29,7 @@ environment:
 
 
 install:
-  - ps: Install-Package -Scope CurrentUser -Force 7Zip4PowerShell
+  - ps: Install-Package -Scope CurrentUser -Force 7Zip4PowerShell -Source nuget.org
   - ps: wget http://scip.zib.de/download/release/scip-4.0.1.tgz -outfile scip.tgz
   - ps: wget http://soplex.zib.de/download/release/soplex-3.0.1.tgz -outfile soplex.tgz
   - ps: Expand-7Zip scip.tgz .
