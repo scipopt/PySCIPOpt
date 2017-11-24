@@ -46,6 +46,7 @@ install:
   - dir %SCIPOPTDIR%
   - dir %SCIPOPTDIR%\lib
   - dir %SCIPOPTDIR%\bin
+  - dir %PATH%
 
 build_script:
   - python setup.py install
