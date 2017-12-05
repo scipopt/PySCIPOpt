@@ -211,6 +211,7 @@ cdef class Variable(Expr):
             return cname.decode('utf-8')
 
     def ptr(self):
+        """ """
         return <size_t>(self.var)
 
     def __repr__(self):
@@ -351,9 +352,8 @@ cdef class Model:
 
     def __init__(self, problemName='model', defaultPlugins=True):
         """
-        Keyword arguments:
-        problemName -- the name of the problem (default 'model')
-        defaultPlugins -- use default plugins? (default True)
+        :param problemName: name of the problem (default 'model')
+        :param defaultPlugins: use default plugins? (default True)
         """
         self.create()
         self._bestSol = None
@@ -375,7 +375,11 @@ cdef class Model:
         PY_SCIP_CALL(SCIPincludeDefaultPlugins(self._scip))
 
     def createProbBasic(self, problemName='model'):
-        """Create new problem iinstance with given name"""
+        """Create new problem iinstance with given name
+
+        :param problemName: name of model or problem (Default value = 'model')
+
+        """
         n = str_conversion(problemName)
         PY_SCIP_CALL(SCIPcreateProbBasic(self._scip, n))
 
@@ -416,7 +420,7 @@ cdef class Model:
         return SCIPgetGap(self._scip)
 
     def getDepth(self):
-        """Retrieve the depth of the current node """
+        """Retrieve the depth of the current node"""
         return SCIPgetDepth(self._scip)
 
     def infinity(self):
@@ -445,19 +449,19 @@ cdef class Model:
     def setObjlimit(self, objlimit):
         """Set a limit on the objective function.
         Only solutions with objective value better than this limit are accepted.
+        
+        :param objlimit: limit on the objective function
 
-        Keyword arguments:
-        objlimit -- limit on the objective function
         """
         PY_SCIP_CALL(SCIPsetObjlimit(self._scip, objlimit))
 
     def setObjective(self, coeffs, sense = 'minimize', clear = 'true'):
         """Establish the objective function as a linear expression.
 
-        Keyword arguments:
-        coeffs -- the coefficients
-        sense -- the objective sense (default 'minimize')
-        clear -- set all other variables objective coefficient to zero (default 'true')
+        :param coeffs: the coefficients
+        :param sense: the objective sense (Default value = 'minimize')
+        :param clear: set all other variables objective coefficient to zero (Default value = 'true')
+
         """
         cdef SCIP_VAR** _vars
         cdef int _nvars
@@ -504,32 +508,32 @@ cdef class Model:
     def setPresolve(self, setting):
         """Set presolving parameter settings.
 
-        Keyword arguments:
-        setting -- the parameter settings
+        :param setting: the parameter settings (SCIP_PARAMSETTING)
+
         """
         PY_SCIP_CALL(SCIPsetPresolving(self._scip, setting, True))
 
     def setSeparating(self, setting):
         """Set separating parameter settings.
 
-        Keyword arguments:
-        setting -- the parameter settings
+        :param setting: the parameter settings (SCIP_PARAMSETTING)
+
         """
         PY_SCIP_CALL(SCIPsetSeparating(self._scip, setting, True))
 
     def setHeuristics(self, setting):
         """Set heuristics parameter settings.
 
-        Keyword arguments:
-        setting -- the parameter settings
+        :param setting: the parameter setting (SCIP_PARAMSETTING)
+
         """
         PY_SCIP_CALL(SCIPsetHeuristics(self._scip, setting, True))
 
     def disablePropagation(self, onlyroot=False):
         """Disables propagation in SCIP to avoid modifying the original problem during transformation.
 
-        Keyword arguments:
-        onlyroot -- use propagation when root processing is finished
+        :param onlyroot: use propagation when root processing is finished (Default value = False)
+
         """
         self.setIntParam("propagating/maxroundsroot", 0)
         if not onlyroot:
@@ -538,10 +542,10 @@ cdef class Model:
     # Write original problem to file
     def writeProblem(self, filename='origprob.cip', trans=False):
         """Write original problem to a file.
+        
+        :param filename: the name of the file to be used (Default value = 'origprob.cip')
+        :param trans: indicates whether the transformed problem is written to file (Default value = False)
 
-        Keyword arguments:
-        filename -- the name of the file to be used (default 'origprob.cip')
-        trans -- indicates whether the transformed problem is written to file (default False)
         """
         if filename.find('.') < 0:
             filename = filename + '.cip'
@@ -560,13 +564,13 @@ cdef class Model:
     def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar = False):
         """Create a new variable.
 
-        Keyword arguments:
-        name -- the name of the variable (use generic name if empty)
-        vtype -- the typ of the variable (default 'C')
-        lb -- the lower bound of the variable (default 0.0)
-        ub -- the upper bound of the variable (default None)
-        obj -- the objective value of the variable (default 0.0)
-        pricedVar -- is the variable a pricing candidate? (default False)
+        :param name: name of the variable, generic if empty (Default value = '')
+        :param vtype: type of the variable (Default value = 'C')
+        :param lb: lower bound of the variable (Default value = 0.0)
+        :param ub: upper bound of the variable (Default value = None)
+        :param obj: objective value of variable (Default value = 0.0)
+        :param pricedVar: is the variable a pricing candidate? (Default value = False)
+
         """
 
         # replace empty name with generic one
@@ -600,16 +604,16 @@ cdef class Model:
     def releaseVar(self, Variable var):
         """Release the variable.
 
-        Keyword arguments:
-        var -- the variable
+        :param Variable var: variable to be released
+
         """
         PY_SCIP_CALL(SCIPreleaseVar(self._scip, &var.var))
 
     def getTransformedVar(self, Variable var):
         """Retrieve the transformed variable.
 
-        Keyword arguments:
-        var -- the variable
+        :param Variable var: original variable to get the transformed of
+
         """
         cdef SCIP_VAR* _tvar
         PY_SCIP_CALL(SCIPtransformVar(self._scip, var.var, &_tvar))
@@ -618,19 +622,19 @@ cdef class Model:
     def addVarLocks(self, Variable var, nlocksdown, nlocksup):
         """adds given values to lock numbers of variable for rounding
 
-        Keyword arguments:
-        var -- the variable to adjust the locks for
-        nlocksdown -- modification number of down locks
-        nlocksup -- modification number of up locks
+        :param Variable var: variable to adjust the locks for
+        :param nlocksdown: new number of down locks
+        :param nlocksup: new number of up locks
+
         """
         PY_SCIP_CALL(SCIPaddVarLocks(self._scip, var.var, nlocksdown, nlocksup))
 
     def chgVarLb(self, Variable var, lb):
         """Changes the lower bound of the specified variable.
 
-        Keyword arguments:
-        var -- the variable
-        lb -- the lower bound (set to None for -infinity)
+        :param Variable var: variable to change bound of
+        :param lb: new lower bound (set to None for -infinity)
+
         """
         if lb is None:
            lb = -SCIPinfinity(self._scip)
@@ -639,15 +643,21 @@ cdef class Model:
     def chgVarUb(self, Variable var, ub):
         """Changes the upper bound of the specified variable.
 
-        Keyword arguments:
-        var -- the variable
-        ub -- the upper bound (set to None for +infinity)
+        :param Variable var: variable to change bound of
+        :param ub: new upper bound (set to None for +infinity)
+
         """
         if ub is None:
            ub = SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarUb(self._scip, var.var, ub))
 
     def chgVarType(self, Variable var, vtype):
+        """Changes the type of a variable
+
+        :param Variable var: variable to change type of
+        :param vtype: new variable type
+
+        """
         cdef SCIP_Bool infeasible
         if vtype in ['C', 'CONTINUOUS']:
             PY_SCIP_CALL(SCIPchgVarType(self._scip, var.var, SCIP_VARTYPE_CONTINUOUS, &infeasible))
@@ -663,8 +673,8 @@ cdef class Model:
     def getVars(self, transformed=False):
         """Retrieve all variables.
 
-        Keyword arguments:
-        transformed -- get transformed variables instead of original
+        :param transformed: get transformed variables instead of original (Default value = False)
+
         """
         cdef SCIP_VAR** _vars
         cdef SCIP_VAR* _var
@@ -687,19 +697,19 @@ cdef class Model:
                 stickingatnode=False):
         """Add a linear or quadratic constraint.
 
-        Keyword arguments:
-        cons -- list of coefficients
-        name -- the name of the constraint (use generic name if empty)
-        initial -- should the LP relaxation of constraint be in the initial LP? (default True)
-        separate -- should the constraint be separated during LP processing? (default True)
-        enforce -- should the constraint be enforced during node processing? (default True)
-        check -- should the constraint be checked for feasibility? (default True)
-        propagate -- should the constraint be propagated during node processing? (default True)
-        local -- is the constraint only valid locally? (default False)
-        modifiable -- is the constraint modifiable (subject to column generation)? (default False)
-        dynamic -- is the constraint subject to aging? (default False)
-        removable -- hould the relaxation be removed from the LP due to aging or cleanup? (default False)
-        stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
+        :param cons: list of coefficients
+        :param name: the name of the constraint, generic name if empty (Default value = '')
+        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        :param separate: should the constraint be separated during LP processing? (Default value = True)
+        :param enforce: should the constraint be enforced during node processing? (Default value = True)
+        :param check: should the constraint be checked during for feasibility? (Default value = True)
+        :param propagate: should the constraint be propagated during node processing? (Default value = True)
+        :param local: is the constraint only valid locally? (Default value = False)
+        :param modifiable: is the constraint modifiable (subject to column generation)? (Default value = False)
+        :param dynamic: is the constraint subject to aging? (Default value = False)
+        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be  moved to a more global node? (Default value = False)
+
         """
         assert isinstance(cons, ExprCons)
 
@@ -725,7 +735,6 @@ cdef class Model:
             return self._addNonlinearCons(cons, **kwargs)
 
     def _addLinCons(self, ExprCons lincons, **kwargs):
-        """Add object of class ExprCons."""
         assert isinstance(lincons, ExprCons)
 
         assert lincons.expr.degree() <= 1
@@ -778,7 +787,6 @@ cdef class Model:
         return PyCons
 
     def _addNonlinearCons(self, ExprCons cons, **kwargs):
-        """Add object of class ExprCons."""
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR** varexprs
         cdef SCIP_EXPRDATA_MONOMIAL** monomials
@@ -843,9 +851,10 @@ cdef class Model:
     def addConsCoeff(self, Constraint cons, Variable var, coeff):
         """Add coefficient to the linear constraint (if non-zero).
 
-        Keyword arguments:
-        cons -- the constraint
-        coeff -- the coefficient
+        :param Constraint cons: constraint to be changed
+        :param Variable var: variable to be added
+        :param coeff: coefficient of new variable
+
         """
         PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, cons.cons, var.var, coeff))
 
@@ -855,19 +864,19 @@ cdef class Model:
                 removable=False, stickingatnode=False):
         """Add an SOS1 constraint.
 
-        Keyword arguments:
-        vars -- list of variables to be included
-        weights -- list of weights (default None)
-        name -- the name of the constraint (default 'SOS1cons')
-        initial -- should the LP relaxation of constraint be in the initial LP? (default True)
-        separate -- should the constraint be separated during LP processing? (default True)
-        enforce -- should the constraint be enforced during node processing? (default True)
-        check -- should the constraint be checked for feasibility? (default True)
-        propagate -- should the constraint be propagated during node processing? (default True)
-        local -- is the constraint only valid locally? (default False)
-        dynamic -- is the constraint subject to aging? (default False)
-        removable -- hould the relaxation be removed from the LP due to aging or cleanup? (default False)
-        stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
+        :param vars: list of variables to be included
+        :param weights: list of weights (Default value = None)
+        :param name: name of the constraint (Default value = "SOS1cons")
+        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        :param separate: should the constraint be separated during LP processing? (Default value = True)
+        :param enforce: should the constraint be enforced during node processing? (Default value = True)
+        :param check: should the constraint be checked for feasibility? (Default value = True)
+        :param propagate: should the constraint be propagated during node processing? (Default value = True)
+        :param local: is the constraint only valid locally? (Default value = False)
+        :param dynamic: is the constraint subject to aging? (Default value = False)
+        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (Default value = False)
+
         """
         cdef SCIP_CONS* scip_cons
         cdef int _nvars
@@ -894,19 +903,19 @@ cdef class Model:
                 removable=False, stickingatnode=False):
         """Add an SOS2 constraint.
 
-        Keyword arguments:
-        vars -- list of variables to be included
-        weights -- list of weights (default None)
-        name -- the name of the constraint (default 'SOS2cons')
-        initial -- should the LP relaxation of constraint be in the initial LP? (default True)
-        separate -- should the constraint be separated during LP processing? (default True)
-        enforce -- should the constraint be enforced during node processing? (default True)
-        check -- should the constraint be checked for feasibility? (default True)
-        propagate -- should the constraint be propagated during node processing? (default True)
-        local -- is the constraint only valid locally? (default False)
-        dynamic -- is the constraint subject to aging? (default False)
-        removable -- hould the relaxation be removed from the LP due to aging or cleanup? (default False)
-        stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
+        :param vars: list of variables to be included
+        :param weights: list of weights (Default value = None)
+        :param name: name of the constraint (Default value = "SOS2cons")
+        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        :param separate: should the constraint be separated during LP processing? (Default value = True)
+        :param enforce: should the constraint be enforced during node processing? (Default value = True)
+        :param check: should the constraint be checked for feasibility? (Default value = True)
+        :param propagate: is the constraint only valid locally? (Default value = True)
+        :param local: is the constraint only valid locally? (Default value = False)
+        :param dynamic: is the constraint subject to aging? (Default value = False)
+        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (Default value = False)
+
         """
         cdef SCIP_CONS* scip_cons
         cdef int _nvars
@@ -933,22 +942,21 @@ cdef class Model:
                 removable=False, stickingatnode=False):
         """Add a cardinality constraint that allows at most 'cardval' many nonzero variables.
 
-        Keyword arguments:
-        consvars -- list of variables to be included
-        cardval -- nonnegative integer
-        indvars -- indicator variables indicating which variables may be treated as nonzero in cardinality constraint, or None
-                   if new indicator variables should be introduced automatically
-        weights -- weights determining the variable order, or None if variables should be ordered in the same way they were added to the constraint
-        name -- the name of the constraint (default 'CardinalityCons')
-        initial -- should the LP relaxation of constraint be in the initial LP? (default True)
-        separate -- should the constraint be separated during LP processing? (default True)
-        enforce -- should the constraint be enforced during node processing? (default True)
-        check -- should the constraint be checked for feasibility? (default True)
-        propagate -- should the constraint be propagated during node processing? (default True)
-        local -- is the constraint only valid locally? (default False)
-        dynamic -- is the constraint subject to aging? (default False)
-        removable -- hould the relaxation be removed from the LP due to aging or cleanup? (default False)
-        stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
+        :param consvars: list of variables to be included
+        :param cardval: nonnegative integer
+        :param indvars: indicator variables indicating which variables may be treated as nonzero in cardinality constraint, or None if new indicator variables should be introduced automatically (Default value = None)
+        :param weights: weights determining the variable order, or None if variables should be ordered in the same way they were added to the constraint (Default value = None)
+        :param name: name of the constraint (Default value = "CardinalityCons")
+        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        :param separate: should the constraint be separated during LP processing? (Default value = True)
+        :param enforce: should the constraint be enforced during node processing? (Default value = True)
+        :param check: should the constraint be checked for feasibility? (Default value = True)
+        :param propagate: should the constraint be propagated during node processing? (Default value = True)
+        :param local: is the constraint only valid locally? (Default value = False)
+        :param dynamic: is the constraint subject to aging? (Default value = False)
+        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (Default value = False)
+
         """
         cdef SCIP_CONS* scip_cons
         cdef SCIP_VAR* indvar
@@ -984,23 +992,23 @@ cdef class Model:
                 propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
         """Add an indicator constraint for the linear inequality 'cons'.
-
+        
         The 'binvar' argument models the redundancy of the linear constraint. A solution for which
         'binvar' is 1 must satisfy the constraint.
 
-        Keyword arguments:
-        cons -- a linear inequality of the form "<="
-        binvar -- binary indicator variable, or None if it should be created
-        name -- the name of the constraint (default 'CardinalityCons')
-        initial -- should the LP relaxation of constraint be in the initial LP? (default True)
-        separate -- should the constraint be separated during LP processing? (default True)
-        enforce -- should the constraint be enforced during node processing? (default True)
-        check -- should the constraint be checked for feasibility? (default True)
-        propagate -- should the constraint be propagated during node processing? (default True)
-        local -- is the constraint only valid locally? (default False)
-        dynamic -- is the constraint subject to aging? (default False)
-        removable -- hould the relaxation be removed from the LP due to aging or cleanup? (default False)
-        stickingatnode -- should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (default False)
+        :param cons: a linear inequality of the form "<="
+        :param binvar: binary indicator variable, or None if it should be created (Default value = None)
+        :param name: name of the constraint (Default value = "CardinalityCons")
+        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        :param separate: should the constraint be separated during LP processing? (Default value = True)
+        :param enforce: should the constraint be enforced during node processing? (Default value = True)
+        :param check: should the constraint be checked for feasibility? (Default value = True)
+        :param propagate: should the constraint be propagated during node processing? (Default value = True)
+        :param local: is the constraint only valid locally? (Default value = False)
+        :param dynamic: is the constraint subject to aging? (Default value = False)
+        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (Default value = False)
+
         """
         assert isinstance(cons, ExprCons)
         cdef SCIP_CONS* scip_cons
@@ -1042,8 +1050,8 @@ cdef class Model:
     def addPyCons(self, Constraint cons):
         """Adds a customly created cons.
 
-        Keyword arguments:
-        cons -- the Python constraint
+        :param Constraint cons: constraint to add
+
         """
         PY_SCIP_CALL(SCIPaddCons(self._scip, cons.cons))
         Py_INCREF(cons)
@@ -1051,47 +1059,47 @@ cdef class Model:
     def addVarSOS1(self, Constraint cons, Variable var, weight):
         """Add variable to SOS1 constraint.
 
-        Keyword arguments:
-        cons -- the SOS1 constraint
-        vars -- the variable
-        weight -- the weight
+        :param Constraint cons: SOS1 constraint
+        :param Variable var: new variable
+        :param weight: weight of new variable
+
         """
         PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, cons.cons, var.var, weight))
 
     def appendVarSOS1(self, Constraint cons, Variable var):
         """Append variable to SOS1 constraint.
 
-        Keyword arguments:
-        cons -- the SOS1 constraint
-        vars -- the variable
+        :param Constraint cons: SOS1 constraint
+        :param Variable var: variable to append
+
         """
         PY_SCIP_CALL(SCIPappendVarSOS1(self._scip, cons.cons, var.var))
 
     def addVarSOS2(self, Constraint cons, Variable var, weight):
         """Add variable to SOS2 constraint.
 
-        Keyword arguments:
-        cons -- the SOS2 constraint
-        vars -- the variable
-        weight -- the weight
+        :param Constraint cons: SOS2 constraint
+        :param Variable var: new variable
+        :param weight: weight of new variable
+
         """
         PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, cons.cons, var.var, weight))
 
     def appendVarSOS2(self, Constraint cons, Variable var):
         """Append variable to SOS2 constraint.
 
-        Keyword arguments:
-        cons -- the SOS2 constraint
-        vars -- the variable
+        :param Constraint cons: SOS2 constraint
+        :param Variable var: variable to append
+
         """
         PY_SCIP_CALL(SCIPappendVarSOS2(self._scip, cons.cons, var.var))
 
     def chgRhs(self, Constraint cons, rhs):
         """Change right hand side value of a constraint.
 
-        Keyword arguments:
-        cons -- linear or quadratic constraint
-        rhs -- new right hand side (set to None for +infinity)
+        :param Constraint cons: linear or quadratic constraint
+        :param rhs: new ride hand side (set to None for +infinity)
+
         """
 
         if rhs is None:
@@ -1108,9 +1116,9 @@ cdef class Model:
     def chgLhs(self, Constraint cons, lhs):
         """Change left hand side value of a constraint.
 
-        Keyword arguments:
-        cons -- linear or quadratic constraint
-        lhs -- new left hand side (set to None for -infinity)
+        :param Constraint cons: linear or quadratic constraint
+        :param lhs: new left hand side (set to None for -infinity)
+
         """
 
         if lhs is None:
@@ -1127,8 +1135,8 @@ cdef class Model:
     def getRhs(self, Constraint cons):
         """Retrieve right hand side value of a constraint.
 
-        Keyword arguments:
-        cons -- linear or quadratic constraint
+        :param Constraint cons: linear or quadratic constraint
+
         """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
         if constype == 'linear':
@@ -1141,8 +1149,8 @@ cdef class Model:
     def getLhs(self, Constraint cons):
         """Retrieve left hand side value of a constraint.
 
-        Keyword arguments:
-        cons -- linear or quadratic constraint
+        :param Constraint cons: linear or quadratic constraint
+
         """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
         if constype == 'linear':
@@ -1155,9 +1163,9 @@ cdef class Model:
     def getActivity(self, Constraint cons, Solution sol = None):
         """Retrieve slack of given contraint.
 
-        Keyword arguments:
-        cons -- linear or quadratic constraint to compute slack of
-        sol -- solution to compute slack of (default None to use current node's solution)
+        :param Constraint cons: linear or quadratic constraint
+        :param Solution sol: solution to compute slack of, None to use current node's solution (Default value = None)
+
         """
         cdef SCIP_Real activity
         cdef SCIP_SOL* scip_sol
@@ -1181,11 +1189,10 @@ cdef class Model:
     def getSlack(self, Constraint cons, Solution sol = None, side = None):
         """Retrieve slack of given contraint.
 
-        Keyword arguments:
-        cons -- linear or quadratic constraint to compute slack of
-        sol -- solution to compute slack of (default None to use current node's solution)
-        side -- whether to use lhs or rhs for ranged constraints ('lhs' or 'rhs'),
-                return minimum of left and right slack if not specified
+        :param Constraint cons: linear or quadratic constraint
+        :param Solution sol: solution to compute slack of, None to use current node's solution (Default value = None)
+        :param side: whether to use 'lhs' or 'rhs' for ranged constraints, None to return minimum (Default value = None)
+
         """
         cdef SCIP_Real activity
         cdef SCIP_SOL* scip_sol
@@ -1220,8 +1227,8 @@ cdef class Model:
     def getTransformedCons(self, Constraint cons):
         """Retrieve transformed constraint.
 
-        Keyword arguments:
-        cons -- the constraint
+        :param Constraint cons: constraint
+
         """
         cdef SCIP_CONS* transcons
         PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.cons, &transcons))
@@ -1241,24 +1248,24 @@ cdef class Model:
     def delCons(self, Constraint cons):
         """Delete constraint from the model
 
-        Keyword arguments:
-        cons -- constraint to be deleted
+        :param Constraint cons: constraint to be deleted
+
         """
         PY_SCIP_CALL(SCIPdelCons(self._scip, cons.cons))
 
     def delConsLocal(self, Constraint cons):
         """Delete constraint from the current node and it's children
 
-        Keyword arguments:
-        cons -- constraint to be deleted
+        :param Constraint cons: constraint to be deleted
+
         """
         PY_SCIP_CALL(SCIPdelConsLocal(self._scip, cons.cons))
 
     def getDualsolLinear(self, Constraint cons):
         """Retrieve the dual solution to a linear constraint.
 
-        Keyword arguments:
-        cons -- the linear constraint
+        :param Constraint cons: linear constraint
+
         """
         # TODO this should ideally be handled on the SCIP side
         cdef int _nvars
@@ -1294,8 +1301,8 @@ cdef class Model:
     def getDualfarkasLinear(self, Constraint cons):
         """Retrieve the dual farkas value to a linear constraint.
 
-        Keyword arguments:
-        cons -- the linear constraint
+        :param Constraint cons: linear constraint
+
         """
         # TODO this should ideally be handled on the SCIP side
         if cons.isOriginal():
@@ -1307,8 +1314,8 @@ cdef class Model:
     def getVarRedcost(self, Variable var):
         """Retrieve the reduced cost of a variable.
 
-        Keyword arguments:
-        var -- variable to get the reduced cost of
+        :param Variable var: variable to get the reduced cost of
+
         """
         redcost = None
         try:
@@ -1327,13 +1334,12 @@ cdef class Model:
     def includePricer(self, Pricer pricer, name, desc, priority=1, delay=True):
         """Include a pricer.
 
-        Keyword arguments:
-        pricer -- the pricer
-        name -- the name
-        desc -- the description
-        priority -- priority of the variable pricer
-        delay -- should the pricer be delayed until no other pricers or already
-                 existing problem variables with negative reduced costs are found?
+        :param Pricer pricer: pricer
+        :param name: name of pricer
+        :param desc: description of pricer
+        :param priority: priority of pricer (Default value = 1)
+        :param delay: should the pricer be delayed until no other pricers or already existing problem variables with negative reduced costs are found? (Default value = True)
+
         """
         n = str_conversion(name)
         d = str_conversion(desc)
@@ -1355,22 +1361,22 @@ cdef class Model:
                         presoltiming=PY_SCIP_PRESOLTIMING.MEDIUM):
         """Include a constraint handler
 
-        Keyword arguments:
-        name -- name of constraint handler
-        desc -- description of constraint handler
-        sepapriority -- priority of the constraint handler for separation
-        enfopriority -- priority of the constraint handler for constraint enforcing
-        chckpriority -- priority of the constraint handler for checking feasibility (and propagation)
-        sepafreq -- frequency for separating cuts; zero means to separate only in the root node
-        propfreq -- frequency for propagating domains; zero means only preprocessing propagation
-        eagerfreq -- frequency for using all instead of only the useful constraints in separation,
-                     propagation and enforcement, -1 for no eager evaluations, 0 for first only
-        maxprerounds -- maximal number of presolving rounds the constraint handler participates in (-1: no limit)
-        delaysepa -- should separation method be delayed, if other separators found cuts?
-        delayprop -- should propagation method be delayed, if other propagators found reductions?
-        needscons -- should the constraint handler be skipped, if no constraints are available?
-        proptiming -- positions in the node solving loop where propagation method of constraint handlers should be executed
-        presoltiming -- timing mask of the constraint handler's presolving method
+        :param Conshdlr conshdlr: constraint handler
+        :param name: name of constraint handler
+        :param desc: description of constraint handler
+        :param sepapriority: priority for separation (Default value = 0)
+        :param enfopriority: priority for constraint enforcing (Default value = 0)
+        :param chckpriority: priority for checking feasibility (Default value = 0)
+        :param sepafreq: frequency for separating cuts; 0 = only at root node (Default value = -1)
+        :param propfreq: frequency for propagating domains; 0 = only preprocessing propagation (Default value = -1)
+        :param eagerfreq: frequency for using all instead of only the useful constraints in separation, propagation and enforcement; -1 = no eager evaluations, 0 = first only (Default value = 100)
+        :param maxprerounds: maximal number of presolving rounds the constraint handler participates in (Default value = -1)
+        :param delaysepa: should separation method be delayed, if other separators found cuts? (Default value = False)
+        :param delayprop: should propagation method be delayed, if other propagators found reductions? (Default value = False)
+        :param needscons: should the constraint handler be skipped, if no constraints are available? (Default value = True)
+        :param proptiming: positions in the node solving loop where propagation method of constraint handlers should be executed (Default value = SCIP_PROPTIMING.BEFORELP)
+        :param presoltiming: timing mask of the constraint handler's presolving method (Default value = SCIP_PRESOLTIMING.MEDIUM)
+
         """
         n = str_conversion(name)
         d = str_conversion(desc)
@@ -1388,6 +1394,22 @@ cdef class Model:
 
     def createCons(self, Conshdlr conshdlr, name, initial=True, separate=True, enforce=True, check=True, propagate=True,
                    local=False, modifiable=False, dynamic=False, removable=False, stickingatnode=False):
+        """Create a constraint of a custom constraint handler
+
+        :param Conshdlr conshdlr: constraint handler
+        :param name: name of constraint
+        :param initial:  (Default value = True)
+        :param separate:  (Default value = True)
+        :param enforce:  (Default value = True)
+        :param check:  (Default value = True)
+        :param propagate:  (Default value = True)
+        :param local:  (Default value = False)
+        :param modifiable:  (Default value = False)
+        :param dynamic:  (Default value = False)
+        :param removable:  (Default value = False)
+        :param stickingatnode:  (Default value = False)
+
+        """
 
         n = str_conversion(name)
         cdef SCIP_CONSHDLR* scip_conshdlr
@@ -1400,12 +1422,13 @@ cdef class Model:
     def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing=SCIP_PRESOLTIMING_FAST):
         """Include a presolver
 
-        Keyword arguments:
-        name         -- name of presolver
-        desc         -- description of presolver
-        priority     -- priority of the presolver (>= 0: before, < 0: after constraint handlers)
-        maxrounds    -- maximal number of presolving rounds the presolver participates in (-1: no limit)
-        timing       -- timing mask of the presolver
+        :param Presol presol: presolver
+        :param name: name of presolver
+        :param desc: description of presolver
+        :param priority: priority of the presolver (>= 0: before, < 0: after constraint handlers)
+        :param maxrounds: maximal number of presolving rounds the presolver participates in (-1: no limit)
+        :param timing: timing mask of presolver (Default value = SCIP_PRESOLTIMING_FAST)
+
         """
         n = str_conversion(name)
         d = str_conversion(desc)
@@ -1417,15 +1440,15 @@ cdef class Model:
     def includeSepa(self, Sepa sepa, name, desc, priority, freq, maxbounddist, usessubscip=False, delay=False):
         """Include a separator
 
-        Keyword arguments:
-        name         -- name of separator
-        desc         -- description of separator
-        priority     -- priority of separator (>= 0: before, < 0: after constraint handlers)
-        freq         -- frequency for calling separator
-        maxbounddist -- maximal relative distance from current node's dual bound to primal bound compared
-                        to best node's dual bound for applying separation
-        usessubscip  -- does the separator use a secondary SCIP instance?
-        delay        -- should separator be delayed, if other separators found cuts?
+        :param Sepa sepa: separator
+        :param name: name of separator
+        :param desc: description of separator
+        :param priority: priority of separator (>= 0: before, < 0: after constraint handlers)
+        :param freq: frequency for calling separator
+        :param maxbounddist: maximal relative distance from current node's dual bound to primal bound compared to best node's dual bound for applying separation
+        :param usessubscip: does the separator use a secondary SCIP instance? (Default value = False)
+        :param delay: should separator be delayed, if other separators found cuts? (Default value = False)
+
         """
         n = str_conversion(name)
         d = str_conversion(desc)
@@ -1438,17 +1461,17 @@ cdef class Model:
                     proptiming, presoltiming=SCIP_PRESOLTIMING_FAST, priority=1, freq=1, delay=True):
         """Include a propagator.
 
-        Keyword arguments:
-        prop -- the propagator
-        name -- the name
-        desc -- the description
-        priority -- priority of the propagator
-        freq -- frequency for calling propagator
-        delay -- should propagator be delayed if other propagators have found reductions?
-        presolpriority -- presolving priority of the propagator (>= 0: before, < 0: after constraint handlers)
-        presolmaxrounds --maximal number of presolving rounds the propagator participates in (-1: no limit)
-        proptiming -- positions in the node solving loop where propagation method of constraint handlers should be executed
-        presoltiming -- timing mask of the constraint handler's presolving method
+        :param Prop prop: propagator
+        :param name: name of propagator
+        :param desc: description of propagator
+        :param presolpriority: presolving priority of the propgator (>= 0: before, < 0: after constraint handlers)
+        :param presolmaxrounds: maximal number of presolving rounds the propagator participates in (-1: no limit)
+        :param proptiming: positions in the node solving loop where propagation method of constraint handlers should be executed
+        :param presoltiming: timing mask of the constraint handler's presolving method (Default value = SCIP_PRESOLTIMING_FAST)
+        :param priority: priority of the propagator (Default value = 1)
+        :param freq: frequency for calling propagator (Default value = 1)
+        :param delay: should propagator be delayed if other propagators have found reductions? (Default value = True)
+
         """
         n = str_conversion(name)
         d = str_conversion(desc)
@@ -1466,17 +1489,17 @@ cdef class Model:
                     maxdepth=-1, timingmask=SCIP_HEURTIMING_BEFORENODE, usessubscip=False):
         """Include a primal heuristic.
 
-        Keyword arguments:
-        heur -- the heuristic
-        name -- the name of the heuristic
-        desc -- the description
-        dispchar -- display character of primal heuristic
-        priority -- priority of the heuristic
-        freq -- frequency offset for calling heuristic
-        freqofs -- frequency offset for calling heuristic
-        maxdepth -- maximal depth level to call heuristic at (-1: no limit)
-        timingmask -- positions in the node solving loop where heuristic should be executed; see definition of SCIP_HeurTiming for possible values
-        usessubscip -- does the heuristic use a secondary SCIP instance?
+        :param Heur heur: heuristic
+        :param name: name of heuristic
+        :param desc: description of heuristic
+        :param dispchar: display character of heuristic
+        :param priority: priority of the heuristic (Default value = 10000)
+        :param freq: frequency for calling heuristic (Default value = 1)
+        :param freqofs: frequency offset for calling heuristic (Default value = 0)
+        :param maxdepth: maximal depth level to call heuristic at (Default value = -1)
+        :param timingmask: positions in the node solving loop where heuristic should be executed (Default value = SCIP_HEURTIMING_BEFORENODE)
+        :param usessubscip: does the heuristic use a secondary SCIP instance? (Default value = False)
+
         """
         nam = str_conversion(name)
         des = str_conversion(desc)
@@ -1494,13 +1517,13 @@ cdef class Model:
     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
         """Include a branching rule.
 
-        Keyword arguments:
-        branchrule -- the branching rule
-        name -- name of branching rule
-        desc --description of branching rule
-        priority --priority of the branching rule
-        maxdepth -- maximal depth level, up to which this branching rule should be used (or -1)
-        maxbounddist -- maximal relative distance from current node's dual bound to primal bound compared to best node's dual bound for applying branching rule (0.0: only on current best node, 1.0: on all nodes)
+        :param Branchrule branchrule: branching rule
+        :param name: name of branching rule
+        :param desc: description of branching rule
+        :param priority: priority of branching rule
+        :param maxdepth: maximal depth level up to which this branching rule should be used (or -1)
+        :param maxbounddist: maximal relative distance from current node's dual bound to primal bound compared to best node's dual bound for applying branching rule (0.0: only on current best node, 1.0: on all nodes)
+
         """
         nam = str_conversion(name)
         des = str_conversion(desc)
@@ -1517,9 +1540,8 @@ cdef class Model:
     def createSol(self, Heur heur = None):
         """Create a new primal solution.
 
-        Keyword arguments:
-        solution -- the new solution
-        heur -- the heuristic that found the solution
+        :param Heur heur: heuristic that found the solution (Default value = None)
+
         """
         cdef SCIP_HEUR* _heur
 
@@ -1535,10 +1557,10 @@ cdef class Model:
     def setSolVal(self, Solution solution, Variable var, val):
         """Set a variable in a solution.
 
-        Keyword arguments:
-        solution -- the solution to be modified
-        var -- the variable in the solution
-        val -- the value of the variable in the solution
+        :param Solution solution: solution to be modified
+        :param Variable var: variable in the solution
+        :param val: value of the specified variable
+
         """
         cdef SCIP_SOL* _sol
         _sol = <SCIP_SOL*>solution.sol
@@ -1547,14 +1569,14 @@ cdef class Model:
     def trySol(self, Solution solution, printreason=True, completely=False, checkbounds=True, checkintegrality=True, checklprows=True, free=True):
         """Check given primal solution for feasibility and try to add it to the storage.
 
-        Keyword arguments:
-        solution -- the solution to store
-        printreason -- should all reasons of violations be printed?
-        completely -- should all violation be checked?
-        checkbounds -- should the bounds of the variables be checked?
-        checkintegrality -- has integrality to be checked?
-        checklprows -- have current LP rows (both local and global) to be checked?
-        free -- should solution be freed (default True)
+        :param Solution solution: solution to store
+        :param printreason: should all reasons of violations be printed? (Default value = True)
+        :param completely: should all violation be checked? (Default value = False)
+        :param checkbounds: should the bounds of the variables be checked? (Default value = True)
+        :param checkintegrality: has integrality to be checked? (Default value = True)
+        :param checklprows: have current LP rows (both local and global) to be checked? (Default value = True)
+        :param free: should solution be freed? (Default value = True)
+
         """
         cdef SCIP_Bool stored
         if free:
@@ -1566,9 +1588,9 @@ cdef class Model:
     def addSol(self, Solution solution, free=True):
         """Try to add a solution to the storage.
 
-        Keyword arguments:
-        solution -- the solution to store
-        free -- should solution be free afterwards (default True)
+        :param Solution solution: solution to store
+        :param free: should solution be freed afterwards? (Default value = True)
+
         """
         cdef SCIP_Bool stored
         if free:
@@ -1580,8 +1602,8 @@ cdef class Model:
     def freeSol(self, Solution solution):
         """Free given solution
 
-        Keyword arguments:
-        solution -- solution to be freed
+        :param Solution solution: solution to be freed
+
         """
         PY_SCIP_CALL(SCIPfreeSol(self._scip, &solution.sol))
 
@@ -1610,9 +1632,9 @@ cdef class Model:
     def getSolObjVal(self, Solution sol, original=True):
         """Retrieve the objective value of the solution.
 
-        Keyword arguments:
-        sol -- the solution
-        original -- objective value in original or transformed space (default True)
+        :param Solution sol: solution
+        :param original: objective value in original space (Default value = True)
+
         """
         if sol == None:
             sol = Solution.create(NULL)
@@ -1626,8 +1648,8 @@ cdef class Model:
         """Retrieve the objective value of value of best solution.
         Can only be called after solving is completed.
 
-        Keyword arguments:
-        original -- objective value in original or transformed space (default True)
+        :param original: objective value in original space (Default value = True)
+
         """
         if not self.getStage() >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
@@ -1637,9 +1659,9 @@ cdef class Model:
         """Retrieve value of given variable in the given solution or in
         the LP/pseudo solution if sol == None
 
-        Keyword arguments:
-        sol -- the solution
-        var -- the variable to query the value of
+        :param Solution sol: solution
+        :param Variable var: variable to query the value of
+
         """
         if sol == None:
             sol = Solution.create(NULL)
@@ -1649,8 +1671,8 @@ cdef class Model:
         """Retrieve the value of the best known solution.
         Can only be called after solving is completed.
 
-        Keyword arguments:
-        var -- the variable to query the value of
+        :param Variable var: variable to query the value of
+
         """
         if not self.getStage() >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
@@ -1669,7 +1691,11 @@ cdef class Model:
         return SCIPgetDualboundRoot(self._scip)
 
     def writeName(self, Variable var):
-        """Write the name of the variable to the std out."""
+        """Write the name of the variable to the std out.
+
+        :param Variable var: variable
+
+        """
         PY_SCIP_CALL(SCIPwriteVarName(self._scip, NULL, var.var, False))
 
     def getStage(self):
@@ -1711,8 +1737,8 @@ cdef class Model:
     def hideOutput(self, quiet = True):
         """Hide the output.
 
-        Keyword arguments:
-        quiet -- hide output? (default True)
+        :param quiet: hide output? (Default value = True)
+
         """
         SCIPsetMessagehdlrQuiet(self._scip, quiet)
 
@@ -1721,9 +1747,9 @@ cdef class Model:
     def setBoolParam(self, name, value):
         """Set a boolean-valued parameter.
 
-        Keyword arguments:
-        name -- the name of the parameter
-        value -- the value of the parameter
+        :param name: name of parameter
+        :param value: value of parameter
+
         """
         n = str_conversion(name)
         PY_SCIP_CALL(SCIPsetBoolParam(self._scip, n, value))
@@ -1731,19 +1757,19 @@ cdef class Model:
     def setIntParam(self, name, value):
         """Set an int-valued parameter.
 
-        Keyword arguments:
-        name -- the name of the parameter
-        value -- the value of the parameter
+        :param name: name of parameter
+        :param value: value of parameter
+
         """
         n = str_conversion(name)
         PY_SCIP_CALL(SCIPsetIntParam(self._scip, n, value))
 
     def setLongintParam(self, name, value):
         """Set a long-valued parameter.
+        
+        :param name: name of parameter
+        :param value: value of parameter
 
-        Keyword arguments:
-        name -- the name of the parameter
-        value -- the value of the parameter
         """
         n = str_conversion(name)
         PY_SCIP_CALL(SCIPsetLongintParam(self._scip, n, value))
@@ -1751,29 +1777,29 @@ cdef class Model:
     def setRealParam(self, name, value):
         """Set a real-valued parameter.
 
-        Keyword arguments:
-        name -- the name of the parameter
-        value -- the value of the parameter
+        :param name: name of parameter
+        :param value: value of parameter
+
         """
         n = str_conversion(name)
         PY_SCIP_CALL(SCIPsetRealParam(self._scip, n, value))
 
     def setCharParam(self, name, value):
         """Set a char-valued parameter.
+        
+        :param name: name of parameter
+        :param value: value of parameter
 
-        Keyword arguments:
-        name -- the name of the parameter
-        value -- the value of the parameter
         """
         n = str_conversion(name)
         PY_SCIP_CALL(SCIPsetCharParam(self._scip, n, value))
 
     def setStringParam(self, name, value):
         """Set a string-valued parameter.
+        
+        :param name: name of parameter
+        :param value: value of parameter
 
-        Keyword arguments:
-        name -- the name of the parameter
-        value -- the value of the parameter
         """
         n = str_conversion(name)
         PY_SCIP_CALL(SCIPsetStringParam(self._scip, n, value))
@@ -1781,8 +1807,8 @@ cdef class Model:
     def readParams(self, file):
         """Read an external parameter file.
 
-        Keyword arguments:
-        file -- the file to be read
+        :param file: file to be read
+
         """
         absfile = str_conversion(abspath(file))
         PY_SCIP_CALL(SCIPreadParams(self._scip, absfile))
@@ -1790,10 +1816,10 @@ cdef class Model:
     def writeParams(self, filename='param.set', comments = True, onlychanged = True):
         """Write parameter settings to an external file.
 
-        Keyword arguments:
-        filename -- the file to be written
-        comments -- write parameter descriptions as comments? (default True)
-        onlychanged -- write only parameters that are changed from their default value? (default True)
+        :param filename: file to be written (Default value = 'param.set')
+        :param comments: write parameter descriptions as comments? (Default value = True)
+        :param onlychanged: write only modified parameters (Default value = True)
+
         """
         fn = str_conversion(filename)
         PY_SCIP_CALL(SCIPwriteParams(self._scip, fn, comments, onlychanged))
@@ -1802,18 +1828,18 @@ cdef class Model:
     def setEmphasis(self, paraemphasis, quiet = True):
         """Set emphasis settings
 
-        Keyword arguments:
-        paraemphasis -- emphasis to set
-        quiet -- hide output? (default True)
+        :param paraemphasis: emphasis to set
+        :param quiet: hide output? (Default value = True)
+
         """
         PY_SCIP_CALL(SCIPsetEmphasis(self._scip, paraemphasis, quiet))
 
     def readProblem(self, file, extension = None):
         """Read a problem instance from an external file.
 
-        Keyword arguments:
-        file -- the file to be read
-        extension -- specifies extensions (default None)
+        :param file: file to be read
+        :param extension: specify file extension/type (Default value = None)
+
         """
         absfile = str_conversion(abspath(file))
         if extension is None:
@@ -1839,7 +1865,7 @@ cdef class Model:
         return nsols
 
     def setParamsCountsols(self):
-        """sets SCIP parameters such that a valid counting process is possible."""
+        """Sets SCIP parameters such that a valid counting process is possible."""
         PY_SCIP_CALL(SCIPsetParamsCountsols(self._scip))
 
 # debugging memory management
