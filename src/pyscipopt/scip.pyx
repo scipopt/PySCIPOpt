@@ -217,7 +217,7 @@ cdef class Variable(Expr):
         return self.name
 
     def vtype(self):
-        """Return the variables type (BINARY, INTEGER or CONTINUOUS)"""
+        """Retrieve the variables type (BINARY, INTEGER or CONTINUOUS)"""
         vartype = SCIPvarGetType(self.var)
         if vartype == SCIP_VARTYPE_BINARY:
             return "BINARY"
@@ -227,49 +227,49 @@ cdef class Variable(Expr):
             return "CONTINUOUS"
 
     def isOriginal(self):
-        """Returns whether the variable belongs to the original problem"""
+        """Retrieve whether the variable belongs to the original problem"""
         return SCIPvarIsOriginal(self.var)
 
     def isInLP(self):
-        """Returns whether the variable is a COLUMN variable that is member of the current LP"""
+        """Retrieve whether the variable is a COLUMN variable that is member of the current LP"""
         return SCIPvarIsInLP(self.var)
 
     def getCol(self):
-        """Returns column of COLUMN variable"""
+        """Retrieve column of COLUMN variable"""
         cdef SCIP_COL* scip_col
         scip_col = SCIPvarGetCol(self.var)
         return Column.create(scip_col)
 
     def getLbOriginal(self):
-        """Returns original lower bound of variable"""
+        """Retrieve original lower bound of variable"""
         return SCIPvarGetLbOriginal(self.var)
 
     def getUbOriginal(self):
-        """Returns original upper bound of variable"""
+        """Retrieve original upper bound of variable"""
         return SCIPvarGetUbOriginal(self.var)
 
     def getLbGlobal(self):
-        """Returns global lower bound of variable"""
+        """Retrieve global lower bound of variable"""
         return SCIPvarGetLbGlobal(self.var)
 
     def getUbGlobal(self):
-        """Returns global upper bound of variable"""
+        """Retrieve global upper bound of variable"""
         return SCIPvarGetUbGlobal(self.var)
 
     def getLbLocal(self):
-        """Returns current lower bound of variable"""
+        """Retrieve current lower bound of variable"""
         return SCIPvarGetLbLocal(self.var)
 
     def getUbLocal(self):
-        """Returns current upper bound of variable"""
+        """Retrieve current upper bound of variable"""
         return SCIPvarGetUbLocal(self.var)
 
     def getObj(self):
-        """Returns current objective value of variable"""
+        """Retrieve current objective value of variable"""
         return SCIPvarGetObj(self.var)
 
     def getLPSol(self):
-        """Returns the current LP solution value of variable"""
+        """Retrieve the current LP solution value of variable"""
         return SCIPvarGetLPSol(self.var)
 
 
@@ -294,47 +294,47 @@ cdef class Constraint:
         return self.name
 
     def isOriginal(self):
-        """Returns whether the constraint belongs to the original problem"""
+        """Retrieve whether the constraint belongs to the original problem"""
         return SCIPconsIsOriginal(self.cons)
 
     def isInitial(self):
-        """Returns True if the relaxation of the constraint should be in the initial LP"""
+        """Retrieve True if the relaxation of the constraint should be in the initial LP"""
         return SCIPconsIsInitial(self.cons)
 
     def isSeparated(self):
-        """Returns True if constraint should be separated during LP processing"""
+        """Retrieve True if constraint should be separated during LP processing"""
         return SCIPconsIsSeparated(self.cons)
 
     def isEnforced(self):
-        """Returns True if constraint should be enforced during node processing"""
+        """Retrieve True if constraint should be enforced during node processing"""
         return SCIPconsIsEnforced(self.cons)
 
     def isChecked(self):
-        """Returns True if conestraint should be checked for feasibility"""
+        """Retrieve True if conestraint should be checked for feasibility"""
         return SCIPconsIsChecked(self.cons)
 
     def isPropagated(self):
-        """Returns True if constraint should be propagated during node processing"""
+        """Retrieve True if constraint should be propagated during node processing"""
         return SCIPconsIsPropagated(self.cons)
 
     def isLocal(self):
-        """Returns True if constraint is only locally valid or not added to any (sub)problem"""
+        """Retrieve True if constraint is only locally valid or not added to any (sub)problem"""
         return SCIPconsIsLocal(self.cons)
 
     def isModifiable(self):
-        """Returns True if constraint is modifiable (subject to column generation)"""
+        """Retrieve True if constraint is modifiable (subject to column generation)"""
         return SCIPconsIsModifiable(self.cons)
 
     def isDynamic(self):
-        """Returns True if constraint is subject to aging"""
+        """Retrieve True if constraint is subject to aging"""
         return SCIPconsIsDynamic(self.cons)
 
     def isRemovable(self):
-        """Returns True if constraint's relaxation should be removed from the LP due to aging or cleanup"""
+        """Retrieve True if constraint's relaxation should be removed from the LP due to aging or cleanup"""
         return SCIPconsIsRemovable(self.cons)
 
     def isStickingAtNode(self):
-        """Returns True if constraint is only locally valid or not added to any (sub)problem"""
+        """Retrieve True if constraint is only locally valid or not added to any (sub)problem"""
         return SCIPconsIsStickingAtNode(self.cons)
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
@@ -392,19 +392,19 @@ cdef class Model:
         SCIPprintVersion(self._scip, NULL)
 
     def getTotalTime(self):
-        """Returns the current total SCIP time in seconds, i.e. the total time since the SCIP instance has been created"""
+        """Retrieve the current total SCIP time in seconds, i.e. the total time since the SCIP instance has been created"""
         return SCIPgetTotalTime(self._scip)
 
     def getSolvingTime(self):
-        """Returns the current solving time in seconds"""
+        """Retrieve the current solving time in seconds"""
         return SCIPgetSolvingTime(self._scip)
 
     def getReadingTime(self):
-        """Returns the current reading time in seconds"""
+        """Retrieve the current reading time in seconds"""
         return SCIPgetReadingTime(self._scip)
 
     def getPresolvingTime(self):
-        """Returns the curernt presolving time in seconds"""
+        """Retrieve the curernt presolving time in seconds"""
         return SCIPgetPresolvingTime(self._scip)
 
     def getNNodes(self):
@@ -420,15 +420,15 @@ cdef class Model:
         return SCIPgetDepth(self._scip)
 
     def infinity(self):
-        """Returns SCIP's infinity value"""
+        """Retrieve SCIP's infinity value"""
         return SCIPinfinity(self._scip)
 
     def epsilon(self):
-        """Return epsilon for e.g. equality checks"""
+        """Retrieve epsilon for e.g. equality checks"""
         return SCIPepsilon(self._scip)
 
     def feastol(self):
-        """Return feasibility tolerance"""
+        """Retrieve feasibility tolerance"""
         return SCIPfeastol(self._scip)
 
 
@@ -490,7 +490,7 @@ cdef class Model:
             raise Warning("unrecognized optimization sense: %s" % sense)
 
     def getObjective(self):
-        """Return objective function as Expr"""
+        """Retrieve objective function as Expr"""
         variables = self.getVars()
         objective = Expr()
         for var in variables:
@@ -1673,7 +1673,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPwriteVarName(self._scip, NULL, var.var, False))
 
     def getStage(self):
-        """Return current SCIP stage"""
+        """Retrieve current SCIP stage"""
         return SCIPgetStage(self._scip)
 
     def getStatus(self):
