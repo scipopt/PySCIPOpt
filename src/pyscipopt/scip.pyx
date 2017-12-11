@@ -10,6 +10,7 @@ include "lp.pxi"
 
 include "branchrule.pxi"
 include "conshdlr.pxi"
+include "event.pxi"
 include "heuristic.pxi"
 include "presol.pxi"
 include "pricer.pxi"
@@ -123,6 +124,43 @@ cdef class PY_SCIP_HEURTIMING:
     DURINGPRESOLLOOP  = SCIP_HEURTIMING_DURINGPRESOLLOOP
     AFTERPROPLOOP     = SCIP_HEURTIMING_AFTERPROPLOOP
 
+cdef class PY_SCIP_EVENTTYPE:
+    DISABLED        = SCIP_EVENTTYPE_DISABLED
+    VARADDED        = SCIP_EVENTTYPE_VARADDED
+    VARDELETED      = SCIP_EVENTTYPE_VARDELETED
+    VARFIXED        = SCIP_EVENTTYPE_VARFIXED
+    VARUNLOCKED     = SCIP_EVENTTYPE_VARUNLOCKED
+    OBJCHANGED      = SCIP_EVENTTYPE_OBJCHANGED
+    GLBCHANGED      = SCIP_EVENTTYPE_GLBCHANGED
+    GUBCHANGED      = SCIP_EVENTTYPE_GUBCHANGED
+    LBTIGHTENED     = SCIP_EVENTTYPE_LBTIGHTENED
+    LBRELAXED       = SCIP_EVENTTYPE_LBRELAXED
+    UBTIGHTENED     = SCIP_EVENTTYPE_UBTIGHTENED
+    UBRELAXED       = SCIP_EVENTTYPE_UBRELAXED
+    GHOLEADDED      = SCIP_EVENTTYPE_GHOLEADDED
+    GHOLEREMOVED    = SCIP_EVENTTYPE_GHOLEREMOVED
+    LHOLEADDED      = SCIP_EVENTTYPE_LHOLEADDED
+    LHOLEREMOVED    = SCIP_EVENTTYPE_LHOLEREMOVED
+    IMPLADDED       = SCIP_EVENTTYPE_IMPLADDED
+    PRESOLVEROUND   = SCIP_EVENTTYPE_PRESOLVEROUND
+    NODEFOCUSED     = SCIP_EVENTTYPE_NODEFOCUSED
+    NODEFEASIBLE    = SCIP_EVENTTYPE_NODEFEASIBLE
+    NODEINFEASIBLE  = SCIP_EVENTTYPE_NODEINFEASIBLE
+    NODEBRANCHED    = SCIP_EVENTTYPE_NODEBRANCHED
+    FIRSTLPSOLVED   = SCIP_EVENTTYPE_FIRSTLPSOLVED
+    LPSOLVED        = SCIP_EVENTTYPE_LPSOLVED
+    POORSOLFOUND    = SCIP_EVENTTYPE_POORSOLFOUND
+    BESTSOLFOUND    = SCIP_EVENTTYPE_BESTSOLFOUND
+    ROWADDEDSEPA    = SCIP_EVENTTYPE_ROWADDEDSEPA
+    ROWDELETEDSEPA  = SCIP_EVENTTYPE_ROWDELETEDSEPA
+    ROWADDEDLP      = SCIP_EVENTTYPE_ROWADDEDLP
+    ROWDELETEDLP    = SCIP_EVENTTYPE_ROWDELETEDLP
+    ROWCOEFCHANGED  = SCIP_EVENTTYPE_ROWCOEFCHANGED
+    ROWCONSTCHANGED = SCIP_EVENTTYPE_ROWCONSTCHANGED
+    ROWSIDECHANGED  = SCIP_EVENTTYPE_ROWSIDECHANGED
+    SYNC            = SCIP_EVENTTYPE_SYNC
+
+
 def PY_SCIP_CALL(SCIP_RETCODE rc):
     if rc == SCIP_OKAY:
         pass
@@ -163,6 +201,15 @@ def PY_SCIP_CALL(SCIP_RETCODE rc):
         raise Exception('SCIP: maximal branching depth level exceeded!')
     else:
         raise Exception('SCIP: unknown return code!')
+
+cdef class Event:
+    cdef SCIP_EVENT* event
+
+    @staticmethod
+    cdef create(SCIP_EVENT* scip_event):
+        event = Event()
+        event.event = scip_event
+        return event
 
 cdef class Column:
     """Base class holding a pointer to corresponding SCIP_COL"""
@@ -1324,6 +1371,23 @@ cdef class Model:
         PY_SCIP_CALL(SCIPsolve(self._scip))
         self._bestSol = Solution.create(SCIPgetBestSol(self._scip))
 
+    def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):
+        """Include an event handler.
+
+        Keyword arguments:
+        eventhdlr -- event handler
+        name -- name of event handler
+        desc -- description of event handler
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeEventhdlr(self._scip, n, d,
+                                          PyEventCopy, PyEventFree, PyEventInit, PyEventExit, PyEventInitsol, PyEventExitsol, PyEventDelete, PyEventExec,
+                                            <SCIP_EVENTHDLRDATA*>eventhdlr))
+        eventhdlr.model = <Model>weakref.proxy(self)
+        eventhdlr.name = name
+        Py_INCREF(eventhdlr)
+
     def includePricer(self, Pricer pricer, name, desc, priority=1, delay=True):
         """Include a pricer.
 
@@ -1699,6 +1763,60 @@ cdef class Model:
             return "minimize"
         else:
             return "unknown"
+
+    def catchEvent(self, eventtype, Eventhdlr eventhdlr):
+        cdef SCIP_EVENTHDLR* _eventhdlr
+        if isinstance(eventhdlr, Eventhdlr):
+            n = str_conversion(eventhdlr.name)
+            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
+        else:
+            raise Warning("event handler not found")
+        PY_SCIP_CALL(SCIPcatchEvent(self._scip, eventtype, _eventhdlr, NULL, NULL))
+
+    def dropEvent(self, eventtype, Eventhdlr eventhdlr):
+        cdef SCIP_EVENTHDLR* _eventhdlr
+        if isinstance(eventhdlr, Eventhdlr):
+            n = str_conversion(eventhdlr.name)
+            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
+        else:
+            raise Warning("event handler not found")
+        PY_SCIP_CALL(SCIPdropEvent(self._scip, eventtype, _eventhdlr, NULL, -1))
+
+    def catchVarEvent(self, Variable var, eventtype, Eventhdlr eventhdlr):
+        cdef SCIP_EVENTHDLR* _eventhdlr
+        if isinstance(eventhdlr, Eventhdlr):
+            n = str_conversion(eventhdlr.name)
+            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
+        else:
+            raise Warning("event handler not found")
+        PY_SCIP_CALL(SCIPcatchVarEvent(self._scip, var.var, eventtype, _eventhdlr, NULL, NULL))
+
+    def dropVarEvent(self, Variable var, eventtype, Eventhdlr eventhdlr):
+        cdef SCIP_EVENTHDLR* _eventhdlr
+        if isinstance(eventhdlr, Eventhdlr):
+            n = str_conversion(eventhdlr.name)
+            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
+        else:
+            raise Warning("event handler not found")
+        PY_SCIP_CALL(SCIPdropVarEvent(self._scip, var.var, eventtype, _eventhdlr, NULL, -1))
+
+    def catchRowEvent(self, Row row, eventtype, Eventhdlr eventhdlr):
+        cdef SCIP_EVENTHDLR* _eventhdlr
+        if isinstance(eventhdlr, Eventhdlr):
+            n = str_conversion(eventhdlr.name)
+            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
+        else:
+            raise Warning("event handler not found")
+        PY_SCIP_CALL(SCIPcatchRowEvent(self._scip, row.row, eventtype, _eventhdlr, NULL, NULL))
+
+    def dropRowEvent(self, Row row, eventtype, Eventhdlr eventhdlr):
+        cdef SCIP_EVENTHDLR* _eventhdlr
+        if isinstance(eventhdlr, Eventhdlr):
+            n = str_conversion(eventhdlr.name)
+            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
+        else:
+            raise Warning("event handler not found")
+        PY_SCIP_CALL(SCIPdropRowEvent(self._scip, row.row, eventtype, _eventhdlr, NULL, -1))
 
     # Statistic Methods
 
