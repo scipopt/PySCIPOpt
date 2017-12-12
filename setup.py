@@ -27,9 +27,7 @@ ext = '.pyx' if cythonize else '.c'
 # set runtime libraries
 runtime_library_dirs = []
 extra_link_args = []
-if platform.system() == 'Linux':
-    runtime_library_dirs.append(libdir)
-elif platform.system() == 'Darwin':
+if platform.system() in ['Linux', 'Darwin']:
     extra_link_args.append('-Wl,-rpath,'+libdir)
 
 # enable debug mode if requested
