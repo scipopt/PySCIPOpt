@@ -325,6 +325,13 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsolve(SCIP* scip)
     SCIP_RETCODE SCIPfreeTransform(SCIP* scip)
 
+    # Tree Methods
+    SCIP_NODE* SCIPgetCurrentNode(SCIP* scip)
+    SCIP_NODE* SCIPnodeGetParent(SCIP_NODE* node)
+    SCIP_Longint SCIPnodeGetNumber(SCIP_NODE* node)
+    int SCIPnodeGetDepth(SCIP_NODE* node)
+    SCIP_Real SCIPnodeGetLowerbound(SCIP_NODE* node)
+
     # Variable Methods
     SCIP_RETCODE SCIPcreateVarBasic(SCIP* scip,
                                     SCIP_VAR** var,

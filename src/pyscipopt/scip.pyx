@@ -194,6 +194,16 @@ cdef class Solution:
         sol.sol = scip_sol
         return sol
 
+cdef class Node:
+    """Base class holding a pointer to corresponding SCIP_NODE"""
+    cdef SCIP_NODE* node
+
+    @staticmethod
+    cdef create(SCIP_NODE* scip_node):
+        node = Node()
+        node.node = scip_node
+        return node
+
 cdef class Variable(Expr):
     """Is a linear expression and has SCIP_VAR*"""
     cdef SCIP_VAR* var
@@ -410,6 +420,42 @@ cdef class Model:
     def getNNodes(self):
         """Retrieve the total number of processed nodes."""
         return SCIPgetNNodes(self._scip)
+
+    def getCurrentNode(self):
+        """Retrieve current node."""
+        return Node.create(SCIPgetCurrentNode(self._scip))
+
+    def getParentNode(self, Node node):
+        """Retrieve parent node.
+
+        Keyword arguments:
+        node -- node to get number of
+        """
+        return Node.create(node.node)
+
+    def getNodeNumber(self, Node node):
+        """Retrieve number of node.
+
+        Keyword arguments:
+        node -- node to get number of
+        """
+        return SCIPnodeGetNumber(node.node)
+
+    def getNodeDepth(self, Node node):
+        """Retrieve depth of node.
+
+        Keyword arguments:
+        node -- node to get depth of
+        """
+        return SCIPnodeGetDepth(node.node)
+
+    def getNodeLowerbound(self, Node node):
+        """Retrieve lower bound of node.
+
+        Keyword arguments:
+        node -- node to get lower bound of
+        """
+        return SCIPnodeGetLowerbound(node.node)
 
     def getGap(self):
         """Retrieve the gap, i.e. |(primalbound - dualbound)/min(|primalbound|,|dualbound|)|."""
