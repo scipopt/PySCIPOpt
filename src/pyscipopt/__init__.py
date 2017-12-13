@@ -1,3 +1,5 @@
+__version__ = '1.2.0'
+
 # export user-relevant objects:
 from pyscipopt.Multidict import multidict
 from pyscipopt.scip      import Model

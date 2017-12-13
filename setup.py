@@ -1,5 +1,6 @@
 from setuptools import setup, Extension
 import os, platform, sys
+from src.pyscipopt import __version__
 
 # look for environment variable that specifies path to SCIP Opt lib and headers
 scipoptdir = os.environ.get('SCIPOPTDIR', '')
@@ -50,7 +51,7 @@ if cythonize:
 
 setup(
     name = 'PySCIPOpt',
-    version = '1.2.0',
+    version = __version__,
     description = 'Python interface and modeling environment for SCIP',
     url = 'https://github.com/SCIP-Interfaces/PySCIPOpt',
     author = 'Zuse Institute Berlin',
