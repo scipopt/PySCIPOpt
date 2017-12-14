@@ -26,15 +26,23 @@ environment:
       PIP: C:\Python36-x64\Scripts\pip
       PYTEST: C:\Python36-x64\Scripts\pytest
       TWINE: C:\Python36-x64\Scripts\twine
-      
-      
+
+
 install:
-  - cmd: "set PATH=%PYTHON%;%PATH%"
+  - ps: Install-Package -Scope CurrentUser -Force 7Zip4PowerShell -Source PSGallery
+  - ps: wget http://scip.zib.de/download/release/scip-4.0.1.tgz -outfile scip.tgz
+  - ps: wget http://soplex.zib.de/download/release/soplex-3.0.1.tgz -outfile soplex.tgz
+  - ps: Expand-7Zip scip.tgz .
+  - ps: Expand-7Zip scip.tar .
+  - ps: Expand-7Zip soplex.tgz .
+  - ps: Expand-7Zip soplex.tar .
+  - cmake -Bsoplex-build -Hsoplex-3.0.1 -DCMAKE_INSTALL_PREFIX=%SCIPOPTDIR% -DCMAKE_GENERATOR_PLATFORM=x64
+  - cmake --build soplex-build --config Release --target INSTALL
+  - cmake -Bscip-build -Hscip-4.0.1 -DCMAKE_INSTALL_PREFIX=%SCIPOPTDIR% -DCMAKE_GENERATOR_PLATFORM=x64
+  - cmake --build scip-build --config Release --target INSTALL
+  - set PATH=%SCIPOPTDIR%\bin;%PYTHON%;%PATH%
+  - if [%INCLUDE_REQUIRED%]==[true] copy .\VC9-include\* %SCIPOPTDIR%\include
   - cmd: "%PIP% install cython networkx pytest wheel twine"
-  - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-4.0.1-win64.exe -outfile scipopt-installer.exe
-  - scipopt-installer.exe /S /D=%SCIPOPTDIR%
-  - set PATH=%SCIPOPTDIR%\bin;%PATH%"
-  - cmd: if [%INCLUDE_REQUIRED%]==[true] copy .\VC9-include\* %SCIPOPTDIR%\include
 
 build_script:
   - python setup.py install
