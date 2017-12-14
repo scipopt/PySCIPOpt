@@ -26,15 +26,21 @@ environment:
       PIP: C:\Python36-x64\Scripts\pip
       PYTEST: C:\Python36-x64\Scripts\pytest
       TWINE: C:\Python36-x64\Scripts\twine
-      
-      
+
 install:
-  - cmd: "set PATH=%PYTHON%;%PATH%"
+  - ps: Install-Package -Scope CurrentUser -Force 7Zip4PowerShell -Source PSGallery
+  - ps: $uri = 'http://opti-test.zib.de/scipoptsuite-latest-scipoptsuite.tgz'
+  - ps: $user = 'opti-test'
+  - ps: $pass = 'error404' | ConvertTo-SecureString -AsPlainText -Force
+  - ps: $cred = New-Object Management.Automation.PSCredential ($user, $pass)
+  - ps: Invoke-WebRequest -UseBasicParsing -Uri $uri -Credential $cred -Outfile scipopt.tgz
+  - ps: Expand-7Zip scipopt.tgz .
+  - ps: Expand-7Zip scipopt.tar .
+  - cmake -Bscip-build -Hscipoptsuite-5.0.0 -DCMAKE_INSTALL_PREFIX=%SCIPOPTDIR% -DCMAKE_GENERATOR_PLATFORM=x64
+  - cmake --build scip-build --config Release --target INSTALL
+  - set PATH=%SCIPOPTDIR%\bin;%PYTHON%;%PATH%
+  - if [%INCLUDE_REQUIRED%]==[true] copy .\VC9-include\* %SCIPOPTDIR%\include
   - cmd: "%PIP% install cython networkx pytest wheel twine"
-  - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-4.0.1-win64.exe -outfile scipopt-installer.exe
-  - scipopt-installer.exe /S /D=%SCIPOPTDIR%
-  - set PATH=%SCIPOPTDIR%\bin;%PATH%"
-  - cmd: if [%INCLUDE_REQUIRED%]==[true] copy .\VC9-include\* %SCIPOPTDIR%\include
 
 build_script:
   - python setup.py install
