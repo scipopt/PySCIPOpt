@@ -345,7 +345,10 @@ cdef extern from "scip/scip.h":
     int SCIPnodeGetDepth(SCIP_NODE* node)
     int SCIPnodeGetNAddedConss(SCIP_NODE* node)
     SCIP_Real SCIPnodeGetLowerbound(SCIP_NODE* node)
+    SCIP_Real SCIPnodeGetEstimate(SCIP_NODE* node)
     SCIP_NODETYPE SCIPnodeGetType(SCIP_NODE* node)
+    SCIP_Bool SCIPnodeIsActive(SCIP_NODE* node)
+    SCIP_Bool SCIPnodeIsPropagatedAgain(SCI_NODE* node)
 
     # Variable Methods
     SCIP_RETCODE SCIPcreateVarBasic(SCIP* scip,

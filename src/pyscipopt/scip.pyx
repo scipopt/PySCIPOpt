@@ -238,9 +238,22 @@ cdef class Node:
         """Retrieve lower bound of node."""
         return SCIPnodeGetLowerbound(self.node)
 
+    def getEstimate(self):
+        """Retrieve the estimated value of the best feasible solution in subtree of the node"""
+        return SCIPnodeGetEstimate(self.node)
+
     def getNAddedConss(self):
         """Retrieve number of added constraints at this node"""
         return SCIPnodeGetNAddedConss(self.node)
+
+    def isActive(self):
+        """Is the node in the path to the current node?"""
+        return SCIPnodeIsActive(self.node)
+
+    def isPropagatedAgain(self):
+        """Is the node marked to be propagated again?"""
+        return SCIPnodeIsPropagatedAgain(self.node)
+
 
 cdef class Variable(Expr):
     """Is a linear expression and has SCIP_VAR*"""
