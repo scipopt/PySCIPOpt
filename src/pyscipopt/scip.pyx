@@ -83,20 +83,34 @@ cdef class PY_SCIP_STATUS:
     INFORUNBD      = SCIP_STATUS_INFORUNBD
 
 cdef class PY_SCIP_STAGE:
-    STAGE_INIT         = SCIP_STAGE_INIT
-    STAGE_PROBLEM      = SCIP_STAGE_PROBLEM
-    STAGE_TRANSFORMING = SCIP_STAGE_TRANSFORMING
-    STAGE_TRANSFORMED  = SCIP_STAGE_TRANSFORMED
-    STAGE_INITPRESOLVE = SCIP_STAGE_INITPRESOLVE
-    STAGE_PRESOLVING   = SCIP_STAGE_PRESOLVING
-    STAGE_EXITPRESOLVE = SCIP_STAGE_EXITPRESOLVE
-    STAGE_PRESOLVED    = SCIP_STAGE_PRESOLVED
-    STAGE_INITSOLVE    = SCIP_STAGE_INITSOLVE
-    STAGE_SOLVING      = SCIP_STAGE_SOLVING
-    STAGE_SOLVED       = SCIP_STAGE_SOLVED
-    STAGE_EXITSOLVE    = SCIP_STAGE_EXITSOLVE
-    STAGE_FREETRANS    = SCIP_STAGE_FREETRANS
-    STAGE_FREE         = SCIP_STAGE_FREE
+    INIT         = SCIP_STAGE_INIT
+    PROBLEM      = SCIP_STAGE_PROBLEM
+    TRANSFORMING = SCIP_STAGE_TRANSFORMING
+    TRANSFORMED  = SCIP_STAGE_TRANSFORMED
+    INITPRESOLVE = SCIP_STAGE_INITPRESOLVE
+    PRESOLVING   = SCIP_STAGE_PRESOLVING
+    EXITPRESOLVE = SCIP_STAGE_EXITPRESOLVE
+    PRESOLVED    = SCIP_STAGE_PRESOLVED
+    INITSOLVE    = SCIP_STAGE_INITSOLVE
+    SOLVING      = SCIP_STAGE_SOLVING
+    SOLVED       = SCIP_STAGE_SOLVED
+    EXITSOLVE    = SCIP_STAGE_EXITSOLVE
+    FREETRANS    = SCIP_STAGE_FREETRANS
+    FREE         = SCIP_STAGE_FREE
+
+cdef class PY_SCIP_NODETYPE:
+    FOCUSNODE   = SCIP_NODETYPE_FOCUSNODE
+    PROBINGNODE = SCIP_NODETYPE_PROBINGNODE
+    SIBLING     = SCIP_NODETYPE_SIBLING
+    CHILD       = SCIP_NODETYPE_CHILD
+    LEAF        = SCIP_NODETYPE_LEAF
+    DEADEND     = SCIP_NODETYPE_DEADEND
+    JUNCTION    = SCIP_NODETYPE_JUNCTION
+    PSEUDOFORK  = SCIP_NODETYPE_PSEUDOFORK
+    FORK        = SCIP_NODETYPE_FORK
+    SUBROOT     = SCIP_NODETYPE_SUBROOT
+    REFOCUSNODE = SCIP_NODETYPE_REFOCUSNODE
+
 
 cdef class PY_SCIP_PROPTIMING:
     BEFORELP     = SCIP_PROPTIMING_BEFORELP
@@ -203,6 +217,30 @@ cdef class Node:
         node = Node()
         node.node = scip_node
         return node
+
+    def getParent(self):
+        """Retrieve parent node."""
+        return Node.create(SCIPnodeGetParent(self.node))
+
+    def getNumber(self):
+        """Retrieve number of node."""
+        return SCIPnodeGetNumber(self.node)
+
+    def getDepth(self):
+        """Retrieve depth of node."""
+        return SCIPnodeGetDepth(self.node)
+
+    def getType(self):
+        """Retrieve type of node."""
+        return SCIPnodeGetType(self.node)
+
+    def getLowerbound(self):
+        """Retrieve lower bound of node."""
+        return SCIPnodeGetLowerbound(self.node)
+
+    def getNAddedConss(self):
+        """Retrieve number of added constraints at this node"""
+        return SCIPnodeGetNAddedConss(self.node)
 
 cdef class Variable(Expr):
     """Is a linear expression and has SCIP_VAR*"""
@@ -424,38 +462,6 @@ cdef class Model:
     def getCurrentNode(self):
         """Retrieve current node."""
         return Node.create(SCIPgetCurrentNode(self._scip))
-
-    def getParentNode(self, Node node):
-        """Retrieve parent node.
-
-        Keyword arguments:
-        node -- node to get number of
-        """
-        return Node.create(node.node)
-
-    def getNodeNumber(self, Node node):
-        """Retrieve number of node.
-
-        Keyword arguments:
-        node -- node to get number of
-        """
-        return SCIPnodeGetNumber(node.node)
-
-    def getNodeDepth(self, Node node):
-        """Retrieve depth of node.
-
-        Keyword arguments:
-        node -- node to get depth of
-        """
-        return SCIPnodeGetDepth(node.node)
-
-    def getNodeLowerbound(self, Node node):
-        """Retrieve lower bound of node.
-
-        Keyword arguments:
-        node -- node to get lower bound of
-        """
-        return SCIPnodeGetLowerbound(node.node)
 
     def getGap(self):
         """Retrieve the gap, i.e. |(primalbound - dualbound)/min(|primalbound|,|dualbound|)|."""
