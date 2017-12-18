@@ -86,6 +86,19 @@ cdef extern from "scip/scip.h":
         SCIP_STAGE_FREETRANS    = 12
         SCIP_STAGE_FREE         = 13
 
+    ctypedef enum SCIP_NODETYPE:
+        SCIP_NODETYPE_FOCUSNODE   =  0
+        SCIP_NODETYPE_PROBINGNODE =  1
+        SCIP_NODETYPE_SIBLING     =  2
+        SCIP_NODETYPE_CHILD       =  3
+        SCIP_NODETYPE_LEAF        =  4
+        SCIP_NODETYPE_DEADEND     =  5
+        SCIP_NODETYPE_JUNCTION    =  6
+        SCIP_NODETYPE_PSEUDOFORK  =  7
+        SCIP_NODETYPE_FORK        =  8
+        SCIP_NODETYPE_SUBROOT     =  9
+        SCIP_NODETYPE_REFOCUSNODE = 10
+
     ctypedef enum SCIP_PARAMSETTING:
         SCIP_PARAMSETTING_DEFAULT    = 0
         SCIP_PARAMSETTING_AGGRESSIVE = 1
@@ -324,6 +337,18 @@ cdef extern from "scip/scip.h":
     # Solve Methods
     SCIP_RETCODE SCIPsolve(SCIP* scip)
     SCIP_RETCODE SCIPfreeTransform(SCIP* scip)
+
+    # Node Methods
+    SCIP_NODE* SCIPgetCurrentNode(SCIP* scip)
+    SCIP_NODE* SCIPnodeGetParent(SCIP_NODE* node)
+    SCIP_Longint SCIPnodeGetNumber(SCIP_NODE* node)
+    int SCIPnodeGetDepth(SCIP_NODE* node)
+    int SCIPnodeGetNAddedConss(SCIP_NODE* node)
+    SCIP_Real SCIPnodeGetLowerbound(SCIP_NODE* node)
+    SCIP_Real SCIPnodeGetEstimate(SCIP_NODE* node)
+    SCIP_NODETYPE SCIPnodeGetType(SCIP_NODE* node)
+    SCIP_Bool SCIPnodeIsActive(SCIP_NODE* node)
+    SCIP_Bool SCIPnodeIsPropagatedAgain(SCIP_NODE* node)
 
     # Variable Methods
     SCIP_RETCODE SCIPcreateVarBasic(SCIP* scip,
