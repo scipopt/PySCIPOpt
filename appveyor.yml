@@ -28,7 +28,7 @@ environment:
       TWINE: C:\Python36-x64\Scripts\twine
 
 install:
-  - ps: $uri = 'http://opti-test.zib.de/v500-rc08/scip/downloads/release/SCIPOptSuite-5.0.0-win64-VS15.exe'
+  - ps: $uri = 'http://opti-test.zib.de/v500-rc08/scip/download/release/SCIPOptSuite-5.0.0-win64-VS15.exe'
   - ps: $user = 'opti-test'
   - ps: $pass = 'error404' | ConvertTo-SecureString -AsPlainText -Force
   - ps: $cred = New-Object Management.Automation.PSCredential ($user, $pass)
