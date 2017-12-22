@@ -437,7 +437,7 @@ cdef extern from "scip/scip.h":
     # Row Methods
     SCIP_RETCODE SCIPcreateRow(SCIP* scip, SCIP_ROW** row, const char* name, int len, SCIP_COL** cols, SCIP_Real* vals,
                                SCIP_Real lhs, SCIP_Real rhs, SCIP_Bool local, SCIP_Bool modifiable, SCIP_Bool removable)
-    SCIP_RETCODE SCIPaddCut(SCIP* scip, SCIP_SOL* sol, SCIP_ROW* row, SCIP_Bool forcecut, SCIP_Bool* infeasible)
+    SCIP_RETCODE SCIPaddRow(SCIP* scip, SCIP_ROW* row, SCIP_Bool forcecut, SCIP_Bool* infeasible)
 
     # Dual Solution Methods
     SCIP_Real SCIPgetDualbound(SCIP* scip)
@@ -569,8 +569,8 @@ cdef extern from "scip/scip.h":
                                  SCIP_RETCODE (*sepaexit) (SCIP* scip, SCIP_SEPA* sepa),
                                  SCIP_RETCODE (*sepainitsol) (SCIP* scip, SCIP_SEPA* sepa),
                                  SCIP_RETCODE (*sepaexitsol) (SCIP* scip, SCIP_SEPA* sepa),
-                                 SCIP_RETCODE (*sepaexeclp) (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result),
-                                 SCIP_RETCODE (*sepaexecsol) (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result),
+                                 SCIP_RETCODE (*sepaexeclp) (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result, unsigned int allowlocal),
+                                 SCIP_RETCODE (*sepaexecsol) (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result, unsigned int allowlocal),
                                  SCIP_SEPADATA* sepadata)
     SCIP_SEPADATA* SCIPsepaGetData(SCIP_SEPA* sepa)
 
