@@ -9,8 +9,7 @@ notifications:
 
 before_install:
   - export VERSION=5.0.0
-  - wget --user opti-test --password error404 http://opti-test.zib.de/scipoptsuite-latest-scipoptsuite.tgz
-  - mv scipoptsuite-latest-scipoptsuite.tgz scipoptsuite-$VERSION.tgz
+  - wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz
   - tar xf scipoptsuite-$VERSION.tgz
   - cd scipoptsuite-$VERSION
   - mkdir build

@@ -28,11 +28,7 @@ environment:
       TWINE: C:\Python36-x64\Scripts\twine
 
 install:
-  - ps: $uri = 'http://opti-test.zib.de/v500-rc08/scip/download/release/SCIPOptSuite-5.0.0-win64-VS15.exe'
-  - ps: $user = 'opti-test'
-  - ps: $pass = 'error404' | ConvertTo-SecureString -AsPlainText -Force
-  - ps: $cred = New-Object Management.Automation.PSCredential ($user, $pass)
-  - ps: Invoke-WebRequest -UseBasicParsing -Uri $uri -Credential $cred -Outfile scipopt-installer.exe
+  - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-5.0.0-win64-VS15.exe -outfile scipopt-installer.exe
   - scipopt-installer.exe /S /D=%SCIPOPTDIR%
   - set PATH=%SCIPOPTDIR%\bin;%PYTHON%;%PATH%
   - if [%INCLUDE_REQUIRED%]==[true] copy .\VC9-include\* %SCIPOPTDIR%\include
