@@ -1,5 +1,5 @@
 from setuptools import setup, Extension
-import os, platform, sys
+import os, platform, sys, re
 
 # look for environment variable that specifies path to SCIP Opt lib and headers
 scipoptdir = os.environ.get('SCIPOPTDIR', '')
@@ -10,6 +10,10 @@ libname = 'scip'
 cythonize = True
 
 packagedir = os.path.join('src', 'pyscipopt')
+
+with open(os.path.join(packagedir, '__init__.py'), 'r') as initfile:
+    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
+                        initfile.read(), re.MULTILINE).group(1)
 
 try:
     from Cython.Build import cythonize
@@ -27,9 +31,7 @@ ext = '.pyx' if cythonize else '.c'
 # set runtime libraries
 runtime_library_dirs = []
 extra_link_args = []
-if platform.system() == 'Linux':
-    runtime_library_dirs.append(libdir)
-elif platform.system() == 'Darwin':
+if platform.system() in ['Linux', 'Darwin']:
     extra_link_args.append('-Wl,-rpath,'+libdir)
 
 # enable debug mode if requested
@@ -52,7 +54,7 @@ if cythonize:
 
 setup(
     name = 'PySCIPOpt',
-    version = '1.2.1',
+    version = version,
     description = 'Python interface and modeling environment for SCIP',
     url = 'https://github.com/SCIP-Interfaces/PySCIPOpt',
     author = 'Zuse Institute Berlin',

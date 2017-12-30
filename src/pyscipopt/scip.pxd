@@ -86,6 +86,19 @@ cdef extern from "scip/scip.h":
         SCIP_STAGE_FREETRANS    = 12
         SCIP_STAGE_FREE         = 13
 
+    ctypedef enum SCIP_NODETYPE:
+        SCIP_NODETYPE_FOCUSNODE   =  0
+        SCIP_NODETYPE_PROBINGNODE =  1
+        SCIP_NODETYPE_SIBLING     =  2
+        SCIP_NODETYPE_CHILD       =  3
+        SCIP_NODETYPE_LEAF        =  4
+        SCIP_NODETYPE_DEADEND     =  5
+        SCIP_NODETYPE_JUNCTION    =  6
+        SCIP_NODETYPE_PSEUDOFORK  =  7
+        SCIP_NODETYPE_FORK        =  8
+        SCIP_NODETYPE_SUBROOT     =  9
+        SCIP_NODETYPE_REFOCUSNODE = 10
+
     ctypedef enum SCIP_PARAMSETTING:
         SCIP_PARAMSETTING_DEFAULT    = 0
         SCIP_PARAMSETTING_AGGRESSIVE = 1
@@ -100,9 +113,9 @@ cdef extern from "scip/scip.h":
         SCIP_PARAMEMPHASIS_HARDLP       = 4
         SCIP_PARAMEMPHASIS_OPTIMALITY   = 5
         SCIP_PARAMEMPHASIS_COUNTER      = 6
-        #SCIP_PARAMEMPHASIS_PHASEFEAS    = 7
-        #SCIP_PARAMEMPHASIS_PHASEIMPROVE = 8
-        #SCIP_PARAMEMPHASIS_PHASEPROOF   = 9
+        SCIP_PARAMEMPHASIS_PHASEFEAS    = 7
+        SCIP_PARAMEMPHASIS_PHASEIMPROVE = 8
+        SCIP_PARAMEMPHASIS_PHASEPROOF   = 9
 
     ctypedef enum SCIP_PROPTIMING:
         SCIP_PROPTIMING_BEFORELP     = 0x001u
@@ -325,6 +338,18 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsolve(SCIP* scip)
     SCIP_RETCODE SCIPfreeTransform(SCIP* scip)
 
+    # Node Methods
+    SCIP_NODE* SCIPgetCurrentNode(SCIP* scip)
+    SCIP_NODE* SCIPnodeGetParent(SCIP_NODE* node)
+    SCIP_Longint SCIPnodeGetNumber(SCIP_NODE* node)
+    int SCIPnodeGetDepth(SCIP_NODE* node)
+    int SCIPnodeGetNAddedConss(SCIP_NODE* node)
+    SCIP_Real SCIPnodeGetLowerbound(SCIP_NODE* node)
+    SCIP_Real SCIPnodeGetEstimate(SCIP_NODE* node)
+    SCIP_NODETYPE SCIPnodeGetType(SCIP_NODE* node)
+    SCIP_Bool SCIPnodeIsActive(SCIP_NODE* node)
+    SCIP_Bool SCIPnodeIsPropagatedAgain(SCIP_NODE* node)
+
     # Variable Methods
     SCIP_RETCODE SCIPcreateVarBasic(SCIP* scip,
                                     SCIP_VAR** var,
@@ -415,7 +440,7 @@ cdef extern from "scip/scip.h":
     # Row Methods
     SCIP_RETCODE SCIPcreateRow(SCIP* scip, SCIP_ROW** row, const char* name, int len, SCIP_COL** cols, SCIP_Real* vals,
                                SCIP_Real lhs, SCIP_Real rhs, SCIP_Bool local, SCIP_Bool modifiable, SCIP_Bool removable)
-    SCIP_RETCODE SCIPaddCut(SCIP* scip, SCIP_SOL* sol, SCIP_ROW* row, SCIP_Bool forcecut, SCIP_Bool* infeasible)
+    SCIP_RETCODE SCIPaddRow(SCIP* scip, SCIP_ROW* row, SCIP_Bool forcecut, SCIP_Bool* infeasible)
 
     # Dual Solution Methods
     SCIP_Real SCIPgetDualbound(SCIP* scip)
@@ -547,8 +572,8 @@ cdef extern from "scip/scip.h":
                                  SCIP_RETCODE (*sepaexit) (SCIP* scip, SCIP_SEPA* sepa),
                                  SCIP_RETCODE (*sepainitsol) (SCIP* scip, SCIP_SEPA* sepa),
                                  SCIP_RETCODE (*sepaexitsol) (SCIP* scip, SCIP_SEPA* sepa),
-                                 SCIP_RETCODE (*sepaexeclp) (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result),
-                                 SCIP_RETCODE (*sepaexecsol) (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result),
+                                 SCIP_RETCODE (*sepaexeclp) (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result, unsigned int allowlocal),
+                                 SCIP_RETCODE (*sepaexecsol) (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result, unsigned int allowlocal),
                                  SCIP_SEPADATA* sepadata)
     SCIP_SEPADATA* SCIPsepaGetData(SCIP_SEPA* sepa)
 

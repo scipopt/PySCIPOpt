@@ -14,13 +14,10 @@ specify its location using the environment variable ``SCIPOPTDIR``:
    | ``set SCIPOPTDIR=<path_to_install_dir>``
 
 ``SCIPOPTDIR`` needs to have a subdirectory ``lib`` that contains the
-library.
+library ``libscip.so`` (for Linux).
 
-Additionally, if you're building PySCIPOpt from source, i.e. not using
-the precompiled egg or wheel, you also need to place all SCIP header
-files into a directory ``include`` next to ``lib`` (this is done
-automatically by ``make install INSTALLDIR=$SCIPOPTDIR SHARED=true`` of
-the SCIP Optimization Suite):
+Please `install the SCIP Optimization Suite using CMake <http://scip.zib.de/doc/html/CMAKE.php>`__ if you're building
+it from source.
 
 ::
 
@@ -38,7 +35,7 @@ Installation from PyPI
 
 ``pip install pyscipopt``
 
-On Windows you need to make sure that the ``scipopt`` library can be
+On Windows you may need to ensure that the ``scip`` library can be
 found at runtime by adjusting your ``PATH`` environment variable:
 
 -  on Windows:
@@ -85,5 +82,5 @@ To use debug mode in PySCIPOpt you need to build it like this:
 
     python setup.py install --debug
 
-Be aware that you will need the debug library of the SCIP Optimization
+Be aware that you will need the *debug library* of the SCIP Optimization
 Suite for this to work.
