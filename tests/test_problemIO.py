@@ -1,6 +1,6 @@
 from pyscipopt import Model
 import pytest
-
+import os
 
 def create_model_with_one_optimum():
     m = Model()
@@ -10,11 +10,11 @@ def create_model_with_one_optimum():
     m.data = [x,y], [c]
     return m
 
-def test_writeProblem(tmpdir):
+def test_writeProblem():
     model = create_model_with_one_optimum()
     model.optimize()
     assert model.getStatus() == "optimal", "model could not be optimized"
 
-    probfile = tmpdir.join("x.cip")
-    model.writeProblem(str(probfile))
-    assert probfile.exists(), "no problem file was written"
+    probfile = "x.cip"
+    model.writeProblem(probfile)
+    assert os.path.exists(probfile), "no problem file was written"
