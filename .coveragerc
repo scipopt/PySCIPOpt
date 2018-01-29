@@ -1,0 +1,11 @@
+[paths]
+source = pyscipopt
+
+[run]
+plugins = Cython.Coverage
+source = pyscipopt
+branch = True
+omit =
+    tests/*
+    *__init__.py
+
