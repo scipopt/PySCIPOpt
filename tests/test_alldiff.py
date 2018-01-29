@@ -2,7 +2,6 @@ import pytest
 
 networkx = pytest.importorskip("networkx")
 plt = pytest.importorskip("matplotlib.pyplot")
-bipartite = pytest.importorskip("networkx.algorithms").bipartite
 
 from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PARAMEMPHASIS, SCIP_PARAMSETTING
 
@@ -34,7 +33,7 @@ init = [5, 3, 0, 0, 7, 0, 0, 0, 0,
         0, 0, 0, 0, 8, 0, 0, 7, 9]
 
 def plot_graph(G):
-    X,Y=bipartite.sets(G)
+    X,Y = networkx.bipartite.sets(G)
     pos = dict()
     pos.update( (n, (1, i)) for i, n in enumerate(X) ) # put nodes from X at x=1
     pos.update( (n, (2, i)) for i, n in enumerate(Y) ) # put nodes from Y at x=2
