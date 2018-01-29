@@ -50,7 +50,7 @@ extensions = [Extension('pyscipopt.scip', [os.path.join(packagedir, 'scip'+ext)]
                           )]
 
 if cythonize:
-    extensions = cythonize(extensions)
+    extensions = cythonize(extensions, compiler_directives={'linetrace': True})
 
 setup(
     name = 'PySCIPOpt',
