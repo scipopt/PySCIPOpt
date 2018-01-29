@@ -2,29 +2,28 @@ import pytest
 
 from pyscipopt import Model, Eventhdlr, SCIP_RESULT, SCIP_EVENTTYPE, SCIP_PARAMSETTING
 
+calls = []
+
 class MyEvent(Eventhdlr):
 
-    def init(self):
-        print("in init")
+    def eventinit(self):
+        calls.append('eventinit')
         self.model.catchEvent(SCIP_EVENTTYPE.FIRSTLPSOLVED, self)
 
-    def exit(self):
-        print("in exit")
+    def eventexit(self):
+        calls.append('eventexit')
         self.model.dropEvent(SCIP_EVENTTYPE.FIRSTLPSOLVED, self)
 
     def eventexec(self, event):
-        print("MyEvent was triggered")
+        calls.append('eventexec')
 
 def test_event():
     # create solver instance
     s = Model()
-    print("before creation")
-    eventhdlr = MyEvent()
-    print("before including")
-    s.includeEventhdlr(eventhdlr, "Myevent", "custom event handler implemented in python")
+    s.hideOutput()
     s.setPresolve(SCIP_PARAMSETTING.OFF)
-    print("before catching")
-    s.catchEvent(SCIP_EVENTTYPE.FIRSTLPSOLVED, eventhdlr)
+    eventhdlr = MyEvent()
+    s.includeEventhdlr(eventhdlr, "TestFirstLPevent", "python event handler to catch FIRSTLPEVENT")
 
     # add some variables
     x = s.addVar("x", obj=1.0)
@@ -32,13 +31,19 @@ def test_event():
 
     # add some constraint
     s.addCons(x + 2*y >= 5)
-    print("before optimize")
     # solve problem
     s.optimize()
 
     # print solution
     assert round(s.getVal(x)) == 5.0
     assert round(s.getVal(y)) == 0.0
+
+    del s
+
+    assert 'eventinit' in calls
+    assert 'eventexit' in calls
+    assert 'eventexec' in calls
+    assert len(calls) == 3
 
 if __name__ == "__main__":
     test_event()

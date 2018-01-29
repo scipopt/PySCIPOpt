@@ -1447,8 +1447,15 @@ cdef class Model:
         n = str_conversion(name)
         d = str_conversion(desc)
         PY_SCIP_CALL(SCIPincludeEventhdlr(self._scip, n, d,
-                                          PyEventCopy, PyEventFree, PyEventInit, PyEventExit, PyEventInitsol, PyEventExitsol, PyEventDelete, PyEventExec,
-                                            <SCIP_EVENTHDLRDATA*>eventhdlr))
+                                          PyEventCopy,
+                                          PyEventFree,
+                                          PyEventInit,
+                                          PyEventExit,
+                                          PyEventInitsol,
+                                          PyEventExitsol,
+                                          PyEventDelete,
+                                          PyEventExec,
+                                          <SCIP_EVENTHDLRDATA*>eventhdlr))
         eventhdlr.model = <Model>weakref.proxy(self)
         eventhdlr.name = name
         Py_INCREF(eventhdlr)

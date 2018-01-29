@@ -2,6 +2,9 @@ cdef class Eventhdlr:
     cdef public Model model
     cdef public str name
 
+    def eventcopy(self):
+        pass
+
     def eventfree(self):
         pass
 
@@ -21,7 +24,8 @@ cdef class Eventhdlr:
         pass
 
     def eventexec(self, event):
-        pass
+        print("python error in eventexec: this method needs to be implemented")
+        return {}
 
 
 # local helper functions for the interface
@@ -31,6 +35,8 @@ cdef Eventhdlr getPyEventhdlr(SCIP_EVENTHDLR* eventhdlr):
     return <Eventhdlr>eventhdlrdata
 
 cdef SCIP_RETCODE PyEventCopy (SCIP* scip, SCIP_EVENTHDLR* eventhdlr):
+    PyEventhdlr = getPyEventhdlr(eventhdlr)
+    PyEventhdlr.eventcopy()
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyEventFree (SCIP* scip, SCIP_EVENTHDLR* eventhdlr):
@@ -68,5 +74,5 @@ cdef SCIP_RETCODE PyEventExec (SCIP* scip, SCIP_EVENTHDLR* eventhdlr, SCIP_EVENT
     PyEventhdlr = getPyEventhdlr(eventhdlr)
     PyEvent = Event()
     PyEvent.event = event
-    PyEventhdlr.eventexeclp(PyEvent)
+    PyEventhdlr.eventexec(PyEvent)
     return SCIP_OKAY
