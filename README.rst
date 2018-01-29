@@ -36,13 +36,6 @@ following steps are always required when using the interface:
 
    model = Model("Example")  # model name is optional
 
-This is equivalent to calling (in C):
-
-.. code:: C
-
-   SCIPcreate(&scip);
-   SCIPcreateProbBasic(scip, "Example");
-
 3) Access the methods in the ``scip.pyx`` file using the solver/model
    instance ``model``, e.g.:
 

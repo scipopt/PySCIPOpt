@@ -8,7 +8,7 @@ notifications:
   email: false
 
 before_install:
-  - export VERSION=4.0.1
+  - export VERSION=5.0.0
   - wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz
   - tar xf scipoptsuite-$VERSION.tgz
   - cd scipoptsuite-$VERSION
