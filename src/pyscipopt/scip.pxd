@@ -343,7 +343,6 @@ cdef extern from "scip/scip.h":
     SCIP_NODE* SCIPnodeGetParent(SCIP_NODE* node)
     SCIP_Longint SCIPnodeGetNumber(SCIP_NODE* node)
     int SCIPnodeGetDepth(SCIP_NODE* node)
-    int SCIPnodeGetNAddedConss(SCIP_NODE* node)
     SCIP_Real SCIPnodeGetLowerbound(SCIP_NODE* node)
     SCIP_Real SCIPnodeGetEstimate(SCIP_NODE* node)
     SCIP_NODETYPE SCIPnodeGetType(SCIP_NODE* node)
@@ -716,6 +715,9 @@ cdef extern from "scip/scip.h":
     SCIP_Bool    SCIPlpiIsDualFeasible(SCIP_LPI* lpi)
 
     BMS_BLKMEM* SCIPblkmem(SCIP* scip)
+
+cdef extern from "scip/tree.h":
+    int SCIPnodeGetNAddedConss(SCIP_NODE* node)
 
 cdef extern from "scip/scipdefplugins.h":
     SCIP_RETCODE SCIPincludeDefaultPlugins(SCIP* scip)
