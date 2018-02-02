@@ -4,6 +4,7 @@ import sys
 
 from cpython cimport Py_INCREF, Py_DECREF
 from libc.stdlib cimport malloc, free
+from libc.stdio cimport fdopen
 
 include "expr.pxi"
 include "lp.pxi"
@@ -1668,6 +1669,79 @@ cdef class Model:
         PY_SCIP_CALL(SCIPcreateSol(self._scip, &solution.sol, _heur))
         return solution
 
+    def printBestSol(self, write_zeros=False):
+        """Prints the best feasible primal solution."""
+        PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, write_zeros));
+
+    def printSol(self, Solution solution, write_zeros=False):
+      """Print the given primal solution.
+
+      Keyword arguments:
+      solution -- solution to print
+      write_zeros -- include variables that are set to zero
+      """
+      PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, NULL, write_zeros));
+
+    def writeBestSol(self, filename="origprob.sol", write_zeros=False):
+        """Write the best feasible primal solution to a file.
+
+        Keyword arguments:
+        filename -- name of the output file
+        write_zeros -- include variables that are set to zero
+        """
+        # use this doubled opening pattern to ensure that IOErrors are
+        #   triggered early and in Python not in C,Cython or SCIP.
+        with open(filename, "w") as f:
+            cfile = fdopen(f.fileno(), "w")
+            PY_SCIP_CALL(SCIPprintBestSol(self._scip, cfile, write_zeros));
+
+    def writeSol(self, Solution solution, filename="origprob.sol", write_zeros=False):
+        """Write the given primal solution to a file.
+
+        Keyword arguments:
+        solution -- solution to write
+        filename -- name of the output file
+        write_zeros -- include variables that are set to zero
+        """
+        # use this doubled opening pattern to ensure that IOErrors are
+        #   triggered early and in Python not in C,Cython or SCIP.
+        with open(filename, "w") as f:
+            cfile = fdopen(f.fileno(), "w")
+            PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, cfile, write_zeros));
+
+    # perhaps this should not be included as it implements duplicated functionality
+    #   (as does it's namesake in SCIP)
+    def readSol(self, filename):
+        """Reads a given solution file, problem has to be transformed in advance.
+
+        Keyword arguments:
+        filename -- name of the input file
+        """
+        fn = str_conversion(filename)
+        PY_SCIP_CALL(SCIPreadSol(self._scip, fn))
+
+    def readSolFile(self, filename):
+        """Reads a given solution file.
+
+        Solution is created but not added to storage/the model.
+        Use 'addSol' OR 'trySol' to add it.
+
+        Keyword arguments:
+        filename -- name of the input file
+        """
+        cdef SCIP_Bool partial
+        cdef SCIP_Bool error
+        cdef SCIP_Bool stored
+        cdef Solution solution
+
+        fn = str_conversion(filename)
+        solution = self.createSol()
+        PY_SCIP_CALL(SCIPreadSolFile(self._scip, fn, solution.sol, False, &partial, &error))
+        if error:
+            raise Exception("SCIP: reading solution from file failed!")
+
+        return solution
+
     def setSolVal(self, Solution solution, Variable var, val):
         """Set a variable in a solution.
 
@@ -1738,10 +1812,6 @@ cdef class Model:
         """Retrieve currently best known feasible primal solution."""
         self._bestSol = Solution.create(SCIPgetBestSol(self._scip))
         return self._bestSol
-
-    def printBestSol(self):
-        """Prints the best feasible primal solution."""
-        PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, False));
 
     def getSolObjVal(self, Solution sol, original=True):
         """Retrieve the objective value of the solution.
@@ -1895,6 +1965,18 @@ cdef class Model:
     def printStatistics(self):
         """Print statistics."""
         PY_SCIP_CALL(SCIPprintStatistics(self._scip, NULL))
+
+    def writeStatistics(self, filename="origprob.stats"):
+      """Write statistics to a file.
+
+      Keyword arguments:
+      filename -- name of the output file
+      """
+      # use this doubled opening pattern to ensure that IOErrors are
+      #   triggered early and in Python not in C,Cython or SCIP.
+      with open(filename, "w") as f:
+          cfile = fdopen(f.fileno(), "w")
+          PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
 
     # Verbosity Methods
 
