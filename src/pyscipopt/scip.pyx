@@ -8,7 +8,6 @@ from libc.stdio cimport fdopen
 
 include "expr.pxi"
 include "lp.pxi"
-
 include "branchrule.pxi"
 include "conshdlr.pxi"
 include "event.pxi"
@@ -164,6 +163,7 @@ cdef class PY_SCIP_EVENTTYPE:
     NODEBRANCHED    = SCIP_EVENTTYPE_NODEBRANCHED
     FIRSTLPSOLVED   = SCIP_EVENTTYPE_FIRSTLPSOLVED
     LPSOLVED        = SCIP_EVENTTYPE_LPSOLVED
+    LPEVENT         = SCIP_EVENTTYPE_LPEVENT
     POORSOLFOUND    = SCIP_EVENTTYPE_POORSOLFOUND
     BESTSOLFOUND    = SCIP_EVENTTYPE_BESTSOLFOUND
     ROWADDEDSEPA    = SCIP_EVENTTYPE_ROWADDEDSEPA
@@ -225,6 +225,12 @@ cdef class Event:
         event = Event()
         event.event = scip_event
         return event
+
+    def getType(self):
+        return SCIPeventGetType(self.event)
+
+    def __repr__(self):
+        return self.getType()
 
 cdef class Column:
     """Base class holding a pointer to corresponding SCIP_COL"""
