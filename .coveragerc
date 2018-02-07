@@ -1,11 +1,6 @@
-[paths]
-source = pyscipopt
-
 [run]
 plugins = Cython.Coverage
-source = pyscipopt
-branch = True
+source = src/pyscipopt
 omit =
-    tests/*
+    tests
     *__init__.py
-
