@@ -13,7 +13,7 @@ before_install:
   - tar xf scipoptsuite-$VERSION.tgz
   - cd scipoptsuite-$VERSION
   - mkdir build
-  - cd build; cmake .. -DCMAKE_INSTALL_PREFIX=~/scipdir; make -j8 install; cd ..
+  - cd build; cmake .. -DCMAKE_C_STANDARD=99 -DCMAKE_INSTALL_PREFIX=~/scipdir; make -j8 install; cd ..
   - cd ..
   - rm -rf scipoptsuite-$VERSION
 
