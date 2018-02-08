@@ -7,27 +7,13 @@ python:
 notifications:
   email: false
 
-matrix:
-  include:
-    # works on Precise and Trusty
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-      env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-
 before_install:
-  - eval "${MATRIX_EVAL}"
   - export VERSION=5.0.1
   - wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz
   - tar xf scipoptsuite-$VERSION.tgz
   - cd scipoptsuite-$VERSION
   - mkdir build
-  - cd build; cmake .. -DCMAKE_INSTALL_PREFIX=~/scipdir; make -j8 install; cd ..
+  - cd build; cmake .. -DCMAKE_C_STANDARD=99 -DCMAKE_INSTALL_PREFIX=~/scipdir; make -j8 install; cd ..
   - cd ..
   - rm -rf scipoptsuite-$VERSION
 
