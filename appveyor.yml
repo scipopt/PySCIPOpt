@@ -28,7 +28,7 @@ environment:
       TWINE: C:\Python36-x64\Scripts\twine
 
 install:
-  - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-5.0.0-win64-VS15.exe -outfile scipopt-installer.exe
+  - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-5.0.1-win64-VS15.exe -outfile scipopt-installer.exe
   - scipopt-installer.exe /S /D=%SCIPOPTDIR%
   - set PATH=%SCIPOPTDIR%\bin;%PYTHON%;%PATH%
   - if [%INCLUDE_REQUIRED%]==[true] copy .\VC9-include\* %SCIPOPTDIR%\include
