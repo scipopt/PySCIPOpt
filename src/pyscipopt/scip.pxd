@@ -414,6 +414,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetObjsense(SCIP* scip, SCIP_OBJSENSE objsense)
     SCIP_OBJSENSE SCIPgetObjsense(SCIP* scip)
     SCIP_RETCODE SCIPsetObjlimit(SCIP* scip, SCIP_Real objlimit)
+    SCIP_RETCODE SCIPaddOrigObjoffset(SCIP* scip, SCIP_Real addval)
+    SCIP_Real SCIPgetOrigObjoffset(SCIP* scip)
     SCIP_RETCODE SCIPsetPresolving(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)
     SCIP_RETCODE SCIPsetSeparating(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)
     SCIP_RETCODE SCIPsetHeuristics(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)

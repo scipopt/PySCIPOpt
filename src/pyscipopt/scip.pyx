@@ -589,7 +589,7 @@ cdef class Model:
         if coeffs.degree() > 1:
             raise ValueError("Nonlinear objective functions are not supported!")
         if coeffs[CONST] != 0.0:
-            raise ValueError("Constant offsets in objective are not supported!")
+            self.addObjoffset(coeffs[CONST])
 
         if clear:
             # clear existing objective function
@@ -622,6 +622,18 @@ cdef class Model:
                 objective += coeff * var
         objective.normalize()
         return objective
+
+    def addObjoffset(self, offset):
+        """Add constant offset to objective
+
+        :param offset: offset to add
+
+        """
+        PY_SCIP_CALL(SCIPaddOrigObjoffset(self._scip, offset))
+
+    def getObjoffset(self):
+        """Retrieve constant objective offset"""
+        return SCIPgetOrigObjoffset(self._scip)
 
     # Setting parameters
     def setPresolve(self, setting):

@@ -11,9 +11,10 @@ def test_model():
     assert x.getObj() == 1.0
     assert y.getObj() == 2.0
 
-    s.setObjective(4.0 * y, clear = False)
+    s.setObjective(4.0 * y + 10.5, clear = False)
     assert x.getObj() == 1.0
     assert y.getObj() == 4.0
+    assert s.getObjoffset() == 10.5
 
     # add some constraint
     c = s.addCons(x + 2 * y >= 1.0)
