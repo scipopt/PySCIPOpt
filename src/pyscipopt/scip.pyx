@@ -1213,6 +1213,15 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPappendVarSOS2(self._scip, cons.cons, var.var))
 
+    def chgCheck(self, Constraint cons, newCheck):
+        """Change "check" flag of a constraint.
+
+        Keyword arguments:
+        cons -- constraint
+        newCheck -- new check value
+        """
+        PY_SCIP_CALL(SCIPsetConsChecked(self._scip, cons.cons, newCheck))
+
     def chgRhs(self, Constraint cons, rhs):
         """Change right hand side value of a constraint.
 

@@ -501,6 +501,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPdelCons(SCIP* scip, SCIP_CONS* cons)
     SCIP_VAR** SCIPgetVarsLinear(SCIP* scip, SCIP_CONS* cons)
     int SCIPgetNVarsLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RETCODE SCIPsetConsChecked(SCIP *scip, SCIP_CONS *cons, SCIP_Bool check)	
 
     # Primal Solution Methods
     SCIP_SOL** SCIPgetSols(SCIP* scip)
