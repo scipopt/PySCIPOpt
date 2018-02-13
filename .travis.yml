@@ -22,7 +22,7 @@ install:
   - SCIPOPTDIR=~/scipdir python setup.py build_ext --inplace --define CYTHON_TRACE
   - SCIPOPTDIR=~/scipdir python setup.py install
 
-script: py.test --cov
+script: py.test --cov --junitxml=coverage.xml
 
 after_success:
   - codecov
