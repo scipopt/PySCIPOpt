@@ -1,6 +1,7 @@
 import weakref
 from os.path import abspath
 import sys
+import warnings
 
 from cpython cimport Py_INCREF, Py_DECREF
 from libc.stdlib cimport malloc, free
@@ -16,6 +17,11 @@ include "presol.pxi"
 include "pricer.pxi"
 include "propagator.pxi"
 include "sepa.pxi"
+
+# recommended SCIP version; major version is required
+MAJOR = 5
+MINOR = 0
+PATCH = 1
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
@@ -470,6 +476,10 @@ cdef class Model:
         :param problemName: name of the problem (default 'model')
         :param defaultPlugins: use default plugins? (default True)
         """
+        if self.version() < MAJOR:
+            raise Exception("linked SCIP is not compatible to this version of PySCIPOpt - use at least version", MAJOR)
+        if self.version() < MAJOR + MINOR/10.0 + PATCH/100.0:
+            warnings.warn("linked SCIP {} is not recommended for this version of PySCIPOpt - use version {}.{}.{}".format(self.version(), MAJOR, MINOR, PATCH))
         self.create()
         self._bestSol = None
         if defaultPlugins:
@@ -505,6 +515,10 @@ cdef class Model:
     def freeTransform(self):
         """Frees all solution process data including presolving and transformed problem, only original problem is kept"""
         PY_SCIP_CALL(SCIPfreeTransform(self._scip))
+
+    def version(self):
+        """Retrieve SCIP version"""
+        return SCIPversion()
 
     def printVersion(self):
         """Print version, copyright information and compile mode"""
