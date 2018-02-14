@@ -623,17 +623,28 @@ cdef class Model:
         objective.normalize()
         return objective
 
-    def addObjoffset(self, offset):
+    def addObjoffset(self, offset, solutions = False):
         """Add constant offset to objective
 
         :param offset: offset to add
+        :param solutions: add offset also to existing solutions (Default value = False)
 
         """
-        PY_SCIP_CALL(SCIPaddOrigObjoffset(self._scip, offset))
+        if solutions:
+            PY_SCIP_CALL(SCIPaddObjoffset(self._scip, offset))
+        else:
+            PY_SCIP_CALL(SCIPaddOrigObjoffset(self._scip, offset))
 
-    def getObjoffset(self):
-        """Retrieve constant objective offset"""
-        return SCIPgetOrigObjoffset(self._scip)
+    def getObjoffset(self, original = True):
+        """Retrieve constant objective offset
+
+        :param original: offset of original or transformed problem (Default value = True)
+
+        """
+        if original:
+            return SCIPgetOrigObjoffset(self._scip)
+        else:
+            return SCIPgetTransObjoffset(self._scip)
 
     # Setting parameters
     def setPresolve(self, setting):
