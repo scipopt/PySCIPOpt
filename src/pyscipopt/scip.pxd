@@ -828,6 +828,10 @@ cdef extern from "scip/scip.h":
     SCIP_Bool    SCIPlpiIsPrimalFeasible(SCIP_LPI* lpi)
     SCIP_Bool    SCIPlpiIsDualFeasible(SCIP_LPI* lpi)
 
+    #re-optimization routines
+    SCIP_RETCODE SCIPfreeReoptSolve(SCIP* scip)
+    SCIP_RETCODE SCIPchgReoptObjective(SCIP* scip, SCIP_OBJSENSE objsense, SCIP_VAR** vars, SCIP_Real* coefs, int nvars)
+
     BMS_BLKMEM* SCIPblkmem(SCIP* scip)
 
 cdef extern from "scip/tree.h":

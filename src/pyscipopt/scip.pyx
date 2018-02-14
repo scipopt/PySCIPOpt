@@ -2192,6 +2192,56 @@ cdef class Model:
         """Sets SCIP parameters such that a valid counting process is possible."""
         PY_SCIP_CALL(SCIPsetParamsCountsols(self._scip))
 
+    def freeReoptSolve(self):
+        """Frees all solution process data and prepares for reoptimization"""
+        PY_SCIP_CALL(SCIPfreeReoptSolve(self._scip))
+
+    def chgReoptObjective(self, coeffs, sense = 'minimize'):
+        """Establish the objective function as a linear expression.
+
+        :param coeffs: the coefficients
+        :param sense: the objective sense (Default value = 'minimize')
+
+        """
+
+        cdef SCIP_OBJSENSE objsense
+
+        if sense == "minimize":
+            objsense = SCIP_OBJSENSE_MINIMIZE
+        elif sense == "maximize":
+            objsense = SCIP_OBJSENSE_MAXIMIZE
+        else:
+            raise Warning("unrecognized optimization sense: %s" % sense)
+        
+        assert isinstance(coeffs, Expr)
+
+        if coeffs.degree() > 1:
+            raise ValueError("Nonlinear objective functions are not supported!")
+        if coeffs[CONST] != 0.0:
+            raise ValueError("Constant offsets in objective are not supported!")
+
+        cdef SCIP_VAR** _vars
+        cdef int _nvars
+        _vars = SCIPgetOrigVars(self._scip)
+        _nvars = SCIPgetNOrigVars(self._scip)
+        _coeffs = <SCIP_Real*> malloc(_nvars * sizeof(SCIP_Real))
+        
+        for i in range(_nvars):
+            _coeffs[i] = 0.0
+        
+        for term, coef in coeffs.terms.items():
+            # avoid CONST term of Expr
+            if term != CONST:
+                assert len(term) == 1
+                var = <Variable>term[0]
+                for i in range(_nvars):
+                    if _vars[i] == var.var:
+                        _coeffs[i] = coef
+
+        PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, _vars, &_coeffs[0], _nvars))
+
+        free(_coeffs)
+
 # debugging memory management
 def is_memory_freed():
     return BMSgetMemoryUsed() == 0
