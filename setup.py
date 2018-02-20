@@ -2,7 +2,7 @@ from setuptools import setup, Extension
 import os, platform, sys, re
 
 # look for environment variable that specifies path to SCIP Opt lib and headers
-scipoptdir = os.environ.get('SCIPOPTDIR', '')
+scipoptdir = os.environ.get('SCIPOPTDIR', '').strip('"')
 includedir = os.path.abspath(os.path.join(scipoptdir, 'include'))
 libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
 libname = 'scip'
