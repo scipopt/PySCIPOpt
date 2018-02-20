@@ -524,6 +524,10 @@ cdef class Model:
         """Print version, copyright information and compile mode"""
         SCIPprintVersion(self._scip, NULL)
 
+    def getProbName(self):
+        """Retrieve problem name"""
+        return bytes(SCIPgetProbName(self._scip)).decode('UTF-8')
+
     def getTotalTime(self):
         """Retrieve the current total SCIP time in seconds, i.e. the total time since the SCIP instance has been created"""
         return SCIPgetTotalTime(self._scip)
