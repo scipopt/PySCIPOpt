@@ -1254,8 +1254,35 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPappendVarSOS2(self._scip, cons.cons, var.var))
 
-    def chgCheck(self, Constraint cons, newCheck):
-        """Change "check" flag of a constraint.
+    def setInitial(self, Constraint cons, newInit):
+        """Set "initial" flag of a constraint.
+
+        Keyword arguments:
+        cons -- constraint
+        newInit -- new initial value
+        """
+        PY_SCIP_CALL(SCIPsetConsInitial(self._scip, cons.cons, newInit))
+
+    def setRemovable(self, Constraint cons, newRem):
+        """Set "removable" flag of a constraint.
+
+        Keyword arguments:
+        cons -- constraint
+        newRem -- new removable value
+        """
+        PY_SCIP_CALL(SCIPsetConsRemovable(self._scip, cons.cons, newRem))
+
+    def setEnforced(self, Constraint cons, newEnf):
+        """Set "enforced" flag of a constraint.
+
+        Keyword arguments:
+        cons -- constraint
+        newEnf -- new enforced value
+        """
+        PY_SCIP_CALL(SCIPsetConsEnforced(self._scip, cons.cons, newEnf))
+
+    def setCheck(self, Constraint cons, newCheck):
+        """Set "check" flag of a constraint.
 
         Keyword arguments:
         cons -- constraint
