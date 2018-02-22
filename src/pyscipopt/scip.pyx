@@ -586,7 +586,7 @@ cdef class Model:
     def setObjlimit(self, objlimit):
         """Set a limit on the objective function.
         Only solutions with objective value better than this limit are accepted.
-        
+
         :param objlimit: limit on the objective function
 
         """
@@ -702,7 +702,7 @@ cdef class Model:
     # Write original problem to file
     def writeProblem(self, filename='origprob.cip', trans=False):
         """Write original problem to a file.
-        
+
         :param filename: the name of the file to be used (Default value = 'origprob.cip')
         :param trans: indicates whether the transformed problem is written to file (Default value = False)
 
@@ -974,20 +974,20 @@ cdef class Model:
             idxs = <int*> malloc(len(term) * sizeof(int))
             for j, var in enumerate(term):
                 idxs[j] = varindex[var.ptr()]
-            PY_SCIP_CALL( SCIPexprCreateMonomial(SCIPblkmem(self._scip), &monomials[i], <SCIP_Real>coef, <int>len(term), idxs, NULL) );
+            PY_SCIP_CALL( SCIPexprCreateMonomial(SCIPblkmem(self._scip), &monomials[i], <SCIP_Real>coef, <int>len(term), idxs, NULL) )
             free(idxs)
 
         # create polynomial from monomials
         PY_SCIP_CALL( SCIPexprCreatePolynomial(SCIPblkmem(self._scip), &expr,
                                                <int>len(varindex), varexprs,
-                                               <int>len(terms), monomials, 0.0, <SCIP_Bool>True) );
+                                               <int>len(terms), monomials, 0.0, <SCIP_Bool>True) )
 
         # create expression tree
-        PY_SCIP_CALL( SCIPexprtreeCreate(SCIPblkmem(self._scip), &exprtree, expr, <int>len(variables), 0, NULL) );
+        PY_SCIP_CALL( SCIPexprtreeCreate(SCIPblkmem(self._scip), &exprtree, expr, <int>len(variables), 0, NULL) )
         vars = <SCIP_VAR**> malloc(len(variables) * sizeof(SCIP_VAR*))
         for idx, var in enumerate(variables): # same as varindex
             vars[idx] = (<Variable>var).var
-        PY_SCIP_CALL( SCIPexprtreeSetVars(exprtree, <int>len(variables), vars) );
+        PY_SCIP_CALL( SCIPexprtreeSetVars(exprtree, <int>len(variables), vars) )
 
         # create nonlinear constraint for exprtree
         PY_SCIP_CALL( SCIPcreateConsNonlinear(
@@ -1152,7 +1152,7 @@ cdef class Model:
                 propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
         """Add an indicator constraint for the linear inequality 'cons'.
-        
+
         The 'binvar' argument models the redundancy of the linear constraint. A solution for which
         'binvar' is 1 must satisfy the constraint.
 
@@ -1749,7 +1749,7 @@ cdef class Model:
 
     def printBestSol(self, write_zeros=False):
         """Prints the best feasible primal solution."""
-        PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, write_zeros));
+        PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, write_zeros))
 
     def printSol(self, Solution solution, write_zeros=False):
       """Print the given primal solution.
@@ -1758,7 +1758,7 @@ cdef class Model:
       solution -- solution to print
       write_zeros -- include variables that are set to zero
       """
-      PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, NULL, write_zeros));
+      PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, NULL, write_zeros))
 
     def writeBestSol(self, filename="origprob.sol", write_zeros=False):
         """Write the best feasible primal solution to a file.
@@ -1771,7 +1771,7 @@ cdef class Model:
         #   triggered early and in Python not in C,Cython or SCIP.
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
-            PY_SCIP_CALL(SCIPprintBestSol(self._scip, cfile, write_zeros));
+            PY_SCIP_CALL(SCIPprintBestSol(self._scip, cfile, write_zeros))
 
     def writeSol(self, Solution solution, filename="origprob.sol", write_zeros=False):
         """Write the given primal solution to a file.
@@ -1785,7 +1785,7 @@ cdef class Model:
         #   triggered early and in Python not in C,Cython or SCIP.
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
-            PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, cfile, write_zeros));
+            PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, cfile, write_zeros))
 
     # perhaps this should not be included as it implements duplicated functionality
     #   (as does it's namesake in SCIP)
@@ -2094,7 +2094,7 @@ cdef class Model:
 
     def setLongintParam(self, name, value):
         """Set a long-valued parameter.
-        
+
         :param name: name of parameter
         :param value: value of parameter
 
@@ -2114,7 +2114,7 @@ cdef class Model:
 
     def setCharParam(self, name, value):
         """Set a char-valued parameter.
-        
+
         :param name: name of parameter
         :param value: value of parameter
 
@@ -2124,7 +2124,7 @@ cdef class Model:
 
     def setStringParam(self, name, value):
         """Set a string-valued parameter.
-        
+
         :param name: name of parameter
         :param value: value of parameter
 
@@ -2216,7 +2216,7 @@ cdef class Model:
             objsense = SCIP_OBJSENSE_MAXIMIZE
         else:
             raise Warning("unrecognized optimization sense: %s" % sense)
-        
+
         assert isinstance(coeffs, Expr)
 
         if coeffs.degree() > 1:
@@ -2229,10 +2229,10 @@ cdef class Model:
         _vars = SCIPgetOrigVars(self._scip)
         _nvars = SCIPgetNOrigVars(self._scip)
         _coeffs = <SCIP_Real*> malloc(_nvars * sizeof(SCIP_Real))
-        
+
         for i in range(_nvars):
             _coeffs[i] = 0.0
-        
+
         for term, coef in coeffs.terms.items():
             # avoid CONST term of Expr
             if term != CONST:
