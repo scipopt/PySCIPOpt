@@ -13,6 +13,9 @@ from pyscipopt.scip      import Prop
 from pyscipopt.scip      import Sepa
 from pyscipopt.scip      import LP
 from pyscipopt.scip      import quicksum
+from pyscipopt.scip      import exp
+from pyscipopt.scip      import log
+from pyscipopt.scip      import sqrt
 from pyscipopt.scip      import PY_SCIP_RESULT       as SCIP_RESULT
 from pyscipopt.scip      import PY_SCIP_PARAMSETTING as SCIP_PARAMSETTING
 from pyscipopt.scip      import PY_SCIP_PARAMEMPHASIS as SCIP_PARAMEMPHASIS

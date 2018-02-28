@@ -891,6 +891,8 @@ cdef class Model:
             return self._addLinCons(cons, **kwargs)
         elif deg <= 2:
             return self._addQuadCons(cons, **kwargs)
+        elif deg == float('inf'): # general nonlinear
+            return self._addGenNonlinearCons(cons, **kwargs)
         else:
             return self._addNonlinearCons(cons, **kwargs)
 
@@ -1006,6 +1008,100 @@ cdef class Model:
         free(vars)
         free(monomials)
         free(varexprs)
+        return PyCons
+
+    def _addGenNonlinearCons(self, ExprCons cons, **kwargs):
+        cdef SCIP_EXPR** childrenexpr
+        cdef SCIP_EXPR** scipexprs
+        cdef SCIP_EXPRTREE* exprtree
+        cdef SCIP_CONS* scip_cons
+        cdef int nchildren
+
+        # get arrays from python's expression tree
+        expr = cons.expr
+        nodes = expr_to_nodes(expr)
+        op2idx = Operator.operatorIndexDic
+
+        # in nodes we have a list of tuples: each tuple is of the form
+        # (operator, [indices]) where indices are the indices of the tuples
+        # that are the children of this operator. This is sorted,
+        # so we are going to do is:
+        # loop over the nodes and create the expression of each
+        # Note1: when the operator is SCIP_EXPR_CONST, [indices] stores the value
+        # Note2: we need to compute the number of variable operators to find out
+        # how many variables are there.
+        nvars = 0
+        for node in nodes:
+            if op2idx[node[0]] == SCIP_EXPR_VARIDX:
+                nvars += 1
+        vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+
+        varpos = 0
+        scipexprs = <SCIP_EXPR**> malloc(len(nodes) * sizeof(SCIP_EXPR*))
+        for i,node in enumerate(nodes):
+            op = node[0]
+            opidx = op2idx[op]
+            if opidx == SCIP_EXPR_VARIDX:
+                assert len(node[1]) == 1
+                pyvar = node[1][0] # for vars we store the actual var!
+                PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &scipexprs[i], opidx, <int>varpos) )
+                vars[varpos] = (<Variable>pyvar).var
+                varpos += 1
+                continue
+            if opidx == SCIP_EXPR_CONST:
+                assert len(node[1]) == 1
+                value = node[1][0]
+                PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &scipexprs[i], opidx, <SCIP_Real>value) )
+                continue
+            if opidx == SCIP_EXPR_SUM or opidx == SCIP_EXPR_PRODUCT:
+                nchildren = len(node[1])
+                childrenexpr = <SCIP_EXPR**> malloc(nchildren * sizeof(SCIP_EXPR*))
+                for c, pos in enumerate(node[1]):
+                    childrenexpr[c] = scipexprs[pos]
+                PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &scipexprs[i], opidx, nchildren, childrenexpr) )
+
+                free(childrenexpr);
+                continue
+            if opidx == SCIP_EXPR_REALPOWER:
+                # the second child is the exponent which is a const
+                valuenode = nodes[node[1][1]]
+                assert op2idx[valuenode[0]] == SCIP_EXPR_CONST
+                exponent = valuenode[1][0]
+                if float(exponent).is_integer():
+                    PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &scipexprs[i], SCIP_EXPR_INTPOWER, scipexprs[node[1][0]], <int>exponent) )
+                else:
+                    PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &scipexprs[i], opidx, scipexprs[node[1][0]], <SCIP_Real>exponent) )
+                continue
+            if opidx == SCIP_EXPR_EXP or opidx == SCIP_EXPR_LOG or opidx == SCIP_EXPR_SQRT or opidx == SCIP_EXPR_ABS:
+                assert len(node[1]) == 1
+                PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &scipexprs[i], opidx, scipexprs[node[1][0]]) )
+                continue
+            # default:
+            raise NotImplementedError
+        assert varpos == nvars
+
+        # create expression tree
+        PY_SCIP_CALL( SCIPexprtreeCreate(SCIPblkmem(self._scip), &exprtree, scipexprs[len(nodes) - 1], nvars, 0, NULL) );
+        PY_SCIP_CALL( SCIPexprtreeSetVars(exprtree, <int>nvars, vars) );
+
+        # create nonlinear constraint for exprtree
+        PY_SCIP_CALL( SCIPcreateConsNonlinear(
+            self._scip, &scip_cons, str_conversion(kwargs['name']),
+            0, NULL, NULL, # linear
+            1, &exprtree, NULL, # nonlinear
+            kwargs['lhs'], kwargs['rhs'],
+            kwargs['initial'], kwargs['separate'], kwargs['enforce'],
+            kwargs['check'], kwargs['propagate'], kwargs['local'],
+            kwargs['modifiable'], kwargs['dynamic'], kwargs['removable'],
+            kwargs['stickingatnode']) )
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        PyCons = Constraint.create(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+        PY_SCIP_CALL( SCIPexprtreeFree(&exprtree) )
+
+        # free more memory
+        free(vars)
+
         return PyCons
 
     def addConsCoeff(self, Constraint cons, Variable var, coeff):
@@ -1177,7 +1273,7 @@ cdef class Model:
             raise ValueError("expected inequality that has either only a left or right hand side")
 
         if cons.expr.degree() > 1:
-            raise ValueError("expected linear inequality, expression has degree %d" % cons.expr.degree)
+            raise ValueError("expected linear inequality, expression has degree %d" % cons.expr.degree())
 
         assert cons.expr.degree() <= 1
 
