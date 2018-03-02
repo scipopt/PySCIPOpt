@@ -216,12 +216,8 @@ cdef class Expr:
 
     def __div__(self, other):
         ''' transforms Expr into GenExpr'''
-        divisor = buildGenExprObj(other)
-        # we can't divide by 0
-        if divisor.getOp() == Operator.const:
-            assert divisor.number != 0.0
-
-        return buildGenExprObj(self) * divisor**(-1)
+        selfexpr = buildGenExprObj(self)
+        return selfexpr.__div__(other)
 
     def __rdiv__(self, other):
         ''' other / self '''
@@ -230,12 +226,12 @@ cdef class Expr:
 
     def __truediv__(self,other):
         selfexpr = buildGenExprObj(self)
-        return selfexpr.__div__(other)
+        return selfexpr.__truediv__(other)
 
     def __rtruediv__(self, other):
         ''' other / self '''
         otherexpr = buildGenExprObj(other)
-        return otherexpr.__div__(self)
+        return otherexpr.__truediv__(self)
 
     def __pow__(self, other, modulo):
         if float(other).is_integer() and other >= 0:
@@ -404,11 +400,7 @@ cdef class GenExpr:
         ''' '''
 
     def __abs__(self):
-        ans = UnaryExpr()
-        ans.op = Operator.fabs
-        ans.operatorIndex = Operator.operatorIndexDic[self.op]
-        ans.children.append(self)
-        return ans
+        return UnaryExpr(Operator.fabs, self)
 
     def __add__(self, other):
         left = buildGenExprObj(self)
@@ -528,9 +520,8 @@ cdef class GenExpr:
     def __div__(self, other):
         divisor = buildGenExprObj(other)
         # we can't divide by 0
-        if divisor.getOp() == Operator.const:
-            assert divisor.number != 0.0
-
+        if divisor.getOp() == Operator.const and divisor.number == 0.0:
+            raise ValueError("cannot divide by 0")
         return self * divisor**(-1)
 
     def __rdiv__(self, other):
@@ -539,13 +530,17 @@ cdef class GenExpr:
         return otherexpr.__div__(self)
 
     def __truediv__(self,other):
-        selfexpr = buildGenExprObj(self)
-        return selfexpr.__div__(other)
+        print("truediv of GenExpr", self, other)
+        divisor = buildGenExprObj(other)
+        # we can't divide by 0
+        if divisor.getOp() == Operator.const and divisor.number == 0.0:
+            raise ValueError("cannot divide by 0")
+        return self * divisor**(-1)
 
     def __rtruediv__(self, other):
         ''' other / self '''
         otherexpr = buildGenExprObj(other)
-        return otherexpr.__div__(self)
+        return otherexpr.__truediv__(self)
 
     def __neg__(self):
         return -1.0 * self
@@ -622,8 +617,11 @@ cdef class PowExpr(GenExpr):
 
 # Exp, Log, Sqrt Expressions
 cdef class UnaryExpr(GenExpr):
-    def __init__(self):
+    def __init__(self, op, expr):
         self.children = []
+        self.children.append(expr)
+        self.op = op
+        self.operatorIndex = Operator.operatorIndexDic[op]
     def __repr__(self):
         return self.op + "(" + self.children[0].__repr__() + ")"
 
@@ -639,23 +637,11 @@ cdef class Constant(GenExpr):
         return str(self.number)
 
 def exp(expr):
-    ans = UnaryExpr()
-    ans.op = Operator.exp
-    ans.operatorIndex = Operator.operatorIndexDic[ans.op]
-    ans.children.append(buildGenExprObj(expr))
-    return ans
+    return UnaryExpr(Operator.exp, buildGenExprObj(expr))
 def log(expr):
-    ans = UnaryExpr()
-    ans.op = Operator.log
-    ans.operatorIndex = Operator.operatorIndexDic[ans.op]
-    ans.children.append(buildGenExprObj(expr))
-    return ans
+    return UnaryExpr(Operator.log, buildGenExprObj(expr))
 def sqrt(expr):
-    ans = UnaryExpr()
-    ans.op = Operator.sqrt
-    ans.operatorIndex = Operator.operatorIndexDic[ans.op]
-    ans.children.append(buildGenExprObj(expr))
-    return ans
+    return UnaryExpr(Operator.sqrt, buildGenExprObj(expr))
 
 # transforms tree to an array of nodes. each node is an operator and the position of the
 # children of that operator (i.e. the other nodes) in the array
