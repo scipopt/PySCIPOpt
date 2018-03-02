@@ -109,16 +109,6 @@ def test_operations_poly(model):
     assert expr[Term(y,y)] == 2.0
     assert expr.terms == (x**3 + 2*y**2).terms
 
-def test_invalid_power(model):
-    m, x, y, z = model
-    assert (x + (y + 1)**0).terms == (x + 1).terms
-
-    with pytest.raises(NotImplementedError):
-        expr = (x + 1)**0.5
-
-    with pytest.raises(NotImplementedError):
-        expr = (x + 1)**(-1)
-
 def test_degree(model):
     m, x, y, z = model
     expr = Expr()
