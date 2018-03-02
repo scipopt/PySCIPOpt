@@ -662,7 +662,9 @@ def value_to_array(val, nodes):
 # haven't even consider substractions, but I guess we would interpret them as a - b = a + (-1) * b
 def expr_to_array(expr, nodes):
     op = expr.op
-    if op != Operator.varidx:
+    if op == Operator.const: # FIXME: constant expr should also have children!
+        nodes.append(tuple([op, [expr.number]]))
+    elif op != Operator.varidx:
         indices = []
         nchildren = len(expr.children)
         for child in expr.children:
