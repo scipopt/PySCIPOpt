@@ -223,6 +223,20 @@ cdef class Expr:
 
         return buildGenExprObj(self) * divisor**(-1)
 
+    def __rdiv__(self, other):
+        ''' other / self '''
+        otherexpr = buildGenExprObj(other)
+        return otherexpr.__div__(self)
+
+    def __truediv__(self,other):
+        selfexpr = buildGenExprObj(self)
+        return selfexpr.__div__(other)
+
+    def __rtruediv__(self, other):
+        ''' other / self '''
+        otherexpr = buildGenExprObj(other)
+        return otherexpr.__div__(self)
+
     def __pow__(self, other, modulo):
         if float(other).is_integer() and other >= 0:
             exp = int(other)
@@ -510,7 +524,7 @@ cdef class GenExpr:
 
         return ans
 
-    #TODO: ipow, idiv, true_div, etc
+    #TODO: ipow, idiv, etc
     def __div__(self, other):
         divisor = buildGenExprObj(other)
         # we can't divide by 0
@@ -518,6 +532,20 @@ cdef class GenExpr:
             assert divisor.number != 0.0
 
         return self * divisor**(-1)
+
+    def __rdiv__(self, other):
+        ''' other / self '''
+        otherexpr = buildGenExprObj(other)
+        return otherexpr.__div__(self)
+
+    def __truediv__(self,other):
+        selfexpr = buildGenExprObj(self)
+        return selfexpr.__div__(other)
+
+    def __rtruediv__(self, other):
+        ''' other / self '''
+        otherexpr = buildGenExprObj(other)
+        return otherexpr.__div__(self)
 
     def __neg__(self):
         return -1.0 * self

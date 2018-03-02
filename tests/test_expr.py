@@ -170,20 +170,3 @@ def test_equation(model):
     assert isinstance(equat.expr, GenExpr)
     assert equat.lhs == equat.rhs
     assert equat.lhs == 0.0
-
-def test_objective(model):
-    m, x, y, z = model
-
-    # setting linear objective
-    m.setObjective(x + y)
-
-    # using quicksum
-    m.setObjective(quicksum(2*v for v in [x, y, z]))
-
-    # setting nonlinear objective
-    with pytest.raises(ValueError):
-        m.setObjective(x**2 - y*z)
-
-    # setting affine objective
-    with pytest.raises(ValueError):
-        m.setObjective(x + y + 1)
