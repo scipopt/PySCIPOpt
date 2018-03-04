@@ -530,7 +530,6 @@ cdef class GenExpr:
         return otherexpr.__div__(self)
 
     def __truediv__(self,other):
-        print("truediv of GenExpr", self, other)
         divisor = buildGenExprObj(other)
         # we can't divide by 0
         if divisor.getOp() == Operator.const and divisor.number == 0.0:
