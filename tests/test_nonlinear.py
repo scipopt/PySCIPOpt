@@ -56,7 +56,7 @@ def test_string_poly():
 
     m.optimize()
 
-    assert abs(m.getPrimalbound() - 1.6924910128) < 1.0e-6
+    assert abs(m.getPrimalbound() - 1.6924910128) < 1.0e-5
 
 # test string with original formulation (uses GenExpr)
 def test_string():
@@ -259,6 +259,3 @@ def test_gastrans():
 
     scip.optimize()
     assert abs(scip.getPrimalbound() - 89.08584) < 1.0e-9
-
-if __name__ == '__main__':
-    test_string()
