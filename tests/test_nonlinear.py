@@ -256,6 +256,10 @@ def test_gastrans():
         else:
             scip.addCons(flow[arc]*abs(flow[arc]) - coef * pressurediff[arc] == 0.0, "pressureloss_%s_%s"%(nodes[arc[0]][0],nodes[arc[1]][0]))
 
-
+    scip.setRealParam('limits/time', 5)
     scip.optimize()
+
+    if scip.getStatus() == 'timelimit':
+        pytest.skip()
+
     assert abs(scip.getPrimalbound() - 89.08584) < 1.0e-9
