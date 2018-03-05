@@ -726,8 +726,8 @@ cdef class Model:
 
         :param name: name of the variable, generic if empty (Default value = '')
         :param vtype: type of the variable (Default value = 'C')
-        :param lb: lower bound of the variable (Default value = 0.0)
-        :param ub: upper bound of the variable (Default value = None)
+        :param lb: lower bound of the variable, use None for -infinity (Default value = 0.0)
+        :param ub: upper bound of the variable, use None for +infinity (Default value = None)
         :param obj: objective value of variable (Default value = 0.0)
         :param pricedVar: is the variable a pricing candidate? (Default value = False)
 
@@ -740,6 +740,8 @@ cdef class Model:
         cname = str_conversion(name)
         if ub is None:
             ub = SCIPinfinity(self._scip)
+        if lb is None:
+            lb = -SCIPinfinity(self._scip)
         cdef SCIP_VAR* scip_var
         if vtype in ['C', 'CONTINUOUS']:
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_CONTINUOUS))
