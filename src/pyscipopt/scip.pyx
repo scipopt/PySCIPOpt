@@ -2278,6 +2278,19 @@ cdef class Model:
         PY_SCIP_CALL(SCIPwriteParams(self._scip, fn, comments, onlychanged))
         print('wrote parameter settings to file ' + filename)
 
+    def resetParam(self, name):
+        """Reset parameter setting to its default value
+
+        :param name: parameter to reset
+
+        """
+        n = str_conversion(name)
+        PY_SCIP_CALL(SCIPresetParam(self._scip, n))
+
+    def resetParams(self):
+        """Reset parameter settings to their default values"""
+        PY_SCIP_CALL(SCIPresetParams(self._scip))
+
     def setEmphasis(self, paraemphasis, quiet = True):
         """Set emphasis settings
 
