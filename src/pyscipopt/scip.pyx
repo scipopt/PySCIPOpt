@@ -1561,35 +1561,9 @@ cdef class Model:
         :param Constraint cons: linear constraint
 
         """
-        # TODO this should ideally be handled on the SCIP side
-        cdef int _nvars
-        cdef SCIP_VAR** _vars
-        cdef SCIP_Bool _success
-        dual = 0.0
+        cdef SCIP_Real dual
+        PY_SCIP_CALL(SCIPgetDualSolVal(self._scip, cons.cons, &dual, NULL))
 
-        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
-        if not constype == 'linear':
-            raise Warning("dual solution values not available for constraints of type ", constype)
-
-        try:
-            _nvars = SCIPgetNVarsLinear(self._scip, cons.cons)
-            if cons.isOriginal():
-                transcons = <Constraint>self.getTransformedCons(cons)
-            else:
-                transcons = cons
-            dual = SCIPgetDualsolLinear(self._scip, transcons.cons)
-            if dual == 0.0 and _nvars == 1:
-                _vars = SCIPgetVarsLinear(self._scip, transcons.cons)
-                LPsol = SCIPvarGetLPSol(_vars[0])
-                rhs = SCIPgetRhsLinear(self._scip, transcons.cons)
-                lhs = SCIPgetLhsLinear(self._scip, transcons.cons)
-                if (LPsol == rhs) or (LPsol == lhs):
-                    dual = SCIPgetVarRedcost(self._scip, _vars[0])
-
-            if self.getObjectiveSense() == "maximize":
-                dual = -dual
-        except:
-            raise Warning("no dual solution available for constraint " + cons.name)
         return dual
 
     def getDualfarkasLinear(self, Constraint cons):
