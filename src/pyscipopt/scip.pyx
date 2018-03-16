@@ -572,6 +572,21 @@ cdef class Model:
         """Retrieve feasibility tolerance"""
         return SCIPfeastol(self._scip)
 
+    def getCondition(self, exact=False):
+        """Get the current LP's condition number
+
+        :param exact: whether to get an estimate or the exact value (Default value = False)
+
+        """
+        cdef SCIP_LPI* lpi
+        PY_SCIP_CALL(SCIPgetLPI(self._scip, &lpi))
+        cdef SCIP_Real quality = 0
+        if exact:
+            PY_SCIP_CALL(SCIPlpiGetRealSolQuality(lpi, SCIP_LPSOLQUALITY_EXACTCONDITION, &quality))
+        else:
+            PY_SCIP_CALL(SCIPlpiGetRealSolQuality(lpi, SCIP_LPSOLQUALITY_ESTIMCONDITION, &quality))
+
+        return quality
 
     # Objective function
 
