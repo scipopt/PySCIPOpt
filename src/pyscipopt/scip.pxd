@@ -210,6 +210,9 @@ cdef extern from "scip/scip.h":
 
         SCIP_EVENTTYPE_LPEVENT          = SCIP_EVENTTYPE_FIRSTLPSOLVED | SCIP_EVENTTYPE_LPSOLVED
 
+    ctypedef enum SCIP_LPSOLQUALITY:
+        SCIP_LPSOLQUALITY_ESTIMCONDITION = 0
+        SCIP_LPSOLQUALITY_EXACTCONDITION = 1
 
     ctypedef bint SCIP_Bool
 
@@ -802,6 +805,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPresetParams(SCIP* scip)
 
     # LPI Functions
+    SCIP_RETCODE SCIPgetLPI(SCIP* scip, SCIP_LPI** lpi)
     SCIP_RETCODE SCIPlpiCreate(SCIP_LPI** lpi, SCIP_MESSAGEHDLR* messagehdlr, const char* name, SCIP_OBJSENSE objsen)
     SCIP_RETCODE SCIPlpiFree(SCIP_LPI** lpi)
     SCIP_RETCODE SCIPlpiWriteLP(SCIP_LPI* lpi, const char* fname)
@@ -827,6 +831,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPlpiGetPrimalRay(SCIP_LPI* lpi, SCIP_Real* ray)
     SCIP_RETCODE SCIPlpiGetDualfarkas(SCIP_LPI* lpi, SCIP_Real* dualfarkas)
     SCIP_RETCODE SCIPlpiGetBasisInd(SCIP_LPI* lpi, int* bind)
+    SCIP_RETCODE SCIPlpiGetRealSolQuality(SCIP_LPI* lpi, SCIP_LPSOLQUALITY qualityindicator, SCIP_Real* quality)
     SCIP_Bool    SCIPlpiHasPrimalRay(SCIP_LPI* lpi)
     SCIP_Bool    SCIPlpiHasDualRay(SCIP_LPI* lpi)
     SCIP_Real    SCIPlpiInfinity(SCIP_LPI* lpi)
