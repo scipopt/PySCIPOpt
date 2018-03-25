@@ -8,6 +8,8 @@ notifications:
   email: false
 
 before_install:
+  - sudo apt-get install coinor-libipopt-dev
+  - exit 1
   - export VERSION=5.0.1
   - wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz
   - tar xf scipoptsuite-$VERSION.tgz
