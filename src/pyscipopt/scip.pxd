@@ -358,6 +358,23 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_EXPRDATA_MONOMIAL:
         pass
 
+    ctypedef struct SCIP_QUADVAREVENTDATA:
+        pass
+
+    ctypedef struct SCIP_QUADVARTERM:
+        SCIP_VAR* var
+        SCIP_Real lincoef
+        SCIP_Real sqrcoef
+        int nadjbilin
+        int adjbilinsize
+        int* adjbilin
+        SCIP_QUADVAREVENTDATA* eventdata
+
+    ctypedef struct SCIP_BILINTERM:
+        SCIP_VAR* var1
+        SCIP_VAR* var2
+        SCIP_Real coef
+
     # General SCIP Methods
     SCIP_RETCODE SCIPcreate(SCIP** scip)
     SCIP_RETCODE SCIPfree(SCIP** scip)
@@ -926,23 +943,6 @@ cdef extern from "scip/cons_quadratic.h":
     SCIP_VAR** SCIPgetLinearVarsQuadratic(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real* SCIPgetCoefsLinearVarsQuadratic(SCIP* scip, SCIP_CONS* cons)
     int SCIPgetNLinearVarsQuadratic(SCIP* scip, SCIP_CONS* cons)
-
-    ctypedef struct SCIP_QUADVAREVENTDATA:
-        pass
-
-    ctypedef struct SCIP_QUADVARTERM:
-        SCIP_VAR* var
-        SCIP_Real lincoef
-        SCIP_Real sqrcoef
-        int nadjbilin
-        int adjbilinsize
-        int* adjbilin
-        SCIP_QUADVAREVENTDATA* eventdata
-
-    ctypedef struct SCIP_BILINTERM:
-        SCIP_VAR* var1
-        SCIP_VAR* var2
-        SCIP_Real coef
 
 cdef extern from "scip/cons_sos1.h":
     SCIP_RETCODE SCIPcreateConsSOS1(SCIP* scip,
