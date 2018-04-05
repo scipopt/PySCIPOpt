@@ -1555,6 +1555,27 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPdelConsLocal(self._scip, cons.cons))
 
+    def getValsLinear(self, Constraint cons):
+        """Retrieve the coefficients of a linear constraint
+
+        :param Constraint cons: linear constraint to get the coefficients of
+
+        """
+        cdef SCIP_Real* _vals
+        cdef SCIP_VAR** _vars
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
+        if not constype == 'linear':
+            raise Warning("coefficients not available for constraints of type ", constype)
+
+        _vals = SCIPgetValsLinear(self._scip, cons.cons)
+        _vars = SCIPgetVarsLinear(self._scip, cons.cons)
+
+        valsdict = {}
+        for i in range(SCIPgetNVarsLinear(self._scip, cons.cons)):
+            valsdict[bytes(SCIPvarGetName(_vars[i])).decode('utf-8')] = _vals[i]
+        return valsdict
+
     def getDualsolLinear(self, Constraint cons):
         """Retrieve the dual solution to a linear constraint.
 
