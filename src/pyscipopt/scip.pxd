@@ -919,6 +919,30 @@ cdef extern from "scip/cons_quadratic.h":
     SCIP_Real SCIPgetLhsQuadratic(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real SCIPgetRhsQuadratic(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPgetActivityQuadratic(SCIP* scip, SCIP_CONS* cons, SCIP_SOL* sol, SCIP_Real* activity)
+    SCIP_BILINTERM* SCIPgetBilinTermsQuadratic(SCIP* scip, SCIP_CONS* cons)
+    int SCIPgetNBilinTermsQuadratic(SCIP* scip, SCIP_CONS* cons)
+    SCIP_QUADVARTERM* SCIPgetQuadVarTermsQuadratic(SCIP* scip, SCIP_CONS* cons)
+    int SCIPgetNQuadVarTermsQuadratic(SCIP* scip, SCIP_CONS* cons)
+    SCIP_VAR** SCIPgetLinearVarsQuadratic(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Real* SCIPgetCoefsLinearVarsQuadratic(SCIP* scip, SCIP_CONS* cons)
+    int SCIPgetNLinearVarsQuadratic(SCIP* scip, SCIP_CONS* cons)
+
+    ctypedef struct SCIP_QUADVAREVENTDATA:
+        pass
+
+    ctypedef struct SCIP_QUADVARTERM:
+        SCIP_VAR* var
+        SCIP_Real lincoef
+        SCIP_Real sqrcoef
+        int nadjbilin
+        int adjbilinsize
+        int* adjbilin
+        SCIP_QUADVAREVENTDATA* eventdata
+
+    ctypedef struct SCIP_BILINTERM:
+        SCIP_VAR* var1
+        SCIP_VAR* var2
+        SCIP_Real coef
 
 cdef extern from "scip/cons_sos1.h":
     SCIP_RETCODE SCIPcreateConsSOS1(SCIP* scip,
