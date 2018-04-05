@@ -460,6 +460,7 @@ cdef class Constraint:
         return SCIPconsIsStickingAtNode(self.cons)
 
     def isQuadratic(self):
+        """Retrieve True if constraint is quadratic"""
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.cons))).decode('UTF-8')
         return constype == 'quadratic'
 
@@ -1548,8 +1549,15 @@ cdef class Model:
         return Constraint.create(transcons)
 
     def getBilintermsQuadratic(self, Constraint cons):
+        """Retrieve bilinear terms of a quadratic constraint.
+
+        :param Constraint cons: constraint
+
+        """
         cdef SCIP_BILINTERM* _bilinterms
         cdef int _nbilinterms
+
+        assert cons.isQuadratic()
 
         _bilinterms = SCIPgetBilinTermsQuadratic(self._scip, cons.cons)
         _nbilinterms = SCIPgetNBilinTermsQuadratic(self._scip, cons.cons)
@@ -1561,8 +1569,15 @@ cdef class Model:
         return (vars1,vars2,coefs)
 
     def getQuadtermsQuadratic(self, Constraint cons):
+        """Retrieve quadratic terms of a quadratic constraint.
+
+        :param Constraint cons: constraint
+
+        """
         cdef SCIP_QUADVARTERM* _quadterms
         cdef int _nquadterms
+
+        assert cons.isQuadratic()
 
         _quadterms = SCIPgetQuadVarTermsQuadratic(self._scip, cons.cons)
         _nquadterms = SCIPgetNQuadVarTermsQuadratic(self._scip, cons.cons)
@@ -1574,9 +1589,16 @@ cdef class Model:
         return (vars,sqrcoefs,lincoefs)
 
     def getLintermsQuadratic(self, Constraint cons):
+        """Retrieve linear terms of a quadratic constraint.
+
+        :param Constraint cons: constraint
+
+        """
         cdef SCIP_VAR** _linvars
         cdef SCIP_Real* _lincoefs
         cdef int _nlinvars
+
+        assert cons.isQuadratic()
 
         _linvars = SCIPgetLinearVarsQuadratic(self._scip, cons.cons)
         _lincoefs = SCIPgetCoefsLinearVarsQuadratic(self._scip, cons.cons)
