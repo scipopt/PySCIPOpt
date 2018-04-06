@@ -1548,66 +1548,53 @@ cdef class Model:
         PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.cons, &transcons))
         return Constraint.create(transcons)
 
-    def getBilintermsQuadratic(self, Constraint cons):
-        """Retrieve bilinear terms of a quadratic constraint.
-
-        :param Constraint cons: constraint
-
-        """
-        cdef SCIP_BILINTERM* _bilinterms
-        cdef int _nbilinterms
-
-        assert cons.isQuadratic()
-
-        _bilinterms = SCIPgetBilinTermsQuadratic(self._scip, cons.cons)
-        _nbilinterms = SCIPgetNBilinTermsQuadratic(self._scip, cons.cons)
-
-        vars1 = [Variable.create(_bilinterms[i].var1) for i in range(_nbilinterms)]
-        vars2 = [Variable.create(_bilinterms[i].var2) for i in range(_nbilinterms)]
-        coefs = [_bilinterms[i].coef for i in range(_nbilinterms)]
-
-        return (vars1,vars2,coefs)
-
-    def getQuadtermsQuadratic(self, Constraint cons):
-        """Retrieve quadratic terms of a quadratic constraint.
+    def getTermsQuadratic(self, Constraint cons):
+        """Retrieve bilinear, quadratic, and linear terms of a quadratic constraint.
 
         :param Constraint cons: constraint
 
         """
         cdef SCIP_QUADVARTERM* _quadterms
-        cdef int _nquadterms
-
-        assert cons.isQuadratic()
-
-        _quadterms = SCIPgetQuadVarTermsQuadratic(self._scip, cons.cons)
-        _nquadterms = SCIPgetNQuadVarTermsQuadratic(self._scip, cons.cons)
-
-        vars = [Variable.create(_quadterms[i].var) for i in range(_nquadterms)]
-        sqrcoefs = [_quadterms[i].sqrcoef for i in range(_nquadterms)]
-        lincoefs = [_quadterms[i].lincoef for i in range(_nquadterms)]
-
-        return (vars,sqrcoefs,lincoefs)
-
-    def getLintermsQuadratic(self, Constraint cons):
-        """Retrieve linear terms of a quadratic constraint.
-
-        :param Constraint cons: constraint
-
-        """
+        cdef SCIP_BILINTERM* _bilinterms
         cdef SCIP_VAR** _linvars
         cdef SCIP_Real* _lincoefs
+        cdef int _nbilinterms
+        cdef int _nquadterms
         cdef int _nlinvars
 
         assert cons.isQuadratic()
 
+        bilinterms = []
+        quadterms  = []
+        linterms   = []
+
+        # bilinear terms
+        _bilinterms = SCIPgetBilinTermsQuadratic(self._scip, cons.cons)
+        _nbilinterms = SCIPgetNBilinTermsQuadratic(self._scip, cons.cons)
+
+        for i in range(_nbilinterms):
+            var1 = Variable.create(_bilinterms[i].var1)
+            var2 = Variable.create(_bilinterms[i].var2)
+            bilinterms.append((var1,var2,_bilinterms[i].coef))
+
+        # quadratic terms
+        _quadterms = SCIPgetQuadVarTermsQuadratic(self._scip, cons.cons)
+        _nquadterms = SCIPgetNQuadVarTermsQuadratic(self._scip, cons.cons)
+
+        for i in range(_nquadterms):
+            var = Variable.create(_quadterms[i].var)
+            quadterms.append((var,_quadterms[i].sqrcoef,_quadterms[i].lincoef))
+
+        # linear terms
         _linvars = SCIPgetLinearVarsQuadratic(self._scip, cons.cons)
         _lincoefs = SCIPgetCoefsLinearVarsQuadratic(self._scip, cons.cons)
         _nlinvars = SCIPgetNLinearVarsQuadratic(self._scip, cons.cons)
 
-        vars = [Variable.create(_linvars[i]) for i in range(_nlinvars)]
-        coefs = [_lincoefs[i] for i in range(_nlinvars)]
+        for i in range(_nlinvars):
+            var = Variable.create(_linvars[i])
+            linterms.append((var,_lincoefs[i]))
 
-        return (vars,coefs)
+        return (bilinterms, quadterms, linterms)
 
     def getConss(self):
         """Retrieve all constraints."""
