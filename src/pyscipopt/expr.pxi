@@ -272,7 +272,10 @@ cdef class Expr:
 
     def degree(self):
         '''computes highest degree of terms'''
-        return max(len(v) for v in self.terms)
+        if len(self.terms) == 0:
+            return 0
+        else:
+            return max(len(v) for v in self.terms)
 
 
 cdef class ExprCons:
