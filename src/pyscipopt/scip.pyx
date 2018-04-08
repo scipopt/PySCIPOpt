@@ -1,5 +1,6 @@
 import weakref
 from os.path import abspath
+from os.path import splitext
 import sys
 import warnings
 
@@ -732,17 +733,19 @@ cdef class Model:
         :param trans: indicates whether the transformed problem is written to file (Default value = False)
 
         """
-        if filename.find('.') < 0:
-            filename = filename + '.cip'
-            ext = str_conversion('cip')
-        else:
-            ext = str_conversion(filename.split('.')[1])
         fn = str_conversion(filename)
+        fname, fext = splitext(fn)
+        ext = str_conversion(fext)
+        if ext == '':
+            fn = str_conversion(fn + '.cip')
+            ext = str_conversion('.cip')
+        ext = str_conversion(ext[1:])
+
         if trans:
             PY_SCIP_CALL(SCIPwriteTransProblem(self._scip, fn, ext, False))
         else:
             PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, fn, ext, False))
-        print('wrote original problem to file ' + filename)
+        print('wrote original problem to file ' + fn)
 
     # Variable Functions
 
