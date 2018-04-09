@@ -291,6 +291,12 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_EXPRDATA_MONOMIAL:
         pass
 
+    ctypedef struct SCIP_BENDERS:
+        pass
+
+    ctypedef struct SCIP_BENDERSDATA:
+        pass
+
     # General SCIP Methods
     SCIP_RETCODE SCIPcreate(SCIP** scip)
     SCIP_RETCODE SCIPfree(SCIP** scip)
@@ -637,6 +643,34 @@ cdef extern from "scip/scip.h":
                                        SCIP_RETCODE (*branchruleexecps) (SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result),
                                        SCIP_BRANCHRULEDATA* branchruledata)
     SCIP_BRANCHRULEDATA* SCIPbranchruleGetData(SCIP_BRANCHRULE* branchrule)
+
+    # Benders' decomposition plugin
+    SCIP_RETCODE SCIPincludeBenders(SCIP* scip,
+                                   const char*  name,
+                                   const char*  desc,
+                                   int priority,
+                                   SCIP_Bool cutlp,
+                                   SCIP_Bool cutpseudo,
+                                   SCIP_Bool cutrelax,
+                                   SCIP_Bool shareaux,
+                                   SCIP_RETCODE (*benderscopy) (SCIP* scip, SCIP_BENDERS* benders, SCIP_Bool* valid),
+                                   SCIP_RETCODE (*bendersfree) (SCIP* scip, SCIP_BENDERS* benders),
+                                   SCIP_RETCODE (*bendersinit) (SCIP* scip, SCIP_BENDERS* benders),
+                                   SCIP_RETCODE (*bendersexit) (SCIP* scip, SCIP_BENDERS* benders),
+                                   SCIP_RETCODE (*bendersinitpre) (SCIP* scip, SCIP_BENDERS* benders),
+                                   SCIP_RETCODE (*bendersexitpre) (SCIP* scip, SCIP_BENDERS* benders),
+                                   SCIP_RETCODE (*bendersinitsol) (SCIP* scip, SCIP_BENDERS* benders),
+                                   SCIP_RETCODE (*bendersexitsol) (SCIP* scip, SCIP_BENDERS* benders),
+                                   SCIP_RETCODE (*bendersgetvar) (SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar, int probnumber),
+                                   SCIP_RETCODE (*benderscreatesub) (SCIP* scip, SCIP_BENDERS* benders, iint probnumber),
+                                   SCIP_RETCODE (*benderspresubsolve) (SCIP* scip, SCIP_BENDERS* benders),
+                                   SCIP_RETCODE (*benderssolvesub) (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, int probnumber, SCIP_Bool* infeasible),
+                                   SCIP_RETCODE (*benderspostsolve) (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, SCIP_Bool infeasible),
+                                   SCIP_RETCODE (*bendersfreesub) (SCIP* scip, SCIP_BENDERS* benders, int probnumber),
+                                   SCIP_BENDERSDATA* bendersdata)
+    SCIP_BENDERS* SCIPfindBenders(SCIP* scip, const char* name)
+    SCIP_RETCODE SCIPactivateBenders(SCIP* scip, SCIP_BENDERS* benders)
+    SCIP_BENDERSDATA* SCIPbendersGetData(SCIP_BENDERS* benders)
 
     # Numerical Methods
     SCIP_Real SCIPinfinity(SCIP* scip)
