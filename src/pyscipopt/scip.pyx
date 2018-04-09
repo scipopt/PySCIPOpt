@@ -459,6 +459,16 @@ cdef class Constraint:
         """Retrieve True if constraint is only locally valid or not added to any (sub)problem"""
         return SCIPconsIsStickingAtNode(self.cons)
 
+    def isLinear(self):
+        """Retrieve True if constraint is linear"""
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.cons))).decode('UTF-8')
+        return constype == 'linear'
+
+    def isQuadratic(self):
+        """Retrieve True if constraint is quadratic"""
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.cons))).decode('UTF-8')
+        return constype == 'quadratic'
+
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
 # - interface SCIPfreeProb()
@@ -1542,6 +1552,54 @@ cdef class Model:
         cdef SCIP_CONS* transcons
         PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.cons, &transcons))
         return Constraint.create(transcons)
+
+    def getTermsQuadratic(self, Constraint cons):
+        """Retrieve bilinear, quadratic, and linear terms of a quadratic constraint.
+
+        :param Constraint cons: constraint
+
+        """
+        cdef SCIP_QUADVARTERM* _quadterms
+        cdef SCIP_BILINTERM* _bilinterms
+        cdef SCIP_VAR** _linvars
+        cdef SCIP_Real* _lincoefs
+        cdef int _nbilinterms
+        cdef int _nquadterms
+        cdef int _nlinvars
+
+        assert cons.isQuadratic()
+
+        bilinterms = []
+        quadterms  = []
+        linterms   = []
+
+        # bilinear terms
+        _bilinterms = SCIPgetBilinTermsQuadratic(self._scip, cons.cons)
+        _nbilinterms = SCIPgetNBilinTermsQuadratic(self._scip, cons.cons)
+
+        for i in range(_nbilinterms):
+            var1 = Variable.create(_bilinterms[i].var1)
+            var2 = Variable.create(_bilinterms[i].var2)
+            bilinterms.append((var1,var2,_bilinterms[i].coef))
+
+        # quadratic terms
+        _quadterms = SCIPgetQuadVarTermsQuadratic(self._scip, cons.cons)
+        _nquadterms = SCIPgetNQuadVarTermsQuadratic(self._scip, cons.cons)
+
+        for i in range(_nquadterms):
+            var = Variable.create(_quadterms[i].var)
+            quadterms.append((var,_quadterms[i].sqrcoef,_quadterms[i].lincoef))
+
+        # linear terms
+        _linvars = SCIPgetLinearVarsQuadratic(self._scip, cons.cons)
+        _lincoefs = SCIPgetCoefsLinearVarsQuadratic(self._scip, cons.cons)
+        _nlinvars = SCIPgetNLinearVarsQuadratic(self._scip, cons.cons)
+
+        for i in range(_nlinvars):
+            var = Variable.create(_linvars[i])
+            linterms.append((var,_lincoefs[i]))
+
+        return (bilinterms, quadterms, linterms)
 
     def getConss(self):
         """Retrieve all constraints."""

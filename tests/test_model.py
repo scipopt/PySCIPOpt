@@ -18,6 +18,7 @@ def test_model():
 
     # add some constraint
     c = s.addCons(x + 2 * y >= 1.0)
+    assert c.isLinear()
     s.chgLhs(c, 5.0)
     s.chgRhs(c, 6.0)
 

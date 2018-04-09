@@ -263,3 +263,25 @@ def test_gastrans():
         pytest.skip()
 
     assert abs(scip.getPrimalbound() - 89.08584) < 1.0e-9
+
+def test_quad_coeffs():
+    """test coefficient access method for quadratic constraints"""
+    scip = Model()
+    x = scip.addVar()
+    y = scip.addVar()
+    z = scip.addVar()
+
+    c = scip.addCons(2*x*y + 0.5*x**2 + 4*z >= 10)
+    assert c.isQuadratic()
+
+    bilinterms, quadterms, linterms = scip.getTermsQuadratic(c)
+
+    assert bilinterms[0][0].name == x.name
+    assert bilinterms[0][1].name == y.name
+    assert bilinterms[0][2] == 2
+
+    assert quadterms[0][0].name == x.name
+    assert quadterms[0][1] == 0.5
+
+    assert linterms[0][0].name == z.name
+    assert linterms[0][1] == 4
