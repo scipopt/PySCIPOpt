@@ -459,6 +459,11 @@ cdef class Constraint:
         """Retrieve True if constraint is only locally valid or not added to any (sub)problem"""
         return SCIPconsIsStickingAtNode(self.cons)
 
+    def isLinear(self):
+        """Retrieve True if constraint is linear"""
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.cons))).decode('UTF-8')
+        return constype == 'linear'
+
     def isQuadratic(self):
         """Retrieve True if constraint is quadratic"""
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.cons))).decode('UTF-8')
