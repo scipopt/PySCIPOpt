@@ -2330,6 +2330,66 @@ cdef class Model:
         n = str_conversion(name)
         PY_SCIP_CALL(SCIPsetStringParam(self._scip, n, value))
 
+    def setParam(self, name, value):
+        """Set a parameter with value in int, bool, real, long, char or str.
+
+        :param name: name of parameter
+        :param value: value of parameter
+        """
+        cdef SCIP_PARAM* param
+
+        n = str_conversion(name)
+        param = SCIPgetParam(self._scip, n)
+
+        if param == NULL:
+            raise KeyError("Not a valid parameter name")
+
+        paramtype =  SCIPparamGetType(param)
+
+        if paramtype == SCIP_PARAMTYPE_BOOL:
+            PY_SCIP_CALL(SCIPsetBoolParam(self._scip, n, value))
+        elif paramtype == SCIP_PARAMTYPE_INT:
+            PY_SCIP_CALL(SCIPsetIntParam(self._scip, n, value))
+        elif paramtype == SCIP_PARAMTYPE_LONGINT:
+            PY_SCIP_CALL(SCIPsetLongintParam(self._scip, n, value))
+        elif paramtype == SCIP_PARAMTYPE_REAL:
+            PY_SCIP_CALL(SCIPsetRealParam(self._scip, n, value))
+        elif paramtype == SCIP_PARAMTYPE_CHAR:
+            PY_SCIP_CALL(SCIPsetCharParam(self._scip, n, value))
+        elif paramtype == SCIP_PARAMTYPE_STRING:
+            PY_SCIP_CALL(SCIPsetStringParam(self._scip, n, value))
+
+
+    def getParam(self, name):
+        """Get the value of a parameter of type
+        int, bool, real, long, char or str.
+
+        :param name: name of parameter
+        """
+        cdef SCIP_PARAM* param
+
+        n = str_conversion(name)
+        param = SCIPgetParam(self._scip, n)
+
+        if param == NULL:
+            raise KeyError("Not a valid parameter name")
+
+        paramtype =  SCIPparamGetType(param)
+
+        if paramtype == SCIP_PARAMTYPE_BOOL:
+            return SCIPparamGetBool(param)
+        elif paramtype == SCIP_PARAMTYPE_INT:
+            return SCIPparamGetInt(param)
+        elif paramtype == SCIP_PARAMTYPE_LONGINT:
+            return SCIPparamGetLongint(param)
+        elif paramtype == SCIP_PARAMTYPE_REAL:
+            return SCIPparamGetReal(param)
+        elif paramtype == SCIP_PARAMTYPE_CHAR:
+            return SCIPparamGetChar(param)
+        elif paramtype == SCIP_PARAMTYPE_STRING:
+            return SCIPparamGetString(param)
+
+
     def readParams(self, file):
         """Read an external parameter file.
 

@@ -820,6 +820,10 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetEmphasis(SCIP* scip, SCIP_PARAMEMPHASIS paramemphasis, SCIP_Bool quiet)
     SCIP_RETCODE SCIPresetParam(SCIP* scip, const char* name)
     SCIP_RETCODE SCIPresetParams(SCIP* scip)
+    SCIP_RETCODE SCIPsetParam(SCIP* scip,  const char*  name, void* value)
+    SCIP_PARAM* SCIPgetParam(SCIP* scip,  const char*  name)
+
+
 
     # LPI Functions
     SCIP_RETCODE SCIPgetLPI(SCIP* scip, SCIP_LPI** lpi)
@@ -1114,3 +1118,24 @@ cdef extern from "scip/cons_countsols.h":
     SCIP_RETCODE SCIPcount(SCIP* scip)
     SCIP_RETCODE SCIPsetParamsCountsols(SCIP* scip)
     SCIP_Longint SCIPgetNCountedSols(SCIP* scip, SCIP_Bool* valid)
+
+cdef extern from "scip/paramset.h":
+    ctypedef enum SCIP_PARAMTYPE:
+        SCIP_PARAMTYPE_BOOL    = 0
+        SCIP_PARAMTYPE_INT     = 1
+        SCIP_PARAMTYPE_LONGINT = 2
+        SCIP_PARAMTYPE_REAL    = 3
+        SCIP_PARAMTYPE_CHAR    = 4
+        SCIP_PARAMTYPE_STRING  = 5
+
+    ctypedef struct SCIP_PARAM:
+        pass
+
+    SCIP_PARAMTYPE SCIPparamGetType(SCIP_PARAM* param)
+    SCIP_Bool SCIPparamGetBool(SCIP_PARAM* param)
+    int SCIPparamGetInt(SCIP_PARAM* param)
+    SCIP_Longint SCIPparamGetLongint(SCIP_PARAM* param)
+    SCIP_Real SCIPparamGetReal(SCIP_PARAM* param)
+    char SCIPparamGetChar(SCIP_PARAM* param)
+    char* SCIPparamGetString(SCIP_PARAM* param)
+
