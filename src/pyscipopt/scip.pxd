@@ -105,6 +105,14 @@ cdef extern from "scip/scip.h":
         SCIP_PARAMSETTING_FAST       = 2
         SCIP_PARAMSETTING_OFF        = 3
 
+    ctypedef enum SCIP_PARAMTYPE:
+        SCIP_PARAMTYPE_BOOL    = 0
+        SCIP_PARAMTYPE_INT     = 1
+        SCIP_PARAMTYPE_LONGINT = 2
+        SCIP_PARAMTYPE_REAL    = 3
+        SCIP_PARAMTYPE_CHAR    = 4
+        SCIP_PARAMTYPE_STRING  = 5
+
     ctypedef enum SCIP_PARAMEMPHASIS:
         SCIP_PARAMEMPHASIS_DEFAULT      = 0
         SCIP_PARAMEMPHASIS_CPSOLVER     = 1
@@ -820,7 +828,6 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetEmphasis(SCIP* scip, SCIP_PARAMEMPHASIS paramemphasis, SCIP_Bool quiet)
     SCIP_RETCODE SCIPresetParam(SCIP* scip, const char* name)
     SCIP_RETCODE SCIPresetParams(SCIP* scip)
-    SCIP_RETCODE SCIPsetParam(SCIP* scip,  const char*  name, void* value)
     SCIP_PARAM* SCIPgetParam(SCIP* scip,  const char*  name)
 
 
@@ -1120,13 +1127,6 @@ cdef extern from "scip/cons_countsols.h":
     SCIP_Longint SCIPgetNCountedSols(SCIP* scip, SCIP_Bool* valid)
 
 cdef extern from "scip/paramset.h":
-    ctypedef enum SCIP_PARAMTYPE:
-        SCIP_PARAMTYPE_BOOL    = 0
-        SCIP_PARAMTYPE_INT     = 1
-        SCIP_PARAMTYPE_LONGINT = 2
-        SCIP_PARAMTYPE_REAL    = 3
-        SCIP_PARAMTYPE_CHAR    = 4
-        SCIP_PARAMTYPE_STRING  = 5
 
     ctypedef struct SCIP_PARAM:
         pass
