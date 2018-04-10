@@ -702,7 +702,7 @@ cdef class Model:
     def setProbName(self, name):
         """Set problem name"""
         n = str_conversion(name)
-        PY_SCIP_CALL(SCIPsetProbName(self._scip, name))
+        PY_SCIP_CALL(SCIPsetProbName(self._scip, n))
 
     def setSeparating(self, setting):
         """Set separating parameter settings.
