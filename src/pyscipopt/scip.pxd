@@ -394,6 +394,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetReadingTime(SCIP* scip)
     SCIP_Real SCIPgetPresolvingTime(SCIP* scip)
     SCIP_STAGE SCIPgetStage(SCIP* scip)
+    SCIP_RETCODE SCIPsetProbName(SCIP* scip, char* name)
     const char* SCIPgetProbName(SCIP* scip)
 
     # Event Methods
