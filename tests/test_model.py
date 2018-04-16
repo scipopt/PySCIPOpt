@@ -49,6 +49,9 @@ def test_model():
     assert s.getSlack(c, solution, 'rhs') == 1.0
     assert s.getActivity(c, solution) == 5.0
 
+    s.writeProblem('model')
+    s.writeProblem('model.lp')
+
     s.freeProb()
     s = Model()
     x = s.addVar("x", vtype = 'C', obj = 1.0)
