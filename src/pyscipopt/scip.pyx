@@ -1486,6 +1486,7 @@ cdef class Model:
 
     def getActivity(self, Constraint cons, Solution sol = None):
         """Retrieve activity of given constraint.
+        Can only be called after solving is completed.
 
         :param Constraint cons: linear or quadratic constraint
         :param Solution sol: solution to compute activity of, None to use current node's solution (Default value = None)
@@ -1493,6 +1494,9 @@ cdef class Model:
         """
         cdef SCIP_Real activity
         cdef SCIP_SOL* scip_sol
+
+        if not self.getStage() >= SCIP_STAGE_SOLVING:
+            raise Warning("method cannot be called before problem is solved")
 
         if isinstance(sol, Solution):
             scip_sol = sol.sol
@@ -1512,6 +1516,8 @@ cdef class Model:
 
     def getSlack(self, Constraint cons, Solution sol = None, side = None):
         """Retrieve slack of given constraint.
+        Can only be called after solving is completed.
+
 
         :param Constraint cons: linear or quadratic constraint
         :param Solution sol: solution to compute slack of, None to use current node's solution (Default value = None)
@@ -1520,6 +1526,10 @@ cdef class Model:
         """
         cdef SCIP_Real activity
         cdef SCIP_SOL* scip_sol
+
+
+        if not self.getStage() >= SCIP_STAGE_SOLVING:
+            raise Warning("method cannot be called before problem is solved")
 
         if isinstance(sol, Solution):
             scip_sol = sol.sol
