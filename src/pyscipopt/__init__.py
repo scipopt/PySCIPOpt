@@ -1,4 +1,4 @@
-__version__ = '1.4.3'
+__version__ = '1.4.4'
 
 # export user-relevant objects:
 from pyscipopt.Multidict import multidict
