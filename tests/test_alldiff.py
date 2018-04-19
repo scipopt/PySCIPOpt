@@ -1,8 +1,6 @@
 import pytest
 
 networkx = pytest.importorskip("networkx")
-plt = pytest.importorskip("matplotlib.pyplot")
-bipartite = pytest.importorskip("networkx.algorithms").bipartite
 
 from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PARAMEMPHASIS, SCIP_PARAMSETTING
 
@@ -34,7 +32,9 @@ init = [5, 3, 0, 0, 7, 0, 0, 0, 0,
         0, 0, 0, 0, 8, 0, 0, 7, 9]
 
 def plot_graph(G):
-    X,Y=bipartite.sets(G)
+    plt = pytest.importorskip("matplotlib.pyplot")
+
+    X,Y = networkx.bipartite.sets(G)
     pos = dict()
     pos.update( (n, (1, i)) for i, n in enumerate(X) ) # put nodes from X at x=1
     pos.update( (n, (2, i)) for i, n in enumerate(Y) ) # put nodes from Y at x=2
@@ -87,7 +87,13 @@ class ALLDIFFconshdlr(Conshdlr):
         # Currently we can't write event handlers in python.
 
         G, vals = self.build_value_graph(vars, domains)
-        M = networkx.bipartite.maximum_matching(G) # returns dict between nodes in matching
+        try:
+            M = networkx.bipartite.maximum_matching(G) # returns dict between nodes in matching
+        except:
+            top_nodes = {n for n, d in G.nodes(data=True) if d['bipartite'] == 0}
+            bottom_nodes = set(G) - top_nodes
+            M = networkx.bipartite.maximum_matching(G, top_nodes) # returns dict between nodes in matching
+
         if( len(M)/2 < len(vars) ):
             #print("it is infeasible: max matching of card ", len(M), " M: ", M)
             #print("Its value graph:\nV = ", G.nodes(), "\nE = ", G.edges())
@@ -125,7 +131,7 @@ class ALLDIFFconshdlr(Conshdlr):
         # compute strongly connected components of D and mark edges on the cc as useful
         gscc = networkx.strongly_connected_component_subgraphs(D, copy=False)
         for g in gscc:
-            for e in g.edges_iter():
+            for e in g.edges():
                 if G.has_edge(*e):
                     G.remove_edge(*e)
 

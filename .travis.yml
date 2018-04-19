@@ -8,19 +8,21 @@ notifications:
   email: false
 
 before_install:
-  - export VERSION=4.0.1
+  - export VERSION=5.0.1
   - wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz
   - tar xf scipoptsuite-$VERSION.tgz
   - cd scipoptsuite-$VERSION
   - mkdir build
-  - cd build; cmake .. -DCMAKE_INSTALL_PREFIX=~/scipdir; make -j8 install; cd ..
+  - cd build; cmake .. -DCMAKE_C_STANDARD=99 -DCMAKE_INSTALL_PREFIX=~/scipdir; make -j8 install; cd ..
   - cd ..
+  - rm -rf scipoptsuite-$VERSION
 
 install:
   - pip install cython networkx pytest-cov codecov
+  - # SCIPOPTDIR=~/scipdir python setup.py build_ext --inplace --define CYTHON_TRACE
   - SCIPOPTDIR=~/scipdir python setup.py install
 
-script: py.test --cov tests
+script: py.test --cov
 
 after_success:
   - codecov

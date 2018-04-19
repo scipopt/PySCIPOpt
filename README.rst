@@ -2,10 +2,9 @@
 PySCIPOpt
 =========
 
-This project provides an interface from the Python programming language
-to the `SCIP Optimization Suite <http://scip.zib.de>`__.
+This project provides an interface from Python to the `SCIP Optimization Suite <http://scip.zib.de>`__.
 
-|PyPI version| |Travis Status| |AppVeyor Status| |Coverage| |Health|
+|Gitter| |PyPI version| |Travis Status| |AppVeyor Status| |Coverage| |Health|
 
 
 Installation
@@ -35,13 +34,6 @@ following steps are always required when using the interface:
 .. code:: python
 
    model = Model("Example")  # model name is optional
-
-This is equivalent to calling (in C):
-
-.. code:: C
-
-   SCIPcreate(&scip);
-   SCIPcreateProbBasic(scip, "Example");
 
 3) Access the methods in the ``scip.pyx`` file using the solver/model
    instance ``model``, e.g.:
@@ -141,6 +133,10 @@ Therefore, you should use the following settings when trying to work with dual i
    model.setPresolve(pyscipopt.SCIP_PARAMSETTING.OFF)
    model.setHeuristics(pyscipopt.SCIP_PARAMSETTING.OFF)
    model.disablePropagation()
+
+.. |Gitter| image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Gitter
+   :target: https://gitter.im/PySCIPOpt/Lobby
 
 .. |Travis Status| image:: https://travis-ci.org/SCIP-Interfaces/PySCIPOpt.svg?branch=master
    :alt: TravisCI Status

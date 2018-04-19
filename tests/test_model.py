@@ -11,26 +11,19 @@ def test_model():
     assert x.getObj() == 1.0
     assert y.getObj() == 2.0
 
-    s.setObjective(4.0 * y, clear = False)
+    s.setObjective(4.0 * y + 10.5, clear = False)
     assert x.getObj() == 1.0
     assert y.getObj() == 4.0
+    assert s.getObjoffset() == 10.5
 
     # add some constraint
     c = s.addCons(x + 2 * y >= 1.0)
+    assert c.isLinear()
     s.chgLhs(c, 5.0)
     s.chgRhs(c, 6.0)
 
     assert s.getLhs(c) == 5.0
     assert s.getRhs(c) == 6.0
-
-    badsolution = s.createSol()
-    s.setSolVal(badsolution, x, 2.0)
-    s.setSolVal(badsolution, y, 2.0)
-    assert s.getSlack(c, badsolution) == 0.0
-    assert s.getSlack(c, badsolution, 'lhs') == 1.0
-    assert s.getSlack(c, badsolution, 'rhs') == 0.0
-    assert s.getActivity(c, badsolution) == 6.0
-    s.freeSol(badsolution)
 
     # solve problem
     s.optimize()
@@ -46,6 +39,9 @@ def test_model():
     assert s.getSlack(c, solution, 'lhs') == 0.0
     assert s.getSlack(c, solution, 'rhs') == 1.0
     assert s.getActivity(c, solution) == 5.0
+
+    s.writeProblem('model')
+    s.writeProblem('model.lp')
 
     s.freeProb()
     s = Model()

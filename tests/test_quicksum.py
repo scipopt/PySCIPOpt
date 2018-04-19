@@ -1,7 +1,7 @@
 from pyscipopt import Model, quicksum
 from pyscipopt.scip import CONST
 
-def test_quicksum():
+def test_quicksum_model():
     m = Model("quicksum")
     x = m.addVar("x")
     y = m.addVar("y")
@@ -33,3 +33,8 @@ def test_largequadratic():
     assert len(cons.expr.terms) == dim * (dim-1) / 2 + dim
     m.addCons(cons)
     # TODO: what can we test beyond the lack of crashes?
+
+if __name__ == "__main__":
+    test_quicksum()
+    test_quicksum_model()
+    test_largequadratic()

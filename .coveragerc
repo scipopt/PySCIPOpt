@@ -1,0 +1,6 @@
+[run]
+plugins = Cython.Coverage
+#source = src/pyscipopt
+#omit =
+#    tests
+#    *__init__.py
