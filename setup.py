@@ -7,6 +7,8 @@ includedir = os.path.abspath(os.path.join(scipoptdir, 'include'))
 libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
 libname = 'scip'
 
+print(scipoptdir)
+
 cythonize = True
 
 packagedir = os.path.join('src', 'pyscipopt')
