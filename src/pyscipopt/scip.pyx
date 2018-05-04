@@ -249,6 +249,41 @@ cdef class Column:
         col.col = scip_col
         return col
 
+    def getLPPos(self):
+        return SCIPcolGetLPPos(self.col)
+
+    def getBasisStatus(self):
+        """Note: returns basis status `zero` for columns not in the current SCIP LP"""
+        cdef SCIP_BASESTAT stat = SCIPcolGetBasisStatus(self.col)
+        if stat == SCIP_BASESTAT_LOWER:
+            return "lower"
+        elif stat == SCIP_BASESTAT_BASIC:
+            return "basic"
+        elif stat == SCIP_BASESTAT_UPPER:
+            return "upper"
+        elif stat == SCIP_BASESTAT_ZERO:
+            return "zero"
+        else:
+            raise Exception('SCIP returned unknown base status!')
+
+    def isIntegral(self):
+        return SCIPcolIsIntegral(self.col)
+
+    def getVar(self):
+        """gets variable this column represents"""
+        cdef SCIP_VAR* var = SCIPcolGetVar(self.col)
+        return Variable.create(var)
+
+    def getPrimsol(self):
+        """gets the primal LP solution of a column"""
+        return SCIPcolGetPrimsol(self.col)
+
+    def getLb(self):
+        return SCIPcolGetLb(self.col)
+
+    def getUb(self):
+        return SCIPcolGetUb(self.col)
+
 cdef class Row:
     """Base class holding a pointer to corresponding SCIP_ROW"""
     cdef SCIP_ROW* row
@@ -258,6 +293,57 @@ cdef class Row:
         row = Row()
         row.row = scip_row
         return row
+
+    def getLhs(self):
+        return SCIProwGetLhs(self.row)
+
+    def getRhs(self):
+        return SCIProwGetRhs(self.row)
+
+    def getConstant(self):
+        return SCIProwGetConstant(self.row)
+
+    def getLPPos(self):
+        return SCIProwGetLPPos(self.row)
+
+    def getBasisStatus(self):
+        """Note: returns basis status `basic` for rows not in the current SCIP LP"""
+        cdef SCIP_BASESTAT stat = SCIProwGetBasisStatus(self.row)
+        if stat == SCIP_BASESTAT_LOWER:
+            return "lower"
+        elif stat == SCIP_BASESTAT_BASIC:
+            return "basic"
+        elif stat == SCIP_BASESTAT_UPPER:
+            return "upper"
+        elif stat == SCIP_BASESTAT_ZERO:
+            # this shouldn't happen!
+            raise Exception('SCIP returned base status zero for a row!')
+        else:
+            raise Exception('SCIP returned unknown base status!')
+
+    def isIntegral(self):
+        return SCIProwIsIntegral(self.row)
+
+    def isModifiable(self):
+        return SCIProwIsModifiable(self.row)
+
+    def getNNonz(self):
+        """get number of nonzero entries in row vector"""
+        return SCIProwGetNNonz(self.row)
+
+    def getNLPNonz(self):
+        """get number of nonzero entries in row vector that correspond to columns currently in the SCIP LP"""
+        return SCIProwGetNLPNonz(self.row)
+
+    def getCols(self):
+        """gets list with columns of nonzero entries"""
+        cdef SCIP_COL** cols = SCIProwGetCols(self.row)
+        return [Column.create(cols[i]) for i in range(self.getNNonz())]
+
+    def getVals(self):
+        """gets list with coefficients of nonzero entries"""
+        cdef SCIP_Real* vals = SCIProwGetVals(self.row)
+        return [vals[i] for i in range(self.getNNonz())]
 
 cdef class Solution:
     """Base class holding a pointer to corresponding SCIP_SOL"""
@@ -583,6 +669,34 @@ cdef class Model:
         """Retrieve feasibility tolerance"""
         return SCIPfeastol(self._scip)
 
+    def feasFrac(self, value):
+        """returns fractional part of value, i.e. x - floor(x) in feasible tolerance: x - floor(x+feastol)"""
+        return SCIPfeasFrac(self._scip, value)
+
+    def frac(self, value):
+        """returns fractional part of value, i.e. x - floor(x) in epsilon tolerance: x - floor(x+eps)"""
+        return SCIPfrac(self._scip, value)
+
+    def isZero(self, value):
+        """returns whether abs(value) < eps"""
+        return SCIPisZero(self._scip, value)
+
+    def isFeasZero(self, value):
+        """returns whether abs(value) < feastol"""
+        return SCIPisFeasZero(self._scip, value)
+
+    def isInfinity(self, value):
+        """returns whether value is SCIP's infinity"""
+        return SCIPisInfinity(self._scip, value)
+
+    def isFeasNegative(self, value):
+        """returns whether value < -feastol"""
+        return SCIPisFeasNegative(self._scip, value)
+
+    def isLE(self, val1, val2):
+        """returns whether val1 <= val2 + eps"""
+        return SCIPisLE(self._scip, val1, val2)
+
     def getCondition(self, exact=False):
         """Get the current LP's condition number
 
@@ -881,6 +995,112 @@ cdef class Model:
             _nvars = SCIPgetNOrigVars(self._scip)
 
         return [Variable.create(_vars[i]) for i in range(_nvars)]
+
+    # LP Methods
+    def getLPColsData(self):
+        """Retrieve current LP columns"""
+        cdef SCIP_COL** cols
+        cdef int ncols
+
+        PY_SCIP_CALL(SCIPgetLPColsData(self._scip, &cols, &ncols))
+        return [Column.create(cols[i]) for i in range(ncols)]
+
+    def getLPRowsData(self):
+        """Retrieve current LP rows"""
+        cdef SCIP_ROW** rows
+        cdef int nrows
+
+        PY_SCIP_CALL(SCIPgetLPRowsData(self._scip, &rows, &nrows))
+        return [Row.create(rows[i]) for i in range(nrows)]
+
+    def getLPBasisInd(self):
+        """Gets all indices of basic columns and rows: index i >= 0 corresponds to column i, index i < 0 to row -i-1"""
+        cdef int nrows = SCIPgetNLPRows(self._scip)
+        cdef int* inds = <int *> malloc(nrows * sizeof(int))
+
+        PY_SCIP_CALL(SCIPgetLPBasisInd(self._scip, inds))
+        result = [inds[i] for i in range(nrows)]
+        free(inds)
+        return result
+
+    def getLPBInvRow(self, row):
+        """gets a row from the inverse basis matrix B^-1"""
+        # TODO: sparsity information
+        cdef int nrows = SCIPgetNLPRows(self._scip)
+        cdef SCIP_Real* coefs = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
+
+        PY_SCIP_CALL(SCIPgetLPBInvRow(self._scip, row, coefs, NULL, NULL))
+        result = [coefs[i] for i in range(nrows)]
+        free(coefs)
+        return result
+
+    def getLPBInvARow(self, row):
+        """gets a row from B^-1 * A"""
+        # TODO: sparsity information
+        cdef int ncols = SCIPgetNLPCols(self._scip)
+        cdef SCIP_Real* coefs = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
+
+        PY_SCIP_CALL(SCIPgetLPBInvARow(self._scip, row, NULL, coefs, NULL, NULL))
+        result = [coefs[i] for i in range(ncols)]
+        free(coefs)
+        return result
+
+    def isLPSolBasic(self):
+        """returns whether the current LP solution is basic, i.e. is defined by a valid simplex basis"""
+        return SCIPisLPSolBasic(self._scip)
+
+    #TODO: documentation!!
+    # LP Row Methods
+    def createEmptyRowSepa(self, Sepa sepa, name="row", lhs = 0.0, rhs = None, local = True, modifiable = False, removable = True):
+        cdef SCIP_ROW* row
+        lhs =  -SCIPinfinity(self._scip) if lhs is None else lhs
+        rhs =  SCIPinfinity(self._scip) if rhs is None else rhs
+        scip_sepa = SCIPfindSepa(self._scip, str_conversion(sepa.name))
+        PY_SCIP_CALL(SCIPcreateEmptyRowSepa(self._scip, &row, scip_sepa, str_conversion(name), lhs, rhs, local, modifiable, removable))
+        PyRow = Row.create(row)
+        # TODO: should I release the row???? No, I haven't add it, so it will actually free it
+        #PY_SCIP_CALL(SCIPreleaseRow(self._scip, &row))
+        return PyRow
+
+    def getRowActivity(self, Row row):
+        return SCIPgetRowActivity(self._scip, row.row)
+
+    def getRowLPActivity(self, Row row):
+        return SCIPgetRowLPActivity(self._scip, row.row)
+
+    # TODO: do we need this? (also do we need release var??)
+    def releaseRow(self, Row row not None):
+        PY_SCIP_CALL(SCIPreleaseRow(self._scip, &row.row))
+
+    def cacheRowExtensions(self, Row row not None):
+        PY_SCIP_CALL(SCIPcacheRowExtensions(self._scip, row.row))
+
+    def flushRowExtensions(self, Row row not None):
+        PY_SCIP_CALL(SCIPflushRowExtensions(self._scip, row.row))
+
+    def addVarToRow(self, Row row not None, Variable var not None, value):
+        PY_SCIP_CALL(SCIPaddVarToRow(self._scip, row.row, var.var, value))
+
+    def printRow(self, Row row not None):
+        """Prints row."""
+        PY_SCIP_CALL(SCIPprintRow(self._scip, row.row, NULL))
+
+    # Cutting Plane Methods
+    def addPoolCut(self, Row row not None):
+        PY_SCIP_CALL(SCIPaddPoolCut(self._scip, row.row))
+
+    def getCutEfficacy(self, Row cut not None, Solution sol = None):
+        return SCIPgetCutEfficacy(self._scip, NULL if sol is None else sol.sol, cut.row)
+
+    def isCutEfficacious(self, Row cut not None, Solution sol = None):
+        """ returns whether the cut's efficacy with respect to the given primal solution or the current LP solution is greater than the minimal cut efficacy"""
+        return SCIPisCutEfficacious(self._scip, NULL if sol is None else sol.sol, cut.row)
+
+    def addCut(self, Row cut not None, forcecut = False):
+        """adds cut to separation storage and returns whether cut has been detected to be infeasible for local bounds"""
+        cdef SCIP_Bool infeasible
+        PY_SCIP_CALL(SCIPaddRow(self._scip, cut.row, forcecut, &infeasible))
+        return infeasible
 
     # Constraint functions
     def addCons(self, cons, name='', initial=True, separate=True,
@@ -1734,6 +1954,10 @@ cdef class Model:
         PY_SCIP_CALL(SCIPsolve(self._scip))
         self._bestSol = Solution.create(SCIPgetBestSol(self._scip))
 
+    def presolve(self):
+        """Presolve the problem."""
+        PY_SCIP_CALL(SCIPpresolve(self._scip))
+
     def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):
         """Include an event handler.
 
@@ -1864,7 +2088,7 @@ cdef class Model:
         presol.model = <Model>weakref.proxy(self)
         Py_INCREF(presol)
 
-    def includeSepa(self, Sepa sepa, name, desc, priority, freq, maxbounddist, usessubscip=False, delay=False):
+    def includeSepa(self, Sepa sepa, name, desc, priority = 0, freq = 10, maxbounddist = 1.0, usessubscip=False, delay=False):
         """Include a separator
 
         :param Sepa sepa: separator
@@ -1882,6 +2106,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPincludeSepa(self._scip, n, d, priority, freq, maxbounddist, usessubscip, delay, PySepaCopy, PySepaFree,
                                           PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, PySepaExeclp, PySepaExecsol, <SCIP_SEPADATA*>sepa))
         sepa.model = <Model>weakref.proxy(self)
+        sepa.name = name
         Py_INCREF(sepa)
 
     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
@@ -2293,6 +2518,9 @@ cdef class Model:
       with open(filename, "w") as f:
           cfile = fdopen(f.fileno(), "w")
           PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
+
+    def getNLPs(self):
+        return SCIPgetNLPs(self._scip)
 
     # Verbosity Methods
 
