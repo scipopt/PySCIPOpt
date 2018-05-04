@@ -1058,8 +1058,6 @@ cdef class Model:
         scip_sepa = SCIPfindSepa(self._scip, str_conversion(sepa.name))
         PY_SCIP_CALL(SCIPcreateEmptyRowSepa(self._scip, &row, scip_sepa, str_conversion(name), lhs, rhs, local, modifiable, removable))
         PyRow = Row.create(row)
-        # TODO: should I release the row???? No, I haven't add it, so it will actually free it
-        #PY_SCIP_CALL(SCIPreleaseRow(self._scip, &row))
         return PyRow
 
     def getRowActivity(self, Row row):
@@ -2088,7 +2086,7 @@ cdef class Model:
         presol.model = <Model>weakref.proxy(self)
         Py_INCREF(presol)
 
-    def includeSepa(self, Sepa sepa, name, desc, priority = 0, freq = 10, maxbounddist = 1.0, usessubscip=False, delay=False):
+    def includeSepa(self, Sepa sepa, name, desc, priority=0, freq=10, maxbounddist=1.0, usessubscip=False, delay=False):
         """Include a separator
 
         :param Sepa sepa: separator
