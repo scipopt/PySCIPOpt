@@ -112,7 +112,7 @@ CONST = Term()
 
 # helper function
 def buildGenExprObj(expr):
-    if isinstance(expr, int) or isinstance(expr, float):
+    if _is_number(expr):
         return Constant(expr)
     elif isinstance(expr, Expr):
         # loop over terms and create a sumexpr with the sum of each term
