@@ -180,6 +180,14 @@ cdef extern from "scip/scip.h":
         SCIP_EXPR_USER      = 69
         SCIP_EXPR_LAST      = 70
 
+
+    ctypedef enum SCIP_BASESTAT:
+        SCIP_BASESTAT_LOWER = 0
+        SCIP_BASESTAT_BASIC = 1
+        SCIP_BASESTAT_UPPER = 2
+        SCIP_BASESTAT_ZERO  = 3
+
+
     ctypedef enum SCIP_EVENTTYPE:
         SCIP_EVENTTYPE_DISABLED         = 0x00000000u
         SCIP_EVENTTYPE_VARADDED         = 0x00000001u
@@ -461,6 +469,7 @@ cdef extern from "scip/scip.h":
     # Solve Methods
     SCIP_RETCODE SCIPsolve(SCIP* scip)
     SCIP_RETCODE SCIPfreeTransform(SCIP* scip)
+    SCIP_RETCODE SCIPpresolve(SCIP* scip)
 
     # Node Methods
     SCIP_NODE* SCIPgetCurrentNode(SCIP* scip)
@@ -509,6 +518,21 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPvarGetObj(SCIP_VAR* var)
     SCIP_Real SCIPvarGetLPSol(SCIP_VAR* var)
 
+    # LP Methods
+    SCIP_RETCODE SCIPgetLPColsData(SCIP* scip, SCIP_COL*** cols, int* ncols)
+    SCIP_RETCODE SCIPgetLPRowsData(SCIP* scip, SCIP_ROW*** rows, int* nrows)
+    SCIP_RETCODE SCIPgetLPBasisInd(SCIP* scip, int* basisind)
+    SCIP_RETCODE SCIPgetLPBInvRow(SCIP* scip, int r, SCIP_Real* coefs, int* inds, int* ninds)
+    SCIP_RETCODE SCIPgetLPBInvARow(SCIP* scip, int r, SCIP_Real* binvrow, SCIP_Real* coefs, int* inds, int* ninds)
+    SCIP_Bool SCIPisLPSolBasic(SCIP* scip)
+    int SCIPgetNLPRows(SCIP* scip)
+    int SCIPgetNLPCols(SCIP* scip)
+
+    # Cutting Plane Methods
+    SCIP_RETCODE SCIPaddPoolCut(SCIP* scip, SCIP_ROW* row)
+    SCIP_Real SCIPgetCutEfficacy(SCIP* scip, SCIP_SOL* sol, SCIP_ROW* cut)
+    SCIP_Bool SCIPisCutEfficacious(SCIP* scip, SCIP_SOL* sol, SCIP_ROW* cut)
+
     # Constraint Methods
     SCIP_RETCODE SCIPcaptureCons(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPreleaseCons(SCIP* scip, SCIP_CONS** cons)
@@ -534,9 +558,6 @@ cdef extern from "scip/scip.h":
     const char* SCIPconshdlrGetName(SCIP_CONSHDLR* conshdlr)
     SCIP_RETCODE SCIPdelConsLocal(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPdelCons(SCIP* scip, SCIP_CONS* cons)
-    SCIP_VAR** SCIPgetVarsLinear(SCIP* scip, SCIP_CONS* cons)
-    int SCIPgetNVarsLinear(SCIP* scip, SCIP_CONS* cons)
-    SCIP_Real* SCIPgetValsLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPsetConsChecked(SCIP *scip, SCIP_CONS *cons, SCIP_Bool check)
     SCIP_RETCODE SCIPsetConsRemovable(SCIP *scip, SCIP_CONS *cons, SCIP_Bool removable)
     SCIP_RETCODE SCIPsetConsInitial(SCIP *scip, SCIP_CONS *cons, SCIP_Bool initial)
@@ -569,6 +590,14 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPcreateRow(SCIP* scip, SCIP_ROW** row, const char* name, int len, SCIP_COL** cols, SCIP_Real* vals,
                                SCIP_Real lhs, SCIP_Real rhs, SCIP_Bool local, SCIP_Bool modifiable, SCIP_Bool removable)
     SCIP_RETCODE SCIPaddRow(SCIP* scip, SCIP_ROW* row, SCIP_Bool forcecut, SCIP_Bool* infeasible)
+    SCIP_RETCODE SCIPcreateEmptyRowSepa(SCIP* scip, SCIP_ROW** row, SCIP_SEPA* sepa, const char* name, SCIP_Real lhs, SCIP_Real rhs, SCIP_Bool local, SCIP_Bool modifiable, SCIP_Bool removable)
+    SCIP_Real SCIPgetRowActivity(SCIP* scip, SCIP_ROW* row)
+    SCIP_Real SCIPgetRowLPActivity(SCIP* scip, SCIP_ROW* row)
+    SCIP_RETCODE SCIPreleaseRow(SCIP* scip, SCIP_ROW** row)
+    SCIP_RETCODE SCIPcacheRowExtensions(SCIP* scip, SCIP_ROW* row)
+    SCIP_RETCODE SCIPflushRowExtensions(SCIP* scip, SCIP_ROW* row)
+    SCIP_RETCODE SCIPaddVarToRow(SCIP* scip, SCIP_ROW* row, SCIP_VAR* var, SCIP_Real val)
+    SCIP_RETCODE SCIPprintRow(SCIP* scip, SCIP_ROW* row, FILE* file)
 
     # Dual Solution Methods
     SCIP_Real SCIPgetDualbound(SCIP* scip)
@@ -720,6 +749,7 @@ cdef extern from "scip/scip.h":
                                  SCIP_RETCODE (*sepaexecsol) (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result, unsigned int allowlocal),
                                  SCIP_SEPADATA* sepadata)
     SCIP_SEPADATA* SCIPsepaGetData(SCIP_SEPA* sepa)
+    SCIP_SEPA* SCIPfindSepa(SCIP* scip, const char* name)
 
     # Propagator plugin
     SCIP_RETCODE SCIPincludeProp(SCIP* scip,
@@ -812,10 +842,18 @@ cdef extern from "scip/scip.h":
 
     # Numerical Methods
     SCIP_Real SCIPinfinity(SCIP* scip)
+    SCIP_Real SCIPfrac(SCIP* scip, SCIP_Real val)
+    SCIP_Real SCIPfeasFrac(SCIP* scip, SCIP_Real val)
+    SCIP_Bool SCIPisZero(SCIP* scip, SCIP_Real val)
+    SCIP_Bool SCIPisFeasZero(SCIP* scip, SCIP_Real val)
+    SCIP_Bool SCIPisFeasNegative(SCIP* scip, SCIP_Real val)
+    SCIP_Bool SCIPisInfinity(SCIP* scip, SCIP_Real val)
+    SCIP_Bool SCIPisLE(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
 
     # Statistic Methods
     SCIP_RETCODE SCIPprintStatistics(SCIP* scip, FILE* outfile)
     SCIP_Longint SCIPgetNNodes(SCIP* scip)
+    SCIP_Longint SCIPgetNLPs(SCIP* scip)
 
     # Parameter Functions
     SCIP_RETCODE SCIPsetBoolParam(SCIP* scip, char* name, SCIP_Bool value)
@@ -912,6 +950,9 @@ cdef extern from "scip/cons_linear.h":
     SCIP_Real SCIPgetLhsLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real SCIPgetRhsLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real SCIPgetActivityLinear(SCIP* scip, SCIP_CONS* cons, SCIP_SOL* sol)
+    SCIP_VAR** SCIPgetVarsLinear(SCIP* scip, SCIP_CONS* cons)
+    int SCIPgetNVarsLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Real* SCIPgetValsLinear(SCIP* scip, SCIP_CONS* cons)
 
 cdef extern from "scip/cons_quadratic.h":
     SCIP_RETCODE SCIPcreateConsQuadratic(SCIP* scip,
@@ -1141,3 +1182,24 @@ cdef extern from "scip/paramset.h":
     char SCIPparamGetChar(SCIP_PARAM* param)
     char* SCIPparamGetString(SCIP_PARAM* param)
 
+cdef extern from "scip/pub_lp.h":
+    # Row Methods
+    SCIP_Real SCIProwGetLhs(SCIP_ROW* row)
+    SCIP_Real SCIProwGetRhs(SCIP_ROW* row)
+    SCIP_Real SCIProwGetConstant(SCIP_ROW* row)
+    int SCIProwGetLPPos(SCIP_ROW* row)
+    SCIP_BASESTAT SCIProwGetBasisStatus(SCIP_ROW* row)
+    SCIP_Bool SCIProwIsIntegral(SCIP_ROW* row)
+    SCIP_Bool SCIProwIsModifiable(SCIP_ROW* row)
+    int SCIProwGetNNonz(SCIP_ROW* row)
+    int SCIProwGetNLPNonz(SCIP_ROW* row)
+    SCIP_COL** SCIProwGetCols(SCIP_ROW* row)
+    SCIP_Real* SCIProwGetVals(SCIP_ROW* row)
+    # Column Methods
+    int SCIPcolGetLPPos(SCIP_COL* col)
+    SCIP_BASESTAT SCIPcolGetBasisStatus(SCIP_COL* col)
+    SCIP_Bool SCIPcolIsIntegral(SCIP_COL* col)
+    SCIP_VAR* SCIPcolGetVar(SCIP_COL* col)
+    SCIP_Real SCIPcolGetPrimsol(SCIP_COL* col)
+    SCIP_Real SCIPcolGetLb(SCIP_COL* col)
+    SCIP_Real SCIPcolGetUb(SCIP_COL* col)
