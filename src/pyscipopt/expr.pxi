@@ -357,6 +357,15 @@ def quicksum(termlist):
         result += term
     return result
 
+def quickmul(termlist):
+    '''multiply linear expressions and constants by avoiding intermediate 
+    data structures and multiplying terms inplace
+    '''
+    result = Expr() + 1
+    for term in termlist:
+        result *= term
+    return result
+
 
 class Op:
     const = 'const'
