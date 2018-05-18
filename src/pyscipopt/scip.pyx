@@ -2178,7 +2178,7 @@ cdef class Model:
         nam = str_conversion(name)
         des = str_conversion(desc)
         PY_SCIP_CALL(SCIPincludeBranchrule(self._scip, nam, des,
-                                          maxdepth, maxdepth, maxbounddist,
+                                          priority, maxdepth, maxbounddist,
                                           PyBranchruleCopy, PyBranchruleFree, PyBranchruleInit, PyBranchruleExit,
                                           PyBranchruleInitsol, PyBranchruleExitsol, PyBranchruleExeclp, PyBranchruleExecext,
                                           PyBranchruleExecps, <SCIP_BRANCHRULEDATA*> branchrule))
