@@ -12,6 +12,7 @@ from pyscipopt.scip      import Pricer
 from pyscipopt.scip      import Prop
 from pyscipopt.scip      import Sepa
 from pyscipopt.scip      import LP
+from pyscipopt.scip      import Expr
 from pyscipopt.scip      import quicksum
 from pyscipopt.scip      import exp
 from pyscipopt.scip      import log
