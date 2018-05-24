@@ -1,5 +1,6 @@
 cdef class Sepa:
     cdef public Model model
+    cdef public str name
 
     def sepafree(self):
         pass
