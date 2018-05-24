@@ -26,13 +26,16 @@ cdef class Benders:
         print("python error in benderscreatesub: this method needs to be implemented")
         return {}
 
-    def benderspresubsolve(self):
+    def benderspresubsolve(self, solution, enfotype, checkint):
+        pass
+
+    def benderssolvesubconvex(self, solution, probnumber, onlyconvex):
         pass
 
     def benderssolvesub(self, solution, probnumber):
         pass
 
-    def benderspostsolve(self, solution, infeasible):
+    def benderspostsolve(self, solution, enfotype, mergecandidates, npriomergecands, checkint, infeasible):
         pass
 
     def bendersfreesub(self, probnumber):
@@ -103,30 +106,54 @@ cdef SCIP_RETCODE PyBendersCreatesub (SCIP* scip, SCIP_BENDERS* benders, int pro
     PyBenders.benderscreatesub(probnumber)
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersPresubsolve (SCIP* scip, SCIP_BENDERS* benders):
+cdef SCIP_RETCODE PyBendersPresubsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, SCIP_BENDERSENFOTYPE type, SCIP_Bool checkint, SCIP_Bool* skipsolve,  SCIP_RESULT* result):
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
-    PyBenders.benderspresubsolve()
+    solution = Solution()
+    solution.sol = sol
+    enfotype = type
+    result_dict = PyBenders.benderspresubsolve(solution, enfotype, checkint)
+    skipsolve[0] = result_dict.get("skipsolve", False)
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersSolvesub (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, int probnumber, SCIP_Bool* infeasible):
+cdef SCIP_RETCODE PyBendersSolvesubconvex (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, int probnumber, SCIP_Bool onlyconvex, SCIP_Real* objective, SCIP_RESULT* result):
+    cdef SCIP_BENDERSDATA* bendersdata
+    bendersdata = SCIPbendersGetData(benders)
+    PyBenders = <Benders>bendersdata
+    solution = Solution()
+    solution.sol = sol
+    result_dict = PyBenders.benderssolvesub(solution, probnumber, onlyconvex)
+    objective[0] = result_dict.get("objective", 1e+20)
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
+    return SCIP_OKAY
+
+cdef SCIP_RETCODE PyBendersSolvesub (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, int probnumber, SCIP_Real* objective, SCIP_RESULT* result):
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
     solution = Solution()
     solution.sol = sol
     result_dict = PyBenders.benderssolvesub(solution, probnumber)
-    infeasible[0] = result_dict.get("infeasible", <SCIP_Real>infeasible[0])
+    objective[0] = result_dict.get("objective", 1e+20)
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersPostsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, SCIP_Bool infeasible):
+cdef SCIP_RETCODE PyBendersPostsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol,
+        SCIP_BENDERSENFOTYPE type, int* mergecands, int npriomergecands, int nmergecands, SCIP_Bool checkint,
+        SCIP_Bool infeasible, SCIP_Bool* merged):
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
     solution = Solution()
     solution.sol = sol
-    PyBenders.benderspostsolve(solution, infeasible)
+    enfotype = type
+    mergecandidates = []
+    for i in range(nmergecands):
+        mergecandidates.append(mergecands[i])
+    result_dict = PyBenders.benderspostsolve(solution, enfotype, mergecandidates, npriomergecands, checkint, infeasible)
+    merged[0] = result_dict.get("merged", False)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyBendersFreesub (SCIP* scip, SCIP_BENDERS* benders, int probnumber):
@@ -144,6 +171,9 @@ cdef SCIP_RETCODE PyBendersGetvar (SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* 
     variable = Variable()
     variable.var = var
     result_dict = PyBenders.bendersgetvar(variable, probnumber)
-    mappedvariable = result_dict.get("mappedvar")
-    mappedvar[0] = <SCIP_VAR*>mappedvariable.var
+    mappedvariable = result_dict.get("mappedvar", None)
+    if mappedvariable is None:
+        mappedvar[0] = NULL
+    else:
+        mappedvar[0] = <SCIP_VAR*>mappedvariable.var
     return SCIP_OKAY
