@@ -144,5 +144,6 @@ cdef SCIP_RETCODE PyBendersGetvar (SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* 
     variable = Variable()
     variable.var = var
     result_dict = PyBenders.bendersgetvar(variable, probnumber)
-    mappedvar[0] = result_dict.get("mappedvar", <SCIP_VAR>mappedvar[0])
+    mappedvariable = result_dict.get("mappedvar")
+    mappedvar[0] = <SCIP_VAR*>mappedvariable.var
     return SCIP_OKAY

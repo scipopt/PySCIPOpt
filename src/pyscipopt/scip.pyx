@@ -1957,6 +1957,59 @@ cdef class Model:
         """Presolve the problem."""
         PY_SCIP_CALL(SCIPpresolve(self._scip))
 
+    # Benders' decomposition methods
+    def initBendersDefault(self, subproblems):
+        """initialises the default Benders' decomposition with a dictionary of subproblems
+
+        Keyword arguments:
+        subproblems -- a single Model instance or dictionary of Model instances
+        """
+        cdef SCIP** subprobs
+
+        # checking whether subproblems is a dictionary
+        if not isinstance(subproblems, dict):
+            isdict = False
+            nsubproblems = 1
+        else:
+            isdict = True
+            nsubproblems = len(subproblems)
+
+        # create array of SCIP instances for the subproblems
+        subprobs = <SCIP**> malloc(nsubproblems * sizeof(SCIP*))
+
+        # if subproblems is a dictionary, then the dictionary is turned into a c array
+        if isdict:
+            for idx, subprob in enumerate(subproblems.values()):
+                subprobs[idx] = <SCIP*>subprob._scip
+        else:
+            subprobs[0] = <SCIP*>subproblems._scip
+
+        # creating the default Benders' decomposition
+        PY_SCIP_CALL(SCIPcreateBendersDefault(self._scip, subprobs, nsubproblems))
+
+    def computeBestSolSubproblems(self):
+        """Solves the subproblems with the best solution to the master problem.
+        Afterwards, the best solution from each subproblem can be queried to get
+        the solution to the original problem.
+        """
+        cdef SCIP_BENDERS** _benders
+        cdef SCIP_RESULT _result
+        cdef SCIP_Bool _infeasible
+        cdef SCIP_Bool _auxviol
+        cdef int nbenders
+
+        checkint = True
+
+        nbenders = SCIPgetNActiveBenders(self._scip)
+        _benders = SCIPgetBenders(self._scip)
+
+        # solving all subproblems from all Benders' decompositions
+        for i in range(nbenders):
+            PY_SCIP_CALL(SCIPsolveBendersSubproblems(self._scip, _benders[i],
+                <SCIP_SOL*>self._bestsol, &_result, &_infeasible, &_auxviol,
+                SCIP_BENDERSENFOTYPE_CHECK, checkint))
+
+
     def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):
         """Include an event handler.
 
