@@ -10,6 +10,7 @@ from libc.stdio cimport fdopen
 
 include "expr.pxi"
 include "lp.pxi"
+include "benders.pxi"
 include "branchrule.pxi"
 include "conshdlr.pxi"
 include "event.pxi"
@@ -2184,6 +2185,35 @@ cdef class Model:
                                           PyBranchruleExecps, <SCIP_BRANCHRULEDATA*> branchrule))
         branchrule.model = <Model>weakref.proxy(self)
         Py_INCREF(branchrule)
+
+    def includeBenders(self, Benders benders, name, desc, priority=1, cutlp=True, cutpseudo=True, cutrelax=True,
+            shareaux=False):
+        """Include a Benders' decomposition.
+
+        Keyword arguments:
+        benders -- the Benders decomposition
+        name -- the name
+        desc -- the description
+        priority -- priority of the Benders' decomposition
+        cutlp -- should Benders' cuts be generated from LP solutions
+        cutpseudo -- should Benders' cuts be generated from pseudo solutions
+        cutrelax -- should Benders' cuts be generated from relaxation solutions
+        shareaux -- should the Benders' decomposition share the auxiliary variables of the highest priority Benders' decomposition
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeBenders(self._scip, n, d,
+                                            priority, cutlp, cutrelax, cutpseudo, shareaux,
+                                            PyBendersCopy, PyBendersFree, PyBendersInit, PyBendersExit, PyBendersInitpre,
+                                            PyBendersExitpre, PyBendersInitsol, PyBendersExitsol, PyBendersGetvar,
+                                            PyBendersCreatesub, PyBendersPresubsolve, PyBendersSolvesub,
+                                            PyBendersPostsolve, PyBendersFreesub,
+                                            <SCIP_BENDERSDATA*>benders))
+        cdef SCIP_BENDERS* scip_benders
+        scip_benders = SCIPfindBenders(self._scip, n)
+        PY_SCIP_CALL(SCIPactivateBenders(self._scip, scip_benders))
+        benders.model = <Model>weakref.proxy(self)
+        Py_INCREF(benders)
 
     # Solution functions
 
