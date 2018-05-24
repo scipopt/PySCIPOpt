@@ -6,7 +6,8 @@ to some facilities with fixed costs and capacities.
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt import Model, quicksum, multidict
+from pyscipopt import Model, quicksum, multidict, SCIP_PARAMSETTING
+import pdb
 
 def flp(I,J,d,M,f,c):
     """flp -- model for the capacitated facility location problem
@@ -74,9 +75,12 @@ if __name__ == "__main__":
     I,J,d,M,f,c = make_data()
     master, subprob = flp(I,J,d,M,f,c)
     # initializing the default Benders' decomposition with the subproblem
+    master.setPresolve(SCIP_PARAMSETTING.OFF)
+    master.setBoolParam("misc/allowdualreds", False)
+    master.setBoolParam("benders/copybenders", False)
     master.initBendersDefault(subprob)
 
-    # optimizing the problem
+    # optimizing the problem using Benders' decomposition
     master.optimize()
 
     # solving the subproblems to get the best solution
@@ -86,12 +90,19 @@ if __name__ == "__main__":
     y = master.data
     facilities = [j for j in y if master.getVal(y[j]) > EPS]
 
-    x = subprob.data
+    x, suby = subprob.data
     edges = [(i,j) for (i,j) in x if subprob.getVal(x[i,j]) > EPS]
 
-    print("Optimal value:", master.getObjVal() + subprob.getObjVal())
+    print("Optimal value:", master.getObjVal())
     print("Facilities at nodes:", facilities)
     print("Edges:", edges)
+
+    master.printStatistics()
+
+    # since computeBestSolSubproblems() was called above, we need to free the
+    # subproblems. This must happen after the solution is extracted, otherwise
+    # the solution will be lost
+    master.freeBendersSubproblems()
 
     try: # plot the result using networkx and matplotlib
         import networkx as NX
