@@ -1,4 +1,4 @@
-__version__ = '1.4.6'
+__version__ = '1.4.7'
 
 # export user-relevant objects:
 from pyscipopt.Multidict import multidict
@@ -12,6 +12,7 @@ from pyscipopt.scip      import Pricer
 from pyscipopt.scip      import Prop
 from pyscipopt.scip      import Sepa
 from pyscipopt.scip      import LP
+from pyscipopt.scip      import Expr
 from pyscipopt.scip      import quicksum
 from pyscipopt.scip      import quickmul
 from pyscipopt.scip      import exp
