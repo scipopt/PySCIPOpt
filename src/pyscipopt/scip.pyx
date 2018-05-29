@@ -1442,12 +1442,13 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         return Constraint.create(scip_cons)
 
-    def addConsAnd(self, vars, resvar=None, name="ANDcons",
+    def addConsAnd(self, vars, resvar, name="ANDcons",
             initial=True, separate=True, enforce=True, check=True,
             propagate=True, local=False, modifiable=False, dynamic=False,
             removable=False, stickingatnode=False):
         """Add an AND-constraint.
-        :param vars: list of variables to be included
+        :param vars: list of BINARY variables to be included (operators)
+        :param resvar: BINARY variable (resultant)
         :param name: name of the constraint (Default value = "ANDcons")
         :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
         :param separate: should the constraint be separated during LP processing? (Default value = True)
@@ -1467,7 +1468,7 @@ cdef class Model:
         _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
         for idx, var in enumerate(vars):
             _vars[idx] = (<Variable>var).var
-        _resVar = (<Variable>resvar).var if resvar is not None else NULL
+        _resVar = (<Variable>resvar).var
 
         PY_SCIP_CALL(SCIPcreateConsAnd(self._scip, &scip_cons, str_conversion(name), _resVar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
@@ -1477,16 +1478,16 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         free(_vars)
-        free(_resVar)
 
         return pyCons
 
-    def addConsOr(self, vars, resvar=None, name="ORcons",
+    def addConsOr(self, vars, resvar, name="ORcons",
             initial=True, separate=True, enforce=True, check=True,
             propagate=True, local=False, modifiable=False, dynamic=False,
             removable=False, stickingatnode=False):
         """Add an OR-constraint.
-        :param vars: list of variables to be included
+        :param vars: list of BINARY variables to be included (operators)
+        :param resvar: BINARY variable (resultant)
         :param name: name of the constraint (Default value = "ORcons")
         :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
         :param separate: should the constraint be separated during LP processing? (Default value = True)
@@ -1506,7 +1507,7 @@ cdef class Model:
         _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
         for idx, var in enumerate(vars):
             _vars[idx] = (<Variable>var).var
-        _resVar = (<Variable>resvar).var if resvar is not None else NULL
+        resVar = (<Variable>resvar).var
 
         PY_SCIP_CALL(SCIPcreateConsOr(self._scip, &scip_cons, str_conversion(name), _resVar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
@@ -1516,7 +1517,6 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         free(_vars)
-        free(_resVar)
 
         return pyCons
 
