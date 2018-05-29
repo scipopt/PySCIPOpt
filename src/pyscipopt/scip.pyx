@@ -1443,6 +1443,84 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         return Constraint.create(scip_cons)
 
+    def addConsAnd(self, vars, resvar, name="ANDcons",
+            initial=True, separate=True, enforce=True, check=True,
+            propagate=True, local=False, modifiable=False, dynamic=False,
+            removable=False, stickingatnode=False):
+        """Add an AND-constraint.
+        :param vars: list of BINARY variables to be included (operators)
+        :param resvar: BINARY variable (resultant)
+        :param name: name of the constraint (Default value = "ANDcons")
+        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        :param separate: should the constraint be separated during LP processing? (Default value = True)
+        :param enforce: should the constraint be enforced during node processing? (Default value = True)
+        :param check: should the constraint be checked for feasibility? (Default value = True)
+        :param propagate: should the constraint be propagated during node processing? (Default value = True)
+        :param local: is the constraint only valid locally? (Default value = False)
+        :param modifiable: is the constraint modifiable (subject to column generation)? (Default value = False)
+        :param dynamic: is the constraint subject to aging? (Default value = False)
+        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (Default value = False)
+        """
+        cdef SCIP_CONS* scip_cons
+
+        nvars = len(vars)
+
+        _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
+        for idx, var in enumerate(vars):
+            _vars[idx] = (<Variable>var).var
+        _resVar = (<Variable>resvar).var
+
+        PY_SCIP_CALL(SCIPcreateConsAnd(self._scip, &scip_cons, str_conversion(name), _resVar, nvars, _vars,
+            initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pyCons = Constraint.create(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        free(_vars)
+
+        return pyCons
+
+    def addConsOr(self, vars, resvar, name="ORcons",
+            initial=True, separate=True, enforce=True, check=True,
+            propagate=True, local=False, modifiable=False, dynamic=False,
+            removable=False, stickingatnode=False):
+        """Add an OR-constraint.
+        :param vars: list of BINARY variables to be included (operators)
+        :param resvar: BINARY variable (resultant)
+        :param name: name of the constraint (Default value = "ORcons")
+        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        :param separate: should the constraint be separated during LP processing? (Default value = True)
+        :param enforce: should the constraint be enforced during node processing? (Default value = True)
+        :param check: should the constraint be checked for feasibility? (Default value = True)
+        :param propagate: should the constraint be propagated during node processing? (Default value = True)
+        :param local: is the constraint only valid locally? (Default value = False)
+        :param modifiable: is the constraint modifiable (subject to column generation)? (Default value = False)
+        :param dynamic: is the constraint subject to aging? (Default value = False)
+        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (Default value = False)
+        """
+        cdef SCIP_CONS* scip_cons
+
+        nvars = len(vars)
+
+        _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
+        for idx, var in enumerate(vars):
+            _vars[idx] = (<Variable>var).var
+        _resVar = (<Variable>resvar).var
+
+        PY_SCIP_CALL(SCIPcreateConsOr(self._scip, &scip_cons, str_conversion(name), _resVar, nvars, _vars,
+            initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pyCons = Constraint.create(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        free(_vars)
+
+        return pyCons
+
     def addConsCardinality(self, consvars, cardval, indvars=None, weights=None, name="CardinalityCons",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
