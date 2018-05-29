@@ -53,7 +53,7 @@ def printOutput(m):
     rstr = "%d" % round(m.getVal(r))
     vs = getAllVarsByName(m, "v")
     vsstr = "".join(["%d" % round(m.getVal(v)) for v in vs])
-    print "Status: %s, resultant: %s, operators: %s" % (status, rstr, vsstr)
+    print("Status: %s, resultant: %s, operators: %s" % (status, rstr, vsstr))
 
 ### TEST ###
 def test_connective(m, connective, sense="min"):
@@ -68,7 +68,7 @@ def test_connective(m, connective, sense="min"):
         printOutput(m)
         return True
     except Exception as e:
-        print "%s: %s" % (e.__class__.__name__, e)
+        print("%s: %s" % (e.__class__.__name__, e))
         return False
 
 ### MAIN ###
@@ -88,8 +88,7 @@ if __name__ == "__main__":
         m = setModel(vtype, connective, noperators)
         setConss(m,vtype, vconss, nconss)
         teststr = ', '.join(list(str(ic) for ic in c))
-        #print "Test: %s" % teststr
-        print "Test: %3d operators of vtype %s; %s-constraint and sense %s; %d as constraint for %3d operator/s" % c
+        print("Test: %3d operators of vtype %s; %s-constraint and sense %s; %d as constraint for %3d operator/s" % c)
         success = test_connective(m, connective, sense) 
-        print "Is test successful? %s" % success
-        print
+        print("Is test successful? %s" % success)
+        print("\n")
