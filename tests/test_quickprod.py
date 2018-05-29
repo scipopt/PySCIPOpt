@@ -1,6 +1,7 @@
 from pyscipopt import Model, quickprod
 from pyscipopt.scip import CONST
 from operator import mul
+from functools import reduce
 
 def test_quickprod_model():
     m = Model("quickprod")
@@ -10,7 +11,7 @@ def test_quickprod_model():
     c = 2.3
 
     q = quickprod([x,y,z,c]) == 0.0
-    s = reduce(mul,[x,y,z,c],1) == 0.0
+    s = functools.reduce(mul,[x,y,z,c],1) == 0.0
 
     assert(q.expr.terms == s.expr.terms)
 
