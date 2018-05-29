@@ -1507,7 +1507,7 @@ cdef class Model:
         _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
         for idx, var in enumerate(vars):
             _vars[idx] = (<Variable>var).var
-        resVar = (<Variable>resvar).var
+        _resVar = (<Variable>resvar).var
 
         PY_SCIP_CALL(SCIPcreateConsOr(self._scip, &scip_cons, str_conversion(name), _resVar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
