@@ -1350,6 +1350,7 @@ cdef class Model:
         PY_SCIP_CALL( SCIPexprtreeFree(&exprtree) )
 
         # free more memory
+        free(scipexprs)
         free(vars)
 
         return PyCons
