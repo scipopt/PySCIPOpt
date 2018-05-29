@@ -1,5 +1,11 @@
 from pyscipopt import Model
 
+import pytest
+
+itertools = pytest.importorskip("itertools")
+product = itertools.product
+
+
 ################################################################################
 #
 # Testing AND/OR constraints
@@ -13,6 +19,8 @@ from pyscipopt import Model
 # TBI: implement and test XOR constraint
 #
 ################################################################################
+
+verbose = True
 
 ### AUXILIARY ###
 def setModel(vtype="B", name=None, imax=2):
@@ -55,40 +63,42 @@ def printOutput(m):
     vsstr = "".join(["%d" % round(m.getVal(v)) for v in vs])
     print("Status: %s, resultant: %s, operators: %s" % (status, rstr, vsstr))
 
-### TEST ###
-def test_connective(m, connective, sense="min"):
+### MAIN ###
+def main_logical(model, logical, sense="min"):
     try:
-        r = getVarByName(m,"r")
-        vs = getAllVarsByName(m, "v")
+        r = getVarByName(model, "r")
+        vs = getAllVarsByName(model, "v")
         ### addConsAnd/Or method (Xor: TBI) ###
-        _m_method = getattr(m, "addCons%s" % connective.capitalize())
-        _m_method(vs,r)
-        m.setObjective(r, sense="%simize" % sense)
-        m.optimize()
-        printOutput(m)
+        method_name = "addCons%s" % logical.capitalize()
+        try:
+            _model_addConsLogical = getattr(model, method_name)
+        except AttributeError as e:
+            if method_name == "addConsXor":
+                pytest.xfail("addCons%s has to be implemented" % method_name)
+            else:
+                raise AttributeError("addCons%s not implemented" % method_name)
+        _model_addConsLogical(vs,r)
+        model.setObjective(r, sense="%simize" % sense)
+        model.optimize()
+        assert model.getStatus() == "optimal"
+        if verbose: printOutput(model)
         return True
     except Exception as e:
-        print("%s: %s" % (e.__class__.__name__, e))
+        if verbose: print("%s: %s" % (e.__class__.__name__, e))
         return False
 
-### MAIN ###
-if __name__ == "__main__":
-    from itertools import product
-    lvtype = ["B"]#,"I","C"] #I and C may raise errors: see preamble
-    lconnective = ["and", "or"]
-    lsense = ["min","max"]
-    lnoperators = [2,20,200]
-    lvconss = [0, 1]
-    lnconss = [1, 2, None]
-    cases = list(product(lnoperators, lvtype, lconnective, lsense, lvconss, lnconss))
-    for c in cases:
-        noperators, vtype, connective, sense, vconss, nconss = c
-        if nconss == None: nconss = noperators
-        c = (noperators, vtype, connective, sense, vconss, nconss)
-        m = setModel(vtype, connective, noperators)
-        setConss(m,vtype, vconss, nconss)
-        teststr = ', '.join(list(str(ic) for ic in c))
-        print("Test: %3d operators of vtype %s; %s-constraint and sense %s; %d as constraint for %3d operator/s" % c)
-        success = test_connective(m, connective, sense) 
-        print("Is test successful? %s" % success)
-        print("\n")
+### TEST ###
+@pytest.mark.parametrize("nconss", [1, 2, "all"])
+@pytest.mark.parametrize("vconss", [0, 1])
+@pytest.mark.parametrize("sense", ["min","max"])
+@pytest.mark.parametrize("logical", ["and", "or", "xor"]) #xor TBI
+@pytest.mark.parametrize("noperators", [2,20,200])
+@pytest.mark.parametrize("vtype", ["B","I","C"]) #I and C may raise errors: see preamble
+def test_logical(noperators, vtype, logical, sense, vconss, nconss):
+    if nconss == "all": nconss = noperators
+    if vtype in ["I","C"]:
+        pytest.skip("unsupported vtype: %s" % vtype)
+    m = setModel(vtype, logical, noperators)
+    setConss(m,vtype, vconss, nconss)
+    success = main_logical(m, logical, sense)
+    assert(success), "Status is not optimal!"

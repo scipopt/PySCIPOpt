@@ -1,21 +1,21 @@
-from pyscipopt import Model, quickmul
+from pyscipopt import Model, quickprod
 from pyscipopt.scip import CONST
 from operator import mul
 
-def test_quickmul_model():
-    m = Model("quickmul")
+def test_quickprod_model():
+    m = Model("quickprod")
     x = m.addVar("x")
     y = m.addVar("y")
     z = m.addVar("z")
     c = 2.3
 
-    q = quickmul([x,y,z,c]) == 0.0
+    q = quickprod([x,y,z,c]) == 0.0
     s = reduce(mul,[x,y,z,c],1) == 0.0
 
     assert(q.expr.terms == s.expr.terms)
 
-def test_quickmul():
-    empty = quickmul(1 for i in [])
+def test_quickprod():
+    empty = quickprod(1 for i in [])
     assert len(empty.terms) == 1
     assert CONST in empty.terms
 
@@ -26,7 +26,7 @@ def test_largequadratic():
     m = Model("dense_quadratic")
     dim = 20
     x = [m.addVar("x_%d" % i) for i in range(dim)]
-    expr = quickmul((i+j+1)*x[i]*x[j]
+    expr = quickprod((i+j+1)*x[i]*x[j]
                     for i in range(dim)
                     for j in range(dim))
     cons = expr <= 1.0
@@ -36,6 +36,6 @@ def test_largequadratic():
     # TODO: what can we test beyond the lack of crashes?
 
 if __name__ == "__main__":
-    test_quickmul()
-    test_quickmul_model()
+    test_quickprod()
+    test_quickprod_model()
     test_largequadratic()
