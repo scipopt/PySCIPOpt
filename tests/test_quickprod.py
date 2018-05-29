@@ -1,7 +1,7 @@
 from pyscipopt import Model, quickprod
 from pyscipopt.scip import CONST
 from operator import mul
-from functools import reduce
+import functools
 
 def test_quickprod_model():
     m = Model("quickprod")
