@@ -357,7 +357,7 @@ def quicksum(termlist):
         result += term
     return result
 
-def quickmul(termlist):
+def quickprod(termlist):
     '''multiply linear expressions and constants by avoiding intermediate 
     data structures and multiplying terms inplace
     '''
