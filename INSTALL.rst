@@ -80,17 +80,12 @@ Suite for this to work (``cmake .. -DCMAKE_BUILD_TYPE=Debug``).
 Testing new installation
 ========================
 
-To test your brand-new installation of PySCIPOpt you need `pytest <https://pytest.org/>`__ on your system:
+To test your brand-new installation of PySCIPOpt you need `pytest <https://pytest.org/>`__ on your system. Here is the `installation procedure <https://docs.pytest.org/en/latest/getting-started.html>`__.  
 
+Tests can be run in the ``PySCIPOpt`` directory with:
 ::
 
-    sudo apt-get install python-pytest   # for Python 2, on Linux
-    sudo apt-get install python3-pytest  # for Python 3, on Linux
-
-Tests are in the ``tests`` directory. Any test can be run with:
-::
-
-   python -m pytest test_name.py
+   py.test # all the available tests
+   py.test tests/test_name.py # a specific tests/test_name.py (Unix)
    
-where ``test_name.py`` is the filename of your test. Ideally, the status of your tests must be passed or skipped.
-Running tests with pytest creates the ``__pycache__`` directory in ``tests`` and, occasionally, a ``model`` file in the working directory. They can be removed harmlessly.
+Ideally, the status of your tests must be passed or skipped. Running tests with pytest creates the ``__pycache__`` directory in ``tests`` and, occasionally, a ``model`` file in the working directory. They can be removed harmlessly.
