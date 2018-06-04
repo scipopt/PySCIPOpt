@@ -88,6 +88,7 @@ functions in python that reference the SCIP public functions included in
 the functionality you require.
 
 We are always happy to accept pull request containing patches or extensions!
+
 Please have a look at our `contribution guidelines <CONTRIBUTING.rst>`__.
 
 Gotchas
