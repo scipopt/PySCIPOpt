@@ -60,12 +60,12 @@ simple examples.
 Please notice that in most cases one needs to use a ``dictionary`` to
 specify the return values needed by SCIP.
 
-Extend the interface
-====================
+Extending the interface
+=======================
 
-The interface python-scip already provides many of the SCIP callable
-library methods. You may also extend python-scip to increase the
-functionality of this interface.The following will provide some
+PySCIPOpt already covers many of the SCIP callable
+library methods. You may also extend it to increase the
+functionality of this interface. The following will provide some
 directions on how this can be achieved:
 
 The two most important files in PySCIPOpt are the ``scip.pxd`` and
@@ -86,6 +86,9 @@ After following the previous two steps, it is then possible to create
 functions in python that reference the SCIP public functions included in
 ``scip.pxd``. This is achieved by modifying the ``scip.pyx`` file to add
 the functionality you require.
+
+We are always happy to accept pull request containing patches or extensions!
+Please have a look at our `contribution guidelines <CONTRIBUTING.rst>`__.
 
 Gotchas
 =======
@@ -122,7 +125,7 @@ Dual values
 -----------
 
 While PySCIPOpt supports access to the dual values of a solution, there are some limitations involved:
- 
+
 - Can only be used when presolving and propagation is disabled to ensure that the LP solver - which is providing the dual information - actually solves the unmodified problem.
 - Heuristics should also be disabled to avoid that the problem is solved before the LP solver is called.
 
