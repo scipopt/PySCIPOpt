@@ -996,6 +996,62 @@ cdef class Model:
 
         return [Variable.create(_vars[i]) for i in range(_nvars)]
 
+    def getVarsByAttr(self, attrname, value, match=False, first=False, *args, **kwargs):
+        """Retrieve first variable by attribute equals to value.
+
+        match (bool): partial match of value is allowed
+        first (bool): only first occurence is returned
+        """
+        if first:
+            try:
+                if match:
+                    return next(
+                        v for v in self.getVars(*args, **kwargs) if value in getattr(v, attrname, None)
+                    )
+                else:
+                    return next(
+                        v for v in self.getVars(*args, **kwargs) if getattr(v, attrname, None) == value
+                    )
+            except StopIteration:
+                return None
+        else:
+            if match:
+                return [
+                    v for v in self.getVars(*args, **kwargs) if value in getattr(v, attrname, None)
+                ]
+            else:
+                return [
+                    v for v in self.getVars(*args, **kwargs) if getattr(v, attrname, None) == value
+                ]
+
+    def getVarsByReturn(self, methname, value, match=False, first=False, *args, **kwargs):
+        """Retrieve first variable by method return equals to value.
+
+        match (bool): partial match of value is allowed
+        first (bool): only first occurence is returned
+        """
+        if first:
+            try:
+                if match:
+                    return next(
+                        v for v in self.getVars(*args, **kwargs) if value in getattr(v, methname, None)()
+                    )
+                else:
+                    return next(
+                        v for v in self.getVars(*args, **kwargs) if getattr(v, methname, None)() == value
+                    )
+            except StopIteration:
+                return None
+        else:
+            if match:
+                return [
+                    v for v in self.getVars(*args, **kwargs) if value in getattr(v, methname, None)()
+                ]
+            else:
+                return [
+                    v for v in self.getVars(*args, **kwargs) if getattr(v, methname, None)() == value
+                ]
+
     # LP Methods
     def getLPColsData(self):
         """Retrieve current LP columns"""
