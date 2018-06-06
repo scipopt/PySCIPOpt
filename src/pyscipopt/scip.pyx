@@ -887,6 +887,7 @@ cdef class Model:
         if lb is None:
             lb = -SCIPinfinity(self._scip)
         cdef SCIP_VAR* scip_var
+        vtype = vtype.upper()
         if vtype in ['C', 'CONTINUOUS']:
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_CONTINUOUS))
         elif vtype in ['B', 'BINARY']:
@@ -995,6 +996,22 @@ cdef class Model:
             _nvars = SCIPgetNOrigVars(self._scip)
 
         return [Variable.create(_vars[i]) for i in range(_nvars)]
+
+    def getVarsByName(self, name, *args, **kwargs):
+        """Retrieve variables by name"""
+        return self.getVarsByAttr("name", name, *args, **kwargs)
+
+    def getVarsByVtype(self, vtype, *args, **kwargs):
+        """Retrieve variables by variable type"""
+        vtype = vtype.upper()
+        if vtype == 'C': vtype = 'CONTINUOUS'
+        if vtype == 'B': vtype = 'BINARY'
+        if vtype == 'I': vtype = 'INTEGER'
+        return self.getVarsByReturn("vtype", vtype, *args, **kwargs)
+
+    def getVarsByDegree(self, degree, *args, **kwargs):
+        """Retrieve variables by degree (testing purpose)"""
+        return self.getVarsByReturn("degree", degree, *args, **kwargs)
 
     def getVarsByAttr(self, attrname, value, match=False, first=False, *args, **kwargs):
         """Retrieve first variable by attribute equals to value.
