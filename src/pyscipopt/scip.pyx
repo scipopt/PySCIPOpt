@@ -866,7 +866,7 @@ cdef class Model:
     # Variable Functions
 
     def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar = False):
-        """Create a new variable.
+        """Create a new variable. Default variable is non-negative and continuous.
 
         :param name: name of the variable, generic if empty (Default value = '')
         :param vtype: type of the variable (Default value = 'C')
@@ -1527,7 +1527,7 @@ cdef class Model:
             removable=False, stickingatnode=False):
         """Add a XOR-constraint.
         :param vars: list of BINARY variables to be included (operators)
-        :param rhsvar: BOOLEAN value, explicit True, False or bool(obj) is needed (rhs)
+        :param rhsvar: BOOLEAN value, explicit True, False or bool(obj) is needed (right-hand side)
         :param name: name of the constraint (Default value = "XORcons")
         :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
         :param separate: should the constraint be separated during LP processing? (Default value = True)
