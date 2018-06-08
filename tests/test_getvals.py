@@ -74,7 +74,8 @@ def test_getbyreturn(attrname, value, match, first):
         if "vtype" == attrname and valtype is not str:
             pytest.xfail("partial match unsupported for %s method" % attrname)
     m = setModel()
-    print m.getVarsByReturn(attrname, value, match, first)
+    vs = m.getVarsByReturn(attrname, value, match, first)
+    printReturnsOfVars(vs, attrname)
 
 @pytest.mark.parametrize("first", [False, True])
 @pytest.mark.parametrize("match", [False, True])
