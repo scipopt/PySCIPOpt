@@ -1087,6 +1087,24 @@ cdef extern from "scip/cons_or.h":
                                          SCIP_Bool removable,
                                          SCIP_Bool stickingatnode)
 
+cdef extern from "scip/cons_xor.h":
+    SCIP_RETCODE SCIPcreateConsXor(SCIP* scip,
+                                         SCIP_CONS** cons,
+                                         const char* name,
+                                         SCIP_Bool rhs,
+                                         int nvars,
+                                         SCIP_VAR** vars,
+                                         SCIP_Bool initial,
+                                         SCIP_Bool separate,
+                                         SCIP_Bool enforce,
+                                         SCIP_Bool check,
+                                         SCIP_Bool propagate,
+                                         SCIP_Bool local,
+                                         SCIP_Bool modifiable,
+                                         SCIP_Bool dynamic,
+                                         SCIP_Bool removable,
+                                         SCIP_Bool stickingatnode)
+
 cdef extern from "blockmemshell/memory.h":
     void BMScheckEmptyMemory()
     long long BMSgetMemoryUsed()

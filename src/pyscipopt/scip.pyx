@@ -866,7 +866,7 @@ cdef class Model:
     # Variable Functions
 
     def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar = False):
-        """Create a new variable.
+        """Create a new variable. Default variable is non-negative and continuous.
 
         :param name: name of the variable, generic if empty (Default value = '')
         :param vtype: type of the variable (Default value = 'C')
@@ -1511,6 +1511,45 @@ cdef class Model:
         _resVar = (<Variable>resvar).var
 
         PY_SCIP_CALL(SCIPcreateConsOr(self._scip, &scip_cons, str_conversion(name), _resVar, nvars, _vars,
+            initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pyCons = Constraint.create(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        free(_vars)
+
+        return pyCons
+
+    def addConsXor(self, vars, rhsvar, name="XORcons",
+            initial=True, separate=True, enforce=True, check=True,
+            propagate=True, local=False, modifiable=False, dynamic=False,
+            removable=False, stickingatnode=False):
+        """Add a XOR-constraint.
+        :param vars: list of BINARY variables to be included (operators)
+        :param rhsvar: BOOLEAN value, explicit True, False or bool(obj) is needed (right-hand side)
+        :param name: name of the constraint (Default value = "XORcons")
+        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        :param separate: should the constraint be separated during LP processing? (Default value = True)
+        :param enforce: should the constraint be enforced during node processing? (Default value = True)
+        :param check: should the constraint be checked for feasibility? (Default value = True)
+        :param propagate: should the constraint be propagated during node processing? (Default value = True)
+        :param local: is the constraint only valid locally? (Default value = False)
+        :param modifiable: is the constraint modifiable (subject to column generation)? (Default value = False)
+        :param dynamic: is the constraint subject to aging? (Default value = False)
+        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (Default value = False)
+        """
+        cdef SCIP_CONS* scip_cons
+
+        nvars = len(vars)
+
+        assert type(rhsvar) is type(bool()), "Provide BOOLEAN value as rhsvar, you gave %s." % type(rhsvar)
+        _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
+        for idx, var in enumerate(vars):
+            _vars[idx] = (<Variable>var).var
+
+        PY_SCIP_CALL(SCIPcreateConsXor(self._scip, &scip_cons, str_conversion(name), rhsvar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))

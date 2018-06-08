@@ -118,3 +118,6 @@ venv.bak/
 
 # pytest
 .pytest_chache/
+
+# model (for tests)
+model
