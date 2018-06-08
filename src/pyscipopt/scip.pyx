@@ -2592,14 +2592,6 @@ cdef class Model:
         """Retrieve the values of the best known solution.
         Can only be called after solving is completed.
 
-        :example
-        print(model.getVals())
-        print(model.getVals(transformed=True))
-        print(model.getVals([x,y,z])
-        print(model.getVals([x,z], transformed=True)
-        print(model.getVals([x])
-        print(model.getVals(x)
-
         :param vars (iterable of Variable var or None): variables to query the value of
             (Default: all variables)
         any further argument/keyword arguments is passed to getVars
