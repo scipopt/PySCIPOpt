@@ -2588,6 +2588,32 @@ cdef class Model:
             raise Warning("method cannot be called before problem is solved")
         return self.getSolVal(self._bestSol, var)
 
+    def getVals(self, vars=None, *args, **kwargs):
+        """Retrieve the values of the best known solution.
+        Can only be called after solving is completed.
+
+        :example
+        print(model.getVals())
+        print(model.getVals(transformed=True))
+        print(model.getVals([x,y,z])
+        print(model.getVals([x,z], transformed=True)
+        print(model.getVals([x])
+        print(model.getVals(x)
+
+        :param vars (iterable of Variable var or None): variables to query the value of
+            (Default: all variables)
+        any further argument/keyword arguments is passed to getVars
+            (see getVars for reference)
+
+        """
+        if vars is None:
+            vars = self.getVars(*args, **kwargs)
+        elif args or kwargs:
+            raise Exception("if vars are given, cannot give other arguments")
+        elif not getattr(vars,"__iter__", None):
+            vars = [vars]
+        return [self.getVal(v) for v in vars]
+
     def getPrimalbound(self):
         """Retrieve the best primal bound."""
         return SCIPgetPrimalbound(self._scip)
