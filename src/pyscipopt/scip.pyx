@@ -1178,6 +1178,9 @@ cdef class Model:
         PyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
+        free(vars_array)
+        free(coeffs_array)
+
         return PyCons
 
     def _addQuadCons(self, ExprCons quadcons, **kwargs):
