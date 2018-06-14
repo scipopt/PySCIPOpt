@@ -183,6 +183,16 @@ cdef class PY_SCIP_EVENTTYPE:
     ROWSIDECHANGED  = SCIP_EVENTTYPE_ROWSIDECHANGED
     SYNC            = SCIP_EVENTTYPE_SYNC
 
+cdef class PY_SCIP_LPSOLSTAT:
+    NOTSOLVED    = SCIP_LPSOLSTAT_NOTSOLVED
+    OPTIMAL      = SCIP_LPSOLSTAT_OPTIMAL
+    INFEASIBLE   = SCIP_LPSOLSTAT_INFEASIBLE
+    UNBOUNDEDRAY = SCIP_LPSOLSTAT_UNBOUNDEDRAY
+    OBJLIMIT     = SCIP_LPSOLSTAT_OBJLIMIT
+    ITERLIMIT    = SCIP_LPSOLSTAT_ITERLIMIT
+    TIMELIMIT    = SCIP_LPSOLSTAT_TIMELIMIT
+    ERROR        = SCIP_LPSOLSTAT_ERROR
+
 
 def PY_SCIP_CALL(SCIP_RETCODE rc):
     if rc == SCIP_OKAY:
@@ -745,6 +755,10 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPsetObjlimit(self._scip, objlimit))
 
+    def setObjlimit(self, objlimit):
+        """returns current limit on objective function."""
+        return SCIPgetObjlimit(self._scip)
+
     def setObjective(self, coeffs, sense = 'minimize', clear = 'true'):
         """Establish the objective function as a linear expression.
 
@@ -1010,6 +1024,9 @@ cdef class Model:
         return [Variable.create(_vars[i]) for i in range(_nvars)]
 
     # LP Methods
+    def getLPSolstat(self):
+        return SCIPgetLPSolstat(self._scip)
+
     def getLPColsData(self):
         """Retrieve current LP columns"""
         cdef SCIP_COL** cols
@@ -1070,6 +1087,15 @@ cdef class Model:
         rhs =  SCIPinfinity(self._scip) if rhs is None else rhs
         scip_sepa = SCIPfindSepa(self._scip, str_conversion(sepa.name))
         PY_SCIP_CALL(SCIPcreateEmptyRowSepa(self._scip, &row, scip_sepa, str_conversion(name), lhs, rhs, local, modifiable, removable))
+        PyRow = Row.create(row)
+        return PyRow
+
+    def createEmptyRowUnspec(self, name="row", lhs = 0.0, rhs = None, local = True, modifiable = False, removable = True):
+        """creates and captures an LP row without any coefficients from an unspecified source"""
+        cdef SCIP_ROW* row
+        lhs =  -SCIPinfinity(self._scip) if lhs is None else lhs
+        rhs =  SCIPinfinity(self._scip) if rhs is None else rhs
+        PY_SCIP_CALL(SCIPcreateEmptyRowUnspec(self._scip, &row, str_conversion(name), lhs, rhs, local, modifiable, removable))
         PyRow = Row.create(row)
         return PyRow
 
@@ -2424,6 +2450,97 @@ cdef class Model:
         scip_benders = SCIPfindBenders(self._scip, n)
         benders.model = <Model>weakref.proxy(self)
         Py_INCREF(benders)
+
+    # Diving methods (Diving is LP related)
+    def startDive(self):
+        """Initiates LP diving
+        It allows the user to change the LP in several ways, solve, change again, etc, without affecting the actual LP that has. When endDive() is called,
+        SCIP will undo all changes done and recover the LP it had before startDive
+        """
+        PY_SCIP_CALL(SCIPstartDive(self._scip))
+
+    def endDive(self):
+        """Quits probing and resets bounds and constraints to the focus node's environment"""
+        PY_SCIP_CALL(SCIPendDive(self._scip))
+
+    def chgVarObjDive(self, Variable var, newobj):
+        """changes (column) variable's objective value in current dive"""
+        PY_SCIP_CALL(SCIPchgVarObjDive(self._scip, var.var, newobj))
+
+    def chgVarLbDive(self, Variable var, newbound):
+        """changes variable's current lb in current dive"""
+        PY_SCIP_CALL(SCIPchgVarLbDive(self._scip, var.var, newbound))
+
+    def chgVarUbDive(self, Variable var, newbound):
+        """changes variable's current ub in current dive"""
+        PY_SCIP_CALL(SCIPchgVarUbDive(self._scip, var.var, newbound))
+
+    def getVarLbDive(self, Variable var):
+        """returns variable's current lb in current dive"""
+        return SCIPgetVarLbDive(self._scip, var.var)
+
+    def getVarUbDive(self, Variable var):
+        """returns variable's current ub in current dive"""
+        return SCIPgetVarUbDive(self._scip, var.var)
+
+    def chgRowLhsDive(self, Row row, newlhs):
+        """changes row lhs in current dive, change will be undone after diving
+        ends, for permanent changes use SCIPchgRowLhs()
+        """
+        PY_SCIP_CALL(SCIPchgRowLhsDive(self._scip, row.row, newlhs))
+
+    def chgRowRhsDive(self, Row row, newrhs):
+        """changes row rhs in current dive, change will be undone after diving
+        ends, for permanent changes use SCIPchgRowLhs()
+        """
+        PY_SCIP_CALL(SCIPchgRowRhsDive(self._scip, row.row, newrhs))
+
+    def addRowDive(self, Row row):
+        """adds a row to the LP in current dive"""
+        PY_SCIP_CALL(SCIPaddRowDive(self._scip, row.row))
+
+    def solveDiveLP(self, itlim = -1):
+        """solves the LP of the current dive no separation or pricing is applied
+        no separation or pricing is applied
+        :param itlim: maximal number of LP iterations to perform (Default value = -1, that is, no limit)
+        returns two booleans:
+        lperror -- if an unresolved lp error occured
+        cutoff -- whether the LP was infeasible or the objective limit was reached
+        """
+        cdef SCIP_Bool lperror
+        cdef SCIP_Bool cutoff
+
+        PY_SCIP_CALL(SCIPsolveDiveLP(self._scip, itlim, &lperror, &cutoff))
+        return lperror, cutoff
+
+    # Probing methods (Probing is tree based)
+    def startProbing(self):
+        """Initiates probing, making methods SCIPnewProbingNode(), SCIPbacktrackProbing(), SCIPchgVarLbProbing(),
+           SCIPchgVarUbProbing(), SCIPfixVarProbing(), SCIPpropagateProbing(), SCIPsolveProbingLP(), etc available
+        """
+        PY_SCIP_CALL(SCIPstartProbing(self._scip))
+
+    def endProbing(self):
+        """Quits probing and resets bounds and constraints to the focus node's environment"""
+        PY_SCIP_CALL(SCIPendProbing(self._scip))
+
+    def chgVarObjProbing(self, Variable var, newobj):
+        """changes (column) variable's objective value during probing mode"""
+        PY_SCIP_CALL(SCIPchgVarObjProbing(self._scip, var.var, newobj))
+
+    def solveProbingLP(self, itlim = -1):
+        """solves the LP at the current probing node (cannot be applied at preprocessing stage)
+        no separation or pricing is applied
+        :param itlim: maximal number of LP iterations to perform (Default value = -1, that is, no limit)
+        returns two booleans:
+        lperror -- if an unresolved lp error occured
+        cutoff -- whether the LP was infeasible or the objective limit was reached
+        """
+        cdef SCIP_Bool lperror
+        cdef SCIP_Bool cutoff
+
+        PY_SCIP_CALL(SCIPsolveProbingLP(self._scip, itlim, &lperror, &cutoff))
+        return lperror, cutoff
 
     # Solution functions
 
