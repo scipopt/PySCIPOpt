@@ -64,7 +64,7 @@ class MyConshdlr(Conshdlr):
             assert id(constraint) in ids
         return {"result": SCIP_RESULT.FEASIBLE}
 
-    def conslock(self, constraint, nlockspos, nlocksneg):
+    def conslock(self, constraint, locktype, nlockspos, nlocksneg):
         calls.add("conslock")
         assert id(constraint) in ids
 
