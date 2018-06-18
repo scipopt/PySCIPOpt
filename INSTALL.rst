@@ -44,7 +44,7 @@ your ``PATH`` environment variable:
 
 On Linux and OS X this is encoded in the generated PySCIPOpt library and therefore not necessary.
 
-Building everything form source
+Building everything from source
 ===============================
 
 PySCIPOpt requires `Cython <http://cython.org/>`__, at least version 0.21 (``pip install cython``).
@@ -76,3 +76,16 @@ To use debug information in PySCIPOpt you need to build it like this:
 
 Be aware that you will need the **debug library** of the SCIP Optimization
 Suite for this to work (``cmake .. -DCMAKE_BUILD_TYPE=Debug``).
+
+Testing new installation
+========================
+
+To test your brand-new installation of PySCIPOpt you need `pytest <https://pytest.org/>`__ on your system. Here is the `installation procedure <https://docs.pytest.org/en/latest/getting-started.html>`__.  
+
+Tests can be run in the ``PySCIPOpt`` directory with:
+::
+
+   py.test # all the available tests
+   py.test tests/test_name.py # a specific tests/test_name.py (Unix)
+   
+Ideally, the status of your tests must be passed or skipped. Running tests with pytest creates the ``__pycache__`` directory in ``tests`` and, occasionally, a ``model`` file in the working directory. They can be removed harmlessly.
