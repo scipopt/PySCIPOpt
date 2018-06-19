@@ -2708,7 +2708,8 @@ cdef class Model:
 
         """
         n = str_conversion(name)
-        PY_SCIP_CALL(SCIPsetStringParam(self._scip, n, value))
+        v = str_conversion(value)
+        PY_SCIP_CALL(SCIPsetStringParam(self._scip, n, v))
 
     def setParam(self, name, value):
         """Set a parameter with value in int, bool, real, long, char or str.
