@@ -1,7 +1,6 @@
 import pytest
 
-from pyscipopt import Model, quicksum
-from pyscipopt.scip import Expr, ExprCons, sqrt
+from pyscipopt import Model, quicksum, sqrt
 
 # test string with polynomial formulation (uses only Expr)
 def test_string_poly():
@@ -137,9 +136,9 @@ def test_circle():
     m.optimize()
 
     bestsol = m.getBestSol()
-    assert abs(m.getSolVal(bestsol, r) - 5.2543) < 1.0e-4
-    assert abs(m.getSolVal(bestsol, a) - 6.1242) < 1.0e-4
-    assert abs(m.getSolVal(bestsol, b) - 5.4702) < 1.0e-4
+    assert abs(m.getSolVal(bestsol, r) - 5.2543) < 1.0e-3
+    assert abs(m.getSolVal(bestsol, a) - 6.1242) < 1.0e-3
+    assert abs(m.getSolVal(bestsol, b) - 5.4702) < 1.0e-3
 
 # test gastrans: see example in <scip path>/examples/CallableLibrary/src/gastrans.c
 # of course there is a more pythonic/elegant way of implementing this, probably
