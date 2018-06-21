@@ -70,8 +70,10 @@ def make_data():
     return I,J,d,M,f,c
 
 
-
-if __name__ == "__main__":
+def test_flpbenders():
+    '''
+    test the Benders' decomposition plugins with the facility location problem.
+    '''
     I,J,d,M,f,c = make_data()
     master, subprob = flp(I,J,d,M,f,c)
     # initializing the default Benders' decomposition with the subproblem
@@ -104,24 +106,8 @@ if __name__ == "__main__":
     # the solution will be lost
     master.freeBendersSubproblems()
 
-    try: # plot the result using networkx and matplotlib
-        import networkx as NX
-        import matplotlib.pyplot as P
-        P.clf()
-        G = NX.Graph()
+    assert master.getObjVal() == 5.61e+03
 
-        other = [j for j in y if j not in facilities]
-        customers = ["c%s"%i for i in d]
-        G.add_nodes_from(facilities)
-        G.add_nodes_from(other)
-        G.add_nodes_from(customers)
-        for (i,j) in edges:
-            G.add_edge("c%s"%i,j)
 
-        position = NX.drawing.layout.spring_layout(G)
-        NX.draw(G,position,node_color="y",nodelist=facilities)
-        NX.draw(G,position,node_color="g",nodelist=other)
-        NX.draw(G,position,node_color="b",nodelist=customers)
-        P.show()
-    except ImportError:
-        print("install 'networkx' and 'matplotlib' for plotting")
+if __name__ == "__main__":
+    test_flpbenders()
