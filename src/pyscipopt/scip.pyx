@@ -1992,7 +1992,7 @@ cdef class Model:
         # if subproblems is a dictionary, then the dictionary is turned into a c array
         if isdict:
             for idx, subprob in enumerate(subproblems.values()):
-                subprobs[idx] = <SCIP*>subprob._scip
+                subprobs[idx] = (<Model>subprob)._scip
         else:
             subprobs[0] = (<Model>subproblems)._scip
 
