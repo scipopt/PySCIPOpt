@@ -698,6 +698,18 @@ cdef class Model:
         """returns whether val1 <= val2 + eps"""
         return SCIPisLE(self._scip, val1, val2)
 
+    def isLT(self, val1, val2):
+        """returns whether val1 < val2 - eps"""
+        return SCIPisLT(self._scip, val1, val2)
+
+    def isGE(self, val1, val2):
+        """returns whether val1 >= val2 - eps"""
+        return SCIPisGE(self._scip, val1, val2)
+
+    def isGT(self, val1, val2):
+        """returns whether val1 > val2 + eps"""
+        return SCIPisGT(self._scip, val1, val2)
+
     def getCondition(self, exact=False):
         """Get the current LP's condition number
 
