@@ -1,5 +1,5 @@
 """
-transp.py: a model for the multi-commodity transportation problem
+mctransp.py: a model for the multi-commodity transportation problem
 
 Model for solving the multi-commodity transportation problem:
 minimize the total transportation cost for satisfying demand at

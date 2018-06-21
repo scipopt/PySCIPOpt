@@ -1,5 +1,5 @@
 """
-transp.py: a model for the transportation problem
+transp_nofn.py: a model for the transportation problem
 
 Model for solving a transportation problem:
 minimize the total transportation cost for satisfying demand at

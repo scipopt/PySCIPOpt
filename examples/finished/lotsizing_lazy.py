@@ -1,5 +1,5 @@
 """
-lotsizing_cut.py:  solve the single-item lot-sizing problem.
+lotsizing_lazy.py:  solve the single-item lot-sizing problem.
 
 Approaches:
     - sils: solve the problem using the standard formulation

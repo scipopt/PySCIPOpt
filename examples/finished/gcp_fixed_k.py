@@ -1,4 +1,3 @@
-#todo
 """
 gcp_fixed_k.py: solve the graph coloring problem with fixed-k model
 
