@@ -742,7 +742,7 @@ cdef class Model:
         """
         cdef SCIP_VAR** _vars
         cdef int _nvars
-        assert isinstance(coeffs, Expr)
+        assert isinstance(coeffs, Expr), "given coefficients are not Expr but %s" % coeffs.__class__.__name__
 
         if coeffs.degree() > 1:
             raise ValueError("Nonlinear objective functions are not supported!")
@@ -1194,7 +1194,7 @@ cdef class Model:
         :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be  moved to a more global node? (Default value = False)
 
         """
-        assert isinstance(cons, ExprCons)
+        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
 
         # replace empty name with generic one
         if name == '':
@@ -1220,9 +1220,9 @@ cdef class Model:
             return self._addNonlinearCons(cons, **kwargs)
 
     def _addLinCons(self, ExprCons lincons, **kwargs):
-        assert isinstance(lincons, ExprCons)
+        assert isinstance(lincons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
 
-        assert lincons.expr.degree() <= 1
+        assert lincons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % lincons.expr.degree()
         terms = lincons.expr.terms
 
         cdef SCIP_CONS* scip_cons
@@ -1245,7 +1245,7 @@ cdef class Model:
 
     def _addQuadCons(self, ExprCons quadcons, **kwargs):
         terms = quadcons.expr.terms
-        assert quadcons.expr.degree() <= 2
+        assert quadcons.expr.degree() <= 2, "given constraint is not quadratic, degree == %d" % quadcons.expr.degree()
 
         cdef SCIP_CONS* scip_cons
         PY_SCIP_CALL(SCIPcreateConsQuadratic(
@@ -1684,7 +1684,7 @@ cdef class Model:
         return pyCons
 
 
-    def addConsIndicator(self, cons, binvar=None, name="CardinalityCons",
+    def addConsIndicator(self, cons, binvar=None, name="IndicatorCons",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
@@ -1695,7 +1695,7 @@ cdef class Model:
 
         :param cons: a linear inequality of the form "<="
         :param binvar: binary indicator variable, or None if it should be created (Default value = None)
-        :param name: name of the constraint (Default value = "CardinalityCons")
+        :param name: name of the constraint (Default value = "IndicatorCons")
         :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
         :param separate: should the constraint be separated during LP processing? (Default value = True)
         :param enforce: should the constraint be enforced during node processing? (Default value = True)
@@ -1707,7 +1707,7 @@ cdef class Model:
         :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (Default value = False)
 
         """
-        assert isinstance(cons, ExprCons)
+        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
         cdef SCIP_CONS* scip_cons
         cdef SCIP_VAR* _binVar
         if cons.lhs is not None and cons.rhs is not None:
@@ -2959,7 +2959,7 @@ cdef class Model:
         else:
             raise Warning("unrecognized optimization sense: %s" % sense)
 
-        assert isinstance(coeffs, Expr)
+        assert isinstance(coeffs, Expr), "given coefficients are not Expr but %s" % coeffs.__class__.__name__
 
         if coeffs.degree() > 1:
             raise ValueError("Nonlinear objective functions are not supported!")

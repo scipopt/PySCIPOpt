@@ -25,11 +25,14 @@ def setModel():
 @pytest.mark.parametrize("idxvar", [0,1,[3,4,6],[],None])
 def test_getvars(idxvar):
     m, vs = setModel()
-    try:
-        vs_ = [vs[i] for i in idxvar]
-    except TypeError:
-        if idxvar is None:
-            vs_ = idxvar
-        else:
-            vs_ = vs[idxvar]
-    print(m.getVals(vs_))
+    if idxvar == []:
+        assert not m.getVals([]) # empty list
+    else:
+        try:
+            vs_ = [vs[i] for i in idxvar]
+        except TypeError:
+            if idxvar is None:
+                vs_ = idxvar
+            else:
+                vs_ = vs[idxvar]
+        assert m.getVals(vs_) # non-empty list
