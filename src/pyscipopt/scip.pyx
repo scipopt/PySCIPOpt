@@ -10,6 +10,7 @@ from libc.stdio cimport fdopen
 
 include "expr.pxi"
 include "lp.pxi"
+include "benders.pxi"
 include "branchrule.pxi"
 include "conshdlr.pxi"
 include "event.pxi"
@@ -696,6 +697,18 @@ cdef class Model:
     def isLE(self, val1, val2):
         """returns whether val1 <= val2 + eps"""
         return SCIPisLE(self._scip, val1, val2)
+
+    def isLT(self, val1, val2):
+        """returns whether val1 < val2 - eps"""
+        return SCIPisLT(self._scip, val1, val2)
+
+    def isGE(self, val1, val2):
+        """returns whether val1 >= val2 - eps"""
+        return SCIPisGE(self._scip, val1, val2)
+
+    def isGT(self, val1, val2):
+        """returns whether val1 > val2 + eps"""
+        return SCIPisGT(self._scip, val1, val2)
 
     def getCondition(self, exact=False):
         """Get the current LP's condition number
@@ -2074,6 +2087,87 @@ cdef class Model:
         """Presolve the problem."""
         PY_SCIP_CALL(SCIPpresolve(self._scip))
 
+    # Benders' decomposition methods
+    def initBendersDefault(self, subproblems):
+        """initialises the default Benders' decomposition with a dictionary of subproblems
+
+        Keyword arguments:
+        subproblems -- a single Model instance or dictionary of Model instances
+        """
+        cdef SCIP** subprobs
+
+        # checking whether subproblems is a dictionary
+        if isinstance(subproblems, dict):
+            isdict = True
+            nsubproblems = len(subproblems)
+        else:
+            isdict = False
+            nsubproblems = 1
+
+        # create array of SCIP instances for the subproblems
+        subprobs = <SCIP**> malloc(nsubproblems * sizeof(SCIP*))
+
+        # if subproblems is a dictionary, then the dictionary is turned into a c array
+        if isdict:
+            for idx, subprob in enumerate(subproblems.values()):
+                subprobs[idx] = (<Model>subprob)._scip
+        else:
+            subprobs[0] = (<Model>subproblems)._scip
+
+        # creating the default Benders' decomposition
+        PY_SCIP_CALL(SCIPcreateBendersDefault(self._scip, subprobs, nsubproblems))
+
+        # activating the Benders' decomposition constraint handlers
+        self.setBoolParam("constraints/benderslp/active", True)
+        self.setBoolParam("constraints/benders/active", True)
+        #self.setIntParam("limits/maxorigsol", 0)
+
+    def computeBestSolSubproblems(self):
+        """Solves the subproblems with the best solution to the master problem.
+        Afterwards, the best solution from each subproblem can be queried to get
+        the solution to the original problem.
+
+        If the user wants to resolve the subproblems, they must free them by
+        calling freeBendersSubproblems()
+        """
+        cdef SCIP_BENDERS** _benders
+        cdef SCIP_Bool _infeasible
+        cdef int nbenders
+        cdef int nsubproblems
+
+        solvecip = True
+
+        nbenders = SCIPgetNActiveBenders(self._scip)
+        _benders = SCIPgetBenders(self._scip)
+
+        # solving all subproblems from all Benders' decompositions
+        for i in range(nbenders):
+            nsubproblems = SCIPbendersGetNSubproblems(_benders[i])
+            for j in range(nsubproblems):
+                PY_SCIP_CALL(SCIPsetupBendersSubproblem(self._scip,
+                    _benders[i], self._bestSol.sol, j))
+                PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip,
+                    _benders[i], self._bestSol.sol, j, &_infeasible,
+                    SCIP_BENDERSENFOTYPE_CHECK, solvecip, NULL))
+
+    def freeBendersSubproblems(self):
+        """Calls the free subproblem function for the Benders' decomposition.
+        This will free all subproblems for all decompositions.
+        """
+        cdef SCIP_BENDERS** _benders
+        cdef int nbenders
+        cdef int nsubproblems
+
+        nbenders = SCIPgetNActiveBenders(self._scip)
+        _benders = SCIPgetBenders(self._scip)
+
+        # solving all subproblems from all Benders' decompositions
+        for i in range(nbenders):
+            nsubproblems = SCIPbendersGetNSubproblems(_benders[i])
+            for j in range(nsubproblems):
+                PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, _benders[i],
+                    j))
+
     def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):
         """Include an event handler.
 
@@ -2302,6 +2396,34 @@ cdef class Model:
                                           PyBranchruleExecps, <SCIP_BRANCHRULEDATA*> branchrule))
         branchrule.model = <Model>weakref.proxy(self)
         Py_INCREF(branchrule)
+
+    def includeBenders(self, Benders benders, name, desc, priority=1, cutlp=True, cutpseudo=True, cutrelax=True,
+            shareaux=False):
+        """Include a Benders' decomposition.
+
+        Keyword arguments:
+        benders -- the Benders decomposition
+        name -- the name
+        desc -- the description
+        priority -- priority of the Benders' decomposition
+        cutlp -- should Benders' cuts be generated from LP solutions
+        cutpseudo -- should Benders' cuts be generated from pseudo solutions
+        cutrelax -- should Benders' cuts be generated from relaxation solutions
+        shareaux -- should the Benders' decomposition share the auxiliary variables of the highest priority Benders' decomposition
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeBenders(self._scip, n, d,
+                                            priority, cutlp, cutrelax, cutpseudo, shareaux,
+                                            PyBendersCopy, PyBendersFree, PyBendersInit, PyBendersExit, PyBendersInitpre,
+                                            PyBendersExitpre, PyBendersInitsol, PyBendersExitsol, PyBendersGetvar,
+                                            PyBendersCreatesub, PyBendersPresubsolve, PyBendersSolvesubconvex,
+                                            PyBendersSolvesub, PyBendersPostsolve, PyBendersFreesub,
+                                            <SCIP_BENDERSDATA*>benders))
+        cdef SCIP_BENDERS* scip_benders
+        scip_benders = SCIPfindBenders(self._scip, n)
+        benders.model = <Model>weakref.proxy(self)
+        Py_INCREF(benders)
 
     # Solution functions
 
@@ -2708,7 +2830,8 @@ cdef class Model:
 
         """
         n = str_conversion(name)
-        PY_SCIP_CALL(SCIPsetStringParam(self._scip, n, value))
+        v = str_conversion(value)
+        PY_SCIP_CALL(SCIPsetStringParam(self._scip, n, v))
 
     def setParam(self, name, value):
         """Set a parameter with value in int, bool, real, long, char or str.
