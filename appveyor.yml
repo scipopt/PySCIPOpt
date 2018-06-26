@@ -34,6 +34,7 @@ install:
   - ps: $env:optipw
   - cmd: "echo password: %pypipw%"
   - cmd: "echo password: %optipw%"
+  - ps: Get-ChildItem env:
   - ps: $uri  = 'http://opti-test.zib.de/v600-rc05/scip/download/release/SCIPOptSuite-6.0.0-win64-VS15.exe'
   - ps: $user = 'opti-test'
   # - ps: $pass = $(env:optipw) | ConvertTo-SecureString -AsPlainText -Force
