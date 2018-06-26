@@ -30,17 +30,17 @@ environment:
       TWINE: C:\Python36-x64\Scripts\twine
 
 install:
-  - ps: $env:pypipw
-  - ps: $env:optipw
+  - $env:pypipw
+  - $env:optipw
   - cmd: "echo password: %pypipw%"
   - cmd: "echo password: %optipw%"
   - Get-ChildItem env:
-  - ps: $uri  = 'http://opti-test.zib.de/v600-rc05/scip/download/release/SCIPOptSuite-6.0.0-win64-VS15.exe'
-  - ps: $user = 'opti-test'
+  - $uri  = 'http://opti-test.zib.de/v600-rc05/scip/download/release/SCIPOptSuite-6.0.0-win64-VS15.exe'
+  - $user = 'opti-test'
   # - ps: $pass = $(env:optipw) | ConvertTo-SecureString -AsPlainText -Force
-  - ps: $cred = New-Object Management.Automation.PSCredential ($user, ($env:optipw))
-  - ps: Invoke-WebRequest -Uri $uri -Credential $cred
-  - ps: Rename-Item "SCIPOptSuite-6.0.0-win64-VS15.exe" "scipopt-installer.exe"
+  - $cred = New-Object Management.Automation.PSCredential ($user, ($env:optipw))
+  - Invoke-WebRequest -Uri $uri -Credential $cred
+  - Rename-Item "SCIPOptSuite-6.0.0-win64-VS15.exe" "scipopt-installer.exe"
   # - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-5.0.1-win64-VS15.exe -outfile scipopt-installer.exe
   # - ps: wget --user=opti-test --password=$optipw http://opti-test.zib.de/v600-rc05/scip/download/release/SCIPOptSuite-6.0.0-win64-VS15.exe -outfile scipopt-installer.exe
   - scipopt-installer.exe /S /D=%SCIPOPTDIR%
