@@ -30,8 +30,8 @@ environment:
       TWINE: C:\Python36-x64\Scripts\twine
 
 install:
-  - ps: Get-Item Env:pypipw
-  - ps: Get-Item Env:optipw
+  - ps: Get-Item $Env:pypipw
+  - ps: Get-Item $Env:optipw
   - ps: $uri  = 'http://opti-test.zib.de/v600-rc05/scip/download/release/SCIPOptSuite-6.0.0-win64-VS15.exe'
   - ps: $user = 'opti-test'
   # - ps: $pass = $(env:optipw) | ConvertTo-SecureString -AsPlainText -Force
