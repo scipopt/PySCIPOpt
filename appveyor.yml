@@ -32,7 +32,7 @@ environment:
 install:
   - ps: $uri  = 'http://opti-test.zib.de/v600-rc05/scip/download/release/SCIPOptSuite-6.0.0-win64-VS15.exe'
   - ps: $user = 'opti-test'
-  - ps: $pass = %optipw% | ConvertTo-SecureString -AsPlainText -Force
+  - ps: $pass = $Env:optipw | ConvertTo-SecureString -AsPlainText -Force
   - ps: $cred = New-Object Management.Automation.PSCredential ($user, $pass)
   - ps: Invoke-WebRequest -Uri $uri -Credential $cred
   - ps: Rename-Item "SCIPOptSuite-6.0.0-win64-VS15.exe" "scipopt-installer.exe"
