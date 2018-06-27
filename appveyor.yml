@@ -30,15 +30,10 @@ environment:
       TWINE: C:\Python36-x64\Scripts\twine
 
 install:
-  - $env:pypipw
-  - $env:optipw
-  - cmd: "echo password: %pypipw%"
-  - cmd: "echo password: %optipw%"
-  - Get-ChildItem env:
   - $uri  = 'http://opti-test.zib.de/v600-rc05/scip/download/release/SCIPOptSuite-6.0.0-win64-VS15.exe'
   - $user = 'opti-test'
-  # - ps: $pass = $(env:optipw) | ConvertTo-SecureString -AsPlainText -Force
-  - $cred = New-Object Management.Automation.PSCredential ($user, ($env:optipw))
+  - $pass = $env:optipw | ConvertTo-SecureString -AsPlainText -Force
+  - $cred = New-Object Management.Automation.PSCredential ($user, ($pass))
   - Invoke-WebRequest -Uri $uri -Credential $cred
   - Rename-Item "SCIPOptSuite-6.0.0-win64-VS15.exe" "scipopt-installer.exe"
   # - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-5.0.1-win64-VS15.exe -outfile scipopt-installer.exe
