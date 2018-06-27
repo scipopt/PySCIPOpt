@@ -1,13 +1,11 @@
 version: '{build}'
 
-branches:
-  only:
-  - master
-
 environment:
   SCIPOPTDIR: C:\scipoptdir
-  password:
+  pypipw:
     secure: HEa8MAJyyfSv33snyK3Gleflk9SIfZBxbnTiS39hlWM=
+  optipw:
+    secure: mi/mkS8vYK1Yza0A1FB4/Q==
 
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
@@ -28,7 +26,13 @@ environment:
       TWINE: C:\Python36-x64\Scripts\twine
 
 install:
-  - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-5.0.1-win64-VS15.exe -outfile scipopt-installer.exe
+  - ps: $uri = 'http://opti-test.zib.de/v600-rc05/scip/download/release/SCIPOptSuite-6.0.0-win64-VS15.exe'
+  - ps: $user = 'opti-test'
+  - ps: $pass = $env:optipw | ConvertTo-SecureString -AsPlainText -Force
+  - ps: $cred = New-Object Management.Automation.PSCredential ($user, ($pass))
+  - ps: Invoke-WebRequest -Uri $uri -Credential $cred -OutFile 'scipopt-installer.exe'
+  # - ps: wget http://scip.zib.de/download/release/SCIPOptSuite-5.0.1-win64-VS15.exe -outfile scipopt-installer.exe
+  # - ps: wget --user=opti-test --password=$optipw http://opti-test.zib.de/v600-rc05/scip/download/release/SCIPOptSuite-6.0.0-win64-VS15.exe -outfile scipopt-installer.exe
   - scipopt-installer.exe /S /D=%SCIPOPTDIR%
   - set PATH=%SCIPOPTDIR%\bin;%PYTHON%;%PATH%
   - if [%INCLUDE_REQUIRED%]==[true] copy .\VC9-include\* %SCIPOPTDIR%\include
@@ -46,7 +50,7 @@ artifacts:
 after_test:
   - cmd: "echo [pypi] > %USERPROFILE%\\.pypirc"
   - cmd: "echo username: pyscipopt >> %USERPROFILE%\\.pypirc"
-  - cmd: "echo password: %password% >> %USERPROFILE%\\.pypirc"
+  - cmd: "echo password: %pypipw% >> %USERPROFILE%\\.pypirc"
   - python setup.py bdist_wheel
 
 on_success:
