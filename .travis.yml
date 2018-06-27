@@ -13,7 +13,7 @@ notifications:
   email: false
 
 before_install:
-  - wget --user=opti-test --password=$PASSWORD -O scipoptsuite-$VERSION.tgz http://opti-test.zib.de/scipoptsuite-v600-rc02.tgz
+  - wget --user=opti-test --password=$PASSWORD -O scipoptsuite-$VERSION.tgz http://opti-test.zib.de/scipoptsuite-v600-rc06.tgz
   - tar xf scipoptsuite-$VERSION.tgz
   - cd scipoptsuite-$VERSION
   - mkdir build
