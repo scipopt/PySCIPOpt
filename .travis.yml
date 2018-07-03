@@ -13,17 +13,15 @@ notifications:
   email: false
 
 before_install:
-  - wget --user=opti-test --password=$PASSWORD -O scipoptsuite-$VERSION.tgz http://opti-test.zib.de/scipoptsuite-v600-rc06.tgz
+  # - wget --user=opti-test --password=$PASSWORD -O scipoptsuite-$VERSION.tgz http://opti-test.zib.de/scipoptsuite-v600-rc06.tgz
+  - wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz
   - tar xf scipoptsuite-$VERSION.tgz
-  - cd scipoptsuite-$VERSION
-  - mkdir build
-  - cd build; cmake .. -DCMAKE_C_STANDARD=99 -DCMAKE_INSTALL_PREFIX=~/scipdir; make -j8 install; cd ..
-  - cd ..
-  - rm -rf scipoptsuite-$VERSION
+  - cmake -Hscipoptsuite-$VERSION -Bbuild -DCMAKE_INSTALL_PREFIX=~/scipdir
+  - cmake --build build --target install
 
 install:
   - pip install cython networkx pytest-cov #codecov
-  - # SCIPOPTDIR=~/scipdir python setup.py build_ext --inplace --define CYTHON_TRACE
+  # - SCIPOPTDIR=~/scipdir python setup.py build_ext --inplace --define CYTHON_TRACE
   - SCIPOPTDIR=~/scipdir python setup.py install
 
 script: py.test #--cov
