@@ -67,7 +67,7 @@ cdef class Conshdlr:
     def consresprop(self):
         return {}
 
-    def conslock(self, constraint, nlockspos, nlocksneg):
+    def conslock(self, constraint, locktype, nlockspos, nlocksneg):
         print("python error in conslock: this method needs to be implemented")
         return {}
 
@@ -330,13 +330,13 @@ cdef SCIP_RETCODE PyConsResprop (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS*
     PyConshdlr.consresprop()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyConsLock (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, int nlockspos, int nlocksneg):
+cdef SCIP_RETCODE PyConsLock (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SCIP_LOCKTYPE locktype, int nlockspos, int nlocksneg):
     PyConshdlr = getPyConshdlr(conshdlr)
     if cons == NULL:
-        PyConshdlr.conslock(None, nlockspos, nlocksneg)
+        PyConshdlr.conslock(None, locktype, nlockspos, nlocksneg)
     else:
         PyCons = getPyCons(cons)
-        PyConshdlr.conslock(PyCons, nlockspos, nlocksneg)
+        PyConshdlr.conslock(PyCons, locktype, nlockspos, nlocksneg)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsActive (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons):

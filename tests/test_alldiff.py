@@ -203,7 +203,7 @@ class ALLDIFFconshdlr(Conshdlr):
                 return {"result": SCIP_RESULT.INFEASIBLE}
         return {"result": SCIP_RESULT.FEASIBLE}
 
-    def conslock(self, constraint, nlockspos, nlocksneg):
+    def conslock(self, constraint, locktype, nlockspos, nlocksneg):
         for var in constraint.data.vars:
             self.model.addVarLocks(var, nlockspos + nlocksneg , nlockspos + nlocksneg)
 
