@@ -867,14 +867,14 @@ cdef class Model:
         fn = str_conversion(filename)
         fn, ext = splitext(fn)
         if len(ext) == 0:
-            filename += '.cip'
             ext = str_conversion('.cip')
+        fn = fn + ext
         ext = ext[1:]
         if trans:
             PY_SCIP_CALL(SCIPwriteTransProblem(self._scip, fn, ext, False))
         else:
             PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, fn, ext, False))
-        print('wrote problem to file ' + filename)
+        print('wrote problem to file ' + str(fn))
 
     # Variable Functions
 
