@@ -25,7 +25,10 @@ def markowitz(I,sigma,r,alpha):
     model.addCons(quicksum(r[i]*x[i] for i in I) >= alpha)
     model.addCons(quicksum(x[i] for i in I) == 1)
 
-    model.setObjective(quicksum(sigma[i]**2 * x[i] * x[i] for i in I), "minimize")
+    # set nonlinear objective: SCIP only allow for linear objectives hence the following
+    obj = model.addVar(vtype="C", name="objective", lb = None, ub = None)  # auxiliary variable to represent objective
+    model.addCons(quicksum(sigma[i]**2 * x[i] * x[i] for i in I) <= obj)
+    model.setObjective(obj, "minimize")
 
     model.data = x
     return model
