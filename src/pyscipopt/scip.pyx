@@ -2968,13 +2968,13 @@ cdef class Model:
         paramtype =  SCIPparamGetType(param)
 
         if paramtype == SCIP_PARAMTYPE_BOOL:
-            PY_SCIP_CALL(SCIPsetBoolParam(self._scip, n, value))
+            PY_SCIP_CALL(SCIPsetBoolParam(self._scip, n, bool(int(value))))
         elif paramtype == SCIP_PARAMTYPE_INT:
-            PY_SCIP_CALL(SCIPsetIntParam(self._scip, n, value))
+            PY_SCIP_CALL(SCIPsetIntParam(self._scip, n, int(value)))
         elif paramtype == SCIP_PARAMTYPE_LONGINT:
-            PY_SCIP_CALL(SCIPsetLongintParam(self._scip, n, value))
+            PY_SCIP_CALL(SCIPsetLongintParam(self._scip, n, int(value)))
         elif paramtype == SCIP_PARAMTYPE_REAL:
-            PY_SCIP_CALL(SCIPsetRealParam(self._scip, n, value))
+            PY_SCIP_CALL(SCIPsetRealParam(self._scip, n, float(value)))
         elif paramtype == SCIP_PARAMTYPE_CHAR:
             PY_SCIP_CALL(SCIPsetCharParam(self._scip, n, value))
         elif paramtype == SCIP_PARAMTYPE_STRING:
