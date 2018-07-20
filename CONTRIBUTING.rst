@@ -20,13 +20,13 @@ Code contributions are very welcome and should comply to a few rules:
 
 6. Before implementing a new PySCIPOpt feature, check whether the feature exists in SCIP. If so, implement it as a pure wrapper, mimicking SCIP whenever possible. If the new feature does not exist in SCIP but it is close to an existing one, consider if implementing that way is substantially convenient (e.g. Pythonic). If it does something completely different, you are welcome to pull your request and discuss the implementation.
 
-For general reference, we suggest:
+   For general reference, we suggest:
 
-- `PySCIPOpt README <README.rst>`__;
-- `SCIP documentation <http://scip.zib.de/doc/html/>`__;
-- `SCIP mailing list <https://listserv.zib.de/mailman/listinfo/scip/>`__ which can be easily searched with search engines (e.g. `Google <http://www.google.com/#q=site:listserv.zib.de%2Fpipermail%2Fscip>`__);
-- `open and closed PySCIPOpt issues <https://github.com/SCIP-Interfaces/PySCIPOpt/issues?utf8=%E2%9C%93&q=is%3Aissue>`__;
-- `SCIP/PySCIPOpt Stack Exchange <https://stackoverflow.com/questions/tagged/scip>`__.
+   - `PySCIPOpt README <README.rst>`__;
+   - `SCIP documentation <http://scip.zib.de/doc/html/>`__;
+   - `SCIP mailing list <https://listserv.zib.de/mailman/listinfo/scip/>`__ which can be easily searched with search engines (e.g. `Google <http://www.google.com/#q=site:listserv.zib.de%2Fpipermail%2Fscip>`__);
+   - `open and closed PySCIPOpt issues <https://github.com/SCIP-Interfaces/PySCIPOpt/issues?utf8=%E2%9C%93&q=is%3Aissue>`__;
+   - `SCIP/PySCIPOpt Stack Exchange <https://stackoverflow.com/questions/tagged/scip>`__.
 
 If you find this contributing guide unclear, please open an issue! :)
 
