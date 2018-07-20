@@ -9,8 +9,8 @@ Code contributions are very welcome and should comply to a few rules:
 
 2. All tests defined in the Continuous Integration setup need to pass:
 
-    - `.travis.yml <.travis.yml>`__
-    - `appveyor.yml <appveyor.yml>`__
+   - `.travis.yml <.travis.yml>`__
+   - `appveyor.yml <appveyor.yml>`__
 
 3. New features should be covered by tests *and* examples. Please extend `tests <tests>`__ and `examples <examples>`__. Tests uses pytest and examples are meant to be accessible for PySCIPOpt newcomers (even advanced examples).
 
@@ -22,11 +22,11 @@ Code contributions are very welcome and should comply to a few rules:
 
 For general reference, we suggest:
 
-    - `PySCIPOpt README <README.rst>`__;
-    - `SCIP documentation <http://scip.zib.de/doc/html/>`__;
-    - `SCIP mailing list <https://listserv.zib.de/mailman/listinfo/scip/>`__ which can be easily searched with search engines (e.g. `Google <http://www.google.com/#q=site:listserv.zib.de%2Fpipermail%2Fscip>`__);
-    - `open and closed PySCIPOpt issues <https://github.com/SCIP-Interfaces/PySCIPOpt/issues?utf8=%E2%9C%93&q=is%3Aissue>`__;
-    - `SCIP/PySCIPOpt Stack Exchange <https://stackoverflow.com/questions/tagged/scip>`__.
+- `PySCIPOpt README <README.rst>`__;
+- `SCIP documentation <http://scip.zib.de/doc/html/>`__;
+- `SCIP mailing list <https://listserv.zib.de/mailman/listinfo/scip/>`__ which can be easily searched with search engines (e.g. `Google <http://www.google.com/#q=site:listserv.zib.de%2Fpipermail%2Fscip>`__);
+- `open and closed PySCIPOpt issues <https://github.com/SCIP-Interfaces/PySCIPOpt/issues?utf8=%E2%9C%93&q=is%3Aissue>`__;
+- `SCIP/PySCIPOpt Stack Exchange <https://stackoverflow.com/questions/tagged/scip>`__.
 
 If you find this contributing guide unclear, please open an issue! :)
 
