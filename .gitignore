@@ -121,3 +121,6 @@ venv.bak/
 
 # model (for tests)
 model
+
+# VSCode
+.vscode/
