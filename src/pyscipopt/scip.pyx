@@ -1025,6 +1025,7 @@ cdef class Model:
 
     # LP Methods
     def getLPSolstat(self):
+        """Gets solution status of current LP"""
         return SCIPgetLPSolstat(self._scip)
 
     def getLPColsData(self):
