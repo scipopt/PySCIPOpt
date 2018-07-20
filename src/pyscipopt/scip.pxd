@@ -240,6 +240,16 @@ cdef extern from "scip/scip.h":
         SCIP_BENDERSENFOTYPE_PSEUDO  = 3
         SCIP_BENDERSENFOTYPE_CHECK   = 4
 
+    ctypedef enum SCIP_LPSOLSTAT:
+        SCIP_LPSOLSTAT_NOTSOLVED    = 0
+        SCIP_LPSOLSTAT_OPTIMAL      = 1
+        SCIP_LPSOLSTAT_INFEASIBLE   = 2
+        SCIP_LPSOLSTAT_UNBOUNDEDRAY = 3
+        SCIP_LPSOLSTAT_OBJLIMIT     = 4
+        SCIP_LPSOLSTAT_ITERLIMIT    = 5
+        SCIP_LPSOLSTAT_TIMELIMIT    = 6
+        SCIP_LPSOLSTAT_ERROR        = 7
+
     ctypedef bint SCIP_Bool
 
     ctypedef long long SCIP_Longint
@@ -421,6 +431,25 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetProbName(SCIP* scip, char* name)
     const char* SCIPgetProbName(SCIP* scip)
 
+    # Diving methods
+    SCIP_RETCODE SCIPstartDive(SCIP* scip)
+    SCIP_RETCODE SCIPchgVarObjDive(SCIP* scip, SCIP_VAR* var, SCIP_Real newobj)
+    SCIP_RETCODE SCIPchgVarLbDive(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
+    SCIP_RETCODE SCIPchgVarUbDive(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
+    SCIP_Real SCIPgetVarLbDive(SCIP* scip, SCIP_VAR* var)
+    SCIP_Real SCIPgetVarUbDive(SCIP* scip, SCIP_VAR* var)
+    SCIP_RETCODE SCIPsolveDiveLP(SCIP* scip, int itlim, SCIP_Bool* lperror, SCIP_Bool* cutoff)
+    SCIP_RETCODE SCIPchgRowLhsDive(SCIP* scip, SCIP_ROW* row, SCIP_Real newlhs)
+    SCIP_RETCODE SCIPchgRowRhsDive(SCIP* scip, SCIP_ROW* row, SCIP_Real newrhs)
+    SCIP_RETCODE SCIPaddRowDive(SCIP* scip, SCIP_ROW* row)
+    SCIP_RETCODE SCIPendDive(SCIP* scip)
+
+    # Probing methods
+    SCIP_RETCODE SCIPstartProbing(SCIP* scip)
+    SCIP_RETCODE SCIPchgVarObjProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real newobj)
+    SCIP_RETCODE SCIPsolveProbingLP(SCIP* scip, int itlim, SCIP_Bool* lperror, SCIP_Bool* cutoff)
+    SCIP_RETCODE SCIPendProbing(SCIP* scip)
+
     # Event Methods
     SCIP_RETCODE SCIPcatchEvent(SCIP* scip,
                                 SCIP_EVENTTYPE eventtype,
@@ -469,6 +498,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetObjsense(SCIP* scip, SCIP_OBJSENSE objsense)
     SCIP_OBJSENSE SCIPgetObjsense(SCIP* scip)
     SCIP_RETCODE SCIPsetObjlimit(SCIP* scip, SCIP_Real objlimit)
+    SCIP_RETCODE SCIPgetObjlimit(SCIP* scip)
     SCIP_RETCODE SCIPaddObjoffset(SCIP* scip, SCIP_Real addval)
     SCIP_RETCODE SCIPaddOrigObjoffset(SCIP* scip, SCIP_Real addval)
     SCIP_Real SCIPgetOrigObjoffset(SCIP* scip)
@@ -541,6 +571,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPgetLPBInvRow(SCIP* scip, int r, SCIP_Real* coefs, int* inds, int* ninds)
     SCIP_RETCODE SCIPgetLPBInvARow(SCIP* scip, int r, SCIP_Real* binvrow, SCIP_Real* coefs, int* inds, int* ninds)
     SCIP_Bool SCIPisLPSolBasic(SCIP* scip)
+    SCIP_LPSOLSTAT SCIPgetLPSolstat(SCIP* scip)
     int SCIPgetNLPRows(SCIP* scip)
     int SCIPgetNLPCols(SCIP* scip)
 
@@ -607,6 +638,7 @@ cdef extern from "scip/scip.h":
                                SCIP_Real lhs, SCIP_Real rhs, SCIP_Bool local, SCIP_Bool modifiable, SCIP_Bool removable)
     SCIP_RETCODE SCIPaddRow(SCIP* scip, SCIP_ROW* row, SCIP_Bool forcecut, SCIP_Bool* infeasible)
     SCIP_RETCODE SCIPcreateEmptyRowSepa(SCIP* scip, SCIP_ROW** row, SCIP_SEPA* sepa, const char* name, SCIP_Real lhs, SCIP_Real rhs, SCIP_Bool local, SCIP_Bool modifiable, SCIP_Bool removable)
+    SCIP_RETCODE SCIPcreateEmptyRowUnspec(SCIP* scip, SCIP_ROW** row, const char* name, SCIP_Real lhs, SCIP_Real rhs, SCIP_Bool local, SCIP_Bool modifiable, SCIP_Bool removable)
     SCIP_Real SCIPgetRowActivity(SCIP* scip, SCIP_ROW* row)
     SCIP_Real SCIPgetRowLPActivity(SCIP* scip, SCIP_ROW* row)
     SCIP_RETCODE SCIPreleaseRow(SCIP* scip, SCIP_ROW** row)
