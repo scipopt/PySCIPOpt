@@ -896,6 +896,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPfreeBendersSubproblem(SCIP* scip, SCIP_BENDERS* benders, int probnumber)
     int SCIPgetNActiveBenders(SCIP* scip)
     SCIP_BENDERS** SCIPgetBenders(SCIP* scip)
+    void SCIPbendersUpdateSubproblemLowerbound(SCIP_BENDERS* benders, int probnumber, SCIP_Real lowerbound)
 
     # Numerical Methods
     SCIP_Real SCIPinfinity(SCIP* scip)

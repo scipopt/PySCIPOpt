@@ -557,6 +557,25 @@ cdef class Constraint:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.cons))).decode('UTF-8')
         return constype == 'quadratic'
 
+cdef class BendersDecomp:
+    cdef SCIP_BENDERS* benders
+    cdef public object data #storage for python user
+
+    @staticmethod
+    cdef create(SCIP_BENDERS* scipbenders):
+        if scipbenders == NULL:
+            raise Warning("cannot create Benders with SCIP_BENDERS* == NULL")
+        benders = BendersDecomp()
+        benders.benders = scipbenders
+        return benders
+
+    def updateLowerbounds(self, lowerbounds):
+        """"updates the subproblem lower bounds using the lowerbounds dict"""
+        assert type(lowerbounds) is dict
+        for d in lowerbounds.keys():
+            SCIPbendersUpdateSubproblemLowerbound(self.benders, d,
+                    lowerbounds[d])
+
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
 # - interface SCIPfreeProb()
@@ -2095,6 +2114,7 @@ cdef class Model:
         subproblems -- a single Model instance or dictionary of Model instances
         """
         cdef SCIP** subprobs
+        cdef SCIP_BENDERS* scipbenders
 
         # checking whether subproblems is a dictionary
         if isinstance(subproblems, dict):
@@ -2116,11 +2136,15 @@ cdef class Model:
 
         # creating the default Benders' decomposition
         PY_SCIP_CALL(SCIPcreateBendersDefault(self._scip, subprobs, nsubproblems))
+        scipbenders = SCIPfindBenders(self._scip, "default")
+        pyBenders = BendersDecomp.create(scipbenders)
 
         # activating the Benders' decomposition constraint handlers
         self.setBoolParam("constraints/benderslp/active", True)
         self.setBoolParam("constraints/benders/active", True)
         #self.setIntParam("limits/maxorigsol", 0)
+
+        return pyBenders
 
     def computeBestSolSubproblems(self):
         """Solves the subproblems with the best solution to the master problem.
