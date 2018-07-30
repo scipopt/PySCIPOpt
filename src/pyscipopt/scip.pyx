@@ -2114,7 +2114,7 @@ cdef class Model:
         subproblems -- a single Model instance or dictionary of Model instances
         """
         cdef SCIP** subprobs
-        cdef SCIP_BENDERS* scipbenders
+        cdef SCIP_BENDERS* benders
 
         # checking whether subproblems is a dictionary
         if isinstance(subproblems, dict):
@@ -2136,8 +2136,8 @@ cdef class Model:
 
         # creating the default Benders' decomposition
         PY_SCIP_CALL(SCIPcreateBendersDefault(self._scip, subprobs, nsubproblems))
-        scipbenders = SCIPfindBenders(self._scip, "default")
-        pyBenders = BendersDecomp.create(scipbenders)
+        benders = SCIPfindBenders(self._scip, "default")
+        pyBenders = BendersDecomp.create(benders)
 
         # activating the Benders' decomposition constraint handlers
         self.setBoolParam("constraints/benderslp/active", True)
