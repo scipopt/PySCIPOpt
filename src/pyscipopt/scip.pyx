@@ -557,25 +557,6 @@ cdef class Constraint:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.cons))).decode('UTF-8')
         return constype == 'quadratic'
 
-cdef class BendersDecomp:
-    cdef SCIP_BENDERS* benders
-    cdef public object data #storage for python user
-
-    @staticmethod
-    cdef create(SCIP_BENDERS* scipbenders):
-        if scipbenders == NULL:
-            raise Warning("cannot create Benders with SCIP_BENDERS* == NULL")
-        benders = BendersDecomp()
-        benders.benders = scipbenders
-        return benders
-
-    def updateLowerbounds(self, lowerbounds):
-        """"updates the subproblem lower bounds using the lowerbounds dict"""
-        assert type(lowerbounds) is dict
-        for d in lowerbounds.keys():
-            SCIPbendersUpdateSubproblemLowerbound(self.benders, d,
-                    lowerbounds[d])
-
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
 # - interface SCIPfreeProb()
@@ -2137,14 +2118,11 @@ cdef class Model:
         # creating the default Benders' decomposition
         PY_SCIP_CALL(SCIPcreateBendersDefault(self._scip, subprobs, nsubproblems))
         benders = SCIPfindBenders(self._scip, "default")
-        pyBenders = BendersDecomp.create(benders)
 
         # activating the Benders' decomposition constraint handlers
         self.setBoolParam("constraints/benderslp/active", True)
         self.setBoolParam("constraints/benders/active", True)
         #self.setIntParam("limits/maxorigsol", 0)
-
-        return pyBenders
 
     def computeBestSolSubproblems(self):
         """Solves the subproblems with the best solution to the master problem.
@@ -2191,6 +2169,24 @@ cdef class Model:
             for j in range(nsubproblems):
                 PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, _benders[i],
                     j))
+
+    def updateBendersLowerbounds(self, lowerbounds, Benders benders = None):
+        """"updates the subproblem lower bounds for benders using
+        the lowerbounds dict. If benders is None, then the default
+        Benders' decomposition is updated
+        """
+        cdef SCIP_BENDERS* _benders
+
+        assert type(lowerbounds) is dict
+
+        if benders is None:
+            _benders = SCIPfindBenders(self._scip, "default")
+        else:
+            n = str_conversion(benders.name)
+            _benders = SCIPfindBenders(self._scip, n)
+
+        for d in lowerbounds.keys():
+            SCIPbendersUpdateSubproblemLowerbound(_benders, d, lowerbounds[d])
 
     def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):
         """Include an event handler.
@@ -2447,6 +2443,7 @@ cdef class Model:
         cdef SCIP_BENDERS* scip_benders
         scip_benders = SCIPfindBenders(self._scip, n)
         benders.model = <Model>weakref.proxy(self)
+        benders.name = name
         Py_INCREF(benders)
 
     # Solution functions
