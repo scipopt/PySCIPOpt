@@ -2170,7 +2170,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, _benders[i],
                     j))
 
-    def updateBendersLowerbounds(self, lowerbounds, Benders benders = None):
+    def updateBendersLowerbounds(self, lowerbounds, Benders benders=None):
         """"updates the subproblem lower bounds for benders using
         the lowerbounds dict. If benders is None, then the default
         Benders' decomposition is updated
