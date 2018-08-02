@@ -80,12 +80,22 @@ Suite for this to work (``cmake .. -DCMAKE_BUILD_TYPE=Debug``).
 Testing new installation
 ========================
 
-To test your brand-new installation of PySCIPOpt you need `pytest <https://pytest.org/>`__ on your system. Here is the `installation procedure <https://docs.pytest.org/en/latest/getting-started.html>`__.  
+To test your brand-new installation of PySCIPOpt you need `pytest <https://pytest.org/>`__ on your system. Here is the `installation procedure <https://docs.pytest.org/en/latest/getting-started.html>`__.
 
 Tests can be run in the ``PySCIPOpt`` directory with:
 ::
 
    py.test # all the available tests
    py.test tests/test_name.py # a specific tests/test_name.py (Unix)
-   
+
 Ideally, the status of your tests must be passed or skipped. Running tests with pytest creates the ``__pycache__`` directory in ``tests`` and, occasionally, a ``model`` file in the working directory. They can be removed harmlessly.
+
+Common errors
+=============
+
+- readline: ``libreadline.so.6: undefined symbol: PC``
+  This is a readline/ncurses compatibility issue that can be fixed like this (when using ``conda``):
+
+  ::
+
+    conda install -c conda-forge readline=6.2
