@@ -1,3 +1,4 @@
+from __future__ import print_function
 import weakref
 from os.path import abspath
 from os.path import splitext
@@ -566,6 +567,13 @@ cdef class Constraint:
         """Retrieve True if constraint is quadratic"""
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.cons))).decode('UTF-8')
         return constype == 'quadratic'
+
+
+cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg):
+    print(msg, end='')
+
+cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg):
+    print(msg, end='', file=sys.stderr)
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
@@ -2887,6 +2895,17 @@ cdef class Model:
 
         """
         SCIPsetMessagehdlrQuiet(self._scip, quiet)
+
+    # Output Methods
+
+    def redirectOutput(self):
+        """Send output to python instead of terminal."""
+
+        cdef SCIP_MESSAGEHDLR *myMessageHandler
+
+        PY_SCIP_CALL(SCIPmessagehdlrCreate(&myMessageHandler, False, NULL, False, relayMessage, relayMessage, relayMessage, NULL, NULL))
+        PY_SCIP_CALL(SCIPsetMessagehdlr(self._scip, myMessageHandler))
+        SCIPmessageSetErrorPrinting(relayErrorMessage, NULL)
 
     # Parameter Methods
 

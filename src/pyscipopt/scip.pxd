@@ -379,6 +379,9 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_MESSAGEHDLR:
         pass
 
+    ctypedef struct SCIP_MESSAGEHDLRDATA:
+        pass
+
     ctypedef struct SCIP_LPI:
         pass
 
@@ -417,10 +420,26 @@ cdef extern from "scip/scip.h":
         SCIP_VAR* var2
         SCIP_Real coef
 
+    ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg)
+    ctypedef void (*errormessagecallback) (void *data, FILE *file, const char *msg)
+    ctypedef SCIP_RETCODE (*messagehdlrfree) (SCIP_MESSAGEHDLR *messagehdlr)
+
     # General SCIP Methods
     SCIP_RETCODE SCIPcreate(SCIP** scip)
     SCIP_RETCODE SCIPfree(SCIP** scip)
+    SCIP_RETCODE SCIPmessagehdlrCreate(SCIP_MESSAGEHDLR **messagehdlr,
+                                       SCIP_Bool bufferedoutput,
+                                       const char *filename,
+                                       SCIP_Bool quiet,
+                                       messagecallback,
+                                       messagecallback,
+                                       messagecallback,
+                                       messagehdlrfree,
+                                       SCIP_MESSAGEHDLRDATA *messagehdlrdata)
+ 	
+    SCIP_RETCODE SCIPsetMessagehdlr(SCIP* scip, SCIP_MESSAGEHDLR* messagehdlr)
     void SCIPsetMessagehdlrQuiet(SCIP* scip, SCIP_Bool quiet)
+    void SCIPmessageSetErrorPrinting(errormessagecallback, void* data)
     SCIP_Real SCIPversion()
     void SCIPprintVersion(SCIP* scip, FILE* outfile)
     SCIP_Real SCIPgetTotalTime(SCIP* scip)
