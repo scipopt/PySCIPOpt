@@ -570,10 +570,10 @@ cdef class Constraint:
 
 
 cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg):
-    print(msg, end='')
+    print(msg.decode('UTF-8'), end='')
 
 cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg):
-    print(msg, end='', file=sys.stderr)
+    print(msg.decode('UTF-8'), end='', file=sys.stderr)
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
