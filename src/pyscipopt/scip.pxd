@@ -436,7 +436,7 @@ cdef extern from "scip/scip.h":
                                        messagecallback,
                                        messagehdlrfree,
                                        SCIP_MESSAGEHDLRDATA *messagehdlrdata)
- 	
+
     SCIP_RETCODE SCIPsetMessagehdlr(SCIP* scip, SCIP_MESSAGEHDLR* messagehdlr)
     void SCIPsetMessagehdlrQuiet(SCIP* scip, SCIP_Bool quiet)
     void SCIPmessageSetErrorPrinting(errormessagecallback, void* data)
