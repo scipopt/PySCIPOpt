@@ -1,4 +1,3 @@
-from __future__ import print_function
 import weakref
 from os.path import abspath
 from os.path import splitext
@@ -570,10 +569,10 @@ cdef class Constraint:
 
 
 cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg):
-    print(msg.decode('UTF-8'), end='')
+    sys.stdout.write(msg.decode('UTF-8'))
 
 cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg):
-    print(msg.decode('UTF-8'), end='', file=sys.stderr)
+    sys.stderr.write(msg.decode('UTF-8'))
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
