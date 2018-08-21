@@ -1,5 +1,6 @@
 cdef class Benders:
     cdef public Model model
+    cdef public str name
 
     def bendersfree(self):
         pass

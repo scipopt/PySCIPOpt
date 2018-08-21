@@ -2129,6 +2129,7 @@ cdef class Model:
         subproblems -- a single Model instance or dictionary of Model instances
         """
         cdef SCIP** subprobs
+        cdef SCIP_BENDERS* benders
 
         # checking whether subproblems is a dictionary
         if isinstance(subproblems, dict):
@@ -2150,6 +2151,7 @@ cdef class Model:
 
         # creating the default Benders' decomposition
         PY_SCIP_CALL(SCIPcreateBendersDefault(self._scip, subprobs, nsubproblems))
+        benders = SCIPfindBenders(self._scip, "default")
 
         # activating the Benders' decomposition constraint handlers
         self.setBoolParam("constraints/benderslp/active", True)
@@ -2201,6 +2203,24 @@ cdef class Model:
             for j in range(nsubproblems):
                 PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, _benders[i],
                     j))
+
+    def updateBendersLowerbounds(self, lowerbounds, Benders benders=None):
+        """"updates the subproblem lower bounds for benders using
+        the lowerbounds dict. If benders is None, then the default
+        Benders' decomposition is updated
+        """
+        cdef SCIP_BENDERS* _benders
+
+        assert type(lowerbounds) is dict
+
+        if benders is None:
+            _benders = SCIPfindBenders(self._scip, "default")
+        else:
+            n = str_conversion(benders.name)
+            _benders = SCIPfindBenders(self._scip, n)
+
+        for d in lowerbounds.keys():
+            SCIPbendersUpdateSubproblemLowerbound(_benders, d, lowerbounds[d])
 
     def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):
         """Include an event handler.
@@ -2457,6 +2477,7 @@ cdef class Model:
         cdef SCIP_BENDERS* scip_benders
         scip_benders = SCIPfindBenders(self._scip, n)
         benders.model = <Model>weakref.proxy(self)
+        benders.name = name
         Py_INCREF(benders)
 
     # Diving methods (Diving is LP related)
