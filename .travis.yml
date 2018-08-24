@@ -19,6 +19,7 @@ notifications:
   email: false
 
 before_install:
+  - sudo apt-get install libblas-dev liblapack-dev gfortran
   - export VERSION=6.0.0
   - wget http://scip.zib.de/download/release/SCIPOptSuite-$VERSION-Linux.deb
   - sudo dpkg -i SCIPOptSuite-$VERSION-Linux.deb
