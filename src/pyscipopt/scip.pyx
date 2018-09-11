@@ -2056,6 +2056,7 @@ cdef class Model:
         # TODO this should ideally be handled on the SCIP side
         cdef int _nvars
         cdef SCIP_VAR** _vars
+        cdef SCIP_Real* _vals
         cdef SCIP_Bool _success
         dual = 0.0
 
@@ -2072,13 +2073,14 @@ cdef class Model:
             dual = SCIPgetDualsolLinear(self._scip, transcons.cons)
             if dual == 0.0 and _nvars == 1:
                 _vars = SCIPgetVarsLinear(self._scip, transcons.cons)
-                LPsol = SCIPvarGetLPSol(_vars[0])
+                _vals = SCIPgetValsLinear(self._scip, transcons.cons)
+                activity = SCIPvarGetLPSol(_vars[0]) * _vals[0]
                 rhs = SCIPgetRhsLinear(self._scip, transcons.cons)
                 lhs = SCIPgetLhsLinear(self._scip, transcons.cons)
-                if (LPsol == rhs) or (LPsol == lhs):
+                if (activity == rhs) or (activity == lhs):
                     dual = SCIPgetVarRedcost(self._scip, _vars[0])
 
-            if self.getObjectiveSense() == "maximize":
+            if self.getObjectiveSense() == "maximize" and not dual == 0.0:
                 dual = -dual
         except:
             raise Warning("no dual solution available for constraint " + cons.name)
