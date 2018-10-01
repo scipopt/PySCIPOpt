@@ -129,6 +129,7 @@ While PySCIPOpt supports access to the dual values of a solution, there are some
 
 - Can only be used when presolving and propagation is disabled to ensure that the LP solver - which is providing the dual information - actually solves the unmodified problem.
 - Heuristics should also be disabled to avoid that the problem is solved before the LP solver is called.
+- There should be no bound constraints, i.e., constraints with only one variable. This can cause incorrect values as explained in `#136 <https://github.com/SCIP-Interfaces/PySCIPOpt/issues/136>`__
 
 Therefore, you should use the following settings when trying to work with dual information:
 
