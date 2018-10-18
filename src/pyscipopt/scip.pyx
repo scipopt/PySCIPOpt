@@ -3185,6 +3185,53 @@ cdef class Model:
 
         free(_coeffs)
 
+    def runInstance(self, tmpfile):
+        tmpfile = sys.stdin
+        problemname = ''
+        optcommand = ''
+
+        for l in tmpfile:
+            l = l.strip('\n')
+            if len(l.split()) < 2:
+                continue
+            scip_command = l.split()[0]
+            command_value = l.split()[1]
+            if l.startswith('set load'):
+                self.readParams(l.split()[2])
+                continue
+            elif l.startswith('set save'):
+                self.writeParams(l.split()[2])
+                continue
+            elif l.startswith('write sol'):
+                self.writeBestSol(l.split()[2])
+                continue
+            elif l.startswith('read'):
+                problemname = l.split()[1].split()[-1]
+                self.readProblem(problemname)
+            elif l.startswith('set'):
+                paramname = ''
+                for w in range(1, len(l.split())-2):
+                    paramname += l.split()[w] + '/'
+                paramname = paramname[:-1]
+                self.setParam(paramname, l.split()[-1])
+                if paramname == 'limits/objective':
+                    self.setHeuristics(SCIP_PARAMSETTING.OFF)
+            elif l.startswith('optimize') or l.startswith('presolve') or l.startswith('count'):
+                optcommand = l
+            elif l.startswith('quit'):
+                break
+            else:
+                continue
+
+        self.printVersion()
+        if optcommand.startswith('optimize'):
+            self.optimize()
+        elif optcommand.startswith('presolve'):
+            self.presolve()
+        elif optcommand.startswith('count'):
+            self.count()
+        self.printStatistics()
+
 # debugging memory management
 def is_memory_freed():
     return BMSgetMemoryUsed() == 0
