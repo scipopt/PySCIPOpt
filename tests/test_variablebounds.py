@@ -3,12 +3,15 @@ from pyscipopt import Model
 
 m = Model()
 
-x0 = m.addVar(lb=-2, ub=4)
+x0 = m.addVar(lb=-5, ub=8)
 r1 = m.addVar()
 r2 = m.addVar()
 y0 = m.addVar(lb=3)
 t = m.addVar(lb=None)
 z = m.addVar()
+
+m.chgVarLbGlobal(x0, -2)
+m.chgVarUbGlobal(x0, 4)
 
 infeas, tightened = m.tightenVarLb(x0, -5)
 assert not infeas
