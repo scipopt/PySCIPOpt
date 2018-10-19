@@ -776,7 +776,11 @@ cdef class Model:
         """
         cdef SCIP_VAR** _vars
         cdef int _nvars
-        assert isinstance(coeffs, Expr)
+
+        # turn the constant value into an Expr instance for further processing
+        if not isinstance(coeffs, Expr):
+            assert(_is_number(coeffs))
+            coeffs = Expr() + coeffs
 
         if coeffs.degree() > 1:
             raise ValueError("Nonlinear objective functions are not supported!")
