@@ -998,7 +998,8 @@ cdef class Model:
 
         :param Variable var: variable to fix
         :param val: float, the fix value
-        :return tuple (infeasible, fixed) of booleans
+        :return: tuple (infeasible, fixed) of booleans
+
         """
         cdef SCIP_Bool infeasible
         cdef SCIP_Bool fixed
@@ -1009,7 +1010,8 @@ cdef class Model:
         """Delete a variable.
 
         :param var: the variable which shall be deleted
-        :return bool, was deleting succesful
+        :return: bool, was deleting succesful
+
         """
         cdef SCIP_Bool deleted
         PY_SCIP_CALL(SCIPdelVar(self._scip, var.var, &deleted))
@@ -1017,53 +1019,69 @@ cdef class Model:
 
     def tightenVarLb(self, Variable var, lb, force=False):
         """Tighten the lower bound in preprocessing or current node, if the bound is tighter.
+
         :param var: SCIP variable
         :param lb: possible new lower bound
         :param force: force tightening even if below bound strengthening tolerance
-        :return: bool, if the bound was tightened
+        :return: tuple of bools, (infeasible, tightened)
+                    infeasible: whether new domain is empty
+                    tightened: whether the bound was tightened
+
         """
         cdef SCIP_Bool infeasible
         cdef SCIP_Bool tightened
         PY_SCIP_CALL(SCIPtightenVarLb(self._scip, var.var, lb, force, &infeasible, &tightened))
-        return tightened
+        return infeasible, tightened
 
 
     def tightenVarUb(self, Variable var, ub, force=False):
         """Tighten the upper bound in preprocessing or current node, if the bound is tighter.
+
         :param var: SCIP variable
         :param ub: possible new upper bound
         :param force: force tightening even if below bound strengthening tolerance
-        :return: bool, if the bound was tightened
+        :return: tuple of bools, (infeasible, tightened)
+                    infeasible: whether new domain is empty
+                    tightened: whether the bound was tightened
+
         """
         cdef SCIP_Bool infeasible
         cdef SCIP_Bool tightened
         PY_SCIP_CALL(SCIPtightenVarUb(self._scip, var.var, ub, force, &infeasible, &tightened))
-        return tightened
+        return infeasible, tightened
     
     
     def tightenVarUbGlobal(self, Variable var, ub, force=False):
         """Tighten the global upper bound, if the bound is tighter.
+
         :param var: SCIP variable
         :param ub: possible new upper bound
         :param force: force tightening even if below bound strengthening tolerance
-        :return: bool, if the bound was tightened
+        :return: tuple of bools, (infeasible, tightened)
+                    infeasible: whether new domain is empty
+                    tightened: whether the bound was tightened
+
         """
         cdef SCIP_Bool infeasible
         cdef SCIP_Bool tightened
         PY_SCIP_CALL(SCIPtightenVarUbGlobal(self._scip, var.var, ub, force, &infeasible, &tightened))
-        return tightened
+        return infeasible, tightened
     
     def tightenVarLbGlobal(self, Variable var, lb, force=False):
         """Tighten the global upper bound, if the bound is tighter.
+
         :param var: SCIP variable
         :param lb: possible new upper bound
         :param force: force tightening even if below bound strengthening tolerance
-        :return: bool, if the bound was tightened
+        :return: tuple of bools, (infeasible, tightened)
+                    infeasible: whether new domain is empty
+                    tightened: whether the bound was tightened
+
         """
         cdef SCIP_Bool infeasible
         cdef SCIP_Bool tightened
         PY_SCIP_CALL(SCIPtightenVarLbGlobal(self._scip, var.var, lb, force, &infeasible, &tightened))
-        return tightened
+        return infeasible, tightened
 
     def chgVarLb(self, Variable var, lb):
         """Changes the lower bound of the specified variable.
@@ -1174,9 +1192,10 @@ cdef class Model:
     def updateNodeLowerbound(self, Node node, lb):
         """if given value is larger than the node's lower bound (in transformed problem),
         sets the node's lower bound to the new value
-        Args:
-            node: Node, the node to update
-            newbound: float, new bound (if greater) for the node
+
+        :param node: Node, the node to update
+        :param newbound: float, new bound (if greater) for the node
+
         """
         PY_SCIP_CALL(SCIPupdateNodeLowerbound(self._scip, node.node, lb))
 
@@ -1190,9 +1209,9 @@ cdef class Model:
         """makes sure that the LP of the current node is loaded and
          may be accessed through the LP information methods
 
-         Returns:
-             cutoff: bool, can the node be cut off?
-         """
+        :return:  bool cutoff, i.e. can the node be cut off?
+
+        """
         cdef SCIP_Bool cutoff
         PY_SCIP_CALL(SCIPconstructLP(self._scip, &cutoff))
         return cutoff
@@ -2169,7 +2188,6 @@ cdef class Model:
     def getConss(self):
         """Retrieve all constraints."""
         cdef SCIP_CONS** _conss
-        # cdef SCIP_CONS* _cons # is not used
         cdef int _nconss
         conss = []
 
