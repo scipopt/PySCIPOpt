@@ -44,7 +44,7 @@ class MyBranching(Branchrule):
 
 m = Model()
 m.setIntParam("presolving/maxrounds", 0)
-m.setLongintParam("lp/rootiterlim", 3)
+#m.setLongintParam("lp/rootiterlim", 3)
 m.setRealParam("limits/time", 10)
 
 x0 = m.addVar(lb=-2, ub=4)
@@ -60,6 +60,10 @@ for i in range(1000):
     more_vars.append(m.addVar(vtype="I", lb= -12, ub=40))
     m.addCons(quicksum(v for v in more_vars) <= (40 - i) * quicksum(v for v in more_vars[::2]))
 
+for i in range(1000):
+    more_vars.append(m.addVar(vtype="I", lb= -52, ub=10))
+    m.addCons(quicksum(v for v in more_vars[50::2]) <= (40 - i) * quicksum(v for v in more_vars[405::2]))
+
 
 
 m.addCons(r1 >= x0)
@@ -67,10 +71,10 @@ m.addCons(r2 >= -x0)
 m.addCons(y0 == r1 +r2)
 #m.addCons(t * l + l * u >= 4)
 m.addCons(t + l + 7* u <= 300)
-m.addCons(t >= quicksum(v for v in more_vars[::3]))
+m.addCons(t >= quicksum(v for v in more_vars[::3]) - 10 * more_vars[5] + 5* more_vars[9])
 m.addCons(more_vars[3] >= l + 2)
 m.addCons(7 <= quicksum(v for v in more_vars[::4]) - x0)
-m.addCons(quicksum(v for v in more_vars[::2]) + l<= quicksum(v for v in more_vars[::4]))
+m.addCons(quicksum(v for v in more_vars[::2]) + l <= quicksum(v for v in more_vars[::4]))
 
 
 m.setObjective(t - quicksum(j*v for j, v in enumerate(more_vars[20:-40])))
