@@ -42,6 +42,7 @@ class MyBranching(Branchrule):
 
 
 m = Model()
+m.setIntParam("heuristics/trivial/priority", -1000)
 
 x0 = m.addVar(lb=-2, ub=4)
 r1 = m.addVar()
