@@ -780,16 +780,6 @@ cdef class Model:
         """returns current limit on objective function."""
         return SCIPgetObjlimit(self._scip)
 
-    def delObjective(self):
-        """clear existing objective function"""
-        cdef SCIP_VAR** _vars
-        cdef int _nvars
-
-        _vars = SCIPgetOrigVars(self._scip)
-        _nvars = SCIPgetNOrigVars(self._scip)
-        for i in range(_nvars):
-            PY_SCIP_CALL(SCIPchgVarObj(self._scip, _vars[i], 0.0))
-
     def setObjective(self, coeffs, sense = 'minimize', clear = 'true'):
         """Establish the objective function as a linear expression.
 
@@ -2689,15 +2679,14 @@ cdef class Model:
             nlpcands:    number of LP branching candidates
             npriolpcands: number of candidates with maximal priority
             nfracimplvars: number of fractional implicit integer variables
+        
         """
-
         cdef int ncands
         cdef int nlpcands
         cdef int npriolpcands
         cdef int nfracimplvars
 
         ncands = SCIPgetNLPBranchCands(self._scip)
-
         cdef SCIP_VAR** lpcands = <SCIP_VAR**> malloc(ncands * sizeof(SCIP_VAR*))
         cdef SCIP_Real* lpcandssol = <SCIP_Real*> malloc(ncands * sizeof(SCIP_Real))
         cdef SCIP_Real* lpcandsfrac = <SCIP_Real*> malloc(ncands * sizeof(SCIP_Real))
@@ -2710,36 +2699,48 @@ cdef class Model:
 
 
     def branchVar(self, variable):
-        """Branch on a non-continuous variable."""
-
+        """Branch on a non-continuous variable.
+        
+        :param variable: Variable to branch on
+        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child.
+        
+        """
         cdef SCIP_NODE* downchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
         cdef SCIP_NODE* eqchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
         cdef SCIP_NODE* upchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
 
         PY_SCIP_CALL(SCIPbranchVar(self._scip, (<Variable>variable).var, &downchild, &eqchild, &upchild))
-
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
 
 
     def branchVarVal(self, variable, value):
-        """Branches on variable using a value which separates the domain of the variable."""
-
+        """Branches on variable using a value which separates the domain of the variable.
+        
+        :param variable: Variable to branch on
+        :param value: float, value to branch on
+        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
+                    if branch variable is integer
+       
+        """
         cdef SCIP_NODE* downchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
         cdef SCIP_NODE* eqchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
         cdef SCIP_NODE* upchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
-
+        
         PY_SCIP_CALL(SCIPbranchVarVal(self._scip, (<Variable>variable).var, value, &downchild, &eqchild, &upchild))
-
         # TODO should the stuff be freed and how?
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
 
 
     def createChild(self, nodeselprio, estimate):
-        """Create a child node of the focus node."""
-
+        """Create a child node of the focus node.
+        
+        :param nodeselprio: float, node selection priority of new node
+        :param estimate: float, estimate for(transformed) objective value of best feasible solution in subtree 
+        :return: Node, the child which was created
+        
+        """
         cdef SCIP_NODE* child = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
         PY_SCIP_CALL(SCIPcreateChild(self._scip, &child, nodeselprio, estimate))
-
         return Node.create(child)
 
     # Diving methods (Diving is LP related)
