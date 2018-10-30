@@ -11,7 +11,6 @@ class MyBranching(Branchrule):
         self.was_called_int = False
 
     def branchexeclp(self, allowaddcons):
-        print("in branchexelp")
         self.count += 1
         if self.count >= 2:
             return {"result": SCIP_RESULT.DIDNOTRUN}
