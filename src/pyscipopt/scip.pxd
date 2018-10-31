@@ -468,6 +468,10 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPchgVarObjProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real newobj)
     SCIP_RETCODE SCIPsolveProbingLP(SCIP* scip, int itlim, SCIP_Bool* lperror, SCIP_Bool* cutoff)
     SCIP_RETCODE SCIPendProbing(SCIP* scip)
+    SCIP_RETCODE SCIPfixVarProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real fixedval)
+    SCIP_Bool SCIPisObjChangedProbing(SCIP* scip)
+    SCIP_Bool SCIPinProbing(SCIP* scip)
+
 
     # Event Methods
     SCIP_RETCODE SCIPcatchEvent(SCIP* scip,
@@ -506,6 +510,12 @@ cdef extern from "scip/scip.h":
                                   int filterpos)
     SCIP_EVENTHDLR* SCIPfindEventhdlr(SCIP* scip, const char* name)
     SCIP_EVENTTYPE SCIPeventGetType(SCIP_EVENT* event)
+    SCIP_Real SCIPeventGetNewbound(SCIP_EVENT* event)
+    SCIP_Real SCIPeventGetOldbound(SCIP_EVENT* event)
+    SCIP_VAR* SCIPeventGetVar(SCIP_EVENT* event)
+    SCIP_NODE* SCIPeventGetNode(SCIP_EVENT* event)
+    SCIP_RETCODE SCIPinterruptSolve(SCIP* scip)
+
 
     # Global Problem Methods
     SCIP_RETCODE SCIPcreateProbBasic(SCIP* scip, char* name)
@@ -542,10 +552,13 @@ cdef extern from "scip/scip.h":
     SCIP_Longint SCIPnodeGetNumber(SCIP_NODE* node)
     int SCIPnodeGetDepth(SCIP_NODE* node)
     SCIP_Real SCIPnodeGetLowerbound(SCIP_NODE* node)
+    SCIP_RETCODE SCIPupdateNodeLowerbound(SCIP* scip, SCIP_NODE* node, SCIP_Real newbound)
     SCIP_Real SCIPnodeGetEstimate(SCIP_NODE* node)
     SCIP_NODETYPE SCIPnodeGetType(SCIP_NODE* node)
     SCIP_Bool SCIPnodeIsActive(SCIP_NODE* node)
     SCIP_Bool SCIPnodeIsPropagatedAgain(SCIP_NODE* node)
+    SCIP_RETCODE SCIPcreateChild(SCIP* scip, SCIP_NODE** node, SCIP_Real nodeselprio, SCIP_Real estimate)
+    SCIP_Bool SCIPinRepropagation(SCIP* scip)
 
     # Variable Methods
     SCIP_RETCODE SCIPcreateVarBasic(SCIP* scip,
@@ -558,6 +571,21 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPchgVarObj(SCIP* scip, SCIP_VAR* var, SCIP_Real newobj)
     SCIP_RETCODE SCIPchgVarLb(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
     SCIP_RETCODE SCIPchgVarUb(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
+    SCIP_RETCODE SCIPchgVarLbGlobal(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
+    SCIP_RETCODE SCIPchgVarUbGlobal(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
+    SCIP_RETCODE SCIPchgVarLbNode(SCIP* scip, SCIP_NODE* node, SCIP_VAR* var, SCIP_Real newbound)
+    SCIP_RETCODE SCIPchgVarUbNode(SCIP* scip, SCIP_NODE* node, SCIP_VAR* var, SCIP_Real newbound)
+    SCIP_RETCODE SCIPtightenVarLb(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound,
+                                  SCIP_Bool force, SCIP_Bool* infeasible, SCIP_Bool* tightened)
+    SCIP_RETCODE SCIPtightenVarUb(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound,
+                                  SCIP_Bool force, SCIP_Bool* infeasible, SCIP_Bool* tightened)
+    SCIP_RETCODE SCIPtightenVarLbGlobal(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound,
+                                        SCIP_Bool force, SCIP_Bool* infeasible, SCIP_Bool* tightened)
+    SCIP_RETCODE SCIPtightenVarUbGlobal(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound,
+                                        SCIP_Bool force, SCIP_Bool* infeasible, SCIP_Bool* tightened)
+    SCIP_RETCODE SCIPfixVar(SCIP* scip, SCIP_VAR* var, SCIP_Real fixedval, SCIP_Bool* infeasible, SCIP_Bool* fixed)
+    SCIP_RETCODE SCIPdelVar(SCIP* scip, SCIP_VAR* var, SCIP_Bool* deleted)
+
     SCIP_RETCODE SCIPchgVarType(SCIP* scip, SCIP_VAR* var, SCIP_VARTYPE vartype, SCIP_Bool* infeasible)
     SCIP_RETCODE SCIPcaptureVar(SCIP* scip, SCIP_VAR* var)
     SCIP_RETCODE SCIPaddPricedVar(SCIP* scip, SCIP_VAR* var, SCIP_Real score)
@@ -589,6 +617,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPgetLPBasisInd(SCIP* scip, int* basisind)
     SCIP_RETCODE SCIPgetLPBInvRow(SCIP* scip, int r, SCIP_Real* coefs, int* inds, int* ninds)
     SCIP_RETCODE SCIPgetLPBInvARow(SCIP* scip, int r, SCIP_Real* binvrow, SCIP_Real* coefs, int* inds, int* ninds)
+    SCIP_RETCODE SCIPconstructLP(SCIP* scip, SCIP_Bool* cutoff)
+    SCIP_Real SCIPgetLPObjval(SCIP* scip)
     SCIP_Bool SCIPisLPSolBasic(SCIP* scip)
     SCIP_LPSOLSTAT SCIPgetLPSolstat(SCIP* scip)
     int SCIPgetNLPRows(SCIP* scip)
@@ -949,6 +979,23 @@ cdef extern from "scip/scip.h":
     int SCIPgetNActiveBenders(SCIP* scip)
     SCIP_BENDERS** SCIPgetBenders(SCIP* scip)
     void SCIPbendersUpdateSubproblemLowerbound(SCIP_BENDERS* benders, int probnumber, SCIP_Real lowerbound)
+
+    SCIP_RETCODE SCIPbranchVar(SCIP* scip,
+                                SCIP_VAR* var,
+                                SCIP_NODE**  downchild,
+                                SCIP_NODE**  eqchild,
+                                SCIP_NODE**  upchild)
+
+    SCIP_RETCODE SCIPbranchVarVal(SCIP* scip,
+                                SCIP_VAR* var,
+                                SCIP_Real val,
+                                SCIP_NODE** downchild,
+                                SCIP_NODE**  eqchild,
+                                SCIP_NODE** upchild)
+    int SCIPgetNLPBranchCands(SCIP* scip)
+    SCIP_RETCODE SCIPgetLPBranchCands(SCIP* scip, SCIP_VAR*** lpcands, SCIP_Real** lpcandssol,
+                                      SCIP_Real** lpcandsfrac, int* nlpcands, int* npriolpcands, int* nfracimplvars)
+
 
     # Numerical Methods
     SCIP_Real SCIPinfinity(SCIP* scip)
