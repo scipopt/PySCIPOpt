@@ -1969,7 +1969,7 @@ cdef class Model:
         cdef int _nquadterms
         cdef int _nlinvars
 
-        assert cons.isQuadratic()
+        assert cons.isQuadratic(), "constraint is not quadratic"
 
         bilinterms = []
         quadterms  = []
