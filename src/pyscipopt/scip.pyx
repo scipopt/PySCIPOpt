@@ -1695,7 +1695,6 @@ cdef class Model:
         if cons.expr.degree() > 1:
             raise ValueError("expected linear inequality, expression has degree %d" % cons.expr.degree())
 
-        assert cons.expr.degree() <= 1 # redundant with previous if-statement?
 
         if cons.rhs is not None:
             rhs =  cons.rhs
