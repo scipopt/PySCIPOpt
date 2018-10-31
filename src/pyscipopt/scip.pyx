@@ -779,7 +779,7 @@ cdef class Model:
 
         # turn the constant value into an Expr instance for further processing
         if not isinstance(coeffs, Expr):
-            assert(_is_number(coeffs))
+            assert(_is_number(coeffs)), "given coefficient is neither ExprCons or number but %s" % coeffs.__class__.__name__
             coeffs = Expr() + coeffs
 
         if coeffs.degree() > 1:
@@ -925,6 +925,7 @@ cdef class Model:
         if lb is None:
             lb = -SCIPinfinity(self._scip)
         cdef SCIP_VAR* scip_var
+        vtype = vtype.upper()
         if vtype in ['C', 'CONTINUOUS']:
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_CONTINUOUS))
         elif vtype in ['B', 'BINARY']:
@@ -1172,7 +1173,7 @@ cdef class Model:
         :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be  moved to a more global node? (Default value = False)
 
         """
-        assert isinstance(cons, ExprCons)
+        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
 
         # replace empty name with generic one
         if name == '':
@@ -1198,9 +1199,9 @@ cdef class Model:
             return self._addNonlinearCons(cons, **kwargs)
 
     def _addLinCons(self, ExprCons lincons, **kwargs):
-        assert isinstance(lincons, ExprCons)
+        assert isinstance(lincons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
 
-        assert lincons.expr.degree() <= 1
+        assert lincons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % lincons.expr.degree()
         terms = lincons.expr.terms
 
         cdef SCIP_CONS* scip_cons
@@ -1223,7 +1224,7 @@ cdef class Model:
 
     def _addQuadCons(self, ExprCons quadcons, **kwargs):
         terms = quadcons.expr.terms
-        assert quadcons.expr.degree() <= 2
+        assert quadcons.expr.degree() <= 2, "given constraint is not quadratic, degree == %d" % quadcons.expr.degree()
 
         cdef SCIP_CONS* scip_cons
         PY_SCIP_CALL(SCIPcreateConsQuadratic(
@@ -1240,7 +1241,7 @@ cdef class Model:
                 var = <Variable>v[0]
                 PY_SCIP_CALL(SCIPaddLinearVarQuadratic(self._scip, scip_cons, var.var, c))
             else: # quadratic
-                assert len(v) == 2, 'term: %s' % v
+                assert len(v) == 2, 'term length must be 1 or 2 but it is %s' % len(v)
                 var1, var2 = <Variable>v[0], <Variable>v[1]
                 PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, var1.var, var2.var, c))
 
@@ -1662,7 +1663,7 @@ cdef class Model:
         return pyCons
 
 
-    def addConsIndicator(self, cons, binvar=None, name="CardinalityCons",
+    def addConsIndicator(self, cons, binvar=None, name="IndicatorCons",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
@@ -1673,7 +1674,7 @@ cdef class Model:
 
         :param cons: a linear inequality of the form "<="
         :param binvar: binary indicator variable, or None if it should be created (Default value = None)
-        :param name: name of the constraint (Default value = "CardinalityCons")
+        :param name: name of the constraint (Default value = "IndicatorCons")
         :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
         :param separate: should the constraint be separated during LP processing? (Default value = True)
         :param enforce: should the constraint be enforced during node processing? (Default value = True)
@@ -1685,7 +1686,7 @@ cdef class Model:
         :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (Default value = False)
 
         """
-        assert isinstance(cons, ExprCons)
+        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
         cdef SCIP_CONS* scip_cons
         cdef SCIP_VAR* _binVar
         if cons.lhs is not None and cons.rhs is not None:
@@ -1694,7 +1695,6 @@ cdef class Model:
         if cons.expr.degree() > 1:
             raise ValueError("expected linear inequality, expression has degree %d" % cons.expr.degree())
 
-        assert cons.expr.degree() <= 1
 
         if cons.rhs is not None:
             rhs =  cons.rhs
@@ -1969,7 +1969,7 @@ cdef class Model:
         cdef int _nquadterms
         cdef int _nlinvars
 
-        assert cons.isQuadratic()
+        assert cons.isQuadratic(), "constraint is not quadratic"
 
         bilinterms = []
         quadterms  = []
@@ -3160,7 +3160,7 @@ cdef class Model:
         else:
             raise Warning("unrecognized optimization sense: %s" % sense)
 
-        assert isinstance(coeffs, Expr)
+        assert isinstance(coeffs, Expr), "given coefficients are not Expr but %s" % coeffs.__class__.__name__
 
         if coeffs.degree() > 1:
             raise ValueError("Nonlinear objective functions are not supported!")
