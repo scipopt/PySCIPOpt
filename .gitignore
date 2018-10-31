@@ -121,6 +121,8 @@ venv.bak/
 
 # model (for tests)
 model
+model.cip
+model.lp
 
 # VSCode
 .vscode/
