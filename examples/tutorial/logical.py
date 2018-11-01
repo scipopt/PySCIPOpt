@@ -26,9 +26,14 @@ def _optimize(name, m):
     print("* Is objective set? %s" % objSet)
     if objSet:
         print("* Sense: %s" % m.getObjectiveSense())
-    for v in m.getVars():
-        if v.name != "n":
-            print("%s: %d" % (v, round(m.getVal(v))))
+    status = m.getStatus()
+    print("* Model status: %s" % status)
+    if status == 'optimal':
+        for v in m.getVars():
+            if v.name != "n":
+                print("%s: %d" % (v, round(m.getVal(v))))
+    else:
+        print("* No variable is printed if model status is not optimal")
     print("")
 
 def and_constraint(v=1, sense="minimize"):
