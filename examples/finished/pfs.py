@@ -1,5 +1,5 @@
 """
-permutationflowshop.py:  model for the permutation flow shop problem
+pfs.py:  model for the permutation flow shop problem
 
 Use a position index formulation for modeling the permutation flow
 shop problem, with the objective of minimizing the makespan (maximum
