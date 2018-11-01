@@ -793,7 +793,7 @@ cdef class Model:
 
         # turn the constant value into an Expr instance for further processing
         if not isinstance(coeffs, Expr):
-            assert(_is_number(coeffs)), "given coefficient is neither ExprCons or number but %s" % coeffs.__class__.__name__
+            assert(_is_number(coeffs)), "given coefficients are neither Expr or number but %s" % coeffs.__class__.__name__
             coeffs = Expr() + coeffs
 
         if coeffs.degree() > 1:
