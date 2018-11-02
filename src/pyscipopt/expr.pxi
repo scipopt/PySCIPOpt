@@ -545,7 +545,7 @@ cdef class GenExpr:
         divisor = buildGenExprObj(other)
         # we can't divide by 0
         if divisor.getOp() == Operator.const and divisor.number == 0.0:
-            raise ValueError("cannot divide by 0")
+            raise ZeroDivisionError("cannot divide by 0")
         return self * divisor**(-1)
 
     def __rdiv__(self, other):
@@ -557,7 +557,7 @@ cdef class GenExpr:
         divisor = buildGenExprObj(other)
         # we can't divide by 0
         if divisor.getOp() == Operator.const and divisor.number == 0.0:
-            raise ValueError("cannot divide by 0")
+            raise ZeroDivisionError("cannot divide by 0")
         return self * divisor**(-1)
 
     def __rtruediv__(self, other):
