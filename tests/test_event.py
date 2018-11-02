@@ -16,6 +16,10 @@ class MyEvent(Eventhdlr):
 
     def eventexec(self, event):
         calls.append('eventexec')
+        event.getNewBound()
+        event.getOldBound()
+        assert event.getNode().getNumber() == 1
+
 
 def test_event():
     # create solver instance

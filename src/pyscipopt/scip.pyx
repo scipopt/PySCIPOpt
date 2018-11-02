@@ -250,6 +250,20 @@ cdef class Event:
     def __repr__(self):
         return self.getType()
 
+    def getNewBound(self):
+        return SCIPeventGetNewbound(self.event)
+
+    def getOldBound(self):
+        return SCIPeventGetOldbound(self.event)
+
+    def getVar(self):
+        cdef SCIP_VAR* var = SCIPeventGetVar(self.event)
+        return Variable.create(var)
+
+    def getNode(self):
+        cdef SCIP_NODE* node = SCIPeventGetNode(self.event)
+        return Node.create(node)
+
 cdef class Column:
     """Base class holding a pointer to corresponding SCIP_COL"""
     cdef SCIP_COL* col
@@ -779,7 +793,7 @@ cdef class Model:
 
         # turn the constant value into an Expr instance for further processing
         if not isinstance(coeffs, Expr):
-            assert(_is_number(coeffs))
+            assert(_is_number(coeffs)), "given coefficients are neither Expr or number but %s" % coeffs.__class__.__name__
             coeffs = Expr() + coeffs
 
         if coeffs.degree() > 1:
@@ -925,6 +939,7 @@ cdef class Model:
         if lb is None:
             lb = -SCIPinfinity(self._scip)
         cdef SCIP_VAR* scip_var
+        vtype = vtype.upper()
         if vtype in ['C', 'CONTINUOUS']:
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_CONTINUOUS))
         elif vtype in ['B', 'BINARY']:
@@ -973,6 +988,96 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPaddVarLocks(self._scip, var.var, nlocksdown, nlocksup))
 
+    def fixVar(self, Variable var, val):
+        """Fixes the variable var to the value val if possible.
+
+        :param Variable var: variable to fix
+        :param val: float, the fix value
+        :return: tuple (infeasible, fixed) of booleans
+
+        """
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool fixed
+        PY_SCIP_CALL(SCIPfixVar(self._scip, var.var, val, &infeasible, &fixed))
+        return infeasible, fixed
+
+    def delVar(self, Variable var):
+        """Delete a variable.
+
+        :param var: the variable which shall be deleted
+        :return: bool, was deleting succesful
+
+        """
+        cdef SCIP_Bool deleted
+        PY_SCIP_CALL(SCIPdelVar(self._scip, var.var, &deleted))
+        return deleted
+
+    def tightenVarLb(self, Variable var, lb, force=False):
+        """Tighten the lower bound in preprocessing or current node, if the bound is tighter.
+
+        :param var: SCIP variable
+        :param lb: possible new lower bound
+        :param force: force tightening even if below bound strengthening tolerance
+        :return: tuple of bools, (infeasible, tightened)
+                    infeasible: whether new domain is empty
+                    tightened: whether the bound was tightened
+
+        """
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool tightened
+        PY_SCIP_CALL(SCIPtightenVarLb(self._scip, var.var, lb, force, &infeasible, &tightened))
+        return infeasible, tightened
+
+
+    def tightenVarUb(self, Variable var, ub, force=False):
+        """Tighten the upper bound in preprocessing or current node, if the bound is tighter.
+
+        :param var: SCIP variable
+        :param ub: possible new upper bound
+        :param force: force tightening even if below bound strengthening tolerance
+        :return: tuple of bools, (infeasible, tightened)
+                    infeasible: whether new domain is empty
+                    tightened: whether the bound was tightened
+
+        """
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool tightened
+        PY_SCIP_CALL(SCIPtightenVarUb(self._scip, var.var, ub, force, &infeasible, &tightened))
+        return infeasible, tightened
+    
+    
+    def tightenVarUbGlobal(self, Variable var, ub, force=False):
+        """Tighten the global upper bound, if the bound is tighter.
+
+        :param var: SCIP variable
+        :param ub: possible new upper bound
+        :param force: force tightening even if below bound strengthening tolerance
+        :return: tuple of bools, (infeasible, tightened)
+                    infeasible: whether new domain is empty
+                    tightened: whether the bound was tightened
+
+        """
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool tightened
+        PY_SCIP_CALL(SCIPtightenVarUbGlobal(self._scip, var.var, ub, force, &infeasible, &tightened))
+        return infeasible, tightened
+    
+    def tightenVarLbGlobal(self, Variable var, lb, force=False):
+        """Tighten the global upper bound, if the bound is tighter.
+
+        :param var: SCIP variable
+        :param lb: possible new upper bound
+        :param force: force tightening even if below bound strengthening tolerance
+        :return: tuple of bools, (infeasible, tightened)
+                    infeasible: whether new domain is empty
+                    tightened: whether the bound was tightened
+
+        """
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool tightened
+        PY_SCIP_CALL(SCIPtightenVarLbGlobal(self._scip, var.var, lb, force, &infeasible, &tightened))
+        return infeasible, tightened
+
     def chgVarLb(self, Variable var, lb):
         """Changes the lower bound of the specified variable.
 
@@ -994,6 +1099,51 @@ cdef class Model:
         if ub is None:
            ub = SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarUb(self._scip, var.var, ub))
+
+
+    def chgVarLbGlobal(self, Variable var, lb):
+        """Changes the global lower bound of the specified variable.
+
+        :param Variable var: variable to change bound of
+        :param lb: new lower bound (set to None for -infinity)
+
+        """
+        if lb is None:
+           lb = -SCIPinfinity(self._scip)
+        PY_SCIP_CALL(SCIPchgVarLbGlobal(self._scip, var.var, lb))
+
+    def chgVarUbGlobal(self, Variable var, ub):
+        """Changes the global upper bound of the specified variable.
+
+        :param Variable var: variable to change bound of
+        :param ub: new upper bound (set to None for +infinity)
+
+        """
+        if ub is None:
+           ub = SCIPinfinity(self._scip)
+        PY_SCIP_CALL(SCIPchgVarUbGlobal(self._scip, var.var, ub))
+
+    def chgVarLbNode(self, Node node, Variable var, lb):
+        """Changes the lower bound of the specified variable at the given node.
+
+        :param Variable var: variable to change bound of
+        :param lb: new lower bound (set to None for -infinity)
+        """
+
+        if lb is None:
+           lb = -SCIPinfinity(self._scip)
+        PY_SCIP_CALL(SCIPchgVarLbNode(self._scip, node.node, var.var, lb))
+
+    def chgVarUbNode(self, Node node, Variable var, ub):
+        """Changes the upper bound of the specified variable at the given node.
+
+        :param Variable var: variable to change bound of
+        :param ub: new upper bound (set to None for +infinity)
+
+        """
+        if ub is None:
+           ub = SCIPinfinity(self._scip)
+        PY_SCIP_CALL(SCIPchgVarUbNode(self._scip, node.node, var.var, ub))
 
     def chgVarType(self, Variable var, vtype):
         """Changes the type of a variable
@@ -1034,10 +1184,37 @@ cdef class Model:
 
         return [Variable.create(_vars[i]) for i in range(_nvars)]
 
+    def updateNodeLowerbound(self, Node node, lb):
+        """if given value is larger than the node's lower bound (in transformed problem),
+        sets the node's lower bound to the new value
+
+        :param node: Node, the node to update
+        :param newbound: float, new bound (if greater) for the node
+
+        """
+        PY_SCIP_CALL(SCIPupdateNodeLowerbound(self._scip, node.node, lb))
+
     # LP Methods
     def getLPSolstat(self):
         """Gets solution status of current LP"""
         return SCIPgetLPSolstat(self._scip)
+
+
+    def constructLP(self):
+        """makes sure that the LP of the current node is loaded and
+         may be accessed through the LP information methods
+
+        :return:  bool cutoff, i.e. can the node be cut off?
+
+        """
+        cdef SCIP_Bool cutoff
+        PY_SCIP_CALL(SCIPconstructLP(self._scip, &cutoff))
+        return cutoff
+
+    def getLPObjVal(self):
+        """gets objective value of current LP (which is the sum of column and loose objective value)"""
+
+        return SCIPgetLPObjval(self._scip)
 
     def getLPColsData(self):
         """Retrieve current LP columns"""
@@ -1172,7 +1349,7 @@ cdef class Model:
         :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be  moved to a more global node? (Default value = False)
 
         """
-        assert isinstance(cons, ExprCons)
+        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
 
         # replace empty name with generic one
         if name == '':
@@ -1198,9 +1375,9 @@ cdef class Model:
             return self._addNonlinearCons(cons, **kwargs)
 
     def _addLinCons(self, ExprCons lincons, **kwargs):
-        assert isinstance(lincons, ExprCons)
+        assert isinstance(lincons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
 
-        assert lincons.expr.degree() <= 1
+        assert lincons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % lincons.expr.degree()
         terms = lincons.expr.terms
 
         cdef SCIP_CONS* scip_cons
@@ -1223,7 +1400,7 @@ cdef class Model:
 
     def _addQuadCons(self, ExprCons quadcons, **kwargs):
         terms = quadcons.expr.terms
-        assert quadcons.expr.degree() <= 2
+        assert quadcons.expr.degree() <= 2, "given constraint is not quadratic, degree == %d" % quadcons.expr.degree()
 
         cdef SCIP_CONS* scip_cons
         PY_SCIP_CALL(SCIPcreateConsQuadratic(
@@ -1240,7 +1417,7 @@ cdef class Model:
                 var = <Variable>v[0]
                 PY_SCIP_CALL(SCIPaddLinearVarQuadratic(self._scip, scip_cons, var.var, c))
             else: # quadratic
-                assert len(v) == 2, 'term: %s' % v
+                assert len(v) == 2, 'term length must be 1 or 2 but it is %s' % len(v)
                 var1, var2 = <Variable>v[0], <Variable>v[1]
                 PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, var1.var, var2.var, c))
 
@@ -1662,7 +1839,7 @@ cdef class Model:
         return pyCons
 
 
-    def addConsIndicator(self, cons, binvar=None, name="CardinalityCons",
+    def addConsIndicator(self, cons, binvar=None, name="IndicatorCons",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
@@ -1673,7 +1850,7 @@ cdef class Model:
 
         :param cons: a linear inequality of the form "<="
         :param binvar: binary indicator variable, or None if it should be created (Default value = None)
-        :param name: name of the constraint (Default value = "CardinalityCons")
+        :param name: name of the constraint (Default value = "IndicatorCons")
         :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
         :param separate: should the constraint be separated during LP processing? (Default value = True)
         :param enforce: should the constraint be enforced during node processing? (Default value = True)
@@ -1685,7 +1862,7 @@ cdef class Model:
         :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (Default value = False)
 
         """
-        assert isinstance(cons, ExprCons)
+        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
         cdef SCIP_CONS* scip_cons
         cdef SCIP_VAR* _binVar
         if cons.lhs is not None and cons.rhs is not None:
@@ -1694,7 +1871,6 @@ cdef class Model:
         if cons.expr.degree() > 1:
             raise ValueError("expected linear inequality, expression has degree %d" % cons.expr.degree())
 
-        assert cons.expr.degree() <= 1
 
         if cons.rhs is not None:
             rhs =  cons.rhs
@@ -1969,7 +2145,7 @@ cdef class Model:
         cdef int _nquadterms
         cdef int _nlinvars
 
-        assert cons.isQuadratic()
+        assert cons.isQuadratic(), "constraint is not quadratic"
 
         bilinterms = []
         quadterms  = []
@@ -2006,7 +2182,6 @@ cdef class Model:
     def getConss(self):
         """Retrieve all constraints."""
         cdef SCIP_CONS** _conss
-        cdef SCIP_CONS* _cons
         cdef int _nconss
         conss = []
 
@@ -2492,6 +2667,86 @@ cdef class Model:
         benders.name = name
         Py_INCREF(benders)
 
+
+    def getLPBranchCands(self):
+        """gets branching candidates for LP solution branching (fractional variables) along with solution values,
+        fractionalities, and number of branching candidates; The number of branching candidates does NOT account
+        for fractional implicit integer variables which should not be used for branching decisions. Fractional
+        implicit integer variables are stored at the positions *nlpcands to *nlpcands + *nfracimplvars - 1
+        branching rules should always select the branching candidate among the first npriolpcands of the candidate list
+
+        :return tuple (lpcands, lpcandssol, lpcadsfrac, nlpcands, npriolpcands, nfracimplvars) where
+
+            lpcands: list of variables of LP branching candidates
+            lpcandssol: list of LP candidate solution values
+            lpcandsfrac	list of LP candidate fractionalities
+            nlpcands:    number of LP branching candidates
+            npriolpcands: number of candidates with maximal priority
+            nfracimplvars: number of fractional implicit integer variables
+        
+        """
+        cdef int ncands
+        cdef int nlpcands
+        cdef int npriolpcands
+        cdef int nfracimplvars
+
+        ncands = SCIPgetNLPBranchCands(self._scip)
+        cdef SCIP_VAR** lpcands = <SCIP_VAR**> malloc(ncands * sizeof(SCIP_VAR*))
+        cdef SCIP_Real* lpcandssol = <SCIP_Real*> malloc(ncands * sizeof(SCIP_Real))
+        cdef SCIP_Real* lpcandsfrac = <SCIP_Real*> malloc(ncands * sizeof(SCIP_Real))
+
+        PY_SCIP_CALL(SCIPgetLPBranchCands(self._scip, &lpcands, &lpcandssol, &lpcandsfrac,
+                                          &nlpcands, &npriolpcands, &nfracimplvars))
+
+        return ([Variable.create(lpcands[i]) for i in range(ncands)], [lpcandssol[i] for i in range(ncands)],
+                [lpcandsfrac[i] for i in range(ncands)], nlpcands, npriolpcands, nfracimplvars)
+
+
+    def branchVar(self, variable):
+        """Branch on a non-continuous variable.
+        
+        :param variable: Variable to branch on
+        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child.
+        
+        """
+        cdef SCIP_NODE* downchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
+        cdef SCIP_NODE* eqchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
+        cdef SCIP_NODE* upchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
+
+        PY_SCIP_CALL(SCIPbranchVar(self._scip, (<Variable>variable).var, &downchild, &eqchild, &upchild))
+        return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
+
+
+    def branchVarVal(self, variable, value):
+        """Branches on variable using a value which separates the domain of the variable.
+        
+        :param variable: Variable to branch on
+        :param value: float, value to branch on
+        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
+                    if branch variable is integer
+       
+        """
+        cdef SCIP_NODE* downchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
+        cdef SCIP_NODE* eqchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
+        cdef SCIP_NODE* upchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
+        
+        PY_SCIP_CALL(SCIPbranchVarVal(self._scip, (<Variable>variable).var, value, &downchild, &eqchild, &upchild))
+        # TODO should the stuff be freed and how?
+        return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
+
+
+    def createChild(self, nodeselprio, estimate):
+        """Create a child node of the focus node.
+        
+        :param nodeselprio: float, node selection priority of new node
+        :param estimate: float, estimate for(transformed) objective value of best feasible solution in subtree 
+        :return: Node, the child which was created
+        
+        """
+        cdef SCIP_NODE* child = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
+        PY_SCIP_CALL(SCIPcreateChild(self._scip, &child, nodeselprio, estimate))
+        return Node.create(child)
+
     # Diving methods (Diving is LP related)
     def startDive(self):
         """Initiates LP diving
@@ -2554,6 +2809,10 @@ cdef class Model:
         PY_SCIP_CALL(SCIPsolveDiveLP(self._scip, itlim, &lperror, &cutoff))
         return lperror, cutoff
 
+    def inRepropagation(self):
+        """returns if the current node is already solved and only propagated again."""
+        return SCIPinRepropagation(self._scip)
+
     # Probing methods (Probing is tree based)
     def startProbing(self):
         """Initiates probing, making methods SCIPnewProbingNode(), SCIPbacktrackProbing(), SCIPchgVarLbProbing(),
@@ -2569,6 +2828,16 @@ cdef class Model:
         """changes (column) variable's objective value during probing mode"""
         PY_SCIP_CALL(SCIPchgVarObjProbing(self._scip, var.var, newobj))
 
+    def fixVarProbing(self, Variable var, fixedval):
+        """Fixes a variable at the current probing node."""
+        PY_SCIP_CALL(SCIPfixVarProbing(self._scip, var.var, fixedval))
+
+    def isObjChangedProbing(self):
+        return SCIPisObjChangedProbing(self._scip)
+
+    def inProbing(self):
+        return SCIPinProbing(self._scip)
+
     def solveProbingLP(self, itlim = -1):
         """solves the LP at the current probing node (cannot be applied at preprocessing stage)
         no separation or pricing is applied
@@ -2582,6 +2851,10 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPsolveProbingLP(self._scip, itlim, &lperror, &cutoff))
         return lperror, cutoff
+
+    def interruptSolve(self):
+        """Interrupt the solving process as soon as possible."""
+        PY_SCIP_CALL(SCIPinterruptSolve(self._scip))
 
     # Solution functions
 
@@ -3160,7 +3433,7 @@ cdef class Model:
         else:
             raise Warning("unrecognized optimization sense: %s" % sense)
 
-        assert isinstance(coeffs, Expr)
+        assert isinstance(coeffs, Expr), "given coefficients are not Expr but %s" % coeffs.__class__.__name__
 
         if coeffs.degree() > 1:
             raise ValueError("Nonlinear objective functions are not supported!")
