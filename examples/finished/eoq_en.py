@@ -1,5 +1,5 @@
 """
-eoq.py:  piecewise linear model to the multi-item economic ordering quantity problem.
+eoq_en.py:  piecewise linear model to the multi-item economic ordering quantity problem.
 
 Approach: use a convex combination formulation.
 
