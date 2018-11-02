@@ -51,7 +51,7 @@ def test_upgrade(model):
     assert isinstance(log(expr), GenExpr)
     assert isinstance(exp(expr), GenExpr)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ZeroDivisionError):
         expr /= 0.0
 
 def test_genexpr_op_expr(model):
