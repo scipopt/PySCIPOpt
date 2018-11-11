@@ -39,7 +39,7 @@ class Conshdlr_sils(Conshdlr):
                 cutsadded = True
         return cutsadded
 
-    def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason):
+    def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason, completely):
         if not self.addcut(checkonly = True, sol = solution):
             return {"result": SCIP_RESULT.INFEASIBLE}
         else:
