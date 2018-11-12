@@ -3262,7 +3262,7 @@ cdef class Model:
 
         """
         n = str_conversion(name)
-        PY_SCIP_CALL(SCIPsetCharParam(self._scip, n, value))
+        PY_SCIP_CALL(SCIPsetCharParam(self._scip, n, ord(value)))
 
     def setStringParam(self, name, value):
         """Set a string-valued parameter.
@@ -3330,7 +3330,7 @@ cdef class Model:
         elif paramtype == SCIP_PARAMTYPE_REAL:
             return SCIPparamGetReal(param)
         elif paramtype == SCIP_PARAMTYPE_CHAR:
-            return SCIPparamGetChar(param)
+            return chr(SCIPparamGetChar(param))
         elif paramtype == SCIP_PARAMTYPE_STRING:
             return SCIPparamGetString(param)
 
