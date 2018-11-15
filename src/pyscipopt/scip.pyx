@@ -776,7 +776,7 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPsetObjlimit(self._scip, objlimit))
 
-    def setObjlimit(self, objlimit):
+    def getObjlimit(self):
         """returns current limit on objective function."""
         return SCIPgetObjlimit(self._scip)
 
