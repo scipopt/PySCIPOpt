@@ -130,7 +130,7 @@ class ALLDIFFconshdlr(Conshdlr):
 
         # compute strongly connected components of D and mark edges on the cc as useful
         for g in networkx.strongly_connected_components(D):
-            for e in g.edges():
+            for e in D.subgraph(g).edges():
                 if G.has_edge(*e):
                     G.remove_edge(*e)
 
