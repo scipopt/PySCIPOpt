@@ -44,7 +44,7 @@ class MyBranching(Branchrule):
 m = Model()
 m.setIntParam("presolving/maxrounds", 0)
 #m.setLongintParam("lp/rootiterlim", 3)
-m.setRealParam("limits/time", 10)
+m.setRealParam("limits/time", 60)
 
 x0 = m.addVar(lb=-2, ub=4)
 r1 = m.addVar()
