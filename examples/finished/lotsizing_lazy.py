@@ -51,7 +51,7 @@ class Conshdlr_sils(Conshdlr):
         else:
             return {"result": SCIP_RESULT.FEASIBLE}
 
-    def conslock(self, constraint, nlockspos, nlocksneg):
+    def conslock(self, constraint, locktype, nlockspos, nlocksneg):
         pass
 
 def sils(T,f,c,d,h):
