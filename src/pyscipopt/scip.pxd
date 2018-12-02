@@ -250,6 +250,12 @@ cdef extern from "scip/scip.h":
         SCIP_LPSOLSTAT_TIMELIMIT    = 6
         SCIP_LPSOLSTAT_ERROR        = 7
 
+    ctypedef enum SCIP_BRANCHDIR:
+        SCIP_BRANCHDIR_DOWNWARDS = 0
+        SCIP_BRANCHDIR_UPWARDS   = 1
+        SCIP_BRANCHDIR_FIXED     = 2
+        SCIP_BRANCHDIR_AUTO      = 3
+
     ctypedef bint SCIP_Bool
 
     ctypedef long long SCIP_Longint
@@ -557,6 +563,8 @@ cdef extern from "scip/scip.h":
     SCIP_NODETYPE SCIPnodeGetType(SCIP_NODE* node)
     SCIP_Bool SCIPnodeIsActive(SCIP_NODE* node)
     SCIP_Bool SCIPnodeIsPropagatedAgain(SCIP_NODE* node)
+    SCIP_Real SCIPcalcNodeselPriority(SCIP*	scip, SCIP_VAR* var, SCIP_BRANCHDIR	branchdir, SCIP_Real targetvalue)
+    SCIP_Real SCIPcalcChildEstimate(SCIP* scip, SCIP_VAR* var, SCIP_Real targetvalue) 	
     SCIP_RETCODE SCIPcreateChild(SCIP* scip, SCIP_NODE** node, SCIP_Real nodeselprio, SCIP_Real estimate)
     SCIP_Bool SCIPinRepropagation(SCIP* scip)
 
