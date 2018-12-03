@@ -20,6 +20,8 @@ Code contributions are very welcome and should comply to a few rules:
 
 6. Before implementing a new PySCIPOpt feature, check whether the feature exists in SCIP. If so, implement it as a pure wrapper, mimicking SCIP whenever possible. If the new feature does not exist in SCIP but it is close to an existing one, consider if implementing that way is substantially convenient (e.g. Pythonic). If it does something completely different, you are welcome to pull your request and discuss the implementation.
 
+7. PySCIPOpt uses `semantic versioning <https://semver.org/>`__. Version number increase only happens on master and must be tagged to build a new PyPI release.
+
 For general reference, we suggest:
 
 - `PySCIPOpt README <README.rst>`__;
@@ -43,8 +45,8 @@ PySCIPOpt is meant to be a fast-prototyping interface of the pure SCIP C API. By
 - with an expected behavior - and parameters, returns, attributes, ... - as close to SCIP as possible
 - without *"breaking"* Python and the purpose for what the language it is meant.
 
-Ideally speaking, we want every SCIP function to be wrapped in PySCIPOpt.  
+Ideally speaking, we want every SCIP function to be wrapped in PySCIPOpt.
 
-**Convenience functions** are additional, non-detrimental features meant to help prototyping the Python way. Since these functions are not in SCIP, we wish to limit them to prevent difference in features between SCIP and PySCIPOPT, which are always difficult to maintain. A few convenience functions survive in PySCIPOpt when keeping them is doubtless beneficial.  
+**Convenience functions** are additional, non-detrimental features meant to help prototyping the Python way. Since these functions are not in SCIP, we wish to limit them to prevent difference in features between SCIP and PySCIPOPT, which are always difficult to maintain. A few convenience functions survive in PySCIPOpt when keeping them is doubtless beneficial.
 
 Admittedly, *there is a middle ground where functions are not completely wrappers or just convenient*. That is the case, for instance, of fundamental :code:`Model` methods like :code:`addCons` or :code:`writeProblem`. We want to leave their development to negotiation.
