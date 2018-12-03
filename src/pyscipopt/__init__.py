@@ -28,3 +28,4 @@ from pyscipopt.scip      import PY_SCIP_PRESOLTIMING as SCIP_PRESOLTIMING
 from pyscipopt.scip      import PY_SCIP_HEURTIMING   as SCIP_HEURTIMING
 from pyscipopt.scip      import PY_SCIP_EVENTTYPE    as SCIP_EVENTTYPE
 from pyscipopt.scip      import PY_SCIP_LPSOLSTAT    as SCIP_LPSOLSTAT
+from pyscipopt.scip      import PY_SCIP_BRANCHDIR    as SCIP_BRANCHDIR

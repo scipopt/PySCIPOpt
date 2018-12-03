@@ -193,6 +193,11 @@ cdef class PY_SCIP_LPSOLSTAT:
     TIMELIMIT    = SCIP_LPSOLSTAT_TIMELIMIT
     ERROR        = SCIP_LPSOLSTAT_ERROR
 
+cdef class PY_SCIP_BRANCHDIR:
+    DOWNWARDS = SCIP_BRANCHDIR_DOWNWARDS
+    UPWARDS   = SCIP_BRANCHDIR_UPWARDS
+    FIXED     = SCIP_BRANCHDIR_FIXED
+    AUTO      = SCIP_BRANCHDIR_AUTO
 
 def PY_SCIP_CALL(SCIP_RETCODE rc):
     if rc == SCIP_OKAY:
@@ -2683,7 +2688,7 @@ cdef class Model:
             nlpcands:    number of LP branching candidates
             npriolpcands: number of candidates with maximal priority
             nfracimplvars: number of fractional implicit integer variables
-        
+
         """
         cdef int ncands
         cdef int nlpcands
@@ -2704,10 +2709,10 @@ cdef class Model:
 
     def branchVar(self, variable):
         """Branch on a non-continuous variable.
-        
+
         :param variable: Variable to branch on
         :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child.
-        
+
         """
         cdef SCIP_NODE* downchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
         cdef SCIP_NODE* eqchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
@@ -2719,29 +2724,53 @@ cdef class Model:
 
     def branchVarVal(self, variable, value):
         """Branches on variable using a value which separates the domain of the variable.
-        
+
         :param variable: Variable to branch on
         :param value: float, value to branch on
         :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
                     if branch variable is integer
-       
+
         """
         cdef SCIP_NODE* downchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
         cdef SCIP_NODE* eqchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
         cdef SCIP_NODE* upchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
-        
+
         PY_SCIP_CALL(SCIPbranchVarVal(self._scip, (<Variable>variable).var, value, &downchild, &eqchild, &upchild))
         # TODO should the stuff be freed and how?
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
 
+    def calcNodeselPriority(self, Variable variable, branchdir, targetvalue):
+        """calculates the node selection priority for moving the given variable's LP value
+        to the given target value;
+        this node selection priority can be given to the SCIPcreateChild() call
+
+        :param variable: variable on which the branching is applied
+        :param branchdir: type of branching that was performed
+        :param targetvalue: new value of the variable in the child node
+        :return: node selection priority for moving the given variable's LP value to the given target value
+
+        """
+        return SCIPcalcNodeselPriority(self._scip, variable.var, branchdir, targetvalue)
+
+    def calcChildEstimate(self, Variable variable, targetvalue):
+        """Calculates an estimate for the objective of the best feasible solution
+        contained in the subtree after applying the given branching;
+        this estimate can be given to the SCIPcreateChild() call
+
+        :param variable: Variable to compute the estimate for
+        :param targetvalue: new value of the variable in the child node
+        :return: objective estimate of the best solution in the subtree after applying the given branching
+
+        """
+        return SCIPcalcChildEstimate(self._scip, variable.var, targetvalue)
 
     def createChild(self, nodeselprio, estimate):
         """Create a child node of the focus node.
-        
+
         :param nodeselprio: float, node selection priority of new node
-        :param estimate: float, estimate for(transformed) objective value of best feasible solution in subtree 
+        :param estimate: float, estimate for(transformed) objective value of best feasible solution in subtree
         :return: Node, the child which was created
-        
+
         """
         cdef SCIP_NODE* child = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
         PY_SCIP_CALL(SCIPcreateChild(self._scip, &child, nodeselprio, estimate))
