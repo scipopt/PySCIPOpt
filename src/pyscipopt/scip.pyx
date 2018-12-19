@@ -1189,6 +1189,10 @@ cdef class Model:
 
         return [Variable.create(_vars[i]) for i in range(_nvars)]
 
+    def getNVars(self):
+        """Retrieve number of variables in the problems"""
+        return SCIPgetNVars(self._scip)
+
     def updateNodeLowerbound(self, Node node, lb):
         """if given value is larger than the node's lower bound (in transformed problem),
         sets the node's lower bound to the new value
@@ -1236,6 +1240,14 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPgetLPRowsData(self._scip, &rows, &nrows))
         return [Row.create(rows[i]) for i in range(nrows)]
+
+    def getNLPRows(self):
+        """Retrieve the number of rows currently in the LP"""
+        return SCIPgetNLPRows(self._scip)
+
+    def getNLPCols(self):
+        """Retrieve the number of cols currently in the LP"""
+        return SCIPgetNLPCols(self._scip)
 
     def getLPBasisInd(self):
         """Gets all indices of basic columns and rows: index i >= 0 corresponds to column i, index i < 0 to row -i-1"""
@@ -1332,6 +1344,14 @@ cdef class Model:
         cdef SCIP_Bool infeasible
         PY_SCIP_CALL(SCIPaddRow(self._scip, cut.row, forcecut, &infeasible))
         return infeasible
+
+    def getNCuts(self):
+        """Retrieve total number of cuts in storage"""
+        return SCIPgetNCuts(self._scip)
+
+    def getNCutsApplied(self):
+        """Retrieve number of currently applied cuts"""
+        return SCIPgetNCutsApplied(self._scip)
 
     # Constraint functions
     def addCons(self, cons, name='', initial=True, separate=True,
@@ -2193,6 +2213,10 @@ cdef class Model:
         _conss = SCIPgetConss(self._scip)
         _nconss = SCIPgetNConss(self._scip)
         return [Constraint.create(_conss[i]) for i in range(_nconss)]
+
+    def getNConss(self):
+        """Retrieve number of all constraints"""
+        return SCIPgetNConss(self._scip)
 
     def delCons(self, Constraint cons):
         """Delete constraint from the model
