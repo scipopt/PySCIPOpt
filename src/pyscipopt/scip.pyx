@@ -19,6 +19,7 @@ include "presol.pxi"
 include "pricer.pxi"
 include "propagator.pxi"
 include "sepa.pxi"
+include "relax.pxi"
 
 # recommended SCIP version; major version is required
 MAJOR = 6
@@ -890,6 +891,14 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPsetHeuristics(self._scip, setting, True))
+
+#    def setRelax(self, setting):
+#        """Set relaxation parameter settings.
+#
+#        :param setting: the parameter setting (SCIP_PARAMSETTING)
+#
+#        """
+#        PY_SCIP_CALL(SCIPsetRelax(self._scip, setting, True))
 
     def disablePropagation(self, onlyroot=False):
         """Disables propagation in SCIP to avoid modifying the original problem during transformation.
@@ -2194,6 +2203,7 @@ cdef class Model:
         _nconss = SCIPgetNConss(self._scip)
         return [Constraint.create(_conss[i]) for i in range(_nconss)]
 
+        
     def delCons(self, Constraint cons):
         """Delete constraint from the model
 
@@ -2622,6 +2632,18 @@ cdef class Model:
         heur.name = name
         Py_INCREF(heur)
 
+    def includeRelax(self, Relax relax, name, desc, priority=10000, freq=1):
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        
+        PY_SCIP_CALL(SCIPincludeRelax(self._scip, nam, des, priority, freq, PyRelaxCopy, PyRelaxFree, PyRelaxInit, PyRelaxExit,
+                                          PyRelaxInitsol, PyRelaxExitsol, PyRelaxExec, <SCIP_RELAXDATA*> relax))
+        relax.model = <Model>weakref.proxy(self)
+        relax.name = name
+        
+        Py_INCREF(relax)
+
+
     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
         """Include a branching rule.
 
@@ -2671,7 +2693,7 @@ cdef class Model:
         benders.model = <Model>weakref.proxy(self)
         benders.name = name
         Py_INCREF(benders)
-
+        
 
     def getLPBranchCands(self):
         """gets branching candidates for LP solution branching (fractional variables) along with solution values,

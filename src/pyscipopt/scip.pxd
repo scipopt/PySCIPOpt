@@ -322,6 +322,12 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_HEURDATA:
         pass
 
+    ctypedef struct SCIP_RELAX:
+        pass
+
+    ctypedef struct SCIP_RELAXDATA:
+        pass
+        
     ctypedef struct SCIP_NODE:
         pass
 
@@ -541,6 +547,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetPresolving(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)
     SCIP_RETCODE SCIPsetSeparating(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)
     SCIP_RETCODE SCIPsetHeuristics(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)
+    SCIP_RETCODE SCIPsetRelaxation(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)
     SCIP_RETCODE SCIPwriteOrigProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
     SCIP_RETCODE SCIPwriteTransProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
     SCIP_STATUS SCIPgetStatus(SCIP* scip)
@@ -909,6 +916,23 @@ cdef extern from "scip/scip.h":
                                  SCIP_HEURDATA* heurdata)
     SCIP_HEURDATA* SCIPheurGetData(SCIP_HEUR* heur)
     SCIP_HEUR* SCIPfindHeur(SCIP* scip, const char* name)
+
+    #Relaxation plugin
+    SCIP_RETCODE SCIPincludeRelax(SCIP* scip,
+		                         const char* name,
+                           		 const char* desc,
+		                         int priority,
+		                         int freq,
+		                         SCIP_RETCODE (*relaxcopy) (SCIP* scip, SCIP_RELAX* relax),
+                                 SCIP_RETCODE (*relaxfree) (SCIP* scip, SCIP_RELAX* relax),
+                                 SCIP_RETCODE (*relaxinit) (SCIP* scip, SCIP_RELAX* relax),
+                                 SCIP_RETCODE (*relaxexit) (SCIP* scip, SCIP_RELAX* relax),
+                                 SCIP_RETCODE (*relaxinitsol) (SCIP* scip, SCIP_RELAX* relax),
+                                 SCIP_RETCODE (*relaxexitsol) (SCIP* scip, SCIP_RELAX* relax),
+                                 SCIP_RETCODE (*relaxexec) (SCIP* scip, SCIP_RELAX* relax, SCIP_Real* lowerbound, SCIP_RESULT* result),
+                                 SCIP_RELAXDATA* relaxdata) 		
+    SCIP_RELAXDATA* SCIPrelaxGetData(SCIP_RELAX* relax)
+    SCIP_RELAX* SCIPfindRelax(SCIP* scip, const char* name)
 
     # Node selection plugin
     SCIP_RETCODE SCIPincludeNodesel(SCIP* scip,
