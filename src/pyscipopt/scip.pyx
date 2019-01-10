@@ -2255,6 +2255,21 @@ cdef class Model:
             valsdict[bytes(SCIPvarGetName(_vars[i])).decode('utf-8')] = _vals[i]
         return valsdict
 
+    def getDualMultiplier(self, Constraint cons):
+        """Retrieve the dual solution to a linear constraint.
+
+        :param Constraint cons: linear constraint
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
+        if not constype == 'linear':
+            raise Warning("dual solution values not available for constraints of type ", constype)
+        if cons.isOriginal():
+            transcons = <Constraint>self.getTransformedCons(cons)
+        else:
+            transcons = cons
+        return SCIPgetDualsolLinear(self._scip, transcons.cons)
+
     def getDualsolLinear(self, Constraint cons):
         """Retrieve the dual solution to a linear constraint.
 
