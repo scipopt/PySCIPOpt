@@ -20,7 +20,7 @@ notifications:
 
 before_install:
   - wget http://scip.zib.de/download/release/SCIPOptSuite-$VERSION-Linux.deb
-  - sudo apt-get update && sudo apt install -y SCIPOptSuite-$VERSION-Linux.deb
+  - sudo apt-get update && sudo apt install -y ./SCIPOptSuite-$VERSION-Linux.deb
 
 install:
   - pip install cython networkx pytest-cov
