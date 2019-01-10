@@ -2256,7 +2256,7 @@ cdef class Model:
         return valsdict
 
     def getDualMultiplier(self, Constraint cons):
-        """Retrieve the dual solution to a linear constraint.
+        """Retrieve the dual multiplier to a linear constraint.
 
         :param Constraint cons: linear constraint
 
