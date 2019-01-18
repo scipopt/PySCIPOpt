@@ -153,7 +153,7 @@ if __name__ == "__main__":
 
     conshdlr = Conshdlr_sils()
     model = sils_cut(T,f,c,d,h, conshdlr)
-    model.setBoolParam("misc/allowdualreds", 0)
+    model.setBoolParam("misc/allowstrongdualreds", 0)
     model.optimize()
     y,x,I = model.data
     print("\nOptimal value [cutting planes]:",model.getObjVal())

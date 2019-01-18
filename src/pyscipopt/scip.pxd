@@ -957,7 +957,7 @@ cdef extern from "scip/scip.h":
                                    SCIP_Bool cutpseudo,
                                    SCIP_Bool cutrelax,
                                    SCIP_Bool shareaux,
-                                   SCIP_RETCODE (*benderscopy) (SCIP* scip, SCIP_BENDERS* benders),
+                                   SCIP_RETCODE (*benderscopy) (SCIP* scip, SCIP_BENDERS* benders, SCIP_Bool threadsafe),
                                    SCIP_RETCODE (*bendersfree) (SCIP* scip, SCIP_BENDERS* benders),
                                    SCIP_RETCODE (*bendersinit) (SCIP* scip, SCIP_BENDERS* benders),
                                    SCIP_RETCODE (*bendersexit) (SCIP* scip, SCIP_BENDERS* benders),
@@ -977,14 +977,13 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPactivateBenders(SCIP* scip, SCIP_BENDERS* benders)
     SCIP_BENDERSDATA* SCIPbendersGetData(SCIP_BENDERS* benders)
     SCIP_RETCODE SCIPcreateBendersDefault(SCIP* scip, SCIP** subproblems, int nsubproblems)
-    int SCIPbendersGetNSubproblems(SCIP_BENDERS* benders);
+    int SCIPbendersGetNSubproblems(SCIP_BENDERS* benders)
     SCIP_RETCODE SCIPsolveBendersSubproblems(SCIP* scip, SCIP_BENDERS* benders,
             SCIP_SOL* sol, SCIP_RESULT* result, SCIP_Bool* infeasible,
-            SCIP_Bool* auxviol, SCIP_BENDERSENFOTYPE type, SCIP_Bool checkint)
+            SCIP_Bool* auxviol, SCIP_Bool checkint)
     SCIP_RETCODE SCIPsetupBendersSubproblem(SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, int probnumber)
     SCIP_RETCODE SCIPsolveBendersSubproblem(SCIP* scip, SCIP_BENDERS* benders,
-            SCIP_SOL* sol, int probnumber, SCIP_Bool* infeasible, SCIP_BENDERSENFOTYPE type,
-            SCIP_Bool solvecip, SCIP_Real* objective)
+            SCIP_SOL* sol, int probnumber, SCIP_Bool* infeasible, SCIP_Bool solvecip, SCIP_Real* objective)
     SCIP_RETCODE SCIPfreeBendersSubproblem(SCIP* scip, SCIP_BENDERS* benders, int probnumber)
     int SCIPgetNActiveBenders(SCIP* scip)
     SCIP_BENDERS** SCIPgetBenders(SCIP* scip)

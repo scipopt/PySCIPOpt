@@ -47,7 +47,7 @@ cdef class Benders:
         return {}
 
 
-cdef SCIP_RETCODE PyBendersCopy (SCIP* scip, SCIP_BENDERS* benders):
+cdef SCIP_RETCODE PyBendersCopy (SCIP* scip, SCIP_BENDERS* benders, SCIP_Bool threadsafe):
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyBendersFree (SCIP* scip, SCIP_BENDERS* benders):
