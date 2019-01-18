@@ -3048,7 +3048,7 @@ cdef class Model:
         return stored
 
     def checkSol(self, Solution solution, printreason=True, completely=False, checkbounds=True, checkintegrality=True, checklprows=True, original=False):
-        """Check given primal solution for feasibility and try to add it to the storage.
+        """Check given primal solution for feasibility without adding it to the storage.
 
         :param Solution solution: solution to store
         :param printreason: should all reasons of violations be printed? (Default value = True)
@@ -3063,7 +3063,7 @@ cdef class Model:
         if original:
             PY_SCIP_CALL(SCIPcheckSolOrig(self._scip, solution.sol, &feasible, printreason, completely))
         else:
-            PY_SCIP_CALL(SCIPtrySol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &feasible))
+            PY_SCIP_CALL(SCIPcheckSol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &feasible))
         return feasible
 
     def addSol(self, Solution solution, free=True):
