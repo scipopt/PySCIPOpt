@@ -3047,6 +3047,25 @@ cdef class Model:
             PY_SCIP_CALL(SCIPtrySol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
         return stored
 
+    def checkSol(self, Solution solution, printreason=True, completely=False, checkbounds=True, checkintegrality=True, checklprows=True, original=False):
+        """Check given primal solution for feasibility without adding it to the storage.
+
+        :param Solution solution: solution to store
+        :param printreason: should all reasons of violations be printed? (Default value = True)
+        :param completely: should all violation be checked? (Default value = False)
+        :param checkbounds: should the bounds of the variables be checked? (Default value = True)
+        :param checkintegrality: has integrality to be checked? (Default value = True)
+        :param checklprows: have current LP rows (both local and global) to be checked? (Default value = True)
+        :param original: must the solution be checked against the original problem (Default value = False)
+
+        """
+        cdef SCIP_Bool feasible
+        if original:
+            PY_SCIP_CALL(SCIPcheckSolOrig(self._scip, solution.sol, &feasible, printreason, completely))
+        else:
+            PY_SCIP_CALL(SCIPcheckSol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &feasible))
+        return feasible
+
     def addSol(self, Solution solution, free=True):
         """Try to add a solution to the storage.
 
