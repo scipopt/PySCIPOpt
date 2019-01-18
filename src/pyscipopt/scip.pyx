@@ -3061,7 +3061,7 @@ cdef class Model:
         """
         cdef SCIP_Bool feasible
         if original:
-            PY_SCIP_CALL(SCIPcheckSolOrig(self._scip, &solution.sol, &feasible, printreason, completely))
+            PY_SCIP_CALL(SCIPcheckSolOrig(self._scip, solution.sol, &feasible, printreason, completely))
         else:
             PY_SCIP_CALL(SCIPtrySol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &feasible))
         return feasible
