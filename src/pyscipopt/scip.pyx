@@ -962,6 +962,9 @@ cdef class Model:
             PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
 
         pyVar = Variable.create(scip_var)
+
+        #setting the variable data
+        SCIPvarSetData(scip_var, <SCIP_VARDATA*>pyVar)
         PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
         return pyVar
 
@@ -1049,8 +1052,8 @@ cdef class Model:
         cdef SCIP_Bool tightened
         PY_SCIP_CALL(SCIPtightenVarUb(self._scip, var.var, ub, force, &infeasible, &tightened))
         return infeasible, tightened
-    
-    
+
+
     def tightenVarUbGlobal(self, Variable var, ub, force=False):
         """Tighten the global upper bound, if the bound is tighter.
 
@@ -1066,7 +1069,7 @@ cdef class Model:
         cdef SCIP_Bool tightened
         PY_SCIP_CALL(SCIPtightenVarUbGlobal(self._scip, var.var, ub, force, &infeasible, &tightened))
         return infeasible, tightened
-    
+
     def tightenVarLbGlobal(self, Variable var, lb, force=False):
         """Tighten the global upper bound, if the bound is tighter.
 
@@ -1192,6 +1195,10 @@ cdef class Model:
     def getNVars(self):
         """Retrieve number of variables in the problems"""
         return SCIPgetNVars(self._scip)
+
+    def getNConss(self):
+        """Retrieve the number of constraints."""
+        return SCIPgetNConss(self._scip)
 
     def updateNodeLowerbound(self, Node node, lb):
         """if given value is larger than the node's lower bound (in transformed problem),
@@ -2452,6 +2459,57 @@ cdef class Model:
 
         for d in lowerbounds.keys():
             SCIPbendersUpdateSubproblemLowerbound(_benders, d, lowerbounds[d])
+
+    def activateBenders(self, str name, int nsubproblems):
+        """Activates the Benders' decomposition plugin with the input name
+
+        Keyword arguments:
+        name -- the name of the Benders' decomposition plugin
+        nsubproblems -- the number of subproblems in the Benders' decomposition
+        """
+        n = str_conversion(name)
+        cdef SCIP_BENDERS* benders
+        benders = SCIPfindBenders(self._scip, n)
+        PY_SCIP_CALL(SCIPactivateBenders(self._scip, benders, nsubproblems))
+
+    def addBendersSubproblem(self, str name, subproblem):
+        """adds a subproblem to the Benders' decomposition given by the input
+        name.
+
+        Keyword arguments:
+        name -- the Benders' decomposition that the subproblem is added to
+        subproblem --  the subproblem to add to the decomposition
+        """
+        cdef SCIP_BENDERS* benders
+        n = str_conversion(name)
+        benders = SCIPfindBenders(self._scip, n)
+        PY_SCIP_CALL(SCIPaddBendersSubproblem(self._scip, benders, (<Model>subproblem)._scip))
+
+    def getBendersVar(self, Variable var, Benders benders = None, probnumber = -1):
+        """Returns the variable for the subproblem or master problem
+        depending on the input probnumber
+
+        Keyword arguments:
+        var -- the source variable for which the target variable is requested
+        benders -- the Benders' decomposition to which the subproblem variables belong to
+        probnumber -- the problem number for which the target variable belongs, -1 for master problem
+        """
+        cdef SCIP_BENDERS* _benders
+        cdef SCIP_VAR* _mappedvar
+
+        if benders is None:
+            _benders = SCIPfindBenders(self._scip, "default")
+        else:
+            n = str_conversion(benders.name)
+            _benders = SCIPfindBenders(self._scip, n)
+
+        if probnumber == -1:
+            PY_SCIP_CALL(SCIPgetBendersMasterVar(self._scip, _benders, var.var, &_mappedvar))
+        else:
+            PY_SCIP_CALL(SCIPgetBendersSubproblemVar(self._scip, _benders, var.var, &_mappedvar, probnumber))
+
+        return Variable.create(_mappedvar)
+
 
     def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):
         """Include an event handler.

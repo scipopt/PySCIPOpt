@@ -3,6 +3,7 @@ __version__ = '2.1.1'
 # export user-relevant objects:
 from pyscipopt.Multidict import multidict
 from pyscipopt.scip      import Model
+from pyscipopt.scip      import Benders
 from pyscipopt.scip      import Branchrule
 from pyscipopt.scip      import Conshdlr
 from pyscipopt.scip      import Eventhdlr
