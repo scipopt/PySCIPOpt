@@ -1198,6 +1198,10 @@ cdef class Model:
 
         return [Variable.create(_vars[i]) for i in range(_nvars)]
 
+    def getNVars(self):
+        """Retrieve number of variables in the problems"""
+        return SCIPgetNVars(self._scip)
+
     def updateNodeLowerbound(self, Node node, lb):
         """if given value is larger than the node's lower bound (in transformed problem),
         sets the node's lower bound to the new value
@@ -1245,6 +1249,14 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPgetLPRowsData(self._scip, &rows, &nrows))
         return [Row.create(rows[i]) for i in range(nrows)]
+
+    def getNLPRows(self):
+        """Retrieve the number of rows currently in the LP"""
+        return SCIPgetNLPRows(self._scip)
+
+    def getNLPCols(self):
+        """Retrieve the number of cols currently in the LP"""
+        return SCIPgetNLPCols(self._scip)
 
     def getLPBasisInd(self):
         """Gets all indices of basic columns and rows: index i >= 0 corresponds to column i, index i < 0 to row -i-1"""
@@ -1341,6 +1353,14 @@ cdef class Model:
         cdef SCIP_Bool infeasible
         PY_SCIP_CALL(SCIPaddRow(self._scip, cut.row, forcecut, &infeasible))
         return infeasible
+
+    def getNCuts(self):
+        """Retrieve total number of cuts in storage"""
+        return SCIPgetNCuts(self._scip)
+
+    def getNCutsApplied(self):
+        """Retrieve number of currently applied cuts"""
+        return SCIPgetNCutsApplied(self._scip)
 
     # Constraint functions
     def addCons(self, cons, name='', initial=True, separate=True,
@@ -2203,7 +2223,10 @@ cdef class Model:
         _nconss = SCIPgetNConss(self._scip)
         return [Constraint.create(_conss[i]) for i in range(_nconss)]
 
-        
+    def getNConss(self):
+        """Retrieve number of all constraints"""
+        return SCIPgetNConss(self._scip)
+
     def delCons(self, Constraint cons):
         """Delete constraint from the model
 
@@ -2240,6 +2263,21 @@ cdef class Model:
         for i in range(SCIPgetNVarsLinear(self._scip, cons.cons)):
             valsdict[bytes(SCIPvarGetName(_vars[i])).decode('utf-8')] = _vals[i]
         return valsdict
+
+    def getDualMultiplier(self, Constraint cons):
+        """Retrieve the dual multiplier to a linear constraint.
+
+        :param Constraint cons: linear constraint
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
+        if not constype == 'linear':
+            raise Warning("dual solution values not available for constraints of type ", constype)
+        if cons.isOriginal():
+            transcons = <Constraint>self.getTransformedCons(cons)
+        else:
+            transcons = cons
+        return SCIPgetDualsolLinear(self._scip, transcons.cons)
 
     def getDualsolLinear(self, Constraint cons):
         """Retrieve the dual solution to a linear constraint.
@@ -3029,6 +3067,25 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPtrySol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
         return stored
+
+    def checkSol(self, Solution solution, printreason=True, completely=False, checkbounds=True, checkintegrality=True, checklprows=True, original=False):
+        """Check given primal solution for feasibility without adding it to the storage.
+
+        :param Solution solution: solution to store
+        :param printreason: should all reasons of violations be printed? (Default value = True)
+        :param completely: should all violation be checked? (Default value = False)
+        :param checkbounds: should the bounds of the variables be checked? (Default value = True)
+        :param checkintegrality: has integrality to be checked? (Default value = True)
+        :param checklprows: have current LP rows (both local and global) to be checked? (Default value = True)
+        :param original: must the solution be checked against the original problem (Default value = False)
+
+        """
+        cdef SCIP_Bool feasible
+        if original:
+            PY_SCIP_CALL(SCIPcheckSolOrig(self._scip, solution.sol, &feasible, printreason, completely))
+        else:
+            PY_SCIP_CALL(SCIPcheckSol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &feasible))
+        return feasible
 
     def addSol(self, Solution solution, free=True):
         """Try to add a solution to the storage.
