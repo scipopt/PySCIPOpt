@@ -1,7 +1,5 @@
-from pyscipopt import Model, quicksum, Conshdlr, SCIP_RESULT
-from pyscipopt.scip import Relax, Expr, Term, ExprCons, expr_to_nodes
-import numpy as np
-from types import SimpleNamespace
+from pyscipopt import Model
+from pyscipopt.scip import Relax
 
 calls = []
 
@@ -35,4 +33,3 @@ def test_relax():
     
 if __name__ == "__main__":
     test_relax()
-    
