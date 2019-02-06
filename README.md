@@ -19,8 +19,8 @@ See [INSTALL.md](INSTALL.md) for instructions.
 Building and solving a model
 ----------------------------
 
-There are several examples provided in the `tests` folder. These display
-some functionality of the interface and can serve as an entry point for
+There are several [tutorials](examples/tutorials) and [examples](examples/finished).
+These display some functionality of the interface and can serve as an entry point for
 writing more complex code. You might also want to have a look at this
 article about PySCIPOpt:
 <https://opus4.kobv.de/opus4-zib/frontdoor/index/index/docId/6045>. The
