@@ -53,7 +53,7 @@ if cythonize:
     extensions = cythonize(extensions)
 #     extensions = cythonize(extensions, compiler_directives={'linetrace': True})
 
-with open('README.md') as f:
+with open('README.rst') as f:
     long_description = f.read()
 
 setup(

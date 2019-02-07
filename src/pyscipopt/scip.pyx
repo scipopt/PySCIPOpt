@@ -193,6 +193,11 @@ cdef class PY_SCIP_LPSOLSTAT:
     TIMELIMIT    = SCIP_LPSOLSTAT_TIMELIMIT
     ERROR        = SCIP_LPSOLSTAT_ERROR
 
+cdef class PY_SCIP_BRANCHDIR:
+    DOWNWARDS = SCIP_BRANCHDIR_DOWNWARDS
+    UPWARDS   = SCIP_BRANCHDIR_UPWARDS
+    FIXED     = SCIP_BRANCHDIR_FIXED
+    AUTO      = SCIP_BRANCHDIR_AUTO
 
 def PY_SCIP_CALL(SCIP_RETCODE rc):
     if rc == SCIP_OKAY:
@@ -1184,6 +1189,10 @@ cdef class Model:
 
         return [Variable.create(_vars[i]) for i in range(_nvars)]
 
+    def getNVars(self):
+        """Retrieve number of variables in the problems"""
+        return SCIPgetNVars(self._scip)
+
     def updateNodeLowerbound(self, Node node, lb):
         """if given value is larger than the node's lower bound (in transformed problem),
         sets the node's lower bound to the new value
@@ -1231,6 +1240,14 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPgetLPRowsData(self._scip, &rows, &nrows))
         return [Row.create(rows[i]) for i in range(nrows)]
+
+    def getNLPRows(self):
+        """Retrieve the number of rows currently in the LP"""
+        return SCIPgetNLPRows(self._scip)
+
+    def getNLPCols(self):
+        """Retrieve the number of cols currently in the LP"""
+        return SCIPgetNLPCols(self._scip)
 
     def getLPBasisInd(self):
         """Gets all indices of basic columns and rows: index i >= 0 corresponds to column i, index i < 0 to row -i-1"""
@@ -1327,6 +1344,14 @@ cdef class Model:
         cdef SCIP_Bool infeasible
         PY_SCIP_CALL(SCIPaddRow(self._scip, cut.row, forcecut, &infeasible))
         return infeasible
+
+    def getNCuts(self):
+        """Retrieve total number of cuts in storage"""
+        return SCIPgetNCuts(self._scip)
+
+    def getNCutsApplied(self):
+        """Retrieve number of currently applied cuts"""
+        return SCIPgetNCutsApplied(self._scip)
 
     # Constraint functions
     def addCons(self, cons, name='', initial=True, separate=True,
@@ -2189,6 +2214,10 @@ cdef class Model:
         _nconss = SCIPgetNConss(self._scip)
         return [Constraint.create(_conss[i]) for i in range(_nconss)]
 
+    def getNConss(self):
+        """Retrieve number of all constraints"""
+        return SCIPgetNConss(self._scip)
+
     def delCons(self, Constraint cons):
         """Delete constraint from the model
 
@@ -2225,6 +2254,21 @@ cdef class Model:
         for i in range(SCIPgetNVarsLinear(self._scip, cons.cons)):
             valsdict[bytes(SCIPvarGetName(_vars[i])).decode('utf-8')] = _vals[i]
         return valsdict
+
+    def getDualMultiplier(self, Constraint cons):
+        """Retrieve the dual multiplier to a linear constraint.
+
+        :param Constraint cons: linear constraint
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
+        if not constype == 'linear':
+            raise Warning("dual solution values not available for constraints of type ", constype)
+        if cons.isOriginal():
+            transcons = <Constraint>self.getTransformedCons(cons)
+        else:
+            transcons = cons
+        return SCIPgetDualsolLinear(self._scip, transcons.cons)
 
     def getDualsolLinear(self, Constraint cons):
         """Retrieve the dual solution to a linear constraint.
@@ -2683,7 +2727,7 @@ cdef class Model:
             nlpcands:    number of LP branching candidates
             npriolpcands: number of candidates with maximal priority
             nfracimplvars: number of fractional implicit integer variables
-        
+
         """
         cdef int ncands
         cdef int nlpcands
@@ -2704,10 +2748,10 @@ cdef class Model:
 
     def branchVar(self, variable):
         """Branch on a non-continuous variable.
-        
+
         :param variable: Variable to branch on
         :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child.
-        
+
         """
         cdef SCIP_NODE* downchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
         cdef SCIP_NODE* eqchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
@@ -2719,29 +2763,53 @@ cdef class Model:
 
     def branchVarVal(self, variable, value):
         """Branches on variable using a value which separates the domain of the variable.
-        
+
         :param variable: Variable to branch on
         :param value: float, value to branch on
         :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
                     if branch variable is integer
-       
+
         """
         cdef SCIP_NODE* downchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
         cdef SCIP_NODE* eqchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
         cdef SCIP_NODE* upchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
-        
+
         PY_SCIP_CALL(SCIPbranchVarVal(self._scip, (<Variable>variable).var, value, &downchild, &eqchild, &upchild))
         # TODO should the stuff be freed and how?
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
 
+    def calcNodeselPriority(self, Variable variable, branchdir, targetvalue):
+        """calculates the node selection priority for moving the given variable's LP value
+        to the given target value;
+        this node selection priority can be given to the SCIPcreateChild() call
+
+        :param variable: variable on which the branching is applied
+        :param branchdir: type of branching that was performed
+        :param targetvalue: new value of the variable in the child node
+        :return: node selection priority for moving the given variable's LP value to the given target value
+
+        """
+        return SCIPcalcNodeselPriority(self._scip, variable.var, branchdir, targetvalue)
+
+    def calcChildEstimate(self, Variable variable, targetvalue):
+        """Calculates an estimate for the objective of the best feasible solution
+        contained in the subtree after applying the given branching;
+        this estimate can be given to the SCIPcreateChild() call
+
+        :param variable: Variable to compute the estimate for
+        :param targetvalue: new value of the variable in the child node
+        :return: objective estimate of the best solution in the subtree after applying the given branching
+
+        """
+        return SCIPcalcChildEstimate(self._scip, variable.var, targetvalue)
 
     def createChild(self, nodeselprio, estimate):
         """Create a child node of the focus node.
-        
+
         :param nodeselprio: float, node selection priority of new node
-        :param estimate: float, estimate for(transformed) objective value of best feasible solution in subtree 
+        :param estimate: float, estimate for(transformed) objective value of best feasible solution in subtree
         :return: Node, the child which was created
-        
+
         """
         cdef SCIP_NODE* child = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
         PY_SCIP_CALL(SCIPcreateChild(self._scip, &child, nodeselprio, estimate))
@@ -2978,6 +3046,25 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPtrySol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
         return stored
+
+    def checkSol(self, Solution solution, printreason=True, completely=False, checkbounds=True, checkintegrality=True, checklprows=True, original=False):
+        """Check given primal solution for feasibility without adding it to the storage.
+
+        :param Solution solution: solution to store
+        :param printreason: should all reasons of violations be printed? (Default value = True)
+        :param completely: should all violation be checked? (Default value = False)
+        :param checkbounds: should the bounds of the variables be checked? (Default value = True)
+        :param checkintegrality: has integrality to be checked? (Default value = True)
+        :param checklprows: have current LP rows (both local and global) to be checked? (Default value = True)
+        :param original: must the solution be checked against the original problem (Default value = False)
+
+        """
+        cdef SCIP_Bool feasible
+        if original:
+            PY_SCIP_CALL(SCIPcheckSolOrig(self._scip, solution.sol, &feasible, printreason, completely))
+        else:
+            PY_SCIP_CALL(SCIPcheckSol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &feasible))
+        return feasible
 
     def addSol(self, Solution solution, free=True):
         """Try to add a solution to the storage.
