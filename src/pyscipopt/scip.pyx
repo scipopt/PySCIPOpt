@@ -2508,7 +2508,12 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPgetBendersSubproblemVar(self._scip, _benders, var.var, &_mappedvar, probnumber))
 
-        return Variable.create(_mappedvar)
+        if _mappedvar == NULL:
+            mappedvar = None
+        else:
+            mappedvar = Variable.create(_mappedvar)
+
+        return mappedvar
 
 
     def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):

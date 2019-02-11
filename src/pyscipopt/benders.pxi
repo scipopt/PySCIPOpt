@@ -117,8 +117,11 @@ cdef SCIP_RETCODE PyBendersPresubsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
-    solution = Solution()
-    solution.sol = sol
+    if sol == NULL:
+        solution = None
+    else:
+        solution = Solution()
+        solution.sol = sol
     enfotype = type
     result_dict = PyBenders.benderspresubsolve(solution, enfotype, checkint)
     skipsolve[0] = result_dict.get("skipsolve", False)
@@ -129,8 +132,11 @@ cdef SCIP_RETCODE PyBendersSolvesubconvex (SCIP* scip, SCIP_BENDERS* benders, SC
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
-    solution = Solution()
-    solution.sol = sol
+    if sol == NULL:
+        solution = None
+    else:
+        solution = Solution()
+        solution.sol = sol
     result_dict = PyBenders.benderssolvesubconvex(solution, probnumber, onlyconvex)
     objective[0] = result_dict.get("objective", 1e+20)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
@@ -140,8 +146,11 @@ cdef SCIP_RETCODE PyBendersSolvesub (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
-    solution = Solution()
-    solution.sol = sol
+    if sol == NULL:
+        solution = None
+    else:
+        solution = Solution()
+        solution.sol = sol
     result_dict = PyBenders.benderssolvesub(solution, probnumber)
     objective[0] = result_dict.get("objective", 1e+20)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
@@ -153,8 +162,11 @@ cdef SCIP_RETCODE PyBendersPostsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SO
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
-    solution = Solution()
-    solution.sol = sol
+    if sol == NULL:
+        solution = None
+    else:
+        solution = Solution()
+        solution.sol = sol
     enfotype = type
     mergecandidates = []
     for i in range(nmergecands):
@@ -177,9 +189,9 @@ cdef SCIP_RETCODE PyBendersGetvar (SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* 
     PyBenders = <Benders>bendersdata
     PyVar = getPyVar(var)
     result_dict = PyBenders.bendersgetvar(PyVar, probnumber)
-    mappedvariable = result_dict.get("mappedvar", None)
+    mappedvariable = <Variable>(result_dict.get("mappedvar", None))
     if mappedvariable is None:
         mappedvar[0] = NULL
     else:
-        mappedvar[0] = <SCIP_VAR*>(mappedvariable.ptr())
+        mappedvar[0] = mappedvariable.var
     return SCIP_OKAY
