@@ -358,6 +358,9 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_CONSDATA:
         pass
 
+    ctypedef struct SCIP_VARDATA:
+        pass
+
     ctypedef struct SCIP_EVENT:
         pass
 
@@ -618,6 +621,8 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPvarGetUbLocal(SCIP_VAR* var)
     SCIP_Real SCIPvarGetObj(SCIP_VAR* var)
     SCIP_Real SCIPvarGetLPSol(SCIP_VAR* var)
+    void SCIPvarSetData(SCIP_VAR* var, SCIP_VARDATA* vardata)
+    SCIP_VARDATA* SCIPvarGetData(SCIP_VAR* var)
 
     # LP Methods
     SCIP_RETCODE SCIPgetLPColsData(SCIP* scip, SCIP_COL*** cols, int* ncols)
@@ -976,7 +981,7 @@ cdef extern from "scip/scip.h":
                                    SCIP_RETCODE (*bendersfreesub) (SCIP* scip, SCIP_BENDERS* benders, int probnumber),
                                    SCIP_BENDERSDATA* bendersdata)
     SCIP_BENDERS* SCIPfindBenders(SCIP* scip, const char* name)
-    SCIP_RETCODE SCIPactivateBenders(SCIP* scip, SCIP_BENDERS* benders)
+    SCIP_RETCODE SCIPactivateBenders(SCIP* scip, SCIP_BENDERS* benders, int nsubproblems)
     SCIP_BENDERSDATA* SCIPbendersGetData(SCIP_BENDERS* benders)
     SCIP_RETCODE SCIPcreateBendersDefault(SCIP* scip, SCIP** subproblems, int nsubproblems)
     int SCIPbendersGetNSubproblems(SCIP_BENDERS* benders);
@@ -991,6 +996,9 @@ cdef extern from "scip/scip.h":
     int SCIPgetNActiveBenders(SCIP* scip)
     SCIP_BENDERS** SCIPgetBenders(SCIP* scip)
     void SCIPbendersUpdateSubproblemLowerbound(SCIP_BENDERS* benders, int probnumber, SCIP_Real lowerbound)
+    SCIP_RETCODE SCIPaddBendersSubproblem(SCIP* scip, SCIP_BENDERS* benders, SCIP* subproblem)
+    SCIP_RETCODE SCIPgetBendersMasterVar(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar)
+    SCIP_RETCODE SCIPgetBendersSubproblemVar(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar, int probnumber)
 
     SCIP_RETCODE SCIPbranchVar(SCIP* scip,
                                 SCIP_VAR* var,
