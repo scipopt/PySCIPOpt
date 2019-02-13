@@ -19,24 +19,23 @@ There are several `examples <examples/finished>`__ and `tutorials <examples/tuto
 These display some functionality of the interface and can serve as an entry
 point for writing more complex code. You might also want to have a look
 at this article about PySCIPOpt:
-https://opus4.kobv.de/opus4-zib/frontdoor/index/index/docId/6045. The
-following steps are always required when using the interface:
+https://link.springer.com/chapter/10.1007%2F978-3-319-42432-3_37.
 
-1) It is necessary to import python-scip in your code. This is achieved
-   by including the line
+Minimal usage example:
+
+1) Import the main class of the module:
 
 .. code:: python
 
    from pyscipopt import Model
 
-2) Create a solver instance.
+2) Create a solver instance:
 
 .. code:: python
 
-   model = Model("Example")  # model name is optional
+   model = Model()
 
-3) Access the methods in the ``scip.pyx`` file using the solver/model
-   instance ``model``, e.g.:
+3) Construct a model and solve it:
 
 .. code:: python
 
@@ -49,13 +48,13 @@ following steps are always required when using the interface:
 Writing new plugins
 ===================
 
-The Python interface can be used to define custom plugins to extend the
+PySCIPOpt can be used to define custom plugins to extend the
 functionality of SCIP. You may write a pricer, heuristic or even
 constraint handler using pure Python code and SCIP can call their
 methods using the callback system. Every available plugin has a base
 class that you need to extend, overwriting the predefined but empty
-callbacks. Please see ``test_pricer.py`` and ``test_heur.py`` for two
-simple examples.
+callbacks. Please see `test_pricer.py <tests/test_pricer.py>`__ and
+`test_heur.py <tests/test_heur.py>`__ for two simple examples.
 
 Please notice that in most cases one needs to use a ``dictionary`` to
 specify the return values needed by SCIP.
@@ -68,26 +67,29 @@ library methods. You may also extend it to increase the
 functionality of this interface. The following will provide some
 directions on how this can be achieved:
 
-The two most important files in PySCIPOpt are the ``scip.pxd`` and
-``scip.pyx``. These two files specify the public functions of SCIP that
-can be accessed from your python code.
+The two most important files in PySCIPOpt are `scip.pxd <src/pyscipopt/scip.pxd>`__
+and `scip.pyx <src/pyscipopt/scip.pxd>`__. These two files specify the
+public functions of SCIP that can be accessed from PySCIPOpt and how this access
+is to be performed.
 
-To make PySCIPOpt aware of the public functions you would like to
-access, you must add them to ``scip.pxd``. There are two things that
-must be done in order to properly add the functions:
+To make PySCIPOpt aware of a public SCIP function you must add the declaration to
+`scip.pxd <src/pyscipopt/scip.pxd>`__, including any missing ``enum``\ s,
+``struct``\ s, SCIP variable types, etc.:
 
-1) Ensure any ``enum``\ s, ``struct``\ s or SCIP variable types are
-   included in ``scip.pxd``
+.. code:: python
 
-2) Add the prototype of the public function you wish to access to
-   ``scip.pxd``
+  int SCIPgetNVars(SCIP* scip)
 
-After following the previous two steps, it is then possible to create
-functions in python that reference the SCIP public functions included in
-``scip.pxd``. This is achieved by modifying the ``scip.pyx`` file to add
-the functionality you require.
+Then you can make the new function callable from Python by adding a new
+wrapper in ``scip.pyx``:
+   
+.. code:: python
+   
+  def getNVars(self):
+    """Retrieve number of variables in the problems"""
+    return SCIPgetNVars(self._scip)
 
-We are always happy to accept pull request containing patches or extensions!
+We are always happy to accept pull requests containing patches or extensions!
 
 Please have a look at our `contribution guidelines <CONTRIBUTING.rst>`__.
 
