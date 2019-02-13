@@ -91,6 +91,17 @@ We are always happy to accept pull request containing patches or extensions!
 
 Please have a look at our `contribution guidelines <CONTRIBUTING.rst>`__.
 
+How to cite
+===========
+
+Please refer to the `citing guidelines for SCIP <https://scip.zib.de/index.php#cite>`__
+and add a reference to this article whenever you are using PySCIPOpt in a publication:
+  
+- Maher S., Miltenberger M., Pedroso J.P., Rehfeldt D., Schwarz R., Serrano F. (2016) PySCIPOpt: Mathematical Programming in Python with the SCIP Optimization Suite. In: Greuel GM., Koch T., Paule P., Sommese A. (eds) Mathematical Software – ICMS 2016. ICMS 2016. Lecture Notes in Computer Science, vol 9725. Springer, Cham
+
+  https://link.springer.com/chapter/10.1007%2F978-3-319-42432-3_37
+
+
 Gotchas
 =======
 
