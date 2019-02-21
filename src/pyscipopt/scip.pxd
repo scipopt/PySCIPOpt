@@ -442,6 +442,23 @@ cdef extern from "scip/scip.h":
     # General SCIP Methods
     SCIP_RETCODE SCIPcreate(SCIP** scip)
     SCIP_RETCODE SCIPfree(SCIP** scip)
+    SCIP_RETCODE SCIPcopy(SCIP*                 sourcescip,
+                          SCIP*                 targetscip,
+                          SCIP_HASHMAP*         varmap,
+                          SCIP_HASHMAP*         consmap,
+                          const char*           suffix,
+                          SCIP_Bool             globalcopy,
+                          SCIP_Bool             enablepricing,
+                          SCIP_Bool             passmessagehdlr,
+                          SCIP_Bool*            valid)
+    SCIP_RETCODE SCIPcopyOrig(SCIP*                 sourcescip,
+                              SCIP*                 targetscip,
+                              SCIP_HASHMAP*         varmap,
+                              SCIP_HASHMAP*         consmap,
+                              const char*           suffix,
+                              SCIP_Bool             enablepricing,
+                              SCIP_Bool             passmessagehdlr,
+                              SCIP_Bool*            valid)
     SCIP_RETCODE SCIPmessagehdlrCreate(SCIP_MESSAGEHDLR **messagehdlr,
                                        SCIP_Bool bufferedoutput,
                                        const char *filename,
