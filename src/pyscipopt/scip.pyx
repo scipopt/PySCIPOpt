@@ -19,6 +19,7 @@ include "presol.pxi"
 include "pricer.pxi"
 include "propagator.pxi"
 include "sepa.pxi"
+include "relax.pxi"
 
 # recommended SCIP version; major version is required
 MAJOR = 6
@@ -2211,6 +2212,9 @@ cdef class Model:
 
         return (bilinterms, quadterms, linterms)
 
+    def setRelaxSolVal(self, Variable var, val):
+        PY_SCIP_CALL(SCIPsetRelaxSolVal(self._scip, var.var, val))
+
     def getConss(self):
         """Retrieve all constraints."""
         cdef SCIP_CONS** _conss
@@ -2723,6 +2727,24 @@ cdef class Model:
         heur.model = <Model>weakref.proxy(self)
         heur.name = name
         Py_INCREF(heur)
+
+    def includeRelax(self, Relax relax, name, desc, priority=10000, freq=1):
+        """Include a relaxation handler.
+        
+        :param Relax relax: relaxation handler
+        :param name: name of relaxation handler
+        :param desc: description of relaxation handler
+        :param priority: priority of the relaxation handler (negative: after LP, non-negative: before LP, Default value = 10000)
+        :param freq: frequency for calling relaxation handler
+        
+        """
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeRelax(self._scip, nam, des, priority, freq, PyRelaxCopy, PyRelaxFree, PyRelaxInit, PyRelaxExit,
+                                          PyRelaxInitsol, PyRelaxExitsol, PyRelaxExec, <SCIP_RELAXDATA*> relax))
+        relax.model = <Model>weakref.proxy(self)
+        relax.name = name
+        Py_INCREF(relax)
 
     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
         """Include a branching rule.
