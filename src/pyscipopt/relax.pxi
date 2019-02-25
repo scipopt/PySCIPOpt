@@ -18,10 +18,10 @@ cdef class Relax:
         pass
         
     def relaxexec(self):
-        print("python error in heurexec: this method needs to be implemented")
+        print("python error in relaxexec: this method needs to be implemented")
         return{}
-        
-    
+
+
 cdef SCIP_RETCODE PyRelaxCopy (SCIP* scip, SCIP_RELAX* relax):
     return SCIP_OKAY
 

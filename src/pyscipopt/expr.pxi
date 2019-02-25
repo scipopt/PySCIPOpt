@@ -153,14 +153,14 @@ cdef class Expr:
         if not isinstance(key, Term):
             key = Term(key)
         return self.terms.get(key, 0.0)
-    
+
     def __iter__(self):
         return iter(self.terms)
-        
+
     def __next__(self):
         try: return next(self.terms)
         except: raise StopIteration
-        
+
     def __abs__(self):
         return abs(buildGenExprObj(self))
 

@@ -327,7 +327,7 @@ cdef extern from "scip/scip.h":
 
     ctypedef struct SCIP_RELAXDATA:
         pass
-        
+
     ctypedef struct SCIP_NODE:
         pass
 
@@ -362,6 +362,9 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_CONSDATA:
+        pass
+
+    ctypedef struct SCIP_VARDATA:
         pass
 
     ctypedef struct SCIP_EVENT:
@@ -625,6 +628,8 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPvarGetUbLocal(SCIP_VAR* var)
     SCIP_Real SCIPvarGetObj(SCIP_VAR* var)
     SCIP_Real SCIPvarGetLPSol(SCIP_VAR* var)
+    void SCIPvarSetData(SCIP_VAR* var, SCIP_VARDATA* vardata)
+    SCIP_VARDATA* SCIPvarGetData(SCIP_VAR* var)
 
     # LP Methods
     SCIP_RETCODE SCIPgetLPColsData(SCIP* scip, SCIP_COL*** cols, int* ncols)
@@ -700,6 +705,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPreadSolFile(SCIP* scip, const char* filename, SCIP_SOL* sol, SCIP_Bool xml, SCIP_Bool*	partial, SCIP_Bool*	error)
     SCIP_RETCODE SCIPcheckSol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool printreason, SCIP_Bool completely, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* feasible)
     SCIP_RETCODE SCIPcheckSolOrig(SCIP* scip, SCIP_SOL* sol, SCIP_Bool* feasible, SCIP_Bool printreason, SCIP_Bool completely)
+
+    SCIP_RETCODE SCIPsetRelaxSolVal(SCIP* scip, SCIP_VAR* var, SCIP_Real val)
 
     # Row Methods
     SCIP_RETCODE SCIPcreateRow(SCIP* scip, SCIP_ROW** row, const char* name, int len, SCIP_COL** cols, SCIP_Real* vals,
@@ -934,7 +941,7 @@ cdef extern from "scip/scip.h":
                                  SCIP_RETCODE (*relaxinitsol) (SCIP* scip, SCIP_RELAX* relax),
                                  SCIP_RETCODE (*relaxexitsol) (SCIP* scip, SCIP_RELAX* relax),
                                  SCIP_RETCODE (*relaxexec) (SCIP* scip, SCIP_RELAX* relax, SCIP_Real* lowerbound, SCIP_RESULT* result),
-                                 SCIP_RELAXDATA* relaxdata) 		
+                                 SCIP_RELAXDATA* relaxdata)
     SCIP_RELAXDATA* SCIPrelaxGetData(SCIP_RELAX* relax)
     SCIP_RELAX* SCIPfindRelax(SCIP* scip, const char* name)
 
@@ -1000,7 +1007,7 @@ cdef extern from "scip/scip.h":
                                    SCIP_RETCODE (*bendersfreesub) (SCIP* scip, SCIP_BENDERS* benders, int probnumber),
                                    SCIP_BENDERSDATA* bendersdata)
     SCIP_BENDERS* SCIPfindBenders(SCIP* scip, const char* name)
-    SCIP_RETCODE SCIPactivateBenders(SCIP* scip, SCIP_BENDERS* benders)
+    SCIP_RETCODE SCIPactivateBenders(SCIP* scip, SCIP_BENDERS* benders, int nsubproblems)
     SCIP_BENDERSDATA* SCIPbendersGetData(SCIP_BENDERS* benders)
     SCIP_RETCODE SCIPcreateBendersDefault(SCIP* scip, SCIP** subproblems, int nsubproblems)
     int SCIPbendersGetNSubproblems(SCIP_BENDERS* benders);
@@ -1015,6 +1022,9 @@ cdef extern from "scip/scip.h":
     int SCIPgetNActiveBenders(SCIP* scip)
     SCIP_BENDERS** SCIPgetBenders(SCIP* scip)
     void SCIPbendersUpdateSubproblemLowerbound(SCIP_BENDERS* benders, int probnumber, SCIP_Real lowerbound)
+    SCIP_RETCODE SCIPaddBendersSubproblem(SCIP* scip, SCIP_BENDERS* benders, SCIP* subproblem)
+    SCIP_RETCODE SCIPgetBendersMasterVar(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar)
+    SCIP_RETCODE SCIPgetBendersSubproblemVar(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar, int probnumber)
 
     SCIP_RETCODE SCIPbranchVar(SCIP* scip,
                                 SCIP_VAR* var,
