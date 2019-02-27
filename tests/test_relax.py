@@ -26,7 +26,7 @@ def test_relax():
     
     m.setObjective(x1 + x0)
     m.optimize()
-    
+    print(m.getVal(x0))
     assert 'relaxexec' in calls
     assert len(calls) == 1
     

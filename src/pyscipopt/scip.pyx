@@ -597,6 +597,9 @@ cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg):
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
 # - interface SCIPfreeProb()
+##
+#@anchor Model
+##
 cdef class Model:
     cdef SCIP* _scip
     # store best solution to get the solution values easier
