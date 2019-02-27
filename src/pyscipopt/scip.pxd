@@ -698,6 +698,10 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPreadSolFile(SCIP* scip, const char* filename, SCIP_SOL* sol, SCIP_Bool xml, SCIP_Bool*	partial, SCIP_Bool*	error)
 
     SCIP_RETCODE SCIPsetRelaxSolVal(SCIP* scip, SCIP_VAR* var, SCIP_Real val)
+    SCIP_RETCODE SCIPmarkRelaxSolValid(SCIP* scip, SCIP_Bool includeslp)
+    SCIP_RETCODE SCIPclearRelaxSolVals(SCIP* scip)
+    SCIP_Real SCIPgetRelaxSolObj(SCIP* scip)
+    
 
     # Row Methods
     SCIP_RETCODE SCIPcreateRow(SCIP* scip, SCIP_ROW** row, const char* name, int len, SCIP_COL** cols, SCIP_Real* vals,

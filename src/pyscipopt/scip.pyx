@@ -2188,6 +2188,15 @@ cdef class Model:
     def setRelaxSolVal(self, Variable var, val):
         PY_SCIP_CALL(SCIPsetRelaxSolVal(self._scip, var.var, val))
 
+    def markRelaxSolValid(self, Includeslp):
+        PY_SCIP_CALL(SCIPmarkRelaxSolValid(self._scip, Includeslp))
+        
+    def clearRelaxSolVals(self):
+        PY_SCIP_CALL(SCIPclearRelaxSolVals(self._scip))
+        
+    def getRelaxSolObj(self):
+        return SCIPgetRelaxSolObj(self._scip)
+
     def getConss(self):
         """Retrieve all constraints."""
         cdef SCIP_CONS** _conss
@@ -3029,7 +3038,7 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPtrySol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
         return stored
-
+    def trySolfree(
     def addSol(self, Solution solution, free=True):
         """Try to add a solution to the storage.
 
