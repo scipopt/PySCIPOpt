@@ -3038,7 +3038,7 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPtrySol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
         return stored
-    def trySolfree(
+
     def addSol(self, Solution solution, free=True):
         """Try to add a solution to the storage.
 
