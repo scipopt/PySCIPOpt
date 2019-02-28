@@ -1,6 +1,5 @@
-## @file maindoc.py
-#  @brief main document page
-##
+##@file maindoc.py 
+#@brief Main documentation page
 
 ## @mainpage Overview
 #
@@ -16,13 +15,11 @@
 # This documentation gives an introduction to the functionality of the Python interface of the SCIP code in the following chapters
 #
 # - \ref Model Class with the most fundamental functions to create and solve a problem
-# - [Examples] (../../examples) Tutorials and examples written in Python 
-# - Functions List of all available functions in PySCIPOpt
+# - \ref examples/tutorial "Tutorials" and \ref examples/finished "Examples" to display some functionality of the interface
 # - @subpage EXTEND Explanations on extending the PySCIPOpt interface
 # 
 # For a more detailed description on how to create a model and how to extend the interface, please have a look at the [README.md] (README.md).
 #
-##
 
 ##@page EXTEND Extending the interface
 # PySCIPOpt already covers many of the SCIP callable library methods. You
@@ -37,9 +34,9 @@
 #access, you must add them to `scip.pxd`. There are two things that must
 #be done in order to properly add the functions:
 #
-#1)  Ensure any `enum`s, `struct`s or SCIP variable types are included in
+# -# Ensure any `enum`s, `struct`s or SCIP variable types are included in
 #    `scip.pxd`
-#2)  Add the prototype of the public function you wish to access to
+# -# Add the prototype of the public function you wish to access to
 #    `scip.pxd`
 #
 #After following the previous two steps, it is then possible to create
@@ -51,5 +48,3 @@
 #extensions!
 #
 #Please have a look at our [contribution guidelines](CONTRIBUTING.md).
-##
-

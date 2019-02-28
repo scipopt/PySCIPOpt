@@ -1,6 +1,6 @@
+##@file markowitz_soco.py
+#@brief simple markowitz model for portfolio optimization.
 """
-markowitz_soco.py:  simple markowitz model for portfolio optimization.
-
 Approach: use second-order cone optimization.
 
 Copyright (c) by Joao Pedro PEDROSO, Masahiro MURAMATSU and Mikio KUBO, 2012

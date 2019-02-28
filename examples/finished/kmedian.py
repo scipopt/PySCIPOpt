@@ -1,6 +1,6 @@
+##@file kmedian.py
+#@brief model for solving the k-median problem.
 """
-kmedian.py:  model for solving the k-median problem.
-
 minimize the total (weighted) travel cost for servicing
 a set of customers from k facilities.
 

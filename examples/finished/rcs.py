@@ -1,6 +1,6 @@
+##@file rcs.py
+#@brief model for the resource constrained scheduling problem
 """
-rcs.py: model for the resource constrained scheduling problem
-
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 from pyscipopt import Model, quicksum, multidict

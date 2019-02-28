@@ -1,6 +1,6 @@
+##@file ssa.py
+#@brief multi-stage (serial) safety stock allocation model
 """
-ssa.py: multi-stage (serial) safety stock allocation model
-
 Approach: use SOS2 constraints for modeling non-linear functions.
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012

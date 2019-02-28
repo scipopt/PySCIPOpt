@@ -1,18 +1,21 @@
+##@file finished/logical.py
+#@brief Tutorial example on how to use AND/OR/XOR constraints
+
 from pyscipopt import Model
 from pyscipopt import quicksum
 
-################################################################################
-#
-# AND/OR/XOR CONSTRAINTS
-#
-# Tutorial example on how to use AND/OR/XOR constraints.
-#
-# N.B.: standard SCIP XOR constraint works differently from AND/OR by design.
-# The constraint is set with a boolean rhs instead of an integer resultant.
-# cf. http://listserv.zib.de/pipermail/scip/2018-May/003392.html
-# A workaround to get the resultant as variable is here proposed.
-#
-################################################################################
+"""
+
+ AND/OR/XOR CONSTRAINTS
+
+ Tutorial example on how to use AND/OR/XOR constraints.
+
+ N.B.: standard SCIP XOR constraint works differently from AND/OR by design.
+ The constraint is set with a boolean rhs instead of an integer resultant.
+ cf. http://listserv.zib.de/pipermail/scip/2018-May/003392.html
+ A workaround to get the resultant as variable is here proposed.
+
+"""
 
 def printFunc(name,m):
     print("* %s *" % name)
@@ -25,7 +28,7 @@ def printFunc(name,m):
             print("%s: %d" % (v, round(m.getVal(v))))
     print("\n")
 
-# AND #
+# AND 
 model = Model()
 model.hideOutput()
 x = model.addVar("x","B")
@@ -38,7 +41,7 @@ model.setObjective(r,sense="minimize")
 model.optimize()
 printFunc("AND",model)
 
-# OR #
+# OR 
 model = Model()
 model.hideOutput()
 x = model.addVar("x","B")
@@ -51,7 +54,7 @@ model.setObjective(r,sense="maximize")
 model.optimize()
 printFunc("OR",model)
 
-# XOR (r as boolean, standard) #
+# XOR (r as boolean, standard) 
 model = Model()
 model.hideOutput()
 x = model.addVar("x","B")
@@ -63,7 +66,7 @@ model.addCons(x==1)
 model.optimize()
 printFunc("Standard XOR (as boolean)",model)
 
-# XOR (r as variable, custom) #
+# XOR (r as variable, custom) 
 model = Model()
 model.hideOutput()
 x = model.addVar("x","B")

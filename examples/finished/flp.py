@@ -1,6 +1,6 @@
+##@file flp.py
+#@brief model for solving the capacitated facility location problem
 """
-flp.py:  model for solving the capacitated facility location problem
-
 minimize the total (weighted) travel cost from n customers
 to some facilities with fixed costs and capacities.
 

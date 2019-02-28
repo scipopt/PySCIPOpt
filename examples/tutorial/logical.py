@@ -1,6 +1,6 @@
+##@file tutorial/logical.py
+#@brief Tutorial example on how to use AND/OR/XOR constraints.
 """
-logical.py: Tutorial example on how to use AND/OR/XOR constraints.
-
 N.B.: standard SCIP XOR constraint works differently from AND/OR by design.
 The constraint is set with a boolean rhs instead of an integer resultant.
 cf. http://listserv.zib.de/pipermail/scip/2018-May/003392.html

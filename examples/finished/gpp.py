@@ -1,6 +1,6 @@
+##@file gpp.py
+#@brief model for the graph partitioning problem
 """
-gpp.py: model for the graph partitioning problem
-
 Copyright (c) by Joao Pedro PEDROSO, Masahiro MURAMATSU and Mikio KUBO, 2012
 """
 

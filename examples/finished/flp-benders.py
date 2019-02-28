@@ -1,6 +1,6 @@
+##@file flp-benders.py
+#@brief model for solving the capacitated facility location problem using Benders' decomposition
 """
-flp-benders.py:  model for solving the capacitated facility location problem using Benders' decomposition
-
 minimize the total (weighted) travel cost from n customers
 to some facilities with fixed costs and capacities.
 

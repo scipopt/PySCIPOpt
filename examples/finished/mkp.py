@@ -1,6 +1,6 @@
+##@file mkp.py
+#@brief model for the multi-constrained knapsack problem
 """
-mkp.py: model for the multi-constrained knapsack problem
-
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 from pyscipopt import Model, quicksum, multidict

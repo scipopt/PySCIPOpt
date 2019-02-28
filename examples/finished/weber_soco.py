@@ -1,6 +1,6 @@
+##@file weber_soco.py
+#@brief model for solving the weber problem using soco.
 """
-weber_soco.py:  model for solving the weber problem using soco.
-
 Copyright (c) by Joao Pedro PEDROSO, Masahiro MURAMATSU and Mikio KUBO, 2012
 """
 from pyscipopt import Model, quicksum, multidict

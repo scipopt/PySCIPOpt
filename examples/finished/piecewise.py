@@ -1,6 +1,6 @@
+##@file piecewise.py
+#@brief several approaches for solving problems with piecewise linear functions.
 """
-piecewise.py:  several approaches for solving problems with piecewise linear functions.
-
 Approaches:
     - mult_selection: multiple selection model
     - convex_comb_sos: model with SOS2 constraints

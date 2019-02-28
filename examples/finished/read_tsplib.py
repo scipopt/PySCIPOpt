@@ -1,6 +1,6 @@
+##@file read_tsplib.py
+#@brief read standard instances of the  traveling salesman problem
 """
-tsp.py:  read standard instances of the  traveling salesman problem
-
 Functions provided:
     * read_tsplib  - read a symmetric tsp instance
     * read_atsplib -        asymmetric

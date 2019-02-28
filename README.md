@@ -19,8 +19,8 @@ See [INSTALL.md](INSTALL.md) for instructions.
 Building and solving a model
 ----------------------------
 
-There are several [examples](examples/finished) and
-[tutorials](examples/tutorials). These display some functionality of the
+There are several \ref examples/finished "examples" and
+\ref examples/tutorial "tutorials". These display some functionality of the
 interface and can serve as an entry point for writing more complex code.
 You might also want to have a look at this article about PySCIPOpt:
 <https://opus4.kobv.de/opus4-zib/frontdoor/index/index/docId/6045>. The
@@ -80,7 +80,7 @@ access, you must add them to `scip.pxd`. There are two things that must
 be done in order to properly add the functions:
 
 1)  Ensure any `enum`s, `struct`s or SCIP variable types are included in
-    `scip.pxd`
+    `scip.pxd` <br>
 2)  Add the prototype of the public function you wish to access to
     `scip.pxd`
 

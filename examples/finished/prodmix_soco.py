@@ -1,6 +1,6 @@
+##@file prodmix_soco.py
+#@brief product mix model using soco.
 """
-prodmix_soco.py:  product mix model using soco.
-
 Copyright (c) by Joao Pedro PEDROSO, Masahiro MURAMATSU and Mikio KUBO, 2012
 """
 from pyscipopt import Model, quicksum, multidict
