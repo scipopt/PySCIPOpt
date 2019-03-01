@@ -51,6 +51,7 @@ def distATT(x1,y1,x2,y2):
         return tij
 
 def distCEIL2D(x1,y1,x2,y2):
+    """returns smallest integer not less than the distance of two points"""
     xdiff = x2 - x1
     ydiff = y2 - y1
     return int(math.ceil(math.sqrt(xdiff*xdiff + ydiff*ydiff)))

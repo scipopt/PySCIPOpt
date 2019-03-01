@@ -1,5 +1,6 @@
-# In this file we implemenet the handling of expressions
-# We have two types of expressions: Expr and GenExpr.
+##@file expr.pxi
+#@brief In this file we implemenet the handling of expressions
+#@details We have two types of expressions: Expr and GenExpr.
 # The Expr can only handle polynomial expressions.
 # In addition, one can recover easily information from them.
 # A polynomial is a dictionary between `terms` and coefficients.
@@ -112,6 +113,7 @@ CONST = Term()
 
 # helper function
 def buildGenExprObj(expr):
+    """helper function to generate an object of type GenExpr"""
     if _is_number(expr):
         return Constant(expr)
     elif isinstance(expr, Expr):
@@ -410,6 +412,7 @@ class Op:
             prod:SCIP_EXPR_PRODUCT
             }
     def getOpIndex(self, op):
+        '''returns operator index'''
         return Op.operatorIndexDic[op];
 
 Operator = Op()
@@ -592,9 +595,11 @@ cdef class GenExpr:
         return _expr_richcmp(self, other, op)
 
     def degree(self):
-        return float('inf') # none of these expressions should be polynomial
+        '''Note: none of these expressions should be polynomial'''
+        return float('inf') 
 
     def getOp(self):
+        '''returns operator of GenExpr'''
         return self.op
 
 
@@ -667,21 +672,25 @@ cdef class Constant(GenExpr):
         return str(self.number)
 
 def exp(expr):
+    """returns expression with exp-function"""
     return UnaryExpr(Operator.exp, buildGenExprObj(expr))
 def log(expr):
+    """returns expression with log-function"""
     return UnaryExpr(Operator.log, buildGenExprObj(expr))
 def sqrt(expr):
+    """returns expression with sqrt-function"""
     return UnaryExpr(Operator.sqrt, buildGenExprObj(expr))
 
-# transforms tree to an array of nodes. each node is an operator and the position of the
-# children of that operator (i.e. the other nodes) in the array
 def expr_to_nodes(expr):
+    '''transforms tree to an array of nodes. each node is an operator and the position of the 
+    children of that operator (i.e. the other nodes) in the array'''
     assert isinstance(expr, GenExpr)
     nodes = []
     expr_to_array(expr, nodes)
     return nodes
 
 def value_to_array(val, nodes):
+    """adds a given value to an array"""
     nodes.append(tuple(['const', [val]]))
     return len(nodes) - 1
 
@@ -691,6 +700,7 @@ def value_to_array(val, nodes):
 # also, for sums, we are not considering coefficients, because basically all coefficients are 1
 # haven't even consider substractions, but I guess we would interpret them as a - b = a + (-1) * b
 def expr_to_array(expr, nodes):
+    """adds expression to array"""
     op = expr.op
     if op == Operator.const: # FIXME: constant expr should also have children!
         nodes.append(tuple([op, [expr.number]]))

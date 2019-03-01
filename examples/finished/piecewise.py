@@ -98,6 +98,7 @@ def convex_comb_dis(model,a,b):
 
 
 def gray(i):
+    """returns i^int(i/2)"""
     return i^(int(i/2))
 
 

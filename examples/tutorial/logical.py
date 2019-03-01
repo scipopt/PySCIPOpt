@@ -37,7 +37,7 @@ def _optimize(name, m):
     print("")
 
 def and_constraint(v=1, sense="minimize"):
-    # AND constraint
+    """ AND constraint """
     assert v in [0,1], "v must be 0 or 1 instead of %s" % v.__repr__()
     model, x, y, z = _init()
     r = model.addVar("r", "B")
@@ -48,7 +48,7 @@ def and_constraint(v=1, sense="minimize"):
 
 
 def or_constraint(v=0, sense="maximize"):
-    # OR constraint
+    """ OR constraint"""
     assert v in [0,1], "v must be 0 or 1 instead of %s" % v.__repr__()
     model, x, y, z = _init()
     r = model.addVar("r", "B")
@@ -58,7 +58,7 @@ def or_constraint(v=0, sense="maximize"):
     _optimize("OR", model)
 
 def xors_constraint(v=1):
-    # XOR (r as boolean) standard constraint
+    """ XOR (r as boolean) standard constraint"""
     assert v in [0,1], "v must be 0 or 1 instead of %s" % v.__repr__()
     model, x, y, z = _init()
     r = True
@@ -67,7 +67,7 @@ def xors_constraint(v=1):
     _optimize("Standard XOR (as boolean)", model)
 
 def xorc_constraint(v=0, sense="maximize"):
-    # XOR (r as variable) custom constraint
+    """ XOR (r as variable) custom constraint"""
     assert v in [0,1], "v must be 0 or 1 instead of %s" % v.__repr__()
     model, x, y, z = _init()
     r = model.addVar("r", "B")

@@ -51,6 +51,7 @@ def rcs(J,P,R,T,p,c,a,RUB):
 
 
 def make_1r():
+    """creates example data set 1"""
     J, p = multidict({       # jobs, processing times
         1 : 1,
         2 : 3,
@@ -74,6 +75,7 @@ def make_1r():
     return (J,P,R,T,p,c,a,RUB)
 
 def make_2r():
+    """creates example data set 2"""
     J, p = multidict({       # jobs, processing times
         1 : 2,
         2 : 2,

@@ -38,6 +38,7 @@ def weber(I,x,y,w):
 
 import random
 def make_data(n,m):
+    """creates example data set"""
     I = range(1,n+1)
     J = range(1,m+1)
     x,y,w = {},{},{}

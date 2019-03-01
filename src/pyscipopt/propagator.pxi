@@ -1,35 +1,47 @@
+##@file propagator.pxi
+#@brief Base class of the Propagators Plugin
 cdef class Prop:
     cdef public Model model
 
     def propfree(self):
+        '''calls destructor and frees memory of propagator'''
         pass
 
     def propinit(self):
+        '''initializes propagator'''
         pass
 
     def propexit(self):
+        '''calls exit method of propagator'''
         pass
 
     def propinitsol(self):
+        '''informs propagator that the prop and bound process is being started'''
         pass
 
     def propexitsol(self, restart):
+        '''informs propagator that the prop and bound process data is being freed'''
         pass
 
     def propinitpre(self):
+        '''informs propagator that the presolving process is being started'''
         pass
 
     def propexitpre(self):
+        '''informs propagator that the presolving process is finished'''
         pass
 
     def proppresol(self, nrounds, presoltiming, result_dict):
+        '''executes presolving method of propagator'''
         pass
 
     def propexec(self, proptiming):
+        '''calls execution method of propagator'''
         print("python error in propexec: this method needs to be implemented")
         return {}
 
     def propresprop(self, confvar, inferinfo, bdtype, relaxedbd):
+        '''resolves the given conflicting bound, that was reduced by the given propagator'''
         print("python error in propresprop: this method needs to be implemented")
         return {}
 

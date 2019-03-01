@@ -18,6 +18,7 @@ from pyscipopt import quicksum
 """
 
 def printFunc(name,m):
+    """prints results"""
     print("* %s *" % name)
     objSet = bool(m.getObjective().terms.keys())
     print("* Is objective set? %s" % objSet)

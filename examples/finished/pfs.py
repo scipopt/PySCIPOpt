@@ -61,6 +61,7 @@ def make_data(n,m):
 
 
 def example():
+    """creates example data set"""
     proc = [[2,3,1],[4,2,3],[1,4,1]]
     p = {}
     for i in range(3):

@@ -1,29 +1,39 @@
+##@file event.pxi
+#@brief Base class of the Event Handler Plugin
 cdef class Eventhdlr:
     cdef public Model model
     cdef public str name
 
     def eventcopy(self):
+        '''sets copy callback for all events of this event handler '''
         pass
 
     def eventfree(self):
+        '''calls destructor and frees memory of event handler '''
         pass
 
     def eventinit(self):
+        '''initializes event handler'''
         pass
 
-    def eventexit(self):
+    def eventexit(self)
+        '''calls exit method of event handler'''
         pass
 
     def eventinitsol(self):
+        '''informs event handler that the branch and bound process is being started '''
         pass
 
     def eventexitsol(self):
+        '''informs event handler that the branch and bound process data is being freed '''
         pass
 
     def eventdelete(self):
+        '''sets callback to free specific event data'''
         pass
 
     def eventexec(self, event):
+        '''calls execution method of event handler '''
         print("python error in eventexec: this method needs to be implemented")
         return {}
 

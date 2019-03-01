@@ -55,6 +55,7 @@ def ssa(n,h,K,f,T):
 
 
 def make_data():
+    """creates example data set"""
     n = 30      # number of stages
     z = 1.65    # for 95% service level
     sigma = 100 # demand's standard deviation

@@ -59,6 +59,7 @@ def flp(I,J,d,M,f,c):
 
 
 def make_data():
+    """creates example data set"""
     I,d = multidict({1:80, 2:270, 3:250, 4:160, 5:180})            # demand
     J,M,f = multidict({1:[500,1000], 2:[500,1000], 3:[500,1000]}) # capacity, fixed costs
     c = {(1,1):4,  (1,2):6,  (1,3):9,    # transportation costs
