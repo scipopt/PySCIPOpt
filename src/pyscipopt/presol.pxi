@@ -1,22 +1,30 @@
+##@file presol.pxi
+#@brief Base class of the Presolver Plugin
 cdef class Presol:
     cdef public Model model
 
     def presolfree(self):
+        '''frees memory of presolver'''
         pass
 
     def presolinit(self):
+        '''initializes presolver'''
         pass
 
     def presolexit(self):
+        '''deinitializes presolver'''
         pass
 
     def presolinitpre(self):
+        '''informs presolver that the presolving process is being started'''
         pass
 
     def presolexitpre(self):
+        '''informs presolver that the presolving process is finished'''
         pass
 
     def presolexec(self, nrounds, presoltiming):
+        '''executes presolver'''
         print("python error in presolexec: this method needs to be implemented")
         return {}
 

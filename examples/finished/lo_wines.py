@@ -1,5 +1,6 @@
+##@file lo_wines.py
+#@brief Simple SCIP example of linear programming.
 """
-lo_wines.py: Simple SCIP example of linear programming.
 It solves the same instance as lo_wines_simple.py:
 
 maximize  15x + 18y + 30z

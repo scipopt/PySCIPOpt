@@ -1,6 +1,6 @@
+##@file mctransp.py
+#@brief a model for the multi-commodity transportation problem
 """
-mctransp.py: a model for the multi-commodity transportation problem
-
 Model for solving the multi-commodity transportation problem:
 minimize the total transportation cost for satisfying demand at
 customers, from capacitated facilities.
@@ -48,6 +48,7 @@ def mctransp(I,J,K,c,d,M):
 
 
 def make_inst1():
+    """creates example data set 1"""
     d = {(1,1):80,   (1,2):85,   (1,3):300,  (1,4):6, # {(customer,commodity):demand}}
          (2,1):270,  (2,2):160,  (2,3):400,  (2,4):7,
          (3,1):250,  (3,2):130,  (3,3):350,  (3,4):4,
@@ -75,6 +76,7 @@ def make_inst1():
     return I,J,K,c,d,M
 
 def make_inst2():
+    """creates example data set 2"""
     d = {(1,1):45,                             # {(customer,commodity):demand}}
          (2,1):20,
          (3,1):30,
@@ -100,6 +102,7 @@ def make_inst2():
 
 
 def make_inst3():
+    """creates example data set 3"""
     d = {(1,1):40,   (1,2):30,   (1,3):10,  # {(customer,commodity):demand}}
          (2,1):70,   (2,2):100,  (2,3):100,
          (3,1):0,    (3,2):0,    (3,3):250,

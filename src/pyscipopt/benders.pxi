@@ -1,50 +1,72 @@
+##@file benders.pxi
+#@brief Base class of the Benders decomposition Plugin
 cdef class Benders:
     cdef public Model model
     cdef public str name
 
     def bendersfree(self):
+        '''calls destructor and frees memory of Benders decomposition '''
         pass
 
     def bendersinit(self):
+        '''initializes Benders deconposition'''
         pass
 
     def bendersexit(self):
+        '''calls exit method of Benders decomposition'''
         pass
 
     def bendersinitpre(self):
+        '''informs the Benders decomposition that the presolving process is being started '''
         pass
 
     def bendersexitpre(self):
+        '''informs the Benders decomposition that the presolving process has been completed'''
         pass
 
     def bendersinitsol(self):
+        '''informs Benders decomposition that the branch and bound process is being started '''
         pass
 
     def bendersexitsol(self):
+        '''informs Benders decomposition that the branch and bound process data is being freed'''
         pass
 
     def benderscreatesub(self, probnumber):
+        '''creates the subproblems and registers it with the Benders decomposition struct '''
         print("python error in benderscreatesub: this method needs to be implemented")
         return {}
 
     def benderspresubsolve(self, solution, enfotype, checkint):
-        pass
+        '''sets the pre subproblem solve callback of Benders decomposition '''
+        return {}
 
     def benderssolvesubconvex(self, solution, probnumber, onlyconvex):
-        pass
+        '''sets convex solve callback of Benders decomposition'''
+        return {}
 
     def benderssolvesub(self, solution, probnumber):
-        pass
+        '''sets solve callback of Benders decomposition '''
+        return {}
 
     def benderspostsolve(self, solution, enfotype, mergecandidates, npriomergecands, checkint, infeasible):
-        pass
+        '''sets post-solve callback of Benders decomposition '''
+        return {}
 
     def bendersfreesub(self, probnumber):
+        '''frees the subproblems'''
         pass
 
     def bendersgetvar(self, variable, probnumber):
+        '''Returns the corresponding master or subproblem variable for the given variable. This provides a call back for the variable mapping between the master and subproblems. '''
         print("python error in bendersgetvar: this method needs to be implemented")
         return {}
+
+# local helper functions for the interface
+cdef Variable getPyVar(SCIP_VAR* var):
+    cdef SCIP_VARDATA* vardata
+    vardata = SCIPvarGetData(var)
+    return <Variable>vardata
 
 
 cdef SCIP_RETCODE PyBendersCopy (SCIP* scip, SCIP_BENDERS* benders):
@@ -111,8 +133,11 @@ cdef SCIP_RETCODE PyBendersPresubsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
-    solution = Solution()
-    solution.sol = sol
+    if sol == NULL:
+        solution = None
+    else:
+        solution = Solution()
+        solution.sol = sol
     enfotype = type
     result_dict = PyBenders.benderspresubsolve(solution, enfotype, checkint)
     skipsolve[0] = result_dict.get("skipsolve", False)
@@ -123,9 +148,12 @@ cdef SCIP_RETCODE PyBendersSolvesubconvex (SCIP* scip, SCIP_BENDERS* benders, SC
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
-    solution = Solution()
-    solution.sol = sol
-    result_dict = PyBenders.benderssolvesub(solution, probnumber, onlyconvex)
+    if sol == NULL:
+        solution = None
+    else:
+        solution = Solution()
+        solution.sol = sol
+    result_dict = PyBenders.benderssolvesubconvex(solution, probnumber, onlyconvex)
     objective[0] = result_dict.get("objective", 1e+20)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
@@ -134,8 +162,11 @@ cdef SCIP_RETCODE PyBendersSolvesub (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
-    solution = Solution()
-    solution.sol = sol
+    if sol == NULL:
+        solution = None
+    else:
+        solution = Solution()
+        solution.sol = sol
     result_dict = PyBenders.benderssolvesub(solution, probnumber)
     objective[0] = result_dict.get("objective", 1e+20)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
@@ -147,8 +178,11 @@ cdef SCIP_RETCODE PyBendersPostsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SO
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
-    solution = Solution()
-    solution.sol = sol
+    if sol == NULL:
+        solution = None
+    else:
+        solution = Solution()
+        solution.sol = sol
     enfotype = type
     mergecandidates = []
     for i in range(nmergecands):
@@ -169,12 +203,11 @@ cdef SCIP_RETCODE PyBendersGetvar (SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* 
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
-    variable = Variable()
-    variable.var = var
-    result_dict = PyBenders.bendersgetvar(variable, probnumber)
-    mappedvariable = result_dict.get("mappedvar", None)
+    PyVar = getPyVar(var)
+    result_dict = PyBenders.bendersgetvar(PyVar, probnumber)
+    mappedvariable = <Variable>(result_dict.get("mappedvar", None))
     if mappedvariable is None:
         mappedvar[0] = NULL
     else:
-        mappedvar[0] = <SCIP_VAR*>mappedvariable.var
+        mappedvar[0] = mappedvariable.var
     return SCIP_OKAY

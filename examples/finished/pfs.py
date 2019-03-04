@@ -1,6 +1,6 @@
+##@file pfs.py
+#@brief model for the permutation flow shop problem
 """
-pfs.py:  model for the permutation flow shop problem
-
 Use a position index formulation for modeling the permutation flow
 shop problem, with the objective of minimizing the makespan (maximum
 completion time).
@@ -61,6 +61,7 @@ def make_data(n,m):
 
 
 def example():
+    """creates example data set"""
     proc = [[2,3,1],[4,2,3],[1,4,1]]
     p = {}
     for i in range(3):

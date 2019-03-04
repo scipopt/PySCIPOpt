@@ -1,107 +1,139 @@
-# This is the base class of the Constraint Handler plugin
+##@file conshdlr.pxi
+#@brief base class of the Constraint Handler plugin
 
 cdef class Conshdlr:
     cdef public Model model
     cdef public str name
 
     def consfree(self):
+        '''calls destructor and frees memory of constraint handler '''
         pass
 
     def consinit(self, constraints):
+        '''calls initialization method of constraint handler '''
         pass
 
     def consexit(self, constraints):
+        '''calls exit method of constraint handler '''
         pass
 
     def consinitpre(self, constraints):
+        '''informs constraint handler that the presolving process is being started '''
         pass
 
     def consexitpre(self, constraints):
+        '''informs constraint handler that the presolving is finished '''
         pass
 
     def consinitsol(self, constraints):
+        '''informs constraint handler that the branch and bound process is being started '''
         pass
 
     def consexitsol(self, constraints, restart):
+        '''informs constraint handler that the branch and bound process data is being freed '''
         pass
 
     def consdelete(self, constraint):
+        '''sets method of constraint handler to free specific constraint data '''
         pass
 
     def constrans(self, sourceconstraint):
+        '''sets method of constraint handler to transform constraint data into data belonging to the transformed problem '''
         return {}
 
     def consinitlp(self, constraints):
+        '''calls LP initialization method of constraint handler to separate all initial active constraints '''
         return {}
 
     def conssepalp(self, constraints, nusefulconss):
+        '''calls separator method of constraint handler to separate LP solution '''
         return {}
 
     def conssepasol(self, constraints, nusefulconss, solution):
+        '''calls separator method of constraint handler to separate given primal solution '''
         return {}
 
     def consenfolp(self, constraints, nusefulconss, solinfeasible):
+        '''calls enforcing method of constraint handler for LP solution for all constraints added'''
         print("python error in consenfolp: this method needs to be implemented")
         return {}
 
     def consenforelax(self, solution, constraints, nusefulconss, solinfeasible):
+        '''calls enforcing method of constraint handler for a relaxation solution for all constraints added'''
         print("python error in consenforelax: this method needs to be implemented")
         return {}
 
     def consenfops(self, constraints, nusefulconss, solinfeasible, objinfeasible):
+        '''calls enforcing method of constraint handler for pseudo solution for all constraints added'''
         print("python error in consenfops: this method needs to be implemented")
         return {}
 
     def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason, completely):
+        '''calls feasibility check method of constraint handler '''
         print("python error in conscheck: this method needs to be implemented")
         return {}
 
     def consprop(self, constraints, nusefulconss, nmarkedconss, proptiming):
+        '''calls propagation method of constraint handler '''
         return {}
 
     def conspresol(self, constraints, nrounds, presoltiming,
                    nnewfixedvars, nnewaggrvars, nnewchgvartypes, nnewchgbds, nnewholes,
                    nnewdelconss, nnewaddconss, nnewupgdconss, nnewchgcoefs, nnewchgsides, result_dict):
+        '''calls presolving method of constraint handler '''
         return result_dict
 
     def consresprop(self):
+        '''sets propagation conflict resolving method of constraint handler '''
         return {}
 
     def conslock(self, constraint, locktype, nlockspos, nlocksneg):
+        '''variable rounding lock method of constraint handler'''
         print("python error in conslock: this method needs to be implemented")
         return {}
 
     def consactive(self, constraint):
+        '''sets activation notification method of constraint handler '''
         pass
 
     def consdeactive(self, constraint):
+        '''sets deactivation notification method of constraint handler '''
         pass
 
     def consenable(self, constraint):
+        '''sets enabling notification method of constraint handler '''
         pass
 
     def consdisable(self, constraint):
+        '''sets disabling notification method of constraint handler '''
         pass
 
     def consdelvars(self, constraints):
+        '''calls variable deletion method of constraint handler'''
         pass
 
     def consprint(self, constraint):
+        '''sets constraint display method of constraint handler '''
         pass
 
     def conscopy(self):
+        '''sets copy method of both the constraint handler and each associated constraint'''
         pass
 
     def consparse(self):
+        '''sets constraint parsing method of constraint handler '''
         pass
 
     def consgetvars(self, constraint):
+        '''sets constraint variable getter method of constraint handler'''
         pass
 
     def consgetnvars(self, constraint):
+        '''sets constraint variable number getter method of constraint handler '''
         return {}
 
     def consgetdivebdchgs(self):
+        '''calls diving solution enforcement callback of constraint handler, if it exists '''
         pass
 
 

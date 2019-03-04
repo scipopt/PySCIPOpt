@@ -1,6 +1,6 @@
+##@file tsp.py
+#@brief solve the traveling salesman problem
 """
-tsp.py:  solve the traveling salesman problem
-
 minimize the travel cost for visiting n customers exactly once
 approach:
     - start with assignment model

@@ -25,9 +25,8 @@ contains the corresponding header files:
         > ...
 
 If you are not using the installer packages, you need to [install the
-SCIP Optimization Suite using
-CMake](http://scip.zib.de/doc/html/CMAKE.php). The Makefile system is
-not compatible with PySCIPOpt!
+SCIP Optimization Suite using CMake] (http://scip.zib.de/doc/html/CMAKE.php). 
+The Makefile system is not compatible with PySCIPOpt!
 
 On Windows it is highly recommended to use the [Anaconda Python
 Platform](https://www.anaconda.com/).

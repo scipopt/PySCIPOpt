@@ -1,3 +1,5 @@
+##@file lp.pxi
+#@brief Base class of the LP Plugin
 cdef class LP:
     cdef SCIP_LPI* lpi
     cdef readonly str name

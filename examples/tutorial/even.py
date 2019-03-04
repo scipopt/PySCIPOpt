@@ -1,6 +1,6 @@
+##@file tutorial/even.py
+#@brief Tutorial example to check whether values are even or odd
 """
-even.py: Tutorial example to check whether values are even or odd
-
 Public Domain, WTFNMFPL Public Licence
 """
 from pyscipopt import Model
