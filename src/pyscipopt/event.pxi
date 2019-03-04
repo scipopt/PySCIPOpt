@@ -16,7 +16,7 @@ cdef class Eventhdlr:
         '''initializes event handler'''
         pass
 
-    def eventexit(self)
+    def eventexit(self):
         '''calls exit method of event handler'''
         pass
 
