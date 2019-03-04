@@ -956,7 +956,7 @@ STRIP_CODE_COMMENTS    = YES
 # function all documented functions referencing it will be listed.
 # The default value is: NO.
 
-REFERENCED_BY_RELATION = YES
+REFERENCED_BY_RELATION = NO
 
 # If the REFERENCES_RELATION tag is set to YES then for each documented function
 # all documented entities called/used by that function will be listed.
@@ -2079,7 +2079,7 @@ SKIP_FUNCTION_MACROS   = YES
 # the path). If a tag file is not located in the directory in which doxygen is
 # run, you must also specify the path to the tagfile here.
 
-TAGFILES               = "../../../sciptag.tag=../../../scipoptsuite-6.0.0/scip/doc/"
+TAGFILES               = "/nfs/OPTI/bzfmuelh/scipoptsuite-6.0.0/scip/doc/html/sciptag.tag=https://scip.zib.de/doc-6.0.0/html"
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create a
 # tag file that is based on the input files it reads. See section "Linking to
