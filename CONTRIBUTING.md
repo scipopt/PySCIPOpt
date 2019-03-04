@@ -6,8 +6,8 @@ Code contributions are very welcome and should comply to a few rules:
 0.  Read Design principles of PySCIPOpt\_.
 1.  Compatibility with both Python-2 and Python-3.
 2.  All tests defined in the Continuous Integration setup need to pass:
-    -   [.travis.yml](.travis.yml)
-    -   [appveyor.yml](appveyor.yml)
+    -   [.travis.yml](../../.travis.yml)
+    -   [appveyor.yml](../../appveyor.yml)
 
 3.  New features should be covered by tests *and* examples. Please
     extend [tests](tests) and [examples](examples). Tests uses pytest
