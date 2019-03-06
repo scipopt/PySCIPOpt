@@ -11,6 +11,11 @@ Suite](http://scip.zib.de).
 [![TravisCI Test Coverage](https://img.shields.io/codecov/c/github/SCIP-Interfaces/PySCIPOpt/master.svg)](https://codecov.io/gh/SCIP-Interfaces/PySCIPOpt)
 [![Code Health](https://landscape.io/github/SCIP-Interfaces/PySCIPOpt/master/landscape.svg?style=flat)](https://landscape.io/github/SCIP-Interfaces/PySCIPOpt/master)
 
+Documentation
+-------------
+
+Please consult the [online documentation here](http://scip-interfaces.github.io/PySCIPOpt/) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
+
 Installation
 ------------
 
