@@ -15,6 +15,7 @@ matrix:
         apt:
           packages:
             - doxygen
+            - graphviz
 
 env:
   global:
@@ -45,7 +46,7 @@ after_success:
        "Host github.com" \
        "  IdentityFile ~/.ssh/travis" \
        "  LogLevel ERROR" >> ~/.ssh/config
-      ./generate-docs.sh || travis_terminate 1
+      ./generate-docs.sh
     fi
   # - codecov
 
