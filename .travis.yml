@@ -4,11 +4,13 @@ sudo: true
 
 language: python
 
-python:
-  - 2.7
-  - 3.5
-  - 3.6
-  - 3.7
+matrix:
+  include:
+    - python: 2.7
+    - python: 3.5
+    - python: 3.6
+    - python: 3.7
+      env: TRAVIS_BUILD_DOCS=true
 
 env:
   global:
@@ -28,7 +30,14 @@ install:
 
 script: py.test #--cov
 
-# after_success:
+after_success:
+  # Generate the docs only if master, the travis_build_docs is true and we can use secure variables
+  - >-
+    #if [[ "$TRAVIS_BRANCH" = "master" && -n "$TRAVIS_BUILD_DOCS" && "$TRAVIS_PULL_REQUEST" = "false" ]] ; then
+    if [[ "$TRAVIS_BUILD_DOCS" ]] ; then
+      source .ci/setup-ssh.sh || travis_terminate 1
+      generate-docs.sh || travis_terminate 1
+    fi
   # - codecov
 
 deploy:
