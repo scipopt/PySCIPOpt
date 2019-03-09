@@ -11,6 +11,10 @@ matrix:
     - python: 3.6
     - python: 3.7
       env: TRAVIS_BUILD_DOCS=true
+      addons:
+        apt:
+          packages:
+            - doxygen
 
 env:
   global:
