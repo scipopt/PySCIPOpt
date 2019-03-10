@@ -29,7 +29,8 @@ git config user.email "deploy@travis-ci.org"
 git reset --hard `git rev-list --max-parents=0 --abbrev-commit HEAD`
 
 # copy new docu files to gh-pages
-mv ../docs/html docs/
+mkdir -p docs/html
+mv ../docs/html/* docs/html/
 git add --all
 git commit -m "Deploy code docs to GitHub Pages, Travis build: ${TRAVIS_BUILD_NUMBER}" -m "Commit: ${TRAVIS_COMMIT}"
 
