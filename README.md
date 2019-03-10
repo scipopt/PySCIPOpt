@@ -14,7 +14,7 @@ Suite](http://scip.zib.de).
 Documentation
 -------------
 
-Please consult the [online documentation here](http://scip-interfaces.github.io/PySCIPOpt/docs/html) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
+Please consult the [online documentation](http://scip-interfaces.github.io/PySCIPOpt/docs/html) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
 
 Installation
 ------------
