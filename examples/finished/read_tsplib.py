@@ -1,6 +1,6 @@
+##@file read_tsplib.py
+#@brief read standard instances of the  traveling salesman problem
 """
-tsp.py:  read standard instances of the  traveling salesman problem
-
 Functions provided:
     * read_tsplib  - read a symmetric tsp instance
     * read_atsplib -        asymmetric
@@ -51,6 +51,7 @@ def distATT(x1,y1,x2,y2):
         return tij
 
 def distCEIL2D(x1,y1,x2,y2):
+    """returns smallest integer not less than the distance of two points"""
     xdiff = x2 - x1
     ydiff = y2 - y1
     return int(math.ceil(math.sqrt(xdiff*xdiff + ydiff*ydiff)))

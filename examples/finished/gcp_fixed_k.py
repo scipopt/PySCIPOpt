@@ -1,6 +1,6 @@
+##@file gcp_fixed_k.py
+#@brief solve the graph coloring problem with fixed-k model
 """
-gcp_fixed_k.py: solve the graph coloring problem with fixed-k model
-
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 

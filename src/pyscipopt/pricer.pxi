@@ -1,26 +1,35 @@
+##@file pricer.pxi
+#@brief Base class of the Pricers Plugin
 cdef class Pricer:
     cdef public Model model
 
     def pricerfree(self):
+        '''calls destructor and frees memory of variable pricer '''
         pass
 
     def pricerinit(self):
+        '''initializes variable pricer'''
         pass
 
     def pricerexit(self):
+        '''calls exit method of variable pricer'''
         pass
 
     def pricerinitsol(self):
+        '''informs variable pricer that the branch and bound process is being started '''
         pass
 
     def pricerexitsol(self):
+        '''informs variable pricer that the branch and bound process data is being freed''' 
         pass
 
     def pricerredcost(self):
+        '''calls reduced cost pricing method of variable pricer'''
         print("python error in pricerredcost: this method needs to be implemented")
         return {}
 
     def pricerfarkas(self):
+        '''calls Farkas pricing method of variable pricer'''
         return {}
 
 

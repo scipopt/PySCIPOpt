@@ -1,5 +1,7 @@
+##@file atsp.py
+#@brief solve the asymmetric traveling salesman problem
+
 """
-atsp.py:  solve the asymmetric traveling salesman problem
 
 formulations implemented:
     - mtz -- Miller-Tucker-Zemlin's potential formulation

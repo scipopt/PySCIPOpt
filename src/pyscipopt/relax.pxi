@@ -1,23 +1,31 @@
+##@file relax.pxi
+#@brief Base class of the Relaxator Plugin
 cdef class Relax:
     cdef public Model model
     cdef public str name
 
     def relaxfree(self):
+        '''calls destructor and frees memory of relaxation handler'''
         pass
 
     def relaxinit(self):
+        '''initializes relaxation handler'''
         pass
 
     def relaxexit(self):
+        '''calls exit method of relaxation handler'''
         pass
 
     def relaxinitsol(self):
+        '''informs relaxaton handler that the branch and bound process is being started'''
         pass
 
     def relaxexitsol(self):
+        '''informs relaxation handler that the branch and bound process data is being freed'''
         pass
         
     def relaxexec(self):
+        '''callls execution method of relaxation handler'''
         print("python error in relaxexec: this method needs to be implemented")
         return{}
 

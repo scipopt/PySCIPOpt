@@ -1,26 +1,35 @@
+##@file sepa.pxi
+#@brief Base class of the Separator Plugin
 cdef class Sepa:
     cdef public Model model
     cdef public str name
 
     def sepafree(self):
+        '''calls destructor and frees memory of separator'''
         pass
 
     def sepainit(self):
+        '''initializes separator'''
         pass
 
     def sepaexit(self):
+        '''calls exit method of separator'''
         pass
 
     def sepainitsol(self):
+        '''informs separator that the branch and bound process is being started'''
         pass
 
     def sepaexitsol(self):
+        '''informs separator that the branch and bound process data is being freed'''
         pass
 
     def sepaexeclp(self):
+        '''calls LP separation method of separator'''
         return {}
 
     def sepaexecsol(self, solution):
+        '''calls primal solution separation method of separator'''
         return {}
 
 

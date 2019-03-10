@@ -1,6 +1,6 @@
+##@file tutorial/puzzle.py
+#@brief solve a simple puzzle using SCIP
 """
-puzzle.py: solve a simple puzzle using SCIP
-
 On a beach there are octopuses, turtles and cranes.
 The total number of legs of all animals is 80, while the number of heads is 32.
 What are the minimum numbers of turtles and octopuses, respectively?

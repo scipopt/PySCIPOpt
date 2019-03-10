@@ -1,6 +1,6 @@
+##@file eoq_en.py
+#@brief piecewise linear model to the multi-item economic ordering quantity problem.
 """
-eoq_en.py:  piecewise linear model to the multi-item economic ordering quantity problem.
-
 Approach: use a convex combination formulation.
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012

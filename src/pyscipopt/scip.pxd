@@ -1,3 +1,5 @@
+##@file scip.pxd
+#@brief holding prototype of the SCIP public functions to use them in PySCIPOpt
 cdef extern from "scip/scip.h":
     # SCIP internal types
     ctypedef enum SCIP_RETCODE:
