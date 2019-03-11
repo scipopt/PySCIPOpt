@@ -8,8 +8,7 @@ Suite](http://scip.zib.de).
 [![PySCIPOpt on PyPI](https://img.shields.io/pypi/v/pyscipopt.svg)](https://pypi.python.org/pypi/pyscipopt)
 [![TravisCI Status](https://travis-ci.org/SCIP-Interfaces/PySCIPOpt.svg?branch=master)](https://travis-ci.org/SCIP-Interfaces/PySCIPOpt)
 [![AppVeyor Status](https://ci.appveyor.com/api/projects/status/fsa896vkl8be79j9?svg=true)](https://ci.appveyor.com/project/mattmilten/pyscipopt)
-[![TravisCI Test Coverage](https://img.shields.io/codecov/c/github/SCIP-Interfaces/PySCIPOpt/master.svg)](https://codecov.io/gh/SCIP-Interfaces/PySCIPOpt)
-[![Code Health](https://landscape.io/github/SCIP-Interfaces/PySCIPOpt/master/landscape.svg?style=flat)](https://landscape.io/github/SCIP-Interfaces/PySCIPOpt/master)
+
 
 Documentation
 -------------
