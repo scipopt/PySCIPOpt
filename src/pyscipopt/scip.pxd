@@ -576,9 +576,11 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPnodeIsActive(SCIP_NODE* node)
     SCIP_Bool SCIPnodeIsPropagatedAgain(SCIP_NODE* node)
     SCIP_Real SCIPcalcNodeselPriority(SCIP*	scip, SCIP_VAR* var, SCIP_BRANCHDIR	branchdir, SCIP_Real targetvalue)
-    SCIP_Real SCIPcalcChildEstimate(SCIP* scip, SCIP_VAR* var, SCIP_Real targetvalue) 	
+    SCIP_Real SCIPcalcChildEstimate(SCIP* scip, SCIP_VAR* var, SCIP_Real targetvalue)
     SCIP_RETCODE SCIPcreateChild(SCIP* scip, SCIP_NODE** node, SCIP_Real nodeselprio, SCIP_Real estimate)
     SCIP_Bool SCIPinRepropagation(SCIP* scip)
+    SCIP_RETCODE SCIPaddConsNode(SCIP* scip, SCIP_NODE* node, SCIP_CONS* cons, SCIP_NODE* validnode)
+    SCIP_RETCODE SCIPaddConsLocal(SCIP* scip, SCIP_CONS* cons, SCIP_NODE* validnode)
 
     # Variable Methods
     SCIP_RETCODE SCIPcreateVarBasic(SCIP* scip,
