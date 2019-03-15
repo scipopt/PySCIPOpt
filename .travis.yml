@@ -37,7 +37,7 @@ script: py.test #--cov
 
 after_success:
   # Generate the docs only if master, the travis_build_docs is set and we can use secure variables (no PR)
-  - echo "branch: $TRAVIS_BRANCH build_docs: $TRAVIS_BUILD_DOCS PR: $TRAVIS_PULL_REQUEST"
+  - echo "branch $TRAVIS_BRANCH, build_docs $TRAVIS_BUILD_DOCS, PR $TRAVIS_PULL_REQUEST"
   - if [[ "$TRAVIS_BRANCH" = "master" && -n "$TRAVIS_BUILD_DOCS" && "$TRAVIS_PULL_REQUEST" = "false" ]] ; then
       openssl aes-256-cbc -K $encrypted_c65e740238ca_key -iv $encrypted_c65e740238ca_iv -in travis.enc -out ~/.ssh/travis -d;
       chmod 600 ~/.ssh/travis;
