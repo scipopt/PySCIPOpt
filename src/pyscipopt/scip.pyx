@@ -13,6 +13,7 @@ from libc.stdio cimport fdopen
 include "expr.pxi"
 include "lp.pxi"
 include "benders.pxi"
+include "benderscut.pxi"
 include "branchrule.pxi"
 include "conshdlr.pxi"
 include "event.pxi"
@@ -2885,6 +2886,37 @@ cdef class Model:
         benders.model = <Model>weakref.proxy(self)
         benders.name = name
         Py_INCREF(benders)
+
+    def includeBenderscut(self, Benders benders, Benderscut benderscut, name, desc, priority=1, islpcut=True):
+        """ Include a Benders' decomposition cutting method
+
+        Keyword arguments:
+        benders -- the Benders' decomposition that this cutting method is attached to
+        benderscut --- the Benders' decomposition cutting method
+        name -- the name
+        desc -- the description
+        priority -- priority of the Benders' decomposition
+        islpcut -- is this cutting method suitable for generating cuts for convex relaxations?
+        """
+        cdef SCIP_BENDERS* _benders
+
+        bendersname = str_conversion(benders.name)
+        _benders = SCIPfindBenders(self._scip, bendersname)
+
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeBenderscut(self._scip, _benders, n, d, priority, islpcut,
+                                            PyBenderscutCopy, PyBenderscutFree, PyBenderscutInit, PyBenderscutExit,
+                                            PyBenderscutInitsol, PyBenderscutExitsol, PyBenderscutExec,
+                                            <SCIP_BENDERSCUTDATA*>benderscut))
+
+        cdef SCIP_BENDERSCUT* scip_benderscut
+        scip_benderscut = SCIPfindBenderscut(_benders, n)
+        benderscut.model = <Model>weakref.proxy(self)
+        benderscut.benders = <Benders>weakref.proxy(benders)
+        benderscut.name = name
+        # TODO: It might be necessary in increment the reference to benders i.e Py_INCREF(benders)
+        Py_INCREF(benderscut)
         
 
     def getLPBranchCands(self):

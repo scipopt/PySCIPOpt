@@ -420,6 +420,12 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_BENDERSDATA:
         pass
 
+    ctypedef struct SCIP_BENDERSCUT:
+        pass
+
+    ctypedef struct SCIP_BENDERSCUTDATA:
+        pass
+
     ctypedef struct SCIP_QUADVAREVENTDATA:
         pass
 
@@ -1046,6 +1052,26 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPaddBendersSubproblem(SCIP* scip, SCIP_BENDERS* benders, SCIP* subproblem)
     SCIP_RETCODE SCIPgetBendersMasterVar(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar)
     SCIP_RETCODE SCIPgetBendersSubproblemVar(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar, int probnumber)
+
+    # Benders' decomposition cuts plugin
+    SCIP_RETCODE SCIPincludeBenderscut(SCIP* scip,
+                                      SCIP_BENDERS* benders,
+                                      const char*  name,
+                                      const char*  desc,
+                                      int priority,
+                                      SCIP_Bool islpcut,
+                                      SCIP_RETCODE (*benderscutcopy) (SCIP* scip, SCIP_BENDERS* benders, SCIP_BENDERSCUT* benderscut),
+                                      SCIP_RETCODE (*benderscutfree) (SCIP* scip, SCIP_BENDERSCUT* benderscut),
+                                      SCIP_RETCODE (*benderscutinit) (SCIP* scip, SCIP_BENDERSCUT* benderscut),
+                                      SCIP_RETCODE (*benderscutexit) (SCIP* scip, SCIP_BENDERSCUT* benderscut),
+                                      SCIP_RETCODE (*benderscutinitsol) (SCIP* scip, SCIP_BENDERSCUT* benderscut),
+                                      SCIP_RETCODE (*benderscutexitsol) (SCIP* scip, SCIP_BENDERSCUT* benderscut),
+                                      SCIP_RETCODE (*benderscutexec) (SCIP* scip, SCIP_BENDERS* benders, SCIP_BENDERSCUT* benderscut, SCIP_SOL* sol, int probnumber, SCIP_BENDERSENFOTYPE type, SCIP_RESULT* result),
+                                      SCIP_BENDERSCUTDATA* benderscutdata)
+    SCIP_BENDERSCUT* SCIPfindBenderscut(SCIP_BENDERS* benders, const char* name)
+    SCIP_BENDERSCUTDATA* SCIPbenderscutGetData(SCIP_BENDERSCUT* benderscut)
+    SCIP_RETCODE SCIPstoreBendersCut(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR** vars, SCIP_Real* vals, SCIP_Real lhs, SCIP_Real rhs, int nvars)
+    SCIP_RETCODE SCIPapplyBendersStoredCuts(SCIP* scip, SCIP_BENDERS* benders)
 
     SCIP_RETCODE SCIPbranchVar(SCIP* scip,
                                 SCIP_VAR* var,
