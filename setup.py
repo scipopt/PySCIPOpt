@@ -53,7 +53,7 @@ if cythonize:
     extensions = cythonize(extensions)
 #     extensions = cythonize(extensions, compiler_directives={'linetrace': True})
 
-with open('README.rst') as f:
+with open('README.md') as f:
     long_description = f.read()
 
 setup(
@@ -61,6 +61,7 @@ setup(
     version = version,
     description = 'Python interface and modeling environment for SCIP',
     long_description = long_description,
+    long_description_content_type='text/markdown',
     url = 'https://github.com/SCIP-Interfaces/PySCIPOpt',
     author = 'Zuse Institute Berlin',
     author_email = 'scip@zib.de',

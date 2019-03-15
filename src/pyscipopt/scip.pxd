@@ -1,3 +1,5 @@
+##@file scip.pxd
+#@brief holding prototype of the SCIP public functions to use them in PySCIPOpt
 cdef extern from "scip/scip.h":
     # SCIP internal types
     ctypedef enum SCIP_RETCODE:
@@ -448,6 +450,23 @@ cdef extern from "scip/scip.h":
     # General SCIP Methods
     SCIP_RETCODE SCIPcreate(SCIP** scip)
     SCIP_RETCODE SCIPfree(SCIP** scip)
+    SCIP_RETCODE SCIPcopy(SCIP*                 sourcescip,
+                          SCIP*                 targetscip,
+                          SCIP_HASHMAP*         varmap,
+                          SCIP_HASHMAP*         consmap,
+                          const char*           suffix,
+                          SCIP_Bool             globalcopy,
+                          SCIP_Bool             enablepricing,
+                          SCIP_Bool             passmessagehdlr,
+                          SCIP_Bool*            valid)
+    SCIP_RETCODE SCIPcopyOrig(SCIP*                 sourcescip,
+                              SCIP*                 targetscip,
+                              SCIP_HASHMAP*         varmap,
+                              SCIP_HASHMAP*         consmap,
+                              const char*           suffix,
+                              SCIP_Bool             enablepricing,
+                              SCIP_Bool             passmessagehdlr,
+                              SCIP_Bool*            valid)
     SCIP_RETCODE SCIPmessagehdlrCreate(SCIP_MESSAGEHDLR **messagehdlr,
                                        SCIP_Bool bufferedoutput,
                                        const char *filename,
@@ -580,9 +599,11 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPnodeIsActive(SCIP_NODE* node)
     SCIP_Bool SCIPnodeIsPropagatedAgain(SCIP_NODE* node)
     SCIP_Real SCIPcalcNodeselPriority(SCIP*	scip, SCIP_VAR* var, SCIP_BRANCHDIR	branchdir, SCIP_Real targetvalue)
-    SCIP_Real SCIPcalcChildEstimate(SCIP* scip, SCIP_VAR* var, SCIP_Real targetvalue) 	
+    SCIP_Real SCIPcalcChildEstimate(SCIP* scip, SCIP_VAR* var, SCIP_Real targetvalue)
     SCIP_RETCODE SCIPcreateChild(SCIP* scip, SCIP_NODE** node, SCIP_Real nodeselprio, SCIP_Real estimate)
     SCIP_Bool SCIPinRepropagation(SCIP* scip)
+    SCIP_RETCODE SCIPaddConsNode(SCIP* scip, SCIP_NODE* node, SCIP_CONS* cons, SCIP_NODE* validnode)
+    SCIP_RETCODE SCIPaddConsLocal(SCIP* scip, SCIP_CONS* cons, SCIP_NODE* validnode)
 
     # Variable Methods
     SCIP_RETCODE SCIPcreateVarBasic(SCIP* scip,

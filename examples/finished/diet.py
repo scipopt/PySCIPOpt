@@ -1,6 +1,6 @@
+##@file diet.py 
+#@brief model for the modern diet problem
 """
-diet.py: model for the modern diet problem
-
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 # todo: can we make it work as "from pyscipopt import *"?

@@ -1,48 +1,64 @@
+##@file benders.pxi
+#@brief Base class of the Benders decomposition Plugin
 cdef class Benders:
     cdef public Model model
     cdef public str name
 
     def bendersfree(self):
+        '''calls destructor and frees memory of Benders decomposition '''
         pass
 
     def bendersinit(self):
+        '''initializes Benders deconposition'''
         pass
 
     def bendersexit(self):
+        '''calls exit method of Benders decomposition'''
         pass
 
     def bendersinitpre(self):
+        '''informs the Benders decomposition that the presolving process is being started '''
         pass
 
     def bendersexitpre(self):
+        '''informs the Benders decomposition that the presolving process has been completed'''
         pass
 
     def bendersinitsol(self):
+        '''informs Benders decomposition that the branch and bound process is being started '''
         pass
 
     def bendersexitsol(self):
+        '''informs Benders decomposition that the branch and bound process data is being freed'''
         pass
 
     def benderscreatesub(self, probnumber):
+        '''creates the subproblems and registers it with the Benders decomposition struct '''
         print("python error in benderscreatesub: this method needs to be implemented")
         return {}
 
     def benderspresubsolve(self, solution, enfotype, checkint):
+        '''sets the pre subproblem solve callback of Benders decomposition '''
         return {}
 
     def benderssolvesubconvex(self, solution, probnumber, onlyconvex):
+        '''sets convex solve callback of Benders decomposition'''
         return {}
 
     def benderssolvesub(self, solution, probnumber):
+        '''sets solve callback of Benders decomposition '''
         return {}
 
     def benderspostsolve(self, solution, enfotype, mergecandidates, npriomergecands, checkint, infeasible):
+        '''sets post-solve callback of Benders decomposition '''
         return {}
 
     def bendersfreesub(self, probnumber):
+        '''frees the subproblems'''
         pass
 
     def bendersgetvar(self, variable, probnumber):
+        '''Returns the corresponding master or subproblem variable for the given variable. This provides a call back for the variable mapping between the master and subproblems. '''
         print("python error in bendersgetvar: this method needs to be implemented")
         return {}
 
