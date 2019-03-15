@@ -1675,6 +1675,31 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, cons.cons, var.var, coeff))
 
+    def addConsNode(self, Node node, Constraint cons, Node validnode=None):
+        """Add a constraint to the given node
+
+        :param Node node: node to add the constraint to
+        :param Constraint cons: constraint to add
+        :param Node validnode: more global node where cons is also valid
+
+        """
+        if isinstance(validnode, Node):
+            PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.node, cons.cons, validnode.node))
+        else:
+            PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.node, cons.cons, NULL))
+
+    def addConsLocal(self, Constraint cons, Node validnode=None):
+        """Add a constraint to the current node
+
+        :param Constraint cons: constraint to add
+        :param Node validnode: more global node where cons is also valid
+
+        """
+        if isinstance(validnode, Node):
+            PY_SCIP_CALL(SCIPaddConsLocal(self._scip, cons.cons, validnode.node))
+        else:
+            PY_SCIP_CALL(SCIPaddConsLocal(self._scip, cons.cons, NULL))
+
     def addConsSOS1(self, vars, weights=None, name="SOS1cons",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
