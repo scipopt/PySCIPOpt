@@ -17,8 +17,6 @@ def test_copy():
     s.optimize()
     s2.optimize()
 
-    s.writeProblem('s.lp')
-    s2.writeProblem('s2.lp')
     assert s.getObjVal() == s2.getObjVal()
 
 if __name__ == "__main__":
