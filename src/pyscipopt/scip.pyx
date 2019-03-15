@@ -619,6 +619,7 @@ cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg):
 ## 
 cdef class Model:
     cdef SCIP* _scip
+    cdef SCIP_Bool* _valid
     # store best solution to get the solution values easier
     cdef Solution _bestSol
     # can be used to store problem data
@@ -626,20 +627,33 @@ cdef class Model:
     # make Model weak referentiable
     cdef object __weakref__
 
-    def __init__(self, problemName='model', defaultPlugins=True):
+    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False):
         """
         :param problemName: name of the problem (default 'model')
         :param defaultPlugins: use default plugins? (default True)
+        :param sourceModel: create a copy of the given Model instance (default None)
+        :param origcopy: whether to call copy or copyOrig (default False)
+        :param globalcopy: whether to create a global or a local copy (default True)
+        :param enablepricing: whether to enable pricing in copy (default False)
         """
         if self.version() < MAJOR:
             raise Exception("linked SCIP is not compatible to this version of PySCIPOpt - use at least version", MAJOR)
         if self.version() < MAJOR + MINOR/10.0 + PATCH/100.0:
             warnings.warn("linked SCIP {} is not recommended for this version of PySCIPOpt - use version {}.{}.{}".format(self.version(), MAJOR, MINOR, PATCH))
-        self.create()
-        self._bestSol = None
-        if defaultPlugins:
-            self.includeDefaultPlugins()
-        self.createProbBasic(problemName)
+        if sourceModel is None:
+            self.create()
+            self._bestSol = None
+            if defaultPlugins:
+                self.includeDefaultPlugins()
+            self.createProbBasic(problemName)
+        else:
+            self.create()
+            self._bestSol = <Solution> sourceModel._bestSol
+            n = str_conversion(problemName)
+            if origcopy:
+                PY_SCIP_CALL(SCIPcopyOrig(sourceModel._scip, self._scip, NULL, NULL, n, enablepricing, True, self._valid))
+            else:
+                PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, True, self._valid))
 
     def __dealloc__(self):
         # call C function directly, because we can no longer call this object's methods, according to
