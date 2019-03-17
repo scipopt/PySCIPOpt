@@ -37,7 +37,7 @@ script: py.test #--cov
 
 after_success:
   # Generate the docs only if version tag present and we can use secure variables (no PR)
-  - if [[ $TRAVIS_BUILD_DOCS =~ v[0-9].[0.9].[0-9]* && $TRAVIS_PULL_REQUEST = "false" ]]; then
+  - if [[ $TRAVIS_BUILD_DOCS =~ v[0-9].[0-9].[0-9]* && $TRAVIS_PULL_REQUEST = "false" ]]; then
       echo "setup ssh config";
       openssl aes-256-cbc -K $encrypted_c65e740238ca_key -iv $encrypted_c65e740238ca_iv -in travis.enc -out ~/.ssh/travis -d;
       chmod 600 ~/.ssh/travis;
