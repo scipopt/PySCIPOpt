@@ -6,14 +6,8 @@ class MyRelax(Relax):
     def relaxexec(self):
         calls.append('relaxexec')
         vars = self.model.getVars()
-        
-        self.model.clearRelaxSolVals()
-        self.model.setRelaxSolVal(vars[0], 2.0)
-        self.model.setRelaxSolVal(vars[1], 2.0)
-        
-        self.model.markRelaxSolValid(True)
+    
         self.model.tightenVarLb(vars[0],2.0)
-        
         self.model.tightenVarLb(vars[1],2.0)
         return {"result": SCIP_RESULT.SUCCESS}
         
