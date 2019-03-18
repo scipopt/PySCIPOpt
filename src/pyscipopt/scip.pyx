@@ -2387,9 +2387,10 @@ cdef class Model:
             for j in range(nsubproblems):
                 PY_SCIP_CALL(SCIPsetupBendersSubproblem(self._scip,
                     _benders[i], self._bestSol.sol, j))
+                #TODO: clean for compatibility with consexpr and master, deleted bendersenfotype
                 PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip,
                     _benders[i], self._bestSol.sol, j, &_infeasible,
-                    SCIP_BENDERSENFOTYPE_CHECK, solvecip, NULL))
+                    solvecip, NULL))
 
     def freeBendersSubproblems(self):
         """Calls the free subproblem function for the Benders' decomposition.

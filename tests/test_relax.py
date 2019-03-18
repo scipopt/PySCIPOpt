@@ -5,11 +5,8 @@ calls = []
 class MyRelax(Relax):
     def relaxexec(self):
         calls.append('relaxexec')
-        vars = self.model.getVars()
-    
-        self.model.tightenVarLb(vars[0],2.0)
-        self.model.tightenVarLb(vars[1],2.0)
-        return {"result": SCIP_RESULT.SUCCESS}
+        lowerbound = 6.0
+        return {'result': SCIP_RESULT.SUCCESS, 'lowerbound':lowerbound}
         
 class BadHeur(Heur):
     #returns some bad (fixed) bound for the given problem
