@@ -4,6 +4,7 @@ from pyscipopt.scip import Relax
 calls = []
 class MyRelax(Relax):
     def relaxexec(self):
+        #returns a fixed lowerbound value (higher than the best solution) 
         calls.append('relaxexec')
         lowerbound = 6.0
         return {'result': SCIP_RESULT.SUCCESS, 'lowerbound':lowerbound}
@@ -42,6 +43,7 @@ def myModel():
     return m
 
 def test_relax():
+    #Get the real best solution, not using the heuristic or the relaxator, as a comparison
     m = myModel()
     vars = m.getVars()
     m.setPresolve(SCIP_PARAMSETTING.OFF)
@@ -51,10 +53,13 @@ def test_relax():
     assert 'relaxexec' not in calls
     assert 'heurexec' not in calls
     
+    #get best solution, if relaxator and heuristic are included
     n = myModel()
     n.setIntParam('lp/solvefreq', -1)
+    #include relaxator
     relaxator = MyRelax()
     n.includeRelax(relaxator,'badrelaxator', 'test that relaxator gets included by taking a bad relaxator', 1)
+    #include heuristics
     heuristic = BadHeur()
     n.includeHeur(heuristic, "BadHeur", "Heuristic returning fixed values", "Y", timingmask=SCIP_HEURTIMING.BEFORENODE)
     n.optimize()
