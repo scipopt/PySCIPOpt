@@ -209,5 +209,5 @@ cdef SCIP_RETCODE PyBendersGetvar (SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* 
     if mappedvariable is None:
         mappedvar[0] = NULL
     else:
-        mappedvar[0] = mappedvariable.var
+        mappedvar[0] = mappedvariable.scip_var
     return SCIP_OKAY

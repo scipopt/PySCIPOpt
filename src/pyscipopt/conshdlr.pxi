@@ -226,7 +226,7 @@ cdef SCIP_RETCODE PyConsTrans (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* s
     # otherwise use the created cons
     if "targetcons" in result_dict:
         PyTargetCons = result_dict.get("targetcons")
-        targetcons[0] = PyTargetCons.cons
+        targetcons[0] = PyTargetCons.scip_cons
         Py_INCREF(PyTargetCons)
     else:
         PY_SCIP_CALL(SCIPcreateCons(scip, targetcons, str_conversion(PySourceCons.name), conshdlr, <SCIP_CONSDATA*>PySourceCons,
