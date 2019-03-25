@@ -33,7 +33,10 @@ install:
   - pip install cython networkx pytest-cov
   - python setup.py install
 
-script: py.test #--cov
+script:
+  - py.test #--cov
+  - for f in examples/finished/*.py; do python $f > /dev/null || echo "failed $f" && travis_terminate 1; done
+  - for f in examples/tutorial/*.py; do python $f > /dev/null || echo "failed $f" && travis_terminate 1; done
 
 after_success:
   # Generate the docs only if version tag present and we can use secure variables (no PR)
