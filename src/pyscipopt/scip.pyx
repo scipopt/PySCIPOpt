@@ -587,6 +587,10 @@ cdef class Constraint:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.cons))).decode('UTF-8')
         return constype == 'quadratic'
 
+    def getType(self):
+        """get Type of Constraint"""
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.cons))).decode('UTF-8')
+        return constype
 
 cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg):
     sys.stdout.write(msg.decode('UTF-8'))
@@ -1440,6 +1444,14 @@ cdef class Model:
         cdef SCIP_EXPRTREE* exprtree
         cdef SCIP_VAR** vars
         cdef SCIP_CONS* scip_cons
+        
+        cdef SCIP_CONSEXPR_EXPR* consexpr
+        cdef SCIP_CONSEXPR_EXPR** varexpr
+        cdef SCIP_HASHMAP* vartoexprvarmap
+        cdef const char* newpos
+        cdef SCIP_CONSHDLR* scip_conshdlr
+        cdef SCIP_CONSEXPR_EXPR** factors
+        cdef SCIP_CONSEXPR_EXPR** monos
 
         terms = cons.expr.terms
 
@@ -1447,6 +1459,34 @@ cdef class Model:
         variables = {var.ptr():var for term in terms for var in term}
         variables = list(variables.values())
         varindex = {var.ptr():idx for (idx,var) in enumerate(variables)}
+
+        #create variable expressions (consexpr)
+        varexpr = <SCIP_CONSEXPR_EXPR**> malloc(len(varindex) * sizeof(SCIP_CONSEXPR_EXPR*))
+        consexprhdlr = SCIPfindConshdlr(self._scip, "expr")
+        vars = <SCIP_VAR**> malloc(len(variables) * sizeof(SCIP_VAR*))
+        for idx, var in enumerate(variables): # same as varindex
+            vars[idx] = (<Variable>var).var
+        for idx in varindex.values():
+            PY_SCIP_CALL(SCIPcreateConsExprExprVar(self._scip, consexprhdlr, &consexpr, vars[idx]))
+            #PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, &consexpr))
+            varexpr[idx] = consexpr
+
+        #create factors
+        factors = <SCIP_CONSEXPR_EXPR**> malloc(len(terms)*sizeof(SCIP_CONSEXPR_EXPR*))
+        monos = <SCIP_CONSEXPR_EXPR**> malloc(len(terms)*sizeof(SCIP_CONSEXPR_EXPR*))
+        for i, (term, coef) in enumerate(terms.items()):
+            ids = <int*> malloc(len(term) * sizeof(int))
+            for j, var in enumerate(term):
+                ids[j] = varindex[var.ptr()]
+            for j, var in enumerate(term):
+                PY_SCIP_CALL(SCIPcreateConsExprExprPow(self._scip, consexprhdlr, factors, varexpr[varindex[var.ptr()]], ids[j]))
+                #PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, factors))
+            #PY_SCIP_CALL(SCIPcreateConsExprExprProduct(self._scip, consexprhdlr, monos, len(term), factors, coef))
+
+        #create Term
+        
+        #TODO: collect constant Term?
+        #create Expressions
 
         # create variable expressions
         varexprs = <SCIP_EXPR**> malloc(len(varindex) * sizeof(SCIP_EXPR*))
