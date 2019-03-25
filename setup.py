@@ -1,84 +1,81 @@
-import sys, os, readline, glob
-from distutils.core import setup
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
-from Cython.Build import cythonize
+from setuptools import setup, Extension
+import os, platform, sys, re
 
-def complete(text, state):
-    return (glob.glob(text+'*')+[None])[state]
+# look for environment variable that specifies path to SCIP Opt lib and headers
+scipoptdir = os.environ.get('SCIPOPTDIR', '').strip('"')
+includedir = os.path.abspath(os.path.join(scipoptdir, 'include'))
+libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
+libname = 'scip'
 
-readline.set_completer_delims(' \t\n;')
-readline.parse_and_bind("tab: complete")
-readline.set_completer(complete)
+cythonize = True
 
-libscipopt = 'lib/libscipopt.so'
-includescip = 'include/scip'
+packagedir = os.path.join('src', 'pyscipopt')
 
-args = sys.argv[1:]
+with open(os.path.join(packagedir, '__init__.py'), 'r') as initfile:
+    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
+                        initfile.read(), re.MULTILINE).group(1)
 
-# remove links to lib and include
-if 'cleanlib' in args:
-    if os.path.exists(libscipopt):
-        print 'removing '+libscipopt
-        os.remove(libscipopt)
-    if os.path.exists(includescip):
-        print 'removing '+includescip
-        os.remove(includescip)
-    quit()
+try:
+    from Cython.Build import cythonize
+except ImportError:
+    if not os.path.exists(os.path.join(packagedir, 'scip.c')):
+        print('Cython is required')
+        quit(1)
+    cythonize = False
 
-# always use build_ext --inplace
-if args.count("build_ext") > 0 and args.count("--inplace") == 0:
-    sys.argv.insert(sys.argv.index("build_ext")+1, "--inplace")
+if not os.path.exists(os.path.join(packagedir, 'scip.pyx')):
+    cythonize = False
 
-# check for missing scipopt library
-if not os.path.exists('lib/libscipopt.so'):
-    pathToLib = os.path.abspath(raw_input('Please enter path to scipopt library (scipoptsuite/lib/libscipopt.so):\n'))
-    print pathToLib
+ext = '.pyx' if cythonize else '.c'
 
-    # create lib directory if necessary
-    if not os.path.exists('lib'):
-        os.makedirs('lib')
+# set runtime libraries
+runtime_library_dirs = []
+extra_link_args = []
+if platform.system() in ['Linux', 'Darwin']:
+    extra_link_args.append('-Wl,-rpath,'+libdir)
 
-    os.symlink(pathToLib, libscipopt)
+# enable debug mode if requested
+extra_compile_args = []
+if "--debug" in sys.argv:
+    extra_compile_args.append('-UNDEBUG')
+    sys.argv.remove("--debug")
 
-# check for missing scip src directory
-if not os.path.exists(includescip):
-    pathToScip = os.path.abspath(raw_input('Please enter path to scip src directory (scipoptsuite/scip/src):\n'))
-    print pathToScip
+extensions = [Extension('pyscipopt.scip', [os.path.join(packagedir, 'scip'+ext)],
+                          include_dirs=[includedir],
+                          library_dirs=[libdir],
+                          libraries=[libname],
+                          runtime_library_dirs=runtime_library_dirs,
+                          extra_compile_args = extra_compile_args,
+                          extra_link_args=extra_link_args
+                          )]
 
-    # create lib directory if necessary
-    if not os.path.exists('include'):
-        os.makedirs('include')
+if cythonize:
+    extensions = cythonize(extensions)
+#     extensions = cythonize(extensions, compiler_directives={'linetrace': True})
 
-    os.symlink(pathToScip, includescip)
-
-ext_modules = []
-
-#extensions =  [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip.pyx')],
-                          ## extra_compile_args=['-g', '-O0', '-UNDEBUG'],
-                          #include_dirs=[includescip],
-                          #library_dirs=['lib'],
-                          #runtime_library_dirs=[os.path.abspath('lib')],
-                          #libraries=['scipopt', 'readline', 'z', 'gmp', 'ncurses', 'm'])]
-
-ext_modules += [Extension('pyscipopt.scip', [os.path.join('pyscipopt', 'scip.pyx')],
-                          #extra_compile_args=['-g', '-O0', '-UNDEBUG'],
-                          include_dirs=[includescip],
-                          library_dirs=['lib'],
-                          runtime_library_dirs=[os.path.abspath('lib')],
-                          libraries=['scipopt', 'readline', 'z', 'gmp', 'ncurses', 'm'])]
-
-
-#ext_modules += cythonize(extensions)
+with open('README.md') as f:
+    long_description = f.read()
 
 setup(
-    name = 'pyscipopt',
-    version = '0.1',
-    description = 'wrapper for SCIP in Python',
+    name = 'PySCIPOpt',
+    version = version,
+    description = 'Python interface and modeling environment for SCIP',
+    long_description = long_description,
+    url = 'https://github.com/SCIP-Interfaces/PySCIPOpt',
     author = 'Zuse Institute Berlin',
     author_email = 'scip@zib.de',
     license = 'MIT',
-    cmdclass = {'build_ext' : build_ext},
-    ext_modules = ext_modules,
-    packages=['pyscipopt']
+    classifiers=[
+    'Development Status :: 4 - Beta',
+    'Intended Audience :: Science/Research',
+    'Intended Audience :: Education',
+    'License :: OSI Approved :: MIT License',
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Cython',
+    'Topic :: Scientific/Engineering :: Mathematics'],
+    ext_modules = extensions,
+    packages = ['pyscipopt'],
+    package_dir = {'pyscipopt': packagedir},
+    package_data = {'pyscipopt': ['scip.pyx', 'scip.pxd', '*.pxi']}
 )
