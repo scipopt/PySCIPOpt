@@ -1471,8 +1471,8 @@ cdef class Model:
                       modifiable=modifiable, dynamic=dynamic,
                       removable=removable,
                       stickingatnode=stickingatnode)
-        kwargs['lhs'] = -SCIPinfinity(self._scip) if cons.lhs is None else cons.lhs
-        kwargs['rhs'] =  SCIPinfinity(self._scip) if cons.rhs is None else cons.rhs
+        kwargs['lhs'] = -SCIPinfinity(self._scip) if cons._lhs is None else cons._lhs
+        kwargs['rhs'] =  SCIPinfinity(self._scip) if cons._rhs is None else cons._rhs
 
         deg = cons.expr.degree()
         if deg <= 1:
@@ -2000,18 +2000,18 @@ cdef class Model:
         assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
         cdef SCIP_CONS* scip_cons
         cdef SCIP_VAR* _binVar
-        if cons.lhs is not None and cons.rhs is not None:
+        if cons._lhs is not None and cons._rhs is not None:
             raise ValueError("expected inequality that has either only a left or right hand side")
 
         if cons.expr.degree() > 1:
             raise ValueError("expected linear inequality, expression has degree %d" % cons.expr.degree())
 
 
-        if cons.rhs is not None:
-            rhs =  cons.rhs
+        if cons._rhs is not None:
+            rhs =  cons._rhs
             negate = False
         else:
-            rhs = -cons.lhs
+            rhs = -cons._lhs
             negate = True
 
         _binVar = (<Variable>binvar).scip_var if binvar is not None else NULL
