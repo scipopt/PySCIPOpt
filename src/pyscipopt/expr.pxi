@@ -137,6 +137,7 @@ def buildGenExprObj(expr):
     else:
         assert isinstance(expr, GenExpr)
         return expr
+
 ##@details Polynomial expressions of variables with operator overloading. \n
 #See also the @ref ExprDetails "description" in the expr.pxi. 
 cdef class Expr:
@@ -417,14 +418,15 @@ class Op:
 
 Operator = Op()
 
+##@details <pre> General expressions of variables with operator overloading.
+#
+#@note
+#   - this expressions are not smart enough to identify equal terms
+#   - in contrast to polynomial expressions, __getitem__ is not implemented
+#     so expr[x] will generate an error instead of returning the coefficient of x </pre>
+#
+#See also the @ref ExprDetails "description" in the expr.pxi. 
 cdef class GenExpr:
-    '''General expressions of variables with operator overloading.
-
-    Notes:
-     - this expressions are not smart enough to identify equal terms
-     - in contrast to polynomial expressions, __getitem__ is not implemented
-     so expr[x] will generate an error instead of returning the coefficient of x
-    '''
     cdef public operatorIndex
     cdef public _op
     cdef public children
