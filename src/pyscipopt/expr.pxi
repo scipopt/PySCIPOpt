@@ -421,7 +421,7 @@ Operator = Op()
 ##@details <pre> General expressions of variables with operator overloading.
 #
 #@note
-#   - this expressions are not smart enough to identify equal terms
+#   - these expressions are not smart enough to identify equal terms
 #   - in contrast to polynomial expressions, __getitem__ is not implemented
 #     so expr[x] will generate an error instead of returning the coefficient of x </pre>
 #
