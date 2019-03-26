@@ -130,46 +130,46 @@ def test_inequality(model):
     cons = expr <= x**1.2
     assert isinstance(cons, ExprCons)
     assert isinstance(cons.expr, GenExpr)
-    assert cons.lhs is None
-    assert cons.rhs == 0.0
+    assert cons._lhs is None
+    assert cons._rhs == 0.0
 
     assert isinstance(expr, Expr)
     cons = expr >= x**1.2
     assert isinstance(cons, ExprCons)
     assert isinstance(cons.expr, GenExpr)
-    assert cons.lhs == 0.0
-    assert cons.rhs is None
+    assert cons._lhs == 0.0
+    assert cons._rhs is None
 
     assert isinstance(expr, Expr)
     cons = expr >= 1 + x**1.2
     assert isinstance(cons, ExprCons)
     assert isinstance(cons.expr, GenExpr)
-    assert cons.lhs == 0.0 # NOTE: the 1 is pass the the other side because of the way GenExprs work
-    assert cons.rhs is None
+    assert cons._lhs == 0.0 # NOTE: the 1 is pass the the other side because of the way GenExprs work
+    assert cons._rhs is None
 
     assert isinstance(expr, Expr)
     cons = exp(expr) <= 1 + x**1.2
     assert isinstance(cons, ExprCons)
     assert isinstance(cons.expr, GenExpr)
-    assert cons.rhs == 0.0
-    assert cons.lhs is None
+    assert cons._rhs == 0.0
+    assert cons._lhs is None
 
 
 def test_equation(model):
     m, x, y, z = model
     equat = 2*x**1.2 - 3*sqrt(y) == 1
     assert isinstance(equat, ExprCons)
-    assert equat.lhs == equat.rhs
-    assert equat.lhs == 1.0
+    assert equat._lhs == equat._rhs
+    assert equat._lhs == 1.0
 
     equat = exp(x+2*y) == 1 + x**1.2
     assert isinstance(equat, ExprCons)
     assert isinstance(equat.expr, GenExpr)
-    assert equat.lhs == equat.rhs
-    assert equat.lhs == 0.0
+    assert equat._lhs == equat._rhs
+    assert equat._lhs == 0.0
 
     equat = x == 1 + x**1.2
     assert isinstance(equat, ExprCons)
     assert isinstance(equat.expr, GenExpr)
-    assert equat.lhs == equat.rhs
-    assert equat.lhs == 0.0
+    assert equat._lhs == equat._rhs
+    assert equat._lhs == 0.0
