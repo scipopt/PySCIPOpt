@@ -1440,7 +1440,7 @@ cdef class Model:
         cdef SCIP_CONSEXPR_EXPR* consexpr
         cdef SCIP_CONSEXPR_EXPR** varexpr
         cdef SCIP_CONSEXPR_EXPR** factors
-        cdef SCIP_CONSEXPR_EXPR** monos
+        cdef SCIP_CONSEXPR_EXPR** monomials
         cdef SCIP_CONSEXPR_EXPR* polynomial
         cdef SCIP_CONS* conss
         cdef int nfactors
@@ -1464,7 +1464,7 @@ cdef class Model:
 
         #create factors and terms
         #TODO: how many memory does factors need? Probably factors gets more memory than needed
-        monos = <SCIP_CONSEXPR_EXPR**> malloc(len(terms)*sizeof(SCIP_CONSEXPR_EXPR*))
+        monomials = <SCIP_CONSEXPR_EXPR**> malloc(len(terms)*sizeof(SCIP_CONSEXPR_EXPR*))
         for i, (term, coef) in enumerate(terms.items()):
             factors = <SCIP_CONSEXPR_EXPR**> malloc(len(term)*sizeof(SCIP_CONSEXPR_EXPR*))
             ids = <int*> malloc(len(term) * sizeof(int))
@@ -1481,12 +1481,12 @@ cdef class Model:
                     PY_SCIP_CALL(SCIPcreateConsExprExprPow(self._scip, consexprhdlr, &factors[nfactors], varexpr[ids[j]], j-l+1))
                     l = j
                     nfactors += 1
-            PY_SCIP_CALL(SCIPcreateConsExprExprProduct(self._scip, consexprhdlr, &monos[i], nfactors, factors, coef))
+            PY_SCIP_CALL(SCIPcreateConsExprExprProduct(self._scip, consexprhdlr, &monomials[i], nfactors, factors, coef))
             free(ids)
             free(factors)
 
         #create Expressions
-        PY_SCIP_CALL( SCIPcreateConsExprExprSum(self._scip, consexprhdlr, &polynomial, len(terms), monos, NULL, 0.0) )
+        PY_SCIP_CALL( SCIPcreateConsExprExprSum(self._scip, consexprhdlr, &polynomial, len(terms), monomials, NULL, 0.0) )
         PY_SCIP_CALL(SCIPcreateConsExpr(self._scip, &conss, str_conversion(kwargs['name']), polynomial, kwargs['lhs'], kwargs['rhs'],
                                         kwargs['initial'], kwargs['separate'], kwargs['enforce'],
                                         kwargs['check'], kwargs['propagate'], kwargs['local'],
@@ -1503,12 +1503,13 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, &consexpr))
         free(vars)
         free(varexpr)
-        free(monos)
+        free(monomials)
         free(consexpr)
         PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, &polynomial))
         free(polynomial)
         return PyCons
 
+    #TODO: update function to use Consexpr
     def _addGenNonlinearCons(self, ExprCons cons, **kwargs):
         cdef SCIP_EXPR** childrenexpr
         cdef SCIP_EXPR** scipexprs
@@ -2043,7 +2044,7 @@ cdef class Model:
     def getRhs(self, Constraint cons):
         """Retrieve right hand side value of a constraint.
 
-        :param Constraint cons: linear or quadratic constraint
+        :param Constraint cons: linear or quadratic constraint or expr constraint
 
         """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
@@ -2051,6 +2052,8 @@ cdef class Model:
             return SCIPgetRhsLinear(self._scip, cons.cons)
         elif constype == 'quadratic':
             return SCIPgetRhsQuadratic(self._scip, cons.cons)
+        elif constype == 'expr':
+            return SCIPgetRhsConsExpr(self._scip, cons.cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
@@ -2065,6 +2068,8 @@ cdef class Model:
             return SCIPgetLhsLinear(self._scip, cons.cons)
         elif constype == 'quadratic':
             return SCIPgetLhsQuadratic(self._scip, cons.cons)
+        elif constype == 'expr':
+            return SCIPgetLhsConsExpr(self._scip, cons.cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
@@ -2211,6 +2216,33 @@ cdef class Model:
         
     def getRelaxSolObj(self):
         return SCIPgetRelaxSolObj(self._scip)
+
+    def getConsExprPolyCons(self, Constraint cons):
+        """get Constraint that is polynomial (and thus ConsExpr) as a PySCIPOpt Expr
+        returns polynomial expression of the form {variables:coefficient}"""
+        cdef SCIP_CONSEXPR_EXPR* consexpr
+        cdef SCIP_VAR* scipvar
+        cdef int ntermmult
+        
+        PyExpr = Expr()
+        consexpr = SCIPgetExprConsExpr(self._scip, cons.cons)
+        assert SCIPisConsExprExprPoly(self._scip,consexpr), "constraint is not a polynomial"
+        nterms = SCIPgetConsExprExprNPolyTerms(self._scip, consexpr)
+        #coefs = []
+        for i in range(nterms):
+            ntermmult = SCIPgetConsExprExprNPolyTermMult(self._scip, consexpr, i)
+            mults = Term()
+            for j in range(ntermmult):
+                scipvar = SCIPgetConsExprExprPolyVar(self._scip, consexpr, i, j)
+                exp = SCIPgetConsExprExprPolyExp(self._scip, consexpr, i, j)
+                var = Variable.create(scipvar)
+                print(exp)
+                #varname = bytes(SCIPvarGetName(var)).decode('utf-8')
+                for _ in range(int(exp)):
+                    mults += Term(var)
+            coefs = SCIPgetConsExprExprPolyCoef(self._scip, consexpr, i)
+            PyExpr += Expr({mults:coefs})
+        return PyExpr
 
     def getConss(self):
         """Retrieve all constraints."""
