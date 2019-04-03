@@ -2629,7 +2629,7 @@ cdef class Model:
 
         Keyword arguments:
         probnumber -- the index of the problem that is to be set up
-        enfotype -- the enforcement type used for solving the subproblem. Either LP, RELAX, PSEUDO or CHECK
+        enfotype -- the enforcement type used for solving the subproblem, see SCIP_BENDERSENFOTYPE
         solvecip -- should the CIP of the subproblem be solved, if False, then only the convex relaxation is solved
         benders -- the Benders' decomposition to which the subproblem belongs to
         solution -- the master problem solution that is used for the set up, if None, then the LP solution is used
