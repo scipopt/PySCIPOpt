@@ -1425,19 +1425,48 @@ cdef extern from "scip/cons_countsols.h":
     SCIP_Longint SCIPgetNCountedSols(SCIP* scip, SCIP_Bool* valid)
 
 cdef extern from "scip/cons_expr.h":
-    SCIP_RETCODE SCIPcreateConsExprBasic(SCIP* scip, SCIP_CONS** cons, const char* name, SCIP_CONSEXPR_EXPR* expr, SCIP_Real lhs, SCIP_Real rhs)
-    SCIP_Bool SCIPisConsExprExprPolyTerm(SCIP_CONSHDLR* conshdlr, SCIP_CONSEXPR_EXPR* expr)
-    SCIP_Bool SCIPisConsExprExprPoly(SCIP* scip, SCIP_CONSEXPR_EXPR* expr)
-    int SCIPgetConsExprExprNPolyTerms(SCIP* scip, SCIP_CONSEXPR_EXPR* expr)
-    SCIP_CONSEXPR_EXPR* SCIPgetExprConsExpr(SCIP* scip, SCIP_CONS* cons)
-    SCIP_RETCODE SCIPparseConsExprExpr(SCIP* scip, SCIP_CONSHDLR* consexprhdlr, const char* exprstr, const char** finalpos, SCIP_CONSEXPR_EXPR** expr)
     SCIP_Real SCIPgetLhsConsExpr(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real SCIPgetRhsConsExpr(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPreleaseConsExprExpr(SCIP* scip, SCIP_CONSEXPR_EXPR** rootexpr)
+    SCIP_RETCODE SCIPcreateConsExpr(SCIP* scip,
+                                    SCIP_CONS** cons,
+                                    const char* name,
+                                    SCIP_CONSEXPR_EXPR* expr,
+                                    SCIP_Real lhs,
+                                    SCIP_Real rhs,
+                                    SCIP_Bool initial,
+                                    SCIP_Bool separate,
+                                    SCIP_Bool enforce,
+                                    SCIP_Bool check,
+                                    SCIP_Bool propagate,
+                                    SCIP_Bool local,
+                                    SCIP_Bool modifiable,
+                                    SCIP_Bool dynamic,
+                                    SCIP_Bool removable,
+                                    SCIP_Bool stickingatnode)
+    SCIP_CONSEXPR_EXPR* SCIPgetExprConsExpr(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RETCODE SCIPprintConsExprExpr(SCIP* scip, SCIP_CONSHDLR* consexprhdlr, SCIP_CONSEXPR_EXPR* expr, FILE* file)
+    SCIP_Bool SCIPisConsExprExprPoly(SCIP* scip, SCIP_CONSEXPR_EXPR* expr)
+    int SCIPgetConsExprExprNPolyTerms(SCIP* scip, SCIP_CONSEXPR_EXPR* expr)
+    SCIP_Real SCIPgetConsExprExprPolyCoef(SCIP* scip, SCIP_CONSEXPR_EXPR* expr, int i)
+    int SCIPgetConsExprExprNPolyTermMult(SCIP* scip, SCIP_CONSEXPR_EXPR* expr, int i)
+    SCIP_VAR* SCIPgetConsExprExprPolyVar(SCIP* scip, SCIP_CONSEXPR_EXPR* expr, int i, int j)
+    SCIP_Real SCIPgetConsExprExprPolyExp(SCIP* scip, SCIP_CONSEXPR_EXPR* expr, int i, int j)
+
+cdef extern from "scip/cons_expr_var.h":
     SCIP_RETCODE SCIPcreateConsExprExprVar(SCIP* scip, SCIP_CONSHDLR* consexprhdlr, SCIP_CONSEXPR_EXPR** expr, SCIP_VAR* var)
+
+cdef extern from "scip/cons_expr_pow.h":
     SCIP_RETCODE SCIPcreateConsExprExprPow(SCIP* scip, SCIP_CONSHDLR* consexprhdlr, SCIP_CONSEXPR_EXPR** expr, SCIP_CONSEXPR_EXPR* child, SCIP_Real exponent)
+
+cdef extern from "scip/cons_expr_product.h":
     SCIP_RETCODE SCIPcreateConsExprExprProduct(SCIP* scip, SCIP_CONSHDLR* consexprhdlr, SCIP_CONSEXPR_EXPR** expr, int nchildren, SCIP_CONSEXPR_EXPR** children, SCIP_Real coefficient)
-    
+    SCIP_RETCODE SCIPappendConsExprExprProductExpr(SCIP* scip, SCIP_CONSEXPR_EXPR* expr, SCIP_CONSEXPR_EXPR* children)
+
+cdef extern from "scip/cons_expr_sum.h":
+    SCIP_RETCODE SCIPcreateConsExprExprSum(SCIP* scip, SCIP_CONSHDLR* consexprhdlr, SCIP_CONSEXPR_EXPR** expr, int nchildren, SCIP_CONSEXPR_EXPR** children, SCIP_Real* coefficients, SCIP_Real constant)
+    SCIP_RETCODE SCIPappendConsExprExprSumExpr(SCIP* scip, SCIP_CONSEXPR_EXPR* expr, SCIP_CONSEXPR_EXPR* child, SCIP_Real childcoef)
+
 cdef extern from "scip/paramset.h":
 
     ctypedef struct SCIP_PARAM:

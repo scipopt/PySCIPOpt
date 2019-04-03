@@ -1437,21 +1437,13 @@ cdef class Model:
         return PyCons
 
     def _addNonlinearCons(self, ExprCons cons, **kwargs):
-        cdef SCIP_EXPR* expr
-        cdef SCIP_EXPR** varexprs
-        cdef SCIP_EXPRDATA_MONOMIAL** monomials
-        cdef int* idxs
-        cdef SCIP_EXPRTREE* exprtree
-        cdef SCIP_VAR** vars
-        cdef SCIP_CONS* scip_cons
-        
         cdef SCIP_CONSEXPR_EXPR* consexpr
         cdef SCIP_CONSEXPR_EXPR** varexpr
-        cdef SCIP_HASHMAP* vartoexprvarmap
-        cdef const char* newpos
-        cdef SCIP_CONSHDLR* scip_conshdlr
         cdef SCIP_CONSEXPR_EXPR** factors
         cdef SCIP_CONSEXPR_EXPR** monos
+        cdef SCIP_CONSEXPR_EXPR* polynomial
+        cdef SCIP_CONS* conss
+        cdef int nfactors
 
         terms = cons.expr.terms
 
@@ -1459,79 +1451,62 @@ cdef class Model:
         variables = {var.ptr():var for term in terms for var in term}
         variables = list(variables.values())
         varindex = {var.ptr():idx for (idx,var) in enumerate(variables)}
+        consexprhdlr = SCIPfindConshdlr(self._scip, "expr")
 
         #create variable expressions (consexpr)
         varexpr = <SCIP_CONSEXPR_EXPR**> malloc(len(varindex) * sizeof(SCIP_CONSEXPR_EXPR*))
-        consexprhdlr = SCIPfindConshdlr(self._scip, "expr")
         vars = <SCIP_VAR**> malloc(len(variables) * sizeof(SCIP_VAR*))
         for idx, var in enumerate(variables): # same as varindex
             vars[idx] = (<Variable>var).var
         for idx in varindex.values():
             PY_SCIP_CALL(SCIPcreateConsExprExprVar(self._scip, consexprhdlr, &consexpr, vars[idx]))
-            #PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, &consexpr))
             varexpr[idx] = consexpr
 
-        #create factors
-        factors = <SCIP_CONSEXPR_EXPR**> malloc(len(terms)*sizeof(SCIP_CONSEXPR_EXPR*))
+        #create factors and terms
+        #TODO: how many memory does factors need? Probably factors gets more memory than needed
         monos = <SCIP_CONSEXPR_EXPR**> malloc(len(terms)*sizeof(SCIP_CONSEXPR_EXPR*))
         for i, (term, coef) in enumerate(terms.items()):
+            factors = <SCIP_CONSEXPR_EXPR**> malloc(len(term)*sizeof(SCIP_CONSEXPR_EXPR*))
             ids = <int*> malloc(len(term) * sizeof(int))
+            l = 0
+            nfactors = 0
             for j, var in enumerate(term):
                 ids[j] = varindex[var.ptr()]
-            for j, var in enumerate(term):
-                PY_SCIP_CALL(SCIPcreateConsExprExprPow(self._scip, consexprhdlr, factors, varexpr[varindex[var.ptr()]], ids[j]))
-                #PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, factors))
-            #PY_SCIP_CALL(SCIPcreateConsExprExprProduct(self._scip, consexprhdlr, monos, len(term), factors, coef))
+                #assuming that vars in term are sorted
+                if ids[l] != ids[j]:
+                    PY_SCIP_CALL(SCIPcreateConsExprExprPow(self._scip, consexprhdlr, &factors[nfactors], varexpr[ids[j-1]], j-l))
+                    l = j
+                    nfactors += 1
+                if j == len(term)-1:
+                    PY_SCIP_CALL(SCIPcreateConsExprExprPow(self._scip, consexprhdlr, &factors[nfactors], varexpr[ids[j]], j-l+1))
+                    l = j
+                    nfactors += 1
+            PY_SCIP_CALL(SCIPcreateConsExprExprProduct(self._scip, consexprhdlr, &monos[i], nfactors, factors, coef))
+            free(ids)
+            free(factors)
 
-        #create Term
-        
-        #TODO: collect constant Term?
         #create Expressions
+        PY_SCIP_CALL( SCIPcreateConsExprExprSum(self._scip, consexprhdlr, &polynomial, len(terms), monos, NULL, 0.0) )
+        PY_SCIP_CALL(SCIPcreateConsExpr(self._scip, &conss, str_conversion(kwargs['name']), polynomial, kwargs['lhs'], kwargs['rhs'],
+                                        kwargs['initial'], kwargs['separate'], kwargs['enforce'],
+                                        kwargs['check'], kwargs['propagate'], kwargs['local'],
+                                        kwargs['modifiable'], kwargs['dynamic'], kwargs['removable'],
+                                       kwargs['stickingatnode']))
 
-        # create variable expressions
-        varexprs = <SCIP_EXPR**> malloc(len(varindex) * sizeof(SCIP_EXPR*))
-        for idx in varindex.values():
-            PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &expr, SCIP_EXPR_VARIDX, <int>idx) )
-            varexprs[idx] = expr
-
-        # create monomials for terms
-        monomials = <SCIP_EXPRDATA_MONOMIAL**> malloc(len(terms) * sizeof(SCIP_EXPRDATA_MONOMIAL*))
-        for i, (term, coef) in enumerate(terms.items()):
-            idxs = <int*> malloc(len(term) * sizeof(int))
-            for j, var in enumerate(term):
-                idxs[j] = varindex[var.ptr()]
-            PY_SCIP_CALL( SCIPexprCreateMonomial(SCIPblkmem(self._scip), &monomials[i], <SCIP_Real>coef, <int>len(term), idxs, NULL) )
-            free(idxs)
-
-        # create polynomial from monomials
-        PY_SCIP_CALL( SCIPexprCreatePolynomial(SCIPblkmem(self._scip), &expr,
-                                               <int>len(varindex), varexprs,
-                                               <int>len(terms), monomials, 0.0, <SCIP_Bool>True) )
-
-        # create expression tree
-        PY_SCIP_CALL( SCIPexprtreeCreate(SCIPblkmem(self._scip), &exprtree, expr, <int>len(variables), 0, NULL) )
-        vars = <SCIP_VAR**> malloc(len(variables) * sizeof(SCIP_VAR*))
-        for idx, var in enumerate(variables): # same as varindex
-            vars[idx] = (<Variable>var).var
-        PY_SCIP_CALL( SCIPexprtreeSetVars(exprtree, <int>len(variables), vars) )
-
-        # create nonlinear constraint for exprtree
-        PY_SCIP_CALL( SCIPcreateConsNonlinear(
-            self._scip, &scip_cons, str_conversion(kwargs['name']),
-            0, NULL, NULL, # linear
-            1, &exprtree, NULL, # nonlinear
-            kwargs['lhs'], kwargs['rhs'],
-            kwargs['initial'], kwargs['separate'], kwargs['enforce'],
-            kwargs['check'], kwargs['propagate'], kwargs['local'],
-            kwargs['modifiable'], kwargs['dynamic'], kwargs['removable'],
-            kwargs['stickingatnode']) )
-        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        PyCons = Constraint.create(scip_cons)
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-        PY_SCIP_CALL( SCIPexprtreeFree(&exprtree) )
+        #release vars and free memory
+        #TODO: which of the variables have to be freed, which released?
+        for i in range(len(variables)):
+            PY_SCIP_CALL(SCIPreleaseVar(self._scip, &vars[i]))
+        PY_SCIP_CALL(SCIPaddCons(self._scip, conss))
+        PyCons = Constraint.create(conss)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &conss))
+        PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, &consexpr))
         free(vars)
-        free(monomials)
-        free(varexprs)
+        free(varexpr)
+        free(monos)
+        free(consexpr)
+        PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, &polynomial))
+        free(polynomial)
         return PyCons
 
     def _addGenNonlinearCons(self, ExprCons cons, **kwargs):
