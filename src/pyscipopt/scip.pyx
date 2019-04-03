@@ -203,6 +203,13 @@ cdef class PY_SCIP_BRANCHDIR:
     FIXED     = SCIP_BRANCHDIR_FIXED
     AUTO      = SCIP_BRANCHDIR_AUTO
 
+cdef class PY_SCIP_BENDERSENFOTYPE:
+    LP     = SCIP_BENDERSENFOTYPE_LP
+    RELAX  = SCIP_BENDERSENFOTYPE_RELAX
+    PSEUDO = SCIP_BENDERSENFOTYPE_PSEUDO
+    CHECK  = SCIP_BENDERSENFOTYPE_CHECK
+
+
 def PY_SCIP_CALL(SCIP_RETCODE rc):
     if rc == SCIP_OKAY:
         pass
@@ -2591,6 +2598,63 @@ cdef class Model:
         n = str_conversion(name)
         benders = SCIPfindBenders(self._scip, n)
         PY_SCIP_CALL(SCIPaddBendersSubproblem(self._scip, benders, (<Model>subproblem)._scip))
+
+    def setupBendersSubproblem(self, probnumber, Benders benders = None, Solution solution = None):
+        """ sets up the Benders' subproblem given the master problem solution
+
+        Keyword arguments:
+        probnumber -- the index of the problem that is to be set up
+        benders -- the Benders' decomposition to which the subproblem belongs to
+        solution -- the master problem solution that is used for the set up, if None, then the LP solution is used
+        """
+        cdef SCIP_BENDERS* scip_benders
+        cdef SCIP_SOL* scip_sol
+
+        if isinstance(solution, Solution):
+            scip_sol = solution.sol
+        else:
+            scip_sol = NULL
+
+        if benders is None:
+            scip_benders = SCIPfindBenders(self._scip, "default")
+        else:
+            n = str_conversion(benders.name)
+            scip_benders = SCIPfindBenders(self._scip, n)
+
+        PY_SCIP_CALL(SCIPsetupBendersSubproblem(self._scip, scip_benders, scip_sol, probnumber))
+
+    def solveBendersSubproblem(self, probnumber, enfotype, solvecip, Benders benders = None, Solution solution = None):
+        """ solves the Benders' decomposition subproblem. The convex relaxation will be solved unless
+        the parameter solvecip is set to True.
+
+        Keyword arguments:
+        probnumber -- the index of the problem that is to be set up
+        enfotype -- the enforcement type used for solving the subproblem, see SCIP_BENDERSENFOTYPE
+        solvecip -- should the CIP of the subproblem be solved, if False, then only the convex relaxation is solved
+        benders -- the Benders' decomposition to which the subproblem belongs to
+        solution -- the master problem solution that is used for the set up, if None, then the LP solution is used
+        """
+
+        cdef SCIP_BENDERS* scip_benders
+        cdef SCIP_SOL* scip_sol
+        cdef SCIP_Real objective
+        cdef SCIP_Bool infeasible
+
+        if isinstance(solution, Solution):
+            scip_sol = solution.sol
+        else:
+            scip_sol = NULL
+
+        if benders is None:
+            scip_benders = SCIPfindBenders(self._scip, "default")
+        else:
+            n = str_conversion(benders.name)
+            scip_benders = SCIPfindBenders(self._scip, n)
+
+        PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip, scip_benders, scip_sol,
+            probnumber, &infeasible, enfotype, solvecip, &objective))
+
+        return infeasible, objective
 
     def getBendersVar(self, Variable var, Benders benders = None, probnumber = -1):
         """Returns the variable for the subproblem or master problem

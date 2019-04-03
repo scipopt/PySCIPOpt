@@ -136,8 +136,7 @@ cdef SCIP_RETCODE PyBendersPresubsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_
     if sol == NULL:
         solution = None
     else:
-        solution = Solution()
-        solution.sol = sol
+        solution = Solution.create(sol)
     enfotype = type
     result_dict = PyBenders.benderspresubsolve(solution, enfotype, checkint)
     skipsolve[0] = result_dict.get("skipsolve", False)
@@ -151,8 +150,7 @@ cdef SCIP_RETCODE PyBendersSolvesubconvex (SCIP* scip, SCIP_BENDERS* benders, SC
     if sol == NULL:
         solution = None
     else:
-        solution = Solution()
-        solution.sol = sol
+        solution = Solution.create(sol)
     result_dict = PyBenders.benderssolvesubconvex(solution, probnumber, onlyconvex)
     objective[0] = result_dict.get("objective", 1e+20)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
@@ -165,8 +163,7 @@ cdef SCIP_RETCODE PyBendersSolvesub (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL
     if sol == NULL:
         solution = None
     else:
-        solution = Solution()
-        solution.sol = sol
+        solution = Solution.create(sol)
     result_dict = PyBenders.benderssolvesub(solution, probnumber)
     objective[0] = result_dict.get("objective", 1e+20)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
@@ -181,8 +178,7 @@ cdef SCIP_RETCODE PyBendersPostsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SO
     if sol == NULL:
         solution = None
     else:
-        solution = Solution()
-        solution.sol = sol
+        solution = Solution.create(sol)
     enfotype = type
     mergecandidates = []
     for i in range(nmergecands):
