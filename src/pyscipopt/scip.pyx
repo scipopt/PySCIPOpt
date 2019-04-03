@@ -2610,8 +2610,8 @@ cdef class Model:
         cdef SCIP_BENDERS* scip_benders
         cdef SCIP_SOL* scip_sol
 
-        if isinstance(sol, Solution):
-            scip_sol = sol.sol
+        if isinstance(solution, Solution):
+            scip_sol = solution.sol
         else:
             scip_sol = NULL
 
@@ -2621,9 +2621,9 @@ cdef class Model:
             n = str_conversion(benders.name)
             scip_benders = SCIPfindBenders(self._scip, n)
 
-        PY_SCIP_CALL(SCIPsetupBendersSubproblem(self._scip, scip_benders, scip_sol, probnumber)
+        PY_SCIP_CALL(SCIPsetupBendersSubproblem(self._scip, scip_benders, scip_sol, probnumber))
 
-    def solveBendersSubproblem(self, probnumber, enfotype, solvecip, Benders benders = None, Solution solution = None)
+    def solveBendersSubproblem(self, probnumber, enfotype, solvecip, Benders benders = None, Solution solution = None):
         """ solves the Benders' decomposition subproblem. The convex relaxation will be solved unless
         the parameter solvecip is set to True.
 
@@ -2636,11 +2636,12 @@ cdef class Model:
         """
 
         cdef SCIP_BENDERS* scip_benders
+        cdef SCIP_SOL* scip_sol
         cdef SCIP_Real objective
         cdef SCIP_Bool infeasible
 
-        if isinstance(sol, Solution):
-            scip_sol = sol.sol
+        if isinstance(solution, Solution):
+            scip_sol = solution.sol
         else:
             scip_sol = NULL
 
