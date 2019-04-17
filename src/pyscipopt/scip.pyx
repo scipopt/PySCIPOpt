@@ -647,8 +647,9 @@ cdef class Model:
     cdef public object data
     # make Model weak referentiable
     cdef object __weakref__
+    cdef SCIP_Bool origmodel
 
-    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False):
+    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False, noscipcreate=False):
         """
         :param problemName: name of the problem (default 'model')
         :param defaultPlugins: use default plugins? (default True)
@@ -656,17 +657,26 @@ cdef class Model:
         :param origcopy: whether to call copy or copyOrig (default False)
         :param globalcopy: whether to create a global or a local copy (default True)
         :param enablepricing: whether to enable pricing in copy (default False)
+        :param noscipcreate: initialize the Model object without creating a SCIP instance
         """
         if self.version() < MAJOR:
             raise Exception("linked SCIP is not compatible to this version of PySCIPOpt - use at least version", MAJOR)
         if self.version() < MAJOR + MINOR/10.0 + PATCH/100.0:
             warnings.warn("linked SCIP {} is not recommended for this version of PySCIPOpt - use version {}.{}.{}".format(self.version(), MAJOR, MINOR, PATCH))
-        if sourceModel is None:
+
+        self.origmodel = True
+
+        if noscipcreate:
+            # if no SCIP instance should be created, then an empty Model object is created.
+            self._scip = NULL
+            self._bestSol = None
+        elif sourceModel is None:
             self.create()
             self._bestSol = None
             if defaultPlugins:
                 self.includeDefaultPlugins()
             self.createProbBasic(problemName)
+            self.origmodel = False
         else:
             self.create()
             self._bestSol = <Solution> sourceModel._bestSol
@@ -679,11 +689,28 @@ cdef class Model:
     def __dealloc__(self):
         # call C function directly, because we can no longer call this object's methods, according to
         # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
-        PY_SCIP_CALL( SCIPfree(&self._scip) )
+        if self._scip is not NULL and self.origmodel:
+           PY_SCIP_CALL( SCIPfree(&self._scip) )
 
     def create(self):
         """Create a new SCIP instance"""
         PY_SCIP_CALL(SCIPcreate(&self._scip))
+
+    @staticmethod
+    cdef createModel(SCIP* scip):
+        """Creates a model and appropriately assigns the scip and bestsol parameters
+        """
+        if scip == NULL:
+            raise Warning("cannot create Model with SCIP* == NULL")
+        model = Model(noscipcreate=True)
+        model._scip = scip
+        model._bestSol = Solution.create(SCIPgetBestSol(scip))
+        return model
+
+    def createModelFromSCIP(self):
+        """Returns a model that has been created by copying the SCIP pointer"""
+        model = Model.createModel(self._scip)
+        return model
 
     def includeDefaultPlugins(self):
         """Includes all default plug-ins into SCIP"""
