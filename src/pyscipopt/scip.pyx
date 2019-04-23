@@ -647,7 +647,9 @@ cdef class Model:
     cdef public object data
     # make Model weak referentiable
     cdef object __weakref__
-    cdef SCIP_Bool origmodel
+    # flag to indicate whether the SCIP should be freed. It will not be freed if an empty Model was created to wrap a
+    # C-API SCIP instance.
+    cdef SCIP_Bool freescip
 
     def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False, noscipcreate=False):
         """
@@ -664,19 +666,19 @@ cdef class Model:
         if self.version() < MAJOR + MINOR/10.0 + PATCH/100.0:
             warnings.warn("linked SCIP {} is not recommended for this version of PySCIPOpt - use version {}.{}.{}".format(self.version(), MAJOR, MINOR, PATCH))
 
-        self.origmodel = True
+        self.freescip = True
 
         if noscipcreate:
             # if no SCIP instance should be created, then an empty Model object is created.
             self._scip = NULL
             self._bestSol = None
+            self.freescip = False
         elif sourceModel is None:
             self.create()
             self._bestSol = None
             if defaultPlugins:
                 self.includeDefaultPlugins()
             self.createProbBasic(problemName)
-            self.origmodel = False
         else:
             self.create()
             self._bestSol = <Solution> sourceModel._bestSol
@@ -689,7 +691,7 @@ cdef class Model:
     def __dealloc__(self):
         # call C function directly, because we can no longer call this object's methods, according to
         # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
-        if self._scip is not NULL and self.origmodel:
+        if self._scip is not NULL and self.freescip:
            PY_SCIP_CALL( SCIPfree(&self._scip) )
 
     def create(self):
