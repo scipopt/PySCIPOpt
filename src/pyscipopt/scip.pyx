@@ -666,7 +666,7 @@ cdef class Model:
         if self.version() < MAJOR + MINOR/10.0 + PATCH/100.0:
             warnings.warn("linked SCIP {} is not recommended for this version of PySCIPOpt - use version {}.{}.{}".format(self.version(), MAJOR, MINOR, PATCH))
 
-        self.freescip = True
+        self._freescip = True
 
         if noscipcreate:
             # if no SCIP instance should be created, then an empty Model object is created.
@@ -691,7 +691,7 @@ cdef class Model:
     def __dealloc__(self):
         # call C function directly, because we can no longer call this object's methods, according to
         # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
-        if self._scip is not NULL and self.freescip:
+        if self._scip is not NULL and self._freescip:
            PY_SCIP_CALL( SCIPfree(&self._scip) )
 
     def create(self):
