@@ -651,7 +651,7 @@ cdef class Model:
     # C-API SCIP instance.
     cdef SCIP_Bool _freescip
 
-    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False, noscipcreate=False):
+    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False, createscip=True):
         """
         :param problemName: name of the problem (default 'model')
         :param defaultPlugins: use default plugins? (default True)
@@ -659,7 +659,7 @@ cdef class Model:
         :param origcopy: whether to call copy or copyOrig (default False)
         :param globalcopy: whether to create a global or a local copy (default True)
         :param enablepricing: whether to enable pricing in copy (default False)
-        :param noscipcreate: initialize the Model object without creating a SCIP instance
+        :param createscip: initialize the Model object and creates a SCIP instance
         """
         if self.version() < MAJOR:
             raise Exception("linked SCIP is not compatible to this version of PySCIPOpt - use at least version", MAJOR)
@@ -668,7 +668,7 @@ cdef class Model:
 
         self._freescip = True
 
-        if noscipcreate:
+        if not createscip:
             # if no SCIP instance should be created, then an empty Model object is created.
             self._scip = NULL
             self._bestSol = None
@@ -704,7 +704,7 @@ cdef class Model:
         """
         if scip == NULL:
             raise Warning("cannot create Model with SCIP* == NULL")
-        model = Model(noscipcreate=True)
+        model = Model(createscip=False)
         model._scip = scip
         model._bestSol = Solution.create(SCIPgetBestSol(scip))
         return model
