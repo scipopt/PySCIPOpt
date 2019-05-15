@@ -649,7 +649,7 @@ cdef class Model:
     cdef object __weakref__
     # flag to indicate whether the SCIP should be freed. It will not be freed if an empty Model was created to wrap a
     # C-API SCIP instance.
-    cdef SCIP_Bool freescip
+    cdef SCIP_Bool _freescip
 
     def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False, noscipcreate=False):
         """
