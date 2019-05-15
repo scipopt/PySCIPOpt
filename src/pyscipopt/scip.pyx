@@ -672,7 +672,7 @@ cdef class Model:
             # if no SCIP instance should be created, then an empty Model object is created.
             self._scip = NULL
             self._bestSol = None
-            self.freescip = False
+            self._freescip = False
         elif sourceModel is None:
             self.create()
             self._bestSol = None
