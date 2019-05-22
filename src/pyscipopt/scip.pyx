@@ -674,13 +674,13 @@ cdef class Model:
             self._bestSol = None
             self._freescip = False
         elif sourceModel is None:
-            self.create()
+            PY_SCIP_CALL(SCIPcreate(&self._scip))
             self._bestSol = None
             if defaultPlugins:
                 self.includeDefaultPlugins()
             self.createProbBasic(problemName)
         else:
-            self.create()
+            PY_SCIP_CALL(SCIPcreate(&self._scip))
             self._bestSol = <Solution> sourceModel._bestSol
             n = str_conversion(problemName)
             if origcopy:
@@ -694,12 +694,8 @@ cdef class Model:
         if self._scip is not NULL and self._freescip:
            PY_SCIP_CALL( SCIPfree(&self._scip) )
 
-    def create(self):
-        """Create a new SCIP instance"""
-        PY_SCIP_CALL(SCIPcreate(&self._scip))
-
     @staticmethod
-    cdef createModel(SCIP* scip):
+    cdef create(SCIP* scip):
         """Creates a model and appropriately assigns the scip and bestsol parameters
         """
         if scip == NULL:
@@ -707,11 +703,6 @@ cdef class Model:
         model = Model(createscip=False)
         model._scip = scip
         model._bestSol = Solution.create(SCIPgetBestSol(scip))
-        return model
-
-    def createModelFromSCIP(self):
-        """Returns a model that has been created by copying the SCIP pointer"""
-        model = Model.createModel(self._scip)
         return model
 
     def includeDefaultPlugins(self):
