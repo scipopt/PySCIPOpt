@@ -2060,7 +2060,7 @@ cdef class Model:
     def getLhs(self, Constraint cons):
         """Retrieve left hand side value of a constraint.
 
-        :param Constraint cons: linear or quadratic constraint
+        :param Constraint cons: linear or quadratic constraint or expr constraint
 
         """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.cons))).decode('UTF-8')
@@ -2228,7 +2228,6 @@ cdef class Model:
         consexpr = SCIPgetExprConsExpr(self._scip, cons.cons)
         assert SCIPisConsExprExprPoly(self._scip,consexpr), "constraint is not a polynomial"
         nterms = SCIPgetConsExprExprNPolyTerms(self._scip, consexpr)
-        #coefs = []
         for i in range(nterms):
             ntermmult = SCIPgetConsExprExprNPolyTermMult(self._scip, consexpr, i)
             mults = Term()
@@ -2236,8 +2235,6 @@ cdef class Model:
                 scipvar = SCIPgetConsExprExprPolyVar(self._scip, consexpr, i, j)
                 exp = SCIPgetConsExprExprPolyExp(self._scip, consexpr, i, j)
                 var = Variable.create(scipvar)
-                print(exp)
-                #varname = bytes(SCIPvarGetName(var)).decode('utf-8')
                 for _ in range(int(exp)):
                     mults += Term(var)
             coefs = SCIPgetConsExprExprPolyCoef(self._scip, consexpr, i)
