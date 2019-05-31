@@ -12,11 +12,12 @@ def example():
     m = Model()
     #m.hideOutput()
     m.setPresolve(SCIP_PARAMSETTING.OFF)
-    
+    m.setHeuristics(SCIP_PARAMSETTING.OFF)
+    m.disablePropagation()
     #add Variables
     x0 = m.addVar(vtype = "C", name = "x0")
     x1 = m.addVar(vtype = "C", name = "x1")
-    #x2 = m.addVar(vtype = "C", name = "x2")
+    x2 = m.addVar(vtype = "C", name = "x2")
     #p = 7.93823555685 + 1.80070743765*x0**6 + 4.40432092848*x1**6 + 0.950088417526*x0**2*x1**2 + 2.2408931992*x0**1*x1**2 + 1.86755799015*x0**1*x1**4 - 0.977277879876*x0**2*x1**1 - 0.151357208298*x0**3*x1**1  - 0.103218851794*x0**4*x1**1
     #p = x0**3+ x0**3*x1**2 +2*x1-x1*x0
     #m.addCons(p <= x0+x1)
@@ -31,22 +32,50 @@ def example():
     #m.addCons(1.0 + 3*x0**2*x1**6 +2*x0**6*x1**2 + 6*x0**2*x1**2 - x0*x1**2 - 2*x0**2*x1 - 3*x0**3*x1**3 <=100) #segfault, not guarantee finite termination
     #m.addCons(0.0 + 3.0*x0 + 5.0*x0**2 - 1.0*x1 + 2.0*x1**2 + 4.0*x0*x1 >= 0) #feasible solution found even though, scip says infeasible
     #m.addCons(3*x0**2+4*x0*x1+2*x1+5*x0-x1**2 >= 0) #nan
-    #m.addCons(x0**4+x1**4 - 42 <= 0) #works
-    #m.addCons(x0**4-3*x0+2*x1**2 -1<= 0) #works
-    #m.addCons(x0**2*x1**2+x0*x1+x0**4+x1**4-x0<=10) #works, reasonable solutions
+    m.addCons(x0**4+x1**4 - 42 >= 0) #works
+    m.addCons(x0**4-3*x0+2*x1**2 -1>= 0) #works
+    m.addCons(x0**2*x1 + 3*x1-x0 >=x2)
+    #m.addCons(x0**2*x1**2+x0*x1+x0**4+x1**4-x0<=10) #does work, no reasonable solutions
     #m.setObjective(-3*x1-x0)
     #m.setObjective(-2*x0+x1)
-    
+    m.setObjective(x2)
+    #TODO: too often unbounded, something is wrong in the way the polynomials are presented
+    """
     m.addCons(x0 <= 3)
     m.addCons(x1 <= 4)
     m.addCons(8*x0**3 - 2*x0**4 - 8*x0**2 + x1 <= 2)
     m.addCons(32*x0**3 - 4*x0**4 - 88*x0**2 + 96*x0 + x1 <= 36)
     m.setObjective(-x0-x1)
-    """m.addCons((1<=x0)<=5.5)
-    m.addCons((1<=x1)<=5.5)
+    """
+    """
+    #Problem only containing linear and quadratic constraints
     m.addCons(0.25*x1 - 0.0625*x1**2 - 0.0625*x0**2 + 0.5*x0 <= 1)
     m.addCons(0.0714285714285714*x1**2 + 0.0714285714285714*x0**2 - 0.428571428571429*x1 - 0.428571428571429*x0 <= -1)
-    m.setObjective(x1)"""
+    m.addCons((1<=x0)<=5.5)
+    m.addCons((1<=x1)<=5.5)
+    m.setObjective(x1)
+    """
+    """
+    #lower bound at 0.25, even though minimum at 0.0??
+    m.addCons(0<=0.5+x0**2*x1**1-x0**6*x1**4-x0**3*x1**3)
+    m.addCons(x2<=1+x0**4+x0**2*x1**4)
+    m.setObjective(x2) 
+    """
+    """
+    #Henning E-Mail Test Polynomials
+    m.addCons(x0**4+x1**4-42>=0)
+    m.addCons(x0**4-3*x0+2*x1**2-1>=0)
+    m.addCons(x0**2*x1 + 3*x1 - x0>=x2)
+    m.setObjective(x2)
+    """
+    """
+    m.addCons(-x0+1>=0)
+    m.addCons(x0+1>=0)
+    m.addCons(-x1+1>=0)
+    m.addCons(x1+1>=0)
+    m.addCons(x0**3+x1**3-x0*x1+4>=x2)
+    m.setObjective(x2)
+    """
     return m
 
 def Poly_to_Expr(p,m):
@@ -101,7 +130,34 @@ def Expr_to_Poly(Exprs):
     if P =='0.0': return Polynomial('0.0*x0')
     else: return Polynomial(P)
 
-
+def ExprToPoly(Exp):
+    #print(Exp)
+    nvar = len(m.getVars())
+    #print(nvar)
+    nterms = len([key for key in Exp])
+    #print(nterms)
+    
+    if Term() in Exp:
+        const = Exp[Term()]
+        #print('const=',const)
+    else:
+        const = 0.0
+        nterms += 1
+    #print(nterms)
+    A = np.array([np.zeros(nterms)]*nvar)
+    b = np.zeros(nterms)
+    #print(A)
+    b[0] = const
+    j = 1
+    for key in Exp:
+       if not key == Term():
+            for el in tuple(key):
+                i = re.findall(r'x\(?([0-9]+)\)?', str(el))
+                A[int(i[0])][j] += 1
+            b[j] = Exp[key]
+            j += 1
+    return Polynomial(A,b) 
+            
 class SoncRelax(Relax):
 #TODO: problems in Polynomial class whenever Polynomial has no constant term, so maybe just add/sub the lhs/rhs to get constant term? otherwise need to change polynomial class
     def relaxexec(self):
@@ -127,15 +183,22 @@ class SoncRelax(Relax):
                 #print("exprcon works")
                 #if exprcon[Term()] == 0.0:
                 #    exprcon += 1
-                polynomial = Expr_to_Poly(exprcon)
+                polynomial = ExprToPoly(exprcon)
+                #print(ExprToPoly(exprcon))
                 #print(polynomial.A, polynomial.b)
                 polynomial.clean()
                 #transform into problem with constraints >= 0
                 if not m.isInfinity(-m.getLhs(con)):
                     polynomial.b[0] -= m.getLhs(con)
-                elif not m.isInfinity(m.getRhs(con)):
+                    print('lhs=',m.getLhs(con))
+                #TODO: need to make sure that constraint >= 0, so need to switch signs everywhere and then add rhs (subtract -rhs)
+                if not m.isInfinity(m.getRhs(con)):
+                    print('rhs=',m.getRhs(con))
                     polynomial.b[0] -= m.getRhs(con)
-                print(polynomial)
+                    #polynomial.b *= -1
+                    print('b=',polynomial.b)
+                #print(polynomial)
+                print('A=',polynomial.A,'b=', polynomial.b)
                 constrained_list.append(polynomial)
                 #if polynomial.monomial_squares == []:
                 #    print("Polynomial cannot be decomposed via SONC.")
@@ -148,22 +211,56 @@ class SoncRelax(Relax):
                 #    feasible = False
             elif contype == 'linear':
                 exprcon = m.getValsLinear(con)
-                polynomial = '0.0'
+                nvar = len(m.getVars())
+                A = np.array([np.zeros(nvar+1)]*nvar)
+                b = np.zeros(nvar+1)
+                i = 0
                 for (key,val) in exprcon.items():
-                    polynomial += '+' + str(val) + '*' + str(key)
-                polynomial = Polynomial(polynomial.replace('+-', '-'))
-                print(polynomial)
+                    b[i] = val
+                    j = re.findall(r'x\(?([0-9]+)\)?', str(key))
+                    A[int(j[0])][i] = 1.0
+                    i += 1
+                    #polynomial += '+' + str(val) + '*' + str(key) #polynomial.replace('+-', '-')
+                polynomial = Polynomial(A,b)
                 polynomial.clean()
+
                 if not m.isInfinity(-m.getLhs(con)):
                     polynomial.b[0] -= m.getLhs(con)
                 elif not m.isInfinity(m.getRhs(con)):
                     polynomial.b[0] -= m.getRhs(con)
+                    #polynomial.b *= -1
                 constrained_list.append(polynomial)
+                print('linear=',polynomial.A,polynomial.b)
             elif contype == 'quadratic':
                 bilin, quad, lin = m.getTermsQuadratic(con)
-                print(bilin, quad, lin)
-                
-                polynomial = '0.0'
+                #print(bilin, quad, lin)
+                #print(len(bilin)+len(quad)*2+len(lin))
+                nvar = len(m.getVars())
+                nterms = len(bilin)+len(quad)*2+len(lin)+1
+                A = np.array([np.zeros(nterms)]*nvar)
+                b = np.zeros(nterms)
+                i = 1
+                for el in bilin:
+                    b[i] = el[2]
+                    j = int(str(el[0])[-1])
+                    A[j][i] = 1.0
+                    j = int(str(el[1])[-1])
+                    A[j][i] = 1.0
+                    i += 1
+                for el in quad:
+                    j = int(str(el[0])[-1])
+                    b[i] = el[1]
+                    A[j][i] = 2.0
+                    i += 1
+                    b[i] = el[2]
+                    A[j][i] = 1.0
+                    i += 1
+                for el in lin:
+                    b[i] = el[1]
+                    j = int(str(el[0])[-1])
+                    A[j][i] = 1.0
+                    i += 1
+                """polynomial = '0.0'
                 for el in lin:
                     polynomial += '+' + str(el[1]) + '*' + str(el[0])
                 for el in quad:
@@ -171,21 +268,26 @@ class SoncRelax(Relax):
                         polynomial += '+' + str(el[-1]) + '*' + str(el[0])
                     if el[1] != 0.0:
                         polynomial += '+' + str(el[1]) + '*' + str(el[0]) + '**' + '2.0'
-                    
+                
                 for el in bilin:
                     if el[-1] != 0.0:
                         polynomial += '+' + str(el[-1]) + '*' + str(el[0]) + '*' + str(el[1])
-                polynomial = Polynomial(polynomial.replace('+-', '-'))
-                print(polynomial)
+                polynomial = Polynomial(polynomial.replace('+-', '-'))"""
+                polynomial = Polynomial(A,b)
                 polynomial.clean()
+                #print(polynomial)
+                
                 if not m.isInfinity(-m.getLhs(con)):
                     polynomial.b[0] -= m.getLhs(con)
                 elif not m.isInfinity(m.getRhs(con)):
                     polynomial.b[0] -= m.getRhs(con)
+                    #polynomial.b *= -1
+                #print(polynomial)
                 constrained_list.append(polynomial)
 
-        obj = Expr_to_Poly(m.getObjective())
-        print("obj =", obj)
+        obj = ExprToPoly(m.getObjective())
+        #print(obj.A,obj.b)
+        #print("obj =", obj)
         if not polycons:
             return {'result': SCIP_RESULT.DIDNOTRUN, 'lowerbound': -m.infinity()}
         fmin, xmin = constrained_opt(obj, constrained_list)
@@ -223,6 +325,7 @@ if __name__=="__main__":
     
     n = example()
     n.setPresolve(SCIP_PARAMSETTING.OFF)
+    n.disablePropagation()
     """conss = n.getConss()
     for con in conss:
         if con.getType() == 'expr':

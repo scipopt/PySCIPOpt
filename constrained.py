@@ -15,6 +15,7 @@ def constrained_opt(objective, constraint_list):
 		#TODO: problem if highest variable does not occur in constraint or objective
 		print(lamb)
 		res = objective.copy()
+		print('res = ', res)
 		for i in range(len(constraint_list)):
 			summand = constraint_list[i].copy()
 			summand.b = np.array(summand.b * lamb[i], dtype = np.float)
@@ -26,8 +27,9 @@ def constrained_opt(objective, constraint_list):
 		lagrangian = build_lagrangian(lamb)
 		try:
 			lagrangian.run_sonc()
-		except InfeasibleError:
+		except InfeasibleError as err:
 		    #TODO: In this case, the optimization should stop?
+			print(err, "\n", lagrangian)
 			lagrangian.lower_bound = -1e+20
 		#lagrangian.sage_opt_python()
 		#lagrangian.traverse(call_sos = False)
@@ -38,9 +40,10 @@ def constrained_opt(objective, constraint_list):
 	#for i in range(len(constraint_list)):
 		#print(constraint_list[i])
 	#TODO: Problem, if number of variables != number constraints, fix index occurrences (2 constraints also gave this problem, but maybe changed to more constraints?)
-	#TODO: Problem, if last var does not occur in constraint or objective
+	#TODO: Problem, if last var does not occur in constraint or objective, maybe using arrays gives easy solution
 	n = max([el.A.shape[0] -1 for el in constraint_list]+ [objective.A.shape[0]-1])
-	data = scipy.optimize.minimize(lower_bound, np.ones(n), method = 'SLSQP', constraints = scipy.optimize.LinearConstraint(np.eye(2), aux.EPSILON, np.inf, keep_feasible = True), options = {'maxiter': 30})
+	m = len(constraint_list)
+	data = scipy.optimize.minimize(lower_bound, np.ones(m), method = 'SLSQP', constraints = scipy.optimize.LinearConstraint(np.eye(m), aux.EPSILON, np.inf, keep_feasible = True), options = {'maxiter': 30})
 	print('Lower bound: %.2f\nMultipliers: %s' % (-data.fun, data.x))
 
 	fmin = np.inf
@@ -56,7 +59,7 @@ def constrained_opt(objective, constraint_list):
 
 	print('Lowest found: %.2f at argument %s' % (fmin, str(xmin)))
 	print('Time: %.2f' % aux.dt2sec(datetime.now() - t0))
-	return -data.fun, data.x #fmin, xmin maybe? 
+	return -data.fun, data.x# maybe?  fmin, xmin
 
 def unite_matrices(A_list):
 	res = []

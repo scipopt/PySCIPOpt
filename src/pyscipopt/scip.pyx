@@ -1495,8 +1495,8 @@ cdef class Model:
 
         #release vars and free memory
         #TODO: which of the variables have to be freed, which released?
-        for i in range(len(variables)):
-            PY_SCIP_CALL(SCIPreleaseVar(self._scip, &vars[i]))
+        #for i in range(len(variables)):
+        #    PY_SCIP_CALL(SCIPreleaseVar(self._scip, &vars[i]))
         PY_SCIP_CALL(SCIPaddCons(self._scip, conss))
         PyCons = Constraint.create(conss)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &conss))
@@ -2228,17 +2228,21 @@ cdef class Model:
         consexpr = SCIPgetExprConsExpr(self._scip, cons.cons)
         assert SCIPisConsExprExprPoly(self._scip,consexpr), "constraint is not a polynomial"
         nterms = SCIPgetConsExprExprNPolyTerms(self._scip, consexpr)
+        #print(nterms)
         for i in range(nterms):
             ntermmult = SCIPgetConsExprExprNPolyTermMult(self._scip, consexpr, i)
             mults = Term()
+            #print(ntermmult)
             for j in range(ntermmult):
                 scipvar = SCIPgetConsExprExprPolyVar(self._scip, consexpr, i, j)
                 exp = SCIPgetConsExprExprPolyExp(self._scip, consexpr, i, j)
                 var = Variable.create(scipvar)
+                #print(var)
                 for _ in range(int(exp)):
                     mults += Term(var)
             coefs = SCIPgetConsExprExprPolyCoef(self._scip, consexpr, i)
             PyExpr += Expr({mults:coefs})
+            #print(PyExpr)
         return PyExpr
 
     def getConss(self):
