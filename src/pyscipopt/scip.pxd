@@ -276,6 +276,9 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_ROW:
         pass
 
+    ctypedef struct SCIP_NLROW:
+        pass
+
     ctypedef struct SCIP_COL:
         pass
 
@@ -441,6 +444,11 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_BILINTERM:
         SCIP_VAR* var1
         SCIP_VAR* var2
+        SCIP_Real coef
+
+    ctypedef struct SCIP_QUADELEM:
+        int idx1
+        int idx2
         SCIP_Real coef
 
     ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg)
@@ -1393,6 +1401,27 @@ cdef extern from "scip/pub_nlp.h":
     SCIP_RETCODE SCIPexprtreeSetVars(SCIP_EXPRTREE* tree,
                                      int nvars,
                                      SCIP_VAR** vars)
+
+
+    SCIP_Real SCIPnlrowGetConstant(SCIP_NLROW* nlrow)
+    int SCIPnlrowGetNLinearVars(SCIP_NLROW* nlrow)
+    SCIP_VAR** SCIPnlrowGetLinearVars(SCIP_NLROW* nlrow)
+    SCIP_Real* SCIPnlrowGetLinearCoefs(SCIP_NLROW* nlrow)
+    void SCIPnlrowGetQuadData(SCIP_NLROW* nlrow,
+                              int* nquadvars,
+                              SCIP_VAR*** quadvars,
+                              int* nquadelems,
+                              SCIP_QUADELEM** quadelems)
+    SCIP_EXPRTREE* SCIPnlrowGetExprtree(SCIP_NLROW* nlrow)
+    SCIP_Real SCIPnlrowGetLhs(SCIP_NLROW* nlrow)
+    SCIP_Real SCIPnlrowGetRhs(SCIP_NLROW* nlrow)
+    const char* SCIPnlrowGetName(SCIP_NLROW* nlrow)
+    SCIP_Real SCIPnlrowGetDualsol(SCIP_NLROW* nlrow)
+
+cdef extern from "scip/scip_nlp.h":
+    SCIP_Bool SCIPisNLPConstructed(SCIP* scip)
+    SCIP_NLROW** SCIPgetNLPNlRows(SCIP* scip)
+    int SCIPgetNNLPNlRows(SCIP* scip)
 
 cdef extern from "scip/cons_nonlinear.h":
     SCIP_RETCODE SCIPcreateConsNonlinear(SCIP* scip,
