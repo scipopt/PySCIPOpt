@@ -429,15 +429,14 @@ cdef class NLRow:
         return SCIPnlrowGetConstant(self.scip_nlrow)
 
     def getLinearTerms(self):
-        """returns a list of linear terms of a nonlinear row"""
+        """returns a list of tuples (var, coef) representing the linear part of a nonlinear row"""
         cdef SCIP_VAR** linvars = SCIPnlrowGetLinearVars(self.scip_nlrow)
         cdef SCIP_Real* lincoefs = SCIPnlrowGetLinearCoefs(self.scip_nlrow)
         cdef int nlinvars = SCIPnlrowGetNLinearVars(self.scip_nlrow)
         return [(Variable.create(linvars[i]), lincoefs[i]) for i in range(nlinvars)]
 
     def getQuadraticTerms(self):
-        """returns a list of quadratic terms of a nonlinear row"""
-
+        """returns a list of tuples (var1, var2, coef) representing the quadratic part of a nonlinear row"""
         cdef int nquadvars;
         cdef SCIP_VAR** quadvars;
         cdef int nquadelems;
@@ -2367,7 +2366,7 @@ cdef class Model:
         return SCIPgetNNLPNlRows(self._scip)
 
     def getNlRows(self):
-        """returns the nonlinear rows in SCIP's internal NLP"""
+        """returns a list with the nonlinear rows in SCIP's internal NLP"""
         cdef SCIP_NLROW** nlrows;
 
         nlrows = SCIPgetNLPNlRows(self._scip)
