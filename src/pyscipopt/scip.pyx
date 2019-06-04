@@ -407,6 +407,71 @@ cdef class Row:
         cdef SCIP_Real* vals = SCIProwGetVals(self.scip_row)
         return [vals[i] for i in range(self.getNNonz())]
 
+cdef class NLRow:
+    """Base class holding a pointer to corresponding SCIP_NLROW"""
+    cdef SCIP_NLROW* scip_nlrow
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_NLROW* scipnlrow):
+        nlrow = NLRow()
+        nlrow.scip_nlrow = scipnlrow
+        return nlrow
+
+    property name:
+        def __get__(self):
+            cname = bytes( SCIPnlrowGetName(self.scip_nlrow) )
+            return cname.decode('utf-8')
+
+    def getConstant(self):
+        """returns the constant of a nonlinear row"""
+        return SCIPnlrowGetConstant(self.scip_nlrow)
+
+    def getLinearTerms(self):
+        """returns a list of linear terms of a nonlinear row"""
+        cdef SCIP_VAR** linvars = SCIPnlrowGetLinearVars(self.scip_nlrow)
+        cdef SCIP_Real* lincoefs = SCIPnlrowGetLinearCoefs(self.scip_nlrow)
+        cdef int nlinvars = SCIPnlrowGetNLinearVars(self.scip_nlrow)
+        return [(Variable.create(linvars[i]), lincoefs[i]) for i in range(nlinvars)]
+
+    def getQuadraticTerms(self):
+        """returns a list of quadratic terms of a nonlinear row"""
+
+        cdef int nquadvars;
+        cdef SCIP_VAR** quadvars;
+        cdef int nquadelems;
+        cdef SCIP_QUADELEM* quadelems;
+
+        SCIPnlrowGetQuadData(self.scip_nlrow, &nquadvars, &quadvars, &nquadelems, &quadelems)
+
+        quadterms = []
+        for i in range(nquadelems):
+            x = Variable.create(quadvars[quadelems[i].idx1])
+            y = Variable.create(quadvars[quadelems[i].idx2])
+            coef = quadelems[i].coef
+            quadterms.append((x,y,coef))
+        return quadterms
+
+    def hasExprtree(self):
+        """returns whether there exists an expression tree in a nonlinear row"""
+        cdef SCIP_EXPRTREE* exprtree;
+
+        exprtree = SCIPnlrowGetExprtree(self.scip_nlrow)
+        return exprtree != NULL
+
+    def getLhs(self):
+        """returns the left hand side of a nonlinear row"""
+        return SCIPnlrowGetLhs(self.scip_nlrow)
+
+    def getRhs(self):
+        """returns the right hand side of a nonlinear row"""
+        return SCIPnlrowGetRhs(self.scip_nlrow)
+
+    def getDualsol(self):
+        """gets the dual NLP solution of a nonlinear row"""
+        return SCIPnlrowGetDualsol(self.scip_nlrow)
+
 cdef class Solution:
     """Base class holding a pointer to corresponding SCIP_SOL"""
     cdef SCIP_SOL* sol
@@ -2292,6 +2357,21 @@ cdef class Model:
         cdef SCIP_CONS* transcons
         PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
         return Constraint.create(transcons)
+
+    def isNLPConstructed(self):
+        """returns whether SCIP's internal NLP has been constructed"""
+        return SCIPisNLPConstructed(self._scip)
+
+    def getNNlRows(self):
+        """gets current number of nonlinear rows in SCIP's internal NLP"""
+        return SCIPgetNNLPNlRows(self._scip)
+
+    def getNlRows(self):
+        """returns the nonlinear rows in SCIP's internal NLP"""
+        cdef SCIP_NLROW** nlrows;
+
+        nlrows = SCIPgetNLPNlRows(self._scip)
+        return [NLRow.create(nlrows[i]) for i in range(self.getNNlRows())]
 
     def getTermsQuadratic(self, Constraint cons):
         """Retrieve bilinear, quadratic, and linear terms of a quadratic constraint.
