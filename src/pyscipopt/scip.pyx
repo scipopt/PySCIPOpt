@@ -407,6 +407,70 @@ cdef class Row:
         cdef SCIP_Real* vals = SCIProwGetVals(self.scip_row)
         return [vals[i] for i in range(self.getNNonz())]
 
+cdef class NLRow:
+    """Base class holding a pointer to corresponding SCIP_NLROW"""
+    cdef SCIP_NLROW* scip_nlrow
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_NLROW* scipnlrow):
+        nlrow = NLRow()
+        nlrow.scip_nlrow = scipnlrow
+        return nlrow
+
+    property name:
+        def __get__(self):
+            cname = bytes( SCIPnlrowGetName(self.scip_nlrow) )
+            return cname.decode('utf-8')
+
+    def getConstant(self):
+        """returns the constant of a nonlinear row"""
+        return SCIPnlrowGetConstant(self.scip_nlrow)
+
+    def getLinearTerms(self):
+        """returns a list of tuples (var, coef) representing the linear part of a nonlinear row"""
+        cdef SCIP_VAR** linvars = SCIPnlrowGetLinearVars(self.scip_nlrow)
+        cdef SCIP_Real* lincoefs = SCIPnlrowGetLinearCoefs(self.scip_nlrow)
+        cdef int nlinvars = SCIPnlrowGetNLinearVars(self.scip_nlrow)
+        return [(Variable.create(linvars[i]), lincoefs[i]) for i in range(nlinvars)]
+
+    def getQuadraticTerms(self):
+        """returns a list of tuples (var1, var2, coef) representing the quadratic part of a nonlinear row"""
+        cdef int nquadvars;
+        cdef SCIP_VAR** quadvars;
+        cdef int nquadelems;
+        cdef SCIP_QUADELEM* quadelems;
+
+        SCIPnlrowGetQuadData(self.scip_nlrow, &nquadvars, &quadvars, &nquadelems, &quadelems)
+
+        quadterms = []
+        for i in range(nquadelems):
+            x = Variable.create(quadvars[quadelems[i].idx1])
+            y = Variable.create(quadvars[quadelems[i].idx2])
+            coef = quadelems[i].coef
+            quadterms.append((x,y,coef))
+        return quadterms
+
+    def hasExprtree(self):
+        """returns whether there exists an expression tree in a nonlinear row"""
+        cdef SCIP_EXPRTREE* exprtree;
+
+        exprtree = SCIPnlrowGetExprtree(self.scip_nlrow)
+        return exprtree != NULL
+
+    def getLhs(self):
+        """returns the left hand side of a nonlinear row"""
+        return SCIPnlrowGetLhs(self.scip_nlrow)
+
+    def getRhs(self):
+        """returns the right hand side of a nonlinear row"""
+        return SCIPnlrowGetRhs(self.scip_nlrow)
+
+    def getDualsol(self):
+        """gets the dual NLP solution of a nonlinear row"""
+        return SCIPnlrowGetDualsol(self.scip_nlrow)
+
 cdef class Solution:
     """Base class holding a pointer to corresponding SCIP_SOL"""
     cdef SCIP_SOL* sol
@@ -647,8 +711,11 @@ cdef class Model:
     cdef public object data
     # make Model weak referentiable
     cdef object __weakref__
+    # flag to indicate whether the SCIP should be freed. It will not be freed if an empty Model was created to wrap a
+    # C-API SCIP instance.
+    cdef SCIP_Bool _freescip
 
-    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False):
+    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False, createscip=True):
         """
         :param problemName: name of the problem (default 'model')
         :param defaultPlugins: use default plugins? (default True)
@@ -656,19 +723,28 @@ cdef class Model:
         :param origcopy: whether to call copy or copyOrig (default False)
         :param globalcopy: whether to create a global or a local copy (default True)
         :param enablepricing: whether to enable pricing in copy (default False)
+        :param createscip: initialize the Model object and creates a SCIP instance
         """
         if self.version() < MAJOR:
             raise Exception("linked SCIP is not compatible to this version of PySCIPOpt - use at least version", MAJOR)
         if self.version() < MAJOR + MINOR/10.0 + PATCH/100.0:
             warnings.warn("linked SCIP {} is not recommended for this version of PySCIPOpt - use version {}.{}.{}".format(self.version(), MAJOR, MINOR, PATCH))
-        if sourceModel is None:
-            self.create()
+
+        self._freescip = True
+
+        if not createscip:
+            # if no SCIP instance should be created, then an empty Model object is created.
+            self._scip = NULL
+            self._bestSol = None
+            self._freescip = False
+        elif sourceModel is None:
+            PY_SCIP_CALL(SCIPcreate(&self._scip))
             self._bestSol = None
             if defaultPlugins:
                 self.includeDefaultPlugins()
             self.createProbBasic(problemName)
         else:
-            self.create()
+            PY_SCIP_CALL(SCIPcreate(&self._scip))
             self._bestSol = <Solution> sourceModel._bestSol
             n = str_conversion(problemName)
             if origcopy:
@@ -679,11 +755,19 @@ cdef class Model:
     def __dealloc__(self):
         # call C function directly, because we can no longer call this object's methods, according to
         # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
-        PY_SCIP_CALL( SCIPfree(&self._scip) )
+        if self._scip is not NULL and self._freescip:
+           PY_SCIP_CALL( SCIPfree(&self._scip) )
 
-    def create(self):
-        """Create a new SCIP instance"""
-        PY_SCIP_CALL(SCIPcreate(&self._scip))
+    @staticmethod
+    cdef create(SCIP* scip):
+        """Creates a model and appropriately assigns the scip and bestsol parameters
+        """
+        if scip == NULL:
+            raise Warning("cannot create Model with SCIP* == NULL")
+        model = Model(createscip=False)
+        model._scip = scip
+        model._bestSol = Solution.create(SCIPgetBestSol(scip))
+        return model
 
     def includeDefaultPlugins(self):
         """Includes all default plug-ins into SCIP"""
@@ -2272,6 +2356,21 @@ cdef class Model:
         cdef SCIP_CONS* transcons
         PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
         return Constraint.create(transcons)
+
+    def isNLPConstructed(self):
+        """returns whether SCIP's internal NLP has been constructed"""
+        return SCIPisNLPConstructed(self._scip)
+
+    def getNNlRows(self):
+        """gets current number of nonlinear rows in SCIP's internal NLP"""
+        return SCIPgetNNLPNlRows(self._scip)
+
+    def getNlRows(self):
+        """returns a list with the nonlinear rows in SCIP's internal NLP"""
+        cdef SCIP_NLROW** nlrows;
+
+        nlrows = SCIPgetNLPNlRows(self._scip)
+        return [NLRow.create(nlrows[i]) for i in range(self.getNNlRows())]
 
     def getTermsQuadratic(self, Constraint cons):
         """Retrieve bilinear, quadratic, and linear terms of a quadratic constraint.
