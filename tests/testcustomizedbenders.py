@@ -6,7 +6,8 @@ to some facilities with fixed costs and capacities.
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt import Model, quicksum, multidict, SCIP_PARAMSETTING, Benders, Benderscut
+from pyscipopt import Model, quicksum, multidict, SCIP_PARAMSETTING, Benders,\
+      Benderscut, SCIP_RESULT, SCIP_LPSOLSTAT
 
 
 class testBenders(Benders):
@@ -15,6 +16,9 @@ class testBenders(Benders):
         super(testBenders, self).__init__()
         self.mpVardict = masterVarDict
         self.I, self.J, self.M, self.c, self.d = I, J, M, c, d
+        self.demand = {}
+        self.capacity = {}
+        self.strong = {}
         self.name = name  # benders name
 
     def benderscreatesub(self, probnumber):
@@ -25,13 +29,13 @@ class testBenders(Benders):
             for i in self.I:
                 x[i, j] = subprob.addVar(vtype="C", name="x(%s,%s)" % (i, j))
         for i in self.I:
-            subprob.addCons(quicksum(x[i, j] for j in self.J) == self.d[i], "Demand(%s)" % i)
+            self.demand[i] = subprob.addCons(quicksum(x[i, j] for j in self.J) == self.d[i], "Demand(%s)" % i)
 
         for j in self.M:
-            subprob.addCons(quicksum(x[i, j] for i in self.I) <= self.M[j] * y[j], "Capacity(%s)" % i)
+            self.capacity[j] = subprob.addCons(quicksum(x[i, j] for i in self.I) <= self.M[j] * y[j], "Capacity(%s)" % i)
 
         for (i, j) in x:
-            subprob.addCons(x[i, j] <= self.d[i] * y[j], "Strong(%s,%s)" % (i, j))
+            self.strong[i,j] = subprob.addCons(x[i, j] <= self.d[i] * y[j], "Strong(%s,%s)" % (i, j))
 
         subprob.setObjective(
             quicksum(self.c[i, j] * x[i, j] for i in self.I for j in self.J),
@@ -51,21 +55,78 @@ class testBenders(Benders):
         return {"mappedvar": mapvar}
 
     def benderssolvesubconvex(self, solution, probnumber, onlyconvex):
-        print("Probnumber: ", probnumber)
+        print("Solving subproblem:", probnumber)
         SCIP_BENDERSENFOTYPE_LP = 1
         SCIP_BENDERSENFOTYPE_RELAX = 2
         SCIP_BENDERSENFOTYPE_PSEUDO = 3
         SCIP_BENDERSENFOTYPE_CHECK = 4
 
         self.model.setupBendersSubproblem(probnumber, self, solution)
-        self.model.solveBendersSubproblem(probnumber, SCIP_BENDERSENFOTYPE_CHECK, False, self, solution)
+        self.subprob.solveProbingLP()
+        subprob = self.model.getBendersSubproblem(probnumber, self)
+        assert self.subprob.getObjVal() == subprob.getObjVal()
+
+        subprob.printSol()
         result_dict = {}
-        result_dict["objective"] = self.subprob.getObjVal()
+
+        objective = subprob.infinity()
+        result = SCIP_RESULT.DIDNOTRUN
+        lpsolstat = self.subprob.getLPSolstat()
+        if lpsolstat == SCIP_LPSOLSTAT.OPTIMAL:
+           objective = self.subprob.getObjVal()
+           result = SCIP_RESULT.FEASIBLE
+        elif lpsolstat == SCIP_LPSOLSTAT.INFEASIBLE:
+           objective = self.subprob.infinity()
+           result = SCIP_RESULT.INFEASIBLE
+        elif lpsolstat == SCIP_LPSOLSTAT.UNBOUNDEDRAY:
+           objective = self.subprob.infinity()
+           result = SCIP_RESULT.UNBOUNDED
+
+
+        result_dict["objective"] = objective
+        result_dict["result"] = result
+
+        print("Result:", result)
+
         return result_dict
 
 
     def bendersfreesub(self, probnumber):
-        self.subprob.freeTransform()
+        print("Freeing subproblems")
+        if self.subprob.inProbing():
+           self.subprob.endProbing()
+
+class testBenderscut(Benderscut):
+
+   def __init__(self, I, J, M):
+      self.I, self.J, self.M = I, J, M
+
+   def benderscutexec(self, solution, probnumber, enfotype):
+      print("Generating Benders cuts")
+      subprob = self.model.getBendersSubproblem(probnumber, benders=self.benders)
+      membersubprob = self.benders.subprob
+
+      # testing whether the dual multipliers can be found for the retrieved
+      # subproblem model. If the constraints don't exist, then the subproblem
+      # model is not correct.
+      # Also checking whether the dual multiplier is the same between the
+      # member subproblem and the retrieved subproblem
+      for i in self.I:
+         subprobcons = self.benders.demand[i]
+         try:
+            dualmult = subprob.getDualMultiplier(subprobcons)
+         except:
+            print("Subproblem constraint <%d> does not exist in the "\
+                  "subproblem."%subprobcons.name)
+            assert False
+
+         memberdualmult = membersubprob.getDualMultiplier(subprobcons)
+         if dualmult != memberdualmult:
+            print("The dual multipliers between the two subproblems are not "\
+                  "the same.")
+            assert False
+
+      return {"result" : SCIP_RESULT.FEASIBLE}
 
 
 
@@ -118,8 +179,12 @@ def test_flpbenders():
     master.setBoolParam("misc/allowdualreds", False)
     master.setBoolParam("benders/copybenders", False)
     bendersName = "testBenders"
+    benderscutName = "testBenderscut"
     testbd = testBenders(master.data, I, J, M, c, d, bendersName)
+    testbdc = testBenderscut(I, J, M)
     master.includeBenders(testbd, bendersName, "benders plugin")
+    #master.includeBenderscut(testbd, testbdc, benderscutName,
+          #"benderscut plugin", priority=1000000)
     master.activateBenders(bendersName, 1)
     master.setBoolParam("constraints/benders/active", True)
     master.setBoolParam("constraints/benderslp/active", True)
