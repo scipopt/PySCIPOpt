@@ -3353,14 +3353,17 @@ cdef class Model:
         """Prints the best feasible primal solution."""
         PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, write_zeros))
 
-    def printSol(self, Solution solution, write_zeros=False):
+    def printSol(self, Solution solution=None, write_zeros=False):
       """Print the given primal solution.
 
       Keyword arguments:
       solution -- solution to print
       write_zeros -- include variables that are set to zero
       """
-      PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, NULL, write_zeros))
+      if solution is None:
+         PY_SCIP_CALL(SCIPprintSol(self._scip, NULL, NULL, write_zeros))
+      else:
+         PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, NULL, write_zeros))
 
     def writeBestSol(self, filename="origprob.sol", write_zeros=False):
         """Write the best feasible primal solution to a file.
