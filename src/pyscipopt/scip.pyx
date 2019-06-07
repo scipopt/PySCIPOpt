@@ -2834,6 +2834,27 @@ cdef class Model:
 
         return infeasible, objective
 
+    def getBendersSubproblem(self, probnumber, Benders benders = None):
+        """Returns a Model object that wraps around the SCIP instance of the subproblem.
+        NOTE: This Model object is just a place holder and SCIP instance will not be freed when the object is destroyed.
+
+        Keyword arguments:
+        probnumber -- the problem number for subproblem that is required
+        benders -- the Benders' decomposition object for the that the subproblem belongs to (Default = None)
+        """
+        cdef SCIP_BENDERS* scip_benders
+        cdef SCIP* scip_subprob
+
+        if benders is None:
+            scip_benders = SCIPfindBenders(self._scip, "default")
+        else:
+            n = str_conversion(benders.name)
+            scip_benders = SCIPfindBenders(self._scip, n)
+
+        scip_subprob = SCIPbendersSubproblem(scip_benders, probnumber)
+
+        return Model.create(scip_subprob)
+
     def getBendersVar(self, Variable var, Benders benders = None, probnumber = -1):
         """Returns the variable for the subproblem or master problem
         depending on the input probnumber
