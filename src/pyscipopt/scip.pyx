@@ -2836,7 +2836,7 @@ cdef class Model:
         Keyword arguments:
         solution -- the master problem solution that is being checked for optimamlity
         probnumber -- the problem number for which optimality is being checked
-        benders -- the Benders' decomposition to which the subproblem variables belong to
+        benders -- the Benders' decomposition to which the subproblem belongs to
         """
         cdef SCIP_BENDERS* _benders
         cdef SCIP_Bool optimal
@@ -2850,6 +2850,20 @@ cdef class Model:
         PY_SCIP_CALL( SCIPcheckBendersSubproblemOptimality(self._scip, _benders, solution.sol, probnumber, &optimal) )
 
         return optimal
+
+    def includeBendersDefaultCuts(self, Benders benders):
+        """includes the default Benders' decomposition cuts to the custom Benders' decomposition plugin
+
+        Keyword arguments:
+        benders -- the Benders' decomposition that the default cuts will be applied to
+        """
+        cdef SCIP_BENDERS* _benders
+
+        assert benders is not None
+        n = str_conversion(benders.name)
+        _benders = SCIPfindBenders(self._scip, n)
+
+        PY_SCIP_CALL( SCIPincludeBendersDefaultCuts(self._scip, _benders) )
 
 
     def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):
