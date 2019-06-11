@@ -2671,7 +2671,7 @@ cdef class Model:
             _benders = SCIPfindBenders(self._scip, n)
 
         for d in lowerbounds.keys():
-            SCIPbendersUpdateSubproblemLowerbound(_benders, d, lowerbounds[d])
+            SCIPupdateBendersSubproblemLowerbound(self._scip, _benders, d, lowerbounds[d])
 
     def activateBenders(self, str name, int nsubproblems):
         """Activates the Benders' decomposition plugin with the input name
@@ -2720,7 +2720,10 @@ cdef class Model:
             n = str_conversion(benders.name)
             scip_benders = SCIPfindBenders(self._scip, n)
 
-        PY_SCIP_CALL(SCIPsetupBendersSubproblem(self._scip, scip_benders, scip_sol, probnumber))
+        retcode = SCIPsetupBendersSubproblem(self._scip, scip_benders, scip_sol, probnumber)
+        print(retcode)
+
+        PY_SCIP_CALL(retcode)
 
     def solveBendersSubproblem(self, probnumber, enfotype, solvecip, Benders benders = None, Solution solution = None):
         """ solves the Benders' decomposition subproblem. The convex relaxation will be solved unless
@@ -2805,6 +2808,27 @@ cdef class Model:
             mappedvar = Variable.create(_mappedvar)
 
         return mappedvar
+
+    def getBendersAuxiliaryVar(self, probnumber, Benders benders = None):
+        """Returns the auxiliary variable that is associated with the input problem number
+
+        Keyword arguments:
+        probnumber -- the problem number for which the target variable belongs, -1 for master problem
+        benders -- the Benders' decomposition to which the subproblem variables belong to
+        """
+        cdef SCIP_BENDERS* _benders
+        cdef SCIP_VAR* _auxvar
+
+        if benders is None:
+            _benders = SCIPfindBenders(self._scip, "default")
+        else:
+            n = str_conversion(benders.name)
+            _benders = SCIPfindBenders(self._scip, n)
+
+        _auxvar = SCIPbendersGetAuxiliaryVar(_benders, probnumber)
+        auxvar = Variable.create(_auxvar)
+
+        return auxvar
 
 
     def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):
@@ -3097,6 +3121,8 @@ cdef class Model:
         """
         cdef SCIP_BENDERS* _benders
 
+        print "Including Benders' cut ", name
+
         bendersname = str_conversion(benders.name)
         _benders = SCIPfindBenders(self._scip, bendersname)
 
@@ -3110,7 +3136,7 @@ cdef class Model:
         cdef SCIP_BENDERSCUT* scip_benderscut
         scip_benderscut = SCIPfindBenderscut(_benders, n)
         benderscut.model = <Model>weakref.proxy(self)
-        benderscut.benders = <Benders>weakref.proxy(benders)
+        benderscut.benders = benders
         benderscut.name = name
         # TODO: It might be necessary in increment the reference to benders i.e Py_INCREF(benders)
         Py_INCREF(benderscut)
