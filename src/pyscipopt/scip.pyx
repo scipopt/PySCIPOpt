@@ -2909,6 +2909,27 @@ cdef class Model:
 
         return auxvar
 
+    def checkBendersSubproblemOptimality(self, Solution solution, probnumber, Benders benders = None):
+        """Returns whether the subproblem is optimal w.r.t the master problem auxiliary variables.
+
+        Keyword arguments:
+        solution -- the master problem solution that is being checked for optimamlity
+        probnumber -- the problem number for which optimality is being checked
+        benders -- the Benders' decomposition to which the subproblem variables belong to
+        """
+        cdef SCIP_BENDERS* _benders
+        cdef SCIP_Bool optimal
+
+        if benders is None:
+            _benders = SCIPfindBenders(self._scip, "default")
+        else:
+            n = str_conversion(benders.name)
+            _benders = SCIPfindBenders(self._scip, n)
+
+        PY_SCIP_CALL( SCIPcheckBendersSubproblemOptimality(self._scip, _benders, solution.sol, probnumber, &optimal) )
+
+        return optimal
+
 
     def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):
         """Include an event handler.
