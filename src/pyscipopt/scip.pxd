@@ -1,3 +1,5 @@
+##@file scip.pxd
+#@brief holding prototype of the SCIP public functions to use them in PySCIPOpt
 cdef extern from "scip/scip.h":
     # SCIP internal types
     ctypedef enum SCIP_RETCODE:
@@ -274,6 +276,9 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_ROW:
         pass
 
+    ctypedef struct SCIP_NLROW:
+        pass
+
     ctypedef struct SCIP_COL:
         pass
 
@@ -364,6 +369,9 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_CONSDATA:
         pass
 
+    ctypedef struct SCIP_VARDATA:
+        pass
+
     ctypedef struct SCIP_EVENT:
         pass
 
@@ -418,6 +426,12 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_BENDERSDATA:
         pass
 
+    ctypedef struct SCIP_BENDERSCUT:
+        pass
+
+    ctypedef struct SCIP_BENDERSCUTDATA:
+        pass
+
     ctypedef struct SCIP_QUADVAREVENTDATA:
         pass
 
@@ -435,6 +449,11 @@ cdef extern from "scip/scip.h":
         SCIP_VAR* var2
         SCIP_Real coef
 
+    ctypedef struct SCIP_QUADELEM:
+        int idx1
+        int idx2
+        SCIP_Real coef
+
     ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg)
     ctypedef void (*errormessagecallback) (void *data, FILE *file, const char *msg)
     ctypedef SCIP_RETCODE (*messagehdlrfree) (SCIP_MESSAGEHDLR *messagehdlr)
@@ -442,6 +461,23 @@ cdef extern from "scip/scip.h":
     # General SCIP Methods
     SCIP_RETCODE SCIPcreate(SCIP** scip)
     SCIP_RETCODE SCIPfree(SCIP** scip)
+    SCIP_RETCODE SCIPcopy(SCIP*                 sourcescip,
+                          SCIP*                 targetscip,
+                          SCIP_HASHMAP*         varmap,
+                          SCIP_HASHMAP*         consmap,
+                          const char*           suffix,
+                          SCIP_Bool             globalcopy,
+                          SCIP_Bool             enablepricing,
+                          SCIP_Bool             passmessagehdlr,
+                          SCIP_Bool*            valid)
+    SCIP_RETCODE SCIPcopyOrig(SCIP*                 sourcescip,
+                              SCIP*                 targetscip,
+                              SCIP_HASHMAP*         varmap,
+                              SCIP_HASHMAP*         consmap,
+                              const char*           suffix,
+                              SCIP_Bool             enablepricing,
+                              SCIP_Bool             passmessagehdlr,
+                              SCIP_Bool*            valid)
     SCIP_RETCODE SCIPmessagehdlrCreate(SCIP_MESSAGEHDLR **messagehdlr,
                                        SCIP_Bool bufferedoutput,
                                        const char *filename,
@@ -574,9 +610,11 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPnodeIsActive(SCIP_NODE* node)
     SCIP_Bool SCIPnodeIsPropagatedAgain(SCIP_NODE* node)
     SCIP_Real SCIPcalcNodeselPriority(SCIP*	scip, SCIP_VAR* var, SCIP_BRANCHDIR	branchdir, SCIP_Real targetvalue)
-    SCIP_Real SCIPcalcChildEstimate(SCIP* scip, SCIP_VAR* var, SCIP_Real targetvalue) 	
+    SCIP_Real SCIPcalcChildEstimate(SCIP* scip, SCIP_VAR* var, SCIP_Real targetvalue)
     SCIP_RETCODE SCIPcreateChild(SCIP* scip, SCIP_NODE** node, SCIP_Real nodeselprio, SCIP_Real estimate)
     SCIP_Bool SCIPinRepropagation(SCIP* scip)
+    SCIP_RETCODE SCIPaddConsNode(SCIP* scip, SCIP_NODE* node, SCIP_CONS* cons, SCIP_NODE* validnode)
+    SCIP_RETCODE SCIPaddConsLocal(SCIP* scip, SCIP_CONS* cons, SCIP_NODE* validnode)
 
     # Variable Methods
     SCIP_RETCODE SCIPcreateVarBasic(SCIP* scip,
@@ -628,6 +666,8 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPvarGetUbLocal(SCIP_VAR* var)
     SCIP_Real SCIPvarGetObj(SCIP_VAR* var)
     SCIP_Real SCIPvarGetLPSol(SCIP_VAR* var)
+    void SCIPvarSetData(SCIP_VAR* var, SCIP_VARDATA* vardata)
+    SCIP_VARDATA* SCIPvarGetData(SCIP_VAR* var)
 
     # LP Methods
     SCIP_RETCODE SCIPgetLPColsData(SCIP* scip, SCIP_COL*** cols, int* ncols)
@@ -646,6 +686,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPaddPoolCut(SCIP* scip, SCIP_ROW* row)
     SCIP_Real SCIPgetCutEfficacy(SCIP* scip, SCIP_SOL* sol, SCIP_ROW* cut)
     SCIP_Bool SCIPisCutEfficacious(SCIP* scip, SCIP_SOL* sol, SCIP_ROW* cut)
+    int SCIPgetNCuts(SCIP* scip)
+    int SCIPgetNCutsApplied(SCIP* scip)
 
     # Constraint Methods
     SCIP_RETCODE SCIPcaptureCons(SCIP* scip, SCIP_CONS* cons)
@@ -699,6 +741,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPaddSol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool* stored)
     SCIP_RETCODE SCIPreadSol(SCIP* scip, const char* filename)
     SCIP_RETCODE SCIPreadSolFile(SCIP* scip, const char* filename, SCIP_SOL* sol, SCIP_Bool xml, SCIP_Bool*	partial, SCIP_Bool*	error)
+    SCIP_RETCODE SCIPcheckSol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool printreason, SCIP_Bool completely, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* feasible)
+    SCIP_RETCODE SCIPcheckSolOrig(SCIP* scip, SCIP_SOL* sol, SCIP_Bool* feasible, SCIP_Bool printreason, SCIP_Bool completely)
 
     SCIP_RETCODE SCIPsetRelaxSolVal(SCIP* scip, SCIP_VAR* var, SCIP_Real val)
     SCIP_RETCODE SCIPmarkRelaxSolValid(SCIP* scip, SCIP_Bool includeslp)
@@ -1005,7 +1049,7 @@ cdef extern from "scip/scip.h":
                                    SCIP_RETCODE (*bendersfreesub) (SCIP* scip, SCIP_BENDERS* benders, int probnumber),
                                    SCIP_BENDERSDATA* bendersdata)
     SCIP_BENDERS* SCIPfindBenders(SCIP* scip, const char* name)
-    SCIP_RETCODE SCIPactivateBenders(SCIP* scip, SCIP_BENDERS* benders)
+    SCIP_RETCODE SCIPactivateBenders(SCIP* scip, SCIP_BENDERS* benders, int nsubproblems)
     SCIP_BENDERSDATA* SCIPbendersGetData(SCIP_BENDERS* benders)
     SCIP_RETCODE SCIPcreateBendersDefault(SCIP* scip, SCIP** subproblems, int nsubproblems)
     int SCIPbendersGetNSubproblems(SCIP_BENDERS* benders);
@@ -1020,6 +1064,29 @@ cdef extern from "scip/scip.h":
     int SCIPgetNActiveBenders(SCIP* scip)
     SCIP_BENDERS** SCIPgetBenders(SCIP* scip)
     void SCIPbendersUpdateSubproblemLowerbound(SCIP_BENDERS* benders, int probnumber, SCIP_Real lowerbound)
+    SCIP_RETCODE SCIPaddBendersSubproblem(SCIP* scip, SCIP_BENDERS* benders, SCIP* subproblem)
+    SCIP_RETCODE SCIPgetBendersMasterVar(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar)
+    SCIP_RETCODE SCIPgetBendersSubproblemVar(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar, int probnumber)
+
+    # Benders' decomposition cuts plugin
+    SCIP_RETCODE SCIPincludeBenderscut(SCIP* scip,
+                                      SCIP_BENDERS* benders,
+                                      const char*  name,
+                                      const char*  desc,
+                                      int priority,
+                                      SCIP_Bool islpcut,
+                                      SCIP_RETCODE (*benderscutcopy) (SCIP* scip, SCIP_BENDERS* benders, SCIP_BENDERSCUT* benderscut),
+                                      SCIP_RETCODE (*benderscutfree) (SCIP* scip, SCIP_BENDERSCUT* benderscut),
+                                      SCIP_RETCODE (*benderscutinit) (SCIP* scip, SCIP_BENDERSCUT* benderscut),
+                                      SCIP_RETCODE (*benderscutexit) (SCIP* scip, SCIP_BENDERSCUT* benderscut),
+                                      SCIP_RETCODE (*benderscutinitsol) (SCIP* scip, SCIP_BENDERSCUT* benderscut),
+                                      SCIP_RETCODE (*benderscutexitsol) (SCIP* scip, SCIP_BENDERSCUT* benderscut),
+                                      SCIP_RETCODE (*benderscutexec) (SCIP* scip, SCIP_BENDERS* benders, SCIP_BENDERSCUT* benderscut, SCIP_SOL* sol, int probnumber, SCIP_BENDERSENFOTYPE type, SCIP_RESULT* result),
+                                      SCIP_BENDERSCUTDATA* benderscutdata)
+    SCIP_BENDERSCUT* SCIPfindBenderscut(SCIP_BENDERS* benders, const char* name)
+    SCIP_BENDERSCUTDATA* SCIPbenderscutGetData(SCIP_BENDERSCUT* benderscut)
+    SCIP_RETCODE SCIPstoreBendersCut(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR** vars, SCIP_Real* vals, SCIP_Real lhs, SCIP_Real rhs, int nvars)
+    SCIP_RETCODE SCIPapplyBendersStoredCuts(SCIP* scip, SCIP_BENDERS* benders)
 
     SCIP_RETCODE SCIPbranchVar(SCIP* scip,
                                 SCIP_VAR* var,
@@ -1341,6 +1408,27 @@ cdef extern from "scip/pub_nlp.h":
     SCIP_RETCODE SCIPexprtreeSetVars(SCIP_EXPRTREE* tree,
                                      int nvars,
                                      SCIP_VAR** vars)
+
+
+    SCIP_Real SCIPnlrowGetConstant(SCIP_NLROW* nlrow)
+    int SCIPnlrowGetNLinearVars(SCIP_NLROW* nlrow)
+    SCIP_VAR** SCIPnlrowGetLinearVars(SCIP_NLROW* nlrow)
+    SCIP_Real* SCIPnlrowGetLinearCoefs(SCIP_NLROW* nlrow)
+    void SCIPnlrowGetQuadData(SCIP_NLROW* nlrow,
+                              int* nquadvars,
+                              SCIP_VAR*** quadvars,
+                              int* nquadelems,
+                              SCIP_QUADELEM** quadelems)
+    SCIP_EXPRTREE* SCIPnlrowGetExprtree(SCIP_NLROW* nlrow)
+    SCIP_Real SCIPnlrowGetLhs(SCIP_NLROW* nlrow)
+    SCIP_Real SCIPnlrowGetRhs(SCIP_NLROW* nlrow)
+    const char* SCIPnlrowGetName(SCIP_NLROW* nlrow)
+    SCIP_Real SCIPnlrowGetDualsol(SCIP_NLROW* nlrow)
+
+cdef extern from "scip/scip_nlp.h":
+    SCIP_Bool SCIPisNLPConstructed(SCIP* scip)
+    SCIP_NLROW** SCIPgetNLPNlRows(SCIP* scip)
+    int SCIPgetNNLPNlRows(SCIP* scip)
 
 cdef extern from "scip/cons_nonlinear.h":
     SCIP_RETCODE SCIPcreateConsNonlinear(SCIP* scip,

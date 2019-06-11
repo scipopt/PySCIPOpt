@@ -1,4 +1,7 @@
+##@file Multidict.py
+#@brief Implementation of Multidictionaries
 def multidict(D):
+    '''creates a multidictionary'''
     keys = list(D.keys())
     if len(keys) == 0:
         return [[]]

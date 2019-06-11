@@ -1,6 +1,6 @@
+##@file ssp.py
+#@brief model for the stable set problem
 """
-ssp.py: model for the stable set problem
-
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 

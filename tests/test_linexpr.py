@@ -131,8 +131,8 @@ def test_inequality(model):
     expr = x + 2*y
     cons = expr <= 0
     assert isinstance(cons, ExprCons)
-    assert cons.lhs is None
-    assert cons.rhs == 0.0
+    assert cons._lhs is None
+    assert cons._rhs == 0.0
     assert cons.expr[x] == 1.0
     assert cons.expr[y] == 2.0
     assert cons.expr[z] == 0.0
@@ -141,8 +141,8 @@ def test_inequality(model):
 
     cons = expr >= 5
     assert isinstance(cons, ExprCons)
-    assert cons.lhs == 5.0
-    assert cons.rhs is None
+    assert cons._lhs == 5.0
+    assert cons._rhs is None
     assert cons.expr[x] == 1.0
     assert cons.expr[y] == 2.0
     assert cons.expr[z] == 0.0
@@ -151,8 +151,8 @@ def test_inequality(model):
 
     cons = 5 <= x + 2*y - 3
     assert isinstance(cons, ExprCons)
-    assert cons.lhs == 8.0
-    assert cons.rhs is None
+    assert cons._lhs == 8.0
+    assert cons._rhs is None
     assert cons.expr[x] == 1.0
     assert cons.expr[y] == 2.0
     assert cons.expr[z] == 0.0
@@ -165,16 +165,16 @@ def test_ranged(model):
     cons = expr >= 3
     ranged = cons <= 5
     assert isinstance(ranged, ExprCons)
-    assert ranged.lhs == 3.0
-    assert ranged.rhs == 5.0
+    assert ranged._lhs == 3.0
+    assert ranged._rhs == 5.0
     assert ranged.expr[y] == 2.0
     assert ranged.expr[CONST] == 0.0
 
     # again, more or less directly:
     ranged = 3 <= (x + 2*y <= 5)
     assert isinstance(ranged, ExprCons)
-    assert ranged.lhs == 3.0
-    assert ranged.rhs == 5.0
+    assert ranged._lhs == 3.0
+    assert ranged._rhs == 5.0
     assert ranged.expr[y] == 2.0
     assert ranged.expr[CONST] == 0.0
     # we must use the parenthesis, because
@@ -198,8 +198,8 @@ def test_equation(model):
     m, x, y, z = model
     equat = 2*x - 3*y == 1
     assert isinstance(equat, ExprCons)
-    assert equat.lhs == equat.rhs
-    assert equat.lhs == 1.0
+    assert equat._lhs == equat._rhs
+    assert equat._lhs == 1.0
     assert equat.expr[x] == 2.0
     assert equat.expr[y] == -3.0
     assert equat.expr[CONST] == 0.0
