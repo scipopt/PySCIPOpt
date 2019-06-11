@@ -1068,6 +1068,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPgetBendersSubproblemVar(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar, int probnumber)
     SCIP_VAR* SCIPbendersGetAuxiliaryVar(SCIP_BENDERS* benders, int probnumber)
     SCIP_RETCODE SCIPcheckBendersSubproblemOptimality(SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, int probnumber, SCIP_Bool* optimal)
+    SCIP_RETCODE SCIPincludeBendersDefaultCuts(SCIP* scip, SCIP_BENDERS* benders)
 
     # Benders' decomposition cuts plugin
     SCIP_RETCODE SCIPincludeBenderscut(SCIP* scip,
@@ -1188,6 +1189,9 @@ cdef extern from "scip/tree.h":
 
 cdef extern from "scip/scipdefplugins.h":
     SCIP_RETCODE SCIPincludeDefaultPlugins(SCIP* scip)
+
+cdef extern from "scip/bendersdefcuts.h":
+    SCIP_RETCODE SCIPincludeBendersDefaultCuts(SCIP* scip, SCIP_BENDERS* benders)
 
 cdef extern from "scip/cons_linear.h":
     SCIP_RETCODE SCIPcreateConsLinear(SCIP* scip,
