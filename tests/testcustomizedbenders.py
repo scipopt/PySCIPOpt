@@ -18,7 +18,6 @@ class testBenders(Benders):
         self.I, self.J, self.M, self.c, self.d = I, J, M, c, d
         self.demand = {}
         self.capacity = {}
-        self.strong = {}
         self.name = name  # benders name
 
     def benderscreatesub(self, probnumber):
@@ -29,13 +28,10 @@ class testBenders(Benders):
             for i in self.I:
                 x[i, j] = subprob.addVar(vtype="C", name="x(%s,%s)" % (i, j))
         for i in self.I:
-            self.demand[i] = subprob.addCons(quicksum(x[i, j] for j in self.J) == self.d[i], "Demand(%s)" % i)
+            self.demand[i] = subprob.addCons(quicksum(x[i, j] for j in self.J) >= self.d[i], "Demand(%s)" % i)
 
         for j in self.M:
             self.capacity[j] = subprob.addCons(quicksum(x[i, j] for i in self.I) <= self.M[j] * y[j], "Capacity(%s)" % i)
-
-        for (i, j) in x:
-            self.strong[i,j] = subprob.addCons(x[i, j] <= self.d[i] * y[j], "Strong(%s,%s)" % (i, j))
 
         subprob.setObjective(
             quicksum(self.c[i, j] * x[i, j] for i in self.I for j in self.J),
@@ -98,8 +94,8 @@ class testBenders(Benders):
 
 class testBenderscut(Benderscut):
 
-   def __init__(self, I, J, M):
-      self.I, self.J, self.M = I, J, M
+   def __init__(self, I, J, M, d):
+      self.I, self.J, self.M, self.d = I, J, M, d
 
    def benderscutexec(self, solution, probnumber, enfotype):
       print("Generating Benders cuts")
@@ -111,10 +107,12 @@ class testBenderscut(Benderscut):
       # model is not correct.
       # Also checking whether the dual multiplier is the same between the
       # member subproblem and the retrieved subproblem
+      lhs = 0
       for i in self.I:
          subprobcons = self.benders.demand[i]
          try:
             dualmult = subprob.getDualMultiplier(subprobcons)
+            lhs += dualmult
          except:
             print("Subproblem constraint <%d> does not exist in the "\
                   "subproblem."%subprobcons.name)
@@ -126,11 +124,19 @@ class testBenderscut(Benderscut):
                   "the same.")
             assert False
 
-      return {"result" : SCIP_RESULT.FEASIBLE}
+      coeffs = [subprob.getDualMultiplier(self.benders.capacity[j])*\
+            self.M[j] for j in self.J]
+
+      self.model.addCons(self.model.getBendersAuxiliaryVar(probnumber,
+         self.benders) -
+         quicksum(self.model.getBendersVar(self.benders.subprob.data[1][j],
+         self.benders)*coeffs[j] for j in self.J) >= lhs)
+
+      return {"result" : SCIP_RESULT.CONSADDED}
 
 
 
-def flp(J,f):
+def flp(I, J, M, d,f):
     """flp -- model for the capacitated facility location problem
     Parameters:
         - I: set of customers
@@ -151,6 +157,8 @@ def flp(J,f):
     master.setObjective(
         quicksum(f[j]*y["y(%d)"%j] for j in J),
         "minimize")
+    master.addCons(quicksum(y["y(%d)"%j]*M[j] for j in J)
+          - quicksum(d[i] for i in I) >= 0)
     master.data = y
 
     return master
@@ -173,7 +181,7 @@ def test_flpbenders():
     test the Benders' decomposition plugins with the facility location problem.
     '''
     I,J,d,M,f,c = make_data()
-    master = flp(J, f)
+    master = flp(I, J, M, d, f)
     # initializing the default Benders' decomposition with the subproblem
     master.setPresolve(SCIP_PARAMSETTING.OFF)
     master.setBoolParam("misc/allowdualreds", False)
@@ -181,11 +189,12 @@ def test_flpbenders():
     bendersName = "testBenders"
     benderscutName = "testBenderscut"
     testbd = testBenders(master.data, I, J, M, c, d, bendersName)
-    testbdc = testBenderscut(I, J, M)
+    testbdc = testBenderscut(I, J, M, d)
     master.includeBenders(testbd, bendersName, "benders plugin")
-    #master.includeBenderscut(testbd, testbdc, benderscutName,
-          #"benderscut plugin", priority=1000000)
+    master.includeBenderscut(testbd, testbdc, benderscutName,
+          "benderscut plugin", priority=1000000)
     master.activateBenders(bendersName, 1)
+    master.updateBendersLowerbounds({0 : 0.0}, testbd)
     master.setBoolParam("constraints/benders/active", True)
     master.setBoolParam("constraints/benderslp/active", True)
     # optimizing the problem using Benders' decomposition
@@ -212,7 +221,7 @@ def test_flpbenders():
     # the solution will be lost
     master.freeBendersSubproblems()
 
-    assert master.getObjVal() == 5.61e+03
+    #assert master.getObjVal() == 5.61e+03
 
 
 if __name__ == "__main__":
