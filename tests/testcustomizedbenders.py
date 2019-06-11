@@ -31,7 +31,7 @@ class testBenders(Benders):
             self.demand[i] = subprob.addCons(quicksum(x[i, j] for j in self.J) >= self.d[i], "Demand(%s)" % i)
 
         for j in self.M:
-            self.capacity[j] = subprob.addCons(quicksum(x[i, j] for i in self.I) <= self.M[j] * y[j], "Capacity(%s)" % i)
+            self.capacity[j] = subprob.addCons(quicksum(x[i, j] for i in self.I) <= self.M[j] * y[j], "Capacity(%s)" % j)
 
         subprob.setObjective(
             quicksum(self.c[i, j] * x[i, j] for i in self.I for j in self.J),
@@ -131,7 +131,7 @@ class testBenderscut(Benderscut):
 
 
 
-def flp(I, J, M, d,f):
+def flp(I, J, M, d,f, c=None, monolithic=False):
     """flp -- model for the capacitated facility location problem
     Parameters:
         - I: set of customers
@@ -149,11 +149,28 @@ def flp(I, J, M, d,f):
     for j in J:
         y["y(%d)"%j] = master.addVar(vtype="B", name="y(%s)"%j)
 
-    master.setObjective(
-        quicksum(f[j]*y["y(%d)"%j] for j in J),
-        "minimize")
+    if monolithic:
+        x = {}
+        demand = {}
+        capacity = {}
+        for j in J:
+            for i in I:
+                x[i, j] = master.addVar(vtype="C", name="x(%s,%s)" % (i, j))
+
+        for i in I:
+            demand[i] = master.addCons(quicksum(x[i, j] for j in J) >= d[i], "Demand(%s)" % i)
+
+        for j in J:
+            print(j, M[j])
+            capacity[j] = master.addCons(quicksum(x[i, j] for i in I) <= M[j] * y["y(%d)"%j], "Capacity(%s)" % j)
+
     master.addCons(quicksum(y["y(%d)"%j]*M[j] for j in J)
           - quicksum(d[i] for i in I) >= 0)
+
+    master.setObjective(
+        quicksum(f[j]*y["y(%d)"%j] for j in J) + (0 if not monolithic else
+        quicksum(c[i, j] * x[i, j] for i in I for j in J)),
+        "minimize")
     master.data = y
 
     return master
@@ -171,7 +188,51 @@ def make_data():
     return I,J,d,M,f,c
 
 
-def test_flpbenders():
+def test_flpbenders_defcuts():
+    '''
+    test the Benders' decomposition plugins with the facility location problem.
+    '''
+    I,J,d,M,f,c = make_data()
+    master = flp(I, J, M, d, f)
+    # initializing the default Benders' decomposition with the subproblem
+    master.setPresolve(SCIP_PARAMSETTING.OFF)
+    master.setBoolParam("misc/allowdualreds", False)
+    master.setBoolParam("benders/copybenders", False)
+    bendersName = "testBenders"
+    testbd = testBenders(master.data, I, J, M, c, d, bendersName)
+    master.includeBenders(testbd, bendersName, "benders plugin")
+    master.includeBendersDefaultCuts(testbd)
+    master.activateBenders(bendersName, 1)
+    master.updateBendersLowerbounds({0 : 0.0}, testbd)
+    master.setBoolParam("constraints/benders/active", True)
+    master.setBoolParam("constraints/benderslp/active", True)
+    # optimizing the problem using Benders' decomposition
+    master.optimize()
+
+    # solving the subproblems to get the best solution
+    # master.computeBestSolSubproblems()
+
+    EPS = 1.e-6
+    y = master.data
+    facilities = [j for j in y if master.getVal(y[j]) > EPS]
+
+    x, suby = testbd.subprob.data
+    edges = [(i, j) for (i, j) in x if testbd.subprob.getVal(x[i,j]) > EPS]
+
+    print("Optimal value:", master.getObjVal())
+    print("Facilities at nodes:", facilities)
+    print("Edges:", edges)
+
+    master.printStatistics()
+
+    # since computeBestSolSubproblems() was called above, we need to free the
+    # subproblems. This must happen after the solution is extracted, otherwise
+    # the solution will be lost
+    master.freeBendersSubproblems()
+
+    return master.getObjVal()
+
+def test_flpbenders_customcuts():
     '''
     test the Benders' decomposition plugins with the facility location problem.
     '''
@@ -216,8 +277,36 @@ def test_flpbenders():
     # the solution will be lost
     master.freeBendersSubproblems()
 
-    #assert master.getObjVal() == 5.61e+03
+    return master.getObjVal()
 
+def test_flp():
+    '''
+    test the Benders' decomposition plugins with the facility location problem.
+    '''
+    I,J,d,M,f,c = make_data()
+    master = flp(I, J, M, d, f, c=c, monolithic=True)
+    # initializing the default Benders' decomposition with the subproblem
+    master.setPresolve(SCIP_PARAMSETTING.OFF)
+
+    # optimizing the monolithic problem
+    master.optimize()
+
+    EPS = 1.e-6
+    y = master.data
+    facilities = [j for j in y if master.getVal(y[j]) > EPS]
+
+    print("Optimal value:", master.getObjVal())
+    print("Facilities at nodes:", facilities)
+
+    master.printBestSol()
+    master.printStatistics()
+
+    return master.getObjVal()
 
 if __name__ == "__main__":
-    test_flpbenders()
+    defcutsobj = test_flpbenders_defcuts()
+    customcutsobj = test_flpbenders_customcuts()
+    monolithicobj = test_flp()
+
+    assert defcutsobj == customcutsobj
+    assert defcutsobj == monolithicobj
