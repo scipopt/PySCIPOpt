@@ -51,18 +51,11 @@ class testBenders(Benders):
         return {"mappedvar": mapvar}
 
     def benderssolvesubconvex(self, solution, probnumber, onlyconvex):
-        print("Solving subproblem:", probnumber)
-        SCIP_BENDERSENFOTYPE_LP = 1
-        SCIP_BENDERSENFOTYPE_RELAX = 2
-        SCIP_BENDERSENFOTYPE_PSEUDO = 3
-        SCIP_BENDERSENFOTYPE_CHECK = 4
-
         self.model.setupBendersSubproblem(probnumber, self, solution)
         self.subprob.solveProbingLP()
         subprob = self.model.getBendersSubproblem(probnumber, self)
         assert self.subprob.getObjVal() == subprob.getObjVal()
 
-        subprob.printSol()
         result_dict = {}
 
         objective = subprob.infinity()
@@ -82,13 +75,10 @@ class testBenders(Benders):
         result_dict["objective"] = objective
         result_dict["result"] = result
 
-        print("Result:", result)
-
         return result_dict
 
 
     def bendersfreesub(self, probnumber):
-        print("Freeing subproblems")
         if self.subprob.inProbing():
            self.subprob.endProbing()
 
@@ -98,21 +88,26 @@ class testBenderscut(Benderscut):
       self.I, self.J, self.M, self.d = I, J, M, d
 
    def benderscutexec(self, solution, probnumber, enfotype):
-      print("Generating Benders cuts")
       subprob = self.model.getBendersSubproblem(probnumber, benders=self.benders)
       membersubprob = self.benders.subprob
+
+      # checking whether the subproblem is already optimal, i.e. whether a cut
+      # needs to be generated
+      if self.model.checkBendersSubproblemOptimality(solution, probnumber,
+            benders=self.benders):
+         return {"result" : SCIP_RESULT.FEASIBLE}
 
       # testing whether the dual multipliers can be found for the retrieved
       # subproblem model. If the constraints don't exist, then the subproblem
       # model is not correct.
       # Also checking whether the dual multiplier is the same between the
-      # member subproblem and the retrieved subproblem
+      # member subproblem and the retrieved subproblem`
       lhs = 0
       for i in self.I:
          subprobcons = self.benders.demand[i]
          try:
             dualmult = subprob.getDualMultiplier(subprobcons)
-            lhs += dualmult
+            lhs += dualmult*self.d[i]
          except:
             print("Subproblem constraint <%d> does not exist in the "\
                   "subproblem."%subprobcons.name)
@@ -165,13 +160,13 @@ def flp(I, J, M, d,f):
 
 
 def make_data():
-    I,d = multidict({1:80, 2:270, 3:250, 4:160, 5:180})            # demand
-    J,M,f = multidict({1:[500,1000], 2:[500,1000], 3:[500,1000]}) # capacity, fixed costs
-    c = {(1,1):4,  (1,2):6,  (1,3):9,    # transportation costs
-         (2,1):5,  (2,2):4,  (2,3):7,
-         (3,1):6,  (3,2):3,  (3,3):4,
-         (4,1):8,  (4,2):5,  (4,3):3,
-         (5,1):10, (5,2):8,  (5,3):4,
+    I,d = multidict({0:80, 1:270, 2:250, 3:160, 4:180})            # demand
+    J,M,f = multidict({0:[500,1000], 1:[500,1000], 2:[500,1000]}) # capacity, fixed costs
+    c = {(0,0):4,  (0,1):6,  (0,2):9,    # transportation costs
+         (1,0):5,  (1,1):4,  (1,2):7,
+         (2,0):6,  (2,1):3,  (2,2):4,
+         (3,0):8,  (3,1):5,  (3,2):3,
+         (4,0):10, (4,1):8,  (4,2):4,
          }
     return I,J,d,M,f,c
 
