@@ -2750,7 +2750,7 @@ cdef class Model:
             _benders = SCIPfindBenders(self._scip, n)
 
         for d in lowerbounds.keys():
-            SCIPupdateBendersSubproblemLowerbound(self._scip, _benders, d, lowerbounds[d])
+            SCIPbendersUpdateSubproblemLowerbound(_benders, d, lowerbounds[d])
 
     def activateBenders(self, str name, int nsubproblems):
         """Activates the Benders' decomposition plugin with the input name

@@ -1061,7 +1061,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPfreeBendersSubproblem(SCIP* scip, SCIP_BENDERS* benders, int probnumber)
     int SCIPgetNActiveBenders(SCIP* scip)
     SCIP_BENDERS** SCIPgetBenders(SCIP* scip)
-    void SCIPupdateBendersSubproblemLowerbound(SCIP* scip, SCIP_BENDERS* benders, int probnumber, SCIP_Real lowerbound)
+    void SCIPbendersUpdateSubproblemLowerbound(SCIP_BENDERS* benders, int probnumber, SCIP_Real lowerbound)
     SCIP_RETCODE SCIPaddBendersSubproblem(SCIP* scip, SCIP_BENDERS* benders, SCIP* subproblem)
     SCIP* SCIPbendersSubproblem(SCIP_BENDERS* benders, int probnumber);
     SCIP_RETCODE SCIPgetBendersMasterVar(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar)
