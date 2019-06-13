@@ -203,7 +203,6 @@ def test_flpbenders_defcuts():
     master.includeBenders(testbd, bendersName, "benders plugin")
     master.includeBendersDefaultCuts(testbd)
     master.activateBenders(bendersName, 1)
-    master.updateBendersLowerbounds({0 : 0.0}, testbd)
     master.setBoolParam("constraints/benders/active", True)
     master.setBoolParam("constraints/benderslp/active", True)
     # optimizing the problem using Benders' decomposition
@@ -250,7 +249,6 @@ def test_flpbenders_customcuts():
     master.includeBenderscut(testbd, testbdc, benderscutName,
           "benderscut plugin", priority=1000000)
     master.activateBenders(bendersName, 1)
-    master.updateBendersLowerbounds({0 : 0.0}, testbd)
     master.setBoolParam("constraints/benders/active", True)
     master.setBoolParam("constraints/benderslp/active", True)
     # optimizing the problem using Benders' decomposition
