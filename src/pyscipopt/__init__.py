@@ -14,7 +14,10 @@ from pyscipopt.scip      import Pricer
 from pyscipopt.scip      import Prop
 from pyscipopt.scip      import Sepa
 from pyscipopt.scip      import LP
+from pyscipopt.scip      import Relax
 from pyscipopt.scip      import Expr
+from pyscipopt.scip      import Term
+from pyscipopt.scip      import ExprCons
 from pyscipopt.scip      import quicksum
 from pyscipopt.scip      import quickprod
 from pyscipopt.scip      import exp

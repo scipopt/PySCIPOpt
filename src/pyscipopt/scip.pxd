@@ -468,6 +468,7 @@ cdef extern from "scip/scip.h":
                           const char*           suffix,
                           SCIP_Bool             globalcopy,
                           SCIP_Bool             enablepricing,
+                          SCIP_Bool				threadsafe,
                           SCIP_Bool             passmessagehdlr,
                           SCIP_Bool*            valid)
     SCIP_RETCODE SCIPcopyOrig(SCIP*                 sourcescip,
@@ -476,6 +477,7 @@ cdef extern from "scip/scip.h":
                               SCIP_HASHMAP*         consmap,
                               const char*           suffix,
                               SCIP_Bool             enablepricing,
+                              SCIP_Bool				threadsafe,
                               SCIP_Bool             passmessagehdlr,
                               SCIP_Bool*            valid)
     SCIP_RETCODE SCIPmessagehdlrCreate(SCIP_MESSAGEHDLR **messagehdlr,

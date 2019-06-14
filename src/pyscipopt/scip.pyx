@@ -691,7 +691,7 @@ cdef class Constraint:
 
     def getType(self):
         """get Type of Constraint"""
-        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.cons))).decode('UTF-8')
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype
 
 cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg):
@@ -752,9 +752,9 @@ cdef class Model:
             self._bestSol = <Solution> sourceModel._bestSol
             n = str_conversion(problemName)
             if origcopy:
-                PY_SCIP_CALL(SCIPcopyOrig(sourceModel._scip, self._scip, NULL, NULL, n, enablepricing, True, self._valid))
+                PY_SCIP_CALL(SCIPcopyOrig(sourceModel._scip, self._scip, NULL, NULL, n, enablepricing, False, True, self._valid))
             else:
-                PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, True, self._valid))
+                PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, False, True, self._valid))
 
     def __dealloc__(self):
         # call C function directly, because we can no longer call this object's methods, according to
@@ -1652,7 +1652,7 @@ cdef class Model:
         varexpr = <SCIP_CONSEXPR_EXPR**> malloc(len(varindex) * sizeof(SCIP_CONSEXPR_EXPR*))
         vars = <SCIP_VAR**> malloc(len(variables) * sizeof(SCIP_VAR*))
         for idx, var in enumerate(variables): # same as varindex
-            vars[idx] = (<Variable>var).var
+            vars[idx] = (<Variable>var).scip_var
         for idx in varindex.values():
             PY_SCIP_CALL(SCIPcreateConsExprExprVar(self._scip, consexprhdlr, &consexpr, vars[idx]))
             varexpr[idx] = consexpr
@@ -2271,9 +2271,9 @@ cdef class Model:
         if constype == 'linear':
             return SCIPgetRhsLinear(self._scip, cons.scip_cons)
         elif constype == 'quadratic':
-            return SCIPgetRhsQuadratic(self._scip, cons.cons)
+            return SCIPgetRhsQuadratic(self._scip, cons.scip_cons)
         elif constype == 'expr':
-            return SCIPgetRhsConsExpr(self._scip, cons.cons)
+            return SCIPgetRhsConsExpr(self._scip, cons.scip_cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
@@ -2287,9 +2287,9 @@ cdef class Model:
         if constype == 'linear':
             return SCIPgetLhsLinear(self._scip, cons.scip_cons)
         elif constype == 'quadratic':
-            return SCIPgetLhsQuadratic(self._scip, cons.cons)
+            return SCIPgetLhsQuadratic(self._scip, cons.scip_cons)
         elif constype == 'expr':
-            return SCIPgetLhsConsExpr(self._scip, cons.cons)
+            return SCIPgetLhsConsExpr(self._scip, cons.scip_cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
@@ -2461,7 +2461,7 @@ cdef class Model:
         cdef int ntermmult
         
         PyExpr = Expr()
-        consexpr = SCIPgetExprConsExpr(self._scip, cons.cons)
+        consexpr = SCIPgetExprConsExpr(self._scip, cons.scip_cons)
         assert SCIPisConsExprExprPoly(self._scip,consexpr), "constraint is not a polynomial"
         nterms = SCIPgetConsExprExprNPolyTerms(self._scip, consexpr)
         #print(nterms)
@@ -2809,7 +2809,7 @@ cdef class Model:
             scip_benders = SCIPfindBenders(self._scip, n)
 
         PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip, scip_benders, scip_sol,
-            probnumber, &infeasible, enfotype, solvecip, &objective))
+            probnumber, &infeasible, enfotype, &objective))
 
         return infeasible, objective
 

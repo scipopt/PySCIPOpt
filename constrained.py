@@ -1,25 +1,26 @@
 #!/usr/bin/env ipython
 # -*- coding: utf-8 -*-
 
-import generate_poly as gen
 from polynomial import *
 from exceptions import InfeasibleError
+
 import scipy
-import cvxpy as cvx
+import cvxpy 			as cvx
+import generate_poly 	as gen
 
 
 def constrained_opt(objective, constraint_list):
 	"""Optimise objective under given constraints."""
 	def build_lagrangian(lamb):
-		"""build the function -sum(lamb*gi), where gi are the constraints, for lamb fixed this function gives a lower bound for f on {x: gi(x)>=0}"""
-		#TODO: problem if highest variable does not occur in constraint or objective
-		print(lamb)
+		"""build the function obj-sum(lamb*gi), where obj is the objective and gi are the constraints, 
+		for lamb fixed this function gives a lower bound for f on {x: gi(x)>=0}"""
 		res = objective.copy()
-		print('res = ', res)
 		for i in range(len(constraint_list)):
 			summand = constraint_list[i].copy()
 			summand.b = np.array(summand.b * lamb[i], dtype = np.float)
-			res += summand
+			res -= summand
+		#print('res = ', res)
+
 		return Polynomial(res.A, res.b)
 
 	def lower_bound(lamb):
@@ -29,7 +30,7 @@ def constrained_opt(objective, constraint_list):
 			lagrangian.run_sonc()
 		except InfeasibleError as err:
 		    #TODO: In this case, the optimization should stop?
-			print(err, "\n", lagrangian)
+			print(err, "\n", lagrangian.A, lagrangian.b)
 			lagrangian.lower_bound = -1e+20
 		#lagrangian.sage_opt_python()
 		#lagrangian.traverse(call_sos = False)
@@ -37,18 +38,14 @@ def constrained_opt(objective, constraint_list):
 
 	t0 = datetime.now()
 	#optimize lower_bound(lamb) with respect to lamb
-	#for i in range(len(constraint_list)):
-		#print(constraint_list[i])
-	#TODO: Problem, if number of variables != number constraints, fix index occurrences (2 constraints also gave this problem, but maybe changed to more constraints?)
-	#TODO: Problem, if last var does not occur in constraint or objective, maybe using arrays gives easy solution
-	n = max([el.A.shape[0] -1 for el in constraint_list]+ [objective.A.shape[0]-1])
+	#TODO: does scipy give a lower bound or just some min??
 	m = len(constraint_list)
-	data = scipy.optimize.minimize(lower_bound, np.ones(m), method = 'SLSQP', constraints = scipy.optimize.LinearConstraint(np.eye(m), aux.EPSILON, np.inf, keep_feasible = True), options = {'maxiter': 30})
+	data = scipy.optimize.minimize(lower_bound, np.ones(m), method = 'SLSQP', constraints = scipy.optimize.LinearConstraint(np.eye(m), aux.EPSILON, np.inf, keep_feasible = True), options = {'maxiter': 40})
 	print('Lower bound: %.2f\nMultipliers: %s' % (-data.fun, data.x))
 
+	"""#find local minima, to get optimality gap (somehow)
 	fmin = np.inf
 	xmin = None
-	#find local minima, to get optimality gap (somehow)
 
 	for _ in range(objective.A.shape[1]):
 		x0 = np.random.randn(objective.A.shape[0]-1)
@@ -57,9 +54,9 @@ def constrained_opt(objective, constraint_list):
 			fmin = objective(xmin_tmp)
 			xmin = xmin_tmp
 
-	print('Lowest found: %.2f at argument %s' % (fmin, str(xmin)))
+	print('Lowest found: %.2f at argument %s' % (fmin, str(xmin)))"""
 	print('Time: %.2f' % aux.dt2sec(datetime.now() - t0))
-	return -data.fun, data.x# maybe?  fmin, xmin
+	return data # maybe?  -data.fun, data.xfmin, xmin, or maybe min(-data.fun, fmin), min(data.x, xmin)
 
 def unite_matrices(A_list):
 	res = []
@@ -97,11 +94,12 @@ if __name__ == "__main__":
 	#p0 = Polynomial(A,b)
 
 	f = Polynomial('x0^2*x1 + 3*x1 - x0')
-	g1 = Polynomial('x0^4+x1^4-42')
-	g2 = Polynomial('x0^4-3*x0+2*x1^2-1')
+	g1 = Polynomial('-x0^4-x1^4+42')
+	g2 = Polynomial('-x0^4+3*x0-2*x1^2+1')
 
-	#fmin, xmin = constrained_opt(f,[g1,g2])
-
+	data = constrained_opt(f,[g1,g2])
+	print(-data.fun, data.x)
+"""
 	A = unite_matrices([f.A, g1.A, g2.A])
 	B = np.array([expand(p,A) for p in [f,g1,g2]])
 
@@ -151,3 +149,4 @@ if __name__ == "__main__":
 
 	#prob_sage.variables()[0].value = C
 	#prob_sage.variables()[1].value = lamb
+"""

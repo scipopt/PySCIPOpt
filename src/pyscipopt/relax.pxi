@@ -25,7 +25,7 @@ cdef class Relax:
         pass
         
     def relaxexec(self):
-        '''callls execution method of relaxation handler'''
+        '''calls execution method of relaxation handler'''
         print("python error in relaxexec: this method needs to be implemented")
         return{}
 
