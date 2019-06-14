@@ -1079,19 +1079,21 @@ cdef class Model:
             name = 'x'+str(SCIPgetNVars(self._scip)+1)
 
         cname = str_conversion(name)
-        if ub is None:
-            ub = SCIPinfinity(self._scip)
         if lb is None:
             lb = -SCIPinfinity(self._scip)
         cdef SCIP_VAR* scip_var
         vtype = vtype.upper()
         if vtype in ['C', 'CONTINUOUS']:
+            if ub is None:
+                ub = SCIPinfinity(self._scip)
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_CONTINUOUS))
         elif vtype in ['B', 'BINARY']:
             if ub is None:
                 ub = 1.0
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_BINARY))
         elif vtype in ['I', 'INTEGER']:
+            if ub is None:
+                ub = SCIPinfinity(self._scip)
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_INTEGER))
         else:
             raise Warning("unrecognized variable type")
