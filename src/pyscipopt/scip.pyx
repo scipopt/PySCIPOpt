@@ -701,7 +701,7 @@ cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg):
 # - interface SCIPfreeProb()
 ##
 #@anchor Model
-## 
+##
 cdef class Model:
     cdef SCIP* _scip
     cdef SCIP_Bool* _valid
@@ -1079,19 +1079,21 @@ cdef class Model:
             name = 'x'+str(SCIPgetNVars(self._scip)+1)
 
         cname = str_conversion(name)
-        if ub is None:
-            ub = SCIPinfinity(self._scip)
         if lb is None:
             lb = -SCIPinfinity(self._scip)
         cdef SCIP_VAR* scip_var
         vtype = vtype.upper()
         if vtype in ['C', 'CONTINUOUS']:
+            if ub is None:
+                ub = SCIPinfinity(self._scip)
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_CONTINUOUS))
         elif vtype in ['B', 'BINARY']:
-            lb = 0.0
-            ub = 1.0
+            if ub is None:
+                ub = 1.0
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_BINARY))
         elif vtype in ['I', 'INTEGER']:
+            if ub is None:
+                ub = SCIPinfinity(self._scip)
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_INTEGER))
         else:
             raise Warning("unrecognized variable type")
@@ -1436,7 +1438,7 @@ cdef class Model:
     # LP Row Methods
     def createEmptyRowSepa(self, Sepa sepa, name="row", lhs = 0.0, rhs = None, local = True, modifiable = False, removable = True):
         """creates and captures an LP row without any coefficients from a separator
-        
+
         :param sepa: separator that creates the row
         :param name: name of row (Default value = "row")
         :param lhs: left hand side of row (Default value = 0)
@@ -1455,7 +1457,7 @@ cdef class Model:
 
     def createEmptyRowUnspec(self, name="row", lhs = 0.0, rhs = None, local = True, modifiable = False, removable = True):
         """creates and captures an LP row without any coefficients from an unspecified source
-        
+
         :param name: name of row (Default value = "row")
         :param lhs: left hand side of row (Default value = 0)
         :param rhs: right hand side of row (Default value = None)
@@ -1484,8 +1486,8 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseRow(self._scip, &row.scip_row))
 
     def cacheRowExtensions(self, Row row not None):
-        """informs row, that all subsequent additions of variables to the row should be cached and not directly applied; 
-        after all additions were applied, flushRowExtensions() must be called; 
+        """informs row, that all subsequent additions of variables to the row should be cached and not directly applied;
+        after all additions were applied, flushRowExtensions() must be called;
         while the caching of row extensions is activated, information methods of the row give invalid results;
         caching should be used, if a row is build with addVarToRow() calls variable by variable to increase the performance"""
         PY_SCIP_CALL(SCIPcacheRowExtensions(self._scip, row.scip_row))
@@ -2996,13 +2998,13 @@ cdef class Model:
 
     def includeRelax(self, Relax relax, name, desc, priority=10000, freq=1):
         """Include a relaxation handler.
-        
+
         :param Relax relax: relaxation handler
         :param name: name of relaxation handler
         :param desc: description of relaxation handler
         :param priority: priority of the relaxation handler (negative: after LP, non-negative: before LP, Default value = 10000)
         :param freq: frequency for calling relaxation handler
-        
+
         """
         nam = str_conversion(name)
         des = str_conversion(desc)
@@ -3093,7 +3095,7 @@ cdef class Model:
         benderscut.name = name
         # TODO: It might be necessary in increment the reference to benders i.e Py_INCREF(benders)
         Py_INCREF(benderscut)
-        
+
 
     def getLPBranchCands(self):
         """gets branching candidates for LP solution branching (fractional variables) along with solution values,
