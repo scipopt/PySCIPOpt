@@ -689,6 +689,10 @@ cdef class Constraint:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'quadratic'
 
+    def isActive(self):
+        """Retrieve True if constraint is active in the current node"""
+        return SCIPconsIsActive(self.scip_cons)
+
     def getType(self):
         """get Type of Constraint"""
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
@@ -2446,7 +2450,10 @@ cdef class Model:
 
     def markRelaxSolValid(self, Includeslp):
         PY_SCIP_CALL(SCIPmarkRelaxSolValid(self._scip, Includeslp))
-        
+
+    def isRelaxSolValid(self):
+        return SCIPisRelaxSolValid(self._scip)
+
     def clearRelaxSolVals(self):
         PY_SCIP_CALL(SCIPclearRelaxSolVals(self._scip))
         
@@ -3164,7 +3171,7 @@ cdef class Model:
 
             lpcands: list of variables of LP branching candidates
             lpcandssol: list of LP candidate solution values
-            lpcandsfrac	list of LP candidate fractionalities
+            lpcandsfrac list of LP candidate fractionalities
             nlpcands:    number of LP branching candidates
             npriolpcands: number of candidates with maximal priority
             nfracimplvars: number of fractional implicit integer variables

@@ -711,6 +711,7 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPconsIsDynamic(SCIP_CONS* cons)
     SCIP_Bool SCIPconsIsRemovable(SCIP_CONS* cons)
     SCIP_Bool SCIPconsIsStickingAtNode(SCIP_CONS* cons)
+    SCIP_Bool SCIPconsIsActive(SCIP_CONS* cons)
     SCIP_CONSDATA* SCIPconsGetData(SCIP_CONS* cons)
     SCIP_CONSHDLR* SCIPconsGetHdlr(SCIP_CONS* cons)
     const char* SCIPconshdlrGetName(SCIP_CONSHDLR* conshdlr)
@@ -748,6 +749,7 @@ cdef extern from "scip/scip.h":
 
     SCIP_RETCODE SCIPsetRelaxSolVal(SCIP* scip, SCIP_VAR* var, SCIP_Real val)
     SCIP_RETCODE SCIPmarkRelaxSolValid(SCIP* scip, SCIP_Bool includeslp)
+    SCIP_Bool SCIPisRelaxSolValid(SCIP* scip)
     SCIP_RETCODE SCIPclearRelaxSolVals(SCIP* scip)
     SCIP_Real SCIPgetRelaxSolObj(SCIP* scip)
     
