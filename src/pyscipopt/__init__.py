@@ -6,6 +6,7 @@ from pyscipopt.scip      import Model
 from pyscipopt.scip      import Benders
 from pyscipopt.scip      import Benderscut
 from pyscipopt.scip      import Branchrule
+from pyscipopt.scip      import Nodesel
 from pyscipopt.scip      import Conshdlr
 from pyscipopt.scip      import Eventhdlr
 from pyscipopt.scip      import Heur
