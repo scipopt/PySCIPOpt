@@ -1,12 +1,11 @@
 #!/usr/bin/env ipython
 # -*- coding: utf-8 -*-
 
-from polynomial import *
-from exceptions import InfeasibleError
+from Poem.polynomial import *
+from Poem.exceptions import InfeasibleError
 
 import scipy
 import cvxpy            as cvx
-import generate_poly    as gen
 
 
 def constrained_opt(objective, constraint_list, solved_instance):

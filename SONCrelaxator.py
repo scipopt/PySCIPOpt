@@ -1,8 +1,8 @@
 #! usr/bin/env python3
 from pyscipopt      import SCIP_RESULT, Relax, Term
-from polynomial     import *
+from Poem.polynomial     import *
 from constrained    import *
-from exceptions     import InfeasibleError
+from Poem.exceptions     import InfeasibleError
 
 
 import numpy as np

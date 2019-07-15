@@ -1,9 +1,8 @@
 #! usr/bin/env python3
 from pyscipopt      import Model, SCIP_PARAMSETTING, Expr, Relax, Term, ExprCons
 from SONCrelaxator  import *
-from polynomial     import *
+from Poem.polynomial     import *
 from constrained    import *
-from generate_poly  import *
 
 import re
 import numpy as np
@@ -48,7 +47,7 @@ def example():
     m.setObjective(6.89037448 -0.89546656*x0 - 1.18063218*x1)
     """
     """
-    #reasconable solution, time ~ 18 sec
+    #reasonable solution, time ~ 18 sec
     m.addCons(1.16786015*x1**2 + 5.22927676*x0**2*x1**2 + 0.71805392*x0**4 <= 0)
     m.addCons( - 0.85409574*x0**2*x1 -2.55298982*x0*x1 <= 0)
     m.setObjective(1.55352131 +0.3130677*x1)
