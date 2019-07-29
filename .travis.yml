@@ -26,8 +26,8 @@ notifications:
   email: false
 
 before_install:
-  - wget http://scip.zib.de/download/release/SCIPOptSuite-$VERSION-Linux.deb
-  - sudo apt-get update && sudo apt install -y ./SCIPOptSuite-$VERSION-Linux.deb
+  - wget http://scip.zib.de/download/release/SCIPOptSuite-$VERSION-Linux-Ub1604.deb
+  - sudo apt-get update && sudo apt install -y ./SCIPOptSuite-$VERSION-Linux-Ub1604.deb
 
 install:
   - pip install cython networkx pytest-cov
