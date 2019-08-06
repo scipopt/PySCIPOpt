@@ -3781,9 +3781,10 @@ cdef class Model:
         elif paramtype == SCIP_PARAMTYPE_REAL:
             PY_SCIP_CALL(SCIPsetRealParam(self._scip, n, float(value)))
         elif paramtype == SCIP_PARAMTYPE_CHAR:
-            PY_SCIP_CALL(SCIPsetCharParam(self._scip, n, value))
+            PY_SCIP_CALL(SCIPsetCharParam(self._scip, n, ord(value)))
         elif paramtype == SCIP_PARAMTYPE_STRING:
-            PY_SCIP_CALL(SCIPsetStringParam(self._scip, n, value))
+            v = str_conversion(value)
+            PY_SCIP_CALL(SCIPsetStringParam(self._scip, n, v))
 
 
     def getParam(self, name):
@@ -3813,7 +3814,7 @@ cdef class Model:
         elif paramtype == SCIP_PARAMTYPE_CHAR:
             return chr(SCIPparamGetChar(param))
         elif paramtype == SCIP_PARAMTYPE_STRING:
-            return SCIPparamGetString(param)
+            return SCIPparamGetString(param).decode('utf-8')
 
 
     def readParams(self, file):
