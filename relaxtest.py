@@ -1,8 +1,8 @@
 #! usr/bin/env python3
-from pyscipopt      import Model, SCIP_PARAMSETTING, Expr, Relax, Term, ExprCons
-from SONCrelaxator  import *
-from Poem.polynomial     import *
-from constrained    import *
+from pyscipopt       import Model, SCIP_PARAMSETTING, Expr, Relax, Term, ExprCons
+from SONCrelaxator   import *
+from constrained     import *
+from Poem.polynomial import *
 
 import re
 import numpy as np
@@ -22,7 +22,7 @@ def example():
     x1 = m.addVar(vtype = "C", name = "x1")
     #x2 = m.addVar(vtype = "C", name = "x2")
     #x3 = m.addVar(vtype = "C", name = "x3")
-    
+
     #TODO: find SONC polynomial with linear term, to split into objective - constraint
     #TODO: find examples with more variables
     """
@@ -61,19 +61,19 @@ def example():
     m.setObjective(-x0-x1)
     """
     """
-    #Problem only containing linear and quadratic constraints, using sonc anyway shows that relaxator is really used (if do not return if polycons==False), time ~ 21sec
-    m.addCons(0.25*x1 - 0.0625*x1**2 - 0.0625*x0**2 + 0.5*x0 <= 1)
+    #Problem only containing linear and quadratic constraints, using sonc anyway shows that relaxator is really used (if do not return if polycons==False), time ~ 21secs
+    m.addCons(0.25*x1 - 0.0625*x1**2 - 0.0625*x0**2 + 0.5*x0 >= 1)
     m.addCons(0.0714285714285714*x1**2 + 0.0714285714285714*x0**2 - 0.428571428571429*x1 - 0.428571428571429*x0 <= -1)
     m.addCons((1<=x0)<=5.5)
     m.addCons((1<=x1)<=5.5)
     m.setObjective(x1)
     """
-    
+    """
     #terminates, gives reasonable lower bound, time ~ 10sec
     m.addCons(0<=0.5+x0**2*x1**1-x0**6*x1**4-x0**3*x1**3)
     m.addCons(-x0<=1-x0**4-x0**2*x1**4)
-    m.setObjective(3+x0) 
-    
+    m.setObjective(3+x0)
+    """
     """
     #(a) Test Polynomials modified, terminates, good lower bound (exact to 5sf.), time ~ 24sec
     m.addCons(-x0**4+3*x0-2*x1**2+1>=0)
@@ -92,8 +92,8 @@ def example():
     #(c) Test Polynomials modified, terminates, time ~ 25sec
     m.addCons(-x0**4+3*x0-2*x1**2+1>=0)
     m.addCons(-x0**4-x1**4+42>=0)
-    #m.addCons(x0**2*x1 >=0) #if added, time ~ 30sec
-    m.setObjective(3*x1-x0)    
+    m.addCons(x0**2*x1 >=0) #if added, time ~ 30sec
+    m.setObjective(3*x1-x0)
     """
     """
     #Example 4.8 (6)i. in Lower Bounds for a polynomial (Ghasemi, Marshall), lower bound: -1.6, sol: 0.0, time ~ 15sec
@@ -101,13 +101,13 @@ def example():
     m.addCons(-x0**3-x1**4>=0)
     m.setObjective(x0+x1)
     """
-    """
-    #Example 4.8 (8), good bound (-7.01e-05, sol: -9.06e-07), time ~ 14sec
-    m.addCons(2*x0**2-x1>=0)
+
+    #Example 4.8 (8), good bound (-7.01e-05, sol: -9.06e-07), time ~ 14sec #only one sol (instead of 3) probably due to rounding error
+    m.addCons(2*x0**2+x1>=0)
     m.addCons(x1-x0**4*x1+x1**5-x0**6-x1**6>=0)
     m.addCons(x1-5*x0**2+x0**4*x1-x0**6-x1**6>=0)
     m.setObjective(-x1-1)
-    """
+
     """
     #terminates, reasonable lower bound, time ~ 8sec
     m.addCons(1-x0**4-x1**4>=0)
@@ -116,12 +116,13 @@ def example():
     """
     """
     #ex14_1_1, unbounded point x3, 4 variables, time ~ 0.1sec
-    m.addCons(-x3+x0<=0)
-    m.addCons(-x3+x0>=0)
+    m.addCons(-x3+x0 <= 0)
+    m.addCons(-x3+x0 >= 0)
+    m.addCons(x3**2 + x0**2 +x2**2 <= 10)
     m.addCons(2*x2**2 + 4*x1*x2 - 42*x1 + 4*x1**3 - x3 <= 14)
     m.addCons(-2*x2**2 - 4*x1*x2 + 42*x1 - 4*x1**3 - x3 <= -14)
     m.addCons(2*x1**2 + 4*x1*x2 - 26*x2 + 4*x2**3 - x3 <= 22)
-    m.addCons(-2*x1**2 - 4*x1*x2 + 26*x2 - 4*x2**3 - x3 <= -22)
+    m.addCons(-2*x1**2 - 4*x1*x2 + 6*x2 - 4*x2**3 - x3 <= -54)
     m.addCons((-5<=x1)<=5)
     m.addCons((-5<=x2)<=5)
     m.setObjective(x0)
@@ -132,11 +133,24 @@ def example():
     m.addCons(-x0**4+x1-x0**3-x1**4+20+x0**2*x1>=0)
     m.setObjective(x0+x1)
     """
+    """
+    #Example instances/MINLP/circle.cip changed
+    m.addCons(-(x0+2.545724188)**2 + (x1-9.983058643)**2 <= -x2**2)
+    m.addCons((x0-8.589400372)**2 - (x1-6.208600402)**2  <= x2**2)
+    m.addCons((x0-5.953378204)**2 + 4*(x1-9.920197351)**2 <= x2**2)
+    m.addCons((x0-3.710241136)**2 - (x1-7.860254203)**2 <= -x2**2)
+    m.addCons(-8.88178419700125e-16 + (x0-3.629909053)**2 - (x1-2.176232347)**2  <= -x2**2)
+    #m.addCons((x0-3.016475803)**2 + (x1-6.757468831)**2 <= x2**2)
+    #m.addCons(8.88178419700125e-16+ (x0-4.148474536)**2 + (x1-2.435660776)**2 <= x2**2)
+    #m.addCons((x0-8.706433123)**2 + (x1-3.250724797)**2 <= x2**2)
+    #m.addCons((x0-1.604023507)**2 + (x1-7.020357481)**2 <= x2**2)
+    #m.addCons((x0-5.501896021)**2 + (x1-4.918207429)**2 <= x2**2)
+    m.setObjective(x2)
+    """
     return m
 
 if __name__=="__main__":
     m = example()
-    m.setPresolve(SCIP_PARAMSETTING.OFF)
     relaxator = SoncRelax()
     #which frequency is reasionable/sufficient? maybe also change priority param?
     m.includeRelax(relaxator,"SONCRelaxator", "Relaxator using SONC decompositions", freq=0)
@@ -147,7 +161,6 @@ if __name__=="__main__":
     print("objective = ", m.getObjVal())
 
     n = example()
-    n.setPresolve(SCIP_PARAMSETTING.OFF)
     n.disablePropagation()
     n.optimize()
     va = n.getVars()

@@ -3,15 +3,20 @@
 
 from Poem.polynomial import *
 from Poem.exceptions import InfeasibleError
+from Poem.aux import *
 
 import scipy
 import cvxpy            as cvx
 
-
 def constrained_opt(objective, constraint_list, solved_instance):
-    """Optimise objective under given constraints."""
-    def build_lagrangian(lamb):
-        """build the function obj-sum(lamb*gi), where obj is the objective and gi are the constraints, 
+    """Optimise objective under given constraints.
+    :param: objective - objective function given as polynomial
+    :param: constraint_list - list of all (polynomial) constraints
+    :param: solved_instance - list of instances that where already solved by this method
+    """
+    #TODO: instead of computing new polynomial maybe just update the old one?
+    def build_lagrangian(lamb, new = False):
+        """build the function obj-sum(lamb*gi), where obj is the objective and gi are the constraints,
         for lamb fixed this function gives a lower bound for f on {x: gi(x)>=0}"""
         res = objective.copy()
         for i in range(len(constraint_list)):
@@ -21,9 +26,24 @@ def constrained_opt(objective, constraint_list, solved_instance):
         return Polynomial(res.A, res.b)
 
     def lower_bound(lamb):
-        """computes a lower bound of build_lagrangian"""
+        """computes a lower bound of build_lagrangian via SONC"""
         lagrangian = build_lagrangian(lamb)
-        lagrangian.run_sonc()
+        #make sure that same polynomial is not computed twice
+        if str(lagrangian) in lagrangian_list.keys():
+            return lagrangian_list[str(lagrangian)]
+
+        #TODO: only compares to poly with lamb = [1,...,1] but should compare to last computed polynomial
+        #can reuse cover if only the coeffs changed since cover only depends on matrix A, not on b
+        if lagrangian.A.shape == poly.A.shape:
+            lagrangian.cover = poly.cover
+            lagrangian.lamb = poly.lamb
+        else:
+            lagrangian._compute_cover()
+        lagrangian.sonc_opt_python()
+        #lagrangian.run_sonc() #uses lagrangian._compute_cover() and lagrangian._compute_zero_cover()
+
+        #save computed polynomial
+        lagrangian_list[str(lagrangian)] = -lagrangian.lower_bound
         return -lagrangian.lower_bound
 
     t0 = datetime.now()
@@ -31,12 +51,22 @@ def constrained_opt(objective, constraint_list, solved_instance):
     m = len(constraint_list)
 
     #return if instance was already solved
-    poly = build_lagrangian(np.ones(m))
+    poly = build_lagrangian(np.ones(m), new = True)
     if str(poly) in solved_instance.keys():
         return solved_instance[str(poly)], poly
 
+    #compute cover of polynomial once, to save time later (TODO: maybe change that), or return if infeasibleError
+    try:
+        poly._compute_cover()
+    except InfeasibleError as err:
+        success = err
+        return success, poly
+
+    lagrangian_list = dict()
     #optimize lower_bound(lamb) with respect to lamb, return InfeasibleError if SONC decomposition is not well-defined (i.e. if unbounded points exist)
-    #TODO: make sure, that verify == 1
+    #constraints in minimize are to make sure that lamb>0
+    #TODO: make sure, that verify == 1?
+    #TODO: Is Infeasible Error still necessary in this case?
     try:
         data = scipy.optimize.minimize(lower_bound, np.ones(m), method = 'SLSQP', constraints = scipy.optimize.LinearConstraint(np.eye(m), aux.EPSILON, np.inf, keep_feasible = True), options = {'maxiter': 40})
     except InfeasibleError as err:
@@ -44,8 +74,8 @@ def constrained_opt(objective, constraint_list, solved_instance):
         return success, poly
     print('Lower bound: %.2f\nMultipliers: %s' % (-data.fun, data.x))
     print('Time: %.2f' % aux.dt2sec(datetime.now() - t0))
-    return data, poly 
- 
+    return data, poly
+
 #TODO: can we use these functions for anything?
 def unite_matrices(A_list):
     res = []
@@ -94,7 +124,7 @@ if __name__ == "__main__":
 
     p = f + g1 + g2
     p = Polynomial(p.A, p.b)
-    
+
     A,b = p.A, p.relax().b
 
     n,t = A.shape

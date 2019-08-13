@@ -103,13 +103,13 @@ class Polynomial(polynomial_base.Polynomial):
 
 	def clear(self):
 		"""Delete all problem associated with the polynomial, to save memory."""
-		self.prob_sos = None 
-		self.prob_sos_sparse = None 
-		self.prob_sos_full = None 
-		self.prob_sonc = None 
-		self.prob_sage = None 
+		self.prob_sos = None
+		self.prob_sos_sparse = None
+		self.prob_sos_full = None
+		self.prob_sonc = None
+		self.prob_sage = None
 
-	# === Output === 
+	# === Output ===
 
 	def get_solutions(self):
 		"""Return a list of (solver, time, optimum) for all solutions found."""
@@ -126,7 +126,7 @@ class Polynomial(polynomial_base.Polynomial):
 		"""Print a table of all stored solutions.
 
 		You can obtain the solution with a given index by p.get_solution(<index>).
-	
+
 		Call:
 			p.print_solutions([only_valid, form])
 		Input:
@@ -142,7 +142,7 @@ class Polynomial(polynomial_base.Polynomial):
 
 	def relax(self):
 		"""Return a lower estimate for the polynomial.
-		
+
 		All potentially newgative terms are made negative at once.
 		This function should be used, when checking the decomposition, obtained by get_decomposition(), since that functions works on the relaxation.
 		"""
@@ -232,7 +232,7 @@ class Polynomial(polynomial_base.Polynomial):
 		"""Create the SAGE-optimisation-problem in cvx for the polynomial given by (A,b).
 
 		Let p be the polynomial given by (A,b). We want to find min{ p(x) : x in R^n} by asking, what is the minimal gamma such that p + gamma is a SAGE.
-		
+
 		Note: This function does NOT call a solver. It only states the problem and does not solve it.
 
 		Call:
@@ -249,7 +249,7 @@ class Polynomial(polynomial_base.Polynomial):
 		b_relax = self.b.copy()
 		b_relax[self.monomial_squares] = abs(self.b[self.monomial_squares])
 		b_relax[self.non_squares] = -abs(self.b[self.non_squares])
-		
+
 		X = cvx.Variable(shape = (t,t), name = 'X', nonneg = True)
 		#lamb[k,i]: barycentric coordinate, using A[:,i] to represent A[:,k]
 		lamb = cvx.Variable(shape = (t,t), name = 'lambda', nonneg = True)
@@ -271,9 +271,9 @@ class Polynomial(polynomial_base.Polynomial):
 		"""Create the SONC-optimisation-problem in cvx for the polynomial given by (A,b).
 
 		Let p be the polynomial given by (A,b). We want to find min{ p(x) : x in R^n} by asking, what is the minimal gamma such that p + gamma is a sum of non-negative circuit polynomials..
-		
+
 		Note: This function does NOT call a solver. It only states the problem and does not solve it.
-		Note: To obtain a DCP-problem in cvx, log was applied to every entry. 
+		Note: To obtain a DCP-problem in cvx, log was applied to every entry.
 			To get the proper solution this has to be mapped back.
 
 		Call:
@@ -284,7 +284,7 @@ class Polynomial(polynomial_base.Polynomial):
 		self.clean()
 		if self.cover is None:
 			self._compute_zero_cover(split)
-		
+
 		t0 = datetime.now()
 
 		#default: evenly distribute the non-squares
@@ -324,7 +324,7 @@ class Polynomial(polynomial_base.Polynomial):
 				B[k, self.cover[k][-1]] = -abs(self.b[self.cover[k][-1]]) / count[self.cover[k][-1]]
 
 		self.coefficient_distribution = B.copy()
-	
+
 	# === Reallocation of SONC coefficients ===
 
 	def _reallocate_coefficients(self):
@@ -348,7 +348,7 @@ class Polynomial(polynomial_base.Polynomial):
 		circ = np.zeros(len(self.cover))
 
 		cover_indices = [k for k in range(len(self.cover)) if 0 in self.cover[k]]
-		
+
 		#compute convex combinations and something-like-circuit-number
 		for k in cover_indices:
 			circ[k] = ((C[k,self.cover[k][1:-1]]/self.lamb[k,self.cover[k][1:-1]]) ** (self.lamb[k,self.cover[k][1:-1]] / (1 - self.lamb[k,0]))).prod()
@@ -396,7 +396,7 @@ class Polynomial(polynomial_base.Polynomial):
 			B = self._reallocate_coefficients()
 			self._create_sonc_opt_problem(B)
 		return opts
-	
+
 	##TODO: idea can still be used, with some adjustments
 	#def improve_sonc(self):
 	#	"""Reduce numerical errors in the solution for the SONC-problem.
@@ -531,7 +531,7 @@ class Polynomial(polynomial_base.Polynomial):
 			data['result'] = matlab_result
 			data['error'] = repr(err)
 		self.solution_time = aux.dt2sec(datetime.now() - t0)
-		
+
 		data['time'] = self.solution_time
 		data['language'] = 'matlab'
 		data['modeler'] = 'cvx'
@@ -582,7 +582,7 @@ class Polynomial(polynomial_base.Polynomial):
 			data['error'] = repr(err)
 
 		self.solution_time = aux.dt2sec(datetime.now() - t0)
-		
+
 		data['time'] = self.solution_time
 		data['language'] = 'matlab'
 		data['solver'] = solver
@@ -647,7 +647,7 @@ class Polynomial(polynomial_base.Polynomial):
 			data['error'] = repr(err)
 
 		self.solution_time = aux.dt2sec(datetime.now() - t0)
-		
+
 		data['time'] = self.solution_time
 		data['language'] = 'matlab'
 		data['solver'] = solver
@@ -718,7 +718,7 @@ class Polynomial(polynomial_base.Polynomial):
 		Output:
 			data: dictionary containing information about the solution
 				- opt: optimal value
-				- C: (t x t)-matrix, coefficients for the decomposition, 
+				- C: (t x t)-matrix, coefficients for the decomposition,
 				- lambda: (t x t)-matrix, barycentri c coordinates
 				- time: time to compute the solution
 				- verify: 1 = Solved, -1 = error, 0 = otherwise/unchecked
@@ -726,13 +726,13 @@ class Polynomial(polynomial_base.Polynomial):
 		"""
 		self.clean()
 		#create problem instance
-		if self.prob_sage is None: 
+		if self.prob_sage is None:
 			self._create_sage_opt_problem()
 
 		#parsing keywords
-		if solver == 'scs': 
+		if solver == 'scs':
 			kwargs = {'eps': aux.EPSILON / 10, 'max_iters' : 20000}
-		elif solver == 'ECOS': 
+		elif solver == 'ECOS':
 			kwargs = {'reltol': aux.EPSILON / 10, 'max_iters' : 1000, 'feastol': aux.EPSILON / 10, 'abstol': aux.EPSILON / 10}
 		else:
 			kwargs = {}
@@ -743,7 +743,7 @@ class Polynomial(polynomial_base.Polynomial):
 		t0 = datetime.now()
 		try:
 			self.prob_sage.solve(solver = solver, **kwargs)
-			
+
 			C = self.prob_sage.variables()[0].value
 			#eliminate zeros, but do not violate other constraints
 			C += (C == 0) * aux.EPSILON / self.A.shape[1]
@@ -797,13 +797,13 @@ class Polynomial(polynomial_base.Polynomial):
 		"""
 		self.clean()
 		#create problem instance
-		if self.prob_sonc is None: 
+		if self.prob_sonc is None:
 			self._create_sonc_opt_problem(split = True)
 
 		#parsing keywords
-		if solver == 'scs': 
+		if solver == 'scs':
 			kwargs = {'eps': aux.EPSILON / 10, 'max_iters' : 20000}
-		elif solver == 'ECOS': 
+		elif solver == 'ECOS':
 			kwargs = {'reltol': aux.EPSILON / 10, 'max_iters' : 500, 'feastol': aux.EPSILON / 10, 'abstol': aux.EPSILON / 10}
 		else:
 			kwargs = {}
@@ -817,7 +817,7 @@ class Polynomial(polynomial_base.Polynomial):
 
 			#get exp-values, round for turning into sparse matrix
 			Exp = np.exp(self.prob_sonc.variables()[0].value)
-			
+
 			#get coordinates and data for the coefficient matrix
 			coords = []
 			data = []
@@ -878,7 +878,7 @@ class Polynomial(polynomial_base.Polynomial):
 		if not self.is_simplex:
 			raise Exception('Trivial solution only in simplex case.')
 
-		if self.prob_sonc is None: 
+		if self.prob_sonc is None:
 			self._create_sonc_opt_problem()
 
 		t0 = datetime.now()
@@ -931,7 +931,7 @@ class Polynomial(polynomial_base.Polynomial):
 		data['init_time'] = self.init_time
 		data['time'] += self.init_time
 		if data['language'] == 'python' and data['strategy'] not in ['trivial', 'traverse', 'fork']:
-			if data['strategy'] == 'sos': 
+			if data['strategy'] == 'sos':
 				data['problem_creation_time'] = self.sos_problem_creation_time
 			elif data['strategy'] == 'sonc':
 				data['problem_creation_time'] = self.sonc_problem_creation_time
@@ -993,7 +993,7 @@ class Polynomial(polynomial_base.Polynomial):
 		Call:
 			data = p.opt([T, solver, check])
 		Input:
-			solver [optional, default 'sedumi'/'ECOS']: solver, to solve the problem, currenty possible: 
+			solver [optional, default 'sedumi'/'ECOS']: solver, to solve the problem, currenty possible:
 				Matlab: 'sedumi', 'sdpt3'
 				Python: 'ECOS', 'scs', 'cvxopt'
 			T [optional, default None]: a covering of the interior points by simplices
@@ -1044,7 +1044,7 @@ class Polynomial(polynomial_base.Polynomial):
 				data = aux.FAULT_DATA.copy()
 				data['result'] = matlab_result
 				data['error'] = repr(err)
-			
+
 			data['modeler'] = 'cvx'
 			data['language'] = 'matlab'
 		else:
@@ -1117,9 +1117,9 @@ class Polynomial(polynomial_base.Polynomial):
 		Current list of methods:
 		- sostools
 		- gloptipoly
-		- sos-cvx in Matlab, using sedumi 
+		- sos-cvx in Matlab, using sedumi
 		- sos-cvx in Matlab, using sdpt3
-		- sos-cvx in Python using cvxopt (if matrix-size <= 120) 
+		- sos-cvx in Python using cvxopt (if matrix-size <= 120)
 
 		- sonc-cvx in Matlab, using sedumi
 		- sonc-cvx in Matlab, using sdpt3
@@ -1148,11 +1148,11 @@ class Polynomial(polynomial_base.Polynomial):
 		"""Return a certificate that the polynomial is SOS.
 
 		Note: This function might fail for SOSTOOLS or Gloptipoly, since these do not always return a full-size matrix.
-		
+
 		Call:
 			cert = p._get_sos_decomposition()
 		Output:
-			cert: a list of Polynomial, such that 
+			cert: a list of Polynomial, such that
 				sum([q**2 for q in cert]) == p (up to rounding)
 		"""
 		if self.solution is None: return None
@@ -1176,7 +1176,7 @@ class Polynomial(polynomial_base.Polynomial):
 		"""Return a decomposition into non-negative polynomials, according to currently stored solution.
 
 		Note: SAGE not implemented, yet.
-		Note: If in SONC, there are points, which are not covered with the constant term, 
+		Note: If in SONC, there are points, which are not covered with the constant term,
 			the solution in exact arithmetic may still be slightly negative.
 
 		Call:
@@ -1255,7 +1255,7 @@ class Polynomial(polynomial_base.Polynomial):
 			return None
 		frac = np.vectorize(aux.to_fraction, cache = True)
 		box_v = np.vectorize(aux.get_box, cache = True)
-		
+
 		C = self.solution['C']
 		C_sy = np.zeros(C.shape, dtype = object)
 		lamb = self.solution['lambda']
@@ -1263,26 +1263,26 @@ class Polynomial(polynomial_base.Polynomial):
 			C[i,i] *= -1
 			C_sy[i,:] = frac(C[i,:])
 			lamb[i,i] *= -1
-		
+
 		lamb_sy = np.zeros(lamb.shape, dtype = object)
-		
+
 		box_all = box_v(lamb, 16)
 		for i in self.non_squares:
 			box = list(zip(box_all[0][i], box_all[1][i]))
 			lamb_sy[i,:] = aux.LP_solve_exact(self.A, np.zeros(self.A.shape[0], dtype = np.int), box = box)
-		
+
 		C_sy[self.monomial_squares,0] = 0
-		
+
 		C_sy *= np.array(np.array(self.relax().b, dtype = np.int) / C_sy.sum(axis = 0))
-		
+
 		decomp = []
-		
+
 		for j in self.non_squares:
 			idx = [i for i in range(1, C_sy.shape[0]) if i != j and lamb_sy[j,i] != 0]
 			C_sy[j,0] = aux.to_fraction(sympy.exp(aux.to_fraction((aux.symlog(lamb_sy[j,idx] / C_sy[j,idx]) * lamb_sy[j,idx] - lamb_sy[j,idx]).sum() + lamb_sy[j,0]*sympy.log(lamb_sy[j,0]) - lamb_sy[j,0] - C_sy[j,j], bound = 1) / lamb_sy[j,0]), bound = 1)
 			decomp.append(AGEPolynomial(self.A, C_sy[j,:], lamb = lamb_sy[j,:], orthant = np.ones(self._variables, dtype = np.int)))
 		return decomp
-	
+
 	def trivial_check(self):
 		"""Check whether p is a sum of monomial squares."""
 		self.clean()
@@ -1293,7 +1293,7 @@ class Polynomial(polynomial_base.Polynomial):
 			return True
 		else:
 			return False
-	
+
 	def is_sum_of_monomial_squares(self, eps = 0):
 		"""Check whether the polynomial is a sum of monomial squares.
 
@@ -1331,7 +1331,7 @@ class Polynomial(polynomial_base.Polynomial):
 				c[m] = -1
 				res = scipy.optimize.linprog(c, A_eq = self.A[:,self.monomial_squares], b_eq = self.A[:,deg])
 				if res.fun < -aux.EPSILON:
-					covering_vertices.append(self.monomial_squares[m])	
+					covering_vertices.append(self.monomial_squares[m])
 			#for each point, check whether it lies in the face given by covering_vertices
 			#This happens iff adding the vector does not increase the rank.
 			rank = np.linalg.matrix_rank(self.A[:,covering_vertices])
@@ -1346,7 +1346,7 @@ class Polynomial(polynomial_base.Polynomial):
 		"""Determine vertices which are not covered by 0 in the current cover.
 
 		By default, using self._compute_zero_cover(), this gives all points which lie on an outer face non-adjacent to zero.
-		"""		
+		"""
 		if aux.VERBOSE > 1:
 			print('Computing degenerate points.')
 		if self.cover is None:
@@ -1373,7 +1373,7 @@ class Polynomial(polynomial_base.Polynomial):
 		Call:
 			p._compute_zero_cover()
 		Result stored in:
-			p.cover: list of coverings, each covering is a list of integers (as column indices), 
+			p.cover: list of coverings, each covering is a list of integers (as column indices),
 				such that these columns of A form a simplex with some interior nodes
 				Each node, if possible, is covered using the origin.
 		"""
@@ -1409,14 +1409,14 @@ class Polynomial(polynomial_base.Polynomial):
 			T.append(T_index)
 		self.cover_time = aux.dt2sec(datetime.now() - t0)
 		self.set_cover(T, split)
-	
+
 	def _compute_cover(self, split = True):
 		"""Compute a complete covering of A using simplices.
 
 		Call:
 			p._compute_cover()
 		Result stored in:
-			p.cover: list of coverings, each covering is a list of integers (as column indices), 
+			p.cover: list of coverings, each covering is a list of integers (as column indices),
 				such that these columns of A form a simplex with some interior nodes
 				Also each node appears in some cover.
 		"""
@@ -1432,7 +1432,7 @@ class Polynomial(polynomial_base.Polynomial):
 		A_eq = self.A[:,self.monomial_squares]
 		X = cvx.Variable(len(self.monomial_squares), nonneg = True)
 		c = np.ones(len(self.monomial_squares))
-		
+
 		#cover U
 		while U_index != set():
 			ui = U_index.pop()
@@ -1598,7 +1598,7 @@ class Polynomial(polynomial_base.Polynomial):
 	def _local_min_random(self, max_iters = 10):
 		"""Give an upper bound to the minimum by guessing starting values and computing the local minima.
 
-		The method runs <max_iters> iterations: 
+		The method runs <max_iters> iterations:
 			Generate a normally distributed start point, scaled by the maximal coefficient.
 			Then run conjugate gradient algorithm to obtain a local minimum.
 			The lowest value found is returned.
@@ -1638,11 +1638,11 @@ class Polynomial(polynomial_base.Polynomial):
 
 	def _local_min_sonc(self):
 		"""Give an upper bound to the minimum, based on the SONC decomposition.
-		
+
 		The method computes the SONC decomposition.
 		Then it computes the minimum of each circuit polynomial by an explicit formula.
 		The barycentre of these minima is then used as start point for a conjugate gradient algorithm on the polynomial.
-	
+
 		Call:
 			fmin, xmin = p._sonc_min()
 		Output:
