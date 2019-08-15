@@ -2800,7 +2800,6 @@ cdef class Model:
             scip_benders = SCIPfindBenders(self._scip, n)
 
         retcode = SCIPsetupBendersSubproblem(self._scip, scip_benders, scip_sol, probnumber)
-        print(retcode)
 
         PY_SCIP_CALL(retcode)
 
@@ -3254,8 +3253,6 @@ cdef class Model:
         islpcut -- is this cutting method suitable for generating cuts for convex relaxations?
         """
         cdef SCIP_BENDERS* _benders
-
-        print "Including Benders' cut ", name
 
         bendersname = str_conversion(benders.name)
         _benders = SCIPfindBenders(self._scip, bendersname)
