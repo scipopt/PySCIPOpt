@@ -32,6 +32,11 @@ cdef extern from "scip/scip.h":
         SCIP_OBJSENSE_MAXIMIZE = -1
         SCIP_OBJSENSE_MINIMIZE =  1
 
+    # This version is used in LPI.
+    ctypedef enum SCIP_OBJSEN:
+        SCIP_OBJSEN_MAXIMIZE = -1
+        SCIP_OBJSEN_MINIMIZE =  1
+
     ctypedef enum SCIP_BOUNDTYPE:
         SCIP_BOUNDTYPE_LOWER = 0
         SCIP_BOUNDTYPE_UPPER = 1
@@ -575,7 +580,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetObjsense(SCIP* scip, SCIP_OBJSENSE objsense)
     SCIP_OBJSENSE SCIPgetObjsense(SCIP* scip)
     SCIP_RETCODE SCIPsetObjlimit(SCIP* scip, SCIP_Real objlimit)
-    SCIP_RETCODE SCIPgetObjlimit(SCIP* scip)
+    SCIP_Real SCIPgetObjlimit(SCIP* scip)
     SCIP_RETCODE SCIPaddObjoffset(SCIP* scip, SCIP_Real addval)
     SCIP_RETCODE SCIPaddOrigObjoffset(SCIP* scip, SCIP_Real addval)
     SCIP_Real SCIPgetOrigObjoffset(SCIP* scip)
@@ -1139,7 +1144,7 @@ cdef extern from "scip/scip.h":
 
     # LPI Functions
     SCIP_RETCODE SCIPgetLPI(SCIP* scip, SCIP_LPI** lpi)
-    SCIP_RETCODE SCIPlpiCreate(SCIP_LPI** lpi, SCIP_MESSAGEHDLR* messagehdlr, const char* name, SCIP_OBJSENSE objsen)
+    SCIP_RETCODE SCIPlpiCreate(SCIP_LPI** lpi, SCIP_MESSAGEHDLR* messagehdlr, const char* name, SCIP_OBJSEN objsen)
     SCIP_RETCODE SCIPlpiFree(SCIP_LPI** lpi)
     SCIP_RETCODE SCIPlpiWriteLP(SCIP_LPI* lpi, const char* fname)
     SCIP_RETCODE SCIPlpiReadLP(SCIP_LPI* lpi, const char* fname)

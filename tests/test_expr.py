@@ -144,7 +144,7 @@ def test_inequality(model):
     cons = expr >= 1 + x**1.2
     assert isinstance(cons, ExprCons)
     assert isinstance(cons.expr, GenExpr)
-    assert cons._lhs == 0.0 # NOTE: the 1 is pass the the other side because of the way GenExprs work
+    assert cons._lhs == 0.0 # NOTE: the 1 is passed to the other side because of the way GenExprs work
     assert cons._rhs is None
 
     assert isinstance(expr, Expr)
