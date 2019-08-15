@@ -77,7 +77,6 @@ class testBenders(Benders):
 
         return result_dict
 
-
     def bendersfreesub(self, probnumber):
         if self.subprob.inProbing():
            self.subprob.endProbing()
@@ -208,8 +207,10 @@ def test_flpbenders_defcuts():
     # optimizing the problem using Benders' decomposition
     master.optimize()
 
-    # solving the subproblems to get the best solution
-    # master.computeBestSolSubproblems()
+    # since custom solving functions are defined, we need to manually solve the
+    # Benders' decomposition subproblems to get the best solution
+    master.setupBendersSubproblem(0, testbd, master.getBestSol())
+    testbd.subprob.solveProbingLP()
 
     EPS = 1.e-6
     y = master.data
@@ -224,7 +225,7 @@ def test_flpbenders_defcuts():
 
     master.printStatistics()
 
-    # since computeBestSolSubproblems() was called above, we need to free the
+    # since the subproblems were setup and then solved, we need to free the
     # subproblems. This must happen after the solution is extracted, otherwise
     # the solution will be lost
     master.freeBendersSubproblems()
@@ -254,8 +255,10 @@ def test_flpbenders_customcuts():
     # optimizing the problem using Benders' decomposition
     master.optimize()
 
-    # solving the subproblems to get the best solution
-    # master.computeBestSolSubproblems()
+    # since custom solving functions are defined, we need to manually solve the
+    # Benders' decomposition subproblems to get the best solution
+    master.setupBendersSubproblem(0, testbd, master.getBestSol())
+    testbd.subprob.solveProbingLP()
 
     EPS = 1.e-6
     y = master.data
@@ -270,7 +273,7 @@ def test_flpbenders_customcuts():
 
     master.printStatistics()
 
-    # since computeBestSolSubproblems() was called above, we need to free the
+    # since the subproblems were setup and then solved, we need to free the
     # subproblems. This must happen after the solution is extracted, otherwise
     # the solution will be lost
     master.freeBendersSubproblems()
