@@ -902,6 +902,14 @@ cdef class Model:
 
         return quality
 
+    def getIterations(self):
+        """Get the iteration count of the last solved LP"""
+        cdef SCIP_LPI* lpi
+        PY_SCIP_CALL(SCIPgetLPI(self._scip, &lpi))
+        cdef int iters = 0
+        PY_SCIP_CALL(SCIPlpiGetIterations(lpi, &iters))
+        return iters
+
     # Objective function
 
     def setMinimize(self):
