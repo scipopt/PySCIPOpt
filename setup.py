@@ -17,7 +17,7 @@ else:
 # determine library
 libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
 libname = 'scip'
-if not os.path.exists(os.path.join(libdir, 'libscip.so')):
+if (not os.path.exists(os.path.join(libdir, 'libscip.so'))) and (not os.path.exists('/usr/lib/libscip.so')):
     if os.path.exists(os.path.join(libdir, 'shared/libscipsolver.so')):
         print('SCIP library <%s> does not exist.\nUsing <%s> instead.' % (os.path.join(libdir, 'libscip.so'), os.path.join(libdir, 'shared/libscipsolver.so')))
         libdir = os.path.abspath(os.path.join(scipoptdir, 'lib/shared'))
