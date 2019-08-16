@@ -60,6 +60,9 @@ if "--debug" in sys.argv:
     extra_compile_args.append('-UNDEBUG')
     sys.argv.remove("--debug")
 
+# avoid errors if SCIP is build with make:
+extra_compile_args.append('-DNO_CONFIG_HEADER')
+
 extensions = [Extension('pyscipopt.scip', [os.path.join(packagedir, 'scip'+ext)],
                           include_dirs=[includedir],
                           library_dirs=[libdir],
