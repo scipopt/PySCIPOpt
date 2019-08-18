@@ -1,11 +1,19 @@
 from setuptools import setup, Extension
 import os, platform, sys, re
 
-runtime_library_dirs = []
-extra_link_args = []
-
 # look for environment variable that specifies path to SCIP
 scipoptdir = os.environ.get('SCIPOPTDIR', '').strip('"')
+
+extra_compile_args = []
+extra_link_args = []
+# set runtime libraries
+if platform.system() in ['Linux', 'Darwin']:
+    extra_link_args.append('-Wl,-rpath,'+libdir)
+
+# enable debug mode if requested
+if "--debug" in sys.argv:
+    extra_compile_args.append('-UNDEBUG')
+    sys.argv.remove("--debug")
 
 # determine include directory
 if os.path.exists(os.path.join(scipoptdir, 'src')):
@@ -51,21 +59,10 @@ if not os.path.exists(os.path.join(packagedir, 'scip.pyx')):
 
 ext = '.pyx' if cythonize else '.c'
 
-# set runtime libraries
-if platform.system() in ['Linux', 'Darwin']:
-    extra_link_args.append('-Wl,-rpath,'+libdir)
-
-# enable debug mode if requested
-extra_compile_args = []
-if "--debug" in sys.argv:
-    extra_compile_args.append('-UNDEBUG')
-    sys.argv.remove("--debug")
-
 extensions = [Extension('pyscipopt.scip', [os.path.join(packagedir, 'scip'+ext)],
                           include_dirs=[includedir],
                           library_dirs=[libdir],
                           libraries=[libname],
-                          runtime_library_dirs=runtime_library_dirs,
                           extra_compile_args = extra_compile_args,
                           extra_link_args=extra_link_args
                           )]
