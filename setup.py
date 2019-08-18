@@ -4,28 +4,29 @@ import os, platform, sys, re
 # look for environment variable that specifies path to SCIP
 scipoptdir = os.environ.get('SCIPOPTDIR', '').strip('"')
 
-# now check whether SCIP is installed on the system or whether a source code directory has been specified
-if os.path.exists(os.path.join(scipoptdir, 'include')):
-    includedir = os.path.abspath(os.path.join(scipoptdir, 'include'))
+# determine include directory
+if os.path.exists(os.path.join(scipoptdir, 'src')):
+    # SCIP seems to be installed in place
+    includedir = os.path.abspath(os.path.join(scipoptdir, 'src'))
 else:
-    if os.path.exists(os.path.join(scipoptdir, 'src')):
-        includedir = os.path.abspath(os.path.join(scipoptdir, 'src'))
-    else:
-        print('Neither directory \'src\' nor \'include\' exists in the path <%s>' % scipoptdir)
-        quit(1)
+    # assume that SCIP is installed on the system
+    includedir = os.path.abspath(os.path.join(scipoptdir, 'include'))
+
+print('Using include path <%s>.' % includedir)
 
 # determine library
-libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
-libname = 'scip'
-if (not os.path.exists(os.path.join(libdir, 'libscip.so'))) and (not os.path.exists('/usr/lib/libscip.so')):
-    if os.path.exists(os.path.join(libdir, 'shared/libscipsolver.so')):
-        print('SCIP library <%s> does not exist.\nUsing <%s> instead.' % (os.path.join(libdir, 'libscip.so'), os.path.join(libdir, 'shared/libscipsolver.so')))
-        libdir = os.path.abspath(os.path.join(scipoptdir, 'lib/shared'))
-        libname = 'scipsolver'
-    else:
-        print('SCIP library does not exist - tried <lib/libscip.so> and <lib/shared/libscipsolver.so>.')
-        quit(1)
+if os.path.exists(os.path.join(scipoptdir, 'lib/shared/libscipsolver.so')):
+    # SCIP seems to be created with make
+    libdir = os.path.abspath(os.path.join(scipoptdir, 'lib/shared'))
+    libname = 'scipsolver'
+    withmake = 1
+else:
+    # assume that SCIP is installed on the system
+    libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
+    libname = 'scip'
+    withmake = 0
 
+print('Using SCIP library <%s> at <%s>.' % (libname,libdir))
 
 cythonize = True
 
@@ -61,7 +62,8 @@ if "--debug" in sys.argv:
     sys.argv.remove("--debug")
 
 # avoid errors if SCIP is build with make:
-extra_compile_args.append('-DNO_CONFIG_HEADER')
+if withmake == 1:
+    extra_compile_args.append('-DNO_CONFIG_HEADER')
 
 extensions = [Extension('pyscipopt.scip', [os.path.join(packagedir, 'scip'+ext)],
                           include_dirs=[includedir],
