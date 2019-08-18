@@ -6,14 +6,6 @@ scipoptdir = os.environ.get('SCIPOPTDIR', '').strip('"')
 
 extra_compile_args = []
 extra_link_args = []
-# set runtime libraries
-if platform.system() in ['Linux', 'Darwin']:
-    extra_link_args.append('-Wl,-rpath,'+libdir)
-
-# enable debug mode if requested
-if "--debug" in sys.argv:
-    extra_compile_args.append('-UNDEBUG')
-    sys.argv.remove("--debug")
 
 # determine include directory
 if os.path.exists(os.path.join(scipoptdir, 'src')):
@@ -37,6 +29,15 @@ else:
     libname = 'scip'
 
 print('Using SCIP library <%s> at <%s>.' % (libname,libdir))
+
+# set runtime libraries
+if platform.system() in ['Linux', 'Darwin']:
+    extra_link_args.append('-Wl,-rpath,'+libdir)
+
+# enable debug mode if requested
+if "--debug" in sys.argv:
+    extra_compile_args.append('-UNDEBUG')
+    sys.argv.remove("--debug")
 
 cythonize = True
 
