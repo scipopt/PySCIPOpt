@@ -1,6 +1,9 @@
 from setuptools import setup, Extension
 import os, platform, sys, re
 
+runtime_library_dirs = []
+extra_link_args = []
+
 # look for environment variable that specifies path to SCIP
 scipoptdir = os.environ.get('SCIPOPTDIR', '').strip('"')
 
@@ -19,12 +22,11 @@ if os.path.exists(os.path.join(scipoptdir, 'lib/shared/libscipsolver.so')):
     # SCIP seems to be created with make
     libdir = os.path.abspath(os.path.join(scipoptdir, 'lib/shared'))
     libname = 'scipsolver'
-    withmake = 1
+    extra_compile_args.append('-DNO_CONFIG_HEADER')
 else:
     # assume that SCIP is installed on the system
     libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
     libname = 'scip'
-    withmake = 0
 
 print('Using SCIP library <%s> at <%s>.' % (libname,libdir))
 
@@ -50,8 +52,6 @@ if not os.path.exists(os.path.join(packagedir, 'scip.pyx')):
 ext = '.pyx' if cythonize else '.c'
 
 # set runtime libraries
-runtime_library_dirs = []
-extra_link_args = []
 if platform.system() in ['Linux', 'Darwin']:
     extra_link_args.append('-Wl,-rpath,'+libdir)
 
@@ -60,10 +60,6 @@ extra_compile_args = []
 if "--debug" in sys.argv:
     extra_compile_args.append('-UNDEBUG')
     sys.argv.remove("--debug")
-
-# avoid errors if SCIP is build with make:
-if withmake == 1:
-    extra_compile_args.append('-DNO_CONFIG_HEADER')
 
 extensions = [Extension('pyscipopt.scip', [os.path.join(packagedir, 'scip'+ext)],
                           include_dirs=[includedir],
