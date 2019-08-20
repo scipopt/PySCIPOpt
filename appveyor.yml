@@ -50,6 +50,7 @@ after_test:
   - cmd: "echo [pypi] > %USERPROFILE%\\.pypirc"
   - cmd: "echo username: pyscipopt >> %USERPROFILE%\\.pypirc"
   - cmd: "echo password: %pypipw% >> %USERPROFILE%\\.pypirc"
+  - python setup.py bdist_wheel
 
 on_success:
   - cmd: "if [%APPVEYOR_REPO_TAG%]==[true] %TWINE% upload dist\\*.whl"
