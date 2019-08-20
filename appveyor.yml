@@ -38,7 +38,7 @@ install:
   - cmd: "%PIP% install cython networkx pytest wheel twine"
 
 build_script:
-  - -cmd: "%PIP% install ."
+  - cmd: "%PIP% install ."
 
 test_script:
   - cmd: "%PYTEST% tests"
