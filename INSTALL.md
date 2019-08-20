@@ -25,7 +25,7 @@ contains the corresponding header files:
         > ...
 
 If you are not using the installer packages, you need to [install the
-SCIP Optimization Suite using CMake](http://scip.zib.de/doc/html/CMAKE.php). 
+SCIP Optimization Suite using CMake](http://scip.zib.de/doc/html/CMAKE.php).
 The Makefile system is not compatible with PySCIPOpt!
 
 On Windows it is highly recommended to use the [Anaconda Python
@@ -57,17 +57,14 @@ found"):
 
 After setting up `SCIPOPTDIR` as specified above, please run
 
-    python setup.py install
-
-You may use the additional options `--user` or
-`--prefix=<custom-python-path>`, to build the interface locally.
+    pip install [-e] .
 
 Building with debug information
 ===============================
 
 To use debug information in PySCIPOpt you need to build it like this:
 
-    python setup.py install --debug
+    pip install [-e] --install-option="--debug" .
 
 Be aware that you will need the **debug library** of the SCIP
 Optimization Suite for this to work
