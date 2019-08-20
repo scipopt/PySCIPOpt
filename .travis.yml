@@ -31,7 +31,7 @@ before_install:
 
 install:
   - pip install cython networkx pytest-cov
-  - python setup.py install
+  - pip install .
 
 script: py.test #--cov
 
