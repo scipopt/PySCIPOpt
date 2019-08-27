@@ -474,14 +474,36 @@ cdef class NLRow:
 cdef class Solution:
     """Base class holding a pointer to corresponding SCIP_SOL"""
     cdef SCIP_SOL* sol
+    cdef SCIP* scip
     # can be used to store problem data
     cdef public object data
 
     @staticmethod
-    cdef create(SCIP_SOL* scip_sol):
+    cdef create(SCIP* scip, SCIP_SOL* scip_sol):
         sol = Solution()
         sol.sol = scip_sol
+        sol.scip = scip
         return sol
+
+    def __getitem__(self, Variable var):
+        return SCIPgetSolVal(self.scip, self.sol, var.scip_var)
+
+    def __setitem__(self, Variable var, value):
+        PY_SCIP_CALL(SCIPsetSolVal(self.scip, self.sol, var.scip_var, value))
+
+    def __repr__(self):
+        cdef SCIP_VAR* scip_var
+
+        vals = {}
+        for i in range(SCIPgetNVars(self.scip)):
+            scip_var = SCIPgetVars(self.scip)[i]
+
+            # extract name
+            cname = bytes(SCIPvarGetName(scip_var))
+            name = cname.decode('utf-8')
+
+            vals[name] = SCIPgetSolVal(self.scip, self.sol, scip_var)
+        return str(vals)
 
 cdef class Node:
     """Base class holding a pointer to corresponding SCIP_NODE"""
@@ -766,7 +788,7 @@ cdef class Model:
             raise Warning("cannot create Model with SCIP* == NULL")
         model = Model(createscip=False)
         model._scip = scip
-        model._bestSol = Solution.create(SCIPgetBestSol(scip))
+        model._bestSol = Solution.create(scip, SCIPgetBestSol(scip))
         return model
 
     def includeDefaultPlugins(self):
@@ -2576,7 +2598,7 @@ cdef class Model:
     def optimize(self):
         """Optimize the problem."""
         PY_SCIP_CALL(SCIPsolve(self._scip))
-        self._bestSol = Solution.create(SCIPgetBestSol(self._scip))
+        self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
 
     def presolve(self):
         """Presolve the problem."""
@@ -3328,14 +3350,15 @@ cdef class Model:
 
         """
         cdef SCIP_HEUR* _heur
+        cdef SCIP_SOL* _sol
 
         if isinstance(heur, Heur):
             n = str_conversion(heur.name)
             _heur = SCIPfindHeur(self._scip, n)
         else:
             _heur = NULL
-        solution = Solution()
-        PY_SCIP_CALL(SCIPcreateSol(self._scip, &solution.sol, _heur))
+        PY_SCIP_CALL(SCIPcreateSol(self._scip, &_sol, _heur))
+        solution = Solution.create(self._scip, _sol)
         return solution
 
     def printBestSol(self, write_zeros=False):
@@ -3492,13 +3515,13 @@ cdef class Model:
         sols = []
 
         for i in range(nsols):
-            sols.append(Solution.create(_sols[i]))
+            sols.append(Solution.create(self._scip, _sols[i]))
 
         return sols
 
     def getBestSol(self):
         """Retrieve currently best known feasible primal solution."""
-        self._bestSol = Solution.create(SCIPgetBestSol(self._scip))
+        self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
         return self._bestSol
 
     def getSolObjVal(self, Solution sol, original=True):
@@ -3509,7 +3532,7 @@ cdef class Model:
 
         """
         if sol == None:
-            sol = Solution.create(NULL)
+            sol = Solution.create(self._scip, NULL)
         if original:
             objval = SCIPgetSolOrigObj(self._scip, sol.sol)
         else:
@@ -3536,7 +3559,7 @@ cdef class Model:
 
         """
         if sol == None:
-            sol = Solution.create(NULL)
+            sol = Solution.create(self._scip, NULL)
         return SCIPgetSolVal(self._scip, sol.sol, var.scip_var)
 
     def getVal(self, Variable var):

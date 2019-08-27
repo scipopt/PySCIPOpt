@@ -70,7 +70,7 @@ cdef SCIP_RETCODE PyBenderscutExec (SCIP* scip, SCIP_BENDERS* benders, SCIP_BEND
     if sol == NULL:
         solution = None
     else:
-        solution = Solution.create(sol)
+        solution = Solution.create(scip, sol)
     enfotype = type
     result_dict = PyBenderscut.benderscutexec(solution, probnumber, enfotype)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
