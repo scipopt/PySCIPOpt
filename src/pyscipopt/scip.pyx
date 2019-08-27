@@ -498,7 +498,7 @@ cdef class Solution:
         for i in range(SCIPgetNVars(self.scip)):
             scip_var = SCIPgetVars(self.scip)[i]
 
-            # exctract name
+            # extract name
             print(scip_var == NULL)
             cname = bytes(SCIPvarGetName(scip_var))
             name = cname.decode('utf-8')
