@@ -499,7 +499,6 @@ cdef class Solution:
             scip_var = SCIPgetVars(self.scip)[i]
 
             # extract name
-            print(scip_var == NULL)
             cname = bytes(SCIPvarGetName(scip_var))
             name = cname.decode('utf-8')
 
