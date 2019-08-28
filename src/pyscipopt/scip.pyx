@@ -736,6 +736,8 @@ cdef class Model:
     # flag to indicate whether the SCIP should be freed. It will not be freed if an empty Model was created to wrap a
     # C-API SCIP instance.
     cdef SCIP_Bool _freescip
+    # map to store python variables
+    cdef _modelvars
 
     def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False, createscip=True):
         """
@@ -753,6 +755,7 @@ cdef class Model:
             warnings.warn("linked SCIP {} is not recommended for this version of PySCIPOpt - use version {}.{}.{}".format(self.version(), MAJOR, MINOR, PATCH))
 
         self._freescip = True
+        self._modelvars = {}
 
         if not createscip:
             # if no SCIP instance should be created, then an empty Model object is created.
@@ -1135,6 +1138,10 @@ cdef class Model:
 
         pyVar = Variable.create(scip_var)
 
+        # store variable in the model to avoid creating new python variable objects in getVars()
+        assert not pyVar.ptr() in self._modelvars
+        self._modelvars[pyVar.ptr()] = pyVar
+
         #setting the variable data
         SCIPvarSetData(scip_var, <SCIP_VARDATA*>pyVar)
         PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
@@ -1354,7 +1361,20 @@ cdef class Model:
             _vars = SCIPgetOrigVars(self._scip)
             _nvars = SCIPgetNOrigVars(self._scip)
 
-        return [Variable.create(_vars[i]) for i in range(_nvars)]
+        for i in range(_nvars):
+            ptr = <size_t>(_vars[i])
+
+            # check whether the corresponding variable exists already
+            if ptr in self._modelvars:
+                vars.append(self._modelvars[ptr])
+            else:
+                # create a new variable
+                var = Variable.create(_vars[i])
+                assert var.ptr() == ptr
+                self._modelvars[ptr] = var
+                vars.append(var)
+
+        return vars
 
     def getNVars(self):
         """Retrieve number of variables in the problems"""
