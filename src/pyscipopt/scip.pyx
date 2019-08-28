@@ -1140,14 +1140,6 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
         return pyVar
 
-    def releaseVar(self, Variable var):
-        """Release the variable.
-
-        :param Variable var: variable to be released
-
-        """
-        PY_SCIP_CALL(SCIPreleaseVar(self._scip, &var.scip_var))
-
     def getTransformedVar(self, Variable var):
         """Retrieve the transformed variable.
 
