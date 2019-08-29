@@ -15,6 +15,8 @@ Documentation
 
 Please consult the [online documentation](http://scip-interfaces.github.io/PySCIPOpt/docs/html) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
 
+See [CHANGELOG.md](CHANGELOG.md) for added, removed or fixed functionality.
+
 Installation
 ------------
 
