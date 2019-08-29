@@ -109,6 +109,13 @@ class Term:
     def __repr__(self):
         return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
 
+    def _evaluate(self, solution):
+        '''computes the value of the term in the given solution.'''
+        prod = 1
+        for var in self.vartuple:
+            prod *= solution[var]
+        return prod
+        
 CONST = Term()
 
 # helper function
@@ -298,6 +305,10 @@ cdef class Expr:
             return 0
         else:
             return max(len(v) for v in self.terms)
+
+    def _evaluate(self, solution):
+        '''computes the value of the expression in the given solution.'''
+        return sum(term._evaluate(solution)*coeff for term, coeff in self.terms.items() if coeff != 0)
 
 
 cdef class ExprCons:
