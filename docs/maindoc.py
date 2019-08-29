@@ -7,6 +7,9 @@
 #
 # See the [web site] (https://github.com/SCIP-Interfaces/PySCIPOpt) to download PySCIPOpt.
 #
+# @section Changelog
+# See [CHANGELOG.md](CHANGELOG.md) for added, removed or fixed functionality.
+#
 # @section Installation
 # See [INSTALL.md](INSTALL.md) for instructions.
 #
