@@ -3579,7 +3579,7 @@ cdef class Model:
             return expr._evaluate(sol)
 
     def getVal(self, Expr expr):
-        """Retrieve the value of the best known solution.
+        """Retrieve the value of the given variable or expression in the best known solution.
         Can only be called after solving is completed.
 
         :param Expr expr: polynomial expression to query the value of
