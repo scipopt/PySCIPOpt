@@ -3563,7 +3563,7 @@ cdef class Model:
         return self.getSolObjVal(self._bestSol, original)
 
     def getSolVal(self, Solution sol, Expr expr):
-        """Retrieve value of given variable in the given solution or in
+        """Retrieve value of given variable or expression in the given solution or in
         the LP/pseudo solution if sol == None
 
         :param Solution sol: solution
