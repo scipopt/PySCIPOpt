@@ -3569,6 +3569,7 @@ cdef class Model:
         :param Solution sol: solution
         :param Expr expr: polynomial expression to query the value of
 
+        Note: a variable is also an expression
         """
         if sol == None:
             sol = Solution.create(self._scip, NULL)
@@ -3584,6 +3585,7 @@ cdef class Model:
 
         :param Expr expr: polynomial expression to query the value of
 
+        Note: a variable is also an expression
         """
         if not self.getStage() >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
