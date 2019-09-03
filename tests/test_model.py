@@ -4,6 +4,15 @@ def test_model():
     # create solver instance
     s = Model()
 
+    # test parameter methods
+    pric = s.getParam('lp/pricing')
+    s.setParam('lp/pricing', 'q')
+    assert 'q' == s.getParam('lp/pricing')
+    s.setParam('lp/pricing', pric)
+    s.setParam('visual/vbcfilename', 'vbcfile')
+    assert 'vbcfile' == s.getParam('visual/vbcfilename')
+    s.setParam('visual/vbcfilename', '-')
+
     # add some variables
     x = s.addVar("x", vtype = 'C', obj = 1.0)
     y = s.addVar("y", vtype = 'C', obj = 2.0)
