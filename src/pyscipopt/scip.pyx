@@ -2746,36 +2746,29 @@ cdef class Model:
         if benders is None:
             _benders = SCIPfindBenders(self._scip, "default")
         else:
-            n = str_conversion(benders.name)
-            _benders = SCIPfindBenders(self._scip, n)
+            _benders = benders._benders
 
         for d in lowerbounds.keys():
             SCIPbendersUpdateSubproblemLowerbound(_benders, d, lowerbounds[d])
 
-    def activateBenders(self, str name, int nsubproblems):
+    def activateBenders(self, Benders benders, int nsubproblems):
         """Activates the Benders' decomposition plugin with the input name
 
         Keyword arguments:
-        name -- the name of the Benders' decomposition plugin
+        benders -- the Benders' decomposition to which the subproblem belongs to
         nsubproblems -- the number of subproblems in the Benders' decomposition
         """
-        n = str_conversion(name)
-        cdef SCIP_BENDERS* benders
-        benders = SCIPfindBenders(self._scip, n)
-        PY_SCIP_CALL(SCIPactivateBenders(self._scip, benders, nsubproblems))
+        PY_SCIP_CALL(SCIPactivateBenders(self._scip, benders._benders, nsubproblems))
 
-    def addBendersSubproblem(self, str name, subproblem):
+    def addBendersSubproblem(self, Benders benders, subproblem):
         """adds a subproblem to the Benders' decomposition given by the input
         name.
 
         Keyword arguments:
-        name -- the Benders' decomposition that the subproblem is added to
+        benders -- the Benders' decomposition to which the subproblem belongs to
         subproblem --  the subproblem to add to the decomposition
         """
-        cdef SCIP_BENDERS* benders
-        n = str_conversion(name)
-        benders = SCIPfindBenders(self._scip, n)
-        PY_SCIP_CALL(SCIPaddBendersSubproblem(self._scip, benders, (<Model>subproblem)._scip))
+        PY_SCIP_CALL(SCIPaddBendersSubproblem(self._scip, benders._benders, (<Model>subproblem)._scip))
 
     def setupBendersSubproblem(self, probnumber, Benders benders = None, Solution solution = None):
         """ sets up the Benders' subproblem given the master problem solution
@@ -2796,8 +2789,7 @@ cdef class Model:
         if benders is None:
             scip_benders = SCIPfindBenders(self._scip, "default")
         else:
-            n = str_conversion(benders.name)
-            scip_benders = SCIPfindBenders(self._scip, n)
+            scip_benders = benders._benders
 
         retcode = SCIPsetupBendersSubproblem(self._scip, scip_benders, scip_sol, probnumber)
 
@@ -2828,8 +2820,7 @@ cdef class Model:
         if benders is None:
             scip_benders = SCIPfindBenders(self._scip, "default")
         else:
-            n = str_conversion(benders.name)
-            scip_benders = SCIPfindBenders(self._scip, n)
+            scip_benders = benders._benders
 
         PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip, scip_benders, scip_sol,
             probnumber, &infeasible, enfotype, solvecip, &objective))
@@ -2850,8 +2841,7 @@ cdef class Model:
         if benders is None:
             scip_benders = SCIPfindBenders(self._scip, "default")
         else:
-            n = str_conversion(benders.name)
-            scip_benders = SCIPfindBenders(self._scip, n)
+            scip_benders = benders._benders
 
         scip_subprob = SCIPbendersSubproblem(scip_benders, probnumber)
 
@@ -2872,8 +2862,7 @@ cdef class Model:
         if benders is None:
             _benders = SCIPfindBenders(self._scip, "default")
         else:
-            n = str_conversion(benders.name)
-            _benders = SCIPfindBenders(self._scip, n)
+            _benders = benders._benders
 
         if probnumber == -1:
             PY_SCIP_CALL(SCIPgetBendersMasterVar(self._scip, _benders, var.scip_var, &_mappedvar))
@@ -2900,8 +2889,7 @@ cdef class Model:
         if benders is None:
             _benders = SCIPfindBenders(self._scip, "default")
         else:
-            n = str_conversion(benders.name)
-            _benders = SCIPfindBenders(self._scip, n)
+            _benders = benders._benders
 
         _auxvar = SCIPbendersGetAuxiliaryVar(_benders, probnumber)
         auxvar = Variable.create(_auxvar)
@@ -2922,8 +2910,7 @@ cdef class Model:
         if benders is None:
             _benders = SCIPfindBenders(self._scip, "default")
         else:
-            n = str_conversion(benders.name)
-            _benders = SCIPfindBenders(self._scip, n)
+            _benders = benders._benders
 
         PY_SCIP_CALL( SCIPcheckBendersSubproblemOptimality(self._scip, _benders, solution.sol, probnumber, &optimal) )
 
@@ -2935,13 +2922,7 @@ cdef class Model:
         Keyword arguments:
         benders -- the Benders' decomposition that the default cuts will be applied to
         """
-        cdef SCIP_BENDERS* _benders
-
-        assert benders is not None
-        n = str_conversion(benders.name)
-        _benders = SCIPfindBenders(self._scip, n)
-
-        PY_SCIP_CALL( SCIPincludeBendersDefaultCuts(self._scip, _benders) )
+        PY_SCIP_CALL( SCIPincludeBendersDefaultCuts(self._scip, benders._benders) )
 
 
     def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):
@@ -3239,6 +3220,7 @@ cdef class Model:
         scip_benders = SCIPfindBenders(self._scip, n)
         benders.model = <Model>weakref.proxy(self)
         benders.name = name
+        benders._benders = scip_benders
         Py_INCREF(benders)
 
     def includeBenderscut(self, Benders benders, Benderscut benderscut, name, desc, priority=1, islpcut=True):
@@ -3254,8 +3236,7 @@ cdef class Model:
         """
         cdef SCIP_BENDERS* _benders
 
-        bendersname = str_conversion(benders.name)
-        _benders = SCIPfindBenders(self._scip, bendersname)
+        _benders = benders._benders
 
         n = str_conversion(name)
         d = str_conversion(desc)

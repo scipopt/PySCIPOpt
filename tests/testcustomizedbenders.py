@@ -37,7 +37,8 @@ class testBenders(Benders):
             quicksum(self.c[i, j] * x[i, j] for i in self.I for j in self.J),
             "minimize")
         subprob.data = x, y
-        self.model.addBendersSubproblem(self.name, subprob)
+        #self.model.addBendersSubproblem(self.name, subprob)
+        self.model.addBendersSubproblem(self, subprob)
         self.subprob = subprob
 
     def bendersgetvar(self, variable, probnumber):
@@ -201,7 +202,7 @@ def test_flpbenders_defcuts():
     testbd = testBenders(master.data, I, J, M, c, d, bendersName)
     master.includeBenders(testbd, bendersName, "benders plugin")
     master.includeBendersDefaultCuts(testbd)
-    master.activateBenders(bendersName, 1)
+    master.activateBenders(testbd, 1)
     master.setBoolParam("constraints/benders/active", True)
     master.setBoolParam("constraints/benderslp/active", True)
     # optimizing the problem using Benders' decomposition
@@ -249,7 +250,7 @@ def test_flpbenders_customcuts():
     master.includeBenders(testbd, bendersName, "benders plugin")
     master.includeBenderscut(testbd, testbdc, benderscutName,
           "benderscut plugin", priority=1000000)
-    master.activateBenders(bendersName, 1)
+    master.activateBenders(testbd, 1)
     master.setBoolParam("constraints/benders/active", True)
     master.setBoolParam("constraints/benderslp/active", True)
     # optimizing the problem using Benders' decomposition
