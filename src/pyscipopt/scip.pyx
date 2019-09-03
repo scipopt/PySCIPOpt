@@ -3562,28 +3562,34 @@ cdef class Model:
             raise Warning("method cannot be called before problem is solved")
         return self.getSolObjVal(self._bestSol, original)
 
-    def getSolVal(self, Solution sol, Variable var):
-        """Retrieve value of given variable in the given solution or in
+    def getSolVal(self, Solution sol, Expr expr):
+        """Retrieve value of given variable or expression in the given solution or in
         the LP/pseudo solution if sol == None
 
         :param Solution sol: solution
-        :param Variable var: variable to query the value of
+        :param Expr expr: polynomial expression to query the value of
 
+        Note: a variable is also an expression
         """
         if sol == None:
             sol = Solution.create(self._scip, NULL)
-        return SCIPgetSolVal(self._scip, sol.sol, var.scip_var)
+        if isinstance(expr, Variable):
+            var = <Variable> expr
+            return SCIPgetSolVal(self._scip, sol.sol, var.scip_var)
+        else:
+            return expr._evaluate(sol)
 
-    def getVal(self, Variable var):
-        """Retrieve the value of the best known solution.
+    def getVal(self, Expr expr):
+        """Retrieve the value of the given variable or expression in the best known solution.
         Can only be called after solving is completed.
 
-        :param Variable var: variable to query the value of
+        :param Expr expr: polynomial expression to query the value of
 
+        Note: a variable is also an expression
         """
         if not self.getStage() >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
-        return self.getSolVal(self._bestSol, var)
+        return self.getSolVal(self._bestSol, expr)
 
     def getPrimalbound(self):
         """Retrieve the best primal bound."""

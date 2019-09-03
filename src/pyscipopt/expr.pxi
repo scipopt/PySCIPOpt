@@ -109,6 +109,13 @@ class Term:
     def __repr__(self):
         return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
 
+    def _evaluate(self, point):
+        '''computes the value of the term in the given variable-value mapping.'''
+        prod = 1
+        for var in self.vartuple:
+            prod *= point[var]
+        return prod
+        
 CONST = Term()
 
 # helper function
@@ -298,6 +305,10 @@ cdef class Expr:
             return 0
         else:
             return max(len(v) for v in self.terms)
+
+    def _evaluate(self, point):
+        '''computes the value of the expression in the given variable-value mapping.'''
+        return sum(term._evaluate(point)*coeff for term, coeff in self.terms.items() if coeff != 0)
 
 
 cdef class ExprCons:

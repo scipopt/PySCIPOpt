@@ -49,6 +49,14 @@ def test_model():
     assert s.getSlack(c, solution, 'rhs') == 1.0
     assert s.getActivity(c, solution) == 5.0
 
+    # check expression evaluations
+    expr = x*x + 2*x*y + y*y
+    expr2 = x + 1
+    assert s.getVal(expr) == s.getSolVal(solution, expr)
+    assert s.getVal(expr2) == s.getSolVal(solution, expr2)   
+    assert round(s.getVal(expr)) == 25.0
+    assert round(s.getVal(expr2)) == 6.0
+
     s.writeProblem('model')
     s.writeProblem('model.lp')
 
