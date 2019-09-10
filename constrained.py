@@ -35,15 +35,20 @@ def constrained_opt(objective, constraint_list, solved_instance):
         #TODO: only compares to poly with lamb = [1,...,1] but should compare to last computed polynomial
         #can reuse cover if only the coeffs changed since cover only depends on matrix A, not on b
         if lagrangian.A.shape == poly.A.shape:
+            lagrangian.prob_sonc = poly.prob_sonc
             lagrangian.cover = poly.cover
             lagrangian.lamb = poly.lamb
         else:
             lagrangian._compute_cover()
-        lagrangian.sonc_opt_python()
+        try:
+            lagrangian.sonc_opt_python()
+        except:
+            return -np.inf
         #lagrangian.run_sonc() #uses lagrangian._compute_cover() and lagrangian._compute_zero_cover()
 
         #save computed polynomial
         lagrangian_list[str(lagrangian)] = -lagrangian.lower_bound
+        #TODO: return '-inf' if verify != 1?
         return -lagrangian.lower_bound
 
     t0 = datetime.now()
@@ -63,17 +68,34 @@ def constrained_opt(objective, constraint_list, solved_instance):
         return success, poly
 
     lagrangian_list = dict()
+    start = np.ones(m)
+    bound = -1e+20
+    #print(solved_instance)
+    for data in solved_instance.values():
+        if type(data) != InfeasibleError:
+            if data.success:
+                if -data.fun > bound and len(data.x) == m:
+                    start = data.x
+    print('start = ', start)
+
     #optimize lower_bound(lamb) with respect to lamb, return InfeasibleError if SONC decomposition is not well-defined (i.e. if unbounded points exist)
     #constraints in minimize are to make sure that lamb>0
     #TODO: make sure, that verify == 1?
     #TODO: Is Infeasible Error still necessary in this case?
     try:
-        data = scipy.optimize.minimize(lower_bound, np.ones(m), method = 'SLSQP', constraints = scipy.optimize.LinearConstraint(np.eye(m), aux.EPSILON, np.inf, keep_feasible = True), options = {'maxiter': 40})
+        data = scipy.optimize.minimize(lower_bound, start, method = 'SLSQP', constraints = scipy.optimize.LinearConstraint(np.eye(m), aux.EPSILON, np.inf, keep_feasible = True), options = {'maxiter': 40})
     except InfeasibleError as err:
         success = err
         return success, poly
-    print('Lower bound: %.2f\nMultipliers: %s' % (-data.fun, data.x))
+    except ValueError:
+        if np.any(start != np.ones(m)):
+            data = scipy.optimize.minimize(lower_bound, np.ones(m), method = 'SLSQP', constraints = scipy.optimize.LinearConstraint(np.eye(m), aux.EPSILON, np.inf, keep_feasible = True), options = {'maxiter': 40})
+        else:
+            data = scipy.optimize.minimize(lower_bound, np.ones(m), method = 'SLSQP', constraints = scipy.optimize.LinearConstraint(np.eye(m), aux.EPSILON, np.inf, keep_feasible = False), options = {'maxiter': 40})
+
+    print('Lower bound: %.6f\nMultipliers: %s' % (-data.fun, data.x))
     print('Time: %.2f' % aux.dt2sec(datetime.now() - t0))
+    print(data)
     return data, poly
 
 #TODO: can we use these functions for anything?

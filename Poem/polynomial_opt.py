@@ -979,7 +979,7 @@ class Polynomial(polynomial_base.Polynomial):
 		#if (data['status'] == 1 or data['verify'] == 1) and self.lower_bound < -data['opt']:
 		if data['verify'] == 1 and self.lower_bound < -data['opt']:
 			self.lower_bound = -data['opt']
-
+		#print('params = ', params)
 		key = (self.solution['language'], self.solution['strategy'], self.solution['modeler'], self.solution['solver'], json.dumps(params))
 		if not key in self.old_solutions.keys():
 			self.solution['index'] = len(self.old_solutions)
