@@ -3,6 +3,10 @@
 ## Unreleased
 - remove Python 2 support
 
+## 2.2.1 - 2019-09-17
+### Added
+- evaluate polynomial expressions using the given solution values
+
 ## 2.2.0 - 2019-08-28
 ### Added
 - convenient access to solution data, via `solution[x]` syntax instead of `model.getVal(x)`
