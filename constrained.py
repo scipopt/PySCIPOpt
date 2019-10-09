@@ -8,31 +8,25 @@ from Poem.aux import *
 import scipy
 import cvxpy            as cvx
 
-def constrained_opt(objective, constraint_list, solved_instance):
-    """Optimise objective under given constraints.
-    :param: objective - objective function given as polynomial
-    :param: constraint_list - list of all (polynomial) constraints
-    :param: solved_instance - list of instances that where already solved by this method
-    """
-    #TODO: instead of computing new polynomial maybe just update the old one?
-    def build_lagrangian(lamb, new = False):
-        """build the function obj-sum(lamb*gi), where obj is the objective and gi are the constraints,
-        for lamb fixed this function gives a lower bound for f on {x: gi(x)>=0}"""
-        res = objective.copy()
-        for i in range(len(constraint_list)):
-            summand = constraint_list[i].copy()
-            summand.b = np.array(summand.b * lamb[i], dtype = np.float)
-            res -= summand
-        return Polynomial(res.A, res.b)
 
+def constrained_opt(objective, constraint_list, start=[]):
+    """Optimise objective under given constraints.
+    :param: objective: objective function given as polynomial
+    :param: constraint_list: list of all (polynomial) constraints
+    :param: start: start point for scipy.optimize.minimize (optional, default value: [1,...,1])
+
+    returns scipy.optimize.OptimizeResult with status 0-9 from SLSQP or status == 10 if InfeasibleError occurs
+    """
+    
     def lower_bound(lamb):
         """computes a lower bound of build_lagrangian via SONC"""
-        lagrangian = build_lagrangian(lamb)
+        lagrangian = build_lagrangian(lamb, objective, constraint_list)
+
         #make sure that same polynomial is not computed twice
         if str(lagrangian) in lagrangian_list.keys():
             return lagrangian_list[str(lagrangian)]
 
-        #TODO: only compares to poly with lamb = [1,...,1] but should compare to last computed polynomial
+        #TODO: only compares to poly with lamb = [1,...,1] but should compare to last computed polynomial (use lagrangian_list?)
         #can reuse cover if only the coeffs changed since cover only depends on matrix A, not on b
         if lagrangian.A.shape == poly.A.shape:
             lagrangian.prob_sonc = poly.prob_sonc
@@ -43,60 +37,53 @@ def constrained_opt(objective, constraint_list, solved_instance):
         try:
             lagrangian.sonc_opt_python()
         except:
+            lagrangian_list[str(lagrangian)] = -np.inf
             return -np.inf
-        #lagrangian.run_sonc() #uses lagrangian._compute_cover() and lagrangian._compute_zero_cover()
 
-        #save computed polynomial
+        #save computed polynomial with corresponding solution
         lagrangian_list[str(lagrangian)] = -lagrangian.lower_bound
-        #TODO: return '-inf' if verify != 1?
         return -lagrangian.lower_bound
 
     t0 = datetime.now()
     #number of constraints
     m = len(constraint_list)
-
-    #return if instance was already solved
-    poly = build_lagrangian(np.ones(m), new = True)
-    if str(poly) in solved_instance.keys():
-        return solved_instance[str(poly)], poly
-
-    #compute cover of polynomial once, to save time later (TODO: maybe change that), or return if infeasibleError
+    if start == []:
+        start = np.ones(m)
+    poly = build_lagrangian(start, objective, constraint_list)
+    #compute cover of polynomial once, to save time later (TODO: maybe change that), or return if InfeasibleError
     try:
         poly._compute_cover()
     except InfeasibleError as err:
-        success = err
-        return success, poly
-
+        return scipy.optimize.OptimizeResult({'success': False, 'message':err, 'status': 10, 'fun':np.inf, 'x':['nan']*m, 'nfev':0, 'njev':0,'nit':0})
     lagrangian_list = dict()
-    start = np.ones(m)
-    bound = -1e+20
-    #print(solved_instance)
-    for data in solved_instance.values():
-        if type(data) != InfeasibleError:
-            if data.success:
-                if -data.fun > bound and len(data.x) == m:
-                    start = data.x
-    print('start = ', start)
 
     #optimize lower_bound(lamb) with respect to lamb, return InfeasibleError if SONC decomposition is not well-defined (i.e. if unbounded points exist)
     #constraints in minimize are to make sure that lamb>0
-    #TODO: make sure, that verify == 1?
-    #TODO: Is Infeasible Error still necessary in this case?
+    #TODO: make sure, that verify == 1
     try:
-        data = scipy.optimize.minimize(lower_bound, start, method = 'SLSQP', constraints = scipy.optimize.LinearConstraint(np.eye(m), aux.EPSILON, np.inf, keep_feasible = True), options = {'maxiter': 40})
+        data = scipy.optimize.minimize(lower_bound, start, method = 'SLSQP', constraints = scipy.optimize.LinearConstraint(np.eye(m), aux.EPSILON, np.inf), options = {'maxiter': 40})
     except InfeasibleError as err:
-        success = err
-        return success, poly
-    except ValueError:
-        if np.any(start != np.ones(m)):
-            data = scipy.optimize.minimize(lower_bound, np.ones(m), method = 'SLSQP', constraints = scipy.optimize.LinearConstraint(np.eye(m), aux.EPSILON, np.inf, keep_feasible = True), options = {'maxiter': 40})
-        else:
-            data = scipy.optimize.minimize(lower_bound, np.ones(m), method = 'SLSQP', constraints = scipy.optimize.LinearConstraint(np.eye(m), aux.EPSILON, np.inf, keep_feasible = False), options = {'maxiter': 40})
-
+        return scipy.optimize.OptimizeResult({'success': False, 'message':err, 'status': 10, 'fun':np.inf, 'x':['nan']*m, 'nfev':0, 'njev':0,'nit':0})
     print('Lower bound: %.6f\nMultipliers: %s' % (-data.fun, data.x))
     print('Time: %.2f' % aux.dt2sec(datetime.now() - t0))
-    print(data)
-    return data, poly
+    return data
+
+
+#TODO: instead of computing new polynomial maybe just update the old one?
+def build_lagrangian(lamb, objective, constraint_list):
+    """build the function obj-sum(lamb*g_i), where obj is the objective and gi are the constraints,
+    for lamb fixed this function gives a lower bound for obj on {x: g_i(x)>=0}
+    :param: lamb: lagrangian multiplier lambda
+    :param: objective: objective function
+    :param: constraint_list: list of constraints"""
+    res = objective.copy()
+    for i in range(len(constraint_list)):
+        summand = constraint_list[i].copy()
+        summand.b = np.array(summand.b * lamb[i], dtype = np.float)
+        res -= summand
+    return Polynomial(res.A, res.b)
+
+
 
 #TODO: can we use these functions for anything?
 def unite_matrices(A_list):
@@ -138,9 +125,9 @@ if __name__ == "__main__":
     g1 = Polynomial('-x0^4-x1^4+42')
     g2 = Polynomial('-x0^4+3*x0-2*x1^2+1')
 
-    data = constrained_opt(f,[g1,g2])
-    print(-data.fun, data.x)
-"""
+    data = constrained_opt(f,[g1,g2], dict())
+    #print(-data.fun, data.x)
+    """
     A = unite_matrices([f.A, g1.A, g2.A])
     B = np.array([expand(p,A) for p in [f,g1,g2]])
 
@@ -190,4 +177,4 @@ if __name__ == "__main__":
 
     #prob_sage.variables()[0].value = C
     #prob_sage.variables()[1].value = lamb
-"""
+    """
