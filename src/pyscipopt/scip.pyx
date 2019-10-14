@@ -23,6 +23,7 @@ include "pricer.pxi"
 include "propagator.pxi"
 include "sepa.pxi"
 include "relax.pxi"
+include "nodesel.pxi"
 
 # recommended SCIP version; major version is required
 MAJOR = 6
