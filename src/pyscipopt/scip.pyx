@@ -1395,6 +1395,27 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPupdateNodeLowerbound(self._scip, node.scip_node, lb))
 
+    # node methods
+    def getOpenNodes(self):
+        """access to all data of open nodes (leaves, children, and siblings)
+
+        :return: three lists containing open leaves, children, siblings
+        """
+        cdef SCIP_NODE** _leaves
+        cdef SCIP_NODE** _children
+        cdef SCIP_NODE** _siblings
+        cdef int _nleaves
+        cdef int _nchildren
+        cdef int _nsiblings
+
+        PY_SCIP_CALL(SCIPgetOpenNodesData(self._scip, &_leaves, &_children, &_siblings, &_nleaves, &_nchildren, &_nsiblings))
+
+        leaves   = [Node.create(_leaves[i]) for i in range(_nleaves)]
+        children = [Node.create(_children[i]) for i in range(_nchildren)]
+        siblings = [Node.create(_siblings[i]) for i in range(_nsiblings)]
+
+        return leaves, children, sib
+
     # LP Methods
     def getLPSolstat(self):
         """Gets solution status of current LP"""
