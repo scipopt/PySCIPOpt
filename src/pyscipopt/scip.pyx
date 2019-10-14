@@ -3079,6 +3079,26 @@ cdef class Model:
         branchrule.model = <Model>weakref.proxy(self)
         Py_INCREF(branchrule)
 
+    def includeNodesel(self, Nodesel nodesel, name, desc, stdpriority, memsavepriority):
+        """Include a node selector.
+
+        :param Nodesel nodesel: node selector
+        :param name: name of node selector
+        :param desc: description of node selector
+        :param stdpriority: priority of the node selector in standard mode
+        :param memsavepriority: priority of the node selector in memory saving mode
+
+        """
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeNodesel(self._scip, nam, des,
+                                          stdpriority, memsavepriority,
+                                          PyNodeselCopy, PyNodeselFree, PyNodeselInit, PyNodeselExit,
+                                          PyNodeselInitsol, PyNodeselExitsol, PyNodeselSelect, PyNodeselComp,
+                                          <SCIP_NODESELDATA*> nodesel))
+        nodesel.model = <Model>weakref.proxy(self)
+        Py_INCREF(nodesel)
+
     def includeBenders(self, Benders benders, name, desc, priority=1, cutlp=True, cutpseudo=True, cutrelax=True,
             shareaux=False):
         """Include a Benders' decomposition.
