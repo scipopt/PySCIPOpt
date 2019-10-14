@@ -25,17 +25,17 @@ class FiFo(Nodesel):
 
 def test_nodesel():
     m = Model()
-    # m.hideOutput()
+    m.hideOutput()
 
-    #include node selector
+    # include node selector
     m.includeNodesel(FiFo(), "testnodeselector", "Testing a node selector.", 1073741823, 536870911)
 
-    #add Variables
+    # add Variables
     x0 = m.addVar(vtype = "C", name = "x0", obj=-1)
     x1 = m.addVar(vtype = "C", name = "x1", obj=-1)
     x2 = m.addVar(vtype = "C", name = "x2", obj=-1)
 
-    #addCons
+    # add constraints
     m.addCons(x0 >= 2)
     m.addCons(x0**2 <= x1)
     m.addCons(x1 * x2 >= x0)
