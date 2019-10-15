@@ -1663,7 +1663,7 @@ cdef class Model:
             coeffs_array[i] = <SCIP_Real>coeff
 
         PY_SCIP_CALL(SCIPcreateConsLinear(
-        self._scip, &scip_cons, str_conversion(kwargs['name']), nvars, vars_array, coeffs_array,
+            self._scip, &scip_cons, str_conversion(kwargs['name']), nvars, vars_array, coeffs_array,
             kwargs['lhs'], kwargs['rhs'], kwargs['initial'],
             kwargs['separate'], kwargs['enforce'], kwargs['check'],
             kwargs['propagate'], kwargs['local'], kwargs['modifiable'],
