@@ -1,9 +1,12 @@
-__version__ = '1.4.9'
+__version__ = '2.2.1'
 
 # export user-relevant objects:
 from pyscipopt.Multidict import multidict
 from pyscipopt.scip      import Model
+from pyscipopt.scip      import Benders
+from pyscipopt.scip      import Benderscut
 from pyscipopt.scip      import Branchrule
+from pyscipopt.scip      import Nodesel
 from pyscipopt.scip      import Conshdlr
 from pyscipopt.scip      import Eventhdlr
 from pyscipopt.scip      import Heur
@@ -27,3 +30,6 @@ from pyscipopt.scip      import PY_SCIP_PROPTIMING   as SCIP_PROPTIMING
 from pyscipopt.scip      import PY_SCIP_PRESOLTIMING as SCIP_PRESOLTIMING
 from pyscipopt.scip      import PY_SCIP_HEURTIMING   as SCIP_HEURTIMING
 from pyscipopt.scip      import PY_SCIP_EVENTTYPE    as SCIP_EVENTTYPE
+from pyscipopt.scip      import PY_SCIP_LPSOLSTAT    as SCIP_LPSOLSTAT
+from pyscipopt.scip      import PY_SCIP_BRANCHDIR    as SCIP_BRANCHDIR
+from pyscipopt.scip      import PY_SCIP_BENDERSENFOTYPE as SCIP_BENDERSENFOTYPE

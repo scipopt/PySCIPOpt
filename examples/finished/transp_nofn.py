@@ -1,6 +1,6 @@
+##@file transp_nofn.py
+#@brief a model for the transportation problem
 """
-transp.py: a model for the transportation problem
-
 Model for solving a transportation problem:
 minimize the total transportation cost for satisfying demand at
 customers, from capacitated facilities.

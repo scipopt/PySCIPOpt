@@ -1,6 +1,6 @@
+##@file mkp.py
+#@brief model for the multi-constrained knapsack problem
 """
-mkp.py: model for the multi-constrained knapsack problem
-
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 from pyscipopt import Model, quicksum, multidict
@@ -34,6 +34,7 @@ def mkp(I,J,v,a,b):
 
 
 def example():
+    """creates example data set"""
     J,v = multidict({1:16, 2:19, 3:23, 4:28})
     a = {(1,1):2,    (1,2):3,    (1,3):4,    (1,4):5,
          (2,1):3000, (2,2):3500, (2,3):5100, (2,4):7200,

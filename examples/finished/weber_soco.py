@@ -1,6 +1,6 @@
+##@file weber_soco.py
+#@brief model for solving the weber problem using soco.
 """
-weber_soco.py:  model for solving the weber problem using soco.
-
 Copyright (c) by Joao Pedro PEDROSO, Masahiro MURAMATSU and Mikio KUBO, 2012
 """
 from pyscipopt import Model, quicksum, multidict
@@ -38,6 +38,7 @@ def weber(I,x,y,w):
 
 import random
 def make_data(n,m):
+    """creates example data set"""
     I = range(1,n+1)
     J = range(1,m+1)
     x,y,w = {},{},{}

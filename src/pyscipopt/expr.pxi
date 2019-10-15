@@ -1,5 +1,6 @@
-# In this file we implemenet the handling of expressions
-# We have two types of expressions: Expr and GenExpr.
+##@file expr.pxi
+#@brief In this file we implemenet the handling of expressions
+#@details @anchor ExprDetails <pre> We have two types of expressions: Expr and GenExpr.
 # The Expr can only handle polynomial expressions.
 # In addition, one can recover easily information from them.
 # A polynomial is a dictionary between `terms` and coefficients.
@@ -40,7 +41,7 @@
 # ```
 # which should, in princple, modify the expr. However, since we do not implement __isub__, __sub__
 # gets called (I guess) and so a copy is returned.
-# Modifying the expression directly would be a bug, given that the expression might be re-used by the user.
+# Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
 
 
 def _is_number(e):
@@ -108,10 +109,18 @@ class Term:
     def __repr__(self):
         return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
 
+    def _evaluate(self, point):
+        '''computes the value of the term in the given variable-value mapping.'''
+        prod = 1
+        for var in self.vartuple:
+            prod *= point[var]
+        return prod
+        
 CONST = Term()
 
 # helper function
 def buildGenExprObj(expr):
+    """helper function to generate an object of type GenExpr"""
     if _is_number(expr):
         return Constant(expr)
     elif isinstance(expr, Expr):
@@ -136,10 +145,11 @@ def buildGenExprObj(expr):
         assert isinstance(expr, GenExpr)
         return expr
 
+##@details Polynomial expressions of variables with operator overloading. \n
+#See also the @ref ExprDetails "description" in the expr.pxi. 
 cdef class Expr:
-    '''Polynomial expressions of variables with operator overloading.'''
     cdef public terms
-
+    
     def __init__(self, terms=None):
         '''terms is a dict of variables to coefficients.
 
@@ -153,6 +163,13 @@ cdef class Expr:
         if not isinstance(key, Term):
             key = Term(key)
         return self.terms.get(key, 0.0)
+
+    def __iter__(self):
+        return iter(self.terms)
+
+    def __next__(self):
+        try: return next(self.terms)
+        except: raise StopIteration
 
     def __abs__(self):
         return abs(buildGenExprObj(self))
@@ -216,20 +233,32 @@ cdef class Expr:
 
     def __div__(self, other):
         ''' transforms Expr into GenExpr'''
+        if _is_number(other):
+            f = 1.0/float(other)
+            return f * self
         selfexpr = buildGenExprObj(self)
         return selfexpr.__div__(other)
 
     def __rdiv__(self, other):
         ''' other / self '''
+        if _is_number(self):
+            f = 1.0/float(self)
+            return f * other
         otherexpr = buildGenExprObj(other)
         return otherexpr.__div__(self)
 
     def __truediv__(self,other):
+        if _is_number(other):
+            f = 1.0/float(other)
+            return f * self
         selfexpr = buildGenExprObj(self)
         return selfexpr.__truediv__(other)
 
     def __rtruediv__(self, other):
         ''' other / self '''
+        if _is_number(self):
+            f = 1.0/float(self)
+            return f * other
         otherexpr = buildGenExprObj(other)
         return otherexpr.__truediv__(self)
 
@@ -277,17 +306,21 @@ cdef class Expr:
         else:
             return max(len(v) for v in self.terms)
 
+    def _evaluate(self, point):
+        '''computes the value of the expression in the given variable-value mapping.'''
+        return sum(term._evaluate(point)*coeff for term, coeff in self.terms.items() if coeff != 0)
+
 
 cdef class ExprCons:
     '''Constraints with a polynomial expressions and lower/upper bounds.'''
     cdef public expr
-    cdef public lhs
-    cdef public rhs
+    cdef public _lhs
+    cdef public _rhs
 
     def __init__(self, expr, lhs=None, rhs=None):
         self.expr = expr
-        self.lhs = lhs
-        self.rhs = rhs
+        self._lhs = lhs
+        self._rhs = rhs
         assert not (lhs is None and rhs is None)
         self.normalize()
 
@@ -302,39 +335,39 @@ cdef class ExprCons:
             assert isinstance(self.expr, GenExpr)
             return
 
-        if not self.lhs is None:
-            self.lhs -= c
-        if not self.rhs is None:
-            self.rhs -= c
+        if not self._lhs is None:
+            self._lhs -= c
+        if not self._rhs is None:
+            self._rhs -= c
 
 
     def __richcmp__(self, other, op):
         '''turn it into a constraint'''
         if op == 1: # <=
-           if not self.rhs is None:
+           if not self._rhs is None:
                raise TypeError('ExprCons already has upper bound')
-           assert self.rhs is None
-           assert not self.lhs is None
+           assert self._rhs is None
+           assert not self._lhs is None
 
            if not _is_number(other):
                raise TypeError('Ranged ExprCons is not well defined!')
 
-           return ExprCons(self.expr, lhs=self.lhs, rhs=float(other))
+           return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
         elif op == 5: # >=
-           if not self.lhs is None:
+           if not self._lhs is None:
                raise TypeError('ExprCons already has lower bound')
-           assert self.lhs is None
-           assert not self.rhs is None
+           assert self._lhs is None
+           assert not self._rhs is None
 
            if not _is_number(other):
                raise TypeError('Ranged ExprCons is not well defined!')
 
-           return ExprCons(self.expr, lhs=float(other), rhs=self.rhs)
+           return ExprCons(self.expr, lhs=float(other), rhs=self._rhs)
         else:
             raise TypeError
 
     def __repr__(self):
-        return 'ExprCons(%s, %s, %s)' % (self.expr, self.lhs, self.rhs)
+        return 'ExprCons(%s, %s, %s)' % (self.expr, self._lhs, self._rhs)
 
     def __nonzero__(self):
         '''Make sure that equality of expressions is not asserted with =='''
@@ -391,20 +424,22 @@ class Op:
             prod:SCIP_EXPR_PRODUCT
             }
     def getOpIndex(self, op):
+        '''returns operator index'''
         return Op.operatorIndexDic[op];
 
 Operator = Op()
 
+##@details <pre> General expressions of variables with operator overloading.
+#
+#@note
+#   - these expressions are not smart enough to identify equal terms
+#   - in contrast to polynomial expressions, __getitem__ is not implemented
+#     so expr[x] will generate an error instead of returning the coefficient of x </pre>
+#
+#See also the @ref ExprDetails "description" in the expr.pxi. 
 cdef class GenExpr:
-    '''General expressions of variables with operator overloading.
-
-    Notes:
-     - this expressions are not smart enough to identify equal terms
-     - in constrast to polynomial expressions, __getitem__ is not implemented
-     so expr[x] will generate an error instead of returning the coefficient of x
-    '''
     cdef public operatorIndex
-    cdef public op
+    cdef public _op
     cdef public children
 
 
@@ -533,7 +568,7 @@ cdef class GenExpr:
         divisor = buildGenExprObj(other)
         # we can't divide by 0
         if divisor.getOp() == Operator.const and divisor.number == 0.0:
-            raise ValueError("cannot divide by 0")
+            raise ZeroDivisionError("cannot divide by 0")
         return self * divisor**(-1)
 
     def __rdiv__(self, other):
@@ -545,7 +580,7 @@ cdef class GenExpr:
         divisor = buildGenExprObj(other)
         # we can't divide by 0
         if divisor.getOp() == Operator.const and divisor.number == 0.0:
-            raise ValueError("cannot divide by 0")
+            raise ZeroDivisionError("cannot divide by 0")
         return self * divisor**(-1)
 
     def __rtruediv__(self, other):
@@ -573,10 +608,12 @@ cdef class GenExpr:
         return _expr_richcmp(self, other, op)
 
     def degree(self):
-        return float('inf') # none of these expressions should be polynomial
+        '''Note: none of these expressions should be polynomial'''
+        return float('inf') 
 
     def getOp(self):
-        return self.op
+        '''returns operator of GenExpr'''
+        return self._op
 
 
 # Sum Expressions
@@ -589,10 +626,10 @@ cdef class SumExpr(GenExpr):
         self.constant = 0.0
         self.coefs = []
         self.children = []
-        self.op = Operator.add
-        self.operatorIndex = Operator.operatorIndexDic[self.op]
+        self._op = Operator.add
+        self.operatorIndex = Operator.operatorIndexDic[self._op]
     def __repr__(self):
-        return self.op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
+        return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
 # Prod Expressions
 cdef class ProdExpr(GenExpr):
@@ -600,18 +637,18 @@ cdef class ProdExpr(GenExpr):
     def __init__(self):
         self.constant = 1.0
         self.children = []
-        self.op = Operator.prod
-        self.operatorIndex = Operator.operatorIndexDic[self.op]
+        self._op = Operator.prod
+        self.operatorIndex = Operator.operatorIndexDic[self._op]
     def __repr__(self):
-        return self.op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
+        return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
 # Var Expressions
 cdef class VarExpr(GenExpr):
     cdef public var
     def __init__(self, var):
         self.children = [var]
-        self.op = Operator.varidx
-        self.operatorIndex = Operator.operatorIndexDic[self.op]
+        self._op = Operator.varidx
+        self.operatorIndex = Operator.operatorIndexDic[self._op]
     def __repr__(self):
         return self.children[0].__repr__()
 
@@ -621,48 +658,52 @@ cdef class PowExpr(GenExpr):
     def __init__(self):
         self.expo = 1.0
         self.children = []
-        self.op = Operator.power
-        self.operatorIndex = Operator.operatorIndexDic[self.op]
+        self._op = Operator.power
+        self.operatorIndex = Operator.operatorIndexDic[self._op]
     def __repr__(self):
-        return self.op + "(" + self.children[0].__repr__() + "," + str(self.expo) + ")"
+        return self._op + "(" + self.children[0].__repr__() + "," + str(self.expo) + ")"
 
 # Exp, Log, Sqrt Expressions
 cdef class UnaryExpr(GenExpr):
     def __init__(self, op, expr):
         self.children = []
         self.children.append(expr)
-        self.op = op
+        self._op = op
         self.operatorIndex = Operator.operatorIndexDic[op]
     def __repr__(self):
-        return self.op + "(" + self.children[0].__repr__() + ")"
+        return self._op + "(" + self.children[0].__repr__() + ")"
 
 # class for constant expressions
 cdef class Constant(GenExpr):
     cdef public number
     def __init__(self,number):
         self.number = number
-        self.op = Operator.const
-        self.operatorIndex = Operator.operatorIndexDic[self.op]
+        self._op = Operator.const
+        self.operatorIndex = Operator.operatorIndexDic[self._op]
 
     def __repr__(self):
         return str(self.number)
 
 def exp(expr):
+    """returns expression with exp-function"""
     return UnaryExpr(Operator.exp, buildGenExprObj(expr))
 def log(expr):
+    """returns expression with log-function"""
     return UnaryExpr(Operator.log, buildGenExprObj(expr))
 def sqrt(expr):
+    """returns expression with sqrt-function"""
     return UnaryExpr(Operator.sqrt, buildGenExprObj(expr))
 
-# transforms tree to an array of nodes. each node is an operator and the position of the
-# children of that operator (i.e. the other nodes) in the array
 def expr_to_nodes(expr):
+    '''transforms tree to an array of nodes. each node is an operator and the position of the 
+    children of that operator (i.e. the other nodes) in the array'''
     assert isinstance(expr, GenExpr)
     nodes = []
     expr_to_array(expr, nodes)
     return nodes
 
 def value_to_array(val, nodes):
+    """adds a given value to an array"""
     nodes.append(tuple(['const', [val]]))
     return len(nodes) - 1
 
@@ -672,7 +713,8 @@ def value_to_array(val, nodes):
 # also, for sums, we are not considering coefficients, because basically all coefficients are 1
 # haven't even consider substractions, but I guess we would interpret them as a - b = a + (-1) * b
 def expr_to_array(expr, nodes):
-    op = expr.op
+    """adds expression to array"""
+    op = expr._op
     if op == Operator.const: # FIXME: constant expr should also have children!
         nodes.append(tuple([op, [expr.number]]))
     elif op != Operator.varidx:

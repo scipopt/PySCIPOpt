@@ -117,4 +117,12 @@ venv.bak/
 .mypy_cache/
 
 # pytest
-.pytest_chache/
+.pytest_cache/
+
+# model (for tests)
+model
+model.cip
+model.lp
+
+# VSCode
+.vscode/

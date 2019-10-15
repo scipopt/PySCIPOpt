@@ -129,9 +129,8 @@ class ALLDIFFconshdlr(Conshdlr):
             G.remove_edges_from(visited_edges)
 
         # compute strongly connected components of D and mark edges on the cc as useful
-        gscc = networkx.strongly_connected_component_subgraphs(D, copy=False)
-        for g in gscc:
-            for e in g.edges():
+        for g in networkx.strongly_connected_components(D):
+            for e in D.subgraph(g).edges():
                 if G.has_edge(*e):
                     G.remove_edge(*e)
 
@@ -203,7 +202,7 @@ class ALLDIFFconshdlr(Conshdlr):
                 return {"result": SCIP_RESULT.INFEASIBLE}
         return {"result": SCIP_RESULT.FEASIBLE}
 
-    def conslock(self, constraint, nlockspos, nlocksneg):
+    def conslock(self, constraint, locktype, nlockspos, nlocksneg):
         for var in constraint.data.vars:
             self.model.addVarLocks(var, nlockspos + nlocksneg , nlockspos + nlocksneg)
 

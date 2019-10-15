@@ -1,6 +1,6 @@
+##@file ssa.py
+#@brief multi-stage (serial) safety stock allocation model
 """
-ssa.py: multi-stage (serial) safety stock allocation model
-
 Approach: use SOS2 constraints for modeling non-linear functions.
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
@@ -55,6 +55,7 @@ def ssa(n,h,K,f,T):
 
 
 def make_data():
+    """creates example data set"""
     n = 30      # number of stages
     z = 1.65    # for 95% service level
     sigma = 100 # demand's standard deviation
