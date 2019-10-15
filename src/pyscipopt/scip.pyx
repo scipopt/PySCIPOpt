@@ -1414,7 +1414,7 @@ cdef class Model:
         children = [Node.create(_children[i]) for i in range(_nchildren)]
         siblings = [Node.create(_siblings[i]) for i in range(_nsiblings)]
 
-        return leaves, children, sib
+        return leaves, children, siblings
 
     # LP Methods
     def getLPSolstat(self):
