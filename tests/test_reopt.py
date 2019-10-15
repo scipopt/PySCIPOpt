@@ -3,8 +3,6 @@ from pyscipopt import Model
 
 class ReoptimizationTest(unittest.TestCase):
 
-    # function names must start with test
-
     def test_reopt(self):
 
         m = Model()
