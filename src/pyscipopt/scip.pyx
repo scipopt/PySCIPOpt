@@ -929,6 +929,7 @@ cdef class Model:
         return quality
 
     def enableReoptimization(self, enable=True):
+        """include specific heuristics and branching rules for reoptimization"""
         PY_SCIP_CALL(SCIPenableReoptimization(self._scip, enable))
 
     def lpiGetIterations(self):
