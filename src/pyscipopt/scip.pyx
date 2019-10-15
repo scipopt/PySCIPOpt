@@ -928,6 +928,10 @@ cdef class Model:
 
         return quality
 
+    def enableReoptimization(self, enable=True):
+        """include specific heuristics and branching rules for reoptimization"""
+        PY_SCIP_CALL(SCIPenableReoptimization(self._scip, enable))
+
     def lpiGetIterations(self):
         """Get the iteration count of the last solved LP"""
         cdef SCIP_LPI* lpi
@@ -1648,20 +1652,29 @@ cdef class Model:
         terms = lincons.expr.terms
 
         cdef SCIP_CONS* scip_cons
+
+        cdef int nvars = len(terms.items())
+
+        vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        coeffs_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+
+        for i, (key, coeff) in enumerate(terms.items()):
+            vars_array[i] = <SCIP_VAR*>(<Variable>key[0]).scip_var
+            coeffs_array[i] = <SCIP_Real>coeff
+
         PY_SCIP_CALL(SCIPcreateConsLinear(
-            self._scip, &scip_cons, str_conversion(kwargs['name']), 0, NULL, NULL,
+            self._scip, &scip_cons, str_conversion(kwargs['name']), nvars, vars_array, coeffs_array,
             kwargs['lhs'], kwargs['rhs'], kwargs['initial'],
             kwargs['separate'], kwargs['enforce'], kwargs['check'],
             kwargs['propagate'], kwargs['local'], kwargs['modifiable'],
             kwargs['dynamic'], kwargs['removable'], kwargs['stickingatnode']))
 
-        for key, coeff in terms.items():
-            var = <Variable>key[0]
-            PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, scip_cons, var.scip_var, <SCIP_Real>coeff))
-
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         PyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        free(vars_array)
+        free(coeffs_array)
 
         return PyCons
 

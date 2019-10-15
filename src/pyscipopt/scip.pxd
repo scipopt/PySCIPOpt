@@ -1176,6 +1176,7 @@ cdef extern from "scip/scip.h":
     #re-optimization routines
     SCIP_RETCODE SCIPfreeReoptSolve(SCIP* scip)
     SCIP_RETCODE SCIPchgReoptObjective(SCIP* scip, SCIP_OBJSENSE objsense, SCIP_VAR** vars, SCIP_Real* coefs, int nvars)
+    SCIP_RETCODE SCIPenableReoptimization(SCIP* scip, SCIP_Bool enable)
 
     BMS_BLKMEM* SCIPblkmem(SCIP* scip)
 
