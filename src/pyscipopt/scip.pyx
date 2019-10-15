@@ -1664,10 +1664,10 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPcreateConsLinear(
         self._scip, &scip_cons, str_conversion(kwargs['name']), nvars, vars_array, coeffs_array,
-             kwargs['lhs'], kwargs['rhs'], kwargs['initial'],
-             kwargs['separate'], kwargs['enforce'], kwargs['check'],
-             kwargs['propagate'], kwargs['local'], kwargs['modifiable'],
-             kwargs['dynamic'], kwargs['removable'], kwargs['stickingatnode']))
+            kwargs['lhs'], kwargs['rhs'], kwargs['initial'],
+            kwargs['separate'], kwargs['enforce'], kwargs['check'],
+            kwargs['propagate'], kwargs['local'], kwargs['modifiable'],
+            kwargs['dynamic'], kwargs['removable'], kwargs['stickingatnode']))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         PyCons = Constraint.create(scip_cons)
