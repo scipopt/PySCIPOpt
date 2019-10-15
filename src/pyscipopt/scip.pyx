@@ -1659,7 +1659,7 @@ cdef class Model:
         coeffs_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
 
         for i, (key, coeff) in enumerate(terms.items()):
-            vars_array[i] = (<Variable>key[0]).var
+            vars_array[i] = <SCIP_VAR*>(<Variable>key[0]).scip_var
             coeffs_array[i] = <SCIP_Real>coeff
 
         PY_SCIP_CALL(SCIPcreateConsLinear(
