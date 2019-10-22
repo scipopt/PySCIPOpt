@@ -33,7 +33,7 @@ install:
   - pip install cython networkx pytest-cov
   - pip install .
 
-script: py.test -s #--cov
+script: py.test #--cov
 
 after_success:
   # Generate the docs only if version tag present and we can use secure variables (no PR)
