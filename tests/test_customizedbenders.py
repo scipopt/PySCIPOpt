@@ -37,7 +37,6 @@ class testBenders(Benders):
             quicksum(self.c[i, j] * x[i, j] for i in self.I for j in self.J),
             "minimize")
         subprob.data = x, y
-        #self.model.addBendersSubproblem(self.name, subprob)
         self.model.addBendersSubproblem(self, subprob)
         self.subprob = subprob
 
@@ -109,14 +108,10 @@ class testBenderscut(Benderscut):
             dualmult = subprob.getDualMultiplier(subprobcons)
             lhs += dualmult*self.d[i]
          except:
-            print("Subproblem constraint <%d> does not exist in the "\
-                  "subproblem."%subprobcons.name)
             assert False
 
          memberdualmult = membersubprob.getDualMultiplier(subprobcons)
          if dualmult != memberdualmult:
-            print("The dual multipliers between the two subproblems are not "\
-                  "the same.")
             assert False
 
       coeffs = [subprob.getDualMultiplier(self.benders.capacity[j])*\
@@ -144,6 +139,7 @@ def flp(I, J, M, d,f, c=None, monolithic=False):
     """
 
     master = Model("flp-master")
+    master.hideOutput()
     # creating the problem
     y = {}
     for j in J:
@@ -161,7 +157,6 @@ def flp(I, J, M, d,f, c=None, monolithic=False):
             demand[i] = master.addCons(quicksum(x[i, j] for j in J) >= d[i], "Demand(%s)" % i)
 
         for j in J:
-            print(j, M[j])
             capacity[j] = master.addCons(quicksum(x[i, j] for i in I) <= M[j] * y["y(%d)"%j], "Capacity(%s)" % j)
 
     master.addCons(quicksum(y["y(%d)"%j]*M[j] for j in J)
@@ -220,12 +215,6 @@ def test_flpbenders_defcuts():
     x, suby = testbd.subprob.data
     edges = [(i, j) for (i, j) in x if testbd.subprob.getVal(x[i,j]) > EPS]
 
-    print("Optimal value:", master.getObjVal())
-    print("Facilities at nodes:", facilities)
-    print("Edges:", edges)
-
-    master.printStatistics()
-
     # since the subproblems were setup and then solved, we need to free the
     # subproblems. This must happen after the solution is extracted, otherwise
     # the solution will be lost
@@ -268,12 +257,6 @@ def test_flpbenders_customcuts():
     x, suby = testbd.subprob.data
     edges = [(i, j) for (i, j) in x if testbd.subprob.getVal(x[i,j]) > EPS]
 
-    print("Optimal value:", master.getObjVal())
-    print("Facilities at nodes:", facilities)
-    print("Edges:", edges)
-
-    master.printStatistics()
-
     # since the subproblems were setup and then solved, we need to free the
     # subproblems. This must happen after the solution is extracted, otherwise
     # the solution will be lost
@@ -297,18 +280,15 @@ def test_flp():
     y = master.data
     facilities = [j for j in y if master.getVal(y[j]) > EPS]
 
-    print("Optimal value:", master.getObjVal())
-    print("Facilities at nodes:", facilities)
-
-    master.printBestSol()
-    master.printStatistics()
-
     return master.getObjVal()
 
-if __name__ == "__main__":
+def test_customizedbenders():
     defcutsobj = test_flpbenders_defcuts()
     customcutsobj = test_flpbenders_customcuts()
     monolithicobj = test_flp()
 
     assert defcutsobj == customcutsobj
     assert defcutsobj == monolithicobj
+
+if __name__ == "__main__":
+   test_customizedbenders()
