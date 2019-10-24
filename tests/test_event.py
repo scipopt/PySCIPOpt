@@ -16,8 +16,7 @@ class MyEvent(Eventhdlr):
 
     def eventexec(self, event):
         calls.append('eventexec')
-        event.getNewBound()
-        event.getOldBound()
+        assert event.getType() == SCIP_EVENTTYPE.FIRSTLPSOLVED
         assert event.getNode().getNumber() == 1
 
 
