@@ -1,11 +1,20 @@
 import pytest
 
-from pyscipopt import Model, quicksum, SCIP_PARAMSETTING
+from pyscipopt import Model, Heur, SCIP_RESULT, quicksum, SCIP_PARAMSETTING, SCIP_HEURTIMING
+
+class MyHeur(Heur):
+    def heurexec(self, heurtiming, nodeinfeasible):
+        self.model.interruptSolve()
+        return {"result": SCIP_RESULT.DIDNOTFIND}
 
 def test_nlrow():
 
     # create nonlinear model
     m = Model("nlrow")
+
+    # add heuristic to interrupt solve: the methods we wanna test can only be called in solving stage
+    heuristic = MyHeur()
+    m.includeHeur(heuristic, "PyHeur", "heur to interrupt", "Y", timingmask=SCIP_HEURTIMING.BEFORENODE)
 
     # create variables
     x = m.addVar(name="x", lb=-3, ub=3, obj=-1)
