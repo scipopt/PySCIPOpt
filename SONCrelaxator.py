@@ -1,9 +1,9 @@
 #! usr/bin/env python3
-from pyscipopt       import SCIP_RESULT, Relax, Term, Expr
-from constrained     import *
-from convert         import *
-from Poem.polynomial import *
-from Poem.exceptions import InfeasibleError
+from pyscipopt      import SCIP_RESULT, Relax, Term, Expr
+from constrained    import *
+from convert        import *
+from POEM.python    import Polynomial, InfeasibleError
+#from Poem.exceptions import InfeasibleError
 
 import numpy as np
 import re
@@ -150,7 +150,7 @@ class SoncRelax(Relax):
                         start = data.x
                         bound = -data.fun
             #find lower bound using SONC
-            data = constrained_opt(obj, constraint_list, start=start)
+            data = constrained_opt(obj, constraint_list, start=[])
             #store {polynomial: solution} as solved, so do not need to compute it twice
             self.solved_instance[str(poly)] = data
 
