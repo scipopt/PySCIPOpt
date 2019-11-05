@@ -104,6 +104,7 @@ class testBenderscut(Benderscut):
       # model is not correct.
       # Also checking whether the dual multiplier is the same between the
       # member subproblem and the retrieved subproblem`
+      print("computing LHS of benders cut")
       lhs = 0
       for i in self.I:
          subprobcons = self.benders.demand[i]
