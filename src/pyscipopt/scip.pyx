@@ -2929,7 +2929,8 @@ cdef class Model:
         else:
             scip_sol = NULL
 
-        PY_SCIP_CALL( SCIPcheckBendersSubproblemOptimality(self._scip, _benders, solution.sol, probnumber, &optimal) )
+        PY_SCIP_CALL( SCIPcheckBendersSubproblemOptimality(self._scip, _benders,
+            scip_sol, probnumber, &optimal) )
 
         return optimal
 
