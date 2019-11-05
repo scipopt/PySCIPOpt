@@ -2767,8 +2767,19 @@ cdef class Model:
         Keyword arguments:
         benders -- the Benders' decomposition to which the subproblem belongs to
         subproblem --  the subproblem to add to the decomposition
+        isconvex -- can be used to specify whether the subproblem is convex
         """
         PY_SCIP_CALL(SCIPaddBendersSubproblem(self._scip, benders._benders, (<Model>subproblem)._scip))
+
+    def setBendersSubproblemIsConvex(self, Benders benders, probnumber, isconvex = True):
+        """sets a flag indicating whether the subproblem is convex
+
+        Keyword arguments:
+        benders -- the Benders' decomposition which contains the subproblem
+        probnumber -- the problem number of the subproblem that the convexity will be set for
+        isconvex -- flag to indicate whether the subproblem is convex
+        """
+        SCIPbendersSetSubproblemIsConvex(benders._benders, probnumber, isconvex)
 
     def setupBendersSubproblem(self, probnumber, Benders benders = None, Solution solution = None):
         """ sets up the Benders' subproblem given the master problem solution
@@ -3467,6 +3478,10 @@ cdef class Model:
     def interruptSolve(self):
         """Interrupt the solving process as soon as possible."""
         PY_SCIP_CALL(SCIPinterruptSolve(self._scip))
+
+    def restartSolve(self):
+        """Restarts the solving process as soon as possible."""
+        PY_SCIP_CALL(SCIPrestartSolve(self._scip))
 
     # Solution functions
 

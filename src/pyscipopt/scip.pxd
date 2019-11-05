@@ -568,6 +568,7 @@ cdef extern from "scip/scip.h":
     SCIP_VAR* SCIPeventGetVar(SCIP_EVENT* event)
     SCIP_NODE* SCIPeventGetNode(SCIP_EVENT* event)
     SCIP_RETCODE SCIPinterruptSolve(SCIP* scip)
+    SCIP_RETCODE SCIPrestartSolve(SCIP* scip)
 
 
     # Global Problem Methods
@@ -1069,6 +1070,7 @@ cdef extern from "scip/scip.h":
     SCIP_VAR* SCIPbendersGetAuxiliaryVar(SCIP_BENDERS* benders, int probnumber)
     SCIP_RETCODE SCIPcheckBendersSubproblemOptimality(SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, int probnumber, SCIP_Bool* optimal)
     SCIP_RETCODE SCIPincludeBendersDefaultCuts(SCIP* scip, SCIP_BENDERS* benders)
+    void SCIPbendersSetSubproblemIsConvex(SCIP_BENDERS* benders, int probnumber, SCIP_Bool isconvex)
 
     # Benders' decomposition cuts plugin
     SCIP_RETCODE SCIPincludeBenderscut(SCIP* scip,
