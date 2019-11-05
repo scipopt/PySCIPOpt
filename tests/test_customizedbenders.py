@@ -205,6 +205,7 @@ def test_flpbenders_defcuts():
     master.activateBenders(testbd, 1)
     master.setBoolParam("constraints/benders/active", True)
     master.setBoolParam("constraints/benderslp/active", True)
+    master.setBoolParam("benders/testBenders/updateauxvarbound", False)
     # optimizing the problem using Benders' decomposition
     master.optimize()
 
@@ -253,6 +254,7 @@ def test_flpbenders_customcuts():
     master.activateBenders(testbd, 1)
     master.setBoolParam("constraints/benders/active", True)
     master.setBoolParam("constraints/benderslp/active", True)
+    master.setBoolParam("benders/testBenders/updateauxvarbound", False)
     # optimizing the problem using Benders' decomposition
     master.optimize()
 
