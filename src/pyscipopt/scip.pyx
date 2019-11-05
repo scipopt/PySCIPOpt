@@ -2916,12 +2916,18 @@ cdef class Model:
         benders -- the Benders' decomposition to which the subproblem belongs to
         """
         cdef SCIP_BENDERS* _benders
+        cdef SCIP_SOL* scip_sol
         cdef SCIP_Bool optimal
 
         if benders is None:
             _benders = SCIPfindBenders(self._scip, "default")
         else:
             _benders = benders._benders
+
+        if isinstance(solution, Solution):
+            scip_sol = solution.sol
+        else:
+            scip_sol = NULL
 
         PY_SCIP_CALL( SCIPcheckBendersSubproblemOptimality(self._scip, _benders, solution.sol, probnumber, &optimal) )
 
