@@ -91,16 +91,8 @@ class testBenderscut(Benderscut):
       subprob = self.model.getBendersSubproblem(probnumber, benders=self.benders)
       membersubprob = self.benders.subprob
 
-      print("executing benderscutexec")
-
       # checking whether the subproblem is already optimal, i.e. whether a cut
       # needs to be generated
-      print("Subproblem stage:", subprob.getStage())
-      print(solution)
-      print(probnumber)
-      print(self.benders)
-      print(self.model.checkBendersSubproblemOptimality(solution, probnumber,
-            benders=self.benders))
       if self.model.checkBendersSubproblemOptimality(solution, probnumber,
             benders=self.benders):
          return {"result" : SCIP_RESULT.FEASIBLE}
@@ -110,7 +102,6 @@ class testBenderscut(Benderscut):
       # model is not correct.
       # Also checking whether the dual multiplier is the same between the
       # member subproblem and the retrieved subproblem`
-      print("computing LHS of benders cut")
       lhs = 0
       for i in self.I:
          subprobcons = self.benders.demand[i]
@@ -128,11 +119,9 @@ class testBenderscut(Benderscut):
                   "the same.")
             assert False
 
-      print("storing coefficients")
       coeffs = [subprob.getDualMultiplier(self.benders.capacity[j])*\
             self.M[j] for j in self.J]
 
-      print("adding the Benders' cut to the problem")
       self.model.addCons(self.model.getBendersAuxiliaryVar(probnumber,
          self.benders) -
          quicksum(self.model.getBendersVar(self.benders.subprob.data[1][j],
