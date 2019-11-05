@@ -1,13 +1,13 @@
 #! usr/bin/env python3
-from pyscipopt       import Term, Expr
-from POEM.python.polynomial import *
+from pyscipopt   import Term, Expr
+from POEM.python import Polynomial
 
 import numpy as np
 import re
 
 
 def ExprToPoly(Exp, nvar):
-    """turn pyscipopt.scip.Expr into a Polynomial (POEM)
+    """turn pyscipopt.scip.Expr into a Polynomial (SCIP -> POEM)
     :param: Exp: expression of type pyscipopt.scip.Expr
     :param: nvar: number of variables of given problem
     """
@@ -20,7 +20,7 @@ def ExprToPoly(Exp, nvar):
         const = 0.0
         nterms += 1
 
-    #turn Expr into Polynomial (POEM)
+    #turn Expr into Polynomial 
     A = np.array([np.zeros(nterms)]*nvar)
     b = np.zeros(nterms)
     b[0] = const
@@ -35,17 +35,16 @@ def ExprToPoly(Exp, nvar):
     return Polynomial(A,b)
 
 def PolyToExpr(p,var):
-    """turn Polynomial (POEM) into a pyscipopt.scip.Expr (uses __dict__ of class polynomial, but this gives the wrong dict for const Term)
+    """turn Polynomial into a pyscipopt.scip.Expr (POEM -> SCIP)
     :param: p: Polynomial object
     :param: var: list of variables
     """
+    #TODO: currently working with strings, change that to arrays
     dictP = p.__dict__()
     d = dict()
-    #print(dictP)
     for key in dictP.keys():
         i = 0
         t =[]
-        #var = model.getVars()
         varstr = [None]*len(var)
         for j in range(len(var)):
             varstr[j] = str(var[j])
@@ -54,11 +53,8 @@ def PolyToExpr(p,var):
             for _ in range(el):
                 t.append(var[varstr.index(f)])
             i+=1
-        #print(t)
         term = Term()
         for el in t:
             term += Term(el)
-        #print(term)
         d[term] = dictP[key]
-        #print(t)
     return Expr(d)

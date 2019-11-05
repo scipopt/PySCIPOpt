@@ -1,8 +1,7 @@
 #! usr/bin/env python3
-from pyscipopt       import Model, SCIP_PARAMSETTING, Expr, Relax, Term, ExprCons
-from SONCrelaxator   import *
-from constrained     import *
-from POEM.python.polynomial import *
+from pyscipopt      import Model, SCIP_PARAMSETTING, Expr, Relax, Term, ExprCons
+from SONCrelaxator  import SoncRelax
+from POEM.python    import Polynomial, build_lagrangian, constrained_opt
 
 import re
 import numpy as np

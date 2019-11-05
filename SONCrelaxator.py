@@ -1,9 +1,7 @@
 #! usr/bin/env python3
 from pyscipopt      import SCIP_RESULT, Relax, Term, Expr
-from constrained    import *
-from convert        import *
-from POEM.python    import Polynomial, InfeasibleError
-#from Poem.exceptions import InfeasibleError
+from POEM.python    import Polynomial, InfeasibleError, build_lagrangian, constrained_opt
+from convert        import ExprToPoly, PolyToExpr
 
 import numpy as np
 import re
@@ -18,31 +16,39 @@ class SoncRelax(Relax):
     def relaxexec(self):
         """execution method of SONC relaxator"""
 
+        def _nonnegCons(polynomial,rhs,lhs):
+            """adds constraints such that constraints >= 0 is satisfied
+            :param: polynomial: polynomial expression of constraint
+            :param: rhs: right hand side of constraint
+            :param: lhs: left hand side of constraint"""
+            if not self.model.isInfinity(-lhs):
+                polynomial.b[0] -= lhs
+                constraint_list.append(polynomial.copy())
+                polynomial.b[0] += lhs
+            if not self.model.isInfinity(rhs):
+                polynomial.b[0] -= rhs
+                polynomial.b *= -1
+                constraint_list.append(polynomial)
+            return
+
         nvars = len(self.model.getVars())
         conss = self.model.getConss()
         constraint_list = []
 
-        #transform each constraint (type linear, quadratic or expr) into a Polynomial to get lower bound with all constraints used
+        #transform each constraint (type linear, quadratic or expr) into a Polynomial to get lower bound with all constraints used (SCIP -> POEM)
         for cons in conss:
             constype = cons.getType()
             lhs = self.model.getLhs(cons)
             rhs = self.model.getRhs(cons)
             if  constype == 'expr':
-                #get constraints as as polynomial (POEM)
+                #transform expr of SCIP into Polynomial of POEM
                 exprcons = self.model.getConsExprPolyCons(cons)
                 polynomial = ExprToPoly(exprcons, nvars)
                 polynomial.clean()
 
-                #transform into problem with constraints >= 0
-                if not self.model.isInfinity(-lhs):
-                    polynomial.b[0] -= lhs
-                    constraint_list.append(polynomial.copy())
-                    polynomial.b[0] += lhs
-                if not self.model.isInfinity(rhs):
-                    polynomial.b[0] -= rhs
-                    polynomial.b *= -1
-                    constraint_list.append(polynomial)
-
+                #add constraints to constraint_list with constraints >= 0
+                _nonnegCons(polynomial, rhs, lhs)
+ 
             elif constype == 'linear':
                 #get linear constraint as Polynomial (POEM)
                 coeffdict = self.model.getValsLinear(cons)
@@ -55,16 +61,9 @@ class SoncRelax(Relax):
                 polynomial = Polynomial(A,b)
                 polynomial.clean()
 
-                #transform into problem with constraints >= 0
-                if not self.model.isInfinity(-lhs):
-                    polynomial.b[0] -= lhs
-                    constraint_list.append(polynomial.copy())
-                    polynomial.b[0] += lhs
-                if not self.model.isInfinity(rhs):
-                    polynomial.b[0] -= rhs
-                    polynomial.b *= -1
-                    constraint_list.append(polynomial)
-                #print(lhs,rhs)
+                #add constraints to constraint_list with constraints >= 0
+                _nonnegCons(polynomial, rhs, lhs)
+                
             elif constype == 'quadratic':
                 #get quadratic constraint as Polynomial (POEM)
                 bilin, quad, lin = self.model.getTermsQuadratic(cons)
@@ -97,26 +96,20 @@ class SoncRelax(Relax):
                 polynomial = Polynomial(A,b)
                 polynomial.clean()
 
-                #transform into problem with constraints >= 0
-                if not self.model.isInfinity(-lhs):
-                    polynomial.b[0] -= lhs
-                    constraint_list.append(polynomial.copy())
-                    polynomial.b[0] += lhs
-                if not self.model.isInfinity(rhs):
-                    polynomial.b[0] -= rhs
-                    polynomial.b *= -1
-                    constraint_list.append(polynomial)
+                #add constraints to constraint_list with constraints >= 0
+                _nonnegCons(polynomial, rhs, lhs)
+                
             else:
                 raise Warning("relaxator not available for constraints of type ", constype)
 
-        #No  constraints of type expr, quadratic or linear
+        #No  constraints of type expr, quadratic or linear, relaxator not applicable
         if constraint_list == []:
             return {'result': SCIP_RESULT.DIDNOTRUN}
 
-        #get Objective as Polynomial (POEM)
+        #get Objective as Polynomial
         obj = ExprToPoly(self.model.getObjective(), nvars)
 
-        #use the Variable bounds as well
+        #use the Variable bounds as linear constraints
         #TODO: improve usage of bounds, maybe delete Constraints if same as bounds (for Polynomial)
         #TODO: problem if bounds are tightened since it makes completely new polynomial (linear term is changed)
         #TODO: 'polynomial unbounded at point ..' appears if variables do not appear in polynomial (possibility to fix them to 0?)
@@ -126,16 +119,15 @@ class SoncRelax(Relax):
             else:
                 if y.getUbLocal() != 1e+20:
                     boundcons = ExprToPoly(Expr({Term(): y.getUbLocal(), Term(y):-1.0}), nvars)
-                    #if not boundcons in constraint_list:
-                    #print(boundcons)
                     constraint_list.append(boundcons)
-                if y.getLbLocal != -1e+20: # and y.getLbLocal != 0.0:
+                if y.getLbLocal != -1e+20: #TODO: do we also need: and y.getLbLocal != 0.0:
                     boundcons = ExprToPoly(Expr({Term(): -y.getLbLocal(), Term(y):1.0}), nvars)
-                    #if not boundcons in constraint_list:
-                    #print(boundcons)
                     constraint_list.append(boundcons)
 
+        """Here starts the real computation
+        TODO: first try to use the GP, if that does not work use scipy"""
         #check if instance was already solved
+        #TODO: quite inefficient since we compute the lagrangian again, find easier way to check this
         ncon = len(constraint_list)
         poly = build_lagrangian(np.ones(ncon), obj, constraint_list)
         if str(poly) in self.solved_instance.keys():
@@ -154,20 +146,21 @@ class SoncRelax(Relax):
             #store {polynomial: solution} as solved, so do not need to compute it twice
             self.solved_instance[str(poly)] = data
 
-        #return if InfeasibleError occurs (unbounded point in SONC decomposition)
-        #print([str(p) for p in constraint_list])
+        #return if InfeasibleError (status=10) occurs (unbounded point in SONC decomposition)
         if data.status == 10:
             print(data.message)
             return {'result': SCIP_RESULT.DIDNOTRUN}
-        print(data.message, data.status)
 
         #optimization terminated successfully, lower bound found
         if data.success:
-            #print(-data.fun, data.x)
             print('lower bound shifted: ', -data.fun+self.model.getObjoffset())
             return {'result': SCIP_RESULT.SUCCESS, 'lowerbound': -data.fun}
+
         #this is still a lower bound, but probably not the best possible
         if data.status >= 4 and not -data.fun==np.inf:
             print('lower bound shifted iteration: ', -data.fun+self.model.getObjoffset())
             return {'result': SCIP_RESULT.SUCCESS, 'lowerbound': -data.fun}
+
+        #TODO: maybe we can use the other status cases given by scipy as well
+        #relaxator did not run successfully, did not find a lower bound
         return {'result': SCIP_RESULT.DIDNOTRUN}
