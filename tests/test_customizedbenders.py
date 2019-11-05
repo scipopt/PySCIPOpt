@@ -95,6 +95,7 @@ class testBenderscut(Benderscut):
 
       # checking whether the subproblem is already optimal, i.e. whether a cut
       # needs to be generated
+      print("Subproblem stage:", subprob.getStage())
       if self.model.checkBendersSubproblemOptimality(solution, probnumber,
             benders=self.benders):
          return {"result" : SCIP_RESULT.FEASIBLE}
