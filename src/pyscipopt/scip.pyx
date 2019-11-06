@@ -2746,36 +2746,40 @@ cdef class Model:
         if benders is None:
             _benders = SCIPfindBenders(self._scip, "default")
         else:
-            n = str_conversion(benders.name)
-            _benders = SCIPfindBenders(self._scip, n)
+            _benders = benders._benders
 
         for d in lowerbounds.keys():
             SCIPbendersUpdateSubproblemLowerbound(_benders, d, lowerbounds[d])
 
-    def activateBenders(self, str name, int nsubproblems):
+    def activateBenders(self, Benders benders, int nsubproblems):
         """Activates the Benders' decomposition plugin with the input name
 
         Keyword arguments:
-        name -- the name of the Benders' decomposition plugin
+        benders -- the Benders' decomposition to which the subproblem belongs to
         nsubproblems -- the number of subproblems in the Benders' decomposition
         """
-        n = str_conversion(name)
-        cdef SCIP_BENDERS* benders
-        benders = SCIPfindBenders(self._scip, n)
-        PY_SCIP_CALL(SCIPactivateBenders(self._scip, benders, nsubproblems))
+        PY_SCIP_CALL(SCIPactivateBenders(self._scip, benders._benders, nsubproblems))
 
-    def addBendersSubproblem(self, str name, subproblem):
+    def addBendersSubproblem(self, Benders benders, subproblem):
         """adds a subproblem to the Benders' decomposition given by the input
         name.
 
         Keyword arguments:
-        name -- the Benders' decomposition that the subproblem is added to
+        benders -- the Benders' decomposition to which the subproblem belongs to
         subproblem --  the subproblem to add to the decomposition
+        isconvex -- can be used to specify whether the subproblem is convex
         """
-        cdef SCIP_BENDERS* benders
-        n = str_conversion(name)
-        benders = SCIPfindBenders(self._scip, n)
-        PY_SCIP_CALL(SCIPaddBendersSubproblem(self._scip, benders, (<Model>subproblem)._scip))
+        PY_SCIP_CALL(SCIPaddBendersSubproblem(self._scip, benders._benders, (<Model>subproblem)._scip))
+
+    def setBendersSubproblemIsConvex(self, Benders benders, probnumber, isconvex = True):
+        """sets a flag indicating whether the subproblem is convex
+
+        Keyword arguments:
+        benders -- the Benders' decomposition which contains the subproblem
+        probnumber -- the problem number of the subproblem that the convexity will be set for
+        isconvex -- flag to indicate whether the subproblem is convex
+        """
+        SCIPbendersSetSubproblemIsConvex(benders._benders, probnumber, isconvex)
 
     def setupBendersSubproblem(self, probnumber, Benders benders = None, Solution solution = None):
         """ sets up the Benders' subproblem given the master problem solution
@@ -2796,10 +2800,11 @@ cdef class Model:
         if benders is None:
             scip_benders = SCIPfindBenders(self._scip, "default")
         else:
-            n = str_conversion(benders.name)
-            scip_benders = SCIPfindBenders(self._scip, n)
+            scip_benders = benders._benders
 
-        PY_SCIP_CALL(SCIPsetupBendersSubproblem(self._scip, scip_benders, scip_sol, probnumber))
+        retcode = SCIPsetupBendersSubproblem(self._scip, scip_benders, scip_sol, probnumber)
+
+        PY_SCIP_CALL(retcode)
 
     def solveBendersSubproblem(self, probnumber, enfotype, solvecip, Benders benders = None, Solution solution = None):
         """ solves the Benders' decomposition subproblem. The convex relaxation will be solved unless
@@ -2826,13 +2831,32 @@ cdef class Model:
         if benders is None:
             scip_benders = SCIPfindBenders(self._scip, "default")
         else:
-            n = str_conversion(benders.name)
-            scip_benders = SCIPfindBenders(self._scip, n)
+            scip_benders = benders._benders
 
         PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip, scip_benders, scip_sol,
             probnumber, &infeasible, enfotype, solvecip, &objective))
 
         return infeasible, objective
+
+    def getBendersSubproblem(self, probnumber, Benders benders = None):
+        """Returns a Model object that wraps around the SCIP instance of the subproblem.
+        NOTE: This Model object is just a place holder and SCIP instance will not be freed when the object is destroyed.
+
+        Keyword arguments:
+        probnumber -- the problem number for subproblem that is required
+        benders -- the Benders' decomposition object for the that the subproblem belongs to (Default = None)
+        """
+        cdef SCIP_BENDERS* scip_benders
+        cdef SCIP* scip_subprob
+
+        if benders is None:
+            scip_benders = SCIPfindBenders(self._scip, "default")
+        else:
+            scip_benders = benders._benders
+
+        scip_subprob = SCIPbendersSubproblem(scip_benders, probnumber)
+
+        return Model.create(scip_subprob)
 
     def getBendersVar(self, Variable var, Benders benders = None, probnumber = -1):
         """Returns the variable for the subproblem or master problem
@@ -2849,8 +2873,7 @@ cdef class Model:
         if benders is None:
             _benders = SCIPfindBenders(self._scip, "default")
         else:
-            n = str_conversion(benders.name)
-            _benders = SCIPfindBenders(self._scip, n)
+            _benders = benders._benders
 
         if probnumber == -1:
             PY_SCIP_CALL(SCIPgetBendersMasterVar(self._scip, _benders, var.scip_var, &_mappedvar))
@@ -2863,6 +2886,61 @@ cdef class Model:
             mappedvar = Variable.create(_mappedvar)
 
         return mappedvar
+
+    def getBendersAuxiliaryVar(self, probnumber, Benders benders = None):
+        """Returns the auxiliary variable that is associated with the input problem number
+
+        Keyword arguments:
+        probnumber -- the problem number for which the target variable belongs, -1 for master problem
+        benders -- the Benders' decomposition to which the subproblem variables belong to
+        """
+        cdef SCIP_BENDERS* _benders
+        cdef SCIP_VAR* _auxvar
+
+        if benders is None:
+            _benders = SCIPfindBenders(self._scip, "default")
+        else:
+            _benders = benders._benders
+
+        _auxvar = SCIPbendersGetAuxiliaryVar(_benders, probnumber)
+        auxvar = Variable.create(_auxvar)
+
+        return auxvar
+
+    def checkBendersSubproblemOptimality(self, Solution solution, probnumber, Benders benders = None):
+        """Returns whether the subproblem is optimal w.r.t the master problem auxiliary variables.
+
+        Keyword arguments:
+        solution -- the master problem solution that is being checked for optimamlity
+        probnumber -- the problem number for which optimality is being checked
+        benders -- the Benders' decomposition to which the subproblem belongs to
+        """
+        cdef SCIP_BENDERS* _benders
+        cdef SCIP_SOL* scip_sol
+        cdef SCIP_Bool optimal
+
+        if benders is None:
+            _benders = SCIPfindBenders(self._scip, "default")
+        else:
+            _benders = benders._benders
+
+        if isinstance(solution, Solution):
+            scip_sol = solution.sol
+        else:
+            scip_sol = NULL
+
+        PY_SCIP_CALL( SCIPcheckBendersSubproblemOptimality(self._scip, _benders,
+            scip_sol, probnumber, &optimal) )
+
+        return optimal
+
+    def includeBendersDefaultCuts(self, Benders benders):
+        """includes the default Benders' decomposition cuts to the custom Benders' decomposition plugin
+
+        Keyword arguments:
+        benders -- the Benders' decomposition that the default cuts will be applied to
+        """
+        PY_SCIP_CALL( SCIPincludeBendersDefaultCuts(self._scip, benders._benders) )
 
 
     def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):
@@ -3160,6 +3238,7 @@ cdef class Model:
         scip_benders = SCIPfindBenders(self._scip, n)
         benders.model = <Model>weakref.proxy(self)
         benders.name = name
+        benders._benders = scip_benders
         Py_INCREF(benders)
 
     def includeBenderscut(self, Benders benders, Benderscut benderscut, name, desc, priority=1, islpcut=True):
@@ -3175,8 +3254,7 @@ cdef class Model:
         """
         cdef SCIP_BENDERS* _benders
 
-        bendersname = str_conversion(benders.name)
-        _benders = SCIPfindBenders(self._scip, bendersname)
+        _benders = benders._benders
 
         n = str_conversion(name)
         d = str_conversion(desc)
@@ -3188,7 +3266,7 @@ cdef class Model:
         cdef SCIP_BENDERSCUT* scip_benderscut
         scip_benderscut = SCIPfindBenderscut(_benders, n)
         benderscut.model = <Model>weakref.proxy(self)
-        benderscut.benders = <Benders>weakref.proxy(benders)
+        benderscut.benders = benders
         benderscut.name = name
         # TODO: It might be necessary in increment the reference to benders i.e Py_INCREF(benders)
         Py_INCREF(benderscut)
@@ -3408,6 +3486,10 @@ cdef class Model:
         """Interrupt the solving process as soon as possible."""
         PY_SCIP_CALL(SCIPinterruptSolve(self._scip))
 
+    def restartSolve(self):
+        """Restarts the solving process as soon as possible."""
+        PY_SCIP_CALL(SCIPrestartSolve(self._scip))
+
     # Solution functions
 
     def createSol(self, Heur heur = None):
@@ -3432,14 +3514,17 @@ cdef class Model:
         """Prints the best feasible primal solution."""
         PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, write_zeros))
 
-    def printSol(self, Solution solution, write_zeros=False):
+    def printSol(self, Solution solution=None, write_zeros=False):
       """Print the given primal solution.
 
       Keyword arguments:
       solution -- solution to print
       write_zeros -- include variables that are set to zero
       """
-      PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, NULL, write_zeros))
+      if solution is None:
+         PY_SCIP_CALL(SCIPprintSol(self._scip, NULL, NULL, write_zeros))
+      else:
+         PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, NULL, write_zeros))
 
     def writeBestSol(self, filename="origprob.sol", write_zeros=False):
         """Write the best feasible primal solution to a file.

@@ -3,6 +3,7 @@
 cdef class Benders:
     cdef public Model model
     cdef public str name
+    cdef SCIP_BENDERS* _benders
 
     def bendersfree(self):
         '''calls destructor and frees memory of Benders decomposition '''
