@@ -1,7 +1,7 @@
 #! usr/bin/env python3
-from pyscipopt      import SCIP_RESULT, Relax, Term, Expr
-from POEM.python    import Polynomial, InfeasibleError, build_lagrangian, constrained_opt
-from convert        import ExprToPoly, PolyToExpr
+from pyscipopt  import SCIP_RESULT, Relax, Term, Expr
+from POEM       import Polynomial, InfeasibleError, build_lagrangian, constrained_opt, solve_GP
+from convert    import ExprToPoly, PolyToExpr
 
 import numpy as np
 import re
@@ -126,6 +126,12 @@ class SoncRelax(Relax):
 
         """Here starts the real computation
         TODO: first try to use the GP, if that does not work use scipy"""
+        #---try to solve it using GP, so do not need scipy---
+        #TODO: sometimes get lower bound > solution, so maybe need to take constant term better into account?
+        problem = solve_GP(obj, constraint_list)
+        if problem.status=='optimal':
+            return {'result': SCIP_RESULT.SUCCESS, 'lowerbound': -problem.value}
+
         #check if instance was already solved
         #TODO: quite inefficient since we compute the lagrangian again, find easier way to check this
         ncon = len(constraint_list)
