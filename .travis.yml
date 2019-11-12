@@ -1,4 +1,6 @@
-os: linux
+os:
+    - linux
+    - osx
 dist: xenial
 sudo: true
 
@@ -26,8 +28,13 @@ notifications:
   email: false
 
 before_install:
-  - wget http://scip.zib.de/download/release/SCIPOptSuite-$VERSION-Linux-Ub1604.deb
-  - sudo apt-get update && sudo apt install -y ./SCIPOptSuite-$VERSION-Linux-Ub1604.deb
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then wget wget http://scip.zib.de/download/release/SCIPOptSuite-$VERSION-Linux-Ub1604.deb; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; sudo apt-get update && sudo apt install -y ./SCIPOptSuite-$VERSION-Linux-Ub1604.deb; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then tar -xf scipoptsuite-$VERSION.tgz && cd scipoptsuite-$VERSION; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir build && cd build && cmake -D CMAKE_BUILD_TYPE=Release -D ZIMPL=OFF -D GCG=OFF -D BUILD_TESTING=OFF -D CMAKE_INSTALL_PREFIX=../install ..; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make -j 4 && make install; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then cd .. && export SCIPOPTDIR=$(pwd)/install && cd ..; fi
 
 install:
   - pip install cython networkx pytest-cov
