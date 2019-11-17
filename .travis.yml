@@ -4,20 +4,20 @@ os:
 dist: xenial
 sudo: true
 
-language: python
+#language: python
 
-matrix:
-  include:
-      #- python: 2.7
-      #- python: 3.5
-      #- python: 3.6
-    - python: 3.7
-      env: TRAVIS_BUILD_DOCS=$TRAVIS_TAG
-      addons:
-        apt:
-          packages:
-            - doxygen
-            - graphviz
+#matrix:
+#  include:
+#      - python: 2.7
+#      - python: 3.5
+#      - python: 3.6
+#      - python: 3.7
+#      env: TRAVIS_BUILD_DOCS=$TRAVIS_TAG
+#      addons:
+#        apt:
+#          packages:
+#            - doxygen
+#            - graphviz
 
 env:
   global:
@@ -30,6 +30,7 @@ notifications:
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then wget wget http://scip.zib.de/download/release/SCIPOptSuite-$VERSION-Linux-Ub1604.deb; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; sudo apt-get update && sudo apt install -y ./SCIPOptSuite-$VERSION-Linux-Ub1604.deb; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install python3; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then wget http://scip.zib.de/download/release/scipoptsuite-$VERSION.tgz; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then tar -xf scipoptsuite-$VERSION.tgz && cd scipoptsuite-$VERSION; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir build && cd build && cmake -D CMAKE_BUILD_TYPE=Release -D ZIMPL=OFF -D GCG=OFF -D BUILD_TESTING=OFF -D CMAKE_INSTALL_PREFIX=../install ..; fi
