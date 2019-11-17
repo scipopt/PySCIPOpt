@@ -38,7 +38,7 @@ install:
   - pip3 install cython networkx pytest-cov
   - pip3 install .
 
-script: py.test #--cov
+script: DYLD_LIBRARY_PATH=$(pwd)/install/lib py.test #--cov
 
 after_success:
   # Generate the docs only if version tag present and we can use secure variables (no PR)
