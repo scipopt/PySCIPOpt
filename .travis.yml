@@ -35,7 +35,7 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export SCIPOPTDIR=$(pwd)/install; fi
 
 install:
-  - pip3 install networkx pytest-cov
+  - pip3 install cython networkx pytest-cov
   - pip3 install .
 
 script: py.test #--cov
