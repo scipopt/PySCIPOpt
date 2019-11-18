@@ -39,7 +39,7 @@ install:
   - pip3 install cython networkx pytest-cov
   - pip3 install .
 
-script: py.test #--cov
+script: py.test --version && echo "from pyscipopt import Model" | python3 #--cov
 
 after_success:
   # Generate the docs only if version tag present and we can use secure variables (no PR)
