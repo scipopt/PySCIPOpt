@@ -33,12 +33,13 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then wget http://scip.zib.de/download/release/SCIPOptSuite-$VERSION-Darwin-no-Ipopt.sh; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir install && sh SCIPOptSuite-$VERSION-Darwin-no-Ipopt.sh --skip-license --prefix=$(pwd)/install; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export SCIPOPTDIR=$(pwd)/install; fi
+    #- if [ "$TRAVIS_OS_NAME" = "osx" ]; then export DYLD_LIBRARY_PATH=$(pwd)/install/lib:$DYLD_LIBRARY_PATH; fi
 
 install:
   - pip3 install cython networkx pytest-cov
   - pip3 install .
 
-script: DYLD_LIBRARY_PATH=$(pwd)/install/lib py.test #--cov
+script: py.test #--cov
 
 after_success:
   # Generate the docs only if version tag present and we can use secure variables (no PR)
