@@ -781,7 +781,7 @@ cdef class Model:
     def __dealloc__(self):
         # call C function directly, because we can no longer call this object's methods, according to
         # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
-        if self._scip is not NULL and self._freescip:
+        if self._scip is not NULL and self._freescip and PY_SCIP_CALL:
            PY_SCIP_CALL( SCIPfree(&self._scip) )
 
     @staticmethod
