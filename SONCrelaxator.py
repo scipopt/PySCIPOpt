@@ -100,12 +100,12 @@ class SoncRelax(Relax):
                 _nonnegCons(polynomial, rhs, lhs)
                 
             else:
+                #TODO: what to do with non-polynomial constraints? (possibly linear relaxation)
                 raise Warning("relaxator not available for constraints of type ", constype)
 
         #No  constraints of type expr, quadratic or linear, relaxator not applicable
         if constraint_list == []:
             return {'result': SCIP_RESULT.DIDNOTRUN}
-
         #get Objective as Polynomial
         obj = ExprToPoly(self.model.getObjective(), nvars)
 
@@ -113,9 +113,22 @@ class SoncRelax(Relax):
         #TODO: improve usage of bounds, maybe delete Constraints if same as bounds (for Polynomial)
         #TODO: problem if bounds are tightened since it makes completely new polynomial (linear term is changed)
         #TODO: 'polynomial unbounded at point ..' appears if variables do not appear in polynomial (possibility to fix them to 0?)
-        for y in self.model.getVars():
+        for i,y in enumerate(self.model.getVars()):
             if y.getUbLocal() == y.getLbLocal() and y.getUbLocal() == 0:
-                constraint_list.append(ExprToPoly({Term(y,y):-1.0}, nvars))
+                equ = False
+                #print(cons)
+                p = np.zeros(len(self.model.getVars())+1)
+                p[0]=1
+                p[i+1]=2
+                for j in constraint_list:
+                    for k in range(1,len(j.A[0])):
+                        #print(i,p,j.A.T[k,:],y)
+                        if np.equal(p,j.A.T[k,:]).all():
+                            equ = True
+                            break
+                #TODO: need to also make sure, this constraint only appears if y**2 not in any other constraint
+                if not equ:
+                    constraint_list.append(ExprToPoly({Term(y,y):-1.0}, nvars))
             else:
                 if y.getUbLocal() != 1e+20:
                     boundcons = ExprToPoly(Expr({Term(): y.getUbLocal(), Term(y):-1.0}), nvars)
@@ -123,9 +136,10 @@ class SoncRelax(Relax):
                 if y.getLbLocal != -1e+20: #TODO: do we also need: and y.getLbLocal != 0.0:
                     boundcons = ExprToPoly(Expr({Term(): -y.getLbLocal(), Term(y):1.0}), nvars)
                     constraint_list.append(boundcons)
+        print('cons',len(constraint_list))
 
         """Here starts the real computation
-        TODO: first try to use the GP, if that does not work use scipy"""
+            first try to use the GP, if that does not work use scipy"""
         #---try to solve it using GP, so do not need scipy---
         #TODO: sometimes get lower bound > solution, so maybe need to take constant term better into account?
         problem = solve_GP(obj, constraint_list)

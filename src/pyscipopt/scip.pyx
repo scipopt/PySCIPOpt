@@ -2468,24 +2468,25 @@ cdef class Model:
         cdef int ntermmult
         
         PyExpr = Expr()
+        #get constraint as consexpr in scip
         consexpr = SCIPgetExprConsExpr(self._scip, cons.scip_cons)
+
+        #check that consexpr is a right type
         assert SCIPisConsExprExprPoly(self._scip,consexpr), "constraint is not a polynomial"
+
+        #get Constraint as PySCIPOpt Expr of the form {variables:coefficient}
         nterms = SCIPgetConsExprExprNPolyTerms(self._scip, consexpr)
-        #print(nterms)
         for i in range(nterms):
             ntermmult = SCIPgetConsExprExprNPolyTermMult(self._scip, consexpr, i)
             mults = Term()
-            #print(ntermmult)
             for j in range(ntermmult):
                 scipvar = SCIPgetConsExprExprPolyVar(self._scip, consexpr, i, j)
                 exp = SCIPgetConsExprExprPolyExp(self._scip, consexpr, i, j)
                 var = Variable.create(scipvar)
-                #print(var)
                 for _ in range(int(exp)):
                     mults += Term(var)
             coefs = SCIPgetConsExprExprPolyCoef(self._scip, consexpr, i)
             PyExpr += Expr({mults:coefs})
-            #print(PyExpr)
         return PyExpr
 
     def getConss(self):

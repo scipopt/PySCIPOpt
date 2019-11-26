@@ -19,7 +19,7 @@ def example():
     #add Variables
     x0 = m.addVar(vtype = "C", name = "x0")
     x1 = m.addVar(vtype = "C", name = "x1")
-    #x2 = m.addVar(vtype = "C", name = "x2")
+    x2 = m.addVar(vtype = "C", name = "x2")
     #x3 = m.addVar(vtype = "C", name = "x3")
     #x4 = m.addVar(vtype = "C", name = "x4")
     #x5 = m.addVar(vtype = "C", name = "x5")
@@ -87,13 +87,13 @@ def example():
     m.addCons(x0**2*x1 + 3*x1 >=0)
     m.setObjective(-x0)
     """
-    
+    """
     #(b) Test Polynomials modified, reasonable lower bound, time ~ 7sec #4.92sec
     m.addCons(-2*x0**4+3*x0-2*x1**2+1>=0)
     m.addCons(-x1**4+42>=0)
     m.addCons(-x0**2*x1 - 3*x1 +0.5*x0 >=0)
     m.setObjective(-0.5*x0)
-    
+    """
     """
     #(c) Test Polynomials modified, terminates, time ~ 25sec #faster if using orthant=[(0,1)] in POEM #6.30sec
     m.addCons(-x0**4+3*x0-2*x1**2+1>=0)
