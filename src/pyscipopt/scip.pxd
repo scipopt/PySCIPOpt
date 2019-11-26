@@ -654,6 +654,7 @@ cdef extern from "scip/scip.h":
     SCIP_VAR** SCIPgetVars(SCIP* scip)
     SCIP_VAR** SCIPgetOrigVars(SCIP* scip)
     const char* SCIPvarGetName(SCIP_VAR* var)
+    int SCIPvarGetIndex(SCIP_VAR* var)
     int SCIPgetNVars(SCIP* scip)
     int SCIPgetNOrigVars(SCIP* scip)
     SCIP_VARTYPE SCIPvarGetType(SCIP_VAR* var)
@@ -1114,6 +1115,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPfrac(SCIP* scip, SCIP_Real val)
     SCIP_Real SCIPfeasFrac(SCIP* scip, SCIP_Real val)
     SCIP_Bool SCIPisZero(SCIP* scip, SCIP_Real val)
+    SCIP_Bool SCIPisFeasIntegral(SCIP* scip, SCIP_Real val)
     SCIP_Bool SCIPisFeasZero(SCIP* scip, SCIP_Real val)
     SCIP_Bool SCIPisFeasNegative(SCIP* scip, SCIP_Real val)
     SCIP_Bool SCIPisInfinity(SCIP* scip, SCIP_Real val)
@@ -1126,6 +1128,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPprintStatistics(SCIP* scip, FILE* outfile)
     SCIP_Longint SCIPgetNNodes(SCIP* scip)
     SCIP_Longint SCIPgetNLPs(SCIP* scip)
+    SCIP_Longint SCIPgetNLPIterations(SCIP* scip)
 
     # Parameter Functions
     SCIP_RETCODE SCIPsetBoolParam(SCIP* scip, char* name, SCIP_Bool value)
