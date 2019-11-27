@@ -148,7 +148,6 @@ def buildGenExprObj(expr):
 ##@details Polynomial expressions of variables with operator overloading. \n
 #See also the @ref ExprDetails "description" in the expr.pxi. 
 cdef class Expr:
-    cdef public terms
     
     def __init__(self, terms=None):
         '''terms is a dict of variables to coefficients.

@@ -1557,3 +1557,88 @@ cdef extern from "scip/pub_lp.h":
 
 cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
+
+cdef class Expr:
+    cdef public terms
+
+cdef class Event:
+    cdef SCIP_EVENT* event
+    # can be used to store problem data
+    cdef public object data
+    @staticmethod
+    cdef create(SCIP_EVENT* scip_event)
+
+cdef class Column:
+    cdef SCIP_COL* scip_col
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_COL* scipcol)
+
+cdef class Row:
+    cdef SCIP_ROW* scip_row
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_ROW* sciprow)
+
+cdef class NLRow:
+    cdef SCIP_NLROW* scip_nlrow
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_NLROW* scipnlrow)
+
+cdef class Solution:
+    cdef SCIP_SOL* sol
+    cdef SCIP* scip
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP* scip, SCIP_SOL* scip_sol)
+
+cdef class Node:
+    cdef SCIP_NODE* scip_node
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_NODE* scipnode)
+
+cdef class Variable(Expr):
+    cdef SCIP_VAR* scip_var
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_VAR* scipvar)
+
+cdef class Constraint:
+    cdef SCIP_CONS* scip_cons
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_CONS* scipcons)
+
+cdef class Model:
+    cdef SCIP* _scip
+    cdef SCIP_Bool* _valid
+    # store best solution to get the solution values easier
+    cdef Solution _bestSol
+    # can be used to store problem data
+    cdef public object data
+    # make Model weak referentiable
+    cdef object __weakref__
+    # flag to indicate whether the SCIP should be freed. It will not be freed if an empty Model was created to wrap a
+    # C-API SCIP instance.
+    cdef SCIP_Bool _freescip
+    # map to store python variables
+    cdef _modelvars
+
+    @staticmethod
+    cdef create(SCIP* scip)
