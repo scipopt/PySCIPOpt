@@ -2,9 +2,15 @@
 
 ## Unreleased
 - remove Python 2 support
-- add getOpenNodes() to access all open nodes
-- add support for node selector plugin
 - move the main Python class declarations into scip.pxd; this makes it possible to write custom `pyx` extensions.
+
+## 2.2.2 - 2019-11-27
+### Added
+- support for node selector plugin
+- getOpenNodes() to access all open nodes
+
+## Changed
+- new Benders functionality
 
 ## 2.2.1 - 2019-09-17
 ### Added

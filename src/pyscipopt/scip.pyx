@@ -577,6 +577,11 @@ cdef class Variable(Expr):
         """Retrieve whether the variable is a COLUMN variable that is member of the current LP"""
         return SCIPvarIsInLP(self.scip_var)
 
+
+    def getIndex(self):
+        """Retrieve the unique index of the variable."""
+        return SCIPvarGetIndex(self.scip_var)
+
     def getCol(self):
         """Retrieve column of COLUMN variable"""
         cdef SCIP_COL* scip_col
@@ -808,6 +813,10 @@ cdef class Model:
         """Retrieve the curernt presolving time in seconds"""
         return SCIPgetPresolvingTime(self._scip)
 
+    def getNLPIterations(self):
+        """Retrieve the current number of LP iterations."""
+        return SCIPgetNLPIterations(self._scip)
+
     def getNNodes(self):
         """Retrieve the total number of processed nodes."""
         return SCIPgetNNodes(self._scip)
@@ -859,6 +868,10 @@ cdef class Model:
     def isFeasNegative(self, value):
         """returns whether value < -feastol"""
         return SCIPisFeasNegative(self._scip, value)
+
+    def isFeasIntegral(self, value):
+        """returns whether value is integral within the LP feasibility bounds"""
+        return SCIPisFeasIntegral(self._scip, value)
 
     def isLE(self, val1, val2):
         """returns whether val1 <= val2 + eps"""
@@ -3730,6 +3743,8 @@ cdef class Model:
             return "infeasible"
         elif stat == SCIP_STATUS_UNBOUNDED:
             return "unbounded"
+        elif stat == SCIP_STATUS_USERINTERRUPT:
+            return "userinterrupt"
         else:
             return "unknown"
 
