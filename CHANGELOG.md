@@ -3,6 +3,7 @@
 ## Unreleased
 - remove Python 2 support
 - move the main Python class declarations into scip.pxd; this makes it possible to write custom `pyx` extensions.
+- expose more SCIP functionality in `scip.pxd`
 
 ## 2.2.2 - 2019-11-27
 ### Added

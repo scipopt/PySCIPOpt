@@ -1,5 +1,11 @@
 ##@file scip.pxd
 #@brief holding prototype of the SCIP public functions to use them in PySCIPOpt
+
+cdef extern from "scip/struct_scip.h":
+    ctypedef struct SCIP:
+        SCIP_SET* set
+        SCIP_LP* lp
+
 cdef extern from "scip/scip.h":
     # SCIP internal types
     ctypedef enum SCIP_RETCODE:
@@ -269,9 +275,6 @@ cdef extern from "scip/scip.h":
 
     ctypedef double SCIP_Real
 
-    ctypedef struct SCIP:
-        pass
-
     ctypedef struct SCIP_VAR:
         pass
 
@@ -279,15 +282,22 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_ROW:
+        SCIP_Real objprod
+        SCIP_Real sqrnorm
+
+    ctypedef struct SCIP_NLROW:
         pass
 
     ctypedef struct SCIP_NLROW:
         pass
 
     ctypedef struct SCIP_COL:
-        pass
+        int age
 
     ctypedef struct SCIP_SOL:
+        pass
+
+    ctypedef struct SCIP_SET:
         pass
 
     ctypedef struct FILE:
@@ -348,7 +358,8 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_BRANCHRULE:
-        pass
+        char* name
+        SCIP_RETCODE (*branchexeclp)(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result)
 
     ctypedef struct SCIP_BRANCHRULEDATA:
         pass
@@ -455,6 +466,9 @@ cdef extern from "scip/scip.h":
         int idx1
         int idx2
         SCIP_Real coef
+
+    ctypedef struct SCIP_LP:
+        SCIP_Real objsqrnorm
 
     ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg)
     ctypedef void (*errormessagecallback) (void *data, FILE *file, const char *msg)
@@ -672,6 +686,10 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPvarGetLPSol(SCIP_VAR* var)
     void SCIPvarSetData(SCIP_VAR* var, SCIP_VARDATA* vardata)
     SCIP_VARDATA* SCIPvarGetData(SCIP_VAR* var)
+    SCIP_Real SCIPvarGetAvgSol(SCIP_VAR* var)
+    SCIP_Real SCIPgetVarPseudocost(SCIP* scip, SCIP_VAR *var, SCIP_BRANCHDIR dir)
+    SCIP_Real SCIPvarGetCutoffSum(SCIP_VAR* var, SCIP_BRANCHDIR dir)
+    SCIP_Longint SCIPvarGetNBranchings(SCIP_VAR* var, SCIP_BRANCHDIR dir)
 
     # LP Methods
     SCIP_RETCODE SCIPgetLPColsData(SCIP* scip, SCIP_COL*** cols, int* ncols)
@@ -685,6 +703,8 @@ cdef extern from "scip/scip.h":
     SCIP_LPSOLSTAT SCIPgetLPSolstat(SCIP* scip)
     int SCIPgetNLPRows(SCIP* scip)
     int SCIPgetNLPCols(SCIP* scip)
+    SCIP_COL** SCIPgetLPCols(SCIP *scip)
+    SCIP_ROW** SCIPgetLPRows(SCIP *scip)
 
     # Cutting Plane Methods
     SCIP_RETCODE SCIPaddPoolCut(SCIP* scip, SCIP_ROW* row)
@@ -763,6 +783,9 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPflushRowExtensions(SCIP* scip, SCIP_ROW* row)
     SCIP_RETCODE SCIPaddVarToRow(SCIP* scip, SCIP_ROW* row, SCIP_VAR* var, SCIP_Real val)
     SCIP_RETCODE SCIPprintRow(SCIP* scip, SCIP_ROW* row, FILE* file)
+
+    # Column Methods
+    SCIP_Real SCIPgetColRedcost(SCIP* scip, SCIP_COL* col)
 
     # Dual Solution Methods
     SCIP_Real SCIPgetDualbound(SCIP* scip)
@@ -1022,6 +1045,7 @@ cdef extern from "scip/scip.h":
                                        SCIP_RETCODE (*branchruleexecps) (SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result),
                                        SCIP_BRANCHRULEDATA* branchruledata)
     SCIP_BRANCHRULEDATA* SCIPbranchruleGetData(SCIP_BRANCHRULE* branchrule)
+    SCIP_BRANCHRULE* SCIPfindBranchrule(SCIP* scip, const char*  name)
 
     # Benders' decomposition plugin
     SCIP_RETCODE SCIPincludeBenders(SCIP* scip,
@@ -1108,6 +1132,7 @@ cdef extern from "scip/scip.h":
     int SCIPgetNLPBranchCands(SCIP* scip)
     SCIP_RETCODE SCIPgetLPBranchCands(SCIP* scip, SCIP_VAR*** lpcands, SCIP_Real** lpcandssol,
                                       SCIP_Real** lpcandsfrac, int* nlpcands, int* npriolpcands, int* nfracimplvars)
+    SCIP_RETCODE SCIPgetPseudoBranchCands(SCIP* scip, SCIP_VAR*** pseudocands, int* npseudocands, int* npriopseudocands)
 
 
     # Numerical Methods
@@ -1123,6 +1148,11 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPisLT(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
     SCIP_Bool SCIPisGE(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
     SCIP_Bool SCIPisGT(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
+    SCIP_Bool SCIPisEQ(SCIP *scip, SCIP_Real val1, SCIP_Real val2)
+    SCIP_Bool SCIPisHugeValue(SCIP *scip, SCIP_Real val)
+    SCIP_Bool SCIPisPositive(SCIP *scip, SCIP_Real val)
+    SCIP_Bool SCIPisNegative(SCIP *scip, SCIP_Real val)
+    SCIP_Bool SCIPisIntegral(SCIP *scip, SCIP_Real val)
 
     # Statistic Methods
     SCIP_RETCODE SCIPprintStatistics(SCIP* scip, FILE* outfile)
@@ -1544,7 +1574,9 @@ cdef extern from "scip/pub_lp.h":
     int SCIProwGetLPPos(SCIP_ROW* row)
     SCIP_BASESTAT SCIProwGetBasisStatus(SCIP_ROW* row)
     SCIP_Bool SCIProwIsIntegral(SCIP_ROW* row)
+    SCIP_Bool SCIProwIsLocal(SCIP_ROW* row)
     SCIP_Bool SCIProwIsModifiable(SCIP_ROW* row)
+    SCIP_Bool SCIProwIsRemovable(SCIP_ROW* row)
     int SCIProwGetNNonz(SCIP_ROW* row)
     int SCIProwGetNLPNonz(SCIP_ROW* row)
     SCIP_COL** SCIProwGetCols(SCIP_ROW* row)
@@ -1557,9 +1589,28 @@ cdef extern from "scip/pub_lp.h":
     SCIP_Real SCIPcolGetPrimsol(SCIP_COL* col)
     SCIP_Real SCIPcolGetLb(SCIP_COL* col)
     SCIP_Real SCIPcolGetUb(SCIP_COL* col)
+    int SCIPcolGetNLPNonz(SCIP_COL* col)
+    int SCIPcolGetNNonz(SCIP_COL* col)
+    SCIP_ROW** SCIPcolGetRows(SCIP_COL* col)
+    SCIP_Real* SCIPcolGetVals(SCIP_COL* col)
+    int SCIPcolGetIndex(SCIP_COL* col)
 
 cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
+
+cdef extern from "scip/lp.h":
+    void SCIPlpRecalculateObjSqrNorm(SCIP_SET* set, SCIP_LP* lp)
+    SCIP_Real SCIProwGetNorm(SCIP_ROW* row)
+    SCIP_Real SCIProwGetDualsol(SCIP_ROW* row)
+    int SCIProwGetAge(SCIP_ROW* row)
+    SCIP_Real SCIPcolGetObj(SCIP_COL *col)
+
+cdef extern from "scip/struct_branch.h":
+    cdef struct SCIP_Branchrule:
+        pass
+
+cdef extern from "scip/def.h":
+    SCIP_Real REALABS(SCIP_Real x)
 
 cdef class Expr:
     cdef public terms
@@ -1596,6 +1647,7 @@ cdef class NLRow:
     cdef create(SCIP_NLROW* scipnlrow)
 
 cdef class Solution:
+    """Base class holding a pointer to corresponding SCIP_SOL"""
     cdef SCIP_SOL* sol
     cdef SCIP* scip
     # can be used to store problem data
@@ -1605,6 +1657,7 @@ cdef class Solution:
     cdef create(SCIP* scip, SCIP_SOL* scip_sol)
 
 cdef class Node:
+    """Base class holding a pointer to corresponding SCIP_NODE"""
     cdef SCIP_NODE* scip_node
     # can be used to store problem data
     cdef public object data
@@ -1645,3 +1698,4 @@ cdef class Model:
 
     @staticmethod
     cdef create(SCIP* scip)
+
