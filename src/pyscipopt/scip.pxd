@@ -1,11 +1,6 @@
 ##@file scip.pxd
 #@brief holding prototype of the SCIP public functions to use them in PySCIPOpt
 
-cdef extern from "scip/struct_scip.h":
-    ctypedef struct SCIP:
-        SCIP_SET* set
-        SCIP_LP* lp
-
 cdef extern from "scip/scip.h":
     # SCIP internal types
     ctypedef enum SCIP_RETCODE:
@@ -275,6 +270,9 @@ cdef extern from "scip/scip.h":
 
     ctypedef double SCIP_Real
 
+    ctypedef struct SCIP:	
+        pass
+
     ctypedef struct SCIP_VAR:
         pass
 
@@ -282,7 +280,7 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_ROW:
-        SCIP_Real objprod
+        pass
 
     ctypedef struct SCIP_NLROW:
         pass
@@ -291,12 +289,9 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_COL:
-        int age
-
-    ctypedef struct SCIP_SOL:
         pass
 
-    ctypedef struct SCIP_SET:
+    ctypedef struct SCIP_SOL:
         pass
 
     ctypedef struct FILE:
@@ -465,9 +460,6 @@ cdef extern from "scip/scip.h":
         int idx1
         int idx2
         SCIP_Real coef
-
-    ctypedef struct SCIP_LP:
-        pass
 
     ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg)
     ctypedef void (*errormessagecallback) (void *data, FILE *file, const char *msg)
@@ -1601,9 +1593,6 @@ cdef extern from "scip/pub_lp.h":
 
 cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
-
-cdef extern from "scip/lp.h":
-    void SCIPlpRecalculateObjSqrNorm(SCIP_SET* set, SCIP_LP* lp)
 
 cdef extern from "scip/struct_branch.h":
     cdef struct SCIP_Branchrule:
