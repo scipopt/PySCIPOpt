@@ -1,6 +1,5 @@
 ##@file scip.pxd
 #@brief holding prototype of the SCIP public functions to use them in PySCIPOpt
-
 cdef extern from "scip/scip.h":
     # SCIP internal types
     ctypedef enum SCIP_RETCODE:
@@ -270,7 +269,7 @@ cdef extern from "scip/scip.h":
 
     ctypedef double SCIP_Real
 
-    ctypedef struct SCIP:	
+    ctypedef struct SCIP:
         pass
 
     ctypedef struct SCIP_VAR:
@@ -1687,4 +1686,3 @@ cdef class Model:
 
     @staticmethod
     cdef create(SCIP* scip)
-
