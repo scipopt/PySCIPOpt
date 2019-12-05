@@ -1591,8 +1591,7 @@ cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
 
 cdef extern from "scip/struct_branch.h":
-    cdef struct SCIP_Branchrule:
-        pass
+    pass
 
 cdef class Expr:
     cdef public terms
