@@ -283,7 +283,6 @@ cdef extern from "scip/scip.h":
 
     ctypedef struct SCIP_ROW:
         SCIP_Real objprod
-        SCIP_Real sqrnorm
 
     ctypedef struct SCIP_NLROW:
         pass
@@ -358,8 +357,8 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_BRANCHRULE:
-        char* name
         SCIP_RETCODE (*branchexeclp)(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result)
+        const char* SCIPbranchruleGetName(SCIP_BRANCHRULE* branchrule)
 
     ctypedef struct SCIP_BRANCHRULEDATA:
         pass
@@ -468,7 +467,7 @@ cdef extern from "scip/scip.h":
         SCIP_Real coef
 
     ctypedef struct SCIP_LP:
-        SCIP_Real objsqrnorm
+        pass
 
     ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg)
     ctypedef void (*errormessagecallback) (void *data, FILE *file, const char *msg)
@@ -596,6 +595,7 @@ cdef extern from "scip/scip.h":
     SCIP_OBJSENSE SCIPgetObjsense(SCIP* scip)
     SCIP_RETCODE SCIPsetObjlimit(SCIP* scip, SCIP_Real objlimit)
     SCIP_Real SCIPgetObjlimit(SCIP* scip)
+    SCIP_Real SCIPgetObjNorm(SCIP* scip)
     SCIP_RETCODE SCIPaddObjoffset(SCIP* scip, SCIP_Real addval)
     SCIP_RETCODE SCIPaddOrigObjoffset(SCIP* scip, SCIP_Real addval)
     SCIP_Real SCIPgetOrigObjoffset(SCIP* scip)
@@ -1581,6 +1581,9 @@ cdef extern from "scip/pub_lp.h":
     int SCIProwGetNLPNonz(SCIP_ROW* row)
     SCIP_COL** SCIProwGetCols(SCIP_ROW* row)
     SCIP_Real* SCIProwGetVals(SCIP_ROW* row)
+    SCIP_Real SCIProwGetNorm(SCIP_ROW* row)
+    SCIP_Real SCIProwGetDualsol(SCIP_ROW* row)
+    int SCIProwGetAge(SCIP_ROW* row)
     # Column Methods
     int SCIPcolGetLPPos(SCIP_COL* col)
     SCIP_BASESTAT SCIPcolGetBasisStatus(SCIP_COL* col)
@@ -1594,16 +1597,13 @@ cdef extern from "scip/pub_lp.h":
     SCIP_ROW** SCIPcolGetRows(SCIP_COL* col)
     SCIP_Real* SCIPcolGetVals(SCIP_COL* col)
     int SCIPcolGetIndex(SCIP_COL* col)
+    SCIP_Real SCIPcolGetObj(SCIP_COL *col)
 
 cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
 
 cdef extern from "scip/lp.h":
     void SCIPlpRecalculateObjSqrNorm(SCIP_SET* set, SCIP_LP* lp)
-    SCIP_Real SCIProwGetNorm(SCIP_ROW* row)
-    SCIP_Real SCIProwGetDualsol(SCIP_ROW* row)
-    int SCIProwGetAge(SCIP_ROW* row)
-    SCIP_Real SCIPcolGetObj(SCIP_COL *col)
 
 cdef extern from "scip/struct_branch.h":
     cdef struct SCIP_Branchrule:
