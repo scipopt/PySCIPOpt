@@ -284,9 +284,6 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_NLROW:
         pass
 
-    ctypedef struct SCIP_NLROW:
-        pass
-
     ctypedef struct SCIP_COL:
         pass
 
@@ -352,7 +349,6 @@ cdef extern from "scip/scip.h":
 
     ctypedef struct SCIP_BRANCHRULE:
         SCIP_RETCODE (*branchexeclp)(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result)
-        const char* SCIPbranchruleGetName(SCIP_BRANCHRULE* branchrule)
 
     ctypedef struct SCIP_BRANCHRULEDATA:
         pass
@@ -1036,6 +1032,7 @@ cdef extern from "scip/scip.h":
                                        SCIP_RETCODE (*branchruleexecps) (SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result),
                                        SCIP_BRANCHRULEDATA* branchruledata)
     SCIP_BRANCHRULEDATA* SCIPbranchruleGetData(SCIP_BRANCHRULE* branchrule)
+    const char* SCIPbranchruleGetName(SCIP_BRANCHRULE* branchrule)
     SCIP_BRANCHRULE* SCIPfindBranchrule(SCIP* scip, const char*  name)
 
     # Benders' decomposition plugin
@@ -1596,9 +1593,6 @@ cdef extern from "scip/scip_tree.h":
 cdef extern from "scip/struct_branch.h":
     cdef struct SCIP_Branchrule:
         pass
-
-cdef extern from "scip/def.h":
-    SCIP_Real REALABS(SCIP_Real x)
 
 cdef class Expr:
     cdef public terms
