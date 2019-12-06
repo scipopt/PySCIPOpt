@@ -348,7 +348,7 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_BRANCHRULE:
-        SCIP_RETCODE (*branchexeclp)(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result)
+        pass
 
     ctypedef struct SCIP_BRANCHRULEDATA:
         pass
@@ -1589,9 +1589,6 @@ cdef extern from "scip/pub_lp.h":
 
 cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
-
-cdef extern from "scip/struct_branch.h":
-    pass
 
 cdef class Expr:
     cdef public terms
