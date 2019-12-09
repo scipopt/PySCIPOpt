@@ -10,7 +10,7 @@
 - support for node selector plugin
 - getOpenNodes() to access all open nodes
 
-## Changed
+### Changed
 - new Benders functionality
 
 ## 2.2.1 - 2019-09-17
