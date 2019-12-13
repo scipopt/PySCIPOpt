@@ -1162,8 +1162,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPresetParam(SCIP* scip, const char* name)
     SCIP_RETCODE SCIPresetParams(SCIP* scip)
     SCIP_PARAM* SCIPgetParam(SCIP* scip,  const char*  name)
-
-
+    SCIP_PARAM** SCIPgetParams(SCIP* scip)
+    int SCIPgetNParams(SCIP* scip)
 
     # LPI Functions
     SCIP_RETCODE SCIPgetLPI(SCIP* scip, SCIP_LPI** lpi)
@@ -1546,6 +1546,7 @@ cdef extern from "scip/paramset.h":
     ctypedef struct SCIP_PARAM:
         pass
 
+    const char* SCIPparamGetName(SCIP_PARAM* param)
     SCIP_PARAMTYPE SCIPparamGetType(SCIP_PARAM* param)
     SCIP_Bool SCIPparamGetBool(SCIP_PARAM* param)
     int SCIPparamGetInt(SCIP_PARAM* param)
