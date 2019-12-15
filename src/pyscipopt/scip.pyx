@@ -3986,7 +3986,7 @@ cdef class Model:
 
     def getParams(self):
         """Gets the values of all parameters as a dict mapping parameter names
-	to their values."""
+        to their values."""
         cdef SCIP_PARAM** params
 
         params = SCIPgetParams(self._scip)
@@ -4000,7 +4000,7 @@ cdef class Model:
         """Sets multiple parameters at once.
 
         :param params: dict mapping parameter names to their values.
-	"""
+        """
         for name, value in params.items():
           self.setParam(name, value)
 
