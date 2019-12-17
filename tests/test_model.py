@@ -11,7 +11,10 @@ def test_model():
     s.setParam('lp/pricing', pric)
     s.setParam('visual/vbcfilename', 'vbcfile')
     assert 'vbcfile' == s.getParam('visual/vbcfilename')
-    s.setParam('visual/vbcfilename', '-')
+
+    assert 'lp/pricing' in s.getParams()
+    s.setParams({'visual/vbcfilename': '-'})
+    assert '-' == s.getParam('visual/vbcfilename')
 
     # add some variables
     x = s.addVar("x", vtype = 'C', obj = 1.0)

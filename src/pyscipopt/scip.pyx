@@ -4002,6 +4002,25 @@ cdef class Model:
         elif paramtype == SCIP_PARAMTYPE_STRING:
             return SCIPparamGetString(param).decode('utf-8')
 
+    def getParams(self):
+        """Gets the values of all parameters as a dict mapping parameter names
+        to their values."""
+        cdef SCIP_PARAM** params
+
+        params = SCIPgetParams(self._scip)
+        result = {}
+        for i in range(SCIPgetNParams(self._scip)):
+          name = SCIPparamGetName(params[i]).decode('utf-8')
+          result[name] = self.getParam(name)
+        return result
+
+    def setParams(self, params):
+        """Sets multiple parameters at once.
+
+        :param params: dict mapping parameter names to their values.
+        """
+        for name, value in params.items():
+          self.setParam(name, value)
 
     def readParams(self, file):
         """Read an external parameter file.
