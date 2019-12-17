@@ -3745,6 +3745,24 @@ cdef class Model:
             return "unbounded"
         elif stat == SCIP_STATUS_USERINTERRUPT:
             return "userinterrupt"
+        elif stat == SCIP_STATUS_INFORUNBD:
+            return "inforunbd"
+        elif stat == SCIP_STATUS_NODELIMIT:
+            return "nodelimit"
+        elif stat == SCIP_STATUS_TOTALNODELIMIT:
+            return "totalnodelimit"
+        elif stat == SCIP_STATUS_STALLNODELIMIT:
+            return "stallnodelimit"
+        elif stat == SCIP_STATUS_GAPLIMIT:
+            return "gaplimit"
+        elif stat == SCIP_STATUS_MEMLIMIT:
+            return "memlimit"
+        elif stat == SCIP_STATUS_SOLLIMIT:
+            return "sollimit"
+        elif stat == SCIP_STATUS_BESTSOLLIMIT:
+            return "bestsollimit"
+        elif stat == SCIP_STATUS_RESTARTLIMIT:
+            return  "restartlimit"
         else:
             return "unknown"
 
