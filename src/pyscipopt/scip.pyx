@@ -1682,7 +1682,9 @@ cdef class Model:
                     nfactors += 1
             PY_SCIP_CALL(SCIPcreateConsExprExprProduct(self._scip, consexprhdlr, &monomials[i], nfactors, factors, coef))
             free(ids)
-            free(factors)
+            for i in range(nfactors):
+                PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, &factors[i]))
+
 
         #create Expressions
         PY_SCIP_CALL( SCIPcreateConsExprExprSum(self._scip, consexprhdlr, &polynomial, len(terms), monomials, NULL, 0.0) )
@@ -1693,19 +1695,14 @@ cdef class Model:
                                        kwargs['stickingatnode']))
 
         #release vars and free memory
-        #TODO: which of the variables have to be freed, which released?
-        #for i in range(len(variables)):
-        #    PY_SCIP_CALL(SCIPreleaseVar(self._scip, &vars[i]))
+        for i in range(len(varindex.values())):
+            PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, &varexpr[i]))
+        for i in range(len(terms)):
+            PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, &monomials[i]))
         PY_SCIP_CALL(SCIPaddCons(self._scip, conss))
         PyCons = Constraint.create(conss)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &conss))
-        PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, &consexpr))
-        free(vars)
-        free(varexpr)
-        free(monomials)
-        free(consexpr)
         PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, &polynomial))
-        free(polynomial)
         return PyCons
 
     #TODO: update function to use Consexpr

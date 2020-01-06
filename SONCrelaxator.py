@@ -1,6 +1,6 @@
 #! usr/bin/env python3
 from pyscipopt  import SCIP_RESULT, Relax, Term, Expr
-from POEM       import Polynomial, InfeasibleError, build_lagrangian, constrained_opt, solve_GP
+from POEM       import Polynomial, InfeasibleError, build_lagrangian, constrained_opt, solve_GP, OptimizationProblem, Constraint
 from convert    import ExprToPoly, PolyToExpr
 
 import numpy as np
@@ -23,17 +23,20 @@ class SoncRelax(Relax):
             :param: lhs: left hand side of constraint"""
             if not self.model.isInfinity(-lhs):
                 polynomial.b[0] -= lhs
-                constraint_list.append(polynomial.copy())
+                #constraint_list.append(polynomial.copy())
+                optProblem.addCons(Constraint(polynomial, '>='))
                 polynomial.b[0] += lhs
             if not self.model.isInfinity(rhs):
                 polynomial.b[0] -= rhs
                 polynomial.b *= -1
-                constraint_list.append(polynomial)
+                #constraint_list.append(polynomial)
+                optProblem.addCons(Constraint(polynomial, '>='))
             return
 
+        optProblem = OptimizationProblem()
         nvars = len(self.model.getVars())
         conss = self.model.getConss()
-        constraint_list = []
+        #constraint_list = []
 
         #transform each constraint (type linear, quadratic or expr) into a Polynomial to get lower bound with all constraints used (SCIP -> POEM)
         for cons in conss:
@@ -104,10 +107,10 @@ class SoncRelax(Relax):
                 raise Warning("relaxator not available for constraints of type ", constype)
 
         #No  constraints of type expr, quadratic or linear, relaxator not applicable
-        if constraint_list == []:
+        if optProblem.constraints == []: #constraint_list == []:
             return {'result': SCIP_RESULT.DIDNOTRUN}
         #get Objective as Polynomial
-        obj = ExprToPoly(self.model.getObjective(), nvars)
+        optProblem.setObjective(ExprToPoly(self.model.getObjective(), nvars))
 
         #use the Variable bounds as linear constraints
         #TODO: improve usage of bounds, maybe delete Constraints if same as bounds (for Polynomial)
@@ -120,32 +123,40 @@ class SoncRelax(Relax):
                 p = np.zeros(len(self.model.getVars())+1)
                 p[0]=1
                 p[i+1]=2
-                for j in constraint_list:
+                for j in optProblem.constraints: #constraint_list:
                     for k in range(1,len(j.A[0])):
-                        #print(i,p,j.A.T[k,:],y)
-                        if np.equal(p,j.A.T[k,:]).all():
+                        #print(i,p,j)
+                        if len(p) == len(j.A.T[k,:]) and np.equal(p,j.A.T[k,:]).all():
                             equ = True
                             break
                 #TODO: need to also make sure, this constraint only appears if y**2 not in any other constraint
                 if not equ:
-                    constraint_list.append(ExprToPoly({Term(y,y):-1.0}, nvars))
+                    #constraint_list.append(ExprToPoly({Term(y,y):-1.0}, nvars))
+                    optProblem.addCons(str(ExprToPoly({Term(y,y):-1.0}, nvars)) + '>= 0')
             else:
                 if y.getUbLocal() != 1e+20:
                     boundcons = ExprToPoly(Expr({Term(): y.getUbLocal(), Term(y):-1.0}), nvars)
-                    constraint_list.append(boundcons)
+                    #constraint_list.append(boundcons)
+                    optProblem.addCons(str(boundcons) + ' >= 0')
                 if y.getLbLocal != -1e+20: #TODO: do we also need: and y.getLbLocal != 0.0:
                     boundcons = ExprToPoly(Expr({Term(): -y.getLbLocal(), Term(y):1.0}), nvars)
-                    constraint_list.append(boundcons)
-        print('cons',len(constraint_list))
+                    #constraint_list.append(boundcons)
+                    optProblem.addCons(str(boundcons) + ' >= 0')
+        #print('cons',len(constraint_list))
+        #print([(con.A, con.b) for con in constraint_list])
+        #constraint_list = [str(con) + " >= 0" for con in constraint_list]
+        #print(constraint_list)
 
         """Here starts the real computation
             first try to use the GP, if that does not work use scipy"""
         #---try to solve it using GP, so do not need scipy---
         #TODO: sometimes get lower bound > solution, so maybe need to take constant term better into account?
-        problem = solve_GP(obj, constraint_list)
+        problem = solve_GP(optProblem)
         if problem.status=='optimal':
             return {'result': SCIP_RESULT.SUCCESS, 'lowerbound': -problem.value}
 
+        """
+        #TODO: this part has to be rewritten since constraint_list is no longer used
         #check if instance was already solved
         #TODO: quite inefficient since we compute the lagrangian again, find easier way to check this
         ncon = len(constraint_list)
@@ -182,5 +193,6 @@ class SoncRelax(Relax):
             return {'result': SCIP_RESULT.SUCCESS, 'lowerbound': -data.fun}
 
         #TODO: maybe we can use the other status cases given by scipy as well
+        """
         #relaxator did not run successfully, did not find a lower bound
         return {'result': SCIP_RESULT.DIDNOTRUN}

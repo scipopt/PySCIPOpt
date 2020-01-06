@@ -19,7 +19,7 @@ def example():
     #add Variables
     x0 = m.addVar(vtype = "C", name = "x0")
     x1 = m.addVar(vtype = "C", name = "x1")
-    x2 = m.addVar(vtype = "C", name = "x2")
+    #x2 = m.addVar(vtype = "C", name = "x2")
     #x3 = m.addVar(vtype = "C", name = "x3")
     #x4 = m.addVar(vtype = "C", name = "x4")
     #x5 = m.addVar(vtype = "C", name = "x5")
@@ -136,7 +136,7 @@ def example():
     """
     #Example 3.2 Ghasemi, Marshall, extended, time ~ 30sec #7.38sec (LP first 0.00)
     m.addCons(x0**2-2*x0*x1+x1**2>=0)
-    m.addCons(-x0**4+x1-x0**3-x1**4+20+x0**2*x1>=0)
+    m.addCons(-x0**4+x1-x0**3-x1**4+20+x0**2*x1<=0)
     m.setObjective(x0+x1)
     """
     """
