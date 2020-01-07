@@ -1,6 +1,6 @@
 #! usr/bin/env python3
-from pyscipopt   import Term, Expr
-from POEM import Polynomial
+from pyscipopt  import Term, Expr
+from POEM       import Polynomial
 
 import numpy as np
 import re

@@ -1,7 +1,7 @@
 #! usr/bin/env python3
 from pyscipopt      import Model, SCIP_PARAMSETTING, Expr, Relax, Term, ExprCons
 from SONCrelaxator  import SoncRelax
-from POEM.python    import Polynomial, build_lagrangian, constrained_opt
+from POEM           import Polynomial, build_lagrangian, constrained_opt
 
 import re
 import numpy as np
@@ -82,18 +82,18 @@ def example():
     """
     """
     #(a) Test Polynomials modified, terminates, good lower bound (exact to 5sf.), time ~ 24sec #5.72sec
-    m.addCons(-x0**4+3*x0-2*x1**2+1>=0)
-    m.addCons(-x0**4-x1**4+42>=0)
-    m.addCons(x0**2*x1 + 3*x1 >=0)
+    m.addCons(3*x0-2*x1**2+1>=0)
+    m.addCons(-2*x0**4+42>=0)
+    m.addCons(x0**2*x1 + 3*x1-x1**4 >=0)
     m.setObjective(-x0)
     """
-    """
+    
     #(b) Test Polynomials modified, reasonable lower bound, time ~ 7sec #4.92sec
     m.addCons(-2*x0**4+3*x0-2*x1**2+1>=0)
     m.addCons(-x1**4+42>=0)
     m.addCons(-x0**2*x1 - 3*x1 +0.5*x0 >=0)
     m.setObjective(-0.5*x0)
-    """
+    
     """
     #(c) Test Polynomials modified, terminates, time ~ 25sec #faster if using orthant=[(0,1)] in POEM #6.30sec
     m.addCons(-x0**4+3*x0-2*x1**2+1>=0)
@@ -117,7 +117,7 @@ def example():
     """
     #terminates, reasonable lower bound, time ~ 8sec #3.04sec (LP first 0.00)
     m.addCons(1-x0**4-x1**4>=0)
-    m.addCons(x0**3+2>=0)
+    m.addCons(x0**3+1>=0)
     m.setObjective(x0-2)
     """
     """
@@ -136,7 +136,7 @@ def example():
     """
     #Example 3.2 Ghasemi, Marshall, extended, time ~ 30sec #7.38sec (LP first 0.00)
     m.addCons(x0**2-2*x0*x1+x1**2>=0)
-    m.addCons(-x0**4+x1-x0**3-x1**4+20+x0**2*x1<=0)
+    m.addCons(-x0**4+x1-x0**3-x1**4+20+x0**2*x1>=0)
     m.setObjective(x0+x1)
     """
     """

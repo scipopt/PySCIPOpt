@@ -33,6 +33,14 @@ class SoncRelax(Relax):
                 optProblem.addCons(Constraint(polynomial, '>='))
             return
 
+        def _nonnegCons2(polynomial,rhs, lhs):
+            if not self.model.isInfinity(-lhs):
+                con = Constraint(polynomial,'>=', lhs)
+                optProblem.addCons(con)
+            if not self.model.isInfinity(rhs):
+                con = Constraint(polynomial, '<=', rhs)
+                optProblem.addCons(con)
+
         optProblem = OptimizationProblem()
         nvars = len(self.model.getVars())
         conss = self.model.getConss()
@@ -50,7 +58,7 @@ class SoncRelax(Relax):
                 polynomial.clean()
 
                 #add constraints to constraint_list with constraints >= 0
-                _nonnegCons(polynomial, rhs, lhs)
+                _nonnegCons2(polynomial, rhs, lhs)
  
             elif constype == 'linear':
                 #get linear constraint as Polynomial (POEM)
@@ -65,7 +73,7 @@ class SoncRelax(Relax):
                 polynomial.clean()
 
                 #add constraints to constraint_list with constraints >= 0
-                _nonnegCons(polynomial, rhs, lhs)
+                _nonnegCons2(polynomial, rhs, lhs)
                 
             elif constype == 'quadratic':
                 #get quadratic constraint as Polynomial (POEM)
@@ -100,7 +108,7 @@ class SoncRelax(Relax):
                 polynomial.clean()
 
                 #add constraints to constraint_list with constraints >= 0
-                _nonnegCons(polynomial, rhs, lhs)
+                _nonnegCons2(polynomial, rhs, lhs)
                 
             else:
                 #TODO: what to do with non-polynomial constraints? (possibly linear relaxation)
@@ -132,18 +140,18 @@ class SoncRelax(Relax):
                 #TODO: need to also make sure, this constraint only appears if y**2 not in any other constraint
                 if not equ:
                     #constraint_list.append(ExprToPoly({Term(y,y):-1.0}, nvars))
-                    optProblem.addCons(str(ExprToPoly({Term(y,y):-1.0}, nvars)) + '>= 0')
+                    optProblem.addCons(Constraint(ExprToPoly({Term(y,y):-1.0}, nvars),'>='))
             else:
                 if y.getUbLocal() != 1e+20:
                     boundcons = ExprToPoly(Expr({Term(): y.getUbLocal(), Term(y):-1.0}), nvars)
                     #constraint_list.append(boundcons)
-                    optProblem.addCons(str(boundcons) + ' >= 0')
-                if y.getLbLocal != -1e+20: #TODO: do we also need: and y.getLbLocal != 0.0:
+                    optProblem.addCons(Constraint(boundcons, '>='))
+                if y.getLbLocal() != -1e+20: #TODO: do we also need: and y.getLbLocal() != 0.0:
                     boundcons = ExprToPoly(Expr({Term(): -y.getLbLocal(), Term(y):1.0}), nvars)
                     #constraint_list.append(boundcons)
-                    optProblem.addCons(str(boundcons) + ' >= 0')
+                    optProblem.addCons(Constraint(boundcons, '>='))
         #print('cons',len(constraint_list))
-        #print([(con.A, con.b) for con in constraint_list])
+        #print([str(con) for con in optProblem.constraints])
         #constraint_list = [str(con) + " >= 0" for con in constraint_list]
         #print(constraint_list)
 
@@ -153,7 +161,8 @@ class SoncRelax(Relax):
         #TODO: sometimes get lower bound > solution, so maybe need to take constant term better into account?
         problem = solve_GP(optProblem)
         if problem.status=='optimal':
-            return {'result': SCIP_RESULT.SUCCESS, 'lowerbound': -problem.value}
+            print("lower bound: ", self.model.getObjoffset()-problem.value)
+            return {'result': SCIP_RESULT.SUCCESS, 'lowerbound': self.model.getObjoffset()-problem.value}
 
         """
         #TODO: this part has to be rewritten since constraint_list is no longer used
