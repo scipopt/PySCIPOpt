@@ -5,10 +5,12 @@ from os.path import abspath
 from os.path import splitext
 import sys
 import warnings
+import ctypes
 
 from cpython cimport Py_INCREF, Py_DECREF
 from libc.stdlib cimport malloc, free
 from libc.stdio cimport fdopen
+from libc.stdint cimport uintptr_t
 
 include "expr.pxi"
 include "lp.pxi"
@@ -763,6 +765,44 @@ cdef class Model:
         model._scip = scip
         model._bestSol = Solution.create(scip, SCIPgetBestSol(scip))
         return model
+
+    @property
+    def _freescip(self) -> bool:
+        """Return whether the underlying Scip pointer gets deallocted when the current
+        object is deleted.
+        """
+        return self._freescip
+
+    @_freescip.setter
+    def _freescip(self, val: bool) -> None:
+        """Set whether the underlying Scip pointer gets deallocted when the current
+        object is deleted.
+        """
+        self._freescip = val
+
+    @staticmethod
+    def from_ptr(scip_ptr: ctypes.c_void_p, take_ownership: bool) -> Model:
+        """Create a Model from a given pointer.
+
+        :param scip_ptr: The pointer used to create the Model.
+        :param take_ownership: Whether the newly created Model assumes ownership of the
+        underlying Scip pointer (see `_freescip`).
+        """
+        model = Model.create(<SCIP*><uintptr_t>(scip_ptr.value))
+        model._freescip = take_ownership
+        return model
+
+    def to_ptr(self, give_ownership: bool) -> ctypes.c_void_p:
+        """Return the underlying Scip pointer to the current Model.
+
+        :param give_ownership: Whether the current Model gives away ownership of the
+        underlying Scip pointer (see `_freescip`).
+        :return scip_ptr: The underlying pointer to the current Model.
+        """
+        ptr = ctypes.c_void_p(<uintptr_t>self._scip)
+        if give_ownership:
+            self._freescip = False
+        return ptr
 
     def includeDefaultPlugins(self):
         """Includes all default plug-ins into SCIP"""
