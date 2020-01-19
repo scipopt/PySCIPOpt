@@ -767,21 +767,21 @@ cdef class Model:
         return model
 
     @property
-    def _freescip(self) -> bool:
+    def _freescip(self):
         """Return whether the underlying Scip pointer gets deallocted when the current
         object is deleted.
         """
         return self._freescip
 
     @_freescip.setter
-    def _freescip(self, val: bool) -> None:
+    def _freescip(self, val):
         """Set whether the underlying Scip pointer gets deallocted when the current
         object is deleted.
         """
         self._freescip = val
 
     @staticmethod
-    def from_ptr(scip_ptr: ctypes.c_void_p, take_ownership: bool) -> Model:
+    def from_ptr(scip_ptr, take_ownership):
         """Create a Model from a given pointer.
 
         :param scip_ptr: The pointer used to create the Model.
@@ -792,7 +792,7 @@ cdef class Model:
         model._freescip = take_ownership
         return model
 
-    def to_ptr(self, give_ownership: bool) -> ctypes.c_void_p:
+    def to_ptr(self, give_ownership):
         """Return the underlying Scip pointer to the current Model.
 
         :param give_ownership: Whether the current Model gives away ownership of the
