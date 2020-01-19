@@ -5,7 +5,6 @@ from os.path import abspath
 from os.path import splitext
 import sys
 import warnings
-import ctypes
 
 cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
@@ -781,15 +780,16 @@ cdef class Model:
         """
         self._freescip = val
 
+    @cython.always_allow_keywords(True)
     @staticmethod
-    def from_ptr(scip_ptr, take_ownership):
+    def from_ptr(uintptr_t scip_ptr, take_ownership):
         """Create a Model from a given pointer.
 
         :param scip_ptr: The pointer used to create the Model.
         :param take_ownership: Whether the newly created Model assumes ownership of the
         underlying Scip pointer (see `_freescip`).
         """
-        model = Model.create(<SCIP*><uintptr_t>(scip_ptr.value))
+        model = Model.create(<SCIP*>scip_ptr)
         model._freescip = take_ownership
         return model
 
@@ -801,7 +801,7 @@ cdef class Model:
         underlying Scip pointer (see `_freescip`).
         :return scip_ptr: The underlying pointer to the current Model.
         """
-        ptr = ctypes.c_void_p(<uintptr_t>self._scip)
+        ptr = <uintptr_t>self._scip
         if give_ownership:
             self._freescip = False
         return ptr
