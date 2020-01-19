@@ -7,6 +7,7 @@ import sys
 import warnings
 import ctypes
 
+cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
 from libc.stdlib cimport malloc, free
 from libc.stdio cimport fdopen
@@ -792,6 +793,7 @@ cdef class Model:
         model._freescip = take_ownership
         return model
 
+    @cython.always_allow_keywords(True)
     def to_ptr(self, give_ownership):
         """Return the underlying Scip pointer to the current Model.
 
