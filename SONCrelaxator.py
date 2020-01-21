@@ -85,7 +85,7 @@ class SoncRelax(Relax):
 
             if constype in ['linear', 'quadratic', 'expr']:
                 polynomial.clean()
-                #add constraints to optProblem.constraints with constraints >= 0
+                #add constraints to optProblem.constraints
                 _nonnegCons(polynomial, rhs, lhs)
 
         #if at most 50% of the constraints is used, relaxator is not used
@@ -117,22 +117,23 @@ class SoncRelax(Relax):
                             break
                 #TODO: need to also make sure, this constraint only appears if y**2 not in any other constraint
                 if not equ:
-                    optProblem.addCons(Constraint(ExprToPoly({Term(y,y):-1.0}, nvars),'>='))
+                    optProblem.addCons(Constraint(ExprToPoly({Term(y,y):1.0}, nvars),'<='))
             else:
                 if y.getUbLocal() != self.model.infinity():
-                    boundcons = ExprToPoly(Expr({Term(): y.getUbLocal(), Term(y):-1.0}), nvars)
-                    optProblem.addCons(Constraint(boundcons, '>='))
+                    boundcons = ExprToPoly(Expr({Term(): -y.getUbLocal(), Term(y):1.0}), nvars)
+                    optProblem.addCons(Constraint(boundcons, '<='))
                 if y.getLbLocal() != -self.model.infinity():
-                    boundcons = ExprToPoly(Expr({Term(): -y.getLbLocal(), Term(y):1.0}), nvars)
-                    optProblem.addCons(Constraint(boundcons, '>='))
+                    boundcons = ExprToPoly(Expr({Term(): y.getLbLocal(), Term(y):-1.0}), nvars)
+                    optProblem.addCons(Constraint(boundcons, '<='))
 
         """Here starts the real computation
             first try to use the GP, if that does not work use scipy (optional)"""
         #try to solve probem using GP 
         problem = solve_GP(optProblem)
         if problem.status=='optimal':
-            print("lower bound: ", self.model.getObjoffset()-problem.value)
-            return {'result': SCIP_RESULT.SUCCESS, 'lowerbound': self.model.getObjoffset()-problem.value}
+            #print("lower bound: ", self.model.getObjoffset()-problem.value)
+            #print("sol: ", optProblem.lowerbound)
+            return {'result': SCIP_RESULT.SUCCESS, 'lowerbound': optProblem.lowerbound}
 
         if scipy:
             #TODO: where can optional param scipy be changed during call?!
