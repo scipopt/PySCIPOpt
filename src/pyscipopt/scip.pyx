@@ -814,7 +814,7 @@ cdef class Model:
         return SCIPgetPresolvingTime(self._scip)
 
     def getNLPIterations(self):
-        """Retrieve the current number of LP iterations."""
+        """Retrieve the total number of LP iterations so far."""
         return SCIPgetNLPIterations(self._scip)
 
     def getNNodes(self):
