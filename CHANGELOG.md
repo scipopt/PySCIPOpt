@@ -4,6 +4,7 @@
 - remove Python 2 support
 - add Model.getParams that returns a dict mapping all parameter names to their values
 - add Model.setParams to set multiple parameters at once using a dict
+- add NULL pointer checks to all Python wrapper classes
 
 ## 2.2.3 - 2019-12-10
 ### Added
