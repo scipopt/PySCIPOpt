@@ -511,8 +511,9 @@ cdef class Node:
         return node
 
     def getParent(self):
-        """Retrieve parent node."""
-        return Node.create(SCIPnodeGetParent(self.scip_node))
+        """Retrieve parent node (or None if the node has no parent node)."""
+        cdef SCIP_NODE* parent = SCIPnodeGetParent(self.scip_node)
+        return Node.create(parent) if parent != NULL else None
 
     def getNumber(self):
         """Retrieve number of node."""
