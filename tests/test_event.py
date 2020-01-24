@@ -18,6 +18,7 @@ class MyEvent(Eventhdlr):
         calls.append('eventexec')
         assert event.getType() == SCIP_EVENTTYPE.FIRSTLPSOLVED
         assert event.getNode().getNumber() == 1
+        assert event.getNode().getParent() is None
 
 
 def test_event():
