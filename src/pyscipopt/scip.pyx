@@ -286,6 +286,11 @@ cdef class Event:
         cdef SCIP_NODE* node = SCIPeventGetNode(self.event)
         return Node.create(node)
 
+    def getRow(self):
+        """gets row for a row event"""
+        cdef SCIP_ROW* row = SCIPeventGetRow(self.event)
+        return Row.create(row)
+
 cdef class Column:
     """Base class holding a pointer to corresponding SCIP_COL"""
 
@@ -342,6 +347,11 @@ cdef class Row:
         row = Row()
         row.scip_row = sciprow
         return row
+
+    property name:
+        def __get__(self):
+            cname = bytes( SCIProwGetName(self.scip_row) )
+            return cname.decode('utf-8')
 
     def getLhs(self):
         """returns the left hand side of row"""
