@@ -476,8 +476,6 @@ cdef class Solution:
     cdef create(SCIP* scip, SCIP_SOL* scip_sol):
         if scip == NULL:
             raise Warning("cannot create Solution with SCIP* == NULL")
-        if scip_sol == NULL:
-            raise Warning("cannot create Solution with SCIP_SOL* == NULL")
         sol = Solution()
         sol.sol = scip_sol
         sol.scip = scip
@@ -3304,7 +3302,8 @@ cdef class Model:
         """Branch on a non-continuous variable.
 
         :param variable: Variable to branch on
-        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child.
+        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
+                    if branch variable is integer (it is None otherwise)
 
         """
         cdef SCIP_NODE* downchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
@@ -3312,7 +3311,9 @@ cdef class Model:
         cdef SCIP_NODE* upchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
 
         PY_SCIP_CALL(SCIPbranchVar(self._scip, (<Variable>variable).scip_var, &downchild, &eqchild, &upchild))
-        return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
+        return (Node.create(downchild),
+                Node.create(eqchild) if eqchild != NULL else None,
+                Node.create(upchild))
 
 
     def branchVarVal(self, variable, value):
@@ -3321,7 +3322,7 @@ cdef class Model:
         :param variable: Variable to branch on
         :param value: float, value to branch on
         :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
-                    if branch variable is integer
+                    if branch variable is integer (it is None otherwise)
 
         """
         cdef SCIP_NODE* downchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
@@ -3330,7 +3331,9 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPbranchVarVal(self._scip, (<Variable>variable).scip_var, value, &downchild, &eqchild, &upchild))
         # TODO should the stuff be freed and how?
-        return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
+        return (Node.create(downchild),
+                Node.create(eqchild) if eqchild != NULL else None,
+                Node.create(upchild))
 
     def calcNodeselPriority(self, Variable variable, branchdir, targetvalue):
         """calculates the node selection priority for moving the given variable's LP value
