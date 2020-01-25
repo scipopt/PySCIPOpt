@@ -5,6 +5,7 @@
 - add Model.getParams that returns a dict mapping all parameter names to their values
 - add Model.setParams to set multiple parameters at once using a dict
 - Node.getParent() returns None if the node has no parent
+- add Event.getRow() and Row.name
 - expose domain changes, bound changes, branching decisions, added constraints for nodes
 
 ## 2.2.3 - 2019-12-10
