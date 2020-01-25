@@ -295,9 +295,6 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_SOL:
         pass
 
-    ctypedef struct SCIP_SET:
-        pass
-
     ctypedef struct FILE:
         pass
 
