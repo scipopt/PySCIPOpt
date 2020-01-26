@@ -517,15 +517,14 @@ cdef class Node:
     @staticmethod
     cdef create(SCIP_NODE* scipnode):
         if scipnode == NULL:
-            raise Warning("cannot create Node with SCIP_NODE* == NULL")
+            return None
         node = Node()
         node.scip_node = scipnode
         return node
 
     def getParent(self):
         """Retrieve parent node (or None if the node has no parent node)."""
-        cdef SCIP_NODE* parent = SCIPnodeGetParent(self.scip_node)
-        return Node.create(parent) if parent != NULL else None
+        return Node.create(SCIPnodeGetParent(self.scip_node))
 
     def getNumber(self):
         """Retrieve number of node."""
@@ -3321,9 +3320,7 @@ cdef class Model:
         cdef SCIP_NODE* upchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
 
         PY_SCIP_CALL(SCIPbranchVar(self._scip, (<Variable>variable).scip_var, &downchild, &eqchild, &upchild))
-        return (Node.create(downchild),
-                Node.create(eqchild) if eqchild != NULL else None,
-                Node.create(upchild))
+        return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
 
 
     def branchVarVal(self, variable, value):
@@ -3341,9 +3338,7 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPbranchVarVal(self._scip, (<Variable>variable).scip_var, value, &downchild, &eqchild, &upchild))
         # TODO should the stuff be freed and how?
-        return (Node.create(downchild),
-                Node.create(eqchild) if eqchild != NULL else None,
-                Node.create(upchild))
+        return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
 
     def calcNodeselPriority(self, Variable variable, branchdir, targetvalue):
         """calculates the node selection priority for moving the given variable's LP value
