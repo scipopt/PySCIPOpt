@@ -259,6 +259,8 @@ cdef class Event:
 
     @staticmethod
     cdef create(SCIP_EVENT* scip_event):
+        if scip_event == NULL:
+            raise Warning("cannot create Event with SCIP_EVENT* == NULL")
         event = Event()
         event.event = scip_event
         return event
@@ -298,6 +300,8 @@ cdef class Column:
 
     @staticmethod
     cdef create(SCIP_COL* scipcol):
+        if scipcol == NULL:
+            raise Warning("cannot create Column with SCIP_COL* == NULL")
         col = Column()
         col.scip_col = scipcol
         return col
@@ -346,6 +350,8 @@ cdef class Row:
 
     @staticmethod
     cdef create(SCIP_ROW* sciprow):
+        if sciprow == NULL:
+            raise Warning("cannot create Row with SCIP_ROW* == NULL")
         row = Row()
         row.scip_row = sciprow
         return row
@@ -417,6 +423,8 @@ cdef class NLRow:
 
     @staticmethod
     cdef create(SCIP_NLROW* scipnlrow):
+        if scipnlrow == NULL:
+            raise Warning("cannot create NLRow with SCIP_NLROW* == NULL")
         nlrow = NLRow()
         nlrow.scip_nlrow = scipnlrow
         return nlrow
@@ -478,6 +486,8 @@ cdef class Solution:
 
     @staticmethod
     cdef create(SCIP* scip, SCIP_SOL* scip_sol):
+        if scip == NULL:
+            raise Warning("cannot create Solution with SCIP* == NULL")
         sol = Solution()
         sol.sol = scip_sol
         sol.scip = scip
@@ -508,14 +518,15 @@ cdef class Node:
 
     @staticmethod
     cdef create(SCIP_NODE* scipnode):
+        if scipnode == NULL:
+            return None
         node = Node()
         node.scip_node = scipnode
         return node
 
     def getParent(self):
         """Retrieve parent node (or None if the node has no parent node)."""
-        cdef SCIP_NODE* parent = SCIPnodeGetParent(self.scip_node)
-        return Node.create(parent) if parent != NULL else None
+        return Node.create(SCIPnodeGetParent(self.scip_node))
 
     def getNumber(self):
         """Retrieve number of node."""
@@ -555,6 +566,8 @@ cdef class Variable(Expr):
 
     @staticmethod
     cdef create(SCIP_VAR* scipvar):
+        if scipvar == NULL:
+            raise Warning("cannot create Variable with SCIP_VAR* == NULL")
         var = Variable()
         var.scip_var = scipvar
         Expr.__init__(var, {Term(var) : 1.0})
@@ -3339,7 +3352,8 @@ cdef class Model:
         """Branch on a non-continuous variable.
 
         :param variable: Variable to branch on
-        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child.
+        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
+                    if branch variable is integer (it is None otherwise)
 
         """
         cdef SCIP_NODE* downchild
@@ -3356,7 +3370,7 @@ cdef class Model:
         :param variable: Variable to branch on
         :param value: float, value to branch on
         :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
-                    if branch variable is integer
+                    if branch variable is integer (it is None otherwise)
 
         """
         cdef SCIP_NODE* downchild
