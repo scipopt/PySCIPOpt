@@ -1,21 +1,23 @@
-os: linux
+os:
+    # - linux
+    - osx
 dist: xenial
 sudo: true
 
-language: python
+#language: python
 
-matrix:
-  include:
-    - python: 2.7
-    - python: 3.5
-    - python: 3.6
-    - python: 3.7
-      env: TRAVIS_BUILD_DOCS=$TRAVIS_TAG
-      addons:
-        apt:
-          packages:
-            - doxygen
-            - graphviz
+#matrix:
+#  include:
+#      - python: 2.7
+#      - python: 3.5
+#      - python: 3.6
+#      - python: 3.7
+#      env: TRAVIS_BUILD_DOCS=$TRAVIS_TAG
+#      addons:
+#        apt:
+#          packages:
+#            - doxygen
+#            - graphviz
 
 env:
   global:
@@ -26,12 +28,16 @@ notifications:
   email: false
 
 before_install:
-  - wget http://scip.zib.de/download/release/SCIPOptSuite-$VERSION-Linux-Ub1604.deb
-  - sudo apt-get update && sudo apt install -y ./SCIPOptSuite-$VERSION-Linux-Ub1604.deb
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then wget wget http://scip.zib.de/download/release/SCIPOptSuite-$VERSION-Linux-Ub1604.deb; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update && sudo apt install -y ./SCIPOptSuite-$VERSION-Linux-Ub1604.deb; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then wget http://scip.zib.de/download/release/SCIPOptSuite-$VERSION-Darwin-no-Ipopt.sh; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir install && sh SCIPOptSuite-$VERSION-Darwin-no-Ipopt.sh --skip-license --prefix=$(pwd)/install; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export SCIPOPTDIR=$(pwd)/install; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export DYLD_LIBRARY_PATH=$SCIPOPTDIR/lib:$DYLD_LIBRARY_PATH; fi
 
 install:
-  - pip install cython networkx pytest-cov
-  - pip install .
+  - pip3 install cython networkx pytest-cov
+  - pip3 install .
 
 script: py.test #--cov
 
