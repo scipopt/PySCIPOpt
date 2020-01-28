@@ -645,7 +645,7 @@ cdef extern from "scip/scip.h":
 
     # Domain change methods
     int SCIPdomchgGetNBoundchgs(SCIP_DOMCHG* domchg)
-    SCIP_BOUNDCHG *SCIPdomchgGetBoundchg(SCIP_DOMCHG* domchg, int pos)
+    SCIP_BOUNDCHG* SCIPdomchgGetBoundchg(SCIP_DOMCHG* domchg, int pos)
 
     # Bound change methods
     SCIP_Real SCIPboundchgGetNewbound(SCIP_BOUNDCHG* boundchg)
