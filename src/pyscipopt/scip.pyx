@@ -595,10 +595,6 @@ cdef class Node:
         node.scip_node = scipnode
         return node
 
-    def isRoot(self):
-        """Returns whether this is the root node."""
-        return self.getParent() is None
-
     def getParent(self):
         """Retrieve parent node (or None if the node has no parent node)."""
         cdef SCIP_NODE* parent = SCIPnodeGetParent(self.scip_node)
