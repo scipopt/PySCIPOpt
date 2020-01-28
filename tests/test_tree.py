@@ -19,10 +19,9 @@ class NodeEventHandler(Eventhdlr):
         assert event.getType() == SCIP_EVENTTYPE.NODEFOCUSED
         node = event.getNode()
         branchings = node.getParentBranchings()
-        if node.isRoot():
+        if node.getDepth() == 0:
             return
         assert len(branchings) == 1
-        print(node.getAddedConss())
         domain_changes = node.getDomchgs()
         bound_changes = domain_changes.getBoundchgs()
         assert len(bound_changes) == 1
