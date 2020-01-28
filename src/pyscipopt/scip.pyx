@@ -523,7 +523,7 @@ cdef class BoundChange:
         """Returns the variable of the bound change."""
         return Variable.create(SCIPboundchgGetVar(self.scip_boundchg))
 
-    def getChgType(self):
+    def getBoundchgtype(self):
         """Returns the bound change type of the bound change."""
         return SCIPboundchgGetBoundchgtype(self.scip_boundchg)
 
