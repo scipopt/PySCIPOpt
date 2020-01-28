@@ -537,7 +537,7 @@ cdef class BoundChange:
 
     def __repr__(self):
         return "{} {} {}".format(self.getVar(),
-                                 _SCIP_BOUNDTYPE_TO_STRING[self.getBoundType()],
+                                 _SCIP_BOUNDTYPE_TO_STRING[self.getBoundtype()],
                                  self.getNewBound())
 
 cdef class DomainChanges:
@@ -577,13 +577,13 @@ cdef class Branching:
         """Returns the value of the bound in the branching."""
         return self.scip_bound
 
-    def getBoundType(self):
+    def getBoundtype(self):
         """Returns the bound type of the branching."""
         return self.scip_boundtype
 
     def __repr__(self):
         return "{} {} {}".format(self.getVar(),
-                                 _SCIP_BOUNDTYPE_TO_STRING[self.getBoundType()],
+                                 _SCIP_BOUNDTYPE_TO_STRING[self.getBoundtype()],
                                  self.getBound())
 
 cdef class Node:
