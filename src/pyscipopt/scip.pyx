@@ -570,7 +570,7 @@ cdef class Node:
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__
-                and self.scip_node == (<Solution>other).scip_node)
+                and self.scip_node == (<Node>other).scip_node)
 
 
 cdef class Variable(Expr):
