@@ -557,35 +557,6 @@ cdef class DomainChanges:
         return [BoundChange.create(SCIPdomchgGetBoundchg(self.scip_domchg, i))
                 for i in range(nboundchgs)]
 
-cdef class Branching:
-    """Branching decision."""
-
-    @staticmethod
-    cdef create(SCIP_VAR* scip_var, SCIP_Real scip_bound,
-                SCIP_BOUNDTYPE scip_boundtype):
-        branching = Branching()
-        branching.scip_var = scip_var
-        branching.scip_bound = scip_bound
-        branching.scip_boundtype = scip_boundtype
-        return branching
-
-    def getVar(self):
-        """Returns the variable of the branching."""
-        return Variable.create(self.scip_var)
-
-    def getBound(self):
-        """Returns the value of the bound in the branching."""
-        return self.scip_bound
-
-    def getBoundtype(self):
-        """Returns the bound type of the branching."""
-        return self.scip_boundtype
-
-    def __repr__(self):
-        return "{} {} {}".format(self.getVar(),
-                                 _SCIP_BOUNDTYPE_TO_STRING[self.getBoundtype()],
-                                 self.getBound())
-
 cdef class Node:
     """Base class holding a pointer to corresponding SCIP_NODE"""
 
@@ -672,13 +643,14 @@ cdef class Node:
         SCIPnodeGetParentBranchings(self.scip_node, branchvars, branchbounds,
                                     boundtypes, &nbranchvars, nbranchvars)
 
-        branchings = [Branching.create(branchvars[i], branchbounds[i], boundtypes[i])
-                      for i in range(nbranchvars)]
+        py_variables = [Variable.create(branchvars[i]) for i in range(nbranchvars)]
+        py_branchbounds = [branchbounds[i] for i in range(nbranchvars)]
+        py_boundtypes = [boundtypes[i] for i in range(nbranchvars)]
 
         free(boundtypes)
         free(branchbounds)
         free(branchvars)
-        return branchings
+        return py_variables, py_branchbounds, py_boundtypes
 
     def getNDomchg(self):
         """Retrieve the number of bound changes due to branching, constraint propagation, and propagation."""
@@ -688,7 +660,7 @@ cdef class Node:
         SCIPnodeGetNDomchg(self.scip_node, &nbranchings, &nconsprop, &nprop)
         return nbranchings, nconsprop, nprop
 
-    def getDomchgs(self):
+    def getDomchg(self):
         """Retrieve domain changes for this node."""
         cdef SCIP_DOMCHG* domchg = SCIPnodeGetDomchg(self.scip_node)
         if domchg == NULL:

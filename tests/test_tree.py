@@ -22,7 +22,7 @@ class NodeEventHandler(Eventhdlr):
         if node.getDepth() == 0:
             return
         assert len(branchings) == 1
-        domain_changes = node.getDomchgs()
+        domain_changes = node.getDomchg()
         bound_changes = domain_changes.getBoundchgs()
         assert len(bound_changes) == 1
 

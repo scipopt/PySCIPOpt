@@ -1684,16 +1684,6 @@ cdef class BoundChange:
     @staticmethod
     cdef create(SCIP_BOUNDCHG* scip_boundchg)
 
-cdef class Branching:
-    """Branching decision."""
-    cdef SCIP_VAR* scip_var
-    cdef SCIP_Real scip_bound
-    cdef SCIP_BOUNDTYPE scip_boundtype
-
-    @staticmethod
-    cdef create(SCIP_VAR* scip_var, SCIP_Real scip_bound,
-                SCIP_BOUNDTYPE scip_boundtype)
-
 cdef class Node:
     """Base class holding a pointer to corresponding SCIP_NODE"""
     cdef SCIP_NODE* scip_node
