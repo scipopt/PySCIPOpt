@@ -634,7 +634,7 @@ cdef class Node:
         """Retrieve the set of variable branchings that were performed in the parent node to create this node."""
         cdef int nbranchvars = self.getNParentBranchings()
         if nbranchvars == 0:
-            return []
+            return None
 
         cdef SCIP_VAR** branchvars = <SCIP_VAR**> malloc(nbranchvars * sizeof(SCIP_VAR*))
         cdef SCIP_Real* branchbounds = <SCIP_Real*> malloc(nbranchvars * sizeof(SCIP_Real))
