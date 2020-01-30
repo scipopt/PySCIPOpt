@@ -40,6 +40,9 @@ if sys.version_info >= (3, 0):
 else:
     str_conversion = lambda x:x
 
+_SCIP_BOUNDTYPE_TO_STRING = {SCIP_BOUNDTYPE_UPPER: '<=',
+                             SCIP_BOUNDTYPE_LOWER: '>='}
+
 # Mapping the SCIP_RESULT enum to a python class
 # This is required to return SCIP_RESULT in the python code
 # In __init__.py this is imported as SCIP_RESULT to keep the
@@ -541,6 +544,59 @@ cdef class Solution:
             vals[name] = SCIPgetSolVal(self.scip, self.sol, scip_var)
         return str(vals)
 
+cdef class BoundChange:
+    """Bound change."""
+
+    @staticmethod
+    cdef create(SCIP_BOUNDCHG* scip_boundchg):
+        if scip_boundchg == NULL:
+            raise Warning("cannot create BoundChange with SCIP_BOUNDCHG* == NULL")
+        boundchg = BoundChange()
+        boundchg.scip_boundchg = scip_boundchg
+        return boundchg
+
+    def getNewBound(self):
+        """Returns the new value of the bound in the bound change."""
+        return SCIPboundchgGetNewbound(self.scip_boundchg)
+
+    def getVar(self):
+        """Returns the variable of the bound change."""
+        return Variable.create(SCIPboundchgGetVar(self.scip_boundchg))
+
+    def getBoundchgtype(self):
+        """Returns the bound change type of the bound change."""
+        return SCIPboundchgGetBoundchgtype(self.scip_boundchg)
+
+    def getBoundtype(self):
+        """Returns the bound type of the bound change."""
+        return SCIPboundchgGetBoundtype(self.scip_boundchg)
+
+    def isRedundant(self):
+        """Returns whether the bound change is redundant due to a more global bound that is at least as strong."""
+        return SCIPboundchgIsRedundant(self.scip_boundchg)
+
+    def __repr__(self):
+        return "{} {} {}".format(self.getVar(),
+                                 _SCIP_BOUNDTYPE_TO_STRING[self.getBoundtype()],
+                                 self.getNewBound())
+
+cdef class DomainChanges:
+    """Set of domain changes."""
+
+    @staticmethod
+    cdef create(SCIP_DOMCHG* scip_domchg):
+        if scip_domchg == NULL:
+            raise Warning("cannot create DomainChanges with SCIP_DOMCHG* == NULL")
+        domchg = DomainChanges()
+        domchg.scip_domchg = scip_domchg
+        return domchg
+
+    def getBoundchgs(self):
+        """Returns the bound changes in the domain change."""
+        nboundchgs = SCIPdomchgGetNBoundchgs(self.scip_domchg)
+        return [BoundChange.create(SCIPdomchgGetBoundchg(self.scip_domchg, i))
+                for i in range(nboundchgs)]
+
 cdef class Node:
     """Base class holding a pointer to corresponding SCIP_NODE"""
 
@@ -576,6 +632,19 @@ cdef class Node:
         """Retrieve the estimated value of the best feasible solution in subtree of the node"""
         return SCIPnodeGetEstimate(self.scip_node)
 
+    def getAddedConss(self):
+        """Retrieve all constraints added at this node."""
+        cdef int addedconsssize = SCIPnodeGetNAddedConss(self.scip_node)
+        if addedconsssize == 0:
+            return []
+        cdef SCIP_CONS** addedconss = <SCIP_CONS**> malloc(addedconsssize * sizeof(SCIP_CONS*))
+        cdef int nconss
+        SCIPnodeGetAddedConss(self.scip_node, addedconss, &nconss, addedconsssize)
+        assert nconss == addedconsssize
+        constraints = [Constraint.create(addedconss[i]) for i in range(nconss)]
+        free(addedconss)
+        return constraints
+
     def getNAddedConss(self):
         """Retrieve number of added constraints at this node"""
         return SCIPnodeGetNAddedConss(self.scip_node)
@@ -588,13 +657,63 @@ cdef class Node:
         """Is the node marked to be propagated again?"""
         return SCIPnodeIsPropagatedAgain(self.scip_node)
 
+    def getNParentBranchings(self):
+        """Retrieve the number of variable branchings that were performed in the parent node to create this node."""
+        cdef SCIP_VAR* dummy_branchvars
+        cdef SCIP_Real dummy_branchbounds
+        cdef SCIP_BOUNDTYPE dummy_boundtypes
+        cdef int nbranchvars
+        # This is a hack: the SCIP interface has no function to directly get the
+        # number of parent branchings, i.e., SCIPnodeGetNParentBranchings() does
+        # not exist.
+        SCIPnodeGetParentBranchings(self.scip_node, &dummy_branchvars,
+                                    &dummy_branchbounds, &dummy_boundtypes,
+                                    &nbranchvars, 0)
+        return nbranchvars
+
+    def getParentBranchings(self):
+        """Retrieve the set of variable branchings that were performed in the parent node to create this node."""
+        cdef int nbranchvars = self.getNParentBranchings()
+        if nbranchvars == 0:
+            return None
+
+        cdef SCIP_VAR** branchvars = <SCIP_VAR**> malloc(nbranchvars * sizeof(SCIP_VAR*))
+        cdef SCIP_Real* branchbounds = <SCIP_Real*> malloc(nbranchvars * sizeof(SCIP_Real))
+        cdef SCIP_BOUNDTYPE* boundtypes = <SCIP_BOUNDTYPE*> malloc(nbranchvars * sizeof(SCIP_BOUNDTYPE))
+
+        SCIPnodeGetParentBranchings(self.scip_node, branchvars, branchbounds,
+                                    boundtypes, &nbranchvars, nbranchvars)
+
+        py_variables = [Variable.create(branchvars[i]) for i in range(nbranchvars)]
+        py_branchbounds = [branchbounds[i] for i in range(nbranchvars)]
+        py_boundtypes = [boundtypes[i] for i in range(nbranchvars)]
+
+        free(boundtypes)
+        free(branchbounds)
+        free(branchvars)
+        return py_variables, py_branchbounds, py_boundtypes
+
+    def getNDomchg(self):
+        """Retrieve the number of bound changes due to branching, constraint propagation, and propagation."""
+        cdef int nbranchings
+        cdef int nconsprop
+        cdef int nprop
+        SCIPnodeGetNDomchg(self.scip_node, &nbranchings, &nconsprop, &nprop)
+        return nbranchings, nconsprop, nprop
+
+    def getDomchg(self):
+        """Retrieve domain changes for this node."""
+        cdef SCIP_DOMCHG* domchg = SCIPnodeGetDomchg(self.scip_node)
+        if domchg == NULL:
+            return None
+        return DomainChanges.create(domchg)
+
     def __hash__(self):
         return hash(<size_t>self.scip_node)
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__
                 and self.scip_node == (<Node>other).scip_node)
-
 
 cdef class Variable(Expr):
     """Is a linear expression and has SCIP_VAR*"""
