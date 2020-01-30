@@ -18,9 +18,13 @@ class NodeEventHandler(Eventhdlr):
         self.calls.append('eventexec')
         assert event.getType() == SCIP_EVENTTYPE.NODEFOCUSED
         node = event.getNode()
-        variables, branchbounds, boundtypes = node.getParentBranchings()
+        
         if node.getDepth() == 0:
+            assert node.getParent() is None
+            assert node.getParentBranchings() is None
             return
+
+        variables, branchbounds, boundtypes = node.getParentBranchings()
         assert len(variables) == 1
         assert len(branchbounds) == 1
         assert len(boundtypes) == 1
