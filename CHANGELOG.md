@@ -8,6 +8,7 @@
 - Node.getParent() returns None if the node has no parent
 - add NULL pointer checks to all Python wrapper classes
 - add Event.getRow() and Row.name
+- expose domain changes, bound changes, branching decisions, added constraints for nodes
 
 ## 2.2.3 - 2019-12-10
 ### Added
