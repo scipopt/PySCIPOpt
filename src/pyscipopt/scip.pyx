@@ -6,9 +6,11 @@ from os.path import splitext
 import sys
 import warnings
 
+cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
 from libc.stdlib cimport malloc, free
 from libc.stdio cimport fdopen
+from libc.stdint cimport uintptr_t
 
 include "expr.pxi"
 include "lp.pxi"
@@ -257,6 +259,8 @@ cdef class Event:
 
     @staticmethod
     cdef create(SCIP_EVENT* scip_event):
+        if scip_event == NULL:
+            raise Warning("cannot create Event with SCIP_EVENT* == NULL")
         event = Event()
         event.event = scip_event
         return event
@@ -286,6 +290,11 @@ cdef class Event:
         cdef SCIP_NODE* node = SCIPeventGetNode(self.event)
         return Node.create(node)
 
+    def getRow(self):
+        """gets row for a row event"""
+        cdef SCIP_ROW* row = SCIPeventGetRow(self.event)
+        return Row.create(row)
+
     def __hash__(self):
         return hash(<size_t>self.event)
 
@@ -298,6 +307,8 @@ cdef class Column:
 
     @staticmethod
     cdef create(SCIP_COL* scipcol):
+        if scipcol == NULL:
+            raise Warning("cannot create Column with SCIP_COL* == NULL")
         col = Column()
         col.scip_col = scipcol
         return col
@@ -353,9 +364,16 @@ cdef class Row:
 
     @staticmethod
     cdef create(SCIP_ROW* sciprow):
+        if sciprow == NULL:
+            raise Warning("cannot create Row with SCIP_ROW* == NULL")
         row = Row()
         row.scip_row = sciprow
         return row
+
+    property name:
+        def __get__(self):
+            cname = bytes( SCIProwGetName(self.scip_row) )
+            return cname.decode('utf-8')
 
     def getLhs(self):
         """returns the left hand side of row"""
@@ -426,6 +444,8 @@ cdef class NLRow:
 
     @staticmethod
     cdef create(SCIP_NLROW* scipnlrow):
+        if scipnlrow == NULL:
+            raise Warning("cannot create NLRow with SCIP_NLROW* == NULL")
         nlrow = NLRow()
         nlrow.scip_nlrow = scipnlrow
         return nlrow
@@ -494,6 +514,8 @@ cdef class Solution:
 
     @staticmethod
     cdef create(SCIP* scip, SCIP_SOL* scip_sol):
+        if scip == NULL:
+            raise Warning("cannot create Solution with SCIP* == NULL")
         sol = Solution()
         sol.sol = scip_sol
         sol.scip = scip
@@ -524,14 +546,15 @@ cdef class Node:
 
     @staticmethod
     cdef create(SCIP_NODE* scipnode):
+        if scipnode == NULL:
+            return None
         node = Node()
         node.scip_node = scipnode
         return node
 
     def getParent(self):
         """Retrieve parent node (or None if the node has no parent node)."""
-        cdef SCIP_NODE* parent = SCIPnodeGetParent(self.scip_node)
-        return Node.create(parent) if parent != NULL else None
+        return Node.create(SCIPnodeGetParent(self.scip_node))
 
     def getNumber(self):
         """Retrieve number of node."""
@@ -578,6 +601,8 @@ cdef class Variable(Expr):
 
     @staticmethod
     cdef create(SCIP_VAR* scipvar):
+        if scipvar == NULL:
+            raise Warning("cannot create Variable with SCIP_VAR* == NULL")
         var = Variable()
         var.scip_var = scipvar
         Expr.__init__(var, {Term(var) : 1.0})
@@ -812,6 +837,46 @@ cdef class Model:
         model._scip = scip
         model._bestSol = Solution.create(scip, SCIPgetBestSol(scip))
         return model
+
+    @property
+    def _freescip(self):
+        """Return whether the underlying Scip pointer gets deallocted when the current
+        object is deleted.
+        """
+        return self._freescip
+
+    @_freescip.setter
+    def _freescip(self, val):
+        """Set whether the underlying Scip pointer gets deallocted when the current
+        object is deleted.
+        """
+        self._freescip = val
+
+    @cython.always_allow_keywords(True)
+    @staticmethod
+    def from_ptr(uintptr_t scip_ptr, take_ownership):
+        """Create a Model from a given pointer.
+
+        :param scip_ptr: The pointer used to create the Model.
+        :param take_ownership: Whether the newly created Model assumes ownership of the
+        underlying Scip pointer (see `_freescip`).
+        """
+        model = Model.create(<SCIP*>scip_ptr)
+        model._freescip = take_ownership
+        return model
+
+    @cython.always_allow_keywords(True)
+    def to_ptr(self, give_ownership):
+        """Return the underlying Scip pointer to the current Model.
+
+        :param give_ownership: Whether the current Model gives away ownership of the
+        underlying Scip pointer (see `_freescip`).
+        :return scip_ptr: The underlying pointer to the current Model.
+        """
+        ptr = <uintptr_t>self._scip
+        if give_ownership:
+            self._freescip = False
+        return ptr
 
     def includeDefaultPlugins(self):
         """Includes all default plug-ins into SCIP"""
@@ -3320,28 +3385,28 @@ cdef class Model:
         cdef int npriolpcands
         cdef int nfracimplvars
 
-        ncands = SCIPgetNLPBranchCands(self._scip)
-        cdef SCIP_VAR** lpcands = <SCIP_VAR**> malloc(ncands * sizeof(SCIP_VAR*))
-        cdef SCIP_Real* lpcandssol = <SCIP_Real*> malloc(ncands * sizeof(SCIP_Real))
-        cdef SCIP_Real* lpcandsfrac = <SCIP_Real*> malloc(ncands * sizeof(SCIP_Real))
+        cdef SCIP_VAR** lpcands
+        cdef SCIP_Real* lpcandssol
+        cdef SCIP_Real* lpcandsfrac
 
         PY_SCIP_CALL(SCIPgetLPBranchCands(self._scip, &lpcands, &lpcandssol, &lpcandsfrac,
                                           &nlpcands, &npriolpcands, &nfracimplvars))
 
-        return ([Variable.create(lpcands[i]) for i in range(ncands)], [lpcandssol[i] for i in range(ncands)],
-                [lpcandsfrac[i] for i in range(ncands)], nlpcands, npriolpcands, nfracimplvars)
+        return ([Variable.create(lpcands[i]) for i in range(nlpcands)], [lpcandssol[i] for i in range(nlpcands)],
+                [lpcandsfrac[i] for i in range(nlpcands)], nlpcands, npriolpcands, nfracimplvars)
 
 
     def branchVar(self, variable):
         """Branch on a non-continuous variable.
 
         :param variable: Variable to branch on
-        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child.
+        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
+                    if branch variable is integer (it is None otherwise)
 
         """
-        cdef SCIP_NODE* downchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
-        cdef SCIP_NODE* eqchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
-        cdef SCIP_NODE* upchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
+        cdef SCIP_NODE* downchild
+        cdef SCIP_NODE* eqchild
+        cdef SCIP_NODE* upchild
 
         PY_SCIP_CALL(SCIPbranchVar(self._scip, (<Variable>variable).scip_var, &downchild, &eqchild, &upchild))
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
@@ -3353,15 +3418,15 @@ cdef class Model:
         :param variable: Variable to branch on
         :param value: float, value to branch on
         :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
-                    if branch variable is integer
+                    if branch variable is integer (it is None otherwise)
 
         """
-        cdef SCIP_NODE* downchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
-        cdef SCIP_NODE* eqchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
-        cdef SCIP_NODE* upchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
+        cdef SCIP_NODE* downchild
+        cdef SCIP_NODE* eqchild
+        cdef SCIP_NODE* upchild
 
         PY_SCIP_CALL(SCIPbranchVarVal(self._scip, (<Variable>variable).scip_var, value, &downchild, &eqchild, &upchild))
-        # TODO should the stuff be freed and how?
+
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
 
     def calcNodeselPriority(self, Variable variable, branchdir, targetvalue):
@@ -3397,7 +3462,7 @@ cdef class Model:
         :return: Node, the child which was created
 
         """
-        cdef SCIP_NODE* child = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
+        cdef SCIP_NODE* child
         PY_SCIP_CALL(SCIPcreateChild(self._scip, &child, nodeselprio, estimate))
         return Node.create(child)
 

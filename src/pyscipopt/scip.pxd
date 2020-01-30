@@ -567,6 +567,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPeventGetOldbound(SCIP_EVENT* event)
     SCIP_VAR* SCIPeventGetVar(SCIP_EVENT* event)
     SCIP_NODE* SCIPeventGetNode(SCIP_EVENT* event)
+    SCIP_ROW* SCIPeventGetRow(SCIP_EVENT* event)
     SCIP_RETCODE SCIPinterruptSolve(SCIP* scip)
     SCIP_RETCODE SCIPrestartSolve(SCIP* scip)
 
@@ -1557,6 +1558,7 @@ cdef extern from "scip/paramset.h":
 
 cdef extern from "scip/pub_lp.h":
     # Row Methods
+    const char* SCIProwGetName(SCIP_ROW* row)
     SCIP_Real SCIProwGetLhs(SCIP_ROW* row)
     SCIP_Real SCIProwGetRhs(SCIP_ROW* row)
     SCIP_Real SCIProwGetConstant(SCIP_ROW* row)
