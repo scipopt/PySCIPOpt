@@ -656,13 +656,6 @@ cdef class Variable(Expr):
         """Retrieve the current LP solution value of variable"""
         return SCIPvarGetLPSol(self.scip_var)
 
-    def __hash__(self):
-        return hash(<size_t>self.scip_var)
-
-    def __eq__(self, other):
-        return (self.__class__ == other.__class__
-                and self.scip_var == (<Variable>other).scip_var)
-
 cdef class Constraint:
     """Base class holding a pointer to corresponding SCIP_CONS"""
 
