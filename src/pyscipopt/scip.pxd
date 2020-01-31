@@ -263,6 +263,11 @@ cdef extern from "scip/scip.h":
         SCIP_BRANCHDIR_FIXED     = 2
         SCIP_BRANCHDIR_AUTO      = 3
 
+    ctypedef enum SCIP_BOUNDCHGTYPE:
+        SCIP_BOUNDCHGTYPE_BRANCHING = 0
+        SCIP_BOUNDCHGTYPE_CONSINFER = 1
+        SCIP_BOUNDCHGTYPE_PROPINFER = 2
+
     ctypedef enum SCIP_ROWORIGINTYPE:
         SCIP_ROWORIGINTYPE_UNSPEC = 0
         SCIP_ROWORIGINTYPE_CONS   = 1
@@ -462,6 +467,12 @@ cdef extern from "scip/scip.h":
         int idx2
         SCIP_Real coef
 
+    ctypedef struct SCIP_BOUNDCHG:
+        pass
+
+    ctypedef union SCIP_DOMCHG:
+        pass
+
     ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg)
     ctypedef void (*errormessagecallback) (void *data, FILE *file, const char *msg)
     ctypedef SCIP_RETCODE (*messagehdlrfree) (SCIP_MESSAGEHDLR *messagehdlr)
@@ -573,6 +584,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPeventGetOldbound(SCIP_EVENT* event)
     SCIP_VAR* SCIPeventGetVar(SCIP_EVENT* event)
     SCIP_NODE* SCIPeventGetNode(SCIP_EVENT* event)
+    SCIP_ROW* SCIPeventGetRow(SCIP_EVENT* event)
     SCIP_RETCODE SCIPinterruptSolve(SCIP* scip)
     SCIP_RETCODE SCIPrestartSolve(SCIP* scip)
 
@@ -625,6 +637,28 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPinRepropagation(SCIP* scip)
     SCIP_RETCODE SCIPaddConsNode(SCIP* scip, SCIP_NODE* node, SCIP_CONS* cons, SCIP_NODE* validnode)
     SCIP_RETCODE SCIPaddConsLocal(SCIP* scip, SCIP_CONS* cons, SCIP_NODE* validnode)
+    void SCIPnodeGetParentBranchings(SCIP_NODE* node,
+                                     SCIP_VAR** branchvars,
+                                     SCIP_Real* branchbounds,
+                                     SCIP_BOUNDTYPE* boundtypes,
+                                     int* nbranchvars,
+                                     int branchvarssize)
+    void SCIPnodeGetAddedConss(SCIP_NODE* node, SCIP_CONS** addedconss,
+                               int* naddedconss, int addedconsssize)
+    void SCIPnodeGetNDomchg(SCIP_NODE* node, int* nbranchings, int* nconsprop,
+                            int* nprop)
+    SCIP_DOMCHG* SCIPnodeGetDomchg(SCIP_NODE* node)
+
+    # Domain change methods
+    int SCIPdomchgGetNBoundchgs(SCIP_DOMCHG* domchg)
+    SCIP_BOUNDCHG* SCIPdomchgGetBoundchg(SCIP_DOMCHG* domchg, int pos)
+
+    # Bound change methods
+    SCIP_Real SCIPboundchgGetNewbound(SCIP_BOUNDCHG* boundchg)
+    SCIP_VAR* SCIPboundchgGetVar(SCIP_BOUNDCHG* boundchg)
+    SCIP_BOUNDCHGTYPE SCIPboundchgGetBoundchgtype(SCIP_BOUNDCHG* boundchg)
+    SCIP_BOUNDTYPE SCIPboundchgGetBoundtype(SCIP_BOUNDCHG* boundchg)
+    SCIP_Bool SCIPboundchgIsRedundant(SCIP_BOUNDCHG* boundchg)
 
     # Variable Methods
     SCIP_RETCODE SCIPcreateVarBasic(SCIP* scip,
@@ -1563,6 +1597,7 @@ cdef extern from "scip/paramset.h":
 
 cdef extern from "scip/pub_lp.h":
     # Row Methods
+    const char* SCIProwGetName(SCIP_ROW* row)
     SCIP_Real SCIProwGetLhs(SCIP_ROW* row)
     SCIP_Real SCIProwGetRhs(SCIP_ROW* row)
     SCIP_Real SCIProwGetConstant(SCIP_ROW* row)
@@ -1643,6 +1678,20 @@ cdef class Solution:
 
     @staticmethod
     cdef create(SCIP* scip, SCIP_SOL* scip_sol)
+
+cdef class DomainChanges:
+    """Set of domain changes."""
+    cdef SCIP_DOMCHG* scip_domchg
+
+    @staticmethod
+    cdef create(SCIP_DOMCHG* scip_domchg)
+
+cdef class BoundChange:
+    """Bound change."""
+    cdef SCIP_BOUNDCHG* scip_boundchg
+
+    @staticmethod
+    cdef create(SCIP_BOUNDCHG* scip_boundchg)
 
 cdef class Node:
     """Base class holding a pointer to corresponding SCIP_NODE"""
