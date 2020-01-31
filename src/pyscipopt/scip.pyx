@@ -298,6 +298,13 @@ cdef class Event:
         cdef SCIP_ROW* row = SCIPeventGetRow(self.event)
         return Row.create(row)
 
+    def __hash__(self):
+        return hash(<size_t>self.event)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.event == (<Event>other).event)
+
 cdef class Column:
     """Base class holding a pointer to corresponding SCIP_COL"""
 
@@ -347,6 +354,13 @@ cdef class Column:
     def getUb(self):
         """gets upper bound of column"""
         return SCIPcolGetUb(self.scip_col)
+
+    def __hash__(self):
+        return hash(<size_t>self.scip_col)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.scip_col == (<Column>other).scip_col)
 
 cdef class Row:
     """Base class holding a pointer to corresponding SCIP_ROW"""
@@ -421,6 +435,13 @@ cdef class Row:
         cdef SCIP_Real* vals = SCIProwGetVals(self.scip_row)
         return [vals[i] for i in range(self.getNNonz())]
 
+    def __hash__(self):
+        return hash(<size_t>self.scip_row)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.scip_row == (<Row>other).scip_row)
+
 cdef class NLRow:
     """Base class holding a pointer to corresponding SCIP_NLROW"""
 
@@ -483,6 +504,13 @@ cdef class NLRow:
     def getDualsol(self):
         """gets the dual NLP solution of a nonlinear row"""
         return SCIPnlrowGetDualsol(self.scip_nlrow)
+
+    def __hash__(self):
+        return hash(<size_t>self.scip_nlrow)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.scip_nlrow == (<NLRow>other).scip_nlrow)
 
 cdef class Solution:
     """Base class holding a pointer to corresponding SCIP_SOL"""
@@ -680,6 +708,13 @@ cdef class Node:
             return None
         return DomainChanges.create(domchg)
 
+    def __hash__(self):
+        return hash(<size_t>self.scip_node)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.scip_node == (<Node>other).scip_node)
+
 cdef class Variable(Expr):
     """Is a linear expression and has SCIP_VAR*"""
 
@@ -765,7 +800,6 @@ cdef class Variable(Expr):
         """Retrieve the current LP solution value of variable"""
         return SCIPvarGetLPSol(self.scip_var)
 
-
 cdef class Constraint:
     """Base class holding a pointer to corresponding SCIP_CONS"""
 
@@ -839,6 +873,13 @@ cdef class Constraint:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'quadratic'
 
+    def __hash__(self):
+        return hash(<size_t>self.scip_cons)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.scip_cons == (<Constraint>other).scip_cons)
+
 
 cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg):
     sys.stdout.write(msg.decode('UTF-8'))
@@ -897,6 +938,13 @@ cdef class Model:
         # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
         if self._scip is not NULL and self._freescip and PY_SCIP_CALL:
            PY_SCIP_CALL( SCIPfree(&self._scip) )
+
+    def __hash__(self):
+        return hash(<size_t>self._scip)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self._scip == (<Model>other)._scip)
 
     @staticmethod
     cdef create(SCIP* scip):
