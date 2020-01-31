@@ -5,6 +5,7 @@
 - add Model.getParams that returns a dict mapping all parameter names to their values
 - add Model.setParams to set multiple parameters at once using a dict
 - Node.getParent() returns None if the node has no parent
+- add Row.isRemovable and Row.getOrigintype
 
 ## 2.2.3 - 2019-12-10
 ### Added
