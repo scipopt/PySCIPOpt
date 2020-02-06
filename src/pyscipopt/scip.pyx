@@ -215,6 +215,11 @@ cdef class PY_SCIP_BENDERSENFOTYPE:
     PSEUDO = SCIP_BENDERSENFOTYPE_PSEUDO
     CHECK  = SCIP_BENDERSENFOTYPE_CHECK
 
+cdef class PY_SCIP_ROWORIGINTYPE:
+    UNSPEC = SCIP_ROWORIGINTYPE_UNSPEC
+    CONS   = SCIP_ROWORIGINTYPE_CONS
+    SEPA   = SCIP_ROWORIGINTYPE_SEPA
+    REOPT  = SCIP_ROWORIGINTYPE_REOPT
 
 def PY_SCIP_CALL(SCIP_RETCODE rc):
     if rc == SCIP_OKAY:
@@ -416,6 +421,14 @@ cdef class Row:
     def isModifiable(self):
         """returns TRUE iff row is modifiable during node processing (subject to column generation) """
         return SCIProwIsModifiable(self.scip_row)
+
+    def isRemovable(self):
+        """returns TRUE iff row is removable from the LP (due to aging or cleanup)"""
+        return SCIProwIsRemovable(self.scip_row)
+
+    def getOrigintype(self):
+        """returns type of origin that created the row"""
+        return SCIProwGetOrigintype(self.scip_row)
 
     def getNNonz(self):
         """get number of nonzero entries in row vector"""

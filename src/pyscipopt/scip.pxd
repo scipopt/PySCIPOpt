@@ -268,6 +268,12 @@ cdef extern from "scip/scip.h":
         SCIP_BOUNDCHGTYPE_CONSINFER = 1
         SCIP_BOUNDCHGTYPE_PROPINFER = 2
 
+    ctypedef enum SCIP_ROWORIGINTYPE:
+        SCIP_ROWORIGINTYPE_UNSPEC = 0
+        SCIP_ROWORIGINTYPE_CONS   = 1
+        SCIP_ROWORIGINTYPE_SEPA   = 2
+        SCIP_ROWORIGINTYPE_REOPT  = 3
+
     ctypedef bint SCIP_Bool
 
     ctypedef long long SCIP_Longint
@@ -1608,6 +1614,9 @@ cdef extern from "scip/pub_lp.h":
     SCIP_Real SCIProwGetNorm(SCIP_ROW* row)
     SCIP_Real SCIProwGetDualsol(SCIP_ROW* row)
     int SCIProwGetAge(SCIP_ROW* row)
+    SCIP_Bool SCIProwIsRemovable(SCIP_ROW* row)
+    SCIP_ROWORIGINTYPE SCIProwGetOrigintype(SCIP_ROW* row)
+
     # Column Methods
     int SCIPcolGetLPPos(SCIP_COL* col)
     SCIP_BASESTAT SCIPcolGetBasisStatus(SCIP_COL* col)
