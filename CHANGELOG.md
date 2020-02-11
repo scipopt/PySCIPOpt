@@ -10,6 +10,7 @@
 - expose domain changes, bound changes, branching decisions, added constraints for nodes
 - define Python object identity based on underlying SCIP object pointers, so that e.g. rows and columns can be added to sets, and testing for equality is consistent over time.
 - add Row.isRemovable and Row.getOrigintype
+- remove Python 2.7 support
 
 ## 2.2.3 - 2019-12-10
 ### Added
