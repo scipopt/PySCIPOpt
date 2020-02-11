@@ -8,12 +8,6 @@ environment:
     secure: mi/mkS8vYK1Yza0A1FB4/Q==
 
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-      PYTHON: C:\Python27-x64
-      PIP: C:\Python27-x64\Scripts\pip
-      PYTEST: C:\Python27-x64\Scripts\pytest
-      TWINE: C:\Python27-x64\Scripts\twine
-      INCLUDE_REQUIRED: true
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       PYTHON: C:\Python35-x64
       PIP: C:\Python35-x64\Scripts\pip
@@ -24,6 +18,17 @@ environment:
       PIP: C:\Python36-x64\Scripts\pip
       PYTEST: C:\Python36-x64\Scripts\pytest
       TWINE: C:\Python36-x64\Scripts\twine
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      PYTHON: C:\Python37-x64
+      PIP: C:\Python37-x64\Scripts\pip
+      PYTEST: C:\Python37-x64\Scripts\pytest
+      TWINE: C:\Python37-x64\Scripts\twine
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      PYTHON: C:\Python38-x64
+      PIP: C:\Python38-x64\Scripts\pip
+      PYTEST: C:\Python38-x64\Scripts\pytest
+      TWINE: C:\Python38-x64\Scripts\twine
+
 
 install:
   # - ps: $uri = 'http://opti-test.zib.de/v600-rc06/scip/download/release/SCIPOptSuite-6.0.0-win64-VS15.exe'

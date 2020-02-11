@@ -30,7 +30,7 @@ include "nodesel.pxi"
 # recommended SCIP version; major version is required
 MAJOR = 6
 MINOR = 0
-PATCH = 0
+PATCH = 2
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
