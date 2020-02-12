@@ -263,6 +263,17 @@ cdef extern from "scip/scip.h":
         SCIP_BRANCHDIR_FIXED     = 2
         SCIP_BRANCHDIR_AUTO      = 3
 
+    ctypedef enum SCIP_BOUNDCHGTYPE:
+        SCIP_BOUNDCHGTYPE_BRANCHING = 0
+        SCIP_BOUNDCHGTYPE_CONSINFER = 1
+        SCIP_BOUNDCHGTYPE_PROPINFER = 2
+
+    ctypedef enum SCIP_ROWORIGINTYPE:
+        SCIP_ROWORIGINTYPE_UNSPEC = 0
+        SCIP_ROWORIGINTYPE_CONS   = 1
+        SCIP_ROWORIGINTYPE_SEPA   = 2
+        SCIP_ROWORIGINTYPE_REOPT  = 3
+
     ctypedef bint SCIP_Bool
 
     ctypedef long long SCIP_Longint
@@ -456,6 +467,12 @@ cdef extern from "scip/scip.h":
         int idx2
         SCIP_Real coef
 
+    ctypedef struct SCIP_BOUNDCHG:
+        pass
+
+    ctypedef union SCIP_DOMCHG:
+        pass
+
     ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg)
     ctypedef void (*errormessagecallback) (void *data, FILE *file, const char *msg)
     ctypedef SCIP_RETCODE (*messagehdlrfree) (SCIP_MESSAGEHDLR *messagehdlr)
@@ -569,6 +586,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPeventGetOldbound(SCIP_EVENT* event)
     SCIP_VAR* SCIPeventGetVar(SCIP_EVENT* event)
     SCIP_NODE* SCIPeventGetNode(SCIP_EVENT* event)
+    SCIP_ROW* SCIPeventGetRow(SCIP_EVENT* event)
     SCIP_RETCODE SCIPinterruptSolve(SCIP* scip)
     SCIP_RETCODE SCIPrestartSolve(SCIP* scip)
 
@@ -584,6 +602,7 @@ cdef extern from "scip/scip.h":
     SCIP_OBJSENSE SCIPgetObjsense(SCIP* scip)
     SCIP_RETCODE SCIPsetObjlimit(SCIP* scip, SCIP_Real objlimit)
     SCIP_Real SCIPgetObjlimit(SCIP* scip)
+    SCIP_Real SCIPgetObjNorm(SCIP* scip)
     SCIP_RETCODE SCIPaddObjoffset(SCIP* scip, SCIP_Real addval)
     SCIP_RETCODE SCIPaddOrigObjoffset(SCIP* scip, SCIP_Real addval)
     SCIP_Real SCIPgetOrigObjoffset(SCIP* scip)
@@ -620,6 +639,28 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPinRepropagation(SCIP* scip)
     SCIP_RETCODE SCIPaddConsNode(SCIP* scip, SCIP_NODE* node, SCIP_CONS* cons, SCIP_NODE* validnode)
     SCIP_RETCODE SCIPaddConsLocal(SCIP* scip, SCIP_CONS* cons, SCIP_NODE* validnode)
+    void SCIPnodeGetParentBranchings(SCIP_NODE* node,
+                                     SCIP_VAR** branchvars,
+                                     SCIP_Real* branchbounds,
+                                     SCIP_BOUNDTYPE* boundtypes,
+                                     int* nbranchvars,
+                                     int branchvarssize)
+    void SCIPnodeGetAddedConss(SCIP_NODE* node, SCIP_CONS** addedconss,
+                               int* naddedconss, int addedconsssize)
+    void SCIPnodeGetNDomchg(SCIP_NODE* node, int* nbranchings, int* nconsprop,
+                            int* nprop)
+    SCIP_DOMCHG* SCIPnodeGetDomchg(SCIP_NODE* node)
+
+    # Domain change methods
+    int SCIPdomchgGetNBoundchgs(SCIP_DOMCHG* domchg)
+    SCIP_BOUNDCHG* SCIPdomchgGetBoundchg(SCIP_DOMCHG* domchg, int pos)
+
+    # Bound change methods
+    SCIP_Real SCIPboundchgGetNewbound(SCIP_BOUNDCHG* boundchg)
+    SCIP_VAR* SCIPboundchgGetVar(SCIP_BOUNDCHG* boundchg)
+    SCIP_BOUNDCHGTYPE SCIPboundchgGetBoundchgtype(SCIP_BOUNDCHG* boundchg)
+    SCIP_BOUNDTYPE SCIPboundchgGetBoundtype(SCIP_BOUNDCHG* boundchg)
+    SCIP_Bool SCIPboundchgIsRedundant(SCIP_BOUNDCHG* boundchg)
 
     # Variable Methods
     SCIP_RETCODE SCIPcreateVarBasic(SCIP* scip,
@@ -656,6 +697,7 @@ cdef extern from "scip/scip.h":
     SCIP_VAR** SCIPgetVars(SCIP* scip)
     SCIP_VAR** SCIPgetOrigVars(SCIP* scip)
     const char* SCIPvarGetName(SCIP_VAR* var)
+    int SCIPvarGetIndex(SCIP_VAR* var)
     int SCIPgetNVars(SCIP* scip)
     int SCIPgetNOrigVars(SCIP* scip)
     SCIP_VARTYPE SCIPvarGetType(SCIP_VAR* var)
@@ -673,6 +715,10 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPvarGetLPSol(SCIP_VAR* var)
     void SCIPvarSetData(SCIP_VAR* var, SCIP_VARDATA* vardata)
     SCIP_VARDATA* SCIPvarGetData(SCIP_VAR* var)
+    SCIP_Real SCIPvarGetAvgSol(SCIP_VAR* var)
+    SCIP_Real SCIPgetVarPseudocost(SCIP* scip, SCIP_VAR *var, SCIP_BRANCHDIR dir)
+    SCIP_Real SCIPvarGetCutoffSum(SCIP_VAR* var, SCIP_BRANCHDIR dir)
+    SCIP_Longint SCIPvarGetNBranchings(SCIP_VAR* var, SCIP_BRANCHDIR dir)
 
     # LP Methods
     SCIP_RETCODE SCIPgetLPColsData(SCIP* scip, SCIP_COL*** cols, int* ncols)
@@ -686,6 +732,8 @@ cdef extern from "scip/scip.h":
     SCIP_LPSOLSTAT SCIPgetLPSolstat(SCIP* scip)
     int SCIPgetNLPRows(SCIP* scip)
     int SCIPgetNLPCols(SCIP* scip)
+    SCIP_COL** SCIPgetLPCols(SCIP *scip)
+    SCIP_ROW** SCIPgetLPRows(SCIP *scip)
 
     # Cutting Plane Methods
     SCIP_RETCODE SCIPaddPoolCut(SCIP* scip, SCIP_ROW* row)
@@ -764,6 +812,9 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPflushRowExtensions(SCIP* scip, SCIP_ROW* row)
     SCIP_RETCODE SCIPaddVarToRow(SCIP* scip, SCIP_ROW* row, SCIP_VAR* var, SCIP_Real val)
     SCIP_RETCODE SCIPprintRow(SCIP* scip, SCIP_ROW* row, FILE* file)
+
+    # Column Methods
+    SCIP_Real SCIPgetColRedcost(SCIP* scip, SCIP_COL* col)
 
     # Dual Solution Methods
     SCIP_Real SCIPgetDualbound(SCIP* scip)
@@ -1023,6 +1074,8 @@ cdef extern from "scip/scip.h":
                                        SCIP_RETCODE (*branchruleexecps) (SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result),
                                        SCIP_BRANCHRULEDATA* branchruledata)
     SCIP_BRANCHRULEDATA* SCIPbranchruleGetData(SCIP_BRANCHRULE* branchrule)
+    const char* SCIPbranchruleGetName(SCIP_BRANCHRULE* branchrule)
+    SCIP_BRANCHRULE* SCIPfindBranchrule(SCIP* scip, const char*  name)
 
     # Benders' decomposition plugin
     SCIP_RETCODE SCIPincludeBenders(SCIP* scip,
@@ -1109,6 +1162,7 @@ cdef extern from "scip/scip.h":
     int SCIPgetNLPBranchCands(SCIP* scip)
     SCIP_RETCODE SCIPgetLPBranchCands(SCIP* scip, SCIP_VAR*** lpcands, SCIP_Real** lpcandssol,
                                       SCIP_Real** lpcandsfrac, int* nlpcands, int* npriolpcands, int* nfracimplvars)
+    SCIP_RETCODE SCIPgetPseudoBranchCands(SCIP* scip, SCIP_VAR*** pseudocands, int* npseudocands, int* npriopseudocands)
 
 
     # Numerical Methods
@@ -1116,6 +1170,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPfrac(SCIP* scip, SCIP_Real val)
     SCIP_Real SCIPfeasFrac(SCIP* scip, SCIP_Real val)
     SCIP_Bool SCIPisZero(SCIP* scip, SCIP_Real val)
+    SCIP_Bool SCIPisFeasIntegral(SCIP* scip, SCIP_Real val)
     SCIP_Bool SCIPisFeasZero(SCIP* scip, SCIP_Real val)
     SCIP_Bool SCIPisFeasNegative(SCIP* scip, SCIP_Real val)
     SCIP_Bool SCIPisInfinity(SCIP* scip, SCIP_Real val)
@@ -1123,11 +1178,17 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPisLT(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
     SCIP_Bool SCIPisGE(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
     SCIP_Bool SCIPisGT(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
+    SCIP_Bool SCIPisEQ(SCIP *scip, SCIP_Real val1, SCIP_Real val2)
+    SCIP_Bool SCIPisHugeValue(SCIP *scip, SCIP_Real val)
+    SCIP_Bool SCIPisPositive(SCIP *scip, SCIP_Real val)
+    SCIP_Bool SCIPisNegative(SCIP *scip, SCIP_Real val)
+    SCIP_Bool SCIPisIntegral(SCIP *scip, SCIP_Real val)
 
     # Statistic Methods
     SCIP_RETCODE SCIPprintStatistics(SCIP* scip, FILE* outfile)
     SCIP_Longint SCIPgetNNodes(SCIP* scip)
     SCIP_Longint SCIPgetNLPs(SCIP* scip)
+    SCIP_Longint SCIPgetNLPIterations(SCIP* scip)
 
     # Parameter Functions
     SCIP_RETCODE SCIPsetBoolParam(SCIP* scip, char* name, SCIP_Bool value)
@@ -1143,8 +1204,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPresetParam(SCIP* scip, const char* name)
     SCIP_RETCODE SCIPresetParams(SCIP* scip)
     SCIP_PARAM* SCIPgetParam(SCIP* scip,  const char*  name)
-
-
+    SCIP_PARAM** SCIPgetParams(SCIP* scip)
+    int SCIPgetNParams(SCIP* scip)
 
     # LPI Functions
     SCIP_RETCODE SCIPgetLPI(SCIP* scip, SCIP_LPI** lpi)
@@ -1527,6 +1588,7 @@ cdef extern from "scip/paramset.h":
     ctypedef struct SCIP_PARAM:
         pass
 
+    const char* SCIPparamGetName(SCIP_PARAM* param)
     SCIP_PARAMTYPE SCIPparamGetType(SCIP_PARAM* param)
     SCIP_Bool SCIPparamGetBool(SCIP_PARAM* param)
     int SCIPparamGetInt(SCIP_PARAM* param)
@@ -1537,17 +1599,26 @@ cdef extern from "scip/paramset.h":
 
 cdef extern from "scip/pub_lp.h":
     # Row Methods
+    const char* SCIProwGetName(SCIP_ROW* row)
     SCIP_Real SCIProwGetLhs(SCIP_ROW* row)
     SCIP_Real SCIProwGetRhs(SCIP_ROW* row)
     SCIP_Real SCIProwGetConstant(SCIP_ROW* row)
     int SCIProwGetLPPos(SCIP_ROW* row)
     SCIP_BASESTAT SCIProwGetBasisStatus(SCIP_ROW* row)
     SCIP_Bool SCIProwIsIntegral(SCIP_ROW* row)
+    SCIP_Bool SCIProwIsLocal(SCIP_ROW* row)
     SCIP_Bool SCIProwIsModifiable(SCIP_ROW* row)
+    SCIP_Bool SCIProwIsRemovable(SCIP_ROW* row)
     int SCIProwGetNNonz(SCIP_ROW* row)
     int SCIProwGetNLPNonz(SCIP_ROW* row)
     SCIP_COL** SCIProwGetCols(SCIP_ROW* row)
     SCIP_Real* SCIProwGetVals(SCIP_ROW* row)
+    SCIP_Real SCIProwGetNorm(SCIP_ROW* row)
+    SCIP_Real SCIProwGetDualsol(SCIP_ROW* row)
+    int SCIProwGetAge(SCIP_ROW* row)
+    SCIP_Bool SCIProwIsRemovable(SCIP_ROW* row)
+    SCIP_ROWORIGINTYPE SCIProwGetOrigintype(SCIP_ROW* row)
+
     # Column Methods
     int SCIPcolGetLPPos(SCIP_COL* col)
     SCIP_BASESTAT SCIPcolGetBasisStatus(SCIP_COL* col)
@@ -1556,6 +1627,113 @@ cdef extern from "scip/pub_lp.h":
     SCIP_Real SCIPcolGetPrimsol(SCIP_COL* col)
     SCIP_Real SCIPcolGetLb(SCIP_COL* col)
     SCIP_Real SCIPcolGetUb(SCIP_COL* col)
+    int SCIPcolGetNLPNonz(SCIP_COL* col)
+    int SCIPcolGetNNonz(SCIP_COL* col)
+    SCIP_ROW** SCIPcolGetRows(SCIP_COL* col)
+    SCIP_Real* SCIPcolGetVals(SCIP_COL* col)
+    int SCIPcolGetIndex(SCIP_COL* col)
+    SCIP_Real SCIPcolGetObj(SCIP_COL *col)
 
 cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
+
+cdef class Expr:
+    cdef public terms
+
+cdef class Event:
+    cdef SCIP_EVENT* event
+    # can be used to store problem data
+    cdef public object data
+    @staticmethod
+    cdef create(SCIP_EVENT* scip_event)
+
+cdef class Column:
+    cdef SCIP_COL* scip_col
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_COL* scipcol)
+
+cdef class Row:
+    cdef SCIP_ROW* scip_row
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_ROW* sciprow)
+
+cdef class NLRow:
+    cdef SCIP_NLROW* scip_nlrow
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_NLROW* scipnlrow)
+
+cdef class Solution:
+    """Base class holding a pointer to corresponding SCIP_SOL"""
+    cdef SCIP_SOL* sol
+    cdef SCIP* scip
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP* scip, SCIP_SOL* scip_sol)
+
+cdef class DomainChanges:
+    """Set of domain changes."""
+    cdef SCIP_DOMCHG* scip_domchg
+
+    @staticmethod
+    cdef create(SCIP_DOMCHG* scip_domchg)
+
+cdef class BoundChange:
+    """Bound change."""
+    cdef SCIP_BOUNDCHG* scip_boundchg
+
+    @staticmethod
+    cdef create(SCIP_BOUNDCHG* scip_boundchg)
+
+cdef class Node:
+    """Base class holding a pointer to corresponding SCIP_NODE"""
+    cdef SCIP_NODE* scip_node
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_NODE* scipnode)
+
+cdef class Variable(Expr):
+    cdef SCIP_VAR* scip_var
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_VAR* scipvar)
+
+cdef class Constraint:
+    cdef SCIP_CONS* scip_cons
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_CONS* scipcons)
+
+cdef class Model:
+    cdef SCIP* _scip
+    cdef SCIP_Bool* _valid
+    # store best solution to get the solution values easier
+    cdef Solution _bestSol
+    # can be used to store problem data
+    cdef public object data
+    # make Model weak referentiable
+    cdef object __weakref__
+    # flag to indicate whether the SCIP should be freed. It will not be freed if an empty Model was created to wrap a
+    # C-API SCIP instance.
+    cdef SCIP_Bool _freescip
+    # map to store python variables
+    cdef _modelvars
+
+    @staticmethod
+    cdef create(SCIP* scip)

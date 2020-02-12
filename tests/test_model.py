@@ -11,7 +11,10 @@ def test_model():
     s.setParam('lp/pricing', pric)
     s.setParam('visual/vbcfilename', 'vbcfile')
     assert 'vbcfile' == s.getParam('visual/vbcfilename')
-    s.setParam('visual/vbcfilename', '-')
+
+    assert 'lp/pricing' in s.getParams()
+    s.setParams({'visual/vbcfilename': '-'})
+    assert '-' == s.getParam('visual/vbcfilename')
 
     # add some variables
     x = s.addVar("x", vtype = 'C', obj = 1.0)
@@ -73,5 +76,17 @@ def test_model():
 
     assert s.getStatus() == 'unbounded'
 
+
+def test_model_ptr():
+    model1 = Model()
+    ptr1 = model1.to_ptr(give_ownership=True)
+    assert not model1._freescip
+
+    model2 = Model.from_ptr(ptr1, take_ownership=True)
+    assert model2._freescip
+    assert model2.to_ptr(False) == ptr1
+
+
 if __name__ == "__main__":
     test_model()
+    test_model_ptr()

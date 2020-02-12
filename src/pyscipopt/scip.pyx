@@ -6,9 +6,11 @@ from os.path import splitext
 import sys
 import warnings
 
+cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
 from libc.stdlib cimport malloc, free
 from libc.stdio cimport fdopen
+from libc.stdint cimport uintptr_t
 
 include "expr.pxi"
 include "lp.pxi"
@@ -37,6 +39,9 @@ if sys.version_info >= (3, 0):
     str_conversion = lambda x:bytes(x,'utf-8')
 else:
     str_conversion = lambda x:x
+
+_SCIP_BOUNDTYPE_TO_STRING = {SCIP_BOUNDTYPE_UPPER: '<=',
+                             SCIP_BOUNDTYPE_LOWER: '>='}
 
 # Mapping the SCIP_RESULT enum to a python class
 # This is required to return SCIP_RESULT in the python code
@@ -210,6 +215,11 @@ cdef class PY_SCIP_BENDERSENFOTYPE:
     PSEUDO = SCIP_BENDERSENFOTYPE_PSEUDO
     CHECK  = SCIP_BENDERSENFOTYPE_CHECK
 
+cdef class PY_SCIP_ROWORIGINTYPE:
+    UNSPEC = SCIP_ROWORIGINTYPE_UNSPEC
+    CONS   = SCIP_ROWORIGINTYPE_CONS
+    SEPA   = SCIP_ROWORIGINTYPE_SEPA
+    REOPT  = SCIP_ROWORIGINTYPE_REOPT
 
 def PY_SCIP_CALL(SCIP_RETCODE rc):
     if rc == SCIP_OKAY:
@@ -253,12 +263,12 @@ def PY_SCIP_CALL(SCIP_RETCODE rc):
         raise Exception('SCIP: unknown return code!')
 
 cdef class Event:
-    cdef SCIP_EVENT* event
-    # can be used to store problem data
-    cdef public object data
+    """Base class holding a pointer to corresponding SCIP_EVENT"""
 
     @staticmethod
     cdef create(SCIP_EVENT* scip_event):
+        if scip_event == NULL:
+            raise Warning("cannot create Event with SCIP_EVENT* == NULL")
         event = Event()
         event.event = scip_event
         return event
@@ -288,14 +298,25 @@ cdef class Event:
         cdef SCIP_NODE* node = SCIPeventGetNode(self.event)
         return Node.create(node)
 
+    def getRow(self):
+        """gets row for a row event"""
+        cdef SCIP_ROW* row = SCIPeventGetRow(self.event)
+        return Row.create(row)
+
+    def __hash__(self):
+        return hash(<size_t>self.event)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.event == (<Event>other).event)
+
 cdef class Column:
     """Base class holding a pointer to corresponding SCIP_COL"""
-    cdef SCIP_COL* scip_col
-    # can be used to store problem data
-    cdef public object data
 
     @staticmethod
     cdef create(SCIP_COL* scipcol):
+        if scipcol == NULL:
+            raise Warning("cannot create Column with SCIP_COL* == NULL")
         col = Column()
         col.scip_col = scipcol
         return col
@@ -339,17 +360,28 @@ cdef class Column:
         """gets upper bound of column"""
         return SCIPcolGetUb(self.scip_col)
 
+    def __hash__(self):
+        return hash(<size_t>self.scip_col)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.scip_col == (<Column>other).scip_col)
+
 cdef class Row:
     """Base class holding a pointer to corresponding SCIP_ROW"""
-    cdef SCIP_ROW* scip_row
-    # can be used to store problem data
-    cdef public object data
 
     @staticmethod
     cdef create(SCIP_ROW* sciprow):
+        if sciprow == NULL:
+            raise Warning("cannot create Row with SCIP_ROW* == NULL")
         row = Row()
         row.scip_row = sciprow
         return row
+
+    property name:
+        def __get__(self):
+            cname = bytes( SCIProwGetName(self.scip_row) )
+            return cname.decode('utf-8')
 
     def getLhs(self):
         """returns the left hand side of row"""
@@ -390,6 +422,14 @@ cdef class Row:
         """returns TRUE iff row is modifiable during node processing (subject to column generation) """
         return SCIProwIsModifiable(self.scip_row)
 
+    def isRemovable(self):
+        """returns TRUE iff row is removable from the LP (due to aging or cleanup)"""
+        return SCIProwIsRemovable(self.scip_row)
+
+    def getOrigintype(self):
+        """returns type of origin that created the row"""
+        return SCIProwGetOrigintype(self.scip_row)
+
     def getNNonz(self):
         """get number of nonzero entries in row vector"""
         return SCIProwGetNNonz(self.scip_row)
@@ -408,14 +448,20 @@ cdef class Row:
         cdef SCIP_Real* vals = SCIProwGetVals(self.scip_row)
         return [vals[i] for i in range(self.getNNonz())]
 
+    def __hash__(self):
+        return hash(<size_t>self.scip_row)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.scip_row == (<Row>other).scip_row)
+
 cdef class NLRow:
     """Base class holding a pointer to corresponding SCIP_NLROW"""
-    cdef SCIP_NLROW* scip_nlrow
-    # can be used to store problem data
-    cdef public object data
 
     @staticmethod
     cdef create(SCIP_NLROW* scipnlrow):
+        if scipnlrow == NULL:
+            raise Warning("cannot create NLRow with SCIP_NLROW* == NULL")
         nlrow = NLRow()
         nlrow.scip_nlrow = scipnlrow
         return nlrow
@@ -472,15 +518,20 @@ cdef class NLRow:
         """gets the dual NLP solution of a nonlinear row"""
         return SCIPnlrowGetDualsol(self.scip_nlrow)
 
+    def __hash__(self):
+        return hash(<size_t>self.scip_nlrow)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.scip_nlrow == (<NLRow>other).scip_nlrow)
+
 cdef class Solution:
     """Base class holding a pointer to corresponding SCIP_SOL"""
-    cdef SCIP_SOL* sol
-    cdef SCIP* scip
-    # can be used to store problem data
-    cdef public object data
 
     @staticmethod
     cdef create(SCIP* scip, SCIP_SOL* scip_sol):
+        if scip == NULL:
+            raise Warning("cannot create Solution with SCIP* == NULL")
         sol = Solution()
         sol.sol = scip_sol
         sol.scip = scip
@@ -506,20 +557,72 @@ cdef class Solution:
             vals[name] = SCIPgetSolVal(self.scip, self.sol, scip_var)
         return str(vals)
 
+cdef class BoundChange:
+    """Bound change."""
+
+    @staticmethod
+    cdef create(SCIP_BOUNDCHG* scip_boundchg):
+        if scip_boundchg == NULL:
+            raise Warning("cannot create BoundChange with SCIP_BOUNDCHG* == NULL")
+        boundchg = BoundChange()
+        boundchg.scip_boundchg = scip_boundchg
+        return boundchg
+
+    def getNewBound(self):
+        """Returns the new value of the bound in the bound change."""
+        return SCIPboundchgGetNewbound(self.scip_boundchg)
+
+    def getVar(self):
+        """Returns the variable of the bound change."""
+        return Variable.create(SCIPboundchgGetVar(self.scip_boundchg))
+
+    def getBoundchgtype(self):
+        """Returns the bound change type of the bound change."""
+        return SCIPboundchgGetBoundchgtype(self.scip_boundchg)
+
+    def getBoundtype(self):
+        """Returns the bound type of the bound change."""
+        return SCIPboundchgGetBoundtype(self.scip_boundchg)
+
+    def isRedundant(self):
+        """Returns whether the bound change is redundant due to a more global bound that is at least as strong."""
+        return SCIPboundchgIsRedundant(self.scip_boundchg)
+
+    def __repr__(self):
+        return "{} {} {}".format(self.getVar(),
+                                 _SCIP_BOUNDTYPE_TO_STRING[self.getBoundtype()],
+                                 self.getNewBound())
+
+cdef class DomainChanges:
+    """Set of domain changes."""
+
+    @staticmethod
+    cdef create(SCIP_DOMCHG* scip_domchg):
+        if scip_domchg == NULL:
+            raise Warning("cannot create DomainChanges with SCIP_DOMCHG* == NULL")
+        domchg = DomainChanges()
+        domchg.scip_domchg = scip_domchg
+        return domchg
+
+    def getBoundchgs(self):
+        """Returns the bound changes in the domain change."""
+        nboundchgs = SCIPdomchgGetNBoundchgs(self.scip_domchg)
+        return [BoundChange.create(SCIPdomchgGetBoundchg(self.scip_domchg, i))
+                for i in range(nboundchgs)]
+
 cdef class Node:
     """Base class holding a pointer to corresponding SCIP_NODE"""
-    cdef SCIP_NODE* scip_node
-    # can be used to store problem data
-    cdef public object data
 
     @staticmethod
     cdef create(SCIP_NODE* scipnode):
+        if scipnode == NULL:
+            return None
         node = Node()
         node.scip_node = scipnode
         return node
 
     def getParent(self):
-        """Retrieve parent node."""
+        """Retrieve parent node (or None if the node has no parent node)."""
         return Node.create(SCIPnodeGetParent(self.scip_node))
 
     def getNumber(self):
@@ -542,6 +645,19 @@ cdef class Node:
         """Retrieve the estimated value of the best feasible solution in subtree of the node"""
         return SCIPnodeGetEstimate(self.scip_node)
 
+    def getAddedConss(self):
+        """Retrieve all constraints added at this node."""
+        cdef int addedconsssize = SCIPnodeGetNAddedConss(self.scip_node)
+        if addedconsssize == 0:
+            return []
+        cdef SCIP_CONS** addedconss = <SCIP_CONS**> malloc(addedconsssize * sizeof(SCIP_CONS*))
+        cdef int nconss
+        SCIPnodeGetAddedConss(self.scip_node, addedconss, &nconss, addedconsssize)
+        assert nconss == addedconsssize
+        constraints = [Constraint.create(addedconss[i]) for i in range(nconss)]
+        free(addedconss)
+        return constraints
+
     def getNAddedConss(self):
         """Retrieve number of added constraints at this node"""
         return SCIPnodeGetNAddedConss(self.scip_node)
@@ -554,15 +670,71 @@ cdef class Node:
         """Is the node marked to be propagated again?"""
         return SCIPnodeIsPropagatedAgain(self.scip_node)
 
+    def getNParentBranchings(self):
+        """Retrieve the number of variable branchings that were performed in the parent node to create this node."""
+        cdef SCIP_VAR* dummy_branchvars
+        cdef SCIP_Real dummy_branchbounds
+        cdef SCIP_BOUNDTYPE dummy_boundtypes
+        cdef int nbranchvars
+        # This is a hack: the SCIP interface has no function to directly get the
+        # number of parent branchings, i.e., SCIPnodeGetNParentBranchings() does
+        # not exist.
+        SCIPnodeGetParentBranchings(self.scip_node, &dummy_branchvars,
+                                    &dummy_branchbounds, &dummy_boundtypes,
+                                    &nbranchvars, 0)
+        return nbranchvars
+
+    def getParentBranchings(self):
+        """Retrieve the set of variable branchings that were performed in the parent node to create this node."""
+        cdef int nbranchvars = self.getNParentBranchings()
+        if nbranchvars == 0:
+            return None
+
+        cdef SCIP_VAR** branchvars = <SCIP_VAR**> malloc(nbranchvars * sizeof(SCIP_VAR*))
+        cdef SCIP_Real* branchbounds = <SCIP_Real*> malloc(nbranchvars * sizeof(SCIP_Real))
+        cdef SCIP_BOUNDTYPE* boundtypes = <SCIP_BOUNDTYPE*> malloc(nbranchvars * sizeof(SCIP_BOUNDTYPE))
+
+        SCIPnodeGetParentBranchings(self.scip_node, branchvars, branchbounds,
+                                    boundtypes, &nbranchvars, nbranchvars)
+
+        py_variables = [Variable.create(branchvars[i]) for i in range(nbranchvars)]
+        py_branchbounds = [branchbounds[i] for i in range(nbranchvars)]
+        py_boundtypes = [boundtypes[i] for i in range(nbranchvars)]
+
+        free(boundtypes)
+        free(branchbounds)
+        free(branchvars)
+        return py_variables, py_branchbounds, py_boundtypes
+
+    def getNDomchg(self):
+        """Retrieve the number of bound changes due to branching, constraint propagation, and propagation."""
+        cdef int nbranchings
+        cdef int nconsprop
+        cdef int nprop
+        SCIPnodeGetNDomchg(self.scip_node, &nbranchings, &nconsprop, &nprop)
+        return nbranchings, nconsprop, nprop
+
+    def getDomchg(self):
+        """Retrieve domain changes for this node."""
+        cdef SCIP_DOMCHG* domchg = SCIPnodeGetDomchg(self.scip_node)
+        if domchg == NULL:
+            return None
+        return DomainChanges.create(domchg)
+
+    def __hash__(self):
+        return hash(<size_t>self.scip_node)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.scip_node == (<Node>other).scip_node)
 
 cdef class Variable(Expr):
     """Is a linear expression and has SCIP_VAR*"""
-    cdef SCIP_VAR* scip_var
-    # can be used to store problem data
-    cdef public object data
 
     @staticmethod
     cdef create(SCIP_VAR* scipvar):
+        if scipvar == NULL:
+            raise Warning("cannot create Variable with SCIP_VAR* == NULL")
         var = Variable()
         var.scip_var = scipvar
         Expr.__init__(var, {Term(var) : 1.0})
@@ -597,6 +769,11 @@ cdef class Variable(Expr):
     def isInLP(self):
         """Retrieve whether the variable is a COLUMN variable that is member of the current LP"""
         return SCIPvarIsInLP(self.scip_var)
+
+
+    def getIndex(self):
+        """Retrieve the unique index of the variable."""
+        return SCIPvarGetIndex(self.scip_var)
 
     def getCol(self):
         """Retrieve column of COLUMN variable"""
@@ -636,11 +813,8 @@ cdef class Variable(Expr):
         """Retrieve the current LP solution value of variable"""
         return SCIPvarGetLPSol(self.scip_var)
 
-
 cdef class Constraint:
-    cdef SCIP_CONS* scip_cons
-    # can be used to store problem data
-    cdef public object data
+    """Base class holding a pointer to corresponding SCIP_CONS"""
 
     @staticmethod
     cdef create(SCIP_CONS* scipcons):
@@ -712,6 +886,13 @@ cdef class Constraint:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'quadratic'
 
+    def __hash__(self):
+        return hash(<size_t>self.scip_cons)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self.scip_cons == (<Constraint>other).scip_cons)
+
 
 cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg):
     sys.stdout.write(msg.decode('UTF-8'))
@@ -726,19 +907,6 @@ cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg):
 #@anchor Model
 ##
 cdef class Model:
-    cdef SCIP* _scip
-    cdef SCIP_Bool* _valid
-    # store best solution to get the solution values easier
-    cdef Solution _bestSol
-    # can be used to store problem data
-    cdef public object data
-    # make Model weak referentiable
-    cdef object __weakref__
-    # flag to indicate whether the SCIP should be freed. It will not be freed if an empty Model was created to wrap a
-    # C-API SCIP instance.
-    cdef SCIP_Bool _freescip
-    # map to store python variables
-    cdef _modelvars
 
     def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False, createscip=True, threadsafe=False):
         """
@@ -782,8 +950,15 @@ cdef class Model:
     def __dealloc__(self):
         # call C function directly, because we can no longer call this object's methods, according to
         # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
-        if self._scip is not NULL and self._freescip:
+        if self._scip is not NULL and self._freescip and PY_SCIP_CALL:
            PY_SCIP_CALL( SCIPfree(&self._scip) )
+
+    def __hash__(self):
+        return hash(<size_t>self._scip)
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__
+                and self._scip == (<Model>other)._scip)
 
     @staticmethod
     cdef create(SCIP* scip):
@@ -795,6 +970,46 @@ cdef class Model:
         model._scip = scip
         model._bestSol = Solution.create(scip, SCIPgetBestSol(scip))
         return model
+
+    @property
+    def _freescip(self):
+        """Return whether the underlying Scip pointer gets deallocted when the current
+        object is deleted.
+        """
+        return self._freescip
+
+    @_freescip.setter
+    def _freescip(self, val):
+        """Set whether the underlying Scip pointer gets deallocted when the current
+        object is deleted.
+        """
+        self._freescip = val
+
+    @cython.always_allow_keywords(True)
+    @staticmethod
+    def from_ptr(uintptr_t scip_ptr, take_ownership):
+        """Create a Model from a given pointer.
+
+        :param scip_ptr: The pointer used to create the Model.
+        :param take_ownership: Whether the newly created Model assumes ownership of the
+        underlying Scip pointer (see `_freescip`).
+        """
+        model = Model.create(<SCIP*>scip_ptr)
+        model._freescip = take_ownership
+        return model
+
+    @cython.always_allow_keywords(True)
+    def to_ptr(self, give_ownership):
+        """Return the underlying Scip pointer to the current Model.
+
+        :param give_ownership: Whether the current Model gives away ownership of the
+        underlying Scip pointer (see `_freescip`).
+        :return scip_ptr: The underlying pointer to the current Model.
+        """
+        ptr = <uintptr_t>self._scip
+        if give_ownership:
+            self._freescip = False
+        return ptr
 
     def includeDefaultPlugins(self):
         """Includes all default plug-ins into SCIP"""
@@ -844,6 +1059,10 @@ cdef class Model:
     def getPresolvingTime(self):
         """Retrieve the curernt presolving time in seconds"""
         return SCIPgetPresolvingTime(self._scip)
+
+    def getNLPIterations(self):
+        """Retrieve the total number of LP iterations so far."""
+        return SCIPgetNLPIterations(self._scip)
 
     def getNNodes(self):
         """Retrieve the total number of processed nodes."""
@@ -896,6 +1115,10 @@ cdef class Model:
     def isFeasNegative(self, value):
         """returns whether value < -feastol"""
         return SCIPisFeasNegative(self._scip, value)
+
+    def isFeasIntegral(self, value):
+        """returns whether value is integral within the LP feasibility bounds"""
+        return SCIPisFeasIntegral(self._scip, value)
 
     def isLE(self, val1, val2):
         """returns whether val1 <= val2 + eps"""
@@ -3293,28 +3516,28 @@ cdef class Model:
         cdef int npriolpcands
         cdef int nfracimplvars
 
-        ncands = SCIPgetNLPBranchCands(self._scip)
-        cdef SCIP_VAR** lpcands = <SCIP_VAR**> malloc(ncands * sizeof(SCIP_VAR*))
-        cdef SCIP_Real* lpcandssol = <SCIP_Real*> malloc(ncands * sizeof(SCIP_Real))
-        cdef SCIP_Real* lpcandsfrac = <SCIP_Real*> malloc(ncands * sizeof(SCIP_Real))
+        cdef SCIP_VAR** lpcands
+        cdef SCIP_Real* lpcandssol
+        cdef SCIP_Real* lpcandsfrac
 
         PY_SCIP_CALL(SCIPgetLPBranchCands(self._scip, &lpcands, &lpcandssol, &lpcandsfrac,
                                           &nlpcands, &npriolpcands, &nfracimplvars))
 
-        return ([Variable.create(lpcands[i]) for i in range(ncands)], [lpcandssol[i] for i in range(ncands)],
-                [lpcandsfrac[i] for i in range(ncands)], nlpcands, npriolpcands, nfracimplvars)
+        return ([Variable.create(lpcands[i]) for i in range(nlpcands)], [lpcandssol[i] for i in range(nlpcands)],
+                [lpcandsfrac[i] for i in range(nlpcands)], nlpcands, npriolpcands, nfracimplvars)
 
 
     def branchVar(self, variable):
         """Branch on a non-continuous variable.
 
         :param variable: Variable to branch on
-        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child.
+        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
+                    if branch variable is integer (it is None otherwise)
 
         """
-        cdef SCIP_NODE* downchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
-        cdef SCIP_NODE* eqchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
-        cdef SCIP_NODE* upchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
+        cdef SCIP_NODE* downchild
+        cdef SCIP_NODE* eqchild
+        cdef SCIP_NODE* upchild
 
         PY_SCIP_CALL(SCIPbranchVar(self._scip, (<Variable>variable).scip_var, &downchild, &eqchild, &upchild))
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
@@ -3326,15 +3549,15 @@ cdef class Model:
         :param variable: Variable to branch on
         :param value: float, value to branch on
         :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
-                    if branch variable is integer
+                    if branch variable is integer (it is None otherwise)
 
         """
-        cdef SCIP_NODE* downchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
-        cdef SCIP_NODE* eqchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
-        cdef SCIP_NODE* upchild = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
+        cdef SCIP_NODE* downchild
+        cdef SCIP_NODE* eqchild
+        cdef SCIP_NODE* upchild
 
         PY_SCIP_CALL(SCIPbranchVarVal(self._scip, (<Variable>variable).scip_var, value, &downchild, &eqchild, &upchild))
-        # TODO should the stuff be freed and how?
+
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
 
     def calcNodeselPriority(self, Variable variable, branchdir, targetvalue):
@@ -3370,7 +3593,7 @@ cdef class Model:
         :return: Node, the child which was created
 
         """
-        cdef SCIP_NODE* child = <SCIP_NODE*> malloc(sizeof(SCIP_NODE))
+        cdef SCIP_NODE* child
         PY_SCIP_CALL(SCIPcreateChild(self._scip, &child, nodeselprio, estimate))
         return Node.create(child)
 
@@ -3765,6 +3988,26 @@ cdef class Model:
             return "infeasible"
         elif stat == SCIP_STATUS_UNBOUNDED:
             return "unbounded"
+        elif stat == SCIP_STATUS_USERINTERRUPT:
+            return "userinterrupt"
+        elif stat == SCIP_STATUS_INFORUNBD:
+            return "inforunbd"
+        elif stat == SCIP_STATUS_NODELIMIT:
+            return "nodelimit"
+        elif stat == SCIP_STATUS_TOTALNODELIMIT:
+            return "totalnodelimit"
+        elif stat == SCIP_STATUS_STALLNODELIMIT:
+            return "stallnodelimit"
+        elif stat == SCIP_STATUS_GAPLIMIT:
+            return "gaplimit"
+        elif stat == SCIP_STATUS_MEMLIMIT:
+            return "memlimit"
+        elif stat == SCIP_STATUS_SOLLIMIT:
+            return "sollimit"
+        elif stat == SCIP_STATUS_BESTSOLLIMIT:
+            return "bestsollimit"
+        elif stat == SCIP_STATUS_RESTARTLIMIT:
+            return  "restartlimit"
         else:
             return "unknown"
 
@@ -4004,6 +4247,25 @@ cdef class Model:
         elif paramtype == SCIP_PARAMTYPE_STRING:
             return SCIPparamGetString(param).decode('utf-8')
 
+    def getParams(self):
+        """Gets the values of all parameters as a dict mapping parameter names
+        to their values."""
+        cdef SCIP_PARAM** params
+
+        params = SCIPgetParams(self._scip)
+        result = {}
+        for i in range(SCIPgetNParams(self._scip)):
+          name = SCIPparamGetName(params[i]).decode('utf-8')
+          result[name] = self.getParam(name)
+        return result
+
+    def setParams(self, params):
+        """Sets multiple parameters at once.
+
+        :param params: dict mapping parameter names to their values.
+        """
+        for name, value in params.items():
+          self.setParam(name, value)
 
     def readParams(self, file):
         """Read an external parameter file.

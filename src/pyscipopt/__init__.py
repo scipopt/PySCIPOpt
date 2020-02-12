@@ -1,4 +1,4 @@
-__version__ = '2.2.1'
+__version__ = '2.2.3'
 
 # export user-relevant objects:
 from pyscipopt.Multidict import multidict
@@ -33,3 +33,4 @@ from pyscipopt.scip      import PY_SCIP_EVENTTYPE    as SCIP_EVENTTYPE
 from pyscipopt.scip      import PY_SCIP_LPSOLSTAT    as SCIP_LPSOLSTAT
 from pyscipopt.scip      import PY_SCIP_BRANCHDIR    as SCIP_BRANCHDIR
 from pyscipopt.scip      import PY_SCIP_BENDERSENFOTYPE as SCIP_BENDERSENFOTYPE
+from pyscipopt.scip      import PY_SCIP_ROWORIGINTYPE as SCIP_ROWORIGINTYPE
