@@ -484,10 +484,10 @@ cdef class NLRow:
 
     def getQuadraticTerms(self):
         """returns a list of tuples (var1, var2, coef) representing the quadratic part of a nonlinear row"""
-        cdef int nquadvars;
-        cdef SCIP_VAR** quadvars;
-        cdef int nquadelems;
-        cdef SCIP_QUADELEM* quadelems;
+        cdef int nquadvars
+        cdef SCIP_VAR** quadvars
+        cdef int nquadelems
+        cdef SCIP_QUADELEM* quadelems
 
         SCIPnlrowGetQuadData(self.scip_nlrow, &nquadvars, &quadvars, &nquadelems, &quadelems)
 
@@ -501,7 +501,7 @@ cdef class NLRow:
 
     def hasExprtree(self):
         """returns whether there exists an expression tree in a nonlinear row"""
-        cdef SCIP_EXPRTREE* exprtree;
+        cdef SCIP_EXPRTREE* exprtree
 
         exprtree = SCIPnlrowGetExprtree(self.scip_nlrow)
         return exprtree != NULL
@@ -907,6 +907,7 @@ cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg):
 #@anchor Model
 ##
 cdef class Model:
+    """Main class holding a pointer to SCIP for managing most interactions"""
 
     def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False, createscip=True):
         """
@@ -2041,7 +2042,7 @@ cdef class Model:
                     childrenexpr[c] = scipexprs[pos]
                 PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &scipexprs[i], opidx, nchildren, childrenexpr) )
 
-                free(childrenexpr);
+                free(childrenexpr)
                 continue
             if opidx == SCIP_EXPR_REALPOWER:
                 # the second child is the exponent which is a const
@@ -2062,8 +2063,8 @@ cdef class Model:
         assert varpos == nvars
 
         # create expression tree
-        PY_SCIP_CALL( SCIPexprtreeCreate(SCIPblkmem(self._scip), &exprtree, scipexprs[len(nodes) - 1], nvars, 0, NULL) );
-        PY_SCIP_CALL( SCIPexprtreeSetVars(exprtree, <int>nvars, vars) );
+        PY_SCIP_CALL( SCIPexprtreeCreate(SCIPblkmem(self._scip), &exprtree, scipexprs[len(nodes) - 1], nvars, 0, NULL) )
+        PY_SCIP_CALL( SCIPexprtreeSetVars(exprtree, <int>nvars, vars) )
 
         # create nonlinear constraint for exprtree
         PY_SCIP_CALL( SCIPcreateConsNonlinear(
@@ -2669,7 +2670,7 @@ cdef class Model:
 
     def getNlRows(self):
         """returns a list with the nonlinear rows in SCIP's internal NLP"""
-        cdef SCIP_NLROW** nlrows;
+        cdef SCIP_NLROW** nlrows
 
         nlrows = SCIPgetNLPNlRows(self._scip)
         return [NLRow.create(nlrows[i]) for i in range(self.getNNlRows())]

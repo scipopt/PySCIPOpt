@@ -17,7 +17,7 @@
 # 
 # This documentation gives an introduction to the functionality of the Python interface of the SCIP code in the following chapters
 #
-# - \ref Model Class with the most fundamental functions to create and solve a problem
+# - \ref pyscipopt::scip::Model "Model" Class with the most fundamental functions to create and solve a problem
 # - \ref examples/tutorial "Tutorials" and \ref examples/finished "Examples" to display some functionality of the interface
 # - @subpage EXTEND Explanations on extending the PySCIPOpt interface
 # 
