@@ -1104,7 +1104,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPactivateBenders(SCIP* scip, SCIP_BENDERS* benders, int nsubproblems)
     SCIP_BENDERSDATA* SCIPbendersGetData(SCIP_BENDERS* benders)
     SCIP_RETCODE SCIPcreateBendersDefault(SCIP* scip, SCIP** subproblems, int nsubproblems)
-    int SCIPbendersGetNSubproblems(SCIP_BENDERS* benders);
+    int SCIPbendersGetNSubproblems(SCIP_BENDERS* benders)
     SCIP_RETCODE SCIPsolveBendersSubproblems(SCIP* scip, SCIP_BENDERS* benders,
             SCIP_SOL* sol, SCIP_RESULT* result, SCIP_Bool* infeasible,
             SCIP_Bool* auxviol, SCIP_BENDERSENFOTYPE type, SCIP_Bool checkint)
@@ -1117,7 +1117,7 @@ cdef extern from "scip/scip.h":
     SCIP_BENDERS** SCIPgetBenders(SCIP* scip)
     void SCIPbendersUpdateSubproblemLowerbound(SCIP_BENDERS* benders, int probnumber, SCIP_Real lowerbound)
     SCIP_RETCODE SCIPaddBendersSubproblem(SCIP* scip, SCIP_BENDERS* benders, SCIP* subproblem)
-    SCIP* SCIPbendersSubproblem(SCIP_BENDERS* benders, int probnumber);
+    SCIP* SCIPbendersSubproblem(SCIP_BENDERS* benders, int probnumber)
     SCIP_RETCODE SCIPgetBendersMasterVar(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar)
     SCIP_RETCODE SCIPgetBendersSubproblemVar(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar, int probnumber)
     SCIP_VAR* SCIPbendersGetAuxiliaryVar(SCIP_BENDERS* benders, int probnumber)
@@ -1670,7 +1670,6 @@ cdef class NLRow:
     cdef create(SCIP_NLROW* scipnlrow)
 
 cdef class Solution:
-    """Base class holding a pointer to corresponding SCIP_SOL"""
     cdef SCIP_SOL* sol
     cdef SCIP* scip
     # can be used to store problem data
@@ -1680,21 +1679,18 @@ cdef class Solution:
     cdef create(SCIP* scip, SCIP_SOL* scip_sol)
 
 cdef class DomainChanges:
-    """Set of domain changes."""
     cdef SCIP_DOMCHG* scip_domchg
 
     @staticmethod
     cdef create(SCIP_DOMCHG* scip_domchg)
 
 cdef class BoundChange:
-    """Bound change."""
     cdef SCIP_BOUNDCHG* scip_boundchg
 
     @staticmethod
     cdef create(SCIP_BOUNDCHG* scip_boundchg)
 
 cdef class Node:
-    """Base class holding a pointer to corresponding SCIP_NODE"""
     cdef SCIP_NODE* scip_node
     # can be used to store problem data
     cdef public object data

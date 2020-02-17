@@ -1,7 +1,6 @@
 # CHANGELOG
 
 ## Unreleased
-- remove Python 2 support
 - add Model.getParams that returns a dict mapping all parameter names to their values
 - add Model.setParams to set multiple parameters at once using a dict
 - Add Model.from_ptr and Model.to_ptr to interface with SCIP* managed outside of PySCIPOpt
@@ -11,6 +10,8 @@
 - expose domain changes, bound changes, branching decisions, added constraints for nodes
 - define Python object identity based on underlying SCIP object pointers, so that e.g. rows and columns can be added to sets, and testing for equality is consistent over time.
 - add Row.isRemovable and Row.getOrigintype
+- remove Python 2.7 support
+- fix documentation errors
 
 ## 2.2.3 - 2019-12-10
 ### Added
