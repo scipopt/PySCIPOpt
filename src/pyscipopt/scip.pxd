@@ -541,6 +541,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPfixVarProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real fixedval)
     SCIP_Bool SCIPisObjChangedProbing(SCIP* scip)
     SCIP_Bool SCIPinProbing(SCIP* scip)
+    SCIP_RETCODE SCIPapplyCutsProbing(SCIP* scip, SCIP_Bool* cutoff)
+    SCIP_RETCODE SCIPpropagateProbing(SCIP* scip, int maxproprounds, SCIP_Bool* cutoff, SCIP_Longint* ndomredsfound)
 
 
     # Event Methods
@@ -739,6 +741,7 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPisCutEfficacious(SCIP* scip, SCIP_SOL* sol, SCIP_ROW* cut)
     int SCIPgetNCuts(SCIP* scip)
     int SCIPgetNCutsApplied(SCIP* scip)
+    SCIP_RETCODE SCIPseparateSol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool pretendroot, SCIP_Bool allowlocal, SCIP_Bool onlydelayed, SCIP_Bool* delayed, SCIP_Bool* cutoff)
 
     # Constraint Methods
     SCIP_RETCODE SCIPcaptureCons(SCIP* scip, SCIP_CONS* cons)
