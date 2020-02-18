@@ -1843,7 +1843,7 @@ cdef class Model:
         cdef SCIP_Bool delayed
         cdef SCIP_Bool cutoff
 
-        PY_SCIP_CALL( SCIPseparateSol(self._scip, sol, pretendroot, allowlocal, onlydelayed, &delayed, &cutoff) )
+        PY_SCIP_CALL( SCIPseparateSol(self._scip, NULL if sol is None else sol.sol, pretendroot, allowlocal, onlydelayed, &delayed, &cutoff) )
         return delayed, cutoff
 
     # Constraint functions
