@@ -1823,23 +1823,23 @@ cdef class Model:
         """Retrieve number of currently applied cuts"""
         return SCIPgetNCutsApplied(self._scip)
 
-    def separateSol(self, Solution sol = None, pretendroot = False, allowlocal = True, onlydelayed = False)
-    """separates the given primal solution or the current LP solution by calling the separators and constraint handlers'
-    separation methods;
-    the generated cuts are stored in the separation storage and can be accessed with the methods SCIPgetCuts() and
-    SCIPgetNCuts();
-    after evaluating the cuts, you have to call SCIPclearCuts() in order to remove the cuts from the
-    separation storage;
-    it is possible to call SCIPseparateSol() multiple times with different solutions and evaluate the found cuts
-    afterwards
-    :param Solution sol: solution to separate, None to use current lp solution (Default value = None)
-    :param pretendroot: should the cut separators be called as if we are at the root node? (Default value = "False")
-    :param allowlocal: should the separator be asked to separate local cuts (Default value = True)
-    :param onlydelayed: should only separators be called that were delayed in the previous round? (Default value = False)
-    returns
-    delayed -- whether a separator was delayed
-    cutoff -- whether the node can be cut off
-    """
+    def separateSol(self, Solution sol = None, pretendroot = False, allowlocal = True, onlydelayed = False):
+        """separates the given primal solution or the current LP solution by calling the separators and constraint handlers'
+        separation methods;
+        the generated cuts are stored in the separation storage and can be accessed with the methods SCIPgetCuts() and
+        SCIPgetNCuts();
+        after evaluating the cuts, you have to call SCIPclearCuts() in order to remove the cuts from the
+        separation storage;
+        it is possible to call SCIPseparateSol() multiple times with different solutions and evaluate the found cuts
+        afterwards
+        :param Solution sol: solution to separate, None to use current lp solution (Default value = None)
+        :param pretendroot: should the cut separators be called as if we are at the root node? (Default value = "False")
+        :param allowlocal: should the separator be asked to separate local cuts (Default value = True)
+        :param onlydelayed: should only separators be called that were delayed in the previous round? (Default value = False)
+        returns
+        delayed -- whether a separator was delayed
+        cutoff -- whether the node can be cut off
+        """
         cdef SCIP_Bool delayed
         cdef SCIP_Bool cutoff
 
