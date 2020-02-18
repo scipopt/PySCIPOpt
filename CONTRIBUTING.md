@@ -3,7 +3,7 @@ Contributing to PySCIPOpt
 
 Code contributions are very welcome and should comply to a few rules:
 
-0.  Read Design principles of PySCIPOpt\_.
+0.  Read [Design principles of PySCIPOpt](#design-principles-of-pyscipopt).
 1.  All tests defined in the Continuous Integration setup need to pass:
     -   [.travis.yml](../../.travis.yml)
     -   [appveyor.yml](../../appveyor.yml)
