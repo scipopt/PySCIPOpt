@@ -1823,6 +1823,29 @@ cdef class Model:
         """Retrieve number of currently applied cuts"""
         return SCIPgetNCutsApplied(self._scip)
 
+    def separateSol(self, Solution sol = None, pretendroot = False, allowlocal = True, onlydelayed = False):
+        """separates the given primal solution or the current LP solution by calling the separators and constraint handlers'
+        separation methods;
+        the generated cuts are stored in the separation storage and can be accessed with the methods SCIPgetCuts() and
+        SCIPgetNCuts();
+        after evaluating the cuts, you have to call SCIPclearCuts() in order to remove the cuts from the
+        separation storage;
+        it is possible to call SCIPseparateSol() multiple times with different solutions and evaluate the found cuts
+        afterwards
+        :param Solution sol: solution to separate, None to use current lp solution (Default value = None)
+        :param pretendroot: should the cut separators be called as if we are at the root node? (Default value = "False")
+        :param allowlocal: should the separator be asked to separate local cuts (Default value = True)
+        :param onlydelayed: should only separators be called that were delayed in the previous round? (Default value = False)
+        returns
+        delayed -- whether a separator was delayed
+        cutoff -- whether the node can be cut off
+        """
+        cdef SCIP_Bool delayed
+        cdef SCIP_Bool cutoff
+
+        PY_SCIP_CALL( SCIPseparateSol(self._scip, NULL if sol is None else sol.sol, pretendroot, allowlocal, onlydelayed, &delayed, &cutoff) )
+        return delayed, cutoff
+
     # Constraint functions
     def addCons(self, cons, name='', initial=True, separate=True,
                 enforce=True, check=True, propagate=True, local=False,
@@ -3670,19 +3693,19 @@ cdef class Model:
         """Initiates probing, making methods SCIPnewProbingNode(), SCIPbacktrackProbing(), SCIPchgVarLbProbing(),
            SCIPchgVarUbProbing(), SCIPfixVarProbing(), SCIPpropagateProbing(), SCIPsolveProbingLP(), etc available
         """
-        PY_SCIP_CALL(SCIPstartProbing(self._scip))
+        PY_SCIP_CALL( SCIPstartProbing(self._scip) )
 
     def endProbing(self):
         """Quits probing and resets bounds and constraints to the focus node's environment"""
-        PY_SCIP_CALL(SCIPendProbing(self._scip))
+        PY_SCIP_CALL( SCIPendProbing(self._scip) )
 
     def chgVarObjProbing(self, Variable var, newobj):
         """changes (column) variable's objective value during probing mode"""
-        PY_SCIP_CALL(SCIPchgVarObjProbing(self._scip, var.scip_var, newobj))
+        PY_SCIP_CALL( SCIPchgVarObjProbing(self._scip, var.scip_var, newobj) )
 
     def fixVarProbing(self, Variable var, fixedval):
         """Fixes a variable at the current probing node."""
-        PY_SCIP_CALL(SCIPfixVarProbing(self._scip, var.scip_var, fixedval))
+        PY_SCIP_CALL( SCIPfixVarProbing(self._scip, var.scip_var, fixedval) )
 
     def isObjChangedProbing(self):
         """returns whether the objective function has changed during probing mode"""
@@ -3703,8 +3726,36 @@ cdef class Model:
         cdef SCIP_Bool lperror
         cdef SCIP_Bool cutoff
 
-        PY_SCIP_CALL(SCIPsolveProbingLP(self._scip, itlim, &lperror, &cutoff))
+        PY_SCIP_CALL( SCIPsolveProbingLP(self._scip, itlim, &lperror, &cutoff) )
         return lperror, cutoff
+
+    def applyCutsProbing(self):
+        """applies the cuts in the separation storage to the LP and clears the storage afterwards;
+        this method can only be applied during probing; the user should resolve the probing LP afterwards
+        in order to get a new solution
+        returns:
+        cutoff -- whether an empty domain was created
+        """
+        cdef SCIP_Bool cutoff
+
+        PY_SCIP_CALL( SCIPapplyCutsProbing(self._scip, &cutoff) )
+        return cutoff
+
+    def propagateProbing(self, maxproprounds):
+        """applies domain propagation on the probing sub problem, that was changed after SCIPstartProbing() was called;
+        the propagated domains of the variables can be accessed with the usual bound accessing calls SCIPvarGetLbLocal()
+        and SCIPvarGetUbLocal(); the propagation is only valid locally, i.e. the local bounds as well as the changed
+        bounds due to SCIPchgVarLbProbing(), SCIPchgVarUbProbing(), and SCIPfixVarProbing() are used for propagation
+        :param maxproprounds: maximal number of propagation rounds (Default value = -1, that is, no limit)
+        returns:
+        cutoff -- whether the probing node can be cutoff
+        ndomredsfound -- number of domain reductions found
+        """
+        cdef SCIP_Bool cutoff
+        cdef SCIP_Longint ndomredsfound
+
+        PY_SCIP_CALL( SCIPpropagateProbing(self._scip, maxproprounds, &cutoff, &ndomredsfound) )
+        return cutoff, ndomredsfound
 
     def interruptSolve(self):
         """Interrupt the solving process as soon as possible."""
