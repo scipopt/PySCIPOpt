@@ -2703,7 +2703,7 @@ cdef class Model:
         cdef SCIP_Real minactivity
         cdef SCIP_Real maxactivity
 
-        PY_SCIP_CALL( SCIPgetNlRowActivityBounds(self._scip, nlrow.nlrow, &minactivity, &maxactivity) )
+        PY_SCIP_CALL( SCIPgetNlRowActivityBounds(self._scip, nlrow.scip_nlrow, &minactivity, &maxactivity) )
         return (minactivity, maxactivity)
 
     def getTermsQuadratic(self, Constraint cons):
