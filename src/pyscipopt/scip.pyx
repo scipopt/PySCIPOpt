@@ -2698,6 +2698,32 @@ cdef class Model:
         nlrows = SCIPgetNLPNlRows(self._scip)
         return [NLRow.create(nlrows[i]) for i in range(self.getNNlRows())]
 
+    def getNlRowSolActivity(self, NLRow nlrow, Solution sol = None):
+        """gives the activity of a nonlinear row for a given primal solution
+        Keyword arguments:
+        nlrow -- nonlinear row
+        solution -- a primal solution, if None, then the current LP solution is used
+        """
+        cdef SCIP_Real activity
+        cdef SCIP_SOL* solptr
+
+        solptr = sol.sol if not sol is None else NULL
+        PY_SCIP_CALL( SCIPgetNlRowSolActivity(self._scip, nlrow.scip_nlrow, solptr, &activity) )
+        return activity
+
+    def getNlRowSolFeasibility(self, NLRow nlrow, Solution sol = None):
+        """gives the feasibility of a nonlinear row for a given primal solution
+        Keyword arguments:
+        nlrow -- nonlinear row
+        solution -- a primal solution, if None, then the current LP solution is used
+        """
+        cdef SCIP_Real feasibility
+        cdef SCIP_SOL* solptr
+
+        solptr = sol.sol if not sol is None else NULL
+        PY_SCIP_CALL( SCIPgetNlRowSolFeasibility(self._scip, nlrow.scip_nlrow, solptr, &feasibility) )
+        return feasibility
+
     def getNlRowActivityBounds(self, NLRow nlrow):
         """gives the minimal and maximal activity of a nonlinear row w.r.t. the variable's bounds"""
         cdef SCIP_Real minactivity
@@ -2705,6 +2731,10 @@ cdef class Model:
 
         PY_SCIP_CALL( SCIPgetNlRowActivityBounds(self._scip, nlrow.scip_nlrow, &minactivity, &maxactivity) )
         return (minactivity, maxactivity)
+
+    def printNlRow(self, NLRow nlrow):
+        """prints nonlinear row"""
+        PY_SCIP_CALL( SCIPprintNlRow(self._scip, nlrow.scip_nlrow, NULL) )
 
     def getTermsQuadratic(self, Constraint cons):
         """Retrieve bilinear, quadratic, and linear terms of a quadratic constraint.

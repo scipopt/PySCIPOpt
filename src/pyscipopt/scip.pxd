@@ -1502,7 +1502,10 @@ cdef extern from "scip/scip_nlp.h":
     SCIP_Bool SCIPisNLPConstructed(SCIP* scip)
     SCIP_NLROW** SCIPgetNLPNlRows(SCIP* scip)
     int SCIPgetNNLPNlRows(SCIP* scip)
+    SCIP_RETCODE SCIPgetNlRowSolActivity(SCIP* scip, SCIP_NLROW* nlrow, SCIP_SOL* sol, SCIP_Real* activity)
+    SCIP_RETCODE SCIPgetNlRowSolFeasibility(SCIP* scip, SCIP_NLROW* nlrow, SCIP_SOL* sol, SCIP_Real* feasibility)
     SCIP_RETCODE SCIPgetNlRowActivityBounds(SCIP* scip, SCIP_NLROW* nlrow, SCIP_Real* minactivity, SCIP_Real* maxactivity)
+    SCIP_RETCODE SCIPprintNlRow(SCIP* scip, SCIP_NLROW* nlrow, FILE* file)
 
 cdef extern from "scip/cons_nonlinear.h":
     SCIP_RETCODE SCIPcreateConsNonlinear(SCIP* scip,
