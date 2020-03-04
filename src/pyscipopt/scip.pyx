@@ -2698,6 +2698,14 @@ cdef class Model:
         nlrows = SCIPgetNLPNlRows(self._scip)
         return [NLRow.create(nlrows[i]) for i in range(self.getNNlRows())]
 
+    def getNlRowActivityBounds(self, NLRow nlrow):
+        """gives the minimal and maximal activity of a nonlinear row w.r.t. the variable's bounds"""
+        cdef SCIP_Real minactivity
+        cdef SCIP_Real maxactivity
+
+        PY_SCIP_CALL( SCIPgetNlRowActivityBounds(self._scip, nlrow.nlrow, &minactivity, &maxactivity) )
+        return (minactivity, maxactivity)
+
     def getTermsQuadratic(self, Constraint cons):
         """Retrieve bilinear, quadratic, and linear terms of a quadratic constraint.
 
@@ -3766,6 +3774,12 @@ cdef class Model:
         PY_SCIP_CALL(SCIPrestartSolve(self._scip))
 
     # Solution functions
+
+    def writeLP(self, filename="LP.lp"):
+        """writes current LP to a file
+        :param filename: file name (Default value = "LP.lp")
+        """
+        PY_SCIP_CALL( SCIPwriteLP(self._scip, str_conversion(filename)) )
 
     def createSol(self, Heur heur = None):
         """Create a new primal solution.
