@@ -12,8 +12,9 @@
 - add Row.isRemovable and Row.getOrigintype
 - remove Python 2.7 support
 - fix documentation errors
-* add Model.applyCutsProbing and Model.propagateProbing
-* add Model.separateSol
+- add Model.applyCutsProbing and Model.propagateProbing
+- add Model.separateSol
+- add methods to work with nonlinear rows
 
 ## 2.2.3 - 2019-12-10
 ### Added
