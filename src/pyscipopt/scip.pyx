@@ -3737,6 +3737,22 @@ cdef class Model:
         """Quits probing and resets bounds and constraints to the focus node's environment"""
         PY_SCIP_CALL( SCIPendProbing(self._scip) )
 
+    def newProbingNode(self):
+        """creates a new probing sub node, whose changes can be undone by backtracking to a higher node in the
+        probing path with a call to backtrackProbing()
+        """
+        PY_SCIP_CALL( SCIPnewProbingNode(self._scip) )
+
+    def backtrackProbing(self, probingdepth):
+        """undoes all changes to the problem applied in probing up to the given probing depth
+        :param probingdepth: probing depth of the node in the probing path that should be reactivated
+        """
+        PY_SCIP_CALL( SCIPbacktrackProbing(self._scip, probingdepth) )
+
+    def getProbingDepth(self):
+        """returns the current probing depth"""
+        return SCIPgetProbingDepth(self._scip)
+
     def chgVarObjProbing(self, Variable var, newobj):
         """changes (column) variable's objective value during probing mode"""
         PY_SCIP_CALL( SCIPchgVarObjProbing(self._scip, var.scip_var, newobj) )
