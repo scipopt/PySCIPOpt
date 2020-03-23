@@ -1184,6 +1184,7 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPisGE(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
     SCIP_Bool SCIPisGT(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
     SCIP_Bool SCIPisEQ(SCIP *scip, SCIP_Real val1, SCIP_Real val2)
+    SCIP_Bool SCIPisFeasEQ(SCIP *scip, SCIP_Real val1, SCIP_Real val2)
     SCIP_Bool SCIPisHugeValue(SCIP *scip, SCIP_Real val)
     SCIP_Bool SCIPisPositive(SCIP *scip, SCIP_Real val)
     SCIP_Bool SCIPisNegative(SCIP *scip, SCIP_Real val)
