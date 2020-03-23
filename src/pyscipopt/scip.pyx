@@ -192,6 +192,7 @@ cdef class PY_SCIP_EVENTTYPE:
     ROWCONSTCHANGED = SCIP_EVENTTYPE_ROWCONSTCHANGED
     ROWSIDECHANGED  = SCIP_EVENTTYPE_ROWSIDECHANGED
     SYNC            = SCIP_EVENTTYPE_SYNC
+    NODESOLVED      = SCIP_EVENTTYPE_NODEFEASIBLE | SCIP_EVENTTYPE_NODEINFEASIBLE | SCIP_EVENTTYPE_NODEBRANCHED
 
 cdef class PY_SCIP_LPSOLSTAT:
     NOTSOLVED    = SCIP_LPSOLSTAT_NOTSOLVED
@@ -1119,6 +1120,14 @@ cdef class Model:
     def isFeasIntegral(self, value):
         """returns whether value is integral within the LP feasibility bounds"""
         return SCIPisFeasIntegral(self._scip, value)
+
+    def isEQ(self, val1, val2):
+        """checks, if values are in range of epsilon"""
+        return SCIPisEQ(self._scip, val1, val2)
+
+    def isFeasEQ(self, val1, val2):
+        """checks, if relative difference of values is in range of feasibility tolerance"""
+        return SCIPisFeasEQ(self._scip, val1, val2)
 
     def isLE(self, val1, val2):
         """returns whether val1 <= val2 + eps"""
