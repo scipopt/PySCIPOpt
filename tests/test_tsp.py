@@ -75,7 +75,7 @@ def create_tsp(vertices, distance):
 
     model.includeConshdlr(conshdlr, "TSP", "TSP subtour eliminator",
                           chckpriority = -10, needscons = False)
-    model.setBoolParam("misc/allowdualreds", False)
+    model.setBoolParam("misc/allowstrongdualreds", False)
 
     model.setObjective(quicksum(distance[i, j] * x[i, j] for (i, j) in pairs(vertices)),
                        "minimize")

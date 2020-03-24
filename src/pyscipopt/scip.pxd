@@ -1118,7 +1118,7 @@ cdef extern from "scip/scip.h":
     int SCIPbendersGetNSubproblems(SCIP_BENDERS* benders)
     SCIP_RETCODE SCIPsolveBendersSubproblems(SCIP* scip, SCIP_BENDERS* benders,
             SCIP_SOL* sol, SCIP_RESULT* result, SCIP_Bool* infeasible,
-            SCIP_Bool* auxviol, SCIP_BENDERSENFOTYPE type, SCIP_Bool checkint)
+            SCIP_Bool* auxviol, SCIP_Bool checkint)
     SCIP_RETCODE SCIPsetupBendersSubproblem(SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, int probnumber,
             SCIP_BENDERSENFOTYPE type)
     SCIP_RETCODE SCIPsolveBendersSubproblem(SCIP* scip, SCIP_BENDERS* benders,

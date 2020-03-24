@@ -119,7 +119,7 @@ if __name__ == "__main__":
     V,c,q,Q = make_data(n)
     model, conshdlr = vrp(V, c, m, q, Q)
 
-    model.setBoolParam("misc/allowdualreds", 0)
+    model.setBoolParam("misc/allowstrongdualreds", 0)
     model.includeConshdlr(conshdlr, "VRP", "VRP constraint handler",
                           sepapriority = 0, enfopriority = 1, chckpriority = 1, sepafreq = -1, propfreq = -1,
                           eagerfreq = -1, maxprerounds = 0, delaysepa = False, delayprop = False, needscons = False,
