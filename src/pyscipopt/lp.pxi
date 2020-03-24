@@ -1,3 +1,5 @@
+##@file lp.pxi
+#@brief Base class of the LP Plugin
 cdef class LP:
     cdef SCIP_LPI* lpi
     cdef readonly str name
@@ -11,9 +13,9 @@ cdef class LP:
         self.name = name
         n = str_conversion(name)
         if sense == "minimize":
-            PY_SCIP_CALL(SCIPlpiCreate(&(self.lpi), NULL, n, SCIP_OBJSENSE_MINIMIZE))
+            PY_SCIP_CALL(SCIPlpiCreate(&(self.lpi), NULL, n, SCIP_OBJSEN_MINIMIZE))
         elif sense == "maximize":
-            PY_SCIP_CALL(SCIPlpiCreate(&(self.lpi), NULL, n, SCIP_OBJSENSE_MAXIMIZE))
+            PY_SCIP_CALL(SCIPlpiCreate(&(self.lpi), NULL, n, SCIP_OBJSEN_MAXIMIZE))
         else:
             raise Warning("unrecognized objective sense")
 

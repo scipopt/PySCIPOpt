@@ -15,8 +15,8 @@ class MyHeur(Heur):
         sol = self.model.createSol(self)
         vars = self.model.getVars()
 
-        self.model.setSolVal(sol, vars[0], 5.0)
-        self.model.setSolVal(sol, vars[1], 0.0)
+        sol[vars[0]] = 5.0
+        sol[vars[1]] = 0.0
 
         accepted = self.model.trySol(sol)
 
@@ -43,8 +43,10 @@ def test_heur():
     s.optimize()
 
     # print solution
-    assert round(s.getVal(x)) == 5.0
-    assert round(s.getVal(y)) == 0.0
+    sol = s.getBestSol()
+    assert sol != None
+    assert round(sol[x]) == 5.0
+    assert round(sol[y]) == 0.0
 
 def test_heur_memory():
     if is_optimized_mode():

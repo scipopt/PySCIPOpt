@@ -1,6 +1,6 @@
+##@file transp.py
+#@brief a model for the transportation problem
 """
-transp.py: a model for the transportation problem
-
 Model for solving a transportation problem:
 minimize the total transportation cost for satisfying demand at
 customers, from capacitated facilities.
@@ -47,6 +47,7 @@ def transp(I,J,c,d,M):
 
 
 def make_inst1():
+    """creates example data set 1"""
     I,d = multidict({1:80, 2:270, 3:250 , 4:160, 5:180}) # demand
     J,M = multidict({1:500, 2:500, 3:500})               # capacity
     c = {(1,1):4,    (1,2):6,    (1,3):9,  # cost
@@ -59,6 +60,7 @@ def make_inst1():
 
 
 def make_inst2():
+    """creates example data set 2"""
     I,d = multidict({1:45, 2:20, 3:30 , 4:30}) # demand
     J,M = multidict({1:35, 2:50, 3:40})        # capacity
     c = {(1,1):8,    (1,2):9,    (1,3):14  ,   # {(customer,factory) : cost<float>}

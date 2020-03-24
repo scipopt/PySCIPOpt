@@ -1,6 +1,6 @@
+##@file lotsizing_lazy.py
+#@brief solve the single-item lot-sizing problem.
 """
-lotsizing_lazy.py:  solve the single-item lot-sizing problem.
-
 Approaches:
     - sils: solve the problem using the standard formulation
     - sils_cut: solve the problem using cutting planes

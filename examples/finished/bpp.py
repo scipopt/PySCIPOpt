@@ -1,6 +1,6 @@
+##@file bpp.py 
+#@brief use SCIP for solving the bin packing problem.
 """
-bpp.py:  use SCIP for solving the bin packing problem.
-
 The instance of the bin packing problem is represented by the two
 lists of n items of sizes and quantity s=(s_i).
 The bin size is B.

@@ -1,6 +1,6 @@
+##@file gcp.py
+#@brief model for the graph coloring problem
 """
-gcp.py: model for the graph coloring problem
-
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 

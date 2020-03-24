@@ -1,23 +1,31 @@
+##@file heuristic.pxi
+#@brief Base class of the Heuristics Plugin
 cdef class Heur:
     cdef public Model model
     cdef public str name
 
     def heurfree(self):
+        '''calls destructor and frees memory of primal heuristic'''
         pass
 
     def heurinit(self):
+        '''initializes primal heuristic'''
         pass
 
     def heurexit(self):
+        '''calls exit method of primal heuristic'''
         pass
 
     def heurinitsol(self):
+        '''informs primal heuristic that the branch and bound process is being started'''
         pass
 
     def heurexitsol(self):
+        '''informs primal heuristic that the branch and bound process data is being freed'''
         pass
 
     def heurexec(self, heurtiming, nodeinfeasible):
+        '''should the heuristic the executed at the given depth, frequency, timing,...'''
         print("python error in heurexec: this method needs to be implemented")
         return {}
 

@@ -4,31 +4,52 @@ sudo: true
 
 language: python
 
-python:
-  - 2.7
-  - 3.5
-  - 3.6
-  - 3.7
+matrix:
+  include:
+    - python: 3.5
+    - python: 3.6
+    - python: 3.7
+    - python: 3.8
+      env: TRAVIS_BUILD_DOCS=$TRAVIS_TAG
+      addons:
+        apt:
+          packages:
+            - doxygen
+            - graphviz
 
 env:
   global:
     - secure: "CML6W6GUTFcZxZavt2x9vT3pUeg9jA2tber8Wl+34zBI9QxXel8PxKlw896OI2jnGPMvL7ANRElklE6/WNaVvogjgZXKcXnqaGKPoPlJNsGenHw0poxjqrrs9VnuX2XU56h53ESsOZ9mq53oFNaimS6fbtIAs7xlS27nY0KJk42ZEicaS2E9cbzH/XqOIEzdIZCHy8NjViMXFCspE9fhndv04T3ic2opXmGDy2veoZ/oF2zbOcz0e9XLEjTs0yXz5qir8AGEnRS4lwI6hb3jkMBOxbNKIPx63gsno3xUHjXYjiwb4iQV9eybhY0csli/5br8isIX81vlg5xeoEfvSy6sZvZ8rErx3Eos5OdCu4vnxqtMZvpb+2pCVQU2IldZTl9B3/lv4ehZhKurF3l89rnqKW14eh4p2eT6WQ2s0tjPd5NuPdow4hT5x7WWSeS1395exlJJGgv1bt4ASM+KNFfA/4CK4TjszZJ7xLttiJ7nOgo/8KtSd/dM0PfBWeeBQxi/0YgCyD781ieL009ZUPwvKf4B0RJ8pPaSDePypKHvzmcm7UGgT86zz1FnCxsIEmHFJQGazXbdBmi0OvPAo1fCrAdMXipppf+ckAotckWjOLIK6IN9RlrF/E9YFll/SfSiXi6EdB0P+T6m8iBqNEToJbUiRqKhMznr7A4+JLs="
-    - VERSION=6.0.1
+    - VERSION=6.0.2
 
 notifications:
   email: false
 
 before_install:
-  - wget http://scip.zib.de/download/release/SCIPOptSuite-$VERSION-Linux.deb
-  - sudo apt-get update && sudo apt install -y ./SCIPOptSuite-$VERSION-Linux.deb
+  - wget http://scip.zib.de/download/release/SCIPOptSuite-$VERSION-Linux-Ub1604.deb
+  - sudo apt-get update && sudo apt install -y ./SCIPOptSuite-$VERSION-Linux-Ub1604.deb
 
 install:
   - pip install cython networkx pytest-cov
-  - python setup.py install
+  - pip install .
 
 script: py.test #--cov
 
-# after_success:
+after_success:
+  # Generate the docs only if version tag present and we can use secure variables (no PR)
+  - if [[ $TRAVIS_BUILD_DOCS =~ v[0-9].[0-9].[0-9]* && $TRAVIS_PULL_REQUEST = "false" ]]; then
+      echo "setup ssh config";
+      openssl aes-256-cbc -K $encrypted_c65e740238ca_key -iv $encrypted_c65e740238ca_iv -in travis.enc -out ~/.ssh/travis -d;
+      chmod 600 ~/.ssh/travis;
+      printf "%s\n" \
+        "Host github.com" \
+        "  IdentityFile ~/.ssh/travis" \
+        "  LogLevel ERROR" >> ~/.ssh/config;
+      echo "generate documentation";
+      ./generate-docs.sh || travis_terminate 1;
+    else
+      echo $TRAVIS_BUILD_DOCS $TRAVIS_PULL_REQUEST;
+    fi
   # - codecov
 
 deploy:

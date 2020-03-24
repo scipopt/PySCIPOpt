@@ -1,6 +1,6 @@
+##@file prodmix_soco.py
+#@brief product mix model using soco.
 """
-prodmix_soco.py:  product mix model using soco.
-
 Copyright (c) by Joao Pedro PEDROSO, Masahiro MURAMATSU and Mikio KUBO, 2012
 """
 from pyscipopt import Model, quicksum, multidict
@@ -36,6 +36,7 @@ def prodmix(I,K,a,p,epsilon,LB):
 
 
 def make_data():
+    """creates example data set"""
     a = { (1,1):.25, (1,2):.15, (1,3):.2,
           (2,1):.3,  (2,2):.3,  (2,3):.1,
           (3,1):.15, (3,2):.65, (3,3):.05,
