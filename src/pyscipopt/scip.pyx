@@ -3075,15 +3075,15 @@ cdef class Model:
         """
         SCIPbendersSetSubproblemIsConvex(benders._benders, probnumber, isconvex)
 
-    def setupBendersSubproblem(self, probnumber, checktype, Benders benders = None, Solution solution = None):
+    def setupBendersSubproblem(self, probnumber, Benders benders = None, Solution solution = None, checktype = PY_SCIP_BENDERSENFOTYPE.LP):
         """ sets up the Benders' subproblem given the master problem solution
 
         Keyword arguments:
         probnumber -- the index of the problem that is to be set up
-        checktype -- the type of solution check that prompted the solving of the Benders' subproblems, either
-            PY_SCIP_BENDERSENFOTYPE: LP, RELAX, PSEUDO or CHECK
         benders -- the Benders' decomposition to which the subproblem belongs to
         solution -- the master problem solution that is used for the set up, if None, then the LP solution is used
+        checktype -- the type of solution check that prompted the solving of the Benders' subproblems, either
+            PY_SCIP_BENDERSENFOTYPE: LP, RELAX, PSEUDO or CHECK. Default is LP
         """
         cdef SCIP_BENDERS* scip_benders
         cdef SCIP_SOL* scip_sol
