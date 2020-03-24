@@ -910,7 +910,7 @@ cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg):
 cdef class Model:
     """Main class holding a pointer to SCIP for managing most interactions"""
 
-    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False, createscip=True):
+    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False, createscip=True, threadsafe=False):
         """
         :param problemName: name of the problem (default 'model')
         :param defaultPlugins: use default plugins? (default True)
@@ -919,6 +919,7 @@ cdef class Model:
         :param globalcopy: whether to create a global or a local copy (default True)
         :param enablepricing: whether to enable pricing in copy (default False)
         :param createscip: initialize the Model object and creates a SCIP instance
+        :param threadsafe: False if data can be safely shared between the source and target problem
         """
         if self.version() < MAJOR:
             raise Exception("linked SCIP is not compatible to this version of PySCIPOpt - use at least version", MAJOR)
@@ -944,9 +945,9 @@ cdef class Model:
             self._bestSol = <Solution> sourceModel._bestSol
             n = str_conversion(problemName)
             if origcopy:
-                PY_SCIP_CALL(SCIPcopyOrig(sourceModel._scip, self._scip, NULL, NULL, n, enablepricing, True, self._valid))
+                PY_SCIP_CALL(SCIPcopyOrig(sourceModel._scip, self._scip, NULL, NULL, n, enablepricing, threadsafe, True, self._valid))
             else:
-                PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, True, self._valid))
+                PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, threadsafe, True, self._valid))
 
     def __dealloc__(self):
         # call C function directly, because we can no longer call this object's methods, according to
@@ -2795,7 +2796,7 @@ cdef class Model:
 
     def setRelaxSolVal(self, Variable var, val):
         """sets the value of the given variable in the global relaxation solution"""
-        PY_SCIP_CALL(SCIPsetRelaxSolVal(self._scip, var.scip_var, val))
+        PY_SCIP_CALL(SCIPsetRelaxSolVal(self._scip, NULL, var.scip_var, val))
 
     def getConss(self):
         """Retrieve all constraints."""
@@ -3005,10 +3006,9 @@ cdef class Model:
             nsubproblems = SCIPbendersGetNSubproblems(_benders[i])
             for j in range(nsubproblems):
                 PY_SCIP_CALL(SCIPsetupBendersSubproblem(self._scip,
-                    _benders[i], self._bestSol.sol, j))
+                    _benders[i], self._bestSol.sol, j, SCIP_BENDERSENFOTYPE_CHECK))
                 PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip,
-                    _benders[i], self._bestSol.sol, j, &_infeasible,
-                    solvecip, NULL))
+                    _benders[i], self._bestSol.sol, j, &_infeasible, solvecip, NULL))
 
     def freeBendersSubproblems(self):
         """Calls the free subproblem function for the Benders' decomposition.
@@ -3075,11 +3075,13 @@ cdef class Model:
         """
         SCIPbendersSetSubproblemIsConvex(benders._benders, probnumber, isconvex)
 
-    def setupBendersSubproblem(self, probnumber, Benders benders = None, Solution solution = None):
+    def setupBendersSubproblem(self, probnumber, checktype, Benders benders = None, Solution solution = None):
         """ sets up the Benders' subproblem given the master problem solution
 
         Keyword arguments:
         probnumber -- the index of the problem that is to be set up
+        checktype -- the type of solution check that prompted the solving of the Benders' subproblems, either
+            PY_SCIP_BENDERSENFOTYPE: LP, RELAX, PSEUDO or CHECK
         benders -- the Benders' decomposition to which the subproblem belongs to
         solution -- the master problem solution that is used for the set up, if None, then the LP solution is used
         """
@@ -3096,17 +3098,16 @@ cdef class Model:
         else:
             scip_benders = benders._benders
 
-        retcode = SCIPsetupBendersSubproblem(self._scip, scip_benders, scip_sol, probnumber)
+        retcode = SCIPsetupBendersSubproblem(self._scip, scip_benders, scip_sol, probnumber, checktype)
 
         PY_SCIP_CALL(retcode)
 
-    def solveBendersSubproblem(self, probnumber, enfotype, solvecip, Benders benders = None, Solution solution = None):
+    def solveBendersSubproblem(self, probnumber, solvecip, Benders benders = None, Solution solution = None):
         """ solves the Benders' decomposition subproblem. The convex relaxation will be solved unless
         the parameter solvecip is set to True.
 
         Keyword arguments:
         probnumber -- the index of the problem that is to be set up
-        enfotype -- the enforcement type used for solving the subproblem, see SCIP_BENDERSENFOTYPE
         solvecip -- should the CIP of the subproblem be solved, if False, then only the convex relaxation is solved
         benders -- the Benders' decomposition to which the subproblem belongs to
         solution -- the master problem solution that is used for the set up, if None, then the LP solution is used
@@ -3128,7 +3129,7 @@ cdef class Model:
             scip_benders = benders._benders
 
         PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip, scip_benders, scip_sol,
-            probnumber, &infeasible, enfotype, solvecip, &objective))
+            probnumber, &infeasible, solvecip, &objective))
 
         return infeasible, objective
 
