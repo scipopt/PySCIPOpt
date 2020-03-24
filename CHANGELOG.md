@@ -15,6 +15,7 @@
 - add Model.applyCutsProbing and Model.propagateProbing
 - add Model.separateSol
 - add methods to work with nonlinear rows
+- adds chgVarUbProbing and chgVarLbProbing to change a variables upper or lower bound during probing mode.
 
 ## 2.2.3 - 2019-12-10
 ### Added
