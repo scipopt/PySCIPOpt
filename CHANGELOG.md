@@ -15,6 +15,15 @@
 - add Model.applyCutsProbing and Model.propagateProbing
 - add Model.separateSol
 - add methods to work with nonlinear rows
+- adds new "threadsafe" parameter to the PyBendersCopy member function. Also, the "threadsafe" parameter can be passed
+  when creating a Model instance
+- adds the boolean return options of "infeasible" and "auxviol" to the Benders.benderspresubsolve function. "infeasible"
+  indicates that the input solution induces an infeasible instance of at least one Benders' subproblems. "auxviol"
+  indicates that the objective value of at least on Benders' subproblem is greater than the auxiliary variable value.
+- adds chgVarUbProbing and chgVarLbProbing to change a variables upper or lower bound during probing mode.
+- setupBendersSubproblem now requires a checktype input. This input indicates the reason for solving the Benders'
+  subproblems, either enforcing the LP, relaxation or pseudo solution (LP, RELAX or PSEUDO) or checking a candidate
+  primal feasible solution (CHECK).
 
 ## 2.2.3 - 2019-12-10
 ### Added
