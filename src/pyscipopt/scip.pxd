@@ -538,6 +538,8 @@ cdef extern from "scip/scip.h":
     # Probing methods
     SCIP_RETCODE SCIPstartProbing(SCIP* scip)
     SCIP_RETCODE SCIPchgVarObjProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real newobj)
+    SCIP_RETCODE SCIPchgVarUbProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
+    SCIP_RETCODE SCIPchgVarLbProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
     SCIP_RETCODE SCIPsolveProbingLP(SCIP* scip, int itlim, SCIP_Bool* lperror, SCIP_Bool* cutoff)
     SCIP_RETCODE SCIPendProbing(SCIP* scip)
     SCIP_RETCODE SCIPfixVarProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real fixedval)
