@@ -537,6 +537,9 @@ cdef extern from "scip/scip.h":
 
     # Probing methods
     SCIP_RETCODE SCIPstartProbing(SCIP* scip)
+    SCIP_RETCODE SCIPnewProbingNode(SCIP* scip)
+    SCIP_RETCODE SCIPgetProbingDepth(SCIP* scip)
+    SCIP_RETCODE SCIPbacktrackProbing(SCIP* scip, int probingdepth)
     SCIP_RETCODE SCIPchgVarObjProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real newobj)
     SCIP_RETCODE SCIPchgVarUbProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
     SCIP_RETCODE SCIPchgVarLbProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
@@ -545,6 +548,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPfixVarProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real fixedval)
     SCIP_Bool SCIPisObjChangedProbing(SCIP* scip)
     SCIP_Bool SCIPinProbing(SCIP* scip)
+    SCIP_RETCODE SCIPapplyCutsProbing(SCIP* scip, SCIP_Bool* cutoff)
+    SCIP_RETCODE SCIPpropagateProbing(SCIP* scip, int maxproprounds, SCIP_Bool* cutoff, SCIP_Longint* ndomredsfound)
 
 
     # Event Methods
@@ -615,6 +620,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetRelaxation(SCIP* scip, SCIP_PARAMSETTING paramsetting, SCIP_Bool quiet)
     SCIP_RETCODE SCIPwriteOrigProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
     SCIP_RETCODE SCIPwriteTransProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
+    SCIP_RETCODE SCIPwriteLP(SCIP* scip, const char*)
     SCIP_STATUS SCIPgetStatus(SCIP* scip)
     SCIP_Real SCIPepsilon(SCIP* scip)
     SCIP_Real SCIPfeastol(SCIP* scip)
@@ -743,6 +749,7 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPisCutEfficacious(SCIP* scip, SCIP_SOL* sol, SCIP_ROW* cut)
     int SCIPgetNCuts(SCIP* scip)
     int SCIPgetNCutsApplied(SCIP* scip)
+    SCIP_RETCODE SCIPseparateSol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool pretendroot, SCIP_Bool allowlocal, SCIP_Bool onlydelayed, SCIP_Bool* delayed, SCIP_Bool* cutoff)
 
     # Constraint Methods
     SCIP_RETCODE SCIPcaptureCons(SCIP* scip, SCIP_CONS* cons)
@@ -1108,7 +1115,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPactivateBenders(SCIP* scip, SCIP_BENDERS* benders, int nsubproblems)
     SCIP_BENDERSDATA* SCIPbendersGetData(SCIP_BENDERS* benders)
     SCIP_RETCODE SCIPcreateBendersDefault(SCIP* scip, SCIP** subproblems, int nsubproblems)
-    int SCIPbendersGetNSubproblems(SCIP_BENDERS* benders);
+    int SCIPbendersGetNSubproblems(SCIP_BENDERS* benders)
     SCIP_RETCODE SCIPsolveBendersSubproblems(SCIP* scip, SCIP_BENDERS* benders,
             SCIP_SOL* sol, SCIP_RESULT* result, SCIP_Bool* infeasible,
             SCIP_Bool* auxviol, SCIP_BENDERSENFOTYPE type, SCIP_Bool checkint)
@@ -1121,7 +1128,7 @@ cdef extern from "scip/scip.h":
     SCIP_BENDERS** SCIPgetBenders(SCIP* scip)
     void SCIPbendersUpdateSubproblemLowerbound(SCIP_BENDERS* benders, int probnumber, SCIP_Real lowerbound)
     SCIP_RETCODE SCIPaddBendersSubproblem(SCIP* scip, SCIP_BENDERS* benders, SCIP* subproblem)
-    SCIP* SCIPbendersSubproblem(SCIP_BENDERS* benders, int probnumber);
+    SCIP* SCIPbendersSubproblem(SCIP_BENDERS* benders, int probnumber)
     SCIP_RETCODE SCIPgetBendersMasterVar(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar)
     SCIP_RETCODE SCIPgetBendersSubproblemVar(SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar, int probnumber)
     SCIP_VAR* SCIPbendersGetAuxiliaryVar(SCIP_BENDERS* benders, int probnumber)
@@ -1181,6 +1188,7 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPisGE(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
     SCIP_Bool SCIPisGT(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
     SCIP_Bool SCIPisEQ(SCIP *scip, SCIP_Real val1, SCIP_Real val2)
+    SCIP_Bool SCIPisFeasEQ(SCIP *scip, SCIP_Real val1, SCIP_Real val2)
     SCIP_Bool SCIPisHugeValue(SCIP *scip, SCIP_Real val)
     SCIP_Bool SCIPisPositive(SCIP *scip, SCIP_Real val)
     SCIP_Bool SCIPisNegative(SCIP *scip, SCIP_Real val)
@@ -1502,6 +1510,10 @@ cdef extern from "scip/scip_nlp.h":
     SCIP_Bool SCIPisNLPConstructed(SCIP* scip)
     SCIP_NLROW** SCIPgetNLPNlRows(SCIP* scip)
     int SCIPgetNNLPNlRows(SCIP* scip)
+    SCIP_RETCODE SCIPgetNlRowSolActivity(SCIP* scip, SCIP_NLROW* nlrow, SCIP_SOL* sol, SCIP_Real* activity)
+    SCIP_RETCODE SCIPgetNlRowSolFeasibility(SCIP* scip, SCIP_NLROW* nlrow, SCIP_SOL* sol, SCIP_Real* feasibility)
+    SCIP_RETCODE SCIPgetNlRowActivityBounds(SCIP* scip, SCIP_NLROW* nlrow, SCIP_Real* minactivity, SCIP_Real* maxactivity)
+    SCIP_RETCODE SCIPprintNlRow(SCIP* scip, SCIP_NLROW* nlrow, FILE* file)
 
 cdef extern from "scip/cons_nonlinear.h":
     SCIP_RETCODE SCIPcreateConsNonlinear(SCIP* scip,
@@ -1674,7 +1686,6 @@ cdef class NLRow:
     cdef create(SCIP_NLROW* scipnlrow)
 
 cdef class Solution:
-    """Base class holding a pointer to corresponding SCIP_SOL"""
     cdef SCIP_SOL* sol
     cdef SCIP* scip
     # can be used to store problem data
@@ -1684,21 +1695,18 @@ cdef class Solution:
     cdef create(SCIP* scip, SCIP_SOL* scip_sol)
 
 cdef class DomainChanges:
-    """Set of domain changes."""
     cdef SCIP_DOMCHG* scip_domchg
 
     @staticmethod
     cdef create(SCIP_DOMCHG* scip_domchg)
 
 cdef class BoundChange:
-    """Bound change."""
     cdef SCIP_BOUNDCHG* scip_boundchg
 
     @staticmethod
     cdef create(SCIP_BOUNDCHG* scip_boundchg)
 
 cdef class Node:
-    """Base class holding a pointer to corresponding SCIP_NODE"""
     cdef SCIP_NODE* scip_node
     # can be used to store problem data
     cdef public object data

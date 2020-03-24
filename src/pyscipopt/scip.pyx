@@ -30,7 +30,7 @@ include "nodesel.pxi"
 # recommended SCIP version; major version is required
 MAJOR = 6
 MINOR = 0
-PATCH = 0
+PATCH = 2
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
@@ -192,6 +192,7 @@ cdef class PY_SCIP_EVENTTYPE:
     ROWCONSTCHANGED = SCIP_EVENTTYPE_ROWCONSTCHANGED
     ROWSIDECHANGED  = SCIP_EVENTTYPE_ROWSIDECHANGED
     SYNC            = SCIP_EVENTTYPE_SYNC
+    NODESOLVED      = SCIP_EVENTTYPE_NODEFEASIBLE | SCIP_EVENTTYPE_NODEINFEASIBLE | SCIP_EVENTTYPE_NODEBRANCHED
 
 cdef class PY_SCIP_LPSOLSTAT:
     NOTSOLVED    = SCIP_LPSOLSTAT_NOTSOLVED
@@ -484,10 +485,10 @@ cdef class NLRow:
 
     def getQuadraticTerms(self):
         """returns a list of tuples (var1, var2, coef) representing the quadratic part of a nonlinear row"""
-        cdef int nquadvars;
-        cdef SCIP_VAR** quadvars;
-        cdef int nquadelems;
-        cdef SCIP_QUADELEM* quadelems;
+        cdef int nquadvars
+        cdef SCIP_VAR** quadvars
+        cdef int nquadelems
+        cdef SCIP_QUADELEM* quadelems
 
         SCIPnlrowGetQuadData(self.scip_nlrow, &nquadvars, &quadvars, &nquadelems, &quadelems)
 
@@ -501,7 +502,7 @@ cdef class NLRow:
 
     def hasExprtree(self):
         """returns whether there exists an expression tree in a nonlinear row"""
-        cdef SCIP_EXPRTREE* exprtree;
+        cdef SCIP_EXPRTREE* exprtree
 
         exprtree = SCIPnlrowGetExprtree(self.scip_nlrow)
         return exprtree != NULL
@@ -907,6 +908,7 @@ cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg):
 #@anchor Model
 ##
 cdef class Model:
+    """Main class holding a pointer to SCIP for managing most interactions"""
 
     def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False, createscip=True, threadsafe=False):
         """
@@ -1119,6 +1121,14 @@ cdef class Model:
     def isFeasIntegral(self, value):
         """returns whether value is integral within the LP feasibility bounds"""
         return SCIPisFeasIntegral(self._scip, value)
+
+    def isEQ(self, val1, val2):
+        """checks, if values are in range of epsilon"""
+        return SCIPisEQ(self._scip, val1, val2)
+
+    def isFeasEQ(self, val1, val2):
+        """checks, if relative difference of values is in range of feasibility tolerance"""
+        return SCIPisFeasEQ(self._scip, val1, val2)
 
     def isLE(self, val1, val2):
         """returns whether val1 <= val2 + eps"""
@@ -1823,6 +1833,29 @@ cdef class Model:
         """Retrieve number of currently applied cuts"""
         return SCIPgetNCutsApplied(self._scip)
 
+    def separateSol(self, Solution sol = None, pretendroot = False, allowlocal = True, onlydelayed = False):
+        """separates the given primal solution or the current LP solution by calling the separators and constraint handlers'
+        separation methods;
+        the generated cuts are stored in the separation storage and can be accessed with the methods SCIPgetCuts() and
+        SCIPgetNCuts();
+        after evaluating the cuts, you have to call SCIPclearCuts() in order to remove the cuts from the
+        separation storage;
+        it is possible to call SCIPseparateSol() multiple times with different solutions and evaluate the found cuts
+        afterwards
+        :param Solution sol: solution to separate, None to use current lp solution (Default value = None)
+        :param pretendroot: should the cut separators be called as if we are at the root node? (Default value = "False")
+        :param allowlocal: should the separator be asked to separate local cuts (Default value = True)
+        :param onlydelayed: should only separators be called that were delayed in the previous round? (Default value = False)
+        returns
+        delayed -- whether a separator was delayed
+        cutoff -- whether the node can be cut off
+        """
+        cdef SCIP_Bool delayed
+        cdef SCIP_Bool cutoff
+
+        PY_SCIP_CALL( SCIPseparateSol(self._scip, NULL if sol is None else sol.sol, pretendroot, allowlocal, onlydelayed, &delayed, &cutoff) )
+        return delayed, cutoff
+
     # Constraint functions
     def addCons(self, cons, name='', initial=True, separate=True,
                 enforce=True, check=True, propagate=True, local=False,
@@ -2042,7 +2075,7 @@ cdef class Model:
                     childrenexpr[c] = scipexprs[pos]
                 PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &scipexprs[i], opidx, nchildren, childrenexpr) )
 
-                free(childrenexpr);
+                free(childrenexpr)
                 continue
             if opidx == SCIP_EXPR_REALPOWER:
                 # the second child is the exponent which is a const
@@ -2063,8 +2096,8 @@ cdef class Model:
         assert varpos == nvars
 
         # create expression tree
-        PY_SCIP_CALL( SCIPexprtreeCreate(SCIPblkmem(self._scip), &exprtree, scipexprs[len(nodes) - 1], nvars, 0, NULL) );
-        PY_SCIP_CALL( SCIPexprtreeSetVars(exprtree, <int>nvars, vars) );
+        PY_SCIP_CALL( SCIPexprtreeCreate(SCIPblkmem(self._scip), &exprtree, scipexprs[len(nodes) - 1], nvars, 0, NULL) )
+        PY_SCIP_CALL( SCIPexprtreeSetVars(exprtree, <int>nvars, vars) )
 
         # create nonlinear constraint for exprtree
         PY_SCIP_CALL( SCIPcreateConsNonlinear(
@@ -2670,10 +2703,48 @@ cdef class Model:
 
     def getNlRows(self):
         """returns a list with the nonlinear rows in SCIP's internal NLP"""
-        cdef SCIP_NLROW** nlrows;
+        cdef SCIP_NLROW** nlrows
 
         nlrows = SCIPgetNLPNlRows(self._scip)
         return [NLRow.create(nlrows[i]) for i in range(self.getNNlRows())]
+
+    def getNlRowSolActivity(self, NLRow nlrow, Solution sol = None):
+        """gives the activity of a nonlinear row for a given primal solution
+        Keyword arguments:
+        nlrow -- nonlinear row
+        solution -- a primal solution, if None, then the current LP solution is used
+        """
+        cdef SCIP_Real activity
+        cdef SCIP_SOL* solptr
+
+        solptr = sol.sol if not sol is None else NULL
+        PY_SCIP_CALL( SCIPgetNlRowSolActivity(self._scip, nlrow.scip_nlrow, solptr, &activity) )
+        return activity
+
+    def getNlRowSolFeasibility(self, NLRow nlrow, Solution sol = None):
+        """gives the feasibility of a nonlinear row for a given primal solution
+        Keyword arguments:
+        nlrow -- nonlinear row
+        solution -- a primal solution, if None, then the current LP solution is used
+        """
+        cdef SCIP_Real feasibility
+        cdef SCIP_SOL* solptr
+
+        solptr = sol.sol if not sol is None else NULL
+        PY_SCIP_CALL( SCIPgetNlRowSolFeasibility(self._scip, nlrow.scip_nlrow, solptr, &feasibility) )
+        return feasibility
+
+    def getNlRowActivityBounds(self, NLRow nlrow):
+        """gives the minimal and maximal activity of a nonlinear row w.r.t. the variable's bounds"""
+        cdef SCIP_Real minactivity
+        cdef SCIP_Real maxactivity
+
+        PY_SCIP_CALL( SCIPgetNlRowActivityBounds(self._scip, nlrow.scip_nlrow, &minactivity, &maxactivity) )
+        return (minactivity, maxactivity)
+
+    def printNlRow(self, NLRow nlrow):
+        """prints nonlinear row"""
+        PY_SCIP_CALL( SCIPprintNlRow(self._scip, nlrow.scip_nlrow, NULL) )
 
     def getTermsQuadratic(self, Constraint cons):
         """Retrieve bilinear, quadratic, and linear terms of a quadratic constraint.
@@ -3668,15 +3739,31 @@ cdef class Model:
         """Initiates probing, making methods SCIPnewProbingNode(), SCIPbacktrackProbing(), SCIPchgVarLbProbing(),
            SCIPchgVarUbProbing(), SCIPfixVarProbing(), SCIPpropagateProbing(), SCIPsolveProbingLP(), etc available
         """
-        PY_SCIP_CALL(SCIPstartProbing(self._scip))
+        PY_SCIP_CALL( SCIPstartProbing(self._scip) )
 
     def endProbing(self):
         """Quits probing and resets bounds and constraints to the focus node's environment"""
-        PY_SCIP_CALL(SCIPendProbing(self._scip))
+        PY_SCIP_CALL( SCIPendProbing(self._scip) )
+
+    def newProbingNode(self):
+        """creates a new probing sub node, whose changes can be undone by backtracking to a higher node in the
+        probing path with a call to backtrackProbing()
+        """
+        PY_SCIP_CALL( SCIPnewProbingNode(self._scip) )
+
+    def backtrackProbing(self, probingdepth):
+        """undoes all changes to the problem applied in probing up to the given probing depth
+        :param probingdepth: probing depth of the node in the probing path that should be reactivated
+        """
+        PY_SCIP_CALL( SCIPbacktrackProbing(self._scip, probingdepth) )
+
+    def getProbingDepth(self):
+        """returns the current probing depth"""
+        return SCIPgetProbingDepth(self._scip)
 
     def chgVarObjProbing(self, Variable var, newobj):
         """changes (column) variable's objective value during probing mode"""
-        PY_SCIP_CALL(SCIPchgVarObjProbing(self._scip, var.scip_var, newobj))
+        PY_SCIP_CALL( SCIPchgVarObjProbing(self._scip, var.scip_var, newobj) )
 
     def chgVarLbProbing(self, Variable var, lb):
         """changes the variable lower bound during probing mode"""
@@ -3692,7 +3779,7 @@ cdef class Model:
 
     def fixVarProbing(self, Variable var, fixedval):
         """Fixes a variable at the current probing node."""
-        PY_SCIP_CALL(SCIPfixVarProbing(self._scip, var.scip_var, fixedval))
+        PY_SCIP_CALL( SCIPfixVarProbing(self._scip, var.scip_var, fixedval) )
 
     def isObjChangedProbing(self):
         """returns whether the objective function has changed during probing mode"""
@@ -3713,8 +3800,36 @@ cdef class Model:
         cdef SCIP_Bool lperror
         cdef SCIP_Bool cutoff
 
-        PY_SCIP_CALL(SCIPsolveProbingLP(self._scip, itlim, &lperror, &cutoff))
+        PY_SCIP_CALL( SCIPsolveProbingLP(self._scip, itlim, &lperror, &cutoff) )
         return lperror, cutoff
+
+    def applyCutsProbing(self):
+        """applies the cuts in the separation storage to the LP and clears the storage afterwards;
+        this method can only be applied during probing; the user should resolve the probing LP afterwards
+        in order to get a new solution
+        returns:
+        cutoff -- whether an empty domain was created
+        """
+        cdef SCIP_Bool cutoff
+
+        PY_SCIP_CALL( SCIPapplyCutsProbing(self._scip, &cutoff) )
+        return cutoff
+
+    def propagateProbing(self, maxproprounds):
+        """applies domain propagation on the probing sub problem, that was changed after SCIPstartProbing() was called;
+        the propagated domains of the variables can be accessed with the usual bound accessing calls SCIPvarGetLbLocal()
+        and SCIPvarGetUbLocal(); the propagation is only valid locally, i.e. the local bounds as well as the changed
+        bounds due to SCIPchgVarLbProbing(), SCIPchgVarUbProbing(), and SCIPfixVarProbing() are used for propagation
+        :param maxproprounds: maximal number of propagation rounds (Default value = -1, that is, no limit)
+        returns:
+        cutoff -- whether the probing node can be cutoff
+        ndomredsfound -- number of domain reductions found
+        """
+        cdef SCIP_Bool cutoff
+        cdef SCIP_Longint ndomredsfound
+
+        PY_SCIP_CALL( SCIPpropagateProbing(self._scip, maxproprounds, &cutoff, &ndomredsfound) )
+        return cutoff, ndomredsfound
 
     def interruptSolve(self):
         """Interrupt the solving process as soon as possible."""
@@ -3725,6 +3840,12 @@ cdef class Model:
         PY_SCIP_CALL(SCIPrestartSolve(self._scip))
 
     # Solution functions
+
+    def writeLP(self, filename="LP.lp"):
+        """writes current LP to a file
+        :param filename: file name (Default value = "LP.lp")
+        """
+        PY_SCIP_CALL( SCIPwriteLP(self._scip, str_conversion(filename)) )
 
     def createSol(self, Heur heur = None):
         """Create a new primal solution.

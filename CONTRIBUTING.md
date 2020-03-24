@@ -3,30 +3,29 @@ Contributing to PySCIPOpt
 
 Code contributions are very welcome and should comply to a few rules:
 
-0.  Read Design principles of PySCIPOpt\_.
-1.  Compatibility with both Python-2 and Python-3.
-2.  All tests defined in the Continuous Integration setup need to pass:
+0.  Read [Design principles of PySCIPOpt](#design-principles-of-pyscipopt).
+1.  All tests defined in the Continuous Integration setup need to pass:
     -   [.travis.yml](../../.travis.yml)
     -   [appveyor.yml](../../appveyor.yml)
 
-3.  New features should be covered by tests *and* examples. Please
+2.  New features should be covered by tests *and* examples. Please
     extend [tests](tests) and [examples](examples). Tests uses pytest
     and examples are meant to be accessible for PySCIPOpt newcomers
     (even advanced examples).
-4.  New code should be documented in the same style as the rest of
+3.  New code should be documented in the same style as the rest of
     the code.
-5.  New code should be
+4.  New code should be
     [pep8-compliant](https://www.python.org/dev/peps/pep-0008/). Help
     yourself with the [style guide
     checker](https://pypi.org/project/pep8/).
-6.  Before implementing a new PySCIPOpt feature, check whether the
+5.  Before implementing a new PySCIPOpt feature, check whether the
     feature exists in SCIP. If so, implement it as a pure wrapper,
     mimicking SCIP whenever possible. If the new feature does not exist
     in SCIP but it is close to an existing one, consider if implementing
     that way is substantially convenient (e.g. Pythonic). If it does
     something completely different, you are welcome to pull your request
     and discuss the implementation.
-7.  PySCIPOpt uses [semantic versioning](https://semver.org/). Version
+6.  PySCIPOpt uses [semantic versioning](https://semver.org/). Version
     number increase only happens on master and must be tagged to build a
     new PyPI release.
 

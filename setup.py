@@ -69,7 +69,7 @@ extensions = [Extension('pyscipopt.scip', [os.path.join(packagedir, 'scip'+ext)]
                           )]
 
 if cythonize:
-    extensions = cythonize(extensions)
+    extensions = cythonize(extensions, compiler_directives = {'language_level': 3})
 #     extensions = cythonize(extensions, compiler_directives={'linetrace': True})
 
 with open('README.md') as f:
@@ -90,7 +90,6 @@ setup(
     'Intended Audience :: Science/Research',
     'Intended Audience :: Education',
     'License :: OSI Approved :: MIT License',
-    'Programming Language :: Python :: 2',
     'Programming Language :: Python :: 3',
     'Programming Language :: Cython',
     'Topic :: Scientific/Engineering :: Mathematics'],
