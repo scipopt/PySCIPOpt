@@ -27,6 +27,8 @@ else:
     # assume that SCIP is installed on the system
     libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
     libname = 'scip'
+    if platform.system() in ['Windows']:
+        libname = 'libscip'
 
 print('Using SCIP library <%s> at <%s>.' % (libname,libdir))
 
