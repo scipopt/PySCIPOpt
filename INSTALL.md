@@ -9,7 +9,8 @@ you need to specify the install location using the environment variable
 -   on Linux and OS X:\
     `export SCIPOPTDIR=<path_to_install_dir>`
 -   on Windows:\
-    `set SCIPOPTDIR=<path_to_install_dir>`
+    `set SCIPOPTDIR=<path_to_install_dir>` (**cmd**, **Cmder**, **WSL**)\
+    `$Env:SCIPOPTDIR = "<path_to_install_dir>"` (**powershell**)
 
 `SCIPOPTDIR` needs to have a subdirectory `lib` that contains the
 library, e.g. `libscip.so` (for Linux) and a subdirectory `include` that
