@@ -23,6 +23,7 @@
 - setupBendersSubproblem now requires a checktype input. This input indicates the reason for solving the Benders'
   subproblems, either enforcing the LP, relaxation or pseudo solution (LP, RELAX or PSEUDO) or checking a candidate
   primal feasible solution (CHECK).
+- adds chgVarUbProbing and chgVarLbProbing to change a variables upper or lower bound during probing mode.
 
 ## 2.2.3 - 2019-12-10
 ### Added

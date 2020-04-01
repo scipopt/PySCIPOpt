@@ -3767,6 +3767,26 @@ cdef class Model:
         """changes (column) variable's objective value during probing mode"""
         PY_SCIP_CALL( SCIPchgVarObjProbing(self._scip, var.scip_var, newobj) )
 
+    def chgVarLbProbing(self, Variable var, lb):
+        """changes the variable lower bound during probing mode
+
+        :param Variable var: variable to change bound of
+        :param lb: new lower bound (set to None for -infinity)
+        """
+        if lb is None:
+           lb = -SCIPinfinity(self._scip)
+        PY_SCIP_CALL(SCIPchgVarLbProbing(self._scip, var.scip_var, lb))
+
+    def chgVarUbProbing(self, Variable var, ub):
+        """changes the variable upper bound during probing mode
+
+        :param Variable var: variable to change bound of
+        :param ub: new upper bound (set to None for +infinity)
+        """
+        if ub is None:
+           ub = SCIPinfinity(self._scip)
+        PY_SCIP_CALL(SCIPchgVarUbProbing(self._scip, var.scip_var, ub))
+
     def fixVarProbing(self, Variable var, fixedval):
         """Fixes a variable at the current probing node."""
         PY_SCIP_CALL( SCIPfixVarProbing(self._scip, var.scip_var, fixedval) )
