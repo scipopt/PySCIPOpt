@@ -1,5 +1,5 @@
 os: linux
-dist: xenial
+dist: bionic
 sudo: true
 
 language: python
