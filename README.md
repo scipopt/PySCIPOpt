@@ -4,7 +4,7 @@ PySCIPOpt
 This project provides an interface from Python to the [SCIP Optimization
 Suite](http://scip.zib.de).
 
-**Warning:** The interface does **not** work with SCIP 7.0 for the time being. If you want to use the interface, then use SCIP **6.0.2**.
+**Warning:** The interface does **not** work with SCIP 7.0 for the time being. If you want to use the interface, then use SCIP **6.0.2**. If you want to use SCIP 7.0, then use the branch [scip-7](https://github.com/SCIP-Interfaces/PySCIPOpt/tree/scip-7). However, in this case, you need to [build everything from source](https://github.com/SCIP-Interfaces/PySCIPOpt/blob/scip-7/INSTALL.md#building-everything-from-source). The interface should work whenver your SCIP installation works.
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PySCIPOpt/Lobby)
 [![PySCIPOpt on PyPI](https://img.shields.io/pypi/v/pyscipopt.svg)](https://pypi.python.org/pypi/pyscipopt)
