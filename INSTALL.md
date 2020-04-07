@@ -2,7 +2,9 @@ Requirements
 ============
 
 PySCIPOpt requires a working installation of the [SCIP Optimization
-Suite](http://scip.zib.de/). If SCIP is not installed in the global path
+Suite](http://scip.zib.de/). Please, make sure that your SCIP installation works!
+
+If SCIP is not installed in the global path
 you need to specify the install location using the environment variable
 `SCIPOPTDIR`:
 
