@@ -70,7 +70,7 @@ cdef Variable getPyVar(SCIP_VAR* var):
     return <Variable>vardata
 
 
-cdef SCIP_RETCODE PyBendersCopy (SCIP* scip, SCIP_BENDERS* benders):
+cdef SCIP_RETCODE PyBendersCopy (SCIP* scip, SCIP_BENDERS* benders, SCIP_Bool threadsafe):
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyBendersFree (SCIP* scip, SCIP_BENDERS* benders):
@@ -130,7 +130,7 @@ cdef SCIP_RETCODE PyBendersCreatesub (SCIP* scip, SCIP_BENDERS* benders, int pro
     PyBenders.benderscreatesub(probnumber)
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersPresubsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, SCIP_BENDERSENFOTYPE type, SCIP_Bool checkint, SCIP_Bool* skipsolve,  SCIP_RESULT* result):
+cdef SCIP_RETCODE PyBendersPresubsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, SCIP_BENDERSENFOTYPE type, SCIP_Bool checkint, SCIP_Bool* infeasible, SCIP_Bool* auxviol, SCIP_Bool* skipsolve,  SCIP_RESULT* result):
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
@@ -140,6 +140,8 @@ cdef SCIP_RETCODE PyBendersPresubsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_
         solution = Solution.create(scip, sol)
     enfotype = type
     result_dict = PyBenders.benderspresubsolve(solution, enfotype, checkint)
+    infeasible[0] = result_dict.get("infeasible", False)
+    auxviol[0] = result_dict.get("auxviol", False)
     skipsolve[0] = result_dict.get("skipsolve", False)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY

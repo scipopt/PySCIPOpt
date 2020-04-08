@@ -285,8 +285,7 @@ def create_sudoku():
 def test_main():
     scip, x = create_sudoku()
 
-    #scip.setBoolParam("misc/allowdualreds", False)
-    scip.setBoolParam("misc/allowdualreds", False)
+    scip.setBoolParam("misc/allowstrongdualreds", False)
     scip.setEmphasis(SCIP_PARAMEMPHASIS.CPSOLVER)
     scip.setPresolve(SCIP_PARAMSETTING.OFF)
     scip.optimize()

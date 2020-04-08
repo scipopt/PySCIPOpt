@@ -196,7 +196,8 @@ def test_flpbenders_defcuts():
     master = flp(I, J, M, d, f)
     # initializing the default Benders' decomposition with the subproblem
     master.setPresolve(SCIP_PARAMSETTING.OFF)
-    master.setBoolParam("misc/allowdualreds", False)
+    master.setBoolParam("misc/allowstrongdualreds", False)
+    master.setBoolParam("misc/allowweakdualreds", False)
     master.setBoolParam("benders/copybenders", False)
     bendersName = "testBenders"
     testbd = testBenders(master.data, I, J, M, c, d, bendersName)
@@ -242,7 +243,8 @@ def test_flpbenders_customcuts():
     master = flp(I, J, M, d, f)
     # initializing the default Benders' decomposition with the subproblem
     master.setPresolve(SCIP_PARAMSETTING.OFF)
-    master.setBoolParam("misc/allowdualreds", False)
+    master.setBoolParam("misc/allowstrongdualreds", False)
+    master.setBoolParam("misc/allowweakdualreds", False)
     master.setBoolParam("benders/copybenders", False)
     bendersName = "testBenders"
     benderscutName = "testBenderscut"

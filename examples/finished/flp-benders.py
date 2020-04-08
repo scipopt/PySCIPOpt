@@ -77,7 +77,7 @@ if __name__ == "__main__":
     master, subprob = flp(I,J,d,M,f,c)
     # initializing the default Benders' decomposition with the subproblem
     master.setPresolve(SCIP_PARAMSETTING.OFF)
-    master.setBoolParam("misc/allowdualreds", False)
+    master.setBoolParam("misc/allowstrongdualreds", False)
     master.setBoolParam("benders/copybenders", False)
     master.initBendersDefault(subprob)
 

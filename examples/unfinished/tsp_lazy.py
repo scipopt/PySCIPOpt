@@ -102,7 +102,7 @@ def solve_tsp(V,c):
                           sepapriority = -1, enfopriority = -1, chckpriority = -1, sepafreq = -1, propfreq = -1,
                           eagerfreq = -1, maxprerounds = 0, delaysepa = False, delayprop = False, needscons = False,
                           presoltiming = SCIP_PRESOLTIMING.FAST, proptiming = SCIP_PROPTIMING.BEFORELP)
-    model.setBoolParam("misc/allowdualreds", 0)
+    model.setBoolParam("misc/allowstrongdualreds", 0)
     model.writeProblem("tsp.cip")
     model.optimize()
     x = model.data

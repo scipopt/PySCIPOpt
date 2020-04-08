@@ -209,7 +209,7 @@ if __name__ == "__main__":
     P,f,g,c,d,h,M = trigeiro(T,N,factor)
     print("\n\n\nStandard formulation + cutting plane ======================")
     model,mils_callback = mils(T,P,f,g,c,d,h,M)
-    model.setBoolParam("misc/allowdualreds", 0)
+    model.setBoolParam("misc/allowstrongdualreds", 0)
     model.optimize(mils_callback)
     y,x,I = model.data
 
