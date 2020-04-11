@@ -22,6 +22,11 @@ Installation
 
 See [INSTALL.md](INSTALL.md) for instructions.
 
+How to cite
+-----------
+
+Please cite [this paper](https://opus4.kobv.de/opus4-zib/frontdoor/index/index/docId/6045) as well as the corresponding [SCIP Optimization Suite report](https://scip.zib.de/index.php#cite) when you use this tool for a publication or other scientific work.
+
 Building and solving a model
 ----------------------------
 
