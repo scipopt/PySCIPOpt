@@ -1,17 +1,15 @@
 # CHANGELOG
 
-## Unreleased
+## 3.0.0 - 2020-04-11
+### Added
 - add Model.getParams that returns a dict mapping all parameter names to their values
 - add Model.setParams to set multiple parameters at once using a dict
 - Add Model.from_ptr and Model.to_ptr to interface with SCIP* managed outside of PySCIPOpt
-- Node.getParent() returns None if the node has no parent
 - add NULL pointer checks to all Python wrapper classes
 - add Event.getRow() and Row.name
 - expose domain changes, bound changes, branching decisions, added constraints for nodes
 - define Python object identity based on underlying SCIP object pointers, so that e.g. rows and columns can be added to sets, and testing for equality is consistent over time.
 - add Row.isRemovable and Row.getOrigintype
-- remove Python 2.7 support
-- fix documentation errors
 - add Model.applyCutsProbing and Model.propagateProbing
 - add Model.separateSol
 - add methods to work with nonlinear rows
@@ -20,10 +18,15 @@
 - adds the boolean return options of "infeasible" and "auxviol" to the Benders.benderspresubsolve function. "infeasible"
   indicates that the input solution induces an infeasible instance of at least one Benders' subproblems. "auxviol"
   indicates that the objective value of at least on Benders' subproblem is greater than the auxiliary variable value.
+- adds chgVarUbProbing and chgVarLbProbing to change a variables upper or lower bound during probing mode.
+
+### Changed
+- Node.getParent() returns None if the node has no parent
+- remove Python 2.7 support
+- fix documentation errors
 - setupBendersSubproblem now requires a checktype input. This input indicates the reason for solving the Benders'
   subproblems, either enforcing the LP, relaxation or pseudo solution (LP, RELAX or PSEUDO) or checking a candidate
   primal feasible solution (CHECK).
-- adds chgVarUbProbing and chgVarLbProbing to change a variables upper or lower bound during probing mode.
 
 ## 2.2.3 - 2019-12-10
 ### Added
