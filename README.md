@@ -22,11 +22,6 @@ Installation
 
 See [INSTALL.md](INSTALL.md) for instructions.
 
-How to cite
------------
-
-Please cite [this paper](https://opus4.kobv.de/opus4-zib/frontdoor/index/index/docId/6045) as well as the corresponding [SCIP Optimization Suite report](https://scip.zib.de/index.php#cite) when you use this tool for a publication or other scientific work.
-
 Building and solving a model
 ----------------------------
 
@@ -161,3 +156,20 @@ model.setPresolve(pyscipopt.SCIP_PARAMSETTING.OFF)
 model.setHeuristics(pyscipopt.SCIP_PARAMSETTING.OFF)
 model.disablePropagation()
 ```
+
+Citing PySCIPOpt
+----------------
+
+Please cite [this paper](https://opus4.kobv.de/opus4-zib/frontdoor/index/index/docId/6045)
+```
+@incollection{MaherMiltenbergerPedrosoRehfeldtSchwarzSerrano2016,
+  author = {Stephen Maher and Matthias Miltenberger and Jo{\~{a}}o Pedro Pedroso and Daniel Rehfeldt and Robert Schwarz and Felipe Serrano},
+  title = {{PySCIPOpt}: Mathematical Programming in Python with the {SCIP} Optimization Suite},
+  booktitle = {Mathematical Software {\textendash} {ICMS} 2016}
+  publisher = {Springer International Publishing},
+  pages = {301--307},
+  year = {2016},
+  doi = {10.1007/978-3-319-42432-3_37},
+}
+```
+as well as the corresponding [SCIP Optimization Suite report](https://scip.zib.de/index.php#cite) when you use this tool for a publication or other scientific work.
