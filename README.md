@@ -21,6 +21,8 @@ Installation
 ------------
 
 See [INSTALL.md](INSTALL.md) for instructions.
+Please note that the latest PySCIPOpt version is usually only compatible with the latest major release of the SCIP Optimization Suite.
+Information which version of PySCIPOpt is required for a given SCIP version can also be found in [INSTALL.md](INSTALL.md).
 
 Building and solving a model
 ----------------------------
