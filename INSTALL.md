@@ -4,6 +4,17 @@ Requirements
 PySCIPOpt requires a working installation of the [SCIP Optimization
 Suite](http://scip.zib.de/). Please, make sure that your SCIP installation works!
 
+Note that the latest PySCIPOpt version is usually only compatible with the latest major release of the SCIP Optimization Suite.
+The following table summarizes which version of PySCIPOpt is required for a given SCIP version:
+
+|SCIP| PySCIPOpt |
+|----|----|
+7.0 | 3.0
+6.0 | 2.0
+5.0 | 1.4, 1.3
+4.0 | 1.2, 1.1
+3.2 | 1.0
+
 If SCIP is not installed in the global path
 you need to specify the install location using the environment variable
 `SCIPOPTDIR`:
