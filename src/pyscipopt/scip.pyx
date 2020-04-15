@@ -4453,14 +4453,14 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPsetEmphasis(self._scip, paraemphasis, quiet))
 
-    def readProblem(self, file, extension = None):
+    def readProblem(self, filename, extension = None):
         """Read a problem instance from an external file.
 
-        :param file: file to be read
+        :param filename: problem file name
         :param extension: specify file extension/type (Default value = None)
 
         """
-        absfile = str_conversion(abspath(file))
+        absfile = str_conversion(abspath(filename))
         if extension is None:
             PY_SCIP_CALL(SCIPreadProb(self._scip, absfile, NULL))
         else:
