@@ -1,3 +1,5 @@
+import pytest
+
 from pyscipopt import Model
 
 def test_model():
@@ -56,7 +58,7 @@ def test_model():
     expr = x*x + 2*x*y + y*y
     expr2 = x + 1
     assert s.getVal(expr) == s.getSolVal(solution, expr)
-    assert s.getVal(expr2) == s.getSolVal(solution, expr2)   
+    assert s.getVal(expr2) == s.getSolVal(solution, expr2)
     assert round(s.getVal(expr)) == 25.0
     assert round(s.getVal(expr2)) == 6.0
 
@@ -85,6 +87,9 @@ def test_model_ptr():
     model2 = Model.from_ptr(ptr1, take_ownership=True)
     assert model2._freescip
     assert model2.to_ptr(False) == ptr1
+
+    with pytest.raises(ValueError):
+        Model.from_ptr("some gibberish", take_ownership=False)
 
 
 if __name__ == "__main__":
