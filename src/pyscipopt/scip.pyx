@@ -4537,6 +4537,15 @@ cdef class Model:
 
         free(_coeffs)
 
+    def chgVarBranchPriority(self, Variable var, priority):
+        """Set the branch priority of a variable.
+
+        :param Variable var: variable to change priority of
+        :param priority: the new priority of the variable (each variable is initialized with 0 as priority)
+        """
+        assert isinstance(var, Variable), "The given variable is not a pyvar, but %s" % var.__class__.__name__
+        PY_SCIP_CALL(SCIPchgVarBranchPriority(self._scip, var.scip_var, priority))
+
 # debugging memory management
 def is_memory_freed():
     return BMSgetMemoryUsed() == 0
