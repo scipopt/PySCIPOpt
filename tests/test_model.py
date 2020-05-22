@@ -86,7 +86,7 @@ def test_model_ptr():
 
     model2 = Model.from_ptr(ptr1, take_ownership=True)
     assert model2._freescip
-    assert model2.to_ptr(False) == ptr1
+    assert model2 == model1
 
     with pytest.raises(ValueError):
         Model.from_ptr("some gibberish", take_ownership=False)
