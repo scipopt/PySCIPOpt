@@ -8,9 +8,9 @@ import warnings
 
 cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
+from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPointer
 from libc.stdlib cimport malloc, free
 from libc.stdio cimport fdopen
-from libc.stdint cimport uintptr_t
 
 include "expr.pxi"
 include "lp.pxi"
@@ -989,14 +989,16 @@ cdef class Model:
 
     @cython.always_allow_keywords(True)
     @staticmethod
-    def from_ptr(uintptr_t scip_ptr, take_ownership):
+    def from_ptr(capsule, take_ownership):
         """Create a Model from a given pointer.
 
-        :param scip_ptr: The pointer used to create the Model.
+        :param cpasule: The PyCapsule containing the SCIP pointer under the name "scip".
         :param take_ownership: Whether the newly created Model assumes ownership of the
         underlying Scip pointer (see `_freescip`).
         """
-        model = Model.create(<SCIP*>scip_ptr)
+        if not PyCapsule_IsValid(capsule, "scip"):
+            raise ValueError("The given capsule does not contain a valid scip pointer")
+        model = Model.create(<SCIP*>PyCapsule_GetPointer(capsule, "scip"))
         model._freescip = take_ownership
         return model
 
@@ -1006,12 +1008,13 @@ cdef class Model:
 
         :param give_ownership: Whether the current Model gives away ownership of the
         underlying Scip pointer (see `_freescip`).
-        :return scip_ptr: The underlying pointer to the current Model.
+        :return capsule: The underlying pointer to the current Model, wrapped in a
+        PyCapsule under the name "scip".
         """
-        ptr = <uintptr_t>self._scip
+        capsule = PyCapsule_New(<void*>self._scip, "scip", NULL)
         if give_ownership:
             self._freescip = False
-        return ptr
+        return capsule
 
     def includeDefaultPlugins(self):
         """Includes all default plug-ins into SCIP"""
