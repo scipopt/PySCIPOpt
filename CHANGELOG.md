@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+### Changed
+- `Model.from_ptr` and `Model.to_ptr` use a `PyCapsule` to exchange the SCIP pointer
+  rather than an integer.
+
 ## 3.0.0 - 2020-04-11
 ### Added
 - add Model.getParams that returns a dict mapping all parameter names to their values
