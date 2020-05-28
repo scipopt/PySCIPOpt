@@ -1082,7 +1082,7 @@ cdef class Model:
         return SCIPgetNInfeasibleLeaves(self._scip)
 
     def getNLeaves(self):
-        """Retrieve number of leaf nodes."""
+        """gets number of leaves in the tree."""
         return SCIPgetNLeaves(self._scip)
 
     def getNChildren(self):
