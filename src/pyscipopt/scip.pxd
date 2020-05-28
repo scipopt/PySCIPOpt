@@ -1198,6 +1198,8 @@ cdef extern from "scip/scip.h":
     # Statistic Methods
     SCIP_RETCODE SCIPprintStatistics(SCIP* scip, FILE* outfile)
     SCIP_Longint SCIPgetNNodes(SCIP* scip)
+    SCIP_Longint SCIPgetNFeasibleLeaves(SCIP* scip)
+    SCIP_Longint SCIPgetNInfeasibleLeaves(SCIP* scip)
     SCIP_Longint SCIPgetNLPs(SCIP* scip)
     SCIP_Longint SCIPgetNLPIterations(SCIP* scip)
 
@@ -1651,6 +1653,9 @@ cdef extern from "scip/pub_lp.h":
 
 cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
+    SCIP_Longint SCIPgetNLeaves(SCIP* scip)
+    SCIP_Longint SCIPgetNChildren(SCIP* scip)
+    SCIP_Longint SCIPgetNSiblings(SCIP* scip)
 
 cdef extern from "scip/scip_var.h":
     SCIP_RETCODE SCIPchgVarBranchPriority(SCIP* scip, SCIP_VAR* var, int branchpriority)

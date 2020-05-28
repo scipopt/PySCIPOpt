@@ -1073,6 +1073,26 @@ cdef class Model:
         """Retrieve the total number of processed nodes."""
         return SCIPgetNNodes(self._scip)
 
+    def getNFeasibleLeaves(self):
+        """Retrieve number of leaf nodes processed with feasible relaxation solution."""
+        return SCIPgetNFeasibleLeaves(self._scip)
+
+    def getNInfeasibleLeaves(self):
+        """gets number of infeasible leaf nodes processed."""
+        return SCIPgetNInfeasibleLeaves(self._scip)
+
+    def getNLeaves(self):
+        """gets number of leaves in the tree."""
+        return SCIPgetNLeaves(self._scip)
+
+    def getNChildren(self):
+        """gets number of children of focus node."""
+        return SCIPgetNChildren(self._scip)
+
+    def getNSiblings(self):
+        """gets number of siblings of focus node."""
+        return SCIPgetNSiblings(self._scip)
+
     def getCurrentNode(self):
         """Retrieve current node."""
         return Node.create(SCIPgetCurrentNode(self._scip))
