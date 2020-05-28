@@ -1086,7 +1086,7 @@ cdef class Model:
         return SCIPgetNLeaves(self._scip)
 
     def getNChildren(self):
-        """Retrieve number of children nodes."""
+        """gets number of children of focus node."""
         return SCIPgetNChildren(self._scip)
 
     def getNSiblings(self):
