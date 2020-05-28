@@ -1090,7 +1090,7 @@ cdef class Model:
         return SCIPgetNChildren(self._scip)
 
     def getNSiblings(self):
-        """Retrieve number of sibling nodes."""
+        """gets number of siblings of focus node."""
         return SCIPgetNSiblings(self._scip)
 
     def getCurrentNode(self):
