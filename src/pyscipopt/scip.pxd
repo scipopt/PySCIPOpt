@@ -1198,6 +1198,11 @@ cdef extern from "scip/scip.h":
     # Statistic Methods
     SCIP_RETCODE SCIPprintStatistics(SCIP* scip, FILE* outfile)
     SCIP_Longint SCIPgetNNodes(SCIP* scip)
+    SCIP_Longint SCIPgetNFeasibleLeaves(SCIP* scip)
+    SCIP_Longint SCIPgetNInfeasibleLeaves(SCIP* scip)
+    SCIP_Longint SCIPgetNLeaves(SCIP* scip)
+    SCIP_Longint SCIPgetNChildren(SCIP* scip)
+    SCIP_Longint SCIPgetNSiblings(SCIP* scip)
     SCIP_Longint SCIPgetNLPs(SCIP* scip)
     SCIP_Longint SCIPgetNLPIterations(SCIP* scip)
 
