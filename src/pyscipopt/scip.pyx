@@ -1078,7 +1078,7 @@ cdef class Model:
         return SCIPgetNFeasibleLeaves(self._scip)
 
     def getNInfeasibleLeaves(self):
-        """Retrieve number of leaf nodes processed with infeasible relaxation solution."""
+        """gets number of infeasible leaf nodes processed."""
         return SCIPgetNInfeasibleLeaves(self._scip)
 
     def getNLeaves(self):
