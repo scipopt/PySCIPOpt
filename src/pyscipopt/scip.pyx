@@ -2872,8 +2872,8 @@ cdef class Model:
             valsdict[bytes(SCIPvarGetName(_vars[i])).decode('utf-8')] = _vals[i]
         return valsdict
 
-    def getDualMultiplier(self, Constraint cons):
-        """Retrieve the dual multiplier to a linear constraint.
+    def getDualsolLinear(self, Constraint cons):
+        """Retrieve the dual solution to a linear constraint.
 
         :param Constraint cons: linear constraint
 
@@ -2887,51 +2887,15 @@ cdef class Model:
             transcons = cons
         return SCIPgetDualsolLinear(self._scip, transcons.scip_cons)
 
-    def getDualsolLinear(self, Constraint cons):
-        """Retrieve the dual solution to a linear constraint.
+    def getDualMultiplier(self, Constraint cons):
+        """DEPRECATED: Retrieve the dual solution to a linear constraint.
 
         :param Constraint cons: linear constraint
 
         """
-        cdef SCIP_Real dualsolval
-        cdef SCIP_Bool boundconstraint
-        cdef int _nvars
-        cdef SCIP_VAR** _vars
-        cdef SCIP_Real* _vals
-        cdef SCIP_Bool _success
-
-        if self.version() > 6.0:
-            PY_SCIP_CALL( SCIPgetDualSolVal(self._scip, cons.scip_cons, &dualsolval, &boundconstraint) )
-            return dualsolval
-        else:
-            dual = 0.0
-
-            constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
-            if not constype == 'linear':
-                raise Warning("dual solution values not available for constraints of type ", constype)
-
-            try:
-                _nvars = SCIPgetNVarsLinear(self._scip, cons.scip_cons)
-                if cons.isOriginal():
-                    transcons = <Constraint>self.getTransformedCons(cons)
-                else:
-                    transcons = cons
-                dual = SCIPgetDualsolLinear(self._scip, transcons.scip_cons)
-                if dual == 0.0 and _nvars == 1:
-                    _vars = SCIPgetVarsLinear(self._scip, transcons.scip_cons)
-                    _vals = SCIPgetValsLinear(self._scip, transcons.scip_cons)
-                    activity = SCIPvarGetLPSol(_vars[0]) * _vals[0]
-                    rhs = SCIPgetRhsLinear(self._scip, transcons.scip_cons)
-                    lhs = SCIPgetLhsLinear(self._scip, transcons.scip_cons)
-                    if (activity == rhs) or (activity == lhs):
-                        dual = SCIPgetVarRedcost(self._scip, _vars[0])
-
-                if self.getObjectiveSense() == "maximize" and not dual == 0.0:
-                    dual = -dual
-            except:
-                raise Warning("no dual solution available for constraint " + cons.name)
-            return dual
-
+        raise Warning("model.getDualMultiplier(cons) is deprecated: please use model.getDualsolLinear(cons)")
+        return self.getDualsolLinear(cons)
+        
     def getDualfarkasLinear(self, Constraint cons):
         """Retrieve the dual farkas value to a linear constraint.
 
