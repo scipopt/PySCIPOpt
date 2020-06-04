@@ -106,20 +106,20 @@ class testBenderscut(Benderscut):
       for i in self.I:
          subprobcons = self.benders.demand[i]
          try:
-            dualmult = subprob.getDualMultiplier(subprobcons)
+            dualmult = subprob.getDualsolLinear(subprobcons)
             lhs += dualmult*self.d[i]
          except:
             print("Subproblem constraint <%d> does not exist in the "\
                   "subproblem."%subprobcons.name)
             assert False
 
-         memberdualmult = membersubprob.getDualMultiplier(subprobcons)
+         memberdualmult = membersubprob.getDualsolLinear(subprobcons)
          if dualmult != memberdualmult:
             print("The dual multipliers between the two subproblems are not "\
                   "the same.")
             assert False
 
-      coeffs = [subprob.getDualMultiplier(self.benders.capacity[j])*\
+      coeffs = [subprob.getDualsolLinear(self.benders.capacity[j])*\
             self.M[j] for j in self.J]
 
       self.model.addCons(self.model.getBendersAuxiliaryVar(probnumber,

@@ -4,6 +4,7 @@
 ### Changed
 - `Model.from_ptr` and `Model.to_ptr` use a `PyCapsule` to exchange the SCIP pointer
   rather than an integer.
+- mark getDualMultiplier() as deprecated, only getDualSolLinear() is supposed to be used to get duals of constraints
 
 ## 3.0.0 - 2020-04-11
 ### Added
