@@ -8,7 +8,7 @@ class CutPricer(Pricer):
         # Retrieving the dual solutions
         dualSolutions = []
         for i, c in enumerate(self.data['cons']):
-            dualSolutions.append(self.model.getDualMultiplier(c))
+            dualSolutions.append(self.model.getDualSolLinear(c))
 
         # Building a MIP to solve the subproblem
         subMIP = Model("CuttingStock-Sub")
