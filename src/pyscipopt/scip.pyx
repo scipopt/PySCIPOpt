@@ -1659,43 +1659,23 @@ cdef class Model:
     # node methods
     def getBestChild(self):
         """gets the best child of the focus node w.r.t. the node selection strategy."""
-        cdef SCIP_NODE* _node
-
-        _node = SCIPgetBestChild(self._scip)
-        node = Node.create(_node)
-        return node
+        return Node.create(SCIPgetBestChild(self._scip))
 
     def getBestSibling(self):
         """gets the best sibling of the focus node w.r.t. the node selection strategy."""
-        cdef SCIP_NODE* _node
-
-        _node = SCIPgetBestSibling(self._scip)
-        node = Node.create(_node)
-        return node
+        return Node.create(SCIPgetBestSibling(self._scip))
 
     def getBestLeaf(self):
         """gets the best leaf from the node queue w.r.t. the node selection strategy."""
-        cdef SCIP_NODE* _node
-
-        _node = SCIPgetBestLeaf(self._scip)
-        node = Node.create(_node)
-        return node
+        return Node.create(SCIPgetBestLeaf(self._scip))
 
     def getBestNode(self):
         """gets the best node from the tree (child, sibling, or leaf) w.r.t. the node selection strategy."""
-        cdef SCIP_NODE* _node
-
-        _node = SCIPgetBestNode(self._scip)
-        node = Node.create(_node)
-        return node
+        return Node.create(SCIPgetBestNode(self._scip))
 
     def getBestboundNode(self):
         """gets the node with smallest lower bound from the tree (child, sibling, or leaf)."""
-        cdef SCIP_NODE* _node
-
-        _node = SCIPgetBestboundNode(self._scip)
-        node = Node.create(_node)
-        return node
+        return Node.create(SCIPgetBestboundNode(self._scip))
 
     def getOpenNodes(self):
         """access to all data of open nodes (leaves, children, and siblings)
