@@ -1657,6 +1657,46 @@ cdef class Model:
         PY_SCIP_CALL(SCIPupdateNodeLowerbound(self._scip, node.scip_node, lb))
 
     # node methods
+    def getBestChild(self):
+        """gets the best child of the focus node w.r.t. the node selection strategy."""
+        cdef SCIP_NODE* _node
+
+        _node = SCIPgetBestChild(self._scip)
+        node = Node.create(_node)
+        return node
+
+    def getBestSibling(self):
+        """gets the best sibling of the focus node w.r.t. the node selection strategy."""
+        cdef SCIP_NODE* _node
+
+        _node = SCIPgetBestSibling(self._scip)
+        node = Node.create(_node)
+        return node
+
+    def getBestLeaf(self):
+        """gets the best leaf from the node queue w.r.t. the node selection strategy."""
+        cdef SCIP_NODE* _node
+
+        _node = SCIPgetBestLeaf(self._scip)
+        node = Node.create(_node)
+        return node
+
+    def getBestNode(self):
+        """gets the best node from the tree (child, sibling, or leaf) w.r.t. the node selection strategy."""
+        cdef SCIP_NODE* _node
+
+        _node = SCIPgetBestNode(self._scip)
+        node = Node.create(_node)
+        return node
+
+    def getBestboundNode(self):
+        """gets the node with smallest lower bound from the tree (child, sibling, or leaf)."""
+        cdef SCIP_NODE* _node
+
+        _node = SCIPgetBestboundNode(self._scip)
+        node = Node.create(_node)
+        return node
+
     def getOpenNodes(self):
         """access to all data of open nodes (leaves, children, and siblings)
 
@@ -2895,7 +2935,7 @@ cdef class Model:
         """
         raise Warning("model.getDualMultiplier(cons) is deprecated: please use model.getDualsolLinear(cons)")
         return self.getDualsolLinear(cons)
-        
+
     def getDualfarkasLinear(self, Constraint cons):
         """Retrieve the dual farkas value to a linear constraint.
 
