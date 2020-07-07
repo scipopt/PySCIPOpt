@@ -4554,6 +4554,45 @@ cdef class Model:
         assert isinstance(var, Variable), "The given variable is not a pyvar, but %s" % var.__class__.__name__
         PY_SCIP_CALL(SCIPchgVarBranchPriority(self._scip, var.scip_var, priority))
 
+
+    def executeBranchRule(self, str name, allowaddcons):
+        cdef SCIP_BRANCHRULE*  branchrule
+        cdef SCIP_RESULT result
+     
+        # if name == 'vanillafullstrong':
+        #     self.setBoolParam('branching/vanillafullstrong/domred', domred)
+
+        branchrule = SCIPfindBranchrule(self._scip, name.encode("UTF-8"))
+        if branchrule == NULL:
+            print("Error, branching rule not found!")
+            return PY_SCIP_RESULT.DIDNOTFIND
+        else:
+            branchrule.branchexeclp(self._scip, branchrule, allowaddcons, &result)
+            return result
+
+    def getVanillafullstrongData(self):
+        cdef SCIP_VAR** cands
+        cdef SCIP_Real* candscores
+        cdef int        ncands
+        cdef int        npriocands
+        cdef int        bestcand
+        cdef int        scip_result
+
+        PY_SCIP_CALL(SCIPgetVanillafullstrongData(self._scip,
+            &cands, &candscores, &ncands, &npriocands, &bestcand, &scip_result))
+
+        assert cands is not NULL
+        assert ncands > 0 and npriocands >= 0
+        assert bestcand > -1
+
+        return (
+            [Variable.create(cands[i]) for i in range(ncands)],
+            None if candscores is NULL else [candscores[i] for i in range(ncands)],
+            npriocands,
+            bestcand,
+            scip_result
+        )
+
 # debugging memory management
 def is_memory_freed():
     return BMSgetMemoryUsed() == 0
