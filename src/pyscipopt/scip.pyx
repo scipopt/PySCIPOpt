@@ -30,7 +30,7 @@ include "nodesel.pxi"
 # recommended SCIP version; major version is required
 MAJOR = 7
 MINOR = 0
-PATCH = 0
+PATCH = 1
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
@@ -1657,6 +1657,26 @@ cdef class Model:
         PY_SCIP_CALL(SCIPupdateNodeLowerbound(self._scip, node.scip_node, lb))
 
     # node methods
+    def getBestChild(self):
+        """gets the best child of the focus node w.r.t. the node selection strategy."""
+        return Node.create(SCIPgetBestChild(self._scip))
+
+    def getBestSibling(self):
+        """gets the best sibling of the focus node w.r.t. the node selection strategy."""
+        return Node.create(SCIPgetBestSibling(self._scip))
+
+    def getBestLeaf(self):
+        """gets the best leaf from the node queue w.r.t. the node selection strategy."""
+        return Node.create(SCIPgetBestLeaf(self._scip))
+
+    def getBestNode(self):
+        """gets the best node from the tree (child, sibling, or leaf) w.r.t. the node selection strategy."""
+        return Node.create(SCIPgetBestNode(self._scip))
+
+    def getBestboundNode(self):
+        """gets the node with smallest lower bound from the tree (child, sibling, or leaf)."""
+        return Node.create(SCIPgetBestboundNode(self._scip))
+
     def getOpenNodes(self):
         """access to all data of open nodes (leaves, children, and siblings)
 
@@ -2895,7 +2915,7 @@ cdef class Model:
         """
         raise Warning("model.getDualMultiplier(cons) is deprecated: please use model.getDualsolLinear(cons)")
         return self.getDualsolLinear(cons)
-        
+
     def getDualfarkasLinear(self, Constraint cons):
         """Retrieve the dual farkas value to a linear constraint.
 
@@ -4533,6 +4553,45 @@ cdef class Model:
         """
         assert isinstance(var, Variable), "The given variable is not a pyvar, but %s" % var.__class__.__name__
         PY_SCIP_CALL(SCIPchgVarBranchPriority(self._scip, var.scip_var, priority))
+
+
+    def executeBranchRule(self, str name, allowaddcons):
+        cdef SCIP_BRANCHRULE*  branchrule
+        cdef SCIP_RESULT result
+     
+        # if name == 'vanillafullstrong':
+        #     self.setBoolParam('branching/vanillafullstrong/domred', domred)
+
+        branchrule = SCIPfindBranchrule(self._scip, name.encode("UTF-8"))
+        if branchrule == NULL:
+            print("Error, branching rule not found!")
+            return PY_SCIP_RESULT.DIDNOTFIND
+        else:
+            branchrule.branchexeclp(self._scip, branchrule, allowaddcons, &result)
+            return result
+
+    def getVanillafullstrongData(self):
+        cdef SCIP_VAR** cands
+        cdef SCIP_Real* candscores
+        cdef int        ncands
+        cdef int        npriocands
+        cdef int        bestcand
+        cdef int        scip_result
+
+        PY_SCIP_CALL(SCIPgetVanillafullstrongData(self._scip,
+            &cands, &candscores, &ncands, &npriocands, &bestcand, &scip_result))
+
+        assert cands is not NULL
+        assert ncands > 0 and npriocands >= 0
+        assert bestcand > -1
+
+        return (
+            [Variable.create(cands[i]) for i in range(ncands)],
+            None if candscores is NULL else [candscores[i] for i in range(ncands)],
+            npriocands,
+            bestcand,
+            scip_result
+        )
 
 # debugging memory management
 def is_memory_freed():

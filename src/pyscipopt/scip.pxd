@@ -281,7 +281,20 @@ cdef extern from "scip/scip.h":
     ctypedef double SCIP_Real
 
     ctypedef struct SCIP:
+        SCIP_SET* set
+        SCIP_STAT* stat
+        SCIP_PROB * origprob
+        SCIP_PROB * transprob
+        SCIP_LP* lp
+
+    ctypedef struct SCIP_SET:
         pass
+
+    ctypedef struct SCIP_PROB:
+        pass
+
+    ctypedef struct SCIP_LP:
+        SCIP_Real objsqrnorm
 
     ctypedef struct SCIP_VAR:
         pass
@@ -359,7 +372,8 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_BRANCHRULE:
-        pass
+        char* name
+        SCIP_RETCODE (*branchexeclp)(SCIP* scip, SCIP_BRANCHRULE* branchrule, SCIP_Bool allowaddcons, SCIP_RESULT* result)
 
     ctypedef struct SCIP_BRANCHRULEDATA:
         pass
@@ -1656,9 +1670,282 @@ cdef extern from "scip/scip_tree.h":
     SCIP_Longint SCIPgetNLeaves(SCIP* scip)
     SCIP_Longint SCIPgetNChildren(SCIP* scip)
     SCIP_Longint SCIPgetNSiblings(SCIP* scip)
+    SCIP_NODE* SCIPgetBestChild(SCIP* scip)
+    SCIP_NODE* SCIPgetBestSibling(SCIP* scip)
+    SCIP_NODE* SCIPgetBestLeaf(SCIP* scip)
+    SCIP_NODE* SCIPgetBestNode(SCIP* scip)
+    SCIP_NODE* SCIPgetBestboundNode(SCIP* scip)
 
 cdef extern from "scip/scip_var.h":
     SCIP_RETCODE SCIPchgVarBranchPriority(SCIP* scip, SCIP_VAR* var, int branchpriority)
+
+cdef extern from "scip/struct_branch.h":
+    cdef struct SCIP_Branchrule:
+        pass
+
+cdef extern from "time.h":
+    ctypedef long clock_t
+
+cdef extern from "scip/struct_clock.h":
+    ctypedef struct SCIP_CPUCLOCK:
+        clock_t     user
+
+    ctypedef struct SCIP_WALLCLOCK:
+        long    sec
+        long    usec
+
+    ctypedef union SCIP_CLOCK_DATA:
+        SCIP_CPUCLOCK   cpuclock
+        SCIP_WALLCLOCK   wallclock
+
+    ctypedef enum SCIP_CLOCKTYPE:
+        SCIP_CLOCKTYPE_DEFAULT = 0
+        SCIP_CLOCKTYPE_CPU     = 1
+        SCIP_CLOCKTYPE_WALL    = 2
+
+    ctypedef struct SCIP_CLOCK:
+        # SCIP_CLOCK_DATA  data
+        SCIP_Real        lasttime
+        int              nruns
+        SCIP_CLOCKTYPE   clocktype
+        SCIP_Bool        usedefault
+        SCIP_Bool        enabled
+
+cdef extern from "scip/type_history.h":
+    ctypedef struct SCIP_HISTORY:
+        SCIP_Real   pscostcount [2]
+        SCIP_Real   pscostweightedmean [2]
+        SCIP_Real   pscostvariance [2]
+        SCIP_Real   vsids [2]
+        SCIP_Real   conflengthsum [2]
+        SCIP_Real   inferencesum [2]
+        SCIP_Real   cutoffsum [2]
+        SCIP_Longint    nactiveconflicts [2]
+        SCIP_Longint    nbranchings [2]
+        SCIP_Longint    branchdepthsum [2]
+
+cdef extern from "scip/struct_stat.h":
+    ctypedef struct SCIP_STAT:
+        # SCIP_REGRESSION *     regressioncandsobjval
+        SCIP_Longint    nlpiterations
+        SCIP_Longint    nrootlpiterations
+        SCIP_Longint    nrootfirstlpiterations
+        SCIP_Longint    nprimallpiterations
+        SCIP_Longint    nduallpiterations
+        SCIP_Longint    nlexduallpiterations
+        SCIP_Longint    nbarrierlpiterations
+        SCIP_Longint    nprimalresolvelpiterations
+        SCIP_Longint    ndualresolvelpiterations
+        SCIP_Longint    nlexdualresolvelpiterations
+        SCIP_Longint    nnodelpiterations
+        SCIP_Longint    ninitlpiterations
+        SCIP_Longint    ndivinglpiterations
+        SCIP_Longint    ndivesetlpiterations
+        SCIP_Longint    nsbdivinglpiterations
+        SCIP_Longint    nsblpiterations
+        SCIP_Longint    nrootsblpiterations
+        SCIP_Longint    nconflictlpiterations
+        SCIP_Longint    nnodes
+        SCIP_Longint    ninternalnodes
+        SCIP_Longint    nobjleaves
+        SCIP_Longint    nfeasleaves
+        SCIP_Longint    ninfeasleaves
+        SCIP_Longint    ntotalnodes
+        SCIP_Longint    ntotalinternalnodes
+        SCIP_Longint    ntotalnodesmerged
+        SCIP_Longint    ncreatednodes
+        SCIP_Longint    ncreatednodesrun
+        SCIP_Longint    nactivatednodes
+        SCIP_Longint    ndeactivatednodes
+        SCIP_Longint    nearlybacktracks
+        SCIP_Longint    nnodesaboverefbound
+        SCIP_Longint    nbacktracks
+        SCIP_Longint    ndelayedcutoffs
+        SCIP_Longint    nreprops
+        SCIP_Longint    nrepropboundchgs
+        SCIP_Longint    nrepropcutoffs
+        SCIP_Longint    nlpsolsfound
+        SCIP_Longint    nrelaxsolsfound
+        SCIP_Longint    npssolsfound
+        SCIP_Longint    nsbsolsfound
+        SCIP_Longint    nlpbestsolsfound
+        SCIP_Longint    nrelaxbestsolsfound
+        SCIP_Longint    npsbestsolsfound
+        SCIP_Longint    nsbbestsolsfound
+        SCIP_Longint    nexternalsolsfound
+        SCIP_Longint    lastdispnode
+        SCIP_Longint    lastdivenode
+        SCIP_Longint    lastconflictnode
+        SCIP_Longint    bestsolnode
+        SCIP_Longint    domchgcount
+        SCIP_Longint    nboundchgs
+        SCIP_Longint    nholechgs
+        SCIP_Longint    nprobboundchgs
+        SCIP_Longint    nprobholechgs
+        SCIP_Longint    nsbdowndomchgs
+        SCIP_Longint    nsbupdomchgs
+        SCIP_Longint    nsbtimesiterlimhit
+        SCIP_Longint    nnodesbeforefirst
+        SCIP_Longint    ninitconssadded
+        SCIP_Longint    nactiveconssadded
+        SCIP_Longint    externmemestim
+        SCIP_Real   avgnnz
+        SCIP_Real   firstlpdualbound
+        SCIP_Real   rootlowerbound
+        SCIP_Real   vsidsweight
+        SCIP_Real   firstprimalbound
+        SCIP_Real   firstprimaltime
+        SCIP_Real   firstsolgap
+        SCIP_Real   lastsolgap
+        SCIP_Real   primalzeroittime
+        SCIP_Real   dualzeroittime
+        SCIP_Real   barrierzeroittime
+        SCIP_Real   maxcopytime
+        SCIP_Real   mincopytime
+        SCIP_Real   firstlptime
+        SCIP_Real   lastbranchvalue
+        SCIP_Real   primaldualintegral
+        SCIP_Real   previousgap
+        SCIP_Real   previntegralevaltime
+        SCIP_Real   lastprimalbound
+        SCIP_Real   lastdualbound
+        SCIP_Real   lastlowerbound
+        SCIP_Real   lastupperbound
+        SCIP_Real   rootlpbestestimate
+        SCIP_Real   referencebound
+        SCIP_Real   bestefficacy
+        SCIP_Real   minefficacyfac
+        SCIP_Real   detertimecnt
+        SCIP_CLOCK *    solvingtime
+        SCIP_CLOCK *    solvingtimeoverall
+        SCIP_CLOCK *    presolvingtime
+        SCIP_CLOCK *    presolvingtimeoverall
+        SCIP_CLOCK *    primallptime
+        SCIP_CLOCK *    duallptime
+        SCIP_CLOCK *    lexduallptime
+        SCIP_CLOCK *    barrierlptime
+        SCIP_CLOCK *    divinglptime
+        SCIP_CLOCK *    strongbranchtime
+        SCIP_CLOCK *    conflictlptime
+        SCIP_CLOCK *    lpsoltime
+        SCIP_CLOCK *    relaxsoltime
+        SCIP_CLOCK *    pseudosoltime
+        SCIP_CLOCK *    sbsoltime
+        SCIP_CLOCK *    nodeactivationtime
+        SCIP_CLOCK *    nlpsoltime
+        SCIP_CLOCK *    copyclock
+        SCIP_CLOCK *    strongpropclock
+        SCIP_CLOCK *    reoptupdatetime
+        SCIP_HISTORY *  glbhistory
+        SCIP_HISTORY *  glbhistorycrun
+        SCIP_VAR *  lastbranchvar
+        # SCIP_VISUAL *     visual
+        # SCIP_HEUR *   firstprimalheur
+        SCIP_STATUS     status
+        SCIP_BRANCHDIR  lastbranchdir
+        SCIP_LPSOLSTAT  lastsblpsolstats [2]
+        SCIP_Longint    nnz
+        SCIP_Longint    lpcount
+        SCIP_Longint    relaxcount
+        SCIP_Longint    nlps
+        SCIP_Longint    nrootlps
+        SCIP_Longint    nprimallps
+        SCIP_Longint    nprimalzeroitlps
+        SCIP_Longint    nduallps
+        SCIP_Longint    ndualzeroitlps
+        SCIP_Longint    nlexduallps
+        SCIP_Longint    nbarrierlps
+        SCIP_Longint    nbarrierzeroitlps
+        SCIP_Longint    nprimalresolvelps
+        SCIP_Longint    ndualresolvelps
+        SCIP_Longint    nlexdualresolvelps
+        SCIP_Longint    nnodelps
+        SCIP_Longint    ninitlps
+        SCIP_Longint    ndivinglps
+        SCIP_Longint    ndivesetlps
+        SCIP_Longint    nsbdivinglps
+        SCIP_Longint    nnumtroublelpmsgs
+        SCIP_Longint    nstrongbranchs
+        SCIP_Longint    nrootstrongbranchs
+        SCIP_Longint    nconflictlps
+        SCIP_Longint    nnlps
+        SCIP_Longint    nisstoppedcalls
+        SCIP_Longint    totaldivesetdepth
+        int     subscipdepth
+        int     ndivesetcalls
+        int     nruns
+        int     ncutpoolfails
+        int     nconfrestarts
+        int     nrootboundchgs
+        int     nrootboundchgsrun
+        int     nrootintfixings
+        int     nrootintfixingsrun
+        int     prevrunnvars
+        int     nvaridx
+        int     ncolidx
+        int     nrowidx
+        int     marked_nvaridx
+        int     marked_ncolidx
+        int     marked_nrowidx
+        int     npricerounds
+        int     nseparounds
+        int     nincseparounds
+        int     ndisplines
+        int     maxdepth
+        int     maxtotaldepth
+        int     plungedepth
+        int     nactiveconss
+        int     nenabledconss
+        int     nimplications
+        int     npresolrounds
+        int     npresolroundsfast
+        int     npresolroundsmed
+        int     npresolroundsext
+        int     npresolfixedvars
+        int     npresolaggrvars
+        int     npresolchgvartypes
+        int     npresolchgbds
+        int     npresoladdholes
+        int     npresoldelconss
+        int     npresoladdconss
+        int     npresolupgdconss
+        int     npresolchgcoefs
+        int     npresolchgsides
+        int     lastnpresolfixedvars
+        int     lastnpresolaggrvars
+        int     lastnpresolchgvartypes
+        int     lastnpresolchgbds
+        int     lastnpresoladdholes
+        int     lastnpresoldelconss
+        int     lastnpresoladdconss
+        int     lastnpresolupgdconss
+        int     lastnpresolchgcoefs
+        int     lastnpresolchgsides
+        int     solindex
+        int     nrunsbeforefirst
+        int     firstprimaldepth
+        int     ncopies
+        int     nreoptruns
+        int     nclockskipsleft
+        SCIP_Bool   memsavemode
+        SCIP_Bool   userinterrupt
+        SCIP_Bool   userrestart
+        SCIP_Bool   inrestart
+        SCIP_Bool   collectvarhistory
+        SCIP_Bool   performpresol
+        SCIP_Bool   branchedunbdvar
+        SCIP_Bool   disableenforelaxmsg
+
+cdef extern from "scip/branch_vanillafullstrong.h":
+    SCIP_RETCODE SCIPincludeBranchruleVanillafullstrong(SCIP* scip)
+    SCIP_RETCODE SCIPgetVanillafullstrongData(SCIP* scip,
+                                              SCIP_VAR*** cands,
+                                              SCIP_Real** candscores,
+                                              int* ncands,
+                                              int* npriocands,
+                                              int* bestcand,
+                                              int* scip_result)
+
 
 cdef class Expr:
     cdef public terms
