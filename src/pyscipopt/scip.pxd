@@ -363,7 +363,10 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_NODE:
-        pass
+        SCIP_Longint number
+        SCIP_Real lowerbound
+        SCIP_Real estimate
+        unsigned int depth
 
     ctypedef struct SCIP_NODESEL:
         pass
@@ -1214,8 +1217,88 @@ cdef extern from "scip/scip.h":
     SCIP_Longint SCIPgetNNodes(SCIP* scip)
     SCIP_Longint SCIPgetNFeasibleLeaves(SCIP* scip)
     SCIP_Longint SCIPgetNInfeasibleLeaves(SCIP* scip)
+    int SCIPgetNRuns(SCIP* scip)
+    int SCIPgetNReoptRuns(SCIP* scip)
+    SCIP_Longint SCIPgetNTotalNodes(SCIP* scip)
+    SCIP_Longint SCIPgetNObjlimLeaves(SCIP* scip)
+    SCIP_Longint SCIPgetNDelayedCutoffs(SCIP* scip)
     SCIP_Longint SCIPgetNLPs(SCIP* scip)
     SCIP_Longint SCIPgetNLPIterations(SCIP* scip)
+    SCIP_Longint SCIPgetNNZs(SCIP* scip)
+    SCIP_Longint SCIPgetNRootLPIterations(SCIP* scip)
+    SCIP_Longint SCIPgetNRootFirstLPIterations(SCIP* scip)
+    SCIP_Longint SCIPgetNPrimalLPs(SCIP* scip)
+    SCIP_Longint SCIPgetNPrimalLPIterations(SCIP* scip)
+    SCIP_Longint SCIPgetNDualLPs(SCIP* scip)
+    SCIP_Longint SCIPgetNDualLPIterations(SCIP* scip)
+    SCIP_Longint SCIPgetNBarrierLPs(SCIP* scip)
+    SCIP_Longint SCIPgetNBarrierLPIterations(SCIP* scip)
+    SCIP_Longint SCIPgetNResolveLPs(SCIP* scip)
+    SCIP_Longint SCIPgetNResolveLPIterations(SCIP* scip)
+    SCIP_Longint SCIPgetNPrimalResolveLPs(SCIP* scip)
+    SCIP_Longint SCIPgetNPrimalResolveLPIterations(SCIP* scip)
+    SCIP_Longint SCIPgetNDualResolveLPs(SCIP* scip)
+    SCIP_Longint SCIPgetNDualResolveLPIterations(SCIP* scip)
+    SCIP_Longint SCIPgetNNodeLPs(SCIP* scip)
+    SCIP_Longint SCIPgetNNodeLPIterations(SCIP* scip)
+    SCIP_Longint SCIPgetNNodeInitLPs(SCIP* scip)
+    SCIP_Longint SCIPgetNNodeInitLPIterations(SCIP* scip)
+    SCIP_Longint SCIPgetNDivingLPs(SCIP* scip)
+    SCIP_Longint SCIPgetNDivingLPIterations(SCIP* scip)
+    SCIP_Longint SCIPgetNStrongbranchs(SCIP* scip)
+    SCIP_Longint SCIPgetNStrongbranchLPIterations(SCIP* scip)
+    SCIP_Longint SCIPgetNRootStrongbranchs(SCIP* scip)
+    SCIP_Longint SCIPgetNRootStrongbranchLPIterations(SCIP* scip)
+    int SCIPgetNPriceRounds(SCIP* scip)
+    int SCIPgetNPricevars(SCIP* scip)
+    int SCIPgetNPricevarsFound(SCIP* scip)
+    int SCIPgetNPricevarsApplied(SCIP* scip)
+    int SCIPgetNSepaRounds(SCIP* scip)
+    int SCIPgetNCutsFound(SCIP* scip)
+    int SCIPgetNCutsFoundRound(SCIP* scip)
+    SCIP_Longint SCIPgetNConflictConssFound(SCIP* scip)
+    int SCIPgetNConflictConssFoundNode(SCIP* scip)
+    SCIP_Longint SCIPgetNConflictConssApplied(SCIP* scip)
+    int SCIPgetMaxDepth(SCIP* scip)
+    int SCIPgetMaxTotalDepth(SCIP* scip)
+    SCIP_Longint SCIPgetNBacktracks(SCIP* scip)
+    int SCIPgetNActiveConss(SCIP* scip)
+    int SCIPgetNEnabledConss(SCIP* scip)
+    SCIP_Real SCIPgetAvgDualbound(SCIP* scip)
+    SCIP_Real SCIPgetAvgLowerbound(SCIP* scip)
+    SCIP_Real SCIPgetLowerbound(SCIP* scip)
+    SCIP_Real SCIPgetLowerboundRoot(SCIP* scip)
+    SCIP_Real SCIPgetFirstLPDualboundRoot(SCIP* scip)
+    SCIP_Real SCIPgetFirstLPLowerboundRoot(SCIP* scip)
+    SCIP_Real SCIPgetFirstPrimalBound(SCIP* scip)
+    SCIP_Real SCIPgetUpperbound(SCIP* scip)
+    SCIP_Real SCIPgetCutoffbound(SCIP* scip)
+    SCIP_Bool SCIPisPrimalboundSol(SCIP* scip)
+    SCIP_Real SCIPgetTransGap(SCIP* scip)
+    SCIP_Longint SCIPgetNSolsFound(SCIP* scip)
+    SCIP_Longint SCIPgetNLimSolsFound(SCIP* scip)
+    SCIP_Longint SCIPgetNBestSolsFound(SCIP* scip)
+    SCIP_Real SCIPgetAvgPseudocost(SCIP* scip, SCIP_Real solvaldelta)
+    SCIP_Real SCIPgetAvgPseudocostCurrentRun(SCIP* scip, SCIP_Real solvaldelta)
+    SCIP_Real SCIPgetAvgPseudocostCount(SCIP* scip, SCIP_BRANCHDIR dir)
+    SCIP_Real SCIPgetAvgPseudocostCountCurrentRun(SCIP* scip, SCIP_BRANCHDIR dir)
+    SCIP_Real SCIPgetPseudocostCount(SCIP* scip, SCIP_BRANCHDIR dir, SCIP_Bool onlycurrentrun)
+    SCIP_Real SCIPgetAvgPseudocostScore(SCIP* scip)
+    SCIP_Real SCIPgetPseudocostVariance(SCIP* scip, SCIP_BRANCHDIR branchdir, SCIP_Bool onlycurrentrun)
+    SCIP_Real SCIPgetAvgPseudocostScoreCurrentRun(SCIP* scip)
+    SCIP_Real SCIPgetAvgConflictScore(SCIP* scip)
+    SCIP_Real SCIPgetAvgConflictScoreCurrentRun(SCIP* scip)
+    SCIP_Real SCIPgetAvgConflictlengthScore(SCIP* scip)
+    SCIP_Real SCIPgetAvgConflictlengthScoreCurrentRun(SCIP* scip)
+    SCIP_Real SCIPgetAvgInferences(SCIP* scip, SCIP_BRANCHDIR dir)
+    SCIP_Real SCIPgetAvgInferencesCurrentRun(SCIP* scip, SCIP_BRANCHDIR dir)
+    SCIP_Real SCIPgetAvgInferenceScore(SCIP* scip)
+    SCIP_Real SCIPgetAvgInferenceScoreCurrentRun(SCIP* scip)
+    SCIP_Real SCIPgetAvgCutoffs(SCIP* scip, SCIP_BRANCHDIR dir)
+    SCIP_Real SCIPgetAvgCutoffsCurrentRun(SCIP* scip, SCIP_BRANCHDIR dir)
+    SCIP_Real SCIPgetAvgCutoffScore(SCIP* scip)
+    SCIP_Real SCIPgetAvgCutoffScoreCurrentRun(SCIP* scip)
+    SCIP_Real SCIPgetDeterministicTime(SCIP* scip)
 
     # Parameter Functions
     SCIP_RETCODE SCIPsetBoolParam(SCIP* scip, char* name, SCIP_Bool value)
@@ -1675,6 +1758,12 @@ cdef extern from "scip/scip_tree.h":
     SCIP_NODE* SCIPgetBestLeaf(SCIP* scip)
     SCIP_NODE* SCIPgetBestNode(SCIP* scip)
     SCIP_NODE* SCIPgetBestboundNode(SCIP* scip)
+    int SCIPgetFocusDepth(SCIP *scip)
+    int SCIPgetPlungeDepth(SCIP *scip)
+    int SCIPgetEffectiveRootDepth(SCIP* scip)
+    int SCIPgetNNodesLeft(SCIP* scip)
+    int SCIPgetCutoffdepth(SCIP* scip)
+    int SCIPgetRepropdepth(SCIP* scip)
 
 cdef extern from "scip/scip_var.h":
     SCIP_RETCODE SCIPchgVarBranchPriority(SCIP* scip, SCIP_VAR* var, int branchpriority)
@@ -1943,8 +2032,7 @@ cdef extern from "scip/branch_vanillafullstrong.h":
                                               SCIP_Real** candscores,
                                               int* ncands,
                                               int* npriocands,
-                                              int* bestcand,
-                                              int* scip_result)
+                                              int* bestcand)
 
 
 cdef class Expr:

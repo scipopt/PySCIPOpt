@@ -5,7 +5,9 @@ from os.path import abspath
 from os.path import splitext
 import sys
 import warnings
+import numpy as np
 
+cimport numpy as np
 cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPointer
@@ -4577,9 +4579,10 @@ cdef class Model:
         cdef int        npriocands
         cdef int        bestcand
         cdef int        scip_result
-
+        
+        scip_result = 1
         PY_SCIP_CALL(SCIPgetVanillafullstrongData(self._scip,
-            &cands, &candscores, &ncands, &npriocands, &bestcand, &scip_result))
+            &cands, &candscores, &ncands, &npriocands, &bestcand))
 
         assert cands is not NULL
         assert ncands > 0 and npriocands >= 0
@@ -4592,6 +4595,162 @@ cdef class Model:
             bestcand,
             scip_result
         )
+
+    def getSolvingStats(self):
+        cdef SCIP* scip = self._scip
+
+        # recover open nodes
+        cdef SCIP_NODE **leaves
+        cdef SCIP_NODE **children
+        cdef SCIP_NODE **siblings
+        cdef int nleaves, nchildren, nsiblings, i
+
+        PY_SCIP_CALL(SCIPgetOpenNodesData(scip, &leaves, &children, &siblings, &nleaves, &nchildren, &nsiblings))
+
+        # recover upper and lower bounds
+        cdef np.float_t primalbound = SCIPgetPrimalbound(scip)
+        cdef np.float_t dualbound = SCIPgetDualbound(scip)
+
+        # record open node quantiles
+        cdef np.ndarray[np.float_t, ndim=1] lowerbounds = np.empty([nleaves+nchildren+nsiblings+1], dtype=np.float)
+
+        lowerbounds[0] = dualbound
+        for i in range(nleaves):
+            lowerbounds[1+i] = leaves[i].lowerbound
+        for i in range(nchildren):
+            lowerbounds[1+nleaves+i] = children[i].lowerbound
+        for i in range(nsiblings):
+            lowerbounds[1+nleaves+nchildren+i] = siblings[i].lowerbound
+
+        percentiles = (10, 25, 50, 75, 90)
+        qs = np.percentile(lowerbounds, percentiles, overwrite_input=True, interpolation='linear')
+
+        return {
+
+            # open nodes (parent's) dual bounds quantiles
+            'opennodes_10quant': qs[0],
+            'opennodes_25quant': qs[1],
+            'opennodes_50quant': qs[2],
+            'opennodes_75quant': qs[3],
+            'opennodes_90quant': qs[4],
+
+            # hardcoded statistics
+            'ninternalnodes': scip.stat.ninternalnodes,
+            'ncreatednodes': scip.stat.ncreatednodes,
+            'ncreatednodesrun': scip.stat.ncreatednodesrun,
+            'nactivatednodes': scip.stat.nactivatednodes,
+            'ndeactivatednodes': scip.stat.ndeactivatednodes,
+
+            # http://scip.zib.de/doc/html/group__PublicLPMethods.php
+
+            'lp_obj': SCIPgetLPObjval(scip),
+
+            # http://scip.zib.de/doc/html/group__PublicTreeMethods.php
+
+            'depth': SCIPgetDepth(scip),
+            'focusdepth': SCIPgetFocusDepth(scip),
+            'plungedepth': SCIPgetPlungeDepth(scip),
+            'effectiverootdepth': SCIPgetEffectiveRootDepth(scip),
+            'inrepropagation': SCIPinRepropagation(scip),
+            'nleaves': SCIPgetNLeaves(scip),
+            'nnodesleft': SCIPgetNNodesLeft(scip),  # nleaves + nchildren + nsiblings
+            'cutoffdepth': SCIPgetCutoffdepth(scip),  # depth of first node in active path that is marked being cutoff
+            'repropdepth': SCIPgetRepropdepth(scip),  # depth of first node in active path that has to be propagated again
+
+            # http://scip.zib.de/doc/html/group__PublicSolvingStatsMethods.php
+
+            'nruns': SCIPgetNRuns(scip),
+            'nreoptruns': SCIPgetNReoptRuns(scip),
+            'nnodes': SCIPgetNNodes(scip),
+            'ntotalnodes': SCIPgetNTotalNodes(scip),  # total number of processed nodes in all runs, including the focus node
+            'nfeasibleleaves': SCIPgetNFeasibleLeaves(scip),  # number of leaf nodes processed with feasible relaxation solution
+            'ninfeasibleleaves': SCIPgetNInfeasibleLeaves(scip),  # number of infeasible leaf nodes processed
+            'nobjlimleaves': SCIPgetNObjlimLeaves(scip),  # number of processed leaf nodes that hit LP objective limit
+            'ndelayedcutoffs': SCIPgetNDelayedCutoffs(scip),  # gets number of times a selected node was from a cut off subtree
+            'nlps': SCIPgetNLPs(scip),
+            'nlpiterations': SCIPgetNLPIterations(scip),
+            'nnzs': SCIPgetNNZs(scip),
+            'nrootlpiterations': SCIPgetNRootLPIterations(scip),
+            'nrootfirstlpiterations': SCIPgetNRootFirstLPIterations(scip),
+            'nprimallps': SCIPgetNPrimalLPs(scip),
+            'nprimallpiterations': SCIPgetNPrimalLPIterations(scip),
+            'nduallps': SCIPgetNDualLPs(scip),
+            'nduallpiterations': SCIPgetNDualLPIterations(scip),
+            'nbarrierlps': SCIPgetNBarrierLPs(scip),
+            'nbarrierlpiterations': SCIPgetNBarrierLPIterations(scip),
+            'nresolvelps': SCIPgetNResolveLPs(scip),
+            'nresolvelpiterations': SCIPgetNResolveLPIterations(scip),
+            'nprimalresolvelps': SCIPgetNPrimalResolveLPs(scip),
+            'nprimalresolvelpiterations': SCIPgetNPrimalResolveLPIterations(scip),
+            'ndualresolvelps': SCIPgetNDualResolveLPs(scip),
+            'ndualresolvelpiterations': SCIPgetNDualResolveLPIterations(scip),
+            'nnodelps': SCIPgetNNodeLPs(scip),
+            'nnodelpiterations': SCIPgetNNodeLPIterations(scip),
+            'nnodeinitlps': SCIPgetNNodeInitLPs(scip),
+            'nnodeinitlpiterations': SCIPgetNNodeInitLPIterations(scip),
+            'ndivinglps': SCIPgetNDivingLPs(scip),
+            'ndivinglpiterations': SCIPgetNDivingLPIterations(scip),
+            'nstrongbranchs': SCIPgetNStrongbranchs(scip),
+            'nstrongbranchlpiterations': SCIPgetNStrongbranchLPIterations(scip),
+            'nrootstrongbranchs': SCIPgetNRootStrongbranchs(scip),
+            'nrootstrongbranchlpiterations': SCIPgetNRootStrongbranchLPIterations(scip),
+            'npricerounds': SCIPgetNPriceRounds(scip),
+            'npricevars': SCIPgetNPricevars(scip),
+            'npricevarsfound': SCIPgetNPricevarsFound(scip),
+            'npricevarsapplied': SCIPgetNPricevarsApplied(scip),
+            'nseparounds': SCIPgetNSepaRounds(scip),
+            'ncutsfound': SCIPgetNCutsFound(scip),
+            'ncutsfoundround': SCIPgetNCutsFoundRound(scip),
+            'ncutsapplied': SCIPgetNCutsApplied(scip),
+            'nconflictconssfound': SCIPgetNConflictConssFound(scip),
+            'nconflictconssfoundnode': SCIPgetNConflictConssFoundNode(scip),
+            'nconflictconssapplied': SCIPgetNConflictConssApplied(scip),
+            'maxdepth': SCIPgetMaxDepth(scip),  # maximal depth of all processed nodes in current branch and bound run (excluding probing nodes)
+            'maxtotaldepth': SCIPgetMaxTotalDepth(scip),
+            'nbacktracks': SCIPgetNBacktracks(scip),  # total number of backtracks, i.e. number of times, the new node was selected from the leaves queue
+            'nactivesonss': SCIPgetNActiveConss(scip),
+            'nenabledconss': SCIPgetNEnabledConss(scip),
+            'avgdualbound': SCIPgetAvgDualbound(scip),  # average dual bound of all unprocessed nodes for original problem
+            'avglowerbound': SCIPgetAvgLowerbound(scip),  # average lower (dual) bound of all unprocessed nodes in transformed problem
+            'dualbound': SCIPgetDualbound(scip),  # global dual bound
+            'lowerbound': SCIPgetLowerbound(scip),  # global lower (dual) bound in transformed problem
+            'dualboundroot': SCIPgetDualboundRoot(scip),  # gets dual bound of the root node for the original problem
+            'lowerboundroot': SCIPgetLowerboundRoot(scip),  # gets lower (dual) bound in transformed problem of the root node
+            'firstlpdualboundroot': SCIPgetFirstLPDualboundRoot(scip),  # gets dual bound for the original problem obtained by the first LP solve at the root node
+            'firstlplowerboundroot': SCIPgetFirstLPLowerboundRoot(scip),  # gets lower (dual) bound in transformed problem obtained by the first LP solve at the root node
+            'firstprimalbound': SCIPgetFirstPrimalBound(scip),  # the primal bound of the very first solution
+            'primalbound': SCIPgetPrimalbound(scip),  # gets global primal bound (objective value of best solution or user objective limit) for the original problem
+            'upperbound': SCIPgetUpperbound(scip),  # gets global upper (primal) bound in transformed problem (objective value of best solution or user objective limit)
+            'cutoffbound': SCIPgetCutoffbound(scip),
+            'isprimalboundsol': SCIPisPrimalboundSol(scip),
+            'gap': SCIPgetGap(scip),
+            'transgap': SCIPgetTransGap(scip),
+            'nsolsfound': SCIPgetNSolsFound(scip),
+            'nlimsolsfound': SCIPgetNLimSolsFound(scip),
+            'nbestsolsfound': SCIPgetNBestSolsFound(scip),
+            # SCIPgetAvgPseudocost(scip, SCIP_Real solvaldelta)
+            # SCIPgetAvgPseudocostCurrentRun(scip, SCIP_Real solvaldelta)
+            # SCIPgetAvgPseudocostCount(scip, SCIP_BRANCHDIR dir)
+            # SCIPgetAvgPseudocostCountCurrentRun(scip, SCIP_BRANCHDIR dir)
+            # SCIPgetPseudocostCount(scip, SCIP_BRANCHDIR dir, SCIP_Bool onlycurrentrun)
+            'avgpseudocostscore': SCIPgetAvgPseudocostScore(scip),
+            # SCIPgetPseudocostVariance(scip, SCIP_BRANCHDIR branchdir, SCIP_Bool onlycurrentrun)
+            'avgpseudocostscorecurrentrun': SCIPgetAvgPseudocostScoreCurrentRun(scip),
+            'avgconflictscore': SCIPgetAvgConflictScore(scip),
+            'avgconflictscorecurrentrun': SCIPgetAvgConflictScoreCurrentRun(scip),
+            'avgconfliclengthscore': SCIPgetAvgConflictlengthScore(scip),
+            'avgconfliclengthscorecurrentrun': SCIPgetAvgConflictlengthScoreCurrentRun(scip),
+            # SCIPgetAvgInferences(scip, SCIP_BRANCHDIR dir)
+            # SCIPgetAvgInferencesCurrentRun(scip, SCIP_BRANCHDIR dir)
+            'avginferencescore': SCIPgetAvgInferenceScore(scip),
+            'avginferencescorecurrentrun': SCIPgetAvgInferenceScoreCurrentRun(scip),
+            # SCIPgetAvgCutoffs(scip, SCIP_BRANCHDIR dir)
+            # SCIPgetAvgCutoffsCurrentRun(scip, SCIP_BRANCHDIR dir)
+            'avgcutoffscore': SCIPgetAvgCutoffScore(scip),
+            'avgcuroffscorecurrentrun': SCIPgetAvgCutoffScoreCurrentRun(scip),
+            'deterministictime': SCIPgetDeterministicTime(scip),  # gets deterministic time number of LPs solved so far
+            'solvingtime': SCIPgetSolvingTime(scip),
+        }
 
 # debugging memory management
 def is_memory_freed():
