@@ -303,13 +303,15 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_ROW:
+        SCIP_Real objprod
+        SCIP_Real sqrnorm
         pass
 
     ctypedef struct SCIP_NLROW:
         pass
 
     ctypedef struct SCIP_COL:
-        pass
+        int age
 
     ctypedef struct SCIP_SOL:
         pass
@@ -1748,6 +1750,22 @@ cdef extern from "scip/pub_lp.h":
     int SCIPcolGetIndex(SCIP_COL* col)
     SCIP_Real SCIPcolGetObj(SCIP_COL *col)
 
+cdef extern from "scip/lp.h":
+    SCIP_Real SCIPlpGetObjNorm(SCIP_LP* lp)
+    void SCIPlpRecalculateObjSqrNorm(SCIP_SET* set, SCIP_LP* lp)
+    SCIP_Real SCIProwGetNorm(SCIP_ROW* row)
+    SCIP_Real SCIProwGetDualsol(SCIP_ROW* row)
+    int SCIProwGetAge(SCIP_ROW* row)
+    SCIP_Real SCIProwGetLPActivity(SCIP_ROW* row,
+                                   SCIP_SET* set,
+                                   SCIP_STAT* stat,
+                                   SCIP_LP* lp)
+    SCIP_Real SCIProwGetObjParallelism(SCIP_ROW* row,
+                                       SCIP_SET* set,
+                                       SCIP_LP* lp)
+
+    SCIP_Real SCIPcolGetObj(SCIP_COL *col)
+
 cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
     SCIP_Longint SCIPgetNLeaves(SCIP* scip)
@@ -1767,6 +1785,9 @@ cdef extern from "scip/scip_tree.h":
 
 cdef extern from "scip/scip_var.h":
     SCIP_RETCODE SCIPchgVarBranchPriority(SCIP* scip, SCIP_VAR* var, int branchpriority)
+
+cdef extern from "scip/def.h":
+    SCIP_Real REALABS(SCIP_Real x)
 
 cdef extern from "scip/struct_branch.h":
     cdef struct SCIP_Branchrule:
