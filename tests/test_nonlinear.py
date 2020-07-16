@@ -55,7 +55,7 @@ def test_string_poly():
 
     m.optimize()
 
-    assert abs(m.getPrimalbound() - 1.6924910128) < 1.0e-5
+    assert abs(m.getPrimalbound() - 1.6924910128) < 1.0e-3
 
 # test string with original formulation (uses GenExpr)
 def test_string():
