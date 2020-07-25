@@ -1656,7 +1656,7 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPupdateNodeLowerbound(self._scip, node.scip_node, lb))
 
-    # node methods
+    # Node methods
     def getBestChild(self):
         """gets the best child of the focus node w.r.t. the node selection strategy."""
         return Node.create(SCIPgetBestChild(self._scip))
@@ -1696,6 +1696,11 @@ cdef class Model:
         siblings = [Node.create(_siblings[i]) for i in range(_nsiblings)]
 
         return leaves, children, siblings
+
+    def repropagateNode(self, Node node):
+        """marks the given node to be propagated again the next time a node of its subtree is processed"""
+        PY_SCIP_CALL(SCIPrepropagateNode(self._scip, node.scip_node))
+
 
     # LP Methods
     def getLPSolstat(self):
@@ -2185,6 +2190,7 @@ cdef class Model:
             PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.scip_node, cons.scip_cons, validnode.scip_node))
         else:
             PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.scip_node, cons.scip_cons, NULL))
+        Py_INCREF(cons)
 
     def addConsLocal(self, Constraint cons, Node validnode=None):
         """Add a constraint to the current node
@@ -2197,6 +2203,7 @@ cdef class Model:
             PY_SCIP_CALL(SCIPaddConsLocal(self._scip, cons.scip_cons, validnode.scip_node))
         else:
             PY_SCIP_CALL(SCIPaddConsLocal(self._scip, cons.scip_cons, NULL))
+        Py_INCREF(cons)
 
     def addConsSOS1(self, vars, weights=None, name="SOS1cons",
                 initial=True, separate=True, enforce=True, check=True,
