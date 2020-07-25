@@ -1656,7 +1656,7 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPupdateNodeLowerbound(self._scip, node.scip_node, lb))
 
-    # node methods
+    # Node methods
     def getBestChild(self):
         """gets the best child of the focus node w.r.t. the node selection strategy."""
         return Node.create(SCIPgetBestChild(self._scip))
@@ -1696,6 +1696,10 @@ cdef class Model:
         siblings = [Node.create(_siblings[i]) for i in range(_nsiblings)]
 
         return leaves, children, siblings
+
+    def repropagateNode(self, Node node):
+        PY_SCIP_CALL(SCIPrepropagateNode(self._scip, node.scip_node))
+
 
     # LP Methods
     def getLPSolstat(self):
