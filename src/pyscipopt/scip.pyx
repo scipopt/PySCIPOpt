@@ -1698,7 +1698,7 @@ cdef class Model:
         return leaves, children, siblings
 
     def repropagateNode(self, Node node):
-    """marks the given node to be propagated again the next time a node of its subtree is processed"""
+        """marks the given node to be propagated again the next time a node of its subtree is processed"""
         PY_SCIP_CALL(SCIPrepropagateNode(self._scip, node.scip_node))
 
 
