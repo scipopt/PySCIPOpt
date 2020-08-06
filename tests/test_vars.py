@@ -47,6 +47,25 @@ def test_variablebounds():
     print("y0", m.getVal(y0))
     print("t", m.getVal(t))
 
+def test_vtype():
+    m = Model()
+
+    x = m.addVar(vtype= 'C', lb=-5.5, ub=8)
+    y = m.addVar(vtype= 'I', lb=-5.2, ub=8)
+    z = m.addVar(vtype= 'B', lb=-5.2, ub=8)
+    w = m.addVar(vtype= 'M', lb=-5.2, ub=8)
+
+    assert x.vtype() == "CONTINUOUS"
+    assert y.vtype() == "INTEGER"
+    assert z.vtype() == "BINARY"
+    assert w.vtype() == "IMPLINT"
+
+    m.chgVarType(x, 'I')
+    assert x.vtype() == "INTEGER"
+
+    m.chgVarType(y, 'M')
+    assert y.vtype() == "IMPLINT"
 
 if __name__ == "__main__":
     test_variablebounds()
+    test_vtype()
