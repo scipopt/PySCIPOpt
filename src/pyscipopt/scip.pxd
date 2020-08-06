@@ -624,6 +624,9 @@ cdef extern from "scip/scip.h":
     SCIP_STATUS SCIPgetStatus(SCIP* scip)
     SCIP_Real SCIPepsilon(SCIP* scip)
     SCIP_Real SCIPfeastol(SCIP* scip)
+    SCIP_RETCODE SCIPsetObjIntegral(SCIP* scip)
+    SCIP_Real SCIPgetLocalOrigEstimate(SCIP* scip)
+    SCIP_Real SCIPgetLocalTransEstimate(SCIP* scip)
 
     # Solve Methods
     SCIP_RETCODE SCIPsolve(SCIP* scip)
@@ -771,6 +774,7 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPconsIsDynamic(SCIP_CONS* cons)
     SCIP_Bool SCIPconsIsRemovable(SCIP_CONS* cons)
     SCIP_Bool SCIPconsIsStickingAtNode(SCIP_CONS* cons)
+    SCIP_Bool SCIPconsIsActive(SCIP_CONS* cons)
     SCIP_CONSDATA* SCIPconsGetData(SCIP_CONS* cons)
     SCIP_CONSHDLR* SCIPconsGetHdlr(SCIP_CONS* cons)
     const char* SCIPconshdlrGetName(SCIP_CONSHDLR* conshdlr)

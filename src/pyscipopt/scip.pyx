@@ -877,6 +877,10 @@ cdef class Constraint:
         """Retrieve True if constraint is only locally valid or not added to any (sub)problem"""
         return SCIPconsIsStickingAtNode(self.scip_cons)
 
+    def isActive(self):
+        """returns TRUE iff constraint is active in the current node"""
+        return SCIPconsIsActive(self.scip_cons)
+
     def isLinear(self):
         """Retrieve True if constraint is linear"""
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
@@ -1295,6 +1299,27 @@ cdef class Model:
             return SCIPgetOrigObjoffset(self._scip)
         else:
             return SCIPgetTransObjoffset(self._scip)
+
+
+    def setObjIntegral(self):
+        """informs SCIP that the objective value is always integral in every feasible solution
+        Note: This function should be used to inform SCIP that the objective function is integral, helping to improve the
+        performance. This is useful when using column generation. If no column generation (pricing) is used, SCIP
+        automatically detects whether the objective function is integral or can be scaled to be integral. However, in
+        any case, the user has to make sure that no variable is added during the solving process that destroys this
+        property.
+        """
+        PY_SCIP_CALL(SCIPsetObjIntegral(self._scip))
+
+    def getLocalEstimate(self, original = False):
+        """gets estimate of best primal solution w.r.t. original or transformed problem contained in current subtree
+
+        :param original: estimate of original or transformed problem (Default value = False)
+        """
+        if original:
+            return SCIPgetLocalOrigEstimate(self._scip)
+        else:
+            return SCIPgetLocalTransEstimate(self._scip)
 
     # Setting parameters
     def setPresolve(self, setting):
