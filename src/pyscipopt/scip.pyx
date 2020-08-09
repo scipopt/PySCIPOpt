@@ -878,7 +878,7 @@ cdef class Constraint:
         return SCIPconsIsStickingAtNode(self.scip_cons)
 
     def isActive(self):
-        """returns TRUE iff constraint is active in the current node"""
+        """returns True iff constraint is active in the current node"""
         return SCIPconsIsActive(self.scip_cons)
 
     def isLinear(self):
