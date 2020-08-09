@@ -754,14 +754,16 @@ cdef class Variable(Expr):
         return self.name
 
     def vtype(self):
-        """Retrieve the variables type (BINARY, INTEGER or CONTINUOUS)"""
+        """Retrieve the variables type (BINARY, INTEGER, IMPLINT or CONTINUOUS)"""
         vartype = SCIPvarGetType(self.scip_var)
         if vartype == SCIP_VARTYPE_BINARY:
             return "BINARY"
         elif vartype == SCIP_VARTYPE_INTEGER:
             return "INTEGER"
-        elif vartype == SCIP_VARTYPE_CONTINUOUS or vartype == SCIP_VARTYPE_IMPLINT:
+        elif vartype == SCIP_VARTYPE_CONTINUOUS:
             return "CONTINUOUS"
+        elif vartype == SCIP_VARTYPE_IMPLINT:
+            return "IMPLINT"
 
     def isOriginal(self):
         """Retrieve whether the variable belongs to the original problem"""
@@ -1361,35 +1363,40 @@ cdef class Model:
         """Create a new variable. Default variable is non-negative and continuous.
 
         :param name: name of the variable, generic if empty (Default value = '')
-        :param vtype: type of the variable (Default value = 'C')
+        :param vtype: type of the variable: 'C' continuous, 'I' integer, 'B' binary, and 'M' implicit integer
+        (see https://www.scipopt.org/doc/html/FAQ.php#implicitinteger) (Default value = 'C')
         :param lb: lower bound of the variable, use None for -infinity (Default value = 0.0)
         :param ub: upper bound of the variable, use None for +infinity (Default value = None)
         :param obj: objective value of variable (Default value = 0.0)
         :param pricedVar: is the variable a pricing candidate? (Default value = False)
 
         """
+        cdef SCIP_VAR* scip_var
 
         # replace empty name with generic one
         if name == '':
             name = 'x'+str(SCIPgetNVars(self._scip)+1)
-
         cname = str_conversion(name)
+
+        # replace None with corresponding infinity
         if lb is None:
             lb = -SCIPinfinity(self._scip)
-        cdef SCIP_VAR* scip_var
+        if ub is None:
+            ub = SCIPinfinity(self._scip)
+
         vtype = vtype.upper()
         if vtype in ['C', 'CONTINUOUS']:
-            if ub is None:
-                ub = SCIPinfinity(self._scip)
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_CONTINUOUS))
         elif vtype in ['B', 'BINARY']:
-            if ub is None:
+            if ub > 1.0:
                 ub = 1.0
+            if lb < 0.0:
+                lb = 0.0
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_BINARY))
         elif vtype in ['I', 'INTEGER']:
-            if ub is None:
-                ub = SCIPinfinity(self._scip)
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_INTEGER))
+        elif vtype in ['M', 'IMPLINT']:
+            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_IMPLINT))
         else:
             raise Warning("unrecognized variable type")
 
@@ -1600,6 +1607,8 @@ cdef class Model:
             PY_SCIP_CALL(SCIPchgVarType(self._scip, var.scip_var, SCIP_VARTYPE_BINARY, &infeasible))
         elif vtype in ['I', 'INTEGER']:
             PY_SCIP_CALL(SCIPchgVarType(self._scip, var.scip_var, SCIP_VARTYPE_INTEGER, &infeasible))
+        elif vtype in ['M', 'IMPLINT']:
+            PY_SCIP_CALL(SCIPchgVarType(self._scip, var.scip_var, SCIP_VARTYPE_IMPLINT, &infeasible))
         else:
             raise Warning("unrecognized variable type")
         if infeasible:
