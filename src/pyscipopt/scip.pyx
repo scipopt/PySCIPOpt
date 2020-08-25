@@ -2237,7 +2237,6 @@ cdef class Model:
                                    propagate, removable, separate,stickingatnode)
             py_cons = self._createCons(cons, **kwargs)
             scip_cons = <SCIP_CONS*> py_cons.scip_cons
-            PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
         else:
             raise Warning(f"Argument cons is of incorrect type ({type(cons)}).")
 
@@ -2247,8 +2246,8 @@ cdef class Model:
             PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.scip_node, scip_cons, NULL))
         else:
             raise Warning(f"Argument validnode is of incorrect type ({type(validnode)}).")
-
-
+        # TODO: This is needed for the ExprCons case. Is it a problem for the Constraint case?
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
 
     def addConsLocal(self, Constraint cons, Node validnode=None):
