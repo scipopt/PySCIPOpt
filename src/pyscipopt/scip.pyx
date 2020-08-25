@@ -1989,7 +1989,7 @@ cdef class Model:
         kwargs['rhs'] = SCIPinfinity(self._scip) if cons._rhs is None else cons._rhs
         return kwargs
 
-    def _addLinCons(self, ExprCons lincons, **kwargs):
+    def _createLinCons(self, ExprCons lincons, **kwargs):
         assert isinstance(lincons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
 
         assert lincons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % lincons.expr.degree()
@@ -2012,15 +2012,22 @@ cdef class Model:
             kwargs['separate'], kwargs['enforce'], kwargs['check'],
             kwargs['propagate'], kwargs['local'], kwargs['modifiable'],
             kwargs['dynamic'], kwargs['removable'], kwargs['stickingatnode']))
-
-        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        PyCons = Constraint.create(scip_cons)
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-
+        #py_cons =
         free(vars_array)
         free(coeffs_array)
+        #PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        #PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
-        return PyCons
+        return Constraint.create(scip_cons)
+
+    def _addLinCons(self, ExprCons lincons, **kwargs):
+        cdef Constraint py_cons
+        py_cons = self._createLinCons(lincons, **kwargs)
+        cdef SCIP_CONS* scip_cons
+        scip_cons = <SCIP_CONS*> py_cons.scip_cons
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+        return py_cons
 
     def _addQuadCons(self, ExprCons quadcons, **kwargs):
         terms = quadcons.expr.terms
