@@ -1363,11 +1363,12 @@ cdef class Model:
         if not onlyroot:
             self.setIntParam("propagating/maxrounds", 0)
 
-    def writeProblem(self, filename='model.cip', trans=False):
+    def writeProblem(self, filename='model.cip', trans=False, genericnames=False):
         """Write current model/problem to a file.
 
         :param filename: the name of the file to be used (Default value = 'model.cip')
         :param trans: indicates whether the transformed problem is written to file (Default value = False)
+        :param genericnames: indicates whether the problem should be written with generic variable and constraint names (Default value = False)
 
         """
         fn = str_conversion(filename)
@@ -1377,9 +1378,9 @@ cdef class Model:
         fn = fn + ext
         ext = ext[1:]
         if trans:
-            PY_SCIP_CALL(SCIPwriteTransProblem(self._scip, fn, ext, False))
+            PY_SCIP_CALL(SCIPwriteTransProblem(self._scip, fn, ext, genericnames))
         else:
-            PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, fn, ext, False))
+            PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, fn, ext, genericnames))
         print('wrote problem to file ' + str(fn))
 
     # Variable Functions

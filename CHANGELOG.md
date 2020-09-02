@@ -1,6 +1,8 @@
 # CHANGELOG
 
 ## Unreleased
+### Added
+- add parameter genericnames to Model.writeProblem() to allow for generic variable and constraint names
 
 ## 3.0.2 - 2020-08-09
 ### Added
