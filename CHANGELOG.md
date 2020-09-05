@@ -1,8 +1,13 @@
 # CHANGELOG
 
 ## Unreleased
+
+## 3.0.3 - 2020-09-05
 ### Added
 - add parameter genericnames to Model.writeProblem() to allow for generic variable and constraint names
+
+### Fixed
+- strip quotes from SCIPOPTDIR path variable that might confuse Windows systems
 
 ## 3.0.2 - 2020-08-09
 ### Added
