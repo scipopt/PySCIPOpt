@@ -1076,8 +1076,12 @@ cdef class Model:
         return SCIPgetNLPIterations(self._scip)
 
     def getNNodes(self):
-        """Retrieve the total number of processed nodes."""
+        """gets number of processed nodes in current run, including the focus node."""
         return SCIPgetNNodes(self._scip)
+
+    def getNTotalNodes(self):
+        """gets number of processed nodes in all runs, including the focus node."""
+        return SCIPgetNTotalNodes(self._scip)
 
     def getNFeasibleLeaves(self):
         """Retrieve number of leaf nodes processed with feasible relaxation solution."""
