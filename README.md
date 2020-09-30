@@ -167,7 +167,7 @@ Please cite [this paper](https://opus4.kobv.de/opus4-zib/frontdoor/index/index/d
 @incollection{MaherMiltenbergerPedrosoRehfeldtSchwarzSerrano2016,
   author = {Stephen Maher and Matthias Miltenberger and Jo{\~{a}}o Pedro Pedroso and Daniel Rehfeldt and Robert Schwarz and Felipe Serrano},
   title = {{PySCIPOpt}: Mathematical Programming in Python with the {SCIP} Optimization Suite},
-  booktitle = {Mathematical Software {\textendash} {ICMS} 2016}
+  booktitle = {Mathematical Software {\textendash} {ICMS} 2016},
   publisher = {Springer International Publishing},
   pages = {301--307},
   year = {2016},
