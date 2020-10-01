@@ -18,6 +18,7 @@ include "benders.pxi"
 include "benderscut.pxi"
 include "branchrule.pxi"
 include "conshdlr.pxi"
+include "cutsel.pxi"
 include "event.pxi"
 include "heuristic.pxi"
 include "presol.pxi"
@@ -3513,6 +3514,24 @@ cdef class Model:
         relax.name = name
 
         Py_INCREF(relax)
+
+    def includeCutsel(self, Cutsel cutsel, name, desc, priority):
+        """include a cut selector
+
+        :param Cutsel cutsel: cut selector
+        :param name: name of cut selector
+        :param desc: description of cut selector
+        :param priority: priority of the cut selector
+        """
+
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeCutsel(self._scip, nam, des,
+                                       priority, PyCutselCopy, PyCutselFree, PyCutselInit, PyCutselExit,
+                                       PyCutselInitsol, PyCutselExitsol, PyCutselSelect,
+                                       <SCIP_CUTSELDATA*> cutsel))
+        cutsel.model = <Model>weakref.proxy(self)
+        Py_INCREF(cutsel)
 
     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
         """Include a branching rule.

@@ -364,6 +364,12 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_BRANCHRULEDATA:
         pass
 
+    ctypedef struct SCIP_CUTSEL:
+        pass
+
+    ctypedef struct SCIP_CUTSELDATA:
+        pass
+
     ctypedef struct SCIP_PRESOL:
         pass
 
@@ -1089,6 +1095,24 @@ cdef extern from "scip/scip.h":
     SCIP_BRANCHRULEDATA* SCIPbranchruleGetData(SCIP_BRANCHRULE* branchrule)
     const char* SCIPbranchruleGetName(SCIP_BRANCHRULE* branchrule)
     SCIP_BRANCHRULE* SCIPfindBranchrule(SCIP* scip, const char*  name)
+
+    # cut selector plugin
+    SCIP_RETCODE SCIPincludeCutsel(SCIP* scip,
+                                   const char* name,
+                                   const char* desc,
+                                   int priority,
+                                   SCIP_RETCODE (*cutselcopy) (SCIP* scip, SCIP_CUTSEL* cutsel),
+                                   SCIP_RETCODE (*cutselfree) (SCIP* scip, SCIP_CUTSEL* cutsel),
+                                   SCIP_RETCODE (*cutselinit) (SCIP* scip, SCIP_CUTSEL* cutsel),
+                                   SCIP_RETCODE (*cutselexit) (SCIP* scip, SCIP_CUTSEL* cutsel),
+                                   SCIP_RETCODE (*cutselinitsol) (SCIP* scip, SCIP_CUTSEL* cutsel),
+                                   SCIP_RETCODE (*cutselexitsol) (SCIP* scip, SCIP_CUTSEL* cutsel),
+                                   SCIP_RETCODE (*cutselselect) (SCIP* scip, SCIP_CUTSEL* cutsel, SCIP_ROW** cuts,
+                                                                 int ncuts, SCIP_ROW** forcedcuts, int nforcedcuts,
+                                                                 SCIP_Bool root, int maxnselectedcuts,
+                                                                 int* nselectedcuts, SCIP_RESULT* result),
+                                   SCIP_CUTSELDATA* cutseldata)
+    SCIP_CUTSELDATA* SCIPcutselGetData(SCIP_CUTSEL* cutsel)
 
     # Benders' decomposition plugin
     SCIP_RETCODE SCIPincludeBenders(SCIP* scip,
