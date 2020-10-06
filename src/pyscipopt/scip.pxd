@@ -831,6 +831,9 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPflushRowExtensions(SCIP* scip, SCIP_ROW* row)
     SCIP_RETCODE SCIPaddVarToRow(SCIP* scip, SCIP_ROW* row, SCIP_VAR* var, SCIP_Real val)
     SCIP_RETCODE SCIPprintRow(SCIP* scip, SCIP_ROW* row, FILE* file)
+    int SCIPgetRowNumIntCols(SCIP* scip, SCIP_ROW* row)
+    int SCIProwGetNNonz(SCIP_ROW* row)
+    SCIP_Real SCIPgetRowObjParallelism(SCIP* scip, SCIP_ROW* row)
 
     # Column Methods
     SCIP_Real SCIPgetColRedcost(SCIP* scip, SCIP_COL* col)

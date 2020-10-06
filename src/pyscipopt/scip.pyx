@@ -1890,6 +1890,18 @@ cdef class Model:
         """Prints row."""
         PY_SCIP_CALL(SCIPprintRow(self._scip, row.scip_row, NULL))
 
+    def getRowNumIntCols(self, Row row):
+        """Returns number of intergal columns in the row"""
+        return PY_SCIP_CALL(SCIPgetRowNumIntCols(self._scip, row.scip_row))
+
+    def rowGetNNonz(self, Row row):
+        """Gets number of non-zero etnries in the row"""
+        return PY_SCIP_CALL(SCIProwGetNNonz(row.scip_row))
+
+    def getRowObjPrallelism(self, Row row):
+        """Returns 1 if the row is parallel, and 0 if orthogonal"""
+        return SCIPgetRowObjParallelism(self._scip, row.scip_row)
+
     # Cutting Plane Methods
     def addPoolCut(self, Row row not None):
         """if not already existing, adds row to global cut pool"""
