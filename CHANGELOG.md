@@ -8,6 +8,7 @@
 
 ### Fixed
 - strip quotes from SCIPOPTDIR path variable that might confuse Windows systems
+* `getTransformedVar` now uses `SCIPgetTransformedVar` instead of `SCIPtransformVar` which captures the variable
 
 ## 3.0.2 - 2020-08-09
 ### Added
