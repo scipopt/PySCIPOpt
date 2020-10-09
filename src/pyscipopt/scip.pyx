@@ -1453,7 +1453,8 @@ cdef class Model:
 
         """
         cdef SCIP_VAR* _tvar
-        PY_SCIP_CALL(SCIPtransformVar(self._scip, var.scip_var, &_tvar))
+        PY_SCIP_CALL(SCIPgetTransformedVar(self._scip, var.scip_var, &_tvar))
+
         return Variable.create(_tvar)
 
     def addVarLocks(self, Variable var, nlocksdown, nlocksup):
