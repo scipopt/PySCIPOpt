@@ -2,10 +2,12 @@
 from pyscipopt  import SCIP_RESULT, Relax, Term, Expr
 from POEM       import Polynomial, InfeasibleError, build_lagrangian, constrained_scipy, solve_GP, OptimizationProblem, Constraint
 from convert    import ExprToPoly, PolyToExpr
+from SONCpreprocess import preprocess
 
 import numpy as np
 import re
 
+scipy=False
 
 class SoncRelax(Relax):
     """Relaxator class using SONCs to find a lower bound"""
@@ -13,7 +15,7 @@ class SoncRelax(Relax):
         #dictionary to store solved instances and corresponding solution
         self.solved_instance = dict()
 
-    def relaxexec(self, scipy=False):
+    def relaxexec(self):
         """execution method of SONC relaxator"""
 
         def _nonnegCons(polynomial,rhs, lhs):
@@ -33,6 +35,7 @@ class SoncRelax(Relax):
             constype = cons.getType()
             lhs = self.model.getLhs(cons)
             rhs = self.model.getRhs(cons)
+            #print('lhs',lhs,'rhs',rhs)
             if  constype == 'expr':
                 #transform expr of SCIP into Polynomial of POEM
                 exprcons = self.model.getConsExprPolyCons(cons)
@@ -101,7 +104,7 @@ class SoncRelax(Relax):
         #TODO: 'polynomial unbounded at point ..' appears if variables do not appear in polynomial (possibility to fix them to 0?)
         #TODO: use transformed problem
         #print('transformed', self.model.getVars(transformed=True))
-        for i,y in enumerate(self.model.getVars(transformed=False)):
+        """for i,y in enumerate(self.model.getVars(transformed=False)):
             if y.getUbLocal() == y.getLbLocal() and y.getUbLocal() == 0:
                 #TODO: if variables are fixed, delete them from the objective and constraints, by evaluating in fixed value (need to make sure the variables order is still correct)
                 equ = False
@@ -122,21 +125,25 @@ class SoncRelax(Relax):
                 if y.getUbLocal() != self.model.infinity():
                     boundcons = ExprToPoly(Expr({Term(): -y.getUbLocal(), Term(y):1.0}), nvars)
                     optProblem.addCons(Constraint(boundcons, '<='))
-                if y.getLbLocal() != -self.model.infinity():
+                if y.getLbLocal() != -self.model.infinity() and y.getLbLocal() != 0:
                     boundcons = ExprToPoly(Expr({Term(): y.getLbLocal(), Term(y):-1.0}), nvars)
-                    optProblem.addCons(Constraint(boundcons, '<='))
-
+                    optProblem.addCons(Constraint(boundcons, '<='))"""
+        #print('before pre',optProblem)
+        #use preprocessing to get a structure that (hopefully) fits for POEM
+        optProblem = preprocess(optProblem, self.model)
+        #print('after pre', optProblem)
         """Here starts the real computation
             first try to use the GP, if that does not work use scipy (optional)"""
-        #try to solve probem using GP 
+        #try to solve problem using GP 
         problem = solve_GP(optProblem)
-        if problem.status=='optimal':
+
+        if optProblem.constraints!=[] and problem.status=='optimal' or type(problem)==dict() and problem['verify']:
             #print("lower bound: ", self.model.getObjoffset()-problem.value)
             #print("sol: ", optProblem.lowerbound)
             return {'result': SCIP_RESULT.SUCCESS, 'lowerbound': optProblem.lowerbound}
 
         if scipy:
-            #TODO: where can optional param scipy be changed during call?!
+            #TODO: where can optional param scipy be changed during call?!, do we really still need that?
             #check if instance was already solved
             #TODO: quite inefficient since we compute the lagrangian again, find easier way to check this
             ncon = len(optProblem.constraints)
