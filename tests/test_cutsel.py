@@ -26,7 +26,7 @@ class MaxEfficacyCutsel(Cutsel):
 
         assert len(sorted_cuts) == len(cuts)
 
-        return {'cuts': sorted_cuts, 'forcedcuts': forcedcuts, 'nselectedcuts': min(maxnselectedcuts, len(cuts), 10),
+        return {'cuts': sorted_cuts, 'nselectedcuts': min(maxnselectedcuts, len(cuts), 10),
                 'result': SCIP_RESULT.SUCCESS}
 
 

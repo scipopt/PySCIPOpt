@@ -85,7 +85,6 @@ cdef SCIP_RETCODE PyCutselSelect (SCIP* scip, SCIP_CUTSEL* cutsel, SCIP_ROW** cu
   # Retrieve the sorted cuts. Note that these do not need to be returned explicitly in result_dict.
   # Pycuts could have been sorted in place in cutselselect()
   pycuts = result_dict.get('cuts', pycuts)
-  pyforcedcuts = result_dict.get('forcedcuts', pyforcedcuts)
 
   assert len(pycuts) == ncuts
   assert len(pyforcedcuts) == nforcedcuts
@@ -93,9 +92,6 @@ cdef SCIP_RETCODE PyCutselSelect (SCIP* scip, SCIP_CUTSEL* cutsel, SCIP_ROW** cu
   #sort cuts
   for i,cut in enumerate(pycuts):
     cuts[i] = <SCIP_ROW *>((<Row>cut).scip_row)
-
-  for i,forcedcut in enumerate(pyforcedcuts):
-    forcedcuts[i] = <SCIP_ROW *>((<Row>cut).scip_row)
 
   nselectedcuts[0] = result_dict.get('nselectedcuts', 0)
   result[0] = result_dict.get('result', <SCIP_RESULT>result[0])
