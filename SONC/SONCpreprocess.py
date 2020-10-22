@@ -84,7 +84,7 @@ def boundNegativeTerms(problem, SCIPprob, index):
     A = polyOrig.A[1:]
     #print('polyOrig',polyOrig.non_squares, polyOrig.monomial_squares)
     #print(max(polyOrig.A[1,polyOrig.non_squares]), polyOrig.b,A)
-    minimal_exponent(polyOrig,n)
+    #minimal_exponent(polyOrig,n)
     for i in range(n):
         a[i] = 2*max(A[i,polyOrig.non_squares])
 
@@ -103,6 +103,7 @@ def boundNegativeTerms(problem, SCIPprob, index):
     #print('problem',problem)
     return problem
 
+#TODO: Do we really need the minimal exponent or is the feasible solution enough?
 def minimal_exponent(polynomial,n):
     constraints = []
     c = cvx.Variable(len(polynomial.non_squares),pos=True,name='c')
