@@ -1687,7 +1687,7 @@ cdef class Model:
         return SCIPgetNConss(self._scip)
 
     def getNIntVars(self):
-        """Retrieve the number of integer variables"""
+        """gets number of integer active problem variables"""
         return SCIPgetNIntVars(self._scip)
 
     def getNBinVars(self):
