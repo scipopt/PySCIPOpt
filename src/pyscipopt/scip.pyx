@@ -1691,7 +1691,7 @@ cdef class Model:
         return SCIPgetNIntVars(self._scip)
 
     def getNBinVars(self):
-        """Retrieve the number of binary variables"""
+        """gets number of binary active problem variables"""
         return SCIPgetNBinVars(self._scip)
 
     def updateNodeLowerbound(self, Node node, lb):
