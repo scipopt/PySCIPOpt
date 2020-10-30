@@ -712,6 +712,8 @@ cdef extern from "scip/scip.h":
     int SCIPvarGetIndex(SCIP_VAR* var)
     int SCIPgetNVars(SCIP* scip)
     int SCIPgetNOrigVars(SCIP* scip)
+    int SCIPgetNIntVars(SCIP* scip)
+    int SCIPgetNBinVars(SCIP* scip)
     SCIP_VARTYPE SCIPvarGetType(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)

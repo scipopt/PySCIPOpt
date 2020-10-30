@@ -1686,6 +1686,14 @@ cdef class Model:
         """Retrieve the number of constraints."""
         return SCIPgetNConss(self._scip)
 
+    def getNIntVars(self):
+        """gets number of integer active problem variables"""
+        return SCIPgetNIntVars(self._scip)
+
+    def getNBinVars(self):
+        """gets number of binary active problem variables"""
+        return SCIPgetNBinVars(self._scip)
+
     def updateNodeLowerbound(self, Node node, lb):
         """if given value is larger than the node's lower bound (in transformed problem),
         sets the node's lower bound to the new value
