@@ -10,22 +10,22 @@ Suite](http://scip.zib.de).
 [![AppVeyor Status](https://ci.appveyor.com/api/projects/status/fsa896vkl8be79j9/branch/master?svg=true)](https://ci.appveyor.com/project/mattmilten/pyscipopt/branch/master)
 
 
-Documentation
--------------
+📘 Documentation
+----------------
 
 Please consult the [online documentation](http://scip-interfaces.github.io/PySCIPOpt/docs/html) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
 
 See [CHANGELOG.md](CHANGELOG.md) for added, removed or fixed functionality.
 
-Installation
-------------
+📦 Installation
+----------------
 
 See [INSTALL.md](INSTALL.md) for instructions.
 Please note that the latest PySCIPOpt version is usually only compatible with the latest major release of the SCIP Optimization Suite.
 Information which version of PySCIPOpt is required for a given SCIP version can also be found in [INSTALL.md](INSTALL.md).
 
-Building and solving a model
-----------------------------
+📐 Building and solving a model
+-------------------------------
 
 There are several [examples](examples/finished) and
 [tutorials](examples/tutorial). These display some functionality of the
@@ -61,8 +61,8 @@ print("x: {}".format(sol[x]))
 print("y: {}".format(sol[y]))
 ```
 
-Writing new plugins
--------------------
+🧩 Writing new plugins
+----------------------
 
 The Python interface can be used to define custom plugins to extend the
 functionality of SCIP. You may write a pricer, heuristic or even
@@ -75,8 +75,8 @@ examples.
 Please notice that in most cases one needs to use a `dictionary` to
 specify the return values needed by SCIP.
 
-Extending the interface
------------------------
+🔨 Extending the interface
+--------------------------
 
 PySCIPOpt already covers many of the SCIP callable library methods. You
 may also extend it to increase the functionality of this interface. The
@@ -105,8 +105,8 @@ extensions!
 
 Please have a look at our [contribution guidelines](CONTRIBUTING.md).
 
-Gotchas
--------
+⚡ Gotchas
+----------
 
 ### Ranged constraints
 
@@ -159,8 +159,8 @@ model.setHeuristics(pyscipopt.SCIP_PARAMSETTING.OFF)
 model.disablePropagation()
 ```
 
-Citing PySCIPOpt
-----------------
+📃 Citing PySCIPOpt
+-------------------
 
 Please cite [this paper](https://opus4.kobv.de/opus4-zib/frontdoor/index/index/docId/6045)
 ```
