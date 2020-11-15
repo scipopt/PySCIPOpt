@@ -1,5 +1,6 @@
 from pyscipopt import Model
 
+
 def test_solution_getbest():
     m = Model()
 
@@ -12,13 +13,14 @@ def test_solution_getbest():
     sol = m.getBestSol()
     assert round(sol[x]) == 2.0
     assert round(sol[y]) == 4.0
-    print(sol) # prints the solution in the transformed space
+    print(sol)  # prints the solution in the transformed space
 
     m.freeTransform()
     sol = m.getBestSol()
     assert round(sol[x]) == 2.0
     assert round(sol[y]) == 4.0
-    print(sol) # prints the solution in the original space
+    print(sol)  # prints the solution in the original space
+
 
 def test_solution_create():
     m = Model()
@@ -32,6 +34,7 @@ def test_solution_create():
     s[y] = 4.0
     assert m.addSol(s, free=True)
 
+
 def test_solution_evaluation():
     m = Model()
 
@@ -42,10 +45,10 @@ def test_solution_evaluation():
     m.optimize()
 
     sol = m.getBestSol()
-    
+
     # Variable evaluation
     assert round(sol[x]) == 2.0
-    assert round(sol[y]) == 4.0 
+    assert round(sol[y]) == 4.0
 
     # Expression evaluation
     expr = x*x + 2*x*y + y*y
@@ -58,6 +61,7 @@ def test_solution_evaluation():
     assert sol[y] == m.getVal(y)
     assert sol[expr] == m.getVal(expr)
     assert sol[expr2] == m.getVal(expr2)
+
 
 if __name__ == "__main__":
     test_solution_getbest()
