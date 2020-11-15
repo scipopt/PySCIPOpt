@@ -538,8 +538,12 @@ cdef class Solution:
         sol.scip = scip
         return sol
 
-    def __getitem__(self, Variable var):
-        return SCIPgetSolVal(self.scip, self.sol, var.scip_var)
+    def __getitem__(self, Expr expr):
+        # check for Variable to avoid infinite recursion in Expr evaluation
+        if isinstance(expr, Variable):
+            var = <Variable> expr
+            return SCIPgetSolVal(self.scip, self.sol, var.scip_var)
+        return expr._evaluate(self)
 
     def __setitem__(self, Variable var, value):
         PY_SCIP_CALL(SCIPsetSolVal(self.scip, self.sol, var.scip_var, value))
@@ -4140,11 +4144,9 @@ cdef class Model:
         """
         if sol == None:
             sol = Solution.create(self._scip, NULL)
-        if isinstance(expr, Variable):
-            var = <Variable> expr
-            return SCIPgetSolVal(self._scip, sol.sol, var.scip_var)
-        else:
-            return expr._evaluate(sol)
+        if self._scip != (<Solution>sol).scip:
+            sol = Solution.create(self._scip, sol.sol)
+        return sol[expr]
 
     def getVal(self, Expr expr):
         """Retrieve the value of the given variable or expression in the best known solution.
