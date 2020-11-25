@@ -420,6 +420,10 @@ cdef class Row:
         """returns TRUE iff the activity of the row (without the row's constant) is always integral in a feasible solution """
         return SCIProwIsIntegral(self.scip_row)
 
+    def isLocal(self):
+        """returns TRUE iff the row is only valid locally """
+        return SCIProwIsLocal(self.scip_row)
+
     def isModifiable(self):
         """returns TRUE iff row is modifiable during node processing (subject to column generation) """
         return SCIProwIsModifiable(self.scip_row)
@@ -427,6 +431,10 @@ cdef class Row:
     def isRemovable(self):
         """returns TRUE iff row is removable from the LP (due to aging or cleanup)"""
         return SCIProwIsRemovable(self.scip_row)
+
+    def isInGlobalCutpool(self):
+        """return TRUE iff row is a member of the global cut pool"""
+        return SCIProwIsInGlobalCutpool(self.scip_row)
 
     def getOrigintype(self):
         """returns type of origin that created the row"""
@@ -1919,6 +1927,10 @@ cdef class Model:
     def isCutEfficacious(self, Row cut not None, Solution sol = None):
         """ returns whether the cut's efficacy with respect to the given primal solution or the current LP solution is greater than the minimal cut efficacy"""
         return SCIPisCutEfficacious(self._scip, NULL if sol is None else sol.sol, cut.scip_row)
+
+    def getCutLPSolCutoffDistance(self, Row cut not None, Solution sol = None):
+        """ returns row's cutoff distance in the direction of the given primal solution"""
+        return SCIPgetCutLPSolCutoffDistance(self._scip, NULL if sol is None else sol.sol, cut.scip_row)
 
     def addCut(self, Row cut not None, forcecut = False):
         """adds cut to separation storage and returns whether cut has been detected to be infeasible for local bounds"""
