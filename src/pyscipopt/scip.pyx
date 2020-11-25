@@ -1902,6 +1902,11 @@ cdef class Model:
         """Returns 1 if the row is parallel, and 0 if orthogonal"""
         return SCIPgetRowObjParallelism(self._scip, row.scip_row)
 
+    def getRowParallelism(self, Row row1, Row row2, orthofunc=101):
+        """Returns the degree of parallelism between hyplerplanes. 1 if perfectly parallel, 0 if orthognal.
+        101 in this case is an 'e' (euclidean) in ASCII. The other accpetable input is 100 (d for discrete)."""
+        return SCIProwGetParallelism(row1.scip_row, row2.scip_row, orthofunc)
+
     # Cutting Plane Methods
     def addPoolCut(self, Row row not None):
         """if not already existing, adds row to global cut pool"""

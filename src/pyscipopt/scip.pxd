@@ -1663,6 +1663,7 @@ cdef extern from "scip/pub_lp.h":
     SCIP_Real* SCIProwGetVals(SCIP_ROW* row)
     SCIP_Real SCIProwGetNorm(SCIP_ROW* row)
     SCIP_Real SCIProwGetDualsol(SCIP_ROW* row)
+    SCIP_Real SCIProwGetParallelism(SCIP_ROW* row1, SCIP_ROW* row2, const char orthofunc)
     int SCIProwGetAge(SCIP_ROW* row)
     SCIP_Bool SCIProwIsRemovable(SCIP_ROW* row)
     SCIP_ROWORIGINTYPE SCIProwGetOrigintype(SCIP_ROW* row)
