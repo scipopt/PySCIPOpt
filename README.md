@@ -6,14 +6,14 @@ Suite](http://scip.zib.de).
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PySCIPOpt/Lobby)
 [![PySCIPOpt on PyPI](https://img.shields.io/pypi/v/pyscipopt.svg)](https://pypi.python.org/pypi/pyscipopt)
-[![TravisCI Status](https://travis-ci.org/SCIP-Interfaces/PySCIPOpt.svg?branch=master)](https://travis-ci.org/SCIP-Interfaces/PySCIPOpt)
+[![TravisCI Status](https://travis-ci.org/scipopt/PySCIPOpt.svg?branch=master)](https://travis-ci.org/scipopt/PySCIPOpt)
 [![AppVeyor Status](https://ci.appveyor.com/api/projects/status/fsa896vkl8be79j9/branch/master?svg=true)](https://ci.appveyor.com/project/mattmilten/pyscipopt/branch/master)
 
 
 Documentation
 -------------
 
-Please consult the [online documentation](http://scip-interfaces.github.io/PySCIPOpt/docs/html) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
+Please consult the [online documentation](http://scipopt.github.io/PySCIPOpt/docs/html) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
 
 See [CHANGELOG.md](CHANGELOG.md) for added, removed or fixed functionality.
 
@@ -148,7 +148,7 @@ are some limitations involved:
     solved before the LP solver is called.
 -   There should be no bound constraints, i.e., constraints with only
     one variable. This can cause incorrect values as explained in
-    [\#136](https://github.com/SCIP-Interfaces/PySCIPOpt/issues/136)
+    [\#136](https://github.com/scipopt/PySCIPOpt/issues/136)
 
 Therefore, you should use the following settings when trying to work
 with dual information:
@@ -167,7 +167,7 @@ Please cite [this paper](https://opus4.kobv.de/opus4-zib/frontdoor/index/index/d
 @incollection{MaherMiltenbergerPedrosoRehfeldtSchwarzSerrano2016,
   author = {Stephen Maher and Matthias Miltenberger and Jo{\~{a}}o Pedro Pedroso and Daniel Rehfeldt and Robert Schwarz and Felipe Serrano},
   title = {{PySCIPOpt}: Mathematical Programming in Python with the {SCIP} Optimization Suite},
-  booktitle = {Mathematical Software {\textendash} {ICMS} 2016}
+  booktitle = {Mathematical Software {\textendash} {ICMS} 2016},
   publisher = {Springer International Publishing},
   pages = {301--307},
   year = {2016},

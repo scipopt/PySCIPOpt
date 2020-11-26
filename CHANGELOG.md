@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## 3.0.4 - 2020-10-30
+### Added
+- add more SCIP functions: `getNTotalNodes`, `getNIntVars`, `getNBinVars`, `getNSols`
+
+### Fixed
+- `getTransformedVar` now uses `SCIPgetTransformedVar` instead of `SCIPtransformVar` which captures the variable
+
+## 3.0.3 - 2020-09-05
+### Added
+- add parameter genericnames to Model.writeProblem() to allow for generic variable and constraint names
+
+### Fixed
+- strip quotes from SCIPOPTDIR path variable that might confuse Windows systems
+
 ## 3.0.2 - 2020-08-09
 ### Added
 - allow creation of implicit integer variables

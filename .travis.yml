@@ -26,7 +26,7 @@ notifications:
   email: false
 
 before_install:
-  - wget --no-check-certificate http://scip.zib.de/download/release/SCIPOptSuite-$VERSION-Linux.deb
+  - wget --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-$VERSION-Linux.deb
   - sudo apt-get update && sudo apt install -y ./SCIPOptSuite-$VERSION-Linux.deb
 
 install:
