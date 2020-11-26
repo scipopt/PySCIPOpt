@@ -1900,7 +1900,7 @@ cdef class Model:
 
     def getRowNumIntCols(self, Row row):
         """Returns number of intergal columns in the row"""
-        return PY_SCIP_CALL(SCIPgetRowNumIntCols(self._scip, row.scip_row))
+        return SCIPgetRowNumIntCols(self._scip, row.scip_row)
 
     def rowGetNNonz(self, Row row):
         """Gets number of non-zero etnries in the row"""
