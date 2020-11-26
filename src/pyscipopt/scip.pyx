@@ -1375,8 +1375,8 @@ cdef class Model:
         :param genericnames: indicates whether the problem should be written with generic variable and constraint names (Default value = False)
 
         """
-        fn = str_conversion(filename)
-        fn, ext = splitext(fn)
+        absfile = str_conversion(abspath(filename))
+        fn, ext = splitext(absfile)
         if len(ext) == 0:
             ext = str_conversion('.cip')
         fn = fn + ext
@@ -3917,7 +3917,8 @@ cdef class Model:
         """writes current LP to a file
         :param filename: file name (Default value = "LP.lp")
         """
-        PY_SCIP_CALL( SCIPwriteLP(self._scip, str_conversion(filename)) )
+        absfile = str_conversion(abspath(filename))
+        PY_SCIP_CALL( SCIPwriteLP(self._scip, str_conversion(absfile)) )
 
     def createSol(self, Heur heur = None):
         """Create a new primal solution.
@@ -3988,8 +3989,8 @@ cdef class Model:
         Keyword arguments:
         filename -- name of the input file
         """
-        fn = str_conversion(filename)
-        PY_SCIP_CALL(SCIPreadSol(self._scip, fn))
+        absfile = str_conversion(abspath(filename))
+        PY_SCIP_CALL(SCIPreadSol(self._scip, absfile))
 
     def readSolFile(self, filename):
         """Reads a given solution file.
@@ -4005,11 +4006,12 @@ cdef class Model:
         cdef SCIP_Bool stored
         cdef Solution solution
 
-        fn = str_conversion(filename)
+        str_absfile = abspath(filename)
+        absfile = str_conversion(str_absfile)
         solution = self.createSol()
-        PY_SCIP_CALL(SCIPreadSolFile(self._scip, fn, solution.sol, False, &partial, &error))
+        PY_SCIP_CALL(SCIPreadSolFile(self._scip, absfile, solution.sol, False, &partial, &error))
         if error:
-            raise Exception("SCIP: reading solution from file failed!")
+            raise Exception("SCIP: reading solution from file " + str_absfile + " failed!")
 
         return solution
 
@@ -4496,9 +4498,10 @@ cdef class Model:
         :param onlychanged: write only modified parameters (Default value = True)
 
         """
-        fn = str_conversion(filename)
-        PY_SCIP_CALL(SCIPwriteParams(self._scip, fn, comments, onlychanged))
-        print('wrote parameter settings to file ' + filename)
+        str_absfile = abspath(filename)
+        absfile = str_conversion(str_absfile)
+        PY_SCIP_CALL(SCIPwriteParams(self._scip, absfile, comments, onlychanged))
+        print('wrote parameter settings to file ' + str_absfile)
 
     def resetParam(self, name):
         """Reset parameter setting to its default value
