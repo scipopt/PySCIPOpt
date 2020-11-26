@@ -1085,8 +1085,12 @@ cdef class Model:
         return SCIPgetNLPIterations(self._scip)
 
     def getNNodes(self):
-        """Retrieve the total number of processed nodes."""
+        """gets number of processed nodes in current run, including the focus node."""
         return SCIPgetNNodes(self._scip)
+
+    def getNTotalNodes(self):
+        """gets number of processed nodes in all runs, including the focus node."""
+        return SCIPgetNTotalNodes(self._scip)
 
     def getNFeasibleLeaves(self):
         """Retrieve number of leaf nodes processed with feasible relaxation solution."""
@@ -1458,7 +1462,8 @@ cdef class Model:
 
         """
         cdef SCIP_VAR* _tvar
-        PY_SCIP_CALL(SCIPtransformVar(self._scip, var.scip_var, &_tvar))
+        PY_SCIP_CALL(SCIPgetTransformedVar(self._scip, var.scip_var, &_tvar))
+
         return Variable.create(_tvar)
 
     def addVarLocks(self, Variable var, nlocksdown, nlocksup):
@@ -1689,6 +1694,14 @@ cdef class Model:
     def getNConss(self):
         """Retrieve the number of constraints."""
         return SCIPgetNConss(self._scip)
+
+    def getNIntVars(self):
+        """gets number of integer active problem variables"""
+        return SCIPgetNIntVars(self._scip)
+
+    def getNBinVars(self):
+        """gets number of binary active problem variables"""
+        return SCIPgetNBinVars(self._scip)
 
     def updateNodeLowerbound(self, Node node, lb):
         """if given value is larger than the node's lower bound (in transformed problem),
@@ -4119,6 +4132,13 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPfreeSol(self._scip, &solution.sol))
+
+    def getNSols(self):
+        """gets number of feasible primal solutions stored in the solution storage in case the problem is transformed;
+           in case the problem stage is SCIP_STAGE_PROBLEM, the number of solution in the original solution candidate
+           storage is returned
+         """
+        return SCIPgetNSols(self._scip)
 
     def getSols(self):
         """Retrieve list of all feasible primal solutions stored in the solution storage."""

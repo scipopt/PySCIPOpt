@@ -14,18 +14,19 @@ Code contributions are very welcome and should comply to a few rules:
     (even advanced examples).
 3.  New code should be documented in the same style as the rest of
     the code.
-4.  New code should be
+4.  New features or bugfixes have to be documented in the CHANGELOG.
+5.  New code should be
     [pep8-compliant](https://www.python.org/dev/peps/pep-0008/). Help
     yourself with the [style guide
     checker](https://pypi.org/project/pep8/).
-5.  Before implementing a new PySCIPOpt feature, check whether the
+6.  Before implementing a new PySCIPOpt feature, check whether the
     feature exists in SCIP. If so, implement it as a pure wrapper,
     mimicking SCIP whenever possible. If the new feature does not exist
     in SCIP but it is close to an existing one, consider if implementing
     that way is substantially convenient (e.g. Pythonic). If it does
     something completely different, you are welcome to pull your request
     and discuss the implementation.
-6.  PySCIPOpt uses [semantic versioning](https://semver.org/). Version
+7.  PySCIPOpt uses [semantic versioning](https://semver.org/). Version
     number increase only happens on master and must be tagged to build a
     new PyPI release.
 
