@@ -1375,7 +1375,8 @@ cdef class Model:
         :param genericnames: indicates whether the problem should be written with generic variable and constraint names (Default value = False)
 
         """
-        absfile = str_conversion(abspath(filename))
+        str_absfile = abspath(filename)
+        absfile = str_conversion(str_absfile)
         fn, ext = splitext(absfile)
         if len(ext) == 0:
             ext = str_conversion('.cip')
@@ -1385,7 +1386,7 @@ cdef class Model:
             PY_SCIP_CALL(SCIPwriteTransProblem(self._scip, fn, ext, genericnames))
         else:
             PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, fn, ext, genericnames))
-        print('wrote problem to file ' + str(fn))
+        print('wrote problem to file ' + str_absfile)
 
     # Variable Functions
 
