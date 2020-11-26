@@ -1928,9 +1928,9 @@ cdef class Model:
         """ returns whether the cut's efficacy with respect to the given primal solution or the current LP solution is greater than the minimal cut efficacy"""
         return SCIPisCutEfficacious(self._scip, NULL if sol is None else sol.sol, cut.scip_row)
 
-    def getCutLPSolCutoffDistance(self, Row cut not None, Solution sol = None):
+    def getCutLPSolCutoffDistance(self, Row cut not None, Solution sol not None):
         """ returns row's cutoff distance in the direction of the given primal solution"""
-        return SCIPgetCutLPSolCutoffDistance(self._scip, NULL if sol is None else sol.sol, cut.scip_row)
+        return SCIPgetCutLPSolCutoffDistance(self._scip, sol.sol, cut.scip_row)
 
     def addCut(self, Row cut not None, forcecut = False):
         """adds cut to separation storage and returns whether cut has been detected to be infeasible for local bounds"""
