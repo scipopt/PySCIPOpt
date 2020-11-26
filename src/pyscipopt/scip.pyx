@@ -4085,6 +4085,13 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPfreeSol(self._scip, &solution.sol))
 
+    def getNSols(self):
+        """gets number of feasible primal solutions stored in the solution storage in case the problem is transformed;
+           in case the problem stage is SCIP_STAGE_PROBLEM, the number of solution in the original solution candidate
+           storage is returned
+         """
+        return SCIPgetNSols(self._scip)
+
     def getSols(self):
         """Retrieve list of all feasible primal solutions stored in the solution storage."""
         cdef SCIP_SOL** _sols

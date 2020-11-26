@@ -4,7 +4,7 @@
 
 ## 3.0.4 - 2020-10-30
 ### Added
-- add more SCIP functions: `getNTotalNodes`, `getNIntVars`, `getNBinVars`
+- add more SCIP functions: `getNTotalNodes`, `getNIntVars`, `getNBinVars`, `getNSols`
 
 ### Fixed
 - `getTransformedVar` now uses `SCIPgetTransformedVar` instead of `SCIPtransformVar` which captures the variable
