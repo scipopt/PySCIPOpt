@@ -4,6 +4,9 @@
 ### Added
 - add more SCIP functions: `getNSols`
 
+### Fixed
+- consistent handling of filenames for reading/writing
+
 ## 3.0.4 - 2020-10-30
 ### Added
 - add more SCIP functions: `getNTotalNodes`, `getNIntVars`, `getNBinVars`
