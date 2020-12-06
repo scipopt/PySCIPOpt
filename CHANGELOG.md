@@ -6,6 +6,7 @@
 
 ### Fixed
 - consistent handling of filenames for reading/writing
+- fix error when no SCIPOPTDIR env var is set on Windows
 
 ## 3.0.4 - 2020-10-30
 ### Added
