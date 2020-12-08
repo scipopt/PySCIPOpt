@@ -1,22 +1,39 @@
 #! usr/bin/env python3
-from pyscipopt  import SCIP_RESULT, Relax, Term, Expr, Model
-from POEM       import Polynomial, InfeasibleError, build_lagrangian_GP, constrained_scipy, solve_GP, OptimizationProblem, Constraint
-from convert    import ExprToPoly, PolyToExpr
+from pyscipopt  import SCIP_RESULT, Relax, Term, Expr
+from POEM       import Polynomial, build_lagrangian_GP, OptimizationProblem, Constraint, InfeasibleError
+from convert    import ExprToPoly
 
 import numpy as np
 import cvxpy as cvx
 
-#base function, calling all preprocessing options
 #TODO: use flags to decide which preprocessing options should be used?
-def preprocess(problem, SCIPprob):
-    problem, index = rewriteObjective(problem, SCIPprob) #index gives the variable that was deleted when rewriting the objective
-    problem = boundNegativeTerms(problem, SCIPprob, index)
+#TODO: is it better not to have the problem in SCIP and POEM, but only use one of them?
+def preprocess(problem, Vars):
+    """base function calling all preprocessing options"""
+    #make sure that we have constraints '>= 0'
+    problem = greaterConstraints(problem)
+    problem, Vars = rewriteObjective(problem, Vars) #index gives the variable that was deleted when rewriting the objective
+    problem = boundNegativeTerms(problem, Vars)
     return problem
 
-def rewriteObjective(problem, SCIPprob):
+def greaterConstraints(problem):
+    for con in problem.constraints:
+        if con.operand == '<=':
+            con.b *= -1
+            con.operand = '>='
+        elif con.operand == '==':
+            con.operand = '>='
+            c = -1*con.b
+            problem.constraints.append(Constraint(Polynomial(con.A,c),'>='))
+    return problem
+
+#TODO: instead of deleting inside A,b maybe a better idea to just set the coefficients to 0 and add a function that deletes those (makes index unnecessary)
+def rewriteObjective(problem, Vars):
+    """function tries to find variables that was only added to make the objective linear and rewrites it back into a nonlinear objective, deletes the variable
+     param: problem - optimization problem of class OptimizationProblem in POEM
+    """
     obj = problem.objective
     cons = problem.constraints
-    #print('problem to be rewritten: ',problem)
     if np.count_nonzero(obj.A[1:,]) == 1:
         index = np.nonzero(obj.A[1:,])
         A = obj.A[1:,]
@@ -26,8 +43,9 @@ def rewriteObjective(problem, SCIPprob):
             #print('constraint', con, con.operand)
             i = np.nonzero(conA[index[0][0]])
             #print('i',i, conA[index[0][0]])
-            if np.count_nonzero(conA) != 1 and np.count_nonzero(conA[index[0][0]]) == 1 and conA[index[0][0]][i] == 1 and con.b[i] == -1:
+            if np.count_nonzero(conA) != 1 and np.count_nonzero(conA[index[0][0]]) == 1 and conA[index[0][0]][i] == 1 and con.b[i] == 1 and con.operand=='>=':
                 #cons.remove(con)
+                con.b*=-1
                 #print('should be', [c.A for c in cons if np.count_nonzero(c.A[index[0]+1])!=1 or np.count_nonzero(c.A[1:,])!=1])
                 cons = [c for c in cons if c!=-con and c != con and (np.count_nonzero(c.A[index[0]+1])!=1 or np.count_nonzero(c.A[1:,])!=1) ]
                 for c in cons:
@@ -53,70 +71,64 @@ def rewriteObjective(problem, SCIPprob):
                 #for c in newProb.constraints:
                 #    print('new constraints: ',c.A,c.b)
                 #print(newProb)
-                return newProb, index[0][0]
-        #print(conA, conA[index])
-    
-    #print(newProb)
-    return problem, -1
+                Vars = np.delete(Vars,index[0][0])
+                return newProb, Vars
 
-def boundNegativeTerms(problem, SCIPprob, index):
+    #return original problem if nothing could be rewritten
+    return problem, Vars
+
+def boundNegativeTerms(problem, Vars):
     """Try to use the bounds x<=u on variables given by branch and bound to find a valid cover for all negative terms in the polynomial.
-    This is done by finding even exponents a with x^a <= u^a."""
+    This is done by finding even exponents a with x^a <= u^a.
+    returns problem with bound constraints added.
+    params: - problem: problem of type OptimizationProblem in POEM
+            - Vars: list of all variables in the problem
+    """
     #TODO: use only when necessary and use only the necessary directions
-    n=len(SCIPprob.getVars())
+    n=len(Vars)
     if problem.constraints !=[]:
         mu = cvx.Variable(len(problem.constraints), pos=True, name='mu')
-        polyOrig = build_lagrangian_GP(mu,problem)
+        polyOrig,mu_constraints = build_lagrangian_GP(mu,problem)
     else:
-        #print(problem)
         polyOrig = problem.objective
         polyOrig._normalise()
+    try:
+        #print(problem)
+        #if all points are already covered, just add the bounds as constraints x^2<=u^2
+        polyOrig._compute_cover()
+        a = 2*np.ones(n,dtype=int) #TODO: use smallest exponent that already exists
+        A = polyOrig.A[1:,]
+        VarExist=np.zeros(n,dtype=int)
+        for i in range(polyOrig.A.shape[1]):
+            #print(polyOrig.A,polyOrig.b)
+            #print(i, polyOrig.A[1:,], polyOrig.A.shape[1])
+            #print('A', A[:,i])
+            if np.count_nonzero(A[:,i])==1:
+                #a[i] = np.nonzero(A[i])[0]
+                #print('index',np.nonzero(A[:,i]))
+                index = np.nonzero(A[:,i])
+                #print('element in A[index,i]',A[index,i])
+                if A[index,i]%2 == 0:
+                    if not VarExist[index]:
+                        VarExist[index] = 1
+                        a[index] = A[index,i]
+                    else:
+                        a[index] = min(a[index],A[index,i])
+            #print('a',a)
 
-    m=len(polyOrig.monomial_squares)
-    l=len(polyOrig.non_squares)
-    var = SCIPprob.getVars()
-    if index != -1:
-        var = np.delete(var,index)
-        n-=1
-    #print(var,index, SCIPprob.getVars())
-    varOrig = SCIPprob.getVars()
-    a = np.zeros(n,dtype=int)
-    A = polyOrig.A[1:]
-    #print('polyOrig',polyOrig.non_squares, polyOrig.monomial_squares)
-    #print(max(polyOrig.A[1,polyOrig.non_squares]), polyOrig.b,A)
-    #minimal_exponent(polyOrig,n)
-    for i in range(n):
-        a[i] = 2*max(A[i,polyOrig.non_squares])
 
 
-    for i,y in enumerate(var):
+    except:
+        #if not all points are covered, 2*max{exponents of inner terms} will cover all points if bounds are given for the constraints
+        A = polyOrig.A[1:]
+        a = np.array([2*max(A[i,polyOrig.non_squares]) for i in range(n)])
+    for i,y in enumerate(Vars):
         u = max(abs(y.getUbLocal()),abs(y.getLbLocal()))
-        #print(u, y.getUbLocal(),y.getLbLocal(), y.getLbGlobal())
-        if u != SCIPprob.infinity():
-            t = Term()
-            for k in range(a[i]):
-                t += Term(varOrig[i])
-            #print(a[i],t,n)
-            #if y.getUbLocal() != SCIPprob.infinity() and y.getLbLocal() != -SCIPprob.infinity():
-            boundcons = ExprToPoly(Expr({Term(): -u**a[i], t:1.0}), n)
+        if u != problem.infinity:
+            #TODO: only works if variables are not reordered at some point
+            boundconsA = np.zeros((n,2))
+            boundconsA[i][1] = a[i]
+            boundconsb = [-u**a[i],1]
+            boundcons = Polynomial(boundconsA,boundconsb)
             problem.addCons(Constraint(boundcons, '<='))
-    #print('problem',problem)
     return problem
-
-#TODO: Do we really need the minimal exponent or is the feasible solution enough?
-def minimal_exponent(polynomial,n):
-    constraints = []
-    c = cvx.Variable(len(polynomial.non_squares),pos=True,name='c')
-    a = cvx.Variable(n,pos=True,name='a')
-    for i,y in enumerate(polynomial.non_squares):
-        print('polyA',polynomial.A,polynomial.non_squares,polynomial.A[1:,y])
-        constraints.append(cvx.sum(a*polynomial.A[1:,y])==c[i])
-        for non in polynomial.non_squares:
-            if non != y:
-                constraints.append(c[i]>=cvx.sum(polynomial.A[1:,non]))
-    lp = cvx.Problem(cvx.Minimize(cvx.sum(c)),constraints)
-    lp.solve()
-    print('lp',lp,lp.value,a.value,c.value,n)
-    return polynomial
-
-
