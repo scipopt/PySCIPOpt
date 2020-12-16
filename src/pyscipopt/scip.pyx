@@ -3939,6 +3939,24 @@ cdef class Model:
         solution = Solution.create(self._scip, _sol)
         return solution
 
+    def createPartialSol(self, Heur heur = None):
+        """Create a partial primal solution, initialized to unknown values.
+        
+        :param Heur heur: heuristic that found the solution (Default value = None)
+
+        """
+        cdef SCIP_HEUR* _heur
+        cdef SCIP_SOL* _sol
+
+        if isinstance(heur, Heur):
+            n = str_conversion(heur.name)
+            _heur = SCIPfindHeur(self._scip, n)
+        else:
+            _heur = NULL
+        PY_SCIP_CALL(SCIPcreatePartialSol(self._scip, &_sol, _heur))
+        partialsolution = Solution.create(self._scip, _sol)
+        return partialsolution
+
     def printBestSol(self, write_zeros=False):
         """Prints the best feasible primal solution."""
         PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, write_zeros))

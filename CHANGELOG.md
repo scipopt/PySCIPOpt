@@ -2,7 +2,7 @@
 
 ## Unreleased
 ### Added
-- add more SCIP functions: `getNSols`
+- add more SCIP functions: `getNSols`, `createPartialSol`
 
 ### Fixed
 - consistent handling of filenames for reading/writing
