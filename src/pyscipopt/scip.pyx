@@ -3941,7 +3941,6 @@ cdef class Model:
 
     def createPartialSol(self, Heur heur = None):
         """Create a partial primal solution, initialized to unknown values.
-        
         :param Heur heur: heuristic that found the solution (Default value = None)
 
         """
