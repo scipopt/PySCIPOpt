@@ -1,6 +1,8 @@
 # CHANGELOG
 
 ## Unreleased
+
+## 3.1.0 - 2020-12-17
 ### Added
 - add more SCIP functions: `getNSols`, `createPartialSol`
 
