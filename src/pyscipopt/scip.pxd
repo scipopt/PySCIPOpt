@@ -294,6 +294,10 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_PROB:
         pass
 
+    ctypedef struct SCIP_LP:
+        SCIP_Real objsqrnorm
+
+
     ctypedef struct SCIP_VAR:
         pass
 
@@ -632,14 +636,12 @@ cdef extern from "scip/scip.h":
     SCIP_STATUS SCIPgetStatus(SCIP* scip)
     SCIP_Real SCIPepsilon(SCIP* scip)
     SCIP_Real SCIPfeastol(SCIP* scip)
-<<<<<<< HEAD
     SCIP_RETCODE SCIPsetObjIntegral(SCIP* scip)
     SCIP_Real SCIPgetLocalOrigEstimate(SCIP* scip)
     SCIP_Real SCIPgetLocalTransEstimate(SCIP* scip)
-=======
+
     SCIP_RETCODE SCIPgetProbvarLinearSum(SCIP*                 scip,SCIP_VAR**            vars,SCIP_Real*            scalars,int*                  nvars, int                   varssize,SCIP_Real*            constant,int*                  requiredsize,SCIP_Bool             mergemultiples)
-    SCIP_Bool SCIPsparseSolGetNextSol(SCIP_SPARSESOL*       sparsesol,SCIP_Longint*         sol, int                   nvars)
->>>>>>> base
+
 
     # Solve Methods
     SCIP_RETCODE SCIPsolve(SCIP* scip)
@@ -669,25 +671,19 @@ cdef extern from "scip/scip.h":
                                      SCIP_BOUNDTYPE* boundtypes,
                                      int* nbranchvars,
                                      int branchvarssize)
-<<<<<<< HEAD
-=======
     void SCIPnodeGetAncestorBranchings(SCIP_NODE* node,
                                      SCIP_VAR** branchvars,
                                      SCIP_Real* branchbounds,
                                      SCIP_BOUNDTYPE* boundtypes,
                                      int* nbranchvars,
                                      int branchvarssize)
->>>>>>> base
+
     void SCIPnodeGetAddedConss(SCIP_NODE* node, SCIP_CONS** addedconss,
                                int* naddedconss, int addedconsssize)
     void SCIPnodeGetNDomchg(SCIP_NODE* node, int* nbranchings, int* nconsprop,
                             int* nprop)
     SCIP_DOMCHG* SCIPnodeGetDomchg(SCIP_NODE* node)
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> base
     # Domain change methods
     int SCIPdomchgGetNBoundchgs(SCIP_DOMCHG* domchg)
     SCIP_BOUNDCHG* SCIPdomchgGetBoundchg(SCIP_DOMCHG* domchg, int pos)
@@ -698,10 +694,7 @@ cdef extern from "scip/scip.h":
     SCIP_BOUNDCHGTYPE SCIPboundchgGetBoundchgtype(SCIP_BOUNDCHG* boundchg)
     SCIP_BOUNDTYPE SCIPboundchgGetBoundtype(SCIP_BOUNDCHG* boundchg)
     SCIP_Bool SCIPboundchgIsRedundant(SCIP_BOUNDCHG* boundchg)
-<<<<<<< HEAD
 
-=======
->>>>>>> base
     # Variable Methods
     SCIP_RETCODE SCIPcreateVarBasic(SCIP* scip,
                                     SCIP_VAR** var,
@@ -1688,11 +1681,7 @@ cdef extern from "scip/pub_lp.h":
     SCIP_Real SCIPcolGetPrimsol(SCIP_COL* col)
     SCIP_Real SCIPcolGetLb(SCIP_COL* col)
     SCIP_Real SCIPcolGetUb(SCIP_COL* col)
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> base
+
     int SCIPcolGetNLPNonz(SCIP_COL* col)
     int SCIPcolGetNNonz(SCIP_COL* col)
     SCIP_ROW** SCIPcolGetRows(SCIP_COL* col)
@@ -1700,8 +1689,6 @@ cdef extern from "scip/pub_lp.h":
     int SCIPcolGetIndex(SCIP_COL* col)
     SCIP_Real SCIPcolGetObj(SCIP_COL *col)
 
-<<<<<<< HEAD
-=======
 cdef extern from "scip/lp.h":
     SCIP_Real SCIPlpGetObjNorm(SCIP_LP* lp)
     # void SCIPlpRecalculateObjSqrNorm(SCIP_SET* set, SCIP_LP* lp)
@@ -1718,7 +1705,6 @@ cdef extern from "scip/lp.h":
 
     SCIP_Real SCIPcolGetObj(SCIP_COL *col)
 
->>>>>>> base
 cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
     SCIP_Longint SCIPgetNLeaves(SCIP* scip)
@@ -1729,22 +1715,18 @@ cdef extern from "scip/scip_tree.h":
     SCIP_NODE* SCIPgetBestLeaf(SCIP* scip)
     SCIP_NODE* SCIPgetBestNode(SCIP* scip)
     SCIP_NODE* SCIPgetBestboundNode(SCIP* scip)
-<<<<<<< HEAD
     SCIP_RETCODE SCIPrepropagateNode(SCIP* scip, SCIP_NODE* node)
-=======
     int SCIPgetFocusDepth(SCIP *scip)
     int SCIPgetPlungeDepth(SCIP *scip)
     int SCIPgetEffectiveRootDepth(SCIP* scip)
     int SCIPgetNNodesLeft(SCIP* scip)
     int SCIPgetCutoffdepth(SCIP* scip)
     int SCIPgetRepropdepth(SCIP* scip)
->>>>>>> base
 
 cdef extern from "scip/scip_var.h":
     SCIP_RETCODE SCIPchgVarBranchPriority(SCIP* scip, SCIP_VAR* var, int branchpriority)
 
-<<<<<<< HEAD
-=======
+
 cdef extern from "scip/def.h":
     SCIP_Real REALABS(SCIP_Real x)
 
@@ -2026,7 +2008,6 @@ cdef extern from "scip/branch_vanillafullstrong.h":
                                               int* bestcand)
 
 
->>>>>>> base
 cdef class Expr:
     cdef public terms
 

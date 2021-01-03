@@ -4109,14 +4109,14 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPfreeSol(self._scip, &solution.sol))
 
-<<<<<<< HEAD
+
     def getNSols(self):
         """gets number of feasible primal solutions stored in the solution storage in case the problem is transformed;
            in case the problem stage is SCIP_STAGE_PROBLEM, the number of solution in the original solution candidate
            storage is returned
          """
         return SCIPgetNSols(self._scip)
-=======
+
     def getSparseSols(self):
         cdef SCIP_VAR** activevars 
         cdef int sparsenvars 
@@ -4197,7 +4197,7 @@ cdef class Model:
         # nallvars = data[0].nallvars
         # print(nallvars)
 
->>>>>>> base
+
 
     def getSols(self):
         """Retrieve list of all feasible primal solutions stored in the solution storage."""
