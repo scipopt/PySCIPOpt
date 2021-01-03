@@ -3379,6 +3379,13 @@ cdef class Model:
         PY_SCIP_CALL(SCIPfreeSol(self._scip, &solution.sol))
 
     def getSparseSols(self):
+        """
+
+        :return Solutions: solutions in the original variable space
+        
+        based off of https://www.scipopt.org/doc/html/cons__countsols_8c_source.php#l02693
+
+        """
         cdef SCIP_VAR** activevars 
         cdef int sparsenvars 
         cdef SCIP_SPARSESOL** sols
@@ -3402,25 +3409,10 @@ cdef class Model:
         SCIPgetCountedSparseSols(self._scip, &activevars, &sparsenvars, &sols, &nsols)
         print(nsols)
         for s in range(nsols):
-            print(s)
             sparsesol = sols[s]
-            print("After sparsesol")
-            print(_nallvars)
-            for v in range(_nallvars):
-                print("ERER")
-                print(v)
-
-
-                print(sparsesol.lbvalues[v])
-                print(sol[v])
-                sol[v] += sparsesol.lbvalues[v]
-                print("after lbvalue")
-                print(sol[v])
-            print("herere")
+            SCIPsparseSolGetFirstSol(sparsesol, sol, sparsenvars)
             while True:
                 for v in range(_nallvars):
-
-                    print(v)
                     vars[0] = _allvars[v]
                     scalars[0] = 1.0
                     nvars = 1
@@ -3429,7 +3421,7 @@ cdef class Model:
                     PY_SCIP_CALL( SCIPgetProbvarLinearSum(self._scip, vars, scalars, &nvars, sparsenvars, &constant, &requiredsize, True) )
                     realvalue = constant;
                     for i in range(_nallvars):
-                        print(i)
+                        # I have no idea how to get the hashmap?
                 if not SCIPsparseSolGetNextSol(sparsesol, sol, sparsenvars):
                     break
 
