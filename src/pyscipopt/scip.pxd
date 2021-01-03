@@ -265,6 +265,17 @@ cdef extern from "scip/scip.h":
     ctypedef double SCIP_Real
 
     ctypedef struct SCIP:
+        SCIP_SET* set
+        SCIP_STAT* stat
+        SCIP_PROB * origprob
+        SCIP_PROB * transprob
+        SCIP_LP* lp
+
+
+    ctypedef struct SCIP_SET:
+        pass
+
+    ctypedef struct SCIP_PROB:
         pass
 
     ctypedef struct SCIP_VAR:
@@ -382,9 +393,6 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_DIVESET:
-        pass
-
-    ctypedef struct SCIP_HASHMAP:
         pass
 
     ctypedef struct SCIP_BOUNDTYPE:
@@ -581,6 +589,8 @@ cdef extern from "scip/scip.h":
     SCIP_STATUS SCIPgetStatus(SCIP* scip)
     SCIP_Real SCIPepsilon(SCIP* scip)
     SCIP_Real SCIPfeastol(SCIP* scip)
+    SCIP_RETCODE SCIPgetProbvarLinearSum(SCIP*                 scip,SCIP_VAR**            vars,SCIP_Real*            scalars,int*                  nvars, int                   varssize,SCIP_Real*            constant,int*                  requiredsize,SCIP_Bool             mergemultiples)
+    SCIP_Bool SCIPsparseSolGetNextSol(SCIP_SPARSESOL*       sparsesol,SCIP_Longint*         sol, int                   nvars)
 
     # Solve Methods
     SCIP_RETCODE SCIPsolve(SCIP* scip)
@@ -604,7 +614,34 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPinRepropagation(SCIP* scip)
     SCIP_RETCODE SCIPaddConsNode(SCIP* scip, SCIP_NODE* node, SCIP_CONS* cons, SCIP_NODE* validnode)
     SCIP_RETCODE SCIPaddConsLocal(SCIP* scip, SCIP_CONS* cons, SCIP_NODE* validnode)
+    void SCIPnodeGetParentBranchings(SCIP_NODE* node,
+                                     SCIP_VAR** branchvars,
+                                     SCIP_Real* branchbounds,
+                                     SCIP_BOUNDTYPE* boundtypes,
+                                     int* nbranchvars,
+                                     int branchvarssize)
+    void SCIPnodeGetAncestorBranchings(SCIP_NODE* node,
+                                     SCIP_VAR** branchvars,
+                                     SCIP_Real* branchbounds,
+                                     SCIP_BOUNDTYPE* boundtypes,
+                                     int* nbranchvars,
+                                     int branchvarssize)
+    void SCIPnodeGetAddedConss(SCIP_NODE* node, SCIP_CONS** addedconss,
+                               int* naddedconss, int addedconsssize)
+    void SCIPnodeGetNDomchg(SCIP_NODE* node, int* nbranchings, int* nconsprop,
+                            int* nprop)
+    SCIP_DOMCHG* SCIPnodeGetDomchg(SCIP_NODE* node)
+    
+    # Domain change methods
+    int SCIPdomchgGetNBoundchgs(SCIP_DOMCHG* domchg)
+    SCIP_BOUNDCHG* SCIPdomchgGetBoundchg(SCIP_DOMCHG* domchg, int pos)
 
+    # Bound change methods
+    SCIP_Real SCIPboundchgGetNewbound(SCIP_BOUNDCHG* boundchg)
+    SCIP_VAR* SCIPboundchgGetVar(SCIP_BOUNDCHG* boundchg)
+    SCIP_BOUNDCHGTYPE SCIPboundchgGetBoundchgtype(SCIP_BOUNDCHG* boundchg)
+    SCIP_BOUNDTYPE SCIPboundchgGetBoundtype(SCIP_BOUNDCHG* boundchg)
+    SCIP_Bool SCIPboundchgIsRedundant(SCIP_BOUNDCHG* boundchg)
     # Variable Methods
     SCIP_RETCODE SCIPcreateVarBasic(SCIP* scip,
                                     SCIP_VAR** var,
@@ -714,6 +751,7 @@ cdef extern from "scip/scip.h":
     SCIP_SOL* SCIPgetBestSol(SCIP* scip)
     SCIP_Real SCIPgetSolVal(SCIP* scip, SCIP_SOL* sol, SCIP_VAR* var)
     SCIP_RETCODE SCIPwriteVarName(SCIP* scip, FILE* outfile, SCIP_VAR* var, SCIP_Bool vartype)
+    SCIP_RETCODE SCIPgetTransformedVar(SCIP* scip, SCIP_VAR* var, SCIP_VAR** transvar)
     SCIP_Real SCIPgetSolOrigObj(SCIP* scip, SCIP_SOL* sol)
     SCIP_Real SCIPgetSolTransObj(SCIP* scip, SCIP_SOL* sol)
     SCIP_RETCODE SCIPcreateSol(SCIP* scip, SCIP_SOL** sol, SCIP_HEUR* heur)
@@ -1475,6 +1513,11 @@ cdef extern from "scip/cons_countsols.h":
     SCIP_RETCODE SCIPcount(SCIP* scip)
     SCIP_RETCODE SCIPsetParamsCountsols(SCIP* scip)
     SCIP_Longint SCIPgetNCountedSols(SCIP* scip, SCIP_Bool* valid)
+    SCIP_RETCODE SCIPincludeConshdlrCountsols   (   SCIP *  scip    )   
+    void SCIPgetCountedSparseSols(SCIP* scip, SCIP_VAR*** vars, int* nvars, SCIP_SPARSESOL*** sols, int* nsols);
+    SCIP_RETCODE SCIPcount  (   SCIP *  scip    );
+    SCIP_RETCODE SCIPsetParamsCountsols    (   SCIP *  scip    );
+
 
 cdef extern from "scip/paramset.h":
 
@@ -1510,3 +1553,425 @@ cdef extern from "scip/pub_lp.h":
     SCIP_Real SCIPcolGetPrimsol(SCIP_COL* col)
     SCIP_Real SCIPcolGetLb(SCIP_COL* col)
     SCIP_Real SCIPcolGetUb(SCIP_COL* col)
+<<<<<<< Updated upstream
+=======
+    int SCIPcolGetNLPNonz(SCIP_COL* col)
+    int SCIPcolGetNNonz(SCIP_COL* col)
+    SCIP_ROW** SCIPcolGetRows(SCIP_COL* col)
+    SCIP_Real* SCIPcolGetVals(SCIP_COL* col)
+    int SCIPcolGetIndex(SCIP_COL* col)
+    SCIP_Real SCIPcolGetObj(SCIP_COL *col)
+
+cdef extern from "scip/lp.h":
+    SCIP_Real SCIPlpGetObjNorm(SCIP_LP* lp)
+    # void SCIPlpRecalculateObjSqrNorm(SCIP_SET* set, SCIP_LP* lp)
+    SCIP_Real SCIProwGetNorm(SCIP_ROW* row)
+    SCIP_Real SCIProwGetDualsol(SCIP_ROW* row)
+    int SCIProwGetAge(SCIP_ROW* row)
+    SCIP_Real SCIProwGetLPActivity(SCIP_ROW* row,
+                                   SCIP_SET* set,
+                                   SCIP_STAT* stat,
+                                   SCIP_LP* lp)
+    SCIP_Real SCIProwGetObjParallelism(SCIP_ROW* row,
+                                       SCIP_SET* set,
+                                       SCIP_LP* lp)
+
+    SCIP_Real SCIPcolGetObj(SCIP_COL *col)
+
+cdef extern from "scip/scip_tree.h":
+    SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
+    SCIP_Longint SCIPgetNLeaves(SCIP* scip)
+    SCIP_Longint SCIPgetNChildren(SCIP* scip)
+    SCIP_Longint SCIPgetNSiblings(SCIP* scip)
+    SCIP_NODE* SCIPgetBestChild(SCIP* scip)
+    SCIP_NODE* SCIPgetBestSibling(SCIP* scip)
+    SCIP_NODE* SCIPgetBestLeaf(SCIP* scip)
+    SCIP_NODE* SCIPgetBestNode(SCIP* scip)
+    SCIP_NODE* SCIPgetBestboundNode(SCIP* scip)
+    int SCIPgetFocusDepth(SCIP *scip)
+    int SCIPgetPlungeDepth(SCIP *scip)
+    int SCIPgetEffectiveRootDepth(SCIP* scip)
+    int SCIPgetNNodesLeft(SCIP* scip)
+    int SCIPgetCutoffdepth(SCIP* scip)
+    int SCIPgetRepropdepth(SCIP* scip)
+
+cdef extern from "scip/scip_var.h":
+    SCIP_RETCODE SCIPchgVarBranchPriority(SCIP* scip, SCIP_VAR* var, int branchpriority)
+
+cdef extern from "scip/def.h":
+    SCIP_Real REALABS(SCIP_Real x)
+
+cdef extern from "scip/struct_branch.h":
+    cdef struct SCIP_Branchrule:
+        pass
+
+cdef extern from "time.h":
+    ctypedef long clock_t
+
+
+cdef extern from "scip/struct_misc.h":
+    ctypedef struct SCIP_SPARSESOL:
+        SCIP_VAR **     vars
+        SCIP_Longint *  lbvalues
+        SCIP_Longint *  ubvalues
+        int     nvars
+
+    ctypedef struct SCIP_HASHMAP:
+        pass
+ 
+cdef extern from "scip/struct_clock.h":
+    ctypedef struct SCIP_CPUCLOCK:
+        clock_t     user
+
+    ctypedef struct SCIP_WALLCLOCK:
+        long    sec
+        long    usec
+
+    ctypedef union SCIP_CLOCK_DATA:
+        SCIP_CPUCLOCK   cpuclock
+        SCIP_WALLCLOCK   wallclock
+
+    ctypedef enum SCIP_CLOCKTYPE:
+        SCIP_CLOCKTYPE_DEFAULT = 0
+        SCIP_CLOCKTYPE_CPU     = 1
+        SCIP_CLOCKTYPE_WALL    = 2
+
+    ctypedef struct SCIP_CLOCK:
+        # SCIP_CLOCK_DATA  data
+        SCIP_Real        lasttime
+        int              nruns
+        SCIP_CLOCKTYPE   clocktype
+        SCIP_Bool        usedefault
+        SCIP_Bool        enabled
+
+cdef extern from "scip/type_history.h":
+    ctypedef struct SCIP_HISTORY:
+        SCIP_Real   pscostcount [2]
+        SCIP_Real   pscostweightedmean [2]
+        SCIP_Real   pscostvariance [2]
+        SCIP_Real   vsids [2]
+        SCIP_Real   conflengthsum [2]
+        SCIP_Real   inferencesum [2]
+        SCIP_Real   cutoffsum [2]
+        SCIP_Longint    nactiveconflicts [2]
+        SCIP_Longint    nbranchings [2]
+        SCIP_Longint    branchdepthsum [2]
+
+cdef extern from "scip/struct_stat.h":
+    ctypedef struct SCIP_STAT:
+        # SCIP_REGRESSION *     regressioncandsobjval
+        SCIP_Longint    nlpiterations
+        SCIP_Longint    nrootlpiterations
+        SCIP_Longint    nrootfirstlpiterations
+        SCIP_Longint    nprimallpiterations
+        SCIP_Longint    nduallpiterations
+        SCIP_Longint    nlexduallpiterations
+        SCIP_Longint    nbarrierlpiterations
+        SCIP_Longint    nprimalresolvelpiterations
+        SCIP_Longint    ndualresolvelpiterations
+        SCIP_Longint    nlexdualresolvelpiterations
+        SCIP_Longint    nnodelpiterations
+        SCIP_Longint    ninitlpiterations
+        SCIP_Longint    ndivinglpiterations
+        SCIP_Longint    ndivesetlpiterations
+        SCIP_Longint    nsbdivinglpiterations
+        SCIP_Longint    nsblpiterations
+        SCIP_Longint    nrootsblpiterations
+        SCIP_Longint    nconflictlpiterations
+        SCIP_Longint    nnodes
+        SCIP_Longint    ninternalnodes
+        SCIP_Longint    nobjleaves
+        SCIP_Longint    nfeasleaves
+        SCIP_Longint    ninfeasleaves
+        SCIP_Longint    ntotalnodes
+        SCIP_Longint    ntotalinternalnodes
+        SCIP_Longint    ntotalnodesmerged
+        SCIP_Longint    ncreatednodes
+        SCIP_Longint    ncreatednodesrun
+        SCIP_Longint    nactivatednodes
+        SCIP_Longint    ndeactivatednodes
+        SCIP_Longint    nearlybacktracks
+        SCIP_Longint    nnodesaboverefbound
+        SCIP_Longint    nbacktracks
+        SCIP_Longint    ndelayedcutoffs
+        SCIP_Longint    nreprops
+        SCIP_Longint    nrepropboundchgs
+        SCIP_Longint    nrepropcutoffs
+        SCIP_Longint    nlpsolsfound
+        SCIP_Longint    nrelaxsolsfound
+        SCIP_Longint    npssolsfound
+        SCIP_Longint    nsbsolsfound
+        SCIP_Longint    nlpbestsolsfound
+        SCIP_Longint    nrelaxbestsolsfound
+        SCIP_Longint    npsbestsolsfound
+        SCIP_Longint    nsbbestsolsfound
+        SCIP_Longint    nexternalsolsfound
+        SCIP_Longint    lastdispnode
+        SCIP_Longint    lastdivenode
+        SCIP_Longint    lastconflictnode
+        SCIP_Longint    bestsolnode
+        SCIP_Longint    domchgcount
+        SCIP_Longint    nboundchgs
+        SCIP_Longint    nholechgs
+        SCIP_Longint    nprobboundchgs
+        SCIP_Longint    nprobholechgs
+        SCIP_Longint    nsbdowndomchgs
+        SCIP_Longint    nsbupdomchgs
+        SCIP_Longint    nsbtimesiterlimhit
+        SCIP_Longint    nnodesbeforefirst
+        SCIP_Longint    ninitconssadded
+        SCIP_Longint    nactiveconssadded
+        SCIP_Longint    externmemestim
+        SCIP_Real   avgnnz
+        SCIP_Real   firstlpdualbound
+        SCIP_Real   rootlowerbound
+        SCIP_Real   vsidsweight
+        SCIP_Real   firstprimalbound
+        SCIP_Real   firstprimaltime
+        SCIP_Real   firstsolgap
+        SCIP_Real   lastsolgap
+        SCIP_Real   primalzeroittime
+        SCIP_Real   dualzeroittime
+        SCIP_Real   barrierzeroittime
+        SCIP_Real   maxcopytime
+        SCIP_Real   mincopytime
+        SCIP_Real   firstlptime
+        SCIP_Real   lastbranchvalue
+        SCIP_Real   primaldualintegral
+        SCIP_Real   previousgap
+        SCIP_Real   previntegralevaltime
+        SCIP_Real   lastprimalbound
+        SCIP_Real   lastdualbound
+        SCIP_Real   lastlowerbound
+        SCIP_Real   lastupperbound
+        SCIP_Real   rootlpbestestimate
+        SCIP_Real   referencebound
+        SCIP_Real   bestefficacy
+        SCIP_Real   minefficacyfac
+        SCIP_Real   detertimecnt
+        SCIP_CLOCK *    solvingtime
+        SCIP_CLOCK *    solvingtimeoverall
+        SCIP_CLOCK *    presolvingtime
+        SCIP_CLOCK *    presolvingtimeoverall
+        SCIP_CLOCK *    primallptime
+        SCIP_CLOCK *    duallptime
+        SCIP_CLOCK *    lexduallptime
+        SCIP_CLOCK *    barrierlptime
+        SCIP_CLOCK *    divinglptime
+        SCIP_CLOCK *    strongbranchtime
+        SCIP_CLOCK *    conflictlptime
+        SCIP_CLOCK *    lpsoltime
+        SCIP_CLOCK *    relaxsoltime
+        SCIP_CLOCK *    pseudosoltime
+        SCIP_CLOCK *    sbsoltime
+        SCIP_CLOCK *    nodeactivationtime
+        SCIP_CLOCK *    nlpsoltime
+        SCIP_CLOCK *    copyclock
+        SCIP_CLOCK *    strongpropclock
+        SCIP_CLOCK *    reoptupdatetime
+        SCIP_HISTORY *  glbhistory
+        SCIP_HISTORY *  glbhistorycrun
+        SCIP_VAR *  lastbranchvar
+        # SCIP_VISUAL *     visual
+        # SCIP_HEUR *   firstprimalheur
+        SCIP_STATUS     status
+        SCIP_BRANCHDIR  lastbranchdir
+        SCIP_LPSOLSTAT  lastsblpsolstats [2]
+        SCIP_Longint    nnz
+        SCIP_Longint    lpcount
+        SCIP_Longint    relaxcount
+        SCIP_Longint    nlps
+        SCIP_Longint    nrootlps
+        SCIP_Longint    nprimallps
+        SCIP_Longint    nprimalzeroitlps
+        SCIP_Longint    nduallps
+        SCIP_Longint    ndualzeroitlps
+        SCIP_Longint    nlexduallps
+        SCIP_Longint    nbarrierlps
+        SCIP_Longint    nbarrierzeroitlps
+        SCIP_Longint    nprimalresolvelps
+        SCIP_Longint    ndualresolvelps
+        SCIP_Longint    nlexdualresolvelps
+        SCIP_Longint    nnodelps
+        SCIP_Longint    ninitlps
+        SCIP_Longint    ndivinglps
+        SCIP_Longint    ndivesetlps
+        SCIP_Longint    nsbdivinglps
+        SCIP_Longint    nnumtroublelpmsgs
+        SCIP_Longint    nstrongbranchs
+        SCIP_Longint    nrootstrongbranchs
+        SCIP_Longint    nconflictlps
+        SCIP_Longint    nnlps
+        SCIP_Longint    nisstoppedcalls
+        SCIP_Longint    totaldivesetdepth
+        int     subscipdepth
+        int     ndivesetcalls
+        int     nruns
+        int     ncutpoolfails
+        int     nconfrestarts
+        int     nrootboundchgs
+        int     nrootboundchgsrun
+        int     nrootintfixings
+        int     nrootintfixingsrun
+        int     prevrunnvars
+        int     nvaridx
+        int     ncolidx
+        int     nrowidx
+        int     marked_nvaridx
+        int     marked_ncolidx
+        int     marked_nrowidx
+        int     npricerounds
+        int     nseparounds
+        int     nincseparounds
+        int     ndisplines
+        int     maxdepth
+        int     maxtotaldepth
+        int     plungedepth
+        int     nactiveconss
+        int     nenabledconss
+        int     nimplications
+        int     npresolrounds
+        int     npresolroundsfast
+        int     npresolroundsmed
+        int     npresolroundsext
+        int     npresolfixedvars
+        int     npresolaggrvars
+        int     npresolchgvartypes
+        int     npresolchgbds
+        int     npresoladdholes
+        int     npresoldelconss
+        int     npresoladdconss
+        int     npresolupgdconss
+        int     npresolchgcoefs
+        int     npresolchgsides
+        int     lastnpresolfixedvars
+        int     lastnpresolaggrvars
+        int     lastnpresolchgvartypes
+        int     lastnpresolchgbds
+        int     lastnpresoladdholes
+        int     lastnpresoldelconss
+        int     lastnpresoladdconss
+        int     lastnpresolupgdconss
+        int     lastnpresolchgcoefs
+        int     lastnpresolchgsides
+        int     solindex
+        int     nrunsbeforefirst
+        int     firstprimaldepth
+        int     ncopies
+        int     nreoptruns
+        int     nclockskipsleft
+        SCIP_Bool   memsavemode
+        SCIP_Bool   userinterrupt
+        SCIP_Bool   userrestart
+        SCIP_Bool   inrestart
+        SCIP_Bool   collectvarhistory
+        SCIP_Bool   performpresol
+        SCIP_Bool   branchedunbdvar
+        SCIP_Bool   disableenforelaxmsg
+
+cdef extern from "scip/branch_vanillafullstrong.h":
+    SCIP_RETCODE SCIPincludeBranchruleVanillafullstrong(SCIP* scip)
+    SCIP_RETCODE SCIPgetVanillafullstrongData(SCIP* scip,
+                                              SCIP_VAR*** cands,
+                                              SCIP_Real** candscores,
+                                              int* ncands,
+                                              int* npriocands,
+                                              int* bestcand)
+
+
+cdef class Expr:
+    cdef public terms
+
+cdef class Event:
+    cdef SCIP_EVENT* event
+    # can be used to store problem data
+    cdef public object data
+    @staticmethod
+    cdef create(SCIP_EVENT* scip_event)
+
+cdef class Column:
+    cdef SCIP_COL* scip_col
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_COL* scipcol)
+
+cdef class Row:
+    cdef SCIP_ROW* scip_row
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_ROW* sciprow)
+
+cdef class NLRow:
+    cdef SCIP_NLROW* scip_nlrow
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_NLROW* scipnlrow)
+
+cdef class Solution:
+    cdef SCIP_SOL* sol
+    cdef SCIP* scip
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP* scip, SCIP_SOL* scip_sol)
+
+cdef class DomainChanges:
+    cdef SCIP_DOMCHG* scip_domchg
+
+    @staticmethod
+    cdef create(SCIP_DOMCHG* scip_domchg)
+
+cdef class BoundChange:
+    cdef SCIP_BOUNDCHG* scip_boundchg
+
+    @staticmethod
+    cdef create(SCIP_BOUNDCHG* scip_boundchg)
+
+cdef class Node:
+    cdef SCIP_NODE* scip_node
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_NODE* scipnode)
+
+cdef class Variable(Expr):
+    cdef SCIP_VAR* scip_var
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_VAR* scipvar)
+
+cdef class Constraint:
+    cdef SCIP_CONS* scip_cons
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_CONS* scipcons)
+
+cdef class Model:
+    cdef SCIP* _scip
+    cdef SCIP_Bool* _valid
+    # store best solution to get the solution values easier
+    cdef Solution _bestSol
+    # can be used to store problem data
+    cdef public object data
+    # make Model weak referentiable
+    cdef object __weakref__
+    # flag to indicate whether the SCIP should be freed. It will not be freed if an empty Model was created to wrap a
+    # C-API SCIP instance.
+    cdef SCIP_Bool _freescip
+    # map to store python variables
+    cdef _modelvars
+
+    @staticmethod
+    cdef create(SCIP* scip)
