@@ -384,6 +384,9 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_DIVESET:
         pass
 
+    ctypedef struct SCIP_HASHMAP:   
+        pass
+
     ctypedef struct SCIP_BOUNDTYPE:
         pass
 
