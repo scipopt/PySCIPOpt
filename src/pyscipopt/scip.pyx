@@ -4149,6 +4149,7 @@ cdef class Model:
         print(nsols)
         for s in range(nsols):
             sparsesol = sols[s]
+            # https://www.scipopt.org/doc-5.0.0/html/group__SparseSol.php#ga56a6b00fdcf3eefa804e814f7ee2ea46 I do not know how to import this
             SCIPsparseSolGetFirstSol(sparsesol, sol, sparsenvars)
             while True:
                 for v in range(_nallvars):
@@ -4161,35 +4162,9 @@ cdef class Model:
                     realvalue = constant;
                     for i in range(_nallvars):
                         # I have no idea how to get the hashmap?
+                # https://www.scipopt.org/doc-5.0.0/html/group__SparseSol.php#gaed7a10e2bd49c6b18a16e98d37174498
                 if not SCIPsparseSolGetNextSol(sparsesol, sol, sparsenvars):
                     break
-
-
-        # cdef SCIP_CONSHDLRDATA* data
-        # data = SCIPconshdlrGetData(SCIPfindConshdlr(self._scip, "countsols"))
-        # cdef SCIP_HASHMAP* hashmap
-        # hashmap = (<SCIP_HASHMAP*>data.hashmap)
-
-        # cdef SCIP_SPARSESOL** sparsesols
-        # cdef SCIP_VAR** origvars
-        # cdef SCIP_VAR** allvars
-        # cdef int norigvars
-        # cdef int nvars
-        # cdef int v
-
-        # norigvars = 0
-        # for v in range(SCIPgetNOrigVars(self._scip)):
-        #     if SCIPvarGetType(SCIPgetOrigVars(self._scip)[v]) != SCIP_VARTYPE_CONTINUOUS:
-        #         origvars[norigvars] = SCIPgetOrigVars(self._scip)[v];
-        #         norigvars += 1;
-
-        # # cdef SCIP_HASHMAP* hashmap = data->hashmap
-        # # cdef SCIP_VAR** activevars = data->vars
-        # cdef int nallvars
-        # nallvars = data[0].nallvars
-        # print(nallvars)
-
-
 
     def getSols(self):
         """Retrieve list of all feasible primal solutions stored in the solution storage."""
