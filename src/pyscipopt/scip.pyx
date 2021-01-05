@@ -4090,12 +4090,16 @@ cdef class Model:
         :param free: should solution be freed afterwards? (Default value = True)
 
         """
+        print("here")
         cdef SCIP_Bool stored
         if free:
             PY_SCIP_CALL(SCIPaddSolFree(self._scip, &solution.sol, &stored))
         else:
             PY_SCIP_CALL(SCIPaddSol(self._scip, solution.sol, &stored))
         return stored
+
+    def includeConshdlerCountsols(self):
+        PY_SCIP_CALL(SCIPincludeConshdlrCountsols(self._scip))
 
     def freeSol(self, Solution solution):
         """Free given solution
@@ -4105,12 +4109,95 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPfreeSol(self._scip, &solution.sol))
 
+<<<<<<< HEAD
     def getNSols(self):
         """gets number of feasible primal solutions stored in the solution storage in case the problem is transformed;
            in case the problem stage is SCIP_STAGE_PROBLEM, the number of solution in the original solution candidate
            storage is returned
          """
         return SCIPgetNSols(self._scip)
+=======
+    def getSparseSols(self):
+        cdef SCIP_VAR** activevars 
+        cdef int sparsenvars 
+        cdef SCIP_SPARSESOL** sols
+        cdef int nsols
+        cdef SCIP_Longint* sol
+
+        cdef SCIP_VAR** vars;
+        cdef SCIP_Real* scalars;
+
+        _allvars = SCIPgetOrigVars(self._scip)
+        _nallvars = SCIPgetNOrigVars(self._scip)
+        cdef SCIP_Real objval
+
+        cdef SCIP_Real constant
+        cdef SCIP_Real realvalue
+        cdef int requiredsize
+        cdef int nvars
+        cdef int idx
+        cdef int i
+        cdef SCIP_SPARSESOL* sparsesol
+        SCIPgetCountedSparseSols(self._scip, &activevars, &sparsenvars, &sols, &nsols)
+        print(nsols)
+        for s in range(nsols):
+            print(s)
+            sparsesol = sols[s]
+            print("After sparsesol")
+            print(_nallvars)
+            for v in range(_nallvars):
+                print("ERER")
+                print(v)
+
+
+                print(sparsesol.lbvalues[v])
+                print(sol[v])
+                sol[v] += sparsesol.lbvalues[v]
+                print("after lbvalue")
+                print(sol[v])
+            print("herere")
+            while True:
+                for v in range(_nallvars):
+
+                    print(v)
+                    vars[0] = _allvars[v]
+                    scalars[0] = 1.0
+                    nvars = 1
+                    constant = 0.0
+
+                    PY_SCIP_CALL( SCIPgetProbvarLinearSum(self._scip, vars, scalars, &nvars, sparsenvars, &constant, &requiredsize, True) )
+                    realvalue = constant;
+                    for i in range(_nallvars):
+                        print(i)
+                if not SCIPsparseSolGetNextSol(sparsesol, sol, sparsenvars):
+                    break
+
+
+        # cdef SCIP_CONSHDLRDATA* data
+        # data = SCIPconshdlrGetData(SCIPfindConshdlr(self._scip, "countsols"))
+        # cdef SCIP_HASHMAP* hashmap
+        # hashmap = (<SCIP_HASHMAP*>data.hashmap)
+
+        # cdef SCIP_SPARSESOL** sparsesols
+        # cdef SCIP_VAR** origvars
+        # cdef SCIP_VAR** allvars
+        # cdef int norigvars
+        # cdef int nvars
+        # cdef int v
+
+        # norigvars = 0
+        # for v in range(SCIPgetNOrigVars(self._scip)):
+        #     if SCIPvarGetType(SCIPgetOrigVars(self._scip)[v]) != SCIP_VARTYPE_CONTINUOUS:
+        #         origvars[norigvars] = SCIPgetOrigVars(self._scip)[v];
+        #         norigvars += 1;
+
+        # # cdef SCIP_HASHMAP* hashmap = data->hashmap
+        # # cdef SCIP_VAR** activevars = data->vars
+        # cdef int nallvars
+        # nallvars = data[0].nallvars
+        # print(nallvars)
+
+>>>>>>> base
 
     def getSols(self):
         """Retrieve list of all feasible primal solutions stored in the solution storage."""
@@ -4120,9 +4207,11 @@ cdef class Model:
         nsols = SCIPgetNSols(self._scip)
         sols = []
 
+        
         for i in range(nsols):
             sols.append(Solution.create(self._scip, _sols[i]))
 
+        
         return sols
 
     def getBestSol(self):
@@ -4358,6 +4447,13 @@ cdef class Model:
 
     # Parameter Methods
 
+    def count(self):
+        print("In correct count")
+        PY_SCIP_CALL(SCIPsetParamsCountsols(self._scip))
+        PY_SCIP_CALL(SCIPsetBoolParam(self._scip, "constraints/countsols/collect", 1));
+        PY_SCIP_CALL(SCIPsetLongintParam(self._scip, "constraints/countsols/sollimit",5) );
+        PY_SCIP_CALL(SCIPcount(self._scip));
+
     def setBoolParam(self, name, value):
         """Set a boolean-valued parameter.
 
@@ -4559,9 +4655,9 @@ cdef class Model:
 
     # Counting functions
 
-    def count(self):
-        """Counts the number of feasible points of problem."""
-        PY_SCIP_CALL(SCIPcount(self._scip))
+    # def count(self):
+    #     """Counts the number of feasible points of problem."""
+    #     PY_SCIP_CALL(SCIPcount(self._scip))
 
     def getNCountedSols(self):
         """Get number of feasible solution."""
