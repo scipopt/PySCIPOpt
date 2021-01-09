@@ -4090,7 +4090,6 @@ cdef class Model:
         :param free: should solution be freed afterwards? (Default value = True)
 
         """
-        print("here")
         cdef SCIP_Bool stored
         if free:
             PY_SCIP_CALL(SCIPaddSolFree(self._scip, &solution.sol, &stored))
@@ -4117,9 +4116,10 @@ cdef class Model:
         return SCIPgetNSols(self._scip)
 
     def getSparseSols(self):
-        """
+        """gets all counted solutions in the original variable space by taking sparse solutions in transformed variable space and 
+        converting them to solutions to solutions in original variable space
 
-        :return Solutions: solutions in the original variable space
+        :return Solution solutions: solutions in the original variable space
         
         based off of https://www.scipopt.org/doc/html/cons__countsols_8c_source.php#l02693
 
@@ -4414,8 +4414,7 @@ cdef class Model:
 
     # Parameter Methods
 
-    def count(self):
-        print("In correct count")
+    def collectSols(self):
         PY_SCIP_CALL(SCIPsetParamsCountsols(self._scip))
         PY_SCIP_CALL(SCIPsetBoolParam(self._scip, "constraints/countsols/collect", 1));
         PY_SCIP_CALL(SCIPsetLongintParam(self._scip, "constraints/countsols/sollimit",5) );
@@ -4622,9 +4621,9 @@ cdef class Model:
 
     # Counting functions
 
-    # def count(self):
-    #     """Counts the number of feasible points of problem."""
-    #     PY_SCIP_CALL(SCIPcount(self._scip))
+    def count(self):
+        """Counts the number of feasible points of problem."""
+        PY_SCIP_CALL(SCIPcount(self._scip))
 
     def getNCountedSols(self):
         """Get number of feasible solution."""
