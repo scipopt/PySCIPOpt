@@ -280,9 +280,6 @@ cdef extern from "scip/scip.h":
 
     ctypedef double SCIP_Real
 
-    ctypedef struct SCIP:
-        pass
-
     ctypedef struct SCIP_VAR:
         pass
 
@@ -796,7 +793,6 @@ cdef extern from "scip/scip.h":
     SCIP_SOL* SCIPgetBestSol(SCIP* scip)
     SCIP_Real SCIPgetSolVal(SCIP* scip, SCIP_SOL* sol, SCIP_VAR* var)
     SCIP_RETCODE SCIPwriteVarName(SCIP* scip, FILE* outfile, SCIP_VAR* var, SCIP_Bool vartype)
-    SCIP_RETCODE SCIPgetTransformedVar(SCIP* scip, SCIP_VAR* var, SCIP_VAR** transvar)
     SCIP_Real SCIPgetSolOrigObj(SCIP* scip, SCIP_SOL* sol)
     SCIP_Real SCIPgetSolTransObj(SCIP* scip, SCIP_SOL* sol)
     SCIP_RETCODE SCIPcreateSol(SCIP* scip, SCIP_SOL** sol, SCIP_HEUR* heur)
