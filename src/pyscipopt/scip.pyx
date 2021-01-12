@@ -3447,7 +3447,7 @@ cdef class Model:
         n = str_conversion(name)
         d = str_conversion(desc)
         PY_SCIP_CALL(SCIPincludeSepa(self._scip, n, d, priority, freq, maxbounddist, usessubscip, delay, PySepaCopy, PySepaFree,
-                                          PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, PySepaExeclp, PySepaExecsol, <setSCIP_SEPADATA*>sepa))
+                                          PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, PySepaExeclp, PySepaExecsol, <SCIP_SEPADATA*>sepa))
         sepa.model = <Model>weakref.proxy(self)
         sepa.name = name
         Py_INCREF(sepa)
@@ -4166,11 +4166,9 @@ cdef class Model:
         cdef SCIP_SOL* _sol
         _sols = SCIPgetSols(self._scip)
         nsols = SCIPgetNSols(self._scip)
-        sols = []
-        
+        sols = []        
         for i in range(nsols):
             sols.append(Solution.create(self._scip, _sols[i]))
-        
         return sols
 
     def getBestSol(self):

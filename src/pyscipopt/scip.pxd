@@ -280,6 +280,9 @@ cdef extern from "scip/scip.h":
 
     ctypedef double SCIP_Real
 
+    ctypedef struct SCIP:   
+        pass    
+
     ctypedef struct SCIP_VAR:
         pass
 
