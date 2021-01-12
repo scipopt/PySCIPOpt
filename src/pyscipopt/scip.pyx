@@ -4116,13 +4116,10 @@ cdef class Model:
         return SCIPgetNSols(self._scip)
 
     def getSparseSols(self):
-        """gets all counted solutions in the original variable space by taking sparse solutions in transformed variable space and 
-        converting them to solutions to solutions in original variable space
+        """Get all counted solutions in the original variable space by taking sparse solutions in the
+        transformed variable space and converting them to solutions in the original variable space
 
-        :return Solution solutions: solutions in the original variable space
-        
-        based off of https://www.scipopt.org/doc/html/cons__countsols_8c_source.php#l02693
-
+        :return Solution:  solutions in the original variable space
         """
         cdef SCIP_VAR** activevars 
         cdef int sparsenvars 
