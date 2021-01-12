@@ -281,21 +281,7 @@ cdef extern from "scip/scip.h":
     ctypedef double SCIP_Real
 
     ctypedef struct SCIP:
-        SCIP_SET* set
-        SCIP_STAT* stat
-        SCIP_PROB * origprob
-        SCIP_PROB * transprob
-        SCIP_LP* lp
-
-
-    ctypedef struct SCIP_SET:
         pass
-
-    ctypedef struct SCIP_PROB:
-        pass
-
-    ctypedef struct SCIP_LP:
-        SCIP_Real objsqrnorm
 
     ctypedef struct SCIP_VAR:
         pass

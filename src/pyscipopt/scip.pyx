@@ -3447,7 +3447,7 @@ cdef class Model:
         n = str_conversion(name)
         d = str_conversion(desc)
         PY_SCIP_CALL(SCIPincludeSepa(self._scip, n, d, priority, freq, maxbounddist, usessubscip, delay, PySepaCopy, PySepaFree,
-                                          PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, PySepaExeclp, PySepaExecsol, <SCIP_SEPADATA*>sepa))
+                                          PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, PySepaExeclp, PySepaExecsol, <setSCIP_SEPADATA*>sepa))
         sepa.model = <Model>weakref.proxy(self)
         sepa.name = name
         Py_INCREF(sepa)
@@ -4097,9 +4097,6 @@ cdef class Model:
             PY_SCIP_CALL(SCIPaddSol(self._scip, solution.sol, &stored))
         return stored
 
-    def includeConshdlerCountsols(self):
-        PY_SCIP_CALL(SCIPincludeConshdlrCountsols(self._scip))
-
     def freeSol(self, Solution solution):
         """Free given solution
 
@@ -4170,11 +4167,9 @@ cdef class Model:
         _sols = SCIPgetSols(self._scip)
         nsols = SCIPgetNSols(self._scip)
         sols = []
-
         
         for i in range(nsols):
             sols.append(Solution.create(self._scip, _sols[i]))
-
         
         return sols
 
