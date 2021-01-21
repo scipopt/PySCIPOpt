@@ -2,7 +2,7 @@ PySCIPOpt
 =========
 
 This project provides an interface from Python to the [SCIP Optimization
-Suite](http://scip.zib.de).
+Suite](https://www.scipopt.org/).
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PySCIPOpt/Lobby)
 [![PySCIPOpt on PyPI](https://img.shields.io/pypi/v/pyscipopt.svg)](https://pypi.python.org/pypi/pyscipopt)
@@ -13,7 +13,7 @@ Suite](http://scip.zib.de).
 Documentation
 -------------
 
-Please consult the [online documentation](http://scipopt.github.io/PySCIPOpt/docs/html) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
+Please consult the [online documentation](https://scipopt.github.io/PySCIPOpt/docs/html) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
 
 See [CHANGELOG.md](CHANGELOG.md) for added, removed or fixed functionality.
 
