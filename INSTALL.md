@@ -9,8 +9,8 @@ The following table summarizes which version of PySCIPOpt is required for a give
 
 |SCIP| PySCIPOpt |
 |----|----|
-7.0 | 3.0
-6.0 | 2.2, 2.1, 2.0
+7.0 | 3.x
+6.0 | 2.x
 5.0 | 1.4, 1.3
 4.0 | 1.2, 1.1
 3.2 | 1.0
@@ -48,7 +48,7 @@ Platform](https://www.anaconda.com/).
 Installation from PyPI
 ======================
 
-`pip install pyscipopt`
+    python -m pip install pyscipopt
 
 On Windows you may need to ensure that the `scip` library can be found
 at runtime by adjusting your `PATH` environment variable:
@@ -71,14 +71,14 @@ found"):
 
 After setting up `SCIPOPTDIR` as specified above, please run
 
-    pip install [-e] .
+    python -m pip install [-e] .
 
 Building with debug information
 ===============================
 
 To use debug information in PySCIPOpt you need to build it like this:
 
-    pip install [-e] --install-option="--debug" .
+    python -m pip install [-e] --install-option="--debug" .
 
 Be aware that you will need the **debug library** of the SCIP
 Optimization Suite for this to work
