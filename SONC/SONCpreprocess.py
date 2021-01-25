@@ -5,6 +5,7 @@ from convert    import ExprToPoly
 
 import numpy as np
 import cvxpy as cvx
+import re
 
 #TODO: use flags to decide which preprocessing options should be used?
 #TODO: is it better not to have the problem in SCIP and POEM, but only use one of them?
@@ -12,8 +13,12 @@ def preprocess(problem, Vars):
     """base function calling all preprocessing options"""
     #make sure that we have constraints '>= 0'
     problem = greaterConstraints(problem)
-    problem, Vars = rewriteObjective(problem, Vars) #index gives the variable that was deleted when rewriting the objective
+    x0found = re.search(r'x0',str(Vars))
+    #print('before pre', problem, Vars)
+    problem, Vars = rewriteObjective(problem, Vars, x0found) #index gives the variable that was deleted when rewriting the objective
+    #print(problem)
     problem = boundNegativeTerms(problem, Vars)
+    #print('after pre', problem, Vars)
     return problem
 
 def greaterConstraints(problem):
@@ -28,7 +33,7 @@ def greaterConstraints(problem):
     return problem
 
 #TODO: instead of deleting inside A,b maybe a better idea to just set the coefficients to 0 and add a function that deletes those (makes index unnecessary)
-def rewriteObjective(problem, Vars):
+def rewriteObjective(problem, Vars, x0found):
     """function tries to find variables that was only added to make the objective linear and rewrites it back into a nonlinear objective, deletes the variable
      param: problem - optimization problem of class OptimizationProblem in POEM
     """
@@ -36,10 +41,19 @@ def rewriteObjective(problem, Vars):
     cons = problem.constraints
     if np.count_nonzero(obj.A[1:,]) == 1:
         index = np.nonzero(obj.A[1:,])
-        A = obj.A[1:,]
-        #print('index',index)
+        A = obj.A[1:,].copy()
+        #print(index, A,Vars)
+        #x0found = re.search(r'x0',str(cons))
+        if x0found == None:
+            #A = np.concatenate((np.zeros(A.shape[0]),A), axis=0)
+            #print(A.shape)
+            #print(A)
+            A = np.concatenate(([np.zeros(A.shape[1])], A))
+            #print('index',index)
         for con in cons:
             conA = con.A[1:,]
+            if x0found == None:
+                conA = np.concatenate(([np.zeros(conA.shape[1])], conA))
             #print('constraint', con, con.operand)
             i = np.nonzero(conA[index[0][0]])
             #print('i',i, conA[index[0][0]])
@@ -71,7 +85,8 @@ def rewriteObjective(problem, Vars):
                 #for c in newProb.constraints:
                 #    print('new constraints: ',c.A,c.b)
                 #print(newProb)
-                Vars = np.delete(Vars,index[0][0])
+                Vars = [el for el in Vars if re.search('x'+str(index[0][0]), str(el))==None]
+                #Vars = np.delete(Vars,index[0][0])
                 return newProb, Vars
 
     #return original problem if nothing could be rewritten
@@ -103,7 +118,7 @@ def boundNegativeTerms(problem, Vars):
             #print(polyOrig.A,polyOrig.b)
             #print(i, polyOrig.A[1:,], polyOrig.A.shape[1])
             #print('A', A[:,i])
-            if np.count_nonzero(A[:,i])==1:
+            if np.count_nonzero(A[:,i])==1 and polyOrig.b[i]>=0:
                 #a[i] = np.nonzero(A[i])[0]
                 #print('index',np.nonzero(A[:,i]))
                 index = np.nonzero(A[:,i])
@@ -122,9 +137,12 @@ def boundNegativeTerms(problem, Vars):
         #if not all points are covered, 2*max{exponents of inner terms} will cover all points if bounds are given for the constraints
         A = polyOrig.A[1:]
         a = np.array([2*max(A[i,polyOrig.non_squares]) for i in range(n)])
+        #print('a uncovered',a, n)
     for i,y in enumerate(Vars):
         u = max(abs(y.getUbLocal()),abs(y.getLbLocal()))
-        if u != problem.infinity:
+        #print('u',y,u, a)
+        #print(polyOrig.non_squares, polyOrig.monomial_squares)
+        if u != problem.infinity :#and abs(u**a[i])<=10e4:
             #TODO: only works if variables are not reordered at some point
             boundconsA = np.zeros((n,2))
             boundconsA[i][1] = a[i]

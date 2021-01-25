@@ -3,6 +3,7 @@
 cdef class Benders:
     cdef public Model model
     cdef public str name
+    cdef SCIP_BENDERS* _benders
 
     def bendersfree(self):
         '''calls destructor and frees memory of Benders decomposition '''
@@ -69,7 +70,7 @@ cdef Variable getPyVar(SCIP_VAR* var):
     return <Variable>vardata
 
 
-cdef SCIP_RETCODE PyBendersCopy (SCIP* scip, SCIP_BENDERS* benders):
+cdef SCIP_RETCODE PyBendersCopy (SCIP* scip, SCIP_BENDERS* benders, SCIP_Bool threadsafe):
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyBendersFree (SCIP* scip, SCIP_BENDERS* benders):
@@ -129,16 +130,18 @@ cdef SCIP_RETCODE PyBendersCreatesub (SCIP* scip, SCIP_BENDERS* benders, int pro
     PyBenders.benderscreatesub(probnumber)
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersPresubsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, SCIP_BENDERSENFOTYPE type, SCIP_Bool checkint, SCIP_Bool* skipsolve,  SCIP_RESULT* result):
+cdef SCIP_RETCODE PyBendersPresubsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, SCIP_BENDERSENFOTYPE type, SCIP_Bool checkint, SCIP_Bool* infeasible, SCIP_Bool* auxviol, SCIP_Bool* skipsolve,  SCIP_RESULT* result):
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
     if sol == NULL:
         solution = None
     else:
-        solution = Solution.create(sol)
+        solution = Solution.create(scip, sol)
     enfotype = type
     result_dict = PyBenders.benderspresubsolve(solution, enfotype, checkint)
+    infeasible[0] = result_dict.get("infeasible", False)
+    auxviol[0] = result_dict.get("auxviol", False)
     skipsolve[0] = result_dict.get("skipsolve", False)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
@@ -150,7 +153,7 @@ cdef SCIP_RETCODE PyBendersSolvesubconvex (SCIP* scip, SCIP_BENDERS* benders, SC
     if sol == NULL:
         solution = None
     else:
-        solution = Solution.create(sol)
+        solution = Solution.create(scip, sol)
     result_dict = PyBenders.benderssolvesubconvex(solution, probnumber, onlyconvex)
     objective[0] = result_dict.get("objective", 1e+20)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
@@ -163,7 +166,7 @@ cdef SCIP_RETCODE PyBendersSolvesub (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL
     if sol == NULL:
         solution = None
     else:
-        solution = Solution.create(sol)
+        solution = Solution.create(scip, sol)
     result_dict = PyBenders.benderssolvesub(solution, probnumber)
     objective[0] = result_dict.get("objective", 1e+20)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
@@ -178,7 +181,7 @@ cdef SCIP_RETCODE PyBendersPostsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SO
     if sol == NULL:
         solution = None
     else:
-        solution = Solution.create(sol)
+        solution = Solution.create(scip, sol)
     enfotype = type
     mergecandidates = []
     for i in range(nmergecands):

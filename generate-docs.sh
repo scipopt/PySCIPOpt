@@ -9,12 +9,17 @@ GH_REPO_REF="github.com/$GH_REPO_ORG/$GH_REPO_NAME.git"
 echo "Downloading SCIP tagfile to create links to SCIP docu"
 wget -q -O docs/scip.tag https://scip.zib.de/doc/scip.tag
 
+#get version number for doxygen
+export VERSION_NUMBER=$(grep "__version__" src/pyscipopt/__init__.py | cut -d ' ' -f 3 | tr --delete \')
+
 # generate html documentation in docs/html
 echo "Generating documentation"
 doxygen docs/doxy
 
 # fix broken links to SCIP online documentation
-sed -i "s/\.php\.html/\.php/g" docs/html/*.html
+# If you set `HTML_FILE_EXTENSION    = .php` in doc/doxy you don't need the following sed commands
+sed -i "s@\.php\.html@.php@g" docs/html/*.* docs/html/search/*.*
+sed -i -E "s@(scip.zib.de.*)\.html@\1.php@g" docs/html/*.* docs/html/search/*.*
 
 # clone the docu branch
 git clone -b gh-pages git@github.com:${GH_REPO_ORG}/${GH_REPO_NAME} code_docs

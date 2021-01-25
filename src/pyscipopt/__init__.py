@@ -1,4 +1,10 @@
-__version__ = '2.1.5'
+__version__ = '3.1.0'
+
+# required for Python 3.8 on Windows
+import os
+if hasattr(os, 'add_dll_directory'):
+    if os.getenv('SCIPOPTDIR'):
+        os.add_dll_directory(os.path.join(os.getenv('SCIPOPTDIR').strip('"'), 'bin'))
 
 # export user-relevant objects:
 from pyscipopt.Multidict import multidict
@@ -6,6 +12,7 @@ from pyscipopt.scip      import Model
 from pyscipopt.scip      import Benders
 from pyscipopt.scip      import Benderscut
 from pyscipopt.scip      import Branchrule
+from pyscipopt.scip      import Nodesel
 from pyscipopt.scip      import Conshdlr
 from pyscipopt.scip      import Eventhdlr
 from pyscipopt.scip      import Heur
@@ -35,3 +42,4 @@ from pyscipopt.scip      import PY_SCIP_EVENTTYPE    as SCIP_EVENTTYPE
 from pyscipopt.scip      import PY_SCIP_LPSOLSTAT    as SCIP_LPSOLSTAT
 from pyscipopt.scip      import PY_SCIP_BRANCHDIR    as SCIP_BRANCHDIR
 from pyscipopt.scip      import PY_SCIP_BENDERSENFOTYPE as SCIP_BENDERSENFOTYPE
+from pyscipopt.scip      import PY_SCIP_ROWORIGINTYPE as SCIP_ROWORIGINTYPE

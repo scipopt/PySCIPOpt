@@ -14,7 +14,7 @@ product = itertools.product
 # see http://scip.zib.de/doc-5.0.1/html/cons__and_8c.php
 #   for resultant and operators definition
 # CAVEAT: ONLY binary variables are allowed
-#   Integer and continous variables behave unexpectedly (due to SCIP?)
+#   Integer and continuous variables behave unexpectedly (due to SCIP?)
 # TBI: automatic assertion of expected resultant VS optimal resultant
 #   (visual inspection at the moment)
 

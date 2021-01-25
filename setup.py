@@ -1,11 +1,45 @@
 from setuptools import setup, Extension
 import os, platform, sys, re
 
-# look for environment variable that specifies path to SCIP Opt lib and headers
+# look for environment variable that specifies path to SCIP
 scipoptdir = os.environ.get('SCIPOPTDIR', '').strip('"')
-includedir = os.path.abspath(os.path.join(scipoptdir, 'include'))
-libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
-libname = 'scip'
+
+extra_compile_args = []
+extra_link_args = []
+
+# determine include directory
+if os.path.exists(os.path.join(scipoptdir, 'src')):
+    # SCIP seems to be installed in place
+    includedir = os.path.abspath(os.path.join(scipoptdir, 'src'))
+else:
+    # assume that SCIP is installed on the system
+    includedir = os.path.abspath(os.path.join(scipoptdir, 'include'))
+
+print('Using include path <%s>.' % includedir)
+
+# determine library
+if os.path.exists(os.path.join(scipoptdir, 'lib/shared/libscipsolver.so')):
+    # SCIP seems to be created with make
+    libdir = os.path.abspath(os.path.join(scipoptdir, 'lib/shared'))
+    libname = 'scipsolver'
+    extra_compile_args.append('-DNO_CONFIG_HEADER')
+else:
+    # assume that SCIP is installed on the system
+    libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
+    libname = 'scip'
+    if platform.system() in ['Windows']:
+        libname = 'libscip'
+
+print('Using SCIP library <%s> at <%s>.' % (libname,libdir))
+
+# set runtime libraries
+if platform.system() in ['Linux', 'Darwin']:
+    extra_link_args.append('-Wl,-rpath,'+libdir)
+
+# enable debug mode if requested
+if "--debug" in sys.argv:
+    extra_compile_args.append('-UNDEBUG')
+    sys.argv.remove("--debug")
 
 cythonize = True
 
@@ -28,29 +62,16 @@ if not os.path.exists(os.path.join(packagedir, 'scip.pyx')):
 
 ext = '.pyx' if cythonize else '.c'
 
-# set runtime libraries
-runtime_library_dirs = []
-extra_link_args = []
-if platform.system() in ['Linux', 'Darwin']:
-    extra_link_args.append('-Wl,-rpath,'+libdir)
-
-# enable debug mode if requested
-extra_compile_args = []
-if "--debug" in sys.argv:
-    extra_compile_args.append('-UNDEBUG')
-    sys.argv.remove("--debug")
-
 extensions = [Extension('pyscipopt.scip', [os.path.join(packagedir, 'scip'+ext)],
                           include_dirs=[includedir],
                           library_dirs=[libdir],
                           libraries=[libname],
-                          runtime_library_dirs=runtime_library_dirs,
                           extra_compile_args = extra_compile_args,
                           extra_link_args=extra_link_args
                           )]
 
 if cythonize:
-    extensions = cythonize(extensions)
+    extensions = cythonize(extensions, compiler_directives = {'language_level': 3})
 #     extensions = cythonize(extensions, compiler_directives={'linetrace': True})
 
 with open('README.md') as f:
@@ -71,7 +92,6 @@ setup(
     'Intended Audience :: Science/Research',
     'Intended Audience :: Education',
     'License :: OSI Approved :: MIT License',
-    'Programming Language :: Python :: 2',
     'Programming Language :: Python :: 3',
     'Programming Language :: Cython',
     'Topic :: Scientific/Engineering :: Mathematics'],

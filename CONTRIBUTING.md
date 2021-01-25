@@ -3,18 +3,18 @@ Contributing to PySCIPOpt
 
 Code contributions are very welcome and should comply to a few rules:
 
-0.  Read Design principles of PySCIPOpt\_.
-1.  Compatibility with both Python-2 and Python-3.
-2.  All tests defined in the Continuous Integration setup need to pass:
+0.  Read [Design principles of PySCIPOpt](#design-principles-of-pyscipopt).
+1.  All tests defined in the Continuous Integration setup need to pass:
     -   [.travis.yml](../../.travis.yml)
     -   [appveyor.yml](../../appveyor.yml)
 
-3.  New features should be covered by tests *and* examples. Please
+2.  New features should be covered by tests *and* examples. Please
     extend [tests](tests) and [examples](examples). Tests uses pytest
     and examples are meant to be accessible for PySCIPOpt newcomers
     (even advanced examples).
-4.  New code should be documented in the same style as the rest of
+3.  New code should be documented in the same style as the rest of
     the code.
+4.  New features or bugfixes have to be documented in the CHANGELOG.
 5.  New code should be
     [pep8-compliant](https://www.python.org/dev/peps/pep-0008/). Help
     yourself with the [style guide
@@ -43,6 +43,17 @@ For general reference, we suggest:
     Exchange](https://stackoverflow.com/questions/tagged/scip).
 
 If you find this contributing guide unclear, please open an issue! :)
+
+How to craft a release
+----------------------
+
+1. update `CHANGELOG`
+2. increase version number in `src/pyscipopt/__init__.py` according to semantic versioning
+3. commit changes to the master branch
+3. tag new version `git tag vX.Y.Z`
+4. `git push` && `git push --tags`
+
+A new PyPI package is automatically created by the Travis build job when pushing a new tag onto the master and the version has been increased. Also the documentation is autmatically created in the process.
 
 Design principles of PySCIPOpt
 ==============================

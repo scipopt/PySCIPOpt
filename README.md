@@ -6,19 +6,23 @@ Suite](http://scip.zib.de).
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PySCIPOpt/Lobby)
 [![PySCIPOpt on PyPI](https://img.shields.io/pypi/v/pyscipopt.svg)](https://pypi.python.org/pypi/pyscipopt)
-[![TravisCI Status](https://travis-ci.org/SCIP-Interfaces/PySCIPOpt.svg?branch=master)](https://travis-ci.org/SCIP-Interfaces/PySCIPOpt)
-[![AppVeyor Status](https://ci.appveyor.com/api/projects/status/fsa896vkl8be79j9?svg=true)](https://ci.appveyor.com/project/mattmilten/pyscipopt)
+[![TravisCI Status](https://travis-ci.org/scipopt/PySCIPOpt.svg?branch=master)](https://travis-ci.org/scipopt/PySCIPOpt)
+[![AppVeyor Status](https://ci.appveyor.com/api/projects/status/fsa896vkl8be79j9/branch/master?svg=true)](https://ci.appveyor.com/project/mattmilten/pyscipopt/branch/master)
 
 
 Documentation
 -------------
 
-Please consult the [online documentation](http://scip-interfaces.github.io/PySCIPOpt/docs/html) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
+Please consult the [online documentation](http://scipopt.github.io/PySCIPOpt/docs/html) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
+
+See [CHANGELOG.md](CHANGELOG.md) for added, removed or fixed functionality.
 
 Installation
 ------------
 
 See [INSTALL.md](INSTALL.md) for instructions.
+Please note that the latest PySCIPOpt version is usually only compatible with the latest major release of the SCIP Optimization Suite.
+Information which version of PySCIPOpt is required for a given SCIP version can also be found in [INSTALL.md](INSTALL.md).
 
 Building and solving a model
 ----------------------------
@@ -52,6 +56,9 @@ y = model.addVar("y", vtype="INTEGER")
 model.setObjective(x + y)
 model.addCons(2*x - y*y >= 0)
 model.optimize()
+sol = model.getBestSol()
+print("x: {}".format(sol[x]))
+print("y: {}".format(sol[y]))
 ```
 
 Writing new plugins
@@ -141,7 +148,7 @@ are some limitations involved:
     solved before the LP solver is called.
 -   There should be no bound constraints, i.e., constraints with only
     one variable. This can cause incorrect values as explained in
-    [\#136](https://github.com/SCIP-Interfaces/PySCIPOpt/issues/136)
+    [\#136](https://github.com/scipopt/PySCIPOpt/issues/136)
 
 Therefore, you should use the following settings when trying to work
 with dual information:
@@ -151,3 +158,20 @@ model.setPresolve(pyscipopt.SCIP_PARAMSETTING.OFF)
 model.setHeuristics(pyscipopt.SCIP_PARAMSETTING.OFF)
 model.disablePropagation()
 ```
+
+Citing PySCIPOpt
+----------------
+
+Please cite [this paper](https://opus4.kobv.de/opus4-zib/frontdoor/index/index/docId/6045)
+```
+@incollection{MaherMiltenbergerPedrosoRehfeldtSchwarzSerrano2016,
+  author = {Stephen Maher and Matthias Miltenberger and Jo{\~{a}}o Pedro Pedroso and Daniel Rehfeldt and Robert Schwarz and Felipe Serrano},
+  title = {{PySCIPOpt}: Mathematical Programming in Python with the {SCIP} Optimization Suite},
+  booktitle = {Mathematical Software {\textendash} {ICMS} 2016},
+  publisher = {Springer International Publishing},
+  pages = {301--307},
+  year = {2016},
+  doi = {10.1007/978-3-319-42432-3_37},
+}
+```
+as well as the corresponding [SCIP Optimization Suite report](https://scip.zib.de/index.php#cite) when you use this tool for a publication or other scientific work.

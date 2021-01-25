@@ -55,7 +55,7 @@ def test_string_poly():
 
     m.optimize()
 
-    assert abs(m.getPrimalbound() - 1.6924910128) < 1.0e-5
+    assert abs(m.getPrimalbound() - 1.6924910128) < 1.0e-3
 
 # test string with original formulation (uses GenExpr)
 def test_string():
@@ -284,3 +284,10 @@ def test_quad_coeffs():
 
     assert linterms[0][0].name == z.name
     assert linterms[0][1] == 4
+
+if __name__ == "__main__":
+    test_string_poly()
+    test_string()
+    test_circle()
+    test_gastrans()
+    test_quad_coeffs()

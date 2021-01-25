@@ -7,6 +7,7 @@ from SONCpreprocess import preprocess
 
 import numpy as np
 import re
+import warnings
 
 #scipy=False
 
@@ -32,15 +33,22 @@ class SoncRelax(Relax):
         conss = self.model.getConss()
 
         #transform each constraint (type linear, quadratic or expr) into a Polynomial to get lower bound with all constraints used (SCIP -> POEM)
+        #TODO: function relies on the fact that the variables are of the form xi, maybe need to change that?
+        x0found = re.search(r'x0',str(self.model.getVars()))
         for cons in conss:
             constype = cons.getType()
-            lhs = self.model.getLhs(cons)
-            rhs = self.model.getRhs(cons)
-            #print('lhs',lhs,'rhs',rhs)
+            #print(cons, constype)
+            if constype in ['expr', 'linear', 'quadratic']:
+                lhs = self.model.getLhs(cons)
+                rhs = self.model.getRhs(cons)
+                #x0found = re.search(r'x0',str(cons))
+                if x0found == None:
+                    nvars += 1
+                #print('lhs',lhs,'rhs',rhs)
             if  constype == 'expr':
                 #transform expr of SCIP into Polynomial of POEM
                 exprcons = self.model.getConsExprPolyCons(cons)
-                polynomial = ExprToPoly(exprcons, nvars)
+                polynomial = ExprToPoly(exprcons, nvars, x0found)
 
             elif constype == 'linear':
                 #get linear constraint as Polynomial (POEM)
@@ -48,9 +56,13 @@ class SoncRelax(Relax):
                 A = np.array([np.zeros(nvars+1)]*nvars)
                 b = np.zeros(nvars+1)
                 for i,(key,val) in enumerate(coeffdict.items()):
+                    #print(key, val)
                     b[i] = val
                     j = re.findall(r'x\(?([0-9]+)\)?', str(key))
+                    #print(i,j,A)
                     A[int(j[0])][i] = 1.0
+                if x0found == None:
+                    A = A[1:,]
                 polynomial = Polynomial(A,b)
                 
             elif constype == 'quadratic':
@@ -82,30 +94,31 @@ class SoncRelax(Relax):
                     j = int(str(el[0])[-1])
                     A[j][i] = 1.0
                     i += 1
+                if x0found == None:
+                    A = A[1:,]
                 polynomial = Polynomial(A,b)
                 
             else:
-                warnings.warn("relaxator not available for constraints of type ", constype)
+                warnings.warn('relaxator not available for constraints of type %s' % constype)
 
             if constype in ['linear', 'quadratic', 'expr']:
                 polynomial.clean()
                 #add constraints to optProblem.constraints
                 _nonnegCons(polynomial, rhs, lhs)
-
         #if at most 50% of the constraints is used, relaxator is not used
         if len(optProblem.constraints) <= self.model.getNConss()//2:
             return {'result': SCIP_RESULT.DIDNOTRUN}
 
         #get Objective as Polynomial
-        optProblem.setObjective(ExprToPoly(self.model.getObjective(), nvars))
+        optProblem.setObjective(ExprToPoly(self.model.getObjective(), nvars, x0found))
 
         #use preprocessing to get a structure that (hopefully) fits for POEM
         optProblem.infinity = self.model.infinity() #make sure infinity means the same for both SCIP and POEM (i.e. if SCIP infinity is changed by user)
         optProblem = preprocess(optProblem, self.model.getVars())
         #try to solve problem using GP 
         optProblem = solve_GP(optProblem)
-
-        if optProblem.solve_time == 'optimal':
+        #print(optProblem.solve_time,optProblem.status)
+        if optProblem.status == 'optimal':
             #print("lower bound: ", self.model.getObjoffset()-problem.value)
             #print("sol: ", optProblem.lowerbound)
             return {'result': SCIP_RESULT.SUCCESS, 'lowerbound': optProblem.lowerbound}

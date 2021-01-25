@@ -6,7 +6,7 @@ import numpy as np
 import re
 
 
-def ExprToPoly(Exp, nvar):
+def ExprToPoly(Exp, nvar, x0found=False):
     """turn pyscipopt.scip.Expr into a Polynomial (SCIP -> POEM)
     :param: Exp: expression of type pyscipopt.scip.Expr
     :param: nvar: number of variables of given problem
@@ -19,19 +19,25 @@ def ExprToPoly(Exp, nvar):
     else:
         const = 0.0
         nterms += 1
-
+    #x0found = re.search(r'x0', str(Exp))
+    #if x0found == None:
+    #    nvar += 1
     #turn Expr into Polynomial 
     A = np.array([np.zeros(nterms)]*nvar)
     b = np.zeros(nterms)
     b[0] = const
     j = 1
     for key in Exp:
-       if not key == Term():
+        if str(key) == 'Term(objconstant)':
+            b[0] = Exp[key]
+        elif not key == Term():
             for el in tuple(key):
                 i = re.findall(r'x\(?([0-9]+)\)?', str(el))
                 A[int(i[0])][j] += 1
             b[j] = Exp[key]
             j += 1
+    if x0found == None:
+        A = A[1:,]
     return Polynomial(A,b)
 
 def PolyToExpr(p,var):

@@ -2,14 +2,28 @@ Requirements
 ============
 
 PySCIPOpt requires a working installation of the [SCIP Optimization
-Suite](http://scip.zib.de/). If SCIP is not installed in the global path
+Suite](http://scip.zib.de/). Please, make sure that your SCIP installation works!
+
+Note that the latest PySCIPOpt version is usually only compatible with the latest major release of the SCIP Optimization Suite.
+The following table summarizes which version of PySCIPOpt is required for a given SCIP version:
+
+|SCIP| PySCIPOpt |
+|----|----|
+7.0 | 3.x
+6.0 | 2.x
+5.0 | 1.4, 1.3
+4.0 | 1.2, 1.1
+3.2 | 1.0
+
+If SCIP is not installed in the global path
 you need to specify the install location using the environment variable
 `SCIPOPTDIR`:
 
 -   on Linux and OS X:\
     `export SCIPOPTDIR=<path_to_install_dir>`
 -   on Windows:\
-    `set SCIPOPTDIR=<path_to_install_dir>`
+    `set SCIPOPTDIR=<path_to_install_dir>` (**cmd**, **Cmder**, **WSL**)\
+    `$Env:SCIPOPTDIR = "<path_to_install_dir>"` (**powershell**)
 
 `SCIPOPTDIR` needs to have a subdirectory `lib` that contains the
 library, e.g. `libscip.so` (for Linux) and a subdirectory `include` that
@@ -25,7 +39,7 @@ contains the corresponding header files:
         > ...
 
 If you are not using the installer packages, you need to [install the
-SCIP Optimization Suite using CMake](http://scip.zib.de/doc/html/CMAKE.php). 
+SCIP Optimization Suite using CMake](http://scip.zib.de/doc/html/CMAKE.php).
 The Makefile system is not compatible with PySCIPOpt!
 
 On Windows it is highly recommended to use the [Anaconda Python
@@ -34,7 +48,7 @@ Platform](https://www.anaconda.com/).
 Installation from PyPI
 ======================
 
-`pip install pyscipopt`
+    python -m pip install pyscipopt
 
 On Windows you may need to ensure that the `scip` library can be found
 at runtime by adjusting your `PATH` environment variable:
@@ -57,17 +71,14 @@ found"):
 
 After setting up `SCIPOPTDIR` as specified above, please run
 
-    python setup.py install
-
-You may use the additional options `--user` or
-`--prefix=<custom-python-path>`, to build the interface locally.
+    python -m pip install [-e] .
 
 Building with debug information
 ===============================
 
 To use debug information in PySCIPOpt you need to build it like this:
 
-    python setup.py install --debug
+    python -m pip install [-e] --install-option="--debug" .
 
 Be aware that you will need the **debug library** of the SCIP
 Optimization Suite for this to work
