@@ -61,17 +61,28 @@ therefore not necessary.
 Building everything from source
 ===============================
 
-PySCIPOpt requires [Cython](http://cython.org/), at least version 0.21
-(`pip install cython`). Furthermore, you need to have the Python
+Recommended is to install in a virtual environment.
+Please note that a globally installed version of PySCIPOpt on your machine might lead to problems.
+
+After setting up and activating your virtual environment make sure you have [Cython](http://cython.org/) installed, at least version 0.21
+
+    pip install cython
+
+Furthermore, you need to have the Python
 development files installed on your system (error message "Python.h not
 found"):
 
     sudo apt-get install python-dev   # for Python 2, on Linux
     sudo apt-get install python3-dev  # for Python 3, on Linux
 
-After setting up `SCIPOPTDIR` as specified above, please run
+After setting up `SCIPOPTDIR` as specified above install pyscipopt
 
+    export SCIPOPTDIR=/path/to/scip/install/dir
     python -m pip install [-e] .
+
+For recompiling the source in the current directory `.` use
+
+    python -m pip install --compile .
 
 Building with debug information
 ===============================
