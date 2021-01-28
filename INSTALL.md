@@ -61,10 +61,10 @@ therefore not necessary.
 Building everything from source
 ===============================
 
-Recommended is to install in a virtual environment.
+Recommended is to install in a virtual environment (e.g. python3 -m venv <DIR_PATH>).
 Please note that a globally installed version of PySCIPOpt on your machine might lead to problems.
 
-After setting up and activating your virtual environment make sure you have [Cython](http://cython.org/) installed, at least version 0.21
+After setting up and activating your virtual environment (source <DIR_PATH>/bin/activate) make sure you have [Cython](http://cython.org/) installed, at least version 0.21
 
     pip install cython
 
