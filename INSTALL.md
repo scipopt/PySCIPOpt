@@ -68,6 +68,10 @@ After setting up and activating your virtual environment (`source <DIR_PATH>/bin
 
     pip install cython
 
+Note you will also need the `wheel` package, which usually is already installed:
+
+    pip install wheel
+
 Furthermore, you need to have the Python
 development files installed on your system (error message "Python.h not
 found"):
@@ -99,7 +103,11 @@ Testing new installation
 ========================
 
 To test your brand-new installation of PySCIPOpt you need
-[pytest](https://pytest.org/) on your system. Here is the [installation
+[pytest](https://pytest.org/) on your system.
+
+    pip install pytest
+
+Here is the complete [installation
 procedure](https://docs.pytest.org/en/latest/getting-started.html).
 
 Tests can be run in the `PySCIPOpt` directory with: :
