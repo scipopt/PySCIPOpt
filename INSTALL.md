@@ -61,17 +61,32 @@ therefore not necessary.
 Building everything from source
 ===============================
 
-PySCIPOpt requires [Cython](http://cython.org/), at least version 0.21
-(`pip install cython`). Furthermore, you need to have the Python
+Recommended is to install in a virtual environment (e.g. `python3 -m venv <DIR_PATH>`).
+Please note that a globally installed version of PySCIPOpt on your machine might lead to problems.
+
+After setting up and activating your virtual environment (`source <DIR_PATH>/bin/activate`) make sure you have [Cython](http://cython.org/) installed, at least version 0.21
+
+    pip install cython
+
+Note you will also need the `wheel` package, which usually is already installed:
+
+    pip install wheel
+
+Furthermore, you need to have the Python
 development files installed on your system (error message "Python.h not
 found"):
 
     sudo apt-get install python-dev   # for Python 2, on Linux
     sudo apt-get install python3-dev  # for Python 3, on Linux
 
-After setting up `SCIPOPTDIR` as specified above, please run
+After setting up `SCIPOPTDIR` as specified above install pyscipopt
 
+    export SCIPOPTDIR=/path/to/scip/install/dir
     python -m pip install [-e] .
+
+For recompiling the source in the current directory `.` use
+
+    python -m pip install --compile .
 
 Building with debug information
 ===============================
@@ -88,7 +103,11 @@ Testing new installation
 ========================
 
 To test your brand-new installation of PySCIPOpt you need
-[pytest](https://pytest.org/) on your system. Here is the [installation
+[pytest](https://pytest.org/) on your system.
+
+    pip install pytest
+
+Here is the complete [installation
 procedure](https://docs.pytest.org/en/latest/getting-started.html).
 
 Tests can be run in the `PySCIPOpt` directory with: :
