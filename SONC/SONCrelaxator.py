@@ -31,10 +31,10 @@ class SoncRelax(Relax):
         optProblem = OptimizationProblem()
         nvars = len(self.model.getVars())
         conss = self.model.getConss()
-
+        print(self.model.getVars(transformed=True),[y.getLbLocal() for y in self.model.getVars(transformed=True)])
         #transform each constraint (type linear, quadratic or expr) into a Polynomial to get lower bound with all constraints used (SCIP -> POEM)
         #TODO: function relies on the fact that the variables are of the form xi, maybe need to change that?
-        x0found = re.search(r'x0',str(self.model.getVars()))
+        #x0found = re.search(r'x0',str(self.model.getVars()))
         for cons in conss:
             constype = cons.getType()
             #print(cons, constype)
@@ -42,27 +42,38 @@ class SoncRelax(Relax):
                 lhs = self.model.getLhs(cons)
                 rhs = self.model.getRhs(cons)
                 #x0found = re.search(r'x0',str(cons))
-                if x0found == None:
-                    nvars += 1
+                #if x0found == None:
+                #    nvars += 1
                 #print('lhs',lhs,'rhs',rhs)
             if  constype == 'expr':
                 #transform expr of SCIP into Polynomial of POEM
                 exprcons = self.model.getConsExprPolyCons(cons)
-                polynomial = ExprToPoly(exprcons, nvars, x0found)
+                print('polynomial constraint',exprcons)
+                polynomial = ExprToPoly(exprcons, nvars, self.model.getVars())
 
             elif constype == 'linear':
                 #get linear constraint as Polynomial (POEM)
                 coeffdict = self.model.getValsLinear(cons)
+                print('linear constraint: ',coeffdict)
+                print(cons)
                 A = np.array([np.zeros(nvars+1)]*nvars)
                 b = np.zeros(nvars+1)
                 for i,(key,val) in enumerate(coeffdict.items()):
                     #print(key, val)
                     b[i] = val
-                    j = re.findall(r'x\(?([0-9]+)\)?', str(key))
+                    #j = re.findall(r'x\(?([0-9]+)\)?', str(key))
                     #print(i,j,A)
-                    A[int(j[0])][i] = 1.0
-                if x0found == None:
-                    A = A[1:,]
+                    #print('linear',str(key), val)
+                    #print(self.model.getVars(), self.model.getVars(transformed=True))
+                    for j,var in enumerate(self.model.getVars()):
+                        #print('i,var',i,var)
+                        #print(re.search(str(var), str(el)))
+                        if re.search(str(var), str(key)):
+                            A[j][i] +=1
+                            break
+                    #A[int(j[0])][i] = 1.0
+                #if x0found == None:
+                #    A = A[1:,]
                 polynomial = Polynomial(A,b)
                 
             elif constype == 'quadratic':
@@ -76,26 +87,34 @@ class SoncRelax(Relax):
                 i = 1
                 for el in bilin:
                     b[i] = el[2]
-                    j = int(str(el[0])[-1])
-                    A[j][i] = 1.0
-                    j = int(str(el[1])[-1])
-                    A[j][i] = 1.0
+                    for (j, var) in self.model.getVars():
+                        if re.search(str(var), str(el[0])):
+                            #j = int(str(el[0])[-1])
+                            A[j][i] = 1.0
+                        elif re.search(str(var), str(el[1])):
+                            #j = int(str(el[1])[-1])
+                            A[j][i] = 1.0
                     i += 1
                 for el in quad:
-                    j = int(str(el[0])[-1])
+                    #j = int(str(el[0])[-1])
                     b[i] = el[1]
-                    A[j][i] = 2.0
-                    i += 1
-                    b[i] = el[2]
-                    A[j][i] = 1.0
-                    i += 1
+                    for (j, var) in self.model.getVars():
+                        if re.search(str(var), str(el[0])):
+                            A[j][i] = 2.0
+                            i += 1
+                            b[i] = el[2]
+                            A[j][i] = 1.0
+                            i += 1
+                            break
                 for el in lin:
                     b[i] = el[1]
-                    j = int(str(el[0])[-1])
-                    A[j][i] = 1.0
-                    i += 1
-                if x0found == None:
-                    A = A[1:,]
+                    #j = int(str(el[0])[-1])
+                    for (j, var) in self.model.getVars():
+                        if re.search(str(var), str(el[0])):
+                            A[j][i] = 1.0
+                            i += 1
+                #if x0found == None:
+                #    A = A[1:,]
                 polynomial = Polynomial(A,b)
                 
             else:
@@ -110,7 +129,7 @@ class SoncRelax(Relax):
             return {'result': SCIP_RESULT.DIDNOTRUN}
 
         #get Objective as Polynomial
-        optProblem.setObjective(ExprToPoly(self.model.getObjective(), nvars, x0found))
+        optProblem.setObjective(ExprToPoly(self.model.getObjective(), nvars, self.model.getVars()))
 
         #use preprocessing to get a structure that (hopefully) fits for POEM
         optProblem.infinity = self.model.infinity() #make sure infinity means the same for both SCIP and POEM (i.e. if SCIP infinity is changed by user)
