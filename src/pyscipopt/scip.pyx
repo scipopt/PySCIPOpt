@@ -2933,18 +2933,35 @@ cdef class Model:
         """get Constraint that is polynomial (and thus ConsExpr) as a PySCIPOpt Expr
         returns polynomial expression of the form {variables:coefficient}"""
         cdef SCIP_CONSEXPR_EXPR* consexpr
+        #cdef SCIP_CONSEXPR_EXPR* simplified
+        cdef SCIP_CONSEXPR_EXPR* expanded
+        cdef SCIP_CONSEXPR_EXPR* duplicated
+        cdef SCIP_Bool changed
+        #cdef SCIP_Bool infeasible
         cdef SCIP_VAR* scipvar
         cdef int ntermmult
         
+        #print('function starts')
         PyExpr = Expr()
         #get constraint as consexpr in scip
         consexpr = SCIPgetExprConsExpr(self._scip, cons.scip_cons)
-
+        #print("consexpr \n")
+        consexprhdlr = SCIPfindConshdlr(self._scip, "expr")
+        #PY_SCIP_CALL(SCIPsimplifyConsExprExpr(self._scip, consexprhdlr, consexpr,&simplified, &changed, &infeasible))
+        #assert(not infeasible)
+        PY_SCIP_CALL(SCIPduplicateConsExprExpr(self._scip, consexprhdlr, consexpr, &duplicated, True))
+        print("duplicate\n")
+        PY_SCIP_CALL(SCIPexpandConsExprPolynomial(self._scip, consexprhdlr, duplicated, &expanded, &changed))
+        print("expanded \n")
+        #assert(expanded!=NULL)
+        print(cons)
         #check that consexpr is a right type
-        assert SCIPisConsExprExprPoly(self._scip,consexpr), "constraint is not a polynomial"
-
+        assert SCIPisConsExprExprPoly(self._scip,expanded), "constraint is not a polynomial"
+        #assert SCIPisConsExprExprPoly(self._scip,consexpr), "constraint is not a polynomial"
+        print("assert \n")
         #get Constraint as PySCIPOpt Expr of the form {variables:coefficient}
-        nterms = SCIPgetConsExprExprNPolyTerms(self._scip, consexpr)
+        nterms = SCIPgetConsExprExprNPolyTerms(self._scip,  consexpr)
+        print(nterms)
         for i in range(nterms):
             ntermmult = SCIPgetConsExprExprNPolyTermMult(self._scip, consexpr, i)
             mults = Term()
@@ -2954,8 +2971,13 @@ cdef class Model:
                 var = Variable.create(scipvar)
                 for _ in range(int(exp)):
                     mults += Term(var)
-            coefs = SCIPgetConsExprExprPolyCoef(self._scip, consexpr, i)
+            coefs = SCIPgetConsExprExprPolyCoef(self._scip,  consexpr, i)
             PyExpr += Expr({mults:coefs})
+        PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, &consexpr))
+        PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, &duplicated))
+        #PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, &expanded))
+        #PY_SCIP_CALL(SCIPreleaseConsExprExpr(self._scip, &simplified))
+        #print('function not the problem')
         return PyExpr
 
     def getConss(self):

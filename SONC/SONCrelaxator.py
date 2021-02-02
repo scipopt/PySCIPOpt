@@ -1,8 +1,8 @@
 #! usr/bin/env python3
 from pyscipopt  import SCIP_RESULT, Relax
 from POEM       import Polynomial, solve_GP, OptimizationProblem, Constraint
-from convert    import ExprToPoly, PolyToExpr
-from SONCpreprocess import preprocess
+from SONC.convert    import ExprToPoly, PolyToExpr
+from SONC.SONCpreprocess import preprocess
 #from scipyRelax import scipyRelax
 
 import numpy as np
@@ -31,7 +31,6 @@ class SoncRelax(Relax):
         optProblem = OptimizationProblem()
         nvars = len(self.model.getVars())
         conss = self.model.getConss()
-        print(self.model.getVars(transformed=True),[y.getLbLocal() for y in self.model.getVars(transformed=True)])
         #transform each constraint (type linear, quadratic or expr) into a Polynomial to get lower bound with all constraints used (SCIP -> POEM)
         #TODO: function relies on the fact that the variables are of the form xi, maybe need to change that?
         #x0found = re.search(r'x0',str(self.model.getVars()))
@@ -48,14 +47,11 @@ class SoncRelax(Relax):
             if  constype == 'expr':
                 #transform expr of SCIP into Polynomial of POEM
                 exprcons = self.model.getConsExprPolyCons(cons)
-                print('polynomial constraint',exprcons)
                 polynomial = ExprToPoly(exprcons, nvars, self.model.getVars())
 
             elif constype == 'linear':
                 #get linear constraint as Polynomial (POEM)
                 coeffdict = self.model.getValsLinear(cons)
-                print('linear constraint: ',coeffdict)
-                print(cons)
                 A = np.array([np.zeros(nvars+1)]*nvars)
                 b = np.zeros(nvars+1)
                 for i,(key,val) in enumerate(coeffdict.items()):
@@ -87,7 +83,7 @@ class SoncRelax(Relax):
                 i = 1
                 for el in bilin:
                     b[i] = el[2]
-                    for (j, var) in self.model.getVars():
+                    for j, var in enumerate(self.model.getVars()):
                         if re.search(str(var), str(el[0])):
                             #j = int(str(el[0])[-1])
                             A[j][i] = 1.0
@@ -98,7 +94,7 @@ class SoncRelax(Relax):
                 for el in quad:
                     #j = int(str(el[0])[-1])
                     b[i] = el[1]
-                    for (j, var) in self.model.getVars():
+                    for j, var in enumerate(self.model.getVars()):
                         if re.search(str(var), str(el[0])):
                             A[j][i] = 2.0
                             i += 1
@@ -109,7 +105,7 @@ class SoncRelax(Relax):
                 for el in lin:
                     b[i] = el[1]
                     #j = int(str(el[0])[-1])
-                    for (j, var) in self.model.getVars():
+                    for j, var in enumerate(self.model.getVars()):
                         if re.search(str(var), str(el[0])):
                             A[j][i] = 1.0
                             i += 1
@@ -130,10 +126,11 @@ class SoncRelax(Relax):
 
         #get Objective as Polynomial
         optProblem.setObjective(ExprToPoly(self.model.getObjective(), nvars, self.model.getVars()))
-
+        print(optProblem)
         #use preprocessing to get a structure that (hopefully) fits for POEM
         optProblem.infinity = self.model.infinity() #make sure infinity means the same for both SCIP and POEM (i.e. if SCIP infinity is changed by user)
         optProblem = preprocess(optProblem, self.model.getVars())
+        print(optProblem)
         #try to solve problem using GP 
         optProblem = solve_GP(optProblem)
         #print(optProblem.solve_time,optProblem.status)

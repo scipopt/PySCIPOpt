@@ -1,7 +1,7 @@
 #! usr/bin/env python3
 from pyscipopt  import SCIP_RESULT, Relax, Term, Expr
 from POEM       import Polynomial, build_lagrangian_GP, OptimizationProblem, Constraint, InfeasibleError
-from convert    import ExprToPoly
+from SONC.convert    import ExprToPoly
 
 import numpy as np
 import cvxpy as cvx
