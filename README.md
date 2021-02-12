@@ -22,9 +22,8 @@ Installation
 
 **Using Conda**
 
-[![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/pyscipopt?logo=conda-forge)](https://anaconda.org/conda-forge/pyscipopt)
-![Conda](https://img.shields.io/conda/pn/conda-forge/pyscipopt?logo=conda-forge)
-![Conda](https://img.shields.io/conda/dn/conda-forge/pyscipopt?logo=conda-forge)
+[![Conda version](https://img.shields.io/conda/vn/conda-forge/pyscipopt?logo=conda-forge)](https://anaconda.org/conda-forge/pyscipopt)
+[![Conda platforms](https://img.shields.io/conda/pn/conda-forge/pyscipopt?logo=conda-forge)](https://anaconda.org/conda-forge/pyscipopt)
 
 Conda will install SCIP automatically, hence everything can be installed in a single command:
 ```bash
