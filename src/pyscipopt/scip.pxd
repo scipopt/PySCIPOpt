@@ -1644,7 +1644,6 @@ cdef extern from "scip/cons_expr.h":
     SCIP_VAR* SCIPgetConsExprExprPolyVar(SCIP* scip, SCIP_CONSEXPR_EXPR* expr, int i, int j)
     SCIP_Real SCIPgetConsExprExprPolyExp(SCIP* scip, SCIP_CONSEXPR_EXPR* expr, int i, int j)
     SCIP_RETCODE SCIPexpandConsExprPolynomial(SCIP* scip, SCIP_CONSHDLR* consexprhdlr, SCIP_CONSEXPR_EXPR* rootexpr, SCIP_CONSEXPR_EXPR** expanded, SCIP_Bool* changed)
-    SCIP_RETCODE SCIPsimplifyConsExprExpr(SCIP* scip, SCIP_CONSHDLR* consexprhdlr, SCIP_CONSEXPR_EXPR* rootexpr, SCIP_CONSEXPR_EXPR** simplified, SCIP_Bool* changed, SCIP_Bool* infeasible)
     SCIP_RETCODE SCIPduplicateConsExprExpr(SCIP* scip, SCIP_CONSHDLR* consexprhdlr, SCIP_CONSEXPR_EXPR* rootexpr, SCIP_CONSEXPR_EXPR** duplicated, SCIP_Bool copychildren)
 
 

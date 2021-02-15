@@ -1,20 +1,14 @@
 #! usr/bin/env python3
-from pyscipopt  import SCIP_RESULT, Relax, Term, Expr
 from POEM       import Polynomial, build_lagrangian_GP, OptimizationProblem, Constraint, InfeasibleError
-from SONC.convert    import ExprToPoly
 
 import numpy as np
 import cvxpy as cvx
-import re
 
-#TODO: use flags to decide which preprocessing options should be used?
-#TODO: is it better not to have the problem in SCIP and POEM, but only use one of them?
 def preprocess(problem, Vars):
     """base function calling all preprocessing options"""
     #make sure that we have constraints '>= 0'
     problem = greaterConstraints(problem)
-    x0found = re.search(r'x0',str(Vars))
-    problem, Vars = rewriteObjective(problem, Vars, x0found) #index gives the variable that was deleted when rewriting the objective
+    problem, Vars = rewriteObjective(problem, Vars)
     problem = boundNegativeTerms(problem, Vars)
     return problem
 
@@ -30,7 +24,7 @@ def greaterConstraints(problem):
     return problem
 
 #TODO: instead of deleting inside A,b maybe a better idea to just set the coefficients to 0 and add a function that deletes those (makes index unnecessary)
-def rewriteObjective(problem, Vars, x0found):
+def rewriteObjective(problem, Vars):
     """function tries to find variables that was only added to make the objective linear and rewrites it back into a nonlinear objective, deletes the variable
      param: problem - optimization problem of class OptimizationProblem in POEM
     """
@@ -65,7 +59,6 @@ def boundNegativeTerms(problem, Vars):
     params: - problem: problem of type OptimizationProblem in POEM
             - Vars: list of all variables in the problem
     """
-    #TODO: use only when necessary and use only the necessary directions
     n=len(Vars)
     if problem.constraints !=[]:
         mu = cvx.Variable(len(problem.constraints), pos=True, name='mu')
@@ -75,31 +68,50 @@ def boundNegativeTerms(problem, Vars):
         polyOrig._normalise()
     try:
         #if all points are already covered, just add the bounds as constraints x^2<=u^2
-        polyOrig._compute_cover()
-        a = 2*np.ones(n,dtype=int)
+        polyOrig._compute_zero_cover()
+        '''a = 2*np.ones(n,dtype=int)
         A = polyOrig.A[1:,]
         VarExist=np.zeros(n,dtype=int)
         for i in range(polyOrig.A.shape[1]):
-            if np.count_nonzero(A[:,i])==1 and polyOrig.b[i]>=0:
+            if np.count_nonzero(A[:,i])==1: # and polyOrig.b[i]>=0:
                 index = np.nonzero(A[:,i])
                 if A[index,i]%2 == 0:
                     if not VarExist[index]:
                         VarExist[index] = 1
                         a[index] = A[index,i]
                     else:
-                        a[index] = min(a[index],A[index,i])
+                        a[index] = min(a[index],A[index,i])'''
+        A = polyOrig.A[1:,]
+        if all(np.count_nonzero(A[:,i])!=1 for i in range(polyOrig.A.shape[1])):
+            a = 2*np.ones(n,dtype=int)
+        else:
+            a = np.ones(n,dtype=int)
+            VarExist=np.zeros(n,dtype=int)
+            for i in range(polyOrig.A.shape[1]):
+                if np.count_nonzero(A[:,i])==1: #and polyOrig.b[i]>=0:
+                    index = np.nonzero(A[:,i])
+                    if i in polyOrig.non_squares:
+                        if not VarExist[index]:
+                            VarExist[index] = 1
+                            a[index] = A[index,i]
+                        else:
+                            a[index] = min(a[index],A[index,i])
 
-    except: #InfeasibleError
+
+    except InfeasibleError:
         #if not all points are covered, 2*max{exponents of inner terms} will cover all points if bounds are given for the constraints
         A = polyOrig.A[1:]
         a = np.array([2*max(A[i,polyOrig.non_squares]) for i in range(n)])
     for i,y in enumerate(Vars):
         u = max(abs(y.getUbLocal()),abs(y.getLbLocal()))
-        if u != problem.infinity and abs(u**a[i])<=10e6:
+        if a[i]!=0 and u != problem.infinity and ((a[i]<= 4 and abs(u**a[i])<=10e7) or abs(u**a[i]<=10e5)):
             #TODO: only works if variables are not reordered at some point
             boundconsA = np.zeros((n,2))
             boundconsA[i][1] = a[i]
-            boundconsb = [-u**a[i],1]
+            if u == abs(y.getLbLocal()) and a[i]%2==1:
+                boundconsb = [u**a[i],1]
+            else:
+                boundconsb = [u**a[i],-1]
             boundcons = Polynomial(boundconsA,boundconsb)
-            problem.addCons(Constraint(boundcons, '<='))
+            problem.addCons(Constraint(boundcons, '>='))
     return problem
