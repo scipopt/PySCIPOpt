@@ -126,3 +126,7 @@ model.lp
 
 # VSCode
 .vscode/
+
+# PyCharm and macOS
+.idea/
+*.DS_Store
