@@ -1919,7 +1919,7 @@ cdef class Model:
         """Gets number of non-zero etnries in the row"""
         return PY_SCIP_CALL(SCIProwGetNNonz(row.scip_row))
 
-    def getRowObjPrallelism(self, Row row):
+    def getRowObjParallelism(self, Row row):
         """Returns 1 if the row is parallel, and 0 if orthogonal"""
         return SCIPgetRowObjParallelism(self._scip, row.scip_row)
 
@@ -2976,6 +2976,20 @@ cdef class Model:
         for i in range(SCIPgetNVarsLinear(self._scip, cons.scip_cons)):
             valsdict[bytes(SCIPvarGetName(_vars[i])).decode('utf-8')] = _vals[i]
         return valsdict
+
+    def getRowLinear(self, Constraint cons):
+        """Retrieve the linear relaxation of the given linear constraint as a row.
+           may return NULL if no LP row was yet created; the user must not modify the row!
+
+        :param Constraint cons: linear constraint to get the coefficients of
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        if not constype == 'linear':
+            raise Warning("coefficients not available for constraints of type ", constype)
+
+        cdef SCIP_ROW* row = SCIPgetRowLinear(self._scip, cons.scip_cons)
+        return Row.create(row)
 
     def getDualsolLinear(self, Constraint cons):
         """Retrieve the dual solution to a linear constraint.
