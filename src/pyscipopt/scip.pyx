@@ -3043,6 +3043,24 @@ cdef class Model:
             raise Warning("no reduced cost available for variable " + var.name)
         return redcost
 
+    def getDualSolVal(self, Constraint cons, boundconstraint=False):
+        """Retrieve returns dual solution value of a constraint.
+
+        :param Constraint cons: constraint to get the dual solution value of
+        :param boundconstraint bool: Decides whether to store a bool if the constraint is a bound constraint
+
+        """
+        cdef SCIP_Real _dualsol
+        cdef SCIP_Bool _bounded
+
+        if boundconstraint:
+            SCIPgetDualSolVal(self._scip, cons.scip_cons, &_dualsol, &_bounded)
+        else:
+            SCIPgetDualSolVal(self._scip, cons.scip_cons, &_dualsol, NULL)
+
+        return _dualsol
+
+
     def optimize(self):
         """Optimize the problem."""
         PY_SCIP_CALL(SCIPsolve(self._scip))
