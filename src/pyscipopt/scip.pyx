@@ -362,6 +362,10 @@ cdef class Column:
         """gets upper bound of column"""
         return SCIPcolGetUb(self.scip_col)
 
+    def getObjCoeff(self):
+        """gets objective value coefficient of a column"""
+        return SCIPcolGetObj(self.scip_col)
+
     def __hash__(self):
         return hash(<size_t>self.scip_col)
 
@@ -457,6 +461,10 @@ cdef class Row:
         """gets list with coefficients of nonzero entries"""
         cdef SCIP_Real* vals = SCIProwGetVals(self.scip_row)
         return [vals[i] for i in range(self.getNNonz())]
+
+    def getNorm(self):
+        """gets Euclidean norm of row vector """
+        return SCIProwGetNorm(self.scip_row)
 
     def __hash__(self):
         return hash(<size_t>self.scip_row)
