@@ -1928,6 +1928,10 @@ cdef class Model:
         101 in this case is an 'e' (euclidean) in ASCII. The other accpetable input is 100 (d for discrete)."""
         return SCIProwGetParallelism(row1.scip_row, row2.scip_row, orthofunc)
 
+    def getRowDualSol(self, Row row):
+        """Gets the dual LP solution of a row"""
+        return SCIProwGetDualsol(row.scip_row)
+
     # Cutting Plane Methods
     def addPoolCut(self, Row row not None):
         """if not already existing, adds row to global cut pool"""
