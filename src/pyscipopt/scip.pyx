@@ -4169,6 +4169,10 @@ cdef class Model:
 
         Note: a variable is also an expression
         """
+        # no need to create a NULL solution wrapper in case we have a variable
+        if sol == None and isinstance(expr, Variable):
+            var = <Variable> expr
+            return SCIPgetSolVal(self._scip, NULL, var.scip_var)
         if sol == None:
             sol = Solution.create(self._scip, NULL)
         return sol[expr]
