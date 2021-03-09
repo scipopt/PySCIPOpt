@@ -539,11 +539,17 @@ cdef class Solution:
         return sol
 
     def __getitem__(self, Expr expr):
-        # check for Variable to avoid infinite recursion in Expr evaluation
+        # fast track for Variable
         if isinstance(expr, Variable):
             var = <Variable> expr
             return SCIPgetSolVal(self.scip, self.sol, var.scip_var)
-        return expr._evaluate(self)
+        return sum(self._evaluate(term)*coeff for term, coeff in expr.terms.items() if coeff != 0)
+    
+    def _evaluate(self, term):
+        result = 1
+        for var in term.vartuple:
+            result *= SCIPgetSolVal(self.scip, self.sol, (<Variable> var).scip_var)
+        return result
 
     def __setitem__(self, Variable var, value):
         PY_SCIP_CALL(SCIPsetSolVal(self.scip, self.sol, var.scip_var, value))
