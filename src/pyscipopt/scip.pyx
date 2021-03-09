@@ -4144,8 +4144,6 @@ cdef class Model:
         """
         if sol == None:
             sol = Solution.create(self._scip, NULL)
-        if self._scip != (<Solution>sol).scip:
-            sol = Solution.create(self._scip, sol.sol)
         return sol[expr]
 
     def getVal(self, Expr expr):
