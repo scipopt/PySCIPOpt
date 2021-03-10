@@ -1,6 +1,8 @@
 # CHANGELOG
 
 ## Unreleased
+### Added
+- add evaluation of `Expr` in `Solution`.
 
 ## 3.1.0 - 2020-12-17
 ### Added

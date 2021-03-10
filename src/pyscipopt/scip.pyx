@@ -538,8 +538,18 @@ cdef class Solution:
         sol.scip = scip
         return sol
 
-    def __getitem__(self, Variable var):
-        return SCIPgetSolVal(self.scip, self.sol, var.scip_var)
+    def __getitem__(self, Expr expr):
+        # fast track for Variable
+        if isinstance(expr, Variable):
+            var = <Variable> expr
+            return SCIPgetSolVal(self.scip, self.sol, var.scip_var)
+        return sum(self._evaluate(term)*coeff for term, coeff in expr.terms.items() if coeff != 0)
+    
+    def _evaluate(self, term):
+        result = 1
+        for var in term.vartuple:
+            result *= SCIPgetSolVal(self.scip, self.sol, (<Variable> var).scip_var)
+        return result
 
     def __setitem__(self, Variable var, value):
         PY_SCIP_CALL(SCIPsetSolVal(self.scip, self.sol, var.scip_var, value))
@@ -4165,13 +4175,13 @@ cdef class Model:
 
         Note: a variable is also an expression
         """
+        # no need to create a NULL solution wrapper in case we have a variable
+        if sol == None and isinstance(expr, Variable):
+            var = <Variable> expr
+            return SCIPgetSolVal(self._scip, NULL, var.scip_var)
         if sol == None:
             sol = Solution.create(self._scip, NULL)
-        if isinstance(expr, Variable):
-            var = <Variable> expr
-            return SCIPgetSolVal(self._scip, sol.sol, var.scip_var)
-        else:
-            return expr._evaluate(sol)
+        return sol[expr]
 
     def getVal(self, Expr expr):
         """Retrieve the value of the given variable or expression in the best known solution.
