@@ -101,7 +101,7 @@ cdef class PY_SCIP_STATUS:
     UNBOUNDED      = SCIP_STATUS_UNBOUNDED
     INFORUNBD      = SCIP_STATUS_INFORUNBD
 
-cdef class PY_SCIP_STAGE:
+cpdef enum PY_SCIP_STAGE:
     INIT         = SCIP_STAGE_INIT
     PROBLEM      = SCIP_STAGE_PROBLEM
     TRANSFORMING = SCIP_STAGE_TRANSFORMING
@@ -2729,7 +2729,7 @@ cdef class Model:
         cdef SCIP_Real activity
         cdef SCIP_SOL* scip_sol
 
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
+        if not self.getStage() >= SOLVING:
             raise Warning("method cannot be called before problem is solved")
 
         if isinstance(sol, Solution):
@@ -2762,7 +2762,7 @@ cdef class Model:
         cdef SCIP_SOL* scip_sol
 
 
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
+        if not self.getStage() >= SOLVING:
             raise Warning("method cannot be called before problem is solved")
 
         if isinstance(sol, Solution):
@@ -4162,7 +4162,7 @@ cdef class Model:
         :param original: objective value in original space (Default value = True)
 
         """
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
+        if not self.getStage() >= SOLVING:
             raise Warning("method cannot be called before problem is solved")
         return self.getSolObjVal(self._bestSol, original)
 
@@ -4191,7 +4191,7 @@ cdef class Model:
 
         Note: a variable is also an expression
         """
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
+        if not self.getStage() >= SOLVING:
             raise Warning("method cannot be called before problem is solved")
         return self.getSolVal(self._bestSol, expr)
 
@@ -4217,7 +4217,7 @@ cdef class Model:
 
     def getStage(self):
         """Retrieve current SCIP stage"""
-        return SCIPgetStage(self._scip)
+        return PY_SCIP_STAGE(SCIPgetStage(self._scip))
 
     def getStatus(self):
         """Retrieve solution status."""
