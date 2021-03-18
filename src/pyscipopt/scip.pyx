@@ -2301,7 +2301,7 @@ cdef class Model:
         if isinstance(validnode, Node):
             PY_SCIP_CALL(SCIPaddConsLocal(self._scip, scip_cons, validnode.scip_node))
         elif validnode is None:
-            PY_SCIP_CALL(SCIPaddConsNode(self._scip, scip_cons, NULL))
+            PY_SCIP_CALL(SCIPaddConsLocal(self._scip, scip_cons, NULL))
         else:
             raise Warning(f"Argument validnode is of incorrect type ({type(validnode)}).")
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
