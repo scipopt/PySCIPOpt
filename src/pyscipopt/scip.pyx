@@ -2277,7 +2277,7 @@ cdef class Model:
 
     def addConsLocal(self, Constraint cons, Node validnode=None, name="", initial=True, separate=True,
                     enforce=False, check=False, propagate=True, local=True,
-                    modifiable=False, dynamic=False, removable=False, stickingatnode=False):):
+                    modifiable=False, dynamic=False, removable=False, stickingatnode=False):
         """Add a constraint to the current node
 
         :param Constraint cons: constraint to add
