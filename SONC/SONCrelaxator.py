@@ -71,12 +71,10 @@ class SoncRelax(Relax):
                 b = np.zeros(nvars+1)
                 for i,(key,val) in enumerate(coeffdict.items()):
                     b[i] = val
-                    #j = re.findall(r'x\(?([0-9]+)\)?', str(key))
                     for j,var in enumerate(self.model.getVars()):
                         if re.search(str(var), str(key)):
                             A[j][i] +=1
                             break
-                    #A[int(j[0])][i] = 1.0
                 polynomial = Polynomial(A,b)
                 
             elif constype == 'quadratic':
@@ -92,14 +90,11 @@ class SoncRelax(Relax):
                     b[i] = el[2]
                     for j, var in enumerate(self.model.getVars()):
                         if re.search(str(var), str(el[0])):
-                            #j = int(str(el[0])[-1])
                             A[j][i] = 1.0
                         elif re.search(str(var), str(el[1])):
-                            #j = int(str(el[1])[-1])
                             A[j][i] = 1.0
                     i += 1
                 for el in quad:
-                    #j = int(str(el[0])[-1])
                     b[i] = el[1]
                     for j, var in enumerate(self.model.getVars()):
                         if re.search(str(var), str(el[0])):

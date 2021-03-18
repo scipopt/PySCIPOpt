@@ -82,9 +82,9 @@ def boundNegativeTerms(problem, Vars):
                     else:
                         a[index] = min(a[index],A[index,i])'''
         A = polyOrig.A[1:,]
-        if all(np.count_nonzero(A[:,i])!=1 for i in range(polyOrig.A.shape[1])):
-            a = 2*np.ones(n,dtype=int)
-        else:
+        #if all(np.count_nonzero(A[:,i])!=1 for i in range(polyOrig.A.shape[1])):
+        a = 2*np.ones(n,dtype=int)
+        '''else:
             a = np.ones(n,dtype=int)
             VarExist=np.zeros(n,dtype=int)
             for i in range(polyOrig.A.shape[1]):
@@ -95,13 +95,14 @@ def boundNegativeTerms(problem, Vars):
                             VarExist[index] = 1
                             a[index] = A[index,i]
                         else:
-                            a[index] = min(a[index],A[index,i])
+                            a[index] = min(a[index],A[index,i])'''
 
 
     except InfeasibleError:
         #if not all points are covered, 2*max{exponents of inner terms} will cover all points if bounds are given for the constraints
         A = polyOrig.A[1:]
         a = np.array([2*max(A[i,polyOrig.non_squares]) for i in range(n)])
+        #a = np.array([8])
     for i,y in enumerate(Vars):
         u = max(abs(y.getUbLocal()),abs(y.getLbLocal()))
         if a[i]!=0 and u != problem.infinity and ((a[i]<= 4 and abs(u**a[i])<=10e7) or abs(u**a[i]<=10e5)):
