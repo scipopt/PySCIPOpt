@@ -1986,10 +1986,21 @@ cdef class Model:
         """
         assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
 
+        kwargs = self._cons_kwargs(check, cons, dynamic, enforce, initial, local, modifiable, name,
+                                   propagate, removable, separate,stickingatnode)
+        cdef Constraint py_cons
+        py_cons = self._createCons(cons, **kwargs)
+        cdef SCIP_CONS* scip_cons
+        scip_cons = <SCIP_CONS*> py_cons.scip_cons
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+        return py_cons
+
+    def _cons_kwargs(self, check, cons, dynamic, enforce, initial, local, modifiable, name, propagate, removable, separate,
+                     stickingatnode):
         # replace empty name with generic one
         if name == '':
-            name = 'c'+str(SCIPgetNConss(self._scip)+1)
-
+            name = 'c' + str(SCIPgetNConss(self._scip) + 1)
         kwargs = dict(name=name, initial=initial, separate=separate,
                       enforce=enforce, check=check,
                       propagate=propagate, local=local,
@@ -1997,21 +2008,26 @@ cdef class Model:
                       removable=removable,
                       stickingatnode=stickingatnode)
         kwargs['lhs'] = -SCIPinfinity(self._scip) if cons._lhs is None else cons._lhs
-        kwargs['rhs'] =  SCIPinfinity(self._scip) if cons._rhs is None else cons._rhs
+        kwargs['rhs'] = SCIPinfinity(self._scip) if cons._rhs is None else cons._rhs
+        return kwargs
 
+    def _createCons(self, cons, **kwargs):
         deg = cons.expr.degree()
+        cdef Constraint py_cons
+
         if deg <= 1:
-            return self._addLinCons(cons, **kwargs)
+            py_cons = self._createLinCons(cons, **kwargs)
         elif deg <= 2:
-            return self._addQuadCons(cons, **kwargs)
+            py_cons = self._createQuadCons(cons, **kwargs)
         elif deg == float('inf'): # general nonlinear
-            return self._addGenNonlinearCons(cons, **kwargs)
+            return self._createGenNonlinearCons(cons, **kwargs)
         else:
-            return self._addNonlinearCons(cons, **kwargs)
+            return self._createNonlinearCons(cons, **kwargs)
+        return py_cons
 
-    def _addLinCons(self, ExprCons lincons, **kwargs):
+
+    def _createLinCons(self, ExprCons lincons, **kwargs):
         assert isinstance(lincons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
-
         assert lincons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % lincons.expr.degree()
         terms = lincons.expr.terms
 
@@ -2032,17 +2048,12 @@ cdef class Model:
             kwargs['separate'], kwargs['enforce'], kwargs['check'],
             kwargs['propagate'], kwargs['local'], kwargs['modifiable'],
             kwargs['dynamic'], kwargs['removable'], kwargs['stickingatnode']))
-
-        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        PyCons = Constraint.create(scip_cons)
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-
         free(vars_array)
         free(coeffs_array)
 
-        return PyCons
+        return Constraint.create(scip_cons)
 
-    def _addQuadCons(self, ExprCons quadcons, **kwargs):
+    def _createQuadCons(self, ExprCons quadcons, **kwargs):
         terms = quadcons.expr.terms
         assert quadcons.expr.degree() <= 2, "given constraint is not quadratic, degree == %d" % quadcons.expr.degree()
 
@@ -2065,12 +2076,9 @@ cdef class Model:
                 var1, var2 = <Variable>v[0], <Variable>v[1]
                 PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, var1.scip_var, var2.scip_var, c))
 
-        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        PyCons = Constraint.create(scip_cons)
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-        return PyCons
+        return Constraint.create(scip_cons)
 
-    def _addNonlinearCons(self, ExprCons cons, **kwargs):
+    def _createNonlinearCons(self, ExprCons cons, **kwargs):
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR** varexprs
         cdef SCIP_EXPRDATA_MONOMIAL** monomials
@@ -2123,16 +2131,13 @@ cdef class Model:
             kwargs['check'], kwargs['propagate'], kwargs['local'],
             kwargs['modifiable'], kwargs['dynamic'], kwargs['removable'],
             kwargs['stickingatnode']) )
-        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        PyCons = Constraint.create(scip_cons)
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
         PY_SCIP_CALL( SCIPexprtreeFree(&exprtree) )
         free(vars)
         free(monomials)
         free(varexprs)
-        return PyCons
+        return Constraint.create(scip_cons)
 
-    def _addGenNonlinearCons(self, ExprCons cons, **kwargs):
+    def _createGenNonlinearCons(self, ExprCons cons, **kwargs):
         cdef SCIP_EXPR** childrenexpr
         cdef SCIP_EXPR** scipexprs
         cdef SCIP_EXPRTREE* exprtree
@@ -2216,16 +2221,14 @@ cdef class Model:
             kwargs['check'], kwargs['propagate'], kwargs['local'],
             kwargs['modifiable'], kwargs['dynamic'], kwargs['removable'],
             kwargs['stickingatnode']) )
-        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         PyCons = Constraint.create(scip_cons)
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
         PY_SCIP_CALL( SCIPexprtreeFree(&exprtree) )
 
         # free more memory
         free(scipexprs)
         free(vars)
 
-        return PyCons
+        return Constraint.create(scip_cons)
 
     def addConsCoeff(self, Constraint cons, Variable var, coeff):
         """Add coefficient to the linear constraint (if non-zero).
@@ -2237,19 +2240,40 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, cons.scip_cons, var.scip_var, coeff))
 
-    def addConsNode(self, Node node, Constraint cons, Node validnode=None):
+    def addConsNode(self, Node node, cons, Node validnode=None, name="", initial=True, separate=True,
+                    enforce=False, check=False, propagate=True, local=True,
+                    modifiable=False, dynamic=False, removable=False, stickingatnode=True):
         """Add a constraint to the given node
 
         :param Node node: node to add the constraint to
         :param Constraint cons: constraint to add
         :param Node validnode: more global node where cons is also valid
-
+        Note: Additional parameter for constraint settings get ignored if cons is not an ExprCons!
         """
-        if isinstance(validnode, Node):
-            PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.scip_node, cons.scip_cons, validnode.scip_node))
+        cdef Constraint py_cons
+        cdef SCIP_CONS* scip_cons
+        if isinstance(cons, Constraint):
+            py_cons = <Constraint>cons
+            scip_cons = <SCIP_CONS*> py_cons.scip_cons
+            # TODO: (Why) Is this INCREF necessary?
+            Py_INCREF(cons)
+        elif isinstance(cons, ExprCons):
+            kwargs = self._cons_kwargs(check, cons, dynamic, enforce, initial, local, modifiable, name,
+                                   propagate, removable, separate,stickingatnode)
+            py_cons = self._createCons(cons, **kwargs)
+            scip_cons = <SCIP_CONS*> py_cons.scip_cons
         else:
-            PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.scip_node, cons.scip_cons, NULL))
-        Py_INCREF(cons)
+            raise Warning(f"Argument cons is of incorrect type ({type(cons)}).")
+
+        if isinstance(validnode, Node):
+            PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.scip_node, scip_cons, validnode.scip_node))
+        elif validnode is None:
+            PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.scip_node, scip_cons, NULL))
+        else:
+            raise Warning(f"Argument validnode is of incorrect type ({type(validnode)}).")
+        # TODO: This is needed for the ExprCons case. Is it a problem for the Constraint case?
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
 
     def addConsLocal(self, Constraint cons, Node validnode=None):
         """Add a constraint to the current node
