@@ -2273,7 +2273,7 @@ cdef class Model:
             raise Warning(f"Argument validnode is of incorrect type ({type(validnode)}).")
         # TODO: This is needed for the ExprCons case. Is it a problem for the Constraint case?
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-
+        return py_cons
 
     def addConsLocal(self, Constraint cons, Node validnode=None, name="", initial=True, separate=True,
                     enforce=False, check=False, propagate=True, local=True,
@@ -2305,6 +2305,7 @@ cdef class Model:
         else:
             raise Warning(f"Argument validnode is of incorrect type ({type(validnode)}).")
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+        return py_cons
 
     def addConsSOS1(self, vars, weights=None, name="SOS1cons",
                 initial=True, separate=True, enforce=True, check=True,
