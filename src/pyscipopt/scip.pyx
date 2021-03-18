@@ -2275,18 +2275,36 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
 
-    def addConsLocal(self, Constraint cons, Node validnode=None):
+    def addConsLocal(self, Constraint cons, Node validnode=None, name="", initial=True, separate=True,
+                    enforce=False, check=False, propagate=True, local=True,
+                    modifiable=False, dynamic=False, removable=False, stickingatnode=False):):
         """Add a constraint to the current node
 
         :param Constraint cons: constraint to add
         :param Node validnode: more global node where cons is also valid
-
+        Note: Additional parameter for constraint settings get ignored if cons is not an ExprCons!
         """
-        if isinstance(validnode, Node):
-            PY_SCIP_CALL(SCIPaddConsLocal(self._scip, cons.scip_cons, validnode.scip_node))
+        cdef Constraint py_cons
+        cdef SCIP_CONS* scip_cons
+        if isinstance(cons, Constraint):
+            py_cons = <Constraint>cons
+            scip_cons = <SCIP_CONS*> py_cons.scip_cons
+            Py_INCREF(cons)
+        elif isinstance(cons, ExprCons):
+            kwargs = self._cons_kwargs(check, cons, dynamic, enforce, initial, local, modifiable, name,
+                                   propagate, removable, separate,stickingatnode)
+            py_cons = self._createCons(cons, **kwargs)
+            scip_cons = <SCIP_CONS*> py_cons.scip_cons
         else:
-            PY_SCIP_CALL(SCIPaddConsLocal(self._scip, cons.scip_cons, NULL))
-        Py_INCREF(cons)
+            raise Warning(f"Argument cons is of incorrect type ({type(cons)}).")
+
+        if isinstance(validnode, Node):
+            PY_SCIP_CALL(SCIPaddConsLocal(self._scip, scip_cons, validnode.scip_node))
+        elif validnode is None:
+            PY_SCIP_CALL(SCIPaddConsNode(self._scip, scip_cons, NULL))
+        else:
+            raise Warning(f"Argument validnode is of incorrect type ({type(validnode)}).")
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
     def addConsSOS1(self, vars, weights=None, name="SOS1cons",
                 initial=True, separate=True, enforce=True, check=True,
@@ -2960,6 +2978,15 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPdelConsLocal(self._scip, cons.scip_cons))
+
+    def delConsNode(self, Node node, Constraint cons):
+        """Delete constraint from the given node and it's children
+
+        :param Constraint cons: constraint to be deleted
+        :param Node node: node to delete the constraint from
+
+        """
+        PY_SCIP_CALL(SCIPdelConsNode(self._scip, node.scip_node, cons.scip_cons))
 
     def getValsLinear(self, Constraint cons):
         """Retrieve the coefficients of a linear constraint

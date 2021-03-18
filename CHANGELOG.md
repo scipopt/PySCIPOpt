@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+- `addConsNode`and `addConsLocal` now accept `Expr`
+- add SCIP function: `delConsNode`
+
 ## 3.1.1 - 2021-03-10
 ### Added
 - add evaluation of `Expr` in `Solution`.
