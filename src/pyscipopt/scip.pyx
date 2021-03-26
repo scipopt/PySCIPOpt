@@ -4573,6 +4573,9 @@ cdef class Model:
         """Counts the number of feasible points of problem."""
         PY_SCIP_CALL(SCIPcount(self._scip))
 
+    def getNReaders(self):
+        return SCIPgetNReaders(self._scip)
+
     def getNCountedSols(self):
         """Get number of feasible solution."""
         cdef SCIP_Bool valid
