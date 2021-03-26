@@ -4574,6 +4574,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPcount(self._scip))
 
     def getNReaders(self):
+        """Get number of currently available readers."""
         return SCIPgetNReaders(self._scip)
 
     def getNCountedSols(self):
