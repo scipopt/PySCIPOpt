@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+### Added
+- add Model.getNReaders that returns the number of available readers
+
 ## 3.1.1 - 2021-03-10
 ### Added
 - add evaluation of `Expr` in `Solution`.
