@@ -857,6 +857,7 @@ cdef extern from "scip/scip.h":
                                    SCIP_READERDATA* readerdata)
     SCIP_READER* SCIPfindReader(SCIP* scip, const char* name)
     SCIP_READERDATA* SCIPreaderGetData(SCIP_READER* reader)
+    int SCIPgetNReaders(SCIP* scip)
 
     # Event handler plugin
     SCIP_RETCODE SCIPincludeEventhdlr(SCIP* scip,
