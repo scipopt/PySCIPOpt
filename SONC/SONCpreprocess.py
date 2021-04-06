@@ -104,6 +104,19 @@ def boundNegativeTerms(problem, Vars):
         a = np.array([2*max(A[i,polyOrig.non_squares]) for i in range(n)])
         #a = np.array([8])
     for i,y in enumerate(Vars):
+        if a[i]%2 == 0:
+            for j in range(A.shape[1]):
+                #print(A)
+                #print(i,j,a[i],A[i,j],A[:,j])
+                #print(polyOrig.b[j])
+                if A[i,j] == a[i] and np.count_nonzero(A[:,j]) == 1:
+                    if len(problem.constraints) != 0 and type(polyOrig.b[j][1]) in {int,float} and polyOrig.b[j][1] == 0:
+                        #print('True')
+                        a[i] -= 1
+                        break
+                    elif len(problem.constraints) == 0 and polyOrig.b[j] > 0:
+                        a[i] -= 1
+                        break
         u = max(abs(y.getUbLocal()),abs(y.getLbLocal()))
         if a[i]!=0 and u != problem.infinity and ((a[i]<= 4 and abs(u**a[i])<=10e7) or abs(u**a[i]<=10e5)):
             #TODO: only works if variables are not reordered at some point

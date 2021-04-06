@@ -22,11 +22,11 @@ class SoncRelax(Relax):
     
     def relaxexit(self):
         #output of all relaxator instance solved and dual bounds and LP relaxations at that time
-        print('SONC relaxator                                   current dual bounds                     LP relaxation')
+        print('relaxator status \t relaxator solution   \t relaxator time \t current dual bound overall \t current dual bound in node')
         for el in self.solved_instance:
-            print(el)
+            print(el[0][0],'\t\t',el[0][1],'\t',el[0][2],'\t\t',el[1][0],'\t\t',el[1][1])
             if len(el)==3:
-                print((1-el[0][1]/el[2][1])*100,'%')
+                print(el[2],'\t',(1-el[0][1]/el[2][1])*100,'%')
 
     def relaxexec(self):
         """execution method of SONC relaxator"""
