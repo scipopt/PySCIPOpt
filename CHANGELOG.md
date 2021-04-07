@@ -2,7 +2,13 @@
 
 ## Unreleased
 ### Added
-- add Model.getNReaders that returns the number of available readers
+### Fixed
+### Changed
+### Removed
+
+## 3.1.2 - 2021-04-07
+### Added
+- add `Model.getNReaders` that returns the number of available readers
 
 ## 3.1.1 - 2021-03-10
 ### Added
