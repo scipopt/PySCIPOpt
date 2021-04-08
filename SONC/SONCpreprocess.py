@@ -66,6 +66,7 @@ def boundNegativeTerms(problem, Vars):
     else:
         polyOrig = problem.objective
         polyOrig._normalise()
+
     try:
         #if all points are already covered, just add the bounds as constraints x^2<=u^2
         polyOrig._compute_zero_cover()
@@ -101,8 +102,8 @@ def boundNegativeTerms(problem, Vars):
     except InfeasibleError:
         #if not all points are covered, 2*max{exponents of inner terms} will cover all points if bounds are given for the constraints
         A = polyOrig.A[1:]
-        a = np.array([2*max(A[i,polyOrig.non_squares]) for i in range(n)])
-        #a = np.array([8])
+        a = np.array([2*max(A[i,polyOrig.non_squares])+2 for i in range(n)])
+    l = len(problem.constraints)
     for i,y in enumerate(Vars):
         if a[i]%2 == 0:
             for j in range(A.shape[1]):
@@ -110,15 +111,15 @@ def boundNegativeTerms(problem, Vars):
                 #print(i,j,a[i],A[i,j],A[:,j])
                 #print(polyOrig.b[j])
                 if A[i,j] == a[i] and np.count_nonzero(A[:,j]) == 1:
-                    if len(problem.constraints) != 0 and type(polyOrig.b[j][1]) in {int,float} and polyOrig.b[j][1] == 0:
+                    if l != 0 and a[i] > 0 and type(polyOrig.b[j][1]) in {int,float} and polyOrig.b[j][1] == 0:
                         #print('True')
                         a[i] -= 1
                         break
-                    elif len(problem.constraints) == 0 and polyOrig.b[j] > 0:
+                    elif l == 0 and a[i] > 0 and  polyOrig.b[j] > 0:
                         a[i] -= 1
                         break
         u = max(abs(y.getUbLocal()),abs(y.getLbLocal()))
-        if a[i]!=0 and u != problem.infinity and ((a[i]<= 4 and abs(u**a[i])<=10e7) or abs(u**a[i]<=10e5)):
+        if a[i]!=0 and u != problem.infinity:# and ((a[i]<= 4 and abs(u**a[i])<=10e7) or abs(u**a[i]<=10e5)):
             #TODO: only works if variables are not reordered at some point
             boundconsA = np.zeros((n,2))
             boundconsA[i][1] = a[i]
