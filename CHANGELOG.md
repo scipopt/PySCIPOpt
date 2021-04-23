@@ -3,7 +3,7 @@
 ## Unreleased
 ### Added
 ### Fixed
-- check for NULL pointers when creating Solution objects (will return None)
+- check for NULL pointers when creating Solution objects (will return None): [#494](https://github.com/scipopt/PySCIPOpt/pull/494)
 
 ### Changed
 ### Removed
