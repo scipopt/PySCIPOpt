@@ -533,6 +533,8 @@ cdef class Solution:
     cdef create(SCIP* scip, SCIP_SOL* scip_sol):
         if scip == NULL:
             raise Warning("cannot create Solution with SCIP* == NULL")
+        if scip_sol == NULL:
+            return None
         sol = Solution()
         sol.sol = scip_sol
         sol.scip = scip
