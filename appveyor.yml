@@ -23,11 +23,11 @@ environment:
       PIP: C:\Python38-x64\Scripts\pip
       PYTEST: C:\Python38-x64\Scripts\pytest
       TWINE: C:\Python38-x64\Scripts\twine
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      PYTHON: C:\Python39-x64
-      PIP: C:\Python39-x64\Scripts\pip
-      PYTEST: C:\Python39-x64\Scripts\pytest
-      TWINE: C:\Python39-x64\Scripts\twine
+#     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+#       PYTHON: C:\Python39-x64
+#       PIP: C:\Python39-x64\Scripts\pip
+#       PYTEST: C:\Python39-x64\Scripts\pytest
+#       TWINE: C:\Python39-x64\Scripts\twine
 
 
 install:
