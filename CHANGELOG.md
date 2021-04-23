@@ -3,6 +3,8 @@
 ## Unreleased
 ### Added
 ### Fixed
+- check for NULL pointers when creating Solution objects (will return None)
+
 ### Changed
 ### Removed
 
