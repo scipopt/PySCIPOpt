@@ -3,9 +3,12 @@
 ## Unreleased
 ### Added
 ### Fixed
-- allow NULL solutions to query LP solutions in the correct solving stage
 ### Changed
 ### Removed
+
+## 3.1.4 - 2021-04-25
+### Fixed
+- check for correct stage when querying solution values (raise warning otherwise)
 
 ## 3.1.3 - 2021-04-23
 ### Fixed
