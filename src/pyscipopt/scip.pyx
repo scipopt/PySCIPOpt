@@ -541,13 +541,13 @@ cdef class Solution:
     def __getitem__(self, Expr expr):
         # fast track for Variable
         if isinstance(expr, Variable):
-            self._checkStage()
+            self._checkStage("SCIPgetSolVal")
             var = <Variable> expr
             return SCIPgetSolVal(self.scip, self.sol, var.scip_var)
         return sum(self._evaluate(term)*coeff for term, coeff in expr.terms.items() if coeff != 0)
     
     def _evaluate(self, term):
-        self._checkStage()
+        self._checkStage("SCIPgetSolVal")
         result = 1
         for var in term.vartuple:
             result *= SCIPgetSolVal(self.scip, self.sol, (<Variable> var).scip_var)
@@ -560,7 +560,7 @@ cdef class Solution:
         cdef SCIP_VAR* scip_var
 
         vals = {}
-        self._checkStage()
+        self._checkStage("SCIPgetSolVal")
         for i in range(SCIPgetNVars(self.scip)):
             scip_var = SCIPgetVars(self.scip)[i]
 
@@ -571,9 +571,10 @@ cdef class Solution:
             vals[name] = SCIPgetSolVal(self.scip, self.sol, scip_var)
         return str(vals)
     
-    def _checkStage(self):
-        if self.sol == NULL and not SCIPgetStage(self.scip) == SCIP_STAGE_SOLVING:
-            raise Warning(f"method cannot only be called in stage SOLVING without a valid solution")
+    def _checkStage(self, method):
+        if method in ["SCIPgetSolVal", "getSolObjVal"]:
+            if self.sol == NULL and not SCIPgetStage(self.scip) == SCIP_STAGE_SOLVING:
+                raise Warning(f"{method} cannot only be called in stage SOLVING without a valid solution (current stage: {SCIPgetStage(self.scip)})")
 
 
 cdef class BoundChange:
@@ -4157,8 +4158,7 @@ cdef class Model:
         """
         if sol == None:
             sol = Solution.create(self._scip, NULL)
-        if sol.sol == NULL and not self.getStage() == SCIP_STAGE_SOLVING:
-            raise Warning(f"method cannot only be called in stage SOLVING without a valid solution")
+        sol._checkStage("getSolObjVal")
         if original:
             objval = SCIPgetSolOrigObj(self._scip, sol.sol)
         else:
