@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 ### Fixed
+- allow NULL solutions to query LP solutions in the correct solving stage
 ### Changed
 ### Removed
 
