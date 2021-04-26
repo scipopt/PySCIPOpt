@@ -3770,8 +3770,9 @@ cdef class Model:
         result = dict(down='down', up='up', downvalid='downvalid', upvalid='upvalid', downinf='downinf',
                       upinf='upinf', downconflict='downconflict', upconflict='upconflict', lperror='lperror')
 
-        PY_SCIP_CALL(SCIPgetVarStrongbranchFrac(self._scip, var.scip_var, itlim, idempotent, &down, &up, &downvalid, &upvalid,\
-                                                &downinf, &upinf, &downconflict, &upconflict, &lperror))
+        PY_SCIP_CALL(SCIPgetVarStrongbranchFrac(self._scip, var.scip_var, itlim, idempotent, 
+                                                &down, &up, &downvalid, &upvalid, &downinf, 
+                                                &upinf, &downconflict, &upconflict, &lperror))
 
         return result
 
