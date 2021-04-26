@@ -3590,27 +3590,6 @@ cdef class Model:
 
         Py_INCREF(relax)
 
-    def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
-        """Include a branching rule.
-
-        :param Branchrule branchrule: branching rule
-        :param name: name of branching rule
-        :param desc: description of branching rule
-        :param priority: priority of branching rule
-        :param maxdepth: maximal depth level up to which this branching rule should be used (or -1)
-        :param maxbounddist: maximal relative distance from current node's dual bound to primal bound compared to best node's dual bound for applying branching rule (0.0: only on current best node, 1.0: on all nodes)
-
-        """
-        nam = str_conversion(name)
-        des = str_conversion(desc)
-        PY_SCIP_CALL(SCIPincludeBranchrule(self._scip, nam, des,
-                                          priority, maxdepth, maxbounddist,
-                                          PyBranchruleCopy, PyBranchruleFree, PyBranchruleInit, PyBranchruleExit,
-                                          PyBranchruleInitsol, PyBranchruleExitsol, PyBranchruleExeclp, PyBranchruleExecext,
-                                          PyBranchruleExecps, <SCIP_BRANCHRULEDATA*> branchrule))
-        branchrule.model = <Model>weakref.proxy(self)
-        Py_INCREF(branchrule)
-
     def includeNodesel(self, Nodesel nodesel, name, desc, stdpriority, memsavepriority):
         """Include a node selector.
 
@@ -3691,73 +3670,6 @@ cdef class Model:
         # TODO: It might be necessary in increment the reference to benders i.e Py_INCREF(benders)
         Py_INCREF(benderscut)
 
-
-    def getLPBranchCands(self):
-        """gets branching candidates for LP solution branching (fractional variables) along with solution values,
-        fractionalities, and number of branching candidates; The number of branching candidates does NOT account
-        for fractional implicit integer variables which should not be used for branching decisions. Fractional
-        implicit integer variables are stored at the positions *nlpcands to *nlpcands + *nfracimplvars - 1
-        branching rules should always select the branching candidate among the first npriolpcands of the candidate list
-
-        :return tuple (lpcands, lpcandssol, lpcadsfrac, nlpcands, npriolpcands, nfracimplvars) where
-
-            lpcands: list of variables of LP branching candidates
-            lpcandssol: list of LP candidate solution values
-            lpcandsfrac	list of LP candidate fractionalities
-            nlpcands:    number of LP branching candidates
-            npriolpcands: number of candidates with maximal priority
-            nfracimplvars: number of fractional implicit integer variables
-
-        """
-        cdef int ncands
-        cdef int nlpcands
-        cdef int npriolpcands
-        cdef int nfracimplvars
-
-        cdef SCIP_VAR** lpcands
-        cdef SCIP_Real* lpcandssol
-        cdef SCIP_Real* lpcandsfrac
-
-        PY_SCIP_CALL(SCIPgetLPBranchCands(self._scip, &lpcands, &lpcandssol, &lpcandsfrac,
-                                          &nlpcands, &npriolpcands, &nfracimplvars))
-
-        return ([Variable.create(lpcands[i]) for i in range(nlpcands)], [lpcandssol[i] for i in range(nlpcands)],
-                [lpcandsfrac[i] for i in range(nlpcands)], nlpcands, npriolpcands, nfracimplvars)
-
-
-    def branchVar(self, variable):
-        """Branch on a non-continuous variable.
-
-        :param variable: Variable to branch on
-        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
-                    if branch variable is integer (it is None otherwise)
-
-        """
-        cdef SCIP_NODE* downchild
-        cdef SCIP_NODE* eqchild
-        cdef SCIP_NODE* upchild
-
-        PY_SCIP_CALL(SCIPbranchVar(self._scip, (<Variable>variable).scip_var, &downchild, &eqchild, &upchild))
-        return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
-
-
-    def branchVarVal(self, variable, value):
-        """Branches on variable using a value which separates the domain of the variable.
-
-        :param variable: Variable to branch on
-        :param value: float, value to branch on
-        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
-                    if branch variable is integer (it is None otherwise)
-
-        """
-        cdef SCIP_NODE* downchild
-        cdef SCIP_NODE* eqchild
-        cdef SCIP_NODE* upchild
-
-        PY_SCIP_CALL(SCIPbranchVarVal(self._scip, (<Variable>variable).scip_var, value, &downchild, &eqchild, &upchild))
-
-        return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
-
     def calcNodeselPriority(self, Variable variable, branchdir, targetvalue):
         """calculates the node selection priority for moving the given variable's LP value
         to the given target value;
@@ -3794,6 +3706,159 @@ cdef class Model:
         cdef SCIP_NODE* child
         PY_SCIP_CALL(SCIPcreateChild(self._scip, &child, nodeselprio, estimate))
         return Node.create(child)
+
+    # Branching methods
+    def startStrongbranch(self, enablepropagation=True):
+        """start strong branching - call before any strong branching
+
+        Note:
+        If propagation is enabled, strong branching is not done directly on the LP,
+        but probing nodes are created which allow to perform propagation but also creates some overhead 
+        
+        :param scip: SCIP data structure
+        :param enablepropagation:	should propagation be done before solving the strong branching LP? 
+        
+        """
+        assert(type(enablepropagation) == bool)
+        PY_SCIP_CALL(SCIPstartStrongbranch(self._scip, enablepropagation))
+
+    def endStrongbranch(self):
+        """ end strong branching - call after any strong branching
+        
+        :param scip: SCIP data structure 
+
+        """
+        PY_SCIP_CALL(SCIPendStrongbranch(self._scip))
+
+    def getVarStrongbranchFrac(self, Variable var, itlim=-1, idempotent=True):
+        """gets strong branching information on column variable with fractional value
+
+        Before calling this method, the strong branching mode must have been activated by calling SCIPstartStrongbranch(); 
+        after strong branching was done for all candidate variables, the strong branching mode must be ended by SCIPendStrongbranch(). 
+        Since this method does not apply domain propagation before strongbranching, propagation should not be enabled in the SCIPstartStrongbranch() call.
+
+        Note:
+        Default iterationlimit is unrestricted and the state of scip remains unchanged by default
+
+        :param scip:	SCIP data structure
+        :param var:	variable to get strong branching values for
+        :param itlim:	iteration limit for strong branchings
+        :param idempotent:	should scip's state remain the same after the call (statistics, column states...), or should it be updated ?
+        :param down:	stores dual bound after branching column down
+        :param up:	stores dual bound after branching column up
+        :param downvalid:	stores whether the returned down value is a valid dual bound, or NULL; otherwise, it can only be used as an estimate value
+        :param upvalid:	stores whether the returned up value is a valid dual bound, or NULL; otherwise, it can only be used as an estimate value
+        :param downinf:	pointer to store whether the downwards branch is infeasible, or NULL
+        :param upinf:	pointer to store whether the upwards branch is infeasible, or NULL
+        :param downconflict:	pointer to store whether a conflict constraint was created for an infeasible downwards branch, or NULL
+        :param upconflict:	pointer to store whether a conflict constraint was created for an infeasible upwards branch, or NULL
+        :param lperror:	pointer to store whether an unresolved LP error occurred or the solving process should be stopped (e.g., due to a time limit) 
+        
+        :return: dict() of the branching information of the column variable with fractional value.
+        """
+        
+        cdef SCIP_Real* down
+        cdef SCIP_Real* up
+        cdef SCIP_Bool* downvalid
+        cdef SCIP_Bool* upvalid
+        cdef SCIP_Bool* downinf
+        cdef SCIP_Bool* upinf
+        cdef SCIP_Bool* downconflict
+        cdef SCIP_Bool* upconflict
+        cdef SCIP_Bool* lperror
+
+        result = dict('down'=down, 'up'=up, 'downvalid'=downvalid, 'upvalid'=upvalid, 'downinf'=downinf,
+                      'upinf'=upinf, 'downconflict'=downconflict, 'upconflict'=upconflict, 'lperror'=lperror)
+
+        PY_SCIP_CALL(SCIPgetVarStrongbranchFrac(self._scip, var.scip_var, itlim, idempotent, &down, &up, &downvalid, &upvalid,\
+                                                &downinf, &upinf, &downconflict, &upconflict, &lperror))
+
+        return result
+
+    def branchVar(self, variable):
+        """Branch on a non-continuous variable.
+
+        :param variable: Variable to branch on
+        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
+                    if branch variable is integer (it is None otherwise)
+
+        """
+        cdef SCIP_NODE* downchild
+        cdef SCIP_NODE* eqchild
+        cdef SCIP_NODE* upchild
+
+        PY_SCIP_CALL(SCIPbranchVar(self._scip, (<Variable>variable).scip_var, &downchild, &eqchild, &upchild))
+        return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
+
+    def branchVarVal(self, variable, value):
+        """Branches on variable using a value which separates the domain of the variable.
+
+        :param variable: Variable to branch on
+        :param value: float, value to branch on
+        :return: tuple(downchild, eqchild, upchild) of Nodes of the left, middle and right child. Middle child only exists
+                    if branch variable is integer (it is None otherwise)
+
+        """
+        cdef SCIP_NODE* downchild
+        cdef SCIP_NODE* eqchild
+        cdef SCIP_NODE* upchild
+
+        PY_SCIP_CALL(SCIPbranchVarVal(self._scip, (<Variable>variable).scip_var, value, &downchild, &eqchild, &upchild))
+
+        return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
+
+    def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
+        """Include a branching rule.
+
+        :param Branchrule branchrule: branching rule
+        :param name: name of branching rule
+        :param desc: description of branching rule
+        :param priority: priority of branching rule
+        :param maxdepth: maximal depth level up to which this branching rule should be used (or -1)
+        :param maxbounddist: maximal relative distance from current node's dual bound to primal bound compared to best node's dual bound for applying branching rule (0.0: only on current best node, 1.0: on all nodes)
+
+        """
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeBranchrule(self._scip, nam, des,
+                                          priority, maxdepth, maxbounddist,
+                                          PyBranchruleCopy, PyBranchruleFree, PyBranchruleInit, PyBranchruleExit,
+                                          PyBranchruleInitsol, PyBranchruleExitsol, PyBranchruleExeclp, PyBranchruleExecext,
+                                          PyBranchruleExecps, <SCIP_BRANCHRULEDATA*> branchrule))
+        branchrule.model = <Model>weakref.proxy(self)
+        Py_INCREF(branchrule)
+
+    def getLPBranchCands(self):
+        """gets branching candidates for LP solution branching (fractional variables) along with solution values,
+        fractionalities, and number of branching candidates; The number of branching candidates does NOT account
+        for fractional implicit integer variables which should not be used for branching decisions. Fractional
+        implicit integer variables are stored at the positions *nlpcands to *nlpcands + *nfracimplvars - 1
+        branching rules should always select the branching candidate among the first npriolpcands of the candidate list
+
+        :return tuple (lpcands, lpcandssol, lpcadsfrac, nlpcands, npriolpcands, nfracimplvars) where
+
+            lpcands: list of variables of LP branching candidates
+            lpcandssol: list of LP candidate solution values
+            lpcandsfrac	list of LP candidate fractionalities
+            nlpcands:    number of LP branching candidates
+            npriolpcands: number of candidates with maximal priority
+            nfracimplvars: number of fractional implicit integer variables
+
+        """
+        cdef int ncands
+        cdef int nlpcands
+        cdef int npriolpcands
+        cdef int nfracimplvars
+
+        cdef SCIP_VAR** lpcands
+        cdef SCIP_Real* lpcandssol
+        cdef SCIP_Real* lpcandsfrac
+
+        PY_SCIP_CALL(SCIPgetLPBranchCands(self._scip, &lpcands, &lpcandssol, &lpcandsfrac,
+                                          &nlpcands, &npriolpcands, &nfracimplvars))
+
+        return ([Variable.create(lpcands[i]) for i in range(nlpcands)], [lpcandssol[i] for i in range(nlpcands)],
+                [lpcandsfrac[i] for i in range(nlpcands)], nlpcands, npriolpcands, nfracimplvars)
 
     # Diving methods (Diving is LP related)
     def startDive(self):

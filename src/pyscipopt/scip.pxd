@@ -522,6 +522,23 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetProbName(SCIP* scip, char* name)
     const char* SCIPgetProbName(SCIP* scip)
 
+    # Branching Methods
+    SCIP_RETCODE SCIPstartStrongbranch(SCIP* scip, SCIP_Bool enablepropagation)
+    SCIP_RETCODE SCIPendStrongbranch(SCIP* scip)
+    SCIP_RETCODE SCIPgetVarStrongbranchFrac(SCIP* scip,
+                                            SCIP_VAR* var,
+                                            int itlim,
+                                            SCIP_Bool idempotent,
+                                            SCIP_Real* down,
+                                            SCIP_Real* up,
+                                            SCIP_Bool* downvalid,
+                                            SCIP_Bool* upvalid,
+                                            SCIP_Bool* downinf,
+                                            SCIP_Bool* upinf,
+                                            SCIP_Bool* downconflict,
+                                            SCIP_Bool* upconflict,
+                                            SCIP_Bool* lperror)
+
     # Diving methods
     SCIP_RETCODE SCIPstartDive(SCIP* scip)
     SCIP_RETCODE SCIPchgVarObjDive(SCIP* scip, SCIP_VAR* var, SCIP_Real newobj)
