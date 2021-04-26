@@ -3757,15 +3757,15 @@ cdef class Model:
         :return: dict() of the branching information of the column variable with fractional value.
         """
         
-        cdef SCIP_Real* down
-        cdef SCIP_Real* up
-        cdef SCIP_Bool* downvalid
-        cdef SCIP_Bool* upvalid
-        cdef SCIP_Bool* downinf
-        cdef SCIP_Bool* upinf
-        cdef SCIP_Bool* downconflict
-        cdef SCIP_Bool* upconflict
-        cdef SCIP_Bool* lperror
+        cdef SCIP_Real down
+        cdef SCIP_Real up
+        cdef SCIP_Bool downvalid
+        cdef SCIP_Bool upvalid
+        cdef SCIP_Bool downinf
+        cdef SCIP_Bool upinf
+        cdef SCIP_Bool downconflict
+        cdef SCIP_Bool upconflict
+        cdef SCIP_Bool lperror
 
         result = dict(down='down', up='up', downvalid='downvalid', upvalid='upvalid', downinf='downinf',
                       upinf='upinf', downconflict='downconflict', upconflict='upconflict', lperror='lperror')
