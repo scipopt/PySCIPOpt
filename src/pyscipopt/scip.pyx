@@ -3767,8 +3767,15 @@ cdef class Model:
         cdef SCIP_Bool upconflict
         cdef SCIP_Bool lperror
 
-        result = dict(down='down', up='up', downvalid='downvalid', upvalid='upvalid', downinf='downinf',
-                      upinf='upinf', downconflict='downconflict', upconflict='upconflict', lperror='lperror')
+        result = {'down' : down, 
+                  'up' : up,
+                  'downvalid' : downvalid,
+                  'upvalid' : upvalid,
+                  'downinf' : downinf,
+                  'upinf' : upinf, 
+                  'downconflict' : downconflict, 
+                  'upconflict' : upconflict, 
+                  'lperror' : lperror)
 
         PY_SCIP_CALL(SCIPgetVarStrongbranchFrac(self._scip, var.scip_var, itlim, idempotent, 
                                                 &down, &up, &downvalid, &upvalid, &downinf, 
