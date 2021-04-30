@@ -3775,7 +3775,7 @@ cdef class Model:
                   'upinf' : upinf, 
                   'downconflict' : downconflict, 
                   'upconflict' : upconflict, 
-                  'lperror' : lperror)
+                  'lperror' : lperror }
 
         PY_SCIP_CALL(SCIPgetVarStrongbranchFrac(self._scip, var.scip_var, itlim, idempotent, 
                                                 &down, &up, &downvalid, &upvalid, &downinf, 
