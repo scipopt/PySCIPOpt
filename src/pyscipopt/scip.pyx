@@ -322,6 +322,10 @@ cdef class Column:
         col.scip_col = scipcol
         return col
 
+    def getAge(self):
+        """gets age of column in LP"""
+        return SCIPcolGetAge(self.scip_col)
+
     def getLPPos(self):
         """gets position of column in current LP, or -1 if it is not in LP"""
         return SCIPcolGetLPPos(self.scip_col)
@@ -399,6 +403,10 @@ cdef class Row:
     def getLPPos(self):
         """gets position of row in current LP, or -1 if it is not in LP"""
         return SCIProwGetLPPos(self.scip_row)
+
+    def getAge(self):
+        """gets age of row in LP"""
+        return SCIProwGetAge(self.scip_row)
 
     def getBasisStatus(self):
         """gets the basis status of a row in the LP solution, Note: returns basis status `basic` for rows not in the current SCIP LP"""
@@ -783,6 +791,9 @@ cdef class Variable(Expr):
         """Retrieve whether the variable is a COLUMN variable that is member of the current LP"""
         return SCIPvarIsInLP(self.scip_var)
 
+    def getAvgSol(self):
+        """Returns a weighted average solution value of the variable in all feasible primal solutions found so far"""
+        return SCIPvarGetAvgSol(self.scip_var)
 
     def getIndex(self):
         """Retrieve the unique index of the variable."""

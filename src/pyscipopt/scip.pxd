@@ -731,6 +731,7 @@ cdef extern from "scip/scip.h":
     int SCIPgetNOrigVars(SCIP* scip)
     int SCIPgetNIntVars(SCIP* scip)
     int SCIPgetNBinVars(SCIP* scip)
+    SCIP_Real SCIPvarGetAvgSol(SCIP_VAR* var)
     SCIP_VARTYPE SCIPvarGetType(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
@@ -1647,6 +1648,7 @@ cdef extern from "scip/pub_lp.h":
     SCIP_Real SCIProwGetRhs(SCIP_ROW* row)
     SCIP_Real SCIProwGetConstant(SCIP_ROW* row)
     int SCIProwGetLPPos(SCIP_ROW* row)
+    int SCIProwGetAge(SCIP_ROW* row)
     SCIP_BASESTAT SCIProwGetBasisStatus(SCIP_ROW* row)
     SCIP_Bool SCIProwIsIntegral(SCIP_ROW* row)
     SCIP_Bool SCIProwIsLocal(SCIP_ROW* row)
@@ -1664,6 +1666,7 @@ cdef extern from "scip/pub_lp.h":
 
     # Column Methods
     int SCIPcolGetLPPos(SCIP_COL* col)
+    int SCIPcolGetAge(SCIP_COL* col)
     SCIP_BASESTAT SCIPcolGetBasisStatus(SCIP_COL* col)
     SCIP_Bool SCIPcolIsIntegral(SCIP_COL* col)
     SCIP_VAR* SCIPcolGetVar(SCIP_COL* col)
