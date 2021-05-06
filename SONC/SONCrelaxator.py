@@ -3,30 +3,28 @@ from pyscipopt  import SCIP_RESULT, Relax
 from POEM       import Polynomial, solve_GP, OptimizationProblem, Constraint, dt2sec
 from SONC.convert    import ExprToPoly
 from SONC.SONCpreprocess import preprocess
-#from scipyRelax import scipyRelax
 
 import numpy as np
 import re
 import warnings
 from datetime import datetime
-#scipy=False
 
 class SoncRelax(Relax):
     """Relaxator class using SONCs to find a lower bound"""
     def relaxinit(self):
-        #list to store solutions of relaxator and LP relaxation
+        """initialise output """
+        #list to store solutions of relaxator and dual bound in node
         self.solved_instance = []
 
         #list to store current variable bounds
         self.varBounds = [(y.getUbLocal(), y.getLbLocal()) for y in self.model.getVars()]
     
     def relaxexit(self):
-        #output of all relaxator instance solved and dual bounds and LP relaxations at that time
-        print('relaxator status \t relaxator solution   \t relaxator time \t current dual bound overall \t current dual bound in node')
+        """output of relaxator data"""
+        #output of all relaxator instances solved and dual bounds  at that node
+        print('relaxator status \t relaxator solution   \t relaxator time \t number of ST polynomials \t current dual bound overall \t current dual bound in node')
         for el in self.solved_instance:
-            print(el[0][0],'\t\t',el[0][1],'\t',el[0][2],'\t\t',el[1][0],'\t\t',el[1][1])
-            if len(el)==3:
-                print(el[2],'\t',(1-el[0][1]/el[2][1])*100,'%')
+            print(el[0][0],'\t\t',el[0][1],'\t',el[0][2],'\t\t',el[0][3],'\t\t\t',el[1][0],'\t\t',el[1][1])
 
     def relaxexec(self):
         """execution method of SONC relaxator"""
@@ -40,27 +38,29 @@ class SoncRelax(Relax):
                 optProblem.addCons(con)
         
         t0 = datetime.now()
+
         #do not reuse the relaxator if the variable bounds have not changed
         if len(self.solved_instance) != 0 and all(self.varBounds[i] == (y.getUbLocal(), y.getLbLocal()) for i,y in enumerate(self.model.getVars())):
             if self.solved_instance[-1][0][0]=='optimal':
                 return {'result':SCIP_RESULT.SUCCESS, 'lowerbound': self.solved_instance[-1][0][1]}
             else:
                 return {'result':SCIP_RESULT.DIDNOTRUN}
+        
         #store new variable bounds if they are changed
         self.varBounds = [(y.getUbLocal(), y.getLbLocal()) for y in self.model.getVars()]
         
         optProblem = OptimizationProblem()
         nvars = len(self.model.getVars())
         conss = self.model.getConss()
-        
-        #transform each constraint (type linear, quadratic or expr) into a Polynomial to get lower bound with all constraints used (SCIP -> POEM)
+
+        #transform each constraint (type linear, quadratic or expr) into a Polynomial (SCIP -> POEM)
         for cons in conss:
             constype = cons.getType()
             if constype in ['expr', 'linear', 'quadratic']:
                 lhs = self.model.getLhs(cons)
                 rhs = self.model.getRhs(cons)
             if  constype == 'expr':
-                #transform expr of SCIP into Polynomial of POEM
+                #transform expr of SCIP into Polynomial (POEM)
                 exprcons = self.model.getConsExprPolyCons(cons)
                 polynomial = ExprToPoly(exprcons, nvars, self.model.getVars())
 
@@ -72,7 +72,8 @@ class SoncRelax(Relax):
                 for i,(key,val) in enumerate(coeffdict.items()):
                     b[i] = val
                     for j,var in enumerate(self.model.getVars()):
-                        if re.search(str(var), str(key)):
+                        #if re.search(str(var), str(key)):
+                        if str(key) == 't_'+str(var):
                             A[j][i] +=1
                             break
                 polynomial = Polynomial(A,b)
@@ -89,15 +90,18 @@ class SoncRelax(Relax):
                 for el in bilin:
                     b[i] = el[2]
                     for j, var in enumerate(self.model.getVars()):
-                        if re.search(str(var), str(el[0])):
+                        #if re.search(str(var), str(el[0])):
+                        if str(el[0]) == 't_'+str(var):
                             A[j][i] = 1.0
-                        elif re.search(str(var), str(el[1])):
+                        #elif re.search(str(var), str(el[1])):
+                        elif str(el[1]) == 't_'+str(var):
                             A[j][i] = 1.0
                     i += 1
                 for el in quad:
                     b[i] = el[1]
                     for j, var in enumerate(self.model.getVars()):
-                        if re.search(str(var), str(el[0])):
+                        #if re.search(str(var), str(el[0])):
+                        if str(el[0]) == 't_'+str(var):
                             A[j][i] = 2.0
                             i += 1
                             b[i] = el[2]
@@ -106,9 +110,9 @@ class SoncRelax(Relax):
                             break
                 for el in lin:
                     b[i] = el[1]
-                    #j = int(str(el[0])[-1])
                     for j, var in enumerate(self.model.getVars()):
-                        if re.search(str(var), str(el[0])):
+                        #if re.search(str(var), str(el[0])):
+                        if str(el[0]) == 't_'+str(var):
                             A[j][i] = 1.0
                             i += 1
                 polynomial = Polynomial(A,b)
@@ -124,27 +128,21 @@ class SoncRelax(Relax):
         #if at most 50% of the constraints is used, relaxator is not used
         if len(optProblem.constraints) <= self.model.getNConss()//2:
             return {'result': SCIP_RESULT.DIDNOTRUN}
-
-        #get Objective as Polynomial
+        
+        #get Objective as Polynomial (POEM)
         optProblem.setObjective(ExprToPoly(self.model.getObjective(), nvars, self.model.getVars()))
-
-        #use preprocessing to get a structure that (hopefully) fits for POEM
+        
+        #rewrite objective and use B&B bounds to get a structure that fits for POEM
         optProblem.infinity = self.model.infinity() #make sure infinity means the same for both SCIP and POEM (i.e. if SCIP infinity is changed by user)
         optProblem = preprocess(optProblem, self.model.getVars())
         
         #try to solve problem using GP 
-        optProblem = solve_GP(optProblem)
+        optProblem, coverlen = solve_GP(optProblem)
         
         #store solved instances for output in the end
-        self.solved_instance.append([(optProblem.status, optProblem.lowerbound,dt2sec(datetime.now()-t0)),(self.model.getDualbound(), self.model.getDualboundRoot())])
-        if self.model.getLPSolstat() != 0:
-            self.solved_instance[-1].append((self.model.getLPSolstat(), self.model.getLPObjVal()))
-
+        self.solved_instance.append([(optProblem.status, optProblem.lowerbound,dt2sec(datetime.now()-t0),coverlen),(self.model.getDualbound(), self.model.getDualboundRoot())])
         if optProblem.status == 'optimal':
             return {'result': SCIP_RESULT.SUCCESS, 'lowerbound': optProblem.lowerbound}
-
-        #if scipy:
-        #    return scipyRelax(optProblem,self)
 
         #relaxator did not run successfully, did not find a lower bound
         return {'result': SCIP_RESULT.DIDNOTFIND}

@@ -6,10 +6,11 @@ import numpy as np
 import re
 
 
-def ExprToPoly(Exp, nvar, Vars, x0found=False):
+def ExprToPoly(Exp, nvar, Vars):
     """turn pyscipopt.scip.Expr into a Polynomial (SCIP -> POEM)
-    :param: Exp: expression of type pyscipopt.scip.Expr
-    :param: nvar: number of variables of given problem
+     - param Exp: expression of type pyscipopt.scip.Expr
+     - param nvar: number of variables of given problem
+     - param Vars: list of variables of given problem
     """
     nterms = len([key for key in Exp])
 
@@ -19,9 +20,7 @@ def ExprToPoly(Exp, nvar, Vars, x0found=False):
     else:
         const = 0.0
         nterms += 1
-    #x0found = re.search(r'x0', str(Exp))
-    #if x0found == None:
-    #    nvar += 1
+    
     #turn Expr into Polynomial 
     A = np.array([np.zeros(nterms)]*nvar)
     b = np.zeros(nterms)
@@ -33,19 +32,12 @@ def ExprToPoly(Exp, nvar, Vars, x0found=False):
         elif not key == Term():
             for el in tuple(key):
                 for i,var in enumerate(Vars):
-                    #print('i,var',i,var)
-                    #print(re.search(str(var), str(el)))
-                    if re.search(str(var), str(el)):
+                    #if re.search(str(var), str(el)):
+                    if str(var) == str(el) or 't_'+str(var) == str(el):
                         A[i][j] +=1
                         break
-                    #print('el,key',el, key)
-                #i = re.findall(r'x\(?([0-9]+)\)?', str(el))
-                #A[int(i[0])][j] += 1
             b[j] = Exp[key]
             j += 1
-    #if x0found == None:
-    #    A = A[1:,]
-    #print(A,b)
     return Polynomial(A,b)
 
 def PolyToExpr(p,var):
