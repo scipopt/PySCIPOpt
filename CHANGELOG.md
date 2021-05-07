@@ -2,7 +2,29 @@
 
 ## Unreleased
 ### Added
-- add more SCIP functions: `getNSols`
+### Fixed
+### Changed
+### Removed
+
+## 3.1.4 - 2021-04-25
+### Fixed
+- check for correct stage when querying solution values (raise warning otherwise)
+
+## 3.1.3 - 2021-04-23
+### Fixed
+- check for NULL pointers when creating Solution objects (will return None): [#494](https://github.com/scipopt/PySCIPOpt/pull/494)
+
+## 3.1.2 - 2021-04-07
+### Added
+- add `Model.getNReaders` that returns the number of available readers
+
+## 3.1.1 - 2021-03-10
+### Added
+- add evaluation of `Expr` in `Solution`.
+
+## 3.1.0 - 2020-12-17
+### Added
+- add more SCIP functions: `getNSols`, `createPartialSol`
 
 ### Fixed
 - consistent handling of filenames for reading/writing

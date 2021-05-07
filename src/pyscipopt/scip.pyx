@@ -538,8 +538,20 @@ cdef class Solution:
         sol.scip = scip
         return sol
 
-    def __getitem__(self, Variable var):
-        return SCIPgetSolVal(self.scip, self.sol, var.scip_var)
+    def __getitem__(self, Expr expr):
+        # fast track for Variable
+        if isinstance(expr, Variable):
+            self._checkStage("SCIPgetSolVal")
+            var = <Variable> expr
+            return SCIPgetSolVal(self.scip, self.sol, var.scip_var)
+        return sum(self._evaluate(term)*coeff for term, coeff in expr.terms.items() if coeff != 0)
+    
+    def _evaluate(self, term):
+        self._checkStage("SCIPgetSolVal")
+        result = 1
+        for var in term.vartuple:
+            result *= SCIPgetSolVal(self.scip, self.sol, (<Variable> var).scip_var)
+        return result
 
     def __setitem__(self, Variable var, value):
         PY_SCIP_CALL(SCIPsetSolVal(self.scip, self.sol, var.scip_var, value))
@@ -548,6 +560,7 @@ cdef class Solution:
         cdef SCIP_VAR* scip_var
 
         vals = {}
+        self._checkStage("SCIPgetSolVal")
         for i in range(SCIPgetNVars(self.scip)):
             scip_var = SCIPgetVars(self.scip)[i]
 
@@ -557,6 +570,12 @@ cdef class Solution:
 
             vals[name] = SCIPgetSolVal(self.scip, self.sol, scip_var)
         return str(vals)
+    
+    def _checkStage(self, method):
+        if method in ["SCIPgetSolVal", "getSolObjVal"]:
+            if self.sol == NULL and not SCIPgetStage(self.scip) == SCIP_STAGE_SOLVING:
+                raise Warning(f"{method} cannot only be called in stage SOLVING without a valid solution (current stage: {SCIPgetStage(self.scip)})")
+
 
 cdef class BoundChange:
     """Bound change."""
@@ -3939,6 +3958,23 @@ cdef class Model:
         solution = Solution.create(self._scip, _sol)
         return solution
 
+    def createPartialSol(self, Heur heur = None):
+        """Create a partial primal solution, initialized to unknown values.
+        :param Heur heur: heuristic that found the solution (Default value = None)
+
+        """
+        cdef SCIP_HEUR* _heur
+        cdef SCIP_SOL* _sol
+
+        if isinstance(heur, Heur):
+            n = str_conversion(heur.name)
+            _heur = SCIPfindHeur(self._scip, n)
+        else:
+            _heur = NULL
+        PY_SCIP_CALL(SCIPcreatePartialSol(self._scip, &_sol, _heur))
+        partialsolution = Solution.create(self._scip, _sol)
+        return partialsolution
+
     def printBestSol(self, write_zeros=False):
         """Prints the best feasible primal solution."""
         PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, write_zeros))
@@ -4122,6 +4158,7 @@ cdef class Model:
         """
         if sol == None:
             sol = Solution.create(self._scip, NULL)
+        sol._checkStage("getSolObjVal")
         if original:
             objval = SCIPgetSolOrigObj(self._scip, sol.sol)
         else:
@@ -4148,13 +4185,13 @@ cdef class Model:
 
         Note: a variable is also an expression
         """
+        # no need to create a NULL solution wrapper in case we have a variable
+        if sol == None and isinstance(expr, Variable):
+            var = <Variable> expr
+            return SCIPgetSolVal(self._scip, NULL, var.scip_var)
         if sol == None:
             sol = Solution.create(self._scip, NULL)
-        if isinstance(expr, Variable):
-            var = <Variable> expr
-            return SCIPgetSolVal(self._scip, sol.sol, var.scip_var)
-        else:
-            return expr._evaluate(sol)
+        return sol[expr]
 
     def getVal(self, Expr expr):
         """Retrieve the value of the given variable or expression in the best known solution.
@@ -4545,6 +4582,10 @@ cdef class Model:
     def count(self):
         """Counts the number of feasible points of problem."""
         PY_SCIP_CALL(SCIPcount(self._scip))
+
+    def getNReaders(self):
+        """Get number of currently available readers."""
+        return SCIPgetNReaders(self._scip)
 
     def getNCountedSols(self):
         """Get number of feasible solution."""
