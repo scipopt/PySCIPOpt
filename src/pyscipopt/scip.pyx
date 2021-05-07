@@ -4376,6 +4376,13 @@ cdef class Model:
         PY_SCIP_CALL(SCIPsetMessagehdlr(self._scip, myMessageHandler))
         SCIPmessageSetErrorPrinting(relayErrorMessage, NULL)
 
+    def setLogfile(self, path):
+        """sets the log file name for the currently installed message handler
+        :param path: name of log file, or None (no log)
+        """
+        c_path = str_conversion(path) if path else None
+        SCIPsetMessagehdlrLogfile(self._scip, c_path)
+
     # Parameter Methods
 
     def setBoolParam(self, name, value):
