@@ -41,7 +41,7 @@ if "--debug" in sys.argv:
     extra_compile_args.append('-UNDEBUG')
     sys.argv.remove("--debug")
 
-cythonize = True
+use_cython = True
 
 packagedir = os.path.join('src', 'pyscipopt')
 
@@ -55,12 +55,12 @@ except ImportError:
     if not os.path.exists(os.path.join(packagedir, 'scip.c')):
         print('Cython is required')
         quit(1)
-    cythonize = False
+    use_cython = False
 
 if not os.path.exists(os.path.join(packagedir, 'scip.pyx')):
-    cythonize = False
+    use_cython = False
 
-ext = '.pyx' if cythonize else '.c'
+ext = '.pyx' if use_cython else '.c'
 
 extensions = [Extension('pyscipopt.scip', [os.path.join(packagedir, 'scip'+ext)],
                           include_dirs=[includedir],
@@ -70,33 +70,33 @@ extensions = [Extension('pyscipopt.scip', [os.path.join(packagedir, 'scip'+ext)]
                           extra_link_args=extra_link_args
                           )]
 
-if cythonize:
-    extensions = cythonize(extensions, compiler_directives = {'language_level': 3})
-#     extensions = cythonize(extensions, compiler_directives={'linetrace': True})
+if use_cython:
+    extensions = cythonize(extensions, compiler_directives={'language_level': 3})
 
 with open('README.md') as f:
     long_description = f.read()
 
 setup(
-    name = 'PySCIPOpt',
-    version = version,
-    description = 'Python interface and modeling environment for SCIP',
-    long_description = long_description,
+    name='PySCIPOpt',
+    version=version,
+    description='Python interface and modeling environment for SCIP',
+    long_description=long_description,
     long_description_content_type='text/markdown',
-    url = 'https://github.com/SCIP-Interfaces/PySCIPOpt',
-    author = 'Zuse Institute Berlin',
-    author_email = 'scip@zib.de',
-    license = 'MIT',
+    url='https://github.com/SCIP-Interfaces/PySCIPOpt',
+    author='Zuse Institute Berlin',
+    author_email='scip@zib.de',
+    license='MIT',
     classifiers=[
-    'Development Status :: 4 - Beta',
-    'Intended Audience :: Science/Research',
-    'Intended Audience :: Education',
-    'License :: OSI Approved :: MIT License',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Cython',
-    'Topic :: Scientific/Engineering :: Mathematics'],
-    ext_modules = extensions,
-    packages = ['pyscipopt'],
-    package_dir = {'pyscipopt': packagedir},
-    package_data = {'pyscipopt': ['scip.pyx', 'scip.pxd', '*.pxi']}
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Science/Research',
+        'Intended Audience :: Education',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Cython',
+        'Topic :: Scientific/Engineering :: Mathematics'],
+    ext_modules=extensions,
+    install_requires=['wheel'],
+    packages=['pyscipopt'],
+    package_dir={'pyscipopt': packagedir},
+    package_data={'pyscipopt': ['scip.pyx', 'scip.pxd', '*.pxi']}
 )

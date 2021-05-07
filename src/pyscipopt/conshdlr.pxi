@@ -259,8 +259,7 @@ cdef SCIP_RETCODE PyConsSepasol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS*
     cdef constraints = []
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
-    solution = Solution()
-    solution.sol = sol
+    solution = Solution.create(scip, sol)
     result_dict = PyConshdlr.conssepasol(constraints, nusefulconss, solution)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
@@ -280,8 +279,7 @@ cdef SCIP_RETCODE PyConsEnforelax (SCIP* scip, SCIP_SOL* sol, SCIP_CONSHDLR* con
     cdef constraints = []
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
-    solution = Solution()
-    solution.sol = sol
+    solution = Solution.create(scip, sol)
     result_dict = PyConshdlr.consenforelax(solution, constraints, nusefulconss, solinfeasible)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
@@ -302,8 +300,7 @@ cdef SCIP_RETCODE PyConsCheck (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** 
     cdef constraints = []
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
-    solution = Solution()
-    solution.sol = sol
+    solution = Solution.create(scip, sol)
     result_dict = PyConshdlr.conscheck(constraints, solution, checkintegrality, checklprows, printreason, completely)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY

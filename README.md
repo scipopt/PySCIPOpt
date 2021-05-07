@@ -2,7 +2,7 @@ PySCIPOpt
 =========
 
 This project provides an interface from Python to the [SCIP Optimization
-Suite](http://scip.zib.de).
+Suite](https://www.scipopt.org/).
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PySCIPOpt/Lobby)
 [![PySCIPOpt on PyPI](https://img.shields.io/pypi/v/pyscipopt.svg)](https://pypi.python.org/pypi/pyscipopt)
@@ -13,12 +13,24 @@ Suite](http://scip.zib.de).
 Documentation
 -------------
 
-Please consult the [online documentation](http://scipopt.github.io/PySCIPOpt/docs/html) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
+Please consult the [online documentation](https://scipopt.github.io/PySCIPOpt/docs/html) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
 
 See [CHANGELOG.md](CHANGELOG.md) for added, removed or fixed functionality.
 
 Installation
 ------------
+
+**Using Conda**
+
+[![Conda version](https://img.shields.io/conda/vn/conda-forge/pyscipopt?logo=conda-forge)](https://anaconda.org/conda-forge/pyscipopt)
+[![Conda platforms](https://img.shields.io/conda/pn/conda-forge/pyscipopt?logo=conda-forge)](https://anaconda.org/conda-forge/pyscipopt)
+
+Conda will install SCIP automatically, hence everything can be installed in a single command:
+```bash
+conda install --channel conda-forge pyscipopt
+```
+
+**Using PyPI and from Source**
 
 See [INSTALL.md](INSTALL.md) for instructions.
 Please note that the latest PySCIPOpt version is usually only compatible with the latest major release of the SCIP Optimization Suite.

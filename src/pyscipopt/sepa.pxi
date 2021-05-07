@@ -84,8 +84,7 @@ cdef SCIP_RETCODE PySepaExeclp (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result
 cdef SCIP_RETCODE PySepaExecsol (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result, unsigned int allowlocal):
     cdef SCIP_SEPADATA* sepadata
     sepadata = SCIPsepaGetData(sepa)
-    solution = Solution()
-    solution.sol = sol
+    solution = Solution.create(scip, sol)
     PySepa = <Sepa>sepadata
     result_dict = PySepa.sepaexecsol(solution)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
