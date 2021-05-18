@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- add SCIP function `SCIPsetMessagehdlrLogfile`
 ### Fixed
 - fix `Model.writeLP` method
 ### Changed
