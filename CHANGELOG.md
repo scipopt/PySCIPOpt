@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 ### Fixed
+- fix `Model.writeLP` method
 ### Changed
 ### Removed
 

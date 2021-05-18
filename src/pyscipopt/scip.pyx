@@ -3938,7 +3938,7 @@ cdef class Model:
         :param filename: file name (Default value = "LP.lp")
         """
         absfile = str_conversion(abspath(filename))
-        PY_SCIP_CALL( SCIPwriteLP(self._scip, str_conversion(absfile)) )
+        PY_SCIP_CALL( SCIPwriteLP(self._scip, absfile) )
 
     def createSol(self, Heur heur = None):
         """Create a new primal solution.
