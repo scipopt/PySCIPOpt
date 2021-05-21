@@ -83,8 +83,28 @@ def boundNegativeTerms(problem, Vars):
         #if all points are already covered, just add the bounds as constraints x^2<=u^2
         polyOrig._compute_zero_cover()
         A = polyOrig.A[1:,]
+        coverST = [polyOrig.cover[0].copy()]
+        for cover in polyOrig.cover[1:]:
+            if 0 not in cover:
+                cover.insert(0,0)
+            added = False
+            for el in coverST:
+                monos = [e for e in el if e in polyOrig.monomial_squares]
+                if (len(cover[:-1])==len(monos) and cover[:-1]==monos):
+                    el.append(cover[-1])
+                    added = True
+                    break
+            if added == False:
+                coverST.append(cover.copy())
         #if all(np.count_nonzero(A[:,i])!=1 for i in range(polyOrig.A.shape[1])):
-        a = 2*np.ones(n,dtype=int)
+        if len(coverST)==1:
+            a = 2*np.ones(n,dtype=int)
+        else:
+            if n%2==0:
+                a = np.array([2*n*max(A[i,polyOrig.non_squares]) for i in range(n)])
+            else:
+                a = np.array([2*n*max(A[i,polyOrig.non_squares]) for i in range(n)])
+            problem.neededBounds=a
         '''else:
             a = np.ones(n,dtype=int) #2*
             VarExist=np.zeros(n,dtype=int)
@@ -102,7 +122,11 @@ def boundNegativeTerms(problem, Vars):
     except InfeasibleError:
         #if not all points are covered, use suitable exponent to cover all
         A = polyOrig.A[1:]
-        a = np.array([2*max(A[i,polyOrig.non_squares])+2 for i in range(n)])
+        if n%2==0:
+            a = np.array([2*n*max(A[i,polyOrig.non_squares]) for i in range(n)])
+        else:
+            a = np.array([2*n*max(A[i,polyOrig.non_squares]) for i in range(n)])
+        problem.neededBounds=a
 
     l = len(problem.constraints)
     for i,y in enumerate(Vars):
@@ -122,7 +146,7 @@ def boundNegativeTerms(problem, Vars):
 
         #add bounds as constraints x^a<=u^a to problem
         u = max(abs(y.getUbLocal()),abs(y.getLbLocal()))
-        if a[i]!=0 and u != problem.infinity:# and ((a[i]<= 4 and abs(u**a[i])<=10e7) or abs(u**a[i]<=10e5)):
+        if a[i]!=0 and u != problem.infinity:#TODO: sometime runtime overflow because power is too large
             boundconsA = np.zeros((n,2))
             boundconsA[i][1] = a[i]
             if u == abs(y.getLbLocal()) and a[i]%2==1:

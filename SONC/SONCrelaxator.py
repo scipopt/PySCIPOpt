@@ -8,6 +8,7 @@ import numpy as np
 import re
 import warnings
 from datetime import datetime
+from tabulate import tabulate
 
 class SoncRelax(Relax):
     """Relaxator class using SONCs to find a lower bound"""
@@ -22,9 +23,7 @@ class SoncRelax(Relax):
     def relaxexit(self):
         """output of relaxator data"""
         #output of all relaxator instances solved and dual bounds  at that node
-        print('relaxator status \t relaxator solution   \t relaxator time \t number of ST polynomials \t current dual bound overall \t current dual bound in node')
-        for el in self.solved_instance:
-            print(el[0][0],'\t\t',el[0][1],'\t',el[0][2],'\t\t',el[0][3],'\t\t\t',el[1][0],'\t\t',el[1][1])
+        print(tabulate(self.solved_instance,headers=["status","relaxator solution","time",'#ST-polynomials', 'dual bound root','dual bound node','primal bound','gap','Needed B&B'],tablefmt="grid"))
 
     def relaxexec(self):
         """execution method of SONC relaxator"""
@@ -140,7 +139,11 @@ class SoncRelax(Relax):
         optProblem, coverlen = solve_GP(optProblem)
         
         #store solved instances for output in the end
-        self.solved_instance.append([(optProblem.status, optProblem.lowerbound,dt2sec(datetime.now()-t0),coverlen),(self.model.getDualbound(), self.model.getDualboundRoot())])
+        self.solved_instance.append([optProblem.status, optProblem.lowerbound,dt2sec(datetime.now()-t0),coverlen,self.model.getDualbound(), self.model.getDualboundRoot(),self.model.getPrimalbound(),self.model.getGap()])
+        if optProblem.neededBounds!=[]:
+            self.solved_instance[-1].append(True)
+        else:
+            self.solved_instance[-1].append(False)
         if optProblem.status == 'optimal':
             return {'result': SCIP_RESULT.SUCCESS, 'lowerbound': optProblem.lowerbound}
 
