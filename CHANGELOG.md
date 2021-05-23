@@ -2,11 +2,15 @@
 
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+### Removed
+
+## 3.1.5 - 2021-05-23
+### Added
 - add SCIP function `SCIPsetMessagehdlrLogfile`
 ### Fixed
 - fix `Model.writeLP` method
-### Changed
-### Removed
 
 ## 3.1.4 - 2021-04-25
 ### Fixed
