@@ -39,48 +39,48 @@ cdef class Eventhdlr:
 
 
 # local helper functions for the interface
-cdef Eventhdlr getPyEventhdlr(SCIP_EVENTHDLR* eventhdlr):
+cdef Eventhdlr getPyEventhdlr(SCIP_EVENTHDLR* eventhdlr) with gil:
     cdef SCIP_EVENTHDLRDATA* eventhdlrdata
     eventhdlrdata = SCIPeventhdlrGetData(eventhdlr)
     return <Eventhdlr>eventhdlrdata
 
-cdef SCIP_RETCODE PyEventCopy (SCIP* scip, SCIP_EVENTHDLR* eventhdlr):
+cdef SCIP_RETCODE PyEventCopy (SCIP* scip, SCIP_EVENTHDLR* eventhdlr) with gil:
     PyEventhdlr = getPyEventhdlr(eventhdlr)
     PyEventhdlr.eventcopy()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyEventFree (SCIP* scip, SCIP_EVENTHDLR* eventhdlr):
+cdef SCIP_RETCODE PyEventFree (SCIP* scip, SCIP_EVENTHDLR* eventhdlr) with gil:
     PyEventhdlr = getPyEventhdlr(eventhdlr)
     PyEventhdlr.eventfree()
     Py_DECREF(PyEventhdlr)
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyEventInit (SCIP* scip, SCIP_EVENTHDLR* eventhdlr):
+cdef SCIP_RETCODE PyEventInit (SCIP* scip, SCIP_EVENTHDLR* eventhdlr) with gil:
     PyEventhdlr = getPyEventhdlr(eventhdlr)
     PyEventhdlr.eventinit()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyEventExit (SCIP* scip, SCIP_EVENTHDLR* eventhdlr):
+cdef SCIP_RETCODE PyEventExit (SCIP* scip, SCIP_EVENTHDLR* eventhdlr) with gil:
     PyEventhdlr = getPyEventhdlr(eventhdlr)
     PyEventhdlr.eventexit()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyEventInitsol (SCIP* scip, SCIP_EVENTHDLR* eventhdlr):
+cdef SCIP_RETCODE PyEventInitsol (SCIP* scip, SCIP_EVENTHDLR* eventhdlr) with gil:
     PyEventhdlr = getPyEventhdlr(eventhdlr)
     PyEventhdlr.eventinitsol()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyEventExitsol (SCIP* scip, SCIP_EVENTHDLR* eventhdlr):
+cdef SCIP_RETCODE PyEventExitsol (SCIP* scip, SCIP_EVENTHDLR* eventhdlr) with gil:
     PyEventhdlr = getPyEventhdlr(eventhdlr)
     PyEventhdlr.eventexitsol()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyEventDelete (SCIP* scip, SCIP_EVENTHDLR* eventhdlr, SCIP_EVENTDATA** eventdata):
+cdef SCIP_RETCODE PyEventDelete (SCIP* scip, SCIP_EVENTHDLR* eventhdlr, SCIP_EVENTDATA** eventdata) with gil:
     PyEventhdlr = getPyEventhdlr(eventhdlr)
     PyEventhdlr.eventdelete()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyEventExec (SCIP* scip, SCIP_EVENTHDLR* eventhdlr, SCIP_EVENT* event, SCIP_EVENTDATA* eventdata):
+cdef SCIP_RETCODE PyEventExec (SCIP* scip, SCIP_EVENTHDLR* eventhdlr, SCIP_EVENT* event, SCIP_EVENTDATA* eventdata) with gil:
     PyEventhdlr = getPyEventhdlr(eventhdlr)
     PyEvent = Event()
     PyEvent.event = event
