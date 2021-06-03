@@ -41,27 +41,18 @@ if "--debug" in sys.argv:
     extra_compile_args.append('-UNDEBUG')
     sys.argv.remove("--debug")
 
-use_cython = True
-
 packagedir = os.path.join('src', 'pyscipopt')
 
 with open(os.path.join(packagedir, '__init__.py'), 'r') as initfile:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
                         initfile.read(), re.MULTILINE).group(1)
 
-try:
-    from Cython.Build import cythonize
-except ImportError:
-    if not os.path.exists(os.path.join(packagedir, 'scip.c')):
-        print('Cython is required')
-        quit(1)
-    use_cython = False
-
-if not os.path.exists(os.path.join(packagedir, 'scip.pyx')):
-    use_cython = False
+# Cython is needed at build time for dev build (source releases are pre-cythonized)
+use_cython = not os.path.exists(os.path.join(packagedir, 'scip.c'))
 
 ext = '.pyx' if use_cython else '.c'
 
+# Cythonizing is done automatically by setuptools on .pyx
 extensions = [Extension('pyscipopt.scip', [os.path.join(packagedir, 'scip'+ext)],
                           include_dirs=[includedir],
                           library_dirs=[libdir],
@@ -69,9 +60,6 @@ extensions = [Extension('pyscipopt.scip', [os.path.join(packagedir, 'scip'+ext)]
                           extra_compile_args = extra_compile_args,
                           extra_link_args=extra_link_args
                           )]
-
-if use_cython:
-    extensions = cythonize(extensions, compiler_directives={'language_level': 3})
 
 with open('README.md') as f:
     long_description = f.read()
@@ -95,6 +83,7 @@ setup(
         'Programming Language :: Cython',
         'Topic :: Scientific/Engineering :: Mathematics'],
     ext_modules=extensions,
+    setup_requires=["cython"] if use_cython else [],
     install_requires=['wheel'],
     packages=['pyscipopt'],
     package_dir={'pyscipopt': packagedir},
