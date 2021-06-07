@@ -1979,18 +1979,19 @@ cdef class Model:
                 stickingatnode=False):
         """Add a linear or quadratic constraint.
 
-        :param cons: list of coefficients
+        :param cons: constraint object
         :param name: the name of the constraint, generic name if empty (Default value = '')
         :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
         :param separate: should the constraint be separated during LP processing? (Default value = True)
         :param enforce: should the constraint be enforced during node processing? (Default value = True)
-        :param check: should the constraint be checked during for feasibility? (Default value = True)
+        :param check: should the constraint be checked for feasibility? (Default value = True)
         :param propagate: should the constraint be propagated during node processing? (Default value = True)
         :param local: is the constraint only valid locally? (Default value = False)
         :param modifiable: is the constraint modifiable (subject to column generation)? (Default value = False)
         :param dynamic: is the constraint subject to aging? (Default value = False)
         :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
         :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be  moved to a more global node? (Default value = False)
+        :return The added @ref scip#Constraint "Constraint" object.
 
         """
         assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
