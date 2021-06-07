@@ -2,10 +2,13 @@
 
 ## Unreleased
 ### Added
-- add convenience function `Model.addConss()` to add multiple constraints at once
 ### Fixed
 ### Changed
 ### Removed
+
+## 3.2.0 - 2021-06-07
+### Added
+- add convenience function `Model.addConss()` to add multiple constraints at once
 
 ## 3.1.5 - 2021-05-23
 ### Added
