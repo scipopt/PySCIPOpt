@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- add convenience function `Model.addConss()` to add multiple constraints at once
 ### Fixed
 ### Changed
 ### Removed

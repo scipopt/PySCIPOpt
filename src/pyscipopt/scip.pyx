@@ -12,6 +12,9 @@ from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPo
 from libc.stdlib cimport malloc, free
 from libc.stdio cimport fdopen
 
+from collections.abc import Iterable
+from itertools import repeat
+
 include "expr.pxi"
 include "lp.pxi"
 include "benders.pxi"
@@ -1979,18 +1982,19 @@ cdef class Model:
                 stickingatnode=False):
         """Add a linear or quadratic constraint.
 
-        :param cons: list of coefficients
+        :param cons: constraint object
         :param name: the name of the constraint, generic name if empty (Default value = '')
         :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
         :param separate: should the constraint be separated during LP processing? (Default value = True)
         :param enforce: should the constraint be enforced during node processing? (Default value = True)
-        :param check: should the constraint be checked during for feasibility? (Default value = True)
+        :param check: should the constraint be checked for feasibility? (Default value = True)
         :param propagate: should the constraint be propagated during node processing? (Default value = True)
         :param local: is the constraint only valid locally? (Default value = False)
         :param modifiable: is the constraint modifiable (subject to column generation)? (Default value = False)
         :param dynamic: is the constraint subject to aging? (Default value = False)
         :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
         :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be  moved to a more global node? (Default value = False)
+        :return The added @ref scip#Constraint "Constraint" object.
 
         """
         assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
@@ -2017,6 +2021,71 @@ cdef class Model:
             return self._addGenNonlinearCons(cons, **kwargs)
         else:
             return self._addNonlinearCons(cons, **kwargs)
+
+    def addConss(self, conss, name='', initial=True, separate=True,
+                 enforce=True, check=True, propagate=True, local=False,
+                 modifiable=False, dynamic=False, removable=False,
+                 stickingatnode=False):
+        """Adds multiple linear or quadratic constraints.
+
+        Each of the constraints is added to the model using Model.addCons().
+
+        For all parameters, except @p conss, this method behaves differently depending on the type of the passed argument:
+          1. If the value is iterable, it must be of the same length as @p conss. For each constraint, Model.addCons() will be called with the value at the corresponding index.
+          2. Else, the (default) value will be applied to all of the constraints.
+
+        :param conss An iterable of constraint objects. Any iterable will be converted into a list before further processing.
+        :param name: the names of the constraints, generic name if empty (Default value = ''). If a single string is passed, it will be suffixed by an underscore and the enumerated index of the constraint (starting with 0).
+        :param initial: should the LP relaxation of constraints be in the initial LP? (Default value = True)
+        :param separate: should the constraints be separated during LP processing? (Default value = True)
+        :param enforce: should the constraints be enforced during node processing? (Default value = True)
+        :param check: should the constraints be checked for feasibility? (Default value = True)
+        :param propagate: should the constraints be propagated during node processing? (Default value = True)
+        :param local: are the constraints only valid locally? (Default value = False)
+        :param modifiable: are the constraints modifiable (subject to column generation)? (Default value = False)
+        :param dynamic: are the constraints subject to aging? (Default value = False)
+        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        :param stickingatnode: should the constraints always be kept at the node where it was added, even if it may be  @oved to a more global node? (Default value = False)
+        :return A list of added @ref scip#Constraint "Constraint" objects.
+
+        :see addCons()
+        """
+        def ensure_iterable(elem, length):
+            if isinstance(elem, Iterable):
+                return elem
+            else:
+                return list(repeat(elem, length))
+
+        assert isinstance(conss, Iterable), "Given constraint list is not iterable."
+
+        conss = list(conss)
+        n_conss = len(conss)
+
+        if isinstance(name, str):
+            if name == "":
+                name = ["" for idx in range(n_conss)]
+            else:
+                name = ["%s_%s" % (name, idx) for idx in range(n_conss)]
+        initial = ensure_iterable(initial, n_conss)
+        separate = ensure_iterable(separate, n_conss)
+        enforce = ensure_iterable(enforce, n_conss)
+        check = ensure_iterable(check, n_conss)
+        propagate = ensure_iterable(propagate, n_conss)
+        local = ensure_iterable(local, n_conss)
+        modifiable = ensure_iterable(modifiable, n_conss)
+        dynamic = ensure_iterable(dynamic, n_conss)
+        removable = ensure_iterable(removable, n_conss)
+        stickingatnode = ensure_iterable(stickingatnode, n_conss)
+
+        constraints = []
+        for i, cons in enumerate(conss):
+            constraints.append(
+                self.addCons(cons, name[i], initial[i], separate[i], enforce[i],
+                             check[i], propagate[i], local[i], modifiable[i],
+                             dynamic[i], removable[i], stickingatnode[i])
+            )
+
+        return constraints
 
     def _addLinCons(self, ExprCons lincons, **kwargs):
         assert isinstance(lincons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
