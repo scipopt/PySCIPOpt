@@ -3719,7 +3719,7 @@ cdef class Model:
         return Node.create(child)
 
     # Branching methods
-    def startStrongbranch(self, enablepropagation=True):
+    def startStrongbranch(self, enablepropagation=False):
         """start strong branching - call before any strong branching
 
         Note:
@@ -3778,6 +3778,10 @@ cdef class Model:
         cdef SCIP_Bool upconflict
         cdef SCIP_Bool lperror
 
+        PY_SCIP_CALL(SCIPgetVarStrongbranchFrac(self._scip, var.scip_var, itlim, idempotent, 
+                                                &down, &up, &downvalid, &upvalid, &downinf, 
+                                                &upinf, &downconflict, &upconflict, &lperror))
+
         result = {'down' : down, 
                   'up' : up,
                   'downvalid' : downvalid,
@@ -3787,10 +3791,6 @@ cdef class Model:
                   'downconflict' : downconflict, 
                   'upconflict' : upconflict, 
                   'lperror' : lperror }
-
-        PY_SCIP_CALL(SCIPgetVarStrongbranchFrac(self._scip, var.scip_var, itlim, idempotent, 
-                                                &down, &up, &downvalid, &upvalid, &downinf, 
-                                                &upinf, &downconflict, &upconflict, &lperror))
 
         return result
 
