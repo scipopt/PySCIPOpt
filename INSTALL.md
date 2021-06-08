@@ -93,7 +93,7 @@ Building with debug information
 
 To use debug information in PySCIPOpt you need to build it like this:
 
-    python -m pip install [-e] --install-option="--debug" .
+    python -m pip install --install-option="--debug" .
 
 Be aware that you will need the **debug library** of the SCIP
 Optimization Suite for this to work
