@@ -1971,6 +1971,11 @@ cdef class Model:
         """Retrieve number of currently applied cuts"""
         return SCIPgetNCutsApplied(self._scip)
 
+    def getNSepaRounds(self):
+        """Retrieve the number of separation rounds that have been performed
+        at the current node"""
+        return SCIPgetNSepaRounds(self._scip)
+
     def separateSol(self, Solution sol = None, pretendroot = False, allowlocal = True, onlydelayed = False):
         """separates the given primal solution or the current LP solution by calling the separators and constraint handlers'
         separation methods;
