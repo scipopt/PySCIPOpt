@@ -3,7 +3,7 @@ name: Integration test
 on: [push]
 
 jobs:
-  Integrate SCIPOptSuite with PySCIPOpt
+  Integrate SCIPOptSuite with PySCIPOpt:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
