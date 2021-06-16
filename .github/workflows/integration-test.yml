@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   Integrate-SCIPOptSuite-with-PySCIPOpt:
-    runs-on: [ubuntu-18.04, ubuntu-20.04]
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: true
       matrix:
