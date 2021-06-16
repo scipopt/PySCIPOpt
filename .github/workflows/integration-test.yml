@@ -29,5 +29,5 @@ jobs:
       run: pip install .
     - name: Run pyscipopt tests
       run: |
-        ./py.test
+        py.test
 
