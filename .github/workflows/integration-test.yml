@@ -26,7 +26,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install cython networkx pytest-cov
     - name: Install PySCIPOpt
-        pip install .
+      run: pip install .
     - name: Run pyscipopt tests
       run: |
         ./py.test
