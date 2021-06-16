@@ -4,13 +4,13 @@ on: [push]
 
 jobs:
   Integrate-SCIPOptSuite-with-PySCIPOpt:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     strategy:
       fail-fast: true
       matrix:
         python-version: [3.6, 3.7, 3.8, 3.9]
     env:
-      version: 7.0.2
+      version: 7.0.3
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
