@@ -2,8 +2,10 @@ name: Deploy Package
 
 on: 
   release:
+    branches: [add-github-actions]
     types: [published]
-
+    #tags:        
+    #  - v*.*.*           # release events to vx.y.z 
 jobs:
   test:
     runs-on: ubuntu-18.04
