@@ -1,7 +1,9 @@
 name: test build
 
+on: [push]
+
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
