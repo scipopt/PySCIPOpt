@@ -18,13 +18,19 @@ jobs:
         with:
          python-version: '3.x'
 
+      - name: SCIPOptSuite installation
+        run: |
+          wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
+          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install build
+          python -m pip install wheel cython networkx pytest-cov build
 
       - name: Build package
-        run: python -m build
+        run: |
+          python -m build --no-isolation --outdir dist/
 
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
