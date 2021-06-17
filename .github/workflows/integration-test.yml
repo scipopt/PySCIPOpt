@@ -30,4 +30,3 @@ jobs:
     - name: Run pyscipopt tests
       run: |
         py.test
-
