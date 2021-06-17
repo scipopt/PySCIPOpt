@@ -3,8 +3,10 @@ name: test build
 on: [push]
 
 jobs:
-  build:
+  Package-build:
     runs-on: ubuntu-18.04
+    env:
+      version: 7.0.3
     steps:
       - uses: actions/checkout@v2
 
@@ -13,15 +15,16 @@ jobs:
         with:
          python-version: '3.8'
 
+      - name: SCIPOptSuite installation
+        run: |
+          wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
+          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
+
       - name: Install dependencies
         run: |
-          which python
-          python --version
           python -m pip install --upgrade pip
           python -m pip install wheel cython networkx pytest-cov build
 
       - name: Build package
         run: |
-          which python
-          python --version
           python -m build
