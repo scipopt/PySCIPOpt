@@ -27,4 +27,4 @@ jobs:
 
       - name: Build package
         run: |
-          python -m build --no-isolation
+          python -m build --no-isolation --outdir dist/
