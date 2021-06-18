@@ -5,8 +5,6 @@ on: [push]
 jobs:
   setup-scipoptsuite:
     runs-on: ubuntu-18.04
-    strategy:
-      fail-fast: true
     env:
       version: 7.0.3
     steps:
