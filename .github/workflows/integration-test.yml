@@ -3,58 +3,36 @@ name: Integration test
 on: [push]
 
 jobs:
-  setup-scipoptsuite:
+  Integration test:
     runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
     env:
       version: 7.0.3
     steps:
-    - name: SCIPOptSuite installation
-      run: |
-        wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
-        sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-  execute-test:
-    runs-on: ubuntu-18.04
-    needs: setup-scipoptsuite
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
-    steps:
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install wheel cython networkx pytest-cov
-    - name: Install PySCIPOpt
-      run: |
-        pwd
-        ls .
-        python -m pip install .
-    - name: Run pyscipopt tests
-      run: |
-        py.test
+      - name: Install dependencies (SCIPOptSuite)
+        run: |
+          wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
+          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
 
-        #  build-documentation:
-        #    runs-on: ubuntu-18.04
-        #    needs: execute-test
-        #    steps:
-        #      # Generate the docs only if version tag present and we can use secure variables (no PR)
-        #      - if [[ $TRAVIS_BUILD_DOCS =~ v[0-9].[0-9].[0-9]* && $TRAVIS_PULL_REQUEST = "false" ]]; then
-        #          echo "setup ssh config";
-        #          openssl aes-256-cbc -K $encrypted_c65e740238ca_key -iv $encrypted_c65e740238ca_iv -in travis.enc -out ~/.ssh/travis -d;
-        #          chmod 600 ~/.ssh/travis;
-        #          printf "%s\n" \
-        #            "Host github.com" \
-        #            "  IdentityFile ~/.ssh/travis" \
-        #            "  LogLevel ERROR" >> ~/.ssh/config;
-        #          echo "generate documentation";
-        #          ./generate-docs.sh || travis_terminate 1;
-        #        else
-        #          echo $TRAVIS_BUILD_DOCS $TRAVIS_PULL_REQUEST;
-        #        fi
+      - name: Setup python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Prepare python environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel cython networkx pytest-cov
+
+      - name: Install PySCIPOpt
+        run: python -m pip install .
+
+      - name: Run pyscipopt tests
+        run: |
+          py.test
 

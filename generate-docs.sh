@@ -1,8 +1,18 @@
 #!/bin/bash
 
+GITHUB_TOKEN=$1
+if [ $GITHUB_TOKEN == "" ]; then
+    echo "Fatal: Missing access token, exiting."
+    exit 1
+fi
+
 # get repo info
-GH_REPO_ORG=`echo $TRAVIS_REPO_SLUG | cut -d "/" -f 1`
-GH_REPO_NAME=`echo $TRAVIS_REPO_SLUG | cut -d "/" -f 2`
+REPO_SLUG=$GITHUB_REPOSITORY
+BUILD_COMMIT=$GITHUB_SHA
+BUILD_NUMBER=$GITHUB_RUN_ID
+
+GH_REPO_ORG=`echo $REPO_SLUG | cut -d "/" -f 1`
+GH_REPO_NAME=`echo $REPO_SLUG | cut -d "/" -f 2`
 GH_REPO_REF="github.com/$GH_REPO_ORG/$GH_REPO_NAME.git"
 
 #get SCIP TAGFILE
@@ -29,8 +39,10 @@ cd code_docs
 # Set the push default to simple i.e. push only the current branch.
 git config --global push.default simple
 # Pretend to be an user called Travis CI.
-git config user.name "Travis Deployment Bot"
-git config user.email "deploy@travis-ci.org"
+git config user.name "SCIP CI Bot"
+git config user.email "timo-admin@zib.de"
+
+git remote set-url --push origin https://${GH_REPO_ORG}:${GITHUB_TOKEN}@github.com/${GH_REPO_ORG}/${GH_REPO_NAME}
 
 # go back to first commit
 git reset --hard `git rev-list --max-parents=0 --abbrev-commit HEAD`
@@ -39,7 +51,7 @@ git reset --hard `git rev-list --max-parents=0 --abbrev-commit HEAD`
 mkdir -p docs/html
 mv ../docs/html/* docs/html/
 git add --all
-git commit -m "Deploy docs to GitHub Pages, Travis build: ${TRAVIS_BUILD_NUMBER}" -m "Commit: ${TRAVIS_COMMIT}"
+git commit -m "Deploy docs to GitHub Pages, GitHub Actions build: ${BUILD_NUMBER}" -m "Commit: ${BUILD_COMMIT}"
 
 # Force push to the remote gh-pages branch.
 # The ouput is redirected to /dev/null to hide any sensitive credential data
