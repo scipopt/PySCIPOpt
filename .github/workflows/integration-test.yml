@@ -33,6 +33,7 @@ jobs:
     - name: Install PySCIPOpt
       run: |
         pwd
+        ls
         python -m pip install .
     - name: Run pyscipopt tests
       run: |
