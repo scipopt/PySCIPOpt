@@ -8,7 +8,7 @@ on:
       - v*.*.*           # release events to vx.y.z
 
 jobs:
-  Deploy packges and generate documentation:
+  Deploy-packges-and-generate-documentation:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
