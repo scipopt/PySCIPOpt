@@ -51,12 +51,14 @@ with open(os.path.join(packagedir, '__init__.py'), 'r') as initfile:
 
 try:
     from Cython.Build import cythonize
-except ImportError:
+except ImportError as err:
+    # if cython is not found _and_ src/pyscipopt/scip.c does not exist then we cannot do anything.
     if not os.path.exists(os.path.join(packagedir, 'scip.c')):
         print('Cython is required')
         quit(1)
     use_cython = False
 
+# if src/pyscipopt/scip.pyx does not exist then there is no need for using cython
 if not os.path.exists(os.path.join(packagedir, 'scip.pyx')):
     use_cython = False
 
