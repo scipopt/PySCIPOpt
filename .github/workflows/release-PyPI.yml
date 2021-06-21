@@ -1,15 +1,19 @@
 name: Release PyPI Package
 
 on:
-  release:
+  workflow_run:
+    workflows: [integration-test]
     branches: [master]
-    types: [published]
-    tags:
-      - v*.*.*           # release events to vx.y.z
+    types: [completed]
 
 jobs:
-  Deploy-packges-and-generate-documentation:
+  deploy-packges-and-generate-documentation:
     runs-on: ubuntu-18.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
+    if: ${{ github.ref == "refs/tags/v*.*.*" }}
+    env:
+      version: 7.0.3
     steps:
       - uses: actions/checkout@v2
 
@@ -35,11 +39,10 @@ jobs:
       - name: Generate documentation
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && ${{ matrix.version == 3 }}
         run: |
-          apt get install doxygen graphviz
-          ./generate-docs.sh "${{ secrets.GITHUB_TOKEN }}"
+          sudo apt-get install doxygen graphviz
+          ./generate-docs.sh "${{ secrets.GITHUB_TOKEN }}" "gh-pages"
 
       - name: Publish package
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
         with:
           user: __token__

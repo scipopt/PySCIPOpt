@@ -3,7 +3,7 @@ name: Integration test
 on: [push]
 
 jobs:
-  Integration-test:
+  integration-test:
     runs-on: ubuntu-18.04
     strategy:
       fail-fast: true

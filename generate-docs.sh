@@ -6,6 +6,13 @@ if [ $GITHUB_TOKEN == "" ]; then
     exit 1
 fi
 
+# for live documentation branch set DOCBRANCH=gh-pages
+DOCBRANCH=$2
+if [ $2 == "" ]; then
+    echo "Fatal: Missing branch, exiting."
+    exit 1
+fi
+
 # get repo info
 REPO_SLUG=$GITHUB_REPOSITORY
 BUILD_COMMIT=$GITHUB_SHA
@@ -32,13 +39,13 @@ sed -i "s@\.php\.html@.php@g" docs/html/*.* docs/html/search/*.*
 sed -i -E "s@(scip.zib.de.*)\.html@\1.php@g" docs/html/*.* docs/html/search/*.*
 
 # clone the docu branch
-git clone -b gh-pages git@github.com:${GH_REPO_ORG}/${GH_REPO_NAME} code_docs
+git clone -b $DOCBRANCH git@github.com:${GH_REPO_ORG}/${GH_REPO_NAME} code_docs
 cd code_docs
 
 ##### Configure git.
 # Set the push default to simple i.e. push only the current branch.
 git config --global push.default simple
-# Pretend to be an user called Travis CI.
+# Pretend to be an user called SCIP CI Bot
 git config user.name "SCIP CI Bot"
 git config user.email "timo-admin@zib.de"
 
