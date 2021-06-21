@@ -1,6 +1,7 @@
 name: Release PyPI Package
 
 on:
+  release:
   workflow_run:
     workflows: ["Integration test"]
     branches: [master]
