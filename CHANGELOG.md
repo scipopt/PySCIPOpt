@@ -2,6 +2,13 @@
 
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+### Removed
+
+
+## 3.2.1 - 2021-06-21
+### Added
 - Continuous Integration: move from travis to github actions:
   - integration with scipoptsuite and
   - publishing documentation and packages.
