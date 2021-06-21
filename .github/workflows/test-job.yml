@@ -2,7 +2,7 @@ name: test build
 
 on:
   workflow_run:
-    workflows: [Integration-test]
+    workflows: ["Integration test"]
     branches: [github-actions-documentation]
     types: [completed]
 
