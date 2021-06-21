@@ -7,21 +7,31 @@ on:
     types: [completed]
 
 jobs:
-  deploy-packges-and-generate-documentation:
-    runs-on: ubuntu-18.04
+  check_tag:
+    runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
+    outputs:
+      run_other_jobs: ${{ steps.check-tag.outputs.run_jobs }}
+    steps:
+      - name: check tag ${{ github.ref }}
+        id: check-tag
+        run: |
+          echo "checking for release tag:"
+          if [[ ${{ github.ref }} =~ ^refs\/tags\/v[0-9]+\.[0-9]+\.0\.[0-9]+$ ]]; then
+            echo "found release tag ${{ github.ref }}, generating packages and documentation."
+            echo "::set-output name=run_jobs::true"
+          else
+            echo "did not find release tag. Ref was ${{ github.ref }}. Exiting"
+            echo "::set-output name=run_jobs::false"
+          fi
+
+  deploy-packges-and-generate-documentation:
+    needs: [check_tag]
+    runs-on: ubuntu-18.04
+    if: needs.check_tag.outputs.run_other_jobs == 'true'
     env:
       version: 7.0.3
     steps:
-      - run: |
-
-          echo "checking for release tag:"
-          if [[${{ github.ref }} =~ refs\/tags\/v[0-9]+\.[0-9]+\.0\.[0-9]+ ]]; then
-            echo "found release tag ${{ github.ref }}, generating packages and documentation."
-          else
-            echo "did not find release tag. Ref was ${{ github.ref }}. Exiting"
-            exit 0
-          fi
       - uses: actions/checkout@v2
 
       - name: Install dependencies (SCIPOptSuite)
