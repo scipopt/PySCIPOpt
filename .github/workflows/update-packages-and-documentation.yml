@@ -1,0 +1,53 @@
+name: Release PyPI Package
+
+on:
+  workflow_run:
+    workflows: [integration-test]
+    branches: [master]
+    types: [completed]
+
+jobs:
+  deploy-packges-and-generate-documentation:
+    runs-on: ubuntu-18.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
+    if: ${{ github.ref == "refs/tags/v*.*.*" }}
+    env:
+      version: 7.0.3
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies (SCIPOptSuite)
+        run: |
+          wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
+          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
+
+      - name: Setup python 3
+        uses: actions/setup-python@v2
+        with:
+         python-version: '3.x'
+
+      - name: Prepare python environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel cython networkx pytest-cov build
+
+      - name: Build package
+        run: |
+          python -m build --no-isolation --outdir dist/
+
+      - name: Generate documentation
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && ${{ matrix.version == 3 }}
+        run: |
+          sudo apt-get install doxygen graphviz
+          ./generate-docs.sh "${{ secrets.GITHUB_TOKEN }}" "gh-pages"
+
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          verbose: true
+          packages-dir: dist/
+
+
