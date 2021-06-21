@@ -64,6 +64,4 @@ git add --all
 git commit -m "Deploy docs to GitHub Pages, GitHub Actions build: ${BUILD_NUMBER}" -m "Commit: ${BUILD_COMMIT}"
 
 # Force push to the remote gh-pages branch.
-# The ouput is redirected to /dev/null to hide any sensitive credential data
-# that might otherwise be exposed.
-git push --force git@github.com:${GH_REPO_ORG}/${GH_REPO_NAME} > /dev/null 2>&1
+git push --force git@github.com:${GH_REPO_ORG}/${GH_REPO_NAME}
