@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 GITHUB_TOKEN=$1
 if [ $GITHUB_TOKEN == "" ]; then
