@@ -2,10 +2,9 @@ name: Release PyPI Package
 
 on:
   workflow_run:
-    release:
-      workflows: ["Integration test"]
-      branches: [master]
-      types: [completed]
+    workflows: ["Integration test"]
+    branches: [master]
+    types: [completed]
 
 jobs:
   check_tag:
