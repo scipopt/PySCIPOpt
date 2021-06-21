@@ -22,6 +22,10 @@ GH_REPO_ORG=`echo $REPO_SLUG | cut -d "/" -f 1`
 GH_REPO_NAME=`echo $REPO_SLUG | cut -d "/" -f 2`
 GH_REPO_REF="github.com/$GH_REPO_ORG/$GH_REPO_NAME.git"
 
+# clone the docu branch
+echo "cloning branch ${DOCBRANCH} from repo git@github.com:${GH_REPO_ORG}/${GH_REPO_NAME}"
+git clone -b ${DOCBRANCH} https://${GH_REPO_ORG}:${GITHUB_TOKEN}@github.com/${GH_REPO_ORG}/${GH_REPO_NAME} code_docs
+
 #get SCIP TAGFILE
 echo "Downloading SCIP tagfile to create links to SCIP docu"
 wget -q -O docs/scip.tag https://scip.zib.de/doc/scip.tag
@@ -38,9 +42,7 @@ doxygen docs/doxy
 sed -i "s@\.php\.html@.php@g" docs/html/*.* docs/html/search/*.*
 sed -i -E "s@(scip.zib.de.*)\.html@\1.php@g" docs/html/*.* docs/html/search/*.*
 
-# clone the docu branch
-echo "cloning branch ${DOCBRANCH} from repo git@github.com:${GH_REPO_ORG}/${GH_REPO_NAME}"
-git clone -b ${DOCBRANCH} https://${GH_REPO_ORG}:${GITHUB_TOKEN}@github.com/${GH_REPO_ORG}/${GH_REPO_NAME} code_docs
+# change into the clone of the previously cloned repo
 cd code_docs
 
 ##### Configure git.
