@@ -3,7 +3,7 @@ name: test build
 on:
   workflow_run:
     workflows: [integration-test]
-    branches: [add-github-actions]
+    branches: [github-actions-documentation]
     types: [completed]
 
 jobs:
