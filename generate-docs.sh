@@ -39,7 +39,8 @@ sed -i "s@\.php\.html@.php@g" docs/html/*.* docs/html/search/*.*
 sed -i -E "s@(scip.zib.de.*)\.html@\1.php@g" docs/html/*.* docs/html/search/*.*
 
 # clone the docu branch
-git clone -b $DOCBRANCH git@github.com:${GH_REPO_ORG}/${GH_REPO_NAME} code_docs
+echo "cloning branch ${DOCBRANCH} from repo git@github.com:${GH_REPO_ORG}/${GH_REPO_NAME}"
+git clone -b ${DOCBRANCH} https://${GH_REPO_ORG}:${GITHUB_TOKEN}@github.com/${GH_REPO_ORG}/${GH_REPO_NAME} code_docs
 cd code_docs
 
 ##### Configure git.
