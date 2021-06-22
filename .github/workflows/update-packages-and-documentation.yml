@@ -1,4 +1,4 @@
-name: Release PyPI Package
+name: Test and Release PyPI Package
 
 env:
   version: 7.0.3
