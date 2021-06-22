@@ -3,7 +3,7 @@ name: Release PyPI Package
 on:
   workflow_run:
     workflows: ["Integration test"]
-    branches: [master]
+    branches: ['releases\/v[0-9]+\.[0-9]+\.[0-9]+Test$']
     types: [completed]
 
 jobs:
