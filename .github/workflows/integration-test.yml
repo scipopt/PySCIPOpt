@@ -1,12 +1,13 @@
 name: Integration test
 
-#runs only on branches not tags.
+# runs only on branches; doesn't run on tags.
 on:
   push:
     branches:
-      - '**' 
+      - '**'
 
 jobs:
+
   Integration-test:
     runs-on: ubuntu-18.04
     strategy:
