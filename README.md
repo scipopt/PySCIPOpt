@@ -6,7 +6,7 @@ Suite](https://www.scipopt.org/).
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PySCIPOpt/Lobby)
 [![PySCIPOpt on PyPI](https://img.shields.io/pypi/v/pyscipopt.svg)](https://pypi.python.org/pypi/pyscipopt)
-[![TravisCI Status](https://travis-ci.org/scipopt/PySCIPOpt.svg?branch=master)](https://travis-ci.org/scipopt/PySCIPOpt)
+![Integration Test](https://github.com/scipopt/PySCIPOpt/actions/workflows/integration-test.yml/badge.svg)
 [![AppVeyor Status](https://ci.appveyor.com/api/projects/status/fsa896vkl8be79j9/branch/master?svg=true)](https://ci.appveyor.com/project/mattmilten/pyscipopt/branch/master)
 
 
