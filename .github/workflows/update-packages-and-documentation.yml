@@ -23,7 +23,7 @@ jobs:
           fi
 
   deploy-packges-and-generate-documentation:
-    needs: [check-tag]
+    needs: [check_tag]
     runs-on: ubuntu-18.04
     if: needs.check_tag.outputs.run_other_jobs == 'true'
     env:
