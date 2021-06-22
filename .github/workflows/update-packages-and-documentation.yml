@@ -1,5 +1,9 @@
 name: Release PyPI Package
 
+env:
+  version: 7.0.3
+
+
 # runs only when a release is published, not on drafts
 on:
   release:
@@ -29,8 +33,6 @@ jobs:
       fail-fast: true
       matrix:
         python-version: [3.6, 3.7, 3.8, 3.9]
-    env:
-      version: 7.0.3
     steps:
       - uses: actions/checkout@v2
 
@@ -59,8 +61,6 @@ jobs:
   deploy-packges-and-generate-documentation:
     needs: release-integration-test
     runs-on: ubuntu-18.04
-    env:
-      version: 7.0.3
     steps:
       - uses: actions/checkout@v2
 

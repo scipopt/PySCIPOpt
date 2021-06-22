@@ -1,5 +1,8 @@
 name: Integration test
 
+env:
+  version: 7.0.3
+
 # runs only on branches; doesn't run on tags.
 on:
   push:
@@ -14,8 +17,6 @@ jobs:
       fail-fast: true
       matrix:
         python-version: [3.6, 3.7, 3.8, 3.9]
-    env:
-      version: 7.0.3
     steps:
       - uses: actions/checkout@v2
 
