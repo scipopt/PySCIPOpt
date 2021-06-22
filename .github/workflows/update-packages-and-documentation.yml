@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [6, 7, 8, 9]
     env:
       version: 7.0.3
     steps:
@@ -24,10 +24,10 @@ jobs:
           wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
           sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
 
-      - name: Setup python ${{ matrix.python-version }}
+      - name: Setup python 3.${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.${{ matrix.python-version }}
 
       - name: Prepare python environment
         run: |
@@ -40,11 +40,11 @@ jobs:
       - name: Run pyscipopt tests
         run: |
           py.test
-          echo "::set-output name=run_jobs_${{ matrix.python-version }}::true"
-      - if: steps.release-test.outputs.run_jobs_3.6 == True && 
-            steps.release-test.outputs.run_jobs_3.7 == True &&
-            steps.release-test.outputs.run_jobs_3.8 == True &&
-            steps.release-test.outputs.run_jobs_3.9 == True
+          echo "::set-output name=run_jobs_3${{ matrix.python-version }}::true"
+      - if: steps.release-test.outputs.run_jobs_36 == True && 
+            steps.release-test.outputs.run_jobs_37 == True &&
+            steps.release-test.outputs.run_jobs_38 == True &&
+            steps.release-test.outputs.run_jobs_39 == True
         run: echo "::set-output name=run_jobs::true"
               
 
