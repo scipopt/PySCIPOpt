@@ -6,10 +6,10 @@ on:
       - published
 
 jobs:
-  Integration-test:
+  release-test:
     runs-on: ubuntu-18.04
     outputs:
-      run_next_job: ${{ steps.Integration-test.outputs.run_jobs }}
+      run_next_job: ${{ steps.release-test.outputs.run_jobs }}
     strategy:
       fail-fast: true
       matrix:
@@ -40,12 +40,18 @@ jobs:
       - name: Run pyscipopt tests
         run: |
           py.test
-          echo "::set-output name=run_jobs::true"
+          echo "::set-output name=run_jobs_${{ matrix.python-version }}::true"
+      - if: steps.release-test.outputs.run_jobs_3.6 == True && 
+            steps.release-test.outputs.run_jobs_3.7 == True &&
+            steps.release-test.outputs.run_jobs_3.8 == True &&
+            steps.release-test.outputs.run_jobs_3.9 == True
+        run: echo "::set-output name=run_jobs::true"
+              
 
   check_tag:
-    needs: [Integration-test]
+    needs: [release-test]
     runs-on: ubuntu-latest
-    if: needs.Integration-test.outputs.run_next_job == 'true'
+    if: needs.release-test.outputs.run_next_job == 'true'
     outputs:
       run_other_jobs: ${{ steps.check-tag.outputs.run_jobs }}
     steps:
