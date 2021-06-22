@@ -6,10 +6,33 @@ on:
       - published
 
 jobs:
-  release-test:
-    runs-on: ubuntu-18.04
+
+  check_tag:
+    runs-on: ubuntu-latest
     outputs:
-      run_next_job: ${{ steps.release-test.outputs.run_jobs }}
+      run_other_jobs: ${{ steps.check-tag.outputs.run_jobs }}
+    steps:
+      - name: check tag ${{ github.ref }}
+        id: check-tag
+        run: |
+          echo "checking for release tag:"
+          if [[ ${{ github.ref }} =~ ^refs\/tags\/v[0-9]+\.[0-9]+\.[0-9]+Test$ ]]; then
+            echo "found release tag ${{ github.ref }}, generating packages and documentation."
+            echo "::set-output name=run_jobs::true"
+          else
+            echo "did not find release tag. Ref was ${{ github.ref }}. Exiting"
+            echo "::set-output name=run_jobs::false"
+          fi
+
+  release-test:    
+    needs: [check_tag]
+    runs-on: ubuntu-18.04
+    if: needs.check_tag.outputs.run_other_jobs == 'true'
+    outputs:
+      run_6: ${{ steps.release-test.outputs.run_jobs_36 }}
+      run_7: ${{ steps.release-test.outputs.run_jobs_37 }}
+      run_8: ${{ steps.release-test.outputs.run_jobs_38 }}
+      run_9: ${{ steps.release-test.outputs.run_jobs_39 }}
     strategy:
       fail-fast: true
       matrix:
@@ -41,40 +64,14 @@ jobs:
         run: |
           py.test
           echo "::set-output name=run_jobs_3${{ matrix.python-version }}::true"
-          echo "${{ steps.release-test.outputs.run_jobs_36 }}"
-          echo "${{ steps.release-test.outputs.run_jobs_37 }}"
-          echo "${{ steps.release-test.outputs.run_jobs_38 }}"
-          echo "${{ steps.release-test.outputs.run_jobs_39 }}"
-      - if: steps.release-test.outputs.run_jobs_36 == 'true' && 
-            steps.release-test.outputs.run_jobs_37 == 'true' &&
-            steps.release-test.outputs.run_jobs_38 == 'true' &&
-            steps.release-test.outputs.run_jobs_39 == 'true'
-        run: echo "::set-output name=run_jobs::true"
-              
-
-  check_tag:
-    needs: [release-test]
-    runs-on: ubuntu-latest
-    if: needs.release-test.outputs.run_next_job == 'true'
-    outputs:
-      run_other_jobs: ${{ steps.check-tag.outputs.run_jobs }}
-    steps:
-      - name: check tag ${{ github.ref }}
-        id: check-tag
-        run: |
-          echo "checking for release tag:"
-          if [[ ${{ github.ref }} =~ ^refs\/tags\/v[0-9]+\.[0-9]+\.[0-9]+Test$ ]]; then
-            echo "found release tag ${{ github.ref }}, generating packages and documentation."
-            echo "::set-output name=run_jobs::true"
-          else
-            echo "did not find release tag. Ref was ${{ github.ref }}. Exiting"
-            echo "::set-output name=run_jobs::false"
-          fi
 
   deploy-packges-and-generate-documentation:
-    needs: [check_tag]
+    needs: [release-test]
     runs-on: ubuntu-18.04
-    if: needs.check_tag.outputs.run_other_jobs == 'true'
+    if: needs.release-test.outputs.run_6 == 'true' && 
+        needs.release-test.outputs.run_7 == 'true' &&
+        needs.release-test.outputs.run_8 == 'true' &&
+        needs.release-test.outputs.run_9 == 'true'
     env:
       version: 7.0.3
     steps:
@@ -112,5 +109,3 @@ jobs:
           password: ${{ secrets.PYPI_API_TOKEN }}
           verbose: true
           packages-dir: dist/
-
-
