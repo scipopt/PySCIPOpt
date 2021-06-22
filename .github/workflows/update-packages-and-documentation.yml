@@ -8,6 +8,8 @@ on:
 jobs:
   Integration-test:
     runs-on: ubuntu-18.04
+    outputs:
+      run_next_job: ${{ steps.Integration-test.outputs.run_jobs }}
     strategy:
       fail-fast: true
       matrix:
@@ -38,11 +40,12 @@ jobs:
       - name: Run pyscipopt tests
         run: |
           py.test
+          echo "::set-output name=run_jobs::true"
 
   check_tag:
     needs: [Integration-test]
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success'
+    if: needs.Integration-test.outputs.run_next_job == 'true'
     outputs:
       run_other_jobs: ${{ steps.check-tag.outputs.run_jobs }}
     steps:
