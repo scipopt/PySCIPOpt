@@ -1,7 +1,9 @@
-name: Release PyPI Package
+name: Test and Release PyPI Package
 
 on:
-  workflow_dispatch:
+  release:
+    types:
+      - published
 
 jobs:
 
@@ -18,14 +20,59 @@ jobs:
             echo "found release tag ${{ github.ref }}, generating packages and documentation."
             echo "::set-output name=run_jobs::true"
           else
-            echo "did not find release tag. Ref was: ${{ github.ref }}. Exiting"
+            echo "did not find release tag. Ref was ${{ github.ref }}. Exiting"
             echo "::set-output name=run_jobs::false"
           fi
 
-  deploy-packges-and-generate-documentation:
+  release-test:    
     needs: [check_tag]
     runs-on: ubuntu-18.04
     if: needs.check_tag.outputs.run_other_jobs == 'true'
+    outputs:
+      run_6: ${{ steps.release-check.outputs.run_jobs_36 }}
+      run_7: ${{ steps.release-check.outputs.run_jobs_37 }}
+      run_8: ${{ steps.release-check.outputs.run_jobs_38 }}
+      run_9: ${{ steps.release-check.outputs.run_jobs_39 }}
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: [6, 7, 8, 9]
+    env:
+      version: 7.0.3
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies (SCIPOptSuite)
+        run: |
+          wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
+          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
+
+      - name: Setup python 3.${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.${{ matrix.python-version }}
+
+      - name: Prepare python environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel cython networkx pytest-cov
+
+      - name: Install PySCIPOpt
+        run: python -m pip install .
+
+      - name: Run pyscipopt tests
+        id: release-check
+        run: |
+          py.test
+          echo "::set-output name=run_jobs_3${{ matrix.python-version }}::true"
+
+  deploy-packges-and-generate-documentation:
+    needs: [release-test]
+    runs-on: ubuntu-18.04
+    if: needs.release-test.outputs.run_6 == 'true' && 
+        needs.release-test.outputs.run_7 == 'true' &&
+        needs.release-test.outputs.run_8 == 'true' &&
+        needs.release-test.outputs.run_9 == 'true'
     env:
       version: 7.0.3
     steps:
