@@ -1,6 +1,10 @@
 name: Integration test
 
-on: [push]
+#runs only on branches not tags.
+on:
+  push:
+    branches:
+      - '**' 
 
 jobs:
   Integration-test:
