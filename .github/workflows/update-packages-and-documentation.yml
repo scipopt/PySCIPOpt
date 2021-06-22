@@ -41,6 +41,10 @@ jobs:
         run: |
           py.test
           echo "::set-output name=run_jobs_3${{ matrix.python-version }}::true"
+          echo "${{ steps.release-test.outputs.run_jobs_36 }}"
+          echo "${{ steps.release-test.outputs.run_jobs_37 }}"
+          echo "${{ steps.release-test.outputs.run_jobs_38 }}"
+          echo "${{ steps.release-test.outputs.run_jobs_39 }}"
       - if: steps.release-test.outputs.run_jobs_36 == 'true' && 
             steps.release-test.outputs.run_jobs_37 == 'true' &&
             steps.release-test.outputs.run_jobs_38 == 'true' &&
