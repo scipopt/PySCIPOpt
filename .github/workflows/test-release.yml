@@ -40,7 +40,7 @@ jobs:
           bash -ex generate-docs.sh "${{ secrets.GITHUB_TOKEN }}" "gh-pages"
 
       - name: "Publish to test.pypi.org"
-        uses: pypa/gh-action-pypi-publish@vtest
+        uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
         with:
           user: __token__
           password: ${{ secrets.TEST_PYPI_PASSWORD }}
