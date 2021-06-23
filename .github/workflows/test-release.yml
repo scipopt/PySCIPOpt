@@ -1,0 +1,49 @@
+name: Test - Release PyPI Package
+
+env:
+  version: 7.0.3
+
+
+# runs only when a release is published, not on drafts
+on:
+  workflow_dispatch:
+    
+
+jobs:
+  deploy-packges-and-generate-documentation:
+    needs: release-integration-test
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies (SCIPOptSuite)
+        run: |
+          wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
+          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
+
+      - name: Setup python 3
+        uses: actions/setup-python@v2
+        with:
+         python-version: '3.x'
+
+      - name: Prepare python environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel cython networkx pytest-cov build
+
+      - name: Build package
+        run: |
+          python -m build --no-isolation --outdir dist/
+
+      - name: Generate documentation
+        run: |
+          sudo apt-get install doxygen graphviz
+          bash -ex generate-docs.sh "${{ secrets.GITHUB_TOKEN }}" "gh-pages"
+
+      - name: "Publish to test.pypi.org"
+        uses: pypa/gh-action-pypi-publish@vtest
+        with:
+          user: __token__
+          password: ${{ secrets.TEST_PYPI_PASSWORD }}
+          verbose: truex
+          packages_dir: dist/
