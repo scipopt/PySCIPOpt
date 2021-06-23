@@ -32,7 +32,7 @@ jobs:
 
       - name: Build package
         run: |
-          python -m build --no-isolation --outdir dist/
+          python -m build --sdist --no-isolation --outdir dist/
 
       - name: Generate documentation
         run: |
