@@ -86,8 +86,7 @@ jobs:
       - name: Generate documentation
         run: |
           sudo apt-get install doxygen graphviz
-          bash -ex generate-docs.sh "${{ secrets.GITHUB_TOKEN }}" "gh-pages_test"
-          exit 1 # TODO delete me and change the branch in the previous line after testing
+          bash -ex generate-docs.sh "${{ secrets.GITHUB_TOKEN }}" "gh-pages"
 
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
