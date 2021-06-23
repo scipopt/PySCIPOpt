@@ -81,17 +81,17 @@ jobs:
 
       - name: Build package
         run: |
-          python -m build --no-isolation --outdir dist/
+          python -m build --sdist --no-isolation --outdir dist/
 
       - name: Generate documentation
         run: |
           sudo apt-get install doxygen graphviz
           bash -ex generate-docs.sh "${{ secrets.GITHUB_TOKEN }}" "gh-pages"
 
-      - name: Publish package
-        uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+      - name: Publish package to pypi.org
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
           verbose: true
-          packages-dir: dist/
+          packages_dir: dist/
