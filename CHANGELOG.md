@@ -4,6 +4,7 @@
 ### Added
 ### Fixed
 ### Changed
+- documentation build parameter EXTRACT_ALL = YES
 ### Removed
 
 
