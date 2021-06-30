@@ -47,10 +47,10 @@ cdef class Prop:
 
 
 
-cdef SCIP_RETCODE PyPropCopy (SCIP* scip, SCIP_PROP* prop):
+cdef SCIP_RETCODE PyPropCopy (SCIP* scip, SCIP_PROP* prop) with gil:
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPropFree (SCIP* scip, SCIP_PROP* prop):
+cdef SCIP_RETCODE PyPropFree (SCIP* scip, SCIP_PROP* prop) with gil:
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
@@ -58,42 +58,42 @@ cdef SCIP_RETCODE PyPropFree (SCIP* scip, SCIP_PROP* prop):
     Py_DECREF(PyProp)
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPropInit (SCIP* scip, SCIP_PROP* prop):
+cdef SCIP_RETCODE PyPropInit (SCIP* scip, SCIP_PROP* prop) with gil:
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
     PyProp.propinit()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPropExit (SCIP* scip, SCIP_PROP* prop):
+cdef SCIP_RETCODE PyPropExit (SCIP* scip, SCIP_PROP* prop) with gil:
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
     PyProp.propexit()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPropInitpre (SCIP* scip, SCIP_PROP* prop):
+cdef SCIP_RETCODE PyPropInitpre (SCIP* scip, SCIP_PROP* prop) with gil:
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
     PyProp.propinitpre()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPropExitpre (SCIP* scip, SCIP_PROP* prop):
+cdef SCIP_RETCODE PyPropExitpre (SCIP* scip, SCIP_PROP* prop) with gil:
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
     PyProp.propexitpre()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPropInitsol (SCIP* scip, SCIP_PROP* prop):
+cdef SCIP_RETCODE PyPropInitsol (SCIP* scip, SCIP_PROP* prop) with gil:
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
     PyProp.propinitsol()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPropExitsol (SCIP* scip, SCIP_PROP* prop, SCIP_Bool restart):
+cdef SCIP_RETCODE PyPropExitsol (SCIP* scip, SCIP_PROP* prop, SCIP_Bool restart) with gil:
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
@@ -104,7 +104,7 @@ cdef SCIP_RETCODE PyPropPresol (SCIP* scip, SCIP_PROP* prop, int nrounds, SCIP_P
                                 int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes, int nnewchgbds, int nnewholes,
                                 int nnewdelconss, int nnewaddconss, int nnewupgdconss, int nnewchgcoefs, int nnewchgsides,
                                 int* nfixedvars, int* naggrvars, int* nchgvartypes, int* nchgbds, int* naddholes,
-                                int* ndelconss, int* naddconss, int* nupgdconss, int* nchgcoefs, int* nchgsides, SCIP_RESULT* result):
+                                int* ndelconss, int* naddconss, int* nupgdconss, int* nchgcoefs, int* nchgsides, SCIP_RESULT* result) with gil:
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
@@ -137,7 +137,7 @@ cdef SCIP_RETCODE PyPropPresol (SCIP* scip, SCIP_PROP* prop, int nrounds, SCIP_P
     nchgsides[0]    = result_dict["nchgsides"]
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPropExec (SCIP* scip, SCIP_PROP* prop, SCIP_PROPTIMING proptiming, SCIP_RESULT* result):
+cdef SCIP_RETCODE PyPropExec (SCIP* scip, SCIP_PROP* prop, SCIP_PROPTIMING proptiming, SCIP_RESULT* result) with gil:
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
@@ -147,7 +147,7 @@ cdef SCIP_RETCODE PyPropExec (SCIP* scip, SCIP_PROP* prop, SCIP_PROPTIMING propt
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPropResProp (SCIP* scip, SCIP_PROP* prop, SCIP_VAR* infervar, int inferinfo,
-                                 SCIP_BOUNDTYPE boundtype, SCIP_BDCHGIDX* bdchgidx, SCIP_Real relaxedbd, SCIP_RESULT* result):
+                                 SCIP_BOUNDTYPE boundtype, SCIP_BDCHGIDX* bdchgidx, SCIP_Real relaxedbd, SCIP_RESULT* result) with gil:
     cdef SCIP_PROPDATA* propdata
     cdef SCIP_VAR* tmp
     tmp = infervar
