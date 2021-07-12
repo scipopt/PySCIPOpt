@@ -46,6 +46,9 @@ jobs:
     env:
       SCIPOPTDIR: C:\scipoptdir
     runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
     steps:
       - uses: actions/checkout@v2
 
@@ -57,10 +60,10 @@ jobs:
         shell: cmd
         run: scipopt-installer.exe /S /D=${{ env.SCIPOPTDIR }}
 
-      - name: Setup python 3.9
+      - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9 3.9
+          python-version: ${{ matrix.python-version }}
 
       - name: Prepare python environment
         shell: powershell
@@ -81,6 +84,9 @@ jobs:
 
   MacOS-test:
     runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
     steps:
       - uses: actions/checkout@v2
 
@@ -89,10 +95,10 @@ jobs:
           wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
           bash SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh --skip-license --prefix=${GITHUB_WORKSPACE}/scipoptsuite/
 
-      - name: Setup python 3.9
+      - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: ${{ matrix.python-version }}
 
       - name: Prepare python environment
         run: |
@@ -102,6 +108,7 @@ jobs:
       - name: Install PySCIPOpt
         run: |
           export SCIPOPTDIR=${GITHUB_WORKSPACE}/scipoptsuite/
+          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH};${SCIPOPTDIR}/lib
           python -m pip install .
 
       - name: Run pyscipopt tests
