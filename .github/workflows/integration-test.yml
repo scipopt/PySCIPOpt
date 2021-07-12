@@ -112,7 +112,7 @@ jobs:
         run: echo ${SCIPOPTDIR} ${DYLD_LIBRARY_PATH}
 
       - name: Install PySCIPOpt
-          python -m pip install .
+        run: python -m pip install .
 
       - name: Run pyscipopt tests
         run: pytest
