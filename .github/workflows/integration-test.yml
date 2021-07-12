@@ -102,6 +102,8 @@ jobs:
       - name: Install PySCIPOpt
         run: |
           export SCIPOPTDIR="/Users/runner/work/PySCIPOpt/PySCIPOpt/"
+          ls /Users/runner/work/PySCIPOpt/PySCIPOpt/
+          env | sort
           python -m pip install .
 
       - name: Run pyscipopt tests
