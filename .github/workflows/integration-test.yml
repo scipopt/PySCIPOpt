@@ -86,7 +86,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.9]
     steps:
       - uses: actions/checkout@v2
 
@@ -108,12 +108,12 @@ jobs:
       - name: Install PySCIPOpt
         env:
           SCIPOPTDIR: ${GITHUB_WORKSPACE}/scipoptsuite/
-          DYLD_LIBRARY_PATH: ${DYLD_LIBRARY_PATH}:${SCIPOPTDIR}/lib
+          DYLD_LIBRARY_PATH: ${SCIPOPTDIR}/lib
         run: python -m pip install .
 
       - name: Run pyscipopt tests
         env:
           SCIPOPTDIR: ${GITHUB_WORKSPACE}/scipoptsuite/
-          DYLD_LIBRARY_PATH: ${DYLD_LIBRARY_PATH}:${SCIPOPTDIR}/lib
+          DYLD_LIBRARY_PATH: ${SCIPOPTDIR}/lib
         run: py.test
 
