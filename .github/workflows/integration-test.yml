@@ -11,76 +11,76 @@ on:
 
 jobs:
 
-  Integration-test:
-    runs-on: ubuntu-18.04
-    strategy:
-      fail-fast: true
-      matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Install dependencies (SCIPOptSuite)
-        run: |
-          wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
-          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
-
-      - name: Setup python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Prepare python environment
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install wheel cython networkx pytest-cov
-
-      - name: Install PySCIPOpt
-        run: python -m pip install .
-
-      - name: Run pyscipopt tests
-        run: |
-          py.test
-
-  Windows-test:
-    env:
-      SCIPOPTDIR: C:\scipoptdir
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        python-version: [3.8, 3.9]
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Download dependencies (SCIPOptSuite)
-        shell: powershell
-        run: wget https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-win64-VS15.exe -outfile scipopt-installer.exe
-
-      - name: Install dependencies (SCIPOptSuite)
-        shell: cmd
-        run: scipopt-installer.exe /S /D=${{ env.SCIPOPTDIR }}
-
-      - name: Setup python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Prepare python environment
-        shell: powershell
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install wheel cython networkx pytest-cov
-
-      - name: Install PySCIPOpt
-        shell: powershell
-        run: |
-          $Env:SCIPOPTDIR = "${{ env.SCIPOPTDIR }}"
-          python -m pip install .
-
-      - name: Run pyscipopt tests
-        shell: powershell
-        run: |
-          py.test
+  #  Integration-test:
+  #    runs-on: ubuntu-18.04
+  #    strategy:
+  #      fail-fast: true
+  #      matrix:
+  #        python-version: [3.6, 3.7, 3.8, 3.9]
+  #    steps:
+  #      - uses: actions/checkout@v2
+  #
+  #      - name: Install dependencies (SCIPOptSuite)
+  #        run: |
+  #          wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
+  #          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
+  #
+  #      - name: Setup python ${{ matrix.python-version }}
+  #        uses: actions/setup-python@v2
+  #        with:
+  #          python-version: ${{ matrix.python-version }}
+  #
+  #      - name: Prepare python environment
+  #        run: |
+  #          python -m pip install --upgrade pip
+  #          python -m pip install wheel cython networkx pytest-cov
+  #
+  #      - name: Install PySCIPOpt
+  #        run: python -m pip install .
+  #
+  #      - name: Run pyscipopt tests
+  #        run: |
+  #          py.test
+  #
+  #  Windows-test:
+  #    env:
+  #      SCIPOPTDIR: C:\scipoptdir
+  #    runs-on: windows-latest
+  #    strategy:
+  #      matrix:
+  #        python-version: [3.8, 3.9]
+  #    steps:
+  #      - uses: actions/checkout@v2
+  #
+  #      - name: Download dependencies (SCIPOptSuite)
+  #        shell: powershell
+  #        run: wget https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-win64-VS15.exe -outfile scipopt-installer.exe
+  #
+  #      - name: Install dependencies (SCIPOptSuite)
+  #        shell: cmd
+  #        run: scipopt-installer.exe /S /D=${{ env.SCIPOPTDIR }}
+  #
+  #      - name: Setup python ${{ matrix.python-version }}
+  #        uses: actions/setup-python@v2
+  #        with:
+  #          python-version: ${{ matrix.python-version }}
+  #
+  #      - name: Prepare python environment
+  #        shell: powershell
+  #        run: |
+  #          python -m pip install --upgrade pip
+  #          python -m pip install wheel cython networkx pytest-cov
+  #
+  #      - name: Install PySCIPOpt
+  #        shell: powershell
+  #        run: |
+  #          $Env:SCIPOPTDIR = "${{ env.SCIPOPTDIR }}"
+  #          python -m pip install .
+  #
+  #      - name: Run pyscipopt tests
+  #        shell: powershell
+  #        run: |
+  #          py.test
 
   MacOS-test:
     runs-on: macos-latest
