@@ -115,5 +115,5 @@ jobs:
         run: |
           export SCIPOPTDIR=${GITHUB_WORKSPACE}/scipoptsuite/
           export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${GITHUB_WORKSPACE}/scipoptsuite/lib
-          pytest
+          python -m pytest
 
