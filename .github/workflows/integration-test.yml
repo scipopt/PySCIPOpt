@@ -109,9 +109,13 @@ jobs:
         run: |
           export SCIPOPTDIR="${GITHUB_WORKSPACE}/scipoptsuite/"
           export DYLD_LIBRARY_PATH="${DYLD_LIBRARY_PATH}:${SCIPOPTDIR}/lib"
+          echo ${DYLD_LIBRARY_PATH}
+          echo ${PATH}
           python -m pip install .
 
       - name: Run pyscipopt tests
         run: |
-          export SCIPOPTDIR="${GITHUB_WORKSPACE}/scipoptsuite/" DYLD_LIBRARY_PATH="${DYLD_LIBRARY_PATH}:${SCIPOPTDIR}/lib"; py.test
+          echo ${DYLD_LIBRARY_PATH}
+          echo ${PATH}
+          py.test
 
