@@ -42,3 +42,63 @@ jobs:
         run: |
           py.test
 
+  Windows-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Download dependencies (SCIPOptSuite)
+        shell: powershell
+        run: wget https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-win64-VS15.exe -outfile scipopt-installer.exe
+
+      - name: Install dependencies (SCIPOptSuite)
+        shell: cmd
+        run: scipopt-installer.exe /S /D=%SCIPOPTDIR%
+
+      - name: Setup python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9 3.9
+
+      - name: Prepare python environment
+        shell: powershell
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel cython networkx pytest-cov
+
+      - name: Install PySCIPOpt
+        shell: powershell
+        run: python -m pip install .
+
+      - name: Run pyscipopt tests
+        shell: powershell
+        run: |
+          py.test
+
+  MacOS-test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies (SCIPOptSuite)
+        run: |
+          wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
+          bash SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
+
+      - name: Setup python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Prepare python environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel cython networkx pytest-cov
+
+      - name: Install PySCIPOpt
+        run: python -m pip install .
+
+      - name: Run pyscipopt tests
+        run: |
+          py.test
+
