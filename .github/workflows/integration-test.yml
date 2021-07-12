@@ -113,5 +113,7 @@ jobs:
 
       - name: Run pyscipopt tests
         run: |
+          export SCIPOPTDIR=${GITHUB_WORKSPACE}/scipoptsuite/
+          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${SCIPOPTDIR}/lib
           py.test
 
