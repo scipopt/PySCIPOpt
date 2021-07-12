@@ -100,7 +100,9 @@ jobs:
           python -m pip install wheel cython networkx pytest-cov
 
       - name: Install PySCIPOpt
-        run: SCIPOPTDIR="/Users/runner/work/PySCIPOpt/PySCIPOpt/" python -m pip install .
+        run: |
+          export SCIPOPTDIR="/Users/runner/work/PySCIPOpt/PySCIPOpt/"
+          python -m pip install .
 
       - name: Run pyscipopt tests
         run: |
