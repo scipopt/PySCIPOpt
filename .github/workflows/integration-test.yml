@@ -106,14 +106,8 @@ jobs:
           python -m pip install wheel cython networkx pytest-cov
 
       - name: Install PySCIPOpt
-        env:
-          SCIPOPTDIR: ${GITHUB_WORKSPACE}/scipoptsuite/
-          DYLD_LIBRARY_PATH: ${SCIPOPTDIR}/lib
-        run: python -m pip install .
+        run: SCIPOPTDIR=${GITHUB_WORKSPACE}/scipoptsuite/ DYLD_LIBRARY_PATH=${GITHUB_WORKSPACE}/scipoptsuite/lib python -m pip install .
 
       - name: Run pyscipopt tests
-        env:
-          SCIPOPTDIR: ${GITHUB_WORKSPACE}/scipoptsuite/
-          DYLD_LIBRARY_PATH: ${SCIPOPTDIR}/lib
-        run: py.test
+        run: SCIPOPTDIR=${GITHUB_WORKSPACE}/scipoptsuite/ DYLD_LIBRARY_PATH=${GITHUB_WORKSPACE}/scipoptsuite/lib py.test
 
