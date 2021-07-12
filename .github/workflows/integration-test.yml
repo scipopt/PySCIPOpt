@@ -43,6 +43,8 @@ jobs:
           py.test
 
   Windows-test:
+    env:
+      SCIPOPTDIR: C:\scipoptdir
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
@@ -53,7 +55,7 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         shell: cmd
-        run: scipopt-installer.exe /S /D=%SCIPOPTDIR%
+        run: scipopt-installer.exe /S /D=${{ env.SCIPOPTDIR }}
 
       - name: Setup python 3.9
         uses: actions/setup-python@v2
@@ -68,7 +70,9 @@ jobs:
 
       - name: Install PySCIPOpt
         shell: powershell
-        run: python -m pip install .
+        run: |
+          $Env:SCIPOPTDIR = "${{ env.SCIPOPTDIR }}"
+          python -m pip install .
 
       - name: Run pyscipopt tests
         shell: powershell
@@ -96,7 +100,7 @@ jobs:
           python -m pip install wheel cython networkx pytest-cov
 
       - name: Install PySCIPOpt
-        run: python -m pip install .
+        run: SCIPOPTDIR="/Users/runner/work/PySCIPOpt/PySCIPOpt/" python -m pip install .
 
       - name: Run pyscipopt tests
         run: |
