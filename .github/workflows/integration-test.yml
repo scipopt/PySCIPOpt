@@ -99,6 +99,9 @@ jobs:
           cd scipoptsuite-${{ env.version }}
           mkdir build
           cd build
+          ls -la /usr/local/opt/tbb@2020/lib
+          export TBB_INSTALL_DIR=/usr/local/opt/tbb@2020/
+          sed -i -e 's/ tbb libtbb.so.2 / libtbb.a /' ../papilo/cmake/Modules/FindTBB.cmake
           cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/scipoptsuite -DIPOPT=off -DSYM=none -DREADLINE=off
           grep -ir tbb CMakeCache.txt
           make install -j VERBOSE=true
