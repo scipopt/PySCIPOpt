@@ -138,7 +138,7 @@ jobs:
         run: |
           brew install tbb@2020 boost
           ls /usr/local/opt/tbb@2020/lib
-          wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
+          wget --quiet --no-check-certificate https://scipopt.org/download/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
           bash SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh --skip-license --prefix=${GITHUB_WORKSPACE}/scipoptsuite/
           ls -l /usr/lib/libz.1.dylib
           ls -l /System/Library/Frameworks/Accelerate.framework/Versions/A/Accelerate
