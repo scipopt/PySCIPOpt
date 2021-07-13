@@ -99,7 +99,6 @@ jobs:
           cd scipoptsuite-${{ env.version }}
           mkdir build
           cd build
-          export TBB_ROOT_DIR=/usr/local/opt/tbb@2020/
           cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/scipoptsuite -DIPOPT=off -DSYM=none -DREADLINE=off
           grep -ir tbb CMakeCache.txt
           make install -j VERBOSE=true
