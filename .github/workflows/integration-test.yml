@@ -93,13 +93,15 @@ jobs:
       - name: Install dependencies (SCIPOptSuite)
         run: |
           brew install tbb boost
+          find / -name libtbb.a
           wget --quiet --no-check-certificate https://scipopt.org/download/release/scipoptsuite-${{ env.version }}.tgz
           tar xfz scipoptsuite-${{ env.version }}.tgz
           cd scipoptsuite-${{ env.version }}
           mkdir build
           cd build
           cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/scipoptsuite -DIPOPT=off -DSYM=none -DREADLINE=off
-          make install -j
+          grep -ir tbb .
+          make install -j VERBOSE=true
           cd ${GITHUB_WORKSPACE}
           wget http://miplib2017.zib.de/WebData/instances/enlight_hard.mps.gz
           wget http://minlplib.org/osil/elf.osil
