@@ -150,7 +150,7 @@ jobs:
           ./scipoptsuite/bin/scip -v
           wget http://miplib2017.zib.de/WebData/instances/enlight_hard.mps.gz
           wget http://minlplib.org/osil/elf.osil
-          ./scipoptsuite/bin/scip -f enlight_hard.mps.gz
+          valgrind ./scipoptsuite/bin/scip -f enlight_hard.mps.gz
           ./scipoptsuite/bin/scip -f elf.osil
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
