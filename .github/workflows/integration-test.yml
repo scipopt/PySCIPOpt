@@ -136,8 +136,13 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          brew search valgrind
-          brew install valgrind
+          git clone https://github.com/Echelon9/valgrind.git
+          cd valgrind
+          git checkout feature/v3.14/macos-mojave-support-v2
+          ./autogen.sh
+          ./configure --enable-only64bit
+          make
+          make install
           wget --quiet --no-check-certificate https://scipopt.org/download/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
           bash SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh --skip-license --prefix=${GITHUB_WORKSPACE}/scipoptsuite/
           ./scipoptsuite/bin/scip -v
