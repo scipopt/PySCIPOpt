@@ -136,20 +136,14 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          brew install automake
-          git clone https://github.com/Echelon9/valgrind.git
-          cd valgrind
-          git checkout feature/v3.14/macos-mojave-support-v2
-          ./autogen.sh
-          ./configure --enable-only64bit
-          make
-          make install
+          brew tap LouisBrunner/valgrind
+          brew install --HEAD LouisBrunner/valgrind/valgrind
           wget --quiet --no-check-certificate https://scipopt.org/download/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
           bash SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh --skip-license --prefix=${GITHUB_WORKSPACE}/scipoptsuite/
-          ./scipoptsuite/bin/scip -v
+          valgrind ./scipoptsuite/bin/scip -v
           wget http://miplib2017.zib.de/WebData/instances/enlight_hard.mps.gz
           wget http://minlplib.org/osil/elf.osil
-          ./scipoptsuite/bin/scip -f enlight_hard.mps.gz
+          valgrind ./scipoptsuite/bin/scip -f enlight_hard.mps.gz
           ./scipoptsuite/bin/scip -f elf.osil
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
