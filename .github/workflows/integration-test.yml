@@ -136,13 +136,12 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          brew install valgrind
           wget --quiet --no-check-certificate https://scipopt.org/download/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
           bash SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh --skip-license --prefix=${GITHUB_WORKSPACE}/scipoptsuite/
-          valgrind ./scipoptsuite/bin/scip -v
+          ./scipoptsuite/bin/scip -v
           wget http://miplib2017.zib.de/WebData/instances/enlight_hard.mps.gz
           wget http://minlplib.org/osil/elf.osil
-          valgrind ./scipoptsuite/bin/scip -f enlight_hard.mps.gz
+          ./scipoptsuite/bin/scip -f enlight_hard.mps.gz
           ./scipoptsuite/bin/scip -f elf.osil
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
