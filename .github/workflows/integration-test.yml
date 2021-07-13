@@ -93,7 +93,7 @@ jobs:
       - name: Install dependencies (SCIPOptSuite)
         run: |
           wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Darwin-no-Ipopt.sh
-          bash SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh --skip-license --prefix=${GITHUB_WORKSPACE}/scipoptsuite/
+          bash SCIPOptSuite-${{ env.version }}-Darwin-no-Ipopt.sh --skip-license --prefix=${GITHUB_WORKSPACE}/scipoptsuite/
           ls -l /usr/lib/libz.1.dylib
           ls -l /System/Library/Frameworks/Accelerate.framework/Versions/A/Accelerate
           ls -l /usr/lib/libSystem.B.dylib
