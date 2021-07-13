@@ -92,17 +92,17 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          brew install tbb@2020 boost
-          ls /usr/local/Cellar/tbb/*/lib/
-          find /usr/local/Cellar/tbb/ -name libtbb.a
+          brew install tbb@2020
+          ls /usr/local/opt/tbb@2020/*/lib/
+          find /usr/local/opt/tbb@2020/ -name libtbb.a
           wget --quiet --no-check-certificate https://scipopt.org/download/release/scipoptsuite-${{ env.version }}.tgz
           tar xfz scipoptsuite-${{ env.version }}.tgz
           cd scipoptsuite-${{ env.version }}
-          sed -i -e 's/ tbb / libtbb.a /' cmake/Modules/FindTBB.cmake
           mkdir build
           cd build
+          export TBB_ROOT_DIR=/usr/local/opt/tbb@2020/
           cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/scipoptsuite -DIPOPT=off -DSYM=none -DREADLINE=off
-          grep -ir tbb .
+          grep -ir tbb CMakeCache.txt
           make install -j VERBOSE=true
           cd ${GITHUB_WORKSPACE}
           wget http://miplib2017.zib.de/WebData/instances/enlight_hard.mps.gz
