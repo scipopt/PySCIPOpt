@@ -98,7 +98,7 @@ jobs:
           cd scipoptsuite-${{ env.version }}
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/scipoptsuite
+          cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/scipoptsuite -DIPOPT=off -DSYM=none -DREADLINE=off
           make install -j
           cd ${GITHUB_WORKSPACE}
           wget http://miplib2017.zib.de/WebData/instances/enlight_hard.mps.gz
