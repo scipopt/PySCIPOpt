@@ -92,16 +92,14 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Darwin-no-Ipopt.sh
-          bash SCIPOptSuite-${{ env.version }}-Darwin-no-Ipopt.sh --skip-license --prefix=${GITHUB_WORKSPACE}/scipoptsuite/
-          ls -l /usr/lib/libz.1.dylib
-          ls -l /System/Library/Frameworks/Accelerate.framework/Versions/A/Accelerate
-          ls -l /usr/lib/libSystem.B.dylib
-          ls -l /usr/local/lib/gcc/9/libgfortran.5.dylib
-          ls -l /usr/local/lib/gcc/9/libquadmath.0.dylib
-          ls -l /usr/lib/libc++.1.dylib
-          otool -L scipoptsuite/bin/scip
-          ./scipoptsuite/bin/scip -v
+          wget --quiet --no-check-certificate https://scipopt.org/download/release/scipoptsuite-${{ env.version }}.tgz
+          tar xvfz scipoptsuite-${{ env.version }}.tgz
+          cd scipoptsuite-${{ env.version }}
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/scipoptsuite
+          make install -j
+          cd ${GITHUB_WORKSPACE}
           wget http://miplib2017.zib.de/WebData/instances/enlight_hard.mps.gz
           wget http://minlplib.org/osil/elf.osil
           ./scipoptsuite/bin/scip -f enlight_hard.mps.gz
