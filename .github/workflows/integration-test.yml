@@ -94,6 +94,8 @@ jobs:
         run: |
           wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
           bash SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh --skip-license --prefix=${GITHUB_WORKSPACE}/scipoptsuite/
+          otool -L scipoptsuite/bin/scip
+          ./scipoptsuite/bin/scip -v
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
