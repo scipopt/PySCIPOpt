@@ -92,6 +92,7 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
+          brew install tbb
           wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
           bash SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh --skip-license --prefix=${GITHUB_WORKSPACE}/scipoptsuite/
           otool -L scipoptsuite/bin/scip
@@ -117,5 +118,5 @@ jobs:
         run: |
           export SCIPOPTDIR=${GITHUB_WORKSPACE}/scipoptsuite/
           export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${GITHUB_WORKSPACE}/scipoptsuite/lib
-          python -m pytest
+          py.test
 
