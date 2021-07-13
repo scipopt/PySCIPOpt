@@ -92,7 +92,7 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          homebrew install tbb
+          brew install tbb
           wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
           bash SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh --skip-license --prefix=${GITHUB_WORKSPACE}/scipoptsuite/
           ls -l /usr/lib/libz.1.dylib
