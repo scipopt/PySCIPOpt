@@ -137,6 +137,7 @@ jobs:
       - name: Install dependencies (SCIPOptSuite)
         run: |
           brew search valgrind
+          brew install valgrind
           wget --quiet --no-check-certificate https://scipopt.org/download/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
           bash SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh --skip-license --prefix=${GITHUB_WORKSPACE}/scipoptsuite/
           ./scipoptsuite/bin/scip -v
