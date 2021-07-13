@@ -93,14 +93,8 @@ jobs:
       - name: Install dependencies (SCIPOptSuite)
         run: |
           brew install tbb@2020 boost
-          wget --quiet --no-check-certificate https://scipopt.org/download/release/scipoptsuite-${{ env.version }}.tgz
-          tar xfz scipoptsuite-${{ env.version }}.tgz
-          cd scipoptsuite-${{ env.version }}
-          mkdir build
-          cd build
-          sed -i -e 's/ tbb libtbb.so.2 / tbb.a /' ../papilo/cmake/Modules/FindTBB.cmake
-          cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/scipoptsuite -DIPOPT=off -DSYM=none -DREADLINE=off -DTBB_LIBRARY_DIR=/usr/local/opt/tbb@2020/lib
-          make install -j
+          wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
+          bash SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh --skip-license
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
