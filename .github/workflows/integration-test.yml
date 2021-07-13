@@ -136,18 +136,10 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          brew install tbb@2020 boost
-          ls /usr/local/opt/tbb@2020/lib
+          brew install valgrind
           wget --quiet --no-check-certificate https://scipopt.org/download/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
           bash SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh --skip-license --prefix=${GITHUB_WORKSPACE}/scipoptsuite/
-          ls -l /usr/lib/libz.1.dylib
-          ls -l /System/Library/Frameworks/Accelerate.framework/Versions/A/Accelerate
-          ls -l /usr/lib/libSystem.B.dylib
-          ls -l /usr/local/lib/gcc/9/libgfortran.5.dylib
-          ls -l /usr/local/lib/gcc/9/libquadmath.0.dylib
-          ls -l /usr/lib/libc++.1.dylib
-          otool -L scipoptsuite/bin/scip
-          ./scipoptsuite/bin/scip -v
+          valgrind ./scipoptsuite/bin/scip -v
           wget http://miplib2017.zib.de/WebData/instances/enlight_hard.mps.gz
           wget http://minlplib.org/osil/elf.osil
           valgrind ./scipoptsuite/bin/scip -f enlight_hard.mps.gz
