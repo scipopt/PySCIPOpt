@@ -92,8 +92,9 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
+          brew install tbb boost
           wget --quiet --no-check-certificate https://scipopt.org/download/release/scipoptsuite-${{ env.version }}.tgz
-          tar xvfz scipoptsuite-${{ env.version }}.tgz
+          tar xfz scipoptsuite-${{ env.version }}.tgz
           cd scipoptsuite-${{ env.version }}
           mkdir build
           cd build
