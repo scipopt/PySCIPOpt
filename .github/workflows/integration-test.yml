@@ -136,6 +136,7 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
+          brew install automake
           git clone https://github.com/Echelon9/valgrind.git
           cd valgrind
           git checkout feature/v3.14/macos-mojave-support-v2
