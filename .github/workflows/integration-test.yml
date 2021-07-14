@@ -140,7 +140,7 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          find /usr/lib /usr/local /Applications/Xcode.app/Contents/developer/Platforms -name libz.dylib
+          uname -a
           brew tap LouisBrunner/valgrind
           brew install --HEAD LouisBrunner/valgrind/valgrind
           wget --quiet --no-check-certificate https://scipopt.org/download/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
