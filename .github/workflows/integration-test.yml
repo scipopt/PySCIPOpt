@@ -141,6 +141,8 @@ jobs:
       - name: Install dependencies (SCIPOptSuite)
         run: |
           uname -a
+          uname -m
+          uname -p
           brew tap LouisBrunner/valgrind
           brew install --HEAD LouisBrunner/valgrind/valgrind
           wget --quiet --no-check-certificate https://scipopt.org/download/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
