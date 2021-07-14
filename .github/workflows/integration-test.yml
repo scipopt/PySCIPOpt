@@ -143,13 +143,13 @@ jobs:
           uname -a
           uname -m
           uname -p
-          brew install zlib
           brew tap LouisBrunner/valgrind
           brew install --HEAD LouisBrunner/valgrind/valgrind
           wget --quiet --no-check-certificate https://scipopt.org/download/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
           bash SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh --skip-license --prefix=${GITHUB_WORKSPACE}/scipoptsuite/
           otool -L scipoptsuite/bin/scip
-          install_name_tool -change scipoptsuite/bin/scip /usr/lib/libz.1.dylib /usr/local/Cellar/zlib/1.2.11/lib/libz.1.dylib
+          ls -l /usr/lib/libSystem.B.dylib
+          otool -hv /usr/lib/libSystem.B.dylib
           ./scipoptsuite/bin/scip -v
           wget https://github.com/scipopt/scip/blob/master/check/instances/MINLP/gastrans.cip
           wget https://github.com/scipopt/scip/blob/master/check/instances/MIP/4sHB.cip
