@@ -140,6 +140,7 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
+          sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist
           locate libz.dylib
           brew tap LouisBrunner/valgrind
           brew install --HEAD LouisBrunner/valgrind/valgrind
