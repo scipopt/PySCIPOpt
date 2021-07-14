@@ -126,6 +126,10 @@ jobs:
   #         export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${GITHUB_WORKSPACE}/scipoptsuite/lib
   #         py.test
 
+  ### if you need valgrind on mac, you can install it via
+  # brew tap LouisBrunner/valgrind
+  # brew install --HEAD LouisBrunner/valgrind/valgrind
+
   MacOS-test:
     runs-on: macos-latest
     strategy:
@@ -136,6 +140,7 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
+          locate libz.dylib
           brew tap LouisBrunner/valgrind
           brew install --HEAD LouisBrunner/valgrind/valgrind
           wget --quiet --no-check-certificate https://scipopt.org/download/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
