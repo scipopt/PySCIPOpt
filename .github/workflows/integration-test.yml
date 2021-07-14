@@ -140,11 +140,12 @@ jobs:
           brew install --HEAD LouisBrunner/valgrind/valgrind
           wget --quiet --no-check-certificate https://scipopt.org/download/SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh
           bash SCIPOptSuite-${{ env.version }}-Darwin-Ipopt-gcc10.sh --skip-license --prefix=${GITHUB_WORKSPACE}/scipoptsuite/
+          otool -L scipoptsuite/bin/scip
           valgrind ./scipoptsuite/bin/scip -v
-          wget http://miplib2017.zib.de/WebData/instances/enlight_hard.mps.gz
-          wget http://minlplib.org/osil/elf.osil
-          valgrind ./scipoptsuite/bin/scip -f enlight_hard.mps.gz
-          ./scipoptsuite/bin/scip -f elf.osil
+          wget https://github.com/scipopt/scip/blob/master/check/instances/MINLP/gastrans.cip
+          wget https://github.com/scipopt/scip/blob/master/check/instances/MIP/4sHB.cip
+          valgrind ./scipoptsuite/bin/scip -f gastrans.cip
+          valgrind ./scipoptsuite/bin/scip -f 4sHB.cip
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
