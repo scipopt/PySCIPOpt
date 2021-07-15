@@ -42,3 +42,98 @@ jobs:
         run: |
           py.test
 
+  Windows-test:
+    env:
+      SCIPOPTDIR: C:\scipoptdir
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Download dependencies (SCIPOptSuite)
+        shell: powershell
+        run: wget https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-win64-VS15.exe -outfile scipopt-installer.exe
+
+      - name: Install dependencies (SCIPOptSuite)
+        shell: cmd
+        run: scipopt-installer.exe /S /D=${{ env.SCIPOPTDIR }}
+
+      - name: Setup python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Prepare python environment
+        shell: powershell
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel cython networkx pytest-cov
+
+      - name: Install PySCIPOpt
+        shell: powershell
+        run: |
+          $Env:SCIPOPTDIR = "${{ env.SCIPOPTDIR }}"
+          python -m pip install .
+
+      - name: Run pyscipopt tests
+        shell: powershell
+        run: |
+          py.test
+
+  MacOS-test:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cache dependencies (SCIPOptSuite)
+        id: cache-scip
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ${GITHUB_WORKSPACE}/scipoptsuite
+          key: ${{ runner.os }}-scipopt-${{ env.version }}
+
+      - name: Install dependencies (SCIPOptSuite)
+        if: steps.cache-scip.outputs.cache-hit != 'true'
+        run: |
+          brew install tbb@2020 boost
+          wget --quiet --no-check-certificate https://scipopt.org/download/release/scipoptsuite-${{ env.version }}.tgz
+          tar xfz scipoptsuite-${{ env.version }}.tgz
+          cd scipoptsuite-${{ env.version }}
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/scipoptsuite -DIPOPT=off -DSYM=none -DREADLINE=off -DTBB_LIBRARY_DIR=/usr/local/opt/tbb@2020/lib
+          make install -j
+
+      - name: Setup python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Prepare python environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel cython networkx pytest-cov pytest
+
+      - name: Install PySCIPOpt
+        run: |
+          export SCIPOPTDIR=${GITHUB_WORKSPACE}/scipoptsuite/
+          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${GITHUB_WORKSPACE}/scipoptsuite/lib
+          python -m pip install .
+
+      - name: Run pyscipopt tests
+        run: |
+          export SCIPOPTDIR=${GITHUB_WORKSPACE}/scipoptsuite/
+          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${GITHUB_WORKSPACE}/scipoptsuite/lib
+          py.test
+
+  ### if you need valgrind on mac, you can install it via
+  # brew tap LouisBrunner/valgrind
+  # brew install --HEAD LouisBrunner/valgrind/valgrind
+
