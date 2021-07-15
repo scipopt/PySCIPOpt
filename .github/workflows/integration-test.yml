@@ -98,7 +98,7 @@ jobs:
           cache-name: cache-node-modules
         with:
           path: ${GITHUB_WORKSPACE}/scipoptsuite
-          key: ${{ runner.os }}-scipopt
+          key: ${{ runner.os }}-scipopt-${{ env }}
 
       - name: Install dependencies (SCIPOptSuite)
         if: steps.cache.outputs.cache-hit != 'true'
