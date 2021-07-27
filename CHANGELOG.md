@@ -1,6 +1,12 @@
 # CHANGELOG
-
 ## Unreleased
+### Added
+### Fixed
+### Changed
+### Removed
+
+
+## 3.2.2 - 2021-06-21 
 ### Added
 - add SCIP functions `getNSolsFound`, `getNSolsFound`, `getNLimSolsFound` and `getNBestSolsFound`
 
@@ -9,7 +15,6 @@
 - documentation build parameter EXTRACT_ALL = YES
 
 ### Removed
-
 
 ## 3.2.1 - 2021-06-21
 ### Added
