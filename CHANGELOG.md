@@ -1,6 +1,8 @@
 # CHANGELOG
 ## Unreleased
 ### Added
+- add SCIP function `getPseudoBranchCands`
+
 ### Fixed
 ### Changed
 ### Removed
