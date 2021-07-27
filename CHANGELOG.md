@@ -2,9 +2,12 @@
 
 ## Unreleased
 ### Added
+- add SCIP functions `getNSolsFound`, `getNSolsFound`, `getNLimSolsFound` and `getNBestSolsFound`
+
 ### Fixed
 ### Changed
 - documentation build parameter EXTRACT_ALL = YES
+
 ### Removed
 
 

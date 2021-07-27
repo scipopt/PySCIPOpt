@@ -4200,6 +4200,18 @@ cdef class Model:
          """
         return SCIPgetNSols(self._scip)
 
+    def getNSolsFound(self):
+        """gets number of feasible primal solutions found so far"""
+        return SCIPgetNSolsFound(self._scip)
+
+    def getNLimSolsFound(self):
+        """gets number of feasible primal solutions respecting the objective limit found so far"""
+        return SCIPgetNLimSolsFound(self._scip)
+
+    def getNBestSolsFound(self):
+        """gets number of feasible primal solutions found so far, that improved the primal bound at the time they were found"""
+        return SCIPgetNBestSolsFound(self._scip)
+
     def getSols(self):
         """Retrieve list of all feasible primal solutions stored in the solution storage."""
         cdef SCIP_SOL** _sols
