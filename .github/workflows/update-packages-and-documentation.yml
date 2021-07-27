@@ -58,8 +58,48 @@ jobs:
         run: |
           py.test
 
-  deploy-packges-and-generate-documentation:
+  windows-test:
     needs: release-integration-test
+    env:
+      SCIPOPTDIR: C:\scipoptdir
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Download dependencies (SCIPOptSuite)
+        shell: powershell
+        run: wget https://scipopt.org/download/release/SCIPOptSuite-${{ env.version }}-win64-VS15.exe -outfile scipopt-installer.exe
+
+      - name: Install dependencies (SCIPOptSuite)
+        shell: cmd
+        run: scipopt-installer.exe /S /D=${{ env.SCIPOPTDIR }}
+
+      - name: Setup python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Prepare python environment
+        shell: powershell
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel cython networkx pytest-cov
+      - name: Install PySCIPOpt
+        shell: powershell
+        run: |
+          $Env:SCIPOPTDIR = "${{ env.SCIPOPTDIR }}"
+          python -m pip install .
+      - name: Run pyscipopt tests
+        shell: powershell
+        run: |
+          py.test
+
+
+  deploy-packages-and-generate-documentation:
+    needs: Windows-test
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
