@@ -94,7 +94,7 @@ jobs:
         id: cache-scip
         uses: actions/cache@v2
         with:
-          path: ${ runner.workspace }/scipoptsuite
+          path: ${{ runner.workspace }}/scipoptsuite
           key: ${{ runner.os }}-scipopt-${{ env.version }}-${{ hashFiles('**/lockfiles') }}
           restore-keys: |
             ${{ runner.os }}-scipopt-${{ env.version }}-
@@ -108,7 +108,7 @@ jobs:
           cd scipoptsuite-${{ env.version }}
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${ runner.workspace }/scipoptsuite -DIPOPT=off -DSYM=none -DREADLINE=off -DTBB_LIBRARY_DIR=/usr/local/opt/tbb@2020/lib
+          cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/scipoptsuite -DIPOPT=off -DSYM=none -DREADLINE=off -DTBB_LIBRARY_DIR=/usr/local/opt/tbb@2020/lib
           make install -j
 
       - name: Setup python ${{ matrix.python-version }}
@@ -123,14 +123,14 @@ jobs:
 
       - name: Install PySCIPOpt
         run: |
-          export SCIPOPTDIR=${ runner.workspace }/scipoptsuite/
-          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${ runner.workspace }/scipoptsuite/lib
+          export SCIPOPTDIR=${{ runner.workspace }}/scipoptsuite/
+          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${{ runner.workspace }}/scipoptsuite/lib
           python -m pip install .
 
       - name: Run pyscipopt tests
         run: |
-          export SCIPOPTDIR=${ runner.workspace }/scipoptsuite/
-          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${ runner.workspace }/scipoptsuite/lib
+          export SCIPOPTDIR=${{ runner.workspace }}/scipoptsuite/
+          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${{ runner.workspace }}/scipoptsuite/lib
           py.test
 
   ### if you need valgrind on mac, you can install it via
