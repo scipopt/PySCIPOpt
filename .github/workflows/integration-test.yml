@@ -96,6 +96,11 @@ jobs:
         with:
           path: ${GITHUB_WORKSPACE}/scipoptsuite
           key: ${{ runner.os }}-scipopt-${{ env.version }}-${{ hashFiles('**/lockfiles') }}
+          restore-keys: |
+            ${{ runner.os }}-scipopt-${{ env.version }}-
+            ${{ runner.os }}-scipopt-
+            ${{ runner.os }}-
+
 
       - name: Install dependencies (SCIPOptSuite)
         if: steps.cache-scip.outputs.cache-hit != 'true'
