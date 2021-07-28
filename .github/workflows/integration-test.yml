@@ -93,11 +93,9 @@ jobs:
       - name: Cache dependencies (SCIPOptSuite)
         id: cache-scip
         uses: actions/cache@v2
-        env:
-          cache-name: cache-node-modules
         with:
           path: ${GITHUB_WORKSPACE}/scipoptsuite
-          key: ${{ runner.os }}-scipopt-${{ env.version }}
+          key: ${{ runner.os }}-scipopt-${{ env.version }}-${{ hashFiles('**/lockfiles') }}
 
       - name: Install dependencies (SCIPOptSuite)
         if: steps.cache-scip.outputs.cache-hit != 'true'
