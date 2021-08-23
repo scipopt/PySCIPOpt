@@ -9,6 +9,7 @@ lib
 src/pyscipopt/scip.c
 __pycache__
 .cache
+.idea
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

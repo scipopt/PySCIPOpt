@@ -1,12 +1,17 @@
 # CHANGELOG
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+### Removed
+
+## 3.3.0 - 2021-08-23
+### Added
 - add SCIP function `getPseudoBranchCands`
 
 ### Fixed
 ### Changed
 ### Removed
-
 
 ## 3.2.2 - 2021-06-21 
 ### Added
