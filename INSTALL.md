@@ -2,7 +2,7 @@ Requirements
 ============
 
 PySCIPOpt requires a working installation of the [SCIP Optimization
-Suite](http://scip.zib.de/). Please, make sure that your SCIP installation works!
+Suite](https://www.scipopt.org/). Please, make sure that your SCIP installation works!
 
 Note that the latest PySCIPOpt version is usually only compatible with the latest major release of the SCIP Optimization Suite.
 The following table summarizes which version of PySCIPOpt is required for a given SCIP version:
@@ -39,7 +39,7 @@ contains the corresponding header files:
         > ...
 
 If you are not using the installer packages, you need to [install the
-SCIP Optimization Suite using CMake](http://scip.zib.de/doc/html/CMAKE.php).
+SCIP Optimization Suite using CMake](https://www.scipopt.org/doc/html/md_INSTALL.php#CMAKE).
 The Makefile system is not compatible with PySCIPOpt!
 
 On Windows it is highly recommended to use the [Anaconda Python
