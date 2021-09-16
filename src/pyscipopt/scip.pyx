@@ -4063,6 +4063,19 @@ cdef class Model:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintBestSol(self._scip, cfile, write_zeros))
 
+    def writeBestTransSol(self, filename="transprob.sol", write_zeros=False):
+        """Write the best feasible primal solution for the transformed problem to a file.
+
+        Keyword arguments:
+        filename -- name of the output file
+        write_zeros -- include variables that are set to zero
+        """
+        # use this double opening pattern to ensure that IOErrors are
+        #   triggered early and in python not in C, Cython or SCIP.
+        with open(filename, "w") as f:
+            cfile = fdopen(f.fileno(), "w")
+            PY_SCIP_CALL(SCIPprintBestTransSol(self._scip, cfile, write_zeros))
+
     def writeSol(self, Solution solution, filename="origprob.sol", write_zeros=False):
         """Write the given primal solution to a file.
 
