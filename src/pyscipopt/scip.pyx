@@ -4090,6 +4090,20 @@ cdef class Model:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, cfile, write_zeros))
 
+    def writeTransSol(self, Solution solution, filename="transprob.sol", write_zeros=False):
+        """Write the given transformed primal solution to a file.
+
+        Keyword arguments:
+        solution -- transformed solution to write
+        filename -- name of the output file
+        write_zeros -- include variables that are set to zero
+        """
+        # use this doubled opening pattern to ensure that IOErrors are
+        #   triggered early and in Python not in C,Cython or SCIP.
+        with open(filename, "w") as f:
+            cfile = fdopen(f.fileno(), "w")
+            PY_SCIP_CALL(SCIPprintTransSol(self._scip, solution.sol, cfile, write_zeros))
+
     # perhaps this should not be included as it implements duplicated functionality
     #   (as does it's namesake in SCIP)
     def readSol(self, filename):
