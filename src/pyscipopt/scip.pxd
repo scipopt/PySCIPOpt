@@ -427,10 +427,19 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_EXPR:
         pass
 
+    ctypedef struct SCIP_EXPRHDLR:
+        pass
+
+    ctypedef struct SCIP_EXPRDATA:
+        pass
+
     ctypedef struct SCIP_EXPRTREE:
         pass
 
     ctypedef struct SCIP_EXPRDATA_MONOMIAL:
+        pass
+
+    ctypedef struct SCIP_DECL_EXPR_OWNERCREATE:
         pass
 
     ctypedef struct SCIP_BENDERS:
@@ -1475,32 +1484,29 @@ cdef extern from "blockmemshell/memory.h":
     void BMScheckEmptyMemory()
     long long BMSgetMemoryUsed()
 
-cdef extern from "nlpi/pub_expr.h":
-    SCIP_RETCODE SCIPexprCreate(BMS_BLKMEM* blkmem,
+cdef extern from "scip/scip_expr.h":
+    SCIP_RETCODE SCIPcreateExpr(SCIP* scip,
                                 SCIP_EXPR** expr,
-                                SCIP_EXPROP op,
-                                ...)
-    SCIP_RETCODE SCIPexprCreateMonomial(BMS_BLKMEM* blkmem,
-                                        SCIP_EXPRDATA_MONOMIAL** monomial,
-                                        SCIP_Real coef,
+                                SCIP_EXPRHDLR* exprhdlr,
+                                SCIP_EXPRDATA* exprdata,
+                                int nchildren,
+                                SCIP_EXPR** children,
+                                SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                void* ownercreatedata)
+    SCIP_RETCODE SCIPcreateExprMonomial(SCIP* scip,
+                                        SCIP_EXPR** expr,
                                         int nfactors,
-                                        int* childidxs,
-                                        SCIP_Real* exponents)
-    SCIP_RETCODE SCIPexprCreatePolynomial(BMS_BLKMEM* blkmem,
-                                          SCIP_EXPR** expr,
-                                          int nchildren,
-                                          SCIP_EXPR** children,
-                                          int nmonomials,
-                                          SCIP_EXPRDATA_MONOMIAL** monomials,
-                                          SCIP_Real constant,
-                                          SCIP_Bool copymonomials)
-    SCIP_RETCODE SCIPexprtreeCreate(BMS_BLKMEM* blkmem,
-                                    SCIP_EXPRTREE** tree,
-                                    SCIP_EXPR* root,
-                                    int nvars,
-                                    int nparams,
-                                    SCIP_Real* params)
-    SCIP_RETCODE SCIPexprtreeFree(SCIP_EXPRTREE** tree)
+                                        SCIP_VAR** vars,
+                                        SCIP_Real* exponents,
+                                        SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                        void* ownercreatedata)
+
+cdef extern from "scip/expr_var.h":
+   SCIP_RETCODE SCIPcreateExprVar(SCIP* scip,
+                                  SCIP_EXPR** expr,
+                                  SCIP_VAR* var,
+                                  SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                  void* ownercreatedata)
 
 cdef extern from "scip/pub_nlp.h":
     SCIP_RETCODE SCIPexprtreeSetVars(SCIP_EXPRTREE* tree,
@@ -1517,7 +1523,7 @@ cdef extern from "scip/pub_nlp.h":
                               SCIP_VAR*** quadvars,
                               int* nquadelems,
                               SCIP_QUADELEM** quadelems)
-    SCIP_EXPRTREE* SCIPnlrowGetExprtree(SCIP_NLROW* nlrow)
+    SCIP_EXPRTREE* SCIPnlrowGetExpr(SCIP_NLROW* nlrow)
     SCIP_Real SCIPnlrowGetLhs(SCIP_NLROW* nlrow)
     SCIP_Real SCIPnlrowGetRhs(SCIP_NLROW* nlrow)
     const char* SCIPnlrowGetName(SCIP_NLROW* nlrow)

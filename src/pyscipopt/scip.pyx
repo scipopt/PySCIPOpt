@@ -507,7 +507,7 @@ cdef class NLRow:
         """returns whether there exists an expression tree in a nonlinear row"""
         cdef SCIP_EXPRTREE* exprtree
 
-        exprtree = SCIPnlrowGetExprtree(self.scip_nlrow)
+        exprtree = SCIPnlrowGetExpr(self.scip_nlrow)
         return exprtree != NULL
 
     def getLhs(self):
@@ -2166,8 +2166,8 @@ cdef class Model:
 
         # create variable expressions
         varexprs = <SCIP_EXPR**> malloc(len(varindex) * sizeof(SCIP_EXPR*))
-        for idx in varindex.values():
-            PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &expr, SCIP_EXPR_VARIDX, <int>idx) )
+        for idx,var in enumerate(variables):
+            PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &expr, (<Variable>var).scip_var, NULL, NULL) )
             varexprs[idx] = expr
 
         # create monomials for terms
