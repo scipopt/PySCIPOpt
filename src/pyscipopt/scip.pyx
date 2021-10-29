@@ -3093,6 +3093,12 @@ cdef class Model:
         PY_SCIP_CALL(SCIPsolve(self._scip))
         self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
 
+    def solveConcurrent(self):
+        """Transforms, presolves, and solves problem using additional solvers which emphasize on
+        finding solutions."""
+        PY_SCIP_CALL(SCIPsolveConcurrent(self._scip))
+        self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
+
     def presolve(self):
         """Presolve the problem."""
         PY_SCIP_CALL(SCIPpresolve(self._scip))

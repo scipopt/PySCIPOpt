@@ -631,6 +631,7 @@ cdef extern from "scip/scip.h":
 
     # Solve Methods
     SCIP_RETCODE SCIPsolve(SCIP* scip)
+    SCIP_RETCODE SCIPsolveConcurrent(SCIP* scip)
     SCIP_RETCODE SCIPfreeTransform(SCIP* scip)
     SCIP_RETCODE SCIPpresolve(SCIP* scip)
 
