@@ -3,11 +3,12 @@ name: Integration test
 env:
   version: 7.0.3
 
-# runs only on branches; doesn't run on tags.
+# runs on branches and pull requests; doesn't run on tags.
 on:
   push:
     branches:
       - '**'
+  pull_request:
 
 jobs:
 
