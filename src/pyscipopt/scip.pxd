@@ -1681,6 +1681,9 @@ cdef extern from "scip/scip_tree.h":
 cdef extern from "scip/scip_var.h":
     SCIP_RETCODE SCIPchgVarBranchPriority(SCIP* scip, SCIP_VAR* var, int branchpriority)
 
+cdef extern from "tpi/tpi.h":
+    int SCIPtpiGetNumThreads()
+
 cdef class Expr:
     cdef public terms
 
