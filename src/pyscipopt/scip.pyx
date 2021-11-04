@@ -2125,7 +2125,7 @@ cdef class Model:
         assert quadcons.expr.degree() <= 2, "given constraint is not quadratic, degree == %d" % quadcons.expr.degree()
 
         cdef SCIP_CONS* scip_cons
-        PY_SCIP_CALL(SCIPcreateConsQuadratic(
+        PY_SCIP_CALL(SCIPcreateConsQuadraticNonlinear(
             self._scip, &scip_cons, str_conversion(kwargs['name']),
             0, NULL, NULL,        # linear
             0, NULL, NULL, NULL,  # quadratc
@@ -2137,11 +2137,11 @@ cdef class Model:
         for v, c in terms.items():
             if len(v) == 1: # linear
                 var = <Variable>v[0]
-                PY_SCIP_CALL(SCIPaddLinearVarQuadratic(self._scip, scip_cons, var.scip_var, c))
+                PY_SCIP_CALL(SCIPaddLinearVarNonlinear(self._scip, scip_cons, var.scip_var, c))
             else: # quadratic
                 assert len(v) == 2, 'term length must be 1 or 2 but it is %s' % len(v)
                 var1, var2 = <Variable>v[0], <Variable>v[1]
-                PY_SCIP_CALL(SCIPaddBilinTermQuadratic(self._scip, scip_cons, var1.scip_var, var2.scip_var, c))
+                PY_SCIP_CALL(SCIPaddExprNonlinear(self._scip, scip_cons, &expr , c)) # @todo get expr from 2 variables
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         PyCons = Constraint.create(scip_cons)
@@ -2153,7 +2153,7 @@ cdef class Model:
         cdef SCIP_EXPR** varexprs
         cdef SCIP_EXPRDATA_MONOMIAL** monomials
         cdef int* idxs
-        cdef SCIP_EXPRTREE* exprtree
+        cdef SCIP_EXPRTREE* exprtree #@todo remove
         cdef SCIP_VAR** vars
         cdef SCIP_CONS* scip_cons
 
@@ -2176,8 +2176,11 @@ cdef class Model:
             idxs = <int*> malloc(len(term) * sizeof(int))
             for j, var in enumerate(term):
                 idxs[j] = varindex[var.ptr()]
-            PY_SCIP_CALL( SCIPexprCreateMonomial(SCIPblkmem(self._scip), &monomials[i], <SCIP_Real>coef, <int>len(term), idxs, NULL) )
+            PY_SCIP_CALL( SCIPcreateExprMonomial(self._scip, &monomials[i], <SCIP_Real>coef, <int>len(term), idxs, NULL) )
             free(idxs)
+
+        ############################################################################################
+        # removed in scip
 
         # create polynomial from monomials
         PY_SCIP_CALL( SCIPexprCreatePolynomial(SCIPblkmem(self._scip), &expr,
@@ -2191,16 +2194,25 @@ cdef class Model:
             vars[idx] = (<Variable>var).scip_var
         PY_SCIP_CALL( SCIPexprtreeSetVars(exprtree, <int>len(variables), vars) )
 
+        ###########################################################################################
+
         # create nonlinear constraint for exprtree
         PY_SCIP_CALL( SCIPcreateConsNonlinear(
-            self._scip, &scip_cons, str_conversion(kwargs['name']),
-            0, NULL, NULL, # linear
-            1, &exprtree, NULL, # nonlinear
-            kwargs['lhs'], kwargs['rhs'],
-            kwargs['initial'], kwargs['separate'], kwargs['enforce'],
-            kwargs['check'], kwargs['propagate'], kwargs['local'],
-            kwargs['modifiable'], kwargs['dynamic'], kwargs['removable'],
-            kwargs['stickingatnode']) )
+            self._scip,
+            &scip_cons,
+            str_conversion(kwargs['name']),
+            &expr,
+            kwargs['lhs'],
+            kwargs['rhs'],
+            kwargs['initial'],
+            kwargs['separate'],
+            kwargs['enforce'],
+            kwargs['check'],
+            kwargs['propagate'],
+            kwargs['local'],
+            kwargs['modifiable'],
+            kwargs['dynamic'],
+            kwargs['removable']) )
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         PyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
@@ -2244,21 +2256,21 @@ cdef class Model:
             if opidx == SCIP_EXPR_VARIDX:
                 assert len(node[1]) == 1
                 pyvar = node[1][0] # for vars we store the actual var!
-                PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &scipexprs[i], opidx, <int>varpos) )
+                PY_SCIP_CALL( SCIPcreateExpr(self._scip, &scipexprs[i], opidx, <int>varpos) )
                 vars[varpos] = (<Variable>pyvar).scip_var
                 varpos += 1
                 continue
             if opidx == SCIP_EXPR_CONST:
                 assert len(node[1]) == 1
                 value = node[1][0]
-                PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &scipexprs[i], opidx, <SCIP_Real>value) )
+                PY_SCIP_CALL( SCIPcreateExpr(self._scip, &scipexprs[i], opidx, <SCIP_Real>value) )
                 continue
             if opidx == SCIP_EXPR_SUM or opidx == SCIP_EXPR_PRODUCT:
                 nchildren = len(node[1])
                 childrenexpr = <SCIP_EXPR**> malloc(nchildren * sizeof(SCIP_EXPR*))
                 for c, pos in enumerate(node[1]):
                     childrenexpr[c] = scipexprs[pos]
-                PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &scipexprs[i], opidx, nchildren, childrenexpr) )
+                PY_SCIP_CALL( SCIPcreateExpr(self._scip, &scipexprs[i], opidx, nchildren, childrenexpr) )
 
                 free(childrenexpr)
                 continue
@@ -2268,32 +2280,39 @@ cdef class Model:
                 assert op2idx[valuenode[0]] == SCIP_EXPR_CONST
                 exponent = valuenode[1][0]
                 if float(exponent).is_integer():
-                    PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &scipexprs[i], SCIP_EXPR_INTPOWER, scipexprs[node[1][0]], <int>exponent) )
+                    PY_SCIP_CALL( SCIPcreateExpr(self._scip, &scipexprs[i], SCIP_EXPR_INTPOWER, scipexprs[node[1][0]], <int>exponent) )
                 else:
-                    PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &scipexprs[i], opidx, scipexprs[node[1][0]], <SCIP_Real>exponent) )
+                    PY_SCIP_CALL( SCIPcreateExpr(self._scip, &scipexprs[i], opidx, scipexprs[node[1][0]], <SCIP_Real>exponent) )
                 continue
             if opidx == SCIP_EXPR_EXP or opidx == SCIP_EXPR_LOG or opidx == SCIP_EXPR_SQRT or opidx == SCIP_EXPR_ABS:
                 assert len(node[1]) == 1
-                PY_SCIP_CALL( SCIPexprCreate(SCIPblkmem(self._scip), &scipexprs[i], opidx, scipexprs[node[1][0]]) )
+                PY_SCIP_CALL( SCIPcreateExpr(self._scip, &scipexprs[i], opidx, scipexprs[node[1][0]]) )
                 continue
             # default:
             raise NotImplementedError
         assert varpos == nvars
 
-        # create expression tree
+        # create expression tree #@todo removed from scip
         PY_SCIP_CALL( SCIPexprtreeCreate(SCIPblkmem(self._scip), &exprtree, scipexprs[len(nodes) - 1], nvars, 0, NULL) )
         PY_SCIP_CALL( SCIPexprtreeSetVars(exprtree, <int>nvars, vars) )
 
         # create nonlinear constraint for exprtree
         PY_SCIP_CALL( SCIPcreateConsNonlinear(
-            self._scip, &scip_cons, str_conversion(kwargs['name']),
-            0, NULL, NULL, # linear
-            1, &exprtree, NULL, # nonlinear
-            kwargs['lhs'], kwargs['rhs'],
-            kwargs['initial'], kwargs['separate'], kwargs['enforce'],
-            kwargs['check'], kwargs['propagate'], kwargs['local'],
-            kwargs['modifiable'], kwargs['dynamic'], kwargs['removable'],
-            kwargs['stickingatnode']) )
+            self._scip,
+            &scip_cons,
+            str_conversion(kwargs['name']),
+            &expr,
+            kwargs['lhs'],
+            kwargs['rhs'],
+            kwargs['initial'],
+            kwargs['separate'],
+            kwargs['enforce'],
+            kwargs['check'],
+            kwargs['propagate'],
+            kwargs['local'],
+            kwargs['modifiable'],
+            kwargs['dynamic'],
+            kwargs['removable']) )
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         PyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
@@ -2778,7 +2797,7 @@ cdef class Model:
         if constype == 'linear':
             return SCIPgetRhsLinear(self._scip, cons.scip_cons)
         elif constype == 'quadratic':
-            return SCIPgetRhsQuadratic(self._scip, cons.scip_cons)
+            return SCIPgetRhsNonlinear(cons.scip_cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
@@ -2792,7 +2811,7 @@ cdef class Model:
         if constype == 'linear':
             return SCIPgetLhsLinear(self._scip, cons.scip_cons)
         elif constype == 'quadratic':
-            return SCIPgetLhsQuadratic(self._scip, cons.scip_cons)
+            return SCIPgetLhsNonlinear(cons.scip_cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
@@ -2939,8 +2958,8 @@ cdef class Model:
         :param Constraint cons: constraint
 
         """
-        cdef SCIP_QUADVARTERM* _quadterms
-        cdef SCIP_BILINTERM* _bilinterms
+        cdef SCIP_QUADVARTERM* _quadterms #@todo this type is removed
+        cdef SCIP_CONSNONLINEAR_BILINTERM* _bilinterms
         cdef SCIP_VAR** _linvars
         cdef SCIP_Real* _lincoefs
         cdef int _nbilinterms
@@ -2962,7 +2981,7 @@ cdef class Model:
             var2 = Variable.create(_bilinterms[i].var2)
             bilinterms.append((var1,var2,_bilinterms[i].coef))
 
-        # quadratic terms
+        # quadratic terms #@todo this is removed?
         _quadterms = SCIPgetQuadVarTermsQuadratic(self._scip, cons.scip_cons)
         _nquadterms = SCIPgetNQuadVarTermsQuadratic(self._scip, cons.scip_cons)
 
