@@ -381,24 +381,6 @@ class Op:
     add = 'sum'
     prod = 'prod'
     fabs = 'abs'
-    operatorIndexDic={
-            varidx:SCIP_EXPR_VARIDX,
-            const:SCIP_EXPR_CONST,
-            plus:SCIP_EXPR_PLUS,
-            minus:SCIP_EXPR_MINUS,
-            mul:SCIP_EXPR_MUL,
-            div:SCIP_EXPR_DIV,
-            sqrt:SCIP_EXPR_SQRT,
-            power:SCIP_EXPR_REALPOWER,
-            exp:SCIP_EXPR_EXP,
-            log:SCIP_EXPR_LOG,
-            fabs:SCIP_EXPR_ABS,
-            add:SCIP_EXPR_SUM,
-            prod:SCIP_EXPR_PRODUCT
-            }
-    def getOpIndex(self, op):
-        '''returns operator index'''
-        return Op.operatorIndexDic[op];
 
 Operator = Op()
 

@@ -271,7 +271,8 @@ def test_quad_coeffs():
     z = scip.addVar()
 
     c = scip.addCons(2*x*y + 0.5*x**2 + 4*z >= 10)
-    assert c.isQuadratic()
+    assert c.isNonlinear()
+    assert scip.checkQuadraticNonlinear(c)
 
     bilinterms, quadterms, linterms = scip.getTermsQuadratic(c)
 

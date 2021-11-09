@@ -486,30 +486,6 @@ cdef class NLRow:
         cdef int nlinvars = SCIPnlrowGetNLinearVars(self.scip_nlrow)
         return [(Variable.create(linvars[i]), lincoefs[i]) for i in range(nlinvars)]
 
-    def getQuadraticTerms(self):
-        """returns a list of tuples (var1, var2, coef) representing the quadratic part of a nonlinear row"""
-        cdef int nquadvars
-        cdef SCIP_VAR** quadvars
-        cdef int nquadelems
-        cdef SCIP_QUADELEM* quadelems
-
-        SCIPnlrowGetQuadData(self.scip_nlrow, &nquadvars, &quadvars, &nquadelems, &quadelems)
-
-        quadterms = []
-        for i in range(nquadelems):
-            x = Variable.create(quadvars[quadelems[i].idx1])
-            y = Variable.create(quadvars[quadelems[i].idx2])
-            coef = quadelems[i].coef
-            quadterms.append((x,y,coef))
-        return quadterms
-
-    def hasExprtree(self):
-        """returns whether there exists an expression tree in a nonlinear row"""
-        cdef SCIP_EXPRTREE* exprtree
-
-        exprtree = SCIPnlrowGetExpr(self.scip_nlrow)
-        return exprtree != NULL
-
     def getLhs(self):
         """returns the left hand side of a nonlinear row"""
         return SCIPnlrowGetLhs(self.scip_nlrow)
@@ -910,10 +886,10 @@ cdef class Constraint:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'linear'
 
-    def isQuadratic(self):
-        """Retrieve True if constraint is quadratic"""
+    def isNonlinear(self):
+        """Retrieve True if constraint is nonlinear"""
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
-        return constype == 'quadratic'
+        return constype == 'nonlinear'
 
     def __hash__(self):
         return hash(<size_t>self.scip_cons)
@@ -2140,8 +2116,22 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddLinearVarNonlinear(self._scip, scip_cons, var.scip_var, c))
             else: # quadratic
                 assert len(v) == 2, 'term length must be 1 or 2 but it is %s' % len(v)
+
+                varexprs = <SCIP_EXPR**> malloc(2 * sizeof(SCIP_EXPR*))
+                prodexpr = <SCIP_EXPR*> malloc(sizeof(SCIP_EXPR))
                 var1, var2 = <Variable>v[0], <Variable>v[1]
-                PY_SCIP_CALL(SCIPaddExprNonlinear(self._scip, scip_cons, &expr , c)) # @todo get expr from 2 variables
+                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[0], var1.scip_var, NULL, NULL) )
+                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[1], var2.scip_var, NULL, NULL) )
+                PY_SCIP_CALL( SCIPcreateExprProduct(self._scip, &prodexpr, 2, varexprs, 1.0, NULL, NULL) )
+
+                PY_SCIP_CALL( SCIPaddExprNonlinear(self._scip, scip_cons, prodexpr, c) )
+
+                PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &prodexpr) )
+                PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &varexprs[1]) )
+                PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &varexprs[0]) )
+                free(varexprs)
+                free(prodexpr)
+
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         PyCons = Constraint.create(scip_cons)
@@ -2151,9 +2141,8 @@ cdef class Model:
     def _addNonlinearCons(self, ExprCons cons, **kwargs):
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR** varexprs
-        cdef SCIP_EXPRDATA_MONOMIAL** monomials
+        cdef SCIP_EXPR** monomials
         cdef int* idxs
-        cdef SCIP_EXPRTREE* exprtree #@todo remove
         cdef SCIP_VAR** vars
         cdef SCIP_CONS* scip_cons
 
@@ -2171,37 +2160,25 @@ cdef class Model:
             varexprs[idx] = expr
 
         # create monomials for terms
-        monomials = <SCIP_EXPRDATA_MONOMIAL**> malloc(len(terms) * sizeof(SCIP_EXPRDATA_MONOMIAL*))
+        monomials = <SCIP_EXPR**> malloc(len(terms) * sizeof(SCIP_EXPR*))
+        termcoefs = <SCIP_Real*> malloc(len(terms) * sizeof(SCIP_Real))
         for i, (term, coef) in enumerate(terms.items()):
-            idxs = <int*> malloc(len(term) * sizeof(int))
+            termvars = <SCIP_VAR**> malloc(len(term) * sizeof(SCIP_VAR*))
             for j, var in enumerate(term):
-                idxs[j] = varindex[var.ptr()]
-            PY_SCIP_CALL( SCIPcreateExprMonomial(self._scip, &monomials[i], <SCIP_Real>coef, <int>len(term), idxs, NULL) )
-            free(idxs)
-
-        ############################################################################################
-        # removed in scip
+                termvars[j] = (<Variable>var).scip_var
+            PY_SCIP_CALL( SCIPcreateExprMonomial(self._scip, &monomials[i], <int>len(term), termvars, NULL, NULL, NULL) )
+            termcoefs[i] = <SCIP_Real>coef
+            free(termvars)
 
         # create polynomial from monomials
-        PY_SCIP_CALL( SCIPexprCreatePolynomial(SCIPblkmem(self._scip), &expr,
-                                               <int>len(varindex), varexprs,
-                                               <int>len(terms), monomials, 0.0, <SCIP_Bool>True) )
+        PY_SCIP_CALL( SCIPcreateExprSum(self._scip, &expr, <int>len(terms), monomials, termcoefs, 0.0, NULL, NULL))
 
-        # create expression tree
-        PY_SCIP_CALL( SCIPexprtreeCreate(SCIPblkmem(self._scip), &exprtree, expr, <int>len(variables), 0, NULL) )
-        vars = <SCIP_VAR**> malloc(len(variables) * sizeof(SCIP_VAR*))
-        for idx, var in enumerate(variables): # same as varindex
-            vars[idx] = (<Variable>var).scip_var
-        PY_SCIP_CALL( SCIPexprtreeSetVars(exprtree, <int>len(variables), vars) )
-
-        ###########################################################################################
-
-        # create nonlinear constraint for exprtree
+        # create nonlinear constraint for expr
         PY_SCIP_CALL( SCIPcreateConsNonlinear(
             self._scip,
             &scip_cons,
             str_conversion(kwargs['name']),
-            &expr,
+            expr,
             kwargs['lhs'],
             kwargs['rhs'],
             kwargs['initial'],
@@ -2216,83 +2193,101 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         PyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-        PY_SCIP_CALL( SCIPexprtreeFree(&exprtree) )
+        PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &expr) )
         free(vars)
         free(monomials)
         free(varexprs)
+        free(termcoefs)
         return PyCons
 
     def _addGenNonlinearCons(self, ExprCons cons, **kwargs):
         cdef SCIP_EXPR** childrenexpr
         cdef SCIP_EXPR** scipexprs
-        cdef SCIP_EXPRTREE* exprtree
-        cdef SCIP_CONS* scip_cons
+        cdef SCIP_CONS* scip_consgit sta
         cdef int nchildren
 
         # get arrays from python's expression tree
         expr = cons.expr
         nodes = expr_to_nodes(expr)
-        op2idx = Operator.operatorIndexDic
 
         # in nodes we have a list of tuples: each tuple is of the form
         # (operator, [indices]) where indices are the indices of the tuples
         # that are the children of this operator. This is sorted,
         # so we are going to do is:
         # loop over the nodes and create the expression of each
-        # Note1: when the operator is SCIP_EXPR_CONST, [indices] stores the value
+        # Note1: when the operator is Operator.const, [indices] stores the value
         # Note2: we need to compute the number of variable operators to find out
         # how many variables are there.
         nvars = 0
         for node in nodes:
-            if op2idx[node[0]] == SCIP_EXPR_VARIDX:
+            if node[0] == Operator.varidx:
                 nvars += 1
         vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
 
         varpos = 0
         scipexprs = <SCIP_EXPR**> malloc(len(nodes) * sizeof(SCIP_EXPR*))
         for i,node in enumerate(nodes):
-            op = node[0]
-            opidx = op2idx[op]
-            if opidx == SCIP_EXPR_VARIDX:
+            opidx = node[0]
+            if opidx == Operator.varidx:
                 assert len(node[1]) == 1
                 pyvar = node[1][0] # for vars we store the actual var!
-                PY_SCIP_CALL( SCIPcreateExpr(self._scip, &scipexprs[i], opidx, <int>varpos) )
+                PY_SCIP_CALL( SCIPcreateExprVaridx(self._scip, &scipexprs[i], <int>varpos, NULL, NULL) )
                 vars[varpos] = (<Variable>pyvar).scip_var
                 varpos += 1
                 continue
-            if opidx == SCIP_EXPR_CONST:
+            if opidx == Operator.const:
                 assert len(node[1]) == 1
                 value = node[1][0]
-                PY_SCIP_CALL( SCIPcreateExpr(self._scip, &scipexprs[i], opidx, <SCIP_Real>value) )
+                PY_SCIP_CALL( SCIPcreateExprValue(self._scip, &scipexprs[i], <SCIP_Real>value, NULL, NULL) )
                 continue
-            if opidx == SCIP_EXPR_SUM or opidx == SCIP_EXPR_PRODUCT:
+            if opidx == Operator.add:
+                nchildren = len(node[1])
+                childrenexpr = <SCIP_EXPR**> malloc(nchildren * sizeof(SCIP_EXPR*))
+                coefs = <SCIP_Real*> malloc(nchildren * sizeof(SCIP_Real))
+                for c, pos in enumerate(node[1]):
+                    childrenexpr[c] = scipexprs[pos]
+                    coefs[c] = 1
+                PY_SCIP_CALL( SCIPcreateExprSum(self._scip, &scipexprs[i], nchildren, childrenexpr, coefs, 0, NULL, NULL))
+                free(childrenexpr)
+                continue
+            if opidx == Operator.prod:
                 nchildren = len(node[1])
                 childrenexpr = <SCIP_EXPR**> malloc(nchildren * sizeof(SCIP_EXPR*))
                 for c, pos in enumerate(node[1]):
                     childrenexpr[c] = scipexprs[pos]
-                PY_SCIP_CALL( SCIPcreateExpr(self._scip, &scipexprs[i], opidx, nchildren, childrenexpr) )
-
+                PY_SCIP_CALL( SCIPcreateExprProduct(self._scip, &scipexprs[i], nchildren, childrenexpr, 1, NULL, NULL) )
                 free(childrenexpr)
                 continue
-            if opidx == SCIP_EXPR_REALPOWER:
+            if opidx == Operator.power:
                 # the second child is the exponent which is a const
                 valuenode = nodes[node[1][1]]
-                assert op2idx[valuenode[0]] == SCIP_EXPR_CONST
+                assert valuenode[0] == Operator.const
                 exponent = valuenode[1][0]
-                if float(exponent).is_integer():
-                    PY_SCIP_CALL( SCIPcreateExpr(self._scip, &scipexprs[i], SCIP_EXPR_INTPOWER, scipexprs[node[1][0]], <int>exponent) )
-                else:
-                    PY_SCIP_CALL( SCIPcreateExpr(self._scip, &scipexprs[i], opidx, scipexprs[node[1][0]], <SCIP_Real>exponent) )
+                PY_SCIP_CALL( SCIPcreateExprPow(self._scip, &scipexprs[i], scipexprs[node[1][0]], <SCIP_Real>exponent, NULL, NULL ))
                 continue
-            if opidx == SCIP_EXPR_EXP or opidx == SCIP_EXPR_LOG or opidx == SCIP_EXPR_SQRT or opidx == SCIP_EXPR_ABS:
+            if opidx == Operator.exp:
                 assert len(node[1]) == 1
-                PY_SCIP_CALL( SCIPcreateExpr(self._scip, &scipexprs[i], opidx, scipexprs[node[1][0]]) )
+                PY_SCIP_CALL( SCIPcreateExprExp(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL ))
+                continue
+            if opidx == Operator.log:
+                assert len(node[1]) == 1
+                PY_SCIP_CALL( SCIPcreateExprLog(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL ))
+                continue
+            if opidx == Operator.sqrt:
+                assert len(node[1]) == 1
+                PY_SCIP_CALL( SCIPcreateExprPow(self._scip, &scipexprs[i], scipexprs[node[1][0]], <SCIP_Real>0.5, NULL, NULL) )
+                continue
+            if opidx == Operator.fabs:
+                assert len(node[1]) == 1
+                PY_SCIP_CALL( SCIPcreateExprAbs(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL ))
                 continue
             # default:
             raise NotImplementedError
         assert varpos == nvars
 
-        # create expression tree #@todo removed from scip
+        # create expression tree
+        #@todo removed from scip, here scipexprs is used, in the original SCIPcreateConsNonlinear this was then applied.
+        #@todo i dont know how to make this happen now without the exprtree.
         PY_SCIP_CALL( SCIPexprtreeCreate(SCIPblkmem(self._scip), &exprtree, scipexprs[len(nodes) - 1], nvars, 0, NULL) )
         PY_SCIP_CALL( SCIPexprtreeSetVars(exprtree, <int>nvars, vars) )
 
@@ -2316,7 +2311,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         PyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-        PY_SCIP_CALL( SCIPexprtreeFree(&exprtree) )
+        PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &expr) )
 
         # free more memory
         free(scipexprs)
@@ -2763,8 +2758,8 @@ cdef class Model:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
         if constype == 'linear':
             PY_SCIP_CALL(SCIPchgRhsLinear(self._scip, cons.scip_cons, rhs))
-        elif constype == 'quadratic':
-            PY_SCIP_CALL(SCIPchgRhsQuadratic(self._scip, cons.scip_cons, rhs))
+        elif constype == 'nonlinear':
+            PY_SCIP_CALL(SCIPchgRhsNonlinear(self._scip, cons.scip_cons, rhs))
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
@@ -2782,8 +2777,8 @@ cdef class Model:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
         if constype == 'linear':
             PY_SCIP_CALL(SCIPchgLhsLinear(self._scip, cons.scip_cons, lhs))
-        elif constype == 'quadratic':
-            PY_SCIP_CALL(SCIPchgLhsQuadratic(self._scip, cons.scip_cons, lhs))
+        elif constype == 'nonlinear':
+            PY_SCIP_CALL(SCIPchgLhsNonlinear(self._scip, cons.scip_cons, lhs))
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
@@ -2837,8 +2832,6 @@ cdef class Model:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
         if constype == 'linear':
             activity = SCIPgetActivityLinear(self._scip, cons.scip_cons, scip_sol)
-        elif constype == 'quadratic':
-            PY_SCIP_CALL(SCIPgetActivityQuadratic(self._scip, cons.scip_cons, scip_sol, &activity))
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
@@ -2872,10 +2865,6 @@ cdef class Model:
             lhs = SCIPgetLhsLinear(self._scip, cons.scip_cons)
             rhs = SCIPgetRhsLinear(self._scip, cons.scip_cons)
             activity = SCIPgetActivityLinear(self._scip, cons.scip_cons, scip_sol)
-        elif constype == 'quadratic':
-            lhs = SCIPgetLhsQuadratic(self._scip, cons.scip_cons)
-            rhs = SCIPgetRhsQuadratic(self._scip, cons.scip_cons)
-            PY_SCIP_CALL(SCIPgetActivityQuadratic(self._scip, cons.scip_cons, scip_sol, &activity))
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
@@ -2952,51 +2941,65 @@ cdef class Model:
         """prints nonlinear row"""
         PY_SCIP_CALL( SCIPprintNlRow(self._scip, nlrow.scip_nlrow, NULL) )
 
+    def checkQuadraticNonlinear(self, Constraint cons):
+        """returns if the given constraint is quadratic
+
+        :param Constraint cons: constraint
+
+        """
+        cdef SCIP_Bool isquadratic
+        PY_SCIP_CALL(SCIPcheckQuadraticNonlinear(self._scip, cons.scip_cons, &isquadratic))
+        return isquadratic
+
     def getTermsQuadratic(self, Constraint cons):
         """Retrieve bilinear, quadratic, and linear terms of a quadratic constraint.
 
         :param Constraint cons: constraint
 
         """
-        cdef SCIP_QUADVARTERM* _quadterms #@todo this type is removed
-        cdef SCIP_CONSNONLINEAR_BILINTERM* _bilinterms
-        cdef SCIP_VAR** _linvars
-        cdef SCIP_Real* _lincoefs
-        cdef int _nbilinterms
-        cdef int _nquadterms
-        cdef int _nlinvars
-
-        assert cons.isQuadratic(), "constraint is not quadratic"
-
-        bilinterms = []
-        quadterms  = []
-        linterms   = []
-
-        # bilinear terms
-        _bilinterms = SCIPgetBilinTermsQuadratic(self._scip, cons.scip_cons)
-        _nbilinterms = SCIPgetNBilinTermsQuadratic(self._scip, cons.scip_cons)
-
-        for i in range(_nbilinterms):
-            var1 = Variable.create(_bilinterms[i].var1)
-            var2 = Variable.create(_bilinterms[i].var2)
-            bilinterms.append((var1,var2,_bilinterms[i].coef))
-
-        # quadratic terms #@todo this is removed?
-        _quadterms = SCIPgetQuadVarTermsQuadratic(self._scip, cons.scip_cons)
-        _nquadterms = SCIPgetNQuadVarTermsQuadratic(self._scip, cons.scip_cons)
-
-        for i in range(_nquadterms):
-            var = Variable.create(_quadterms[i].var)
-            quadterms.append((var,_quadterms[i].sqrcoef,_quadterms[i].lincoef))
+        cdef SCIP_EXPR* expr
 
         # linear terms
-        _linvars = SCIPgetLinearVarsQuadratic(self._scip, cons.scip_cons)
-        _lincoefs = SCIPgetCoefsLinearVarsQuadratic(self._scip, cons.scip_cons)
-        _nlinvars = SCIPgetNLinearVarsQuadratic(self._scip, cons.scip_cons)
+        cdef SCIP_EXPR** _linexprs
+        cdef SCIP_Real* _lincoefs
+        cdef int _nlinvars
 
-        for i in range(_nlinvars):
-            var = Variable.create(_linvars[i])
-            linterms.append((var,_lincoefs[i]))
+        # bilinear terms
+        cdef int _nbilinterms
+        cdef SCIP_EXPR* bilinterm1
+        cdef SCIP_EXPR* bilinterm2
+        cdef SCIP_Real bilincoef
+
+        # quadratic terms
+        cdef int _nquadterms
+        cdef SCIP_Real sqrcoef
+        cdef SCIP_Real lincoef
+        cdef SCIP_EXPR* sqrexpr
+
+        assert cons.isNonlinear(), "constraint is not nonlinear"
+        assert self.checkQuadraticNonlinear(cons), "constraint is not quadratic"
+
+        expr = SCIPgetExprNonlinear(cons.scip_cons)
+        SCIPexprGetQuadraticData(expr, NULL, &_nlinvars, &_linexprs, &_lincoefs, &_nquadterms, &_nbilinterms, NULL, NULL)
+
+        linterms   = []
+        bilinterms = []
+        quadterms  = []
+
+        for termidx in range(_nlinvars):
+            var = Variable.create(SCIPgetVarExprVar(_linexprs[termidx]))
+            linterms.append((var,_lincoefs[termidx]))
+
+        for termidx in range(_nbilinterms):
+            SCIPexprGetQuadraticBilinTerm(expr, termidx, &bilinterm1, &bilinterm2, &bilincoef, NULL, NULL)
+            var1 = Variable.create(SCIPgetVarExprVar(bilinterm1))
+            var2 = Variable.create(SCIPgetVarExprVar(bilinterm2))
+            bilinterms.append((var1,var2,bilincoef))
+
+        for termidx in range(_nquadterms):
+            SCIPexprGetQuadraticQuadTerm(expr, termidx, NULL, &lincoef, &sqrcoef, NULL, NULL, &sqrexpr)
+            var = Variable.create(SCIPgetVarExprVar(sqrexpr))
+            quadterms.append((var,sqrcoef,lincoef))
 
         return (bilinterms, quadterms, linterms)
 
