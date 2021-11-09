@@ -91,7 +91,7 @@ cdef SCIP_RETCODE PyNodeselSelect (SCIP* scip, SCIP_NODESEL* nodesel, SCIP_NODE*
   selnode[0] = selected_node.scip_node
   return SCIP_OKAY
 
-cdef int PyNodeselComp (SCIP* scip, SCIP_NODESEL* nodesel, SCIP_NODE* node1, SCIP_NODE* node2):
+cdef int PyNodeselComp (SCIP* scip, SCIP_NODESEL* nodesel, SCIP_NODE* node1, SCIP_NODE* node2) with gil:
   cdef SCIP_NODESELDATA* nodeseldata
   nodeseldata = SCIPnodeselGetData(nodesel)
   PyNodesel = <Nodesel>nodeseldata
