@@ -2101,6 +2101,7 @@ cdef class Model:
         assert quadcons.expr.degree() <= 2, "given constraint is not quadratic, degree == %d" % quadcons.expr.degree()
 
         cdef SCIP_CONS* scip_cons
+        cdef SCIP_EXPR* prodexpr
         PY_SCIP_CALL(SCIPcreateConsQuadraticNonlinear(
             self._scip, &scip_cons, str_conversion(kwargs['name']),
             0, NULL, NULL,        # linear
@@ -2118,7 +2119,6 @@ cdef class Model:
                 assert len(v) == 2, 'term length must be 1 or 2 but it is %s' % len(v)
 
                 varexprs = <SCIP_EXPR**> malloc(2 * sizeof(SCIP_EXPR*))
-                prodexpr = <SCIP_EXPR*> malloc(sizeof(SCIP_EXPR))
                 var1, var2 = <Variable>v[0], <Variable>v[1]
                 PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[0], var1.scip_var, NULL, NULL) )
                 PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[1], var2.scip_var, NULL, NULL) )
@@ -2130,7 +2130,6 @@ cdef class Model:
                 PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &varexprs[1]) )
                 PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &varexprs[0]) )
                 free(varexprs)
-                free(prodexpr)
 
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
@@ -2203,7 +2202,7 @@ cdef class Model:
     def _addGenNonlinearCons(self, ExprCons cons, **kwargs):
         cdef SCIP_EXPR** childrenexpr
         cdef SCIP_EXPR** scipexprs
-        cdef SCIP_CONS* scip_consgit sta
+        cdef SCIP_CONS* scip_cons
         cdef int nchildren
 
         # get arrays from python's expression tree
@@ -2285,18 +2284,12 @@ cdef class Model:
             raise NotImplementedError
         assert varpos == nvars
 
-        # create expression tree
-        #@todo removed from scip, here scipexprs is used, in the original SCIPcreateConsNonlinear this was then applied.
-        #@todo i dont know how to make this happen now without the exprtree.
-        PY_SCIP_CALL( SCIPexprtreeCreate(SCIPblkmem(self._scip), &exprtree, scipexprs[len(nodes) - 1], nvars, 0, NULL) )
-        PY_SCIP_CALL( SCIPexprtreeSetVars(exprtree, <int>nvars, vars) )
-
-        # create nonlinear constraint for exprtree
+        # create nonlinear constraint for the expression root
         PY_SCIP_CALL( SCIPcreateConsNonlinear(
             self._scip,
             &scip_cons,
             str_conversion(kwargs['name']),
-            &expr,
+            scipexprs[len(nodes) - 1],
             kwargs['lhs'],
             kwargs['rhs'],
             kwargs['initial'],
@@ -2311,7 +2304,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         PyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-        PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &expr) )
+        PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &scipexprs[len(nodes) - 1]) )
 
         # free more memory
         free(scipexprs)
@@ -2948,7 +2941,7 @@ cdef class Model:
 
         """
         cdef SCIP_Bool isquadratic
-        PY_SCIP_CALL(SCIPcheckQuadraticNonlinear(self._scip, cons.scip_cons, &isquadratic))
+        PY_SCIP_CALL( SCIPcheckQuadraticNonlinear(self._scip, cons.scip_cons, &isquadratic) )
         return isquadratic
 
     def getTermsQuadratic(self, Constraint cons):

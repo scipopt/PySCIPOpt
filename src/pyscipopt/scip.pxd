@@ -1351,7 +1351,7 @@ cdef extern from "scip/cons_nonlinear.h":
     SCIP_RETCODE SCIPchgRhsNonlinear(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
     SCIP_Real SCIPgetLhsNonlinear(SCIP_CONS* cons)
     SCIP_Real SCIPgetRhsNonlinear(SCIP_CONS* cons)
-    SCIPcheckQuadraticNonlinear(SCIP* scip, SCIP_CONS* cons, SCIP_Bool* isquadratic)
+    SCIP_RETCODE SCIPcheckQuadraticNonlinear(SCIP* scip, SCIP_CONS* cons, SCIP_Bool* isquadratic)
 
 cdef extern from "scip/cons_sos1.h":
     SCIP_RETCODE SCIPcreateConsSOS1(SCIP* scip,
