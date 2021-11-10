@@ -31,9 +31,9 @@ include "relax.pxi"
 include "nodesel.pxi"
 
 # recommended SCIP version; major version is required
-MAJOR = 7
+MAJOR = 8
 MINOR = 0
-PATCH = 3
+PATCH = 0
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
