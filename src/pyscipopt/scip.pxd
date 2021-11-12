@@ -966,8 +966,8 @@ cdef extern from "scip/scip.h":
                                  SCIP_RETCODE (*sepaexit) (SCIP* scip, SCIP_SEPA* sepa),
                                  SCIP_RETCODE (*sepainitsol) (SCIP* scip, SCIP_SEPA* sepa),
                                  SCIP_RETCODE (*sepaexitsol) (SCIP* scip, SCIP_SEPA* sepa),
-                                 SCIP_RETCODE (*sepaexeclp) (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result, unsigned int allowlocal),
-                                 SCIP_RETCODE (*sepaexecsol) (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result, unsigned int allowlocal),
+                                 SCIP_RETCODE (*sepaexeclp) (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result, unsigned int allowlocal, int depth),
+                                 SCIP_RETCODE (*sepaexecsol) (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result, unsigned int allowlocal, int depth),
                                  SCIP_SEPADATA* sepadata)
     SCIP_SEPADATA* SCIPsepaGetData(SCIP_SEPA* sepa)
     SCIP_SEPA* SCIPfindSepa(SCIP* scip, const char* name)
