@@ -1,7 +1,9 @@
 # CHANGELOG
+
 ## Unreleased
 ### Added
 ### Fixed
+- close file descriptors after file operation is finished
 ### Changed
 ### Removed
 
