@@ -1459,6 +1459,10 @@ cdef extern from "scip/cons_xor.h":
                                          SCIP_Bool dynamic,
                                          SCIP_Bool removable,
                                          SCIP_Bool stickingatnode)
+cdef extern from "scip/scip_cons.h":
+    SCIP_RETCODE SCIPprintCons(SCIP* scip,
+                               SCIP_CONS* cons,
+                               FILE* file)
 
 cdef extern from "blockmemshell/memory.h":
     void BMScheckEmptyMemory()

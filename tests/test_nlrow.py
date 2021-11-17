@@ -21,9 +21,14 @@ def test_nlrow():
     y = m.addVar(name="y", lb=-3, ub=3, obj=-1)
 
     # create constraints
-    m.addCons(1*x + 2*y + 3 * x**2 + 4*y**2  + 5*x*y <= 6)
+    cons = m.addCons(1*x + 2*y + 3 * x**2 + 4*y**2  + 5*x*y <= 6)
+    m.printCons(cons)
+
     m.addCons(7*x**2 + 8*y**2 == 9)
+
+    # the third constraint is nlrows[0]
     m.addCons(10*x + 11*y <= 12)
+
 
     # optimize without presolving
     m.setPresolve(SCIP_PARAMSETTING.OFF)
@@ -35,6 +40,8 @@ def test_nlrow():
 
     # collect nonlinear rows
     nlrows = m.getNlRows()
+
+    m.printNlRow(nlrows[1])
 
     # check first nonlinear row
     assert nlrows[0].getLhs() == -m.infinity()

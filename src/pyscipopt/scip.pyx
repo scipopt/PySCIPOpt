@@ -1956,7 +1956,7 @@ cdef class Model:
                 enforce=True, check=True, propagate=True, local=False,
                 modifiable=False, dynamic=False, removable=False,
                 stickingatnode=False):
-        """Add a linear or quadratic constraint.
+        """Add a linear or nonlinear constraint.
 
         :param cons: constraint object
         :param name: the name of the constraint, generic name if empty (Default value = '')
@@ -2062,6 +2062,9 @@ cdef class Model:
             )
 
         return constraints
+
+    def printCons(self, Constraint constraint):
+        return PY_SCIP_CALL(SCIPprintCons(self._scip, constraint.scip_cons, NULL))
 
     def _addLinCons(self, ExprCons lincons, **kwargs):
         assert isinstance(lincons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
