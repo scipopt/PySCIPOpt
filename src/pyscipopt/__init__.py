@@ -1,10 +1,10 @@
 __version__ = '3.4.0'
 
-# required for Python 3.8 on Windows
 import os
 if hasattr(os, 'add_dll_directory'):
     if os.getenv('SCIPOPTDIR'):
-        os.add_dll_directory(os.path.join(os.getenv('SCIPOPTDIR').strip('"'), 'bin'))
+        os.environ['PATH'] = os.path.join(os.getenv('SCIPOPTDIR').strip('"'), 'bin') + \
+                             os.pathsep + os.environ['PATH']
 
 # export user-relevant objects:
 from pyscipopt.Multidict import multidict
