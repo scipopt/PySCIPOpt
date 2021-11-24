@@ -4,6 +4,7 @@
 ### Added
 ### Fixed
 - close file descriptors after file operation is finished
+- delete variable pointer from model when calling delVar
 ### Changed
 ### Removed
 

@@ -1511,6 +1511,8 @@ cdef class Model:
 
         """
         cdef SCIP_Bool deleted
+        if var.ptr() in self._modelvars:
+            del self._modelvars[var.ptr()]
         PY_SCIP_CALL(SCIPdelVar(self._scip, var.scip_var, &deleted))
         return deleted
 
