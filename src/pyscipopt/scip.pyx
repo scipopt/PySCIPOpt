@@ -486,6 +486,49 @@ cdef class NLRow:
         cdef int nlinvars = SCIPnlrowGetNLinearVars(self.scip_nlrow)
         return [(Variable.create(linvars[i]), lincoefs[i]) for i in range(nlinvars)]
 
+    def getQuadraticTerms(self):
+        """returns a list of tuples (var1, var2, coef) representing the quadratic part of a nonlinear row,
+           where bilinear terms go before the square terms
+        """
+        cdef SCIP_EXPR* expr
+
+        # linear terms
+        cdef int _nlinvars
+        cdef SCIP_EXPR** _linexprs
+        cdef SCIP_Real* _lincoefs
+
+        # bilinear terms
+        cdef int _nbilinterms
+        cdef SCIP_EXPR* bilinterm1
+        cdef SCIP_EXPR* bilinterm2
+        cdef SCIP_Real bilincoef
+
+        # quadratic terms
+        cdef int _nquadterms
+        cdef SCIP_Real sqrcoef
+        cdef SCIP_Real lincoef
+        cdef SCIP_EXPR* sqrexpr
+
+        quadterms  = []
+
+        expr = SCIPnlrowGetExpr(self.scip_nlrow)
+
+        if expr != NULL:
+            SCIPexprGetQuadraticData(expr, NULL, NULL, NULL, NULL, &_nquadterms, &_nbilinterms, NULL, NULL)
+
+            #for termidx in range(_nbilinterms):
+            #    SCIPexprGetQuadraticBilinTerm(expr, termidx, &bilinterm1, &bilinterm2, &bilincoef, NULL, NULL)
+            #    var1 = Variable.create(SCIPgetVarExprVar(bilinterm1))
+            #    var2 = Variable.create(SCIPgetVarExprVar(bilinterm2))
+            #    quadterms.append((var1,var2,bilincoef))
+
+            #for termidx in range(_nquadterms):
+            #    SCIPexprGetQuadraticQuadTerm(expr, termidx, NULL, &lincoef, &sqrcoef, NULL, NULL, &sqrexpr)
+            #    var = Variable.create(SCIPgetVarExprVar(sqrexpr))
+            #    quadterms.append((var,var,sqrcoef))
+
+        return quadterms
+
     def getLhs(self):
         """returns the left hand side of a nonlinear row"""
         return SCIPnlrowGetLhs(self.scip_nlrow)
@@ -2145,7 +2188,6 @@ cdef class Model:
         cdef SCIP_EXPR** varexprs
         cdef SCIP_EXPR** monomials
         cdef int* idxs
-        cdef SCIP_VAR** vars
         cdef SCIP_CONS* scip_cons
 
         terms = cons.expr.terms
@@ -2196,7 +2238,6 @@ cdef class Model:
         PyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
         PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &expr) )
-        free(vars)
         free(monomials)
         free(varexprs)
         free(termcoefs)

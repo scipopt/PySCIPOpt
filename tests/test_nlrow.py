@@ -21,12 +21,8 @@ def test_nlrow():
     y = m.addVar(name="y", lb=-3, ub=3, obj=-1)
 
     # create constraints
-    cons = m.addCons(1*x + 2*y + 3 * x**2 + 4*y**2  + 5*x*y <= 6)
-    m.printCons(cons)
-
+    m.addCons(1*x + 2*y + 3 * x**2 + 4*y**2  + 5*x*y <= 6)
     m.addCons(7*x**2 + 8*y**2 == 9)
-
-    # the third constraint is nlrows[0]
     m.addCons(10*x + 11*y <= 12)
 
 
@@ -41,20 +37,37 @@ def test_nlrow():
     # collect nonlinear rows
     nlrows = m.getNlRows()
 
-    m.printNlRow(nlrows[1])
+    # the nlrow that corresponds to the linear (third) constraint is added before the nonlinear rows,
+    # because Initsol of the linear conshdlr gets called first
+    # therefore the ordering is: nlrows[0] is for constraint 3, nlrows[1] is for constraint 1,
+    # nlrows[2] is for constraint 2
 
-    # check first nonlinear row
+    # check first nonlinear row that represents constraint 3
     assert nlrows[0].getLhs() == -m.infinity()
-    assert nlrows[0].getRhs() == 6
+    assert nlrows[0].getRhs() == 12
 
     linterms = nlrows[0].getLinearTerms()
+    assert len(linterms) == 2
+    assert str(linterms[0][0]) == "t_x"
+    assert linterms[0][1] == 10
+    assert str(linterms[1][0]) == "t_y"
+    assert linterms[1][1] == 11
+
+    quadterms = nlrows[0].getQuadraticTerms()
+    assert len(quadterms) == 0
+
+    # check second nonlinear row that represents constraint 1
+    assert nlrows[1].getLhs() == -m.infinity()
+    assert nlrows[1].getRhs() == 6
+
+    linterms = nlrows[1].getLinearTerms()
     assert len(linterms) == 2
     assert str(linterms[0][0]) == "t_x"
     assert linterms[0][1] == 1
     assert str(linterms[1][0]) == "t_y"
     assert linterms[1][1] == 2
 
-    quadterms = nlrows[0].getQuadraticTerms()
+    quadterms = nlrows[1].getQuadraticTerms()
     assert len(quadterms) == 3
     assert str(quadterms[0][0]) == "t_x"
     assert str(quadterms[0][1]) == "t_x"
@@ -66,14 +79,14 @@ def test_nlrow():
     assert str(quadterms[2][1]) == "t_y"
     assert quadterms[2][2] == 5
 
-    # check second nonlinear row
-    assert nlrows[1].getLhs() == 9
-    assert nlrows[1].getRhs() == 9
+    # check third nonlinear row that represents constraint 2
+    assert nlrows[2].getLhs() == 9
+    assert nlrows[2].getRhs() == 9
 
-    linterms = nlrows[1].getLinearTerms()
+    linterms = nlrows[2].getLinearTerms()
     assert len(linterms) == 0
 
-    quadterms = nlrows[1].getQuadraticTerms()
+    quadterms = nlrows[2].getQuadraticTerms()
     assert len(quadterms) == 2
     assert str(quadterms[0][0]) == "t_x"
     assert str(quadterms[0][1]) == "t_x"
@@ -81,20 +94,6 @@ def test_nlrow():
     assert str(quadterms[1][0]) == "t_y"
     assert str(quadterms[1][1]) == "t_y"
     assert quadterms[1][2] == 8
-
-    # check third nonlinear row
-    assert nlrows[2].getLhs() == -m.infinity()
-    assert nlrows[2].getRhs() == 12
-
-    linterms = nlrows[2].getLinearTerms()
-    assert len(linterms) == 2
-    assert str(linterms[0][0]) == "t_x"
-    assert linterms[0][1] == 10
-    assert str(linterms[1][0]) == "t_y"
-    assert linterms[1][1] == 11
-
-    quadterms = nlrows[2].getQuadraticTerms()
-    assert len(quadterms) == 0
 
 if __name__ == "__main__":
     test_nlrow()
