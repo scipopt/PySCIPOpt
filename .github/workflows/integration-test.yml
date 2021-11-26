@@ -91,22 +91,24 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      #- name: Cache dependencies (SCIPOptSuite)
-      #  id: cache-scip
-      #  uses: actions/cache@v2
-      #  with:
-      #    path: |
-      #      ${{ runner.workspace }}/scipoptsuite
-      #      ~/Library/Caches/Homebrew/tbb@2020--*
-      #      ~/Library/Caches/Homebrew/downloads/*--tbb@2020-*
-      #      ~/Library/Caches/Homebrew/boost--*
-      #      ~/Library/Caches/Homebrew/downloads/*--boost-*
-      #    key: ${{ runner.os }}-scipopt-${{ env.version }}-${{ hashFiles('**/lockfiles') }}
-      #    restore-keys: |
-      #      ${{ runner.os }}-scipopt-${{ env.version }}-
+      - name: Cache dependencies (SCIPOptSuite)
+        id: cache-scip
+        uses: actions/cache@v2
+        with:
+          path: |
+            ${{ runner.workspace }}/scipoptsuite
+            ~/Library/Caches/Homebrew/tbb@2020--*
+              /usr/local/opt/tbb@2020*
+            ~/Library/Caches/Homebrew/downloads/*--tbb@2020-*
+            ~/Library/Caches/Homebrew/boost--*    
+              /usr/local/opt/boost*
+            ~/Library/Caches/Homebrew/downloads/*--boost-*
+          key: ${{ runner.os }}-scipopt-${{ env.version }}-${{ hashFiles('**/lockfiles') }}
+          restore-keys: |
+            ${{ runner.os }}-scipopt-${{ env.version }}-
 
       - name: Install dependencies (SCIPOptSuite)
-        #if: steps.cache-scip.outputs.cache-hit != 'true'
+        if: steps.cache-scip.outputs.cache-hit != 'true'
         run: |
           brew install tbb@2020 boost
           wget --quiet --no-check-certificate https://scipopt.org/download/release/scipoptsuite-${{ env.version }}.tgz
