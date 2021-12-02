@@ -2154,12 +2154,6 @@ cdef class Model:
         variables = list(variables.values())
         varindex = {var.ptr():idx for (idx,var) in enumerate(variables)}
 
-        # create variable expressions
-        varexprs = <SCIP_EXPR**> malloc(len(varindex) * sizeof(SCIP_EXPR*))
-        for idx,var in enumerate(variables):
-            PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &expr, (<Variable>var).scip_var, NULL, NULL) )
-            varexprs[idx] = expr
-
         # create monomials for terms
         monomials = <SCIP_EXPR**> malloc(len(terms) * sizeof(SCIP_EXPR*))
         termcoefs = <SCIP_Real*> malloc(len(terms) * sizeof(SCIP_Real))
@@ -2195,8 +2189,9 @@ cdef class Model:
         PyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
         PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &expr) )
+        for i in range(<int>len(terms)):
+            PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &monomials[i]))
         free(monomials)
-        free(varexprs)
         free(termcoefs)
         return PyCons
 
@@ -2231,7 +2226,7 @@ cdef class Model:
             if opidx == Operator.varidx:
                 assert len(node[1]) == 1
                 pyvar = node[1][0] # for vars we store the actual var!
-                PY_SCIP_CALL( SCIPcreateExprVaridx(self._scip, &scipexprs[i], <int>varpos, NULL, NULL) )
+                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &scipexprs[i], (<Variable>pyvar).scip_var, NULL, NULL) )
                 vars[varpos] = (<Variable>pyvar).scip_var
                 varpos += 1
                 continue
@@ -2248,6 +2243,7 @@ cdef class Model:
                     childrenexpr[c] = scipexprs[pos]
                     coefs[c] = 1
                 PY_SCIP_CALL( SCIPcreateExprSum(self._scip, &scipexprs[i], nchildren, childrenexpr, coefs, 0, NULL, NULL))
+                free(coefs)
                 free(childrenexpr)
                 continue
             if opidx == Operator.prod:
@@ -2305,7 +2301,8 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         PyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-        PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &scipexprs[len(nodes) - 1]) )
+        for i in range(len(nodes)):
+            PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &scipexprs[i]) )
 
         # free more memory
         free(scipexprs)
