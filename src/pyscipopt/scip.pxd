@@ -1587,7 +1587,6 @@ cdef extern from "scip/pub_nlp.h":
     int SCIPnlrowGetNLinearVars(SCIP_NLROW* nlrow)
     SCIP_VAR** SCIPnlrowGetLinearVars(SCIP_NLROW* nlrow)
     SCIP_Real* SCIPnlrowGetLinearCoefs(SCIP_NLROW* nlrow)
-    SCIP_EXPR* SCIPnlrowGetExpr(SCIP_NLROW* nlrow)
     SCIP_Real SCIPnlrowGetLhs(SCIP_NLROW* nlrow)
     SCIP_Real SCIPnlrowGetRhs(SCIP_NLROW* nlrow)
     const char* SCIPnlrowGetName(SCIP_NLROW* nlrow)

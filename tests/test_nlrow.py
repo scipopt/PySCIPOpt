@@ -25,7 +25,6 @@ def test_nlrow():
     m.addCons(7*x**2 + 8*y**2 == 9)
     m.addCons(10*x + 11*y <= 12)
 
-
     # optimize without presolving
     m.setPresolve(SCIP_PARAMSETTING.OFF)
     m.optimize()
@@ -53,13 +52,6 @@ def test_nlrow():
     assert str(linterms[1][0]) == "t_y"
     assert linterms[1][1] == 11
 
-    quadterms = nlrows[0].getQuadraticTerms()
-    assert len(quadterms) == 0
-
-    # check second nonlinear row that represents constraint 1
-    assert nlrows[1].getLhs() == -m.infinity()
-    assert nlrows[1].getRhs() == 6
-
     linterms = nlrows[1].getLinearTerms()
     assert len(linterms) == 2
     assert str(linterms[0][0]) == "t_x"
@@ -67,33 +59,12 @@ def test_nlrow():
     assert str(linterms[1][0]) == "t_y"
     assert linterms[1][1] == 2
 
-    quadterms = nlrows[1].getQuadraticTerms()
-    assert len(quadterms) == 3
-    assert str(quadterms[0][0]) == "t_x"
-    assert str(quadterms[0][1]) == "t_x"
-    assert quadterms[0][2] == 3
-    assert str(quadterms[1][0]) == "t_y"
-    assert str(quadterms[1][1]) == "t_y"
-    assert quadterms[1][2] == 4
-    assert str(quadterms[2][0]) == "t_x"
-    assert str(quadterms[2][1]) == "t_y"
-    assert quadterms[2][2] == 5
-
     # check third nonlinear row that represents constraint 2
     assert nlrows[2].getLhs() == 9
     assert nlrows[2].getRhs() == 9
 
     linterms = nlrows[2].getLinearTerms()
     assert len(linterms) == 0
-
-    quadterms = nlrows[2].getQuadraticTerms()
-    assert len(quadterms) == 2
-    assert str(quadterms[0][0]) == "t_x"
-    assert str(quadterms[0][1]) == "t_x"
-    assert quadterms[0][2] == 7
-    assert str(quadterms[1][0]) == "t_y"
-    assert str(quadterms[1][1]) == "t_y"
-    assert quadterms[1][2] == 8
 
 if __name__ == "__main__":
     test_nlrow()
