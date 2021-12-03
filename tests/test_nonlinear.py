@@ -137,8 +137,8 @@ def test_circle():
 
     bestsol = m.getBestSol()
     assert abs(m.getSolVal(bestsol, r) - 5.2543) < 1.0e-3
-    assert abs(m.getSolVal(bestsol, a) - 6.1242) < 1.0e-3
-    assert abs(m.getSolVal(bestsol, b) - 5.4702) < 1.0e-3
+    assert abs(m.getSolVal(bestsol, a) - 6.1230) < 1.0e-3
+    assert abs(m.getSolVal(bestsol, b) - 5.4713) < 1.0e-3
 
 # test gastrans: see example in <scip path>/examples/CallableLibrary/src/gastrans.c
 # of course there is a more pythonic/elegant way of implementing this, probably

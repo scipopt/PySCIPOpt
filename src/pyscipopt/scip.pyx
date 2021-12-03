@@ -2967,6 +2967,10 @@ cdef class Model:
         cdef SCIP_Real lincoef
         cdef SCIP_EXPR* sqrexpr
 
+        # variables
+        cdef SCIP_VAR* scipvar1
+        cdef SCIP_VAR* scipvar2
+
         assert cons.isNonlinear(), "constraint is not nonlinear"
         assert self.checkQuadraticNonlinear(cons), "constraint is not quadratic"
 
@@ -2983,12 +2987,19 @@ cdef class Model:
 
         for termidx in range(_nbilinterms):
             SCIPexprGetQuadraticBilinTerm(expr, termidx, &bilinterm1, &bilinterm2, &bilincoef, NULL, NULL)
-            var1 = Variable.create(SCIPgetVarExprVar(bilinterm1))
-            var2 = Variable.create(SCIPgetVarExprVar(bilinterm2))
-            bilinterms.append((var1,var2,bilincoef))
+            scipvar1 = SCIPgetVarExprVar(bilinterm1)
+            scipvar2 = SCIPgetVarExprVar(bilinterm2)
+            var1 = Variable.create(scipvar1)
+            var2 = Variable.create(scipvar2)
+            if scipvar1 != scipvar2:
+                bilinterms.append((var1,var2,bilincoef))
+            else:
+                quadterms.append((var1,bilincoef,0.0))
 
         for termidx in range(_nquadterms):
             SCIPexprGetQuadraticQuadTerm(expr, termidx, NULL, &lincoef, &sqrcoef, NULL, NULL, &sqrexpr)
+            if sqrexpr == NULL:
+                continue
             var = Variable.create(SCIPgetVarExprVar(sqrexpr))
             quadterms.append((var,sqrcoef,lincoef))
 
