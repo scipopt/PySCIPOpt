@@ -1,7 +1,7 @@
 name: Integration test
 
 env:
-  version: 7.0.3
+  version: 8.0.0
 
 # runs only on branches; doesn't run on tags.
 on:
@@ -12,7 +12,7 @@ on:
 jobs:
 
   Integration-test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: true
       matrix:
@@ -107,7 +107,7 @@ jobs:
       - name: Install dependencies (SCIPOptSuite)
         if: steps.cache-scip.outputs.cache-hit != 'true'
         run: |
-          brew install tbb@2020 boost
+          brew install tbb@2020 boost bison
           wget --quiet --no-check-certificate https://scipopt.org/download/release/scipoptsuite-${{ env.version }}.tgz
           tar xfz scipoptsuite-${{ env.version }}.tgz
           cd scipoptsuite-${{ env.version }}
