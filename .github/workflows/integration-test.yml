@@ -3,11 +3,12 @@ name: Integration test
 env:
   version: 8.0.0
 
-# runs only on branches; doesn't run on tags.
+# runs on branches and pull requests; doesn't run on tags.
 on:
   push:
     branches:
       - '**'
+  pull_request:
 
 jobs:
 
@@ -97,8 +98,10 @@ jobs:
           path: |
             ${{ runner.workspace }}/scipoptsuite
             ~/Library/Caches/Homebrew/tbb@2020--*
+              /usr/local/opt/tbb@2020*
             ~/Library/Caches/Homebrew/downloads/*--tbb@2020-*
-            ~/Library/Caches/Homebrew/boost--*
+            ~/Library/Caches/Homebrew/boost--*    
+              /usr/local/opt/boost*
             ~/Library/Caches/Homebrew/downloads/*--boost-*
           key: ${{ runner.os }}-scipopt-${{ env.version }}-${{ hashFiles('**/lockfiles') }}
           restore-keys: |
@@ -113,7 +116,7 @@ jobs:
           cd scipoptsuite-${{ env.version }}
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/scipoptsuite -DIPOPT=off -DSYM=none -DREADLINE=off -DTBB_LIBRARY_DIR=/usr/local/opt/tbb@2020/lib
+          cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/scipoptsuite -DIPOPT=off -DSYM=none -DTPI=tny -DREADLINE=off -DTBB_LIBRARY_DIR=/usr/local/opt/tbb@2020/lib
           make install -j
 
       - name: Setup python ${{ matrix.python-version }}

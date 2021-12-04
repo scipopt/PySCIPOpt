@@ -1,9 +1,17 @@
 # CHANGELOG
+
 ## Unreleased
 ### Added
 ### Fixed
+- close file descriptors after file operation is finished
+- delete variable pointer from model when calling delVar
 ### Changed
 ### Removed
+
+## 3.4.0 - 2021-10-30
+### Added
+- add support for concurrent optimization
+  - note that SCIP needs to be linked to a TPI (task processing interface) to use this feature
 
 ## 3.3.0 - 2021-08-23
 ### Added
