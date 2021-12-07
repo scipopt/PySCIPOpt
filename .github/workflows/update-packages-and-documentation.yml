@@ -1,7 +1,7 @@
 name: Test and Release PyPI Package
 
 env:
-  version: 7.0.3
+  version: 8.0.0
 
 
 # runs only when a release is published, not on drafts
@@ -28,7 +28,7 @@ jobs:
 
   release-integration-test:
     needs: check-tag
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: true
       matrix:
@@ -100,7 +100,7 @@ jobs:
 
   deploy-packages-and-generate-documentation:
     needs: Windows-test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
 
