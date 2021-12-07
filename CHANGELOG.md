@@ -3,15 +3,29 @@
 ## Unreleased
 ### Added
 ### Fixed
-- close file descriptors after file operation is finished
-- delete variable pointer from model when calling delVar
 ### Changed
 ### Removed
+
+## 3.5.0 - 2021-12-07
+### Added
+### Fixed
+- close file descriptors after file operation is finished
+- fixed deletion of variable pointer from model when calling delVar
+- fixed scip install for MAC integration test
+- Fixing assert failure if scip is compiled using quadprecision
+- fixed missing GIL by @AntoinePrv in #539
+### Changed
+- changed integration test to include scip TPI (tinycthreads)
+### Removed
+- removed Mac integration test until the segmentation fault in test_memory.py is fixed on Mac 
 
 ## 3.4.0 - 2021-10-30
 ### Added
 - add support for concurrent optimization
   - note that SCIP needs to be linked to a TPI (task processing interface) to use this feature
+- SCIPsolverConcurrent implementation from issue #229 by @TNonet in #535
+- fix action to also run on external PRs by @mattmilten in #536
+- fix concurrent solve test by @mattmilten in #537
 
 ## 3.3.0 - 2021-08-23
 ### Added
