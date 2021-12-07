@@ -10,7 +10,7 @@ cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPointer
 from libc.stdlib cimport malloc, free
-from libc.stdio cimport fdopen
+from libc.stdio cimport fdopen, fclose
 
 from collections.abc import Iterable
 from itertools import repeat
@@ -1487,6 +1487,8 @@ cdef class Model:
 
         """
         cdef SCIP_Bool deleted
+        if var.ptr() in self._modelvars:
+            del self._modelvars[var.ptr()]
         PY_SCIP_CALL(SCIPdelVar(self._scip, var.scip_var, &deleted))
         return deleted
 
@@ -3117,6 +3119,16 @@ cdef class Model:
         PY_SCIP_CALL(SCIPsolve(self._scip))
         self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
 
+    def solveConcurrent(self):
+        """Transforms, presolves, and solves problem using additional solvers which emphasize on
+        finding solutions."""
+        if SCIPtpiGetNumThreads() == 1:
+            warnings.warn("SCIP was compiled without task processing interface. Parallel solve not possible - using optimize() instead of solveConcurrent()") 
+            self.optimize()
+        else:
+            PY_SCIP_CALL(SCIPsolveConcurrent(self._scip))
+            self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
+
     def presolve(self):
         """Presolve the problem."""
         PY_SCIP_CALL(SCIPpresolve(self._scip))
@@ -4115,6 +4127,7 @@ cdef class Model:
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintBestSol(self._scip, cfile, write_zeros))
+            fclose(cfile)
 
     def writeSol(self, Solution solution, filename="origprob.sol", write_zeros=False):
         """Write the given primal solution to a file.
@@ -4129,6 +4142,7 @@ cdef class Model:
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, cfile, write_zeros))
+            fclose(cfile)
 
     # perhaps this should not be included as it implements duplicated functionality
     #   (as does it's namesake in SCIP)
@@ -4474,6 +4488,7 @@ cdef class Model:
       with open(filename, "w") as f:
           cfile = fdopen(f.fileno(), "w")
           PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
+          fclose(cfile)
 
     def getNLPs(self):
         """gets total number of LPs solved so far"""

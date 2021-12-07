@@ -261,7 +261,7 @@ def test_gastrans():
     if scip.getStatus() == 'timelimit':
         pytest.skip()
 
-    assert abs(scip.getPrimalbound() - 89.08584) < 1.0e-9
+    assert abs(scip.getPrimalbound() - 89.08584) < 1.0e-6
 
 def test_quad_coeffs():
     """test coefficient access method for quadratic constraints"""

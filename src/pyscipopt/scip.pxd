@@ -612,6 +612,7 @@ cdef extern from "scip/scip.h":
 
     # Solve Methods
     SCIP_RETCODE SCIPsolve(SCIP* scip)
+    SCIP_RETCODE SCIPsolveConcurrent(SCIP* scip)
     SCIP_RETCODE SCIPfreeTransform(SCIP* scip)
     SCIP_RETCODE SCIPpresolve(SCIP* scip)
 
@@ -1726,6 +1727,9 @@ cdef extern from "scip/scip_tree.h":
 
 cdef extern from "scip/scip_var.h":
     SCIP_RETCODE SCIPchgVarBranchPriority(SCIP* scip, SCIP_VAR* var, int branchpriority)
+
+cdef extern from "tpi/tpi.h":
+    int SCIPtpiGetNumThreads()
 
 cdef class Expr:
     cdef public terms

@@ -78,6 +78,15 @@ def test_model():
 
     assert s.getStatus() == 'unbounded'
 
+def test_solve_concurrent():
+    s = Model()
+    x = s.addVar("x", vtype = 'C', obj = 1.0)
+    y = s.addVar("y", vtype = 'C', obj = 2.0)
+    c = s.addCons(x + y <= 10.0)
+    s.setMaximize()
+    s.solveConcurrent()
+    assert s.getStatus() == 'optimal'
+    assert s.getObjVal() == 20.0
 
 def test_multiple_cons_simple():
     def assert_conss_eq(a, b):
@@ -177,4 +186,8 @@ def test_model_ptr():
 
 if __name__ == "__main__":
     test_model()
+    test_solve_concurrent()
+    test_multiple_cons_simple()
+    test_multiple_cons_names()
+    test_multiple_cons_params()
     test_model_ptr()
