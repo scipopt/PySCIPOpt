@@ -34,6 +34,17 @@ conda install --channel conda-forge pyscipopt
 
 See [INSTALL.md](INSTALL.md) for instructions.
 Please note that the latest PySCIPOpt version is usually only compatible with the latest major release of the SCIP Optimization Suite.
+The following table summarizes which version of PySCIPOpt is required for a given SCIP version:
+
+|SCIP| PySCIPOpt |
+|----|----|
+8.0 | 4.x
+7.0 | 3.x
+6.0 | 2.x
+5.0 | 1.4, 1.3
+4.0 | 1.2, 1.1
+3.2 | 1.0
+
 Information which version of PySCIPOpt is required for a given SCIP version can also be found in [INSTALL.md](INSTALL.md).
 
 Building and solving a model
