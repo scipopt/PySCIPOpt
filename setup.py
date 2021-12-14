@@ -18,10 +18,10 @@ else:
 print('Using include path <%s>.' % includedir)
 
 # determine library
-if os.path.exists(os.path.join(scipoptdir, 'lib/shared/libscipsolver.so')):
+if os.path.exists(os.path.join(scipoptdir, 'lib/shared/libscip.so')):
     # SCIP seems to be created with make
     libdir = os.path.abspath(os.path.join(scipoptdir, 'lib/shared'))
-    libname = 'scipsolver'
+    libname = 'scip'
     extra_compile_args.append('-DNO_CONFIG_HEADER')
 else:
     # assume that SCIP is installed on the system
