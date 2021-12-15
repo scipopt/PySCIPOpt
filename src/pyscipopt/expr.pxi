@@ -381,24 +381,6 @@ class Op:
     add = 'sum'
     prod = 'prod'
     fabs = 'abs'
-    operatorIndexDic={
-            varidx:SCIP_EXPR_VARIDX,
-            const:SCIP_EXPR_CONST,
-            plus:SCIP_EXPR_PLUS,
-            minus:SCIP_EXPR_MINUS,
-            mul:SCIP_EXPR_MUL,
-            div:SCIP_EXPR_DIV,
-            sqrt:SCIP_EXPR_SQRT,
-            power:SCIP_EXPR_REALPOWER,
-            exp:SCIP_EXPR_EXP,
-            log:SCIP_EXPR_LOG,
-            fabs:SCIP_EXPR_ABS,
-            add:SCIP_EXPR_SUM,
-            prod:SCIP_EXPR_PRODUCT
-            }
-    def getOpIndex(self, op):
-        '''returns operator index'''
-        return Op.operatorIndexDic[op];
 
 Operator = Op()
 
@@ -411,7 +393,6 @@ Operator = Op()
 #
 #See also the @ref ExprDetails "description" in the expr.pxi. 
 cdef class GenExpr:
-    cdef public operatorIndex
     cdef public _op
     cdef public children
 
@@ -588,7 +569,6 @@ cdef class SumExpr(GenExpr):
         self.coefs = []
         self.children = []
         self._op = Operator.add
-        self.operatorIndex = Operator.operatorIndexDic[self._op]
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
@@ -599,7 +579,6 @@ cdef class ProdExpr(GenExpr):
         self.constant = 1.0
         self.children = []
         self._op = Operator.prod
-        self.operatorIndex = Operator.operatorIndexDic[self._op]
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
@@ -609,7 +588,6 @@ cdef class VarExpr(GenExpr):
     def __init__(self, var):
         self.children = [var]
         self._op = Operator.varidx
-        self.operatorIndex = Operator.operatorIndexDic[self._op]
     def __repr__(self):
         return self.children[0].__repr__()
 
@@ -620,7 +598,6 @@ cdef class PowExpr(GenExpr):
         self.expo = 1.0
         self.children = []
         self._op = Operator.power
-        self.operatorIndex = Operator.operatorIndexDic[self._op]
     def __repr__(self):
         return self._op + "(" + self.children[0].__repr__() + "," + str(self.expo) + ")"
 
@@ -630,7 +607,6 @@ cdef class UnaryExpr(GenExpr):
         self.children = []
         self.children.append(expr)
         self._op = op
-        self.operatorIndex = Operator.operatorIndexDic[op]
     def __repr__(self):
         return self._op + "(" + self.children[0].__repr__() + ")"
 
@@ -640,7 +616,6 @@ cdef class Constant(GenExpr):
     def __init__(self,number):
         self.number = number
         self._op = Operator.const
-        self.operatorIndex = Operator.operatorIndexDic[self._op]
 
     def __repr__(self):
         return str(self.number)

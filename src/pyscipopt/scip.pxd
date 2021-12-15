@@ -427,10 +427,13 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_EXPR:
         pass
 
-    ctypedef struct SCIP_EXPRTREE:
+    ctypedef struct SCIP_EXPRHDLR:
         pass
 
-    ctypedef struct SCIP_EXPRDATA_MONOMIAL:
+    ctypedef struct SCIP_EXPRDATA:
+        pass
+
+    ctypedef struct SCIP_DECL_EXPR_OWNERCREATE:
         pass
 
     ctypedef struct SCIP_BENDERS:
@@ -444,28 +447,6 @@ cdef extern from "scip/scip.h":
 
     ctypedef struct SCIP_BENDERSCUTDATA:
         pass
-
-    ctypedef struct SCIP_QUADVAREVENTDATA:
-        pass
-
-    ctypedef struct SCIP_QUADVARTERM:
-        SCIP_VAR* var
-        SCIP_Real lincoef
-        SCIP_Real sqrcoef
-        int nadjbilin
-        int adjbilinsize
-        int* adjbilin
-        SCIP_QUADVAREVENTDATA* eventdata
-
-    ctypedef struct SCIP_BILINTERM:
-        SCIP_VAR* var1
-        SCIP_VAR* var2
-        SCIP_Real coef
-
-    ctypedef struct SCIP_QUADELEM:
-        int idx1
-        int idx2
-        SCIP_Real coef
 
     ctypedef struct SCIP_BOUNDCHG:
         pass
@@ -986,8 +967,8 @@ cdef extern from "scip/scip.h":
                                  SCIP_RETCODE (*sepaexit) (SCIP* scip, SCIP_SEPA* sepa),
                                  SCIP_RETCODE (*sepainitsol) (SCIP* scip, SCIP_SEPA* sepa),
                                  SCIP_RETCODE (*sepaexitsol) (SCIP* scip, SCIP_SEPA* sepa),
-                                 SCIP_RETCODE (*sepaexeclp) (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result, unsigned int allowlocal),
-                                 SCIP_RETCODE (*sepaexecsol) (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result, unsigned int allowlocal),
+                                 SCIP_RETCODE (*sepaexeclp) (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result, unsigned int allowlocal, int depth),
+                                 SCIP_RETCODE (*sepaexecsol) (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result, unsigned int allowlocal, int depth),
                                  SCIP_SEPADATA* sepadata)
     SCIP_SEPADATA* SCIPsepaGetData(SCIP_SEPA* sepa)
     SCIP_SEPA* SCIPfindSepa(SCIP* scip, const char* name)
@@ -1321,8 +1302,24 @@ cdef extern from "scip/cons_linear.h":
     int SCIPgetNVarsLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real* SCIPgetValsLinear(SCIP* scip, SCIP_CONS* cons)
 
-cdef extern from "scip/cons_quadratic.h":
-    SCIP_RETCODE SCIPcreateConsQuadratic(SCIP* scip,
+cdef extern from "scip/cons_nonlinear.h":
+    SCIP_EXPR* SCIPgetExprNonlinear(SCIP_CONS* cons)
+    SCIP_RETCODE SCIPcreateConsNonlinear(SCIP* scip,
+                                         SCIP_CONS** cons,
+                                         const char* name,
+                                         SCIP_EXPR* expr,
+                                         SCIP_Real lhs,
+                                         SCIP_Real rhs,
+                                         SCIP_Bool initial,
+                                         SCIP_Bool separate,
+                                         SCIP_Bool enforce,
+                                         SCIP_Bool check,
+                                         SCIP_Bool propagate,
+                                         SCIP_Bool local,
+                                         SCIP_Bool modifiable,
+                                         SCIP_Bool dynamic,
+                                         SCIP_Bool removable)
+    SCIP_RETCODE SCIPcreateConsQuadraticNonlinear(SCIP* scip,
                                          SCIP_CONS** cons,
                                          const char* name,
                                          int nlinvars,
@@ -1343,27 +1340,19 @@ cdef extern from "scip/cons_quadratic.h":
                                          SCIP_Bool modifiable,
                                          SCIP_Bool dynamic,
                                          SCIP_Bool removable)
-    SCIP_RETCODE SCIPaddLinearVarQuadratic(SCIP* scip,
+    SCIP_RETCODE SCIPaddLinearVarNonlinear(SCIP* scip,
                                            SCIP_CONS* cons,
                                            SCIP_VAR* var,
                                            SCIP_Real coef)
-    SCIP_RETCODE SCIPaddBilinTermQuadratic(SCIP* scip,
-                                           SCIP_CONS* cons,
-                                           SCIP_VAR* var1,
-                                           SCIP_VAR* var2,
-                                           SCIP_Real coef)
-    SCIP_RETCODE SCIPchgLhsQuadratic(SCIP* scip, SCIP_CONS* cons, SCIP_Real lhs)
-    SCIP_RETCODE SCIPchgRhsQuadratic(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
-    SCIP_Real SCIPgetLhsQuadratic(SCIP* scip, SCIP_CONS* cons)
-    SCIP_Real SCIPgetRhsQuadratic(SCIP* scip, SCIP_CONS* cons)
-    SCIP_RETCODE SCIPgetActivityQuadratic(SCIP* scip, SCIP_CONS* cons, SCIP_SOL* sol, SCIP_Real* activity)
-    SCIP_BILINTERM* SCIPgetBilinTermsQuadratic(SCIP* scip, SCIP_CONS* cons)
-    int SCIPgetNBilinTermsQuadratic(SCIP* scip, SCIP_CONS* cons)
-    SCIP_QUADVARTERM* SCIPgetQuadVarTermsQuadratic(SCIP* scip, SCIP_CONS* cons)
-    int SCIPgetNQuadVarTermsQuadratic(SCIP* scip, SCIP_CONS* cons)
-    SCIP_VAR** SCIPgetLinearVarsQuadratic(SCIP* scip, SCIP_CONS* cons)
-    SCIP_Real* SCIPgetCoefsLinearVarsQuadratic(SCIP* scip, SCIP_CONS* cons)
-    int SCIPgetNLinearVarsQuadratic(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RETCODE SCIPaddExprNonlinear(SCIP* scip,
+                                      SCIP_CONS* cons,
+                                      SCIP_EXPR* expr,
+                                      SCIP_Real coef)
+    SCIP_RETCODE SCIPchgLhsNonlinear(SCIP* scip, SCIP_CONS* cons, SCIP_Real lhs)
+    SCIP_RETCODE SCIPchgRhsNonlinear(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
+    SCIP_Real SCIPgetLhsNonlinear(SCIP_CONS* cons)
+    SCIP_Real SCIPgetRhsNonlinear(SCIP_CONS* cons)
+    SCIP_RETCODE SCIPcheckQuadraticNonlinear(SCIP* scip, SCIP_CONS* cons, SCIP_Bool* isquadratic)
 
 cdef extern from "scip/cons_sos1.h":
     SCIP_RETCODE SCIPcreateConsSOS1(SCIP* scip,
@@ -1471,54 +1460,134 @@ cdef extern from "scip/cons_xor.h":
                                          SCIP_Bool dynamic,
                                          SCIP_Bool removable,
                                          SCIP_Bool stickingatnode)
+cdef extern from "scip/scip_cons.h":
+    SCIP_RETCODE SCIPprintCons(SCIP* scip,
+                               SCIP_CONS* cons,
+                               FILE* file)
 
 cdef extern from "blockmemshell/memory.h":
     void BMScheckEmptyMemory()
     long long BMSgetMemoryUsed()
 
-cdef extern from "nlpi/pub_expr.h":
-    SCIP_RETCODE SCIPexprCreate(BMS_BLKMEM* blkmem,
+cdef extern from "scip/scip_expr.h":
+    SCIP_RETCODE SCIPcreateExpr(SCIP* scip,
                                 SCIP_EXPR** expr,
-                                SCIP_EXPROP op,
-                                ...)
-    SCIP_RETCODE SCIPexprCreateMonomial(BMS_BLKMEM* blkmem,
-                                        SCIP_EXPRDATA_MONOMIAL** monomial,
-                                        SCIP_Real coef,
+                                SCIP_EXPRHDLR* exprhdlr,
+                                SCIP_EXPRDATA* exprdata,
+                                int nchildren,
+                                SCIP_EXPR** children,
+                                SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                void* ownercreatedata)
+    SCIP_RETCODE SCIPcreateExprMonomial(SCIP* scip,
+                                        SCIP_EXPR** expr,
                                         int nfactors,
-                                        int* childidxs,
-                                        SCIP_Real* exponents)
-    SCIP_RETCODE SCIPexprCreatePolynomial(BMS_BLKMEM* blkmem,
-                                          SCIP_EXPR** expr,
-                                          int nchildren,
-                                          SCIP_EXPR** children,
-                                          int nmonomials,
-                                          SCIP_EXPRDATA_MONOMIAL** monomials,
-                                          SCIP_Real constant,
-                                          SCIP_Bool copymonomials)
-    SCIP_RETCODE SCIPexprtreeCreate(BMS_BLKMEM* blkmem,
-                                    SCIP_EXPRTREE** tree,
-                                    SCIP_EXPR* root,
-                                    int nvars,
-                                    int nparams,
-                                    SCIP_Real* params)
-    SCIP_RETCODE SCIPexprtreeFree(SCIP_EXPRTREE** tree)
+                                        SCIP_VAR** vars,
+                                        SCIP_Real* exponents,
+                                        SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                        void* ownercreatedata)
+    SCIP_RETCODE SCIPreleaseExpr(SCIP* scip, SCIP_EXPR** expr)
+
+cdef extern from "scip/pub_expr.h":
+    void SCIPexprGetQuadraticData(SCIP_EXPR* expr,
+                                  SCIP_Real* constant,
+                                  int* nlinexprs,
+                                  SCIP_EXPR*** linexprs,
+                                  SCIP_Real** lincoefs,
+                                  int* nquadexprs,
+                                  int* nbilinexprs,
+                                  SCIP_Real** eigenvalues,
+                                  SCIP_Real** eigenvectors)
+    void SCIPexprGetQuadraticQuadTerm(SCIP_EXPR* quadexpr,
+                                      int termidx,
+                                      SCIP_EXPR** expr,
+                                      SCIP_Real* lincoef,
+                                      SCIP_Real* sqrcoef,
+                                      int* nadjbilin,
+                                      int** adjbilin,
+                                      SCIP_EXPR** sqrexpr)
+    void SCIPexprGetQuadraticBilinTerm(SCIP_EXPR* expr,
+                                       int termidx,
+                                       SCIP_EXPR** expr1,
+                                       SCIP_EXPR** expr2,
+                                       SCIP_Real* coef,
+                                       int* pos2,
+                                       SCIP_EXPR** prodexpr)
+
+cdef extern from "scip/expr_var.h":
+   SCIP_VAR* SCIPgetVarExprVar(SCIP_EXPR* expr)
+   SCIP_RETCODE SCIPcreateExprVar(SCIP* scip,
+                                  SCIP_EXPR** expr,
+                                  SCIP_VAR* var,
+                                  SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                  void* ownercreatedata)
+
+cdef extern from "scip/expr_varidx.h":
+   SCIP_RETCODE SCIPcreateExprVaridx(SCIP* scip,
+                                     SCIP_EXPR** expr,
+                                     int varidx,
+                                     SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                     void* ownercreatedata)
+
+cdef extern from "scip/expr_value.h":
+   SCIP_RETCODE SCIPcreateExprValue(SCIP* scip,
+                                    SCIP_EXPR** expr,
+                                    SCIP_Real value,
+                                    SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                    void* ownercreatedata)
+
+cdef extern from "scip/expr_sum.h":
+    SCIP_RETCODE SCIPcreateExprSum(SCIP* scip,
+                                   SCIP_EXPR** expr,
+                                   int nchildren,
+                                   SCIP_EXPR** children,
+                                   SCIP_Real* coefficients,
+                                   SCIP_Real constant,
+                                   SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                   void* ownercreatedata)
+
+cdef extern from "scip/expr_abs.h":
+    SCIP_RETCODE SCIPcreateExprAbs(SCIP* scip,
+                                   SCIP_EXPR** expr,
+                                   SCIP_EXPR* child,
+                                   SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                   void* ownercreatedata)
+
+cdef extern from "scip/expr_exp.h":
+    SCIP_RETCODE SCIPcreateExprExp(SCIP* scip,
+                                   SCIP_EXPR** expr,
+                                   SCIP_EXPR* child,
+                                   SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                   void* ownercreatedata)
+
+cdef extern from "scip/expr_log.h":
+    SCIP_RETCODE SCIPcreateExprLog(SCIP* scip,
+                                   SCIP_EXPR** expr,
+                                   SCIP_EXPR* child,
+                                   SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                   void* ownercreatedata)
+
+cdef extern from "scip/expr_product.h":
+    SCIP_RETCODE SCIPcreateExprProduct(SCIP* scip,
+                                       SCIP_EXPR** expr,
+                                       int nchildren,
+                                       SCIP_EXPR** children,
+                                       SCIP_Real coefficient,
+                                       SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                       void* ownercreatedata)
+
+cdef extern from "scip/expr_pow.h":
+    SCIP_RETCODE SCIPcreateExprPow(SCIP* scip,
+                                   SCIP_EXPR** expr,
+                                   SCIP_EXPR* child,
+                                   SCIP_Real exponent,
+                                   SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                   void* ownercreatedata)
 
 cdef extern from "scip/pub_nlp.h":
-    SCIP_RETCODE SCIPexprtreeSetVars(SCIP_EXPRTREE* tree,
-                                     int nvars,
-                                     SCIP_VAR** vars)
-
-
     SCIP_Real SCIPnlrowGetConstant(SCIP_NLROW* nlrow)
     int SCIPnlrowGetNLinearVars(SCIP_NLROW* nlrow)
     SCIP_VAR** SCIPnlrowGetLinearVars(SCIP_NLROW* nlrow)
     SCIP_Real* SCIPnlrowGetLinearCoefs(SCIP_NLROW* nlrow)
-    void SCIPnlrowGetQuadData(SCIP_NLROW* nlrow,
-                              int* nquadvars,
-                              SCIP_VAR*** quadvars,
-                              int* nquadelems,
-                              SCIP_QUADELEM** quadelems)
-    SCIP_EXPRTREE* SCIPnlrowGetExprtree(SCIP_NLROW* nlrow)
     SCIP_Real SCIPnlrowGetLhs(SCIP_NLROW* nlrow)
     SCIP_Real SCIPnlrowGetRhs(SCIP_NLROW* nlrow)
     const char* SCIPnlrowGetName(SCIP_NLROW* nlrow)
@@ -1533,28 +1602,6 @@ cdef extern from "scip/scip_nlp.h":
     SCIP_RETCODE SCIPgetNlRowActivityBounds(SCIP* scip, SCIP_NLROW* nlrow, SCIP_Real* minactivity, SCIP_Real* maxactivity)
     SCIP_RETCODE SCIPprintNlRow(SCIP* scip, SCIP_NLROW* nlrow, FILE* file)
 
-cdef extern from "scip/cons_nonlinear.h":
-    SCIP_RETCODE SCIPcreateConsNonlinear(SCIP* scip,
-                                         SCIP_CONS** cons,
-                                         const char* name,
-                                         int nlinvars,
-                                         SCIP_VAR** linvars,
-                                         SCIP_Real* lincoefs,
-                                         int nexprtrees,
-                                         SCIP_EXPRTREE** exprtrees,
-                                         SCIP_Real* nonlincoefs,
-                                         SCIP_Real lhs,
-                                         SCIP_Real rhs,
-                                         SCIP_Bool initial,
-                                         SCIP_Bool separate,
-                                         SCIP_Bool enforce,
-                                         SCIP_Bool check,
-                                         SCIP_Bool propagate,
-                                         SCIP_Bool local,
-                                         SCIP_Bool modifiable,
-                                         SCIP_Bool dynamic,
-                                         SCIP_Bool removable,
-                                         SCIP_Bool stickingatnode)
 
 cdef extern from "scip/cons_cardinality.h":
     SCIP_RETCODE SCIPcreateConsCardinality(SCIP* scip,

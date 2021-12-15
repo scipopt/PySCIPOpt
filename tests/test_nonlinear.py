@@ -137,8 +137,8 @@ def test_circle():
 
     bestsol = m.getBestSol()
     assert abs(m.getSolVal(bestsol, r) - 5.2543) < 1.0e-3
-    assert abs(m.getSolVal(bestsol, a) - 6.1242) < 1.0e-3
-    assert abs(m.getSolVal(bestsol, b) - 5.4702) < 1.0e-3
+    assert abs(m.getSolVal(bestsol, a) - 6.1230) < 1.0e-3
+    assert abs(m.getSolVal(bestsol, b) - 5.4713) < 1.0e-3
 
 # test gastrans: see example in <scip path>/examples/CallableLibrary/src/gastrans.c
 # of course there is a more pythonic/elegant way of implementing this, probably
@@ -261,7 +261,7 @@ def test_gastrans():
     if scip.getStatus() == 'timelimit':
         pytest.skip()
 
-    assert abs(scip.getPrimalbound() - 89.08584) < 1.0e-6
+    assert abs(scip.getPrimalbound() - 89.08584) < 1.0e-5
 
 def test_quad_coeffs():
     """test coefficient access method for quadratic constraints"""
@@ -271,7 +271,8 @@ def test_quad_coeffs():
     z = scip.addVar()
 
     c = scip.addCons(2*x*y + 0.5*x**2 + 4*z >= 10)
-    assert c.isQuadratic()
+    assert c.isNonlinear()
+    assert scip.checkQuadraticNonlinear(c)
 
     bilinterms, quadterms, linterms = scip.getTermsQuadratic(c)
 
