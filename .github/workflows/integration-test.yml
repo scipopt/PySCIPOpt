@@ -116,7 +116,9 @@ jobs:
           cd scipoptsuite-${{ env.version }}
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/scipoptsuite -DIPOPT=off -DSYM=none -DTPI=tny -DREADLINE=off -DLD_LIBRARY_PATH=/usr/local/opt/tbb@2020/lib -DC_INCLUDE_PATH=/usr/local/opt/tbb@2020/include
+          export LDFLAGS="-L/usr/local/opt/tbb@2020/lib"
+  export CPPFLAGS="-I/usr/local/opt/tbb@2020/include"
+          cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/scipoptsuite -DIPOPT=off -DSYM=none -DTPI=tny -DREADLINE=off
           make install -j
 
       - name: Setup python ${{ matrix.python-version }}
