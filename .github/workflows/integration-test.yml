@@ -97,9 +97,9 @@ jobs:
         with:
           path: |
             ${{ runner.workspace }}/scipoptsuite
-            ~/Library/Caches/Homebrew/tbb@2020--*
-              /usr/local/opt/tbb@2020*
-            ~/Library/Caches/Homebrew/downloads/*--tbb@2020-*
+            ~/Library/Caches/Homebrew/tbb--*
+              /usr/local/opt/tbb*
+            ~/Library/Caches/Homebrew/downloads/*--tbb-*
             ~/Library/Caches/Homebrew/boost--*
               /usr/local/opt/boost*
             ~/Library/Caches/Homebrew/downloads/*--boost-*
@@ -116,8 +116,6 @@ jobs:
           cd scipoptsuite-${{ env.version }}
           mkdir build
           cd build
-          export LDFLAGS="-L/usr/local/opt/tbb@2020/lib"
-          export CPPFLAGS="-I/usr/local/opt/tbb@2020/include"
           cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/scipoptsuite -DIPOPT=off -DSYM=none -DTPI=tny -DREADLINE=off
           make install -j
 
