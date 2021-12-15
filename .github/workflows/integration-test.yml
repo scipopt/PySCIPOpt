@@ -117,7 +117,7 @@ jobs:
           mkdir build
           cd build
           export LDFLAGS="-L/usr/local/opt/tbb@2020/lib"
-  export CPPFLAGS="-I/usr/local/opt/tbb@2020/include"
+          export CPPFLAGS="-I/usr/local/opt/tbb@2020/include"
           cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/scipoptsuite -DIPOPT=off -DSYM=none -DTPI=tny -DREADLINE=off
           make install -j
 
