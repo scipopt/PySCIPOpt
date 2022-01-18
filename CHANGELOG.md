@@ -1,10 +1,98 @@
 # CHANGELOG
 
 ## Unreleased
+### Added
+### Fixed
+### Changed
+### Removed
+
+## 3.5.0 - 2021-12-07
+### Added
+### Fixed
+- close file descriptors after file operation is finished
+- fixed deletion of variable pointer from model when calling delVar
+- fixed scip install for MAC integration test
+- Fixing assert failure if scip is compiled using quadprecision
+- fixed missing GIL by @AntoinePrv in #539
+### Changed
+- changed integration test to include scip TPI (tinycthreads)
+### Removed
+- removed Mac integration test until the segmentation fault in test_memory.py is fixed on Mac 
+
+## 3.4.0 - 2021-10-30
+### Added
+- add support for concurrent optimization
+  - note that SCIP needs to be linked to a TPI (task processing interface) to use this feature
+- SCIPsolverConcurrent implementation from issue #229 by @TNonet in #535
+- fix action to also run on external PRs by @mattmilten in #536
+- fix concurrent solve test by @mattmilten in #537
+
+## 3.3.0 - 2021-08-23
+### Added
+- add SCIP function `getPseudoBranchCands`
+
+### Fixed
+### Changed
+### Removed
+
+## 3.2.2 - 2021-06-21 
+### Added
+- add SCIP functions `getNSolsFound`, `getNSolsFound`, `getNLimSolsFound` and `getNBestSolsFound`
+
+### Fixed
+### Changed
+- documentation build parameter EXTRACT_ALL = YES
+
+### Removed
+
+## 3.2.1 - 2021-06-21
+### Added
+- Continuous Integration: move from travis to github actions:
+  - integration with scipoptsuite and
+  - publishing documentation and packages.
+
+### Fixed
+### Changed
+### Removed
+- CI files
+
+## 3.2.0 - 2021-06-07
+### Added
+- add convenience function `Model.addConss()` to add multiple constraints at once
+
+## 3.1.5 - 2021-05-23
+### Added
+- add SCIP function `SCIPsetMessagehdlrLogfile`
+### Fixed
+- fix `Model.writeLP` method
+
+## 3.1.4 - 2021-04-25
+### Fixed
+- check for correct stage when querying solution values (raise warning otherwise)
+
+## 3.1.3 - 2021-04-23
+### Fixed
+- check for NULL pointers when creating Solution objects (will return None): [#494](https://github.com/scipopt/PySCIPOpt/pull/494)
+
+## 3.1.2 - 2021-04-07
+### Added
+- add `Model.getNReaders` that returns the number of available readers
+
+## 3.1.1 - 2021-03-10
+### Added
+- add evaluation of `Expr` in `Solution`.
+
+## 3.1.0 - 2020-12-17
+### Added
+- add more SCIP functions: `getNSols`, `createPartialSol`
+
+### Fixed
+- consistent handling of filenames for reading/writing
+- fix error when no SCIPOPTDIR env var is set on Windows
 
 ## 3.0.4 - 2020-10-30
 ### Added
-- add more SCIP functions: `getNTotalNodes`, `getNIntVars`, `getNBinVars`, `getNSols`
+- add more SCIP functions: `getNTotalNodes`, `getNIntVars`, `getNBinVars`
 
 ### Fixed
 - `getTransformedVar` now uses `SCIPgetTransformedVar` instead of `SCIPtransformVar` which captures the variable

@@ -70,10 +70,10 @@ cdef Variable getPyVar(SCIP_VAR* var):
     return <Variable>vardata
 
 
-cdef SCIP_RETCODE PyBendersCopy (SCIP* scip, SCIP_BENDERS* benders, SCIP_Bool threadsafe):
+cdef SCIP_RETCODE PyBendersCopy (SCIP* scip, SCIP_BENDERS* benders, SCIP_Bool threadsafe) with gil:
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersFree (SCIP* scip, SCIP_BENDERS* benders):
+cdef SCIP_RETCODE PyBendersFree (SCIP* scip, SCIP_BENDERS* benders) with gil:
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
@@ -81,56 +81,56 @@ cdef SCIP_RETCODE PyBendersFree (SCIP* scip, SCIP_BENDERS* benders):
     Py_DECREF(PyBenders)
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersInit (SCIP* scip, SCIP_BENDERS* benders):
+cdef SCIP_RETCODE PyBendersInit (SCIP* scip, SCIP_BENDERS* benders) with gil:
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
     PyBenders.bendersinit()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersExit (SCIP* scip, SCIP_BENDERS* benders):
+cdef SCIP_RETCODE PyBendersExit (SCIP* scip, SCIP_BENDERS* benders) with gil:
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
     PyBenders.bendersexit()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersInitpre (SCIP* scip, SCIP_BENDERS* benders):
+cdef SCIP_RETCODE PyBendersInitpre (SCIP* scip, SCIP_BENDERS* benders) with gil:
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
     PyBenders.bendersinitpre()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersExitpre (SCIP* scip, SCIP_BENDERS* benders):
+cdef SCIP_RETCODE PyBendersExitpre (SCIP* scip, SCIP_BENDERS* benders) with gil:
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
     PyBenders.bendersexitpre()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersInitsol (SCIP* scip, SCIP_BENDERS* benders):
+cdef SCIP_RETCODE PyBendersInitsol (SCIP* scip, SCIP_BENDERS* benders) with gil:
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
     PyBenders.bendersinitsol()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersExitsol (SCIP* scip, SCIP_BENDERS* benders):
+cdef SCIP_RETCODE PyBendersExitsol (SCIP* scip, SCIP_BENDERS* benders) with gil:
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
     PyBenders.bendersexitsol()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersCreatesub (SCIP* scip, SCIP_BENDERS* benders, int probnumber):
+cdef SCIP_RETCODE PyBendersCreatesub (SCIP* scip, SCIP_BENDERS* benders, int probnumber) with gil:
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
     PyBenders.benderscreatesub(probnumber)
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersPresubsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, SCIP_BENDERSENFOTYPE type, SCIP_Bool checkint, SCIP_Bool* infeasible, SCIP_Bool* auxviol, SCIP_Bool* skipsolve,  SCIP_RESULT* result):
+cdef SCIP_RETCODE PyBendersPresubsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, SCIP_BENDERSENFOTYPE type, SCIP_Bool checkint, SCIP_Bool* infeasible, SCIP_Bool* auxviol, SCIP_Bool* skipsolve,  SCIP_RESULT* result) with gil:
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
@@ -146,7 +146,7 @@ cdef SCIP_RETCODE PyBendersPresubsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersSolvesubconvex (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, int probnumber, SCIP_Bool onlyconvex, SCIP_Real* objective, SCIP_RESULT* result):
+cdef SCIP_RETCODE PyBendersSolvesubconvex (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, int probnumber, SCIP_Bool onlyconvex, SCIP_Real* objective, SCIP_RESULT* result) with gil:
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
@@ -159,7 +159,7 @@ cdef SCIP_RETCODE PyBendersSolvesubconvex (SCIP* scip, SCIP_BENDERS* benders, SC
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersSolvesub (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, int probnumber, SCIP_Real* objective, SCIP_RESULT* result):
+cdef SCIP_RETCODE PyBendersSolvesub (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol, int probnumber, SCIP_Real* objective, SCIP_RESULT* result) with gil:
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
@@ -174,7 +174,7 @@ cdef SCIP_RETCODE PyBendersSolvesub (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL
 
 cdef SCIP_RETCODE PyBendersPostsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SOL* sol,
         SCIP_BENDERSENFOTYPE type, int* mergecands, int npriomergecands, int nmergecands, SCIP_Bool checkint,
-        SCIP_Bool infeasible, SCIP_Bool* merged):
+        SCIP_Bool infeasible, SCIP_Bool* merged) with  gil:
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
@@ -190,7 +190,7 @@ cdef SCIP_RETCODE PyBendersPostsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SO
     merged[0] = result_dict.get("merged", False)
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyBendersFreesub (SCIP* scip, SCIP_BENDERS* benders, int probnumber):
+cdef SCIP_RETCODE PyBendersFreesub (SCIP* scip, SCIP_BENDERS* benders, int probnumber) with gil:
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
@@ -198,7 +198,7 @@ cdef SCIP_RETCODE PyBendersFreesub (SCIP* scip, SCIP_BENDERS* benders, int probn
     return SCIP_OKAY
 
 #TODO: Really need to ask about the passing and returning of variables
-cdef SCIP_RETCODE PyBendersGetvar (SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar, int probnumber):
+cdef SCIP_RETCODE PyBendersGetvar (SCIP* scip, SCIP_BENDERS* benders, SCIP_VAR* var, SCIP_VAR** mappedvar, int probnumber) with gil:
     cdef SCIP_BENDERSDATA* bendersdata
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata

@@ -34,10 +34,10 @@ cdef class Sepa:
 
 
 
-cdef SCIP_RETCODE PySepaCopy (SCIP* scip, SCIP_SEPA* sepa):
+cdef SCIP_RETCODE PySepaCopy (SCIP* scip, SCIP_SEPA* sepa) with gil:
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PySepaFree (SCIP* scip, SCIP_SEPA* sepa):
+cdef SCIP_RETCODE PySepaFree (SCIP* scip, SCIP_SEPA* sepa) with gil:
     cdef SCIP_SEPADATA* sepadata
     sepadata = SCIPsepaGetData(sepa)
     PySepa = <Sepa>sepadata
@@ -45,35 +45,35 @@ cdef SCIP_RETCODE PySepaFree (SCIP* scip, SCIP_SEPA* sepa):
     Py_DECREF(PySepa)
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PySepaInit (SCIP* scip, SCIP_SEPA* sepa):
+cdef SCIP_RETCODE PySepaInit (SCIP* scip, SCIP_SEPA* sepa) with gil:
     cdef SCIP_SEPADATA* sepadata
     sepadata = SCIPsepaGetData(sepa)
     PySepa = <Sepa>sepadata
     PySepa.sepainit()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PySepaExit (SCIP* scip, SCIP_SEPA* sepa):
+cdef SCIP_RETCODE PySepaExit (SCIP* scip, SCIP_SEPA* sepa) with gil:
     cdef SCIP_SEPADATA* sepadata
     sepadata = SCIPsepaGetData(sepa)
     PySepa = <Sepa>sepadata
     PySepa.sepaexit()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PySepaInitsol (SCIP* scip, SCIP_SEPA* sepa):
+cdef SCIP_RETCODE PySepaInitsol (SCIP* scip, SCIP_SEPA* sepa) with gil:
     cdef SCIP_SEPADATA* sepadata
     sepadata = SCIPsepaGetData(sepa)
     PySepa = <Sepa>sepadata
     PySepa.sepainitsol()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PySepaExitsol (SCIP* scip, SCIP_SEPA* sepa):
+cdef SCIP_RETCODE PySepaExitsol (SCIP* scip, SCIP_SEPA* sepa) with gil:
     cdef SCIP_SEPADATA* sepadata
     sepadata = SCIPsepaGetData(sepa)
     PySepa = <Sepa>sepadata
     PySepa.sepaexitsol()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PySepaExeclp (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result, unsigned int allowlocal):
+cdef SCIP_RETCODE PySepaExeclp (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result, unsigned int allowlocal, int depth) with gil:
     cdef SCIP_SEPADATA* sepadata
     sepadata = SCIPsepaGetData(sepa)
     PySepa = <Sepa>sepadata
@@ -81,13 +81,10 @@ cdef SCIP_RETCODE PySepaExeclp (SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
-
-cdef SCIP_RETCODE PySepaExecsol (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result, unsigned int allowlocal,
-                                 int depth):
+cdef SCIP_RETCODE PySepaExecsol (SCIP* scip, SCIP_SEPA* sepa, SCIP_SOL* sol, SCIP_RESULT* result, unsigned int allowlocal, int depth) with gil:
     cdef SCIP_SEPADATA* sepadata
     sepadata = SCIPsepaGetData(sepa)
-    solution = Solution()
-    solution.sol = sol
+    solution = Solution.create(scip, sol)
     PySepa = <Sepa>sepadata
     result_dict = PySepa.sepaexecsol(solution)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])

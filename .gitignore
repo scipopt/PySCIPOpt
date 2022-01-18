@@ -9,6 +9,7 @@ lib
 src/pyscipopt/scip.c
 __pycache__
 .cache
+.idea
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -126,3 +127,4 @@ model.lp
 
 # VSCode
 .vscode/
+.devcontainer/
