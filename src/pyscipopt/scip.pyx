@@ -2595,7 +2595,7 @@ cdef class Model:
         return pyCons
 
 
-    def addConsIndicator(self, cons, binvar=None, name="IndicatorCons",
+    def addConsIndicator(self, cons, binvar=None, activeone=True, name="IndicatorCons",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
@@ -2606,6 +2606,7 @@ cdef class Model:
 
         :param cons: a linear inequality of the form "<="
         :param binvar: binary indicator variable, or None if it should be created (Default value = None)
+        :param activeone: constraint should active if binvar is 1 (0 if activeone = False)
         :param name: name of the constraint (Default value = "IndicatorCons")
         :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
         :param separate: should the constraint be separated during LP processing? (Default value = True)
@@ -2627,7 +2628,6 @@ cdef class Model:
         if cons.expr.degree() > 1:
             raise ValueError("expected linear inequality, expression has degree %d" % cons.expr.degree())
 
-
         if cons._rhs is not None:
             rhs =  cons._rhs
             negate = False
@@ -2635,7 +2635,12 @@ cdef class Model:
             rhs = -cons._lhs
             negate = True
 
-        _binVar = (<Variable>binvar).scip_var if binvar is not None else NULL
+        if binvar is not None:
+            _binVar = (<Variable>binvar).scip_var
+            if not activeone:
+                PY_SCIP_CALL(SCIPgetNegatedVar(self._scip, _binVar, &_binVar))
+        else:
+            _binVar = NULL
 
         PY_SCIP_CALL(SCIPcreateConsIndicator(self._scip, &scip_cons, str_conversion(name), _binVar, 0, NULL, NULL, rhs,
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
@@ -2653,6 +2658,15 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pyCons
+
+    def getSlackVarIndicator(self, Constraint cons):
+        """Get slack variable of an indicator constraint.
+
+        :param Constraint cons: indicator constraint
+
+        """
+        cdef SCIP_VAR* var = SCIPgetSlackVarIndicator(cons.scip_cons);
+        return Variable.create(var)
 
     def addPyCons(self, Constraint cons):
         """Adds a customly created cons.
