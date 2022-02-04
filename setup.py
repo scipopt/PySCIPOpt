@@ -12,8 +12,18 @@ extra_link_args = []
 
 # determine include directory
 if os.path.exists(os.path.join(scipoptdir, 'src')):
-    # SCIP seems to be installed in place
-    includedir = os.path.abspath(os.path.join(scipoptdir, 'src'))
+    # SCIP seems to be installed in place; check whether it was build using make or cmake
+
+    if os.path.exists(os.path.join(scipoptdir, 'src/scip')):
+        # SCIPOPTDIR pointed to the main source directory
+        includedir = os.path.abspath(os.path.join(scipoptdir, 'src'))
+    else:
+        # SCIPOPTDIR probably pointed to a cmake build directory; try one level up
+        if os.path.exists(os.path.join(scipoptdir, '../src')):
+            includedir = os.path.abspath(os.path.join(scipoptdir, '../src'))
+        else:
+            print('SCIPOPT contains a src directory, but we could not find the include files.')
+            quit(1)
 else:
     # assume that SCIP is installed on the system
     includedir = os.path.abspath(os.path.join(scipoptdir, 'include'))
