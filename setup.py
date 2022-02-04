@@ -3,6 +3,9 @@ import os, platform, sys, re
 
 # look for environment variable that specifies path to SCIP
 scipoptdir = os.environ.get('SCIPOPTDIR', '').strip('"')
+if not scipoptdir:
+    print('Environment variable SCIPOPTDIR is empty. Please specify path to SCIP.')
+    quit(1)
 
 extra_compile_args = []
 extra_link_args = []
