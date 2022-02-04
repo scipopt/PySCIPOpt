@@ -7,30 +7,55 @@ scipoptdir = os.environ.get('SCIPOPTDIR', '').strip('"')
 extra_compile_args = []
 extra_link_args = []
 
-# determine include directory
-if os.path.exists(os.path.join(scipoptdir, 'src')):
-    # SCIP seems to be installed in place
-    includedir = os.path.abspath(os.path.join(scipoptdir, 'src'))
-else:
-    # assume that SCIP is installed on the system
-    includedir = os.path.abspath(os.path.join(scipoptdir, 'include'))
-
-print('Using include path <%s>.' % includedir)
-
-# determine library
-if os.path.exists(os.path.join(scipoptdir, 'lib/shared/libscip.so')):
-    # SCIP seems to be created with make
-    libdir = os.path.abspath(os.path.join(scipoptdir, 'lib/shared'))
-    libname = 'scip'
-    extra_compile_args.append('-DNO_CONFIG_HEADER')
-else:
-    # assume that SCIP is installed on the system
-    libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
+# if SCIPOPTDIR is not set, we assume that SCIP is installed globally
+if not scipoptdir:
+    includedir = '.'
+    libdir = '.'
     libname = 'scip'
     if platform.system() in ['Windows']:
         libname = 'libscip'
+    print('Assuming that SCIP is installed globally.\n')
 
-print('Using SCIP library <%s> at <%s>.' % (libname,libdir))
+else:
+    # determine include directory
+    if os.path.exists(os.path.join(scipoptdir, 'src')):
+        # SCIP seems to be installed in place; check whether it was build using make or cmake
+
+        if os.path.exists(os.path.join(scipoptdir, 'src/scip')):
+            # SCIPOPTDIR pointed to the main source directory
+            includedir = os.path.abspath(os.path.join(scipoptdir, 'src'))
+        else:
+            # SCIPOPTDIR probably pointed to a cmake build directory; try one level up
+            if os.path.exists(os.path.join(scipoptdir, '../src/scip')):
+                includedir = os.path.abspath(os.path.join(scipoptdir, '../src'))
+            else:
+                print('Location SCIPOPTDIR does not contain a src/scip directory; exiting because we cannot not find the include files.')
+                quit(1)
+    else:
+        # assume that SCIP is installed on the system
+        if os.path.exists(os.path.join(scipoptdir, 'include')):
+            includedir = os.path.abspath(os.path.join(scipoptdir, 'include'))
+        else:
+            print('Location SCIPOPTDIR does not contain an include directory; exiting because we cannot not find the include files.')
+            quit(1)
+
+    # determine library
+    if os.path.exists(os.path.join(scipoptdir, 'lib/shared/libscip.so')):
+        # SCIP seems to be created with make
+        libdir = os.path.abspath(os.path.join(scipoptdir, 'lib/shared'))
+        libname = 'scip'
+        extra_compile_args.append('-DNO_CONFIG_HEADER')
+        # the following is a temporary hack to make it compile with SCIP/make:
+        extra_compile_args.append('-DTPI_NONE') # this is just a guess, if other TPIs are used, please modify
+    else:
+        # assume that SCIP is installed on the system
+        libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
+        libname = 'scip'
+        if platform.system() in ['Windows']:
+            libname = 'libscip'
+
+    print('Using include path <%s>.' % includedir)
+    print('Using SCIP library <%s> at <%s>.\n' % (libname,libdir))
 
 # set runtime libraries
 if platform.system() in ['Linux', 'Darwin']:
