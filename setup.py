@@ -36,6 +36,8 @@ if os.path.exists(os.path.join(scipoptdir, 'lib/shared/libscip.so')):
     libdir = os.path.abspath(os.path.join(scipoptdir, 'lib/shared'))
     libname = 'scip'
     extra_compile_args.append('-DNO_CONFIG_HEADER')
+    # the following is a temporary hack to make it compile with SCIP/make:
+    extra_compile_args.append('-DTPI_NONE') # this is just a guess, if other TPIs are used, please modify
 else:
     # assume that SCIP is installed on the system
     libdir = os.path.abspath(os.path.join(scipoptdir, 'lib'))
