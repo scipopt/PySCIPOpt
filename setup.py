@@ -24,21 +24,17 @@ else:
             includedir = os.path.abspath(os.path.join(scipoptdir, "src"))
         else:
             # SCIPOPTDIR probably pointed to a cmake build directory; try one level up
-            if os.path.exists(os.path.join(scipoptdir, "../src/scip")):
-                includedir = os.path.abspath(os.path.join(scipoptdir, "../src"))
+            if os.path.exists(os.path.join(scipoptdir, "..", "src", "scip")):
+                includedir = os.path.abspath(os.path.join(scipoptdir, "..", "src"))
             else:
-                print(
-                    f"Location SCIPOPTDIR={scipoptdir} does not contain a src/scip directory; exiting because we cannot find the include files."
-                )
+                print(f"SCIPOPTDIR={scipoptdir} does not contain a src/scip directory.")
                 quit(1)
     else:
         # assume that SCIP is installed on the system
         if os.path.exists(os.path.join(scipoptdir, "include")):
             includedir = os.path.abspath(os.path.join(scipoptdir, "include"))
         else:
-            print(
-                f"Location SCIPOPTDIR={scipoptdir} does not contain an include directory; exiting because we cannot find the include files."
-            )
+            print(f"SCIPOPTDIR={scipoptdir} does not contain an include directory.")
             quit(1)
 
     # determine library
