@@ -93,7 +93,7 @@ ext = ".pyx" if use_cython else ".c"
 extensions = [
     Extension(
         "pyscipopt.scip",
-        [os.path.join(packagedir, "scip", "ext")],
+        [os.path.join(packagedir, "scip", ext)],
         include_dirs=[includedir],
         library_dirs=[libdir],
         libraries=[libname],
