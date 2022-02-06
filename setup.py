@@ -27,15 +27,14 @@ else:
             if os.path.exists(os.path.join(scipoptdir, "..", "src", "scip")):
                 includedir = os.path.abspath(os.path.join(scipoptdir, "..", "src"))
             else:
-                print(f"SCIPOPTDIR={scipoptdir} does not contain a src/scip directory.")
-                quit(1)
+                sys.exit(f"SCIPOPTDIR={scipoptdir} does not contain a src/scip directory.")
+
     else:
         # assume that SCIP is installed on the system
         if os.path.exists(os.path.join(scipoptdir, "include")):
             includedir = os.path.abspath(os.path.join(scipoptdir, "include"))
         else:
-            print(f"SCIPOPTDIR={scipoptdir} does not contain an include directory.")
-            quit(1)
+            sys.exit(f"SCIPOPTDIR={scipoptdir} does not contain an include directory.")
 
     # determine library
     if os.path.exists(os.path.join(scipoptdir, "lib", "shared", "libscip.so")):
@@ -76,8 +75,7 @@ try:
 except ImportError as err:
     # if cython is not found _and_ src/pyscipopt/scip.c does not exist then we cannot do anything.
     if not os.path.exists(os.path.join(packagedir, "scip.c")):
-        print("Cython is required.")
-        quit(1)
+        sys.exit("Cython is required.")
     use_cython = False
 
 # if src/pyscipopt/scip.pyx does not exist then there is no need for using cython
