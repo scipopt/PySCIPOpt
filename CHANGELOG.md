@@ -27,6 +27,17 @@
 
 ### Removed
 
+## 4.0.0 - 2021-12-15
+### Added
+- many functions regarding the new cons expression logic and implementation
+### Fixed
+- fixed tests and github actions to fit the new SCIP version.
+### Changed
+- SCIP8 changes the way nonlinear constraints are handled inside SCIP. These changes have consequences for their respective PySCIPOpt wrappers and have changed regardingly. Please refer to the latest SCIP report for an in-depth explanation of these changes.
+- small changes to the documentation.
+### Removed
+- some of the deprecated functions that could not be made backwards compatible
+
 ## 3.5.0 - 2021-12-07
 ### Added
 ### Fixed
