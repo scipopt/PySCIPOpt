@@ -19,7 +19,10 @@
 - Add getNorm call to Row
 - Add getRowDualSol to Row
 - Add getDualSolVal to Model
+- added activeone parameter of addConsIndicator() allows to activate the constraint if the binary (indicator) variable is 1 or 0.
+- added function getSlackVarIndicator(), returns the slack variable of the indicator constraint.
 ### Fixed
+- cmake / make install works from build directory
 ### Changed
 
 ### Removed
