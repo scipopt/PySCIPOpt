@@ -2,6 +2,12 @@
 
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+### Removed
+
+## 4.1.0 - 2022-02-22
+### Added
 - Interface to include custom cut selector plugins
 - New test for cut selector plugin
 - Add SCIP function SCIPgetCutLPSolCutoffDistance and wrapper getCutLPSolCutoffDistance
@@ -24,7 +30,6 @@
 ### Fixed
 - cmake / make install works from build directory
 ### Changed
-
 ### Removed
 
 ## 4.0.0 - 2021-12-15
