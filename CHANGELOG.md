@@ -2,8 +2,26 @@
 
 ## Unreleased
 ### Added
+- Interface to include custom cut selector plugins
+- New test for cut selector plugin
+- Add SCIP function SCIPgetCutLPSolCutoffDistance and wrapper getCutLPSolCutoffDistance
+- Add SCIP function SCIPprintBestTransSol and wrapper writeBestTransSol
+- Add SCIP function SCIPprintTransSol and wrapper writeTransSol
+- Add SCIP function SCIPgetRowNumIntCols and wrapper getRowNumIntCols
+- Add SCIP function SCIProwGetNNonz and wrapper rowGetNNonz
+- Add SCIP function SCIPgetRowObjParallelism and wrapper getRowObjParallelism
+- Add SCIP function SCIPgetNSepaRounds and wrapper getNSepaRounds
+- Add SCIP function SCIPgetRowLinear and wrapper getRowLinear
+- Add SCIP function SCIProwIsInGlobalCutpool and wrapper isInGlobalCutpool
+- Add SCIP function SCIProwGetParallelism and wrapper getRowParallelism
+- Add getObjCoeff call to Column
+- Add isLocal call to Row
+- Add getNorm call to Row
+- Add getRowDualSol to Row
+- Add getDualSolVal to Model
 ### Fixed
 ### Changed
+
 ### Removed
 
 ## 3.5.0 - 2021-12-07
