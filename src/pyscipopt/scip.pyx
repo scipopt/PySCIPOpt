@@ -21,6 +21,7 @@ include "benders.pxi"
 include "benderscut.pxi"
 include "branchrule.pxi"
 include "conshdlr.pxi"
+include "cutsel.pxi"
 include "event.pxi"
 include "heuristic.pxi"
 include "presol.pxi"
@@ -364,6 +365,10 @@ cdef class Column:
         """gets upper bound of column"""
         return SCIPcolGetUb(self.scip_col)
 
+    def getObjCoeff(self):
+        """gets objective value coefficient of a column"""
+        return SCIPcolGetObj(self.scip_col)
+
     def __hash__(self):
         return hash(<size_t>self.scip_col)
 
@@ -422,6 +427,10 @@ cdef class Row:
         """returns TRUE iff the activity of the row (without the row's constant) is always integral in a feasible solution """
         return SCIProwIsIntegral(self.scip_row)
 
+    def isLocal(self):
+        """returns TRUE iff the row is only valid locally """
+        return SCIProwIsLocal(self.scip_row)
+
     def isModifiable(self):
         """returns TRUE iff row is modifiable during node processing (subject to column generation) """
         return SCIProwIsModifiable(self.scip_row)
@@ -429,6 +438,10 @@ cdef class Row:
     def isRemovable(self):
         """returns TRUE iff row is removable from the LP (due to aging or cleanup)"""
         return SCIProwIsRemovable(self.scip_row)
+
+    def isInGlobalCutpool(self):
+        """return TRUE iff row is a member of the global cut pool"""
+        return SCIProwIsInGlobalCutpool(self.scip_row)
 
     def getOrigintype(self):
         """returns type of origin that created the row"""
@@ -451,6 +464,10 @@ cdef class Row:
         """gets list with coefficients of nonzero entries"""
         cdef SCIP_Real* vals = SCIProwGetVals(self.scip_row)
         return [vals[i] for i in range(self.getNNonz())]
+
+    def getNorm(self):
+        """gets Euclidean norm of row vector """
+        return SCIProwGetNorm(self.scip_row)
 
     def __hash__(self):
         return hash(<size_t>self.scip_row)
@@ -1903,6 +1920,27 @@ cdef class Model:
         """Prints row."""
         PY_SCIP_CALL(SCIPprintRow(self._scip, row.scip_row, NULL))
 
+    def getRowNumIntCols(self, Row row):
+        """Returns number of intergal columns in the row"""
+        return SCIPgetRowNumIntCols(self._scip, row.scip_row)
+
+    def rowGetNNonz(self, Row row):
+        """Gets number of non-zero etnries in the row"""
+        return PY_SCIP_CALL(SCIProwGetNNonz(row.scip_row))
+
+    def getRowObjParallelism(self, Row row):
+        """Returns 1 if the row is parallel, and 0 if orthogonal"""
+        return SCIPgetRowObjParallelism(self._scip, row.scip_row)
+
+    def getRowParallelism(self, Row row1, Row row2, orthofunc=101):
+        """Returns the degree of parallelism between hyplerplanes. 1 if perfectly parallel, 0 if orthognal.
+        101 in this case is an 'e' (euclidean) in ASCII. The other accpetable input is 100 (d for discrete)."""
+        return SCIProwGetParallelism(row1.scip_row, row2.scip_row, orthofunc)
+
+    def getRowDualSol(self, Row row):
+        """Gets the dual LP solution of a row"""
+        return SCIProwGetDualsol(row.scip_row)
+
     # Cutting Plane Methods
     def addPoolCut(self, Row row not None):
         """if not already existing, adds row to global cut pool"""
@@ -1915,6 +1953,10 @@ cdef class Model:
     def isCutEfficacious(self, Row cut not None, Solution sol = None):
         """ returns whether the cut's efficacy with respect to the given primal solution or the current LP solution is greater than the minimal cut efficacy"""
         return SCIPisCutEfficacious(self._scip, NULL if sol is None else sol.sol, cut.scip_row)
+
+    def getCutLPSolCutoffDistance(self, Row cut not None, Solution sol not None):
+        """ returns row's cutoff distance in the direction of the given primal solution"""
+        return SCIPgetCutLPSolCutoffDistance(self._scip, sol.sol, cut.scip_row)
 
     def addCut(self, Row cut not None, forcecut = False):
         """adds cut to separation storage and returns whether cut has been detected to be infeasible for local bounds"""
@@ -1929,6 +1971,11 @@ cdef class Model:
     def getNCutsApplied(self):
         """Retrieve number of currently applied cuts"""
         return SCIPgetNCutsApplied(self._scip)
+
+    def getNSepaRounds(self):
+        """Retrieve the number of separation rounds that have been performed
+        at the current node"""
+        return SCIPgetNSepaRounds(self._scip)
 
     def separateSol(self, Solution sol = None, pretendroot = False, allowlocal = True, onlydelayed = False):
         """separates the given primal solution or the current LP solution by calling the separators and constraint handlers'
@@ -3076,6 +3123,20 @@ cdef class Model:
             valsdict[bytes(SCIPvarGetName(_vars[i])).decode('utf-8')] = _vals[i]
         return valsdict
 
+    def getRowLinear(self, Constraint cons):
+        """Retrieve the linear relaxation of the given linear constraint as a row.
+           may return NULL if no LP row was yet created; the user must not modify the row!
+
+        :param Constraint cons: linear constraint to get the coefficients of
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        if not constype == 'linear':
+            raise Warning("coefficients not available for constraints of type ", constype)
+
+        cdef SCIP_ROW* row = SCIPgetRowLinear(self._scip, cons.scip_cons)
+        return Row.create(row)
+
     def getDualsolLinear(self, Constraint cons):
         """Retrieve the dual solution to a linear constraint.
 
@@ -3127,6 +3188,24 @@ cdef class Model:
         except:
             raise Warning("no reduced cost available for variable " + var.name)
         return redcost
+
+    def getDualSolVal(self, Constraint cons, boundconstraint=False):
+        """Retrieve returns dual solution value of a constraint.
+
+        :param Constraint cons: constraint to get the dual solution value of
+        :param boundconstraint bool: Decides whether to store a bool if the constraint is a bound constraint
+
+        """
+        cdef SCIP_Real _dualsol
+        cdef SCIP_Bool _bounded
+
+        if boundconstraint:
+            SCIPgetDualSolVal(self._scip, cons.scip_cons, &_dualsol, &_bounded)
+        else:
+            SCIPgetDualSolVal(self._scip, cons.scip_cons, &_dualsol, NULL)
+
+        return _dualsol
+
 
     def optimize(self):
         """Optimize the problem."""
@@ -3666,6 +3745,24 @@ cdef class Model:
 
         Py_INCREF(relax)
 
+    def includeCutsel(self, Cutsel cutsel, name, desc, priority):
+        """include a cut selector
+
+        :param Cutsel cutsel: cut selector
+        :param name: name of cut selector
+        :param desc: description of cut selector
+        :param priority: priority of the cut selector
+        """
+
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeCutsel(self._scip, nam, des,
+                                       priority, PyCutselCopy, PyCutselFree, PyCutselInit, PyCutselExit,
+                                       PyCutselInitsol, PyCutselExitsol, PyCutselSelect,
+                                       <SCIP_CUTSELDATA*> cutsel))
+        cutsel.model = <Model>weakref.proxy(self)
+        Py_INCREF(cutsel)
+
     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
         """Include a branching rule.
 
@@ -4143,6 +4240,19 @@ cdef class Model:
             PY_SCIP_CALL(SCIPprintBestSol(self._scip, cfile, write_zeros))
             fclose(cfile)
 
+    def writeBestTransSol(self, filename="transprob.sol", write_zeros=False):
+        """Write the best feasible primal solution for the transformed problem to a file.
+
+        Keyword arguments:
+        filename -- name of the output file
+        write_zeros -- include variables that are set to zero
+        """
+        # use this double opening pattern to ensure that IOErrors are
+        #   triggered early and in python not in C, Cython or SCIP.
+        with open(filename, "w") as f:
+            cfile = fdopen(f.fileno(), "w")
+            PY_SCIP_CALL(SCIPprintBestTransSol(self._scip, cfile, write_zeros))
+
     def writeSol(self, Solution solution, filename="origprob.sol", write_zeros=False):
         """Write the given primal solution to a file.
 
@@ -4157,6 +4267,20 @@ cdef class Model:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, cfile, write_zeros))
             fclose(cfile)
+
+    def writeTransSol(self, Solution solution, filename="transprob.sol", write_zeros=False):
+        """Write the given transformed primal solution to a file.
+
+        Keyword arguments:
+        solution -- transformed solution to write
+        filename -- name of the output file
+        write_zeros -- include variables that are set to zero
+        """
+        # use this doubled opening pattern to ensure that IOErrors are
+        #   triggered early and in Python not in C,Cython or SCIP.
+        with open(filename, "w") as f:
+            cfile = fdopen(f.fileno(), "w")
+            PY_SCIP_CALL(SCIPprintTransSol(self._scip, solution.sol, cfile, write_zeros))
 
     # perhaps this should not be included as it implements duplicated functionality
     #   (as does it's namesake in SCIP)

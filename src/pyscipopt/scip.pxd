@@ -364,6 +364,12 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_BRANCHRULEDATA:
         pass
 
+    ctypedef struct SCIP_CUTSEL:
+        pass
+
+    ctypedef struct SCIP_CUTSELDATA:
+        pass
+
     ctypedef struct SCIP_PRESOL:
         pass
 
@@ -736,6 +742,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPaddPoolCut(SCIP* scip, SCIP_ROW* row)
     SCIP_Real SCIPgetCutEfficacy(SCIP* scip, SCIP_SOL* sol, SCIP_ROW* cut)
     SCIP_Bool SCIPisCutEfficacious(SCIP* scip, SCIP_SOL* sol, SCIP_ROW* cut)
+    SCIP_Real SCIPgetCutLPSolCutoffDistance(SCIP* scip, SCIP_SOL* sol, SCIP_ROW* cut)
     int SCIPgetNCuts(SCIP* scip)
     int SCIPgetNCutsApplied(SCIP* scip)
     SCIP_RETCODE SCIPseparateSol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool pretendroot, SCIP_Bool allowlocal, SCIP_Bool onlydelayed, SCIP_Bool* delayed, SCIP_Bool* cutoff)
@@ -789,7 +796,9 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPtrySol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool printreason, SCIP_Bool completely, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* stored)
     SCIP_RETCODE SCIPfreeSol(SCIP* scip, SCIP_SOL** sol)
     SCIP_RETCODE SCIPprintBestSol(SCIP* scip, FILE* outfile, SCIP_Bool printzeros)
+    SCIP_RETCODE SCIPprintBestTransSol(SCIP* scip, FILE* outfile, SCIP_Bool printzeros)
     SCIP_RETCODE SCIPprintSol(SCIP* scip, SCIP_SOL* sol, FILE* outfile, SCIP_Bool printzeros)
+    SCIP_RETCODE SCIPprintTransSol(SCIP* scip, SCIP_SOL* sol, FILE* outfile, SCIP_Bool printzeros)
     SCIP_Real SCIPgetPrimalbound(SCIP* scip)
     SCIP_Real SCIPgetGap(SCIP* scip)
     int SCIPgetDepth(SCIP* scip)
@@ -815,6 +824,9 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPflushRowExtensions(SCIP* scip, SCIP_ROW* row)
     SCIP_RETCODE SCIPaddVarToRow(SCIP* scip, SCIP_ROW* row, SCIP_VAR* var, SCIP_Real val)
     SCIP_RETCODE SCIPprintRow(SCIP* scip, SCIP_ROW* row, FILE* file)
+    int SCIPgetRowNumIntCols(SCIP* scip, SCIP_ROW* row)
+    int SCIProwGetNNonz(SCIP_ROW* row)
+    SCIP_Real SCIPgetRowObjParallelism(SCIP* scip, SCIP_ROW* row)
 
     # Column Methods
     SCIP_Real SCIPgetColRedcost(SCIP* scip, SCIP_COL* col)
@@ -1081,6 +1093,24 @@ cdef extern from "scip/scip.h":
     const char* SCIPbranchruleGetName(SCIP_BRANCHRULE* branchrule)
     SCIP_BRANCHRULE* SCIPfindBranchrule(SCIP* scip, const char*  name)
 
+    # cut selector plugin
+    SCIP_RETCODE SCIPincludeCutsel(SCIP* scip,
+                                   const char* name,
+                                   const char* desc,
+                                   int priority,
+                                   SCIP_RETCODE (*cutselcopy) (SCIP* scip, SCIP_CUTSEL* cutsel),
+                                   SCIP_RETCODE (*cutselfree) (SCIP* scip, SCIP_CUTSEL* cutsel),
+                                   SCIP_RETCODE (*cutselinit) (SCIP* scip, SCIP_CUTSEL* cutsel),
+                                   SCIP_RETCODE (*cutselexit) (SCIP* scip, SCIP_CUTSEL* cutsel),
+                                   SCIP_RETCODE (*cutselinitsol) (SCIP* scip, SCIP_CUTSEL* cutsel),
+                                   SCIP_RETCODE (*cutselexitsol) (SCIP* scip, SCIP_CUTSEL* cutsel),
+                                   SCIP_RETCODE (*cutselselect) (SCIP* scip, SCIP_CUTSEL* cutsel, SCIP_ROW** cuts,
+                                                                 int ncuts, SCIP_ROW** forcedcuts, int nforcedcuts,
+                                                                 SCIP_Bool root, int maxnselectedcuts,
+                                                                 int* nselectedcuts, SCIP_RESULT* result),
+                                   SCIP_CUTSELDATA* cutseldata)
+    SCIP_CUTSELDATA* SCIPcutselGetData(SCIP_CUTSEL* cutsel)
+
     # Benders' decomposition plugin
     SCIP_RETCODE SCIPincludeBenders(SCIP* scip,
                                    const char*  name,
@@ -1198,6 +1228,7 @@ cdef extern from "scip/scip.h":
     SCIP_Longint SCIPgetNInfeasibleLeaves(SCIP* scip)
     SCIP_Longint SCIPgetNLPs(SCIP* scip)
     SCIP_Longint SCIPgetNLPIterations(SCIP* scip)
+    int SCIPgetNSepaRounds(SCIP* scip)
 
     # Parameter Functions
     SCIP_RETCODE SCIPsetBoolParam(SCIP* scip, char* name, SCIP_Bool value)
@@ -1301,6 +1332,7 @@ cdef extern from "scip/cons_linear.h":
     SCIP_VAR** SCIPgetVarsLinear(SCIP* scip, SCIP_CONS* cons)
     int SCIPgetNVarsLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real* SCIPgetValsLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_ROW* SCIPgetRowLinear(SCIP* scip, SCIP_CONS* cons)
 
 cdef extern from "scip/cons_nonlinear.h":
     SCIP_EXPR* SCIPgetExprNonlinear(SCIP_CONS* cons)
@@ -1690,12 +1722,14 @@ cdef extern from "scip/pub_lp.h":
     SCIP_Bool SCIProwIsLocal(SCIP_ROW* row)
     SCIP_Bool SCIProwIsModifiable(SCIP_ROW* row)
     SCIP_Bool SCIProwIsRemovable(SCIP_ROW* row)
+    SCIP_Bool SCIProwIsInGlobalCutpool(SCIP_ROW* row)
     int SCIProwGetNNonz(SCIP_ROW* row)
     int SCIProwGetNLPNonz(SCIP_ROW* row)
     SCIP_COL** SCIProwGetCols(SCIP_ROW* row)
     SCIP_Real* SCIProwGetVals(SCIP_ROW* row)
     SCIP_Real SCIProwGetNorm(SCIP_ROW* row)
     SCIP_Real SCIProwGetDualsol(SCIP_ROW* row)
+    SCIP_Real SCIProwGetParallelism(SCIP_ROW* row1, SCIP_ROW* row2, const char orthofunc)
     int SCIProwGetAge(SCIP_ROW* row)
     SCIP_Bool SCIProwIsRemovable(SCIP_ROW* row)
     SCIP_ROWORIGINTYPE SCIProwGetOrigintype(SCIP_ROW* row)
