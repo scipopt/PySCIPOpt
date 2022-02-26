@@ -12,7 +12,7 @@ cdef class Reader:
         '''calls read method of reader'''
         return {}
 
-    def readerwrite(self, file, name, probdata, transformed, objsense, objscale, objoffset, binvars, intvars,
+    def readerwrite(self, file, name, transformed, objsense, objscale, objoffset, binvars, intvars,
                     implvars, contvars, fixedvars, startnvars, conss, maxnconss, startnconss, genericnames):
         '''calls write method of reader'''
         return {}
@@ -47,9 +47,10 @@ cdef SCIP_RETCODE PyReaderWrite (SCIP* scip, SCIP_READER* reader, FILE* file,
                                  SCIP_Bool genericnames, SCIP_RESULT* result) with gil:
     cdef SCIP_READERDATA* readerdata
     readerdata = SCIPreaderGetData(reader)
-    PyFile = <object>file
+    cdef int fd = fileno(file)
+    PyFile = os.fdopen(fd, "w", closefd=False)
     PyName = name.decode('utf-8')
-    PyProbdata = <object>probdata
+    #wrap probdata
     PyBinVars = [Variable.create(vars[i]) for i in range(nbinvars)]
     PyIntVars = [Variable.create(vars[i]) for i in range(nbinvars, nintvars)]
     PyImplVars = [Variable.create(vars[i]) for i in range(nintvars, nimplvars)]
@@ -57,7 +58,7 @@ cdef SCIP_RETCODE PyReaderWrite (SCIP* scip, SCIP_READER* reader, FILE* file,
     PyFixedVars = [Variable.create(fixedvars[i]) for i in range(nfixedvars)]
     PyConss = [Constraint.create(conss[i]) for i in range(nconss)]
     PyReader = <Reader>readerdata
-    result_dict = PyReader.readerwrite(PyFile, PyName, PyProbdata, transformed, objsense, objscale, objoffset, 
+    result_dict = PyReader.readerwrite(PyFile, PyName, transformed, objsense, objscale, objoffset, #add probdata
                                        PyBinVars, PyIntVars, PyImplVars, PyContVars, PyFixedVars, startnvars,
                                        PyConss, maxnconss, startnconss, genericnames)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])

@@ -3,7 +3,7 @@
 import weakref
 from os.path import abspath
 from os.path import splitext
-from io import IOBase
+import os
 import sys
 import warnings
 
@@ -12,6 +12,7 @@ from cpython cimport Py_INCREF, Py_DECREF
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPointer
 from libc.stdlib cimport malloc, free
 from libc.stdio cimport fdopen, fclose
+from posix.stdio cimport fileno
 
 from collections.abc import Iterable
 from itertools import repeat
