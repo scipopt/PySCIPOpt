@@ -50,7 +50,6 @@ cdef SCIP_RETCODE PyReaderWrite (SCIP* scip, SCIP_READER* reader, FILE* file,
     cdef int fd = fileno(file)
     PyFile = os.fdopen(fd, "w", closefd=False)
     PyName = name.decode('utf-8')
-    #wrap probdata
     PyBinVars = [Variable.create(vars[i]) for i in range(nbinvars)]
     PyIntVars = [Variable.create(vars[i]) for i in range(nbinvars, nintvars)]
     PyImplVars = [Variable.create(vars[i]) for i in range(nintvars, nimplvars)]
@@ -58,7 +57,7 @@ cdef SCIP_RETCODE PyReaderWrite (SCIP* scip, SCIP_READER* reader, FILE* file,
     PyFixedVars = [Variable.create(fixedvars[i]) for i in range(nfixedvars)]
     PyConss = [Constraint.create(conss[i]) for i in range(nconss)]
     PyReader = <Reader>readerdata
-    result_dict = PyReader.readerwrite(PyFile, PyName, transformed, objsense, objscale, objoffset, #add probdata
+    result_dict = PyReader.readerwrite(PyFile, PyName, transformed, objsense, objscale, objoffset,
                                        PyBinVars, PyIntVars, PyImplVars, PyContVars, PyFixedVars, startnvars,
                                        PyConss, maxnconss, startnconss, genericnames)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
