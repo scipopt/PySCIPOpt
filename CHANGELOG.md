@@ -2,6 +2,8 @@
 
 ## Unreleased
 ### Added
+- Interface to include custom reader plugins
+- New test for reader plugin
 ### Fixed
 ### Changed
 ### Removed
