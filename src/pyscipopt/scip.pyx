@@ -1264,9 +1264,6 @@ cdef class Model:
         if coeffs.degree() > 1:
             raise ValueError("Nonlinear objective functions are not supported!")
         
-        if coeffs[CONST] != 0.0:
-            self.addObjoffset(coeffs[CONST])
-
         if clear:
             # clear existing objective function
             self.addObjoffset(-self.getObjoffset())
@@ -1275,6 +1272,8 @@ cdef class Model:
             for i in range(_nvars):
                 PY_SCIP_CALL(SCIPchgVarObj(self._scip, _vars[i], 0.0))
 
+        if coeffs[CONST] != 0.0:
+            self.addObjoffset(coeffs[CONST])
 
         for term, coef in coeffs.terms.items():
             # avoid CONST term of Expr
