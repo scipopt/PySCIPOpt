@@ -15,37 +15,19 @@ if not scipoptdir:
     print("Assuming that SCIP is installed globally.\n")
 
 else:
-    # determine include directory
-    if os.path.exists(os.path.join(scipoptdir, "src")):
-        # SCIP seems to be installed in place; check whether it was build using make or cmake
-
-        if os.path.exists(os.path.join(scipoptdir, "src", "scip")):
-            # SCIPOPTDIR pointed to the main source directory
-            includedir = os.path.abspath(os.path.join(scipoptdir, "src"))
-        else:
-            # SCIPOPTDIR probably pointed to a cmake build directory; try one level up
-            if os.path.exists(os.path.join(scipoptdir, "..", "src", "scip")):
-                includedir = os.path.abspath(os.path.join(scipoptdir, "..", "src"))
-            else:
-                sys.exit(f"SCIPOPTDIR={scipoptdir} does not contain a src/scip directory.")
-
-    else:
-        # assume that SCIP is installed on the system
-        if os.path.exists(os.path.join(scipoptdir, "include")):
-            includedir = os.path.abspath(os.path.join(scipoptdir, "include"))
-        else:
-            sys.exit(f"SCIPOPTDIR={scipoptdir} does not contain an include directory.")
-
-    # determine library
-    if os.path.exists(os.path.join(scipoptdir, "lib", "shared", "libscip.so")):
-        # SCIP seems to be created with make
+    if "--make" in sys.argv:
+        includedir = os.path.abspath(os.path.join(scipoptdir, "src"))
         libdir = os.path.abspath(os.path.join(scipoptdir, "lib", "shared"))
         libname = "scip"
         extra_compile_args.append("-DNO_CONFIG_HEADER")
         # the following is a temporary hack to make it compile with SCIP/make:
         extra_compile_args.append("-DTPI_NONE")  # if other TPIs are used, please modify
+    elif "--cmake" in sys.argv:
+        includedir = os.path.abspath(os.path.join(scipoptdir, "..", "src"))
+        libdir = os.path.abspath(os.path.join(scipoptdir, "lib"))
+        libname = "libscip" if platform.system() in ["Windows"] else "scip"
     else:
-        # assume that SCIP is installed on the system
+        includedir = os.path.abspath(os.path.join(scipoptdir, "include"))
         libdir = os.path.abspath(os.path.join(scipoptdir, "lib"))
         libname = "libscip" if platform.system() in ["Windows"] else "scip"
 
