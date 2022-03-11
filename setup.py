@@ -12,29 +12,29 @@ if not scipoptdir:
     includedir = "."
     libdir = "."
     libname = "libscip" if platform.system() in ["Windows"] else "scip"
-    print("Assuming that SCIP is installed globally.\n")
+    print("Assuming that SCIP is installed globally, because SCIPOPTDIR is undefined.\n")
 
 else:
-    # determine include directory
-    if os.path.exists(os.path.join(scipoptdir, "src")):
-        # SCIP seems to be installed in place; check whether it was build using make or cmake
 
-        if os.path.exists(os.path.join(scipoptdir, "src", "scip")):
-            # SCIPOPTDIR pointed to the main source directory
-            includedir = os.path.abspath(os.path.join(scipoptdir, "src"))
-        else:
-            # SCIPOPTDIR probably pointed to a cmake build directory; try one level up
-            if os.path.exists(os.path.join(scipoptdir, "..", "src", "scip")):
-                includedir = os.path.abspath(os.path.join(scipoptdir, "..", "src"))
-            else:
-                sys.exit(f"SCIPOPTDIR={scipoptdir} does not contain a src/scip directory.")
-
+    # check whether SCIP is installed in the given directory
+    if os.path.exists(os.path.join(scipoptdir, "include")):
+        includedir = os.path.abspath(os.path.join(scipoptdir, "include"))
     else:
-        # assume that SCIP is installed on the system
-        if os.path.exists(os.path.join(scipoptdir, "include")):
-            includedir = os.path.abspath(os.path.join(scipoptdir, "include"))
-        else:
-            sys.exit(f"SCIPOPTDIR={scipoptdir} does not contain an include directory.")
+        print("SCIPOPTDIR={scipoptdir} does not contain an include directory; searching for include files in src or ../src directory.\n")
+
+        if os.path.exists(os.path.join(scipoptdir, "src")):
+            # SCIP seems to be installed in-place; check whether it was built using make or cmake
+            if os.path.exists(os.path.join(scipoptdir, "src", "scip")):
+                # assume that SCIPOPTDIR pointed to the main source directory (make)
+                includedir = os.path.abspath(os.path.join(scipoptdir, "src"))
+            else:
+                # assume that SCIPOPTDIR pointed to a cmake build directory; try one level up (this is just a heuristic)
+                if os.path.exists(os.path.join(scipoptdir, "..", "src", "scip")):
+                    includedir = os.path.abspath(os.path.join(scipoptdir, "..", "src"))
+                else:
+                    sys.exit(f"Could neither find src/scip nor ../src/scip directory in SCIPOPTDIR={scipoptdir}. Consider installing SCIP in a separate directory.")
+        else:                    
+            sys.exit(f"Could not find a src directory in SCIPOPTDIR={scipoptdir}; maybe it points to a wrong directory.")
 
     # determine library
     if os.path.exists(os.path.join(scipoptdir, "lib", "shared", "libscip.so")):
