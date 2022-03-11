@@ -20,7 +20,7 @@ else:
     if os.path.exists(os.path.join(scipoptdir, "include")):
         includedir = os.path.abspath(os.path.join(scipoptdir, "include"))
     else:
-        print("SCIPOPTDIR={scipoptdir} does not contain an include directory; searching for include files in src or ../src directory.\n")
+        print(f"SCIPOPTDIR={scipoptdir} does not contain an include directory; searching for include files in src or ../src directory.")
 
         if os.path.exists(os.path.join(scipoptdir, "src")):
             # SCIP seems to be installed in-place; check whether it was built using make or cmake
