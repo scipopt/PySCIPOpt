@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 ### Fixed
+- revert change from #543 to fix #570 (closing file descriptors)
 ### Changed
 ### Removed
 

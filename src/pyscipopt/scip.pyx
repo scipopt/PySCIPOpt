@@ -10,7 +10,7 @@ cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPointer
 from libc.stdlib cimport malloc, free
-from libc.stdio cimport fdopen, fclose
+from libc.stdio cimport fdopen
 
 from collections.abc import Iterable
 from itertools import repeat
@@ -4238,7 +4238,6 @@ cdef class Model:
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintBestSol(self._scip, cfile, write_zeros))
-            fclose(cfile)
 
     def writeBestTransSol(self, filename="transprob.sol", write_zeros=False):
         """Write the best feasible primal solution for the transformed problem to a file.
@@ -4266,7 +4265,6 @@ cdef class Model:
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, cfile, write_zeros))
-            fclose(cfile)
 
     def writeTransSol(self, Solution solution, filename="transprob.sol", write_zeros=False):
         """Write the given transformed primal solution to a file.
@@ -4626,7 +4624,6 @@ cdef class Model:
       with open(filename, "w") as f:
           cfile = fdopen(f.fileno(), "w")
           PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
-          fclose(cfile)
 
     def getNLPs(self):
         """gets total number of LPs solved so far"""
