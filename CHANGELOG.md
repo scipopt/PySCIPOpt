@@ -2,6 +2,12 @@
 
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+### Removed
+
+## 4.2.0 - 2022-03-21
+### Added
 - Interface to include custom reader plugins
 - New test for reader plugin
 ### Fixed
