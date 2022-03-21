@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 ### Fixed
+- use correct offset value when updating the objective function
 ### Changed
 ### Removed
 
