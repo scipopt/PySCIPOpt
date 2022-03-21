@@ -3,6 +3,7 @@
 import weakref
 from os.path import abspath
 from os.path import splitext
+import os
 import sys
 import warnings
 
@@ -10,7 +11,8 @@ cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPointer
 from libc.stdlib cimport malloc, free
-from libc.stdio cimport fdopen
+from libc.stdio cimport fdopen, fclose
+from posix.stdio cimport fileno
 
 from collections.abc import Iterable
 from itertools import repeat
@@ -28,6 +30,7 @@ include "presol.pxi"
 include "pricer.pxi"
 include "propagator.pxi"
 include "sepa.pxi"
+include "reader.pxi"
 include "relax.pxi"
 include "nodesel.pxi"
 
@@ -3670,6 +3673,24 @@ cdef class Model:
         sepa.model = <Model>weakref.proxy(self)
         sepa.name = name
         Py_INCREF(sepa)
+
+    def includeReader(self, Reader reader, name, desc, ext):
+        """Include a reader
+
+        :param Reader reader: reader
+        :param name: name of reader
+        :param desc: description of reader
+        :param ext: file extension of reader
+
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        e = str_conversion(ext)
+        PY_SCIP_CALL(SCIPincludeReader(self._scip, n, d, e, PyReaderCopy, PyReaderFree,
+                                          PyReaderRead, PyReaderWrite, <SCIP_READERDATA*>reader))
+        reader.model = <Model>weakref.proxy(self)
+        reader.name = name
+        Py_INCREF(reader)
 
     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
                     proptiming, presoltiming=SCIP_PRESOLTIMING_FAST, priority=1, freq=1, delay=True):

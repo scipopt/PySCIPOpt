@@ -2,6 +2,8 @@
 
 ## Unreleased
 ### Added
+- Interface to include custom reader plugins
+- New test for reader plugin
 ### Fixed
 - revert change from #543 to fix #570 (closing file descriptors)
 - use correct offset value when updating the objective function
