@@ -1733,6 +1733,7 @@ cdef extern from "scip/pub_lp.h":
     int SCIProwGetAge(SCIP_ROW* row)
     SCIP_Bool SCIProwIsRemovable(SCIP_ROW* row)
     SCIP_ROWORIGINTYPE SCIProwGetOrigintype(SCIP_ROW* row)
+    SCIP_CONS* SCIProwGetOriginCons(SCIP_ROW* row)
 
     # Column Methods
     int SCIPcolGetLPPos(SCIP_COL* col)

@@ -447,6 +447,11 @@ cdef class Row:
         """returns type of origin that created the row"""
         return SCIProwGetOrigintype(self.scip_row)
 
+    def getConsOriginConshdlrtype(self):
+        """returns type of constraint handler that created the row"""
+        cdef SCIP_CONS* scip_con = SCIProwGetOriginCons(self.scip_row)
+        return bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(scip_con))).decode('UTF-8')
+
     def getNNonz(self):
         """get number of nonzero entries in row vector"""
         return SCIProwGetNNonz(self.scip_row)
@@ -4238,7 +4243,6 @@ cdef class Model:
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintBestSol(self._scip, cfile, write_zeros))
-            fclose(cfile)
 
     def writeBestTransSol(self, filename="transprob.sol", write_zeros=False):
         """Write the best feasible primal solution for the transformed problem to a file.
@@ -4266,7 +4270,6 @@ cdef class Model:
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, cfile, write_zeros))
-            fclose(cfile)
 
     def writeTransSol(self, Solution solution, filename="transprob.sol", write_zeros=False):
         """Write the given transformed primal solution to a file.
@@ -4626,7 +4629,6 @@ cdef class Model:
       with open(filename, "w") as f:
           cfile = fdopen(f.fileno(), "w")
           PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
-          fclose(cfile)
 
     def getNLPs(self):
         """gets total number of LPs solved so far"""
