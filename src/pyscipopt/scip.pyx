@@ -573,7 +573,7 @@ cdef class Solution:
     def _checkStage(self, method):
         if method in ["SCIPgetSolVal", "getSolObjVal"]:
             if self.sol == NULL and not SCIPgetStage(self.scip) == SCIP_STAGE_SOLVING:
-                raise Warning(f"{method} cannot only be called in stage SOLVING without a valid solution (current stage: {SCIPgetStage(self.scip)})")
+                raise Warning(f"{method} can only be called in stage SOLVING with a valid solution (current stage: {SCIPgetStage(self.scip)})")
 
 
 cdef class BoundChange:
