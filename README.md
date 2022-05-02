@@ -2,7 +2,7 @@ PySCIPOpt
 =========
 
 This project provides an interface from Python to the [SCIP Optimization
-Suite](https://www.scipopt.org/).
+Suite](https://www.scipopt.org/). Please review [SCIP's license restrictions](https://scipopt.org/index.php#license) before installing PySCIPOpt.
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PySCIPOpt/Lobby)
 [![PySCIPOpt on PyPI](https://img.shields.io/pypi/v/pyscipopt.svg)](https://pypi.python.org/pypi/pyscipopt)
