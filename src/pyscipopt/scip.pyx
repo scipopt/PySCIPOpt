@@ -1930,8 +1930,8 @@ cdef class Model:
         return SCIPgetRowNumIntCols(self._scip, row.scip_row)
 
     def rowGetNNonz(self, Row row):
-        """Gets number of non-zero etnries in the row"""
-        return PY_SCIP_CALL(SCIProwGetNNonz(row.scip_row))
+        """Gets number of non-zero entries in the row"""
+        return SCIProwGetNNonz(row.scip_row)
 
     def getRowObjParallelism(self, Row row):
         """Returns 1 if the row is parallel, and 0 if orthogonal"""
