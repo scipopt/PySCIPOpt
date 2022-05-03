@@ -1929,10 +1929,6 @@ cdef class Model:
         """Returns number of intergal columns in the row"""
         return SCIPgetRowNumIntCols(self._scip, row.scip_row)
 
-    def rowGetNNonz(self, Row row):
-        """Gets number of non-zero entries in the row"""
-        return SCIProwGetNNonz(row.scip_row)
-
     def getRowObjParallelism(self, Row row):
         """Returns 1 if the row is parallel, and 0 if orthogonal"""
         return SCIPgetRowObjParallelism(self._scip, row.scip_row)
