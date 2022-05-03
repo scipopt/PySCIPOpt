@@ -5,6 +5,7 @@
 ### Fixed
 ### Changed
 ### Removed
+- Removed function rowGetNNonz
 
 ## 4.2.0 - 2022-03-21
 ### Added
