@@ -2,6 +2,8 @@
 
 ## Unreleased
 ### Added
+- Add SCIP function SCIprowGetOriginCons
+- Add getConsOriginConshdlrtype to Row
 ### Fixed
 ### Changed
 ### Removed
