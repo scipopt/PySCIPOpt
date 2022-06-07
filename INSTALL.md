@@ -73,7 +73,7 @@ found"):
 After setting up `SCIPOPTDIR` as specified above install pyscipopt
 
     export SCIPOPTDIR=/path/to/scip/install/dir
-    python -m pip install [-e] .
+    python -m pip install .
 
 For recompiling the source in the current directory `.` use
 

@@ -1,4 +1,4 @@
-__version__ = '4.1.0'
+__version__ = '4.2.0'
 
 # required for Python 3.8 on Windows
 import os
@@ -19,6 +19,7 @@ from pyscipopt.scip      import Heur
 from pyscipopt.scip      import Presol
 from pyscipopt.scip      import Pricer
 from pyscipopt.scip      import Prop
+from pyscipopt.scip      import Reader
 from pyscipopt.scip      import Sepa
 from pyscipopt.scip      import LP
 from pyscipopt.scip      import Expr

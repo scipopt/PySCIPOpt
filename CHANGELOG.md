@@ -7,6 +7,17 @@
 ### Fixed
 ### Changed
 ### Removed
+- Removed function rowGetNNonz
+
+## 4.2.0 - 2022-03-21
+### Added
+- Interface to include custom reader plugins
+- New test for reader plugin
+### Fixed
+- revert change from #543 to fix #570 (closing file descriptors)
+- use correct offset value when updating the objective function
+### Changed
+### Removed
 
 ## 4.1.0 - 2022-02-22
 ### Added
