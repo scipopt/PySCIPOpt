@@ -25,6 +25,8 @@ Installation
 [![Conda version](https://img.shields.io/conda/vn/conda-forge/pyscipopt?logo=conda-forge)](https://anaconda.org/conda-forge/pyscipopt)
 [![Conda platforms](https://img.shields.io/conda/pn/conda-forge/pyscipopt?logo=conda-forge)](https://anaconda.org/conda-forge/pyscipopt)
 
+***DO NOT USE THE CONDA BASE ENVIRONMENT TO INSTALL PYSCIPOPT.***
+
 Conda will install SCIP automatically, hence everything can be installed in a single command:
 ```bash
 conda install --channel conda-forge pyscipopt
