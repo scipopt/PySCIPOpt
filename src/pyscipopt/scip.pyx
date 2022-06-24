@@ -450,6 +450,11 @@ cdef class Row:
         """returns type of origin that created the row"""
         return SCIProwGetOrigintype(self.scip_row)
 
+    def getConsOriginConshdlrtype(self):
+        """returns type of constraint handler that created the row"""
+        cdef SCIP_CONS* scip_con = SCIProwGetOriginCons(self.scip_row)
+        return bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(scip_con))).decode('UTF-8')
+
     def getNNonz(self):
         """get number of nonzero entries in row vector"""
         return SCIProwGetNNonz(self.scip_row)
