@@ -376,7 +376,7 @@ def quickprod(termlist):
 class Op:
     const = 'const'
     varidx = 'var'
-    exp, log, sqrt = 'exp','log', 'sqrt'
+    exp, log, sqrt, sin, cos = 'exp', 'log', 'sqrt', 'sin', 'cos'
     plus, minus, mul, div, power = '+', '-', '*', '/', '**'
     add = 'sum'
     prod = 'prod'
@@ -601,7 +601,7 @@ cdef class PowExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + self.children[0].__repr__() + "," + str(self.expo) + ")"
 
-# Exp, Log, Sqrt Expressions
+# Exp, Log, Sqrt, Sin, Cos Expressions
 cdef class UnaryExpr(GenExpr):
     def __init__(self, op, expr):
         self.children = []
@@ -629,6 +629,12 @@ def log(expr):
 def sqrt(expr):
     """returns expression with sqrt-function"""
     return UnaryExpr(Operator.sqrt, buildGenExprObj(expr))
+def sin(expr):
+    """returns expression with sin-function"""
+    return UnaryExpr(Operator.sin, buildGenExprObj(expr))
+def cos(expr):
+    """returns expression with cos-function"""
+    return UnaryExpr(Operator.cos, buildGenExprObj(expr))
 
 def expr_to_nodes(expr):
     '''transforms tree to an array of nodes. each node is an operator and the position of the 

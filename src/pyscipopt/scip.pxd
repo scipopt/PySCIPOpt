@@ -1598,6 +1598,18 @@ cdef extern from "scip/expr_log.h":
                                    SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
                                    void* ownercreatedata)
 
+cdef extern from "scip/expr_trig.h":
+    SCIP_RETCODE SCIPcreateExprSin(SCIP* scip,
+                                   SCIP_EXPR** expr,
+                                   SCIP_EXPR* child,
+                                   SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                   void* ownercreatedata)
+    SCIP_RETCODE SCIPcreateExprCos(SCIP* scip,
+                                   SCIP_EXPR** expr,
+                                   SCIP_EXPR* child,
+                                   SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                   void* ownercreatedata)
+
 cdef extern from "scip/expr_product.h":
     SCIP_RETCODE SCIPcreateExprProduct(SCIP* scip,
                                        SCIP_EXPR** expr,

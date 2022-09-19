@@ -2328,6 +2328,14 @@ cdef class Model:
                 assert len(node[1]) == 1
                 PY_SCIP_CALL( SCIPcreateExprPow(self._scip, &scipexprs[i], scipexprs[node[1][0]], <SCIP_Real>0.5, NULL, NULL) )
                 continue
+            if opidx == Operator.sin:
+                assert len(node[1]) == 1
+                PY_SCIP_CALL( SCIPcreateExprSin(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL) )
+                continue
+            if opidx == Operator.cos:
+                assert len(node[1]) == 1
+                PY_SCIP_CALL( SCIPcreateExprCos(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL) )
+                continue
             if opidx == Operator.fabs:
                 assert len(node[1]) == 1
                 PY_SCIP_CALL( SCIPcreateExprAbs(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL ))

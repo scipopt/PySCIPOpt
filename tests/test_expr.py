@@ -1,6 +1,6 @@
 import pytest
 
-from pyscipopt import Model, sqrt, log, exp
+from pyscipopt import Model, sqrt, log, exp, sin, cos
 from pyscipopt.scip import Expr, GenExpr, ExprCons, Term, quicksum
 
 @pytest.fixture(scope="module")
@@ -50,6 +50,8 @@ def test_upgrade(model):
     assert isinstance(abs(expr), GenExpr)
     assert isinstance(log(expr), GenExpr)
     assert isinstance(exp(expr), GenExpr)
+    assert isinstance(sin(expr), GenExpr)
+    assert isinstance(cos(expr), GenExpr)
 
     with pytest.raises(ZeroDivisionError):
         expr /= 0.0
@@ -108,6 +110,8 @@ def test_genexpr_op_genexpr(model):
     assert isinstance(genexpr, GenExpr)
     assert isinstance(sqrt(x) + genexpr, GenExpr)
     assert isinstance(exp(x) + genexpr, GenExpr)
+    assert isinstance(sin(x) + genexpr, GenExpr)
+    assert isinstance(cos(x) + genexpr, GenExpr)
     assert isinstance(1/x + genexpr, GenExpr)
     assert isinstance(1/x**1.5 - genexpr, GenExpr)
     assert isinstance(y/x - exp(genexpr), GenExpr)

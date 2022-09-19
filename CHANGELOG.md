@@ -4,6 +4,8 @@
 ### Added
 - Add SCIP function SCIprowGetOriginCons
 - Add getConsOriginConshdlrtype to Row
+- Add possibility to use sine and cosing
+
 ### Fixed
 ### Changed
 ### Removed
