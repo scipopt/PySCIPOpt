@@ -1,27 +1,21 @@
 #todo relax function needed
 """
 cutstock.py:  use SCIP for solving the cutting stock problem.
-
 The instance of the cutting stock problem is represented by the two
 lists of m items of size w=(w_i) and and quantity q=(q_i).
-
 The roll size is B.
-
 Given packing patterns t_1, ...,t_k,...t_K where t_k is a vector of
 the numbers of items cut from a roll, the problem is reduced to the
 following LP:
-
     minimize   sum_{k} x_k
     subject to sum_{k} t_k(i) x_k >= q_i    for all i
                x_k >=0                      for all k.
-
 We apply a column generation approch (Gilmore-Gomory approach) in
 which we generate cutting patterns by solving a knapsack sub-problem.
-
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 
-from pyscipopt import Model, quicksum, multidict
+from pyscipopt import Model, quicksum, SCIP_PARAMSETTING
 
 LOG = True
 EPS = 1.e-6
@@ -34,48 +28,44 @@ def solveCuttingStock(w,q,B):
         - B: bin/roll capacity
     Returns a solution: list of lists, each of which with the cuts of a roll.
     """
-    t = []      # patterns
+    P = []      # patterns
     m = len(w)
 
     # Generate initial patterns with one size for each item width
     for (i,width) in enumerate(w):
         pat = [0]*m  # vector of number of orders to be packed into one roll (bin)
         pat[i] = int(B/width)
-        t.append(pat)
+        P.append(pat)
+    
 
-    # if LOG:
-    #     print "sizes of orders=",w
-    #     print "quantities of orders=",q
-    #     print "roll size=",B
-    #     print "initial patterns",t
-
-    K = len(t)
+    K = len(P)
     master = Model("master LP") # master LP problem
     x = {}
 
     for k in range(K):
-        x[k] = master.addVar(vtype="I", name="x(%s)"%k)
+        x[k] = master.addVar(vtype="I", lb = 0, name="x(%s)"%k)
+
+    y = master.addVar(ub=0, lb=0, name="y") # This variable is required due to issues with the way SCIP deals with dual variables in bounded constraints. See https://github.com/scipopt/PySCIPOpt#dual-values
 
     orders = {}
 
     for i in range(m):
-        orders[i] = master.addCons(
-            quicksum(t[k][i]*x[k] for k in range(K) if t[k][i] > 0) >= q[i], "Order(%s)"%i)
+        orders[i] = master.addCons(quicksum(P[k][i]*x[k] + y for k in range(K)) >= q[i], "Order(%s)"%i)
 
     master.setObjective(quicksum(x[k] for k in range(K)), "minimize")
-
-    # master.Params.OutputFlag = 0 # silent mode
-
-    # iter = 0
+    master.hideOutput() # Silent mode
+    
     while True:
-        # print "current patterns:"
-        # for ti in t:
-        #     print ti
-        # print
 
-        # iter += 1
-        relax = master.relax()
+        relax = Model(sourceModel = master) # Linear relxation of RMP
+        for var in relax.getVars():
+            relax.chgVarType(var, "CONTINUOUS")
+
+        relax.setPresolve(SCIP_PARAMSETTING.OFF)
+        relax.setHeuristics(SCIP_PARAMSETTING.OFF)
+        relax.disablePropagation()        
         relax.optimize()
+
         pi = [relax.getDualsolLinear(c) for c in relax.getConss()] # keep dual variables
 
         knapsack = Model("KP")     # knapsack sub-problem
@@ -83,120 +73,94 @@ def solveCuttingStock(w,q,B):
         y = {}
 
         for i in range(m):
-            y[i] = knapsack.addVar(lb=0, ub=q[i], vtype="I", name="y(%s)"%i)
+            y[i] = knapsack.addVar(lb=0, ub=q[i], vtype="INTEGER", name="y(%s)"%i)
 
         knapsack.addCons(quicksum(w[i]*y[i] for i in range(m)) <= B, "Width")
+
 
         knapsack.setObjective(quicksum(pi[i]*y[i] for i in range(m)), "maximize")
 
         knapsack.hideOutput() # silent mode
         knapsack.optimize()
-        # if LOG:
-        #     print "objective of knapsack problem:", knapsack.ObjVal
-        if knapsack.getObjVal() < 1+EPS: # break if no more columns
+
+        if knapsack.getObjVal() < 1 + EPS: # break if no more columns
             break
 
-        pat = [int(y[i].X+0.5) for i in y]      # new pattern
-        t.append(pat)
-        # if LOG:
-        #     print "shadow prices and new pattern:"
-        #     for (i,d) in enumerate(pi):
-        #         print "\t%5s%12s%7s" % (i,d,pat[i])
-        #     print
+        pat = [int(knapsack.getVal(y[i]) + 0.5) for i in y]      # new pattern
+        P.append(pat)
+
+        x[K] = master.addVar(obj=1, vtype="I", name="x(%s)"%K)
 
         # add new column to the master problem
-        col = Column()
-        for i in range(m):
-            if t[K][i] > 0:
-                col.addTerms(t[K][i], orders[i])
-        x[K] = master.addVar(obj=1, vtype="I", name="x(%s)"%K, column=col)
+        for i, con in enumerate(master.getConss()):
+            master.addConsCoeff(con, x[K], P[K-1][i])
 
         # master.write("MP" + str(iter) + ".lp")
         K += 1
 
-
-    # Finally, solve the IP
-    # if LOG:
-    #     master.Params.OutputFlag = 1 # verbose mode
     master.optimize()
-
-    # if LOG:
-    #     print
-    #     print "final solution (integer master problem):  objective =", master.ObjVal
-    #     print "patterns:"
-    #     for k in x:
-    #         if x[k].X > EPS:
-    #             print "pattern",k,
-    #             print "\tsizes:",
-    #             print [w[i] for i in range(m) if t[k][i]>0 for j in range(t[k][i]) ],
-    #             print "--> %s rolls" % int(x[k].X+.5)
 
     rolls = []
     for k in x:
-        for j in range(int(x[k].X + .5)):
-            rolls.append(sorted([w[i] for i in range(m) if t[k][i]>0 for j in range(t[k][i])]))
+        for j in range(int(master.getVal(x[k]) + .5)):
+            rolls.append(sorted([w[i] for i in range(m) if P[k][i]>0 for j in range(P[k][i])]))
     rolls.sort()
     return rolls
 
 
+def cuttingStockKantorovich(w, q, B):
+    """
+    Direct formulation of the Cutting Stock problem.
+    """
 
-def CuttingStockExample1():
-    """CuttingStockExample1: create toy instance for the cutting stock problem."""
-    B = 110            # roll width (bin size)
-    w = [20,45,50,55,75]  # width (size) of orders (items)
-    q = [48,35,24,10,8]  # quantitiy of orders
+    model = Model("Naive Cutting Stock")
+    m = max(w)*max(q) # m rolls
+    n = len(q) # n orders  
+    y = {}
+    for j in range(m):
+        y[j] = model.addVar(name = "y[%s]" % j, vtype="BINARY")
+    
+    x = {}
+    for j in range(m):
+        for i in range(n):
+            x[i,j] = model.addVar(name = "x[%s,%s]" %(i,j), lb = 0, vtype="INTEGER")
+            model.addCons(x[i,j] <= q[i]*y[j])
+
+    for i in range(n):
+        model.addCons(quicksum(x[i,j] for j in range(m)) == q[i])
+
+    for j in range(m):
+        model.addCons((quicksum(w[i]*x[i,j] for i in range(n)) <= B))
+
+    model.setObjective(quicksum(y[j] for j in range(m)), "minimize")
+    model.hideOutput()
+    model.optimize()
+
+    return model.getObjVal()
+
+
+def generateCuttingStockExample():
+    # Generates small/medium sized instances
+    from random import randint
+    B = randint(30,70)
+    n_orders = randint(2,5)
+    w = [randint(10,B) for _ in range(n_orders)]
+    q = [randint(1,10) for _ in range(n_orders)]
     return w,q,B
-
-def CuttingStockExample2():
-    """CuttingStockExample2: create toy instance for the cutting stock problem."""
-    B = 9            # roll width (bin size)
-    w = [2,3,4,5,6,7,8]   # width (size) of orders (items)
-    q = [4,2,6,6,2,2,2]  # quantitiy of orders
-    return w,q,B
-
-
-def mkCuttingStock(s):
-    """mkCuttingStock: convert a bin packing instance into cutting stock format"""
-    w,q = [],[]   # list of different widths (sizes) of items, their quantities
-    for item in sorted(s):
-        if w == [] or item != w[-1]:
-            w.append(item)
-            q.append(1)
-        else:
-            q[-1] += 1
-    return w,q
-
-
-def mkBinPacking(w,q):
-    """mkBinPacking: convert a cutting stock instance into bin packing format"""
-    s = []
-    for j in range(len(w)):
-        for i in range(q[j]):
-            s.append(w[j])
-    return s
 
 
 if __name__ == "__main__":
-    from bpp import FFD,solveBinPacking
-
-    w,q,B = CuttingStockExample1()
-    # w,q,B = CuttingStockExample2()
-    # n = 500
-    # B = 100
-    # s,B = DiscreteUniform(n,18,50,B)
-
-    s = mkBinPacking(w,q)
-    ffd = FFD(s,B)
-    print("\n\n\nSolution of FFD:")
-    print(ffd)
-    print(len(ffd), "bins")
-
-    print("\n\n\nCutting stock problem, column generation:")
-    rolls = solveCuttingStock(w,q,B)
-    print(len(rolls), "rolls:")
-    print(rolls)
-
-    print("\n\n\nBin packing problem:")
-    bins = solveBinPacking(s,B)
-    print(len(bins), "bins:")
-    print(bins)
+    from random import seed
+    seed(42)
+    for i in range(10):
+        w, q, B = generateCuttingStockExample() # Getting a new instance
+        naive_obj = cuttingStockKantorovich(w,q,B) # Solving it with original MIP formulation
+        column_generation_obj = solveCuttingStock(w,q,B) # Solving it with delayed column generation
+        
+        assert abs(naive_obj - len(column_generation_obj)) < EPS, "Different objectives" # Checking that the heuristic works for these instances
+        print("Test %i OKAY." %(i+1), "Item widths: ", w, "Item demands ", q, "Roll Capcity ", B)
+    
+    w, q, B = [13,16], [3,3], 46 # <- this is an example where the relaxation does not lead to the optimal solution. Branching is required.
+    naive_obj = cuttingStockKantorovich(w,q,B)
+    column_generation_obj = solveCuttingStock(w,q,B)
+    print("Kantorovich Cutting Stock: %i bins | Column Generation Heuristic: %i bins" % (naive_obj, len(column_generation_obj)))
