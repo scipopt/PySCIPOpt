@@ -1415,7 +1415,7 @@ cdef class Model:
 
     # Variable Functions
 
-    def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar = False):
+    def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0):
         """Create a new variable. Default variable is non-negative and continuous.
 
         :param name: name of the variable, generic if empty (Default value = '')
@@ -1425,6 +1425,7 @@ cdef class Model:
         :param ub: upper bound of the variable, use None for +infinity (Default value = None)
         :param obj: objective value of variable (Default value = 0.0)
         :param pricedVar: is the variable a pricing candidate? (Default value = False)
+        :param pricedVarScore: score of variable in case it is priced, the higher the better (Default value = 1.0)
 
         """
         cdef SCIP_VAR* scip_var
@@ -1457,7 +1458,7 @@ cdef class Model:
             raise Warning("unrecognized variable type")
 
         if pricedVar:
-            PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, 1.0))
+            PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, pricedVarScore))
         else:
             PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
 
