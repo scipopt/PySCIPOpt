@@ -122,7 +122,6 @@ setup(
         "Topic :: Scientific/Engineering :: Mathematics",
     ],
     ext_modules=extensions,
-    install_requires=["wheel"],
     packages=["pyscipopt"],
     package_dir={"pyscipopt": packagedir},
     package_data={"pyscipopt": ["scip.pyx", "scip.pxd", "*.pxi"]},
