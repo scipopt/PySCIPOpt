@@ -86,6 +86,10 @@ jobs:
     # https://github.com/sagemath/sage/blob/develop/.github/workflows/docker.yml
     uses: sagemath/sagetrac-mirror/.github/workflows/docker.yml@develop
     with:
+      # Extra system packages to install. See available packages at
+      # https://github.com/sagemath/sage/tree/develop/build/pkgs
+      # liblzma, bzip2, and libffi are python3 dependencies.
+      extra_sage_packages: "patch cmake liblzma bzip2 libffi python3 onetbb"
       # Sage distribution packages to build
       targets: SAGE_CHECK=no SAGE_CHECK_PACKAGES="soplex,scipoptsuite,pyscipopt" pyscipopt
       # Standard setting: Test the current beta release of Sage:
