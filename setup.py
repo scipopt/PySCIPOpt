@@ -9,8 +9,12 @@ extra_link_args = []
 
 # if SCIPOPTDIR is not set, we assume that SCIP is installed globally
 if not scipoptdir:
-    includedir = "."
-    libdir = "."
+    if platform.system() == "Darwin":
+        includedir = "/usr/local/include/"
+        libdir = "/usr/local/lib/"
+    else:
+        includedir = "."
+        libdir = "."
     libname = "libscip" if platform.system() in ["Windows"] else "scip"
     print("Assuming that SCIP is installed globally, because SCIPOPTDIR is undefined.\n")
 
