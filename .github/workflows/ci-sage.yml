@@ -84,7 +84,7 @@ jobs:
 
   linux:
     # https://github.com/sagemath/sage/blob/develop/.github/workflows/docker.yml
-    uses: sagemath/sagetrac-mirror/.github/workflows/docker.yml@develop
+    uses: sagemath/sage/.github/workflows/docker.yml@develop
     with:
       # Extra system packages to install. See available packages at
       # https://github.com/sagemath/sage/tree/develop/build/pkgs
@@ -96,10 +96,6 @@ jobs:
       sage_repo: sagemath/sage
       sage_ref: develop
       upstream_artifact: upstream
-      sage_trac_git: https://github.com/sagemath/sagetrac-mirror.git
-      # Temporarily test on the branch from sage ticket https://trac.sagemath.org/ticket/21003 (pyscipopt)
-      # (this is a no-op after that ticket is merged)
-      sage_trac_ticket: 21003
       # Docker targets (stages) to tag
       docker_targets: "with-targets"
       # We prefix the image name with the SPKG name ("pyscipopt-") to avoid the error
