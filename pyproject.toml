@@ -20,4 +20,13 @@ build-frontend = "build"
 # OneTBB, as of version 2021.8.0, does not build on manylinux2014 - https://github.com/oneapi-src/oneTBB/issues/950
 # And manylinux_2_24 is EOL - https://github.com/pypa/manylinux#docker-images
 manylinux-x86_64-image = "manylinux_2_28"
-manylinux-i686-image = "manylinux_2_28"
+# There is no manylinux_2_28 for i686
+
+[tool.cibuildwheel.macos]
+# Build `arm64` wheels on an Intel runner.
+# Note that the `arm64` cannot be tested in this configuration.
+archs = ["x86_64", "arm64"]
+
+[tool.cibuildwheel.linux]
+# On a Linux Intel runner with qemu installed, build Intel and ARM wheels
+archs = ["x86_64", "aarch64"]
