@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
 before-all = [
-  "apt-get install --yes git || yum install -y git || brew install git",
+  "(apt-get update && apt-get install --yes git) || yum install -y git || brew install git",
   "git clone --depth=1 https://github.com/sagemath/sage",
   "cd sage",
   "make configure",
