@@ -15,7 +15,7 @@ before-all = [
   "./configure --enable-build-as-root --enable-fat-binary",
   "make -j3 V=0 base-toolchain scip"
 ]
-environment = { PATH="$(pwd)/local/bin:$PATH", LD_LIBRARY_PATH="$(pwd)/local/lib:$LD_LIBRARY_PATH", PKG_CONFIG_PATH="$(pwd)/local/lib/pkgconfig:$PKG_CONFIG_PATH", ACLOCAL_PATH="/usr/share/aclocal", SCIPOPTDIR="$(pwd)/local" }
+environment = { PATH="$(pwd)/sage/local/bin:$PATH", LD_LIBRARY_PATH="$(pwd)/sage/local/lib:$LD_LIBRARY_PATH", PKG_CONFIG_PATH="$(pwd)/sage/local/lib/pkgconfig:$PKG_CONFIG_PATH", ACLOCAL_PATH="/usr/share/aclocal", SCIPOPTDIR="$(pwd)/sage/local" }
 build-frontend = "build"
 # OneTBB, as of version 2021.8.0, does not build on manylinux2014 - https://github.com/oneapi-src/oneTBB/issues/950
 # And manylinux_2_24 is EOL - https://github.com/pypa/manylinux#docker-images
