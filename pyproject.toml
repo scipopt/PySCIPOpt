@@ -1,3 +1,10 @@
 [build-system]
 requires = ['setuptools', 'cython <3, >=0.21']
 build-backend = "setuptools.build_meta"
+
+[tool.cibuildwheel.linux]
+before-all = [
+  "apt-get update && apt install wget",
+  "wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-8.0.3-Linux-ubuntu.deb",
+  "apt install -y ./SCIPOptSuite-8.0.3-Linux-ubuntu.deb"
+]
