@@ -9,6 +9,11 @@ on:
     types:
       - published
 
+concurrency:
+  # Cancel previous runs of this workflow for the same branch
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}

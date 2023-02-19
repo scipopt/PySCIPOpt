@@ -2,9 +2,17 @@
 requires = ['setuptools', 'cython <3, >=0.21']
 build-backend = "setuptools.build_meta"
 
-[tool.cibuildwheel.linux]
+[tool.cibuildwheel]
 before-all = [
-  "apt-get update && apt install wget",
-  "wget --quiet --no-check-certificate https://scipopt.org/download/release/SCIPOptSuite-8.0.3-Linux-ubuntu.deb",
-  "apt install -y ./SCIPOptSuite-8.0.3-Linux-ubuntu.deb"
+  "apt-get install --yes git || yum install -y git || brew install git",
+  "git clone --depth=1 https://github.com/sagemath/sage",
+  "cd sage",
+  "make configure",
+  "export PATH=build/bin:$PATH",
+  "eval $(sage-print-system-package-command auto update)",
+  "eval $(sage-print-system-package-command auto --yes --no-install-recommends --spkg install cmake zlib ncurses readline)",
+  "./configure --enable-build-as-root",
+  "make -j3 base-toolchain scip"
 ]
+environment = { PATH="$(pwd)/local/bin:$PATH", LD_LIBRARY_PATH="$(pwd)/local/lib:$LD_LIBRARY_PATH", PKG_CONFIG_PATH="$(pwd)/local/lib/pkgconfig:$PKG_CONFIG_PATH", ACLOCAL_PATH="/usr/share/aclocal", SCIPOPTDIR="$(pwd)/local" }
+build-frontend = "build"
