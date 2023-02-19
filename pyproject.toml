@@ -17,5 +17,6 @@ before-all = [
 environment = { PATH="$(pwd)/local/bin:$PATH", LD_LIBRARY_PATH="$(pwd)/local/lib:$LD_LIBRARY_PATH", PKG_CONFIG_PATH="$(pwd)/local/lib/pkgconfig:$PKG_CONFIG_PATH", ACLOCAL_PATH="/usr/share/aclocal", SCIPOPTDIR="$(pwd)/local" }
 build-frontend = "build"
 # OneTBB, as of version 2021.8.0, does not build on manylinux2014 - https://github.com/oneapi-src/oneTBB/issues/950
-manylinux-x86_64-image = "manylinux_2_24"
-manylinux-i686-image = "manylinux_2_24"
+# And manylinux_2_24 is EOL - https://github.com/pypa/manylinux#docker-images
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-i686-image = "manylinux_2_28"
