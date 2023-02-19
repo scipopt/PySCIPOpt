@@ -11,7 +11,7 @@ before-all = [
   "make configure",
   "export PATH=build/bin:$PATH",
   "eval $(sage-print-system-package-command auto update)",
-  "eval $(sage-print-system-package-command auto --yes --no-install-recommends --spkg install cmake zlib ncurses readline patch openblas gmp)",
+  "eval $(sage-print-system-package-command auto --yes --no-install-recommends --spkg install cmake zlib ncurses readline patch openblas gmp mpfr boost_cropped onetbb)",
   "./configure --enable-build-as-root --enable-fat-binary",
   "make -j3 V=0 base-toolchain scip"
 ]
