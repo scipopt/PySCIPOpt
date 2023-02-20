@@ -35,11 +35,8 @@ name: Run Sage CI for Linux
 ## systems/configurations.
 
 on:
-  pull_request:
   push:
     tags:
-    branches:
-      - master
   workflow_dispatch:
     # Allow to run manually
 
