@@ -1,7 +1,7 @@
 name: TestPyPI release
 
 env:
-  version: 8.0.0
+  version: 8.0.3
 
 
 # runs only when a release is published, not on drafts
