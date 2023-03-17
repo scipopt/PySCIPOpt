@@ -34,7 +34,7 @@ jobs:
       matrix:
         python-version: [3.7, 3.8, 3.9, 3.10, 3.11]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
@@ -42,7 +42,7 @@ jobs:
           sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
 
       - name: Setup python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -67,7 +67,7 @@ jobs:
       matrix:
         python-version: [3.8, 3.9, 3.10, 3.11]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Download dependencies (SCIPOptSuite)
         shell: powershell
@@ -78,7 +78,7 @@ jobs:
         run: scipopt-installer.exe /S /D=${{ env.SCIPOPTDIR }}
 
       - name: Setup python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -102,7 +102,7 @@ jobs:
     needs: Windows-test
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
@@ -110,7 +110,7 @@ jobs:
           sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
 
       - name: Setup python 3
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
          python-version: '3.x'
 
