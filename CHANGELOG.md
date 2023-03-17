@@ -2,13 +2,16 @@
 
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+### Removed
+
+## 4.3.0 - 2023-03-17
+### Added
 - Add SCIP function SCIprowGetOriginCons
 - Add getConsOriginConshdlrtype to Row
 - Add possibility to use sine and cosing
-- Add ability to set priced variable score 
-
-### Fixed
-### Changed
+- Add ability to set priced variable score
 ### Removed
 - Removed function rowGetNNonz
 
