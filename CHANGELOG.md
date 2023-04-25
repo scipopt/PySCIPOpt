@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Add SCIP function SCIPgetSolTime and wrapper getSolTime
 ### Fixed
 ### Changed
 ### Removed

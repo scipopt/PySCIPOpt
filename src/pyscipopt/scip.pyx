@@ -4474,6 +4474,14 @@ cdef class Model:
             objval = SCIPgetSolTransObj(self._scip, sol.sol)
         return objval
 
+    def getSolTime(self, Solution sol):
+        """Get clock time, when this solution was found.
+
+        :param Solution sol: solution
+        
+        """
+        return SCIPgetSolTime(self._scip, sol.sol)
+
     def getObjVal(self, original=True):
         """Retrieve the objective value of value of best solution.
         Can only be called after solving is completed.
