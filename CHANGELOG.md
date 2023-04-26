@@ -5,6 +5,7 @@
 - Add SCIP function SCIPgetSolTime and wrapper getSolTime
 ### Fixed
 ### Changed
+- Improved error message when using < or > instead of <= or >=
 ### Removed
 
 ## 4.3.0 - 2023-03-17
