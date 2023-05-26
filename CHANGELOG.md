@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Add SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear
 - Add SCIP function SCIPgetSolTime and wrapper getSolTime
 ### Fixed
 ### Changed
