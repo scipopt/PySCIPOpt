@@ -2917,7 +2917,6 @@ cdef class Model:
 
         PY_SCIP_CALL( SCIPaddCoefLinear(self._scip, cons.scip_cons, var.scip_var, value) )
 
-
     def getActivity(self, Constraint cons, Solution sol = None):
         """Retrieve activity of given constraint.
         Can only be called after solving is completed.
