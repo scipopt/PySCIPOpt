@@ -2997,7 +2997,6 @@ cdef class Model:
         return Constraint.create(transcons)
 
     def isNLPConstructed(self):
-        
         """returns whether SCIP's internal NLP has been constructed"""
         return SCIPisNLPConstructed(self._scip)
 
