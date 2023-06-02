@@ -12,10 +12,30 @@ installation_dir = site.getusersitepackages()
 
 import subprocess
 
-command = f'mkdir -p {installation_dir} && cd {installation_dir} && wget https://scipopt.org/download/release/SCIPOptSuite-8.0.3-Linux-debian.sh && chmod 700 * && echo "y" | ./*.sh && rm *.sh'
+# Determine the operating system
+current_os = platform.system()
 
-subprocess.run(command, shell=True)
-scipoptdir = installation_dir + "/SCIPOptSuite-8.0.3-Linux"
+if current_os == 'Linux':
+    command = f'mkdir -p {installation_dir} && cd {installation_dir} && wget https://scipopt.org/download/release/SCIPOptSuite-8.0.3-Linux-debian.sh && chmod 700 * && echo "y" | ./*.sh && rm *.sh'
+
+    subprocess.run(command, shell=True)
+    scipoptdir = installation_dir + "/SCIPOptSuite-8.0.3-Linux"
+
+elif current_os == 'Windows':
+    # Windows
+    # set specific values or behavior for Windows
+    print("Windows is not supported yet. Please install SCIP manually.")
+
+elif current_os == 'Darwin':
+    command = f'mkdir -p {installation_dir} && cd {installation_dir} && curl https://scipopt.org/download/release/SCIPOptSuite-8.0.3-Darwin-Ipopt-gcc10.sh --output scipoptsuite.sh && chmod 700 scipoptsuite.sh && echo "y" | ./scipoptsuite.sh && rm scipoptsuite.sh'
+
+    subprocess.run(command, shell=True)
+    scipoptdir = installation_dir + "/SCIPOptSuite-8.0.3-Darwin"
+
+else:
+    # Unknown or unsupported operating system
+    # handle accordingly
+    print("Unknown or unsupported operating system. Please install SCIP manually.")
 
 # if SCIPOPTDIR is not set, we assume that SCIP is installed globally
 if not scipoptdir:
