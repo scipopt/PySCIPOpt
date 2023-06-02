@@ -2,10 +2,20 @@ from setuptools import setup, Extension
 import os, platform, sys, re
 
 # look for environment variable that specifies path to SCIP
-scipoptdir = os.environ.get("SCIPOPTDIR", "").strip('"')
 
 extra_compile_args = []
 extra_link_args = []
+
+import site
+# Get the installation directory
+installation_dir = site.getusersitepackages()
+
+import subprocess
+
+command = f'mkdir -p {installation_dir} && cd {installation_dir} && wget https://scipopt.org/download/release/SCIPOptSuite-8.0.3-Linux-debian.sh && chmod 700 * && echo "y" | ./*.sh && rm *.sh'
+
+subprocess.run(command, shell=True)
+scipoptdir = installation_dir + "/SCIPOptSuite-8.0.3-Linux"
 
 # if SCIPOPTDIR is not set, we assume that SCIP is installed globally
 if not scipoptdir:
