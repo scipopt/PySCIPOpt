@@ -62,7 +62,6 @@ jobs:
       - name: Install PySCIPOpt
         shell: powershell
         run: |
-          $Env:SCIPOPTDIR = "${{ env.SCIPOPTDIR }}"
           python -m pip install .
 
       - name: Run pyscipopt tests
@@ -83,7 +82,6 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ${{ runner.workspace }}/scipoptsuite
             ~/Library/Caches/Homebrew/tbb--*
               /usr/local/opt/tbb*
             ~/Library/Caches/Homebrew/downloads/*--tbb-*
@@ -106,15 +104,11 @@ jobs:
 
       - name: Install PySCIPOpt
         run: |
-          export SCIPOPTDIR=${{ runner.workspace }}/scipoptsuite/
-          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${{ runner.workspace }}/scipoptsuite/lib
           python -m pip install .
 
-#      - name: Run pyscipopt tests
-#        run: |
-#          export SCIPOPTDIR=${{ runner.workspace }}/scipoptsuite/
-#          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${{ runner.workspace }}/scipoptsuite/lib
-#          py.test
+      - name: Run pyscipopt tests
+        run: |
+          py.test
 
   ### if you need valgrind on mac, you can install it via
   # brew tap LouisBrunner/valgrind
