@@ -27,7 +27,7 @@ elif current_os == 'Windows':
     print("Windows is not supported yet. Please install SCIP manually.")
 
 elif current_os == 'Darwin':
-    command = f'mkdir -p {installation_dir} && cd {installation_dir} && curl https://scipopt.org/download/release/SCIPOptSuite-8.0.3-Darwin-Ipopt-gcc10.sh --output scipoptsuite.sh && chmod 700 scipoptsuite.sh && echo "y" | ./scipoptsuite.sh && rm scipoptsuite.sh && export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:{installation_dir}/SCIPOptSuite-8.0.3-Darwin/lib'
+    command = f'mkdir -p {installation_dir} && cd {installation_dir} && curl https://scipopt.org/download/release/SCIPOptSuite-8.0.3-Darwin-Ipopt-gcc10.sh --output scipoptsuite.sh && chmod 700 scipoptsuite.sh && echo "y" | ./scipoptsuite.sh && rm scipoptsuite.sh && ln -s {installation_dir}/SCIPOptSuite-8.0.3-Darwin/lib/libscip.8.0.dylib /usr/local/lib/libscip.8.0.dylib'
 
     subprocess.run(command, shell=True)
     scipoptdir = installation_dir + "/SCIPOptSuite-8.0.3-Darwin"
