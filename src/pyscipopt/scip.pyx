@@ -90,6 +90,8 @@ cdef class PY_SCIP_PARAMEMPHASIS:
     PHASEFEAS    = SCIP_PARAMEMPHASIS_PHASEFEAS
     PHASEIMPROVE = SCIP_PARAMEMPHASIS_PHASEIMPROVE
     PHASEPROOF   = SCIP_PARAMEMPHASIS_PHASEPROOF
+    NUMERICS     = SCIP_PARAMEMPHASIS_NUMERICS
+    BENCHMARK    = SCIP_PARAMEMPHASIS_BENCHMARK
 
 cdef class PY_SCIP_STATUS:
     UNKNOWN        = SCIP_STATUS_UNKNOWN
@@ -2879,6 +2881,42 @@ cdef class Model:
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
+    def chgCoefLinear(self, Constraint cons, Variable var, value):
+        """Changes coefficient of variable in linear constraint;
+        deletes the variable if coefficient is zero; adds variable if not yet contained in the constraint
+        This method may only be called during problem creation stage for an original constraint and variable.
+        This method requires linear time to search for occurences of the variable in the constraint data.
+
+        :param Constraint cons: linear constraint
+        :param Variable var: variable of constraint entry
+        :param value: new coefficient of constraint entry
+
+        """
+        PY_SCIP_CALL( SCIPchgCoefLinear(self._scip, cons.scip_cons, var.scip_var, value) )
+
+    def delCoefLinear(self, Constraint cons, Variable var):
+        """Deletes variable from linear constraint
+        This method may only be called during problem creation stage for an original constraint and variable.
+        This method requires linear time to search for occurences of the variable in the constraint data.
+
+        :param Constraint cons: linear constraint
+        :param Variable var: variable of constraint entry
+
+        """
+
+        PY_SCIP_CALL( SCIPdelCoefLinear(self._scip, cons.scip_cons, var.scip_var) )
+
+    def addCoefLinear(self, Constraint cons, Variable var, value):
+        """Adds coefficient to linear constraint (if it is not zero)
+
+        :param Constraint cons: linear constraint
+        :param Variable var: variable of constraint entry
+        :param value: coefficient of constraint entry
+
+        """
+
+        PY_SCIP_CALL( SCIPaddCoefLinear(self._scip, cons.scip_cons, var.scip_var, value) )
+
     def getActivity(self, Constraint cons, Solution sol = None):
         """Retrieve activity of given constraint.
         Can only be called after solving is completed.
@@ -4471,6 +4509,14 @@ cdef class Model:
         else:
             objval = SCIPgetSolTransObj(self._scip, sol.sol)
         return objval
+
+    def getSolTime(self, Solution sol):
+        """Get clock time, when this solution was found.
+
+        :param Solution sol: solution
+        
+        """
+        return SCIPgetSolTime(self._scip, sol.sol)
 
     def getObjVal(self, original=True):
         """Retrieve the objective value of value of best solution.

@@ -1,7 +1,7 @@
 name: TestPyPI release
 
 env:
-  version: 8.0.0
+  version: 8.0.3
 
 
 # runs only when a release is published, not on drafts
@@ -13,7 +13,7 @@ jobs:
   deploy-packges-and-generate-documentation:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
@@ -21,7 +21,7 @@ jobs:
           sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
 
       - name: Setup python 3
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
          python-version: '3.x'
 
