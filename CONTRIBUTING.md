@@ -4,7 +4,6 @@ Contributing to PySCIPOpt
 Code contributions are very welcome and should comply to a few rules:
 
 1.  Read [Design principles of PySCIPOpt](#design-principles-of-pyscipopt).
-
 2.  New features should be covered by tests *and* examples. Please
     extend [tests](tests) and [examples](examples). Tests uses pytest
     and examples are meant to be accessible for PySCIPOpt newcomers
@@ -49,8 +48,9 @@ How to craft a release
 3. commit changes to the master branch
 3. tag new version `git tag vX.Y.Z`
 4. `git push` && `git push --tags`
+5. [create GitHub release](https://github.com/scipopt/PySCIPOpt/releases) based on that tag
 
-A new PyPI package is automatically created by the Travis build job when pushing a new tag onto the master and the version has been increased. Also the documentation is autmatically created in the process.
+A new PyPI package is automatically created by the GitHub actions when pushing a new tag onto the master and the version has been increased. Also the documentation is autmatically created in the process.
 
 Design principles of PySCIPOpt
 ==============================
