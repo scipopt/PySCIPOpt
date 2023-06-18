@@ -77,7 +77,7 @@ def _expr_richcmp(self, other, op):
         else:
             raise NotImplementedError
     else:
-        raise NotImplementedError
+        raise NotImplementedError("Can only support constraints with '<=', '>=', or '=='.")
 
 
 class Term:

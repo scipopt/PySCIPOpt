@@ -131,6 +131,8 @@ cdef extern from "scip/scip.h":
         SCIP_PARAMEMPHASIS_PHASEFEAS    = 7
         SCIP_PARAMEMPHASIS_PHASEIMPROVE = 8
         SCIP_PARAMEMPHASIS_PHASEPROOF   = 9
+        SCIP_PARAMEMPHASIS_NUMERICS     = 10
+        SCIP_PARAMEMPHASIS_BENCHMARK    = 11
 
     ctypedef enum SCIP_PROPTIMING:
         SCIP_PROPTIMING_BEFORELP     = 0x001u
@@ -809,6 +811,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPcheckSol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool printreason, SCIP_Bool completely, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* feasible)
     SCIP_RETCODE SCIPcheckSolOrig(SCIP* scip, SCIP_SOL* sol, SCIP_Bool* feasible, SCIP_Bool printreason, SCIP_Bool completely)
 
+    SCIP_Real SCIPgetSolTime(SCIP* scip, SCIP_SOL* sol)
+
     SCIP_RETCODE SCIPsetRelaxSolVal(SCIP* scip, SCIP_RELAX* relax, SCIP_VAR* var, SCIP_Real val)
 
     # Row Methods
@@ -1328,6 +1332,9 @@ cdef extern from "scip/cons_linear.h":
     SCIP_RETCODE SCIPchgRhsLinear(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
     SCIP_Real SCIPgetLhsLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real SCIPgetRhsLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RETCODE SCIPchgCoefLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR* var, SCIP_Real newval)
+    SCIP_RETCODE SCIPdelCoefLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR*)
+    SCIP_RETCODE SCIPaddCoefLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR*, SCIP_Real val)
     SCIP_Real SCIPgetActivityLinear(SCIP* scip, SCIP_CONS* cons, SCIP_SOL* sol)
     SCIP_VAR** SCIPgetVarsLinear(SCIP* scip, SCIP_CONS* cons)
     int SCIPgetNVarsLinear(SCIP* scip, SCIP_CONS* cons)

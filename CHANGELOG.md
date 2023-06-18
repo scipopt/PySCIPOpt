@@ -2,6 +2,15 @@
 
 ## Unreleased
 ### Added
+- Add SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear
+- Add SCIP function SCIPgetSolTime and wrapper getSolTime
+### Fixed
+### Changed
+- Improved error message when using < or > instead of <= or >=
+### Removed
+
+## 4.3.0 - 2023-03-17
+### Added
 - Add SCIP function SCIprowGetOriginCons
 - Add getConsOriginConshdlrtype to Row
 - Add possibility to use sine and cosing

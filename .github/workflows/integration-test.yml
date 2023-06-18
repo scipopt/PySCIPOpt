@@ -1,7 +1,7 @@
 name: Integration test
 
 env:
-  version: 8.0.0
+  version: 8.0.3
 
 # runs on branches and pull requests; doesn't run on tags.
 on:
@@ -17,9 +17,9 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
@@ -27,14 +27,14 @@ jobs:
           sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu.deb
 
       - name: Setup python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Prepare python environment
         run: |
           python -m pip install --upgrade pip
-          python -m pip install wheel cython networkx pytest-cov
+          python -m pip install networkx pytest-cov
 
       - name: Install PySCIPOpt
         run: python -m pip install .
@@ -49,9 +49,9 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Download dependencies (SCIPOptSuite)
         shell: powershell
@@ -62,7 +62,7 @@ jobs:
         run: scipopt-installer.exe /S /D=${{ env.SCIPOPTDIR }}
 
       - name: Setup python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -70,7 +70,7 @@ jobs:
         shell: powershell
         run: |
           python -m pip install --upgrade pip
-          python -m pip install wheel cython networkx pytest-cov
+          python -m pip install networkx pytest-cov
 
       - name: Install PySCIPOpt
         shell: powershell
@@ -87,9 +87,9 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Cache dependencies (SCIPOptSuite)
         id: cache-scip
@@ -120,14 +120,14 @@ jobs:
           make install -j
 
       - name: Setup python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Prepare python environment
         run: |
           python -m pip install --upgrade pip
-          python -m pip install wheel cython networkx pytest-cov pytest
+          python -m pip install networkx pytest-cov pytest
 
       - name: Install PySCIPOpt
         run: |
