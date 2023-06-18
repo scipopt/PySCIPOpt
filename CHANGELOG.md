@@ -9,6 +9,7 @@
 
 ### Fixed
 ### Changed
+- Pricer plugin fundamental callbacks now raise an error if not implemented
 ### Removed
 - Removed function rowGetNNonz
 
