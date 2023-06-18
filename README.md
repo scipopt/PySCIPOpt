@@ -72,7 +72,7 @@ from pyscipopt import Model
 model = Model("Example")  # model name is optional
 ```
 
-3)  Access the methods in the `scip.pyx` file using the solver/model
+3)  Access the methods in the `scip.pxi` file using the solver/model
     instance `model`, e.g.:
 
 ``` {.sourceCode .python}
@@ -108,7 +108,7 @@ may also extend it to increase the functionality of this interface. The
 following will provide some directions on how this can be achieved:
 
 The two most important files in PySCIPOpt are the `scip.pxd` and
-`scip.pyx`. These two files specify the public functions of SCIP that
+`scip.pxi`. These two files specify the public functions of SCIP that
 can be accessed from your python code.
 
 To make PySCIPOpt aware of the public functions you would like to
@@ -122,7 +122,7 @@ be done in order to properly add the functions:
 
 After following the previous two steps, it is then possible to create
 functions in python that reference the SCIP public functions included in
-`scip.pxd`. This is achieved by modifying the `scip.pyx` file to add the
+`scip.pxd`. This is achieved by modifying the `scip.pxi` file to add the
 functionality you require.
 
 We are always happy to accept pull request containing patches or

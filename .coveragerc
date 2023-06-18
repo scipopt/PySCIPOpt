@@ -1,6 +1,7 @@
 [run]
 plugins = Cython.Coverage
-#source = src/pyscipopt
-#omit =
-#    tests
-#    *__init__.py
+source = src/pyscipopt
+omit =
+    tests
+    __init__.py
+    scip.pyx
