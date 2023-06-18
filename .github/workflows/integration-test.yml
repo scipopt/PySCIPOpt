@@ -41,7 +41,8 @@ jobs:
 
       - name: Run pyscipopt tests
         run: |
-          pytest --cov=src
+          coverage run -m pytest
+          coverage xml
       
       - name: Upload to codecov.io
         uses: codecov/codecov-action@v2
