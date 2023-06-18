@@ -42,6 +42,7 @@ jobs:
       - name: Run pyscipopt tests
         run: |
           coverage run -m pytest
+          coverage report -m
           coverage xml
       
       - name: Upload to codecov.io
