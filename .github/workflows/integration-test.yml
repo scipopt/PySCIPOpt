@@ -41,14 +41,7 @@ jobs:
 
       - name: Run pyscipopt tests
         run: |
-          coverage run -m pytest
-          coverage report -m
-          coverage xml
-      
-      - name: Upload to codecov.io
-        uses: codecov/codecov-action@v2
-        with:
-          fail_ci_if_error: true
+          py.test
 
   Windows-test:
     env:
