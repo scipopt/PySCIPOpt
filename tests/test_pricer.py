@@ -1,3 +1,4 @@
+import pytest
 from pyscipopt import Model, Pricer, SCIP_RESULT, SCIP_PARAMSETTING, quicksum
 
 class CutPricer(Pricer):
@@ -144,5 +145,19 @@ def test_cuttingstock():
 
     assert s.getObjVal() == 452.25
 
+def test_incomplete_pricer():
+    class IncompletePricer(Pricer):
+        pass
+
+    pricer = IncompletePricer()
+    model = Model()
+    model.setPresolve(0)    
+    model.includePricer(pricer, "", "") 
+
+    with pytest.raises(Exception):
+        model.optimize()
+    
+
 if __name__ == '__main__':
     test_cuttingstock()
+    test_incomplete_pricer()
