@@ -10,7 +10,8 @@ class SoncRelax(Relax):
 
 def test_relax():
     m = Model()
-    # m.hideOutput()
+    m.hideOutput()
+
     #include relaxator
     m.includeRelax(SoncRelax(),'testrelaxator','Test that relaxator gets included')
     
@@ -26,7 +27,7 @@ def test_relax():
     
     m.setObjective(x1 + x0)
     m.optimize()
-    print(m.getVal(x0))
+
     assert 'relaxexec' in calls
     assert len(calls) >= 1
     
