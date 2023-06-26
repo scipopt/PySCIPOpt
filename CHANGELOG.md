@@ -14,7 +14,11 @@
 - Add SCIP function SCIprowGetOriginCons
 - Add getConsOriginConshdlrtype to Row
 - Add possibility to use sine and cosing
-- Add ability to set priced variable score
+- Add ability to set priced variable score 
+
+### Fixed
+### Changed
+- Pricer plugin fundamental callbacks now raise an error if not implemented
 ### Removed
 - Removed function rowGetNNonz
 

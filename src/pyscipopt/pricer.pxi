@@ -25,12 +25,11 @@ cdef class Pricer:
 
     def pricerredcost(self):
         '''calls reduced cost pricing method of variable pricer'''
-        print("python error in pricerredcost: this method needs to be implemented")
-        return {}
-
+        raise NotImplementedError("pricerredcost() is a fundamental callback and should be implemented in the derived class")
+    
     def pricerfarkas(self):
         '''calls Farkas pricing method of variable pricer'''
-        return {}
+        raise NotImplementedError("pricerfarkas() is a fundamental callback and should be implemented in the derived class")
 
 
 
