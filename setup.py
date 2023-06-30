@@ -88,6 +88,8 @@ if not os.path.exists(os.path.join(packagedir, "scip.pyx")):
 
 ext = ".pyx" if use_cython else ".c"
 
+on_github_actions = os.getenv('GITHUB_ACTIONS') == 'true'
+
 extensions = [
     Extension(
         "pyscipopt.scip",
@@ -97,11 +99,12 @@ extensions = [
         libraries=[libname],
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
+        define_macros= [("CYTHON_TRACE_NOGIL", 1), ("CYTHON_TRACE", 1)] if on_github_actions else []
     )
 ]
 
 if use_cython:
-    extensions = cythonize(extensions, compiler_directives={"language_level": 3})
+    extensions = cythonize(extensions, compiler_directives={"language_level": 3, "linetrace": on_github_actions})
 
 with open("README.md") as f:
     long_description = f.read()
