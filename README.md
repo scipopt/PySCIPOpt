@@ -7,6 +7,7 @@ Suite](https://www.scipopt.org/). Please review [SCIP's license restrictions](ht
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PySCIPOpt/Lobby)
 [![PySCIPOpt on PyPI](https://img.shields.io/pypi/v/pyscipopt.svg)](https://pypi.python.org/pypi/pyscipopt)
 [![Integration test](https://github.com/scipopt/PySCIPOpt/actions/workflows/integration-test.yml/badge.svg)](https://github.com/scipopt/PySCIPOpt/actions/workflows/integration-test.yml)
+[![coverage](https://img.shields.io/codecov/c/github/scipopt/pyscipopt)](https://app.codecov.io/gh/scipopt/pyscipopt/)
 [![AppVeyor Status](https://ci.appveyor.com/api/projects/status/fsa896vkl8be79j9/branch/master?svg=true)](https://ci.appveyor.com/project/mattmilten/pyscipopt/branch/master)
 
 
