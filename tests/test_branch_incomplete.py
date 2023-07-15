@@ -1,6 +1,6 @@
 import pytest
 import os
-from pyscipopt import Model, Branchrule, SCIP_RESULT, quicksum, SCIP_PARAMSETTING
+from pyscipopt import Model, Branchrule, SCIP_PARAMSETTING
 
 
 def test_incomplete_branchrule():
