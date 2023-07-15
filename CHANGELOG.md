@@ -5,6 +5,8 @@
 - Add SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear
 - Add SCIP function SCIPgetSolTime and wrapper getSolTime
 ### Fixed
+- Pricer plugin fundamental callbacks now raise an error if not implemented
+- Brachrule plugin fundamental callbacks now raise an error if not implemented
 ### Changed
 - Improved error message when using < or > instead of <= or >=
 ### Removed
@@ -18,7 +20,6 @@
 
 ### Fixed
 ### Changed
-- Pricer plugin fundamental callbacks now raise an error if not implemented
 ### Removed
 - Removed function rowGetNNonz
 
