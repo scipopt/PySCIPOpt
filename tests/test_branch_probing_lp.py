@@ -1,4 +1,4 @@
-from pyscipopt import Model, Branchrule, SCIP_RESULT, quicksum
+from pyscipopt import Model, Branchrule, SCIP_RESULT, quicksum, SCIP_PARAMSETTING
 
 
 class MyBranching(Branchrule):
@@ -42,6 +42,7 @@ class MyBranching(Branchrule):
 
 def test_branching():
     m = Model()
+    m.setHeuristics(SCIP_PARAMSETTING.OFF)
     m.setIntParam("presolving/maxrounds", 0)
     #m.setLongintParam("lp/rootiterlim", 3)
     m.setRealParam("limits/time", 60)
