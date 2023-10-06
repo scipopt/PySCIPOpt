@@ -6,6 +6,7 @@
 - Add SCIP function SCIPgetSolTime and wrapper getSolTime
 ### Fixed
 - Fixed segmentation fault when accessing the Solution class directly
+- Changed getSols so that it prints solutions in terms of the original variables
 ### Changed
 - Improved error message when using < or > instead of <= or >=
 ### Removed

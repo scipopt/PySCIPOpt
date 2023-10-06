@@ -572,8 +572,8 @@ cdef class Solution:
 
         vals = {}
         self._checkStage("SCIPgetSolVal")
-        for i in range(SCIPgetNVars(self.scip)):
-            scip_var = SCIPgetVars(self.scip)[i]
+        for i in range(SCIPgetNOrigVars(self.scip)):
+            scip_var = SCIPgetOrigVars(self.scip)[i]
 
             # extract name
             cname = bytes(SCIPvarGetName(scip_var))
