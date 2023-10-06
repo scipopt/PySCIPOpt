@@ -8,6 +8,7 @@
 ### Changed
 - Improved error message when using < or > instead of <= or >=
 ### Removed
+- Removed double declaration of SCIPfindEventhdlr
 
 ## 4.3.0 - 2023-03-17
 ### Added
