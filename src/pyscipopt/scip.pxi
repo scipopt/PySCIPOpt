@@ -535,11 +535,16 @@ cdef class NLRow:
 cdef class Solution:
     """Base class holding a pointer to corresponding SCIP_SOL"""
 
+    # We are raising an error here to avoid creating a solution without an associated model. See Issue #625
+    def __init__(self, raise_error = False):
+        if not raise_error:
+            raise ValueError("To create a solution you should use the createSol method of the Model class.")
+
     @staticmethod
     cdef create(SCIP* scip, SCIP_SOL* scip_sol):
         if scip == NULL:
             raise Warning("cannot create Solution with SCIP* == NULL")
-        sol = Solution()
+        sol = Solution(True)
         sol.sol = scip_sol
         sol.scip = scip
         return sol
