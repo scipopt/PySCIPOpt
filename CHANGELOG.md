@@ -5,6 +5,7 @@
 - Add SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear
 - Add SCIP function SCIPgetSolTime and wrapper getSolTime
 ### Fixed
+- Fixed segmentation fault when accessing the Solution class directly
 ### Changed
 - Improved error message when using < or > instead of <= or >=
 ### Removed

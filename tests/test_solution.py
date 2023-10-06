@@ -1,5 +1,5 @@
-from pyscipopt import Model
-
+from pyscipopt import Model, scip
+import pytest
 
 def test_solution_getbest():
     m = Model()
@@ -62,6 +62,10 @@ def test_solution_evaluation():
     assert sol[expr] == m.getVal(expr)
     assert sol[expr2] == m.getVal(expr2)
 
+
+def test_create_solution():
+    with pytest.raises(ValueError):
+        scip.Solution()
 
 if __name__ == "__main__":
     test_solution_getbest()
