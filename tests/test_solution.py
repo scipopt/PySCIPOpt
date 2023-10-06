@@ -67,6 +67,14 @@ def test_create_solution():
     with pytest.raises(ValueError):
         scip.Solution()
 
+def test_print_soltion():
+    m = Model()
+
+    m.addVar()
+    m.optimize()
+
+    assert str(m.getSols()[0]) == "{'x1': -0.0}"
+
 if __name__ == "__main__":
     test_solution_getbest()
     test_solution_create()
