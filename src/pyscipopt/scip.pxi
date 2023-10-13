@@ -1727,6 +1727,13 @@ cdef class Model:
     def getNBinVars(self):
         """gets number of binary active problem variables"""
         return SCIPgetNBinVars(self._scip)
+    
+    def getVarDict(self):
+        """gets dictionary with variables names as keys and current variable values as items"""
+        var_dict = {}
+        for var in self.getVars():
+            var_dict[var.name] = self.getVal(var)
+        return var_dict
 
     def updateNodeLowerbound(self, Node node, lb):
         """if given value is larger than the node's lower bound (in transformed problem),
@@ -1741,7 +1748,7 @@ cdef class Model:
     def relax(self):
         """Relaxes the integrality restrictions of the model"""
         for var in self.getVars():
-            var.chgVarType(var, "C")
+            self.chgVarType(var, "C")
         return
 
     # Node methods
