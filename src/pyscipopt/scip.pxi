@@ -2126,6 +2126,19 @@ cdef class Model:
 
         return constraints
 
+    def getConsNVars(self, Constraint constraint):
+        cdef int nvars 
+        cdef SCIP_Bool success
+
+        PY_SCIP_CALL(SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success)) # I need to convert nvars to a python integer  
+
+        if not success:
+            conshdlr = SCIPconsGetHdlr(constraint.scip_cons)
+            conshdrlname = SCIPconshdlrGetName(conshdlr)
+            raise TypeError("The constraint handler %s does not have this functionality." % conshdrlname)
+        
+        return nvars
+
     def printCons(self, Constraint constraint):
         return PY_SCIP_CALL(SCIPprintCons(self._scip, constraint.scip_cons, NULL))
 
