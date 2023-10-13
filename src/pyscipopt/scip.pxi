@@ -1338,7 +1338,6 @@ cdef class Model:
         else:
             return SCIPgetTransObjoffset(self._scip)
 
-
     def setObjIntegral(self):
         """informs SCIP that the objective value is always integral in every feasible solution
         Note: This function should be used to inform SCIP that the objective function is integral, helping to improve the
@@ -1615,7 +1614,6 @@ cdef class Model:
            ub = SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarUb(self._scip, var.scip_var, ub))
 
-
     def chgVarLbGlobal(self, Variable var, lb):
         """Changes the global lower bound of the specified variable.
 
@@ -1739,6 +1737,12 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPupdateNodeLowerbound(self._scip, node.scip_node, lb))
+    
+    def relax(self):
+        """Relaxes the integrality restrictions of the model"""
+        for var in self.getVars():
+            var.chgVarType(var, "C")
+        return
 
     # Node methods
     def getBestChild(self):
@@ -2140,6 +2144,7 @@ cdef class Model:
         return nvars
 
     def getConsVars(self, Constraint constraint):
+        """
         cdef SCIP_Bool success
         cdef int _nvars
 
@@ -2161,7 +2166,7 @@ cdef class Model:
                 self._modelvars[ptr] = var
                 vars.append(var)
         return vars
-        
+    """
     
     def printCons(self, Constraint constraint):
         return PY_SCIP_CALL(SCIPprintCons(self._scip, constraint.scip_cons, NULL))
