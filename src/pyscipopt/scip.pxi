@@ -2139,6 +2139,30 @@ cdef class Model:
         
         return nvars
 
+    def getConsVars(self, Constraint constraint):
+        cdef SCIP_Bool success
+        cdef int _nvars
+
+        _nvars = SCIPgetConsNVars(self._scip, constraint.scip_cons, &_nvars, &success)
+
+        cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(_nvars * sizeof(SCIP_VAR*))
+        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, _nvars*sizeof(SCIP_VAR), &success)
+        
+        vars = []
+        for i in range(_nvars):
+            ptr = <size_t>(_vars[i])
+            # check whether the corresponding variable exists already
+            if ptr in self._modelvars:
+                vars.append(self._modelvars[ptr])
+            else:
+                # create a new variable
+                var = Variable.create(_vars[i])
+                assert var.ptr() == ptr
+                self._modelvars[ptr] = var
+                vars.append(var)
+        return vars
+        
+    
     def printCons(self, Constraint constraint):
         return PY_SCIP_CALL(SCIPprintCons(self._scip, constraint.scip_cons, NULL))
 
@@ -4006,7 +4030,7 @@ cdef class Model:
 
         return ([Variable.create(pseudocands[i]) for i in range(npseudocands)], npseudocands, npriopseudocands)
 
-    def branchVar(self, variable):
+    def branchVar(self, Variable variable):
         """Branch on a non-continuous variable.
 
         :param variable: Variable to branch on
