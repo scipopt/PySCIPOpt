@@ -75,6 +75,16 @@ def test_print_soltion():
 
     assert str(m.getBestSol()) == "{'x1': -0.0}"
 
+
+def test_getSols():
+    m = Model()
+
+    x = m.addVar()
+    m.optimize()
+
+    assert len(m.getSols()) >= 1
+    assert any(sol[x] == 0.0 for sol in m.getSols())
+
 if __name__ == "__main__":
     test_solution_getbest()
     test_solution_create()
