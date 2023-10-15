@@ -13,7 +13,7 @@ def test_incomplete_branchrule():
     model.setSeparating(SCIP_PARAMSETTING.OFF)
     model.setHeuristics(SCIP_PARAMSETTING.OFF)
     model.includeBranchrule(branchrule, "", "", priority=10000000, maxdepth=-1, maxbounddist=1)
-    model.readProblem(os.path.join("tests", "data", "10teams.mps.gz"))
+    model.readProblem(os.path.join("tests", "data", "10teams.mps"))
 
     with pytest.raises(Exception):
         model.optimize()
