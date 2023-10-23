@@ -45,7 +45,7 @@ def test_branching():
     m.setHeuristics(SCIP_PARAMSETTING.OFF)
     m.setIntParam("presolving/maxrounds", 0)
     #m.setLongintParam("lp/rootiterlim", 3)
-    m.setRealParam("limits/time", 60)
+    m.setLongintParam("limits/nodes", 1)
 
     x0 = m.addVar(lb=-2, ub=4)
     r1 = m.addVar()
