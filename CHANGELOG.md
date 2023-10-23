@@ -5,9 +5,14 @@
 - Add SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear
 - Add SCIP function SCIPgetSolTime and wrapper getSolTime
 ### Fixed
+- Pricer plugin fundamental callbacks now raise an error if not implemented
+- Brachrule plugin fundamental callbacks now raise an error if not implemented
+- Fixed segmentation fault when accessing the Solution class directly
+- Changed getSols so that it prints solutions in terms of the original variables
 ### Changed
 - Improved error message when using < or > instead of <= or >=
 ### Removed
+- Removed double declaration of SCIPfindEventhdlr
 
 ## 4.3.0 - 2023-03-17
 ### Added
@@ -18,7 +23,6 @@
 
 ### Fixed
 ### Changed
-- Pricer plugin fundamental callbacks now raise an error if not implemented
 ### Removed
 - Removed function rowGetNNonz
 
