@@ -1747,6 +1747,9 @@ cdef class Model:
     
     def relax(self):
         """Relaxes the integrality restrictions of the model"""
+        if self.getStage() != SCIP_STAGE_PROBLEM:
+            raise Warning("method can only be called in stage PROBLEM")
+            
         for var in self.getVars():
             self.chgVarType(var, "C")
         return
