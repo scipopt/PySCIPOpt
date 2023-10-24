@@ -2141,7 +2141,7 @@ cdef class Model:
         cdef int nvars 
         cdef SCIP_Bool success
 
-        PY_SCIP_CALL(SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success)) # I need to convert nvars to a python integer  
+        PY_SCIP_CALL(SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success))   
 
         if not success:
             conshdlr = SCIPconsGetHdlr(constraint.scip_cons)
@@ -2151,16 +2151,17 @@ cdef class Model:
         return nvars
 
     def getConsVars(self, Constraint constraint):
-        """
         cdef SCIP_Bool success
         cdef int _nvars
 
-        _nvars = SCIPgetConsNVars(self._scip, constraint.scip_cons, &_nvars, &success)
+        SCIPgetConsNVars(self._scip, constraint.scip_cons, &_nvars, &success)
+        print(_nvars)
 
         cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(_nvars * sizeof(SCIP_VAR*))
         SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, _nvars*sizeof(SCIP_VAR), &success)
         
         vars = []
+        print(_nvars)
         for i in range(_nvars):
             ptr = <size_t>(_vars[i])
             # check whether the corresponding variable exists already
@@ -2173,7 +2174,6 @@ cdef class Model:
                 self._modelvars[ptr] = var
                 vars.append(var)
         return vars
-    """
     
     def printCons(self, Constraint constraint):
         return PY_SCIP_CALL(SCIPprintCons(self._scip, constraint.scip_cons, NULL))
