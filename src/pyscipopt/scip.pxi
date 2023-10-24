@@ -1749,7 +1749,7 @@ cdef class Model:
         """Relaxes the integrality restrictions of the model"""
         if self.getStage() != SCIP_STAGE_PROBLEM:
             raise Warning("method can only be called in stage PROBLEM")
-            
+
         for var in self.getVars():
             self.chgVarType(var, "C")
         return
@@ -2158,13 +2158,11 @@ cdef class Model:
         cdef int _nvars
 
         SCIPgetConsNVars(self._scip, constraint.scip_cons, &_nvars, &success)
-        print(_nvars)
 
         cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(_nvars * sizeof(SCIP_VAR*))
         SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, _nvars*sizeof(SCIP_VAR), &success)
         
         vars = []
-        print(_nvars)
         for i in range(_nvars):
             ptr = <size_t>(_vars[i])
             # check whether the corresponding variable exists already
