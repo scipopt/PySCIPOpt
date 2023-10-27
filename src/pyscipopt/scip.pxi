@@ -2140,6 +2140,11 @@ cdef class Model:
         return constraints
 
     def getConsNVars(self, Constraint constraint):
+        """
+        Gets number of variables in a constraint.
+
+        :param constraint: Constraint to get the number of variables from.
+        """
         cdef int nvars 
         cdef SCIP_Bool success
 
@@ -2153,6 +2158,11 @@ cdef class Model:
         return nvars
 
     def getConsVars(self, Constraint constraint):
+        """
+        Gets variables in a constraint.
+
+        :param constraint: Constraint to get the variables from.
+        """
         cdef SCIP_Bool success
         cdef int _nvars
 
