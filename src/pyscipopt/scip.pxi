@@ -1752,7 +1752,6 @@ cdef class Model:
 
         for var in self.getVars():
             self.chgVarType(var, "C")
-        return
 
     # Node methods
     def getBestChild(self):
