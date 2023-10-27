@@ -2,13 +2,16 @@
 
 ## Unreleased
 ### Added
+- Add SCIP functions SCIPconsGetNVars, SCIPconsGetVars
 - Add SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear
 - Add SCIP function SCIPgetSolTime and wrapper getSolTime
+- Add convenience methods relax and getVarDict
 ### Fixed
 - Pricer plugin fundamental callbacks now raise an error if not implemented
 - Brachrule plugin fundamental callbacks now raise an error if not implemented
 - Fixed segmentation fault when accessing the Solution class directly
 - Changed getSols so that it prints solutions in terms of the original variables
+- Fixed error message in _checkStage
 ### Changed
 - Improved error message when using < or > instead of <= or >=
 ### Removed
