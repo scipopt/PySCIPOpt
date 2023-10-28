@@ -4,6 +4,7 @@
 ### Added
 - Add SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear
 - Add SCIP function SCIPgetSolTime and wrapper getSolTime
+- Add SCIP functions getPrimalRay, getPrimalRayVal
 ### Fixed
 ### Changed
 - Improved error message when using < or > instead of <= or >=

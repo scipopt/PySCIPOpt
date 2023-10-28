@@ -4557,6 +4557,25 @@ cdef class Model:
         if not self.getStage() >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
         return self.getSolVal(self._bestSol, expr)
+    
+    def getPrimalRayVal(self, Variable var):
+        """
+        Gets value of given variable in primal ray causing unboundedness of the LP relaxation
+        """
+        return SCIPgetPrimalRayVal(self._scip, var.scip_var)
+
+    def getPrimalRay(self):
+        """
+        Gets primal ray causing unboundedness of the LP relaxation
+        """
+        cdef int _nvars = SCIPgetNVars(self._scip)
+        cdef SCIP_VAR ** _vars = SCIPgetVars(self._scip)
+
+        ray = []
+        for i in range(_nvars):
+            ray.append(float(SCIPgetPrimalRayVal(self._scip, _vars[i])))
+
+        return ray
 
     def getPrimalbound(self):
         """Retrieve the best primal bound."""
