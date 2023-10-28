@@ -4622,6 +4622,12 @@ cdef class Model:
             raise Warning("method cannot be called before problem is solved")
         return self.getSolVal(self._bestSol, expr)
     
+    def hasPrimalRay(self):
+        """
+        Returns whether a primal ray is stored that proves unboundedness of the LP relaxation
+        """
+        return SCIPhasPrimalRay(self._scip)
+        
     def getPrimalRayVal(self, Variable var):
         """
         Gets value of given variable in primal ray causing unboundedness of the LP relaxation

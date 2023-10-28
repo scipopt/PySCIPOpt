@@ -6,7 +6,7 @@
 - Add SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear
 - Add SCIP function SCIPgetSolTime and wrapper getSolTime
 - Add convenience methods relax and getVarDict
-- Add SCIP functions getPrimalRay, getPrimalRayVal
+- Add SCIP functions hasPrimalRay, getPrimalRay, getPrimalRayVal
 ### Fixed
 - Pricer plugin fundamental callbacks now raise an error if not implemented
 - Brachrule plugin fundamental callbacks now raise an error if not implemented

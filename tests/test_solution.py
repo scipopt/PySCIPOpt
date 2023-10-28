@@ -62,6 +62,24 @@ def test_solution_evaluation():
     assert sol[expr] == m.getVal(expr)
     assert sol[expr2] == m.getVal(expr2)
 
+def test_hasPrimalRay():
+    m = Model()
+    x = m.addVar()
+    m.setObjective(x, "maximize")
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    
+    m.optimize()
+    
+    assert m.hasPrimalRay()
+
+    m = Model()
+    x = m.addVar(lb = 0) # for readability
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+
+    m.optimize()
+
+    assert not m.hasPrimalRay()
+    
 def test_getPrimalRayVal():
     m = Model()
     x = m.addVar()
