@@ -1,4 +1,5 @@
-from pyscipopt import Model, SCIP_PARAMSETTING
+from pyscipopt import Model, scip, SCIP_PARAMSETTING
+import pytest
 
 def test_solution_getbest():
     m = Model()
@@ -84,6 +85,28 @@ def test_getPrimalRay():
 
     assert m.getPrimalRay() == [1,0]
 
+
+def test_create_solution():
+    with pytest.raises(ValueError):
+        scip.Solution()
+
+def test_print_soltion():
+    m = Model()
+
+    m.addVar()
+    m.optimize()
+
+    assert str(m.getBestSol()) == "{'x1': -0.0}"
+
+
+def test_getSols():
+    m = Model()
+
+    x = m.addVar()
+    m.optimize()
+
+    assert len(m.getSols()) >= 1
+    assert any(sol[x] == 0.0 for sol in m.getSols())
 
 if __name__ == "__main__":
     test_getPrimalRayVal()
