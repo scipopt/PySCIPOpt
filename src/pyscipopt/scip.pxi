@@ -2883,7 +2883,7 @@ cdef class Model:
         """Change right hand side value of a constraint.
 
         :param Constraint cons: linear or quadratic constraint
-        :param rhs: new ride hand side (set to None for +infinity)
+        :param rhs: new right hand side (set to None for +infinity)
 
         """
 
