@@ -14,7 +14,3 @@ def test_freed():
     m = Model()
     del m
     assert is_memory_freed()
-
-if __name__ == "__main__":
-    test_not_freed()
-    test_freed()

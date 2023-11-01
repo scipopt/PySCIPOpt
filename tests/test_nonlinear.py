@@ -285,10 +285,3 @@ def test_quad_coeffs():
 
     assert linterms[0][0].name == z.name
     assert linterms[0][1] == 4
-
-if __name__ == "__main__":
-    test_string_poly()
-    test_string()
-    test_circle()
-    test_gastrans()
-    test_quad_coeffs()

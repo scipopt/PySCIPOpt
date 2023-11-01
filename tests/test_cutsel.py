@@ -79,7 +79,3 @@ def test_cut_selector():
     scip.setObjective(quicksum(c[i] * e[i] for i in range(len(A))), sense='minimize')
 
     scip.optimize()
-
-
-if __name__ == "__main__":
-    test_cut_selector()

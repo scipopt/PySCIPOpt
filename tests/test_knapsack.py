@@ -46,6 +46,3 @@ def test_knapsack():
 
     includedWeight = sum([weights[i]*varSolutions[i] for i in range(len(weights))])
     assert includedWeight > 0 and includedWeight <= knapsackSize
-
-if __name__ == "__main__":
-    test_knapsack()

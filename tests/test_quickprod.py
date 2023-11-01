@@ -35,8 +35,3 @@ def test_largequadratic():
     assert cons.expr.degree() == 2*dim*dim
     m.addCons(cons)
     # TODO: what can we test beyond the lack of crashes?
-
-if __name__ == "__main__":
-    test_quickprod()
-    test_quickprod_model()
-    test_largequadratic()

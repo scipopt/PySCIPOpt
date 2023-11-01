@@ -156,8 +156,3 @@ def test_incomplete_pricer():
 
     with pytest.raises(Exception):
         model.optimize()
-    
-
-if __name__ == '__main__':
-    test_cuttingstock()
-    test_incomplete_pricer()

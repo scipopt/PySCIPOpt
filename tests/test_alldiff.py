@@ -299,6 +299,3 @@ def test_main():
             for col in range(9):
                 out += str(round(scip.getVal(x[row,col]))) + ' '
             print(out)
-
-if __name__ == "__main__":
-    test_main()

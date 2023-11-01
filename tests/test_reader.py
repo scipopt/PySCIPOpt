@@ -59,7 +59,7 @@ def createFile(filename):
 def deleteFile(filename):
     os.remove(filename)
 
-def test():
+def test_main():
     createFile("tmp.sod")
 
     m = Model("soduko")
@@ -79,7 +79,3 @@ def test():
     assert input == "soduko"
 
     deleteFile("model.sod")
-
-
-if __name__ == "__main__":
-    test()

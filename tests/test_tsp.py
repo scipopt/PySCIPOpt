@@ -112,7 +112,3 @@ def test_main():
 
     print("Optimal tour:", edges)
     print("Optimal cost:", objective_value)
-
-
-if __name__ == "__main__":
-    test_main()

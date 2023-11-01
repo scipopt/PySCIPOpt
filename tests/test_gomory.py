@@ -340,6 +340,3 @@ def test_CKS():
     # solve problem
     s.optimize()
     s.printStatistics()
-
-if __name__ == "__main__":
-    test_CKS()

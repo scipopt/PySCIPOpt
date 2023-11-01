@@ -182,12 +182,3 @@ def test_model_ptr():
 
     with pytest.raises(ValueError):
         Model.from_ptr("some gibberish", take_ownership=False)
-
-
-if __name__ == "__main__":
-    test_model()
-    test_solve_concurrent()
-    test_multiple_cons_simple()
-    test_multiple_cons_names()
-    test_multiple_cons_params()
-    test_model_ptr()

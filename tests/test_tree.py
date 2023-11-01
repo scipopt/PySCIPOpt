@@ -61,6 +61,3 @@ def test_tree():
     del s
 
     assert len(node_eventhdlr.calls) > 3
-
-if __name__ == "__main__":
-    test_tree()

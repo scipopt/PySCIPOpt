@@ -61,8 +61,3 @@ def test_solution_evaluation():
     assert sol[y] == m.getVal(y)
     assert sol[expr] == m.getVal(expr)
     assert sol[expr2] == m.getVal(expr2)
-
-
-if __name__ == "__main__":
-    test_solution_getbest()
-    test_solution_create()

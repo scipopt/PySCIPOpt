@@ -65,6 +65,3 @@ def test_nlrow():
 
     linterms = nlrows[2].getLinearTerms()
     assert len(linterms) == 0
-
-if __name__ == "__main__":
-    test_nlrow()
