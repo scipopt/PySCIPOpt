@@ -25,18 +25,17 @@ cdef class Branchrule:
 
     def branchexeclp(self, allowaddcons):
         '''executes branching rule for fractional LP solution'''
-        # this method needs to be implemented by the user
-        return {}
+        raise NotImplementedError("branchexeclp() is a fundamental callback and should be implemented in the derived "
+                                  "class")
 
     def branchexecext(self, allowaddcons):
         '''executes branching rule for external branching candidates '''
-        # this method needs to be implemented by the user
-        return {}
+        raise NotImplementedError("branchexecext() is a fundamental callback and should be implemented in the derived class")
 
     def branchexecps(self, allowaddcons):
         '''executes branching rule for not completely fixed pseudo solution '''
         # this method needs to be implemented by the user
-        return {}
+        raise NotImplementedError("branchexecps() is a fundamental callback and should be implemented in the derived class")
 
 
 

@@ -216,3 +216,38 @@ def test_model_ptr():
 
     with pytest.raises(ValueError):
         Model.from_ptr("some gibberish", take_ownership=False)
+
+def test_model_relax():
+    model = Model()
+    x = {}
+    for i in range(5):
+        x[i] = model.addVar(lb = -i, ub = i, vtype="C")
+    for i in range(10,15):
+        x[i] = model.addVar(lb = -i, ub = i, vtype="I")
+    for i in range(20,25):
+        x[i] = model.addVar(vtype="B")
+    
+    model.relax()
+    for v in x.values():
+        var_lb = v.getLbGlobal()
+        var_ub = v.getUbGlobal()
+        assert v.getLbGlobal() == var_lb
+        assert v.getUbGlobal() == var_ub
+        assert v.vtype() == "CONTINUOUS"
+
+def test_getVarsDict():
+    model = Model()
+    x = {}
+    for i in range(5):
+        x[i] = model.addVar(lb = -i, ub = i, vtype="C")
+    for i in range(10,15):
+        x[i] = model.addVar(lb = -i, ub = i, vtype="I")
+    for i in range(20,25):
+        x[i] = model.addVar(vtype="B")
+    
+    model.hideOutput()
+    model.optimize()
+    var_dict = model.getVarDict()
+    for v in x.values():
+        assert v.name in var_dict
+        assert model.getVal(v) == var_dict[v.name]

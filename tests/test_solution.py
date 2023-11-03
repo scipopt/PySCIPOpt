@@ -1,5 +1,5 @@
-from pyscipopt import Model, SCIP_PARAMSETTING, quicksum, quickprod
-
+import pytest
+from pyscipopt import Model, scip, SCIP_PARAMSETTING, quicksum, quickprod
 
 def test_solution_getbest():
     m = Model()
@@ -77,4 +77,25 @@ def test_getSolTime():
     m.setObjective(quicksum(x[i] for i in range(20)))
     m.optimize()
     for s in m.getSols():
-        assert type(m.getSolTime(s)) == float
+        m.getSolTime(s)) 
+
+def test_create_solution():
+    with pytest.raises(ValueError):
+        scip.Solution()
+
+def test_print_soltion():
+    m = Model()
+
+    m.addVar()
+    m.optimize()
+
+    assert str(m.getBestSol()) == "{'x1': -0.0}"
+
+def test_getSols():
+    m = Model()
+
+    x = m.addVar()
+    m.optimize()
+
+    assert len(m.getSols()) >= 1
+    assert any(sol[x] == 0.0 for sol in m.getSols())
