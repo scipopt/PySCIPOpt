@@ -59,13 +59,13 @@ def createFile(filename):
 def deleteFile(filename):
     os.remove(filename)
 
-def test_main():
+def test_sudoku_reader():
     createFile("tmp.sod")
 
-    m = Model("soduko")
+    m = Model("sudoku")
     reader = SudokuReader()
 
-    m.includeReader(reader, "sodreader", "PyReader for soduko problem", "sod")
+    m.includeReader(reader, "sudreader", "PyReader for sudoku problem", "sod")
 
     m.readProblem("tmp.sod")
 
@@ -76,6 +76,6 @@ def test_main():
     m.writeProblem("model.sod")
     with open("model.sod", "r") as f:
         input = f.readline()
-    assert input == "soduko"
+    assert input == "sudoku"
 
     deleteFile("model.sod")
