@@ -1,4 +1,4 @@
-from pyscipopt import Model
+from pyscipopt import Model, SCIP_PARAMSETTING, quicksum, quickprod
 
 
 def test_solution_getbest():
@@ -61,3 +61,20 @@ def test_solution_evaluation():
     assert sol[y] == m.getVal(y)
     assert sol[expr] == m.getVal(expr)
     assert sol[expr2] == m.getVal(expr2)
+
+def test_getSolTime():
+    m = Model()
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+
+    x = {}
+    for i in range(20):
+        x[i] = m.addVar(ub=i)
+
+    for i in range(1,6):
+        m.addCons(quicksum(x[j] for j in range(20) if j%i==0) >= i)
+        m.addCons(quickprod(x[j] for j in range(20) if j%i==0) <= i**3)
+    
+    m.setObjective(quicksum(x[i] for i in range(20)))
+    m.optimize()
+    for s in m.getSols():
+        assert type(m.getSolTime(s)) == float
