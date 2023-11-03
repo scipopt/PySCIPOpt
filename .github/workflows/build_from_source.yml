@@ -137,7 +137,7 @@ jobs:
         git clone https://github.com/coin-or-tools/ThirdParty-Mumps.git
         cd ThirdParty-Mumps
         ./get.Mumps
-        ./configure --enable-shared=no --enable-static=yes --prefix=../scip_install
+        ./configure --enable-shared=no --enable-static=yes --prefix=$GITHUB_WORKSPACE/scip_install
         make
         make install
       shell: bash
@@ -152,7 +152,7 @@ jobs:
         git clone https://github.com/coin-or-tools/ThirdParty-Mumps.git
         cd ThirdParty-Mumps
         ./get.Mumps
-        ./configure --enable-shared=no --enable-static=yes --prefix=../scip_install
+        ./configure --enable-shared=no --enable-static=yes --prefix=$GITHUB_WORKSPACE/scip_install
         make
         make install
       shell: bash
@@ -163,7 +163,7 @@ jobs:
         cd Ipopt-releases-3.14.12
         mkdir build
         cd build
-        ../configure --prefix=../../scip_install/
+        ../configure --prefix=$GITHUB_WORKSPACE/scip_install/
         make -j$(nproc)
         make test V=1 || :
         make install
@@ -179,7 +179,7 @@ jobs:
         cd Ipopt-releases-3.14.12
         mkdir build
         cd build
-        ../configure --prefix=../../scip_install/
+        ../configure --prefix=$GITHUB_WORKSPACE/scip_install/
         make -j$(nproc)
         make test
         make install
@@ -225,8 +225,8 @@ jobs:
         export PATH="$PATH:/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.37.32822/bin/Hostx64/x64"
         export PATH="$PATH:/c/Program Files/Microsoft Visual Studio/2022/Enterprise/MSBuild/Current/Bin"
         cmake -G "Visual Studio 17 2022" -B soplex_build -DCMAKE_INSTALL_PREFIX=../scip_install -DCMAKE_BUILD_TYPE=Release -DPAPILO=false -DGMP=false -DZLIB=false
-        cmake --build $GITHUB_WORKSPACE/soplex_build --config Release
-        cmake --install $GITHUB_WORKSPACE/soplex_build
+        cmake --build soplex_build --config Release
+        cmake --install soplex_build
       shell: msys2 {0}
 
     - name: Download and install SCIP for Ubuntu
