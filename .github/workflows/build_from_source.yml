@@ -232,7 +232,6 @@ jobs:
     - name: Download and install SCIP for Ubuntu
       if: (matrix.os == 'ubuntu-latest') || (matrix.os == 'ubuntu-20.04')
       run: |
-        mkdir $GITHUB_WORKSPACE/scip_install
         git clone https://github.com/scipopt/scip.git
         cd scip
         mkdir build
@@ -249,7 +248,6 @@ jobs:
         export CXX=/usr/local/bin/g++-13
         export FC=/usr/local/bin/gfortran-13
         export MACOSX_DEPLOYMENT_TARGET=10.15
-        mkdir $GITHUB_WORKSPACE/scip_install
         git clone https://github.com/scipopt/scip.git
         cd scip
         mkdir build
@@ -268,7 +266,7 @@ jobs:
         export PATH="$PATH:/c/Program Files/Microsoft Visual Studio/2022/Enterprise/Common7/Tools"
         export PATH="$PATH:/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.37.32822/bin/Hostx64/x64"
         export PATH="$PATH:/c/Program Files/Microsoft Visual Studio/2022/Enterprise/MSBuild/Current/Bin"
-        cmake -G "Visual Studio 17 2022" -B scip_build -DCMAKE_INSTALL_PREFIX=../scip_install -DCMAKE_BUILD_TYPE=Release -DLPS=spx -DSOPLEX_DIR=../scip_install -DPAPILO=false -DZIMPL=false -DZLIB=false -DREADLINE=false -DGMP=false -DIPOPT=true -DIPOPT_DIR=../scip_install -DIPOPT_LIBRARIES=../scip_install/bin
+        cmake -G "Visual Studio 17 2022" -B $GITHUB_WORKSPACE/scip_build -DCMAKE_INSTALL_PREFIX=../scip_install -DCMAKE_BUILD_TYPE=Release -DLPS=spx -DSOPLEX_DIR=../scip_install -DPAPILO=false -DZIMPL=false -DZLIB=false -DREADLINE=false -DGMP=false -DIPOPT=true -DIPOPT_DIR=../scip_install -DIPOPT_LIBRARIES=../scip_install/bin
         cmake --build $GITHUB_WORKSPACE/scip_build --config Release
         cmake --install $GITHUB_WORKSPACE/scip_build
       shell: msys2 {0}
