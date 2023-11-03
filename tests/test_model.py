@@ -141,6 +141,8 @@ def test_multiple_cons_names():
 
     assert len(conss) == 5
     assert all([c.name.startswith(name + "_") for c in conss])
+    assert conss == m.getConss()
+    assert m.getNConss() == 5
 
 
 def test_multiple_cons_params():
