@@ -2883,7 +2883,7 @@ cdef class Model:
         """Change right hand side value of a constraint.
 
         :param Constraint cons: linear or quadratic constraint
-        :param rhs: new ride hand side (set to None for +infinity)
+        :param rhs: new right hand side (set to None for +infinity)
 
         """
 
@@ -4621,6 +4621,35 @@ cdef class Model:
         if not self.getStage() >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
         return self.getSolVal(self._bestSol, expr)
+    
+    def hasPrimalRay(self):
+        """
+        Returns whether a primal ray is stored that proves unboundedness of the LP relaxation
+        """
+        return SCIPhasPrimalRay(self._scip)
+        
+    def getPrimalRayVal(self, Variable var):
+        """
+        Gets value of given variable in primal ray causing unboundedness of the LP relaxation
+        """
+        assert SCIPhasPrimalRay(self._scip), "The problem does not have a primal ray."
+        
+        return SCIPgetPrimalRayVal(self._scip, var.scip_var)
+
+    def getPrimalRay(self):
+        """
+        Gets primal ray causing unboundedness of the LP relaxation
+        """
+        assert SCIPhasPrimalRay(self._scip), "The problem does not have a primal ray."
+
+        cdef int _nvars = SCIPgetNVars(self._scip)
+        cdef SCIP_VAR ** _vars = SCIPgetVars(self._scip)
+
+        ray = []
+        for i in range(_nvars):
+            ray.append(float(SCIPgetPrimalRayVal(self._scip, _vars[i])))
+
+        return ray
 
     def getPrimalbound(self):
         """Retrieve the best primal bound."""

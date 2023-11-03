@@ -1,4 +1,4 @@
-from pyscipopt import Model, scip
+from pyscipopt import Model, scip, SCIP_PARAMSETTING
 import pytest
 
 def test_solution_getbest():
@@ -62,6 +62,47 @@ def test_solution_evaluation():
     assert sol[expr] == m.getVal(expr)
     assert sol[expr2] == m.getVal(expr2)
 
+def test_hasPrimalRay():
+    m = Model()
+    x = m.addVar()
+    m.setObjective(x, "maximize")
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    
+    m.optimize()
+    
+    assert m.hasPrimalRay()
+
+    m = Model()
+    x = m.addVar(lb = 0) # for readability
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+
+    m.optimize()
+
+    assert not m.hasPrimalRay()
+    
+def test_getPrimalRayVal():
+    m = Model()
+    x = m.addVar()
+    m.setObjective(x, "maximize")
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    
+    m.hideOutput()
+    m.optimize()
+    
+    assert m.getPrimalRayVal(x) == 1
+    
+def test_getPrimalRay():
+    m = Model()
+    x = m.addVar()
+    y = m.addVar()
+    m.setObjective(x, "maximize")
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    
+    m.hideOutput()
+    m.optimize()
+
+    assert m.getPrimalRay() == [1,0]
+
 
 def test_create_solution():
     with pytest.raises(ValueError):
@@ -86,5 +127,4 @@ def test_getSols():
     assert any(sol[x] == 0.0 for sol in m.getSols())
 
 if __name__ == "__main__":
-    test_solution_getbest()
-    test_solution_create()
+    test_getPrimalRayVal()

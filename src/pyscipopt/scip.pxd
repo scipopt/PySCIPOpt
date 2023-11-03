@@ -806,6 +806,8 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetPrimalbound(SCIP* scip)
     SCIP_Real SCIPgetGap(SCIP* scip)
     int SCIPgetDepth(SCIP* scip)
+    SCIP_Bool SCIPhasPrimalRay(SCIP * scip)
+    SCIP_Real SCIPgetPrimalRayVal(SCIP * scip, SCIP_VAR * var)
     SCIP_RETCODE SCIPaddSolFree(SCIP* scip, SCIP_SOL** sol, SCIP_Bool* stored)
     SCIP_RETCODE SCIPaddSol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool* stored)
     SCIP_RETCODE SCIPreadSol(SCIP* scip, const char* filename)
