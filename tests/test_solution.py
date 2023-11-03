@@ -79,6 +79,47 @@ def test_getSolTime():
     for s in m.getSols():
         assert m.getSolTime(s) >= 0
 
+def test_hasPrimalRay():
+    m = Model()
+    x = m.addVar()
+    m.setObjective(x, "maximize")
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    
+    m.optimize()
+    
+    assert m.hasPrimalRay()
+
+    m = Model()
+    x = m.addVar(lb = 0) # for readability
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+
+    m.optimize()
+
+    assert not m.hasPrimalRay()
+    
+def test_getPrimalRayVal():
+    m = Model()
+    x = m.addVar()
+    m.setObjective(x, "maximize")
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    
+    m.hideOutput()
+    m.optimize()
+    
+    assert m.getPrimalRayVal(x) == 1
+    
+def test_getPrimalRay():
+    m = Model()
+    x = m.addVar()
+    y = m.addVar()
+    m.setObjective(x, "maximize")
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    
+    m.hideOutput()
+    m.optimize()
+
+    assert m.getPrimalRay() == [1,0]
+
 def test_create_solution():
     with pytest.raises(ValueError):
         scip.Solution()
