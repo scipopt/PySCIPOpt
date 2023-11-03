@@ -4632,12 +4632,16 @@ cdef class Model:
         """
         Gets value of given variable in primal ray causing unboundedness of the LP relaxation
         """
+        assert SCIPhasPrimalRay(self._scip), "The problem does not have a primal ray."
+        
         return SCIPgetPrimalRayVal(self._scip, var.scip_var)
 
     def getPrimalRay(self):
         """
         Gets primal ray causing unboundedness of the LP relaxation
         """
+        assert SCIPhasPrimalRay(self._scip), "The problem does not have a primal ray."
+
         cdef int _nvars = SCIPgetNVars(self._scip)
         cdef SCIP_VAR ** _vars = SCIPgetVars(self._scip)
 
