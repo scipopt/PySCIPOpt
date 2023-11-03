@@ -77,7 +77,7 @@ def test_getSolTime():
     m.setObjective(quicksum(x[i] for i in range(20)))
     m.optimize()
     for s in m.getSols():
-        m.getSolTime(s)) 
+        m.getSolTime(s)
 
 def test_create_solution():
     with pytest.raises(ValueError):
