@@ -175,7 +175,7 @@ def test_multiple_cons_params():
 def test_addCoefLinear():
     m = Model()
     x = m.addVar(obj=1)
-    y = m.addVar()
+    y = m.addVar(obj=0)
     c = m.addCons(x >= 1)
 
     m.addCoefLinear(c, y, 1)
