@@ -1,5 +1,5 @@
-from pyscipopt import Model, scip, SCIP_PARAMSETTING
 import pytest
+from pyscipopt import Model, scip, SCIP_PARAMSETTING, quicksum, quickprod
 
 def test_solution_getbest():
     m = Model()
@@ -62,6 +62,23 @@ def test_solution_evaluation():
     assert sol[expr] == m.getVal(expr)
     assert sol[expr2] == m.getVal(expr2)
 
+def test_getSolTime():
+    m = Model()
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+
+    x = {}
+    for i in range(20):
+        x[i] = m.addVar(ub=i)
+
+    for i in range(1,6):
+        m.addCons(quicksum(x[j] for j in range(20) if j%i==0) >= i)
+        m.addCons(quickprod(x[j] for j in range(20) if j%i==0) <= i**3)
+    
+    m.setObjective(quicksum(x[i] for i in range(20)))
+    m.optimize()
+    for s in m.getSols():
+        assert m.getSolTime(s) >= 0
+
 def test_hasPrimalRay():
     m = Model()
     x = m.addVar()
@@ -103,7 +120,6 @@ def test_getPrimalRay():
 
     assert m.getPrimalRay() == [1,0]
 
-
 def test_create_solution():
     with pytest.raises(ValueError):
         scip.Solution()
@@ -116,7 +132,6 @@ def test_print_soltion():
 
     assert str(m.getBestSol()) == "{'x1': -0.0}"
 
-
 def test_getSols():
     m = Model()
 
@@ -125,6 +140,3 @@ def test_getSols():
 
     assert len(m.getSols()) >= 1
     assert any(sol[x] == 0.0 for sol in m.getSols())
-
-if __name__ == "__main__":
-    test_getPrimalRayVal()

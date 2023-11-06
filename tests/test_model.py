@@ -141,6 +141,8 @@ def test_multiple_cons_names():
 
     assert len(conss) == 5
     assert all([c.name.startswith(name + "_") for c in conss])
+    assert conss == m.getConss()
+    assert m.getNConss() == 5
 
 
 def test_multiple_cons_params():
@@ -170,6 +172,38 @@ def test_multiple_cons_params():
 
     assert_conss_neq(conss[0], conss[1])
 
+def test_addCoefLinear():
+    m = Model()
+    x = m.addVar(obj=1)
+    y = m.addVar(obj=0)
+    c = m.addCons(x >= 1)
+
+    m.addCoefLinear(c, y, 1)
+
+    m.optimize()
+    assert m.getVal(x) == 0
+
+def test_delCoefLinear():
+    m = Model()
+    x = m.addVar(obj=1)
+    y = m.addVar(obj=0)
+    c = m.addCons(x + y >= 1)
+
+    m.delCoefLinear(c,y)
+
+    m.optimize()
+    assert m.getVal(x) == 1
+
+def test_chgCoefLinear():
+    m = Model()
+    x = m.addVar(obj=10)
+    y = m.addVar(obj=1)
+    c = m.addCons(x + y >= 1)
+
+    m.chgCoefLinear(c, y, 0.001)
+
+    m.optimize()
+    assert m.getObjVal() == 10
 
 def test_model_ptr():
     model1 = Model()

@@ -20,6 +20,3 @@ def test_lp():
     solval = myLP.solve()
 
     assert round(5.0 == solval)
-
-if __name__ == "__main__":
-    test_lp()

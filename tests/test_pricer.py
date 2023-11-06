@@ -38,6 +38,7 @@ class CutPricer(Pricer):
 
         objval = 1 + subMIP.getObjVal()
 
+
         # Adding the column to the master problem
         if objval < -1e-08:
             currentNumVar = len(self.data['var'])
@@ -52,6 +53,9 @@ class CutPricer(Pricer):
                 self.model.addConsCoeff(c, newVar, coeff)
 
                 newPattern.append(coeff)
+
+            # Testing getVarRedcost
+            assert round(self.model.getVarRedcost(newVar),6) == round(objval,6)
 
             # Storing the new variable in the pricer data.
             self.data['patterns'].append(newPattern)
@@ -112,6 +116,7 @@ def test_cuttingstock():
     pricer.data['demand'] = demand
     pricer.data['rollLength'] = rollLength
     pricer.data['patterns'] = patterns
+    pricer.data['redcosts'] = []
 
     # solve problem
     s.optimize()
@@ -142,7 +147,7 @@ def test_cuttingstock():
             print(outline)
 
     print('\t\t\tTotal Output:\t', '\t'.join(str(e) for e in widthOutput))
-
+    
     assert s.getObjVal() == 452.25
 
 def test_incomplete_pricer():
@@ -156,8 +161,3 @@ def test_incomplete_pricer():
 
     with pytest.raises(Exception):
         model.optimize()
-    
-
-if __name__ == '__main__':
-    test_cuttingstock()
-    test_incomplete_pricer()

@@ -65,7 +65,3 @@ def test_vtype():
 
     m.chgVarType(y, 'M')
     assert y.vtype() == "IMPLINT"
-
-if __name__ == "__main__":
-    test_variablebounds()
-    test_vtype()

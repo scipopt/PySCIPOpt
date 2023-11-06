@@ -94,6 +94,3 @@ def test_branching():
 
     assert my_branchrule.was_called_val
     assert my_branchrule.was_called_int
-
-if __name__ == "__main__":
-    test_branching()

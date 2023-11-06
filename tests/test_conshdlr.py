@@ -250,6 +250,3 @@ def test_conshdlr():
     #assert "consdelvars" in calls
     #assert "consprint" in calls
     assert "consgetnvars" in calls
-
-if __name__ == "__main__":
-    test_conshdlr()

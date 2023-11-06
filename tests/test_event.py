@@ -48,6 +48,3 @@ def test_event():
     assert 'eventexit' in calls
     assert 'eventexec' in calls
     assert len(calls) == 3
-
-if __name__ == "__main__":
-    test_event()

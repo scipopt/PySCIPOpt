@@ -30,7 +30,3 @@ def test_relax():
 
     assert 'relaxexec' in calls
     assert len(calls) >= 1
-    
-    
-if __name__ == "__main__":
-    test_relax()
