@@ -10,7 +10,6 @@ class CutPricer(Pricer):
         dualSolutions = []
         for i, c in enumerate(self.data['cons']):
             dualSolutions.append(self.model.getDualsolLinear(c))
-            #assert self.model.getDualsolLinear(c) == self.model.getDualSolVal(c)
 
         # Building a MIP to solve the subproblem
         subMIP = Model("CuttingStock-Sub")
