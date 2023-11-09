@@ -8,7 +8,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04]
+        include:
+          - os: ubuntu-20.04
+            arch: x86_64
+
 
     steps:
       - uses: actions/checkout@v4
@@ -16,7 +19,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
         env:
-            SCIPOPTDIR: ${{ github.workspace }}/scip_install
+          CIBW_ARCHS: ${{ matrix.arch }}
         
       - uses: actions/upload-artifact@v3
         with:
