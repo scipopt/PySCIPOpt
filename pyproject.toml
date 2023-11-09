@@ -11,5 +11,5 @@ before-all = [
     "mv home/runner/work/scip/scip/ipopt/ scip"
     ]
 build-frontend = "pip"
-manylinux-x86_64-image = "manylinux_2_28"
+manylinux-x86_64-image = "manylinux_2_27"
 environment = { SCIPOPTDIR="$(pwd)/scip", LD_LIBRARY_PATH="$(pwd)/scip/lib:LD_LIBRARY_PATH", DYLD_LIBRARY_PATH="$(pwd)/scip/lib:$DYLD_LIBRARY_PATH", PATH="$(pwd)/scip/bin:$PATH", PKG_CONFIG_PATH="$(pwd)/scip/lib/pkgconfig:$PKG_CONFIG_PATH"}
