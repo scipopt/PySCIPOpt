@@ -1,0 +1,296 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+
+    steps:
+      - uses: actions/checkout@v4
+    
+      - name: Install dependencies for Ubuntu
+        if: (matrix.os == 'ubuntu-latest') || (matrix.os == 'ubuntu-20.04')
+        run: |
+          sudo apt-get install gcc g++ gfortran git patch wget pkg-config liblapack-dev unzip zip build-essential libscalapack-mpi-dev
+          sudo rm /usr/lib/x86_64-linux-gnu/liblapack.so
+          sudo rm /usr/lib/x86_64-linux-gnu/liblapack.so.3
+          sudo rm /usr/lib/x86_64-linux-gnu/libblas.so
+          sudo rm /usr/lib/x86_64-linux-gnu/libblas.so.3
+        shell: bash
+  
+      - name: Instance dependencies for Mac
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install bash
+          brew upgrade cmake
+          brew install unzip
+        shell: bash
+  
+      - name: Install dependencies for Windows
+        if: (matrix.os == 'windows-latest') || (matrix.os == 'windows-2019')
+        run: |
+          pacman -S --noconfirm unzip git mingw-w64-x86_64-cmake cmake mingw-w64-x86_64-zlib
+        shell: msys2 {0}
+  
+      - name: Download IPOPT for Ubuntu
+        if: (matrix.os == 'ubuntu-latest') || (matrix.os == 'ubuntu-20.04')
+        run: |
+          wget https://github.com/coin-or/Ipopt/archive/refs/tags/releases/3.14.12.zip
+          unzip 3.14.12.zip
+          mkdir $GITHUB_WORKSPACE/scip_install
+          mkdir $GITHUB_WORKSPACE/scip_install/share
+          echo 'enable_shared=no
+          enable_java=no
+          enable_sipopt=no
+          with_pic=yes
+          with_metis_cflags="-I$GITHUB_WORKSPACE/metis/include/"
+          with_metis_lflags="-L$GITHUB_WORKSPACE/metis/lib -lmetis -lm"
+          with_lapack_lflags="-llapack -lblas -lgfortran -lquadmath -lm"
+          LT_LDFLAGS=-all-static
+          LDFLAGS=-static' > $GITHUB_WORKSPACE/scip_install/share/config.site
+        shell: bash
+  
+      - name: Download IPOPT for Mac
+        if: matrix.os == 'macos-latest'
+        run: |
+          wget https://github.com/coin-or/Ipopt/archive/refs/tags/releases/3.14.12.zip
+          unzip 3.14.12.zip
+          mkdir $GITHUB_WORKSPACE/scip_install
+          mkdir $GITHUB_WORKSPACE/scip_install/share
+          echo 'enable_shared=no
+          enable_java=no
+          enable_sipopt=no
+          with_pic=yes
+          with_metis_cflags="-I$GITHUB_WORKSPACE/metis/include"
+          with_metis_lflags="-L$GITHUB_WORKSPACE/metis/lib -lmetis"' > $GITHUB_WORKSPACE/scip_install/share/config.site
+        shell: bash
+  
+      - name: Download IPOPT for Windows
+        if: (matrix.os == 'windows-latest') || (matrix.os == 'windows-2019')
+        run: |
+          wget https://github.com/coin-or/Ipopt/releases/download/releases%2F3.14.12/Ipopt-3.14.12-win64-msvs2019-md.zip
+          unzip Ipopt-3.14.12-win64-msvs2019-md.zip
+          mv Ipopt-3.14.12-win64-msvs2019-md/ scip_install
+          mv scip_install/lib/ipopt.dll.lib scip_install/lib/ipopt.lib
+        shell: msys2 {0}
+  
+  
+      - name: Download and install metis for Ubuntu
+        if: (matrix.os == 'ubuntu-latest') || (matrix.os == 'ubuntu-20.04')
+        run: |
+          wget https://github.com/KarypisLab/METIS/archive/refs/tags/v5.1.1-DistDGL-v0.5.tar.gz
+          tar -xvf v5.1.1-DistDGL-v0.5.tar.gz
+          wget https://github.com/KarypisLab/GKlib/archive/refs/tags/METIS-v5.1.1-DistDGL-0.5.tar.gz
+          tar -xvf METIS-v5.1.1-DistDGL-0.5.tar.gz
+          mkdir $GITHUB_WORKSPACE/metis
+          cd GKlib-METIS-v5.1.1-DistDGL-0.5
+          make config prefix=$GITHUB_WORKSPACE/GKlib-METIS-v5.1.1-DistDGL-0.5
+          make
+          make install
+          cd ..
+          cd METIS-5.1.1-DistDGL-v0.5
+          make config prefix=$GITHUB_WORKSPACE/metis/ gklib_path=$GITHUB_WORKSPACE/GKlib-METIS-v5.1.1-DistDGL-0.5
+          make
+          make install
+        shell: bash
+  
+      - name: Download and install metis for Mac
+        if: matrix.os == 'macos-latest'
+        run: |
+          export CC=/usr/local/bin/gcc-13
+          export CXX=/usr/local/bin/g++-13
+          export MACOSX_DEPLOYMENT_TARGET=10.15
+          wget https://github.com/KarypisLab/METIS/archive/refs/tags/v5.1.1-DistDGL-v0.5.tar.gz
+          tar -xvf v5.1.1-DistDGL-v0.5.tar.gz
+          wget https://github.com/KarypisLab/GKlib/archive/refs/tags/METIS-v5.1.1-DistDGL-0.5.tar.gz
+          tar -xvf METIS-v5.1.1-DistDGL-0.5.tar.gz
+          mkdir $GITHUB_WORKSPACE/metis
+          cd GKlib-METIS-v5.1.1-DistDGL-0.5
+          make config prefix=$GITHUB_WORKSPACE/GKlib-METIS-v5.1.1-DistDGL-0.5
+          make
+          make install
+          sed -i'' -e 's/set(GKlib_COPTIONS "${GKlib_COPTIONS} -Werror -Wall -pedantic -Wno-unused-function -Wno-unused-but-set-variable -Wno-unused-variable -Wno-unknown-pragmas -Wno-unused-label")/set(GKlib_COPTIONS "${GKlib_COPTIONS} -Wall -pedantic -Wno-unused-function -Wno-unused-but-set-variable -Wno-unused-variable -Wno-unknown-pragmas -Wno-unused-label")/g' GKlibSystem.cmake
+          cd ..
+          cd METIS-5.1.1-DistDGL-v0.5
+          make config prefix=$GITHUB_WORKSPACE/metis/ gklib_path=$GITHUB_WORKSPACE/GKlib-METIS-v5.1.1-DistDGL-0.5
+          make
+          make install
+        shell: bash
+  
+      - name: Download and install Mumps for Ubuntu
+        if: (matrix.os == 'ubuntu-latest') || (matrix.os == 'ubuntu-20.04')
+        run: |
+          git clone https://github.com/coin-or-tools/ThirdParty-Mumps.git
+          cd ThirdParty-Mumps
+          ./get.Mumps
+          ./configure --enable-shared=no --enable-static=yes --prefix=$GITHUB_WORKSPACE/scip_install
+          make
+          make install
+        shell: bash
+  
+      - name: Download and install Mumps for Mac
+        if: matrix.os == 'macos-latest'
+        run: |
+          export CC=/usr/local/bin/gcc-13
+          export CXX=/usr/local/bin/g++-13
+          export FC=/usr/local/bin/gfortran-13
+          export MACOSX_DEPLOYMENT_TARGET=10.15
+          git clone https://github.com/coin-or-tools/ThirdParty-Mumps.git
+          cd ThirdParty-Mumps
+          ./get.Mumps
+          ./configure --enable-shared=no --enable-static=yes --prefix=$GITHUB_WORKSPACE/scip_install
+          make
+          make install
+        shell: bash
+  
+      - name: Install IPOPT for Ubuntu
+        if: (matrix.os == 'ubuntu-latest') || (matrix.os == 'ubuntu-20.04')
+        run: |
+          cd Ipopt-releases-3.14.12
+          mkdir build
+          cd build
+          ../configure --prefix=$GITHUB_WORKSPACE/scip_install/
+          make -j$(nproc)
+          make test V=1 || :
+          make install
+        shell: bash
+  
+      - name: Install IPOPT for Mac
+        if: matrix.os == 'macos-latest'
+        run: |
+          export CC=/usr/local/bin/gcc-13
+          export CXX=/usr/local/bin/g++-13
+          export FC=/usr/local/bin/gfortran-13
+          export MACOSX_DEPLOYMENT_TARGET=10.15
+          cd Ipopt-releases-3.14.12
+          mkdir build
+          cd build
+          ../configure --prefix=$GITHUB_WORKSPACE/scip_install/
+          make -j$(nproc)
+          make test
+          make install
+        shell: bash
+  
+      - name: Download and install SOPLEX for Ubuntu
+        if: (matrix.os == 'ubuntu-latest') || (matrix.os == 'ubuntu-20.04')
+        run: |
+          git clone https://github.com/scipopt/soplex.git
+          cd soplex
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=../../scip_install -DCMAKE_BUILD_TYPE=Release -DGMP=false -DPAPILO=false
+          make -j$(nproc)
+          make test
+          make install
+        shell: bash
+  
+      - name: Download and install SOPLEX for Mac
+        if: matrix.os == 'macos-latest'
+        run: |
+          export CC=/usr/local/bin/gcc-13
+          export CXX=/usr/local/bin/g++-13
+          export FC=/usr/local/bin/gfortran-13
+          export MACOSX_DEPLOYMENT_TARGET=10.15
+          git clone https://github.com/scipopt/soplex.git
+          cd soplex
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=../../scip_install -DCMAKE_BUILD_TYPE=Release -DGMP=false -DPAPILO=false
+          make -j$(nproc)
+          make test
+          make install
+        shell: bash
+  
+      - name: Download and install SOPLEX for Windows
+        if: (matrix.os == 'windows-latest') || (matrix.os == 'windows-2019')
+        run: |
+          git clone https://github.com/scipopt/soplex.git
+          cd soplex
+          mkdir soplex_build
+          export PATH="$PATH:/c/Program Files/Microsoft Visual Studio/2022/Enterprise/Common7/Tools"
+          export PATH="$PATH:/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.37.32822/bin/Hostx64/x64"
+          export PATH="$PATH:/c/Program Files/Microsoft Visual Studio/2022/Enterprise/MSBuild/Current/Bin"
+          cmake -G "Visual Studio 17 2022" -B soplex_build -DCMAKE_INSTALL_PREFIX=../scip_install -DCMAKE_BUILD_TYPE=Release -DPAPILO=false -DGMP=false -DZLIB=false
+          cmake --build soplex_build --config Release
+          cmake --install soplex_build
+        shell: msys2 {0}
+  
+      - name: Download and install SCIP for Ubuntu
+        if: (matrix.os == 'ubuntu-latest') || (matrix.os == 'ubuntu-20.04')
+        run: |
+          git clone https://github.com/scipopt/scip.git
+          cd scip
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=../../scip_install -DCMAKE_BUILD_TYPE=Release -DLPS=spx -DSOPLEX_DIR=../../scip_install -DPAPILO=false -DZIMPL=false -DGMP=false -DREADLINE=false -DIPOPT=true -DIPOPT_DIR=../../scip_install
+          make -j$(nproc) VERBOSE=true
+          make install
+        shell: bash
+  
+      - name: Download and install SCIP for Mac
+        if:  matrix.os == 'macos-latest'
+        run: |
+          export CC=/usr/local/bin/gcc-13
+          export CXX=/usr/local/bin/g++-13
+          export FC=/usr/local/bin/gfortran-13
+          export MACOSX_DEPLOYMENT_TARGET=10.15
+          git clone https://github.com/scipopt/scip.git
+          cd scip
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=../../scip_install -DCMAKE_BUILD_TYPE=Release -DLPS=spx -DSOPLEX_DIR=../../scip_install -DPAPILO=false -DZIMPL=false -DGMP=false -DREADLINE=false -DIPOPT=true -DIPOPT_DIR=../../scip_install
+          make -j$(nproc)
+          make install
+        shell: bash
+  
+      - name: Download and install SCIP for Windows
+        if: (matrix.os == 'windows-latest') || (matrix.os == 'windows-2019')
+        run: |
+          mkdir $GITHUB_WORKSPACE/scip_build
+          git clone https://github.com/scipopt/scip.git
+          cd scip
+          export PATH="$PATH:/c/Program Files/Microsoft Visual Studio/2022/Enterprise/Common7/Tools"
+          export PATH="$PATH:/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.37.32822/bin/Hostx64/x64"
+          export PATH="$PATH:/c/Program Files/Microsoft Visual Studio/2022/Enterprise/MSBuild/Current/Bin"
+          cmake -G "Visual Studio 17 2022" -B $GITHUB_WORKSPACE/scip_build -DCMAKE_INSTALL_PREFIX=../scip_install -DCMAKE_BUILD_TYPE=Release -DLPS=spx -DSOPLEX_DIR=../scip_install -DPAPILO=false -DZIMPL=false -DZLIB=false -DREADLINE=false -DGMP=false -DIPOPT=true -DIPOPT_DIR=../scip_install -DIPOPT_LIBRARIES=../scip_install/bin
+          cmake --build $GITHUB_WORKSPACE/scip_build --config Release
+          cmake --install $GITHUB_WORKSPACE/scip_build
+        shell: msys2 {0}
+  
+      - name: ZIP SCIP for Ubuntu
+        if: (matrix.os == 'ubuntu-latest') || (matrix.os == 'ubuntu-20.04')
+        run: |
+          zip -r $GITHUB_WORKSPACE/upload.zip scip_install/lib scip_install/include scip_install/bin
+        shell: bash
+  
+      - name: ZIP SCIP for MacOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          zip -r $GITHUB_WORKSPACE/upload.zip scip_install/lib scip_install/include scip_install/bin
+        shell: bash
+  
+      - name: ZIP SCIP for Windows
+        if: (matrix.os == 'windows-latest') || (matrix.os == 'windows-2019')
+        run: |
+          zip -r scip_install/lib scip_install/include scip_install/bin
+        shell: msys2 {0}
+
+    
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.16.2
+        env:
+            SCIPOPTDIR: ${{ github.workspace }}/scip_install
+        #    ...
+        # with:
+        #   package-dir: .
+        #   output-dir: wheelhouse
+        #   config-file: "{package}/pyproject.toml"
+        
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./wheelhouse/*.whl
