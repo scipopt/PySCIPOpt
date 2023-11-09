@@ -18,16 +18,12 @@ jobs:
         run: |
           wget https://github.com/mmghannam/scip/releases/download/v8.0.3/libscip-ubuntu.zip -O scip.zip
           unzip scip.zip
+          echo SCIPOPTDIR=$PWD/scip_install >> $GITHUB_ENV
     
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
         env:
             SCIPOPTDIR: ${{ github.workspace }}/scip_install
-        #    ...
-        # with:
-        #   package-dir: .
-        #   output-dir: wheelhouse
-        #   config-file: "{package}/pyproject.toml"
         
       - uses: actions/upload-artifact@v3
         with:
