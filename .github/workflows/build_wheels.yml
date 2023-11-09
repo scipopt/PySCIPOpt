@@ -12,13 +12,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download SCIP
-        if: (matrix.os == 'ubuntu-latest') || (matrix.os == 'ubuntu-20.04')
-        run: |
-          wget https://github.com/mmghannam/scip/releases/download/v8.0.3/libscip-ubuntu.zip -O scip.zip
-          unzip scip.zip
-          echo SCIPOPTDIR=$PWD/scip_install >> $GITHUB_ENV
     
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
