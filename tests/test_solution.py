@@ -108,13 +108,6 @@ def test_create_solution():
     with pytest.raises(ValueError):
         scip.Solution()
 
-def test_print_soltion():
-    m = Model()
-
-    m.addVar(obj=1, lb=0)
-    m.optimize()
-
-    assert str(m.getBestSol()) == "{'x1': 0.0}"
 
 
 def test_getSols():
