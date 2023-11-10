@@ -111,7 +111,7 @@ def test_create_solution():
 def test_print_soltion():
     m = Model()
 
-    m.addVar()
+    m.addVar(obj=1, lb=0)
     m.optimize()
 
     assert str(m.getBestSol()) == "{'x1': -0.0}"

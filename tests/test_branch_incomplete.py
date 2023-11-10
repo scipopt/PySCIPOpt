@@ -9,11 +9,11 @@ def test_incomplete_branchrule():
 
     branchrule = IncompleteBranchrule()
     model = Model()
+    model.addVar(obj=1, lb=0, vtype="INTEGER")
     model.setPresolve(SCIP_PARAMSETTING.OFF)
     model.setSeparating(SCIP_PARAMSETTING.OFF)
     model.setHeuristics(SCIP_PARAMSETTING.OFF)
     model.includeBranchrule(branchrule, "", "", priority=10000000, maxdepth=-1, maxbounddist=1)
-    model.readProblem(os.path.join("tests", "data", "10teams.mps"))
 
     with pytest.raises(Exception):
         model.optimize()
