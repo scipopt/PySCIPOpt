@@ -35,6 +35,13 @@ def test_nlrow():
 
     # collect nonlinear rows
     nlrows = m.getNlRows()
+    
+    # test getNNlRows
+    assert len(nlrows) == m.getNNlRows()
+
+    # to test printing of NLRows
+    for row in nlrows:
+        m.printNlRow(row)
 
     # the nlrow that corresponds to the linear (third) constraint is added before the nonlinear rows,
     # because Initsol of the linear conshdlr gets called first
@@ -65,6 +72,3 @@ def test_nlrow():
 
     linterms = nlrows[2].getLinearTerms()
     assert len(linterms) == 0
-
-if __name__ == "__main__":
-    test_nlrow()

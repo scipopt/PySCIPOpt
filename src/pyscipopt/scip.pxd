@@ -754,6 +754,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPreleaseCons(SCIP* scip, SCIP_CONS** cons)
     SCIP_RETCODE SCIPtransformCons(SCIP* scip, SCIP_CONS* cons, SCIP_CONS** transcons)
     SCIP_RETCODE SCIPgetTransformedCons(SCIP* scip, SCIP_CONS* cons, SCIP_CONS** transcons)
+    SCIP_RETCODE SCIPgetConsVars(SCIP* scip, SCIP_CONS* cons, SCIP_VAR** vars, int varssize, SCIP_Bool* success)
+    SCIP_RETCODE SCIPgetConsNVars(SCIP* scip, SCIP_CONS* cons, int* nvars, SCIP_Bool* success)
     SCIP_CONS** SCIPgetConss(SCIP* scip)
     const char* SCIPconsGetName(SCIP_CONS* cons)
     int SCIPgetNConss(SCIP* scip)
@@ -804,6 +806,8 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetPrimalbound(SCIP* scip)
     SCIP_Real SCIPgetGap(SCIP* scip)
     int SCIPgetDepth(SCIP* scip)
+    SCIP_Bool SCIPhasPrimalRay(SCIP * scip)
+    SCIP_Real SCIPgetPrimalRayVal(SCIP * scip, SCIP_VAR * var)
     SCIP_RETCODE SCIPaddSolFree(SCIP* scip, SCIP_SOL** sol, SCIP_Bool* stored)
     SCIP_RETCODE SCIPaddSol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool* stored)
     SCIP_RETCODE SCIPreadSol(SCIP* scip, const char* filename)
@@ -874,7 +878,6 @@ cdef extern from "scip/scip.h":
                                       SCIP_RETCODE (*eventdelete) (SCIP* scip, SCIP_EVENTHDLR* eventhdlr, SCIP_EVENTDATA** eventdata),
                                       SCIP_RETCODE (*eventexec) (SCIP* scip, SCIP_EVENTHDLR* eventhdlr, SCIP_EVENT* event, SCIP_EVENTDATA* eventdata),
                                       SCIP_EVENTHDLRDATA* eventhdlrdata)
-    SCIP_EVENTHDLR* SCIPfindEventhdlr(SCIP* scip, const char* name)
     SCIP_EVENTHDLRDATA* SCIPeventhdlrGetData(SCIP_EVENTHDLR* eventhdlr)
 
     # Variable pricer plugin

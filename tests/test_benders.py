@@ -107,7 +107,3 @@ def test_flpbenders():
     master.freeBendersSubproblems()
 
     assert master.getObjVal() == 5.61e+03
-
-
-if __name__ == "__main__":
-    test_flpbenders()

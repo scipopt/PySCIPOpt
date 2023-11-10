@@ -535,11 +535,16 @@ cdef class NLRow:
 cdef class Solution:
     """Base class holding a pointer to corresponding SCIP_SOL"""
 
+    # We are raising an error here to avoid creating a solution without an associated model. See Issue #625
+    def __init__(self, raise_error = False):
+        if not raise_error:
+            raise ValueError("To create a solution you should use the createSol method of the Model class.")
+
     @staticmethod
     cdef create(SCIP* scip, SCIP_SOL* scip_sol):
         if scip == NULL:
             raise Warning("cannot create Solution with SCIP* == NULL")
-        sol = Solution()
+        sol = Solution(True)
         sol.sol = scip_sol
         sol.scip = scip
         return sol
@@ -567,8 +572,8 @@ cdef class Solution:
 
         vals = {}
         self._checkStage("SCIPgetSolVal")
-        for i in range(SCIPgetNVars(self.scip)):
-            scip_var = SCIPgetVars(self.scip)[i]
+        for i in range(SCIPgetNOrigVars(self.scip)):
+            scip_var = SCIPgetOrigVars(self.scip)[i]
 
             # extract name
             cname = bytes(SCIPvarGetName(scip_var))
@@ -579,8 +584,8 @@ cdef class Solution:
     
     def _checkStage(self, method):
         if method in ["SCIPgetSolVal", "getSolObjVal"]:
-            if self.sol == NULL and not SCIPgetStage(self.scip) == SCIP_STAGE_SOLVING:
-                raise Warning(f"{method} can only be called in stage SOLVING with a valid solution (current stage: {SCIPgetStage(self.scip)})")
+            if self.sol == NULL and SCIPgetStage(self.scip) != SCIP_STAGE_SOLVING:
+                raise Warning(f"{method} can only be called with a valid solution or in stage SOLVING (current stage: {SCIPgetStage(self.scip)})")
 
 
 cdef class BoundChange:
@@ -1333,7 +1338,6 @@ cdef class Model:
         else:
             return SCIPgetTransObjoffset(self._scip)
 
-
     def setObjIntegral(self):
         """informs SCIP that the objective value is always integral in every feasible solution
         Note: This function should be used to inform SCIP that the objective function is integral, helping to improve the
@@ -1610,7 +1614,6 @@ cdef class Model:
            ub = SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarUb(self._scip, var.scip_var, ub))
 
-
     def chgVarLbGlobal(self, Variable var, lb):
         """Changes the global lower bound of the specified variable.
 
@@ -1724,6 +1727,13 @@ cdef class Model:
     def getNBinVars(self):
         """gets number of binary active problem variables"""
         return SCIPgetNBinVars(self._scip)
+    
+    def getVarDict(self):
+        """gets dictionary with variables names as keys and current variable values as items"""
+        var_dict = {}
+        for var in self.getVars():
+            var_dict[var.name] = self.getVal(var)
+        return var_dict
 
     def updateNodeLowerbound(self, Node node, lb):
         """if given value is larger than the node's lower bound (in transformed problem),
@@ -1734,6 +1744,14 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPupdateNodeLowerbound(self._scip, node.scip_node, lb))
+    
+    def relax(self):
+        """Relaxes the integrality restrictions of the model"""
+        if self.getStage() != SCIP_STAGE_PROBLEM:
+            raise Warning("method can only be called in stage PROBLEM")
+
+        for var in self.getVars():
+            self.chgVarType(var, "C")
 
     # Node methods
     def getBestChild(self):
@@ -2121,6 +2139,52 @@ cdef class Model:
 
         return constraints
 
+    def getConsNVars(self, Constraint constraint):
+        """
+        Gets number of variables in a constraint.
+
+        :param constraint: Constraint to get the number of variables from.
+        """
+        cdef int nvars 
+        cdef SCIP_Bool success
+
+        PY_SCIP_CALL(SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success))   
+
+        if not success:
+            conshdlr = SCIPconsGetHdlr(constraint.scip_cons)
+            conshdrlname = SCIPconshdlrGetName(conshdlr)
+            raise TypeError("The constraint handler %s does not have this functionality." % conshdrlname)
+        
+        return nvars
+
+    def getConsVars(self, Constraint constraint):
+        """
+        Gets variables in a constraint.
+
+        :param constraint: Constraint to get the variables from.
+        """
+        cdef SCIP_Bool success
+        cdef int _nvars
+
+        SCIPgetConsNVars(self._scip, constraint.scip_cons, &_nvars, &success)
+
+        cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(_nvars * sizeof(SCIP_VAR*))
+        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, _nvars*sizeof(SCIP_VAR), &success)
+        
+        vars = []
+        for i in range(_nvars):
+            ptr = <size_t>(_vars[i])
+            # check whether the corresponding variable exists already
+            if ptr in self._modelvars:
+                vars.append(self._modelvars[ptr])
+            else:
+                # create a new variable
+                var = Variable.create(_vars[i])
+                assert var.ptr() == ptr
+                self._modelvars[ptr] = var
+                vars.append(var)
+        return vars
+    
     def printCons(self, Constraint constraint):
         return PY_SCIP_CALL(SCIPprintCons(self._scip, constraint.scip_cons, NULL))
 
@@ -2819,7 +2883,7 @@ cdef class Model:
         """Change right hand side value of a constraint.
 
         :param Constraint cons: linear or quadratic constraint
-        :param rhs: new ride hand side (set to None for +infinity)
+        :param rhs: new right hand side (set to None for +infinity)
 
         """
 
@@ -3988,7 +4052,7 @@ cdef class Model:
 
         return ([Variable.create(pseudocands[i]) for i in range(npseudocands)], npseudocands, npriopseudocands)
 
-    def branchVar(self, variable):
+    def branchVar(self, Variable variable):
         """Branch on a non-continuous variable.
 
         :param variable: Variable to branch on
@@ -4557,6 +4621,35 @@ cdef class Model:
         if not self.getStage() >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
         return self.getSolVal(self._bestSol, expr)
+    
+    def hasPrimalRay(self):
+        """
+        Returns whether a primal ray is stored that proves unboundedness of the LP relaxation
+        """
+        return SCIPhasPrimalRay(self._scip)
+        
+    def getPrimalRayVal(self, Variable var):
+        """
+        Gets value of given variable in primal ray causing unboundedness of the LP relaxation
+        """
+        assert SCIPhasPrimalRay(self._scip), "The problem does not have a primal ray."
+        
+        return SCIPgetPrimalRayVal(self._scip, var.scip_var)
+
+    def getPrimalRay(self):
+        """
+        Gets primal ray causing unboundedness of the LP relaxation
+        """
+        assert SCIPhasPrimalRay(self._scip), "The problem does not have a primal ray."
+
+        cdef int _nvars = SCIPgetNVars(self._scip)
+        cdef SCIP_VAR ** _vars = SCIPgetVars(self._scip)
+
+        ray = []
+        for i in range(_nvars):
+            ray.append(float(SCIPgetPrimalRayVal(self._scip, _vars[i])))
+
+        return ray
 
     def getPrimalbound(self):
         """Retrieve the best primal bound."""

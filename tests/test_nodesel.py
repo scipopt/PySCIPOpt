@@ -42,7 +42,3 @@ def test_nodesel():
 
     m.setObjective(x1 + x0)
     m.optimize()
-
-
-if __name__ == "__main__":
-    test_nodesel()
