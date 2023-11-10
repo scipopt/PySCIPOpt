@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel.linux]
 before-all = [
-    "(apt-get update && apt-get install --yes wget) || yum install -y wget || brew install wget",
+    "(apt-get update && apt-get install --yes wget) || yum install -y wget blas zlib libgfortran || brew install wget",
     "wget https://github.com/mmghannam/scip/releases/download/v8.0.3/libscip-centos.zip -O scip.zip",
     "unzip scip.zip",
     "mv scip_install scip",
