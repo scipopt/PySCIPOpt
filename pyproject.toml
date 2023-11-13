@@ -26,8 +26,8 @@ environment = { SCIPOPTDIR="$(pwd)/scip", LD_LIBRARY_PATH="$(pwd)/scip/lib:LD_LI
 before-all = [
     "choco install 7zip wget",
     "wget https://github.com/mmghannam/scip/releases/download/v8.0.3/libscip-windows.zip -O scip.zip",
-    "\"C:\\Program Files\\7-Zip\\7z.exe\" x \"scip.zip\" -o\"scip\"",
-    "mv .\\scip\\scip_install .\\test",
+    "\"C:\\Program Files\\7-Zip\\7z.exe\" x \"scip.zip\" -o\"scip-test\"",
+    "mv .\\scip-test\\scip_install .\\test",
     "mv .\\test .\\scip"
 ]
 environment = { SCIPOPTDIR="$(pwd)\\scip"}
