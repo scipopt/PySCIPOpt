@@ -24,6 +24,8 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
         env:
+          CIBW_ENVIRONMENT_WINDOWS: |
+            "SCIPOPTDIR="D:\\a\\PySCIPOpt\\PySCIPOpt\\scip"
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}\\tests"
