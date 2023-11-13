@@ -11,7 +11,9 @@ jobs:
         include:
           # - os: ubuntu-20.04
           #   arch: x86_64
-          - os: macos-latest
+          # - os: macos-latest
+          #   arch: x86_64
+          - os: windows-latest
             arch: x86_64
 
 
@@ -24,7 +26,7 @@ jobs:
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_TEST_REQUIRES: pytest
-          CIBW_TEST_COMMAND: "pytest {project}/tests"
+          CIBW_TEST_COMMAND: "pytest {project}\\tests"
         
       - uses: actions/upload-artifact@v3
         with:
