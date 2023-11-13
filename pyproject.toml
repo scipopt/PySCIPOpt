@@ -28,7 +28,6 @@ before-all = [
     "wget https://github.com/mmghannam/scip/releases/download/v8.0.3/libscip-windows.zip -O scip.zip",
     "\"C:\\Program Files\\7-Zip\\7z.exe\" x \"scip.zip\" -o\"scip\"",
     "mv .\\scip\\scip_install .\\test",
-    "rm .\\scip",
     "mv .\\test .\\scip"
 ]
 environment = { SCIPOPTDIR="$(pwd)\\scip"}
