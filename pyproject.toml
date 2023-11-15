@@ -33,4 +33,4 @@ before-all = [
     "mv .\\scip-test\\scip_install .\\test",
     "mv .\\test .\\scip"
 ]
-environment = { SCIPOPTDIR='scip' }
+environment = { SCIPOPTDIR='D:\\a\\PySCIPOpt\\PySCIPOpt\\scip' }
