@@ -111,3 +111,11 @@ def test_cons_indicator():
     assert m.getVal(slack) == 0
     assert m.getVal(binvar) == 1
     assert m.getVal(x) == 1
+
+def test_printCons():
+    m = Model()
+    x = m.addVar()
+    y = m.addVar()
+    c = m.addCons(x*y <= 5)
+    
+    m.printCons(c)
