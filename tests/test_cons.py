@@ -40,3 +40,54 @@ def test_constraint_option_setting():
         assert c.isEnforced() == option
         assert c.isRemovable() == option
         assert c.isInitial() == option
+
+def test_cons_logical():
+    m = Model()
+    x1 = m.addVar(vtype="B")
+    x2 = m.addVar(vtype="B")
+    x3 = m.addVar(vtype="B")
+    x4 = m.addVar(vtype="B")
+    result1 = m.addVar(vtype="B")
+    result2 = m.addVar(vtype="B")
+
+    m.addCons(x3 == 1-x1)
+    m.addCons(x4 == 1-x2)
+    
+    # result1 true
+    m.addConsAnd([x1,x2], result1)
+    m.addConsOr([x1,x2], result1)
+    m.addConsXor([x1,x3], True)
+
+    # result2 false
+    m.addConsOr([x3,x4], result2)
+    m.addConsAnd([x1,x3], result2)
+    m.addConsXor([x1,x2], False)
+
+    m.optimize() 
+
+    assert m.getVal(result1) == 1
+    assert m.getVal(result2) == 0
+    
+def test_SOScons():
+    m = Model()
+    x = {}
+    for i in range(6):
+        x[i] = m.addVar(vtype="B", obj=-i)
+
+    c1 = m.addConsSOS1([x[0]], [1])
+    c2 = m.addConsSOS2([x[1]], [1])
+
+    m.addVarSOS1(c1, x[2], 1)
+    m.addVarSOS2(c2, x[3], 1)
+
+    m.appendVarSOS1(c1, x[4])
+    m.appendVarSOS2(c2, x[5])
+
+    m.optimize()
+
+    assert m.getVal(x[0]) == 0
+    assert m.getVal(x[1]) == 0
+    assert m.getVal(x[2]) == 0
+    assert m.getVal(x[3]) == 1
+    assert m.getVal(x[4]) == 1
+    assert m.getVal(x[5]) == 1
