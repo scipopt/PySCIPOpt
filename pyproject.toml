@@ -1,5 +1,5 @@
 [build-system]
-requires = ['setuptools', 'cython <3, >=0.21', 'msvc-runtime']
+requires = ['setuptools', 'cython <3, >=0.21']
 build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel.linux]
@@ -31,4 +31,4 @@ before-all = [
     "mv .\\scip-test\\scip_install .\\test",
     "mv .\\test .\\scip"
 ]
-environment = { SCIPOPTDIR='./scip', PATH='./scip/bin:$PATH'}
+environment = { SCIPOPTDIR='$(pwd)/scip', PATH='$(pwd)/scip/bin:$PATH'}
