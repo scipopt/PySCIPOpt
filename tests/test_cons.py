@@ -91,3 +91,23 @@ def test_SOScons():
     assert m.getVal(x[3]) == 1
     assert m.getVal(x[4]) == 1
     assert m.getVal(x[5]) == 1
+
+
+# WIP. addConsIndicator doesn't behave as expected when binary variable is False. See Issue #717.
+def test_cons_indicator():
+    
+    m = Model()
+    x = m.addVar(lb=0)
+    binvar = m.addVar(vtype="B",lb=1)
+    #binvar2 = m.addVar(vtype="B", ub=0)
+
+    c = m.addConsIndicator(x >= 1, binvar)
+    #c = m.addConsIndicator(x <= 0, binvar2)
+
+    slack = m.getSlackVarIndicator(c)
+
+    m.optimize()
+
+    assert m.getVal(slack) == 0
+    assert m.getVal(binvar) == 1
+    assert m.getVal(x) == 1
