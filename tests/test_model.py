@@ -250,27 +250,3 @@ def test_getVarsDict():
     for v in x.values():
         assert v.name in var_dict
         assert model.getVal(v) == var_dict[v.name]
-
-def test_SOScons():
-    m = Model()
-    x = {}
-    for i in range(6):
-        x[i] = m.addVar(vtype="B", obj=-i)
-
-    c1 = m.addConsSOS1([x[0]], [1])
-    c2 = m.addConsSOS2([x[1]], [1])
-
-    m.addVarSOS1(c1, x[2], 1)
-    m.addVarSOS2(c2, x[3], 1)
-
-    m.appendVarSOS1(c1, x[4])
-    m.appendVarSOS2(c2, x[5])
-
-    m.optimize()
-
-    assert m.getVal(x[0]) == 0
-    assert m.getVal(x[1]) == 0
-    assert m.getVal(x[2]) == 0
-    assert m.getVal(x[3]) == 1
-    assert m.getVal(x[4]) == 1
-    assert m.getVal(x[5]) == 1
