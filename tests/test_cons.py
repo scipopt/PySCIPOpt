@@ -112,6 +112,17 @@ def test_cons_indicator():
     assert m.getVal(binvar) == 1
     assert m.getVal(x) == 1
 
+def test_addConsCardinality():
+    m = Model()
+    x = {}
+    for i in range(5):
+        x[i] = m.addVar(ub=1,obj=-1)
+
+    m.addConsCardinality([x[i] for i in range(5)], 3)
+    m.optimize()
+
+    assert m.getVal(quicksum(x[i] for i in range(5))) == 3
+
 def test_printCons():
     m = Model()
     x = m.addVar()
