@@ -31,16 +31,17 @@ def test_solution_create():
 
     s = m.createSol()
     s[x] = 2.0
-    s[y] = 4.0
+    s[y] = 5.0
+    assert not m.checkSol(s)
     assert m.addSol(s, free=True)
 
     s1 = m.createSol()
     m.setSolVal(s1,x,1.0)
     m.setSolVal(s1,y,2.0)
+    assert m.checkSol(s1)
 
     m.optimize()
 
-    assert m.getSolVal(s1,x+y) == 3
     m.freeSol(s1)
 
 def test_solution_evaluation():
@@ -66,9 +67,13 @@ def test_solution_evaluation():
 
     # Check consistency with Models's getVal method
     assert sol[x] == m.getVal(x)
+    assert m.getSolVal(sol,x) == m.getVal(x)
     assert sol[y] == m.getVal(y)
+    assert m.getSolVal(sol,y) == m.getVal(y)
     assert sol[expr] == m.getVal(expr)
+    assert m.getSolVal(sol,expr) == m.getVal(expr)
     assert sol[expr2] == m.getVal(expr2)
+    assert m.getSolVal(sol,expr2) == m.getVal(expr2)
 
 def test_getSolTime():
     m = Model()

@@ -40,6 +40,7 @@ def test_model():
     assert s.getRhs(c) == 6.0
 
     # solve problem
+    s.presolve() # to test presolve method
     s.optimize()
 
     solution = s.getBestSol()
