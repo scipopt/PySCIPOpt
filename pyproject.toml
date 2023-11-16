@@ -2,8 +2,11 @@
 requires = ['setuptools', 'cython <3, >=0.21']
 build-backend = "setuptools.build_meta"
 
+[tool.cibuildwheel]
+skip="pp* cp312*" # currently doesn't work with PyPy or CPython 3.12
+
+
 [tool.cibuildwheel.linux]
-skip="pp*"
 before-all = [
     "(apt-get update && apt-get install --yes wget) || yum install -y wget zlib libgfortran || brew install wget",
     "wget https://github.com/mmghannam/scip/releases/download/v8.0.3/libscip-centos.zip -O scip.zip",
@@ -14,7 +17,6 @@ environment = { SCIPOPTDIR="$(pwd)/scip", LD_LIBRARY_PATH="$(pwd)/scip/lib:LD_LI
 
 
 [tool.cibuildwheel.macos]
-skip="pp*"
 before-all = [
     "brew install wget zlib gcc",
     "wget https://github.com/mmghannam/scip/releases/download/v8.0.3/libscip-macos.zip -O scip.zip",
