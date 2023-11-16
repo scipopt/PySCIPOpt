@@ -34,6 +34,14 @@ def test_solution_create():
     s[y] = 4.0
     assert m.addSol(s, free=True)
 
+    s1 = m.createSol()
+    m.setSolVal(s1,x,1.0)
+    m.setSolVal(s1,y,2.0)
+
+    m.optimize()
+
+    assert m.getSolVal(s1,x+y) == 3
+    m.freeSol(s1)
 
 def test_solution_evaluation():
     m = Model()
