@@ -251,3 +251,20 @@ def test_getVarsDict():
     for v in x.values():
         assert v.name in var_dict
         assert model.getVal(v) == var_dict[v.name]
+
+def test_objLim():
+    m = Model()
+
+    x = m.addVar(obj=1, lb=2)
+    m.setObjlimit(1)
+
+    m.optimize()
+    assert m.getNLimSolsFound() == 0
+
+    m = Model()
+    x = m.addVar(obj=1, lb=2)
+
+    m.setObjlimit(2)
+    m.optimize()
+    assert m.getNLimSolsFound() == 1
+    

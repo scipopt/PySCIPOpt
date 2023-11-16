@@ -39,6 +39,8 @@ class CutPricer(Pricer):
         objval = 1 + subMIP.getObjVal()
 
         assert type(self.model.getNSolsFound()) == int
+        assert type(self.model.getNBestSolsFound()) == int
+        assert self.model.getNBestSolsFound() <= self.model.getNSolsFound()
         self.model.data["nSols"] = self.model.getNSolsFound()
 
         # Adding the column to the master problem

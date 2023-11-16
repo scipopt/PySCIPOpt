@@ -42,6 +42,7 @@ def test_solution_create():
 
     m.optimize()
 
+    assert m.getSolObjVal(s1) == -1
     m.freeSol(s1)
 
 def test_solution_evaluation():
