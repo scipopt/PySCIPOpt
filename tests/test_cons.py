@@ -114,7 +114,6 @@ def test_cons_indicator():
     assert m.isEQ(m.getVal(x), 1)
 
 
-# addConsIndicator doesn't behave as expected when binary variable is False. See Issue #717.
 @pytest.mark.xfail
 def test_cons_indicator_fail():
     m = Model()
