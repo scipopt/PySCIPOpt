@@ -155,6 +155,6 @@ def test_getValsLinear():
     assert True
 
 
-@pytest.mark.skip(reaons="TODO: test getRowLinear()")
+@pytest.mark.skip(reason="TODO: test getRowLinear()")
 def test_getRowLinear():
     assert True
