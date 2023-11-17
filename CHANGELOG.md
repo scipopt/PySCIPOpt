@@ -7,6 +7,7 @@
 - Add SCIP function SCIPgetSolTime and wrapper getSolTime
 - Add convenience methods relax and getVarDict
 - Add SCIP functions hasPrimalRay, getPrimalRay, getPrimalRayVal
+- Add multiple tests for constraints and for solutions
 ### Fixed
 - Correctly set result, lowerbound in PyRelaxExec
 - Fixed typo in documentation of chgRhs

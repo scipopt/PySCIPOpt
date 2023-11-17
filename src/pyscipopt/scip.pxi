@@ -2722,7 +2722,6 @@ cdef class Model:
 
         return pyCons
 
-
     def addConsIndicator(self, cons, binvar=None, activeone=True, name="IndicatorCons",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
@@ -3322,7 +3321,6 @@ cdef class Model:
             SCIPgetDualSolVal(self._scip, cons.scip_cons, &_dualsol, NULL)
 
         return _dualsol
-
 
     def optimize(self):
         """Optimize the problem."""
