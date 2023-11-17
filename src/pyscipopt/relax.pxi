@@ -74,6 +74,7 @@ cdef SCIP_RETCODE PyRelaxExec (SCIP* scip, SCIP_RELAX* relax, SCIP_Real* lowerbo
     relaxdata = SCIPrelaxGetData(relax)
     PyRelax = <Relax>relaxdata
     result_dict = PyRelax.relaxexec()
+    assert isinstance(result_dict, dict), "relaxexec() must return a dictionary"
     lowerbound[0] = result_dict.get("lowerbound", <SCIP_Real>lowerbound[0])
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
