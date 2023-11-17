@@ -150,13 +150,11 @@ def test_create_solution():
 def test_print_solution():
     m = Model()
 
-    m.addVar()
     m.addVar(obj=1, name="x")
     m.optimize()
 
-    assert str(m.getBestSol()) == "{'x1': -0.0}"
     solution_str = str(m.getBestSol())
-    print(re.match(r"{'x': -?\d+\.?\d*}", solution_str) is not None)
+    assert re.match(r"{'x': -?\d+\.?\d*}", solution_str) is not None
 
 
 def test_getSols():
