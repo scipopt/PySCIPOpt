@@ -7,6 +7,7 @@
 - Add SCIP function SCIPgetSolTime and wrapper getSolTime
 - Add convenience methods relax and getVarDict
 - Add SCIP functions hasPrimalRay, getPrimalRay, getPrimalRayVal
+- Add multiple tests for constraints and for solutions
 ### Fixed
 - Fixed typo in documentation of chgRhs
 - Pricer plugin fundamental callbacks now raise an error if not implemented
