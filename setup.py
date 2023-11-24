@@ -132,4 +132,5 @@ setup(
     packages=["pyscipopt"],
     package_dir={"pyscipopt": packagedir},
     package_data={"pyscipopt": ["scip.pyx", "scip.pxd", "*.pxi", "scip/*"]},
+    include_package_data=True,
 )
