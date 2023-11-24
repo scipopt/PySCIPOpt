@@ -131,6 +131,6 @@ setup(
     ext_modules=extensions,
     packages=["pyscipopt"],
     package_dir={"pyscipopt": packagedir},
-    package_data={"pyscipopt": ["scip.pyx", "scip.pxd", "*.pxi", "scip/*"]},
+    package_data={"pyscipopt": ["scip.pyx", "scip.pxd", "*.pxi", "scip/lib/*"]},
     include_package_data=True,
 )
