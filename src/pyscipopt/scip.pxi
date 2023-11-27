@@ -1071,9 +1071,12 @@ cdef class Model:
 
     def freeTransform(self):
         """Frees all solution process data including presolving and transformed problem, only original problem is kept"""
+        self._modelvars = {
+            var: value
+            for var, value in self._modelvars.items()
+            if value.isOriginal()
+        }
         PY_SCIP_CALL(SCIPfreeTransform(self._scip))
-        self._modelvars = {}
-        self.getVars()
 
     def version(self):
         """Retrieve SCIP version"""
