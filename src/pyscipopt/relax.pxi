@@ -28,7 +28,7 @@ cdef class Relax:
         '''callls execution method of relaxation handler'''
         print("python error in relaxexec: this method needs to be implemented")
         return{}
-
+        
 
 cdef SCIP_RETCODE PyRelaxCopy (SCIP* scip, SCIP_RELAX* relax) with gil:
     return SCIP_OKAY
@@ -73,6 +73,8 @@ cdef SCIP_RETCODE PyRelaxExec (SCIP* scip, SCIP_RELAX* relax, SCIP_Real* lowerbo
     cdef SCIP_RELAXDATA* relaxdata
     relaxdata = SCIPrelaxGetData(relax)
     PyRelax = <Relax>relaxdata
-    PyRelax.relaxexec()
+    result_dict = PyRelax.relaxexec()
+    assert isinstance(result_dict, dict), "relaxexec() must return a dictionary."
+    lowerbound[0] = result_dict.get("lowerbound", <SCIP_Real>lowerbound[0])
+    result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
-    

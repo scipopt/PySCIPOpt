@@ -9,6 +9,7 @@
 - Added convenience methods relax and getVarDict
 - Added SCIP functions hasPrimalRay, getPrimalRay, getPrimalRayVal
 ### Fixed
+- Correctly set result, lowerbound in PyRelaxExec
 - Fixed typo in documentation of chgRhs
 - Pricer plugin fundamental callbacks now raise an error if not implemented
 - Brachrule plugin fundamental callbacks now raise an error if not implemented
