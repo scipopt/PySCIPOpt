@@ -2,11 +2,12 @@
 
 ## Unreleased
 ### Added
-- Add SCIP functions SCIPconsGetNVars, SCIPconsGetVars
-- Add SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear
-- Add SCIP function SCIPgetSolTime and wrapper getSolTime
-- Add convenience methods relax and getVarDict
-- Add SCIP functions hasPrimalRay, getPrimalRay, getPrimalRayVal
+- Added type with cdef to loop variables if they're integer
+- Added SCIP functions SCIPconsGetNVars, SCIPconsGetVars
+- Added SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear
+- Added SCIP function SCIPgetSolTime and wrapper getSolTime
+- Added convenience methods relax and getVarDict
+- Added SCIP functions hasPrimalRay, getPrimalRay, getPrimalRayVal
 ### Fixed
 - Fixed typo in documentation of chgRhs
 - Pricer plugin fundamental callbacks now raise an error if not implemented
