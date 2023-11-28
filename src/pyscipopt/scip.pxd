@@ -197,43 +197,45 @@ cdef extern from "scip/scip.h":
         SCIP_BASESTAT_ZERO  = 3
 
 
-    ctypedef enum SCIP_EVENTTYPE:
-        SCIP_EVENTTYPE_DISABLED         = 0x00000000u
-        SCIP_EVENTTYPE_VARADDED         = 0x00000001u
-        SCIP_EVENTTYPE_VARDELETED       = 0x00000002u
-        SCIP_EVENTTYPE_VARFIXED         = 0x00000004u
-        SCIP_EVENTTYPE_VARUNLOCKED      = 0x00000008u
-        SCIP_EVENTTYPE_OBJCHANGED       = 0x00000010u
-        SCIP_EVENTTYPE_GLBCHANGED       = 0x00000020u
-        SCIP_EVENTTYPE_GUBCHANGED       = 0x00000040u
-        SCIP_EVENTTYPE_LBTIGHTENED      = 0x00000080u
-        SCIP_EVENTTYPE_LBRELAXED        = 0x00000100u
-        SCIP_EVENTTYPE_UBTIGHTENED      = 0x00000200u
-        SCIP_EVENTTYPE_UBRELAXED        = 0x00000400u
-        SCIP_EVENTTYPE_GHOLEADDED       = 0x00000800u
-        SCIP_EVENTTYPE_GHOLEREMOVED     = 0x00001000u
-        SCIP_EVENTTYPE_LHOLEADDED       = 0x00002000u
-        SCIP_EVENTTYPE_LHOLEREMOVED     = 0x00004000u
-        SCIP_EVENTTYPE_IMPLADDED        = 0x00008000u
-        SCIP_EVENTTYPE_PRESOLVEROUND    = 0x00010000u
-        SCIP_EVENTTYPE_NODEFOCUSED      = 0x00020000u
-        SCIP_EVENTTYPE_NODEFEASIBLE     = 0x00040000u
-        SCIP_EVENTTYPE_NODEINFEASIBLE   = 0x00080000u
-        SCIP_EVENTTYPE_NODEBRANCHED     = 0x00100000u
-        SCIP_EVENTTYPE_FIRSTLPSOLVED    = 0x00200000u
-        SCIP_EVENTTYPE_LPSOLVED         = 0x00400000u
-        SCIP_EVENTTYPE_POORSOLFOUND     = 0x00800000u
-        SCIP_EVENTTYPE_BESTSOLFOUND     = 0x01000000u
-        SCIP_EVENTTYPE_ROWADDEDSEPA     = 0x02000000u
-        SCIP_EVENTTYPE_ROWDELETEDSEPA   = 0x04000000u
-        SCIP_EVENTTYPE_ROWADDEDLP       = 0x08000000u
-        SCIP_EVENTTYPE_ROWDELETEDLP     = 0x10000000u
-        SCIP_EVENTTYPE_ROWCOEFCHANGED   = 0x20000000u
-        SCIP_EVENTTYPE_ROWCONSTCHANGED  = 0x40000000u
-        SCIP_EVENTTYPE_ROWSIDECHANGED   = 0x80000000u
-        SCIP_EVENTTYPE_SYNC             = 0x100000000u
+    cdef extern from "scip/type_event.h":
+        unsigned long SCIP_EVENTTYPE_DISABLED          
+        unsigned long SCIP_EVENTTYPE_VARADDED          
+        unsigned long SCIP_EVENTTYPE_VARDELETED       
+        unsigned long SCIP_EVENTTYPE_VARFIXED          
+        unsigned long SCIP_EVENTTYPE_VARUNLOCKED      
+        unsigned long SCIP_EVENTTYPE_OBJCHANGED             
+        unsigned long SCIP_EVENTTYPE_GLBCHANGED        
+        unsigned long SCIP_EVENTTYPE_GUBCHANGED       
+        unsigned long SCIP_EVENTTYPE_LBTIGHTENED      
+        unsigned long SCIP_EVENTTYPE_LBRELAXED        
+        unsigned long SCIP_EVENTTYPE_UBTIGHTENED      
+        unsigned long SCIP_EVENTTYPE_UBRELAXED        
+        unsigned long SCIP_EVENTTYPE_GHOLEADDED       
+        unsigned long SCIP_EVENTTYPE_GHOLEREMOVED     
+        unsigned long SCIP_EVENTTYPE_LHOLEADDED       
+        unsigned long SCIP_EVENTTYPE_LHOLEREMOVED     
+        unsigned long SCIP_EVENTTYPE_IMPLADDED        
+        unsigned long SCIP_EVENTTYPE_PRESOLVEROUND    
+        unsigned long SCIP_EVENTTYPE_NODEFOCUSED      
+        unsigned long SCIP_EVENTTYPE_NODEFEASIBLE     
+        unsigned long SCIP_EVENTTYPE_NODEINFEASIBLE   
+        unsigned long SCIP_EVENTTYPE_NODEBRANCHED     
+        unsigned long SCIP_EVENTTYPE_NODEDELETE       
+        unsigned long SCIP_EVENTTYPE_FIRSTLPSOLVED    
+        unsigned long SCIP_EVENTTYPE_LPSOLVED         
+        unsigned long SCIP_EVENTTYPE_POORSOLFOUND     
+        unsigned long SCIP_EVENTTYPE_BESTSOLFOUND     
+        unsigned long SCIP_EVENTTYPE_ROWADDEDSEPA     
+        unsigned long SCIP_EVENTTYPE_ROWDELETEDSEPA   
+        unsigned long SCIP_EVENTTYPE_ROWADDEDLP       
+        unsigned long SCIP_EVENTTYPE_ROWDELETEDLP     
+        unsigned long SCIP_EVENTTYPE_ROWCOEFCHANGED   
+        unsigned long SCIP_EVENTTYPE_ROWCONSTCHANGED  
+        unsigned long SCIP_EVENTTYPE_ROWSIDECHANGED   
+        unsigned long SCIP_EVENTTYPE_SYNC             
 
-        SCIP_EVENTTYPE_LPEVENT          = SCIP_EVENTTYPE_FIRSTLPSOLVED | SCIP_EVENTTYPE_LPSOLVED
+        unsigned long SCIP_EVENTTYPE_LPEVENT    
+
 
     ctypedef enum SCIP_LPSOLQUALITY:
         SCIP_LPSOLQUALITY_ESTIMCONDITION = 0
@@ -544,41 +546,41 @@ cdef extern from "scip/scip.h":
 
     # Event Methods
     SCIP_RETCODE SCIPcatchEvent(SCIP* scip,
-                                SCIP_EVENTTYPE eventtype,
+                                unsigned long eventtype,
                                 SCIP_EVENTHDLR* eventhdlr,
                                 SCIP_EVENTDATA* eventdata,
                                 int* filterpos)
     SCIP_RETCODE SCIPdropEvent(SCIP* scip,
-                               SCIP_EVENTTYPE eventtype,
+                               unsigned long eventtype,
                                SCIP_EVENTHDLR* eventhdlr,
                                SCIP_EVENTDATA* eventdata,
                                int filterpos)
     SCIP_RETCODE SCIPcatchVarEvent(SCIP* scip,
                                    SCIP_VAR* var,
-                                   SCIP_EVENTTYPE eventtype,
+                                   unsigned long eventtype,
                                    SCIP_EVENTHDLR* eventhdlr,
                                    SCIP_EVENTDATA* eventdata,
                                    int* filterpos)
     SCIP_RETCODE SCIPdropVarEvent(SCIP* scip,
                                   SCIP_VAR* var,
-                                  SCIP_EVENTTYPE eventtype,
+                                  unsigned long eventtype,
                                   SCIP_EVENTHDLR* eventhdlr,
                                   SCIP_EVENTDATA* eventdata,
                                   int filterpos)
     SCIP_RETCODE SCIPcatchRowEvent(SCIP* scip,
                                    SCIP_ROW* row,
-                                   SCIP_EVENTTYPE eventtype,
+                                   unsigned long eventtype,
                                    SCIP_EVENTHDLR* eventhdlr,
                                    SCIP_EVENTDATA* eventdata,
                                    int* filterpos)
     SCIP_RETCODE SCIPdropRowEvent(SCIP* scip,
                                   SCIP_ROW* row,
-                                  SCIP_EVENTTYPE eventtype,
+                                  unsigned long eventtype,
                                   SCIP_EVENTHDLR* eventhdlr,
                                   SCIP_EVENTDATA* eventdata,
                                   int filterpos)
     SCIP_EVENTHDLR* SCIPfindEventhdlr(SCIP* scip, const char* name)
-    SCIP_EVENTTYPE SCIPeventGetType(SCIP_EVENT* event)
+    unsigned long SCIPeventGetType(SCIP_EVENT* event)
     SCIP_Real SCIPeventGetNewbound(SCIP_EVENT* event)
     SCIP_Real SCIPeventGetOldbound(SCIP_EVENT* event)
     SCIP_VAR* SCIPeventGetVar(SCIP_EVENT* event)
