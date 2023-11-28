@@ -2,13 +2,24 @@
 
 ## Unreleased
 ### Added
-- Added type with cdef to loop variables if they're integer
+- Added methods for getting the names of the current stage and of an event
+- Added types to loop variables
+### Fixed
+- Fixed outdated time.clock call in gcp.py
+### Changed
+### Removed
+
+## 4.4.0 - 2023-12-04
+### Added
+- Add getConshdlrName to class Constraint
+- Added all event types and tests for checking them 
 - Added SCIP functions SCIPconsGetNVars, SCIPconsGetVars
 - Added SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear
 - Added SCIP function SCIPgetSolTime and wrapper getSolTime
 - Added convenience methods relax and getVarDict
 - Added SCIP functions hasPrimalRay, getPrimalRay, getPrimalRayVal
 ### Fixed
+- Fixed mistake with outdated values for several enums
 - Correctly set result, lowerbound in PyRelaxExec
 - Fixed typo in documentation of chgRhs
 - Pricer plugin fundamental callbacks now raise an error if not implemented
@@ -17,6 +28,7 @@
 - Changed getSols so that it prints solutions in terms of the original variables
 - Fixed error message in _checkStage
 ### Changed
+- Made it so SCIP macros are used directly, instead of being manually inputted. 
 - Improved error message when using < or > instead of <= or >=
 ### Removed
 - Removed double declaration of SCIPfindEventhdlr
