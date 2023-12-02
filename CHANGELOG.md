@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added eval method to evaluate constant expressions
 - Add getConshdlrName to class Constraint
 ### Fixed
 ### Changed

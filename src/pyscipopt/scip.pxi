@@ -4650,6 +4650,18 @@ cdef class Model:
             raise Warning("method cannot be called before problem is solved")
         return self.getSolVal(self._bestSol, expr)
     
+    def eval(self, str const):
+        """Evaluates expression without variables
+        :param string const: Constant expression as string"""
+        import math
+        for operation in ["log", "sin", "cos", "exp", "sqrt"]:
+            const = const.replace(operation, "math."+operation)
+        const = const.replace("prod(", "math.prod([")
+        const = const.replace("sum(", "sum([")
+        const = const.replace("))", ")])]")
+
+        return eval(const)
+
     def hasPrimalRay(self):
         """
         Returns whether a primal ray is stored that proves unboundedness of the LP relaxation
