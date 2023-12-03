@@ -38,6 +38,10 @@ class CutPricer(Pricer):
 
         objval = 1 + subMIP.getObjVal()
 
+        assert type(self.model.getNSolsFound()) == int
+        assert type(self.model.getNBestSolsFound()) == int
+        assert self.model.getNBestSolsFound() <= self.model.getNSolsFound()
+        self.model.data["nSols"] = self.model.getNSolsFound()
 
         # Adding the column to the master problem
         if objval < -1e-08:
@@ -74,6 +78,8 @@ def test_cuttingstock():
     s = Model("CuttingStock")
 
     s.setPresolve(0)
+    s.data = {}
+    s.data["nSols"] = 0
 
     # creating a pricer
     pricer = CutPricer()
@@ -149,6 +155,8 @@ def test_cuttingstock():
     print('\t\t\tTotal Output:\t', '\t'.join(str(e) for e in widthOutput))
     
     assert s.getObjVal() == 452.25
+    assert type(s.getNSols()) == int
+    assert s.getNSols() == s.data["nSols"]
 
 def test_incomplete_pricer():
     class IncompletePricer(Pricer):

@@ -2170,7 +2170,7 @@ cdef class Model:
         SCIPgetConsNVars(self._scip, constraint.scip_cons, &_nvars, &success)
 
         cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(_nvars * sizeof(SCIP_VAR*))
-        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, _nvars*sizeof(SCIP_VAR), &success)
+        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, _nvars*sizeof(SCIP_VAR*), &success)
         
         vars = []
         for i in range(_nvars):
@@ -2722,7 +2722,6 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pyCons
-
 
     def addConsIndicator(self, cons, binvar=None, activeone=True, name="IndicatorCons",
                 initial=True, separate=True, enforce=True, check=True,
@@ -3323,7 +3322,6 @@ cdef class Model:
             SCIPgetDualSolVal(self._scip, cons.scip_cons, &_dualsol, NULL)
 
         return _dualsol
-
 
     def optimize(self):
         """Optimize the problem."""
@@ -4460,6 +4458,8 @@ cdef class Model:
         """
         cdef SCIP_SOL* _sol
         _sol = <SCIP_SOL*>solution.sol
+        
+        assert _sol != NULL, "Cannot set value to a freed solution."
         PY_SCIP_CALL(SCIPsetSolVal(self._scip, _sol, var.scip_var, val))
 
     def trySol(self, Solution solution, printreason=True, completely=False, checkbounds=True, checkintegrality=True, checklprows=True, free=True):
