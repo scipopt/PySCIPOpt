@@ -13,6 +13,7 @@
 ### Added
 - Add getConshdlrName to class Constraint
 - Added all event types and tests for checking them 
+- Added all event types and tests for checking them 
 - Added SCIP functions SCIPconsGetNVars, SCIPconsGetVars
 - Added SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear
 - Added SCIP function SCIPgetSolTime and wrapper getSolTime
