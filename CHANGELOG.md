@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## Unreleased
+## Untracked
+### Added
+### Fixed
+### Changed
+### Removed
+
+## 4.4.0 - 2023-12-04
 ### Added
 - Added methods for getting the names of the current stage and of an event
 - Added all event types and tests for checking them 
