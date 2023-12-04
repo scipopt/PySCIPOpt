@@ -2,6 +2,12 @@
 
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+### Removed
+
+## 4.4.0 - 2023-12-04
+### Added
 - Added all event types and tests for checking them 
 - Added SCIP functions SCIPconsGetNVars, SCIPconsGetVars
 - Added SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear
