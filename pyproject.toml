@@ -44,4 +44,6 @@ before-all = [
     "mv .\\scip-test\\scip_install .\\test",
     "mv .\\test .\\scip"
 ]
+before-build = "pip install delvewheel"
 environment = { SCIPOPTDIR='D:\\a\\PySCIPOpt\\PySCIPOpt\\scip' }
+repair-wheel-command = "delvewheel repair --add-path c:/bin;c:/lib;c:/bin/src;c:/lib/src;D:/a/PySCIPOpt/PySCIPOpt/scip/;D:/a/PySCIPOpt/PySCIPOpt/scip/lib/;D:/a/PySCIPOpt/PySCIPOpt/scip/bin/ -w {dest_dir} {wheel}"
