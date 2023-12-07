@@ -20,6 +20,7 @@
 - Added SCIP function SCIPgetSolTime and wrapper getSolTime
 - Added convenience methods relax and getVarDict
 - Added SCIP functions hasPrimalRay, getPrimalRay, getPrimalRayVal
+- Add getConshdlrName to class Constraint
 ### Fixed
 - 
 - Fixed typo in documentation of chgRhs
