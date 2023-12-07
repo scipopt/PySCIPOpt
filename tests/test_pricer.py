@@ -158,6 +158,11 @@ def test_cuttingstock():
     assert type(s.getNSols()) == int
     assert s.getNSols() == s.data["nSols"]
 
+    # Testing freeTransform
+    s.freeTransform()
+    for i in range(10):
+        s.addVar()
+
 def test_incomplete_pricer():
     class IncompletePricer(Pricer):
         pass
