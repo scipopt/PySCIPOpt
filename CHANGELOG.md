@@ -5,6 +5,7 @@
 - Add getConshdlrName to class Constraint
 ### Fixed
 ### Changed
+- Changed default installation option via pypi to package pre-build SCIP
 ### Removed
 
 ## 4.4.0 - 2023-12-04
