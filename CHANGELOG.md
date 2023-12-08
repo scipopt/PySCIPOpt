@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Add getConshdlrName to class Constraint
 ### Fixed
 ### Changed
 ### Removed
