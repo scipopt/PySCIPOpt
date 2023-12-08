@@ -30,6 +30,15 @@ jobs:
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}/tests"
         
-      - uses: actions/upload-artifact@v3
+      # - uses: actions/upload-artifact@v3
+      #   with:
+      #     path: ./wheelhouse/*.whl
+      
+      - name: "Publish to test.pypi.org"
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          path: ./wheelhouse/*.whl
+          repository_url: https://test.pypi.org/legacy/
+          user: __token__
+          password: ${{ secrets.TESTPYPI_API_TOKEN }}
+          verbose: true
+          packages_dir: ./wheelhouse/
