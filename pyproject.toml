@@ -18,7 +18,7 @@ environment = { SCIPOPTDIR="$(pwd)/scip", LD_LIBRARY_PATH="$(pwd)/scip/lib:LD_LI
 
 
 [tool.cibuildwheel.macos]
-skip="pp* cp312* cp38* cp39* cp310*"
+skip="pp* cp312*"
 before-all = [
     "brew install wget zlib gcc",
     "wget https://github.com/mmghannam/scip/releases/download/v8.0.3/libscip-macos-arm.zip -O scip.zip",
