@@ -13,10 +13,10 @@ jobs:
             arch: x86_64
           # - os: macos-latest
           #   arch: arm64
-          # - os: macos-latest
-          #   arch: x86_64
-          # - os: windows-latest
-          #   arch: AMD64
+          - os: macos-latest
+            arch: x86_64
+          - os: windows-latest
+            arch: AMD64
 
 
 
@@ -59,7 +59,6 @@ jobs:
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          repository_url: https://test.pypi.org/legacy/
           user: __token__
           password: ${{ secrets.TESTPYPI_API_TOKEN }}
           verbose: true
