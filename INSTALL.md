@@ -1,12 +1,24 @@
 Requirements
 ============
 
+From version 4.4.0 SCIP is automatically shipped when using PyPI for the following systems:
+
+- CPython 3.6 / 3.7 / 3.8 / 3.9 / 3.10 / 3.11 for ManyLinux2014
+- CPython 3.6 / 3.7 / 3.8 / 3.9 / 3.10 / 3.11 for MacOS for x86_64 (ARM i.e. Apple Silicon is currently unavailable)
+- CPython 3.8 / 3.9 / 3.10 / 3.11 for Windows
+
+This work is currently ongoing, and is planned to encompass all Python and OS combinations. 
+
+Please note that to use any of these Python / OS combinations without the default SCIP, one must build PySCIPOpt from source and
+link against your own installation of SCIP. Such a scenario is common if the LP plugin should be Gurobi / Xpress / CPLEX instead of Soplex.
+
+When installing from source or using PyPI with a python version and operating system combination that is not mentioned above,
 PySCIPOpt requires a working installation of the [SCIP Optimization
 Suite](https://www.scipopt.org/). Please, make sure that your SCIP installation works!
 
 **Note that the latest PySCIPOpt version is usually only compatible with the latest major release of the SCIP Optimization Suite. See the table on the README.md page for details.**
 
-If SCIP is not installed in the global path
+If installing SCIP from source or using PyPI with a python and operating system that is not mentioned above, and SCIP is not installed in the global path,
 you need to specify the install location using the environment variable
 `SCIPOPTDIR`:
 
@@ -29,11 +41,11 @@ contains the corresponding header files:
         > nlpi
         > ...
 
-If you are not using the installer packages, you need to [install the
+If you install SCIP yourself and are not using the installer packages, you need to [install the
 SCIP Optimization Suite using CMake](https://www.scipopt.org/doc/html/md_INSTALL.php#CMAKE).
 The Makefile system is not compatible with PySCIPOpt!
 
-On Windows it is highly recommended to use the [Anaconda Python
+When building SCIP from source using Windows it is highly recommended to use the [Anaconda Python
 Platform](https://www.anaconda.com/).
 
 Installation from PyPI
@@ -41,7 +53,12 @@ Installation from PyPI
 
     python -m pip install pyscipopt
 
-On Windows you may need to ensure that the `scip` library can be found
+Please note that if your Python version and OS version are in the combinations at the start of this INSTALL file then
+pip now automatically installs a pre-built version of SCIP. For these combinations, to use your own installation of SCIP,
+plese see the section on building from source. For unavailable combinations this pip command will automatically
+search your global installs or custom set paths as above.
+
+On Windows for combinations not listed at the start of this file, you may need to ensure that the `scip` library can be found
 at runtime by adjusting your `PATH` environment variable:
 
 -   on Windows: `set PATH=%PATH%;%SCIPOPTDIR%\bin`
