@@ -64,6 +64,3 @@ def test_heur_memory():
         heur_prox.name
 
     assert is_memory_freed()
-
-if __name__ == "__main__":
-    test_heur()

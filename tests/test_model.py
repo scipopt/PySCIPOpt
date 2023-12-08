@@ -40,6 +40,7 @@ def test_model():
     assert s.getRhs(c) == 6.0
 
     # solve problem
+    s.presolve() # to test presolve method
     s.optimize()
 
     solution = s.getBestSol()
@@ -118,7 +119,6 @@ def test_multiple_cons_simple():
     s.freeProb()
     m.freeProb()
 
-
 def test_multiple_cons_names():
     m = Model()
     x = m.addVar("x", vtype = 'C', obj = 1.0)
@@ -141,6 +141,8 @@ def test_multiple_cons_names():
 
     assert len(conss) == 5
     assert all([c.name.startswith(name + "_") for c in conss])
+    assert conss == m.getConss()
+    assert m.getNConss() == 5
 
 
 def test_multiple_cons_params():
@@ -170,6 +172,38 @@ def test_multiple_cons_params():
 
     assert_conss_neq(conss[0], conss[1])
 
+def test_addCoefLinear():
+    m = Model()
+    x = m.addVar(obj=1)
+    y = m.addVar(obj=0)
+    c = m.addCons(x >= 1)
+
+    m.addCoefLinear(c, y, 1)
+
+    m.optimize()
+    assert m.getVal(x) == 0
+
+def test_delCoefLinear():
+    m = Model()
+    x = m.addVar(obj=1)
+    y = m.addVar(obj=0)
+    c = m.addCons(x + y >= 1)
+
+    m.delCoefLinear(c,y)
+
+    m.optimize()
+    assert m.getVal(x) == 1
+
+def test_chgCoefLinear():
+    m = Model()
+    x = m.addVar(obj=10)
+    y = m.addVar(obj=1)
+    c = m.addCons(x + y >= 1)
+
+    m.chgCoefLinear(c, y, 0.001)
+
+    m.optimize()
+    assert m.getObjVal() == 10
 
 def test_model_ptr():
     model1 = Model()
@@ -217,3 +251,20 @@ def test_getVarsDict():
     for v in x.values():
         assert v.name in var_dict
         assert model.getVal(v) == var_dict[v.name]
+
+def test_objLim():
+    m = Model()
+
+    x = m.addVar(obj=1, lb=2)
+    m.setObjlimit(1)
+
+    m.optimize()
+    assert m.getNLimSolsFound() == 0
+
+    m = Model()
+    x = m.addVar(obj=1, lb=2)
+
+    m.setObjlimit(2)
+    m.optimize()
+    assert m.getNLimSolsFound() == 1
+    

@@ -18,6 +18,3 @@ def test_copy():
     s2.optimize()
 
     assert s.getObjVal() == s2.getObjVal()
-
-if __name__ == "__main__":
-    test_copy()

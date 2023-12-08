@@ -188,6 +188,7 @@ cdef class PY_SCIP_EVENTTYPE:
     NODEFEASIBLE    = SCIP_EVENTTYPE_NODEFEASIBLE
     NODEINFEASIBLE  = SCIP_EVENTTYPE_NODEINFEASIBLE
     NODEBRANCHED    = SCIP_EVENTTYPE_NODEBRANCHED
+    NODEDELETE      = SCIP_EVENTTYPE_NODEDELETE
     FIRSTLPSOLVED   = SCIP_EVENTTYPE_FIRSTLPSOLVED
     LPSOLVED        = SCIP_EVENTTYPE_LPSOLVED
     LPEVENT         = SCIP_EVENTTYPE_LPEVENT
@@ -201,7 +202,24 @@ cdef class PY_SCIP_EVENTTYPE:
     ROWCONSTCHANGED = SCIP_EVENTTYPE_ROWCONSTCHANGED
     ROWSIDECHANGED  = SCIP_EVENTTYPE_ROWSIDECHANGED
     SYNC            = SCIP_EVENTTYPE_SYNC
-    NODESOLVED      = SCIP_EVENTTYPE_NODEFEASIBLE | SCIP_EVENTTYPE_NODEINFEASIBLE | SCIP_EVENTTYPE_NODEBRANCHED
+    GBDCHANGED      = SCIP_EVENTTYPE_GBDCHANGED
+    LBCHANGED       = SCIP_EVENTTYPE_LBCHANGED
+    UBCHANGED       = SCIP_EVENTTYPE_UBCHANGED
+    BOUNDTIGHTENED  = SCIP_EVENTTYPE_BOUNDTIGHTENED
+    BOUNDRELAXED    = SCIP_EVENTTYPE_BOUNDRELAXED
+    BOUNDCHANGED    = SCIP_EVENTTYPE_BOUNDCHANGED
+    GHOLECHANGED    = SCIP_EVENTTYPE_GHOLECHANGED
+    LHOLECHANGED    = SCIP_EVENTTYPE_LHOLECHANGED
+    HOLECHANGED     = SCIP_EVENTTYPE_HOLECHANGED
+    DOMCHANGED      = SCIP_EVENTTYPE_DOMCHANGED
+    VARCHANGED      = SCIP_EVENTTYPE_VARCHANGED
+    VAREVENT        = SCIP_EVENTTYPE_VAREVENT
+    NODESOLVED      = SCIP_EVENTTYPE_NODESOLVED
+    NODEEVENT       = SCIP_EVENTTYPE_NODEEVENT
+    SOLFOUND        = SCIP_EVENTTYPE_SOLFOUND
+    SOLEVENT        = SCIP_EVENTTYPE_SOLEVENT
+    ROWCHANGED      = SCIP_EVENTTYPE_ROWCHANGED
+    ROWEVENT        = SCIP_EVENTTYPE_ROWEVENT
 
 cdef class PY_SCIP_LPSOLSTAT:
     NOTSOLVED    = SCIP_LPSOLSTAT_NOTSOLVED
@@ -923,6 +941,11 @@ cdef class Constraint:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'nonlinear'
 
+    def getConshdlrName(self):
+        """Return the constraint handler's name"""
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
+        return constype
+
     def __hash__(self):
         return hash(<size_t>self.scip_cons)
 
@@ -1071,6 +1094,11 @@ cdef class Model:
 
     def freeTransform(self):
         """Frees all solution process data including presolving and transformed problem, only original problem is kept"""
+        self._modelvars = {
+            var: value
+            for var, value in self._modelvars.items()
+            if value.isOriginal()
+        }
         PY_SCIP_CALL(SCIPfreeTransform(self._scip))
 
     def version(self):
@@ -2169,7 +2197,7 @@ cdef class Model:
         SCIPgetConsNVars(self._scip, constraint.scip_cons, &_nvars, &success)
 
         cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(_nvars * sizeof(SCIP_VAR*))
-        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, _nvars*sizeof(SCIP_VAR), &success)
+        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, _nvars*sizeof(SCIP_VAR*), &success)
         
         vars = []
         for i in range(_nvars):
@@ -2721,7 +2749,6 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pyCons
-
 
     def addConsIndicator(self, cons, binvar=None, activeone=True, name="IndicatorCons",
                 initial=True, separate=True, enforce=True, check=True,
@@ -3322,7 +3349,6 @@ cdef class Model:
             SCIPgetDualSolVal(self._scip, cons.scip_cons, &_dualsol, NULL)
 
         return _dualsol
-
 
     def optimize(self):
         """Optimize the problem."""
@@ -4459,6 +4485,8 @@ cdef class Model:
         """
         cdef SCIP_SOL* _sol
         _sol = <SCIP_SOL*>solution.sol
+        
+        assert _sol != NULL, "Cannot set value to a freed solution."
         PY_SCIP_CALL(SCIPsetSolVal(self._scip, _sol, var.scip_var, val))
 
     def trySol(self, Solution solution, printreason=True, completely=False, checkbounds=True, checkintegrality=True, checklprows=True, free=True):

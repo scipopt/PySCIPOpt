@@ -26,7 +26,3 @@ def test_niceqcqp():
 
     assert round(s.getVal(x)) == 1.0
     assert round(s.getVal(y)) == 1.0
-
-if __name__ == "__main__":
-    test_niceqp()
-    test_niceqcqp()

@@ -17,7 +17,3 @@ def test_freed():
 
 def test_print_memory_in_use():
     print_memory_in_use()
-
-if __name__ == "__main__":
-    test_not_freed()
-    test_freed()
