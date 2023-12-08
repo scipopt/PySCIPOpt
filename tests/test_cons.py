@@ -97,7 +97,7 @@ def test_SOScons():
     assert m.isEQ(m.getVal(x[4]), 1)
     assert m.isEQ(m.getVal(x[5]), 1)
     assert c1.getConshdlrName() == "SOS1"
-    assert c2.getConshdlrName() == "SOS1"
+    assert c2.getConshdlrName() == "SOS2"
 
 
 def test_cons_indicator():
