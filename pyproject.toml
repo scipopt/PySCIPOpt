@@ -7,7 +7,7 @@ skip="pp* cp312*" # currently doesn't work with PyPy or CPython 3.12
 
 
 [tool.cibuildwheel.linux]
-skip="pp* cp312* *musllinux*"
+skip="pp* cp312* cp36* cp37* cp38* cp39* cp310* *musllinux*"
 before-all = [
     "(apt-get update && apt-get install --yes wget) || yum install -y wget zlib libgfortran || brew install wget",
     "wget https://github.com/mmghannam/scip/releases/download/v8.0.3/libscip-centos.zip -O scip.zip",

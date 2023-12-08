@@ -13,10 +13,10 @@ jobs:
             arch: x86_64
           # - os: macos-latest
           #   arch: arm64
-          - os: macos-latest
-            arch: x86_64
-          - os: windows-latest
-            arch: AMD64
+          # - os: macos-latest
+          #   arch: x86_64
+          # - os: windows-latest
+          #   arch: AMD64
 
 
 
@@ -30,15 +30,36 @@ jobs:
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}/tests"
         
-      # - uses: actions/upload-artifact@v3
-      #   with:
-      #     path: ./wheelhouse/*.whl
-      
-      - name: "Publish to test.pypi.org"
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./wheelhouse/*.whl
+
+  build_sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build sdist
+        shell: bash -l {0}
+        run: pipx run build --sdist
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: dist/*.tar.gz
+
+  upload_pypi:
+    needs: [build_wheels]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifact
+          path: dist
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository_url: https://test.pypi.org/legacy/
           user: __token__
           password: ${{ secrets.TESTPYPI_API_TOKEN }}
           verbose: true
-          packages_dir: ./wheelhouse/
