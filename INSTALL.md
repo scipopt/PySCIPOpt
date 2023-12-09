@@ -3,7 +3,7 @@ Requirements
 
 From version 4.4.0 SCIP is automatically shipped when using PyPI for the following systems:
 
-- CPython 3.6 / 3.7 / 3.8 / 3.9 / 3.10 / 3.11 for ManyLinux2014
+- CPython 3.6 / 3.7 / 3.8 / 3.9 / 3.10 / 3.11 for  Linux (manylinux2014)
 - CPython 3.6 / 3.7 / 3.8 / 3.9 / 3.10 / 3.11 for MacOS for x86_64 (ARM i.e. Apple Silicon is currently unavailable)
 - CPython 3.8 / 3.9 / 3.10 / 3.11 for Windows
 
