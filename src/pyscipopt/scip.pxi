@@ -110,6 +110,8 @@ cdef class PY_SCIP_STATUS:
     UNBOUNDED      = SCIP_STATUS_UNBOUNDED
     INFORUNBD      = SCIP_STATUS_INFORUNBD
 
+StageNames = {}
+
 cdef class PY_SCIP_STAGE:
     INIT         = SCIP_STAGE_INIT
     PROBLEM      = SCIP_STAGE_PROBLEM
@@ -4742,6 +4744,19 @@ cdef class Model:
     def getStage(self):
         """Retrieve current SCIP stage"""
         return SCIPgetStage(self._scip)
+    
+    def getStageName(self):
+        """Returns name of current stage as string"""
+        if not StageNames:
+            self._getStageNames()
+        return StageNames[self.getStage()]
+
+    def _getStageNames(self):
+        """Gets names of stages"""
+        for name in dir(PY_SCIP_STAGE):
+            attr = getattr(PY_SCIP_STAGE, name)
+            if isinstance(attr, int):
+                StageNames[attr] = name
 
     def getStatus(self):
         """Retrieve solution status."""
