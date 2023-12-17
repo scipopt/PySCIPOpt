@@ -165,6 +165,8 @@ cdef class PY_SCIP_HEURTIMING:
     DURINGPRESOLLOOP  = SCIP_HEURTIMING_DURINGPRESOLLOOP
     AFTERPROPLOOP     = SCIP_HEURTIMING_AFTERPROPLOOP
 
+EventNames = {}
+
 cdef class PY_SCIP_EVENTTYPE:
     DISABLED        = SCIP_EVENTTYPE_DISABLED
     VARADDED        = SCIP_EVENTTYPE_VARADDED
@@ -220,6 +222,7 @@ cdef class PY_SCIP_EVENTTYPE:
     SOLEVENT        = SCIP_EVENTTYPE_SOLEVENT
     ROWCHANGED      = SCIP_EVENTTYPE_ROWCHANGED
     ROWEVENT        = SCIP_EVENTTYPE_ROWEVENT
+
 
 cdef class PY_SCIP_LPSOLSTAT:
     NOTSOLVED    = SCIP_LPSOLSTAT_NOTSOLVED
@@ -305,6 +308,19 @@ cdef class Event:
         """gets type of event"""
         return SCIPeventGetType(self.event)
 
+    def getName(self):
+        """gets name of event"""
+        if not EventNames:
+            self._getEventNames()
+        return EventNames[self.getType()]
+
+    def _getEventNames(self):
+        """gets event names"""
+        for name in dir(PY_SCIP_EVENTTYPE):
+            attr = getattr(PY_SCIP_EVENTTYPE, name)
+            if isinstance(attr, int):
+                EventNames[attr] = name
+        
     def __repr__(self):
         return self.getType()
 
