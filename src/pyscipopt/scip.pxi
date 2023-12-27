@@ -326,6 +326,9 @@ cdef class Event:
     def __repr__(self):
         return self.getType()
 
+    def __str__(self):
+        return self.getName()
+
     def getNewBound(self):
         """gets new bound for a bound change event"""
         return SCIPeventGetNewbound(self.event)
@@ -4716,7 +4719,7 @@ cdef class Model:
         if not StageNames:
             self._getStageNames()
         return StageNames[self.getStage()]
-
+    
     def _getStageNames(self):
         """Gets names of stages"""
         for name in dir(PY_SCIP_STAGE):

@@ -14,6 +14,7 @@ class MyEvent(Eventhdlr):
     #    self.model.dropEvent(self.event_type, self)
 
     def eventexec(self, event):
+        assert str(event) == event.getName()
         assert type(event.getName()) == str
 
         calls.append('eventexec')
