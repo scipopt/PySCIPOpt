@@ -456,9 +456,6 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_HASHMAP:
         pass
 
-    #ctypedef struct SCIP_BOUNDTYPE:
-    #   pass
-
     ctypedef struct SCIP_BDCHGIDX:
         pass
 

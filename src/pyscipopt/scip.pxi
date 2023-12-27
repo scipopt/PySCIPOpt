@@ -962,6 +962,11 @@ cdef class Constraint:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'nonlinear'
 
+    def getConshdlrName(self):
+        """Return the constraint handler's name"""
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
+        return constype
+
     def __hash__(self):
         return hash(<size_t>self.scip_cons)
 
@@ -1110,6 +1115,11 @@ cdef class Model:
 
     def freeTransform(self):
         """Frees all solution process data including presolving and transformed problem, only original problem is kept"""
+        self._modelvars = {
+            var: value
+            for var, value in self._modelvars.items()
+            if value.isOriginal()
+        }
         PY_SCIP_CALL(SCIPfreeTransform(self._scip))
 
     def version(self):

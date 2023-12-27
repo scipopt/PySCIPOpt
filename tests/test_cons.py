@@ -96,6 +96,8 @@ def test_SOScons():
     assert m.isEQ(m.getVal(x[3]), 1)
     assert m.isEQ(m.getVal(x[4]), 1)
     assert m.isEQ(m.getVal(x[5]), 1)
+    assert c1.getConshdlrName() == "SOS1"
+    assert c2.getConshdlrName() == "SOS2"
 
 
 def test_cons_indicator():
@@ -112,6 +114,7 @@ def test_cons_indicator():
     assert m.isEQ(m.getVal(slack), 0)
     assert m.isEQ(m.getVal(binvar), 1)
     assert m.isEQ(m.getVal(x), 1)
+    assert c.getConshdlrName() == "indicator"
 
 
 @pytest.mark.xfail(reason="addConsIndicator doesn't behave as expected when binary variable is False. See Issue #717.")
