@@ -20,13 +20,13 @@
 - Add getConshdlrName to class Constraint
 - Added all event types and tests for checking them 
 - Added methods for getting the names of the current stage and of an event
-- Add getConshdlrName to class Constraint
 ### Fixed
 ### Changed
 ### Removed
 
 ## 4.4.0 - 2023-12-04
 ### Added
+- Add getConshdlrName to class Constraint
 - Added all event types and tests for checking them 
 - Added SCIP functions SCIPconsGetNVars, SCIPconsGetVars
 - Added SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear
