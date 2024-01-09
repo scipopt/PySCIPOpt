@@ -4,6 +4,7 @@
 ### Added
 - Added methods for getting the names of the current stage and of an event
 ### Fixed
+- Fixed outdated time.clock call in gcp.py
 ### Changed
 ### Removed
 
