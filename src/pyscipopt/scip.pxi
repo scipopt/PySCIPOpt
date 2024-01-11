@@ -2602,7 +2602,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, scip_cons, var.scip_var, weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        return Constraint.create(scip_cons)
+        return Constraint.create(scip_cons)      
 
     def addConsAnd(self, vars, resvar, name="ANDcons",
             initial=True, separate=True, enforce=True, check=True,
@@ -2834,6 +2834,35 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pyCons
+    
+    def addPiecewiseLinearCons(self, X, Y, a, b):
+        """add piecewise relation with multiple selection formulation
+
+            :param a: array with x-coordinates of the points in the piecewise linear relation
+            :param b: array with y-coordinate of the points in the piecewise linear relation
+        """
+        K = len(a)-1
+        w,z = {},{}
+        for k in range(K):
+            w[k] = self.addVar(lb=-self.infinity()) 
+            z[k] = self.addVar(vtype="B")
+
+        #X = self.addVar(lb=a[0], ub=a[K])
+        #Y = self.addVar(lb=-self.infinity())
+
+        for k in range(K):
+            self.addCons(w[k] >= a[k]*z[k])
+            self.addCons(w[k] <= a[k+1]*z[k])
+
+        self.addConsSOS1([z[k] for k in range(K)])
+        self.addCons(X == quicksum(w[k] for k in range(K)))
+
+        c = [float(b[k+1]-b[k])/(a[k+1]-a[k]) for k in range(K)]
+        d = [b[k]-c[k]*a[k] for k in range(K)]
+        
+        new_cons = self.addCons(Y == quicksum(d[k]*z[k] + c[k]*w[k] for k in range(K)))
+        
+        return new_cons
 
     def getSlackVarIndicator(self, Constraint cons):
         """Get slack variable of an indicator constraint.
