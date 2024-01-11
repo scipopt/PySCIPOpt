@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added method for adding piecewise linear constraints
 - Added methods for getting the names of the current stage and of an event
 ### Fixed
 - Fixed outdated time.clock call in gcp.py
