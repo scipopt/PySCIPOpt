@@ -146,14 +146,14 @@ if __name__ == "__main__":
                 if not (name,size-1,prob) in cpu or cpu[name,size-1,prob] < 100: #cpu.has_key((name,size-1,prob))
                     cpu[name,size,prob] = 0.
                     for t in range(N):
-                        tinit = time.clock()
+                        tinit = time.time()
                         random.seed(t)
                         V,E = make_data(size,prob)
                         model = m(V,E,K)
                         model.hideOutput()     # silent mode
                         model.optimize()
                         assert model.getObjVal() >= 0 and model.getObjVal() <= K
-                        tend = time.clock()
+                        tend = time.time()
                         cpu[name,size,prob] += tend - tinit
                     cpu[name,size,prob] /= N
                 else:
