@@ -4650,7 +4650,7 @@ cdef class Model:
             raise Warning("method cannot be called before problem is solved")
         return self.getSolVal(self._bestSol, expr)
     
-    def eval(self, str const):
+    def evalConstantExpression(self, str const):
         """Evaluates expression without variables
         :param string const: Constant expression as string"""
         import math

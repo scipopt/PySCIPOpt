@@ -272,6 +272,6 @@ def test_eval():
     import math
     m = Model()
 
-    assert m.isEQ(math.log(2), m.eval("log(2)"))
-    assert m.isEQ(sum([21.68,math.prod([0.007446285387417584,sum([996.47,math.prod([-1.0,math.exp(1.234317963583726),math.log(1.42)])])])]) ,m.eval("sum(21.68,prod(0.007446285387417584,sum(996.47,prod(-1.0,exp(1.234317963583726),log(1.42)))))"))
+    assert m.isEQ(math.log(2), m.evalConstantExpression("log(2)"))
+    assert m.isEQ(sum([21.68,math.prod([0.007446285387417584,sum([996.47,math.prod([-1.0,math.exp(1.234317963583726),math.log(1.42)])])])]) ,m.evalConstantExpression("sum(21.68,prod(0.007446285387417584,sum(996.47,prod(-1.0,exp(1.234317963583726),log(1.42)))))"))
     
