@@ -3,13 +3,15 @@
 ## Unreleased
 ### Added
 - Added eval method to evaluate constant expressions
-- Add getConshdlrName to class Constraint
+- Added methods for getting the names of the current stage and of an event
 ### Fixed
+- Fixed outdated time.clock call in gcp.py
 ### Changed
 ### Removed
 
 ## 4.4.0 - 2023-12-04
 ### Added
+- Add getConshdlrName to class Constraint
 - Added all event types and tests for checking them 
 - Added SCIP functions SCIPconsGetNVars, SCIPconsGetVars
 - Added SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear

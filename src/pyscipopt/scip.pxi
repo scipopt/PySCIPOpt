@@ -110,6 +110,8 @@ cdef class PY_SCIP_STATUS:
     UNBOUNDED      = SCIP_STATUS_UNBOUNDED
     INFORUNBD      = SCIP_STATUS_INFORUNBD
 
+StageNames = {}
+
 cdef class PY_SCIP_STAGE:
     INIT         = SCIP_STAGE_INIT
     PROBLEM      = SCIP_STAGE_PROBLEM
@@ -164,6 +166,8 @@ cdef class PY_SCIP_HEURTIMING:
     BEFOREPRESOL      = SCIP_HEURTIMING_BEFOREPRESOL
     DURINGPRESOLLOOP  = SCIP_HEURTIMING_DURINGPRESOLLOOP
     AFTERPROPLOOP     = SCIP_HEURTIMING_AFTERPROPLOOP
+
+EventNames = {}
 
 cdef class PY_SCIP_EVENTTYPE:
     DISABLED        = SCIP_EVENTTYPE_DISABLED
@@ -220,6 +224,7 @@ cdef class PY_SCIP_EVENTTYPE:
     SOLEVENT        = SCIP_EVENTTYPE_SOLEVENT
     ROWCHANGED      = SCIP_EVENTTYPE_ROWCHANGED
     ROWEVENT        = SCIP_EVENTTYPE_ROWEVENT
+
 
 cdef class PY_SCIP_LPSOLSTAT:
     NOTSOLVED    = SCIP_LPSOLSTAT_NOTSOLVED
@@ -305,8 +310,24 @@ cdef class Event:
         """gets type of event"""
         return SCIPeventGetType(self.event)
 
+    def getName(self):
+        """gets name of event"""
+        if not EventNames:
+            self._getEventNames()
+        return EventNames[self.getType()]
+
+    def _getEventNames(self):
+        """gets event names"""
+        for name in dir(PY_SCIP_EVENTTYPE):
+            attr = getattr(PY_SCIP_EVENTTYPE, name)
+            if isinstance(attr, int):
+                EventNames[attr] = name
+        
     def __repr__(self):
-        return self.getType()
+        return str(self.getType())
+
+    def __str__(self):
+        return self.getName()
 
     def getNewBound(self):
         """gets new bound for a bound change event"""
@@ -4714,6 +4735,19 @@ cdef class Model:
     def getStage(self):
         """Retrieve current SCIP stage"""
         return SCIPgetStage(self._scip)
+    
+    def getStageName(self):
+        """Returns name of current stage as string"""
+        if not StageNames:
+            self._getStageNames()
+        return StageNames[self.getStage()]
+    
+    def _getStageNames(self):
+        """Gets names of stages"""
+        for name in dir(PY_SCIP_STAGE):
+            attr = getattr(PY_SCIP_STAGE, name)
+            if isinstance(attr, int):
+                StageNames[attr] = name
 
     def getStatus(self):
         """Retrieve solution status."""

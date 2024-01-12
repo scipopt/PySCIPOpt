@@ -1,6 +1,6 @@
 import pytest
 
-from pyscipopt import Model
+from pyscipopt import Model, SCIP_STAGE
 
 def test_model():
     # create solver instance
@@ -267,6 +267,25 @@ def test_objLim():
     m.setObjlimit(2)
     m.optimize()
     assert m.getNLimSolsFound() == 1
+    
+def test_getStage():
+    m = Model() 
+
+    assert m.getStage() == SCIP_STAGE.PROBLEM
+    assert m.getStageName() == "PROBLEM"
+
+    x = m.addVar()
+    m.addCons(x >= 1)    
+    
+    print(m.getStage())
+    assert m.getStage() == SCIP_STAGE.PROBLEM
+    assert m.getStageName() == "PROBLEM" 
+
+    m.optimize()
+
+    print(m.getStage())
+    assert m.getStage() == SCIP_STAGE.SOLVED
+    assert m.getStageName() == "SOLVED"
 
 def test_eval():
     import math
