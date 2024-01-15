@@ -2836,29 +2836,34 @@ cdef class Model:
         return pyCons
     
     def addPiecewiseLinearCons(self, X, Y, a, b):
-        """add piecewise relation with multiple selection formulation
+        """add constraint of the form y = f(x), where f is a piecewise linear function
 
+            :param X: x variable
+            :param Y: y variable
             :param a: array with x-coordinates of the points in the piecewise linear relation
             :param b: array with y-coordinate of the points in the piecewise linear relation
+
+            Disclaimer: For the moment, can only model 2d piecewise linear functions
+            Adapted from https://github.com/scipopt/PySCIPOpt/blob/master/examples/finished/piecewise.py
         """
+        assert len(a) == len(b), "Must have the same number of x and y-coordinates"
+
         K = len(a)-1
         w,z = {},{}
         for k in range(K):
             w[k] = self.addVar(lb=-self.infinity()) 
             z[k] = self.addVar(vtype="B")
 
-        #X = self.addVar(lb=a[0], ub=a[K])
-        #Y = self.addVar(lb=-self.infinity())
-
         for k in range(K):
             self.addCons(w[k] >= a[k]*z[k])
             self.addCons(w[k] <= a[k+1]*z[k])
 
-        self.addConsSOS1([z[k] for k in range(K)])
+        self.addCons(quicksum(z[k] for k in range(K)) == 1)
+
         self.addCons(X == quicksum(w[k] for k in range(K)))
 
-        c = [float(b[k+1]-b[k])/(a[k+1]-a[k]) for k in range(K)]
-        d = [b[k]-c[k]*a[k] for k in range(K)]
+        c = [float(b[k+1]-b[k]) / (a[k+1]-a[k]) for k in range(K)]
+        d = [b[k] - c[k]*a[k] for k in range(K)]
         
         new_cons = self.addCons(Y == quicksum(d[k]*z[k] + c[k]*w[k] for k in range(K)))
         
