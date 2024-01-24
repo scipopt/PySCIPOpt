@@ -1,6 +1,7 @@
 import pytest
+import random
 
-from pyscipopt import Model, quicksum, sqrt
+from pyscipopt import Model, quicksum, sqrt, exp, log, sin
 
 # test string with polynomial formulation (uses only Expr)
 def test_string_poly():
@@ -285,3 +286,50 @@ def test_quad_coeffs():
 
     assert linterms[0][0].name == z.name
     assert linterms[0][1] == 4
+
+def test_nonlinear_objective():
+    m = Model()
+
+    x = {}
+    for i in range(random.randint(1,20)):
+        x[i] = m.addVar(lb = -float("inf"))
+
+    obj = 0
+    for var in x:
+        rand = random.random()
+        if rand <= 0.2:
+            obj += 20*random.random()*var
+        elif rand <= 0.4:
+            obj += exp(random.random()*var)
+        elif rand <= 0.6:
+            obj += log(max(random.random()*var,0.1))
+        elif rand <= 0.8:
+            obj += sqrt(random.random()*var)
+        else:
+            obj += sin(random.random()*var)
+
+    if random.random() <= 0.5:
+        sense = "minimize"
+    else:
+        sense = "maximize"
+    
+    m.setObjective(obj, sense=sense)
+    m.optimize()
+    assert m.getNSols() > 0
+    result_1 = m.getObjVal()
+
+    m = Model()
+    aux = m.addVar(lb=-float("inf"), obj = 1)
+    if sense == "minimize":
+        m.addCons(obj <= aux)
+        m.setMinimize()
+    else:
+        m.addCons(obj >= aux)
+        m.setMaximize()
+    m.optimize()
+    assert m.getNSols() > 0
+    result_2 = m.getObjVal()
+
+    assert result_1 == result_2
+
+        
