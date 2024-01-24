@@ -1322,12 +1322,8 @@ cdef class Model:
 
         # turn the constant value into an Expr instance for further processing
         if not isinstance(coeffs, Expr):
-            assert(_is_number(coeffs)), "given coefficients are neither Expr or number but %s" % coeffs.__class__.__name__
             coeffs = Expr() + coeffs
 
-        if coeffs.degree() > 1:
-            raise ValueError("Nonlinear objective functions are not supported!")
-        
         if clear:
             # clear existing objective function
             self.addObjoffset(-self.getObjoffset())
@@ -1336,22 +1332,33 @@ cdef class Model:
             for i in range(_nvars):
                 PY_SCIP_CALL(SCIPchgVarObj(self._scip, _vars[i], 0.0))
 
-        if coeffs[CONST] != 0.0:
-            self.addObjoffset(coeffs[CONST])
-
-        for term, coef in coeffs.terms.items():
-            # avoid CONST term of Expr
-            if term != CONST:
-                assert len(term) == 1
-                var = <Variable>term[0]
-                PY_SCIP_CALL(SCIPchgVarObj(self._scip, var.scip_var, coef))
-
-        if sense == "minimize":
-            self.setMinimize()
-        elif sense == "maximize":
-            self.setMaximize()
+        if coeffs.degree() > 1:
+            new_obj = self.addVar(lb=-float("inf"),obj=1)
+            if sense == "minimize":
+                self.addCons(coeffs <= new_obj)
+                self.setMinimize()
+            elif sense == "maximize":
+                self.addCons(coeffs >= new_obj)
+                self.setMaximize()
+            else:
+                raise Warning("unrecognized optimization sense: %s" % sense)
         else:
-            raise Warning("unrecognized optimization sense: %s" % sense)
+            if coeffs[CONST] != 0.0:
+                self.addObjoffset(coeffs[CONST])
+
+            for term, coef in coeffs.terms.items():
+                # avoid CONST term of Expr
+                if term != CONST:
+                    assert len(term) == 1
+                    var = <Variable>term[0]
+                    PY_SCIP_CALL(SCIPchgVarObj(self._scip, var.scip_var, coef))
+
+            if sense == "minimize":
+                self.setMinimize()
+            elif sense == "maximize":
+                self.setMaximize()
+            else:
+                raise Warning("unrecognized optimization sense: %s" % sense)
 
     def getObjective(self):
         """Retrieve objective function as Expr"""
