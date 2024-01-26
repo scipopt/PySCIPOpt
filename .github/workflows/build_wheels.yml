@@ -29,6 +29,8 @@ jobs:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}/tests"
+          CC: "/usr/local/bin/gcc-13"
+          CCX: "CXX=/usr/local/bin/g++-13"
         
       # - uses: actions/upload-artifact@v3
       #   with:
