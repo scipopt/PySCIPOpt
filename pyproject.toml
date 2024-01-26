@@ -21,11 +21,11 @@ environment = { SCIPOPTDIR="$(pwd)/scip", LD_LIBRARY_PATH="$(pwd)/scip/lib:LD_LI
 skip="pp* cp36* cp37* cp38* cp38* cp39* cp310* cp312*"
 before-all = [
     "brew install wget zlib gcc",
-    "wget https://github.com/mmghannam/scip/releases/download/v8.0.3/libscip-macos.zip -O scip.zip",
+    "wget https://github.com/mmghannam/scip/releases/download/v8.0.3/libscip-macos-arm.zip -O scip.zip",
     "unzip scip.zip",
     "mv scip_install src/scip"
     ]
-environment = { SCIPOPTDIR="$(pwd)/src/scip", LD_LIBRARY_PATH="$(pwd)/src/scip/lib:LD_LIBRARY_PATH", DYLD_LIBRARY_PATH="$(pwd)/src/scip/lib:$DYLD_LIBRARY_PATH", PATH="$(pwd)/src/scip/bin:$PATH", PKG_CONFIG_PATH="$(pwd)/src/scip/lib/pkgconfig:$PKG_CONFIG_PATH"}
+environment = {SCIPOPTDIR="$(pwd)/src/scip", LD_LIBRARY_PATH="$(pwd)/src/scip/lib:LD_LIBRARY_PATH", DYLD_LIBRARY_PATH="$(pwd)/src/scip/lib:$DYLD_LIBRARY_PATH", PATH="$(pwd)/src/scip/bin:$PATH", PKG_CONFIG_PATH="$(pwd)/src/scip/lib/pkgconfig:$PKG_CONFIG_PATH"}
 repair-wheel-command = [
   "delocate-listdeps {wheel}",
   "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}",
