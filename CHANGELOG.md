@@ -20,6 +20,7 @@
 - Added SCIP functions hasPrimalRay, getPrimalRay, getPrimalRayVal
 ### Fixed
 - Fixed mistake with outdated values for several enums
+- Correctly set result, lowerbound in PyRelaxExec
 - Fixed typo in documentation of chgRhs
 - Pricer plugin fundamental callbacks now raise an error if not implemented
 - Brachrule plugin fundamental callbacks now raise an error if not implemented
