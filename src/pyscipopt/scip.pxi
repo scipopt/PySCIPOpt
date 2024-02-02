@@ -2446,6 +2446,7 @@ cdef class Model:
 
         return PyCons
 
+    # TODO Find a better way to retrieve a scip expression from a python expression. Consider making GenExpr include Expr, to avoid using Union. See PR #760.
     from typing import Union
     def addExprNonlinear(self, Constraint cons, expr: Union[Expr,GenExpr], float coef):
         """
