@@ -1,18 +1,8 @@
 # CHANGELOG
 
-## 4.4.0 - 2023-12-04
+## Unreleased
 ### Added
-- Added methods for getting the names of the current stage and of an event
 - Added types to loop variables
-### Fixed
-- Fixed outdated time.clock call in gcp.py
-### Changed
-### Removed
-
-## 4.4.0 - 2023-12-04
-### Added
-- Add getConshdlrName to class Constraint
-- Added all event types and tests for checking them 
 - Added methods for getting the names of the current stage and of an event
 ### Fixed
 - Fixed outdated time.clock call in gcp.py
@@ -28,9 +18,9 @@
 - Added SCIP function SCIPgetSolTime and wrapper getSolTime
 - Added convenience methods relax and getVarDict
 - Added SCIP functions hasPrimalRay, getPrimalRay, getPrimalRayVal
-- Add getConshdlrName to class Constraint
 ### Fixed
-- 
+- Fixed mistake with outdated values for several enums
+- Correctly set result, lowerbound in PyRelaxExec
 - Fixed typo in documentation of chgRhs
 - Pricer plugin fundamental callbacks now raise an error if not implemented
 - Brachrule plugin fundamental callbacks now raise an error if not implemented
