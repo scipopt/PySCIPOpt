@@ -216,8 +216,3 @@ def test_objective(model):
     # setting affine objective
     m.setObjective(x + y + 1)
     assert m.getObjoffset() == 1
-
-    # setting nonlinear objective
-    with pytest.raises(ValueError):
-        m.setObjective(x ** 2 - y * z)
-

@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added possibility for nonlinear objective functions
 - Added types to loop variables
 - Added methods for getting the names of the current stage and of an event
 ### Fixed

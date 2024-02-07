@@ -286,3 +286,16 @@ def test_getStage():
     print(m.getStage())
     assert m.getStage() == SCIP_STAGE.SOLVED
     assert m.getStageName() == "SOLVED"
+
+@pytest.mark.xskip(reason="getObjective doesn't behave as expected with nonlinear objectives")
+def test_getObjective():
+    m = Model()
+    x = m.addVar(obj=2)
+    y = m.addVar(obj=3)
+
+    assert str(m.getObjective()) == "Expr({Term(x1): 2.0, Term(x2): 3.0})"
+    
+    m.setObjective(x**2 + y**(1/3))
+    m.getObjective()
+    
+    
