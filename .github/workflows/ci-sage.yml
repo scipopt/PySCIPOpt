@@ -74,7 +74,7 @@ jobs:
           && echo "sage-package create ${{ env.SPKG }} --version git --tarball ${{ env.SPKG }}-git.tar.gz --type=standard" > upstream/update-pkgs.sh \
           && if [ -n "${{ env.REMOVE_PATCHES }}" ]; then echo "(cd ../build/pkgs/${{ env.SPKG }}/patches && rm -f ${{ env.REMOVE_PATCHES }}; :)" >> upstream/update-pkgs.sh; fi \
           && echo "sed -i.bak \"/pushdef.*LT_VERSION/s/3[0-9.]*/4/\" ../build/pkgs/python3/spkg-configure.m4" >> upstream/update-pkgs.sh \
-          && echo "sed -i.bak \"/export.*proxy/d\" ../build/bin/sage-spkg" >> upstream/update-pkgs.sh \
+          && echo "sed -i.bak \"/export.*proxy/s/export.*/:/\" ../build/bin/sage-spkg" >> upstream/update-pkgs.sh \
           && ls -l upstream/
       - uses: actions/upload-artifact@v3
         with:
