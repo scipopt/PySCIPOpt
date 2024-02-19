@@ -8,6 +8,7 @@
 - Add convenience methods relax and getVarDict
 - Add SCIP functions hasPrimalRay, getPrimalRay, getPrimalRayVal
 ### Fixed
+- Fixed README links 
 - Fixed typo in documentation of chgRhs
 - Pricer plugin fundamental callbacks now raise an error if not implemented
 - Brachrule plugin fundamental callbacks now raise an error if not implemented
