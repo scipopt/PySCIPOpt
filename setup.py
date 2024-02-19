@@ -69,11 +69,6 @@ use_cython = True
 
 packagedir = os.path.join("src", "pyscipopt")
 
-with open(os.path.join(packagedir, "_version.py"), "r") as initfile:
-    version = re.search(
-        r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', initfile.read(), re.MULTILINE
-    ).group(1)
-
 try:
     from Cython.Build import cythonize
 except ImportError as err:
@@ -106,28 +101,7 @@ extensions = [
 if use_cython:
     extensions = cythonize(extensions, compiler_directives={"language_level": 3, "linetrace": on_github_actions})
 
-with open("README.md") as f:
-    long_description = f.read()
-
 setup(
-    name="PySCIPOpt",
-    version=version,
-    description="Python interface and modeling environment for SCIP",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url="https://github.com/SCIP-Interfaces/PySCIPOpt",
-    author="Zuse Institute Berlin",
-    author_email="scip@zib.de",
-    license="MIT",
-    classifiers=[
-        "Development Status :: 4 - Beta",
-        "Intended Audience :: Science/Research",
-        "Intended Audience :: Education",
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Cython",
-        "Topic :: Scientific/Engineering :: Mathematics",
-    ],
     ext_modules=extensions,
     packages=["pyscipopt"],
     package_dir={"pyscipopt": packagedir},
