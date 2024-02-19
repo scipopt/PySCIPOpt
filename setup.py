@@ -69,7 +69,7 @@ use_cython = True
 
 packagedir = os.path.join("src", "pyscipopt")
 
-with open(os.path.join(packagedir, "__init__.py"), "r") as initfile:
+with open(os.path.join(packagedir, "_version.py"), "r") as initfile:
     version = re.search(
         r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', initfile.read(), re.MULTILINE
     ).group(1)
