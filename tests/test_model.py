@@ -1,6 +1,6 @@
 import pytest
 
-from pyscipopt import Model
+from pyscipopt import Model, SCIP_STAGE
 
 def test_model():
     # create solver instance
@@ -40,6 +40,7 @@ def test_model():
     assert s.getRhs(c) == 6.0
 
     # solve problem
+    s.presolve() # to test presolve method
     s.optimize()
 
     solution = s.getBestSol()
@@ -117,7 +118,6 @@ def test_multiple_cons_simple():
 
     s.freeProb()
     m.freeProb()
-
 
 def test_multiple_cons_names():
     m = Model()
@@ -251,3 +251,38 @@ def test_getVarsDict():
     for v in x.values():
         assert v.name in var_dict
         assert model.getVal(v) == var_dict[v.name]
+
+def test_objLim():
+    m = Model()
+
+    x = m.addVar(obj=1, lb=2)
+    m.setObjlimit(1)
+
+    m.optimize()
+    assert m.getNLimSolsFound() == 0
+
+    m = Model()
+    x = m.addVar(obj=1, lb=2)
+
+    m.setObjlimit(2)
+    m.optimize()
+    assert m.getNLimSolsFound() == 1
+    
+def test_getStage():
+    m = Model() 
+
+    assert m.getStage() == SCIP_STAGE.PROBLEM
+    assert m.getStageName() == "PROBLEM"
+
+    x = m.addVar()
+    m.addCons(x >= 1)    
+    
+    print(m.getStage())
+    assert m.getStage() == SCIP_STAGE.PROBLEM
+    assert m.getStageName() == "PROBLEM" 
+
+    m.optimize()
+
+    print(m.getStage())
+    assert m.getStage() == SCIP_STAGE.SOLVED
+    assert m.getStageName() == "SOLVED"
