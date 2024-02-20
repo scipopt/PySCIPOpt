@@ -106,6 +106,11 @@ jobs:
     # Use https://github.com/sagemath/sage/pull/37237
     uses: mkoeppe/sage/.github/workflows/macos.yml@ci-macos-2024
     with:
+      # Extra system packages to install. See available packages at
+      # https://github.com/sagemath/sage/tree/develop/build/pkgs
+      # Use boost_cropped from system because Sage ships 1.66.0, too old for papilo
+      extra_sage_packages: "cmake gfortran openblas boost_cropped onetbb"
+      # Sage distribution packages to build
       targets:           SAGE_CHECK=no SAGE_CHECK_PACKAGES="soplex,scipoptsuite,pyscipopt" pyscipopt
       sage_repo:         sagemath/sage
       sage_ref:          refs/pull/37237/head
