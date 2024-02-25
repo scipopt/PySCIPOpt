@@ -285,3 +285,21 @@ def test_quad_coeffs():
 
     assert linterms[0][0].name == z.name
     assert linterms[0][1] == 4
+
+def test_addExprNonLinear():
+    m = Model()
+    x = m.addVar("x", lb=0, ub=1, obj=10)
+    y = m.addVar("y", obj=1)
+    z = m.addVar("z", obj=1)
+
+    c = m.addCons(x**2 >= 9)
+    c1 = m.addCons(x**3 >= 4)
+    m.addExprNonlinear(c, y**2, 2)
+    m.addExprNonlinear(c1, z**(1/3), 1)
+
+    m.setParam("numerics/epsilon", 10**(-5)) # bigger eps due to nonlinearities
+    m.optimize()
+
+    assert m.getNSols() > 0
+    assert m.isEQ(m.getVal(y), 2)
+    assert m.isEQ(m.getVal(z), 27)

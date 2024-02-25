@@ -2365,6 +2365,7 @@ cdef class Model:
         free(monomials)
         free(termcoefs)
         return PyCons
+    
 
     def _addGenNonlinearCons(self, ExprCons cons, **kwargs):
         cdef SCIP_EXPR** childrenexpr
@@ -2488,6 +2489,24 @@ cdef class Model:
         free(vars)
 
         return PyCons
+
+    # TODO Find a better way to retrieve a scip expression from a python expression. Consider making GenExpr include Expr, to avoid using Union. See PR #760.
+    from typing import Union
+    def addExprNonlinear(self, Constraint cons, expr: Union[Expr,GenExpr], float coef):
+        """
+        Add coef*expr to nonlinear constraint.
+        """
+        assert self.getStage() == 1, "addExprNonlinear cannot be called in stage %i." % self.getStage()
+        assert cons.isNonlinear(), "addExprNonlinear can only be called with nonlinear constraints."
+
+        cdef Constraint temp_cons
+        cdef SCIP_EXPR* scip_expr 
+
+        temp_cons = self.addCons(expr <= 0)
+        scip_expr = SCIPgetExprNonlinear(temp_cons.scip_cons)
+
+        PY_SCIP_CALL(SCIPaddExprNonlinear(self._scip, cons.scip_cons, scip_expr, coef))
+        self.delCons(temp_cons)
 
     def addConsCoeff(self, Constraint cons, Variable var, coeff):
         """Add coefficient to the linear constraint (if non-zero).

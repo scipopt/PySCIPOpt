@@ -1,7 +1,8 @@
 # CHANGELOG
 
-## Unreleased
+## 4.4.0 - 2023-12-04
 ### Added
+- Added SCIP function addExprNonlinear
 - Add support for Cython 3
 - Added methods for getting the names of the current stage and of an event
 ### Fixed
