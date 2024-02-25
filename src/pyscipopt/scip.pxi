@@ -975,10 +975,10 @@ cdef class Constraint:
                 and self.scip_cons == (<Constraint>other).scip_cons)
 
 
-cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg):
+cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) noexcept:
     sys.stdout.write(msg.decode('UTF-8'))
 
-cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg):
+cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg) noexcept:
     sys.stderr.write(msg.decode('UTF-8'))
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods

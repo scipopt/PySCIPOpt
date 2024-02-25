@@ -18,10 +18,10 @@ cdef class Reader:
         return {}
 
 
-cdef SCIP_RETCODE PyReaderCopy (SCIP* scip, SCIP_READER* reader) with gil:
+cdef SCIP_RETCODE PyReaderCopy (SCIP* scip, SCIP_READER* reader) noexcept with gil:
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyReaderFree (SCIP* scip, SCIP_READER* reader) with gil:
+cdef SCIP_RETCODE PyReaderFree (SCIP* scip, SCIP_READER* reader) noexcept with gil:
     cdef SCIP_READERDATA* readerdata
     readerdata = SCIPreaderGetData(reader)
     PyReader = <Reader>readerdata
@@ -29,7 +29,7 @@ cdef SCIP_RETCODE PyReaderFree (SCIP* scip, SCIP_READER* reader) with gil:
     Py_DECREF(PyReader)
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyReaderRead (SCIP* scip, SCIP_READER* reader, const char* filename, SCIP_RESULT* result) with gil:
+cdef SCIP_RETCODE PyReaderRead (SCIP* scip, SCIP_READER* reader, const char* filename, SCIP_RESULT* result) noexcept with gil:
     cdef SCIP_READERDATA* readerdata
     readerdata = SCIPreaderGetData(reader)
     PyReader = <Reader>readerdata
@@ -44,7 +44,7 @@ cdef SCIP_RETCODE PyReaderWrite (SCIP* scip, SCIP_READER* reader, FILE* file,
                                  SCIP_VAR** vars, int nvars, int nbinvars, int nintvars, int nimplvars, int ncontvars,
                                  SCIP_VAR** fixedvars, int nfixedvars, int startnvars,
                                  SCIP_CONS** conss, int nconss, int maxnconss, int startnconss,
-                                 SCIP_Bool genericnames, SCIP_RESULT* result) with gil:
+                                 SCIP_Bool genericnames, SCIP_RESULT* result) noexcept with gil:
     cdef SCIP_READERDATA* readerdata
     readerdata = SCIPreaderGetData(reader)
     cdef int fd = fileno(file)
