@@ -1,4 +1,4 @@
-from setuptools import setup, Extension
+from setuptools import find_packages, setup, Extension
 import os, platform, sys, re
 
 # look for environment variable that specifies path to SCIP
@@ -129,7 +129,7 @@ setup(
         "Topic :: Scientific/Engineering :: Mathematics",
     ],
     ext_modules=extensions,
-    packages=["pyscipopt"],
+    packages=find_packages(where="src"),
     package_dir={"pyscipopt": packagedir},
     package_data={"pyscipopt": ["scip.pyx", "scip.pxd", "*.pxi"]},
 )
