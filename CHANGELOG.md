@@ -2,8 +2,10 @@
 
 ## Unreleased
 ### Added
+- Add support for Cython 3
 - Added methods for getting the names of the current stage and of an event
 ### Fixed
+- Fixed README links 
 - Fixed outdated time.clock call in gcp.py
 ### Changed
 ### Removed
