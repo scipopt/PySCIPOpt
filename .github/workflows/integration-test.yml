@@ -1,7 +1,7 @@
 name: Integration test
 
 env:
-  version: 8.1.0
+  version: 9.0.0
 
 # runs on branches and pull requests; doesn't run on tags.
 on:
