@@ -462,7 +462,7 @@ cdef SCIP_RETCODE PyConsGetdivebdchgs (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsGetPermSymGraph (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SYM_GRAPH* graph,
-                                         SCIP_Bool* success) with gil:
+                                         SCIP_Bool* success) noexcept with gil:
     # TODO
     PyConshdlr = getPyConshdlr(conshdlr)
     PyConshdlr.consgetpermsymgraph()
@@ -470,7 +470,7 @@ cdef SCIP_RETCODE PyConsGetPermSymGraph (SCIP* scip, SCIP_CONSHDLR* conshdlr, SC
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsGetSignedPermSymGraph (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SYM_GRAPH* graph,
-                                               SCIP_Bool* success) with gil:
+                                               SCIP_Bool* success) noexcept with gil:
     # TODO
     PyConshdlr = getPyConshdlr(conshdlr)
     PyConshdlr.consgetsignedpermsymgraph()
