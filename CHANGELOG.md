@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 4.4.0 - 2023-12-04
+## Unreleased
 ### Added
 - Added SCIP function addExprNonlinear
 - Add support for Cython 3
