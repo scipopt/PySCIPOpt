@@ -136,6 +136,14 @@ cdef class Conshdlr:
         '''calls diving solution enforcement callback of constraint handler, if it exists '''
         pass
 
+    def consgetpermsymgraph(self):
+        '''permutation symmetry detection graph getter callback, if it exists '''
+        pass
+
+    def consgetsignedpermsymgraph(self):
+        '''signed permutation symmetry detection graph getter callback, if it exists '''
+        pass
+
 
 # local helper functions for the interface
 cdef Conshdlr getPyConshdlr(SCIP_CONSHDLR* conshdlr):
@@ -451,4 +459,20 @@ cdef SCIP_RETCODE PyConsGetdivebdchgs (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP
     PyConshdlr.consgetdivebdchgs()
     success[0] = False
     infeasible[0] = False
+    return SCIP_OKAY
+
+cdef SCIP_RETCODE PyConsGetPermSymGraph (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SYM_GRAPH* graph,
+                                         SCIP_Bool* success) noexcept with gil:
+    # TODO
+    PyConshdlr = getPyConshdlr(conshdlr)
+    PyConshdlr.consgetpermsymgraph()
+    success[0] = False
+    return SCIP_OKAY
+
+cdef SCIP_RETCODE PyConsGetSignedPermSymGraph (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SYM_GRAPH* graph,
+                                               SCIP_Bool* success) noexcept with gil:
+    # TODO
+    PyConshdlr = getPyConshdlr(conshdlr)
+    PyConshdlr.consgetsignedpermsymgraph()
+    success[0] = False
     return SCIP_OKAY

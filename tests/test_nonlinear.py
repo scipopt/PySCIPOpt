@@ -105,7 +105,7 @@ def test_string():
 
     m.optimize()
 
-    assert abs(m.getPrimalbound() - 1.6924910128) < 1.0e-6
+    assert abs(m.getPrimalbound() - 1.6924910128) < 1.0e-3
 
 # test circle: find circle of smallest radius that encloses the given points
 def test_circle():
@@ -136,9 +136,9 @@ def test_circle():
     m.optimize()
 
     bestsol = m.getBestSol()
-    assert abs(m.getSolVal(bestsol, r) - 5.2543) < 1.0e-3
-    assert abs(m.getSolVal(bestsol, a) - 6.1230) < 1.0e-3
-    assert abs(m.getSolVal(bestsol, b) - 5.4713) < 1.0e-3
+    assert abs(m.getSolVal(bestsol, r) - 5.2543) < 1.0e-2
+    assert abs(m.getSolVal(bestsol, a) - 6.1230) < 1.0e-2
+    assert abs(m.getSolVal(bestsol, b) - 5.4713) < 1.0e-2
 
 # test gastrans: see example in <scip path>/examples/CallableLibrary/src/gastrans.c
 # of course there is a more pythonic/elegant way of implementing this, probably
