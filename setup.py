@@ -69,11 +69,6 @@ use_cython = True
 
 packagedir = os.path.join("src", "pyscipopt")
 
-with open(os.path.join(packagedir, "__init__.py"), "r") as initfile:
-    version = re.search(
-        r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', initfile.read(), re.MULTILINE
-    ).group(1)
-
 try:
     from Cython.Build import cythonize
 except ImportError as err:
@@ -105,9 +100,6 @@ extensions = [
 
 if use_cython:
     extensions = cythonize(extensions, compiler_directives={"language_level": 3, "linetrace": on_github_actions})
-
-with open("README.md") as f:
-    long_description = f.read()
 
 setup(
     name="PySCIPOpt",

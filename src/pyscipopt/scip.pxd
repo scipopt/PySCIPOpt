@@ -348,6 +348,9 @@ cdef extern from "scip/scip.h":
     ctypedef struct FILE:
         pass
 
+    ctypedef struct SYM_GRAPH:
+        pass
+
     ctypedef struct SCIP_READER:
         pass
 
@@ -501,7 +504,7 @@ cdef extern from "scip/scip.h":
     ctypedef union SCIP_DOMCHG:
         pass
 
-    ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg)
+    ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) noexcept
     ctypedef void (*errormessagecallback) (void *data, FILE *file, const char *msg)
     ctypedef SCIP_RETCODE (*messagehdlrfree) (SCIP_MESSAGEHDLR *messagehdlr)
 
@@ -986,6 +989,8 @@ cdef extern from "scip/scip.h":
                                      SCIP_RETCODE (*consgetvars) (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SCIP_VAR** vars, int varssize, SCIP_Bool* success),
                                      SCIP_RETCODE (*consgetnvars) (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, int* nvars, SCIP_Bool* success),
                                      SCIP_RETCODE (*consgetdivebdchgs) (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_DIVESET* diveset, SCIP_SOL* sol, SCIP_Bool* success, SCIP_Bool* infeasible),
+                                     SCIP_RETCODE (*consgetpermsymgraph)(SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SYM_GRAPH* graph, SCIP_Bool* success),
+                                     SCIP_RETCODE (*consgetsignedpermsymgraph)(SCIP * scip, SCIP_CONSHDLR * conshdlr, SCIP_CONS * cons, SYM_GRAPH * graph, SCIP_Bool * success),
                                      SCIP_CONSHDLRDATA* conshdlrdata)
     SCIP_CONSHDLRDATA* SCIPconshdlrGetData(SCIP_CONSHDLR* conshdlr)
     SCIP_CONSHDLR* SCIPfindConshdlr(SCIP* scip, const char* name)

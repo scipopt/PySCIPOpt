@@ -110,6 +110,8 @@ cdef class PY_SCIP_STATUS:
     UNBOUNDED      = SCIP_STATUS_UNBOUNDED
     INFORUNBD      = SCIP_STATUS_INFORUNBD
 
+StageNames = {}
+
 cdef class PY_SCIP_STAGE:
     INIT         = SCIP_STAGE_INIT
     PROBLEM      = SCIP_STAGE_PROBLEM
@@ -164,6 +166,8 @@ cdef class PY_SCIP_HEURTIMING:
     BEFOREPRESOL      = SCIP_HEURTIMING_BEFOREPRESOL
     DURINGPRESOLLOOP  = SCIP_HEURTIMING_DURINGPRESOLLOOP
     AFTERPROPLOOP     = SCIP_HEURTIMING_AFTERPROPLOOP
+
+EventNames = {}
 
 cdef class PY_SCIP_EVENTTYPE:
     DISABLED        = SCIP_EVENTTYPE_DISABLED
@@ -220,6 +224,7 @@ cdef class PY_SCIP_EVENTTYPE:
     SOLEVENT        = SCIP_EVENTTYPE_SOLEVENT
     ROWCHANGED      = SCIP_EVENTTYPE_ROWCHANGED
     ROWEVENT        = SCIP_EVENTTYPE_ROWEVENT
+
 
 cdef class PY_SCIP_LPSOLSTAT:
     NOTSOLVED    = SCIP_LPSOLSTAT_NOTSOLVED
@@ -305,8 +310,24 @@ cdef class Event:
         """gets type of event"""
         return SCIPeventGetType(self.event)
 
+    def getName(self):
+        """gets name of event"""
+        if not EventNames:
+            self._getEventNames()
+        return EventNames[self.getType()]
+
+    def _getEventNames(self):
+        """gets event names"""
+        for name in dir(PY_SCIP_EVENTTYPE):
+            attr = getattr(PY_SCIP_EVENTTYPE, name)
+            if isinstance(attr, int):
+                EventNames[attr] = name
+        
     def __repr__(self):
-        return self.getType()
+        return str(self.getType())
+
+    def __str__(self):
+        return self.getName()
 
     def getNewBound(self):
         """gets new bound for a bound change event"""
@@ -954,10 +975,10 @@ cdef class Constraint:
                 and self.scip_cons == (<Constraint>other).scip_cons)
 
 
-cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg):
+cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) noexcept:
     sys.stdout.write(msg.decode('UTF-8'))
 
-cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg):
+cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg) noexcept:
     sys.stderr.write(msg.decode('UTF-8'))
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
@@ -2344,6 +2365,7 @@ cdef class Model:
         free(monomials)
         free(termcoefs)
         return PyCons
+    
 
     def _addGenNonlinearCons(self, ExprCons cons, **kwargs):
         cdef SCIP_EXPR** childrenexpr
@@ -2467,6 +2489,24 @@ cdef class Model:
         free(vars)
 
         return PyCons
+
+    # TODO Find a better way to retrieve a scip expression from a python expression. Consider making GenExpr include Expr, to avoid using Union. See PR #760.
+    from typing import Union
+    def addExprNonlinear(self, Constraint cons, expr: Union[Expr,GenExpr], float coef):
+        """
+        Add coef*expr to nonlinear constraint.
+        """
+        assert self.getStage() == 1, "addExprNonlinear cannot be called in stage %i." % self.getStage()
+        assert cons.isNonlinear(), "addExprNonlinear can only be called with nonlinear constraints."
+
+        cdef Constraint temp_cons
+        cdef SCIP_EXPR* scip_expr 
+
+        temp_cons = self.addCons(expr <= 0)
+        scip_expr = SCIPgetExprNonlinear(temp_cons.scip_cons)
+
+        PY_SCIP_CALL(SCIPaddExprNonlinear(self._scip, cons.scip_cons, scip_expr, coef))
+        self.delCons(temp_cons)
 
     def addConsCoeff(self, Constraint cons, Variable var, coeff):
         """Add coefficient to the linear constraint (if non-zero).
@@ -3740,7 +3780,7 @@ cdef class Model:
                                               PyConsInitsol, PyConsExitsol, PyConsDelete, PyConsTrans, PyConsInitlp, PyConsSepalp, PyConsSepasol,
                                               PyConsEnfolp, PyConsEnforelax, PyConsEnfops, PyConsCheck, PyConsProp, PyConsPresol, PyConsResprop, PyConsLock,
                                               PyConsActive, PyConsDeactive, PyConsEnable, PyConsDisable, PyConsDelvars, PyConsPrint, PyConsCopy,
-                                              PyConsParse, PyConsGetvars, PyConsGetnvars, PyConsGetdivebdchgs,
+                                              PyConsParse, PyConsGetvars, PyConsGetnvars, PyConsGetdivebdchgs, PyConsGetPermSymGraph, PyConsGetSignedPermSymGraph,
                                               <SCIP_CONSHDLRDATA*>conshdlr))
         conshdlr.model = <Model>weakref.proxy(self)
         conshdlr.name = name
@@ -4702,6 +4742,19 @@ cdef class Model:
     def getStage(self):
         """Retrieve current SCIP stage"""
         return SCIPgetStage(self._scip)
+    
+    def getStageName(self):
+        """Returns name of current stage as string"""
+        if not StageNames:
+            self._getStageNames()
+        return StageNames[self.getStage()]
+    
+    def _getStageNames(self):
+        """Gets names of stages"""
+        for name in dir(PY_SCIP_STAGE):
+            attr = getattr(PY_SCIP_STAGE, name)
+            if isinstance(attr, int):
+                StageNames[attr] = name
 
     def getStatus(self):
         """Retrieve solution status."""

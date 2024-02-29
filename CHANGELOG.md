@@ -2,14 +2,20 @@
 
 ## Unreleased
 ### Added
-- Add getConshdlrName to class Constraint
+- Added SCIP function addExprNonlinear
+- Add support for Cython 3
+- Added methods for getting the names of the current stage and of an event
+- Add support for SCIP symmetry graph callbacks in constraint handlers
 ### Fixed
+- Fixed README links 
+- Fixed outdated time.clock call in gcp.py
 ### Changed
 - Changed default installation option via pypi to package pre-build SCIP
 ### Removed
 
 ## 4.4.0 - 2023-12-04
 ### Added
+- Add getConshdlrName to class Constraint
 - Added all event types and tests for checking them 
 - Added SCIP functions SCIPconsGetNVars, SCIPconsGetVars
 - Added SCIP functions SCIPchgCoefLinear, SCIPaddCoefLinear and SCIPdelCoefLinear
