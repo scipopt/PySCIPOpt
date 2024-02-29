@@ -44,7 +44,7 @@ skip="pp*" # currently doesn't work with PyPy
 skip="pp* cp36* cp37* *musllinux*"
 before-all = [
     "(apt-get update && apt-get install --yes wget) || yum install -y wget zlib libgfortran || brew install wget",
-    "wget https://cloud.zib.de/s/6Jz5wprTbFnsn8J/download/libscip-centos.zip -O scip.zip",
+    "wget https://cloud.zib.de/s/cKipPbSe9jP3m7i/download/libscip-centos.zip -O scip.zip",
     "unzip scip.zip",
     "mv scip_install scip"
     ]
