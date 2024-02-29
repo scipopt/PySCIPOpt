@@ -48,7 +48,7 @@ before-all = [
     "unzip scip.zip",
     "mv scip_install scip"
     ]
-environment = { SCIPOPTDIR="$(pwd)/scip", LD_LIBRARY_PATH="$(pwd)/scip/lib:$(pwd)/scip/lib64:$LD_LIBRARY_PATH", DYLD_LIBRARY_PATH="$(pwd)/scip/lib:$(pwd)/scip/lib64:$DYLD_LIBRARY_PATH", PATH="$(pwd)/scip/bin:$PATH", PKG_CONFIG_PATH="$(pwd)/scip/lib/pkgconfig:$PKG_CONFIG_PATH"}
+environment = { SCIPOPTDIR="$(pwd)/scip", LD_LIBRARY_PATH="$(pwd)/scip/lib:$LD_LIBRARY_PATH", DYLD_LIBRARY_PATH="$(pwd)/scip/lib:$DYLD_LIBRARY_PATH", PATH="$(pwd)/scip/bin:$PATH", PKG_CONFIG_PATH="$(pwd)/scip/lib/pkgconfig:$PKG_CONFIG_PATH"}
 
 
 [tool.cibuildwheel.macos]
