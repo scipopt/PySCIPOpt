@@ -101,6 +101,9 @@ extensions = [
 if use_cython:
     extensions = cythonize(extensions, compiler_directives={"language_level": 3, "linetrace": on_github_actions})
 
+with open("README.md") as f:
+    long_description = f.read()
+
 setup(
     name="PySCIPOpt",
     version="5.0.0",
