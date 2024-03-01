@@ -35,7 +35,7 @@ include "relax.pxi"
 include "nodesel.pxi"
 
 # recommended SCIP version; major version is required
-MAJOR = 8
+MAJOR = 9
 MINOR = 0
 PATCH = 0
 
