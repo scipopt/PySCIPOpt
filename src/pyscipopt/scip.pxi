@@ -413,6 +413,9 @@ cdef class Column:
         """gets objective value coefficient of a column"""
         return SCIPcolGetObj(self.scip_col)
 
+    def getAge(self):
+        return SCIPcolGetAge(self.scip_col)
+
     def __hash__(self):
         return hash(<size_t>self.scip_col)
 
@@ -513,6 +516,9 @@ cdef class Row:
         """gets list with coefficients of nonzero entries"""
         cdef SCIP_Real* vals = SCIProwGetVals(self.scip_row)
         return [vals[i] for i in range(self.getNNonz())]
+
+    def getAge(self):
+        return SCIProwGetAge(self.scip_row)
 
     def getNorm(self):
         """gets Euclidean norm of row vector """
@@ -884,6 +890,10 @@ cdef class Variable(Expr):
     def getLPSol(self):
         """Retrieve the current LP solution value of variable"""
         return SCIPvarGetLPSol(self.scip_var)
+
+    def getAvgSol(self):
+        """Get the weighted average solution of variable in all feasible primal solutions found"""
+        return SCIPvarGetAvgSol(self.scip_var)
 
 cdef class Constraint:
     """Base class holding a pointer to corresponding SCIP_CONS"""
@@ -1929,6 +1939,10 @@ cdef class Model:
     def isLPSolBasic(self):
         """returns whether the current LP solution is basic, i.e. is defined by a valid simplex basis"""
         return SCIPisLPSolBasic(self._scip)
+
+    # LP Col Methods
+    def getColRedCost(self, Column col):
+        return SCIPgetColRedcost(self._scip, col.scip_col)
 
     #TODO: documentation!!
     # LP Row Methods
@@ -5175,6 +5189,52 @@ cdef class Model:
         """
         assert isinstance(var, Variable), "The given variable is not a pyvar, but %s" % var.__class__.__name__
         PY_SCIP_CALL(SCIPchgVarBranchPriority(self._scip, var.scip_var, priority))
+
+    def startStrongBranching(self, enablepropagation):
+        """Start strong branching. Needs to be called before any strong branching. Must also later end strong branching.
+        If propagation is enabled then strong branching is not done of the LP, but on additionally created nodes (has some overhead)"""
+
+        PY_SCIP_CALL(SCIPstartStrongbranch(self._scip, enablepropagation))
+
+    def getVarStrongBranch(self, integral, Variable var, itlim, idempotent):
+
+        cdef SCIP_Real down
+        cdef SCIP_Real up
+        cdef SCIP_Bool downvalid
+        cdef SCIP_Bool upvalid
+        cdef SCIP_Bool downinf
+        cdef SCIP_Bool upinf
+        cdef SCIP_Bool downconflict
+        cdef SCIP_Bool upconflict
+        cdef SCIP_Bool lperror
+
+        if integral:
+            PY_SCIP_CALL(SCIPgetVarStrongbranchInt(self._scip, var.scip_var, itlim, idempotent, &down, &up, &downvalid, 
+                                                   &upvalid, &downinf, &upinf, &downconflict, &upconflict, &lperror))
+        else:
+            PY_SCIP_CALL(SCIPgetVarStrongbranchFrac(self._scip, var.scip_var, itlim, idempotent, &down, &up, &downvalid, 
+                                                    &upvalid, &downinf, &upinf, &downconflict, &upconflict, &lperror))
+
+        return down, up, downvalid, upvalid, downinf, upinf, downconflict, upconflict, lperror
+
+    def updateVarPseudoCost(self, Variable var, valdelta, objdelta, weight):
+
+        PY_SCIP_CALL(SCIPupdateVarPseudocost(self._scip, var.scip_var, valdelta, objdelta, weight))
+
+    def getBranchScoreMultiple(self, Variable var, nchildren, gains):
+
+
+        cdef int _nchildren = nchildren
+        _gains = <SCIP_Real*> malloc(_nchildren * sizeof(SCIP_Real))
+        for i in range(_nchildren):
+            _gains[i] = gains[i]
+
+        score = SCIPgetBranchScoreMultiple(self._scip, var.scip_var, _nchildren, _gains)
+
+        free(_gains)
+
+        return score
+
 
 # debugging memory management
 def is_memory_freed():
