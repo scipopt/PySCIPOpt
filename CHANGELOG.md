@@ -10,6 +10,7 @@
 - Fixed README links 
 - Fixed outdated time.clock call in gcp.py
 ### Changed
+- Changed default installation option via pypi to package pre-build SCIP
 ### Removed
 
 ## 4.4.0 - 2023-12-04

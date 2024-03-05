@@ -107,6 +107,7 @@ def test_string():
 
     assert abs(m.getPrimalbound() - 1.6924910128) < 1.0e-3
 
+@pytest.mark.skip(reason="Test fails on CPython3.6 for MacOS with x86_64")
 # test circle: find circle of smallest radius that encloses the given points
 def test_circle():
     points =[

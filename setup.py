@@ -101,9 +101,31 @@ extensions = [
 if use_cython:
     extensions = cythonize(extensions, compiler_directives={"language_level": 3, "linetrace": on_github_actions})
 
+with open("README.md") as f:
+    long_description = f.read()
+
 setup(
+    name="PySCIPOpt",
+    version="5.0.0",
+    description="Python interface and modeling environment for SCIP",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/SCIP-Interfaces/PySCIPOpt",
+    author="Zuse Institute Berlin",
+    author_email="scip@zib.de",
+    license="MIT",
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Science/Research",
+        "Intended Audience :: Education",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Cython",
+        "Topic :: Scientific/Engineering :: Mathematics",
+    ],
     ext_modules=extensions,
     packages=["pyscipopt"],
     package_dir={"pyscipopt": packagedir},
-    package_data={"pyscipopt": ["scip.pyx", "scip.pxd", "*.pxi"]},
+    package_data={"pyscipopt": ["scip.pyx", "scip.pxd", "*.pxi", "scip/lib/*"]},
+    include_package_data=True,
 )
