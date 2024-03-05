@@ -109,7 +109,7 @@ jobs:
       - name: Install dependencies (SCIPOptSuite)
         if: steps.cache-scip.outputs.cache-hit != 'true'
         run: |
-          brew install tbb boost bison
+          brew install tbb boost
           wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/scipoptsuite-${{ env.version }}.tgz
           tar xfz scipoptsuite-${{ env.version }}.tgz
           cd scipoptsuite-${{ env.version }}
