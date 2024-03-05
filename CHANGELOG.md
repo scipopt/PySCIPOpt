@@ -2,6 +2,12 @@
 
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+### Removed
+
+## 5.0.0 - 2024-03-05
+### Added
 - Added SCIP function addExprNonlinear
 - Add support for Cython 3
 - Added methods for getting the names of the current stage and of an event
@@ -11,7 +17,6 @@
 - Fixed outdated time.clock call in gcp.py
 ### Changed
 - Changed default installation option via pypi to package pre-build SCIP
-### Removed
 
 ## 4.4.0 - 2023-12-04
 ### Added
