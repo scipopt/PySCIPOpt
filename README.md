@@ -40,6 +40,7 @@ The following table summarizes which version of PySCIPOpt is required for a give
 
 |SCIP| PySCIPOpt |
 |----|----|
+9.0 | 5.x
 8.0 | 4.x
 7.0 | 3.x
 6.0 | 2.x
