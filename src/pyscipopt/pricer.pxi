@@ -33,10 +33,10 @@ cdef class Pricer:
 
 
 
-cdef SCIP_RETCODE PyPricerCopy (SCIP* scip, SCIP_PRICER* pricer, SCIP_Bool* valid) noexcept with gil:
+cdef SCIP_RETCODE PyPricerCopy (SCIP* scip, SCIP_PRICER* pricer, SCIP_Bool* valid) with gil:
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPricerFree (SCIP* scip, SCIP_PRICER* pricer) noexcept with gil:
+cdef SCIP_RETCODE PyPricerFree (SCIP* scip, SCIP_PRICER* pricer) with gil:
     cdef SCIP_PRICERDATA* pricerdata
     pricerdata = SCIPpricerGetData(pricer)
     PyPricer = <Pricer>pricerdata
@@ -44,35 +44,35 @@ cdef SCIP_RETCODE PyPricerFree (SCIP* scip, SCIP_PRICER* pricer) noexcept with g
     Py_DECREF(PyPricer)
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPricerInit (SCIP* scip, SCIP_PRICER* pricer) noexcept with gil:
+cdef SCIP_RETCODE PyPricerInit (SCIP* scip, SCIP_PRICER* pricer) with gil:
     cdef SCIP_PRICERDATA* pricerdata
     pricerdata = SCIPpricerGetData(pricer)
     PyPricer = <Pricer>pricerdata
     PyPricer.pricerinit()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPricerExit (SCIP* scip, SCIP_PRICER* pricer) noexcept with gil:
+cdef SCIP_RETCODE PyPricerExit (SCIP* scip, SCIP_PRICER* pricer) with gil:
     cdef SCIP_PRICERDATA* pricerdata
     pricerdata = SCIPpricerGetData(pricer)
     PyPricer = <Pricer>pricerdata
     PyPricer.pricerexit()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPricerInitsol (SCIP* scip, SCIP_PRICER* pricer) noexcept with gil:
+cdef SCIP_RETCODE PyPricerInitsol (SCIP* scip, SCIP_PRICER* pricer) with gil:
     cdef SCIP_PRICERDATA* pricerdata
     pricerdata = SCIPpricerGetData(pricer)
     PyPricer = <Pricer>pricerdata
     PyPricer.pricerinitsol()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPricerExitsol (SCIP* scip, SCIP_PRICER* pricer) noexcept with gil:
+cdef SCIP_RETCODE PyPricerExitsol (SCIP* scip, SCIP_PRICER* pricer) with gil:
     cdef SCIP_PRICERDATA* pricerdata
     pricerdata = SCIPpricerGetData(pricer)
     PyPricer = <Pricer>pricerdata
     PyPricer.pricerexitsol()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPricerRedcost (SCIP* scip, SCIP_PRICER* pricer, SCIP_Real* lowerbound, SCIP_Bool* stopearly, SCIP_RESULT* result) noexcept with gil:
+cdef SCIP_RETCODE PyPricerRedcost (SCIP* scip, SCIP_PRICER* pricer, SCIP_Real* lowerbound, SCIP_Bool* stopearly, SCIP_RESULT* result) with gil:
     cdef SCIP_PRICERDATA* pricerdata
     pricerdata = SCIPpricerGetData(pricer)
     PyPricer = <Pricer>pricerdata
@@ -82,7 +82,7 @@ cdef SCIP_RETCODE PyPricerRedcost (SCIP* scip, SCIP_PRICER* pricer, SCIP_Real* l
     stopearly[0] = result_dict.get("stopearly", <SCIP_Bool>stopearly[0])
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPricerFarkas (SCIP* scip, SCIP_PRICER* pricer, SCIP_RESULT* result) noexcept with gil:
+cdef SCIP_RETCODE PyPricerFarkas (SCIP* scip, SCIP_PRICER* pricer, SCIP_RESULT* result) with gil:
     cdef SCIP_PRICERDATA* pricerdata
     pricerdata = SCIPpricerGetData(pricer)
     PyPricer = <Pricer>pricerdata
