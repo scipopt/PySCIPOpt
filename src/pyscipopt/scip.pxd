@@ -504,7 +504,7 @@ cdef extern from "scip/scip.h":
     ctypedef union SCIP_DOMCHG:
         pass
 
-    ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) noexcept
+    ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) 
     ctypedef void (*errormessagecallback) (void *data, FILE *file, const char *msg)
     ctypedef SCIP_RETCODE (*messagehdlrfree) (SCIP_MESSAGEHDLR *messagehdlr)
 
@@ -832,6 +832,7 @@ cdef extern from "scip/scip.h":
     int SCIPgetNBestSolsFound(SCIP* scip)
     SCIP_SOL* SCIPgetBestSol(SCIP* scip)
     SCIP_Real SCIPgetSolVal(SCIP* scip, SCIP_SOL* sol, SCIP_VAR* var)
+    SCIP_Bool SCIPsolIsOriginal(SCIP_SOL* sol)
     SCIP_RETCODE SCIPwriteVarName(SCIP* scip, FILE* outfile, SCIP_VAR* var, SCIP_Bool vartype)
     SCIP_Real SCIPgetSolOrigObj(SCIP* scip, SCIP_SOL* sol)
     SCIP_Real SCIPgetSolTransObj(SCIP* scip, SCIP_SOL* sol)
