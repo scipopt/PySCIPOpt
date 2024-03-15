@@ -1313,7 +1313,7 @@ cdef class Model:
         :param objlimit: limit on the objective function
 
         """
-        PY_SCIP_CALL(SCIPsetObjlimit(self._scip, objlimit))
+        PY_SCIP_CALL(SCIPlimit(self._scip, objlimit))
 
     def getObjlimit(self):
         """returns current limit on objective function."""
@@ -1322,7 +1322,7 @@ cdef class Model:
     def setObjective(self, coeffs, sense = 'minimize', clear = 'true'):
         """Establish the objective function as a linear expression.
 
-        :param coeffs: the coefficients
+        :param coeffs: the objective function SCIP Expr, or constant value
         :param sense: the objective sense (Default value = 'minimize')
         :param clear: set all other variables objective coefficient to zero (Default value = 'true')
 
@@ -1332,9 +1332,10 @@ cdef class Model:
 
         # turn the constant value into an Expr instance for further processing
         if not isinstance(coeffs, Expr):
+            if not isinstance(coeffs, GenExpr) and not issubclass(type(coeffs), GenExpr):
+                assert(_is_number(coeffs)), "given coefficients are neither Expr / GenExpr or number but %s" % coeffs.__class__.__name__
             coeffs = Expr() + coeffs
 
-        cdef int i
         if clear:
             # clear existing objective function
             self.addObjoffset(-self.getObjoffset())
@@ -1345,7 +1346,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPchgVarObj(self._scip, _vars[i], 0.0))
 
         if coeffs.degree() > 1:
-            new_obj = self.addVar(lb=-float("inf"),obj=1)
+            new_obj = self.addVar(lb=-SCIPinfinity,obj=1)
             if sense == "minimize":
                 self.addCons(coeffs <= new_obj)
                 self.setMinimize()

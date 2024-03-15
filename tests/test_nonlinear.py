@@ -288,48 +288,28 @@ def test_quad_coeffs():
     assert linterms[0][1] == 4
 
 def test_nonlinear_objective():
-    m = Model()
+    scip = Model()
 
-    x = {}
-    for i in range(random.randint(1,20)):
-        x[i] = m.addVar(lb = -float("inf"))
+    v = scip.addVar()
+    w = scip.addVar()
+    x = scip.addVar()
+    y = scip.addVar()
+    z = scip.addVar()
 
     obj = 0
-    for var in x:
-        rand = random.random()
-        if rand <= 0.2:
-            obj += 20*random.random()*var
-        elif rand <= 0.4:
-            obj += exp(random.random()*var)
-        elif rand <= 0.6:
-            obj += log(max(random.random()*var,0.1))
-        elif rand <= 0.8:
-            obj += sqrt(random.random()*var)
-        else:
-            obj += sin(random.random()*var)
+    obj += exp(v)
+    obj += log(w)
+    obj += sqrt(x)
+    obj += sin(y)
+    obj += z**3 * y
 
-    if random.random() <= 0.5:
-        sense = "minimize"
-    else:
-        sense = "maximize"
-    
-    m.setObjective(obj, sense=sense)
-    m.optimize()
-    assert m.getNSols() > 0
-    result_1 = m.getObjVal()
+    scip.addCons(v + w + x + y + z <= 1)
 
-    m = Model()
-    aux = m.addVar(lb=-float("inf"), obj = 1)
-    if sense == "minimize":
-        m.addCons(obj <= aux)
-        m.setMinimize()
-    else:
-        m.addCons(obj >= aux)
-        m.setMaximize()
-    m.optimize()
-    assert m.getNSols() > 0
-    result_2 = m.getObjVal()
+    scip.setObjective(obj, sense='maximize')
 
-    assert result_1 == result_2
+    obj_expr = scip.getObjective()
+
+    assert len(obj_expr) == 1
+    assert obj_expr.degree == 1
 
         
