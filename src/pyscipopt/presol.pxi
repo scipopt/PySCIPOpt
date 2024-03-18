@@ -30,10 +30,10 @@ cdef class Presol:
 
 
 
-cdef SCIP_RETCODE PyPresolCopy (SCIP* scip, SCIP_PRESOL* presol) noexcept with gil:
+cdef SCIP_RETCODE PyPresolCopy (SCIP* scip, SCIP_PRESOL* presol) with gil:
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPresolFree (SCIP* scip, SCIP_PRESOL* presol) noexcept with gil:
+cdef SCIP_RETCODE PyPresolFree (SCIP* scip, SCIP_PRESOL* presol) with gil:
     cdef SCIP_PRESOLDATA* presoldata
     presoldata = SCIPpresolGetData(presol)
     PyPresol = <Presol>presoldata
@@ -41,14 +41,14 @@ cdef SCIP_RETCODE PyPresolFree (SCIP* scip, SCIP_PRESOL* presol) noexcept with g
     Py_DECREF(PyPresol)
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPresolInit (SCIP* scip, SCIP_PRESOL* presol) noexcept with gil:
+cdef SCIP_RETCODE PyPresolInit (SCIP* scip, SCIP_PRESOL* presol) with gil:
     cdef SCIP_PRESOLDATA* presoldata
     presoldata = SCIPpresolGetData(presol)
     PyPresol = <Presol>presoldata
     PyPresol.presolinit()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPresolExit (SCIP* scip, SCIP_PRESOL* presol) noexcept with gil:
+cdef SCIP_RETCODE PyPresolExit (SCIP* scip, SCIP_PRESOL* presol) with gil:
     cdef SCIP_PRESOLDATA* presoldata
     presoldata = SCIPpresolGetData(presol)
     PyPresol = <Presol>presoldata
@@ -56,14 +56,14 @@ cdef SCIP_RETCODE PyPresolExit (SCIP* scip, SCIP_PRESOL* presol) noexcept with g
     return SCIP_OKAY
 
 
-cdef SCIP_RETCODE PyPresolInitpre (SCIP* scip, SCIP_PRESOL* presol) noexcept with gil:
+cdef SCIP_RETCODE PyPresolInitpre (SCIP* scip, SCIP_PRESOL* presol) with gil:
     cdef SCIP_PRESOLDATA* presoldata
     presoldata = SCIPpresolGetData(presol)
     PyPresol = <Presol>presoldata
     PyPresol.presolinitpre()
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyPresolExitpre (SCIP* scip, SCIP_PRESOL* presol) noexcept with gil:
+cdef SCIP_RETCODE PyPresolExitpre (SCIP* scip, SCIP_PRESOL* presol) with gil:
     cdef SCIP_PRESOLDATA* presoldata
     presoldata = SCIPpresolGetData(presol)
     PyPresol = <Presol>presoldata
@@ -74,7 +74,7 @@ cdef SCIP_RETCODE PyPresolExec (SCIP* scip, SCIP_PRESOL* presol, int nrounds, SC
                                 int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes, int nnewchgbds, int nnewholes,
                                 int nnewdelconss, int nnewaddconss, int nnewupgdconss, int nnewchgcoefs, int nnewchgsides,
                                 int* nfixedvars, int* naggrvars, int* nchgvartypes, int* nchgbds, int* naddholes,
-                                int* ndelconss, int* naddconss, int* nupgdconss, int* nchgcoefs, int* nchgsides, SCIP_RESULT* result) noexcept with gil:
+                                int* ndelconss, int* naddconss, int* nupgdconss, int* nchgcoefs, int* nchgsides, SCIP_RESULT* result) with gil:
     cdef SCIP_PRESOLDATA* presoldata
     presoldata = SCIPpresolGetData(presol)
     PyPresol = <Presol>presoldata

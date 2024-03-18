@@ -29,10 +29,10 @@ cdef class Cutsel:
     return {}
 
 
-cdef SCIP_RETCODE PyCutselCopy (SCIP* scip, SCIP_CUTSEL* cutsel) noexcept with gil:
+cdef SCIP_RETCODE PyCutselCopy (SCIP* scip, SCIP_CUTSEL* cutsel) with gil:
   return SCIP_OKAY
 
-cdef SCIP_RETCODE PyCutselFree (SCIP* scip, SCIP_CUTSEL* cutsel) noexcept with gil:
+cdef SCIP_RETCODE PyCutselFree (SCIP* scip, SCIP_CUTSEL* cutsel) with gil:
   cdef SCIP_CUTSELDATA* cutseldata
   cutseldata = SCIPcutselGetData(cutsel)
   PyCutsel = <Cutsel>cutseldata
@@ -40,7 +40,7 @@ cdef SCIP_RETCODE PyCutselFree (SCIP* scip, SCIP_CUTSEL* cutsel) noexcept with g
   Py_DECREF(PyCutsel)
   return SCIP_OKAY
 
-cdef SCIP_RETCODE PyCutselInit (SCIP* scip, SCIP_CUTSEL* cutsel) noexcept with gil:
+cdef SCIP_RETCODE PyCutselInit (SCIP* scip, SCIP_CUTSEL* cutsel) with gil:
   cdef SCIP_CUTSELDATA* cutseldata
   cutseldata = SCIPcutselGetData(cutsel)
   PyCutsel = <Cutsel>cutseldata
@@ -48,21 +48,21 @@ cdef SCIP_RETCODE PyCutselInit (SCIP* scip, SCIP_CUTSEL* cutsel) noexcept with g
   return SCIP_OKAY
 
 
-cdef SCIP_RETCODE PyCutselExit (SCIP* scip, SCIP_CUTSEL* cutsel) noexcept with gil:
+cdef SCIP_RETCODE PyCutselExit (SCIP* scip, SCIP_CUTSEL* cutsel) with gil:
   cdef SCIP_CUTSELDATA* cutseldata
   cutseldata = SCIPcutselGetData(cutsel)
   PyCutsel = <Cutsel>cutseldata
   PyCutsel.cutselexit()
   return SCIP_OKAY
 
-cdef SCIP_RETCODE PyCutselInitsol (SCIP* scip, SCIP_CUTSEL* cutsel) noexcept with gil:
+cdef SCIP_RETCODE PyCutselInitsol (SCIP* scip, SCIP_CUTSEL* cutsel) with gil:
   cdef SCIP_CUTSELDATA* cutseldata
   cutseldata = SCIPcutselGetData(cutsel)
   PyCutsel = <Cutsel>cutseldata
   PyCutsel.cutselinitsol()
   return SCIP_OKAY
 
-cdef SCIP_RETCODE PyCutselExitsol (SCIP* scip, SCIP_CUTSEL* cutsel) noexcept with gil:
+cdef SCIP_RETCODE PyCutselExitsol (SCIP* scip, SCIP_CUTSEL* cutsel) with gil:
   cdef SCIP_CUTSELDATA* cutseldata
   cutseldata = SCIPcutselGetData(cutsel)
   PyCutsel = <Cutsel>cutseldata
@@ -71,7 +71,7 @@ cdef SCIP_RETCODE PyCutselExitsol (SCIP* scip, SCIP_CUTSEL* cutsel) noexcept wit
 
 cdef SCIP_RETCODE PyCutselSelect (SCIP* scip, SCIP_CUTSEL* cutsel, SCIP_ROW** cuts, int ncuts,
                                   SCIP_ROW** forcedcuts, int nforcedcuts, SCIP_Bool root, int maxnselectedcuts,
-                                  int* nselectedcuts, SCIP_RESULT* result) noexcept with gil:
+                                  int* nselectedcuts, SCIP_RESULT* result) with gil:
   cdef SCIP_CUTSELDATA* cutseldata
   cdef SCIP_ROW* scip_row
   cutseldata = SCIPcutselGetData(cutsel)
