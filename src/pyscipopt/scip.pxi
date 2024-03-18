@@ -4657,8 +4657,18 @@ cdef class Model:
         :param original: objective value in original space (Default value = True)
 
         """
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
-            raise Warning("method cannot be called before problem is solved")
+        if self._bestSol == None:
+            if self.getStage() != SCIP_STAGE_SOLVING:
+                raise Warning("Without a solution, method can only be called in stage SOLVING.")
+        else:
+            if SCIPsolIsOriginal(self._bestSol.sol):
+                stage_requirement = SCIP_STAGE_PROBLEM
+            else:
+                stage_requirement = SCIP_STAGE_TRANSFORMING
+
+            if not self.getStage() >= stage_requirement:
+                raise Warning("method cannot be called in stage %i." % self.getStage)
+                
         return self.getSolObjVal(self._bestSol, original)
 
     def getSolVal(self, Solution sol, Expr expr):
@@ -4686,8 +4696,8 @@ cdef class Model:
 
         Note: a variable is also an expression
         """
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
-            raise Warning("method cannot be called before problem is solved")
+        if not self.getStage() >= SCIP_STAGE_PROBLEM:
+            raise Warning("method cannot be called in stage %i" % self.getStage())
         return self.getSolVal(self._bestSol, expr)
     
     def hasPrimalRay(self):
