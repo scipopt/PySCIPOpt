@@ -975,10 +975,10 @@ cdef class Constraint:
                 and self.scip_cons == (<Constraint>other).scip_cons)
 
 
-cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) :
+cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) noexcept:
     sys.stdout.write(msg.decode('UTF-8'))
 
-cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg) :
+cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg) noexcept:
     sys.stderr.write(msg.decode('UTF-8'))
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
@@ -4633,12 +4633,17 @@ cdef class Model:
         :param original: objective value in original space (Default value = True)
 
         """
+        print(7)
         if sol == None:
+            print(8)
             sol = Solution.create(self._scip, NULL)
         sol._checkStage("getSolObjVal")
+        print(9)
         if original:
+            print("a")
             objval = SCIPgetSolOrigObj(self._scip, sol.sol)
         else:
+            print("b")
             objval = SCIPgetSolTransObj(self._scip, sol.sol)
         return objval
 
@@ -4652,23 +4657,37 @@ cdef class Model:
 
     def getObjVal(self, original=True):
         """Retrieve the objective value of value of best solution.
-        Can only be called after solving is completed.
 
         :param original: objective value in original space (Default value = True)
 
         """
+        cdef SCIP_SOL* mysol
+        cdef SCIP_Bool stored
+
+        print(1)
         if self._bestSol == None:
+            print(2)
             if self.getStage() != SCIP_STAGE_SOLVING:
                 raise Warning("Without a solution, method can only be called in stage SOLVING.")
         else:
+            print(self)
+            print(self._bestSol)
+            mysol = self._bestSol.sol
+            print("b")
+            assert mysol != NULL
+            SCIPaddSol(self._scip, mysol, &stored)
+            print("c")
+
             if SCIPsolIsOriginal(self._bestSol.sol):
+                print(4)
                 stage_requirement = SCIP_STAGE_PROBLEM
             else:
+                print(5)
                 stage_requirement = SCIP_STAGE_TRANSFORMING
 
             if not self.getStage() >= stage_requirement:
                 raise Warning("method cannot be called in stage %i." % self.getStage)
-                
+        print(6)
         return self.getSolObjVal(self._bestSol, original)
 
     def getSolVal(self, Solution sol, Expr expr):
