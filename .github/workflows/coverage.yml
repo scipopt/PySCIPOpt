@@ -23,7 +23,7 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIP-${{ env.version }}-Darwin-arm.zip -o scip.zip
+          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIP-${{ env.version }}-Darwin-arm.zip -O scip.zip
           unzip scip.zip
 
       - name: Setup python ${{ matrix.python-version }}
