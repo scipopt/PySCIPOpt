@@ -38,6 +38,7 @@ jobs:
 
       - name: Install PySCIPOpt
         run: |
+          export CFLAGS="-O0 -ggdb" # disable compiler optimizations for faster builds
           export SCIPOPTDIR=$(pwd)/scip_install
           python -m pip install .
 
