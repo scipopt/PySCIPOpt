@@ -13,7 +13,7 @@ on:
 jobs:
 
   test-coverage:
-    runs-on: ubuntu-20.04
+    runs-on: macos-14
     strategy:
       fail-fast: true
       matrix:
@@ -23,8 +23,8 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Linux-ubuntu20.deb
-          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu20.deb
+          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIP-${{ env.version }}-Darwin-arm.zip -o scip.zip
+          unzip scip.zip
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -33,13 +33,12 @@ jobs:
 
       - name: Prepare python environment
         run: |
+          export SCIPOPTDIR=$(pwd)/scip_install
           python -m pip install --upgrade pip
           python -m pip install networkx cython pytest-cov
 
       - name: Install PySCIPOpt
-        run: |
-          export CFLAGS="-O0 -ggdb" # disable compiler optimizations for faster builds
-          python -m pip install .
+        run: python -m pip install .
 
       - name: Run pyscipopt tests
         run: |
