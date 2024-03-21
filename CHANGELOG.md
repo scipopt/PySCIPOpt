@@ -2,7 +2,9 @@
 
 ## Unreleased
 ### Added
+- Added SCIPsolIsOriginal
 ### Fixed
+- Fixed too strict stage check for getObjVal, getVal
 ### Changed
 ### Removed
 

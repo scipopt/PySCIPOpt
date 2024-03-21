@@ -286,3 +286,15 @@ def test_getStage():
     print(m.getStage())
     assert m.getStage() == SCIP_STAGE.SOLVED
     assert m.getStageName() == "SOLVED"
+
+def test_getObjVal():
+    m = Model()
+    x = m.addVar()
+    m.setObjective(x)
+
+    m.setParam("limits/solutions", 1)
+    m.optimize()
+
+    m.getObjVal()
+    m.getVal(x)
+
