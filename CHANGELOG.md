@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 ### Fixed
+- Fixed "weakly-referenced object no longer exists" when calling dropEvent in test_customizedbenders
 ### Changed
 ### Removed
 
