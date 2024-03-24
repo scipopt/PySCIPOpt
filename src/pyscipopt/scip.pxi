@@ -4808,6 +4808,8 @@ cdef class Model:
             _eventhdlr = SCIPfindEventhdlr(self._scip, n)
         else:
             raise Warning("event handler not found")
+        
+        Py_INCREF(self)
         PY_SCIP_CALL(SCIPcatchEvent(self._scip, eventtype, _eventhdlr, NULL, NULL))
 
     def dropEvent(self, eventtype, Eventhdlr eventhdlr):
@@ -4818,6 +4820,8 @@ cdef class Model:
             _eventhdlr = SCIPfindEventhdlr(self._scip, n)
         else:
             raise Warning("event handler not found")
+        
+        Py_DECREF(self)
         PY_SCIP_CALL(SCIPdropEvent(self._scip, eventtype, _eventhdlr, NULL, -1))
 
     def catchVarEvent(self, Variable var, eventtype, Eventhdlr eventhdlr):
