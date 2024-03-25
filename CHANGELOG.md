@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 ### Fixed
+- Fixed incorrect writing/printing when user had a non-default locale
 ### Changed
 ### Removed
 
