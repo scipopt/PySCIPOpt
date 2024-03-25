@@ -5196,7 +5196,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPchgVarBranchPriority(self._scip, var.scip_var, priority))
 
     def getTreesizeEstimation(self):
-        """Get the estimation of the tree size."""
+        """Get an estimation of the final tree size """
         return SCIPgetTreesizeEstimation(self._scip)
 
 # debugging memory management
