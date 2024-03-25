@@ -300,3 +300,16 @@ def test_getTreesizeEstimation():
     m.optimize()
 
     assert m.getTreesizeEstimation() > 0
+   
+def test_locale():
+    import locale
+
+    m = Model()
+    x = m.addVar(lb=1.1)
+
+    locale.setlocale(locale.LC_NUMERIC, "de_DE.UTF-8")
+    m.writeProblem("model.cip")
+
+    with open("model.cip") as file:
+        assert "1,1" not in file.read()
+
