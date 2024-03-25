@@ -286,3 +286,15 @@ def test_getStage():
     print(m.getStage())
     assert m.getStage() == SCIP_STAGE.SOLVED
     assert m.getStageName() == "SOLVED"
+
+def test_locale():
+    import locale
+
+    m = Model()
+    x = m.addVar(lb=1.1)
+
+    locale.setlocale(locale.LC_NUMERIC, "de_DE.UTF-8")
+    m.writeProblem("model.cip")
+
+    with open("model.cip") as file:
+        assert "1,1" not in file.read()
