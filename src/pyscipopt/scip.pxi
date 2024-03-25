@@ -5195,6 +5195,12 @@ cdef class Model:
         assert isinstance(var, Variable), "The given variable is not a pyvar, but %s" % var.__class__.__name__
         PY_SCIP_CALL(SCIPchgVarBranchPriority(self._scip, var.scip_var, priority))
 
+    def getTreesizeEstimation(self):
+        """Get the estimation of the tree size."""
+        cdef SCIP_DOUBLE treeSizeEstimation;
+        treeSizeEstimation = SCIPgetTreesizeEstimation(self._scip)
+        return treeSizeEstimation
+
 # debugging memory management
 def is_memory_freed():
     return BMSgetMemoryUsed() == 0
