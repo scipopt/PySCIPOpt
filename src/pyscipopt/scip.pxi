@@ -5197,9 +5197,7 @@ cdef class Model:
 
     def getTreesizeEstimation(self):
         """Get the estimation of the tree size."""
-        cdef SCIP_DOUBLE treeSizeEstimation;
-        treeSizeEstimation = SCIPgetTreesizeEstimation(self._scip)
-        return treeSizeEstimation
+        return SCIPgetTreesizeEstimation(self._scip)
 
 # debugging memory management
 def is_memory_freed():
