@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
 ### Fixed
 - Fixed incorrect writing/printing when user had a non-default locale
 ### Changed
