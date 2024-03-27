@@ -3,7 +3,9 @@
 ## Unreleased
 ### Added
 - Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
+- New test for model setLogFile
 ### Fixed
+- Fixed model.setLogFile(None) error
 ### Changed
 ### Removed
 
