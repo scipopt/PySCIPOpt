@@ -131,6 +131,23 @@ def test_cons_indicator_fail():
     m.setSolVal(sol, binvar, 0)
     assert m.checkSol(sol)  # solution should be feasible
 
+def test_addConsDisjunction():
+    m = Model()
+
+    x1 = m.addVar(vtype="C", lb=-1, ub=1)
+    x2 = m.addVar(vtype="C", lb=-3, ub=3)
+    o = m.addVar(vtype="C")
+
+    c = m.addConsDisjunction([x1 <= 0, x2 <= 0])
+    m.addCons(o <= x1 + x2)
+
+    m.setObjective(o, "maximize")
+    m.optimize()
+
+    assert m.isEQ(m.getVal(x1), 0.0)
+    assert m.isEQ(m.getVal(x2), 3.0)
+    assert m.isEQ(m.getVal(o), 3.0)
+    #assert c.getConshdlrName() == "disjunction"
 
 def test_addConsCardinality():
     m = Model()

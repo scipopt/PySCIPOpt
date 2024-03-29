@@ -1493,6 +1493,23 @@ cdef extern from "scip/cons_sos2.h":
                                    SCIP_CONS* cons,
                                    SCIP_VAR* var)
 
+cdef extern from "scip/cons_disjunction.h":
+    SCIP_RETCODE SCIPcreateConsDisjunction(SCIP *scip,
+                                            SCIP_CONS **cons,
+                                            const char *name,
+                                            int nconss,
+                                            SCIP_CONS **conss,
+                                            SCIP_CONS *relaxcons,
+                                            SCIP_Bool initial,
+                                            SCIP_Bool enforce,
+                                            SCIP_Bool check,
+                                            SCIP_Bool local,
+                                            SCIP_Bool modifiable,
+                                            SCIP_Bool dynamic)
+    SCIP_RETCODE SCIPaddConsElemDisjunction(SCIP *scip,
+                                            SCIP_CONS *cons,
+                                            SCIP_CONS *addcons)
+
 cdef extern from "scip/cons_and.h":
     SCIP_RETCODE SCIPcreateConsAnd(SCIP* scip,
                                          SCIP_CONS** cons,
