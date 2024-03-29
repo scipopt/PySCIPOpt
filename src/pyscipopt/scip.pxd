@@ -1270,6 +1270,7 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPisPositive(SCIP *scip, SCIP_Real val)
     SCIP_Bool SCIPisNegative(SCIP *scip, SCIP_Real val)
     SCIP_Bool SCIPisIntegral(SCIP *scip, SCIP_Real val)
+    SCIP_Real SCIPgetTreesizeEstimation(SCIP *scip)
 
     # Statistic Methods
     SCIP_RETCODE SCIPprintStatistics(SCIP* scip, FILE* outfile)

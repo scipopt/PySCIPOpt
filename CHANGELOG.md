@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
 ### Fixed
 ### Changed
 ### Removed
