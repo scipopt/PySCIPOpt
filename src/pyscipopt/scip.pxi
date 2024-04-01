@@ -1318,11 +1318,12 @@ cdef class Model:
     def setObjective(self, coeffs, sense = 'minimize', clear = 'true'):
         """Establish the objective function as a linear expression.
 
-        :param coeffs: the coefficients
+        :param coeffs: the objective function SCIP Expr, or constant value
         :param sense: the objective sense (Default value = 'minimize')
         :param clear: set all other variables objective coefficient to zero (Default value = 'true')
 
         """
+ 
         cdef SCIP_VAR** _vars
         cdef int _nvars
 
@@ -1332,7 +1333,7 @@ cdef class Model:
             coeffs = Expr() + coeffs
 
         if coeffs.degree() > 1:
-            raise ValueError("SCIP does not support nonlinear objectives. Please refer to the set_nonlinear_objective function in the recipe sub-package.")
+            raise ValueError("SCIP does not support nonlinear objective functions. Consider using set_nonlinear_objective in the recipes folder.")
         
         if clear:
             # clear existing objective function
@@ -1358,7 +1359,6 @@ cdef class Model:
             self.setMaximize()
         else:
             raise Warning("unrecognized optimization sense: %s" % sense)
-
 
     def getObjective(self):
         """Retrieve objective function as Expr"""
