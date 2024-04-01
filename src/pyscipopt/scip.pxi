@@ -2621,7 +2621,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, scip_cons, var.scip_var, weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        return Constraint.create(scip_cons)
+        return Constraint.create(scip_cons)      
 
     def addConsAnd(self, vars, resvar, name="ANDcons",
             initial=True, separate=True, enforce=True, check=True,
@@ -2853,7 +2853,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pyCons
-
+    
     def getSlackVarIndicator(self, Constraint cons):
         """Get slack variable of an indicator constraint.
 
