@@ -6,6 +6,7 @@
 - Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
 - Add recipes sub-package
 ### Fixed
+- Fixed incorrect writing/printing when user had a non-default locale
 ### Changed
 ### Removed
 
