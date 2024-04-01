@@ -1,4 +1,4 @@
-__version__ = '4.4.0'
+from ._version import __version__
 
 # required for Python 3.8 on Windows
 import os

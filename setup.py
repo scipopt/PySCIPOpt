@@ -69,11 +69,6 @@ use_cython = True
 
 packagedir = os.path.join("src", "pyscipopt")
 
-with open(os.path.join(packagedir, "__init__.py"), "r") as initfile:
-    version = re.search(
-        r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', initfile.read(), re.MULTILINE
-    ).group(1)
-
 try:
     from Cython.Build import cythonize
 except ImportError as err:
@@ -111,7 +106,7 @@ with open("README.md") as f:
 
 setup(
     name="PySCIPOpt",
-    version=version,
+    version="5.0.0",
     description="Python interface and modeling environment for SCIP",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -131,5 +126,6 @@ setup(
     ext_modules=extensions,
     packages=find_packages(where="src"),
     package_dir={"pyscipopt": packagedir},
-    package_data={"pyscipopt": ["scip.pyx", "scip.pxd", "*.pxi"]},
+    package_data={"pyscipopt": ["scip.pyx", "scip.pxd", "*.pxi", "scip/lib/*"]},
+    include_package_data=True,
 )

@@ -286,3 +286,17 @@ def test_getStage():
     print(m.getStage())
     assert m.getStage() == SCIP_STAGE.SOLVED
     assert m.getStageName() == "SOLVED"
+
+def test_getTreesizeEstimation():
+    m = Model()
+
+    assert m.getTreesizeEstimation() == -1
+
+    x = m.addVar("x", vtype='B', obj=1.0)
+    y = m.addVar("y", vtype='B', obj=2.0)
+    c = m.addCons(x + y <= 10.0)
+    m.setMaximize()
+
+    m.optimize()
+
+    assert m.getTreesizeEstimation() > 0
