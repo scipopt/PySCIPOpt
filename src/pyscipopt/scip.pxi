@@ -4907,14 +4907,11 @@ cdef class Model:
         """sets the log file name for the currently installed message handler
         :param path: name of log file, or None (no log)
         """
-        cdef char* c_path
-        cdef bytes py_path
         if path:
-            py_path = str_conversion(path)
-            c_path = py_path
+            c_path = str_conversion(path)
+            SCIPsetMessagehdlrLogfile(self._scip, c_path)
         else:
-            c_path = NULL
-        SCIPsetMessagehdlrLogfile(self._scip, c_path)
+            SCIPsetMessagehdlrLogfile(self._scip, NULL)
 
     # Parameter Methods
 
