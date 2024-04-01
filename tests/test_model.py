@@ -287,7 +287,6 @@ def test_getStage():
     assert m.getStage() == SCIP_STAGE.SOLVED
     assert m.getStageName() == "SOLVED"
 
-@pytest.mark.xskip(reason="getObjective doesn't behave as expected with nonlinear objectives")
 def test_getObjective():
     m = Model()
     x = m.addVar(obj=2)
@@ -299,3 +298,17 @@ def test_getObjective():
     m.getObjective()
     
     
+def test_getTreesizeEstimation():
+    m = Model()
+
+    assert m.getTreesizeEstimation() == -1
+
+    x = m.addVar("x", vtype='B', obj=1.0)
+    y = m.addVar("y", vtype='B', obj=2.0)
+    c = m.addCons(x + y <= 10.0)
+    m.setMaximize()
+
+    m.optimize()
+
+    assert m.getTreesizeEstimation() > 0
+
