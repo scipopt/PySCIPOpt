@@ -35,7 +35,7 @@ include "relax.pxi"
 include "nodesel.pxi"
 
 # recommended SCIP version; major version is required
-MAJOR = 8
+MAJOR = 9
 MINOR = 0
 PATCH = 0
 
@@ -975,10 +975,10 @@ cdef class Constraint:
                 and self.scip_cons == (<Constraint>other).scip_cons)
 
 
-cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg):
+cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) noexcept:
     sys.stdout.write(msg.decode('UTF-8'))
 
-cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg):
+cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg) noexcept:
     sys.stderr.write(msg.decode('UTF-8'))
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
@@ -1322,8 +1322,12 @@ cdef class Model:
 
         # turn the constant value into an Expr instance for further processing
         if not isinstance(coeffs, Expr):
+            assert(_is_number(coeffs)), "given coefficients are neither Expr or number but %s" % coeffs.__class__.__name__
             coeffs = Expr() + coeffs
 
+        if coeffs.degree() > 1:
+            raise ValueError("SCIP does not support nonlinear objectives. Please refer to the set_nonlinear_objective function in the recipe sub-package.")
+        
         if clear:
             # clear existing objective function
             self.addObjoffset(-self.getObjoffset())
@@ -1332,33 +1336,23 @@ cdef class Model:
             for i in range(_nvars):
                 PY_SCIP_CALL(SCIPchgVarObj(self._scip, _vars[i], 0.0))
 
-        if coeffs.degree() > 1:
-            new_obj = self.addVar(lb=-float("inf"),obj=1)
-            if sense == "minimize":
-                self.addCons(coeffs <= new_obj)
-                self.setMinimize()
-            elif sense == "maximize":
-                self.addCons(coeffs >= new_obj)
-                self.setMaximize()
-            else:
-                raise Warning("unrecognized optimization sense: %s" % sense)
+        if coeffs[CONST] != 0.0:
+            self.addObjoffset(coeffs[CONST])
+
+        for term, coef in coeffs.terms.items():
+            # avoid CONST term of Expr
+            if term != CONST:
+                assert len(term) == 1
+                var = <Variable>term[0]
+                PY_SCIP_CALL(SCIPchgVarObj(self._scip, var.scip_var, coef))
+
+        if sense == "minimize":
+            self.setMinimize()
+        elif sense == "maximize":
+            self.setMaximize()
         else:
-            if coeffs[CONST] != 0.0:
-                self.addObjoffset(coeffs[CONST])
+            raise Warning("unrecognized optimization sense: %s" % sense)
 
-            for term, coef in coeffs.terms.items():
-                # avoid CONST term of Expr
-                if term != CONST:
-                    assert len(term) == 1
-                    var = <Variable>term[0]
-                    PY_SCIP_CALL(SCIPchgVarObj(self._scip, var.scip_var, coef))
-
-            if sense == "minimize":
-                self.setMinimize()
-            elif sense == "maximize":
-                self.setMaximize()
-            else:
-                raise Warning("unrecognized optimization sense: %s" % sense)
 
     def getObjective(self):
         """Retrieve objective function as Expr"""
@@ -2372,6 +2366,7 @@ cdef class Model:
         free(monomials)
         free(termcoefs)
         return PyCons
+    
 
     def _addGenNonlinearCons(self, ExprCons cons, **kwargs):
         cdef SCIP_EXPR** childrenexpr
@@ -2495,6 +2490,24 @@ cdef class Model:
         free(vars)
 
         return PyCons
+
+    # TODO Find a better way to retrieve a scip expression from a python expression. Consider making GenExpr include Expr, to avoid using Union. See PR #760.
+    from typing import Union
+    def addExprNonlinear(self, Constraint cons, expr: Union[Expr,GenExpr], float coef):
+        """
+        Add coef*expr to nonlinear constraint.
+        """
+        assert self.getStage() == 1, "addExprNonlinear cannot be called in stage %i." % self.getStage()
+        assert cons.isNonlinear(), "addExprNonlinear can only be called with nonlinear constraints."
+
+        cdef Constraint temp_cons
+        cdef SCIP_EXPR* scip_expr 
+
+        temp_cons = self.addCons(expr <= 0)
+        scip_expr = SCIPgetExprNonlinear(temp_cons.scip_cons)
+
+        PY_SCIP_CALL(SCIPaddExprNonlinear(self._scip, cons.scip_cons, scip_expr, coef))
+        self.delCons(temp_cons)
 
     def addConsCoeff(self, Constraint cons, Variable var, coeff):
         """Add coefficient to the linear constraint (if non-zero).
@@ -2841,7 +2854,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pyCons
-
+    
     def getSlackVarIndicator(self, Constraint cons):
         """Get slack variable of an indicator constraint.
 
@@ -3768,7 +3781,7 @@ cdef class Model:
                                               PyConsInitsol, PyConsExitsol, PyConsDelete, PyConsTrans, PyConsInitlp, PyConsSepalp, PyConsSepasol,
                                               PyConsEnfolp, PyConsEnforelax, PyConsEnfops, PyConsCheck, PyConsProp, PyConsPresol, PyConsResprop, PyConsLock,
                                               PyConsActive, PyConsDeactive, PyConsEnable, PyConsDisable, PyConsDelvars, PyConsPrint, PyConsCopy,
-                                              PyConsParse, PyConsGetvars, PyConsGetnvars, PyConsGetdivebdchgs,
+                                              PyConsParse, PyConsGetvars, PyConsGetnvars, PyConsGetdivebdchgs, PyConsGetPermSymGraph, PyConsGetSignedPermSymGraph,
                                               <SCIP_CONSHDLRDATA*>conshdlr))
         conshdlr.model = <Model>weakref.proxy(self)
         conshdlr.name = name
@@ -5182,6 +5195,10 @@ cdef class Model:
         """
         assert isinstance(var, Variable), "The given variable is not a pyvar, but %s" % var.__class__.__name__
         PY_SCIP_CALL(SCIPchgVarBranchPriority(self._scip, var.scip_var, priority))
+
+    def getTreesizeEstimation(self):
+        """Get an estimation of the final tree size """
+        return SCIPgetTreesizeEstimation(self._scip)
 
 # debugging memory management
 def is_memory_freed():
