@@ -360,3 +360,5 @@ def test_locale():
 
     with open("model.cip") as file:
         assert "1,1" not in file.read()
+
+    locale.setlocale(locale.LC_NUMERIC,"")
