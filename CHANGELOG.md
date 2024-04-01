@@ -2,12 +2,25 @@
 
 ## Unreleased
 ### Added
-- Added possibility for nonlinear objective functions
-- Added methods for getting the names of the current stage and of an event
+- Added recipe for nonlinear objective functions
+- Added method for adding piecewise linear constraints
+- Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
+- Add recipes sub-package
 ### Fixed
-- Fixed outdated time.clock call in gcp.py
 ### Changed
 ### Removed
+
+## 5.0.0 - 2024-03-05
+### Added
+- Added SCIP function addExprNonlinear
+- Add support for Cython 3
+- Added methods for getting the names of the current stage and of an event
+- Add support for SCIP symmetry graph callbacks in constraint handlers
+### Fixed
+- Fixed README links 
+- Fixed outdated time.clock call in gcp.py
+### Changed
+- Changed default installation option via pypi to package pre-build SCIP
 
 ## 4.4.0 - 2023-12-04
 ### Added
