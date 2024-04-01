@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added recipe for nonlinear objective functions
 - Added method for adding piecewise linear constraints
 - Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
 - New test for model setLogFile

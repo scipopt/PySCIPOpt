@@ -288,6 +288,14 @@ def test_getStage():
     assert m.getStage() == SCIP_STAGE.SOLVED
     assert m.getStageName() == "SOLVED"
 
+def test_getObjective():
+    m = Model()
+    m.addVar(obj=2, name="x1")
+    m.addVar(obj=3, name="x2")
+
+    assert str(m.getObjective()) == "Expr({Term(x1): 2.0, Term(x2): 3.0})"
+    
+    
 def test_getTreesizeEstimation():
     m = Model()
 
@@ -349,3 +357,5 @@ def test_locale():
 
     with open("model.cip") as file:
         assert "1,1" not in file.read()
+
+    locale.setlocale(locale.LC_NUMERIC,"")
