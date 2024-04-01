@@ -307,7 +307,7 @@ def test_locale():
     m = Model()
     x = m.addVar(lb=1.1)
 
-    locale.setlocale(locale.LC_NUMERIC, "de_DE.UTF-8")
+    locale.setlocale(locale.LC_NUMERIC, "pt_PT")
 
     assert locale.str(1.1) == "1,1"
 
