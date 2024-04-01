@@ -43,6 +43,7 @@ jobs:
 
       - name: Run pyscipopt tests
         run: |
+          sudo apt-get install tzdata locales -y && sudo locale-gen pt_PT.UTF-8
           coverage run -m pytest
           coverage report -m
           coverage xml
