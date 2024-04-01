@@ -1,4 +1,5 @@
 import pytest
+import os
 
 from pyscipopt import Model, SCIP_STAGE
 
@@ -312,3 +313,50 @@ def test_getTreesizeEstimation():
 
     assert m.getTreesizeEstimation() > 0
 
+def test_setLogFile():
+    m = Model()
+    x = m.addVar("x", vtype="I")
+    y = m.addVar("y", vtype="I")
+    m.addCons(x + y == 1)
+    m.setObjective(2*x+y)
+    
+    log_file_name = "test_setLogFile.log"
+    m.setLogfile(log_file_name)
+    assert os.path.exists(log_file_name)
+    
+    m.optimize()
+    del m
+    assert os.path.getsize(log_file_name) > 0
+    os.remove(log_file_name)
+
+def test_setLogFile_none():
+    m = Model()
+    x = m.addVar("x", vtype="I")
+    y = m.addVar("y", vtype="I")
+    m.addCons(x + y == 1)
+    m.setObjective(2*x+y)
+    
+    log_file_name = "test_setLogfile_none.log"
+    m.setLogfile(log_file_name)
+    assert os.path.exists(log_file_name)
+    
+    m.setLogfile(None)
+    m.optimize()
+    del m
+    assert os.path.getsize(log_file_name) == 0
+    os.remove(log_file_name)
+   
+def test_locale():
+    import locale
+
+    m = Model()
+    x = m.addVar(lb=1.1)
+
+    locale.setlocale(locale.LC_NUMERIC, "pt_PT")
+
+    assert locale.str(1.1) == "1,1"
+
+    m.writeProblem("model.cip")
+
+    with open("model.cip") as file:
+        assert "1,1" not in file.read()
