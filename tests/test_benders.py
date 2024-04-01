@@ -106,4 +106,4 @@ def test_flpbenders():
     # the solution will be lost
     master.freeBendersSubproblems()
 
-    assert master.getObjVal() == 5.61e+03
+    assert 5.61e+03 - 10e-6 < master.getObjVal() < 5.61e+03 + 10e-6
