@@ -15,7 +15,7 @@ Documentation
 
 Please consult the [online documentation](https://scipopt.github.io/PySCIPOpt/docs/html) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
 
-See [CHANGELOG.md](CHANGELOG.md) for added, removed or fixed functionality.
+See [CHANGELOG.md](https://github.com/scipopt/PySCIPOpt/blob/master/CHANGELOG.md) for added, removed or fixed functionality.
 
 Installation
 ------------
@@ -34,12 +34,13 @@ conda install --channel conda-forge pyscipopt
 
 **Using PyPI and from Source**
 
-See [INSTALL.md](INSTALL.md) for instructions.
+See [INSTALL.md](https://github.com/scipopt/PySCIPOpt/blob/master/INSTALL.md) for instructions.
 Please note that the latest PySCIPOpt version is usually only compatible with the latest major release of the SCIP Optimization Suite.
 The following table summarizes which version of PySCIPOpt is required for a given SCIP version:
 
 |SCIP| PySCIPOpt |
 |----|----|
+9.0 | 5.x
 8.0 | 4.x
 7.0 | 3.x
 6.0 | 2.x
@@ -47,13 +48,13 @@ The following table summarizes which version of PySCIPOpt is required for a give
 4.0 | 1.2, 1.1
 3.2 | 1.0
 
-Information which version of PySCIPOpt is required for a given SCIP version can also be found in [INSTALL.md](INSTALL.md).
+Information which version of PySCIPOpt is required for a given SCIP version can also be found in [INSTALL.md](https://github.com/scipopt/PySCIPOpt/blob/master/INSTALL.md).
 
 Building and solving a model
 ----------------------------
 
-There are several [examples](examples/finished) and
-[tutorials](examples/tutorial). These display some functionality of the
+There are several [examples](https://github.com/scipopt/PySCIPOpt/blob/master/examples/finished) and
+[tutorials](https://github.com/scipopt/PySCIPOpt/blob/master/examples/tutorial). These display some functionality of the
 interface and can serve as an entry point for writing more complex code.
 You might also want to have a look at this article about PySCIPOpt:
 <https://opus4.kobv.de/opus4-zib/frontdoor/index/index/docId/6045>. The
@@ -128,7 +129,7 @@ functionality you require.
 We are always happy to accept pull request containing patches or
 extensions!
 
-Please have a look at our [contribution guidelines](CONTRIBUTING.md).
+Please have a look at our [contribution guidelines](https://github.com/scipopt/PySCIPOpt/blob/master/CONTRIBUTING.md).
 
 Gotchas
 -------
