@@ -6,6 +6,7 @@
 - Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
 - Add recipes sub-package
 ### Fixed
+- Fixed "weakly-referenced object no longer exists" when calling dropEvent in test_customizedbenders
 - Fixed incorrect writing/printing when user had a non-default locale
 ### Changed
 ### Removed
