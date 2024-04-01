@@ -4,6 +4,7 @@
 ### Added
 - Added method for adding piecewise linear constraints
 - Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
+- Add recipes sub-package
 ### Fixed
 ### Changed
 ### Removed
