@@ -6,6 +6,7 @@ from os.path import splitext
 import os
 import sys
 import warnings
+import locale
 
 cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
@@ -1128,7 +1129,12 @@ cdef class Model:
 
     def printVersion(self):
         """Print version, copyright information and compile mode"""
+        user_locale = locale.getlocale()
+        locale.setlocale(locale.LC_ALL, "C")
+
         SCIPprintVersion(self._scip, NULL)
+
+        locale.setlocale(locale.LC_ALL, user_locale)
 
     def getProbName(self):
         """Retrieve problem name"""
@@ -1455,6 +1461,9 @@ cdef class Model:
         :param genericnames: indicates whether the problem should be written with generic variable and constraint names (Default value = False)
 
         """
+        user_locale = locale.getlocale()
+        locale.setlocale(locale.LC_ALL, "C")
+
         str_absfile = abspath(filename)
         absfile = str_conversion(str_absfile)
         fn, ext = splitext(absfile)
@@ -1467,6 +1476,8 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, fn, ext, genericnames))
         print('wrote problem to file ' + str_absfile)
+
+        locale.setlocale(locale.LC_ALL, user_locale)
 
     # Variable Functions
 
@@ -2621,7 +2632,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, scip_cons, var.scip_var, weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        return Constraint.create(scip_cons)
+        return Constraint.create(scip_cons)      
 
     def addConsAnd(self, vars, resvar, name="ANDcons",
             initial=True, separate=True, enforce=True, check=True,
@@ -2853,7 +2864,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pyCons
-
+    
     def getSlackVarIndicator(self, Constraint cons):
         """Get slack variable of an indicator constraint.
 
@@ -4373,8 +4384,13 @@ cdef class Model:
         """writes current LP to a file
         :param filename: file name (Default value = "LP.lp")
         """
+        user_locale = locale.getlocale()
+        locale.setlocale(locale.LC_ALL, "C")
+
         absfile = str_conversion(abspath(filename))
         PY_SCIP_CALL( SCIPwriteLP(self._scip, absfile) )
+
+        locale.setlocale(locale.LC_ALL, user_locale)
 
     def createSol(self, Heur heur = None):
         """Create a new primal solution.
@@ -4413,19 +4429,30 @@ cdef class Model:
 
     def printBestSol(self, write_zeros=False):
         """Prints the best feasible primal solution."""
+        user_locale = locale.getlocale()
+        locale.setlocale(locale.LC_ALL, "C")
+
         PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, write_zeros))
 
-    def printSol(self, Solution solution=None, write_zeros=False):
-      """Print the given primal solution.
+        locale.setlocale(locale.LC_ALL, user_locale)
 
-      Keyword arguments:
-      solution -- solution to print
-      write_zeros -- include variables that are set to zero
-      """
-      if solution is None:
-         PY_SCIP_CALL(SCIPprintSol(self._scip, NULL, NULL, write_zeros))
-      else:
-         PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, NULL, write_zeros))
+    def printSol(self, Solution solution=None, write_zeros=False):
+        """Print the given primal solution.
+
+        Keyword arguments:
+        solution -- solution to print
+        write_zeros -- include variables that are set to zero
+        """
+
+        user_locale = locale.getlocale()
+        locale.setlocale(locale.LC_ALL, "C")
+
+        if solution is None:
+            PY_SCIP_CALL(SCIPprintSol(self._scip, NULL, NULL, write_zeros))
+        else:
+            PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, NULL, write_zeros))
+        
+        locale.setlocale(locale.LC_ALL, user_locale)
 
     def writeBestSol(self, filename="origprob.sol", write_zeros=False):
         """Write the best feasible primal solution to a file.
@@ -4434,11 +4461,17 @@ cdef class Model:
         filename -- name of the output file
         write_zeros -- include variables that are set to zero
         """
+
+        user_locale = locale.getlocale()
+        locale.setlocale(locale.LC_ALL, "C")
+
         # use this doubled opening pattern to ensure that IOErrors are
         #   triggered early and in Python not in C,Cython or SCIP.
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintBestSol(self._scip, cfile, write_zeros))
+
+        locale.setlocale(locale.LC_ALL, user_locale)
 
     def writeBestTransSol(self, filename="transprob.sol", write_zeros=False):
         """Write the best feasible primal solution for the transformed problem to a file.
@@ -4447,11 +4480,16 @@ cdef class Model:
         filename -- name of the output file
         write_zeros -- include variables that are set to zero
         """
+        user_locale = locale.getlocale()
+        locale.setlocale(locale.LC_ALL, "C")
+
         # use this double opening pattern to ensure that IOErrors are
         #   triggered early and in python not in C, Cython or SCIP.
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintBestTransSol(self._scip, cfile, write_zeros))
+        
+        locale.setlocale(locale.LC_ALL, user_locale)
 
     def writeSol(self, Solution solution, filename="origprob.sol", write_zeros=False):
         """Write the given primal solution to a file.
@@ -4461,11 +4499,16 @@ cdef class Model:
         filename -- name of the output file
         write_zeros -- include variables that are set to zero
         """
+        user_locale = locale.getlocale()
+        locale.setlocale(locale.LC_ALL, "C")
+
         # use this doubled opening pattern to ensure that IOErrors are
         #   triggered early and in Python not in C,Cython or SCIP.
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, cfile, write_zeros))
+        
+        locale.setlocale(locale.LC_ALL, user_locale)
 
     def writeTransSol(self, Solution solution, filename="transprob.sol", write_zeros=False):
         """Write the given transformed primal solution to a file.
@@ -4475,11 +4518,16 @@ cdef class Model:
         filename -- name of the output file
         write_zeros -- include variables that are set to zero
         """
+        user_locale = locale.getlocale()
+        locale.setlocale(locale.LC_ALL, "C")
+
         # use this doubled opening pattern to ensure that IOErrors are
         #   triggered early and in Python not in C,Cython or SCIP.
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintTransSol(self._scip, solution.sol, cfile, write_zeros))
+        
+        locale.setlocale(locale.LC_ALL, user_locale)
 
     # perhaps this should not be included as it implements duplicated functionality
     #   (as does it's namesake in SCIP)
@@ -4737,7 +4785,12 @@ cdef class Model:
         :param Variable var: variable
 
         """
+        user_locale = locale.getlocale()
+        locale.setlocale(locale.LC_ALL, "C")
+
         PY_SCIP_CALL(SCIPwriteVarName(self._scip, NULL, var.scip_var, False))
+
+        locale.setlocale(locale.LC_ALL, user_locale)
 
     def getStage(self):
         """Retrieve current SCIP stage"""
@@ -4808,6 +4861,8 @@ cdef class Model:
             _eventhdlr = SCIPfindEventhdlr(self._scip, n)
         else:
             raise Warning("event handler not found")
+        
+        Py_INCREF(self)
         PY_SCIP_CALL(SCIPcatchEvent(self._scip, eventtype, _eventhdlr, NULL, NULL))
 
     def dropEvent(self, eventtype, Eventhdlr eventhdlr):
@@ -4818,6 +4873,8 @@ cdef class Model:
             _eventhdlr = SCIPfindEventhdlr(self._scip, n)
         else:
             raise Warning("event handler not found")
+        
+        Py_DECREF(self)
         PY_SCIP_CALL(SCIPdropEvent(self._scip, eventtype, _eventhdlr, NULL, -1))
 
     def catchVarEvent(self, Variable var, eventtype, Eventhdlr eventhdlr):
@@ -4864,19 +4921,29 @@ cdef class Model:
 
     def printStatistics(self):
         """Print statistics."""
+        user_locale = locale.getlocale()
+        locale.setlocale(locale.LC_ALL, "C")
+
         PY_SCIP_CALL(SCIPprintStatistics(self._scip, NULL))
 
-    def writeStatistics(self, filename="origprob.stats"):
-      """Write statistics to a file.
+        locale.setlocale(locale.LC_ALL, user_locale)
 
-      Keyword arguments:
-      filename -- name of the output file
-      """
-      # use this doubled opening pattern to ensure that IOErrors are
-      #   triggered early and in Python not in C,Cython or SCIP.
-      with open(filename, "w") as f:
-          cfile = fdopen(f.fileno(), "w")
-          PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
+    def writeStatistics(self, filename="origprob.stats"):
+        """Write statistics to a file.
+
+        Keyword arguments:
+        filename -- name of the output file
+        """
+        user_locale = locale.getlocale()
+        locale.setlocale(locale.LC_ALL, "C")
+
+        # use this doubled opening pattern to ensure that IOErrors are
+        #   triggered early and in Python not in C,Cython or SCIP.
+        with open(filename, "w") as f:
+            cfile = fdopen(f.fileno(), "w")
+            PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
+        
+        locale.setlocale(locale.LC_ALL, user_locale)
 
     def getNLPs(self):
         """gets total number of LPs solved so far"""
@@ -5073,10 +5140,15 @@ cdef class Model:
         :param onlychanged: write only modified parameters (Default value = True)
 
         """
+        user_locale = locale.getlocale()
+        locale.setlocale(locale.LC_ALL, "C")
+
         str_absfile = abspath(filename)
         absfile = str_conversion(str_absfile)
         PY_SCIP_CALL(SCIPwriteParams(self._scip, absfile, comments, onlychanged))
         print('wrote parameter settings to file ' + str_absfile)
+
+        locale.setlocale(locale.LC_ALL, user_locale)
 
     def resetParam(self, name):
         """Reset parameter setting to its default value

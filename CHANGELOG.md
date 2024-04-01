@@ -2,10 +2,14 @@
 
 ## Unreleased
 ### Added
+- Added method for adding piecewise linear constraints
 - Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
 - New test for model setLogFile
 ### Fixed
 - Fixed model.setLogFile(None) error
+- Add recipes sub-package
+- Fixed "weakly-referenced object no longer exists" when calling dropEvent in test_customizedbenders
+- Fixed incorrect writing/printing when user had a non-default locale
 ### Changed
 ### Removed
 
