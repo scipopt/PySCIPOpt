@@ -55,7 +55,7 @@ Building and solving a model
 
 There are several [examples](https://github.com/scipopt/PySCIPOpt/blob/master/examples/finished) and
 [tutorials](https://github.com/scipopt/PySCIPOpt/blob/master/examples/tutorial). These display some functionality of the
-interface and can serve as an entry point for writing more complex code.
+interface and can serve as an entry point for writing more complex code. Some of the common usecases are also avaialble in the [recipes](https://github.com/scipopt/PySCIPOpt/blob/master/src/pyscipopt/recipes) sub-package.
 You might also want to have a look at this article about PySCIPOpt:
 <https://opus4.kobv.de/opus4-zib/frontdoor/index/index/docId/6045>. The
 following steps are always required when using the interface:
