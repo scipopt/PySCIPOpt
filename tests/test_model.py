@@ -308,6 +308,9 @@ def test_locale():
     x = m.addVar(lb=1.1)
 
     locale.setlocale(locale.LC_NUMERIC, "de_DE.UTF-8")
+
+    assert locale.str(1.1) == "1,1"
+
     m.writeProblem("model.cip")
 
     with open("model.cip") as file:
