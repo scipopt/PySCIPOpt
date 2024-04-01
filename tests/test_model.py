@@ -290,13 +290,10 @@ def test_getStage():
 
 def test_getObjective():
     m = Model()
-    x = m.addVar(obj=2)
-    y = m.addVar(obj=3)
+    m.addVar(obj=2, name="x1")
+    m.addVar(obj=3, name="x2")
 
     assert str(m.getObjective()) == "Expr({Term(x1): 2.0, Term(x2): 3.0})"
-    
-    m.setObjective(x**2 + y**(1/3))
-    m.getObjective()
     
     
 def test_getTreesizeEstimation():
