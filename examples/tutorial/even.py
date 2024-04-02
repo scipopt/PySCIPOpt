@@ -1,31 +1,33 @@
 ##@file tutorial/even.py
-#@brief Tutorial example to check whether values are even or odd
+# @brief Tutorial example to check whether values are even or odd
 """
 Public Domain, WTFNMFPL Public Licence
 """
-from pyscipopt import Model
 from pprint import pformat as pfmt
 
+from pyscipopt import Model
+
 example_values = [
-               0,
-               1,
-             1.5,
-    "helloworld", 
-              20,
-              25,
-            -101,
-            -15.,
-             -10,
-          -2**31,
-     -int(2**31), 
-       "2**31-1",
-    int(2**31-1),
-    int(2**63)-1 
+    0,
+    1,
+    1.5,
+    "helloworld",
+    20,
+    25,
+    -101,
+    -15.,
+    -10,
+    -2 ** 31,
+    -int(2 ** 31),
+    "2**31-1",
+    int(2 ** 31 - 1),
+    int(2 ** 63) - 1
 ]
 
 verbose = False
-#verbose = True # uncomment for additional info on variables!
-sdic = {0: "even", 1: "odd"} # remainder to 2
+# verbose = True # uncomment for additional info on variables!
+sdic = {0: "even", 1: "odd"}  # remainder to 2
+
 
 def parity(number):
     """
@@ -44,7 +46,7 @@ def parity(number):
     """
     sval = -1
     if verbose:
-        print(80*"*")
+        print(80 * "*")
     try:
         assert number == int(round(number))
         m = Model()
@@ -55,7 +57,7 @@ def parity(number):
         # since 0 is the default lb. To allow for negative values, give None
         # as lower bound.
         # (None means -infinity as lower bound and +infinity as upper bound)
-        x = m.addVar("x", vtype="I", lb=None, ub=None) #ub=None is default
+        x = m.addVar("x", vtype="I", lb=None, ub=None)  # ub=None is default
         n = m.addVar("n", vtype="I", lb=None)
         s = m.addVar("s", vtype="B")
         # CAVEAT: if number is negative, x's lower bound must be None
@@ -63,18 +65,18 @@ def parity(number):
         #     there is no feasible solution (trivial) but the program
         #     does not highlight which constraints conflict.
 
-        m.addCons(x==number)
+        m.addCons(x == number)
 
         # minimize the difference between the number and twice a natural number
-        m.addCons(s == x-2*n)
+        m.addCons(s == x - 2 * n)
         m.setObjective(s)
         m.optimize()
 
         assert m.getStatus() == "optimal"
-        boolmod = m.getVal(s) == m.getVal(x)%2
+        boolmod = m.getVal(s) == m.getVal(x) % 2
         if verbose:
             for v in m.getVars():
-                print("%*s: %d" % (fmtlen, v,m.getVal(v)))
+                print("%*s: %d" % (fmtlen, v, m.getVal(v)))
             print("%*d%%2 == %d?" % (fmtlen, m.getVal(x), m.getVal(s)))
             print("%*s" % (fmtlen, boolmod))
 
@@ -86,9 +88,10 @@ def parity(number):
         print("%*s is neither even nor odd!" % (fmtlen, number.__repr__()))
     finally:
         if verbose:
-            print(80*"*")
+            print(80 * "*")
             print("")
     return sval
+
 
 if __name__ == "__main__":
     """
@@ -99,6 +102,7 @@ if __name__ == "__main__":
     """
     import sys
     from ast import literal_eval as leval
+
     try:
         # check parity for each positional arguments
         sys.argv[1]
@@ -107,10 +111,10 @@ if __name__ == "__main__":
         # check parity for each default example value
         values = example_values
     # format lenght, cosmetics
-    fmtlen = max([len(fmt) for fmt in pfmt(values,width=1).split('\n')])
+    fmtlen = max([len(fmt) for fmt in pfmt(values, width=1).split('\n')])
     for value in values:
         try:
             n = leval(value)
-        except (ValueError, SyntaxError): # for numbers or str w/ spaces
+        except (ValueError, SyntaxError):  # for numbers or str w/ spaces
             n = value
         parity(n)

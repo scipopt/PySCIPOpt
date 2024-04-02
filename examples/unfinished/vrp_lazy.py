@@ -9,8 +9,10 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 import math
 import random
+
 import networkx
-from pyscipopt import Model, Conshdlr, quicksum, multidict, SCIP_RESULT, SCIP_PRESOLTIMING, SCIP_PROPTIMING
+from pyscipopt import Model, Conshdlr, quicksum, SCIP_RESULT, SCIP_PRESOLTIMING, SCIP_PROPTIMING
+
 
 class VRPconshdlr(Conshdlr):
 
