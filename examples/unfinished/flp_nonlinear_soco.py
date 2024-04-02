@@ -11,9 +11,10 @@ Approach: use a second-order cone optimization formulation.
 
 Copyright (c) by Joao Pedro PEDROSO, Masahiro MURAMATSU and Mikio KUBO, 2012
 """
-import math
 import random
-from pyscipopt import Model, quicksum, multidict
+
+from pyscipopt import Model, quicksum
+
 
 def flp_nonlinear_soco(I,J,d,M,f,c):
     """flp_nonlinear_soco --  use
@@ -52,7 +53,8 @@ def flp_nonlinear_soco(I,J,d,M,f,c):
 
 
 if __name__ == "__main__":
-    from flp_nonlinear import distance,make_data,example,read_orlib,read_cortinhal
+    from flp_nonlinear import make_data
+
     # I,J,d,M,f,c,x_pos,y_pos = example()
     K = 100
     random.seed(1)
