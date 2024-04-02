@@ -169,7 +169,6 @@ def test_printCons():
 
     m.printCons(c)
 
-
 @pytest.mark.skip(reason="TODO: test getValsLinear()")
 def test_getValsLinear():
     assert True
