@@ -3,7 +3,6 @@ staff_sched.py:  model for staff scheduling
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-import random
 from pyscipopt import Model, quicksum, multidict
 
 def staff(I,T,N,J,S,c,b):
