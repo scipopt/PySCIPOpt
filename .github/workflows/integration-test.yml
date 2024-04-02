@@ -25,6 +25,9 @@ jobs:
           wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Linux-ubuntu20.deb
           sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu20.deb
 
+      - name: Install locales for tests
+        run: sudo apt-get install tzdata locales -y && sudo locale-gen pt_PT && sudo update-locale # add pt_PT locale that is used in tests
+
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -109,7 +112,7 @@ jobs:
       - name: Install dependencies (SCIPOptSuite)
         if: steps.cache-scip.outputs.cache-hit != 'true'
         run: |
-          brew install tbb boost
+          brew install tbb boost bison
           wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/scipoptsuite-${{ env.version }}.tgz
           tar xfz scipoptsuite-${{ env.version }}.tgz
           cd scipoptsuite-${{ env.version }}
