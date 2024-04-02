@@ -2076,6 +2076,106 @@ cdef class Model:
         PY_SCIP_CALL( SCIPseparateSol(self._scip, NULL if sol is None else sol.sol, pretendroot, allowlocal, onlydelayed, &delayed, &cutoff) )
         return delayed, cutoff
 
+    def _createConsLinear(self, ExprCons lincons, **kwargs):
+        assert isinstance(lincons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
+
+        assert lincons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % lincons.expr.degree()
+        terms = lincons.expr.terms
+
+        cdef SCIP_CONS* scip_cons
+
+        cdef int nvars = len(terms.items())
+
+        vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        coeffs_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+
+        for i, (key, coeff) in enumerate(terms.items()):
+            vars_array[i] = <SCIP_VAR*>(<Variable>key[0]).scip_var
+            coeffs_array[i] = <SCIP_Real>coeff
+
+        PY_SCIP_CALL(SCIPcreateConsLinear(
+            self._scip, &scip_cons, str_conversion(kwargs['name']), nvars, vars_array, coeffs_array,
+            kwargs['lhs'], kwargs['rhs'], kwargs['initial'],
+            kwargs['separate'], kwargs['enforce'], kwargs['check'],
+            kwargs['propagate'], kwargs['local'], kwargs['modifiable'],
+            kwargs['dynamic'], kwargs['removable'], kwargs['stickingatnode']))
+
+        PyCons = Constraint.create(scip_cons)
+
+        free(vars_array)
+        free(coeffs_array)
+        return PyCons
+
+    def _createConsQuadratic(self, ExprCons quadcons, **kwargs):
+        terms = quadcons.expr.terms
+        assert quadcons.expr.degree() <= 2, "given constraint is not quadratic, degree == %d" % quadcons.expr.degree()
+
+        cdef SCIP_CONS* scip_cons
+        cdef SCIP_EXPR* prodexpr
+        PY_SCIP_CALL(SCIPcreateConsQuadraticNonlinear(
+            self._scip, &scip_cons, str_conversion(kwargs['name']),
+            0, NULL, NULL,        # linear
+            0, NULL, NULL, NULL,  # quadratc
+            kwargs['lhs'], kwargs['rhs'],
+            kwargs['initial'], kwargs['separate'], kwargs['enforce'],
+            kwargs['check'], kwargs['propagate'], kwargs['local'],
+            kwargs['modifiable'], kwargs['dynamic'], kwargs['removable']))
+
+        for v, c in terms.items():
+            if len(v) == 1: # linear
+                var = <Variable>v[0]
+                PY_SCIP_CALL(SCIPaddLinearVarNonlinear(self._scip, scip_cons, var.scip_var, c))
+            else: # quadratic
+                assert len(v) == 2, 'term length must be 1 or 2 but it is %s' % len(v)
+
+                varexprs = <SCIP_EXPR**> malloc(2 * sizeof(SCIP_EXPR*))
+                var1, var2 = <Variable>v[0], <Variable>v[1]
+                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[0], var1.scip_var, NULL, NULL) )
+                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[1], var2.scip_var, NULL, NULL) )
+                PY_SCIP_CALL( SCIPcreateExprProduct(self._scip, &prodexpr, 2, varexprs, 1.0, NULL, NULL) )
+
+                PY_SCIP_CALL( SCIPaddExprNonlinear(self._scip, scip_cons, prodexpr, c) )
+
+                PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &prodexpr) )
+                PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &varexprs[1]) )
+                PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &varexprs[0]) )
+                free(varexprs)
+
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        PyCons = Constraint.create(scip_cons)
+
+        return PyCons
+
+    def createExprCons(self, cons, name='', initial=True, separate=True,
+                enforce=True, check=True, propagate=True, local=False,
+                modifiable=False, dynamic=False, removable=False,
+                stickingatnode=False):
+
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+
+        kwargs = dict(name=name, initial=initial, separate=separate,
+                      enforce=enforce, check=check,
+                      propagate=propagate, local=local,
+                      modifiable=modifiable, dynamic=dynamic,
+                      removable=removable,
+                      stickingatnode=stickingatnode)
+        kwargs['lhs'] = -SCIPinfinity(self._scip) if cons._lhs is None else cons._lhs
+        kwargs['rhs'] =  SCIPinfinity(self._scip) if cons._rhs is None else cons._rhs
+
+        deg = cons.expr.degree()
+        if deg <= 1:
+            return self._createConsLinear(cons, **kwargs)
+        elif deg <= 2:
+            return self._createConsQuadratic(cons, **kwargs)
+        elif deg == float('inf'): # general nonlinear
+            raise NotImplementedError("General Nonlinear Constraint Not yet Implemented")
+            #return self._addGenNonlinearCons(cons, **kwargs)
+        else:
+            #return self._addNonlinearCons(cons, **kwargs)
+            raise NotImplementedError("Polynomial Nonlinear Constraint Not yet Implemented")
+
     # Constraint functions
     def addCons(self, cons, name='', initial=True, separate=True,
                 enforce=True, check=True, propagate=True, local=False,
@@ -2100,28 +2200,18 @@ cdef class Model:
         """
         assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
 
-        # replace empty name with generic one
-        if name == '':
-            name = 'c'+str(SCIPgetNConss(self._scip)+1)
-
         kwargs = dict(name=name, initial=initial, separate=separate,
                       enforce=enforce, check=check,
                       propagate=propagate, local=local,
                       modifiable=modifiable, dynamic=dynamic,
                       removable=removable,
                       stickingatnode=stickingatnode)
-        kwargs['lhs'] = -SCIPinfinity(self._scip) if cons._lhs is None else cons._lhs
-        kwargs['rhs'] =  SCIPinfinity(self._scip) if cons._rhs is None else cons._rhs
+        # replace empty name with generic one
+        pycons = self.createExprCons(cons, **kwargs)
+        PY_SCIP_CALL(SCIPaddCons(self._scip, (<Constraint>pycons).scip_cons))
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &((<Constraint>pycons).scip_cons)))
+        return pycons
 
-        deg = cons.expr.degree()
-        if deg <= 1:
-            return self._addLinCons(cons, **kwargs)
-        elif deg <= 2:
-            return self._addQuadCons(cons, **kwargs)
-        elif deg == float('inf'): # general nonlinear
-            return self._addGenNonlinearCons(cons, **kwargs)
-        else:
-            return self._addNonlinearCons(cons, **kwargs)
     
     def addConss(self, conss, name='', initial=True, separate=True,
                  enforce=True, check=True, propagate=True, local=False,
@@ -2187,7 +2277,7 @@ cdef class Model:
             )
 
         return constraints
-
+    
     def addConsDisjunction(self, conss, name = '', initial = True, 
         relaxcons = None, enforce=True, check =True, 
         local=False, modifiable = False, dynamic = False):
@@ -2248,6 +2338,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
                 free(vars_array)
                 free(coeffs_array)
+
             elif deg <=2:
                 PY_SCIP_CALL(SCIPcreateConsQuadraticNonlinear(
                     self._scip, &scip_cons, str_conversion(kwargs['name']),
