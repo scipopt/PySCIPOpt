@@ -2,6 +2,8 @@
 
 ## Unreleased
 ### Added
+- Added methods for creating expression constraints without adding to problem
+- Added methods for creating/adding/appending disjunction constraints
 - Added recipe for nonlinear objective functions
 - Added method for adding piecewise linear constraints
 - Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
