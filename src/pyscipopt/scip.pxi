@@ -2372,19 +2372,27 @@ cdef class Model:
         """
         assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
 
+        cdef SCIP_CONS* scip_cons
+
         kwargs = dict(name=name, initial=initial, separate=separate,
                       enforce=enforce, check=check,
                       propagate=propagate, local=local,
                       modifiable=modifiable, dynamic=dynamic,
                       removable=removable,
                       stickingatnode=stickingatnode)
-        # replace empty name with generic one
-        pycons = self.createExprCons(cons, **kwargs)
-        PY_SCIP_CALL(SCIPaddCons(self._scip, (<Constraint>pycons).scip_cons))
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &((<Constraint>pycons).scip_cons)))
+        #  we have to pass this back to a SCIP_CONS*
+        # object to create a new python constraint & handle constraint release
+        # correctly. Otherwise, segfaults when trying to query information
+        # about the created constraint later.
+        pycons_initial = self.createExprCons(cons, **kwargs)
+        scip_cons = (<Constraint>pycons_initial).scip_cons
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pycons = Constraint.create(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
         return pycons
 
-    
     def addConss(self, conss, name='', initial=True, separate=True,
                  enforce=True, check=True, propagate=True, local=False,
                  modifiable=False, dynamic=False, removable=False,
@@ -2638,7 +2646,6 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         return Constraint.create(scip_cons)
-
     def addConsSOS2(self, vars, weights=None, name="SOS2cons",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
@@ -3458,6 +3465,7 @@ cdef class Model:
             self.optimize()
         else:
             PY_SCIP_CALL(SCIPsolveConcurrent(self._scip))
+            print("solveconcurrent")
             self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
 
     def presolve(self):

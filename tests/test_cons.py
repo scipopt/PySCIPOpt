@@ -11,6 +11,7 @@ def test_getConsNVars():
         x[i] = m.addVar("%i" % i)
 
     c = m.addCons(quicksum(x[i] for i in x) <= 10)
+    print(c.__hash__())
     assert m.getConsNVars(c) == n_vars
 
     m.optimize()
@@ -117,7 +118,9 @@ def test_cons_indicator():
     assert c.getConshdlrName() == "indicator"
 
 
-@pytest.mark.xfail(reason="addConsIndicator doesn't behave as expected when binary variable is False. See Issue #717.")
+@pytest.mark.xfail(
+    reason="addConsIndicator doesn't behave as expected when binary variable is False. See Issue #717."
+)
 def test_cons_indicator_fail():
     m = Model()
     binvar = m.addVar(vtype="B")
@@ -131,23 +134,6 @@ def test_cons_indicator_fail():
     m.setSolVal(sol, binvar, 0)
     assert m.checkSol(sol)  # solution should be feasible
 
-def test_addConsDisjunction():
-    m = Model()
-
-    x1 = m.addVar(vtype="C", lb=-1, ub=1)
-    x2 = m.addVar(vtype="C", lb=-3, ub=3)
-    o = m.addVar(vtype="C")
-
-    c = m.addConsDisjunction([x1 <= 0, x2 <= 0])
-    m.addCons(o <= x1 + x2)
-
-    m.setObjective(o, "maximize")
-    m.optimize()
-
-    assert m.isEQ(m.getVal(x1), 0.0)
-    assert m.isEQ(m.getVal(x2), 3.0)
-    assert m.isEQ(m.getVal(o), 3.0)
-    #assert c.getConshdlrName() == "disjunction"
 
 def test_addConsCardinality():
     m = Model()
@@ -170,6 +156,42 @@ def test_printCons():
     m.printCons(c)
 
 
+def test_addConsElemDisjunction():
+    m = Model()
+    x = m.addVar(vtype="c", lb=-10, ub=2)
+    y = m.addVar(vtype="c", lb=-10, ub=5)
+    o = m.addVar(vtype="c")
+
+    m.addCons(o <= (x + y))
+    disj_cons = m.addConsDisjunction([])
+    c1 = m.createExprCons(x <= 1)
+    c2 = m.createExprCons(x <= 0)
+    c3 = m.createExprCons(y <= 0)
+    m.addConsElemDisjunction(disj_cons, c1)
+    disj_cons = m.addConsElemDisjunction(disj_cons, c2)
+    disj_cons = m.addConsElemDisjunction(disj_cons, c3)
+    m.setObjective(o, "maximize")
+    m.optimize()
+    assert m.isEQ(m.getVal(x), 1)
+    assert m.isEQ(m.getVal(y), 5)
+    assert m.isEQ(m.getVal(o), 6)
+
+
+def test_addConsDisjunction_expr_init():
+    m = Model()
+    x = m.addVar(vtype="c", lb=-10, ub=2)
+    y = m.addVar(vtype="c", lb=-10, ub=5)
+    o = m.addVar(vtype="c")
+
+    m.addCons(o <= (x + y))
+    m.addConsDisjunction([x <= 1, x <= 0, y <= 0])
+    m.setObjective(o, "maximize")
+    m.optimize()
+    assert m.isEQ(m.getVal(x), 1)
+    assert m.isEQ(m.getVal(y), 5)
+    assert m.isEQ(m.getVal(o), 6)
+
+
 @pytest.mark.skip(reason="TODO: test getValsLinear()")
 def test_getValsLinear():
     assert True
@@ -178,3 +200,7 @@ def test_getValsLinear():
 @pytest.mark.skip(reason="TODO: test getRowLinear()")
 def test_getRowLinear():
     assert True
+
+
+if __name__ == "__main__":
+    test_getConsNVars()

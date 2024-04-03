@@ -1507,6 +1507,7 @@ cdef extern from "scip/cons_disjunction.h":
                                             SCIP_Bool local,
                                             SCIP_Bool modifiable,
                                             SCIP_Bool dynamic)
+
     SCIP_RETCODE SCIPaddConsElemDisjunction(SCIP *scip,
                                             SCIP_CONS *cons,
                                             SCIP_CONS *addcons)
