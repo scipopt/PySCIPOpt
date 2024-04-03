@@ -2449,11 +2449,11 @@ cdef class Model:
             )
 
         return constraints
-    
+
     def addConsDisjunction(self, conss, name = '', initial = True, 
         relaxcons = None, enforce=True, check =True, 
         local=False, modifiable = False, dynamic = False):
-        
+
         def ensure_iterable(elem, length):
             if isinstance(elem, Iterable):
                 return elem
@@ -2463,12 +2463,11 @@ cdef class Model:
 
         conss = list(conss)
         n_conss = len(conss)
-        assert n_conss >= 2, "Given constraint list contains fewer than 2 items!"
 
         cdef SCIP_CONS* disj_cons
 
         cdef SCIP_CONS* scip_cons
-        
+
         cdef SCIP_EXPR* scip_expr
 
         PY_SCIP_CALL(SCIPcreateConsDisjunction(
@@ -2476,79 +2475,26 @@ cdef class Model:
             initial, enforce, check, local, modifiable, dynamic
         ))
 
-        #PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
+        # TODO add constraints to disjunction
         for i, cons in enumerate(conss):
-            deg = cons.expr.degree()
-            assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__     
-
-            kwargs = dict(name='c'+str(SCIPgetNConss(self._scip)+1),initial=True,separate=True,
-                enforce=True, check=True, propagate=True, local=False,
-                modifiable=False, dynamic=False, removable=False,
-                stickingatnode=False)
-
-            kwargs['lhs'] = -SCIPinfinity(self._scip) if cons._lhs is None else cons._lhs
-            kwargs['rhs'] =  SCIPinfinity(self._scip) if cons._rhs is None else cons._rhs
-            terms = cons.expr.terms
-
-            if deg <= 1:
-                nvars = len(terms.items())
-                vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
-                coeffs_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
-
-                for i, (key, coeff) in enumerate(terms.items()):
-                    vars_array[i] = <SCIP_VAR*>(<Variable>key[0]).scip_var
-                    coeffs_array[i] = <SCIP_Real>coeff
-
-                PY_SCIP_CALL(SCIPcreateConsLinear(
-                    self._scip, &scip_cons, str_conversion(kwargs['name']), nvars, vars_array, coeffs_array,
-                    kwargs['lhs'], kwargs['rhs'], kwargs['initial'],
-                    kwargs['separate'], kwargs['enforce'], kwargs['check'],
-                    kwargs['propagate'], kwargs['local'], kwargs['modifiable'],
-                    kwargs['dynamic'], kwargs['removable'], kwargs['stickingatnode']))
-                PY_SCIP_CALL(SCIPaddConsElemDisjunction(self._scip, disj_cons, scip_cons)) 
-                PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-                free(vars_array)
-                free(coeffs_array)
-
-            elif deg <=2:
-                PY_SCIP_CALL(SCIPcreateConsQuadraticNonlinear(
-                    self._scip, &scip_cons, str_conversion(kwargs['name']),
-                    0, NULL, NULL,        # linear
-                    0, NULL, NULL, NULL,  # quadratc
-                    kwargs['lhs'], kwargs['rhs'],
-                    kwargs['initial'], kwargs['separate'], kwargs['enforce'],
-                    kwargs['check'], kwargs['propagate'], kwargs['local'],
-                    kwargs['modifiable'], kwargs['dynamic'], kwargs['removable']))
-                for v, c in terms.items():
-                    if len(v) == 1: # linear
-                        var = <Variable>v[0]
-                        PY_SCIP_CALL(SCIPaddLinearVarNonlinear(self._scip, scip_cons, var.scip_var, c))
-                    else: # quadratic
-                        assert len(v) == 2, 'term length must be 1 or 2 but it is %s' % len(v)
-
-                        varexprs = <SCIP_EXPR**> malloc(2 * sizeof(SCIP_EXPR*))
-                        var1, var2 = <Variable>v[0], <Variable>v[1]
-                        PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[0], var1.scip_var, NULL, NULL) )
-                        PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[1], var2.scip_var, NULL, NULL) )
-                        PY_SCIP_CALL( SCIPcreateExprProduct(self._scip, &scip_expr, 2, varexprs, 1.0, NULL, NULL) )
-
-                        PY_SCIP_CALL( SCIPaddExprNonlinear(self._scip, scip_cons, scip_expr, c) )
-
-                        PY_SCIP_CALL(SCIPaddConsElemDisjunction(self._scip, disj_cons, scip_cons)) 
-                        PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &scip_expr) )
-                        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-                        PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &varexprs[1]) )
-                        PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &varexprs[0]) )
-                        free(varexprs)
-            else:
-                raise NotImplementedError("Only Linear Expressions are currently supported")
-
-
+            pycons = self.createExprCons(cons, name=name, initial = initial,
+                                            enforce=enforce, check=check,
+                                            local=local, modifiable=modifiable, dynamic=dynamic
+                                            )
+            PY_SCIP_CALL(SCIPaddConsElemDisjunction(self._scip,disj_cons, (<Constraint>pycons).scip_cons))
+            PY_SCIP_CALL(SCIPreleaseCons(self._scip, &(<Constraint>pycons).scip_cons))
         PY_SCIP_CALL(SCIPaddCons(self._scip, disj_cons))
         PyCons = Constraint.create(disj_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &disj_cons))
         return PyCons
+
+    def addConsElemDisjunction(self, Constraint disj_cons, Constraint cons):
+        PY_SCIP_CALL(SCIPaddConsElemDisjunction(self._scip, disj_cons.scip_cons, cons.scip_cons))
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &((<Constraint>disj_cons).scip_cons)))
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &((<Constraint>cons).scip_cons)))
+
+        return disj_cons
 
 
     def getConsNVars(self, Constraint constraint):
