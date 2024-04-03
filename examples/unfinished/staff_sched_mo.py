@@ -7,8 +7,8 @@ Objectives:
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-import random
-from pyscipopt import Model, quicksum, multidict
+from pyscipopt import Model, quicksum
+
 
 def staff_mo(I,T,N,J,S,c,b):
     """
@@ -135,7 +135,7 @@ def solve_segment(I,T,N,J,S,c,b):
 
 if __name__ == "__main__":
     from pareto_front import pareto_front
-    from staff_sched import make_data,make_data_trick
+    from staff_sched import make_data_trick
     # I,T,N,J,S,c,b = make_data()
     I,T,N,J,S,c,b = make_data_trick()
     cand_seg = solve_segment(I,T,N,J,S,c,b)

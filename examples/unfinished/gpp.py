@@ -4,7 +4,8 @@
 Copyright (c) by Joao Pedro PEDROSO, Masahiro MURAMATSU and Mikio KUBO, 2012
 """
 
-from pyscipopt import Model, quicksum, multidict
+from pyscipopt import Model, quicksum
+
 
 def gpp(V,E):
     """gpp -- model for the graph partitioning problem

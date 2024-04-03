@@ -21,7 +21,7 @@ which we generate cutting patterns by solving a knapsack sub-problem.
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 
-from pyscipopt import Model, quicksum, multidict
+from pyscipopt import Model, quicksum
 
 LOG = True
 EPS = 1.e-6
