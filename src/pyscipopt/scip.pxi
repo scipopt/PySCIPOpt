@@ -2338,7 +2338,25 @@ cdef class Model:
                 enforce=True, check=True, propagate=True, local=False,
                 modifiable=False, dynamic=False, removable=False,
                 stickingatnode=False):
+        """Create a linear or nonlinear constraint without adding it to the SCIP problem. This is useful for creating disjunction constraints
+        without also enforcing the individual constituents. Currently, this can only be used as an argument to `.addConsElemDisjunction`. To add 
+        an individual linear/nonlinear constraint, prefer `.addCons()`.
 
+        :param cons: constraint object
+        :param name: the name of the constraint, generic name if empty (Default value = '')
+        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        :param separate: should the constraint be separated during LP processing? (Default value = True)
+        :param enforce: should the constraint be enforced during node processing? (Default value = True)
+        :param check: should the constraint be checked for feasibility? (Default value = True)
+        :param propagate: should the constraint be propagated during node processing? (Default value = True)
+        :param local: is the constraint only valid locally? (Default value = False)
+        :param modifiable: is the constraint modifiable (subject to column generation)? (Default value = False)
+        :param dynamic: is the constraint subject to aging? (Default value = False)
+        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be  moved to a more global node? (Default value = False)
+        :return The created @ref scip#Constraint "Constraint" object.
+
+        """
         if name == '':
             name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
@@ -2474,7 +2492,19 @@ cdef class Model:
     def addConsDisjunction(self, conss, name = '', initial = True, 
         relaxcons = None, enforce=True, check =True, 
         local=False, modifiable = False, dynamic = False):
+        """Add a disjunction constraint.
 
+        :param Iterable[Constraint] conss: An iterable of constraint objects to be included initially in the disjunction. Currently, these must be expressions.
+        :param name: the name of the disjunction constraint.
+        :param initial: should the LP relaxation of disjunction constraint be in the initial LP? (Default value = True)
+        :param relaxcons: a conjunction constraint containing the linear relaxation of the disjunction constraint, or None. (Default value = None)
+        :param enforce: should the constraint be enforced during node processing? (Default value = True)
+        :param check: should the constraint be checked for feasibility? (Default value = True)
+        :param local: is the constraint only valid locally? (Default value = False)
+        :param modifiable: is the constraint modifiable (subject to column generation)? (Default value = False)
+        :param dynamic: is the constraint subject to aging? (Default value = False)
+        :return The added @ref scip#Constraint "Constraint" object.
+        """
         def ensure_iterable(elem, length):
             if isinstance(elem, Iterable):
                 return elem
@@ -2513,7 +2543,12 @@ cdef class Model:
     def addConsElemDisjunction(self, Constraint disj_cons, Constraint cons):
         PY_SCIP_CALL(SCIPaddConsElemDisjunction(self._scip, (<Constraint>disj_cons).scip_cons, (<Constraint>cons).scip_cons))
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &((<Constraint>cons).scip_cons)))
-
+        """Appends a constraint to a disjunction.
+        
+        :param Constraint disj_cons: the disjunction constraint to append to.
+        :param Constraint cons: the Constraint to append
+        :return The disjunction constraint with added @ref scip#Constraint object.
+        """
         return disj_cons
 
 
