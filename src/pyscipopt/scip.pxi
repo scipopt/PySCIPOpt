@@ -2490,8 +2490,7 @@ cdef class Model:
         return PyCons
 
     def addConsElemDisjunction(self, Constraint disj_cons, Constraint cons):
-        PY_SCIP_CALL(SCIPaddConsElemDisjunction(self._scip, disj_cons.scip_cons, cons.scip_cons))
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &((<Constraint>disj_cons).scip_cons)))
+        PY_SCIP_CALL(SCIPaddConsElemDisjunction(self._scip, (<Constraint>disj_cons).scip_cons, (<Constraint>cons).scip_cons))
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &((<Constraint>cons).scip_cons)))
 
         return disj_cons
