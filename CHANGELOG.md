@@ -2,6 +2,12 @@
 
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+### Removed
+
+## 5.0.1 - 2024-04-05
+### Added
 - Added recipe for nonlinear objective functions
 - Added method for adding piecewise linear constraints
 - Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
