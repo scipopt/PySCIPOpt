@@ -347,12 +347,17 @@ def test_locale():
     import locale
 
     m = Model()
-    x = m.addVar(lb=1.1)
-
-    locale.setlocale(locale.LC_NUMERIC, "pt_PT")
+    m.addVar(lb=1.1)
+    
+    try:
+        locale.setlocale(locale.LC_NUMERIC, "pt_PT")
+    except Exception:
+        pytest.skip("pt_PT locale is non-default and needs to be installed.")
+    
 
     assert locale.str(1.1) == "1,1"
 
+    
     m.writeProblem("model.cip")
 
     with open("model.cip") as file:
