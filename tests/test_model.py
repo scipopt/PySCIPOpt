@@ -352,11 +352,9 @@ def test_locale():
     try:
         locale.setlocale(locale.LC_NUMERIC, "pt_PT")
     except Exception:
-        pytest.skip("pt_PT locale is non-default and needs to be installed.")
+        pytest.skip("pt_PT locale was not found. It might need to be installed.")
     
-
     assert locale.str(1.1) == "1,1"
-
     
     m.writeProblem("model.cip")
 
