@@ -975,6 +975,128 @@ cdef class Constraint:
         return (self.__class__ == other.__class__
                 and self.scip_cons == (<Constraint>other).scip_cons)
 
+cdef class Decomposition:
+    """Base class holding a pointer to SCIP decomposition"""
+
+    @staticmethod
+    cdef create(SCIP_DECOMP* scip_decomp):
+        if scip_decomp == NULL:
+            raise Warning("cannot create Constraint with SCIP_CONS* == NULL")
+        decomp = Decomposition()
+        decomp.scip_decomp = scip_decomp
+        return decomp
+
+    def isOriginal(self):
+        return SCIPdecompIsOriginal(self.scip_decomp)
+
+    def getAreaScore(self):
+        return SCIPdecompGetAreaScore(self.scip_decomp)
+
+    def getModularity(self):
+        return SCIPdecompGetModularity(self.scip_decomp)
+
+    def getNBorderVars(self):
+        return SCIPdecompGetNBorderVars(self.scip_decomp)
+
+    def getNBorderConss(self):
+        return SCIPdecompGetNBorderConss(self.scip_decomp)
+
+    def getNBlockGraphEdges(self):
+        return SCIPdecompGetNBlockGraphEdges(self.scip_decomp)
+
+    def getNBlockGraphComponents(self):
+        return SCIPdecompGetNBlockGraphComponents(self.scip_decomp)
+
+    def getNblockGraphArticulations(self):
+        return SCIPdecompGetNBlockGraphArticulations(self.scip_decomp)
+
+    def getBlockGraphMaxDegree(self):
+        return SCIPdecompGetBlockGraphMaxDegree(self.scip_decomp)
+
+    def getBlockGraphMinDegree(self):
+        return SCIPdecompGetBlockGraphMinDegree(self.scip_decomp)
+
+    def getConsLabels(self, conss):
+        """get {cons: label} pair for python constraints conss"""
+        cdef int nconss = <int> len(conss)
+        cdef int* labels = <int *> malloc(nconss * sizeof(int))
+        cdef SCIP_CONS** scip_conss = <SCIP_CONS**> malloc(nconss * sizeof(SCIP_CONS*))
+
+        for i in range(nconss):
+            scip_conss[i] = (<Constraint>conss[i]).scip_cons
+
+        PY_SCIP_CALL(SCIPdecompGetConsLabels(self.scip_decomp, scip_conss, labels, nconss))
+
+        cons_labels = {}
+        for i in range(nconss):
+            cons_labels[conss[i]] = labels[i]
+        free(labels)
+        free(scip_conss)
+        return cons_labels
+
+    def setConsLabels(self, cons_labels):
+        """ applies labels to constraints in decomposition.
+        :param cons_labels dict of {constraint: label} pairs to be applied
+        """
+        cons_labels = cons_labels.items()
+
+        cdef int nconss = len(cons_labels)
+        cdef SCIP_CONS** scip_conss = <SCIP_CONS**> malloc(nconss* sizeof(SCIP_CONS*))
+        cdef int* labels = <int*> malloc(nconss * sizeof(int))
+
+        for i in range(nconss):
+            scip_conss[i] = (<Constraint>cons_labels[i][0]).scip_cons
+            labels[i] = cons_labels[i][1]
+
+        PY_SCIP_CALL(SCIPdecompSetConsLabels(self.scip_decomp, scip_conss, labels, nconss))
+
+        free(scip_conss)
+        free(labels)
+
+    def getVarsLabels(self, vrs):
+        """get {var: label} pairs for python variables vrs"""
+
+        cdef int nvars = <int> len(vrs)
+        cdef int* labels = <int*> malloc(nvars * sizeof(int))
+        cdef SCIP_VAR** scip_vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+
+        for i in range(nvars):
+            scip_vars[i] = (<Variable>vrs[i]).scip_var
+
+        PY_SCIP_CALL(SCIPdecompGetVarsLabels(self.scip_decomp, scip_vars, labels, nvars))
+
+        var_labels = {}
+        for i in range(nvars):
+            var_labels[vrs[i]] = labels[i]
+
+        free(labels)
+        free(scip_vars)
+        return var_labels
+
+    def setVarLabels(self, var_labels):
+        """set {var: label} pairs in decomposition"""
+        var_labels = var_labels.items()
+
+        cdef int nvars= len(var_labels)
+        cdef SCIP_VAR** scip_vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        cdef int* labels = <int*> malloc(nvars * sizeof(int))
+
+        for i in range(nvars):
+            scip_vars[i] = (<Variable>var_labels[i][0]).scip_var
+            labels[i] = var_labels[i][1]
+
+        PY_SCIP_CALL(SCIPdecompSetVarsLabels(self.scip_decomp, scip_vars, labels, nvars))
+
+        free(scip_vars)
+        free(labels)
+
+    def clear(self, varlabels =True, conslabels = True):
+        """clears variable and/or constraint labels from decomposition"""
+
+        if not (varlabels or conslabels):
+            ... # TODO does decomp clear do anything if both options are false?
+        else:
+            PY_SCIP_CALL(SCIPdecompClear(self.scip_decomp, varlabels, conslabels))
 
 cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) noexcept:
     sys.stdout.write(msg.decode('UTF-8'))
@@ -3421,6 +3543,9 @@ cdef class Model:
     def presolve(self):
         """Presolve the problem."""
         PY_SCIP_CALL(SCIPpresolve(self._scip))
+
+    def addDecomposition(self, Decomposition decomp):
+        PY_SCIP_CALL(SCIPaddDecomp(self._scip, decomp.scip_decomp))
 
     # Benders' decomposition methods
     def initBendersDefault(self, subproblems):

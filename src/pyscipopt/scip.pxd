@@ -333,6 +333,9 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_CONS:
         pass
 
+    ctypedef struct SCIP_DECOMP:
+        pass
+
     ctypedef struct SCIP_ROW:
         pass
 
@@ -1552,6 +1555,95 @@ cdef extern from "scip/scip_cons.h":
                                SCIP_CONS* cons,
                                FILE* file)
 
+cdef extern from "scip/pub_dcmp.h":
+    SCIP_RETCODE SCIPdecompCreate(SCIP_DECOMP** decomp,
+                                  BMS_BLKMEM* blkmem,
+                                  int nblocks,
+                                  SCIP_Bool original,
+                                  SCIP_Bool benderslabels)
+
+    SCIP_Bool SCIPdecompIsOriginal(SCIP_DECOMP *decomp)
+
+    void SCIPdecompSetUseBendersLabels(SCIP_DECOMP *decomp, SCIP_Bool benderslabels)
+
+    SCIP_Bool SCIPdecompUseBendersLabels(SCIP_DECOMP *decomp)
+
+    int SCIPdecompGetNBlocks(SCIP_DECOMP *decomp)
+
+    SCIP_Real SCIPdecompGetAreaScore(SCIP_DECOMP *decomp)
+
+    SCIP_Real SCIPdecompGetModularity(SCIP_DECOMP *decomp)
+
+    SCIP_RETCODE SCIPdecompGetVarsSize(SCIP_DECOMP *decomp, int *varssize, int nblocks)
+
+    SCIP_RETCODE SCIPdecompGetConssSize(SCIP_DECOMP *decomp, int *consssize, int nblocks)
+
+    int SCIPdecompGetNBorderVars(SCIP_DECOMP *decomp)
+
+    int SCIPdecompGetNBorderConss(SCIP_DECOMP *decomp)
+
+    int SCIPdecompGetNBlockGraphEdges(SCIP_DECOMP *decomp)
+
+    int SCIPdecompGetNBlockGraphComponents(SCIP_DECOMP *decomp)
+
+    int SCIPdecompGetNBlockGraphArticulations(SCIP_DECOMP *decomp)
+
+    int SCIPdecompGetBlockGraphMaxDegree(SCIP_DECOMP *decomp)
+
+    int SCIPdecompGetBlockGraphMinDegree(SCIP_DECOMP *decomp)
+
+    SCIP_RETCODE SCIPdecompSetVarsLabels(SCIP_DECOMP *decomp, SCIP_VAR **vrs, int *labels, int nvars)
+
+    void SCIPdecompGetVarsLabels(SCIP_DECOMP *decomp, SCIP_VAR **vrs, int *labels, int nvars)
+
+    SCIP_RETCODE SCIPdecompSetConsLabels(SCIP_DECOMP *decomp, SCIP_CONS **conss, int *labels, int nconss)
+
+    void SCIPdecompGetConsLabels(SCIP_DECOMP *decomp, SCIP_CONS **conss, int *labels, int nconss)
+
+    SCIP_RETCODE SCIPdecompClear(SCIP_DECOMP *decomp, SCIP_Bool clearvarlabels, SCIP_Bool clearconslabels)
+
+    char* SCIPdecompPrintStats(SCIP_DECOMP *decomp, char *strbuf)
+
+cdef extern from "scip/scip_dcmp.h":
+    SCIP_RETCODE SCIPcreateDecomp(SCIP* scip,
+                                  SCIP_DECOMP** decomp,
+                                  int nblocks,
+                                  SCIP_Bool original,
+                                  SCIP_Bool benderslabels)
+
+    SCIP_RETCODE SCIPaddDecomp(SCIP* scip, SCIP_DECOMP* decomp) 
+
+    void SCIPfreeDecomp(SCIP* scip, SCIP_DECOMP** decomp)
+
+    void SCIPgetDecomps(SCIP* scip, 
+                       SCIP_DECOMP*** decomp, 
+                       int* ndecomps,
+                       SCIP_Bool original)
+
+    SCIP_RETCODE SCIPhasConsOnlyLinkVars(SCIP* scip,
+                                         SCIP_DECOMP* decomp,
+                                         SCIP_CONS *cons,
+                                         SCIP_Bool* hasonlylinkvars)
+
+    SCIP_RETCODE SCIPcomputeDecompConsLabels(SCIP* scip,
+                                             SCIP_DECOMP* decomp,
+                                             SCIP_CONS** conss, 
+                                             int nconss)
+
+    SCIP_RETCODE SCIPcomputeDecompVarsLabels(SCIP* scip,
+                                             SCIP_DECOMP* decomp,
+                                             SCIP_CONS** conss, 
+                                             int nconss)
+    SCIP_RETCODE SCIPassignDecompLinkConss(SCIP* scip,
+                                           SCIP_DECOMP* decomp,
+                                           SCIP_CONS** conss,
+                                           int* nskipconss)
+
+    SCIP_RETCODE SCIPcomputeDecompStats(SCIP* scip,
+                                        SCIP_DECOMP *decomp,
+                                        SCIP_CONS** conss,
+                                        int nconss,
+                                        int* nskipconss)
 cdef extern from "blockmemshell/memory.h":
     void BMScheckEmptyMemory()
     long long BMSgetMemoryUsed()
@@ -1915,6 +2007,14 @@ cdef class Constraint:
 
     @staticmethod
     cdef create(SCIP_CONS* scipcons)
+
+cdef class Decomposition:
+    cdef SCIP_DECOMP* scip_decomp
+
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_DECOMP* scip_decomp)
 
 cdef class Model:
     cdef SCIP* _scip
