@@ -977,7 +977,8 @@ cdef class Constraint:
 
 cdef class Decomposition:
     """Base class holding a pointer to SCIP decomposition"""
-
+    def __init__(self):
+        self.create()
     @staticmethod
     cdef create(SCIP_DECOMP* scip_decomp):
         if scip_decomp == NULL:
@@ -1044,9 +1045,10 @@ cdef class Decomposition:
         cdef SCIP_CONS** scip_conss = <SCIP_CONS**> malloc(nconss* sizeof(SCIP_CONS*))
         cdef int* labels = <int*> malloc(nconss * sizeof(int))
 
-        for i in range(nconss):
-            scip_conss[i] = (<Constraint>cons_labels[i][0]).scip_cons
-            labels[i] = cons_labels[i][1]
+        for i, pair in enumerate(cons_labels):
+            cons, lab = pair
+            scip_conss[i] = (<Constraint>cons).scip_cons
+            labels[i] = lab
 
         PY_SCIP_CALL(SCIPdecompSetConsLabels(self.scip_decomp, scip_conss, labels, nconss))
 
