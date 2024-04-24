@@ -11,7 +11,9 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 
 import math
 import random
-from pyscipopt import Model, quicksum, multidict
+
+from pyscipopt import quicksum
+
 
 def optimize(model,cand):
     """optimize: function for solving the model, updating candidate solutions' list

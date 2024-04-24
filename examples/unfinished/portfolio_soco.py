@@ -5,9 +5,11 @@ Approach: use second-order cone optimization.
 
 Copyright (c) by Joao Pedro PEDROSO, Masahiro MURAMATSU and Mikio KUBO, 2012
 """
+import math
+
 from pyscipopt import Model, quicksum, multidict
 
-import math
+
 def phi_inv(p):
     """phi_inv: inverse of gaussian (normal) CDF
     Source:

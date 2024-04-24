@@ -1315,24 +1315,26 @@ cdef class Model:
         """returns current limit on objective function."""
         return SCIPgetObjlimit(self._scip)
 
-    def setObjective(self, coeffs, sense = 'minimize', clear = 'true'):
+    def setObjective(self, expr, sense = 'minimize', clear = 'true'):
         """Establish the objective function as a linear expression.
 
-        :param coeffs: the coefficients
+        :param expr: the objective function SCIP Expr, or constant value
         :param sense: the objective sense (Default value = 'minimize')
         :param clear: set all other variables objective coefficient to zero (Default value = 'true')
 
         """
+ 
         cdef SCIP_VAR** _vars
         cdef int _nvars
 
         # turn the constant value into an Expr instance for further processing
-        if not isinstance(coeffs, Expr):
-            assert(_is_number(coeffs)), "given coefficients are neither Expr or number but %s" % coeffs.__class__.__name__
-            coeffs = Expr() + coeffs
+        if not isinstance(expr, Expr):
+            print(expr)
+            assert(_is_number(expr)), "given coefficients are neither Expr or number but %s" % expr.__class__.__name__
+            expr = Expr() + expr
 
-        if coeffs.degree() > 1:
-            raise ValueError("Nonlinear objective functions are not supported!")
+        if expr.degree() > 1:
+            raise ValueError("SCIP does not support nonlinear objective functions. Consider using set_nonlinear_objective in the pyscipopt.recipe.nonlinear")
         
         if clear:
             # clear existing objective function
@@ -1342,10 +1344,10 @@ cdef class Model:
             for i in range(_nvars):
                 PY_SCIP_CALL(SCIPchgVarObj(self._scip, _vars[i], 0.0))
 
-        if coeffs[CONST] != 0.0:
-            self.addObjoffset(coeffs[CONST])
+        if expr[CONST] != 0.0:
+            self.addObjoffset(expr[CONST])
 
-        for term, coef in coeffs.terms.items():
+        for term, coef in expr.terms.items():
             # avoid CONST term of Expr
             if term != CONST:
                 assert len(term) == 1
@@ -4861,6 +4863,8 @@ cdef class Model:
             _eventhdlr = SCIPfindEventhdlr(self._scip, n)
         else:
             raise Warning("event handler not found")
+        
+        Py_INCREF(self)
         PY_SCIP_CALL(SCIPcatchEvent(self._scip, eventtype, _eventhdlr, NULL, NULL))
 
     def dropEvent(self, eventtype, Eventhdlr eventhdlr):
@@ -4871,6 +4875,8 @@ cdef class Model:
             _eventhdlr = SCIPfindEventhdlr(self._scip, n)
         else:
             raise Warning("event handler not found")
+        
+        Py_DECREF(self)
         PY_SCIP_CALL(SCIPdropEvent(self._scip, eventtype, _eventhdlr, NULL, -1))
 
     def catchVarEvent(self, Variable var, eventtype, Eventhdlr eventhdlr):
@@ -4970,8 +4976,11 @@ cdef class Model:
         """sets the log file name for the currently installed message handler
         :param path: name of log file, or None (no log)
         """
-        c_path = str_conversion(path) if path else None
-        SCIPsetMessagehdlrLogfile(self._scip, c_path)
+        if path:
+            c_path = str_conversion(path)
+            SCIPsetMessagehdlrLogfile(self._scip, c_path)
+        else:
+            SCIPsetMessagehdlrLogfile(self._scip, NULL)
 
     # Parameter Methods
 

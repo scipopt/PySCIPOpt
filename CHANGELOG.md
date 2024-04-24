@@ -2,11 +2,22 @@
 
 ## Unreleased
 ### Added
+- Added check for pt_PT locale in test_model.py
+### Fixed
+### Changed
+### Removed
+
+## 5.0.1 - 2024-04-05
+### Added
+- Added recipe for nonlinear objective functions
 - Added method for adding piecewise linear constraints
 - Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
-- Add recipes sub-package
+- New test for model setLogFile
 ### Fixed
 - Fixed locale fix
+- Fixed model.setLogFile(None) error
+- Add recipes sub-package
+- Fixed "weakly-referenced object no longer exists" when calling dropEvent in test_customizedbenders
 - Fixed incorrect writing/printing when user had a non-default locale
 ### Changed
 ### Removed
