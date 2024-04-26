@@ -1329,7 +1329,6 @@ cdef class Model:
 
         # turn the constant value into an Expr instance for further processing
         if not isinstance(expr, Expr):
-            print(expr)
             assert(_is_number(expr)), "given coefficients are neither Expr or number but %s" % expr.__class__.__name__
             expr = Expr() + expr
 
