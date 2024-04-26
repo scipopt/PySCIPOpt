@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added verbose option for writeProblem and writeParams
 - Added check for pt_PT locale in test_model.py
 ### Fixed
 ### Changed
