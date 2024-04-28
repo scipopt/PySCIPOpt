@@ -4539,8 +4539,13 @@ cdef class Model:
         Keyword arguments:
         filename -- name of the input file
         """
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
         absfile = str_conversion(abspath(filename))
         PY_SCIP_CALL(SCIPreadSol(self._scip, absfile))
+
+        locale.setlocale(locale.LC_NUMERIC, user_locale)
 
     def readSolFile(self, filename):
         """Reads a given solution file.
@@ -4559,7 +4564,14 @@ cdef class Model:
         str_absfile = abspath(filename)
         absfile = str_conversion(str_absfile)
         solution = self.createSol()
+
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
         PY_SCIP_CALL(SCIPreadSolFile(self._scip, absfile, solution.sol, False, &partial, &error))
+
+        locale.setlocale(locale.LC_NUMERIC, user_locale)
+
         if error:
             raise Exception("SCIP: reading solution from file " + str_absfile + " failed!")
 
@@ -5132,7 +5144,13 @@ cdef class Model:
 
         """
         absfile = str_conversion(abspath(file))
+        
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+        
         PY_SCIP_CALL(SCIPreadParams(self._scip, absfile))
+        
+        locale.setlocale(locale.LC_NUMERIC, user_locale)
 
     def writeParams(self, filename='param.set', comments = True, onlychanged = True):
         """Write parameter settings to an external file.
@@ -5181,12 +5199,17 @@ cdef class Model:
         :param extension: specify file extension/type (Default value = None)
 
         """
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
         absfile = str_conversion(abspath(filename))
         if extension is None:
             PY_SCIP_CALL(SCIPreadProb(self._scip, absfile, NULL))
         else:
             extension = str_conversion(extension)
             PY_SCIP_CALL(SCIPreadProb(self._scip, absfile, extension))
+
+        locale.setlocale(locale.LC_NUMERIC, user_locale)
 
     # Counting functions
 
