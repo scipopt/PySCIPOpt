@@ -361,6 +361,6 @@ def test_locale():
     with open("model.cip") as file:
         assert "1,1" not in file.read()
         
-    m.readProblem("data/test_locale.cip")
+    m.readProblem(os.path.join("tests", "data", "test_locale.cip"))
 
     locale.setlocale(locale.LC_NUMERIC,"")
