@@ -2,8 +2,10 @@
 
 ## Unreleased
 ### Added
+- Expanded locale test
 - Added check for pt_PT locale in test_model.py
 ### Fixed
+- Fixed locale errors in reading
 ### Changed
 ### Removed
 
