@@ -131,7 +131,6 @@ def test_cons_indicator_fail():
     m.setSolVal(sol, binvar, 0)
     assert m.checkSol(sol)  # solution should be feasible
 
-
 def test_addConsCardinality():
     m = Model()
     x = {}
@@ -142,6 +141,17 @@ def test_addConsCardinality():
     m.optimize()
 
     assert m.isEQ(m.getVal(quicksum(x[i] for i in range(5))), 3)
+
+def test_getOrigConss():
+    m = Model()
+    x = m.addVar("x", lb=0, ub=2, obj=-1)
+    y = m.addVar("y", lb=0, ub=4, obj=0)
+    m.addCons(x * x <= y)
+    m.addCons(x + y <= 1000)
+    m.addCons(2x + 2y <= 1000)
+    m.optimize()
+    assert len(m.getOrigConss()) == m.getNOrigConss()
+    assert m.getNOrigConss() < m.getNConss()
 
 
 def test_printCons():
