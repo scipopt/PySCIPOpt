@@ -4,6 +4,13 @@
 ### Added
 - Added methods for creating expression constraints without adding to problem
 - Added methods for creating/adding/appending disjunction constraints
+- Added check for pt_PT locale in test_model.py
+### Fixed
+### Changed
+### Removed
+
+## 5.0.1 - 2024-04-05
+### Added
 - Added recipe for nonlinear objective functions
 - Added method for adding piecewise linear constraints
 - Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
