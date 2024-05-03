@@ -148,7 +148,7 @@ def test_getOrigConss():
     y = m.addVar("y", lb=0, ub=4, obj=0)
     m.addCons(x * x <= y)
     m.addCons(x + y <= 1000)
-    m.addCons(2x + 2y <= 1000)
+    m.addCons(2* x + 2 * y <= 1000)
     m.optimize()
     assert len(m.getOrigConss()) == m.getNOrigConss()
     assert m.getNOrigConss() < m.getNConss()
