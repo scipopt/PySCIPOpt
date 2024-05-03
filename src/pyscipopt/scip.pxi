@@ -1778,10 +1778,6 @@ cdef class Model:
         """Retrieve number of variables in the problems"""
         return SCIPgetNVars(self._scip)
 
-    def getNConss(self):
-        """Retrieve the number of constraints."""
-        return SCIPgetNConss(self._scip)
-
     def getNIntVars(self):
         """gets number of integer active problem variables"""
         return SCIPgetNIntVars(self._scip)
@@ -3279,9 +3275,23 @@ cdef class Model:
         _nconss = SCIPgetNConss(self._scip)
         return [Constraint.create(_conss[i]) for i in range(_nconss)]
 
+    def getOrigConss(self):
+        """Retrieve all constraints in the original space"""
+        cdef SCIP_CONS** _conss
+        cdef int _nconss
+        conss = []
+
+        _conss = SCIPgetOrigConss(self._scip)
+        _nconss = SCIPgetNOrigConss(self._scip)
+        return [Constraint.create(_conss[i]) for i in range(_nconss)]
+
     def getNConss(self):
         """Retrieve number of all constraints"""
         return SCIPgetNConss(self._scip)
+
+    def getNOrigConss(self):
+        """Retrieve number of constraints in the original space"""
+        return SCIPgetNOrigConss(self._scip)
 
     def delCons(self, Constraint cons):
         """Delete constraint from the model

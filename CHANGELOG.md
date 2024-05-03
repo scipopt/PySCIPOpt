@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 - Added check for pt_PT locale in test_model.py
+- Added function wrappers for SCIPgetOrigConss and SCIPgetNOrigConss
 ### Fixed
 ### Changed
 ### Removed
