@@ -11,7 +11,6 @@ def test_getConsNVars():
         x[i] = m.addVar("%i" % i)
 
     c = m.addCons(quicksum(x[i] for i in x) <= 10)
-    print(c.__hash__())
     assert m.getConsNVars(c) == n_vars
 
     m.optimize()
@@ -200,7 +199,3 @@ def test_getValsLinear():
 @pytest.mark.skip(reason="TODO: test getRowLinear()")
 def test_getRowLinear():
     assert True
-
-
-if __name__ == "__main__":
-    test_getConsNVars()

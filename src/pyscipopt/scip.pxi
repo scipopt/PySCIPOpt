@@ -2541,14 +2541,14 @@ cdef class Model:
         return PyCons
 
     def addConsElemDisjunction(self, Constraint disj_cons, Constraint cons):
-        PY_SCIP_CALL(SCIPaddConsElemDisjunction(self._scip, (<Constraint>disj_cons).scip_cons, (<Constraint>cons).scip_cons))
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &((<Constraint>cons).scip_cons)))
         """Appends a constraint to a disjunction.
-        
+
         :param Constraint disj_cons: the disjunction constraint to append to.
         :param Constraint cons: the Constraint to append
         :return The disjunction constraint with added @ref scip#Constraint object.
         """
+        PY_SCIP_CALL(SCIPaddConsElemDisjunction(self._scip, (<Constraint>disj_cons).scip_cons, (<Constraint>cons).scip_cons))
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &(<Constraint>cons).scip_cons))
         return disj_cons
 
 
@@ -3513,7 +3513,6 @@ cdef class Model:
             self.optimize()
         else:
             PY_SCIP_CALL(SCIPsolveConcurrent(self._scip))
-            print("solveconcurrent")
             self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
 
     def presolve(self):
