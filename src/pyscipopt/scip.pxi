@@ -2334,7 +2334,7 @@ cdef class Model:
 
         return PyCons
 
-    def createExprCons(self, cons, name='', initial=True, separate=True,
+    def createConsFromExpr(self, cons, name='', initial=True, separate=True,
                 enforce=True, check=True, propagate=True, local=False,
                 modifiable=False, dynamic=False, removable=False,
                 stickingatnode=False):
@@ -2415,7 +2415,7 @@ cdef class Model:
         # object to create a new python constraint & handle constraint release
         # correctly. Otherwise, segfaults when trying to query information
         # about the created constraint later.
-        pycons_initial = self.createExprCons(cons, **kwargs)
+        pycons_initial = self.createConsFromExpr(cons, **kwargs)
         scip_cons = (<Constraint>pycons_initial).scip_cons
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
@@ -2529,7 +2529,7 @@ cdef class Model:
 
         # TODO add constraints to disjunction
         for i, cons in enumerate(conss):
-            pycons = self.createExprCons(cons, name=name, initial = initial,
+            pycons = self.createConsFromExpr(cons, name=name, initial = initial,
                                             enforce=enforce, check=check,
                                             local=local, modifiable=modifiable, dynamic=dynamic
                                             )

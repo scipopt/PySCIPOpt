@@ -163,9 +163,9 @@ def test_addConsElemDisjunction():
 
     m.addCons(o <= (x + y))
     disj_cons = m.addConsDisjunction([])
-    c1 = m.createExprCons(x <= 1)
-    c2 = m.createExprCons(x <= 0)
-    c3 = m.createExprCons(y <= 0)
+    c1 = m.createConsFromExpr(x <= 1)
+    c2 = m.createConsFromExpr(x <= 0)
+    c3 = m.createConsFromExpr(y <= 0)
     m.addConsElemDisjunction(disj_cons, c1)
     disj_cons = m.addConsElemDisjunction(disj_cons, c2)
     disj_cons = m.addConsElemDisjunction(disj_cons, c3)
