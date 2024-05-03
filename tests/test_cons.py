@@ -146,12 +146,16 @@ def test_getOrigConss():
     m = Model()
     x = m.addVar("x", lb=0, ub=2, obj=-1)
     y = m.addVar("y", lb=0, ub=4, obj=0)
-    m.addCons(x * x <= y)
+    z = m.addVar("z", lb=0, ub=5, obj=2)
+    m.addCons(x <= y + z)
+    m.addCons(x <= z + 100)
+    m.addCons(y >= -100)
     m.addCons(x + y <= 1000)
     m.addCons(2* x + 2 * y <= 1000)
+    m.addCons(x + y + z <= 7)
     m.optimize()
-    assert len(m.getOrigConss()) == m.getNOrigConss()
-    assert m.getNOrigConss() < m.getNConss()
+    assert len(m.getConss(transformed=False)) == m.getNConss(transformed=False)
+    assert m.getNConss(transformed=True) < m.getNConss(transformed=False)
 
 
 def test_printCons():

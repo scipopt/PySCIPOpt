@@ -1774,9 +1774,12 @@ cdef class Model:
 
         return vars
 
-    def getNVars(self):
+    def getNVars(self, transformed=True):
         """Retrieve number of variables in the problems"""
-        return SCIPgetNVars(self._scip)
+        if transformed:
+            return SCIPgetNVars(self._scip)
+        else:
+            return SCIPgetNOrigVars(self._scip)
 
     def getNIntVars(self):
         """gets number of integer active problem variables"""
@@ -3265,33 +3268,26 @@ cdef class Model:
         """sets the value of the given variable in the global relaxation solution"""
         PY_SCIP_CALL(SCIPsetRelaxSolVal(self._scip, NULL, var.scip_var, val))
 
-    def getConss(self):
+    def getConss(self, transformed=True):
         """Retrieve all constraints."""
         cdef SCIP_CONS** _conss
         cdef int _nconss
         conss = []
 
-        _conss = SCIPgetConss(self._scip)
-        _nconss = SCIPgetNConss(self._scip)
+        if transformed:
+            _conss = SCIPgetConss(self._scip)
+            _nconss = SCIPgetNConss(self._scip)
+        else:
+            _conss = SCIPgetOrigConss(self._scip)
+            _nconss = SCIPgetNOrigConss(self._scip)
         return [Constraint.create(_conss[i]) for i in range(_nconss)]
 
-    def getOrigConss(self):
-        """Retrieve all constraints in the original space"""
-        cdef SCIP_CONS** _conss
-        cdef int _nconss
-        conss = []
-
-        _conss = SCIPgetOrigConss(self._scip)
-        _nconss = SCIPgetNOrigConss(self._scip)
-        return [Constraint.create(_conss[i]) for i in range(_nconss)]
-
-    def getNConss(self):
+    def getNConss(self, transformed=True):
         """Retrieve number of all constraints"""
-        return SCIPgetNConss(self._scip)
-
-    def getNOrigConss(self):
-        """Retrieve number of constraints in the original space"""
-        return SCIPgetNOrigConss(self._scip)
+        if transformed:
+            return SCIPgetNConss(self._scip)
+        else:
+            return SCIPgetNOrigConss(self._scip)
 
     def delCons(self, Constraint cons):
         """Delete constraint from the model
