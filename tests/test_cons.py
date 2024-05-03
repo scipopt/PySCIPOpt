@@ -155,6 +155,7 @@ def test_getOrigConss():
     m.addCons(x + y + z <= 7)
     m.optimize()
     assert len(m.getConss(transformed=False)) == m.getNConss(transformed=False)
+    assert m.getNConss(transformed=False) == 6
     assert m.getNConss(transformed=True) < m.getNConss(transformed=False)
 
 

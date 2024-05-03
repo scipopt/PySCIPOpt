@@ -3,7 +3,8 @@
 ## Unreleased
 ### Added
 - Added check for pt_PT locale in test_model.py
-- Added function wrappers for SCIPgetOrigConss and SCIPgetNOrigConss
+- Added SCIPgetOrigConss and SCIPgetNOrigConss Cython bindings. 
+- Added transformed=False option to getConss, getNConss, and getNVars
 ### Fixed
 ### Changed
 ### Removed
