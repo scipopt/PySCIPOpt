@@ -1775,7 +1775,10 @@ cdef class Model:
         return vars
 
     def getNVars(self, transformed=True):
-        """Retrieve number of variables in the problems"""
+        """Retrieve number of variables in the problems.
+        
+        :param transformed: get transformed variables instead of original (Default value = True)
+        """
         if transformed:
             return SCIPgetNVars(self._scip)
         else:
@@ -3269,7 +3272,10 @@ cdef class Model:
         PY_SCIP_CALL(SCIPsetRelaxSolVal(self._scip, NULL, var.scip_var, val))
 
     def getConss(self, transformed=True):
-        """Retrieve all constraints."""
+        """Retrieve all constraints.
+        
+        :param transformed: get transformed variables instead of original (Default value = True)
+        """
         cdef SCIP_CONS** _conss
         cdef int _nconss
         conss = []
