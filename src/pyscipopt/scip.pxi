@@ -4507,7 +4507,7 @@ cdef class Model:
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def createSol(self, Heur heur = None):
-        """Create a new primal solution.
+        """Create a new primal solution in the transformed space.
 
         :param Heur heur: heuristic that found the solution (Default value = None)
 
@@ -4542,7 +4542,7 @@ cdef class Model:
         return partialsolution
 
     def createOrigSol(self, Heur heur = None):
-        """Create a new primal solution.
+        """Create a new primal solution in the original space.
 
         :param Heur heur: heuristic that found the solution (Default value = None)
 
