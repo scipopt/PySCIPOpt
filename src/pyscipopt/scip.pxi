@@ -5252,7 +5252,7 @@ cdef class Model:
         :param filename: file to be written (Default value = 'param.set')
         :param comments: write parameter descriptions as comments? (Default value = True)
         :param onlychanged: write only modified parameters (Default value = True)
-        :param verbose: indicates whether a success message should be print
+        :param verbose: indicates whether a success message should be printed
         """
         user_locale = locale.getlocale(category=locale.LC_NUMERIC)
         locale.setlocale(locale.LC_NUMERIC, "C")
