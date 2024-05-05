@@ -47,6 +47,33 @@ def test_solution_create():
     assert m.getSolObjVal(s1) == -1
     m.freeSol(s1)
 
+def test_createOrigSol():
+    m = Model()
+
+    x = m.addVar("x", lb=0, ub=2, obj=-1)
+    y = m.addVar("y", lb=1, ub=4, obj=1)
+    z = m.addVar("z", lb=1, ub=5, obj=10)
+    m.addCons(x * x <= y*z)
+    m.presolve()
+
+    s = m.createOrigSol()
+    s[x] = 2.0
+    s[y] = 5.0
+    s[z] = 10.0
+    assert not m.checkSol(s)
+    assert m.addSol(s, free=True)
+
+    s1 = m.createOrigSol()
+    m.setSolVal(s1, x, 1.0)
+    m.setSolVal(s1, y, 1.0)
+    m.setSolVal(s1, z, 1.0)
+    assert m.checkSol(s1)
+
+    m.optimize()
+
+    assert m.getSolObjVal(s1) == 10.0
+    m.freeSol(s1)
+
 
 def test_solution_evaluation():
     m = Model()
