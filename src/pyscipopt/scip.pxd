@@ -637,6 +637,10 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPdelVar(SCIP* scip, SCIP_VAR* var, SCIP_Bool* deleted)
     SCIP_RETCODE SCIPaddCons(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPdelCons(SCIP* scip, SCIP_CONS* cons)
+    SCIP_CONS**  SCIPgetOrigConss(SCIP* scip)
+    int          SCIPgetNOrigConss(SCIP* scip)
+    SCIP_CONS*   SCIPfindOrigCons(SCIP* scip, const char*)
+    SCIP_CONS*   SCIPfindCons(SCIP* scip, const char*)
     SCIP_RETCODE SCIPsetObjsense(SCIP* scip, SCIP_OBJSENSE objsense)
     SCIP_OBJSENSE SCIPgetObjsense(SCIP* scip)
     SCIP_RETCODE SCIPsetObjlimit(SCIP* scip, SCIP_Real objlimit)
@@ -1494,6 +1498,24 @@ cdef extern from "scip/cons_sos2.h":
     SCIP_RETCODE SCIPappendVarSOS2(SCIP* scip,
                                    SCIP_CONS* cons,
                                    SCIP_VAR* var)
+
+cdef extern from "scip/cons_disjunction.h":
+    SCIP_RETCODE SCIPcreateConsDisjunction(SCIP *scip,
+                                            SCIP_CONS **cons,
+                                            const char *name,
+                                            int nconss,
+                                            SCIP_CONS **conss,
+                                            SCIP_CONS *relaxcons,
+                                            SCIP_Bool initial,
+                                            SCIP_Bool enforce,
+                                            SCIP_Bool check,
+                                            SCIP_Bool local,
+                                            SCIP_Bool modifiable,
+                                            SCIP_Bool dynamic)
+
+    SCIP_RETCODE SCIPaddConsElemDisjunction(SCIP *scip,
+                                            SCIP_CONS *cons,
+                                            SCIP_CONS *addcons)
 
 cdef extern from "scip/cons_and.h":
     SCIP_RETCODE SCIPcreateConsAnd(SCIP* scip,
