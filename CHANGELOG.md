@@ -2,12 +2,14 @@
 
 ## Unreleased
 ### Added
+- Expanded locale test
 - Added methods for creating expression constraints without adding to problem
 - Added methods for creating/adding/appending disjunction constraints
 - Added check for pt_PT locale in test_model.py
 - Added SCIPgetOrigConss and SCIPgetNOrigConss Cython bindings. 
 - Added transformed=False option to getConss, getNConss, and getNVars
 ### Fixed
+- Fixed locale errors in reading
 ### Changed
 ### Removed
 
@@ -18,6 +20,7 @@
 - Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
 - New test for model setLogFile
 ### Fixed
+- Fixed locale fix
 - Fixed model.setLogFile(None) error
 - Add recipes sub-package
 - Fixed "weakly-referenced object no longer exists" when calling dropEvent in test_customizedbenders
