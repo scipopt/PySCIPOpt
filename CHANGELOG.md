@@ -3,7 +3,11 @@
 ## Unreleased
 ### Added
 - Expanded locale test
+- Added methods for creating expression constraints without adding to problem
+- Added methods for creating/adding/appending disjunction constraints
 - Added check for pt_PT locale in test_model.py
+- Added SCIPgetOrigConss and SCIPgetNOrigConss Cython bindings. 
+- Added transformed=False option to getConss, getNConss, and getNVars
 ### Fixed
 - Fixed locale errors in reading
 ### Changed
