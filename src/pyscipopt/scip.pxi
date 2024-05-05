@@ -1329,7 +1329,6 @@ cdef class Model:
 
         # turn the constant value into an Expr instance for further processing
         if not isinstance(expr, Expr):
-            print(expr)
             assert(_is_number(expr)), "given coefficients are neither Expr or number but %s" % expr.__class__.__name__
             expr = Expr() + expr
 
@@ -1455,13 +1454,13 @@ cdef class Model:
         if not onlyroot:
             self.setIntParam("propagating/maxrounds", 0)
 
-    def writeProblem(self, filename='model.cip', trans=False, genericnames=False):
+    def writeProblem(self, filename='model.cip', trans=False, genericnames=False, verbose=True):
         """Write current model/problem to a file.
 
         :param filename: the name of the file to be used (Default value = 'model.cip'). Should have an extension corresponding to one of the readable file formats, described in https://www.scipopt.org/doc/html/group__FILEREADERS.php.
         :param trans: indicates whether the transformed problem is written to file (Default value = False)
         :param genericnames: indicates whether the problem should be written with generic variable and constraint names (Default value = False)
-
+        :param verbose: indicates whether a success message should be printed
         """
         user_locale = locale.getlocale(category=locale.LC_NUMERIC)
         locale.setlocale(locale.LC_NUMERIC, "C")
@@ -1469,15 +1468,19 @@ cdef class Model:
         str_absfile = abspath(filename)
         absfile = str_conversion(str_absfile)
         fn, ext = splitext(absfile)
+
         if len(ext) == 0:
             ext = str_conversion('.cip')
         fn = fn + ext
         ext = ext[1:]
+
         if trans:
             PY_SCIP_CALL(SCIPwriteTransProblem(self._scip, fn, ext, genericnames))
         else:
             PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, fn, ext, genericnames))
-        print('wrote problem to file ' + str_absfile)
+        
+        if verbose:
+            print('wrote problem to file ' + str_absfile)
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
@@ -5280,13 +5283,13 @@ cdef class Model:
         
         locale.setlocale(locale.LC_NUMERIC, user_locale)
 
-    def writeParams(self, filename='param.set', comments = True, onlychanged = True):
+    def writeParams(self, filename='param.set', comments=True, onlychanged=True, verbose=True):
         """Write parameter settings to an external file.
 
         :param filename: file to be written (Default value = 'param.set')
         :param comments: write parameter descriptions as comments? (Default value = True)
         :param onlychanged: write only modified parameters (Default value = True)
-
+        :param verbose: indicates whether a success message should be printed
         """
         user_locale = locale.getlocale(category=locale.LC_NUMERIC)
         locale.setlocale(locale.LC_NUMERIC, "C")
@@ -5294,7 +5297,9 @@ cdef class Model:
         str_absfile = abspath(filename)
         absfile = str_conversion(str_absfile)
         PY_SCIP_CALL(SCIPwriteParams(self._scip, absfile, comments, onlychanged))
-        print('wrote parameter settings to file ' + str_absfile)
+
+        if verbose:
+            print('wrote parameter settings to file ' + str_absfile)
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 

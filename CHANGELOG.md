@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 - Wrapped SCIPcreateOrigSol and added tests 
+- Added verbose option for writeProblem and writeParams
 - Expanded locale test
 - Added methods for creating expression constraints without adding to problem
 - Added methods for creating/adding/appending disjunction constraints
