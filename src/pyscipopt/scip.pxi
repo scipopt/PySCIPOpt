@@ -4507,7 +4507,7 @@ cdef class Model:
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def createSol(self, Heur heur = None):
-        """Create a new primal solution.
+        """Create a new primal solution in the transformed space.
 
         :param Heur heur: heuristic that found the solution (Default value = None)
 
@@ -4540,6 +4540,25 @@ cdef class Model:
         PY_SCIP_CALL(SCIPcreatePartialSol(self._scip, &_sol, _heur))
         partialsolution = Solution.create(self._scip, _sol)
         return partialsolution
+
+    def createOrigSol(self, Heur heur = None):
+        """Create a new primal solution in the original space.
+
+        :param Heur heur: heuristic that found the solution (Default value = None)
+
+        """
+        cdef SCIP_HEUR* _heur
+        cdef SCIP_SOL* _sol
+
+        if isinstance(heur, Heur):
+            n = str_conversion(heur.name)
+            _heur = SCIPfindHeur(self._scip, n)
+        else:
+            _heur = NULL
+            
+        PY_SCIP_CALL(SCIPcreateOrigSol(self._scip, &_sol, _heur))
+        solution = Solution.create(self._scip, _sol)
+        return solution
 
     def printBestSol(self, write_zeros=False):
         """Prints the best feasible primal solution."""
