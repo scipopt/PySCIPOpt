@@ -68,6 +68,7 @@ def test_createOrigSol():
     m.setSolVal(s1, y, 1.0)
     m.setSolVal(s1, z, 1.0)
     assert m.checkSol(s1)
+    assert m.addSol(s1, free=False)
 
     m.optimize()
 
