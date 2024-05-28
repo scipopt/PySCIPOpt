@@ -1,4 +1,4 @@
-from pyscipopt import Model, quicksum
+from pyscipopt import Model, SCIP_PARAMEMPHASIS
 
 
 def get_infeasible_constraints(orig_model: Model, verbose=False):
@@ -24,6 +24,8 @@ def get_infeasible_constraints(orig_model: Model, verbose=False):
 
     model.hideOutput()
     model.setPresolve(0) # just to be safe, maybe we can use presolving
+    model.setEmphasis(SCIP_PARAMEMPHASIS.PHASEFEAS) # focusing on model feasibility
+    #model.setParam("limits/solutions", 1) # SCIP sometimes returns the incorrect stage when models are prematurely stopped
     model.optimize()
 
     n_infeasibilities_detected = 0
