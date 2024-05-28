@@ -25,7 +25,7 @@ def get_infeasible_constraints(orig_model: Model, verbose=False):
     model.hideOutput()
     model.setPresolve(0) # just to be safe, maybe we can use presolving
     model.setEmphasis(SCIP_PARAMEMPHASIS.PHASEFEAS) # focusing on model feasibility
-    #model.setParam("limits/solutions", 1) # SCIP sometimes returns the incorrect stage when models are prematurely stopped
+    #model.setParam("limits/solutions", 1) # PySCIPOpt sometimes incorrectly raises an error when a model is prematurely stopped. See PR # 815.
     model.optimize()
 
     n_infeasibilities_detected = 0
