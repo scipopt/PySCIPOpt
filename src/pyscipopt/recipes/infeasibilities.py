@@ -3,36 +3,41 @@ from pyscipopt import Model, SCIP_PARAMEMPHASIS
 
 def get_infeasible_constraints(orig_model: Model, verbose=False):
     """
-    Given a model, adds slack variables to all the constraints and minimizes their sum.
-    Non-zero slack variables correspond to infeasible constraints.
+    Given a model, adds slack variables to all the constraints and minimizes a binary variable that indicates if they're positive.
+    Positive slack variables correspond to infeasible constraints.
     """
-
+    
     model = Model(sourceModel=orig_model, origcopy=True) # to preserve the model
-    slack = {}
-    aux   = {}
+    slack      = {}
+    aux        = {}
+    binary     = {}
+    aux_binary = {}
+
     for c in model.getConss():
 
         slack[c.name] = model.addVar(lb=-float("inf"), name=c.name) 
-
         model.addConsCoeff(c, slack[c.name], 1)
+        binary[c.name] = model.addVar(obj=1, vtype="B") # Binary variable to get minimum infeasible constraints. See PR #857.)
 
         # getting the absolute value because of <= and >= constraints 
-        aux[c.name] = model.addVar(obj=1)
+        aux[c.name] = model.addVar()
         model.addCons(aux[c.name] >= slack[c.name])
         model.addCons(aux[c.name] >= -slack[c.name])
-
+        
+        # modeling aux > 0 => binary = 1 constraint. See https://or.stackexchange.com/q/12142/5352 for an explanation
+        aux_binary[c.name] = model.addVar(ub=1)
+        model.addCons(binary[c.name]+aux_binary[c.name] == 1)
+        model.addConsSOS1([aux[c.name], aux_binary[c.name]])
 
     model.hideOutput()
     model.setPresolve(0) # just to be safe, maybe we can use presolving
-    model.setEmphasis(SCIP_PARAMEMPHASIS.PHASEFEAS) # focusing on model feasibility
-    #model.setParam("limits/solutions", 1) # PySCIPOpt sometimes incorrectly raises an error when a model is prematurely stopped. See PR # 815.
     model.optimize()
 
     n_infeasibilities_detected = 0
-    for v in aux:
-        if model.isGT(model.getVal(aux[v]), 0):
+    for c in binary:
+        if model.isGT(model.getVal(binary[c]), 0):
             n_infeasibilities_detected += 1
-            print("Constraint %s is causing an infeasibility." % v)
+            print("Constraint %s is causing an infeasibility." % c)
 
     if verbose:
         if n_infeasibilities_detected > 0:

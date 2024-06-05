@@ -24,4 +24,4 @@ def test_get_infeasible_constraints():
     m.addCons(x == -4)
 
     n_infeasibilities_detected = get_infeasible_constraints(m)[0]
-    assert n_infeasibilities_detected == 3 # with x == -4, x == 2 also becomes infeasible
+    assert n_infeasibilities_detected == 2
