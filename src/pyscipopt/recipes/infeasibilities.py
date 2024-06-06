@@ -1,4 +1,4 @@
-from pyscipopt import Model, SCIP_PARAMEMPHASIS
+from pyscipopt import Model, quicksum
 
 
 def get_infeasible_constraints(orig_model: Model, verbose=False):
@@ -8,6 +8,7 @@ def get_infeasible_constraints(orig_model: Model, verbose=False):
     """
     
     model = Model(sourceModel=orig_model, origcopy=True) # to preserve the model
+
     slack      = {}
     aux        = {}
     binary     = {}
@@ -17,7 +18,7 @@ def get_infeasible_constraints(orig_model: Model, verbose=False):
 
         slack[c.name] = model.addVar(lb=-float("inf"), name=c.name) 
         model.addConsCoeff(c, slack[c.name], 1)
-        binary[c.name] = model.addVar(obj=1, vtype="B") # Binary variable to get minimum infeasible constraints. See PR #857.)
+        binary[c.name] = model.addVar(vtype="B") # Binary variable to get minimum infeasible constraints. See PR #857.
 
         # getting the absolute value because of <= and >= constraints 
         aux[c.name] = model.addVar()
@@ -29,6 +30,7 @@ def get_infeasible_constraints(orig_model: Model, verbose=False):
         model.addCons(binary[c.name]+aux_binary[c.name] == 1)
         model.addConsSOS1([aux[c.name], aux_binary[c.name]])
 
+    model.setObjective(quicksum(binary[c.name] for c in orig_model.getConss()))
     model.hideOutput()
     model.setPresolve(0) # just to be safe, maybe we can use presolving
     model.optimize()

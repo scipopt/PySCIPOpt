@@ -6,6 +6,8 @@ def test_get_infeasible_constraints():
     m = Model()
 
     x = m.addVar(lb=0)
+    m.setObjective(2*x)
+
     m.addCons(x <= 4)
     
     n_infeasibilities_detected = get_infeasible_constraints(m)[0]
