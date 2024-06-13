@@ -5087,6 +5087,85 @@ cdef class Model:
             PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
         
         locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
+    def readStatistics(self, filename):
+        """
+        Given a .stats file, reads it and returns a dictionary with some statistics.
+
+        Keyword arguments:
+        filename -- name of the input file
+        """
+        available_stats = ["Total Time", "solving", "presolving", "reading", "copying",
+                            "Problem name", "Variables", "Constraints", "number of runs", 
+                            "nodes", "Root LP Estimate", "Solutions found", "First Solution", 
+                            "Primal Bound", "Dual Bound", "Gap", "primal-dual"]
+
+        result = {}
+        file = open(filename)
+        data = file.readlines()
+        seen_cons = 0
+        for i, line in enumerate(data):
+            split_line = line.split(":")
+            split_line[1] = split_line[1][:-1] # removing \n
+            stat_name = split_line[0].strip()
+
+            if seen_cons == 2 and stat_name == "Constraints": 
+                continue
+
+            if stat_name in available_stats:
+                cur_stat       = split_line[0].strip()
+                relevant_value = split_line[1].strip()
+
+                if stat_name == "Variables":
+                    relevant_value = relevant_value[:-1] # removing ")"
+                    var_stats = {}
+                    split_var = relevant_value.split("(")
+                    var_stats["total"] = int(split_var[0])
+                    split_var = split_var[1].split(",")
+
+                    for var_type in split_var:
+                        split_result = var_type.strip().split(" ")
+                        var_stats[split_result[1]] = int(split_result[0])
+                    
+                    if "Original" in data[i-2]:
+                        result["Variables"] = var_stats
+                    else:
+                        result["Presolved Variables"] = var_stats
+                    
+                    continue
+
+                if stat_name == "Constraints":
+                    seen_cons += 1
+                    con_stats = {}
+                    split_con = relevant_value.split(",")
+                    for con_type in split_con:
+                        split_result = con_type.strip().split(" ")
+                        con_stats[split_result[1]] = int(split_result[0])
+
+                    if "Original" in data[i-3]:
+                        result["Constraints"] = con_stats
+                    else:
+                        result["Presolved Constraints"] = con_stats
+                    continue
+                
+                relevant_value = relevant_value.split(" ")[0]
+                if stat_name == "Problem name":
+                    if "Original" in data[i-1]:
+                        result["Problem name"] = relevant_value
+                    else:
+                        result["Presolved Problem name"] = relevant_value
+                    continue
+                
+                if stat_name == "Gap":
+                    result["Gap (%)"] = float(relevant_value[:-1])
+                    continue 
+
+                if _is_number(relevant_value):
+                    result[cur_stat] = float(relevant_value)
+                else: # it's a string
+                    result[cur_stat] = relevant_value                    
+
+        return result
 
     def getNLPs(self):
         """gets total number of LPs solved so far"""
