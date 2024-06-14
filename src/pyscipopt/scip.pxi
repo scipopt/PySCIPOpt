@@ -1607,7 +1607,6 @@ cdef class Model:
         PY_SCIP_CALL(SCIPtightenVarLb(self._scip, var.scip_var, lb, force, &infeasible, &tightened))
         return infeasible, tightened
 
-
     def tightenVarUb(self, Variable var, ub, force=False):
         """Tighten the upper bound in preprocessing or current node, if the bound is tighter.
 
@@ -1623,7 +1622,6 @@ cdef class Model:
         cdef SCIP_Bool tightened
         PY_SCIP_CALL(SCIPtightenVarUb(self._scip, var.scip_var, ub, force, &infeasible, &tightened))
         return infeasible, tightened
-
 
     def tightenVarUbGlobal(self, Variable var, ub, force=False):
         """Tighten the global upper bound, if the bound is tighter.
@@ -2556,7 +2554,6 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &(<Constraint>cons).scip_cons))
         return disj_cons
 
-
     def getConsNVars(self, Constraint constraint):
         """
         Gets number of variables in a constraint.
@@ -2699,6 +2696,7 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         return Constraint.create(scip_cons)
+
     def addConsSOS2(self, vars, weights=None, name="SOS2cons",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
