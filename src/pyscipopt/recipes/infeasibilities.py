@@ -16,7 +16,7 @@ def get_infeasible_constraints(orig_model: Model, verbose=False):
 
     for c in model.getConss():
 
-        slack[c.name] = model.addVar(lb=-float("inf"), name=c.name) 
+        slack[c.name] = model.addVar(lb=-float("inf"), name="s_"+c.name) 
         model.addConsCoeff(c, slack[c.name], 1)
         binary[c.name] = model.addVar(vtype="B") # Binary variable to get minimum infeasible constraints. See PR #857.
 
@@ -26,13 +26,12 @@ def get_infeasible_constraints(orig_model: Model, verbose=False):
         model.addCons(aux[c.name] >= -slack[c.name])
         
         # modeling aux > 0 => binary = 1 constraint. See https://or.stackexchange.com/q/12142/5352 for an explanation
-        aux_binary[c.name] = model.addVar(ub=1)
+        aux_binary[c.name] = model.addVar(vtype="B")
         model.addCons(binary[c.name]+aux_binary[c.name] == 1)
         model.addConsSOS1([aux[c.name], aux_binary[c.name]])
 
     model.setObjective(quicksum(binary[c.name] for c in orig_model.getConss()))
     model.hideOutput()
-    model.setPresolve(0) # just to be safe, maybe we can use presolving
     model.optimize()
 
     n_infeasibilities_detected = 0
