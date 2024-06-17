@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added SCIPprintExternalCodes (retrieves version of linked symmetry, lp solver, nl solver etc)
 - Added recipe with reformulation for detecting infeasible constraints
 - Wrapped SCIPcreateOrigSol and added tests 
 - Added verbose option for writeProblem and writeParams
@@ -11,7 +12,6 @@
 - Added check for pt_PT locale in test_model.py
 - Added SCIPgetOrigConss and SCIPgetNOrigConss Cython bindings. 
 - Added transformed=False option to getConss, getNConss, and getNVars
-- Added SCIPprintExternalCodes (retrieves version of linked symmetry, lp solver, nl solver etc)
 ### Fixed
 - Fixed locale errors in reading
 ### Changed
