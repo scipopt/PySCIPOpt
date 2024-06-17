@@ -11,6 +11,7 @@
 - Added check for pt_PT locale in test_model.py
 - Added SCIPgetOrigConss and SCIPgetNOrigConss Cython bindings. 
 - Added transformed=False option to getConss, getNConss, and getNVars
+- Added SCIPprintExternalCodes (retrieves version of linked symmetry, lp solver, nl solver etc)
 ### Fixed
 - Fixed locale errors in reading
 ### Changed
