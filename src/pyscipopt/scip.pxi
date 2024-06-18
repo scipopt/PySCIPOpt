@@ -1137,6 +1137,15 @@ cdef class Model:
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
+    def printExternalCodeVersions(self):
+        """Print external code versions, e.g. symmetry, non-linear solver, lp solver"""
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        SCIPprintExternalCodes(self._scip, NULL)
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
+
     def getProbName(self):
         """Retrieve problem name"""
         return bytes(SCIPgetProbName(self._scip)).decode('UTF-8')

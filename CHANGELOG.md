@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 - Added parser to read .stats file
+- Added SCIPprintExternalCodes (retrieves version of linked symmetry, lp solver, nl solver etc)
 - Added recipe with reformulation for detecting infeasible constraints
 - Wrapped SCIPcreateOrigSol and added tests 
 - Added verbose option for writeProblem and writeParams

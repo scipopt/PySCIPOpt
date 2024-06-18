@@ -364,3 +364,8 @@ def test_locale():
     m.readProblem(os.path.join("tests", "data", "test_locale.cip"))
 
     locale.setlocale(locale.LC_NUMERIC,"")
+
+def test_version_external_codes():
+     scip = Model()
+     scip.printVersion()
+     scip.printExternalCodeVersions()
