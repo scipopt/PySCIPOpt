@@ -5572,20 +5572,32 @@ class Statistics:
     primal_dual_integral: float
 
     def _populate_remaining(self):
+        # number of variables in the model
         self.n_vars: int = self._variables["total"]
+        # number of binary variables in the model
         self.n_binary_vars: int = self._variables["binary"]
+        # number of implicit integer variables in the model
         self.n_implicit_integer_vars: int = self._variables["implicit"]
+        # number of continuous variables in the model
         self.n_continuous_vars: int = self._variables["continuous"]
 
+        # number of variables in the presolved model
         self.n_presolved_vars: int = self._presolved_variables["total"]
+        # number of binary variables in the presolved model
         self.n_presolved_binary_vars: int = self._presolved_variables["binary"]
+        # number of implicit integer variables in the presolved model
         self.n_presolved_implicit_integer_vars: int = self._presolved_variables["implicit"]
+        # number of continuous variables in the presolved model
         self.n_presolved_continuous_vars: int = self._presolved_variables["continuous"]
 
+        # number of initial constraints in the model
         self.n_conss: int = self._constraints["initial"]
+        # number of maximal constraints in the model
         self.n_maximal_cons: int = self._constraints["maximal"]
 
+        # number of initial constraints in the presolved model
         self.n_presolved_conss: int = self._presolved_constraints["initial"]
+        # number of maximal constraints in the presolved model
         self.n_presolved_maximal_cons: int = self._presolved_constraints["maximal"]
         
     
