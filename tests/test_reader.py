@@ -86,8 +86,6 @@ def test_readStatistics():
     y = m.addVar()
 
     m.addCons(x+y <= 3)
-    m.writeStatistics(os.path.join("tests", "data", "readStatistics.stats"))
-
     m.hideOutput()
     m.optimize()
     m.writeStatistics(os.path.join("tests", "data", "readStatistics.stats"))

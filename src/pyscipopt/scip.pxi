@@ -5100,7 +5100,8 @@ cdef class Model:
     
     def readStatistics(self, filename):
         """
-        Given a .stats file, reads it and returns a dictionary with some statistics.
+        Given a .stats file of a solved model, reads it and returns an instance of the Statistics class
+        holding some statistics.
 
         Keyword arguments:
         filename -- name of the input file
@@ -5121,7 +5122,7 @@ cdef class Model:
             split_line[1] = split_line[1][:-1] # removing \n
             stat_name = split_line[0].strip()
 
-            if seen_cons == 2 and stat_name == "Constraints": 
+            if seen_cons == 2 and stat_name == "Constraints":
                 continue
 
             if stat_name in available_stats:
@@ -5177,14 +5178,16 @@ cdef class Model:
                 else: # it's a string
                     result[cur_stat] = relevant_value                    
 
+        # changing keys to pythonic variable names
         treated_keys = {"Total Time": "total_time", "solving":"solving_time", "presolving":"presolving_time", "reading":"reading_time", "copying":"copying_time", 
                         "Problem name": "problem_name", "Presolved Problem name": "presolved_problem_name", "Variables":"_variables", 
                         "Presolved Variables":"_presolved_variables", "Constraints": "_constraints", "Presolved Constraints":"_presolved_constraints",
                         "number of runs": "n_runs", "nodes":"n_nodes", "Solutions found": "solutions_found", "First Solution": "first_solution", 
                         "Primal Bound":"primal_bound", "Dual Bound":"dual_bound", "Gap (%)":"gap", "primal-dual":"primal_dual_integral"}
         treated_result = dict((treated_keys[key], value) for (key, value) in result.items())
+        
         stats = Statistics(**treated_result)
-        stats._populate_remaining()
+        stats._populate_remaining() # retrieve different variable/constraint types from the variable/constraint dictionary 
 
         return stats
 
@@ -5600,8 +5603,6 @@ class Statistics:
         # number of maximal constraints in the presolved model
         self.n_presolved_maximal_cons: int = self._presolved_constraints["maximal"]
         
-    
-
 # debugging memory management
 def is_memory_freed():
     return BMSgetMemoryUsed() == 0
