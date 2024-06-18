@@ -87,23 +87,19 @@ def test_readStatistics():
 
     m.addCons(x+y <= 3)
     m.writeStatistics(os.path.join("tests", "data", "readStatistics.stats"))
-    
-    m2 = Model()
-    result = m2.readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
 
-    assert result["Variables"]["total"] == 2
-    assert result["Variables"]["integer"] == 1
-
+    m.hideOutput()
     m.optimize()
     m.writeStatistics(os.path.join("tests", "data", "readStatistics.stats"))
-    result = m2.readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
+    result = m.readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
 
-    assert type(result["Total Time"]) == float
-    assert result["Problem name"] == "readStats"
-    assert result["Presolved Problem name"] == "t_readStats"
-    assert type(result["primal-dual"]) == float
-    assert result["Solutions found"] == 1
-    assert type(result["Gap (%)"]) == float
-    assert result["Presolved Constraints"] == {"initial": 1, "maximal": 1}
-    assert result["Variables"] == {"total": 2, "binary": 0, "integer": 1, "implicit": 0, "continuous": 1}
-    assert result["Presolved Variables"] == {"total": 0, "binary": 0, "integer": 0, "implicit": 0, "continuous": 0}
+    assert len([k for k, val in result.__dict__.items() if not str(hex(id(val))) in str(val)]) == 31 # number of attributes. See https://stackoverflow.com/a/57431390/9700522
+    assert type(result.total_time) == float
+    assert result.problem_name == "readStats"
+    assert result.presolved_problem_name == "t_readStats"
+    assert type(result.primal_dual_integral) == float
+    assert result.solutions_found == 1
+    assert type(result.gap) == float
+    assert result._presolved_constraints == {"initial": 1, "maximal": 1}
+    assert result._variables == {"total": 2, "binary": 0, "integer": 1, "implicit": 0, "continuous": 1}
+    assert result._presolved_variables == {"total": 0, "binary": 0, "integer": 0, "implicit": 0, "continuous": 0}

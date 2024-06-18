@@ -17,6 +17,7 @@ from posix.stdio cimport fileno
 
 from collections.abc import Iterable
 from itertools import repeat
+from dataclasses import dataclass
 
 include "expr.pxi"
 include "lp.pxi"
@@ -5095,14 +5096,16 @@ cdef class Model:
         Keyword arguments:
         filename -- name of the input file
         """
-        available_stats = ["Total Time", "solving", "presolving", "reading", "copying",
-                            "Problem name", "Variables", "Constraints", "number of runs", 
-                            "nodes", "Root LP Estimate", "Solutions found", "First Solution", 
-                            "Primal Bound", "Dual Bound", "Gap", "primal-dual"]
-
         result = {}
         file = open(filename)
         data = file.readlines()
+        
+        assert "problem is solved" in data[0], "readStatistics can only be called if the problem was solved"
+        available_stats = ["Total Time", "solving", "presolving", "reading", "copying",
+                        "Problem name", "Variables", "Constraints", "number of runs", 
+                        "nodes", "Solutions found", "First Solution", "Primal Bound",
+                        "Dual Bound", "Gap", "primal-dual"]
+
         seen_cons = 0
         for i, line in enumerate(data):
             split_line = line.split(":")
@@ -5165,7 +5168,16 @@ cdef class Model:
                 else: # it's a string
                     result[cur_stat] = relevant_value                    
 
-        return result
+        treated_keys = {"Total Time": "total_time", "solving":"solving_time", "presolving":"presolving_time", "reading":"reading_time", "copying":"copying_time", 
+                        "Problem name": "problem_name", "Presolved Problem name": "presolved_problem_name", "Variables":"_variables", 
+                        "Presolved Variables":"_presolved_variables", "Constraints": "_constraints", "Presolved Constraints":"_presolved_constraints",
+                        "number of runs": "n_runs", "nodes":"n_nodes", "Solutions found": "solutions_found", "First Solution": "first_solution", 
+                        "Primal Bound":"primal_bound", "Dual Bound":"dual_bound", "Gap (%)":"gap", "primal-dual":"primal_dual_integral"}
+        treated_result = dict((treated_keys[key], value) for (key, value) in result.items())
+        stats = Statistics(**treated_result)
+        stats._populate_remaining()
+
+        return stats
 
     def getNLPs(self):
         """gets total number of LPs solved so far"""
@@ -5508,6 +5520,66 @@ cdef class Model:
     def getTreesizeEstimation(self):
         """Get an estimation of the final tree size """
         return SCIPgetTreesizeEstimation(self._scip)
+
+@dataclass
+class Statistics:
+    # Total time since model was created
+    total_time: float
+    # Time spent solving the problem
+    solving_time: float
+    # Time spent on presolving
+    presolving_time: float
+    # Time spent on reading
+    reading_time: float
+    # Time spent on copying
+    copying_time: float
+    # Name of problem
+    problem_name: str
+    # Name of presolved problem
+    presolved_problem_name: str
+    # Dictionary with number of variables by type 
+    _variables: dict
+    # Dictionary with number of presolved variables by type 
+    _presolved_variables: dict
+    # Dictionary with number of constraints by type
+    _constraints: dict
+    # Dictionary with number of presolved constraints by type
+    _presolved_constraints: dict
+    # The number of restarts it took to solve the problem (TODO: check this)
+    n_runs: int
+    # The number of nodes explored in the branch-and-bound tree
+    n_nodes: int
+    # number of found solutions
+    solutions_found: int
+    # objective value of first found solution
+    first_solution: float    
+    # The best primal bound found 
+    primal_bound: float
+    # The best dual bound found
+    dual_bound: float
+    # The gap between the primal and dual bounds
+    gap: float
+    # The primal-dual integral 
+    primal_dual_integral: float
+
+    def _populate_remaining(self):
+        self.n_vars: int = self._variables["total"]
+        self.n_binary_vars: int = self._variables["binary"]
+        self.n_implicit_integer_vars: int = self._variables["implicit"]
+        self.n_continuous_vars: int = self._variables["continuous"]
+
+        self.n_presolved_vars: int = self._presolved_variables["total"]
+        self.n_presolved_binary_vars: int = self._presolved_variables["binary"]
+        self.n_presolved_implicit_integer_vars: int = self._presolved_variables["implicit"]
+        self.n_presolved_continuous_vars: int = self._presolved_variables["continuous"]
+
+        self.n_conss: int = self._constraints["initial"]
+        self.n_maximal_cons: int = self._constraints["maximal"]
+
+        self.n_presolved_conss: int = self._presolved_constraints["initial"]
+        self.n_presolved_maximal_cons: int = self._presolved_constraints["maximal"]
+        
+    
 
 # debugging memory management
 def is_memory_freed():
