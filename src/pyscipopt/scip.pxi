@@ -5182,13 +5182,11 @@ cdef class Model:
         treated_keys = {"Total Time": "total_time", "solving":"solving_time", "presolving":"presolving_time", "reading":"reading_time", "copying":"copying_time", 
                         "Problem name": "problem_name", "Presolved Problem name": "presolved_problem_name", "Variables":"_variables", 
                         "Presolved Variables":"_presolved_variables", "Constraints": "_constraints", "Presolved Constraints":"_presolved_constraints",
-                        "number of runs": "n_runs", "nodes":"n_nodes", "Solutions found": "solutions_found", "First Solution": "first_solution", 
+                        "number of runs": "n_runs", "nodes":"n_nodes", "Solutions found": "n_solutions_found", "First Solution": "first_solution", 
                         "Primal Bound":"primal_bound", "Dual Bound":"dual_bound", "Gap (%)":"gap", "primal-dual":"primal_dual_integral"}
         treated_result = dict((treated_keys[key], value) for (key, value) in result.items())
         
         stats = Statistics(**treated_result)
-        stats._populate_remaining() # retrieve different variable/constraint types from the variable/constraint dictionary 
-
         return stats
 
     def getNLPs(self):
@@ -5535,74 +5533,153 @@ cdef class Model:
 
 @dataclass
 class Statistics:
-    # Total time since model was created
-    total_time: float
-    # Time spent solving the problem
+    """
+    Attributes
+    ----------
+    total_time : float
+        Total time since model was created
     solving_time: float
-    # Time spent on presolving
+        Time spent solving the problem
     presolving_time: float
-    # Time spent on reading
+        Time spent on presolving
     reading_time: float
-    # Time spent on copying
+        Time spent on reading
     copying_time: float
-    # Name of problem
+        Time spent on copying
     problem_name: str
-    # Name of presolved problem
+        Name of problem
     presolved_problem_name: str
-    # Dictionary with number of variables by type 
+        Name of presolved problem
     _variables: dict
-    # Dictionary with number of presolved variables by type 
+        Dictionary with number of variables by type 
     _presolved_variables: dict
-    # Dictionary with number of constraints by type
+        Dictionary with number of presolved variables by type 
     _constraints: dict
-    # Dictionary with number of presolved constraints by type
+        Dictionary with number of constraints by type
     _presolved_constraints: dict
-    # The number of restarts it took to solve the problem (TODO: check this)
-    n_runs: int
-    # The number of nodes explored in the branch-and-bound tree
+        Dictionary with number of presolved constraints by type
     n_nodes: int
-    # number of found solutions
-    solutions_found: int
-    # objective value of first found solution
-    first_solution: float    
-    # The best primal bound found 
+        The number of nodes explored in the branch-and-bound tree
+    n_solutions_found: int
+        number of found solutions
+    first_solution: float
+        objective value of first found solution
     primal_bound: float
-    # The best dual bound found
+        The best primal bound found 
     dual_bound: float
-    # The gap between the primal and dual bounds
+        The best dual bound found
     gap: float
-    # The primal-dual integral 
+        The gap between the primal and dual bounds
+    primal_dual_integral: float
+        The primal-dual integral 
+    n_vars: int
+        number of variables in the model
+    n_binary_vars: int
+        number of binary variables in the model
+    n_integer_vars: int 
+        number of integer variables in the model
+    n_implicit_integer_vars: int 
+        number of implicit integer variables in the model
+    n_continuous_vars: int
+        number of continuous variables in the model
+    n_presolved_vars: int
+        number of variables in the presolved model
+    n_presolved_continuous_vars: int
+        number of continuous variables in the presolved model
+    n_presolved_binary_vars: int
+        number of binary variables in the presolved model
+    n_presolved_integer_vars: int
+        number of integer variables in the presolved model
+    n_presolved_implicit_integer_vars: int
+        number of implicit integer variables in the presolved model
+    n_maximal_cons: int
+        number of maximal constraints in the model
+    n_initial_cons: int
+        number of initial constraints in the presolved model
+    n_presolved_maximal_cons
+        number of maximal constraints in the presolved model
+    n_presolved_conss
+        number of initial constraints in the model
+    """
+
+    total_time: float
+    solving_time: float
+    presolving_time: float
+    reading_time: float
+    copying_time: float
+    problem_name: str
+    presolved_problem_name: str
+    _variables: dict
+    _presolved_variables: dict
+    _constraints: dict
+    _presolved_constraints: dict
+    n_runs: int
+    n_nodes: int
+    n_solutions_found: int
+    first_solution: float    
+    primal_bound: float
+    dual_bound: float
+    gap: float
     primal_dual_integral: float
 
-    def _populate_remaining(self):
-        # number of variables in the model
-        self.n_vars: int = self._variables["total"]
-        # number of binary variables in the model
-        self.n_binary_vars: int = self._variables["binary"]
-        # number of implicit integer variables in the model
-        self.n_implicit_integer_vars: int = self._variables["implicit"]
-        # number of continuous variables in the model
-        self.n_continuous_vars: int = self._variables["continuous"]
+    # unpacking the _variables, _presolved_variables, _constraints
+    # _presolved_constraints dictionaries
+    @property
+    def n_vars(self):
+        return self._variables["total"]
 
-        # number of variables in the presolved model
-        self.n_presolved_vars: int = self._presolved_variables["total"]
-        # number of binary variables in the presolved model
-        self.n_presolved_binary_vars: int = self._presolved_variables["binary"]
-        # number of implicit integer variables in the presolved model
-        self.n_presolved_implicit_integer_vars: int = self._presolved_variables["implicit"]
-        # number of continuous variables in the presolved model
-        self.n_presolved_continuous_vars: int = self._presolved_variables["continuous"]
+    @property
+    def n_binary_vars(self):
+        return self._variables["binary"]
 
-        # number of initial constraints in the model
-        self.n_conss: int = self._constraints["initial"]
-        # number of maximal constraints in the model
-        self.n_maximal_cons: int = self._constraints["maximal"]
+    @property
+    def n_integer_vars(self):
+        return self._variables["integer"]
 
-        # number of initial constraints in the presolved model
-        self.n_presolved_conss: int = self._presolved_constraints["initial"]
-        # number of maximal constraints in the presolved model
-        self.n_presolved_maximal_cons: int = self._presolved_constraints["maximal"]
-        
+    @property
+    def n_implicit_integer_vars(self):
+        return self._variables["implicit"]
+
+    @property
+    def n_continuous_vars(self):
+        return self._variables["continuous"]
+
+    @property
+    def n_presolved_vars(self):
+        return self._presolved_variables["total"]
+
+    @property
+    def n_presolved_binary_vars(self):
+        return self._presolved_variables["binary"]
+
+    @property
+    def n_presolved_integer_vars(self):
+        return self._presolved_variables["integer"]
+
+    @property
+    def n_presolved_implicit_integer_vars(self):
+        return self._presolved_variables["implicit"]
+
+    @property
+    def n_presolved_continuous_vars(self):
+        return self._presolved_variables["continuous"]
+
+    @property
+    def n_conss(self):
+        return self._constraints["initial"]
+
+    @property
+    def n_maximal_cons(self):
+        return self._constraints["maximal"]
+
+    @property
+    def n_presolved_conss(self):
+        return self._presolved_constraints["initial"]
+
+    @property
+    def n_presolved_maximal_cons(self):
+        return self._presolved_constraints["maximal"]
+            
 # debugging memory management
 def is_memory_freed():
     return BMSgetMemoryUsed() == 0
