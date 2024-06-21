@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added SCIP_STATUS_DUALLIMIT and SCIP_STATUS_PRIMALLIMIT
 - Added SCIPprintExternalCodes (retrieves version of linked symmetry, lp solver, nl solver etc)
 - Added recipe with reformulation for detecting infeasible constraints
 - Wrapped SCIPcreateOrigSol and added tests 

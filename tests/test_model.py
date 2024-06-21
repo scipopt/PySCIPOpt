@@ -370,3 +370,20 @@ def test_version_external_codes():
      scip = Model()
      scip.printVersion()
      scip.printExternalCodeVersions()
+
+def test_primal_dual_limit():
+    from pyscipopt import SCIP_PARAMSETTING
+    scip = Model()
+    scip.readProblem("tests/data/10teams.mps")
+    scip.setParam("limits/primal", 1000000)
+    scip.setHeuristics(SCIP_PARAMSETTING.OFF)
+    scip.setSeparating(SCIP_PARAMSETTING.OFF)
+    scip.setPresolve(SCIP_PARAMSETTING.OFF)
+    scip.optimize()
+    assert(scip.getStatus() == "primallimit"), scip.getStatus()
+
+    scip = Model()
+    scip.readProblem("tests/data/10teams.mps")
+    scip.setParam("limits/dual", -10)
+    scip.optimize()
+    assert (scip.getStatus() == "duallimit"), scip.getStatus()
