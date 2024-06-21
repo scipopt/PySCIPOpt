@@ -1,4 +1,4 @@
-name: Build
+name: Build wheels
 
 on:
   workflow_dispatch:
@@ -7,7 +7,12 @@ on:
               type: string
               description: SCIPOptSuite deployment version
               required: true
-              default: "0.4.0"
+              default: "v0.4.0"
+          upload_to_pypi:
+              type: boolean
+              description: Whether the artifacts should be uploaded to PyPI
+              required: false
+              default: false
 
 jobs:
   build_wheels:
@@ -59,6 +64,7 @@ jobs:
   upload_pypi:
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
+    if: github.event.inputs.upload_to_pypi == 'true'
     steps:
       - uses: actions/download-artifact@v3
         with:
