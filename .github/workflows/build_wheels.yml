@@ -1,4 +1,4 @@
-name: Build Wheels
+name: Build wheels
 
 on:
   workflow_dispatch:
@@ -8,6 +8,11 @@ on:
               description: SCIPOptSuite deployment version
               required: true
               default: "v0.4.0"
+          upload_to_pypi:
+              type: boolean
+              description: Whether the artifacts should be uploaded to PyPI
+              required: false
+              default: false
 
 jobs:
   build_wheels:
@@ -16,14 +21,14 @@ jobs:
     strategy:
       matrix:
         include:
-          # - os: ubuntu-20.04
-          #   arch: x86_64
+          - os: ubuntu-20.04
+            arch: x86_64
           - os: macos-14
             arch: arm64
-          # - os: macos-latest
-          #   arch: x86_64
-          # - os: windows-latest
-          #   arch: AMD64
+          - os: macos-latest
+            arch: x86_64
+          - os: windows-latest
+            arch: AMD64
 
 
 
@@ -56,17 +61,18 @@ jobs:
         with:
           path: dist/*.tar.gz
 
-  # upload_pypi:
-  #   needs: [build_wheels, build_sdist]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/download-artifact@v3
-  #       with:
-  #         name: artifact
-  #         path: dist
+  upload_pypi:
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    if: github.event.inputs.upload_to_pypi == 'true'
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifact
+          path: dist
 
-  #     - uses: pypa/gh-action-pypi-publish@release/v1
-  #       with:
-  #         user: __token__
-  #         password: ${{ secrets.PYPI_API_TOKEN }}
-  #         verbose: true
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          verbose: true

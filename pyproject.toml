@@ -52,7 +52,7 @@ environment = { SCIPOPTDIR="$(pwd)/scip", LD_LIBRARY_PATH="$(pwd)/scip/lib:$LD_L
 
 
 [tool.cibuildwheel.macos]
-skip="pp* cp36* cp37* cp38* cp310* cp311* cp312*"
+skip="pp* cp36* cp37*"
 before-all = '''
 #!/bin/bash
 brew install wget zlib gcc
