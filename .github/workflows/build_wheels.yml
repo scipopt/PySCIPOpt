@@ -1,9 +1,13 @@
 name: Build
 
 on:
-  push:
-    tags: 
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+      inputs:
+          scip_version:
+              type: string
+              description: SCIPOptSuite deployment version
+              required: true
+              default: "0.4.0"
 
 jobs:
   build_wheels:
@@ -32,6 +36,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}/tests"
+          SCIPOPTSUITE_VERSION: ${{ github.event.inputs.scip_version }}
         
       - uses: actions/upload-artifact@v3
         with:
