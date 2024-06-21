@@ -44,7 +44,7 @@ skip="pp*" # currently doesn't work with PyPy
 skip="pp* cp36* cp37* *musllinux*"
 before-all = [
     "(apt-get update && apt-get install --yes wget) || yum install -y wget zlib libgfortran || brew install wget",
-    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.1.0/libscip-linux.zip -O scip.zip",
+    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/$SCIPOPTSUITE_VERSION/libscip-linux.zip -O scip.zip",
     "unzip scip.zip",
     "mv scip_install scip"
     ]
@@ -57,9 +57,9 @@ before-all = '''
 #!/bin/bash
 brew install wget zlib gcc
 if [[ $CIBW_ARCHS == *"arm"* ]]; then
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.1.0/libscip-macos-arm.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/$SCIPOPTSUITE_VERSION/libscip-macos-arm.zip -O scip.zip
 else
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.1.0/libscip-macos.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/$SCIPOPTSUITE_VERSION/libscip-macos.zip -O scip.zip
 fi
 unzip scip.zip
 mv scip_install src/scip
@@ -75,7 +75,7 @@ repair-wheel-command = [
 skip="pp* cp36* cp37*"
 before-all = [
     "choco install 7zip wget",
-    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.1.0/libscip-windows.zip -O scip.zip",
+    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/$SCIPOPTSUITE_VERSION/libscip-windows.zip -O scip.zip",
     "\"C:\\Program Files\\7-Zip\\7z.exe\" x \"scip.zip\" -o\"scip-test\"",
     "mv .\\scip-test\\scip_install .\\test",
     "mv .\\test .\\scip"
