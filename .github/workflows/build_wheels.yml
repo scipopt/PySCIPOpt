@@ -14,10 +14,6 @@ on:
               required: false
               default: false
 
-
-env:
-  SCIPOPTSUITE_VERSION: ${{ github.event.inputs.scip_version }}
-
 jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
@@ -45,6 +41,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}/tests"
+          SCIPOPTSUITE_VERSION: ${{ github.event.inputs.scip_version }}
         
       - uses: actions/upload-artifact@v3
         with:
