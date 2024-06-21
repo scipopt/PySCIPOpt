@@ -7,7 +7,7 @@ on:
               type: string
               description: SCIPOptSuite deployment version
               required: true
-              default: "0.4.0"
+              default: "v0.4.0"
 
 jobs:
   build_wheels:
