@@ -369,7 +369,6 @@ def test_locale():
     except Exception:
         pytest.skip("pt_PT locale was not found. It might need to be installed.")    
 
-
 def test_version_external_codes():
      scip = Model()
      scip.printVersion()

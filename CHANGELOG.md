@@ -2,6 +2,8 @@
 
 ## Unreleased
 ### Added
+- Created Statistics class
+- Added parser to read .stats file
 ### Fixed
 ### Changed
 ### Removed
