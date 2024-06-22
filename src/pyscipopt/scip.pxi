@@ -5549,15 +5549,7 @@ class Statistics:
     problem_name: str
         Name of problem
     presolved_problem_name: str
-        Name of presolved problem
-    _variables: dict
-        Dictionary with number of variables by type 
-    _presolved_variables: dict
-        Dictionary with number of presolved variables by type 
-    _constraints: dict
-        Dictionary with number of constraints by type
-    _presolved_constraints: dict
-        Dictionary with number of presolved constraints by type
+        Name of presolved problem    
     n_nodes: int
         The number of nodes explored in the branch-and-bound tree
     n_solutions_found: int
@@ -5596,9 +5588,9 @@ class Statistics:
         number of maximal constraints in the model
     n_initial_cons: int
         number of initial constraints in the presolved model
-    n_presolved_maximal_cons
+    n_presolved_maximal_cons: int
         number of maximal constraints in the presolved model
-    n_presolved_conss
+    n_presolved_conss: int
         number of initial constraints in the model
     """
 
@@ -5609,10 +5601,10 @@ class Statistics:
     copying_time: float
     problem_name: str
     presolved_problem_name: str
-    _variables: dict
-    _presolved_variables: dict
-    _constraints: dict
-    _presolved_constraints: dict
+    _variables: dict             # Dictionary with number of variables by type 
+    _presolved_variables: dict   # Dictionary with number of presolved variables by type
+    _constraints: dict           # Dictionary with number of constraints by type
+    _presolved_constraints: dict # Dictionary with number of presolved constraints by type
     n_runs: int
     n_nodes: int
     n_solutions_found: int
