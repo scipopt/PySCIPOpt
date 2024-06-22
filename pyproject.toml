@@ -44,11 +44,11 @@ skip="pp*" # currently doesn't work with PyPy
 skip="pp* cp36* cp37* *musllinux*"
 before-all = [
     "(apt-get update && apt-get install --yes wget) || yum install -y wget zlib libgfortran || brew install wget",
-    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.1.0/libscip-linux.zip -O scip.zip",
+    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.4.0/libscip-linux.zip -O scip.zip",
     "unzip scip.zip",
     "mv scip_install scip"
     ]
-environment = { SCIPOPTDIR="$(pwd)/scip", LD_LIBRARY_PATH="$(pwd)/scip/lib:$LD_LIBRARY_PATH", DYLD_LIBRARY_PATH="$(pwd)/scip/lib:$DYLD_LIBRARY_PATH", PATH="$(pwd)/scip/bin:$PATH", PKG_CONFIG_PATH="$(pwd)/scip/lib/pkgconfig:$PKG_CONFIG_PATH"}
+environment = { SCIPOPTDIR="$(pwd)/scip", LD_LIBRARY_PATH="$(pwd)/scip/lib:$LD_LIBRARY_PATH", DYLD_LIBRARY_PATH="$(pwd)/scip/lib:$DYLD_LIBRARY_PATH", PATH="$(pwd)/scip/bin:$PATH", PKG_CONFIG_PATH="$(pwd)/scip/lib/pkgconfig:$PKG_CONFIG_PATH", RELEASE="true"}
 
 
 [tool.cibuildwheel.macos]
@@ -57,14 +57,14 @@ before-all = '''
 #!/bin/bash
 brew install wget zlib gcc
 if [[ $CIBW_ARCHS == *"arm"* ]]; then
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.1.0/libscip-macos-arm.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.4.0/libscip-macos-arm.zip -O scip.zip
 else
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.1.0/libscip-macos.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.4.0/libscip-macos.zip -O scip.zip
 fi
 unzip scip.zip
 mv scip_install src/scip
 '''
-environment = {SCIPOPTDIR="$(pwd)/src/scip", LD_LIBRARY_PATH="$(pwd)/src/scip/lib:LD_LIBRARY_PATH", DYLD_LIBRARY_PATH="$(pwd)/src/scip/lib:$DYLD_LIBRARY_PATH", PATH="$(pwd)/src/scip/bin:$PATH", PKG_CONFIG_PATH="$(pwd)/src/scip/lib/pkgconfig:$PKG_CONFIG_PATH"}
+environment = {SCIPOPTDIR="$(pwd)/src/scip", LD_LIBRARY_PATH="$(pwd)/src/scip/lib:LD_LIBRARY_PATH", DYLD_LIBRARY_PATH="$(pwd)/src/scip/lib:$DYLD_LIBRARY_PATH", PATH="$(pwd)/src/scip/bin:$PATH", PKG_CONFIG_PATH="$(pwd)/src/scip/lib/pkgconfig:$PKG_CONFIG_PATH", RELEASE="true"}
 repair-wheel-command = [
   "delocate-listdeps {wheel}",
   "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}",
@@ -75,11 +75,11 @@ repair-wheel-command = [
 skip="pp* cp36* cp37*"
 before-all = [
     "choco install 7zip wget",
-    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.1.0/libscip-windows.zip -O scip.zip",
+    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.4.0/libscip-windows.zip -O scip.zip",
     "\"C:\\Program Files\\7-Zip\\7z.exe\" x \"scip.zip\" -o\"scip-test\"",
     "mv .\\scip-test\\scip_install .\\test",
     "mv .\\test .\\scip"
 ]
 before-build = "pip install delvewheel"
-environment = { SCIPOPTDIR='D:\\a\\PySCIPOpt\\PySCIPOpt\\scip' }
+environment = { SCIPOPTDIR='D:\\a\\PySCIPOpt\\PySCIPOpt\\scip', RELEASE="true" }
 repair-wheel-command = "delvewheel repair --add-path c:/bin;c:/lib;c:/bin/src;c:/lib/src;D:/a/PySCIPOpt/PySCIPOpt/scip/;D:/a/PySCIPOpt/PySCIPOpt/scip/lib/;D:/a/PySCIPOpt/PySCIPOpt/scip/bin/ -w {dest_dir} {wheel}"
