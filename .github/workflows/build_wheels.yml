@@ -12,10 +12,10 @@ on:
               type: boolean
               description: Should upload
               required: false
-              default: false
+              default: true
           test_pypi:
               type: boolean
-              description: Should upload to Test PyPI
+              description: Use Test PyPI
               required: false
               default: true
 
