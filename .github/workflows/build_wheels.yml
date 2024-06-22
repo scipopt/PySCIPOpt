@@ -1,9 +1,23 @@
-name: Build
+name: Build wheels
 
 on:
-  push:
-    tags: 
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+      inputs:
+          # scip_version:
+          #     type: string
+          #     description: SCIPOptSuite deployment version
+          #     required: true
+          #     default: "v0.4.0"
+          upload_to_pypi:
+              type: boolean
+              description: Should upload
+              required: false
+              default: true
+          test_pypi:
+              type: boolean
+              description: Use Test PyPI
+              required: false
+              default: true
 
 jobs:
   build_wheels:
@@ -16,7 +30,7 @@ jobs:
             arch: x86_64
           - os: macos-14
             arch: arm64
-          - os: macos-latest
+          - os: macos-13
             arch: x86_64
           - os: windows-latest
             arch: AMD64
@@ -54,6 +68,7 @@ jobs:
   upload_pypi:
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
+    if: github.event.inputs.upload_to_pypi == 'true'
     steps:
       - uses: actions/download-artifact@v3
         with:
@@ -61,7 +76,17 @@ jobs:
           path: dist
 
       - uses: pypa/gh-action-pypi-publish@release/v1
+        if: github.event.inputs.test_pypi == 'false'
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
           verbose: true
+    
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        if: github.event.inputs.test_pypi == 'true'
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          user: __token__
+          password: ${{ secrets.TESTPYPI_API_TOKEN }}
+          verbose: true
+

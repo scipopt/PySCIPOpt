@@ -107,6 +107,8 @@ cdef class PY_SCIP_STATUS:
     SOLLIMIT       = SCIP_STATUS_SOLLIMIT
     BESTSOLLIMIT   = SCIP_STATUS_BESTSOLLIMIT
     RESTARTLIMIT   = SCIP_STATUS_RESTARTLIMIT
+    PRIMALLIMIT    = SCIP_STATUS_PRIMALLIMIT
+    DUALLIMIT      = SCIP_STATUS_DUALLIMIT
     OPTIMAL        = SCIP_STATUS_OPTIMAL
     INFEASIBLE     = SCIP_STATUS_INFEASIBLE
     UNBOUNDED      = SCIP_STATUS_UNBOUNDED
@@ -4993,6 +4995,10 @@ cdef class Model:
             return "bestsollimit"
         elif stat == SCIP_STATUS_RESTARTLIMIT:
             return  "restartlimit"
+        elif stat == SCIP_STATUS_PRIMALLIMIT:
+            return "primallimit"
+        elif stat == SCIP_STATUS_DUALLIMIT:
+            return "duallimit"
         else:
             return "unknown"
 

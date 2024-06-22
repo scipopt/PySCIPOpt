@@ -83,7 +83,10 @@ if not os.path.exists(os.path.join(packagedir, "scip.pyx")):
 
 ext = ".pyx" if use_cython else ".c"
 
+
 on_github_actions = os.getenv('GITHUB_ACTIONS') == 'true'
+release_mode = os.getenv('RELEASE') == 'true'
+compile_with_line_tracing = on_github_actions and not release_mode    
 
 extensions = [
     Extension(
@@ -94,19 +97,19 @@ extensions = [
         libraries=[libname],
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
-        define_macros= [("CYTHON_TRACE_NOGIL", 1), ("CYTHON_TRACE", 1)] if on_github_actions else []
+        define_macros= [("CYTHON_TRACE_NOGIL", 1), ("CYTHON_TRACE", 1)] if compile_with_line_tracing else []
     )
 ]
 
 if use_cython:
-    extensions = cythonize(extensions, compiler_directives={"language_level": 3, "linetrace": on_github_actions})
+    extensions = cythonize(extensions, compiler_directives={"language_level": 3, "linetrace": compile_with_line_tracing})
 
 with open("README.md") as f:
     long_description = f.read()
 
 setup(
     name="PySCIPOpt",
-    version="5.0.1",
+    version="5.1.0",
     description="Python interface and modeling environment for SCIP",
     long_description=long_description,
     long_description_content_type="text/markdown",
