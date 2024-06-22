@@ -345,10 +345,6 @@ def test_setLogFile_none():
     os.remove(log_file_name)
    
 def test_locale():
-    on_release = os.getenv('SCIPOPTSUITE_VERSION') is not None
-    if on_release:
-        pytest.skip("Skip this test on release builds")
-
     import locale
 
     m = Model()
@@ -356,19 +352,18 @@ def test_locale():
     
     try:
         locale.setlocale(locale.LC_NUMERIC, "pt_PT")
+        assert locale.str(1.1) == "1,1"
+    
+        m.writeProblem("model.cip")
+
+        with open("model.cip") as file:
+            assert "1,1" not in file.read()
+            
+        m.readProblem(os.path.join("tests", "data", "test_locale.cip"))
+
+        locale.setlocale(locale.LC_NUMERIC,"")
     except Exception:
-        pytest.skip("pt_PT locale was not found. It might need to be installed.")
-    
-    assert locale.str(1.1) == "1,1"
-    
-    m.writeProblem("model.cip")
-
-    with open("model.cip") as file:
-        assert "1,1" not in file.read()
-        
-    m.readProblem(os.path.join("tests", "data", "test_locale.cip"))
-
-    locale.setlocale(locale.LC_NUMERIC,"")
+        pytest.skip("pt_PT locale was not found. It might need to be installed.")    
 
 
 def test_version_external_codes():
