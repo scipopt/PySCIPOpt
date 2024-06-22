@@ -10,9 +10,14 @@ on:
           #     default: "v0.4.0"
           upload_to_pypi:
               type: boolean
-              description: Whether the artifacts should be uploaded to PyPI
+              description: Should upload
               required: false
-              default: false
+              default: true
+          test_pypi:
+              type: boolean
+              description: Use Test PyPI
+              required: false
+              default: true
 
 jobs:
   build_wheels:
@@ -71,7 +76,17 @@ jobs:
           path: dist
 
       - uses: pypa/gh-action-pypi-publish@release/v1
+        if: github.event.inputs.test_pypi == 'false'
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
           verbose: true
+    
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        if: github.event.inputs.test_pypi == 'true'
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          user: __token__
+          password: ${{ secrets.TESTPYPI_API_TOKEN }}
+          verbose: true
+
