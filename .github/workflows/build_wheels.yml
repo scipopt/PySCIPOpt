@@ -3,11 +3,11 @@ name: Build wheels
 on:
   workflow_dispatch:
       inputs:
-          scip_version:
-              type: string
-              description: SCIPOptSuite deployment version
-              required: true
-              default: "v0.4.0"
+          # scip_version:
+          #     type: string
+          #     description: SCIPOptSuite deployment version
+          #     required: true
+          #     default: "v0.4.0"
           upload_to_pypi:
               type: boolean
               description: Whether the artifacts should be uploaded to PyPI
@@ -25,7 +25,7 @@ jobs:
             arch: x86_64
           - os: macos-14
             arch: arm64
-          - os: macos-latest
+          - os: macos-13
             arch: x86_64
           - os: windows-latest
             arch: AMD64
@@ -41,7 +41,6 @@ jobs:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}/tests"
-          SCIPOPTSUITE_VERSION: ${{ github.event.inputs.scip_version }}
         
       - uses: actions/upload-artifact@v3
         with:
