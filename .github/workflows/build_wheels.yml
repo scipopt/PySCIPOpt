@@ -10,12 +10,12 @@ on:
           #     default: "v0.4.0"
           upload_to_pypi:
               type: boolean
-              description: Whether the artifacts should be uploaded to PyPI
+              description: Should upload
               required: false
               default: false
           test_pypi:
               type: boolean
-              description: Whether the artifacts should be uploaded to Test PyPI
+              description: Should upload to Test PyPI
               required: false
               default: true
 
