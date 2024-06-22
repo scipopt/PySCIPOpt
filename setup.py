@@ -85,7 +85,7 @@ ext = ".pyx" if use_cython else ".c"
 
 
 on_github_actions = os.getenv('GITHUB_ACTIONS') == 'true'
-release_mode = os.getenv('SCIPOPTSUITE_VERSION') is not None
+release_mode = os.getenv('RELEASE') == 'true'
 compile_with_line_tracing = on_github_actions and not release_mode    
 
 extensions = [

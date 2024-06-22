@@ -345,7 +345,7 @@ def test_setLogFile_none():
     os.remove(log_file_name)
    
 def test_locale():
-    on_release = os.getenv('SCIPOPTSUITE_VERSION') is not None
+    on_release = os.getenv('RELEASE') is not None
     if on_release:
         pytest.skip("Skip this test on release builds")
 
