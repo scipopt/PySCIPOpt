@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Expanded Statistics class to more problems
 - Created Statistics class
 - Added parser to read .stats file
 ### Fixed
