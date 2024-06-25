@@ -1,7 +1,7 @@
 import pytest
 import os
 
-from pyscipopt import Model, quicksum, Reader, SCIP_RESULT
+from pyscipopt import Model, quicksum, Reader, SCIP_RESULT, readStatistics
 
 class SudokuReader(Reader):
 
@@ -89,7 +89,7 @@ def test_readStatistics():
     m.hideOutput()
     m.optimize()
     m.writeStatistics(os.path.join("tests", "data", "readStatistics.stats"))
-    result = m.readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
+    result = readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
 
     assert result.status == "optimal"
     assert len([k for k, val in result.__dict__.items() if not str(hex(id(val))) in str(val)]) == 20 # number of attributes. See https://stackoverflow.com/a/57431390/9700522
@@ -113,7 +113,7 @@ def test_readStatistics():
     m.hideOutput()
     m.optimize()
     m.writeStatistics(os.path.join("tests", "data", "readStatistics.stats"))
-    result = m.readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
+    result = readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
     assert result.status == "unbounded"
 
     m = Model()
@@ -122,7 +122,7 @@ def test_readStatistics():
     m.hideOutput()
     m.optimize()
     m.writeStatistics(os.path.join("tests", "data", "readStatistics.stats"))
-    result = m.readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
+    result = readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
     assert result.status == "infeasible"
     assert result.gap == None
     assert result.n_solutions_found == 0
@@ -133,8 +133,6 @@ def test_readStatistics():
     m.setParam("limits/solutions", 0)
     m.optimize()
     m.writeStatistics(os.path.join("tests", "data", "readStatistics.stats"))
-    result = m.readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
+    result = readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
     assert result.status == "user_interrupt"
     assert result.gap == None
-
-test_readStatistics()
