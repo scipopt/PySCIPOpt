@@ -16,8 +16,10 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 import math
 import random
-from pyscipopt import Model, quicksum, multidict
+
 from piecewise import *
+from pyscipopt import Model, quicksum, multidict
+
 
 def flp_nonlinear_mselect(I,J,d,M,f,c,K):
     """flp_nonlinear_mselect --  use multiple selection model

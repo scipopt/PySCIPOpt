@@ -1,4 +1,4 @@
-__version__ = '4.4.0'
+from ._version import __version__
 
 # required for Python 3.8 on Windows
 import os
@@ -9,6 +9,8 @@ if hasattr(os, 'add_dll_directory'):
 # export user-relevant objects:
 from pyscipopt.Multidict import multidict
 from pyscipopt.scip      import Model
+from pyscipopt.scip      import Variable
+from pyscipopt.scip      import Constraint
 from pyscipopt.scip      import Benders
 from pyscipopt.scip      import Benderscut
 from pyscipopt.scip      import Branchrule

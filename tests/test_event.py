@@ -10,8 +10,9 @@ class MyEvent(Eventhdlr):
         calls.append('eventinit')
         self.model.catchEvent(self.event_type, self)        
 
-    #def eventexit(self):
-    #    self.model.dropEvent(self.event_type, self)
+    def eventexit(self):
+        # PR #828 fixes an error here, but the underlying cause might not be solved (self.model being deleted before dropEvent is called)
+        self.model.dropEvent(self.event_type, self)
 
     def eventexec(self, event):
         assert str(event) == event.getName()

@@ -5,11 +5,11 @@ Approach: use an SOS2 constraints for modeling non-linear functions.
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt import Model, quicksum, multidict
 import math
-import random
 
 from piecewise import convex_comb_sos
+from pyscipopt import Model, quicksum, multidict
+
 
 def cost(a,b,c,e,f,p_min,p):
     """cost: fuel cost based on "standard" parameters
