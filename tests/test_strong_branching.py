@@ -16,7 +16,6 @@ class StrongBranchingRule(Branchrule):
     def __init__(self, scip, idempotent=False):
         self.scip = scip
         self.idempotent = idempotent
-        self.count = 0
 
     def branchexeclp(self, allowaddcons):
 
@@ -111,6 +110,30 @@ class StrongBranchingRule(Branchrule):
         return {"result": SCIP_RESULT.BRANCHED}
 
 
+class FeatureSelectorBranchingRule(Branchrule):
+
+    def __init__(self, scip):
+        self.scip = scip
+
+    def branchexeclp(self, allowaddcons):
+
+        if self.scip.getNNodes() == 1 or self.scip.getNNodes() == 250:
+
+            rows = self.scip.getLPRowsData()
+            cols = self.scip.getLPColsData()
+
+            # This is just a dummy rule to check functionality.
+            # A user should be able to see how they can access information without affecting the solve process.
+
+            age_row = rows[0].getAge()
+            age_col = cols[0].getAge()
+            red_cost_col = self.scip.getColRedCost(cols[0])
+
+            avg_sol = cols[0].getVar().getAvgSol()
+
+        return {"result": SCIP_RESULT.DIDNOTRUN}
+
+
 def create_model():
     scip = Model()
     scip.setHeuristics(SCIP_PARAMSETTING.OFF)
@@ -154,7 +177,7 @@ def test_strong_branching():
 
     strong_branch_rule = StrongBranchingRule(scip, idempotent=False)
     scip.includeBranchrule(strong_branch_rule, "strong branch rule", "custom strong branching rule",
-                           priority=10000000, maxdepth=4, maxbounddist=1)
+                           priority=10000000, maxdepth=-1, maxbounddist=1)
 
     scip.optimize()
 
@@ -164,6 +187,16 @@ def test_strong_branching_idempotent():
 
     strong_branch_rule = StrongBranchingRule(scip, idempotent=True)
     scip.includeBranchrule(strong_branch_rule, "strong branch rule", "custom strong branching rule",
-                           priority=10000000, maxdepth=4, maxbounddist=1)
+                           priority=10000000, maxdepth=-1, maxbounddist=1)
+
+    scip.optimize()
+
+
+def test_dummy_feature_selector():
+    scip = create_model()
+
+    feature_dummy_branch_rule = FeatureSelectorBranchingRule(scip)
+    scip.includeBranchrule(feature_dummy_branch_rule, "dummy branch rule", "custom feature creation branching rule",
+                           priority=10000000, maxdepth=-1, maxbounddist=1)
 
     scip.optimize()
