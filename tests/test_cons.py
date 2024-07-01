@@ -72,7 +72,6 @@ def test_cons_logical():
     assert m.isEQ(m.getVal(result1), 1)
     assert m.isEQ(m.getVal(result2), 0)
 
-
 def test_SOScons():
     m = Model()
     x = {}
