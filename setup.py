@@ -1,4 +1,4 @@
-from setuptools import setup, Extension
+from setuptools import find_packages, setup, Extension
 import os, platform, sys, re
 
 # look for environment variable that specifies path to SCIP
@@ -106,7 +106,7 @@ with open("README.md") as f:
 
 setup(
     name="PySCIPOpt",
-    version="5.0.0",
+    version="5.0.1",
     description="Python interface and modeling environment for SCIP",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -124,7 +124,7 @@ setup(
         "Topic :: Scientific/Engineering :: Mathematics",
     ],
     ext_modules=extensions,
-    packages=["pyscipopt"],
+    packages=find_packages(where="src"),
     package_dir={"pyscipopt": packagedir},
     package_data={"pyscipopt": ["scip.pyx", "scip.pxd", "*.pxi", "scip/lib/*"]},
     include_package_data=True,

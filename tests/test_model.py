@@ -1,4 +1,5 @@
 import pytest
+import os
 
 from pyscipopt import Model, SCIP_STAGE
 
@@ -287,6 +288,81 @@ def test_getStage():
     assert m.getStage() == SCIP_STAGE.SOLVED
     assert m.getStageName() == "SOLVED"
 
+def test_getObjective():
+    m = Model()
+    m.addVar(obj=2, name="x1")
+    m.addVar(obj=3, name="x2")
+
+    assert str(m.getObjective()) == "Expr({Term(x1): 2.0, Term(x2): 3.0})"
+    
+    
+def test_getTreesizeEstimation():
+    m = Model()
+
+    assert m.getTreesizeEstimation() == -1
+
+    x = m.addVar("x", vtype='B', obj=1.0)
+    y = m.addVar("y", vtype='B', obj=2.0)
+    c = m.addCons(x + y <= 10.0)
+    m.setMaximize()
+
+    m.optimize()
+
+    assert m.getTreesizeEstimation() > 0
+
+def test_setLogFile():
+    m = Model()
+    x = m.addVar("x", vtype="I")
+    y = m.addVar("y", vtype="I")
+    m.addCons(x + y == 1)
+    m.setObjective(2*x+y)
+    
+    log_file_name = "test_setLogFile.log"
+    m.setLogfile(log_file_name)
+    assert os.path.exists(log_file_name)
+    
+    m.optimize()
+    del m
+    assert os.path.getsize(log_file_name) > 0
+    os.remove(log_file_name)
+
+def test_setLogFile_none():
+    m = Model()
+    x = m.addVar("x", vtype="I")
+    y = m.addVar("y", vtype="I")
+    m.addCons(x + y == 1)
+    m.setObjective(2*x+y)
+    
+    log_file_name = "test_setLogfile_none.log"
+    m.setLogfile(log_file_name)
+    assert os.path.exists(log_file_name)
+    
+    m.setLogfile(None)
+    m.optimize()
+    del m
+    assert os.path.getsize(log_file_name) == 0
+    os.remove(log_file_name)
+   
+def test_locale():
+    import locale
+
+    m = Model()
+    m.addVar(lb=1.1)
+    
+    try:
+        locale.setlocale(locale.LC_NUMERIC, "pt_PT")
+    except Exception:
+        pytest.skip("pt_PT locale was not found. It might need to be installed.")
+    
+    assert locale.str(1.1) == "1,1"
+    
+    m.writeProblem("model.cip")
+
+    with open("model.cip") as file:
+        assert "1,1" not in file.read()
+
+    locale.setlocale(locale.LC_NUMERIC,"")
+
 def test_getObjVal():
     m = Model()
     x = m.addVar()
@@ -298,3 +374,89 @@ def test_getObjVal():
     m.getObjVal()
     m.getVal(x)
 
+
+def test_getObjective():
+    m = Model()
+    m.addVar(obj=2, name="x1")
+    m.addVar(obj=3, name="x2")
+
+    assert str(m.getObjective()) == "Expr({Term(x1): 2.0, Term(x2): 3.0})"
+    
+    
+def test_getTreesizeEstimation():
+    m = Model()
+
+    assert m.getTreesizeEstimation() == -1
+
+    x = m.addVar("x", vtype='B', obj=1.0)
+    y = m.addVar("y", vtype='B', obj=2.0)
+    c = m.addCons(x + y <= 10.0)
+    m.setMaximize()
+
+    m.optimize()
+
+    assert m.getTreesizeEstimation() > 0
+
+def test_setLogFile():
+    m = Model()
+    x = m.addVar("x", vtype="I")
+    y = m.addVar("y", vtype="I")
+    m.addCons(x + y == 1)
+    m.setObjective(2*x+y)
+    
+    log_file_name = "test_setLogFile.log"
+    m.setLogfile(log_file_name)
+    assert os.path.exists(log_file_name)
+    
+    m.optimize()
+    del m
+    assert os.path.getsize(log_file_name) > 0
+    os.remove(log_file_name)
+
+def test_setLogFile_none():
+    m = Model()
+    x = m.addVar("x", vtype="I")
+    y = m.addVar("y", vtype="I")
+    m.addCons(x + y == 1)
+    m.setObjective(2*x+y)
+    
+    log_file_name = "test_setLogfile_none.log"
+    m.setLogfile(log_file_name)
+    assert os.path.exists(log_file_name)
+    
+    m.setLogfile(None)
+    m.optimize()
+    del m
+    assert os.path.getsize(log_file_name) == 0
+    os.remove(log_file_name)
+   
+def test_locale():
+    import locale
+
+    m = Model()
+    m.addVar(lb=1.1)
+    
+    try:
+        locale.setlocale(locale.LC_NUMERIC, "pt_PT")
+    except Exception:
+        pytest.skip("pt_PT locale was not found. It might need to be installed.")
+    
+    assert locale.str(1.1) == "1,1"
+    
+    m.writeProblem("model.cip")
+
+    with open("model.cip") as file:
+        assert "1,1" not in file.read()
+
+    locale.setlocale(locale.LC_NUMERIC,"")
+
+def test_getObjVal():
+    m = Model()
+    x = m.addVar()
+    m.setObjective(x)
+
+    m.setParam("limits/solutions", 1)
+    m.optimize()
+
+    m.getObjVal()
+    m.getVal(x)

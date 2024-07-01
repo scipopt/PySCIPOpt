@@ -1,6 +1,7 @@
 import pytest
+import random
 
-from pyscipopt import Model, quicksum, sqrt
+from pyscipopt import Model, quicksum, sqrt, exp, log, sin
 
 # test string with polynomial formulation (uses only Expr)
 def test_string_poly():
