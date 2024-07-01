@@ -5558,7 +5558,7 @@ cdef class Model:
 
     def startStrongBranching(self):
         """Start strong branching. Needs to be called before any strong branching. Must also later end strong branching.
-        If propagation is enabled then strong branching is not done of the LP, but on additionally created nodes (has some overhead)"""
+        If propagation is enabled then strong branching is not done on the LP, but on additionally created nodes (has some overhead)"""
 
         PY_SCIP_CALL(SCIPstartStrongbranch(self._scip, False))
 
@@ -5577,7 +5577,10 @@ cdef class Model:
         downvalid - Whether down stores a valid dual bound or is NULL
         upvalid - Whether up stores a valid dual bound or is NULL
         solval - The solution value of the variable at the last strong branching call
-        lpobjval - The LP objective value at the time of the last strong branching call"""
+        lpobjval - The LP objective value at the time of the last strong branching call
+
+        :param Variable var: variable to get the previous strong branching information from
+        """
 
         cdef SCIP_Real down
         cdef SCIP_Real up
@@ -5591,7 +5594,10 @@ cdef class Model:
         return down, up, downvalid, upvalid, solval, lpobjval
 
     def getVarStrongBranchLastNode(self, Variable var):
-        """Get the node number from the last time strong branching was called on the variable"""
+        """Get the node number from the last time strong branching was called on the variable
+
+        :param Variable var: variable to get the previous strong branching node from
+        """
 
         cdef SCIP_Longint node_num
         node_num = SCIPgetVarStrongbranchNode(self._scip, var.scip_var)
@@ -5632,7 +5638,7 @@ cdef class Model:
          Update is ignored if objdelts is infinite. Weight is in range (0, 1], and affects how it updates
          the global weighted sum.
 
-         :param Variable var: Variable whos psuedo cost will be updated
+         :param Variable var: Variable whos pseudo cost will be updated
          :param valdelta: The change in variable value (e.g. the fractional amount removed or added by branching)
          :param objdelta: The change in objective value of the LP after valdelta change of the variable
          :param weight: the weight in range (0,1] of how the update affects the stored weighted sum.
