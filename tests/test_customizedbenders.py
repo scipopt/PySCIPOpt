@@ -55,13 +55,12 @@ class testBenders(Benders):
         self.model.setupBendersSubproblem(probnumber, self, solution)
         self.subprob.solveProbingLP()
         subprob = self.model.getBendersSubproblem(probnumber, self)
-        
         print(subprob.getStage())
         print(subprob.getBestSol())
         self.subprob.getObjVal()
         print(subprob.getObjVal())
         print(subprob.getSolObjVal(subprob.getBestSol()))
-        
+   
         assert self.subprob.getObjVal() == subprob.getObjVal()
 
         result_dict = {}
@@ -229,8 +228,6 @@ def flpbenders_defcuts_test():
     x, suby = testbd.subprob.data
     edges = [(i, j) for (i, j) in x if testbd.subprob.getVal(x[i,j]) > EPS]
 
-    assert False
-
     print("Optimal value:", master.getObjVal())
     print("Facilities at nodes:", facilities)
     print("Edges:", edges)
@@ -241,8 +238,6 @@ def flpbenders_defcuts_test():
     # subproblems. This must happen after the solution is extracted, otherwise
     # the solution will be lost
     master.freeBendersSubproblems()
-
-    assert False
 
     return master.getObjVal()
 
@@ -283,8 +278,6 @@ def flpbenders_customcuts_test():
     x, suby = testbd.subprob.data
     edges = [(i, j) for (i, j) in x if testbd.subprob.getVal(x[i,j]) > EPS]
 
-    assert False
-
     print("Optimal value:", master.getObjVal())
     print("Facilities at nodes:", facilities)
     print("Edges:", edges)
@@ -314,9 +307,6 @@ def flp_test():
     y = master.data
     facilities = [j for j in y if master.getVal(y[j]) > EPS]
 
-    assert False
-
-
     print("Optimal value:", master.getObjVal())
     print("Facilities at nodes:", facilities)
 
@@ -333,7 +323,3 @@ def test_customized_benders():
 
     assert defcutsobj == customcutsobj
     assert defcutsobj == monolithicobj
-
-
-
-test_customized_benders()

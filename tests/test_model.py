@@ -1,7 +1,7 @@
 import pytest
 import os
 
-from pyscipopt import Model, SCIP_STAGE
+from pyscipopt import Model, SCIP_STAGE, quicksum
 
 def test_model():
     # create solver instance
@@ -363,18 +363,6 @@ def test_locale():
 
     locale.setlocale(locale.LC_NUMERIC,"")
 
-def test_getObjVal():
-    m = Model()
-    x = m.addVar()
-    m.setObjective(x)
-
-    m.setParam("limits/solutions", 1)
-    m.optimize()
-
-    m.getObjVal()
-    m.getVal(x)
-
-
 def test_getObjective():
     m = Model()
     m.addVar(obj=2, name="x1")
@@ -452,11 +440,42 @@ def test_locale():
 
 def test_getObjVal():
     m = Model()
-    x = m.addVar()
-    m.setObjective(x)
 
+    x = m.addVar(obj=0)
+    y = m.addVar(obj = 1)
+    z = m.addVar(obj = 2)
+
+    m.addCons(x+y+z >= 0)
+    m.addCons(y+z >= 3)
+    m.addCons(z >= 8)
+
+    m.setParam("limits/solutions", 0)
+    m.optimize()
+    
+    try:
+        m.getObjVal()
+    except Warning:
+        pass
+
+    try:
+        m.getVal(x)
+    except Warning:
+        pass
+
+    m.freeTransform()
     m.setParam("limits/solutions", 1)
+    m.presolve()
+
+    assert m.getObjVal()
+    assert m.getVal(x)
+
+    m.freeTransform()
+    m.setParam("limits/solutions", -1)
+
     m.optimize()
 
-    m.getObjVal()
-    m.getVal(x)
+    assert m.getObjVal() == 16 
+    assert m.getVal(x) == 0
+
+    assert m.getObjVal() == 16 
+    assert m.getVal(x) == 0
