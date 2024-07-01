@@ -5550,11 +5550,47 @@ cdef class Model:
         assert isinstance(var, Variable), "The given variable is not a pyvar, but %s" % var.__class__.__name__
         PY_SCIP_CALL(SCIPchgVarBranchPriority(self._scip, var.scip_var, priority))
 
-    def startStrongBranching(self, enablepropagation):
+    def startStrongBranching(self, enablepropagation=False):
         """Start strong branching. Needs to be called before any strong branching. Must also later end strong branching.
         If propagation is enabled then strong branching is not done of the LP, but on additionally created nodes (has some overhead)"""
 
         PY_SCIP_CALL(SCIPstartStrongbranch(self._scip, enablepropagation))
+
+    def endStrongBranching(self):
+        """End strong branching. Needs to be called if startStrongBranching was called previously.
+        Between these calls the user can access all strong branching functionality. """
+
+        PY_SCIP_CALL(SCIPendStrongbranch(self._scip))
+
+    def getVarStrongBranchLast(self, Variable var):
+        """Get the results of the last strong branching call on this variable (potentially was called
+        at another node).
+
+        down - The dual bound of the LP after branching down on the variable
+        up - The dual bound of the LP after branchign up on the variable
+        downvalid - Whether down stores a valid dual bound or is NULL
+        upvalid - Whether up stores a valid dual bound or is NULL
+        solval - The solution value of the variable at the last strong branching call
+        lpobjval - The LP objective value at the time of the last strong branching call"""
+
+        cdef SCIP_Real down
+        cdef SCIP_Real up
+        cdef SCIP_Real solval
+        cdef SCIP_Real lpobjval
+        cdef SCIP_Bool downvalid
+        cdef SCIP_Bool upvalid
+
+        PY_SCIP_CALL(SCIPgetVarStrongbranchLast(self._scip, var.scip_var, &down, &up, &downvalid, &upvalid, &solval, &lpobjval))
+
+        return down, up, downvalid, upvalid, solval, lpobjval
+
+    def getVarStrongBranchNode(self, Variable var):
+        """Get the node number from the last time strong branching was called on the variable"""
+
+        cdef SCIP_Longint node_num
+        node_num = SCIPgetVarStrongbranchNode(self._scip, var.scip_var)
+
+        return node_num
 
     def getVarStrongBranch(self, Variable var, itlim, idempotent=False, integral=False):
         """ Gets strong branching information on column variable.
