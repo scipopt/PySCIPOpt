@@ -138,7 +138,6 @@ def create_model():
     scip = Model()
     scip.setHeuristics(SCIP_PARAMSETTING.OFF)
     scip.setSeparating(SCIP_PARAMSETTING.OFF)
-    # scip.setIntParam("presolving/maxrounds", 0)
     scip.setLongintParam("limits/nodes", 2000)
 
     x0 = scip.addVar(lb=-2, ub=4)
