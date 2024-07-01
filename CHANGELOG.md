@@ -2,8 +2,28 @@
 
 ## Unreleased
 ### Added
-- Added check for pt_PT locale in test_model.py
+- Created Statistics class
+- Added parser to read .stats file
 ### Fixed
+- Fixed too strict getObjVal, getVal check
+### Changed
+### Removed
+
+## 5.1.1 - 2024-06-22
+### Added
+- Added SCIP_STATUS_DUALLIMIT and SCIP_STATUS_PRIMALLIMIT
+- Added SCIPprintExternalCodes (retrieves version of linked symmetry, lp solver, nl solver etc)
+- Added recipe with reformulation for detecting infeasible constraints
+- Wrapped SCIPcreateOrigSol and added tests 
+- Added verbose option for writeProblem and writeParams
+- Expanded locale test
+- Added methods for creating expression constraints without adding to problem
+- Added methods for creating/adding/appending disjunction constraints
+- Added check for pt_PT locale in test_model.py
+- Added SCIPgetOrigConss and SCIPgetNOrigConss Cython bindings. 
+- Added transformed=False option to getConss, getNConss, and getNVars
+### Fixed
+- Fixed locale errors in reading
 ### Changed
 ### Removed
 
@@ -14,6 +34,7 @@
 - Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
 - New test for model setLogFile
 ### Fixed
+- Fixed locale fix
 - Fixed model.setLogFile(None) error
 - Add recipes sub-package
 - Fixed "weakly-referenced object no longer exists" when calling dropEvent in test_customizedbenders
