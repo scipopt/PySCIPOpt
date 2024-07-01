@@ -17,6 +17,7 @@ from posix.stdio cimport fileno
 
 from collections.abc import Iterable
 from itertools import repeat
+from dataclasses import dataclass
 
 include "expr.pxi"
 include "lp.pxi"
@@ -106,6 +107,8 @@ cdef class PY_SCIP_STATUS:
     SOLLIMIT       = SCIP_STATUS_SOLLIMIT
     BESTSOLLIMIT   = SCIP_STATUS_BESTSOLLIMIT
     RESTARTLIMIT   = SCIP_STATUS_RESTARTLIMIT
+    PRIMALLIMIT    = SCIP_STATUS_PRIMALLIMIT
+    DUALLIMIT      = SCIP_STATUS_DUALLIMIT
     OPTIMAL        = SCIP_STATUS_OPTIMAL
     INFEASIBLE     = SCIP_STATUS_INFEASIBLE
     UNBOUNDED      = SCIP_STATUS_UNBOUNDED
@@ -1131,12 +1134,21 @@ cdef class Model:
 
     def printVersion(self):
         """Print version, copyright information and compile mode"""
-        user_locale = locale.getlocale()
-        locale.setlocale(locale.LC_ALL, "C")
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
 
         SCIPprintVersion(self._scip, NULL)
 
-        locale.setlocale(locale.LC_ALL, user_locale)
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
+
+    def printExternalCodeVersions(self):
+        """Print external code versions, e.g. symmetry, non-linear solver, lp solver"""
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        SCIPprintExternalCodes(self._scip, NULL)
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def getProbName(self):
         """Retrieve problem name"""
@@ -1456,31 +1468,35 @@ cdef class Model:
         if not onlyroot:
             self.setIntParam("propagating/maxrounds", 0)
 
-    def writeProblem(self, filename='model.cip', trans=False, genericnames=False):
+    def writeProblem(self, filename='model.cip', trans=False, genericnames=False, verbose=True):
         """Write current model/problem to a file.
 
         :param filename: the name of the file to be used (Default value = 'model.cip'). Should have an extension corresponding to one of the readable file formats, described in https://www.scipopt.org/doc/html/group__FILEREADERS.php.
         :param trans: indicates whether the transformed problem is written to file (Default value = False)
         :param genericnames: indicates whether the problem should be written with generic variable and constraint names (Default value = False)
-
+        :param verbose: indicates whether a success message should be printed
         """
-        user_locale = locale.getlocale()
-        locale.setlocale(locale.LC_ALL, "C")
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
 
         str_absfile = abspath(filename)
         absfile = str_conversion(str_absfile)
         fn, ext = splitext(absfile)
+
         if len(ext) == 0:
             ext = str_conversion('.cip')
         fn = fn + ext
         ext = ext[1:]
+
         if trans:
             PY_SCIP_CALL(SCIPwriteTransProblem(self._scip, fn, ext, genericnames))
         else:
             PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, fn, ext, genericnames))
-        print('wrote problem to file ' + str_absfile)
+        
+        if verbose:
+            print('wrote problem to file ' + str_absfile)
 
-        locale.setlocale(locale.LC_ALL, user_locale)
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     # Variable Functions
 
@@ -1605,7 +1621,6 @@ cdef class Model:
         PY_SCIP_CALL(SCIPtightenVarLb(self._scip, var.scip_var, lb, force, &infeasible, &tightened))
         return infeasible, tightened
 
-
     def tightenVarUb(self, Variable var, ub, force=False):
         """Tighten the upper bound in preprocessing or current node, if the bound is tighter.
 
@@ -1621,7 +1636,6 @@ cdef class Model:
         cdef SCIP_Bool tightened
         PY_SCIP_CALL(SCIPtightenVarUb(self._scip, var.scip_var, ub, force, &infeasible, &tightened))
         return infeasible, tightened
-
 
     def tightenVarUbGlobal(self, Variable var, ub, force=False):
         """Tighten the global upper bound, if the bound is tighter.
@@ -1775,13 +1789,15 @@ cdef class Model:
 
         return vars
 
-    def getNVars(self):
-        """Retrieve number of variables in the problems"""
-        return SCIPgetNVars(self._scip)
-
-    def getNConss(self):
-        """Retrieve the number of constraints."""
-        return SCIPgetNConss(self._scip)
+    def getNVars(self, transformed=True):
+        """Retrieve number of variables in the problems.
+        
+        :param transformed: get transformed variables instead of original (Default value = True)
+        """
+        if transformed:
+            return SCIPgetNVars(self._scip)
+        else:
+            return SCIPgetNOrigVars(self._scip)
 
     def getNIntVars(self):
         """gets number of integer active problem variables"""
@@ -2090,168 +2106,7 @@ cdef class Model:
         PY_SCIP_CALL( SCIPseparateSol(self._scip, NULL if sol is None else sol.sol, pretendroot, allowlocal, onlydelayed, &delayed, &cutoff) )
         return delayed, cutoff
 
-    # Constraint functions
-    def addCons(self, cons, name='', initial=True, separate=True,
-                enforce=True, check=True, propagate=True, local=False,
-                modifiable=False, dynamic=False, removable=False,
-                stickingatnode=False):
-        """Add a linear or nonlinear constraint.
-
-        :param cons: constraint object
-        :param name: the name of the constraint, generic name if empty (Default value = '')
-        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
-        :param separate: should the constraint be separated during LP processing? (Default value = True)
-        :param enforce: should the constraint be enforced during node processing? (Default value = True)
-        :param check: should the constraint be checked for feasibility? (Default value = True)
-        :param propagate: should the constraint be propagated during node processing? (Default value = True)
-        :param local: is the constraint only valid locally? (Default value = False)
-        :param modifiable: is the constraint modifiable (subject to column generation)? (Default value = False)
-        :param dynamic: is the constraint subject to aging? (Default value = False)
-        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
-        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be  moved to a more global node? (Default value = False)
-        :return The added @ref scip#Constraint "Constraint" object.
-
-        """
-        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
-
-        # replace empty name with generic one
-        if name == '':
-            name = 'c'+str(SCIPgetNConss(self._scip)+1)
-
-        kwargs = dict(name=name, initial=initial, separate=separate,
-                      enforce=enforce, check=check,
-                      propagate=propagate, local=local,
-                      modifiable=modifiable, dynamic=dynamic,
-                      removable=removable,
-                      stickingatnode=stickingatnode)
-        kwargs['lhs'] = -SCIPinfinity(self._scip) if cons._lhs is None else cons._lhs
-        kwargs['rhs'] =  SCIPinfinity(self._scip) if cons._rhs is None else cons._rhs
-
-        deg = cons.expr.degree()
-        if deg <= 1:
-            return self._addLinCons(cons, **kwargs)
-        elif deg <= 2:
-            return self._addQuadCons(cons, **kwargs)
-        elif deg == float('inf'): # general nonlinear
-            return self._addGenNonlinearCons(cons, **kwargs)
-        else:
-            return self._addNonlinearCons(cons, **kwargs)
-
-    def addConss(self, conss, name='', initial=True, separate=True,
-                 enforce=True, check=True, propagate=True, local=False,
-                 modifiable=False, dynamic=False, removable=False,
-                 stickingatnode=False):
-        """Adds multiple linear or quadratic constraints.
-
-        Each of the constraints is added to the model using Model.addCons().
-
-        For all parameters, except @p conss, this method behaves differently depending on the type of the passed argument:
-          1. If the value is iterable, it must be of the same length as @p conss. For each constraint, Model.addCons() will be called with the value at the corresponding index.
-          2. Else, the (default) value will be applied to all of the constraints.
-
-        :param conss An iterable of constraint objects. Any iterable will be converted into a list before further processing.
-        :param name: the names of the constraints, generic name if empty (Default value = ''). If a single string is passed, it will be suffixed by an underscore and the enumerated index of the constraint (starting with 0).
-        :param initial: should the LP relaxation of constraints be in the initial LP? (Default value = True)
-        :param separate: should the constraints be separated during LP processing? (Default value = True)
-        :param enforce: should the constraints be enforced during node processing? (Default value = True)
-        :param check: should the constraints be checked for feasibility? (Default value = True)
-        :param propagate: should the constraints be propagated during node processing? (Default value = True)
-        :param local: are the constraints only valid locally? (Default value = False)
-        :param modifiable: are the constraints modifiable (subject to column generation)? (Default value = False)
-        :param dynamic: are the constraints subject to aging? (Default value = False)
-        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
-        :param stickingatnode: should the constraints always be kept at the node where it was added, even if it may be  @oved to a more global node? (Default value = False)
-        :return A list of added @ref scip#Constraint "Constraint" objects.
-
-        :see addCons()
-        """
-        def ensure_iterable(elem, length):
-            if isinstance(elem, Iterable):
-                return elem
-            else:
-                return list(repeat(elem, length))
-
-        assert isinstance(conss, Iterable), "Given constraint list is not iterable."
-
-        conss = list(conss)
-        n_conss = len(conss)
-
-        if isinstance(name, str):
-            if name == "":
-                name = ["" for idx in range(n_conss)]
-            else:
-                name = ["%s_%s" % (name, idx) for idx in range(n_conss)]
-        initial = ensure_iterable(initial, n_conss)
-        separate = ensure_iterable(separate, n_conss)
-        enforce = ensure_iterable(enforce, n_conss)
-        check = ensure_iterable(check, n_conss)
-        propagate = ensure_iterable(propagate, n_conss)
-        local = ensure_iterable(local, n_conss)
-        modifiable = ensure_iterable(modifiable, n_conss)
-        dynamic = ensure_iterable(dynamic, n_conss)
-        removable = ensure_iterable(removable, n_conss)
-        stickingatnode = ensure_iterable(stickingatnode, n_conss)
-
-        constraints = []
-        for i, cons in enumerate(conss):
-            constraints.append(
-                self.addCons(cons, name[i], initial[i], separate[i], enforce[i],
-                             check[i], propagate[i], local[i], modifiable[i],
-                             dynamic[i], removable[i], stickingatnode[i])
-            )
-
-        return constraints
-
-    def getConsNVars(self, Constraint constraint):
-        """
-        Gets number of variables in a constraint.
-
-        :param constraint: Constraint to get the number of variables from.
-        """
-        cdef int nvars 
-        cdef SCIP_Bool success
-
-        PY_SCIP_CALL(SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success))   
-
-        if not success:
-            conshdlr = SCIPconsGetHdlr(constraint.scip_cons)
-            conshdrlname = SCIPconshdlrGetName(conshdlr)
-            raise TypeError("The constraint handler %s does not have this functionality." % conshdrlname)
-        
-        return nvars
-
-    def getConsVars(self, Constraint constraint):
-        """
-        Gets variables in a constraint.
-
-        :param constraint: Constraint to get the variables from.
-        """
-        cdef SCIP_Bool success
-        cdef int _nvars
-
-        SCIPgetConsNVars(self._scip, constraint.scip_cons, &_nvars, &success)
-
-        cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(_nvars * sizeof(SCIP_VAR*))
-        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, _nvars*sizeof(SCIP_VAR*), &success)
-        
-        vars = []
-        for i in range(_nvars):
-            ptr = <size_t>(_vars[i])
-            # check whether the corresponding variable exists already
-            if ptr in self._modelvars:
-                vars.append(self._modelvars[ptr])
-            else:
-                # create a new variable
-                var = Variable.create(_vars[i])
-                assert var.ptr() == ptr
-                self._modelvars[ptr] = var
-                vars.append(var)
-        return vars
-    
-    def printCons(self, Constraint constraint):
-        return PY_SCIP_CALL(SCIPprintCons(self._scip, constraint.scip_cons, NULL))
-
-    def _addLinCons(self, ExprCons lincons, **kwargs):
+    def _createConsLinear(self, ExprCons lincons, **kwargs):
         assert isinstance(lincons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
 
         assert lincons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % lincons.expr.degree()
@@ -2275,16 +2130,13 @@ cdef class Model:
             kwargs['propagate'], kwargs['local'], kwargs['modifiable'],
             kwargs['dynamic'], kwargs['removable'], kwargs['stickingatnode']))
 
-        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         PyCons = Constraint.create(scip_cons)
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         free(vars_array)
         free(coeffs_array)
-
         return PyCons
 
-    def _addQuadCons(self, ExprCons quadcons, **kwargs):
+    def _createConsQuadratic(self, ExprCons quadcons, **kwargs):
         terms = quadcons.expr.terms
         assert quadcons.expr.degree() <= 2, "given constraint is not quadratic, degree == %d" % quadcons.expr.degree()
 
@@ -2319,13 +2171,11 @@ cdef class Model:
                 PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &varexprs[0]) )
                 free(varexprs)
 
-
-        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         PyCons = Constraint.create(scip_cons)
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
         return PyCons
 
-    def _addNonlinearCons(self, ExprCons cons, **kwargs):
+    def _createConsNonlinear(self, cons, **kwargs):
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR** varexprs
         cdef SCIP_EXPR** monomials
@@ -2370,18 +2220,17 @@ cdef class Model:
             kwargs['modifiable'],
             kwargs['dynamic'],
             kwargs['removable']) )
-        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+
         PyCons = Constraint.create(scip_cons)
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
         PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &expr) )
         for i in range(<int>len(terms)):
             PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &monomials[i]))
         free(monomials)
         free(termcoefs)
         return PyCons
-    
 
-    def _addGenNonlinearCons(self, ExprCons cons, **kwargs):
+    def _createConsGenNonlinear(self, cons, **kwargs):
         cdef SCIP_EXPR** childrenexpr
         cdef SCIP_EXPR** scipexprs
         cdef SCIP_CONS* scip_cons
@@ -2492,9 +2341,7 @@ cdef class Model:
             kwargs['modifiable'],
             kwargs['dynamic'],
             kwargs['removable']) )
-        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         PyCons = Constraint.create(scip_cons)
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
         for i in range(len(nodes)):
             PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &scipexprs[i]) )
 
@@ -2503,6 +2350,272 @@ cdef class Model:
         free(vars)
 
         return PyCons
+
+    def createConsFromExpr(self, cons, name='', initial=True, separate=True,
+                enforce=True, check=True, propagate=True, local=False,
+                modifiable=False, dynamic=False, removable=False,
+                stickingatnode=False):
+        """Create a linear or nonlinear constraint without adding it to the SCIP problem. This is useful for creating disjunction constraints
+        without also enforcing the individual constituents. Currently, this can only be used as an argument to `.addConsElemDisjunction`. To add 
+        an individual linear/nonlinear constraint, prefer `.addCons()`.
+
+        :param cons: constraint object
+        :param name: the name of the constraint, generic name if empty (Default value = '')
+        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        :param separate: should the constraint be separated during LP processing? (Default value = True)
+        :param enforce: should the constraint be enforced during node processing? (Default value = True)
+        :param check: should the constraint be checked for feasibility? (Default value = True)
+        :param propagate: should the constraint be propagated during node processing? (Default value = True)
+        :param local: is the constraint only valid locally? (Default value = False)
+        :param modifiable: is the constraint modifiable (subject to column generation)? (Default value = False)
+        :param dynamic: is the constraint subject to aging? (Default value = False)
+        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be  moved to a more global node? (Default value = False)
+        :return The created @ref scip#Constraint "Constraint" object.
+
+        """
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+
+        kwargs = dict(name=name, initial=initial, separate=separate,
+                      enforce=enforce, check=check,
+                      propagate=propagate, local=local,
+                      modifiable=modifiable, dynamic=dynamic,
+                      removable=removable,
+                      stickingatnode=stickingatnode)
+        kwargs['lhs'] = -SCIPinfinity(self._scip) if cons._lhs is None else cons._lhs
+        kwargs['rhs'] =  SCIPinfinity(self._scip) if cons._rhs is None else cons._rhs
+
+        deg = cons.expr.degree()
+        if deg <= 1:
+            return self._createConsLinear(cons, **kwargs)
+        elif deg <= 2:
+            return self._createConsQuadratic(cons, **kwargs)
+        elif deg == float('inf'): # general nonlinear
+            return self._createConsGenNonlinear(cons, **kwargs)
+        else:
+            return self._createConsNonlinear(cons, **kwargs)
+
+    # Constraint functions
+    def addCons(self, cons, name='', initial=True, separate=True,
+                enforce=True, check=True, propagate=True, local=False,
+                modifiable=False, dynamic=False, removable=False,
+                stickingatnode=False):
+        """Add a linear or nonlinear constraint.
+
+        :param cons: constraint object
+        :param name: the name of the constraint, generic name if empty (Default value = '')
+        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        :param separate: should the constraint be separated during LP processing? (Default value = True)
+        :param enforce: should the constraint be enforced during node processing? (Default value = True)
+        :param check: should the constraint be checked for feasibility? (Default value = True)
+        :param propagate: should the constraint be propagated during node processing? (Default value = True)
+        :param local: is the constraint only valid locally? (Default value = False)
+        :param modifiable: is the constraint modifiable (subject to column generation)? (Default value = False)
+        :param dynamic: is the constraint subject to aging? (Default value = False)
+        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be  moved to a more global node? (Default value = False)
+        :return The added @ref scip#Constraint "Constraint" object.
+
+        """
+        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
+
+        cdef SCIP_CONS* scip_cons
+
+        kwargs = dict(name=name, initial=initial, separate=separate,
+                      enforce=enforce, check=check,
+                      propagate=propagate, local=local,
+                      modifiable=modifiable, dynamic=dynamic,
+                      removable=removable,
+                      stickingatnode=stickingatnode)
+        #  we have to pass this back to a SCIP_CONS*
+        # object to create a new python constraint & handle constraint release
+        # correctly. Otherwise, segfaults when trying to query information
+        # about the created constraint later.
+        pycons_initial = self.createConsFromExpr(cons, **kwargs)
+        scip_cons = (<Constraint>pycons_initial).scip_cons
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pycons = Constraint.create(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        return pycons
+
+    def addConss(self, conss, name='', initial=True, separate=True,
+                 enforce=True, check=True, propagate=True, local=False,
+                 modifiable=False, dynamic=False, removable=False,
+                 stickingatnode=False):
+        """Adds multiple linear or quadratic constraints.
+
+        Each of the constraints is added to the model using Model.addCons().
+
+        For all parameters, except @p conss, this method behaves differently depending on the type of the passed argument:
+          1. If the value is iterable, it must be of the same length as @p conss. For each constraint, Model.addCons() will be called with the value at the corresponding index.
+          2. Else, the (default) value will be applied to all of the constraints.
+
+        :param conss An iterable of constraint objects. Any iterable will be converted into a list before further processing.
+        :param name: the names of the constraints, generic name if empty (Default value = ''). If a single string is passed, it will be suffixed by an underscore and the enumerated index of the constraint (starting with 0).
+        :param initial: should the LP relaxation of constraints be in the initial LP? (Default value = True)
+        :param separate: should the constraints be separated during LP processing? (Default value = True)
+        :param enforce: should the constraints be enforced during node processing? (Default value = True)
+        :param check: should the constraints be checked for feasibility? (Default value = True)
+        :param propagate: should the constraints be propagated during node processing? (Default value = True)
+        :param local: are the constraints only valid locally? (Default value = False)
+        :param modifiable: are the constraints modifiable (subject to column generation)? (Default value = False)
+        :param dynamic: are the constraints subject to aging? (Default value = False)
+        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        :param stickingatnode: should the constraints always be kept at the node where it was added, even if it may be  @oved to a more global node? (Default value = False)
+        :return A list of added @ref scip#Constraint "Constraint" objects.
+
+        :see addCons()
+        """
+        def ensure_iterable(elem, length):
+            if isinstance(elem, Iterable):
+                return elem
+            else:
+                return list(repeat(elem, length))
+
+        assert isinstance(conss, Iterable), "Given constraint list is not iterable."
+
+        conss = list(conss)
+        n_conss = len(conss)
+
+        if isinstance(name, str):
+            if name == "":
+                name = ["" for idx in range(n_conss)]
+            else:
+                name = ["%s_%s" % (name, idx) for idx in range(n_conss)]
+        initial = ensure_iterable(initial, n_conss)
+        separate = ensure_iterable(separate, n_conss)
+        enforce = ensure_iterable(enforce, n_conss)
+        check = ensure_iterable(check, n_conss)
+        propagate = ensure_iterable(propagate, n_conss)
+        local = ensure_iterable(local, n_conss)
+        modifiable = ensure_iterable(modifiable, n_conss)
+        dynamic = ensure_iterable(dynamic, n_conss)
+        removable = ensure_iterable(removable, n_conss)
+        stickingatnode = ensure_iterable(stickingatnode, n_conss)
+
+        constraints = []
+        for i, cons in enumerate(conss):
+            constraints.append(
+                self.addCons(cons, name[i], initial[i], separate[i], enforce[i],
+                             check[i], propagate[i], local[i], modifiable[i],
+                             dynamic[i], removable[i], stickingatnode[i])
+            )
+
+        return constraints
+
+    def addConsDisjunction(self, conss, name = '', initial = True, 
+        relaxcons = None, enforce=True, check =True, 
+        local=False, modifiable = False, dynamic = False):
+        """Add a disjunction constraint.
+
+        :param Iterable[Constraint] conss: An iterable of constraint objects to be included initially in the disjunction. Currently, these must be expressions.
+        :param name: the name of the disjunction constraint.
+        :param initial: should the LP relaxation of disjunction constraint be in the initial LP? (Default value = True)
+        :param relaxcons: a conjunction constraint containing the linear relaxation of the disjunction constraint, or None. (Default value = None)
+        :param enforce: should the constraint be enforced during node processing? (Default value = True)
+        :param check: should the constraint be checked for feasibility? (Default value = True)
+        :param local: is the constraint only valid locally? (Default value = False)
+        :param modifiable: is the constraint modifiable (subject to column generation)? (Default value = False)
+        :param dynamic: is the constraint subject to aging? (Default value = False)
+        :return The added @ref scip#Constraint "Constraint" object.
+        """
+        def ensure_iterable(elem, length):
+            if isinstance(elem, Iterable):
+                return elem
+            else:
+                return list(repeat(elem, length))
+        assert isinstance(conss, Iterable), "Given constraint list is not iterable"
+
+        conss = list(conss)
+        n_conss = len(conss)
+
+        cdef SCIP_CONS* disj_cons
+
+        cdef SCIP_CONS* scip_cons
+
+        cdef SCIP_EXPR* scip_expr
+
+        PY_SCIP_CALL(SCIPcreateConsDisjunction(
+            self._scip, &disj_cons, str_conversion(name), 0, &scip_cons, NULL, 
+            initial, enforce, check, local, modifiable, dynamic
+        ))
+
+
+        # TODO add constraints to disjunction
+        for i, cons in enumerate(conss):
+            pycons = self.createConsFromExpr(cons, name=name, initial = initial,
+                                            enforce=enforce, check=check,
+                                            local=local, modifiable=modifiable, dynamic=dynamic
+                                            )
+            PY_SCIP_CALL(SCIPaddConsElemDisjunction(self._scip,disj_cons, (<Constraint>pycons).scip_cons))
+            PY_SCIP_CALL(SCIPreleaseCons(self._scip, &(<Constraint>pycons).scip_cons))
+        PY_SCIP_CALL(SCIPaddCons(self._scip, disj_cons))
+        PyCons = Constraint.create(disj_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &disj_cons))
+        return PyCons
+
+    def addConsElemDisjunction(self, Constraint disj_cons, Constraint cons):
+        """Appends a constraint to a disjunction.
+
+        :param Constraint disj_cons: the disjunction constraint to append to.
+        :param Constraint cons: the Constraint to append
+        :return The disjunction constraint with added @ref scip#Constraint object.
+        """
+        PY_SCIP_CALL(SCIPaddConsElemDisjunction(self._scip, (<Constraint>disj_cons).scip_cons, (<Constraint>cons).scip_cons))
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &(<Constraint>cons).scip_cons))
+        return disj_cons
+
+    def getConsNVars(self, Constraint constraint):
+        """
+        Gets number of variables in a constraint.
+
+        :param constraint: Constraint to get the number of variables from.
+        """
+        cdef int nvars 
+        cdef SCIP_Bool success
+
+        PY_SCIP_CALL(SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success))   
+
+        if not success:
+            conshdlr = SCIPconsGetHdlr(constraint.scip_cons)
+            conshdrlname = SCIPconshdlrGetName(conshdlr)
+            raise TypeError("The constraint handler %s does not have this functionality." % conshdrlname)
+
+        return nvars
+
+    def getConsVars(self, Constraint constraint):
+        """
+        Gets variables in a constraint.
+
+        :param constraint: Constraint to get the variables from.
+        """
+        cdef SCIP_Bool success
+        cdef int _nvars
+
+        SCIPgetConsNVars(self._scip, constraint.scip_cons, &_nvars, &success)
+
+        cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(_nvars * sizeof(SCIP_VAR*))
+        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, _nvars*sizeof(SCIP_VAR*), &success)
+
+        vars = []
+        for i in range(_nvars):
+            ptr = <size_t>(_vars[i])
+            # check whether the corresponding variable exists already
+            if ptr in self._modelvars:
+                vars.append(self._modelvars[ptr])
+            else:
+                # create a new variable
+                var = Variable.create(_vars[i])
+                assert var.ptr() == ptr
+                self._modelvars[ptr] = var
+                vars.append(var)
+        return vars
+
+    def printCons(self, Constraint constraint):
+        return PY_SCIP_CALL(SCIPprintCons(self._scip, constraint.scip_cons, NULL))
 
     # TODO Find a better way to retrieve a scip expression from a python expression. Consider making GenExpr include Expr, to avoid using Union. See PR #760.
     from typing import Union
@@ -3270,19 +3383,29 @@ cdef class Model:
         """sets the value of the given variable in the global relaxation solution"""
         PY_SCIP_CALL(SCIPsetRelaxSolVal(self._scip, NULL, var.scip_var, val))
 
-    def getConss(self):
-        """Retrieve all constraints."""
+    def getConss(self, transformed=True):
+        """Retrieve all constraints.
+        
+        :param transformed: get transformed variables instead of original (Default value = True)
+        """
         cdef SCIP_CONS** _conss
         cdef int _nconss
         conss = []
 
-        _conss = SCIPgetConss(self._scip)
-        _nconss = SCIPgetNConss(self._scip)
+        if transformed:
+            _conss = SCIPgetConss(self._scip)
+            _nconss = SCIPgetNConss(self._scip)
+        else:
+            _conss = SCIPgetOrigConss(self._scip)
+            _nconss = SCIPgetNOrigConss(self._scip)
         return [Constraint.create(_conss[i]) for i in range(_nconss)]
 
-    def getNConss(self):
+    def getNConss(self, transformed=True):
         """Retrieve number of all constraints"""
-        return SCIPgetNConss(self._scip)
+        if transformed:
+            return SCIPgetNConss(self._scip)
+        else:
+            return SCIPgetNOrigConss(self._scip)
 
     def delCons(self, Constraint cons):
         """Delete constraint from the model
@@ -4388,16 +4511,16 @@ cdef class Model:
         """writes current LP to a file
         :param filename: file name (Default value = "LP.lp")
         """
-        user_locale = locale.getlocale()
-        locale.setlocale(locale.LC_ALL, "C")
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
 
         absfile = str_conversion(abspath(filename))
         PY_SCIP_CALL( SCIPwriteLP(self._scip, absfile) )
 
-        locale.setlocale(locale.LC_ALL, user_locale)
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def createSol(self, Heur heur = None):
-        """Create a new primal solution.
+        """Create a new primal solution in the transformed space.
 
         :param Heur heur: heuristic that found the solution (Default value = None)
 
@@ -4431,14 +4554,33 @@ cdef class Model:
         partialsolution = Solution.create(self._scip, _sol)
         return partialsolution
 
+    def createOrigSol(self, Heur heur = None):
+        """Create a new primal solution in the original space.
+
+        :param Heur heur: heuristic that found the solution (Default value = None)
+
+        """
+        cdef SCIP_HEUR* _heur
+        cdef SCIP_SOL* _sol
+
+        if isinstance(heur, Heur):
+            n = str_conversion(heur.name)
+            _heur = SCIPfindHeur(self._scip, n)
+        else:
+            _heur = NULL
+            
+        PY_SCIP_CALL(SCIPcreateOrigSol(self._scip, &_sol, _heur))
+        solution = Solution.create(self._scip, _sol)
+        return solution
+
     def printBestSol(self, write_zeros=False):
         """Prints the best feasible primal solution."""
-        user_locale = locale.getlocale()
-        locale.setlocale(locale.LC_ALL, "C")
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
 
         PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, write_zeros))
 
-        locale.setlocale(locale.LC_ALL, user_locale)
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def printSol(self, Solution solution=None, write_zeros=False):
         """Print the given primal solution.
@@ -4448,15 +4590,15 @@ cdef class Model:
         write_zeros -- include variables that are set to zero
         """
 
-        user_locale = locale.getlocale()
-        locale.setlocale(locale.LC_ALL, "C")
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
 
         if solution is None:
             PY_SCIP_CALL(SCIPprintSol(self._scip, NULL, NULL, write_zeros))
         else:
             PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, NULL, write_zeros))
         
-        locale.setlocale(locale.LC_ALL, user_locale)
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def writeBestSol(self, filename="origprob.sol", write_zeros=False):
         """Write the best feasible primal solution to a file.
@@ -4466,8 +4608,8 @@ cdef class Model:
         write_zeros -- include variables that are set to zero
         """
 
-        user_locale = locale.getlocale()
-        locale.setlocale(locale.LC_ALL, "C")
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
 
         # use this doubled opening pattern to ensure that IOErrors are
         #   triggered early and in Python not in C,Cython or SCIP.
@@ -4475,7 +4617,7 @@ cdef class Model:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintBestSol(self._scip, cfile, write_zeros))
 
-        locale.setlocale(locale.LC_ALL, user_locale)
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def writeBestTransSol(self, filename="transprob.sol", write_zeros=False):
         """Write the best feasible primal solution for the transformed problem to a file.
@@ -4484,8 +4626,8 @@ cdef class Model:
         filename -- name of the output file
         write_zeros -- include variables that are set to zero
         """
-        user_locale = locale.getlocale()
-        locale.setlocale(locale.LC_ALL, "C")
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
 
         # use this double opening pattern to ensure that IOErrors are
         #   triggered early and in python not in C, Cython or SCIP.
@@ -4493,7 +4635,7 @@ cdef class Model:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintBestTransSol(self._scip, cfile, write_zeros))
         
-        locale.setlocale(locale.LC_ALL, user_locale)
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def writeSol(self, Solution solution, filename="origprob.sol", write_zeros=False):
         """Write the given primal solution to a file.
@@ -4503,8 +4645,8 @@ cdef class Model:
         filename -- name of the output file
         write_zeros -- include variables that are set to zero
         """
-        user_locale = locale.getlocale()
-        locale.setlocale(locale.LC_ALL, "C")
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
 
         # use this doubled opening pattern to ensure that IOErrors are
         #   triggered early and in Python not in C,Cython or SCIP.
@@ -4512,7 +4654,7 @@ cdef class Model:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, cfile, write_zeros))
         
-        locale.setlocale(locale.LC_ALL, user_locale)
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def writeTransSol(self, Solution solution, filename="transprob.sol", write_zeros=False):
         """Write the given transformed primal solution to a file.
@@ -4522,8 +4664,8 @@ cdef class Model:
         filename -- name of the output file
         write_zeros -- include variables that are set to zero
         """
-        user_locale = locale.getlocale()
-        locale.setlocale(locale.LC_ALL, "C")
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
 
         # use this doubled opening pattern to ensure that IOErrors are
         #   triggered early and in Python not in C,Cython or SCIP.
@@ -4531,7 +4673,7 @@ cdef class Model:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintTransSol(self._scip, solution.sol, cfile, write_zeros))
         
-        locale.setlocale(locale.LC_ALL, user_locale)
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     # perhaps this should not be included as it implements duplicated functionality
     #   (as does it's namesake in SCIP)
@@ -4541,8 +4683,13 @@ cdef class Model:
         Keyword arguments:
         filename -- name of the input file
         """
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
         absfile = str_conversion(abspath(filename))
         PY_SCIP_CALL(SCIPreadSol(self._scip, absfile))
+
+        locale.setlocale(locale.LC_NUMERIC, user_locale)
 
     def readSolFile(self, filename):
         """Reads a given solution file.
@@ -4561,7 +4708,14 @@ cdef class Model:
         str_absfile = abspath(filename)
         absfile = str_conversion(str_absfile)
         solution = self.createSol()
+
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
         PY_SCIP_CALL(SCIPreadSolFile(self._scip, absfile, solution.sol, False, &partial, &error))
+
+        locale.setlocale(locale.LC_NUMERIC, user_locale)
+
         if error:
             raise Exception("SCIP: reading solution from file " + str_absfile + " failed!")
 
@@ -4806,12 +4960,12 @@ cdef class Model:
         :param Variable var: variable
 
         """
-        user_locale = locale.getlocale()
-        locale.setlocale(locale.LC_ALL, "C")
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
 
         PY_SCIP_CALL(SCIPwriteVarName(self._scip, NULL, var.scip_var, False))
 
-        locale.setlocale(locale.LC_ALL, user_locale)
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def getStage(self):
         """Retrieve current SCIP stage"""
@@ -4861,6 +5015,10 @@ cdef class Model:
             return "bestsollimit"
         elif stat == SCIP_STATUS_RESTARTLIMIT:
             return  "restartlimit"
+        elif stat == SCIP_STATUS_PRIMALLIMIT:
+            return "primallimit"
+        elif stat == SCIP_STATUS_DUALLIMIT:
+            return "duallimit"
         else:
             return "unknown"
 
@@ -4942,12 +5100,12 @@ cdef class Model:
 
     def printStatistics(self):
         """Print statistics."""
-        user_locale = locale.getlocale()
-        locale.setlocale(locale.LC_ALL, "C")
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
 
         PY_SCIP_CALL(SCIPprintStatistics(self._scip, NULL))
 
-        locale.setlocale(locale.LC_ALL, user_locale)
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def writeStatistics(self, filename="origprob.stats"):
         """Write statistics to a file.
@@ -4955,8 +5113,8 @@ cdef class Model:
         Keyword arguments:
         filename -- name of the output file
         """
-        user_locale = locale.getlocale()
-        locale.setlocale(locale.LC_ALL, "C")
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
 
         # use this doubled opening pattern to ensure that IOErrors are
         #   triggered early and in Python not in C,Cython or SCIP.
@@ -4964,7 +5122,98 @@ cdef class Model:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
         
-        locale.setlocale(locale.LC_ALL, user_locale)
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
+    def readStatistics(self, filename):
+        """
+        Given a .stats file of a solved model, reads it and returns an instance of the Statistics class
+        holding some statistics.
+
+        Keyword arguments:
+        filename -- name of the input file
+        """
+        result = {}
+        file = open(filename)
+        data = file.readlines()
+        
+        assert "problem is solved" in data[0], "readStatistics can only be called if the problem was solved"
+        available_stats = ["Total Time", "solving", "presolving", "reading", "copying",
+                        "Problem name", "Variables", "Constraints", "number of runs", 
+                        "nodes", "Solutions found", "First Solution", "Primal Bound",
+                        "Dual Bound", "Gap", "primal-dual"]
+
+        seen_cons = 0
+        for i, line in enumerate(data):
+            split_line = line.split(":")
+            split_line[1] = split_line[1][:-1] # removing \n
+            stat_name = split_line[0].strip()
+
+            if seen_cons == 2 and stat_name == "Constraints":
+                continue
+
+            if stat_name in available_stats:
+                cur_stat       = split_line[0].strip()
+                relevant_value = split_line[1].strip()
+
+                if stat_name == "Variables":
+                    relevant_value = relevant_value[:-1] # removing ")"
+                    var_stats = {}
+                    split_var = relevant_value.split("(")
+                    var_stats["total"] = int(split_var[0])
+                    split_var = split_var[1].split(",")
+
+                    for var_type in split_var:
+                        split_result = var_type.strip().split(" ")
+                        var_stats[split_result[1]] = int(split_result[0])
+                    
+                    if "Original" in data[i-2]:
+                        result["Variables"] = var_stats
+                    else:
+                        result["Presolved Variables"] = var_stats
+                    
+                    continue
+
+                if stat_name == "Constraints":
+                    seen_cons += 1
+                    con_stats = {}
+                    split_con = relevant_value.split(",")
+                    for con_type in split_con:
+                        split_result = con_type.strip().split(" ")
+                        con_stats[split_result[1]] = int(split_result[0])
+
+                    if "Original" in data[i-3]:
+                        result["Constraints"] = con_stats
+                    else:
+                        result["Presolved Constraints"] = con_stats
+                    continue
+                
+                relevant_value = relevant_value.split(" ")[0]
+                if stat_name == "Problem name":
+                    if "Original" in data[i-1]:
+                        result["Problem name"] = relevant_value
+                    else:
+                        result["Presolved Problem name"] = relevant_value
+                    continue
+                
+                if stat_name == "Gap":
+                    result["Gap (%)"] = float(relevant_value[:-1])
+                    continue 
+
+                if _is_number(relevant_value):
+                    result[cur_stat] = float(relevant_value)
+                else: # it's a string
+                    result[cur_stat] = relevant_value                    
+
+        # changing keys to pythonic variable names
+        treated_keys = {"Total Time": "total_time", "solving":"solving_time", "presolving":"presolving_time", "reading":"reading_time", "copying":"copying_time", 
+                        "Problem name": "problem_name", "Presolved Problem name": "presolved_problem_name", "Variables":"_variables", 
+                        "Presolved Variables":"_presolved_variables", "Constraints": "_constraints", "Presolved Constraints":"_presolved_constraints",
+                        "number of runs": "n_runs", "nodes":"n_nodes", "Solutions found": "n_solutions_found", "First Solution": "first_solution", 
+                        "Primal Bound":"primal_bound", "Dual Bound":"dual_bound", "Gap (%)":"gap", "primal-dual":"primal_dual_integral"}
+        treated_result = dict((treated_keys[key], value) for (key, value) in result.items())
+        
+        stats = Statistics(**treated_result)
+        return stats
 
     def getNLPs(self):
         """gets total number of LPs solved so far"""
@@ -5151,25 +5400,33 @@ cdef class Model:
 
         """
         absfile = str_conversion(abspath(file))
+        
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+        
         PY_SCIP_CALL(SCIPreadParams(self._scip, absfile))
+        
+        locale.setlocale(locale.LC_NUMERIC, user_locale)
 
-    def writeParams(self, filename='param.set', comments = True, onlychanged = True):
+    def writeParams(self, filename='param.set', comments=True, onlychanged=True, verbose=True):
         """Write parameter settings to an external file.
 
         :param filename: file to be written (Default value = 'param.set')
         :param comments: write parameter descriptions as comments? (Default value = True)
         :param onlychanged: write only modified parameters (Default value = True)
-
+        :param verbose: indicates whether a success message should be printed
         """
-        user_locale = locale.getlocale()
-        locale.setlocale(locale.LC_ALL, "C")
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
 
         str_absfile = abspath(filename)
         absfile = str_conversion(str_absfile)
         PY_SCIP_CALL(SCIPwriteParams(self._scip, absfile, comments, onlychanged))
-        print('wrote parameter settings to file ' + str_absfile)
 
-        locale.setlocale(locale.LC_ALL, user_locale)
+        if verbose:
+            print('wrote parameter settings to file ' + str_absfile)
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def resetParam(self, name):
         """Reset parameter setting to its default value
@@ -5200,12 +5457,17 @@ cdef class Model:
         :param extension: specify file extension/type (Default value = None)
 
         """
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
         absfile = str_conversion(abspath(filename))
         if extension is None:
             PY_SCIP_CALL(SCIPreadProb(self._scip, absfile, NULL))
         else:
             extension = str_conversion(extension)
             PY_SCIP_CALL(SCIPreadProb(self._scip, absfile, extension))
+
+        locale.setlocale(locale.LC_NUMERIC, user_locale)
 
     # Counting functions
 
@@ -5295,6 +5557,147 @@ cdef class Model:
         """Get an estimation of the final tree size """
         return SCIPgetTreesizeEstimation(self._scip)
 
+@dataclass
+class Statistics:
+    """
+    Attributes
+    ----------
+    total_time : float
+        Total time since model was created
+    solving_time: float
+        Time spent solving the problem
+    presolving_time: float
+        Time spent on presolving
+    reading_time: float
+        Time spent on reading
+    copying_time: float
+        Time spent on copying
+    problem_name: str
+        Name of problem
+    presolved_problem_name: str
+        Name of presolved problem    
+    n_nodes: int
+        The number of nodes explored in the branch-and-bound tree
+    n_solutions_found: int
+        number of found solutions
+    first_solution: float
+        objective value of first found solution
+    primal_bound: float
+        The best primal bound found 
+    dual_bound: float
+        The best dual bound found
+    gap: float
+        The gap between the primal and dual bounds
+    primal_dual_integral: float
+        The primal-dual integral 
+    n_vars: int
+        number of variables in the model
+    n_binary_vars: int
+        number of binary variables in the model
+    n_integer_vars: int 
+        number of integer variables in the model
+    n_implicit_integer_vars: int 
+        number of implicit integer variables in the model
+    n_continuous_vars: int
+        number of continuous variables in the model
+    n_presolved_vars: int
+        number of variables in the presolved model
+    n_presolved_continuous_vars: int
+        number of continuous variables in the presolved model
+    n_presolved_binary_vars: int
+        number of binary variables in the presolved model
+    n_presolved_integer_vars: int
+        number of integer variables in the presolved model
+    n_presolved_implicit_integer_vars: int
+        number of implicit integer variables in the presolved model
+    n_maximal_cons: int
+        number of maximal constraints in the model
+    n_initial_cons: int
+        number of initial constraints in the presolved model
+    n_presolved_maximal_cons: int
+        number of maximal constraints in the presolved model
+    n_presolved_conss: int
+        number of initial constraints in the model
+    """
+
+    total_time: float
+    solving_time: float
+    presolving_time: float
+    reading_time: float
+    copying_time: float
+    problem_name: str
+    presolved_problem_name: str
+    _variables: dict             # Dictionary with number of variables by type 
+    _presolved_variables: dict   # Dictionary with number of presolved variables by type
+    _constraints: dict           # Dictionary with number of constraints by type
+    _presolved_constraints: dict # Dictionary with number of presolved constraints by type
+    n_runs: int
+    n_nodes: int
+    n_solutions_found: int
+    first_solution: float    
+    primal_bound: float
+    dual_bound: float
+    gap: float
+    primal_dual_integral: float
+
+    # unpacking the _variables, _presolved_variables, _constraints
+    # _presolved_constraints dictionaries
+    @property
+    def n_vars(self):
+        return self._variables["total"]
+
+    @property
+    def n_binary_vars(self):
+        return self._variables["binary"]
+
+    @property
+    def n_integer_vars(self):
+        return self._variables["integer"]
+
+    @property
+    def n_implicit_integer_vars(self):
+        return self._variables["implicit"]
+
+    @property
+    def n_continuous_vars(self):
+        return self._variables["continuous"]
+
+    @property
+    def n_presolved_vars(self):
+        return self._presolved_variables["total"]
+
+    @property
+    def n_presolved_binary_vars(self):
+        return self._presolved_variables["binary"]
+
+    @property
+    def n_presolved_integer_vars(self):
+        return self._presolved_variables["integer"]
+
+    @property
+    def n_presolved_implicit_integer_vars(self):
+        return self._presolved_variables["implicit"]
+
+    @property
+    def n_presolved_continuous_vars(self):
+        return self._presolved_variables["continuous"]
+
+    @property
+    def n_conss(self):
+        return self._constraints["initial"]
+
+    @property
+    def n_maximal_cons(self):
+        return self._constraints["maximal"]
+
+    @property
+    def n_presolved_conss(self):
+        return self._presolved_constraints["initial"]
+
+    @property
+    def n_presolved_maximal_cons(self):
+        return self._presolved_constraints["maximal"]
+            
 # debugging memory management
 def is_memory_freed():
     return BMSgetMemoryUsed() == 0

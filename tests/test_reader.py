@@ -79,3 +79,29 @@ def test_sudoku_reader():
     assert input == "sudoku"
 
     deleteFile("model.sod")
+
+def test_readStatistics():
+    m = Model(problemName="readStats")
+    x = m.addVar(vtype="I")
+    y = m.addVar()
+
+    m.addCons(x+y <= 3)
+    m.hideOutput()
+    m.optimize()
+    m.writeStatistics(os.path.join("tests", "data", "readStatistics.stats"))
+    result = m.readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
+
+    assert len([k for k, val in result.__dict__.items() if not str(hex(id(val))) in str(val)]) == 19 # number of attributes. See https://stackoverflow.com/a/57431390/9700522
+    assert type(result.total_time) == float
+    assert result.problem_name == "readStats"
+    assert result.presolved_problem_name == "t_readStats"
+    assert type(result.primal_dual_integral) == float
+    assert result.n_solutions_found == 1
+    assert type(result.gap) == float
+    assert result._presolved_constraints == {"initial": 1, "maximal": 1}
+    assert result._variables == {"total": 2, "binary": 0, "integer": 1, "implicit": 0, "continuous": 1}
+    assert result._presolved_variables == {"total": 0, "binary": 0, "integer": 0, "implicit": 0, "continuous": 0}
+    assert result.n_vars == 2
+    assert result.n_presolved_vars == 0
+    assert result.n_binary_vars == 0
+    assert result.n_integer_vars == 1

@@ -78,7 +78,9 @@ cdef extern from "scip/scip.h":
         SCIP_STATUS SCIP_STATUS_GAPLIMIT       
         SCIP_STATUS SCIP_STATUS_SOLLIMIT       
         SCIP_STATUS SCIP_STATUS_BESTSOLLIMIT   
-        SCIP_STATUS SCIP_STATUS_RESTARTLIMIT   
+        SCIP_STATUS SCIP_STATUS_RESTARTLIMIT
+        SCIP_STATUS SCIP_STATUS_PRIMALLIMIT
+        SCIP_STATUS SCIP_STATUS_DUALLIMIT
         SCIP_STATUS SCIP_STATUS_OPTIMAL        
         SCIP_STATUS SCIP_STATUS_INFEASIBLE     
         SCIP_STATUS SCIP_STATUS_UNBOUNDED      
@@ -546,6 +548,7 @@ cdef extern from "scip/scip.h":
     void SCIPsetMessagehdlrLogfile(SCIP* scip, const char* filename)
     SCIP_Real SCIPversion()
     void SCIPprintVersion(SCIP* scip, FILE* outfile)
+    void SCIPprintExternalCodes(SCIP* scip, FILE* outfile)
     SCIP_Real SCIPgetTotalTime(SCIP* scip)
     SCIP_Real SCIPgetSolvingTime(SCIP* scip)
     SCIP_Real SCIPgetReadingTime(SCIP* scip)
@@ -637,6 +640,10 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPdelVar(SCIP* scip, SCIP_VAR* var, SCIP_Bool* deleted)
     SCIP_RETCODE SCIPaddCons(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPdelCons(SCIP* scip, SCIP_CONS* cons)
+    SCIP_CONS**  SCIPgetOrigConss(SCIP* scip)
+    int          SCIPgetNOrigConss(SCIP* scip)
+    SCIP_CONS*   SCIPfindOrigCons(SCIP* scip, const char*)
+    SCIP_CONS*   SCIPfindCons(SCIP* scip, const char*)
     SCIP_RETCODE SCIPsetObjsense(SCIP* scip, SCIP_OBJSENSE objsense)
     SCIP_OBJSENSE SCIPgetObjsense(SCIP* scip)
     SCIP_RETCODE SCIPsetObjlimit(SCIP* scip, SCIP_Real objlimit)
@@ -838,6 +845,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetSolTransObj(SCIP* scip, SCIP_SOL* sol)
     SCIP_RETCODE SCIPcreateSol(SCIP* scip, SCIP_SOL** sol, SCIP_HEUR* heur)
     SCIP_RETCODE SCIPcreatePartialSol(SCIP* scip, SCIP_SOL** sol,SCIP_HEUR* heur)
+    SCIP_RETCODE SCIPcreateOrigSol(SCIP* scip, SCIP_SOL** sol, SCIP_HEUR* heur)    
     SCIP_RETCODE SCIPsetSolVal(SCIP* scip, SCIP_SOL* sol, SCIP_VAR* var, SCIP_Real val)
     SCIP_RETCODE SCIPtrySolFree(SCIP* scip, SCIP_SOL** sol, SCIP_Bool printreason, SCIP_Bool completely, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* stored)
     SCIP_RETCODE SCIPtrySol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool printreason, SCIP_Bool completely, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* stored)
@@ -1494,6 +1502,24 @@ cdef extern from "scip/cons_sos2.h":
     SCIP_RETCODE SCIPappendVarSOS2(SCIP* scip,
                                    SCIP_CONS* cons,
                                    SCIP_VAR* var)
+
+cdef extern from "scip/cons_disjunction.h":
+    SCIP_RETCODE SCIPcreateConsDisjunction(SCIP *scip,
+                                            SCIP_CONS **cons,
+                                            const char *name,
+                                            int nconss,
+                                            SCIP_CONS **conss,
+                                            SCIP_CONS *relaxcons,
+                                            SCIP_Bool initial,
+                                            SCIP_Bool enforce,
+                                            SCIP_Bool check,
+                                            SCIP_Bool local,
+                                            SCIP_Bool modifiable,
+                                            SCIP_Bool dynamic)
+
+    SCIP_RETCODE SCIPaddConsElemDisjunction(SCIP *scip,
+                                            SCIP_CONS *cons,
+                                            SCIP_CONS *addcons)
 
 cdef extern from "scip/cons_and.h":
     SCIP_RETCODE SCIPcreateConsAnd(SCIP* scip,
