@@ -624,7 +624,9 @@ cdef class Solution:
     
     def _checkStage(self, method):
         if method in ["SCIPgetSolVal", "getSolObjVal"]:
-            if self.sol == NULL and SCIPgetStage(self.scip) != SCIP_STAGE_SOLVING:
+            stage_check = SCIPgetStage(self.scip) not in [SCIP_STAGE_INIT, SCIP_STAGE_FREE]
+
+            if not stage_check or self.sol == NULL and SCIPgetStage(self.scip) != SCIP_STAGE_SOLVING:
                 raise Warning(f"{method} can only be called with a valid solution or in stage SOLVING (current stage: {SCIPgetStage(self.scip)})")
 
 
@@ -1329,7 +1331,6 @@ cdef class Model:
 
         # turn the constant value into an Expr instance for further processing
         if not isinstance(expr, Expr):
-            print(expr)
             assert(_is_number(expr)), "given coefficients are neither Expr or number but %s" % expr.__class__.__name__
             expr = Expr() + expr
 
@@ -3421,6 +3422,7 @@ cdef class Model:
     def presolve(self):
         """Presolve the problem."""
         PY_SCIP_CALL(SCIPpresolve(self._scip))
+        self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
 
     # Benders' decomposition methods
     def initBendersDefault(self, subproblems):
@@ -3484,7 +3486,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPsetupBendersSubproblem(self._scip,
                     _benders[i], self._bestSol.sol, j, SCIP_BENDERSENFOTYPE_CHECK))
                 PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip,
-                    _benders[i], self._bestSol.sol, j, &_infeasible, solvecip, NULL))
+                    _benders[i], self._bestSol.sol, j, &_infeasible, solvecip, NULL))                
 
     def freeBendersSubproblems(self):
         """Calls the free subproblem function for the Benders' decomposition.
@@ -4683,18 +4685,16 @@ cdef class Model:
         :param original: objective value in original space (Default value = True)
 
         """
-        print(7)
         if sol == None:
-            print(8)
             sol = Solution.create(self._scip, NULL)
+
         sol._checkStage("getSolObjVal")
-        print(9)
+
         if original:
-            print("a")
             objval = SCIPgetSolOrigObj(self._scip, sol.sol)
         else:
-            print("b")
             objval = SCIPgetSolTransObj(self._scip, sol.sol)
+
         return objval
 
     def getSolTime(self, Solution sol):
@@ -4709,35 +4709,22 @@ cdef class Model:
         """Retrieve the objective value of value of best solution.
 
         :param original: objective value in original space (Default value = True)
-
         """
-        cdef SCIP_SOL* mysol
-        cdef SCIP_Bool stored
 
-        print(1)
-        if self._bestSol == None:
-            print(2)
+        if SCIPgetNSols(self._scip) == 0:
             if self.getStage() != SCIP_STAGE_SOLVING:
                 raise Warning("Without a solution, method can only be called in stage SOLVING.")
         else:
-            print(self)
-            print(self._bestSol)
-            mysol = self._bestSol.sol
-            print("b")
-            assert mysol != NULL
-            SCIPaddSol(self._scip, mysol, &stored)
-            print("c")
-
+            assert self._bestSol.sol != NULL
+            
             if SCIPsolIsOriginal(self._bestSol.sol):
-                print(4)
                 stage_requirement = SCIP_STAGE_PROBLEM
             else:
-                print(5)
                 stage_requirement = SCIP_STAGE_TRANSFORMING
 
             if not self.getStage() >= stage_requirement:
                 raise Warning("method cannot be called in stage %i." % self.getStage)
-        print(6)
+
         return self.getSolObjVal(self._bestSol, original)
 
     def getSolVal(self, Solution sol, Expr expr):
@@ -4765,8 +4752,11 @@ cdef class Model:
 
         Note: a variable is also an expression
         """
-        if not self.getStage() >= SCIP_STAGE_PROBLEM:
-            raise Warning("method cannot be called in stage %i" % self.getStage())
+        stage_check = SCIPgetStage(self._scip) not in [SCIP_STAGE_INIT, SCIP_STAGE_FREE]
+
+        if not stage_check or self._bestSol.sol == NULL and SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
+            raise Warning("Method cannot be called in stage ", self.getStage())
+
         return self.getSolVal(self._bestSol, expr)
     
     def hasPrimalRay(self):
