@@ -5628,7 +5628,7 @@ cdef class Model:
 
     def updateVarPseudoCost(self, Variable var, valdelta, objdelta, weight):
         """Updates the pseudo costs of the given variable and the global pseudo costs after a change of valdelta
-         in the variable's solution value and resulting change of objdelta in the in the LP's objective value.
+         in the variable's solution value and resulting change of objdelta in the LP's objective value.
          Update is ignored if objdelts is infinite. Weight is in range (0, 1], and affects how it updates
          the global weighted sum.
 
