@@ -2060,8 +2060,8 @@ cdef class Model:
         return SCIPgetRowObjParallelism(self._scip, row.scip_row)
 
     def getRowParallelism(self, Row row1, Row row2, orthofunc=101):
-        """Returns the degree of parallelism between hyplerplanes. 1 if perfectly parallel, 0 if orthognal.
-        101 in this case is an 'e' (euclidean) in ASCII. The other accpetable input is 100 (d for discrete)."""
+        """Returns the degree of parallelism between hyplerplanes. 1 if perfectly parallel, 0 if orthogonal.
+        101 in this case is an 'e' (euclidean) in ASCII. The other acceptable input is 100 (d for discrete)."""
         return SCIProwGetParallelism(row1.scip_row, row2.scip_row, orthofunc)
 
     def getRowDualSol(self, Row row):
@@ -5671,6 +5671,255 @@ cdef class Model:
     def getTreesizeEstimation(self):
         """Get an estimation of the final tree size """
         return SCIPgetTreesizeEstimation(self._scip)
+
+
+    def getBipartiteGraphRepresentation(self, prev_col_features=None, prev_edge_features=None, prev_row_features=None,
+                                        static_only=False, suppress_warnings=False):
+        """This function generated the bipartite graph representation of an LP, which was first used in
+        the following paper:
+        @inproceedings{conf/nips/GasseCFCL19,
+        title={Exact Combinatorial Optimization with Graph Convolutional Neural Networks},
+        author={Gasse, Maxime and Chételat, Didier and Ferroni, Nicola and Charlin, Laurent and Lodi, Andrea},
+        booktitle={Advances in Neural Information Processing Systems 32},
+        year={2019}
+        }
+        The exact features have been modified compared to the original implementation.
+        This function is used mainly in the machine learning community for MIP.
+        A user can only call it during the solving process, when there is an LP object. This means calling it
+        from some user defined plugin on the Python side.
+        An example plugin is a branching rule or an event handler, which is exclusively created to call this function.
+        The user must then make certain to return the appropriate SCIP_RESULT (e.g. DIDNOTRUN)
+
+        :param prev_col_features: The list of column features previously returned by this function
+        :param prev_edge_features: The list of edge features previously returned by this function
+        :param prev_row_features: The list of row features previously returned by this function
+        :param static_only: Whether exclusively static features should be generated
+        :param suppress_warnings: Whether warnings should be suppressed
+        """
+
+        cdef SCIP* scip = self._scip
+        cdef int i, j, k, col_i
+        cdef SCIP_VARTYPE vtype
+        cdef SCIP_Real sim, prod
+
+        # Check if SCIP is in the correct stage
+        if SCIPgetStage(scip) != SCIP_STAGE_SOLVING:
+            raise Warning("This functionality can only been called in SCIP_STAGE SOLVING. The row and column"
+                          "information is then accessible")
+
+        # Generate column features
+        cdef SCIP_COL** cols = SCIPgetLPCols(scip)
+        cdef int ncols = SCIPgetNLPCols(scip)
+
+        if static_only:
+            n_col_features = 5
+            col_feature_map = {"continuous": 0, "binary": 1, "integer": 2, "implicit_integer": 3, "obj_coef": 4}
+        else:
+            n_col_features = 19
+            col_feature_map = {"continuous": 0, "binary": 1, "integer": 2, "implicit_integer": 3, "obj_coef": 4,
+                               "has_lb": 5, "has_ub": 6, "sol_at_lb": 7, "sol_at_ub": 8, "sol_val": 9, "sol_frac": 10,
+                               "red_cost": 11, "basis_lower": 12, "basis_basic": 13, "basis_upper": 14,
+                               "basis_zero": 15, "best_incumbent_val": 16, "avg_incumbent_val": 17, "age": 18}
+
+        if prev_col_features is None:
+            col_features = [[0 for _ in range(n_col_features)] for _ in range(ncols)]
+        else:
+            assert len(prev_col_features) > 0, "Previous column features is empty"
+            col_features = prev_col_features
+            if len(prev_col_features) != ncols:
+                if not suppress_warnings:
+                    raise Warning(f"The number of columns has changed. Previous column data being ignored")
+                else:
+                    col_features = [[0 for _ in range(n_col_features)] for _ in range(ncols)]
+                    prev_col_features = None
+            if len(prev_col_features[0]) != n_col_features:
+                raise Warning(f"Dimension mismatch in provided previous features and new features:"
+                              f"{len(prev_col_features[0])} != {n_col_features}")
+
+        cdef SCIP_SOL* sol = SCIPgetBestSol(scip)
+        cdef SCIP_VAR* var
+        cdef SCIP_Real lb, ub, solval
+        cdef SCIP_BASESTAT basis_status
+        for i in range(ncols):
+            col_i = SCIPcolGetLPPos(cols[i])
+            var = SCIPcolGetVar(cols[i])
+
+            lb = SCIPcolGetLb(cols[i])
+            ub = SCIPcolGetUb(cols[i])
+            solval = SCIPcolGetPrimsol(cols[i])
+
+            # Collect the static features first (don't need to changed if previous features are passed)
+            if prev_col_features is None:
+                # Variable types
+                vtype = SCIPvarGetType(var)
+                if vtype == SCIP_VARTYPE_BINARY:
+                    col_features[col_i][col_feature_map["binary"]] = 1
+                elif vtype == SCIP_VARTYPE_INTEGER:
+                    col_features[col_i][col_feature_map["integer"]] = 1
+                elif vtype == SCIP_VARTYPE_CONTINUOUS:
+                    col_features[col_i][col_feature_map["continuous"]] = 1
+                elif vtype == SCIP_VARTYPE_IMPLINT:
+                    col_features[col_i][col_feature_map["implicit_integer"]] = 1
+                # Objective coefficient
+                col_features[col_i][col_feature_map["obj_coef"]] = SCIPcolGetObj(cols[i])
+
+            # Collect the dynamic features
+            if not static_only:
+                # Lower bound
+                if not SCIPisInfinity(scip, abs(lb)):
+                    col_features[col_i][col_feature_map["has_lb"]] = 1
+
+                # Upper bound
+                if not SCIPisInfinity(scip, abs(ub)):
+                    col_features[col_i][col_feature_map["has_ub"]] = 1
+
+                # Basis status
+                basis_status = SCIPcolGetBasisStatus(cols[i])
+                if basis_status == SCIP_BASESTAT_LOWER:
+                    col_features[col_i][col_feature_map["basis_lower"]] = 1
+                elif basis_status == SCIP_BASESTAT_BASIC:
+                    col_features[col_i][col_feature_map["basis_basic"]] = 1
+                elif basis_status == SCIP_BASESTAT_UPPER:
+                    col_features[col_i][col_feature_map["basis_upper"]] = 1
+                elif basis_status == SCIP_BASESTAT_ZERO:
+                    col_features[col_i][col_feature_map["basis_zero"]] = 1
+
+                # Reduced cost
+                col_features[col_i][col_feature_map["red_cost"]] = SCIPgetColRedcost(scip, cols[i])
+
+                # Age
+                col_features[col_i][col_feature_map["age"]] = SCIPcolGetAge(cols[i])
+
+                # LP solution value
+                col_features[col_i][col_feature_map["sol_val"]] = solval
+                col_features[col_i][col_feature_map["sol_frac"]] = SCIPfeasFrac(scip, solval)
+                col_features[col_i][col_feature_map["sol_at_lb"]] = int(SCIPisEQ(scip, solval, lb))
+                col_features[col_i][col_feature_map["sol_at_ub"]] = int(SCIPisEQ(scip, solval, ub))
+
+                # Incumbent solution value
+                if sol is NULL:
+                    col_features[col_i][col_feature_map["best_incumbent_val"]] = None
+                    col_features[col_i][col_feature_map["avg_incumbent_val"]] = None
+                else:
+                    col_features[col_i][col_feature_map["best_incumbent_val"]] = SCIPgetSolVal(scip, sol, var)
+                    col_features[col_i][col_feature_map["avg_incumbent_val"]] = SCIPvarGetAvgSol(var)
+
+        # Generate row features
+        cdef int nrows = SCIPgetNLPRows(scip)
+        cdef SCIP_ROW** rows = SCIPgetLPRows(scip)
+
+        if static_only:
+            n_row_features = 6
+            row_feature_map = {"has_lhs": 0, "has_rhs": 1, "n_non_zeros": 2, "obj_cosine": 3, "bias": 4, "norm": 5}
+        else:
+            n_row_features = 14
+            row_feature_map = {"has_lhs": 0, "has_rhs": 1, "n_non_zeros": 2, "obj_cosine": 3, "bias": 4, "norm": 5,
+                               "sol_at_lhs": 6, "sol_at_rhs": 7, "dual_sol": 8, "age": 9,
+                               "basis_lower": 10, "basis_basic": 11, "basis_upper": 12, "basis_zero": 13}
+
+        if prev_row_features is None:
+            row_features = [[0 for _ in range(n_row_features)] for _ in range(nrows)]
+        else:
+            assert len(prev_row_features) > 0, "Previous row features is empty"
+            row_features = prev_row_features
+            if len(prev_row_features) != nrows:
+                if not suppress_warnings:
+                    raise Warning(f"The number of rows has changed. Previous row data being ignored")
+                else:
+                    row_features = [[0 for _ in range(n_row_features)] for _ in range(nrows)]
+                    prev_row_features = None
+            if len(prev_row_features[0]) != n_row_features:
+                raise Warning(f"Dimension mismatch in provided previous features and new features:"
+                              f"{len(prev_row_features[0])} != {n_row_features}")
+
+        cdef int nnzrs = 0
+        cdef SCIP_Real lhs, rhs, cst
+        for i in range(nrows):
+
+            # lhs <= activity + cst <= rhs
+            lhs = SCIProwGetLhs(rows[i])
+            rhs = SCIProwGetRhs(rows[i])
+            cst = SCIProwGetConstant(rows[i])
+            activity = SCIPgetRowLPActivity(scip, rows[i])
+
+            if prev_row_features is None:
+                # number of coefficients
+                row_features[i][row_feature_map["n_non_zeros"]] = SCIProwGetNLPNonz(rows[i])
+                nnzrs += row_features[i][row_feature_map["n_non_zeros"]]
+
+                # left-hand-side
+                if not SCIPisInfinity(scip, abs(lhs)):
+                    row_features[i][row_feature_map["has_lhs"]] = 1
+
+                # right-hand-side
+                if not SCIPisInfinity(scip, abs(rhs)):
+                    row_features[i][row_feature_map["has_rhs"]] = 1
+
+                # bias
+                row_features[i][row_feature_map["bias"]] = cst
+
+                # Objective cosine similarity
+                row_features[i][row_feature_map["obj_cosine"]] = SCIPgetRowObjParallelism(scip, rows[i])
+
+                # L2 norm
+                row_features[i][row_feature_map["norm"]] = SCIProwGetNorm(rows[i])
+
+            if not static_only:
+
+                # Dual solution
+                row_features[i][row_feature_map["dual_sol"]] = SCIProwGetDualsol(rows[i])
+
+                # Basis status
+                basis_status = SCIProwGetBasisStatus(rows[i])
+                if basis_status == SCIP_BASESTAT_LOWER:
+                    row_features[i][row_feature_map["basis_lower"]] = 1
+                elif basis_status == SCIP_BASESTAT_BASIC:
+                    row_features[i][row_feature_map["basis_basic"]] = 1
+                elif basis_status == SCIP_BASESTAT_UPPER:
+                    row_features[i][row_feature_map["basis_upper"]] = 1
+                elif basis_status == SCIP_BASESTAT_ZERO:
+                    row_features[i][row_feature_map["basis_zero"]] = 1
+
+                # Age
+                row_features[i][row_feature_map["age"]] = SCIProwGetAge(rows[i])
+
+                # Is tight
+                row_features[i][row_feature_map["sol_at_lhs"]] = int(SCIPisEQ(scip, activity, lhs))
+                row_features[i][row_feature_map["sol_at_rhs"]] = int(SCIPisEQ(scip, activity, rhs))
+
+        # Generate edge (coefficient) features
+        cdef SCIP_COL** row_cols
+        cdef SCIP_Real * row_vals
+        n_edge_features = 3
+        edge_feature_map = {"col_idx": 0, "row_idx": 1, "coef": 2}
+        if prev_edge_features is None:
+            edge_features = [[0 for _ in range(n_edge_features)] for _ in range(nnzrs)]
+            j = 0
+            for i in range(nrows):
+                # coefficient indexes and values
+                row_cols = SCIProwGetCols(rows[i])
+                row_vals = SCIProwGetVals(rows[i])
+                for k in range(row_features[i][row_feature_map["n_non_zeros"]]):
+                    edge_features[j][edge_feature_map["col_idx"]] = SCIPcolGetLPPos(row_cols[k])
+                    edge_features[j][edge_feature_map["row_idx"]] = i
+                    edge_features[j][edge_feature_map["coef"]] = row_vals[k]
+                    j += 1
+        else:
+            assert len(prev_edge_features) > 0, "Previous edge features is empty"
+            edge_features = prev_edge_features
+            if len(prev_edge_features) != nnzrs:
+                if not suppress_warnings:
+                    raise Warning(f"The number of coefficients in the LP has changed. Previous edge data being ignored")
+                else:
+                    edge_features = [[0 for _ in range(3)] for _ in range(nnzrs)]
+                    prev_edge_features = None
+            if len(prev_edge_features[0]) != 3:
+                raise Warning(f"Dimension mismatch in provided previous features and new features:"
+                              f"{len(prev_edge_features[0])} != 3")
+
+
+        return (col_features, edge_features, row_features,
+                {"col": col_feature_map, "edge": edge_feature_map, "row": row_feature_map})
 
 @dataclass
 class Statistics:
