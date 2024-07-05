@@ -4,8 +4,9 @@
 ### Added
 - Created Statistics class
 - Added parser to read .stats file
-- Added SCIPstartStrongbranch, SCIPgetBranchScoreMultiple, SCIPgetVarStrongbranchInt, SCIPupdateVarPseudocost, SCIPgetVarStrongbranchFrac, SCIPcolGetAge
-- Added wrappers for the above functions
+- Added Python definitions and wrappers for SCIPstartStrongbranch, SCIPendStrongbranch SCIPgetBranchScoreMultiple, 
+  SCIPgetVarStrongbranchInt, SCIPupdateVarPseudocost, SCIPgetVarStrongbranchFrac, SCIPcolGetAge, 
+  SCIPgetVarStrongbranchLast, SCIPgetVarStrongbranchNode, SCIPallColsInLP, SCIPcolGetAge
 ### Fixed
 - Fixed too strict getObjVal, getVal check
 ### Changed

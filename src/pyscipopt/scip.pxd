@@ -788,6 +788,7 @@ cdef extern from "scip/scip.h":
     int SCIPgetNLPCols(SCIP* scip)
     SCIP_COL** SCIPgetLPCols(SCIP *scip)
     SCIP_ROW** SCIPgetLPRows(SCIP *scip)
+    SCIP_Bool SCIPallColsInLP(SCIP* scip)
 
     # Cutting Plane Methods
     SCIP_RETCODE SCIPaddPoolCut(SCIP* scip, SCIP_ROW* row)

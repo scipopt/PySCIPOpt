@@ -1973,6 +1973,12 @@ cdef class Model:
         """returns whether the current LP solution is basic, i.e. is defined by a valid simplex basis"""
         return SCIPisLPSolBasic(self._scip)
 
+    def allColsInLP(self):
+        """checks if all columns, i.e. every variable with non-empty column is present in the LP.
+        This is not True when performing pricing for instance."""
+
+        return SCIPallColsInLP(self._scip)
+
     # LP Col Methods
     def getColRedCost(self, Column col):
         return SCIPgetColRedcost(self._scip, col.scip_col)
@@ -5570,11 +5576,11 @@ cdef class Model:
         assert isinstance(var, Variable), "The given variable is not a pyvar, but %s" % var.__class__.__name__
         PY_SCIP_CALL(SCIPchgVarBranchPriority(self._scip, var.scip_var, priority))
 
-    def startStrongBranching(self, enablepropagation=False):
+    def startStrongBranching(self):
         """Start strong branching. Needs to be called before any strong branching. Must also later end strong branching.
-        If propagation is enabled then strong branching is not done of the LP, but on additionally created nodes (has some overhead)"""
+        If propagation is enabled then strong branching is not done on the LP, but on additionally created nodes (has some overhead)"""
 
-        PY_SCIP_CALL(SCIPstartStrongbranch(self._scip, enablepropagation))
+        PY_SCIP_CALL(SCIPstartStrongbranch(self._scip, False))
 
     def endStrongBranching(self):
         """End strong branching. Needs to be called if startStrongBranching was called previously.
@@ -5582,7 +5588,7 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPendStrongbranch(self._scip))
 
-    def getVarStrongBranchLast(self, Variable var):
+    def getVarStrongBranchInfoLast(self, Variable var):
         """Get the results of the last strong branching call on this variable (potentially was called
         at another node).
 
@@ -5591,7 +5597,10 @@ cdef class Model:
         downvalid - Whether down stores a valid dual bound or is NULL
         upvalid - Whether up stores a valid dual bound or is NULL
         solval - The solution value of the variable at the last strong branching call
-        lpobjval - The LP objective value at the time of the last strong branching call"""
+        lpobjval - The LP objective value at the time of the last strong branching call
+
+        :param Variable var: variable to get the previous strong branching information from
+        """
 
         cdef SCIP_Real down
         cdef SCIP_Real up
@@ -5604,16 +5613,19 @@ cdef class Model:
 
         return down, up, downvalid, upvalid, solval, lpobjval
 
-    def getVarStrongBranchNode(self, Variable var):
-        """Get the node number from the last time strong branching was called on the variable"""
+    def getVarStrongBranchLastNode(self, Variable var):
+        """Get the node number from the last time strong branching was called on the variable
+
+        :param Variable var: variable to get the previous strong branching node from
+        """
 
         cdef SCIP_Longint node_num
         node_num = SCIPgetVarStrongbranchNode(self._scip, var.scip_var)
 
         return node_num
 
-    def getVarStrongBranch(self, Variable var, itlim, idempotent=False, integral=False):
-        """ Gets strong branching information on column variable.
+    def strongBranchVar(self, Variable var, itlim, idempotent=False, integral=False):
+        """ Strong branches and gets information on column variable.
 
         :param Variable var: Variable to get strong branching information on
         :param itlim: LP iteration limit for total strong branching calls
@@ -5642,11 +5654,11 @@ cdef class Model:
 
     def updateVarPseudoCost(self, Variable var, valdelta, objdelta, weight):
         """Updates the pseudo costs of the given variable and the global pseudo costs after a change of valdelta
-         in the variable's solution value and resulting change of objdelta in the in the LP's objective value.
+         in the variable's solution value and resulting change of objdelta in the LP's objective value.
          Update is ignored if objdelts is infinite. Weight is in range (0, 1], and affects how it updates
          the global weighted sum.
 
-         :param Variable var: Variable whos psuedo cost will be updated
+         :param Variable var: Variable whos pseudo cost will be updated
          :param valdelta: The change in variable value (e.g. the fractional amount removed or added by branching)
          :param objdelta: The change in objective value of the LP after valdelta change of the variable
          :param weight: the weight in range (0,1] of how the update affects the stored weighted sum.
@@ -5820,8 +5832,7 @@ class Statistics:
     @property
     def n_presolved_maximal_cons(self):
         return self._presolved_constraints["maximal"]
-            
->>>>>>> master
+
 # debugging memory management
 def is_memory_freed():
     return BMSgetMemoryUsed() == 0
