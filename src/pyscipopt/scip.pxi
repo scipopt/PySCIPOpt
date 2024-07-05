@@ -636,7 +636,9 @@ cdef class Solution:
     
     def _checkStage(self, method):
         if method in ["SCIPgetSolVal", "getSolObjVal"]:
-            if self.sol == NULL and SCIPgetStage(self.scip) != SCIP_STAGE_SOLVING:
+            stage_check = SCIPgetStage(self.scip) not in [SCIP_STAGE_INIT, SCIP_STAGE_FREE]
+
+            if not stage_check or self.sol == NULL and SCIPgetStage(self.scip) != SCIP_STAGE_SOLVING:
                 raise Warning(f"{method} can only be called with a valid solution or in stage SOLVING (current stage: {SCIPgetStage(self.scip)})")
 
 
@@ -3560,6 +3562,7 @@ cdef class Model:
     def presolve(self):
         """Presolve the problem."""
         PY_SCIP_CALL(SCIPpresolve(self._scip))
+        self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
 
     # Benders' decomposition methods
     def initBendersDefault(self, subproblems):
@@ -3623,7 +3626,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPsetupBendersSubproblem(self._scip,
                     _benders[i], self._bestSol.sol, j, SCIP_BENDERSENFOTYPE_CHECK))
                 PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip,
-                    _benders[i], self._bestSol.sol, j, &_infeasible, solvecip, NULL))
+                    _benders[i], self._bestSol.sol, j, &_infeasible, solvecip, NULL))                
 
     def freeBendersSubproblems(self):
         """Calls the free subproblem function for the Benders' decomposition.
@@ -4855,11 +4858,14 @@ cdef class Model:
         """
         if sol == None:
             sol = Solution.create(self._scip, NULL)
+
         sol._checkStage("getSolObjVal")
+
         if original:
             objval = SCIPgetSolOrigObj(self._scip, sol.sol)
         else:
             objval = SCIPgetSolTransObj(self._scip, sol.sol)
+
         return objval
 
     def getSolTime(self, Solution sol):
@@ -4872,13 +4878,24 @@ cdef class Model:
 
     def getObjVal(self, original=True):
         """Retrieve the objective value of value of best solution.
-        Can only be called after solving is completed.
 
         :param original: objective value in original space (Default value = True)
-
         """
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
-            raise Warning("method cannot be called before problem is solved")
+
+        if SCIPgetNSols(self._scip) == 0:
+            if self.getStage() != SCIP_STAGE_SOLVING:
+                raise Warning("Without a solution, method can only be called in stage SOLVING.")
+        else:
+            assert self._bestSol.sol != NULL
+            
+            if SCIPsolIsOriginal(self._bestSol.sol):
+                min_stage_requirement = SCIP_STAGE_PROBLEM
+            else:
+                min_stage_requirement = SCIP_STAGE_TRANSFORMING
+
+            if not self.getStage() >= min_stage_requirement:
+                raise Warning("method cannot be called in stage %i." % self.getStage)
+
         return self.getSolObjVal(self._bestSol, original)
 
     def getSolVal(self, Solution sol, Expr expr):
@@ -4906,8 +4923,11 @@ cdef class Model:
 
         Note: a variable is also an expression
         """
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
-            raise Warning("method cannot be called before problem is solved")
+        stage_check = SCIPgetStage(self._scip) not in [SCIP_STAGE_INIT, SCIP_STAGE_FREE]
+
+        if not stage_check or self._bestSol.sol == NULL and SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
+            raise Warning("Method cannot be called in stage ", self.getStage())
+
         return self.getSolVal(self._bestSol, expr)
     
     def hasPrimalRay(self):
