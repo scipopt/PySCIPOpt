@@ -4872,11 +4872,11 @@ cdef class Model:
             assert self._bestSol.sol != NULL
             
             if SCIPsolIsOriginal(self._bestSol.sol):
-                stage_requirement = SCIP_STAGE_PROBLEM
+                min_stage_requirement = SCIP_STAGE_PROBLEM
             else:
-                stage_requirement = SCIP_STAGE_TRANSFORMING
+                min_stage_requirement = SCIP_STAGE_TRANSFORMING
 
-            if not self.getStage() >= stage_requirement:
+            if not self.getStage() >= min_stage_requirement:
                 raise Warning("method cannot be called in stage %i." % self.getStage)
 
         return self.getSolObjVal(self._bestSol, original)
