@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Expanded Statistics class to more problems.
 - Created Statistics class
 - Added parser to read .stats file
 ### Fixed
@@ -25,6 +26,7 @@
 ### Fixed
 - Fixed locale errors in reading
 ### Changed
+- Made readStatistics a standalone function
 ### Removed
 
 ## 5.1.1 - 2024-06-22

@@ -24,6 +24,7 @@ from pyscipopt.scip      import Prop
 from pyscipopt.scip      import Reader
 from pyscipopt.scip      import Sepa
 from pyscipopt.scip      import LP
+from pyscipopt.scip      import readStatistics
 from pyscipopt.scip      import Expr
 from pyscipopt.scip      import quicksum
 from pyscipopt.scip      import quickprod
