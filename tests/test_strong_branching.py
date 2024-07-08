@@ -73,7 +73,7 @@ class StrongBranchingRule(Branchrule):
                 downgain = 0
             if not upinf and upvalid:
                 up_bounds[i] = up
-                upgain = max([down - lpobjval, 0])
+                upgain = max([up - lpobjval, 0])
             else:
                 upgain = 0
 
@@ -136,6 +136,7 @@ class FeatureSelectorBranchingRule(Branchrule):
 
 def create_model():
     scip = Model()
+    # Disable separating and heuristics as we want to branch on the problem many times before reaching optimality.
     scip.setHeuristics(SCIP_PARAMSETTING.OFF)
     scip.setSeparating(SCIP_PARAMSETTING.OFF)
     scip.setLongintParam("limits/nodes", 2000)
@@ -155,7 +156,7 @@ def create_model():
 
     for i in range(100):
         more_vars.append(scip.addVar(vtype="I", lb=-52, ub=10))
-        scip.addCons(quicksum(v for v in more_vars[50::2]) <= (40 - i) * quicksum(v for v in more_vars[405::2]))
+        scip.addCons(quicksum(v for v in more_vars[50::2]) <= (40 - i) * quicksum(v for v in more_vars[200::2]))
 
     scip.addCons(r1 >= x0)
     scip.addCons(r2 >= -x0)

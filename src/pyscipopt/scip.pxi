@@ -418,7 +418,7 @@ cdef class Column:
         return SCIPcolGetObj(self.scip_col)
 
     def getAge(self):
-        """Gets the age of a column, i.e., the total number of successive times a column was in the LP
+        """Gets the age of the column, i.e., the total number of successive times a column was in the LP
         and was 0.0 in the solution"""
         return SCIPcolGetAge(self.scip_col)
 
@@ -1981,6 +1981,10 @@ cdef class Model:
 
     # LP Col Methods
     def getColRedCost(self, Column col):
+        """gets the reduced cost of the column in the current LP
+
+        :param Column col: the column of the LP for which the reduced cost will be retrieved
+        """
         return SCIPgetColRedcost(self._scip, col.scip_col)
 
     #TODO: documentation!!
@@ -5578,6 +5582,7 @@ cdef class Model:
 
     def startStrongBranching(self):
         """Start strong branching. Needs to be called before any strong branching. Must also later end strong branching.
+        TODO: Propagation option has currently been disabled via Python.
         If propagation is enabled then strong branching is not done on the LP, but on additionally created nodes (has some overhead)"""
 
         PY_SCIP_CALL(SCIPstartStrongbranch(self._scip, False))
