@@ -180,6 +180,10 @@ def test_strong_branching():
                            priority=10000000, maxdepth=-1, maxbounddist=1)
 
     scip.optimize()
+    if scip.getStatus() == "optimal":
+        assert scip.isEQ(-112196, scip.getObjVal())
+    else:
+        assert -112196 <= scip.getObjVal()
 
 
 def test_strong_branching_idempotent():
@@ -190,6 +194,10 @@ def test_strong_branching_idempotent():
                            priority=10000000, maxdepth=-1, maxbounddist=1)
 
     scip.optimize()
+    if scip.getStatus() == "optimal":
+        assert scip.isEQ(-112196, scip.getObjVal())
+    else:
+        assert -112196 <= scip.getObjVal()
 
 
 def test_dummy_feature_selector():
