@@ -31,7 +31,7 @@ echo "Downloading SCIP tagfile to create links to SCIP docu"
 wget -q -O docs/scip.tag https://scip.zib.de/doc/scip.tag
 
 #get version number for doxygen
-export VERSION_NUMBER=$(grep "__version__" src/pyscipopt/__init__.py | cut -d ' ' -f 3 | tr --delete \')
+export VERSION_NUMBER=$(grep "__version__" src/pyscipopt/_version.py | cut -d ' ' -f 3 | tr --delete \')
 
 # generate html documentation in docs/html
 echo "Generating documentation"
