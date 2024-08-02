@@ -4,6 +4,7 @@
 ### Added
 - Created Statistics class
 - Added parser to read .stats file
+- Release checklist in `RELEASE.md`
 ### Fixed
 - Fixed too strict getObjVal, getVal check
 ### Changed
