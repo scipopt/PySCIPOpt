@@ -15,4 +15,4 @@ git tag vX.X.X
 git push origin vX.X.X
 ```
 8. Then make a github [release](https://github.com/scipopt/PySCIPOpt/releases/new) from this new tag. 
-9. TODO: Update docs.
+9. Update documentation by running the `Generate Docs` workflow in Actions->Generate Docs.
