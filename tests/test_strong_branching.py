@@ -36,14 +36,14 @@ class StrongBranchingRule(Branchrule):
         best_cand_idx = 0
 
         # Start strong branching and iterate over the branching candidates
-        self.scip.startStrongBranching()
+        self.scip.startStrongbranch()
         for i in range(npriocands):
 
             # Check the case that the variable has already been strong branched on at this node.
             # This case occurs when events happen in the node that should be handled immediately.
             # When processing the node again (because the event did not remove it), there's no need to duplicate work.
-            if self.scip.getVarStrongBranchLastNode(branch_cands[i]) == num_nodes:
-                down, up, downvalid, upvalid, _, lastlpobjval = self.scip.getVarStrongBranchInfoLast(branch_cands[i])
+            if self.scip.getVarStrongbranchNode(branch_cands[i]) == num_nodes:
+                down, up, downvalid, upvalid, _, lastlpobjval = self.scip.getVarStrongbranchLast(branch_cands[i])
                 if downvalid:
                     down_bounds[i] = down
                 if upvalid:
@@ -54,7 +54,7 @@ class StrongBranchingRule(Branchrule):
                 continue
 
             # Strong branch!
-            down, up, downvalid, upvalid, downinf, upinf, downconflict, upconflict, lperror = self.scip.strongBranchVar(
+            down, up, downvalid, upvalid, downinf, upinf, downconflict, upconflict, lperror = self.scip.getVarStrongbranch(
                 branch_cands[i], 200, idempotent=self.idempotent)
 
             # In the case of an LP error handle appropriately (for this example we just break the loop)
@@ -81,16 +81,16 @@ class StrongBranchingRule(Branchrule):
             if not self.idempotent:
                 lpsol = branch_cands[i].getLPSol()
                 if not downinf and downvalid:
-                    self.scip.updateVarPseudoCost(branch_cands[i], -self.scip.frac(lpsol), downgain, 1)
+                    self.scip.updateVarPseudocost(branch_cands[i], -self.scip.frac(lpsol), downgain, 1)
                 if not upinf and upvalid:
-                    self.scip.updateVarPseudoCost(branch_cands[i], 1 - self.scip.frac(lpsol), upgain, 1)
+                    self.scip.updateVarPseudocost(branch_cands[i], 1 - self.scip.frac(lpsol), upgain, 1)
 
             scores[i] = self.scip.getBranchScoreMultiple(branch_cands[i], [downgain, upgain])
             if scores[i] > scores[best_cand_idx]:
                 best_cand_idx = i
 
         # End strong branching
-        self.scip.endStrongBranching()
+        self.scip.endStrongbranch()
 
         # In the case of an LP error
         if lperror:
