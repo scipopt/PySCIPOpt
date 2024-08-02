@@ -36,14 +36,14 @@ class StrongBranchingRule(Branchrule):
         best_cand_idx = 0
 
         # Start strong branching and iterate over the branching candidates
-        self.scip.startStrongBranching()
+        self.scip.startStrongbranch()
         for i in range(npriocands):
 
             # Check the case that the variable has already been strong branched on at this node.
             # This case occurs when events happen in the node that should be handled immediately.
             # When processing the node again (because the event did not remove it), there's no need to duplicate work.
-            if self.scip.getVarStrongBranchLastNode(branch_cands[i]) == num_nodes:
-                down, up, downvalid, upvalid, _, lastlpobjval = self.scip.getVarStrongBranchInfoLast(branch_cands[i])
+            if self.scip.getVarStrongbranchNode(branch_cands[i]) == num_nodes:
+                down, up, downvalid, upvalid, _, lastlpobjval = self.scip.getVarStrongbranchLast(branch_cands[i])
                 if downvalid:
                     down_bounds[i] = down
                 if upvalid:
@@ -54,7 +54,7 @@ class StrongBranchingRule(Branchrule):
                 continue
 
             # Strong branch!
-            down, up, downvalid, upvalid, downinf, upinf, downconflict, upconflict, lperror = self.scip.strongBranchVar(
+            down, up, downvalid, upvalid, downinf, upinf, downconflict, upconflict, lperror = self.scip.getVarStrongbranch(
                 branch_cands[i], 200, idempotent=self.idempotent)
 
             # In the case of an LP error handle appropriately (for this example we just break the loop)
@@ -73,7 +73,7 @@ class StrongBranchingRule(Branchrule):
                 downgain = 0
             if not upinf and upvalid:
                 up_bounds[i] = up
-                upgain = max([down - lpobjval, 0])
+                upgain = max([up - lpobjval, 0])
             else:
                 upgain = 0
 
@@ -81,16 +81,16 @@ class StrongBranchingRule(Branchrule):
             if not self.idempotent:
                 lpsol = branch_cands[i].getLPSol()
                 if not downinf and downvalid:
-                    self.scip.updateVarPseudoCost(branch_cands[i], -self.scip.frac(lpsol), downgain, 1)
+                    self.scip.updateVarPseudocost(branch_cands[i], -self.scip.frac(lpsol), downgain, 1)
                 if not upinf and upvalid:
-                    self.scip.updateVarPseudoCost(branch_cands[i], 1 - self.scip.frac(lpsol), upgain, 1)
+                    self.scip.updateVarPseudocost(branch_cands[i], 1 - self.scip.frac(lpsol), upgain, 1)
 
             scores[i] = self.scip.getBranchScoreMultiple(branch_cands[i], [downgain, upgain])
             if scores[i] > scores[best_cand_idx]:
                 best_cand_idx = i
 
         # End strong branching
-        self.scip.endStrongBranching()
+        self.scip.endStrongbranch()
 
         # In the case of an LP error
         if lperror:
@@ -136,6 +136,7 @@ class FeatureSelectorBranchingRule(Branchrule):
 
 def create_model():
     scip = Model()
+    # Disable separating and heuristics as we want to branch on the problem many times before reaching optimality.
     scip.setHeuristics(SCIP_PARAMSETTING.OFF)
     scip.setSeparating(SCIP_PARAMSETTING.OFF)
     scip.setLongintParam("limits/nodes", 2000)
@@ -155,7 +156,7 @@ def create_model():
 
     for i in range(100):
         more_vars.append(scip.addVar(vtype="I", lb=-52, ub=10))
-        scip.addCons(quicksum(v for v in more_vars[50::2]) <= (40 - i) * quicksum(v for v in more_vars[405::2]))
+        scip.addCons(quicksum(v for v in more_vars[50::2]) <= (40 - i) * quicksum(v for v in more_vars[200::2]))
 
     scip.addCons(r1 >= x0)
     scip.addCons(r2 >= -x0)
@@ -179,6 +180,10 @@ def test_strong_branching():
                            priority=10000000, maxdepth=-1, maxbounddist=1)
 
     scip.optimize()
+    if scip.getStatus() == "optimal":
+        assert scip.isEQ(-112196, scip.getObjVal())
+    else:
+        assert -112196 <= scip.getObjVal()
 
 
 def test_strong_branching_idempotent():
@@ -189,6 +194,10 @@ def test_strong_branching_idempotent():
                            priority=10000000, maxdepth=-1, maxbounddist=1)
 
     scip.optimize()
+    if scip.getStatus() == "optimal":
+        assert scip.isEQ(-112196, scip.getObjVal())
+    else:
+        assert -112196 <= scip.getObjVal()
 
 
 def test_dummy_feature_selector():

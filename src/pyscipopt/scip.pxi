@@ -418,7 +418,7 @@ cdef class Column:
         return SCIPcolGetObj(self.scip_col)
 
     def getAge(self):
-        """Gets the age of a column, i.e., the total number of successive times a column was in the LP
+        """Gets the age of the column, i.e., the total number of successive times a column was in the LP
         and was 0.0 in the solution"""
         return SCIPcolGetAge(self.scip_col)
 
@@ -1981,6 +1981,10 @@ cdef class Model:
 
     # LP Col Methods
     def getColRedCost(self, Column col):
+        """gets the reduced cost of the column in the current LP
+
+        :param Column col: the column of the LP for which the reduced cost will be retrieved
+        """
         return SCIPgetColRedcost(self._scip, col.scip_col)
 
     #TODO: documentation!!
@@ -5577,19 +5581,20 @@ cdef class Model:
         assert isinstance(var, Variable), "The given variable is not a pyvar, but %s" % var.__class__.__name__
         PY_SCIP_CALL(SCIPchgVarBranchPriority(self._scip, var.scip_var, priority))
 
-    def startStrongBranching(self):
+    def startStrongbranch(self):
         """Start strong branching. Needs to be called before any strong branching. Must also later end strong branching.
+        TODO: Propagation option has currently been disabled via Python.
         If propagation is enabled then strong branching is not done on the LP, but on additionally created nodes (has some overhead)"""
 
         PY_SCIP_CALL(SCIPstartStrongbranch(self._scip, False))
 
-    def endStrongBranching(self):
+    def endStrongbranch(self):
         """End strong branching. Needs to be called if startStrongBranching was called previously.
         Between these calls the user can access all strong branching functionality. """
 
         PY_SCIP_CALL(SCIPendStrongbranch(self._scip))
 
-    def getVarStrongBranchInfoLast(self, Variable var):
+    def getVarStrongbranchLast(self, Variable var):
         """Get the results of the last strong branching call on this variable (potentially was called
         at another node).
 
@@ -5614,7 +5619,7 @@ cdef class Model:
 
         return down, up, downvalid, upvalid, solval, lpobjval
 
-    def getVarStrongBranchLastNode(self, Variable var):
+    def getVarStrongbranchNode(self, Variable var):
         """Get the node number from the last time strong branching was called on the variable
 
         :param Variable var: variable to get the previous strong branching node from
@@ -5625,7 +5630,7 @@ cdef class Model:
 
         return node_num
 
-    def strongBranchVar(self, Variable var, itlim, idempotent=False, integral=False):
+    def getVarStrongbranch(self, Variable var, itlim, idempotent=False, integral=False):
         """ Strong branches and gets information on column variable.
 
         :param Variable var: Variable to get strong branching information on
@@ -5653,7 +5658,7 @@ cdef class Model:
 
         return down, up, downvalid, upvalid, downinf, upinf, downconflict, upconflict, lperror
 
-    def updateVarPseudoCost(self, Variable var, valdelta, objdelta, weight):
+    def updateVarPseudocost(self, Variable var, valdelta, objdelta, weight):
         """Updates the pseudo costs of the given variable and the global pseudo costs after a change of valdelta
          in the variable's solution value and resulting change of objdelta in the LP's objective value.
          Update is ignored if objdelts is infinite. Weight is in range (0, 1], and affects how it updates
