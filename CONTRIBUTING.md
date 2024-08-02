@@ -43,14 +43,7 @@ If you find this contributing guide unclear, please open an issue! :)
 How to craft a release
 ----------------------
 
-1. update `CHANGELOG`
-2. increase version number in `src/pyscipopt/__init__.py` according to semantic versioning
-3. commit changes to the master branch
-3. tag new version `git tag vX.Y.Z`
-4. `git push` && `git push --tags`
-5. [create GitHub release](https://github.com/scipopt/PySCIPOpt/releases) based on that tag
-
-A new PyPI package is automatically created by the GitHub actions when pushing a new tag onto the master and the version has been increased. Also the documentation is autmatically created in the process.
+Moved to [RELEASE.md](RELEASE.md).
 
 Design principles of PySCIPOpt
 ==============================
