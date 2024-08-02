@@ -1,0 +1,16 @@
+name: Generate documentation
+
+on:
+  workflow_dispatch:
+      inputs: {}
+
+jobs:
+  generate-documentation:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Generate documentation
+        run: |
+          sudo apt-get install doxygen graphviz
+          bash -ex generate-docs.sh "${{ secrets.GITHUB_TOKEN }}" "gh-pages"
