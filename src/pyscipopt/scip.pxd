@@ -788,6 +788,7 @@ cdef extern from "scip/scip.h":
     int SCIPgetNLPCols(SCIP* scip)
     SCIP_COL** SCIPgetLPCols(SCIP *scip)
     SCIP_ROW** SCIPgetLPRows(SCIP *scip)
+    SCIP_Bool SCIPallColsInLP(SCIP* scip)
 
     # Cutting Plane Methods
     SCIP_RETCODE SCIPaddPoolCut(SCIP* scip, SCIP_ROW* row)
@@ -1258,7 +1259,15 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPgetLPBranchCands(SCIP* scip, SCIP_VAR*** lpcands, SCIP_Real** lpcandssol,
                                       SCIP_Real** lpcandsfrac, int* nlpcands, int* npriolpcands, int* nfracimplvars)
     SCIP_RETCODE SCIPgetPseudoBranchCands(SCIP* scip, SCIP_VAR*** pseudocands, int* npseudocands, int* npriopseudocands)
-
+    SCIP_RETCODE SCIPstartStrongbranch(SCIP* scip, SCIP_Bool enablepropogation)
+    SCIP_RETCODE SCIPendStrongbranch(SCIP* scip)
+    SCIP_RETCODE SCIPgetVarStrongbranchLast(SCIP* scip, SCIP_VAR* var, SCIP_Real* down, SCIP_Real* up, SCIP_Bool* downvalid, SCIP_Bool* upvalid, SCIP_Real* solval, SCIP_Real* lpobjval)
+    SCIP_Longint SCIPgetVarStrongbranchNode(SCIP* scip, SCIP_VAR* var)
+    SCIP_Real SCIPgetBranchScoreMultiple(SCIP* scip, SCIP_VAR* var, int nchildren, SCIP_Real* gains)
+    SCIP_RETCODE SCIPgetVarStrongbranchWithPropagation(SCIP* scip, SCIP_VAR* var, SCIP_Real solval, SCIP_Real lpobjval, int itlim, int maxproprounds, SCIP_Real* down, SCIP_Real* up, SCIP_Bool* downvalid, SCIP_Bool* upvalid, SCIP_Longint* ndomredsdown, SCIP_Longint* ndomredsup, SCIP_Bool* downinf, SCIP_Bool* upinf, SCIP_Bool* downconflict, SCIP_Bool* upconflict, SCIP_Bool* lperror, SCIP_Real* newlbs, SCIP_Real* newubs)
+    SCIP_RETCODE SCIPgetVarStrongbranchInt(SCIP* scip, SCIP_VAR* var, int itlim, SCIP_Bool idempotent, SCIP_Real* down, SCIP_Real* up, SCIP_Bool* downvalid, SCIP_Bool* upvalid, SCIP_Bool* downinf, SCIP_Bool* upinf, SCIP_Bool* downconflict, SCIP_Bool* upconflict, SCIP_Bool* lperror)
+    SCIP_RETCODE SCIPupdateVarPseudocost(SCIP* scip, SCIP_VAR* var, SCIP_Real solvaldelta, SCIP_Real objdelta, SCIP_Real weight)
+    SCIP_RETCODE SCIPgetVarStrongbranchFrac(SCIP* scip, SCIP_VAR* var, int itlim, SCIP_Bool idempotent, SCIP_Real* down, SCIP_Real* up, SCIP_Bool* downvalid, SCIP_Bool* upvalid, SCIP_Bool* downinf, SCIP_Bool* upinf, SCIP_Bool* downconflict, SCIP_Bool* upconflict, SCIP_Bool* lperror)
 
     # Numerical Methods
     SCIP_Real SCIPinfinity(SCIP* scip)
@@ -1841,6 +1850,7 @@ cdef extern from "scip/pub_lp.h":
     int SCIPcolGetNNonz(SCIP_COL* col)
     SCIP_ROW** SCIPcolGetRows(SCIP_COL* col)
     SCIP_Real* SCIPcolGetVals(SCIP_COL* col)
+    int SCIPcolGetAge(SCIP_COL* col)
     int SCIPcolGetIndex(SCIP_COL* col)
     SCIP_Real SCIPcolGetObj(SCIP_COL *col)
 

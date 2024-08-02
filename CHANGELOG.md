@@ -5,6 +5,10 @@
 - Created Statistics class
 - Added parser to read .stats file
 - Release checklist in `RELEASE.md`
+- Added Python definitions and wrappers for SCIPstartStrongbranch, SCIPendStrongbranch SCIPgetBranchScoreMultiple, 
+  SCIPgetVarStrongbranchInt, SCIPupdateVarPseudocost, SCIPgetVarStrongbranchFrac, SCIPcolGetAge, 
+  SCIPgetVarStrongbranchLast, SCIPgetVarStrongbranchNode, SCIPallColsInLP, SCIPcolGetAge
+- Added getBipartiteGraphRepresentation
 ### Fixed
 - Fixed too strict getObjVal, getVal check
 ### Changed
