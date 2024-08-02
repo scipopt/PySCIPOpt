@@ -2063,6 +2063,7 @@ cdef class Model:
 
     def getRowParallelism(self, Row row1, Row row2, orthofunc=101):
         """Returns the degree of parallelism between hyplerplanes. 1 if perfectly parallel, 0 if orthogonal.
+        For two row vectors v, w the parallelism is calculated as: |v*w|/(|v|*|w|).
         101 in this case is an 'e' (euclidean) in ASCII. The other acceptable input is 100 (d for discrete)."""
         return SCIProwGetParallelism(row1.scip_row, row2.scip_row, orthofunc)
 
@@ -5695,7 +5696,7 @@ cdef class Model:
 
     def getBipartiteGraphRepresentation(self, prev_col_features=None, prev_edge_features=None, prev_row_features=None,
                                         static_only=False, suppress_warnings=False):
-        """This function generated the bipartite graph representation of an LP, which was first used in
+        """This function generates the bipartite graph representation of an LP, which was first used in
         the following paper:
         @inproceedings{conf/nips/GasseCFCL19,
         title={Exact Combinatorial Optimization with Graph Convolutional Neural Networks},

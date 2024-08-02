@@ -64,7 +64,7 @@ def create_model():
 
     for i in range(100):
         more_vars.append(scip.addVar(vtype="I", lb=-52, ub=10))
-        scip.addCons(quicksum(v for v in more_vars[50::2]) <= (40 - i) * quicksum(v for v in more_vars[405::2]))
+        scip.addCons(quicksum(v for v in more_vars[50::2]) <= (40 - i) * quicksum(v for v in more_vars[200::2]))
 
     scip.addCons(r1 >= x0)
     scip.addCons(r2 >= -x0)
