@@ -417,6 +417,11 @@ cdef class Column:
         """gets objective value coefficient of a column"""
         return SCIPcolGetObj(self.scip_col)
 
+    def getAge(self):
+        """Gets the age of the column, i.e., the total number of successive times a column was in the LP
+        and was 0.0 in the solution"""
+        return SCIPcolGetAge(self.scip_col)
+
     def __hash__(self):
         return hash(<size_t>self.scip_col)
 
@@ -517,6 +522,10 @@ cdef class Row:
         """gets list with coefficients of nonzero entries"""
         cdef SCIP_Real* vals = SCIProwGetVals(self.scip_row)
         return [vals[i] for i in range(self.getNNonz())]
+
+    def getAge(self):
+        """Gets the age of the row. (The consecutive times the row has been non-active in the LP)"""
+        return SCIProwGetAge(self.scip_row)
 
     def getNorm(self):
         """gets Euclidean norm of row vector """
@@ -890,6 +899,10 @@ cdef class Variable(Expr):
     def getLPSol(self):
         """Retrieve the current LP solution value of variable"""
         return SCIPvarGetLPSol(self.scip_var)
+
+    def getAvgSol(self):
+        """Get the weighted average solution of variable in all feasible primal solutions found"""
+        return SCIPvarGetAvgSol(self.scip_var)
 
 cdef class Constraint:
     """Base class holding a pointer to corresponding SCIP_CONS"""
@@ -1959,6 +1972,20 @@ cdef class Model:
     def isLPSolBasic(self):
         """returns whether the current LP solution is basic, i.e. is defined by a valid simplex basis"""
         return SCIPisLPSolBasic(self._scip)
+
+    def allColsInLP(self):
+        """checks if all columns, i.e. every variable with non-empty column is present in the LP.
+        This is not True when performing pricing for instance."""
+
+        return SCIPallColsInLP(self._scip)
+
+    # LP Col Methods
+    def getColRedCost(self, Column col):
+        """gets the reduced cost of the column in the current LP
+
+        :param Column col: the column of the LP for which the reduced cost will be retrieved
+        """
+        return SCIPgetColRedcost(self._scip, col.scip_col)
 
     #TODO: documentation!!
     # LP Row Methods
@@ -5553,6 +5580,119 @@ cdef class Model:
         assert isinstance(var, Variable), "The given variable is not a pyvar, but %s" % var.__class__.__name__
         PY_SCIP_CALL(SCIPchgVarBranchPriority(self._scip, var.scip_var, priority))
 
+    def startStrongbranch(self):
+        """Start strong branching. Needs to be called before any strong branching. Must also later end strong branching.
+        TODO: Propagation option has currently been disabled via Python.
+        If propagation is enabled then strong branching is not done on the LP, but on additionally created nodes (has some overhead)"""
+
+        PY_SCIP_CALL(SCIPstartStrongbranch(self._scip, False))
+
+    def endStrongbranch(self):
+        """End strong branching. Needs to be called if startStrongBranching was called previously.
+        Between these calls the user can access all strong branching functionality. """
+
+        PY_SCIP_CALL(SCIPendStrongbranch(self._scip))
+
+    def getVarStrongbranchLast(self, Variable var):
+        """Get the results of the last strong branching call on this variable (potentially was called
+        at another node).
+
+        down - The dual bound of the LP after branching down on the variable
+        up - The dual bound of the LP after branchign up on the variable
+        downvalid - Whether down stores a valid dual bound or is NULL
+        upvalid - Whether up stores a valid dual bound or is NULL
+        solval - The solution value of the variable at the last strong branching call
+        lpobjval - The LP objective value at the time of the last strong branching call
+
+        :param Variable var: variable to get the previous strong branching information from
+        """
+
+        cdef SCIP_Real down
+        cdef SCIP_Real up
+        cdef SCIP_Real solval
+        cdef SCIP_Real lpobjval
+        cdef SCIP_Bool downvalid
+        cdef SCIP_Bool upvalid
+
+        PY_SCIP_CALL(SCIPgetVarStrongbranchLast(self._scip, var.scip_var, &down, &up, &downvalid, &upvalid, &solval, &lpobjval))
+
+        return down, up, downvalid, upvalid, solval, lpobjval
+
+    def getVarStrongbranchNode(self, Variable var):
+        """Get the node number from the last time strong branching was called on the variable
+
+        :param Variable var: variable to get the previous strong branching node from
+        """
+
+        cdef SCIP_Longint node_num
+        node_num = SCIPgetVarStrongbranchNode(self._scip, var.scip_var)
+
+        return node_num
+
+    def getVarStrongbranch(self, Variable var, itlim, idempotent=False, integral=False):
+        """ Strong branches and gets information on column variable.
+
+        :param Variable var: Variable to get strong branching information on
+        :param itlim: LP iteration limit for total strong branching calls
+        :param idempotent: Should SCIP's state remain the same after the call?
+        :param integral: Boolean on whether the variable is currently integer.
+        """
+
+        cdef SCIP_Real down
+        cdef SCIP_Real up
+        cdef SCIP_Bool downvalid
+        cdef SCIP_Bool upvalid
+        cdef SCIP_Bool downinf
+        cdef SCIP_Bool upinf
+        cdef SCIP_Bool downconflict
+        cdef SCIP_Bool upconflict
+        cdef SCIP_Bool lperror
+
+        if integral:
+            PY_SCIP_CALL(SCIPgetVarStrongbranchInt(self._scip, var.scip_var, itlim, idempotent, &down, &up, &downvalid, 
+                                                   &upvalid, &downinf, &upinf, &downconflict, &upconflict, &lperror))
+        else:
+            PY_SCIP_CALL(SCIPgetVarStrongbranchFrac(self._scip, var.scip_var, itlim, idempotent, &down, &up, &downvalid, 
+                                                    &upvalid, &downinf, &upinf, &downconflict, &upconflict, &lperror))
+
+        return down, up, downvalid, upvalid, downinf, upinf, downconflict, upconflict, lperror
+
+    def updateVarPseudocost(self, Variable var, valdelta, objdelta, weight):
+        """Updates the pseudo costs of the given variable and the global pseudo costs after a change of valdelta
+         in the variable's solution value and resulting change of objdelta in the LP's objective value.
+         Update is ignored if objdelts is infinite. Weight is in range (0, 1], and affects how it updates
+         the global weighted sum.
+
+         :param Variable var: Variable whos pseudo cost will be updated
+         :param valdelta: The change in variable value (e.g. the fractional amount removed or added by branching)
+         :param objdelta: The change in objective value of the LP after valdelta change of the variable
+         :param weight: the weight in range (0,1] of how the update affects the stored weighted sum.
+         """
+
+        PY_SCIP_CALL(SCIPupdateVarPseudocost(self._scip, var.scip_var, valdelta, objdelta, weight))
+
+    def getBranchScoreMultiple(self, Variable var, gains):
+        """Calculates the branching score out of the gain predictions for a branching with
+        arbitrary many children.
+
+        :param Variable var: variable to calculate the score for
+        :param gains: list of gains for each child.
+        """
+
+        assert isinstance(gains, list)
+        nchildren = len(gains)
+
+        cdef int _nchildren = nchildren
+        _gains = <SCIP_Real*> malloc(_nchildren * sizeof(SCIP_Real))
+        for i in range(_nchildren):
+            _gains[i] = gains[i]
+
+        score = SCIPgetBranchScoreMultiple(self._scip, var.scip_var, _nchildren, _gains)
+
+        free(_gains)
+
+        return score
+
     def getTreesizeEstimation(self):
         """Get an estimation of the final tree size """
         return SCIPgetTreesizeEstimation(self._scip)
@@ -5697,7 +5837,7 @@ class Statistics:
     @property
     def n_presolved_maximal_cons(self):
         return self._presolved_constraints["maximal"]
-            
+
 # debugging memory management
 def is_memory_freed():
     return BMSgetMemoryUsed() == 0
