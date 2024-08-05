@@ -54,7 +54,7 @@ def random_nlp_1():
     model.addCons(exp(v)+log(w)+sqrt(x)+sin(y)+z**3 * y <= 5)
     model.setObjective(v + w + x + y + z, sense='maximize')
 
-    return
+    return model
 
 def knapsack_model(weights = [4, 2, 6, 3, 7, 5], costs = [7, 2, 5, 4, 3, 4]):
     # create solver instance
