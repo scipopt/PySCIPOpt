@@ -54,7 +54,7 @@ class testBenders(Benders):
     def benderssolvesubconvex(self, solution, probnumber, onlyconvex):
         self.model.setupBendersSubproblem(probnumber, self, solution)
         self.subprob.solveProbingLP()
-        subprob = self.model.getBendersSubproblem(probnumber, self)
+        subprob = self.model.getBendersSubproblem(probnumber, self)  
         assert self.subprob.getObjVal() == subprob.getObjVal()
 
         result_dict = {}

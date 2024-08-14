@@ -417,6 +417,11 @@ cdef class Column:
         """gets objective value coefficient of a column"""
         return SCIPcolGetObj(self.scip_col)
 
+    def getAge(self):
+        """Gets the age of the column, i.e., the total number of successive times a column was in the LP
+        and was 0.0 in the solution"""
+        return SCIPcolGetAge(self.scip_col)
+
     def __hash__(self):
         return hash(<size_t>self.scip_col)
 
@@ -517,6 +522,10 @@ cdef class Row:
         """gets list with coefficients of nonzero entries"""
         cdef SCIP_Real* vals = SCIProwGetVals(self.scip_row)
         return [vals[i] for i in range(self.getNNonz())]
+
+    def getAge(self):
+        """Gets the age of the row. (The consecutive times the row has been non-active in the LP)"""
+        return SCIProwGetAge(self.scip_row)
 
     def getNorm(self):
         """gets Euclidean norm of row vector """
@@ -627,7 +636,9 @@ cdef class Solution:
     
     def _checkStage(self, method):
         if method in ["SCIPgetSolVal", "getSolObjVal"]:
-            if self.sol == NULL and SCIPgetStage(self.scip) != SCIP_STAGE_SOLVING:
+            stage_check = SCIPgetStage(self.scip) not in [SCIP_STAGE_INIT, SCIP_STAGE_FREE]
+
+            if not stage_check or self.sol == NULL and SCIPgetStage(self.scip) != SCIP_STAGE_SOLVING:
                 raise Warning(f"{method} can only be called with a valid solution or in stage SOLVING (current stage: {SCIPgetStage(self.scip)})")
 
 
@@ -888,6 +899,10 @@ cdef class Variable(Expr):
     def getLPSol(self):
         """Retrieve the current LP solution value of variable"""
         return SCIPvarGetLPSol(self.scip_var)
+
+    def getAvgSol(self):
+        """Get the weighted average solution of variable in all feasible primal solutions found"""
+        return SCIPvarGetAvgSol(self.scip_var)
 
 cdef class Constraint:
     """Base class holding a pointer to corresponding SCIP_CONS"""
@@ -1958,6 +1973,20 @@ cdef class Model:
         """returns whether the current LP solution is basic, i.e. is defined by a valid simplex basis"""
         return SCIPisLPSolBasic(self._scip)
 
+    def allColsInLP(self):
+        """checks if all columns, i.e. every variable with non-empty column is present in the LP.
+        This is not True when performing pricing for instance."""
+
+        return SCIPallColsInLP(self._scip)
+
+    # LP Col Methods
+    def getColRedCost(self, Column col):
+        """gets the reduced cost of the column in the current LP
+
+        :param Column col: the column of the LP for which the reduced cost will be retrieved
+        """
+        return SCIPgetColRedcost(self._scip, col.scip_col)
+
     #TODO: documentation!!
     # LP Row Methods
     def createEmptyRowSepa(self, Sepa sepa, name="row", lhs = 0.0, rhs = None, local = True, modifiable = False, removable = True):
@@ -2037,8 +2066,9 @@ cdef class Model:
         return SCIPgetRowObjParallelism(self._scip, row.scip_row)
 
     def getRowParallelism(self, Row row1, Row row2, orthofunc=101):
-        """Returns the degree of parallelism between hyplerplanes. 1 if perfectly parallel, 0 if orthognal.
-        101 in this case is an 'e' (euclidean) in ASCII. The other accpetable input is 100 (d for discrete)."""
+        """Returns the degree of parallelism between hyplerplanes. 1 if perfectly parallel, 0 if orthogonal.
+        For two row vectors v, w the parallelism is calculated as: |v*w|/(|v|*|w|).
+        101 in this case is an 'e' (euclidean) in ASCII. The other acceptable input is 100 (d for discrete)."""
         return SCIProwGetParallelism(row1.scip_row, row2.scip_row, orthofunc)
 
     def getRowDualSol(self, Row row):
@@ -3543,6 +3573,7 @@ cdef class Model:
     def presolve(self):
         """Presolve the problem."""
         PY_SCIP_CALL(SCIPpresolve(self._scip))
+        self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
 
     # Benders' decomposition methods
     def initBendersDefault(self, subproblems):
@@ -3606,7 +3637,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPsetupBendersSubproblem(self._scip,
                     _benders[i], self._bestSol.sol, j, SCIP_BENDERSENFOTYPE_CHECK))
                 PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip,
-                    _benders[i], self._bestSol.sol, j, &_infeasible, solvecip, NULL))
+                    _benders[i], self._bestSol.sol, j, &_infeasible, solvecip, NULL))                
 
     def freeBendersSubproblems(self):
         """Calls the free subproblem function for the Benders' decomposition.
@@ -4838,11 +4869,14 @@ cdef class Model:
         """
         if sol == None:
             sol = Solution.create(self._scip, NULL)
+
         sol._checkStage("getSolObjVal")
+
         if original:
             objval = SCIPgetSolOrigObj(self._scip, sol.sol)
         else:
             objval = SCIPgetSolTransObj(self._scip, sol.sol)
+
         return objval
 
     def getSolTime(self, Solution sol):
@@ -4855,13 +4889,24 @@ cdef class Model:
 
     def getObjVal(self, original=True):
         """Retrieve the objective value of value of best solution.
-        Can only be called after solving is completed.
 
         :param original: objective value in original space (Default value = True)
-
         """
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
-            raise Warning("method cannot be called before problem is solved")
+
+        if SCIPgetNSols(self._scip) == 0:
+            if self.getStage() != SCIP_STAGE_SOLVING:
+                raise Warning("Without a solution, method can only be called in stage SOLVING.")
+        else:
+            assert self._bestSol.sol != NULL
+            
+            if SCIPsolIsOriginal(self._bestSol.sol):
+                min_stage_requirement = SCIP_STAGE_PROBLEM
+            else:
+                min_stage_requirement = SCIP_STAGE_TRANSFORMING
+
+            if not self.getStage() >= min_stage_requirement:
+                raise Warning("method cannot be called in stage %i." % self.getStage)
+
         return self.getSolObjVal(self._bestSol, original)
 
     def getSolVal(self, Solution sol, Expr expr):
@@ -4889,8 +4934,11 @@ cdef class Model:
 
         Note: a variable is also an expression
         """
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
-            raise Warning("method cannot be called before problem is solved")
+        stage_check = SCIPgetStage(self._scip) not in [SCIP_STAGE_INIT, SCIP_STAGE_FREE]
+
+        if not stage_check or self._bestSol.sol == NULL and SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
+            raise Warning("Method cannot be called in stage ", self.getStage())
+
         return self.getSolVal(self._bestSol, expr)
     
     def hasPrimalRay(self):
@@ -5442,9 +5490,371 @@ cdef class Model:
         assert isinstance(var, Variable), "The given variable is not a pyvar, but %s" % var.__class__.__name__
         PY_SCIP_CALL(SCIPchgVarBranchPriority(self._scip, var.scip_var, priority))
 
+    def startStrongbranch(self):
+        """Start strong branching. Needs to be called before any strong branching. Must also later end strong branching.
+        TODO: Propagation option has currently been disabled via Python.
+        If propagation is enabled then strong branching is not done on the LP, but on additionally created nodes (has some overhead)"""
+
+        PY_SCIP_CALL(SCIPstartStrongbranch(self._scip, False))
+
+    def endStrongbranch(self):
+        """End strong branching. Needs to be called if startStrongBranching was called previously.
+        Between these calls the user can access all strong branching functionality. """
+
+        PY_SCIP_CALL(SCIPendStrongbranch(self._scip))
+
+    def getVarStrongbranchLast(self, Variable var):
+        """Get the results of the last strong branching call on this variable (potentially was called
+        at another node).
+
+        down - The dual bound of the LP after branching down on the variable
+        up - The dual bound of the LP after branchign up on the variable
+        downvalid - Whether down stores a valid dual bound or is NULL
+        upvalid - Whether up stores a valid dual bound or is NULL
+        solval - The solution value of the variable at the last strong branching call
+        lpobjval - The LP objective value at the time of the last strong branching call
+
+        :param Variable var: variable to get the previous strong branching information from
+        """
+
+        cdef SCIP_Real down
+        cdef SCIP_Real up
+        cdef SCIP_Real solval
+        cdef SCIP_Real lpobjval
+        cdef SCIP_Bool downvalid
+        cdef SCIP_Bool upvalid
+
+        PY_SCIP_CALL(SCIPgetVarStrongbranchLast(self._scip, var.scip_var, &down, &up, &downvalid, &upvalid, &solval, &lpobjval))
+
+        return down, up, downvalid, upvalid, solval, lpobjval
+
+    def getVarStrongbranchNode(self, Variable var):
+        """Get the node number from the last time strong branching was called on the variable
+
+        :param Variable var: variable to get the previous strong branching node from
+        """
+
+        cdef SCIP_Longint node_num
+        node_num = SCIPgetVarStrongbranchNode(self._scip, var.scip_var)
+
+        return node_num
+
+    def getVarStrongbranch(self, Variable var, itlim, idempotent=False, integral=False):
+        """ Strong branches and gets information on column variable.
+
+        :param Variable var: Variable to get strong branching information on
+        :param itlim: LP iteration limit for total strong branching calls
+        :param idempotent: Should SCIP's state remain the same after the call?
+        :param integral: Boolean on whether the variable is currently integer.
+        """
+
+        cdef SCIP_Real down
+        cdef SCIP_Real up
+        cdef SCIP_Bool downvalid
+        cdef SCIP_Bool upvalid
+        cdef SCIP_Bool downinf
+        cdef SCIP_Bool upinf
+        cdef SCIP_Bool downconflict
+        cdef SCIP_Bool upconflict
+        cdef SCIP_Bool lperror
+
+        if integral:
+            PY_SCIP_CALL(SCIPgetVarStrongbranchInt(self._scip, var.scip_var, itlim, idempotent, &down, &up, &downvalid, 
+                                                   &upvalid, &downinf, &upinf, &downconflict, &upconflict, &lperror))
+        else:
+            PY_SCIP_CALL(SCIPgetVarStrongbranchFrac(self._scip, var.scip_var, itlim, idempotent, &down, &up, &downvalid, 
+                                                    &upvalid, &downinf, &upinf, &downconflict, &upconflict, &lperror))
+
+        return down, up, downvalid, upvalid, downinf, upinf, downconflict, upconflict, lperror
+
+    def updateVarPseudocost(self, Variable var, valdelta, objdelta, weight):
+        """Updates the pseudo costs of the given variable and the global pseudo costs after a change of valdelta
+         in the variable's solution value and resulting change of objdelta in the LP's objective value.
+         Update is ignored if objdelts is infinite. Weight is in range (0, 1], and affects how it updates
+         the global weighted sum.
+
+         :param Variable var: Variable whos pseudo cost will be updated
+         :param valdelta: The change in variable value (e.g. the fractional amount removed or added by branching)
+         :param objdelta: The change in objective value of the LP after valdelta change of the variable
+         :param weight: the weight in range (0,1] of how the update affects the stored weighted sum.
+         """
+
+        PY_SCIP_CALL(SCIPupdateVarPseudocost(self._scip, var.scip_var, valdelta, objdelta, weight))
+
+    def getBranchScoreMultiple(self, Variable var, gains):
+        """Calculates the branching score out of the gain predictions for a branching with
+        arbitrary many children.
+
+        :param Variable var: variable to calculate the score for
+        :param gains: list of gains for each child.
+        """
+
+        assert isinstance(gains, list)
+        nchildren = len(gains)
+
+        cdef int _nchildren = nchildren
+        _gains = <SCIP_Real*> malloc(_nchildren * sizeof(SCIP_Real))
+        for i in range(_nchildren):
+            _gains[i] = gains[i]
+
+        score = SCIPgetBranchScoreMultiple(self._scip, var.scip_var, _nchildren, _gains)
+
+        free(_gains)
+
+        return score
+
     def getTreesizeEstimation(self):
         """Get an estimation of the final tree size """
         return SCIPgetTreesizeEstimation(self._scip)
+
+
+    def getBipartiteGraphRepresentation(self, prev_col_features=None, prev_edge_features=None, prev_row_features=None,
+                                        static_only=False, suppress_warnings=False):
+        """This function generates the bipartite graph representation of an LP, which was first used in
+        the following paper:
+        @inproceedings{conf/nips/GasseCFCL19,
+        title={Exact Combinatorial Optimization with Graph Convolutional Neural Networks},
+        author={Gasse, Maxime and Chételat, Didier and Ferroni, Nicola and Charlin, Laurent and Lodi, Andrea},
+        booktitle={Advances in Neural Information Processing Systems 32},
+        year={2019}
+        }
+        The exact features have been modified compared to the original implementation.
+        This function is used mainly in the machine learning community for MIP.
+        A user can only call it during the solving process, when there is an LP object. This means calling it
+        from some user defined plugin on the Python side.
+        An example plugin is a branching rule or an event handler, which is exclusively created to call this function.
+        The user must then make certain to return the appropriate SCIP_RESULT (e.g. DIDNOTRUN)
+
+        :param prev_col_features: The list of column features previously returned by this function
+        :param prev_edge_features: The list of edge features previously returned by this function
+        :param prev_row_features: The list of row features previously returned by this function
+        :param static_only: Whether exclusively static features should be generated
+        :param suppress_warnings: Whether warnings should be suppressed
+        """
+
+        cdef SCIP* scip = self._scip
+        cdef int i, j, k, col_i
+        cdef SCIP_VARTYPE vtype
+        cdef SCIP_Real sim, prod
+
+        # Check if SCIP is in the correct stage
+        if SCIPgetStage(scip) != SCIP_STAGE_SOLVING:
+            raise Warning("This functionality can only been called in SCIP_STAGE SOLVING. The row and column"
+                          "information is then accessible")
+
+        # Generate column features
+        cdef SCIP_COL** cols = SCIPgetLPCols(scip)
+        cdef int ncols = SCIPgetNLPCols(scip)
+
+        if static_only:
+            n_col_features = 5
+            col_feature_map = {"continuous": 0, "binary": 1, "integer": 2, "implicit_integer": 3, "obj_coef": 4}
+        else:
+            n_col_features = 19
+            col_feature_map = {"continuous": 0, "binary": 1, "integer": 2, "implicit_integer": 3, "obj_coef": 4,
+                               "has_lb": 5, "has_ub": 6, "sol_at_lb": 7, "sol_at_ub": 8, "sol_val": 9, "sol_frac": 10,
+                               "red_cost": 11, "basis_lower": 12, "basis_basic": 13, "basis_upper": 14,
+                               "basis_zero": 15, "best_incumbent_val": 16, "avg_incumbent_val": 17, "age": 18}
+
+        if prev_col_features is None:
+            col_features = [[0 for _ in range(n_col_features)] for _ in range(ncols)]
+        else:
+            assert len(prev_col_features) > 0, "Previous column features is empty"
+            col_features = prev_col_features
+            if len(prev_col_features) != ncols:
+                if not suppress_warnings:
+                    raise Warning(f"The number of columns has changed. Previous column data being ignored")
+                else:
+                    col_features = [[0 for _ in range(n_col_features)] for _ in range(ncols)]
+                    prev_col_features = None
+            if len(prev_col_features[0]) != n_col_features:
+                raise Warning(f"Dimension mismatch in provided previous features and new features:"
+                              f"{len(prev_col_features[0])} != {n_col_features}")
+
+        cdef SCIP_SOL* sol = SCIPgetBestSol(scip)
+        cdef SCIP_VAR* var
+        cdef SCIP_Real lb, ub, solval
+        cdef SCIP_BASESTAT basis_status
+        for i in range(ncols):
+            col_i = SCIPcolGetLPPos(cols[i])
+            var = SCIPcolGetVar(cols[i])
+
+            lb = SCIPcolGetLb(cols[i])
+            ub = SCIPcolGetUb(cols[i])
+            solval = SCIPcolGetPrimsol(cols[i])
+
+            # Collect the static features first (don't need to changed if previous features are passed)
+            if prev_col_features is None:
+                # Variable types
+                vtype = SCIPvarGetType(var)
+                if vtype == SCIP_VARTYPE_BINARY:
+                    col_features[col_i][col_feature_map["binary"]] = 1
+                elif vtype == SCIP_VARTYPE_INTEGER:
+                    col_features[col_i][col_feature_map["integer"]] = 1
+                elif vtype == SCIP_VARTYPE_CONTINUOUS:
+                    col_features[col_i][col_feature_map["continuous"]] = 1
+                elif vtype == SCIP_VARTYPE_IMPLINT:
+                    col_features[col_i][col_feature_map["implicit_integer"]] = 1
+                # Objective coefficient
+                col_features[col_i][col_feature_map["obj_coef"]] = SCIPcolGetObj(cols[i])
+
+            # Collect the dynamic features
+            if not static_only:
+                # Lower bound
+                if not SCIPisInfinity(scip, abs(lb)):
+                    col_features[col_i][col_feature_map["has_lb"]] = 1
+
+                # Upper bound
+                if not SCIPisInfinity(scip, abs(ub)):
+                    col_features[col_i][col_feature_map["has_ub"]] = 1
+
+                # Basis status
+                basis_status = SCIPcolGetBasisStatus(cols[i])
+                if basis_status == SCIP_BASESTAT_LOWER:
+                    col_features[col_i][col_feature_map["basis_lower"]] = 1
+                elif basis_status == SCIP_BASESTAT_BASIC:
+                    col_features[col_i][col_feature_map["basis_basic"]] = 1
+                elif basis_status == SCIP_BASESTAT_UPPER:
+                    col_features[col_i][col_feature_map["basis_upper"]] = 1
+                elif basis_status == SCIP_BASESTAT_ZERO:
+                    col_features[col_i][col_feature_map["basis_zero"]] = 1
+
+                # Reduced cost
+                col_features[col_i][col_feature_map["red_cost"]] = SCIPgetColRedcost(scip, cols[i])
+
+                # Age
+                col_features[col_i][col_feature_map["age"]] = SCIPcolGetAge(cols[i])
+
+                # LP solution value
+                col_features[col_i][col_feature_map["sol_val"]] = solval
+                col_features[col_i][col_feature_map["sol_frac"]] = SCIPfeasFrac(scip, solval)
+                col_features[col_i][col_feature_map["sol_at_lb"]] = int(SCIPisEQ(scip, solval, lb))
+                col_features[col_i][col_feature_map["sol_at_ub"]] = int(SCIPisEQ(scip, solval, ub))
+
+                # Incumbent solution value
+                if sol is NULL:
+                    col_features[col_i][col_feature_map["best_incumbent_val"]] = None
+                    col_features[col_i][col_feature_map["avg_incumbent_val"]] = None
+                else:
+                    col_features[col_i][col_feature_map["best_incumbent_val"]] = SCIPgetSolVal(scip, sol, var)
+                    col_features[col_i][col_feature_map["avg_incumbent_val"]] = SCIPvarGetAvgSol(var)
+
+        # Generate row features
+        cdef int nrows = SCIPgetNLPRows(scip)
+        cdef SCIP_ROW** rows = SCIPgetLPRows(scip)
+
+        if static_only:
+            n_row_features = 6
+            row_feature_map = {"has_lhs": 0, "has_rhs": 1, "n_non_zeros": 2, "obj_cosine": 3, "bias": 4, "norm": 5}
+        else:
+            n_row_features = 14
+            row_feature_map = {"has_lhs": 0, "has_rhs": 1, "n_non_zeros": 2, "obj_cosine": 3, "bias": 4, "norm": 5,
+                               "sol_at_lhs": 6, "sol_at_rhs": 7, "dual_sol": 8, "age": 9,
+                               "basis_lower": 10, "basis_basic": 11, "basis_upper": 12, "basis_zero": 13}
+
+        if prev_row_features is None:
+            row_features = [[0 for _ in range(n_row_features)] for _ in range(nrows)]
+        else:
+            assert len(prev_row_features) > 0, "Previous row features is empty"
+            row_features = prev_row_features
+            if len(prev_row_features) != nrows:
+                if not suppress_warnings:
+                    raise Warning(f"The number of rows has changed. Previous row data being ignored")
+                else:
+                    row_features = [[0 for _ in range(n_row_features)] for _ in range(nrows)]
+                    prev_row_features = None
+            if len(prev_row_features[0]) != n_row_features:
+                raise Warning(f"Dimension mismatch in provided previous features and new features:"
+                              f"{len(prev_row_features[0])} != {n_row_features}")
+
+        cdef int nnzrs = 0
+        cdef SCIP_Real lhs, rhs, cst
+        for i in range(nrows):
+
+            # lhs <= activity + cst <= rhs
+            lhs = SCIProwGetLhs(rows[i])
+            rhs = SCIProwGetRhs(rows[i])
+            cst = SCIProwGetConstant(rows[i])
+            activity = SCIPgetRowLPActivity(scip, rows[i])
+
+            if prev_row_features is None:
+                # number of coefficients
+                row_features[i][row_feature_map["n_non_zeros"]] = SCIProwGetNLPNonz(rows[i])
+                nnzrs += row_features[i][row_feature_map["n_non_zeros"]]
+
+                # left-hand-side
+                if not SCIPisInfinity(scip, abs(lhs)):
+                    row_features[i][row_feature_map["has_lhs"]] = 1
+
+                # right-hand-side
+                if not SCIPisInfinity(scip, abs(rhs)):
+                    row_features[i][row_feature_map["has_rhs"]] = 1
+
+                # bias
+                row_features[i][row_feature_map["bias"]] = cst
+
+                # Objective cosine similarity
+                row_features[i][row_feature_map["obj_cosine"]] = SCIPgetRowObjParallelism(scip, rows[i])
+
+                # L2 norm
+                row_features[i][row_feature_map["norm"]] = SCIProwGetNorm(rows[i])
+
+            if not static_only:
+
+                # Dual solution
+                row_features[i][row_feature_map["dual_sol"]] = SCIProwGetDualsol(rows[i])
+
+                # Basis status
+                basis_status = SCIProwGetBasisStatus(rows[i])
+                if basis_status == SCIP_BASESTAT_LOWER:
+                    row_features[i][row_feature_map["basis_lower"]] = 1
+                elif basis_status == SCIP_BASESTAT_BASIC:
+                    row_features[i][row_feature_map["basis_basic"]] = 1
+                elif basis_status == SCIP_BASESTAT_UPPER:
+                    row_features[i][row_feature_map["basis_upper"]] = 1
+                elif basis_status == SCIP_BASESTAT_ZERO:
+                    row_features[i][row_feature_map["basis_zero"]] = 1
+
+                # Age
+                row_features[i][row_feature_map["age"]] = SCIProwGetAge(rows[i])
+
+                # Is tight
+                row_features[i][row_feature_map["sol_at_lhs"]] = int(SCIPisEQ(scip, activity, lhs))
+                row_features[i][row_feature_map["sol_at_rhs"]] = int(SCIPisEQ(scip, activity, rhs))
+
+        # Generate edge (coefficient) features
+        cdef SCIP_COL** row_cols
+        cdef SCIP_Real * row_vals
+        n_edge_features = 3
+        edge_feature_map = {"col_idx": 0, "row_idx": 1, "coef": 2}
+        if prev_edge_features is None:
+            edge_features = [[0 for _ in range(n_edge_features)] for _ in range(nnzrs)]
+            j = 0
+            for i in range(nrows):
+                # coefficient indexes and values
+                row_cols = SCIProwGetCols(rows[i])
+                row_vals = SCIProwGetVals(rows[i])
+                for k in range(row_features[i][row_feature_map["n_non_zeros"]]):
+                    edge_features[j][edge_feature_map["col_idx"]] = SCIPcolGetLPPos(row_cols[k])
+                    edge_features[j][edge_feature_map["row_idx"]] = i
+                    edge_features[j][edge_feature_map["coef"]] = row_vals[k]
+                    j += 1
+        else:
+            assert len(prev_edge_features) > 0, "Previous edge features is empty"
+            edge_features = prev_edge_features
+            if len(prev_edge_features) != nnzrs:
+                if not suppress_warnings:
+                    raise Warning(f"The number of coefficients in the LP has changed. Previous edge data being ignored")
+                else:
+                    edge_features = [[0 for _ in range(3)] for _ in range(nnzrs)]
+                    prev_edge_features = None
+            if len(prev_edge_features[0]) != 3:
+                raise Warning(f"Dimension mismatch in provided previous features and new features:"
+                              f"{len(prev_edge_features[0])} != 3")
+
+
+        return (col_features, edge_features, row_features,
+                {"col": col_feature_map, "edge": edge_feature_map, "row": row_feature_map})
 
 @dataclass
 class Statistics:
