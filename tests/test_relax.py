@@ -67,11 +67,11 @@ def test_empty_relaxator():
 def test_relax():
     model = random_MIP_1()
 
-    x = model.addVariable(vtype="B")
+    x = model.addVar(vtype="B")
 
     model.relax()
 
-    assert x.lb() == 0 and x.ub() == 1
+    assert x.getLbGlobal() == 0 and x.getUbGlobal() == 1
 
     for var in model.getVars():
-        assert var.getType() == "C"
+        assert var.vtype() == "CONTINUOUS"
