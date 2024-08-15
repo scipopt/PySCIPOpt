@@ -5151,97 +5151,6 @@ cdef class Model:
             PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
         
         locale.setlocale(locale.LC_NUMERIC,user_locale)
-    
-    def readStatistics(self, filename):
-        """
-        Given a .stats file of a solved model, reads it and returns an instance of the Statistics class
-        holding some statistics.
-
-        Keyword arguments:
-        filename -- name of the input file
-        """
-        result = {}
-        file = open(filename)
-        data = file.readlines()
-        
-        assert "problem is solved" in data[0], "readStatistics can only be called if the problem was solved"
-        available_stats = ["Total Time", "solving", "presolving", "reading", "copying",
-                        "Problem name", "Variables", "Constraints", "number of runs", 
-                        "nodes", "Solutions found", "First Solution", "Primal Bound",
-                        "Dual Bound", "Gap", "primal-dual"]
-
-        seen_cons = 0
-        for i, line in enumerate(data):
-            split_line = line.split(":")
-            split_line[1] = split_line[1][:-1] # removing \n
-            stat_name = split_line[0].strip()
-
-            if seen_cons == 2 and stat_name == "Constraints":
-                continue
-
-            if stat_name in available_stats:
-                cur_stat       = split_line[0].strip()
-                relevant_value = split_line[1].strip()
-
-                if stat_name == "Variables":
-                    relevant_value = relevant_value[:-1] # removing ")"
-                    var_stats = {}
-                    split_var = relevant_value.split("(")
-                    var_stats["total"] = int(split_var[0])
-                    split_var = split_var[1].split(",")
-
-                    for var_type in split_var:
-                        split_result = var_type.strip().split(" ")
-                        var_stats[split_result[1]] = int(split_result[0])
-                    
-                    if "Original" in data[i-2]:
-                        result["Variables"] = var_stats
-                    else:
-                        result["Presolved Variables"] = var_stats
-                    
-                    continue
-
-                if stat_name == "Constraints":
-                    seen_cons += 1
-                    con_stats = {}
-                    split_con = relevant_value.split(",")
-                    for con_type in split_con:
-                        split_result = con_type.strip().split(" ")
-                        con_stats[split_result[1]] = int(split_result[0])
-
-                    if "Original" in data[i-3]:
-                        result["Constraints"] = con_stats
-                    else:
-                        result["Presolved Constraints"] = con_stats
-                    continue
-                
-                relevant_value = relevant_value.split(" ")[0]
-                if stat_name == "Problem name":
-                    if "Original" in data[i-1]:
-                        result["Problem name"] = relevant_value
-                    else:
-                        result["Presolved Problem name"] = relevant_value
-                    continue
-                
-                if stat_name == "Gap":
-                    result["Gap (%)"] = float(relevant_value[:-1])
-                    continue 
-
-                if _is_number(relevant_value):
-                    result[cur_stat] = float(relevant_value)
-                else: # it's a string
-                    result[cur_stat] = relevant_value                    
-
-        # changing keys to pythonic variable names
-        treated_keys = {"Total Time": "total_time", "solving":"solving_time", "presolving":"presolving_time", "reading":"reading_time", "copying":"copying_time", 
-                        "Problem name": "problem_name", "Presolved Problem name": "presolved_problem_name", "Variables":"_variables", 
-                        "Presolved Variables":"_presolved_variables", "Constraints": "_constraints", "Presolved Constraints":"_presolved_constraints",
-                        "number of runs": "n_runs", "nodes":"n_nodes", "Solutions found": "n_solutions_found", "First Solution": "first_solution", 
-                        "Primal Bound":"primal_bound", "Dual Bound":"dual_bound", "Gap (%)":"gap", "primal-dual":"primal_dual_integral"}
-        treated_result = dict((treated_keys[key], value) for (key, value) in result.items())
-        
-        stats = Statistics(**treated_result)
-        return stats
 
     def getNLPs(self):
         """gets total number of LPs solved so far"""
@@ -5952,6 +5861,8 @@ class Statistics:
     """
     Attributes
     ----------
+    status: str
+        Status of the problem (optimal solution found, infeasible, etc.)
     total_time : float
         Total time since model was created
     solving_time: float
@@ -6010,6 +5921,7 @@ class Statistics:
         number of initial constraints in the model
     """
 
+    status: str
     total_time: float
     solving_time: float
     presolving_time: float
@@ -6021,14 +5933,14 @@ class Statistics:
     _presolved_variables: dict   # Dictionary with number of presolved variables by type
     _constraints: dict           # Dictionary with number of constraints by type
     _presolved_constraints: dict # Dictionary with number of presolved constraints by type
-    n_runs: int
-    n_nodes: int
-    n_solutions_found: int
-    first_solution: float    
-    primal_bound: float
-    dual_bound: float
-    gap: float
-    primal_dual_integral: float
+    n_runs: int = None
+    n_nodes: int = None
+    n_solutions_found: int = -1
+    first_solution: float = None   
+    primal_bound: float = None
+    dual_bound: float = None
+    gap: float = None
+    primal_dual_integral: float = None
 
     # unpacking the _variables, _presolved_variables, _constraints
     # _presolved_constraints dictionaries
@@ -6088,6 +6000,117 @@ class Statistics:
     def n_presolved_maximal_cons(self):
         return self._presolved_constraints["maximal"]
 
+def readStatistics(filename):
+        """
+        Given a .stats file of a solved model, reads it and returns an instance of the Statistics class
+        holding some statistics.
+
+        Keyword arguments:
+        filename -- name of the input file
+        """
+        result = {}
+        file = open(filename)
+        data = file.readlines()
+        
+        if "optimal solution found" in data[0]:
+            result["status"] = "optimal"
+        elif "infeasible" in data[0]:
+            result["status"] = "infeasible"
+        elif "unbounded" in data[0]:
+            result["status"] = "unbounded"
+        elif "limit reached" in data[0]:
+            result["status"] = "user_interrupt"
+        else:
+            raise "readStatistics can only be called if the problem was solved"
+
+        available_stats = ["Total Time", "solving", "presolving", "reading", "copying",
+                "Problem name", "Variables", "Constraints", "number of runs", 
+                "nodes", "Solutions found"]
+            
+        if result["status"] in ["optimal", "user_interrupt"]:
+            available_stats.extend(["First Solution", "Primal Bound", "Dual Bound", "Gap", "primal-dual"])
+
+        seen_cons = 0
+        for i, line in enumerate(data):
+            split_line = line.split(":")
+            split_line[1] = split_line[1][:-1] # removing \n
+            stat_name = split_line[0].strip()
+
+            if seen_cons == 2 and stat_name == "Constraints":
+                continue
+
+            if stat_name in available_stats:
+                relevant_value = split_line[1].strip()
+
+                if stat_name == "Variables":
+                    relevant_value = relevant_value[:-1] # removing ")"
+                    var_stats = {}
+                    split_var = relevant_value.split("(")
+                    var_stats["total"] = int(split_var[0])
+                    split_var = split_var[1].split(",")
+
+                    for var_type in split_var:
+                        split_result = var_type.strip().split(" ")
+                        var_stats[split_result[1]] = int(split_result[0])
+                    
+                    if "Original" in data[i-2]:
+                        result["Variables"] = var_stats
+                    else:
+                        result["Presolved Variables"] = var_stats
+                    
+                    continue
+
+                if stat_name == "Constraints":
+                    seen_cons += 1
+                    con_stats = {}
+                    split_con = relevant_value.split(",")
+                    for con_type in split_con:
+                        split_result = con_type.strip().split(" ")
+                        con_stats[split_result[1]] = int(split_result[0])
+
+                    if "Original" in data[i-3]:
+                        result["Constraints"] = con_stats
+                    else:
+                        result["Presolved Constraints"] = con_stats
+                    continue
+                
+                relevant_value = relevant_value.split(" ")[0]
+                if stat_name == "Problem name":
+                    if "Original" in data[i-1]:
+                        result["Problem name"] = relevant_value
+                    else:
+                        result["Presolved Problem name"] = relevant_value
+                    continue
+                
+                if stat_name == "Gap":
+                    relevant_value = relevant_value[:-1] # removing %
+
+                if _is_number(relevant_value):
+                    result[stat_name] = float(relevant_value)
+                    if stat_name == "Solutions found" and result[stat_name] == 0:
+                        break
+
+                else: # it's a string
+                    result[stat_name] = relevant_value                    
+
+        # changing keys to pythonic variable names
+        treated_keys = {"status": "status", "Total Time": "total_time", "solving":"solving_time", "presolving":"presolving_time", "reading":"reading_time", 
+                        "copying":"copying_time", "Problem name": "problem_name", "Presolved Problem name": "presolved_problem_name", "Variables":"_variables", 
+                        "Presolved Variables":"_presolved_variables", "Constraints": "_constraints", "Presolved Constraints":"_presolved_constraints",
+                        "number of runs": "n_runs", "nodes":"n_nodes", "Solutions found": "n_solutions_found"}
+
+        if result["status"] in ["optimal", "user_interrupt"]:
+            if result["Solutions found"] > 0:
+                treated_keys["First Solution"]  = "first_solution"
+                treated_keys["Primal Bound"]    = "primal_bound"
+                treated_keys["Dual Bound"]      = "dual_bound"
+                treated_keys["Gap"]         = "gap"
+                treated_keys["primal-dual"]     = "primal_dual_integral"
+        treated_result = dict((treated_keys[key], value) for (key, value) in result.items())
+        
+        stats = Statistics(**treated_result)
+        return stats
+            
 # debugging memory management
 def is_memory_freed():
     return BMSgetMemoryUsed() == 0
