@@ -1,6 +1,7 @@
 from pyscipopt import Model, SCIP_RESULT
 from pyscipopt.scip import Relax
 import pytest 
+from helpers.utils import random_MIP_1
 
 calls = []
 
@@ -14,7 +15,7 @@ class SoncRelax(Relax):
         }
 
 
-def test_relax():
+def test_relaxator():
     m = Model()
     m.hideOutput()
 
@@ -62,3 +63,15 @@ def test_empty_relaxator():
 
     with pytest.raises(Exception):
         m.optimize()
+
+def test_relax():
+    model = random_MIP_1()
+
+    x = model.addVariable(vtype="B")
+
+    model.relax()
+
+    assert x.lb() == 0 and x.ub() == 1
+
+    for var in model.getVars():
+        assert var.getType() == "C"
