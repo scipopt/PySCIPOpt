@@ -10,6 +10,7 @@ This section contains official tutorials (examples) for PySCIPOpt.
   :caption: Contents:
 
   model
+  expressions
   readwrite
   vartypes
   constypes
