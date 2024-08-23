@@ -1,0 +1,4 @@
+sphinx
+sphinx-rtd-theme
+piccolo-theme
+sphinxcontrib-bibtex
