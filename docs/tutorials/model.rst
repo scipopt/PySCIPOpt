@@ -15,7 +15,7 @@ simply import it from the package directly.
 .. contents:: Contents
 
 
-Create a Model via Variables and Constraints
+Create a Model, Variables, and Constraints
 ==============================================
 
 While an empty Model is still something, we ultimately want a non-empty optimization problem. Let's
