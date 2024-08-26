@@ -2,8 +2,9 @@
 Tutorials (Examples)
 #####################
 
-
-This section contains official tutorials (examples) for PySCIPOpt.
+This section contains official tutorials (examples) for PySCIPOpt. Please keep in mind
+that PySCIPOpt's primary purpose is as a wrapper for SCIP. Therefore, for sometimes
+more detailed information see `this page <https://www.scipopt.org/doc/html/index.php>`_.
 
 .. toctree::
   :maxdepth: 1
@@ -15,7 +16,7 @@ This section contains official tutorials (examples) for PySCIPOpt.
   vartypes
   constypes
   branchrule
-  strongbranch
   cutselector
   separator
   heuristic
+  lazycons

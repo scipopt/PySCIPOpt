@@ -123,13 +123,76 @@ The variable type can be queried from the Variable object.
 Variable Information
 =======================
 
-- get objective coefficient
-- get LP sol
-- egt AvgSol
-- Explain that one should use getVal to get the solution value in the primal
+In this subsection we'll walk through some functionality that is possible with the variable
+objects.
 
-What is a Column?
-==================
+First, we can easily obtain the objective coefficient of a variable.
 
-- explain what a column is
-- explain how it differs
+.. code-block:: python
+
+  scip.setObjective(2 * x)
+  assert x.getObj() == 2.0
+
+Assuming we have a solution to our problem, we can obtain the variable solution value
+in the current best solution with the command:
+
+.. code-block:: python
+
+  var_val = scip.getVal(x)
+
+An alternate way to obtain the variable solution value (of whatever solution you wish) is
+to query the solution object with the SCIP expression (potentially just the variable)
+
+.. code-block:: python
+
+  if scip.getNSols() >= 1:
+      scip_sol = scip.getBestSol()
+      var_val = scip_sol[x]
+
+We can also obtain the LP solution of a variable. This would be used when you have included your own
+plugin, and are querying specific information for a given LP relaxation at some node. This is not the
+variable solution value in the final optimal solution!
+
+.. code-block:: python
+
+  lp_val = x.getLPSol()
+
+The LP solution value brings up an interesting feature of SCIP. Is the variable even in the LP?
+When you solve an optimization problm with SCIP, the problem is first transformed. This process is
+called presolve, and is done to speed up the subsequent solving process. Therefore a variable
+that was originally created may have been transformed entirely, or may have just been removed
+from the transformed problem as it is redundant. The variable may also not exist because you
+are currently doing some pricing, and the LP only contains a subset of the variables. The summary is:
+It should not be taken for granted that your originally created variable is in an LP.
+This can be checked with the following code:
+
+.. code-block:: python
+
+  is_in_lp = x.isInLP()
+  if is_in_lp:
+      print("Variable is in LP!")
+  else:
+      print("Variable is not in LP!")
+
+Now to some additional confusion. When you're solving an LP do you actually want a variable object?
+The variable object contains a lot of unnecessary information that is not needed to strictly
+solve the LP. This information will also have to be sent to the LP solver because SCIP is a plugin
+based solver and can use many different LP solvers. Therefore, if the variable is in the LP,
+it is represented by a column. The column object is the object that is actually used when solving the LP.
+The column for a variable can be found with the following code:
+
+.. code-block:: python
+
+  col = x.getCol()
+
+Information that is LP specific can be queried by the column directly. This includes the
+objective value coefficient, the LP solution value, lower and upper bounds,
+and of course the variable that it represents.
+
+.. code-block::
+
+  obj_coeff = col.getObjCoeff()
+  lp_val = col.getPrimsol()
+  lb = col.getLb()
+  ub = col.getUb()
+  x = col.getVar()
