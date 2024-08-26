@@ -49,6 +49,18 @@ which we have represented by ``sorted_cuts``, return ``nselectedcuts`` that resu
 ``SCIP_RESULT`` is there to indicate whether the algorithm was successful. See the
 appropriate documentation for more potential result code.
 
+To include a cut selector one would need to do something like the following code:
+
+.. code-block:: python
+
+  cutsel = DummyCutsel()
+  scip.includeCutsel(cutsel, 'name', 'description', 5000000)
+
+The final argument of the ``includeCutsel`` function in the example above was the
+priority. If the priority is higher than all other cut selectors then it will be called
+first. In the case of some failure or non-success return code, then the second highest
+priority cut selector is called and so on.
+
 Example Cut Selector
 ======================
 
