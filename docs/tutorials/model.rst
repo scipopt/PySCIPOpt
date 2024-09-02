@@ -71,7 +71,7 @@ optimal objective value, and the variable solution values in the optimal solutio
       print(f"Variable {scip_var.name} has value {scip.getVal(scip_var)})
 
 Set / Get a Parameter
-===============
+=====================
 
 SCIP has an absolutely giant amount of parameters (see `here <https://www.scipopt.org/doc/html/PARAMETERS.php>`_).
 There is one easily accessible function for setting individual parameters. For example,

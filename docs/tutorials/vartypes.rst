@@ -189,7 +189,7 @@ Information that is LP specific can be queried by the column directly. This incl
 objective value coefficient, the LP solution value, lower and upper bounds,
 and of course the variable that it represents.
 
-.. code-block::
+.. code-block:: python
 
   obj_coeff = col.getObjCoeff()
   lp_val = col.getPrimsol()
