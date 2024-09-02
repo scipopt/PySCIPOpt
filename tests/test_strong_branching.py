@@ -131,6 +131,11 @@ class FeatureSelectorBranchingRule(Branchrule):
 
             avg_sol = cols[0].getVar().getAvgSol()
 
+            # While branching let's check some other functionality
+            branch_cands, _, _, _, npriocands, _ = self.scip.getLPBranchCands()
+            may_round_up = self.scip.varMayRound(branch_cands[0], direction="up")
+
+
         return {"result": SCIP_RESULT.DIDNOTRUN}
 
 
