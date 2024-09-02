@@ -1,6 +1,6 @@
-################
-Variable Intro
-################
+####################
+Variable Information
+####################
 
 In this overview of variables in PySCIPOpt we'll walk through best
 practices for modelling them and the various information that they

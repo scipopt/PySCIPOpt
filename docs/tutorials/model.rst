@@ -1,6 +1,6 @@
-####################
-Model Introduction
-####################
+#####################################################################
+Introduction (Model Object, Solution Information, Parameter Settings)
+#####################################################################
 
 
 The ``Model`` object is the central Python object that you will interact with. To use the ``Model`` object
@@ -56,7 +56,7 @@ on how to create more variables see :doc:`this page </tutorials/vartypes>`.
   :doc:`this page </tutorials/expressions>` for more information on this.
 
 Query the Model for Solution Information
-==============================================
+=========================================
 
 Now that we have successfully optimized our model, let's see some examples
 of what information we can query. For example, the solving time, number of nodes,
@@ -69,6 +69,45 @@ optimal objective value, and the variable solution values in the optimal solutio
   obj_val = scip.getObjVal()
   for scip_var in [x, y, z]:
       print(f"Variable {scip_var.name} has value {scip.getVal(scip_var)})
+
+Set / Get a Parameter
+===============
+
+SCIP has an absolutely giant amount of parameters (see `here <https://www.scipopt.org/doc/html/PARAMETERS.php>`_).
+There is one easily accessible function for setting individual parameters. For example,
+if we want to set a time limit of 20s on the solving process then we would execute the following code:
+
+.. code-block:: python
+
+  scip.setParam("limits/time", 20)
+
+To get the value of a parameter there is also one easily accessible function. For instance, we could
+now check if the time limit has been set correctly with the following code.
+
+.. code-block:: python
+
+  time_limit = scip.getParam("limits/time")
+
+A user can set multiple parameters at once by creating a dictionary with keys corresponding to the
+parameter names and values corresponding to the desired parameter values.
+
+.. code-block:: python
+
+  param_dict = {"limits/time": 20}
+  scip.setParams(param_dict)
+
+To get the values of all parameters in a dictionary use the following command:
+
+.. code-block:: python
+
+  param_dict = scip.getParams()
+
+Finally, if you have a ``.set`` file (common for using SCIP via the command-line) that contains
+all the parameter values that you wish to set, then one can use the command:
+
+.. code-block:: python
+
+  scip.readParams(path_to_file)
 
 Copy a SCIP Model
 ==================

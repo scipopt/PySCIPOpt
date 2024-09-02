@@ -1,6 +1,6 @@
-####################
-Cut Selector Intro
-####################
+############
+Cut Selector
+############
 
 For the following let us assume that a Model object is available, which is created as follows:
 

@@ -1,6 +1,6 @@
-############################
-Non-Linear Expressions Intro
-############################
+#######################
+Non-Linear Expressions
+#######################
 
 
 One of the big advantages of SCIP is that it handles arbitrary constraints.

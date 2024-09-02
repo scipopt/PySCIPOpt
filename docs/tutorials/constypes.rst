@@ -1,6 +1,6 @@
-#######################
-Constraint Type Intro
-#######################
+###################
+Constraints in SCIP
+###################
 
 In this overview of constraints in PySCIPOpt we'll walk through best
 practices for modelling them and the various information that they
@@ -152,3 +152,25 @@ or incredibly inefficient to enforce otherwise. An example of such a constraint 
 is presented in the lazy constraint tutorial for modelling the subtour elimination
 constraints :doc:`here </tutorials/lazycons>`
 
+Quicksum
+========
+
+It is very common that when constructing constraints one wants to use the inbuilt ``sum`` function
+in Python. For example, consider the common scenario where we have a set of binary variables.
+
+.. code-block:: python
+
+  x = [scip.addVar(vtype='B', name=f"x_{i}") for i in range(1000)]
+
+A standard constraint in this example may be that exactly one binary variable can be active.
+To sum these varaibles we recommend using the custom ``quicksum`` function, as it avoids
+intermediate data structure and adds terms inplace. For example:
+
+.. code-block:: python
+
+  scip.addCons(quicksum(x[i] for i in range(1000)) == 1, name="sum_cons")
+
+.. note:: While this is often unnecessary for smaller models, for larger models it can have a substantial
+  improvement on time spent in model construction.
+
+.. note:: For ``prod`` there also exists an equivalent ``quickprod`` function.
