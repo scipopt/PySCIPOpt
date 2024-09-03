@@ -2,9 +2,9 @@
 Why SCIP?
 ###########
 
-.. note:: This is written from the perspective user that is primarily MILP focused.
+.. note:: This page is written for a user that is primarily MILP focused.
 
-This is an important question, and one that is in general answered by performance claims.
+"Why SCIP?" is an important question, and one that is in general answered by performance claims.
 To be clear, SCIP is performant. It is one of the leading open-source solvers.
 It manages to be competitive on a huge array of benchmarks, which include but are not limited to,
 mixed-integer linear programming, mixed-integer quadratic programming, mixed-integer semidefinite
@@ -13,53 +13,92 @@ This page will attempt to answer the question "Why SCIP?" without relying on a p
 It will convey the scope of SCIP, how the general structure of SCIP works,
 and the natural advantages (also weaknesses) SCIP has compared to other mixed-integer optimizers.
 
-So, why SCIP? SCIP (Solving Constraint Integer Programs) is likely much more general than you expect.
-It also likely provides easy to use functionality that you didn't know was possible to freely access.
+So, why SCIP? SCIP (Solving Constraint Integer Programs). The two main points are that SCIP is likely
+much more general than you expect, and it also likely provides easy to use functionality
+that you didn't know was possible.
 
-Combining Integer Programming and Constraint Programming
-=========================================================
+Differences to Standard MILP Solvers
+====================================
 
-SCIP (Solving Constraint Integer Programs) combines techniques from both the integer programming and
-constraint programming communities. For both communities, a common solving technique is
-successively dividing the problem into smaller subproblems and solving those subproblems recursively, i.e., branching.
-The communities differ however in how they handle those subproblems, with the MIP community using LP relaxations and
-cutting planes to provide dual bounds, and the CP community using propagation to tighten variable domains.
-Why is this relevant? It is to emphasise that SCIP is more than a branch-and-cut solver.
-
-Differences to Traditional Branch-and-Cut
-============================================
-Let's expand on this generality of SCIP.
-Those from the MIP community are familiar with branch-and-cut based solvers. The algorithm is the backbone of all
-modern solvers, and in general are associated with the following problem (we'll stick to linear for now):
+SCIP (Solving Constraint Integer Programs) is a constraint based solver, it is not a pure MILP solver.
+This claim is thrown around frequently, but it is difficult to actually understand the difference and
+the positive + negative outcomes this has on the solving process.
+Let's consider a stock standard MILP definition.
 
 .. math::
 
-    &\text{min} & &\mathbf{c}^{t}x \\
+    &\text{min} & \quad &\mathbf{c}^{t}x \\
     &\text{s.t.} & & \mathbf{A}x \leq \mathbf{b} \\
     & & & x \in \mathbb{Z}^{|\mathcal{J}|} \times \mathbb{R}^{[n] / \mathcal{J}}, \quad \mathcal{J} \subseteq [n]
 
-This is the standard formulation all MIP practitioners are aware of. How would a solver go about solving
-this problem? First the solver would perform some presolve. This is maybe the most impactful performance
-choice of the solving process. The formulation provided is altered in some way to make the subsequent solving process
-faster. This is why in SCIP you have the ``transformed`` problem and the ``original`` problem. This is not
-unique SCIP however, it is just that information is more open when using SCIP.
+When looking at such a problem, one probably thinks of matrices, e.g., the coefficient matrix :math:`\mathbf{A}`.
+When thinking of the solving process, one probably then thinks of adding cuts and branching. Adding cuts could then
+be represented by adding additional rows to the problem, and branching represented by creating two subproblems
+with different variable bounds (the bounds also maybe represented as rows). SCIP's design is inherently different
+from such an approach. SCIP considers each constraint individually as opposed to taking such a matrix view.
 
-The solver would then solve the root node LP (linear programming) relaxation. The LP relaxation is obtained by
-simply removing the integrality requirement on the problem above:
+What are the ramifications of this choice? A clear negative ramification is that some matrix operations, many of which
+are important for quick MILP solving, are less clear on how they'd be implemented and are likely to be less efficient.
+A clear positive ramification is that now the jump to handling non-linear constraints is easier.
+If there is no restriction to such a matrix representation, and each constraint is handled individually,
+then why can the constraints not actually be arbitrary? That's exactly one of the core strengths of SCIP!
+This can be seen in the :doc:` lazy constraint example </tutorials/lazycons>`, where a single constraint
+is constructed that will ultimately create up to exponentially many additional linear constraints
+dynamically in the solving process. To emphasise this point further, one of the most common
+constraint handlers in SCIP is the integrality constraint handler.
+It is responsible for telling the solver how to enforce integrality for integer variables with currently
+fractional solution. That is, a constraint handler enforces integrality, and therefore it can be transparently
+decided when to enforce integrality during the solving process.
 
-.. math::
+Most probably, when reading the above, an assumption has been made that when solving MILPs one needs access
+to an LP solver for solving the LP relaxations. SCIP is unusual here on two points. Firstly, SCIP
+does not have a built-in LP solver, but rather it has an LP interfaces that works with a huge variety of
+other external LP solvers. This has the huge benefit of separating the reliance on a single LP solver,
+and allows user to change the underlying LP solver if they wish. This also has a huge downside however,
+which is that communication with the LP solver is now more computationally costly, and some information from the
+LP solver may be inaccessible. The second unusual point is that SCIP does not need an LP solver to
+prove globally optimal solutions. There is an entire field of study parallel to MILP, namely CP
+(constraint programming). In CP, the problems are solved using propagation to tighten variable domains,
+and the splitting of the original problem into subproblems, i.e., branching.
+That is not to say that one should avoid LPs when solving MILPs. In the vast majority of cases
+the use of LP relaxations is extremely important for good computational performance.
 
-    &\text{min} & &\mathbf{c}^{t}x \\
-    &\text{s.t.} & & \mathbf{A}x \leq \mathbf{b} \\
-    & & & x \in \mathbb{R}^{[n]}
+Now on to the final assumption. Above we mentioned that SCIP does not need to rely on an LP solver, and that
+it can use techniques from the CP community. What if we wanted to use another relaxation technique however?
+For instance some convex relaxation, but necessarily a linear relaxation? This can be done in SCIP!
+The functionality exists to write your own relaxator, and decide on what the relaxation of the problem should
+look like at each node of the tree.
 
-The solver would then generate cuts, add some cuts, resolve the LP, and repeat this process until some termination
-condition is hit. Let's pause here and discuss some probable assumptions that were made from a programming perspective.
-
-
-
-
-- Has been used for a long time. Bugs definitely exist, but it is tried and tested.
-- Plugin generality (Lp solver etc)
+SCIP is therefore a software at the intersection of mixed-integer programming and constraint programming.
+Its technique of treating the optimization problem as a set of constraints as opposed to an array of
+inequalities makes it able to naturally handle a wider class of optimization problems.
 
 
+Modular Design and Plug-Ins
+===========================
+
+Maybe the biggest advantage of SCIP over other solvers, is for users in the MILP community that
+want to influence the default solving process in some way. Let's take a look at the following graphic:
+
+.. image:: _static/scip_structure_landscape-compressed.png
+  :width: 600
+  :align: center
+  :alt: SCIP Plug-In Flower structure. Each flower is a plugin, with specific algorithms being petals.
+
+This graphic shows the plug-in structure of SCIP. In the center we have the core of SCIP. Ignore this for now,
+however, and let's look at one of the various flowers of the graph. For instance, let's take
+the primal heuristic flower, i.e., the yellow nodes on the right. Let's then take a look at the petals
+(nodes). These have names corresponding to different heuristics. For example, there's feaspump, rins,
+random rounding, and fracdiving. The beauty of the structure of SCIP is that all these primal heuristics
+share a common interface. Why is this important? Because writing and including your own heuristic means
+you just need to implement a small and well-defined set of functions! These functions have plenty of
+documentation online, examples in Python are given in this website, and the design insulates you
+from having to actually dive into the core. It is therefore incredibly accessible for MIP practitioners
+and researchers to use SCIP for their own custom algorithms.
+
+
+
+
+.. note:: Because we are using Python, communication between different self-written plug-ins is easy.
+  One would need to make them aware of one another when creating them, and then their Python
+  representation can be queried as desired.
