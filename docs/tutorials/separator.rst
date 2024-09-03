@@ -1,5 +1,5 @@
 ##########################
-Seperator (Cutting Plane)
+Seperator (Cutting Planes)
 ##########################
 
 For the following let us assume that a Model object is available, which is created as follows:
@@ -19,8 +19,9 @@ What is a Separator?
 A separator is an algorithm for generating cutting planes (often abbreviated as cuts).
 A cut is an inequality that does not remove any feasible solutions of the optimization problem but is intended
 to remove some fractional solutions from the relaxation. For the purpose of this introduction we restrict ourselves
-to linear cuts in this paper. A cut would then be denoted by a an array of coefficients (:math:`\boldsymbol{\alpha}`)
-on each variable and a right-hand-side value (:math:`\beta`).
+to linear cuts in this paper. A cut would then be denoted by a an array of coefficients
+(:math:`\boldsymbol{\alpha} \in \mathbb{R}^{n}`) on each variable and a right-hand-side value
+(:math:`\beta \in \mathbb{R}`).
 
 .. math::
 
@@ -34,10 +35,10 @@ thereby making a tighter relaxation. For this reason algorithms that find cuts a
 Gomory Mixed-Integer Cut Example
 ================================
 
-In this example we show to generate one of the most prolific class of cutting planes, namely the
+In this example we show to generate one of the most prolific class of cutting planes, the
 Gomory mixed-integer (GMI) cut. This example looks complicated, and that's simply because it is.
-While in theory a GMI cut can be quickly written down, this assumes that your basis information is nicely
-accessible in the form that you want, and that your problem is in standard form. For this reason the code
+While in theory a GMI cut can be quickly written down, that assumes that your basis information is nicely
+accessible in the form that you want and that your problem is in standard form. For this reason the code
 needs to be quite substantial to construct the cuts from scratch.
 
 .. note:: Separators are one of the most difficult components of a MIP solver to program due to their correctness
@@ -301,7 +302,7 @@ needs to be quite substantial to construct the cuts from scratch.
 
           return {"result": result}
 
-The GMI separator would then be included using the following code:
+The GMI separator can then be included using the following code:
 
 .. code-block:: python
 

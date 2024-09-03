@@ -67,8 +67,10 @@ candidates? For more information on this please read `this page <https://www.sci
 Now let's discuss what the function returned. We see that it returned a simple dictionary, with the
 ``"result"`` key and a ``SCIP_RESULT``. This is because inside the function the child nodes
 have already been created, and the solver just needs to be made aware of this with the appropriate
-code. In the case of branching when something goes wrong (and you have not made the children nodes),
-just simply returned ``SCIP_RESULT:DIDNOTRUN``. This will then move on to the next branching rule with
+code.
+
+In the case of something going wrong while branching (and you have not made the children nodes),
+just simply return ``SCIP_RESULT:DIDNOTRUN``. This will then move on to the next branching rule with
 the next highest priority.
 
 .. note::
@@ -203,6 +205,6 @@ strong branching or obtain some strong branching information.
 
           return {"result": SCIP_RESULT.BRANCHED}
 
-Let's look at some of the specific functions called during this branch rule. In SCIP we must call ``startStrongbranch``
-before doing any actual strong branching (which is done with the call ``getVarStrongbranch``). When we're done
-with strong branching we must then also call ``endStrongbranch``.
+.. note:: In SCIP we must call ``startStrongbranch``
+  before doing any actual strong branching (which is done with the call ``getVarStrongbranch``). When we're done
+  with strong branching we must then also call ``endStrongbranch``.

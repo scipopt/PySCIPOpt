@@ -19,14 +19,14 @@ A (primal) heuristic is an algorithm for finding a feasible solution to an optim
 computational costs than their exact counterparts but without any optimality guarantees.
 The reason that heuristics are implemented in exact optimization solvers are two-fold. It is advantageous
 for certain algorithms to have a good intermediate solution, and it is helpful for users that they can
-halt the solving process and have access to the current best solution.
+halt the solving process and access the current best solution.
 
 Simple Rounding Heuristic Example
 =================================
 
 In this example we show how to implement a simple rounding heuristic in SCIP. The rounding heuristic
 will take all the fractional variables with integer requirements from the current relaxation solution,
-and attempt to round them to their nearest integer value.
+and attempt to round them to their nearest integer values.
 
 .. code-block:: python
 

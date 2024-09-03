@@ -23,7 +23,7 @@ consider the basic optimization problem:
 
 .. math::
 
-  &\text{min} & &2x + 3y -5z \\
+  &\text{min} & \quad &2x + 3y -5z \\
   &\text{s.t.} & &x + y \leq 5\\
   & & &x+z \geq 3\\
   & & &y + z = 4\\
@@ -43,13 +43,13 @@ We can construct the optimization problem as follows:
   scip.setObjective(2 * x + 3 * y - 5 * z, sense="minimize")
   scip.optimize()
 
-That's it! We've built the optimization problem defined above and run it.
+That's it! We've built the optimization problem defined above and we've optimized it.
 For how to read a Model from file see :doc:`this page </tutorials/readwrite>` and for best practices
 on how to create more variables see :doc:`this page </tutorials/vartypes>`.
 
 .. note:: ``vtype='C'`` here refers to a continuous variables.
   Providing the lb, ub was not necessary as they default to (0, None) for continuous variables.
-  Providing the name attribute is not necessary but is good practice.
+  Providing the name attribute is not necessary either but is good practice.
   Providing the objective sense was also not necessary as it defaults to "minimize".
 
 .. note:: An advantage of SCIP is that it can handle general non-linearities. See

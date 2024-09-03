@@ -46,11 +46,13 @@ constraints bring up an interesting feature of SCIP when used in the context of 
 The context of an LP here means that we are after the LP relaxation of the optimization problem
 at some node. Is the constraint even in the LP?
 When you solve an optimization problm with SCIP, the problem is first transformed. This process is
-called presolve, and is done to speed up the subsequent solving process. Therefore a constraint
-that was originally created may have been transformed entirely, or may have just been removed
-from the transformed problem as it is redundant. The constraint is also much more general
+called presolve, and is done to accelerate the subsequent solving process. Therefore a constraint
+that was originally created may have been transformed entirely, as the original variables that
+featured in the constraint have also been changed. Additionally, maybe the constraint was found to be redundant,
+i.e., trivially true, and was removed. The constraint is also much more general
 than necessary, containing information that is not strictly necessary for solving the LP,
-and may not even be linear. Therefore, when representing a constraint in an LP, we use Row objects.
+and may not even be representable by linear constraints.
+Therefore, when representing a constraint in an LP, we use Row objects.
 Be warned however, that this is not necessarily a simple one-to-one matching. Some more complicated
 constraints may either have no Row representation in the LP or have multiple such rows
 necessary to best represent it in the LP. For a standard linear constraint the Row
@@ -63,7 +65,7 @@ that represents the constraint in the LP can be found with the code:
 .. note:: Remember that such a Row representation refers only to the latest LP, and is
   best queried when access to the current LP is clear, e.g. when branching.
 
-From a Row object one can easily obtain information about. Some quick examples are
+From a Row object one can easily obtain information about the current LP. Some quick examples are
 the lhs, rhs, constant shift, the columns with non-zero coefficient values, the matching
 coefficient values, and the constraint handler that created the Row.
 
@@ -91,7 +93,7 @@ and many boolean properties of the constraint, e.g., is it linear.
 
 As constraints are broader than the standard linear constraints most users are familiar with,
 many of the functions that obtain constraint information are callable from the Model object.
-These include the activity of the constraint, the slack of the constraint, the dual value,
+These include the activity of the constraint, the slack of the constraint,
 and adding or deleting coefficients.
 
 .. code-block:: python
@@ -105,7 +107,7 @@ and adding or deleting coefficients.
 
 Currently not mentioned w.r.t. the constraints and rows is the dual information.
 This is frustratingly complicated. SCIP has a plugin based LP solver, which offers many
-choices for LP solvers, but makes getting information from them more complicated. Calling for
+choices for LP solvers, but makes getting information from them more complicated. Getting
 dual values from constraints or rows will work, but to be confident that they are returning
 the correct information we encourage doing three different things:
 
@@ -139,7 +141,8 @@ In the above we presented examples of only linear constraints and a non-linear
 constraint. SCIP however can handle many different types of constraints. Some of these that are
 likely familiar are SOS constraints, Indicator constraints, and AND / OR / XOR constraints.
 These constraint handlers have custom methods for improving the solving process of
-optimization problems that they feature in. To add such a constraint you'd use the code:
+optimization problems that they feature in. To add such a constraint, e.g., an SOS and indicator
+constraint, you'd use the code:
 
 .. code-block:: python
 
@@ -147,8 +150,9 @@ optimization problems that they feature in. To add such a constraint you'd use t
   indicator_cons = scip.addConsIndicator(x + y <= 1, binvar=z, name="example_indicator")
 
 SCIP also allows the creation of custom constraint handlers. These could be empty and just
-there to record data, or they could be there to enforce a constraint that is impossible
-or incredibly inefficient to enforce otherwise. An example of such a constraint handler
+there to record data, there to provide custom handling of some user defined function, or they could be there to
+enforce a constraint that is  incredibly inefficient to enforce via linear constraints.
+An example of such a constraint handler
 is presented in the lazy constraint tutorial for modelling the subtour elimination
 constraints :doc:`here </tutorials/lazycons>`
 

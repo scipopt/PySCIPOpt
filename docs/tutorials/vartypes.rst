@@ -1,9 +1,9 @@
 ####################
-Variable Information
+Variables in SCIP
 ####################
 
 In this overview of variables in PySCIPOpt we'll walk through best
-practices for modelling them and the various information that they
+practices for modelling them and the various information that
 can be extracted from them.
 
 For the following let us assume that a Model object is available, which is created as follows:
@@ -67,7 +67,7 @@ Here we will store PySCIPOpt variables in a numpy ndarray
 
   import numpy as np
   n, m = 5, 5
-  var_array = np.zeros((n, m), dtype=object) # dtype is object allows arbitrary storage
+  var_array = np.zeros((n, m), dtype=object) # dtype object allows arbitrary storage
   for i in range(n):
       for j in range(m):
           var_array[i][j] = scip.addVar(vtype='B', name=f"x_{i}_{j}")
@@ -86,6 +86,14 @@ Here we will store PySCIPOpt variables in a numpy ndarray
     a = np.random.uniform(size=(n,m))
     c = a @ var_array
 
+Get Variables
+=============
+
+Given a Model object, all added variables can be retrieved with the function:
+
+.. code-block:: python
+
+    scip_vars = scip.getVars()
 
 Variable Types
 =================
@@ -140,7 +148,7 @@ in the current best solution with the command:
 
   var_val = scip.getVal(x)
 
-An alternate way to obtain the variable solution value (of whatever solution you wish) is
+An alternate way to obtain the variable solution value (can be done from whatever solution you wish) is
 to query the solution object with the SCIP expression (potentially just the variable)
 
 .. code-block:: python
@@ -149,30 +157,31 @@ to query the solution object with the SCIP expression (potentially just the vari
       scip_sol = scip.getBestSol()
       var_val = scip_sol[x]
 
+What is a Column?
+=================
+
 We can also obtain the LP solution of a variable. This would be used when you have included your own
 plugin, and are querying specific information for a given LP relaxation at some node. This is not the
 variable solution value in the final optimal solution!
 
-.. code-block:: python
-
-  lp_val = x.getLPSol()
-
 The LP solution value brings up an interesting feature of SCIP. Is the variable even in the LP?
-When you solve an optimization problm with SCIP, the problem is first transformed. This process is
-called presolve, and is done to speed up the subsequent solving process. Therefore a variable
-that was originally created may have been transformed entirely, or may have just been removed
-from the transformed problem as it is redundant. The variable may also not exist because you
-are currently doing some pricing, and the LP only contains a subset of the variables. The summary is:
-It should not be taken for granted that your originally created variable is in an LP.
-This can be checked with the following code:
+We can easily check this.
 
 .. code-block:: python
 
   is_in_lp = x.isInLP()
   if is_in_lp:
       print("Variable is in LP!")
+      print(f"Variable value in LP is {x.getLPSol()}")
   else:
       print("Variable is not in LP!")
+
+When you solve an optimization problem with SCIP, the problem is first transformed. This process is
+called presolve, and is done to accelerate the subsequent solving process. Therefore a variable
+that was originally created may have been transformed to another variable, or may have just been removed
+from the transformed problem entirely. The variable may also not exist because you
+are currently doing some pricing, and the LP only contains a subset of the variables. The summary is:
+It should not be taken for granted that your originally created variable is in an LP.
 
 Now to some additional confusion. When you're solving an LP do you actually want a variable object?
 The variable object contains a lot of unnecessary information that is not needed to strictly
@@ -196,3 +205,28 @@ and of course the variable that it represents.
   lb = col.getLb()
   ub = col.getUb()
   x = col.getVar()
+
+What is a Transformed Variable?
+===============================
+
+In the explanation of a column we touched on the transformed problem.
+Naturally, in the transformed space we now have transformed variables instead of the original variables.
+To access the transformed variables one can use the command:
+
+.. code-block:: python
+
+  scip_vars = scip.getVars(transformed=True)
+
+A variable can be checked for whether it belongs to the original space or the transformed space
+with the command:
+
+ .. code-block:: python
+
+  is_original = scip_vars[0].isOriginal()
+
+This difference is often important and should be kept in mind. For instance, in general the user is not interested
+in the solution values of the transformed variables at the end of the solving process, rather they are interested
+in the solution values of the original variables. This is because they can be interpreted easily as they
+belong to some user defined formulation.
+
+.. note:: By default SCIP places a ``t_`` in front of all transformed variable names.

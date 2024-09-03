@@ -24,12 +24,12 @@ Non-Linear Objectives
 ======================
 
 While SCIP supports general non-linearities, it only supports linear objective functions.
-With some basic reformulation this is not an issue however. Let's consider the general
+With some basic reformulation this is not a restriction however. Let's consider the general
 optimization problem:
 
 .. math::
 
-  &\text{min} & &f(x) \\
+  &\text{min} & \quad &f(x) \\
   &\text{s.t.} & & g(x) \leq b \\
   & & & x \in \mathbb{Z}^{|\mathcal{J}|} \times \mathbb{R}^{[n] / \mathcal{J}}, \quad \mathcal{J} \subseteq [n] \\
   & & & f : \mathbb{R}^{n} \rightarrow \mathbb{R}, g : \mathbb{R}^{n} \rightarrow \mathbb{R}
@@ -39,7 +39,7 @@ reformulated as:
 
 .. math::
 
-  &\text{min} & &y \\
+  &\text{min} & \quad &y \\
   &\text{s.t.} & & g(x) \leq b \\
   & & & y \geq f(x) \\
   & & & x \in \mathbb{Z}^{|\mathcal{J}|} \times \mathbb{R}^{[n] / \mathcal{J}}, \quad \mathcal{J} \subseteq [n] \\
@@ -54,10 +54,12 @@ Let's see an example of how this would work when programming. Consider the simpl
 
 .. math::
 
-  &\text{min} & &x^{2} + y \\
+  &\text{min} & \quad &x^{2} + y \\
   &\text{s.t.} & & x + y \geq 5 \\
   & & & x + 1.3 y \leq 10 \\
   & & & (x,y) \in \mathbb{Z}^{2}
+
+One can program an equivalent optimization problem with linear objective function as follows:
 
 .. code-block:: python
 
@@ -74,7 +76,7 @@ Polynomials
 ============
 
 Polynomials can be constructed directly from using Python operators on created variables.
-Let's see an example of constructing the following constraints:
+Let's see an example of constructing the following constraint:
 
 .. math::
 
@@ -127,7 +129,6 @@ The code for the following constraint can be written as follows:
 
 .. code-block:: python
 
-  from pyscipopt import sqrt
   x = scip.addVar(vtype='C', lb=None, name='x')
   y = scip.addVar(vtype='C', name='y')
   cons_1 = scip.addCons(abs(x) <= y + 5, name="abs_cons")
@@ -145,6 +146,7 @@ constructing the following constraints:
 .. math::
 
   \frac{1}{1 + e^{-x}} &= y \\
+  & \\
   \log (x) &\leq z
 
 The code for the following constraint can be written as follows:
@@ -154,7 +156,7 @@ The code for the following constraint can be written as follows:
   from pyscipopt import exp, log
   x = scip.addVar(vtype='C', name='x')
   y = scip.addVar(vtype='C', name='y')
-  y = scip.addVar(vtype='C', name='z')
+  z = scip.addVar(vtype='C', name='z')
   cons_1 = scip.addCons( (1 / (1 + exp(-x))) == y, name="exp_cons")
   cons_2 = scip.addCons(log(x) <= z, name="log_cons)
 
@@ -168,7 +170,8 @@ constructing the following constraints:
 .. math::
 
   sin(x) &= y \\
-  cos(y) \leq 0.5 \\
+  & \\
+  cos(y) & \leq 0.5 \\
 
 
 The code for the following constraint can be written as follows:

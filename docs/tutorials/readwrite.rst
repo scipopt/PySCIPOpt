@@ -2,6 +2,10 @@
 Read and Write Files
 #####################
 
+While building your own optimization problem is fun, at some point you often need to share it, or
+read an optimization problem written by someone else. For this you're going to need to
+write the optimization problem to some file or read it from some file.
+
 .. contents:: Contents
 
 Model File Formats
@@ -47,11 +51,14 @@ what formats those are and the model types they're associated with.
 
 .. note:: In general we recommend sharing files using the ``.mps`` extension when possible.
 
-  For a more human readable format for equivalent problems we then recommend the ``.lp`` extension.
+  For a more human readable format for equivalent problems we recommend the ``.lp`` extension.
 
   For general non-linearities that are to be shared with others we recommend the ``.osil`` extension.
 
   For general constraint types that will only be used by other SCIP users we recommend the ``.cip`` extension.
+
+.. note:: Some of these file formats may only have a reader programmed and not a writer. Additionally,
+  some of these readers may require external plug-ins that are not shipped by default via PyPI.
 
 Write a Model
 ================

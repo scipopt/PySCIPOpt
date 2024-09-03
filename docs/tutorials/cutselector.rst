@@ -44,10 +44,10 @@ A cut selector in PySCIPOpt takes the following structure:
 The class ``DummyCutsel`` inherits the necessary ``Cutsel`` class, and then programs
 the necessary function ``cutselselect``. The docstrings of the ``cutselselect`` explain
 the input to the function. It is then up to the user to create some new ordering ``cuts``,
-which we have represented by ``sorted_cuts``, return ``nselectedcuts`` that results in the first
-``nselectedcuts`` of the ``sorted_cuts``being added to the optimization problem. The
+which we have represented by ``sorted_cuts``. The returned value of ``nselectedcuts`` results in the first
+``nselectedcuts`` of the ``sorted_cuts`` being added to the optimization problem. The
 ``SCIP_RESULT`` is there to indicate whether the algorithm was successful. See the
-appropriate documentation for more potential result code.
+appropriate documentation for more potential result codes.
 
 To include a cut selector one would need to do something like the following code:
 
