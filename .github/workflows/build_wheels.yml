@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.inputs.upload_to_pypi == 'true'
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         with:
           name: artifact
           path: dist
