@@ -1891,6 +1891,14 @@ cdef class Model:
         """gets the best sibling of the focus node w.r.t. the node selection strategy."""
         return Node.create(SCIPgetBestSibling(self._scip))
 
+    def getPrioChild(self):
+        """gets the best child of the focus node w.r.t. the node selection priority assigned by the branching rule."""
+        return Node.create(SCIPgetPrioChild(self._scip))
+
+    def getPrioSibling(self):
+        """gets the best sibling of the focus node w.r.t. the node selection priority assigned by the branching rule."""
+        return Node.create(SCIPgetPrioSibling(self._scip))
+
     def getBestLeaf(self):
         """gets the best leaf from the node queue w.r.t. the node selection strategy."""
         return Node.create(SCIPgetBestLeaf(self._scip))

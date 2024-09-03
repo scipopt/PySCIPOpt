@@ -1870,6 +1870,8 @@ cdef extern from "scip/scip_tree.h":
     SCIP_NODE* SCIPgetBestChild(SCIP* scip)
     SCIP_NODE* SCIPgetBestSibling(SCIP* scip)
     SCIP_NODE* SCIPgetBestLeaf(SCIP* scip)
+    SCIP_NODE* SCIPgetPrioChild(SCIP* scip)
+    SCIP_NODE* SCIPgetPrioSibling(SCIP* scip)
     SCIP_NODE* SCIPgetBestNode(SCIP* scip)
     SCIP_NODE* SCIPgetBestboundNode(SCIP* scip)
     SCIP_RETCODE SCIPrepropagateNode(SCIP* scip, SCIP_NODE* node)

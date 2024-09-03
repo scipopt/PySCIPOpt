@@ -19,4 +19,5 @@ more detailed information see `this page <https://www.scipopt.org/doc/html/index
   cutselector
   separator
   heuristic
+  nodeselector
   lazycons

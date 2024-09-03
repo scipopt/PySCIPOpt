@@ -19,5 +19,6 @@ Contents
   tutorials/index
   whyscip
   similarsoftware
+  faq
   api
 
