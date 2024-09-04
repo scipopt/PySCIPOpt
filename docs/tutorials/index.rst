@@ -11,6 +11,7 @@ more detailed information see `this page <https://www.scipopt.org/doc/html/index
   :caption: Contents:
 
   model
+  logfile
   expressions
   readwrite
   vartypes

@@ -23,7 +23,8 @@ sys.path.insert(0, os.path.abspath("../src/"))
 project = "PySCIPOpt"
 copyright = "2024, Zuse Institute Berlin"
 author = "Zuse Institute Berlin <scip@zib.de>"
-html_logo = "_static/scip-logo.png"
+html_logo = "_static/skippy_logo_blue.png"
+html_favicon = '_static/skippy_logo_blue.png'
 
 
 # -- General configuration ---------------------------------------------------
@@ -75,10 +76,9 @@ extlinks = {
 # a list of builtin themes.
 #
 html_theme = "sphinx_nefertiti"
+# html_theme = "pydata_sphinx_theme"
 # html_theme = "piccolo_theme"
 # html_theme = "sphinx_rtd_theme"
-
-html_favicon = 'scip-logo-16x16.png'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
