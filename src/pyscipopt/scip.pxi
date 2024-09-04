@@ -4610,7 +4610,7 @@ cdef class Model:
         if not initlp:
             PY_SCIP_CALL(SCIPcreateSol(self._scip, &_sol, _heur))
         else:
-            PY_SCIP_CALL(SCIPcreateLPSol(self._scip, &_sol, _huer))
+            PY_SCIP_CALL(SCIPcreateLPSol(self._scip, &_sol, _heur))
         solution = Solution.create(self._scip, _sol)
         return solution
 

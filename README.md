@@ -17,6 +17,17 @@ Please consult the [online documentation](https://scipopt.github.io/PySCIPOpt/do
 
 See [CHANGELOG.md](https://github.com/scipopt/PySCIPOpt/blob/master/CHANGELOG.md) for added, removed or fixed functionality.
 
+You can also build the documentation locally with the command
+```shell
+pip install -r docs/requirements.txt
+sphinx-build docs docs/_build
+```
+Às the documentation requires additional python packages, one should run the following command
+before building the documentation for the first time:
+```shell
+(venv) pip install -r docs/requirements.txt
+```
+
 Installation
 ------------
 
