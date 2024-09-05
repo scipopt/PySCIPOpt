@@ -1,6 +1,6 @@
-#####################
-Tutorials (Examples)
-#####################
+######################
+User Guide (Tutorials)
+######################
 
 This section contains official tutorials (examples) for PySCIPOpt. Please keep in mind
 that PySCIPOpt's primary purpose is as a wrapper for SCIP. Therefore, for sometimes

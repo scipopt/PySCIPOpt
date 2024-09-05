@@ -47,7 +47,7 @@ integer programming formulation for the problem is:
     & & & \sum_{i,j \in \mathcal{S}} x_{i,j} \leq |\mathcal{S}| - 1, \quad \forall \mathcal{S} \subset \mathcal{V}, |\mathcal{S}| \geq 2 \quad (*) \\
     & & & x_{i,j} \in \{0,1\}, \quad \forall (i,j) \in \mathcal{V} \times \mathcal{V}
 
-In the above formulation, the second set of constraints (marked with *) are called subtour elimination constraints.
+In the above formulation, the second set of constraints (marked with an asterisk) are called subtour elimination constraints.
 They are called such as a valid solution in absense of those constraints might consist of a collection
 of smaller cycles instead of a single large cycle. As the constraint set requires checking every subset of nodes
 there are exponentially many. Moreover, we know that most of the constraints are probably unnecessary,

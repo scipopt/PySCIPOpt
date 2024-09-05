@@ -211,7 +211,7 @@ the output above are information on the following
   * - primalbound
     - current primal bound
   * - gap
-    - current (relative) gap using | primal-dual | / MIN(| dual |,| primal |)
+    - current (relative) gap using | primal-dual | / MIN(| dual | , | primal |)
   * - compl.
     - completion of search in percent (based on tree size estimation)
 
