@@ -3563,12 +3563,8 @@ cdef class Model:
     def solveConcurrent(self):
         """Transforms, presolves, and solves problem using additional solvers which emphasize on
         finding solutions."""
-        if SCIPtpiGetNumThreads() == 1:
-            warnings.warn("SCIP was compiled without task processing interface. Parallel solve not possible - using optimize() instead of solveConcurrent()") 
-            self.optimize()
-        else:
-            PY_SCIP_CALL(SCIPsolveConcurrent(self._scip))
-            self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
+        PY_SCIP_CALL(SCIPsolveConcurrent(self._scip))
+        self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
 
     def presolve(self):
         """Presolve the problem."""
