@@ -10,6 +10,7 @@
   SCIPgetVarStrongbranchInt, SCIPupdateVarPseudocost, SCIPgetVarStrongbranchFrac, SCIPcolGetAge, 
   SCIPgetVarStrongbranchLast, SCIPgetVarStrongbranchNode, SCIPallColsInLP, SCIPcolGetAge
 - Added getBipartiteGraphRepresentation
+- Added helper functions that facilitate testing
 - Added Python definitions and wrappers for SCIPgetNImplVars, SCIPgetNContVars, SCIPvarMayRoundUp,
   SCIPvarMayRoundDown, SCIPcreateLPSol, SCIPfeasFloor, SCIPfeasCeil, SCIPfeasRound, SCIPgetPrioChild,
   SCIPgetPrioSibling
