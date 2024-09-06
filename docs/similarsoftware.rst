@@ -77,6 +77,7 @@ or you want to compare the performance of different solvers.
 - `LINOPy <https://github.com/PyPSA/linopy>`_
 - `PULP <https://github.com/coin-or/pulp>`_
 - `PICOS <https://gitlab.com/picos-api/picos>`_
+- `AMPL Python API <https://amplpy.ampl.com/en/latest/>`_
 
 
 Software using PySCIPOpt
