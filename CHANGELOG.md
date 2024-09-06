@@ -10,6 +10,7 @@
   SCIPgetVarStrongbranchInt, SCIPupdateVarPseudocost, SCIPgetVarStrongbranchFrac, SCIPcolGetAge, 
   SCIPgetVarStrongbranchLast, SCIPgetVarStrongbranchNode, SCIPallColsInLP, SCIPcolGetAge
 - Added getBipartiteGraphRepresentation
+- Added helper functions that facilitate testing
 ### Fixed
 - Fixed too strict getObjVal, getVal check
 ### Changed
