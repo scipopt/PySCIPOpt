@@ -89,8 +89,7 @@ def test_nodesel_fifo():
     m.optimize()
 
 def test_nodesel_dfs():
-    m = random_mip_1()
-    m.setParam("limits/nodes", 500)
+    m = random_mip_1(node_lim=500)
 
     # include node selector
     dfs_node_sel = DFS(m)

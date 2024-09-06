@@ -9,7 +9,7 @@ def is_optimized_mode():
     return is_memory_freed()
 
 
-def random_mip_1(disable_sepa=True, disable_huer=True, disable_presolve=True):
+def random_mip_1(disable_sepa=True, disable_huer=True, disable_presolve=True, node_lim=2000, small=False):
     model = Model()
 
     x0 = model.addVar(lb=-2, ub=4)
@@ -21,13 +21,20 @@ def random_mip_1(disable_sepa=True, disable_huer=True, disable_presolve=True):
     u = model.addVar(vtype="I", lb=-3, ub=99)
 
     more_vars = []
-    for i in range(500):
+    if small:
+        n = 100
+    else:
+        n = 500
+    for i in range(n):
         more_vars.append(model.addVar(vtype="I", lb=-12, ub=40))
         model.addCons(quicksum(v for v in more_vars) <= (40 - i) * quicksum(v for v in more_vars[::2]))
 
     for i in range(100):
         more_vars.append(model.addVar(vtype="I", lb=-52, ub=10))
-        model.addCons(quicksum(v for v in more_vars[50::2]) <= (40 - i) * quicksum(v for v in more_vars[405::2]))
+        if small:
+            model.addCons(quicksum(v for v in more_vars[50::2]) <= (40 - i) * quicksum(v for v in more_vars[65::2]))
+        else:
+            model.addCons(quicksum(v for v in more_vars[50::2]) <= (40 - i) * quicksum(v for v in more_vars[405::2]))
 
     model.addCons(r1 >= x0)
     model.addCons(r2 >= -x0)
@@ -46,6 +53,7 @@ def random_mip_1(disable_sepa=True, disable_huer=True, disable_presolve=True):
         model.setHeuristics(SCIP_PARAMSETTING.OFF)
     if disable_presolve:
         model.setPresolve(SCIP_PARAMSETTING.OFF)
+    model.setParam("limits/nodes", node_lim)
 
     return model
 

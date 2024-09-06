@@ -66,7 +66,7 @@ We will now create the basic model containing all information aside from the con
 
   import numpy as np
   import networkx
-  n = 15
+  n = 300
   x = {}
   c = {}
   for i in range(n):
@@ -75,7 +75,7 @@ We will now create the basic model containing all information aside from the con
       for j in range(i + 1, n):
           x[i][j] = scip.addVar(vtype='B', name=f"x_{i}_{j}")
           c[i][j] = np.random.uniform(10)
-  scip.setObjective(quicksum(quicksum(c[i][j]*x[i][j] for i in range(n)) for j in range(n)), "minimize")
+  scip.setObjective(quicksum(quicksum(c[i][j]*x[i][j] for j in range(i + 1, n)) for i in range(n)), "minimize")
   for i in range(n):
       scip.addCons(quicksum(x[i][j] for j in range(i + 1, n)) + quicksum(x[j][i] for j in range(i-1, 0, -1)) == 2,
                    name=f"sum_in_out_{i}")
@@ -107,7 +107,7 @@ Now we will create the code on how to implement such a constraint handler.
           x = cons.data['vars']
 
           for i in list(x.keys()):
-              for j in list(x[i].keys())
+              for j in list(x[i].keys()):
                   if self.model.getSolVal(solution, x[i][j]) > 0.5:
                       edges.append((i, j))
 
@@ -147,6 +147,7 @@ Now we will create the code on how to implement such a constraint handler.
 
                   # add subtour elimination constraint for each subtour
                   for S in subtours:
+                      print("Constraint added!)
                       self.model.addCons(quicksum(x[i][j] for i in S for j in S if j>i) <= len(S)-1)
                       consadded = True
 
@@ -156,10 +157,10 @@ Now we will create the code on how to implement such a constraint handler.
               return {"result": SCIP_RESULT.FEASIBLE}
 
 
-    # this is rather technical and not relevant for the exercise. to learn more see
-    # https://scipopt.org/doc/html/CONS.php#CONS_FUNDAMENTALCALLBACKS
-    def conslock(self, constraint, locktype, nlockspos, nlocksneg):
-        pass
+      # this is rather technical and not relevant for the exercise. to learn more see
+      # https://scipopt.org/doc/html/CONS.php#CONS_FUNDAMENTALCALLBACKS
+      def conslock(self, constraint, locktype, nlockspos, nlocksneg):
+          pass
 
 In the above we've created our problem and custom constraint handler! We now need to actually
 add the constraint handler to the problem. After that, we can simply call ``optimize`` whenever we are ready.
@@ -167,15 +168,15 @@ To add the costraint handler use something along the lines of the following:
 
 .. code-block:: python
 
-  # create the constraint handler
-   conshdlr = SEC()
+    # create the constraint handler
+    conshdlr = SEC()
 
-   # Add the constraint handler to SCIP. We set check priority < 0 so that only integer feasible solutions
-   # are passed to the conscheck callback
-   model.includeConshdlr(conshdlr, "TSP", "TSP subtour eliminator", chckpriority = -10, enfopriority = -10)
+    # Add the constraint handler to SCIP. We set check priority < 0 so that only integer feasible solutions
+    # are passed to the conscheck callback
+    scip.includeConshdlr(conshdlr, "TSP", "TSP subtour eliminator", chckpriority = -10, enfopriority = -10)
 
-   # create a subtour elimination constraint
-   cons = conshdlr.createCons("no_subtour_cons", x)
+    # create a subtour elimination constraint
+    cons = conshdlr.createCons("no_subtour_cons", x)
 
-   # add constraint to SCIP
-   model.addPyCons(cons)
+    # add constraint to SCIP
+    scip.addPyCons(cons)
