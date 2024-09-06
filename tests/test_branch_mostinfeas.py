@@ -1,8 +1,6 @@
 from pyscipopt import Branchrule, SCIP_RESULT
 from helpers.utils import random_mip_1
 
-import numpy as np
-
 
 class MostInfBranchRule(Branchrule):
 
@@ -18,7 +16,7 @@ class MostInfBranchRule(Branchrule):
 
         # Find the variable that is most fractional
         best_cand_idx = 0
-        best_dist = np.inf
+        best_dist = float('inf')
         for i in range(npriocands):
             if abs(branch_cand_fracs[i] - 0.5) <= best_dist:
                 best_dist = abs(branch_cand_fracs[i] - 0.5)
