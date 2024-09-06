@@ -1,6 +1,6 @@
 import pytest
 from pyscipopt.scip import Model, is_memory_freed, print_memory_in_use
-from util import is_optimized_mode
+from helpers.utils import is_optimized_mode
 
 def test_not_freed():
     if is_optimized_mode():

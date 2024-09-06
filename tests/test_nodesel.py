@@ -1,6 +1,6 @@
-from pyscipopt import Model
+from pyscipopt import Model, SCIP_PARAMSETTING
 from pyscipopt.scip import Nodesel
-
+from helpers.utils import random_mip_1
 
 class FiFo(Nodesel):
 
@@ -71,7 +71,6 @@ class DFS(Nodesel):
 
 def test_nodesel_fifo():
     m = Model()
-    m.hideOutput()
 
     # include node selector
     m.includeNodesel(FiFo(), "testnodeselector", "Testing a node selector.", 1073741823, 536870911)
@@ -90,22 +89,11 @@ def test_nodesel_fifo():
     m.optimize()
 
 def test_nodesel_dfs():
-    m = Model()
-    m.hideOutput()
+    m = random_mip_1()
+    m.setParam("limits/nodes", 500)
 
     # include node selector
     dfs_node_sel = DFS(m)
     m.includeNodesel(dfs_node_sel, "DFS", "Depth First Search Nodesel.", 1000000, 1000000)
 
-    # add Variables
-    x0 = m.addVar(vtype="C", name="x0", obj=-1)
-    x1 = m.addVar(vtype="C", name="x1", obj=-1)
-    x2 = m.addVar(vtype="C", name="x2", obj=-1)
-
-    # add constraints
-    m.addCons(x0 >= 2)
-    m.addCons(x0 ** 2 <= x1)
-    m.addCons(x1 * x2 >= x0)
-
-    m.setObjective(x1 + x0)
     m.optimize()

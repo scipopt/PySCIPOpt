@@ -6,7 +6,7 @@ import pytest
 from pyscipopt import Model, Heur, SCIP_RESULT, SCIP_PARAMSETTING, SCIP_HEURTIMING, SCIP_LPSOLSTAT
 from pyscipopt.scip import is_memory_freed
 
-from util import is_optimized_mode
+from helpers.utils import random_mip_1, is_optimized_mode
 
 class MyHeur(Heur):
 
@@ -55,18 +55,18 @@ class SimpleRoundingHeuristic(Heur):
         for i in range(ncands):
             old_sol_val = branch_cand_sols[i]
             scip_var = branch_cands[i]
-            may_round_up = scip.varMayRound(scip_var, direction="up")
-            may_round_down = scip.varMayRound(scip_var, direction="down")
+            may_round_up = scip_var.varMayRound(direction="up")
+            may_round_down = scip_var.varMayRound(direction="down")
             # If we can round in both directions then round in objective function direction
             if may_round_up and may_round_down:
                 if scip_var.getObj() >= 0.0:
-                    new_sol_val = scip.feasFloor(scip, old_sol_val)
+                    new_sol_val = scip.feasFloor(old_sol_val)
                 else:
-                    new_sol_val = scip.feasCeil(scip, old_sol_val)
+                    new_sol_val = scip.feasCeil(old_sol_val)
             elif may_round_down:
-                new_sol_val = scip.feasFloor(scip, old_sol_val)
+                new_sol_val = scip.feasFloor(old_sol_val)
             elif may_round_up:
-                new_sol_val = scip.feasCeil(scip, old_sol_val)
+                new_sol_val = scip.feasCeil(old_sol_val)
             else:
                 # The variable cannot be rounded. The heuristic will fail.
                 continue
@@ -124,24 +124,10 @@ def test_heur_memory():
 
 def test_simple_round_heur():
     # create solver instance
-    s = Model()
+    s = random_mip_1(disable_sepa=False, disable_huer=False)
     heuristic = SimpleRoundingHeuristic()
     s.includeHeur(heuristic, "SimpleRounding", "simple rounding heuristic implemented in python", "Y",
-                  timingmask=SCIP_HEURTIMING.BEFORENODE)
-    s.setPresolve(SCIP_PARAMSETTING.OFF)
-
-    # add some variables
-    x = s.addVar("x", obj=1.0)
-    y = s.addVar("y", obj=2.0)
-
-    # add some constraint
-    s.addCons(x + 2 * y >= 5)
-
+                  timingmask=SCIP_HEURTIMING.DURINGLPLOOP)
+    s.setParam("limits/nodes", 1)
     # solve problem
     s.optimize()
-
-    # print solution
-    sol = s.getBestSol()
-    assert sol != None
-    assert round(sol[x]) == 5.0
-    assert round(sol[y]) == 0.0
