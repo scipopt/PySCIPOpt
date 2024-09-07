@@ -904,6 +904,22 @@ cdef class Variable(Expr):
         """Get the weighted average solution of variable in all feasible primal solutions found"""
         return SCIPvarGetAvgSol(self.scip_var)
 
+    def varMayRound(self, direction="down"):
+        """Checks whether its it possible, to round variable up and stay feasible for the relaxation
+
+        :param direction: direction in which the variable will be rounded
+
+        """
+        if direction not in ("down", "up"):
+            raise Warning(f"Unrecognized direction for rounding: {direction}")
+        cdef SCIP_Bool mayround
+        if direction == "down":
+            mayround = SCIPvarMayRoundDown(self.scip_var)
+        else:
+            mayround = SCIPvarMayRoundUp(self.scip_var)
+
+        return mayround
+
 cdef class Constraint:
     """Base class holding a pointer to corresponding SCIP_CONS"""
 
@@ -1246,6 +1262,18 @@ cdef class Model:
     def frac(self, value):
         """returns fractional part of value, i.e. x - floor(x) in epsilon tolerance: x - floor(x+eps)"""
         return SCIPfrac(self._scip, value)
+
+    def feasFloor(self, value):
+        """ rounds value + feasibility tolerance down to the next integer"""
+        return SCIPfeasFloor(self._scip, value)
+
+    def feasCeil(self, value):
+        """rounds value - feasibility tolerance up to the next integer"""
+        return SCIPfeasCeil(self._scip, value)
+
+    def feasRound(self, value):
+        """rounds value to the nearest integer in feasibility tolerance"""
+        return SCIPfeasRound(self._scip, value)
 
     def isZero(self, value):
         """returns whether abs(value) < eps"""
@@ -1748,6 +1776,7 @@ cdef class Model:
            ub = SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarUbNode(self._scip, node.scip_node, var.scip_var, ub))
 
+
     def chgVarType(self, Variable var, vtype):
         """Changes the type of a variable
 
@@ -1819,6 +1848,14 @@ cdef class Model:
     def getNBinVars(self):
         """gets number of binary active problem variables"""
         return SCIPgetNBinVars(self._scip)
+
+    def getNImplVars(self):
+        """gets number of implicit integer active problem variables"""
+        return SCIPgetNImplVars(self._scip)
+
+    def getNContVars(self):
+        """gets number of continuous active problem variables"""
+        return SCIPgetNContVars(self._scip)
     
     def getVarDict(self):
         """gets dictionary with variables names as keys and current variable values as items"""
@@ -1853,6 +1890,14 @@ cdef class Model:
     def getBestSibling(self):
         """gets the best sibling of the focus node w.r.t. the node selection strategy."""
         return Node.create(SCIPgetBestSibling(self._scip))
+
+    def getPrioChild(self):
+        """gets the best child of the focus node w.r.t. the node selection priority assigned by the branching rule."""
+        return Node.create(SCIPgetPrioChild(self._scip))
+
+    def getPrioSibling(self):
+        """gets the best sibling of the focus node w.r.t. the node selection priority assigned by the branching rule."""
+        return Node.create(SCIPgetPrioSibling(self._scip))
 
     def getBestLeaf(self):
         """gets the best leaf from the node queue w.r.t. the node selection strategy."""
@@ -4547,10 +4592,11 @@ cdef class Model:
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
-    def createSol(self, Heur heur = None):
+    def createSol(self, Heur heur = None, initlp=False):
         """Create a new primal solution in the transformed space.
 
         :param Heur heur: heuristic that found the solution (Default value = None)
+        :param initlp: Should the created solution be initialised to the current LP solution instead of all zeros
 
         """
         cdef SCIP_HEUR* _heur
@@ -4561,7 +4607,10 @@ cdef class Model:
             _heur = SCIPfindHeur(self._scip, n)
         else:
             _heur = NULL
-        PY_SCIP_CALL(SCIPcreateSol(self._scip, &_sol, _heur))
+        if not initlp:
+            PY_SCIP_CALL(SCIPcreateSol(self._scip, &_sol, _heur))
+        else:
+            PY_SCIP_CALL(SCIPcreateLPSol(self._scip, &_sol, _heur))
         solution = Solution.create(self._scip, _sol)
         return solution
 

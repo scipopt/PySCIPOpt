@@ -1,4 +1,5 @@
 from pyscipopt import Model, Branchrule, SCIP_RESULT, quicksum, SCIP_PARAMSETTING
+from helpers.utils import random_mip_1
 
 """
 This is a test for strong branching. It also gives a basic outline of what a function that imitates strong
@@ -131,49 +132,15 @@ class FeatureSelectorBranchingRule(Branchrule):
 
             avg_sol = cols[0].getVar().getAvgSol()
 
+            # While branching let's check some other functionality
+            branch_cands, _, _, _, npriocands, _ = self.scip.getLPBranchCands()
+
+
         return {"result": SCIP_RESULT.DIDNOTRUN}
 
 
-def create_model():
-    scip = Model()
-    # Disable separating and heuristics as we want to branch on the problem many times before reaching optimality.
-    scip.setHeuristics(SCIP_PARAMSETTING.OFF)
-    scip.setSeparating(SCIP_PARAMSETTING.OFF)
-    scip.setLongintParam("limits/nodes", 2000)
-
-    x0 = scip.addVar(lb=-2, ub=4)
-    r1 = scip.addVar()
-    r2 = scip.addVar()
-    y0 = scip.addVar(lb=3)
-    t = scip.addVar(lb=None)
-    l = scip.addVar(vtype="I", lb=-9, ub=18)
-    u = scip.addVar(vtype="I", lb=-3, ub=99)
-
-    more_vars = []
-    for i in range(100):
-        more_vars.append(scip.addVar(vtype="I", lb=-12, ub=40))
-        scip.addCons(quicksum(v for v in more_vars) <= (40 - i) * quicksum(v for v in more_vars[::2]))
-
-    for i in range(100):
-        more_vars.append(scip.addVar(vtype="I", lb=-52, ub=10))
-        scip.addCons(quicksum(v for v in more_vars[50::2]) <= (40 - i) * quicksum(v for v in more_vars[200::2]))
-
-    scip.addCons(r1 >= x0)
-    scip.addCons(r2 >= -x0)
-    scip.addCons(y0 == r1 + r2)
-    scip.addCons(t + l + 7 * u <= 300)
-    scip.addCons(t >= quicksum(v for v in more_vars[::3]) - 10 * more_vars[5] + 5 * more_vars[9])
-    scip.addCons(more_vars[3] >= l + 2)
-    scip.addCons(7 <= quicksum(v for v in more_vars[::4]) - x0)
-    scip.addCons(quicksum(v for v in more_vars[::2]) + l <= quicksum(v for v in more_vars[::4]))
-
-    scip.setObjective(t - quicksum(j * v for j, v in enumerate(more_vars[20:-40])))
-
-    return scip
-
-
 def test_strong_branching():
-    scip = create_model()
+    scip = random_mip_1(disable_presolve=False, disable_huer=False, small=True, node_lim=500)
 
     strong_branch_rule = StrongBranchingRule(scip, idempotent=False)
     scip.includeBranchrule(strong_branch_rule, "strong branch rule", "custom strong branching rule",
@@ -181,13 +148,14 @@ def test_strong_branching():
 
     scip.optimize()
     if scip.getStatus() == "optimal":
-        assert scip.isEQ(-112196, scip.getObjVal())
+        assert scip.isEQ(-45308, scip.getObjVal())
     else:
-        assert -112196 <= scip.getObjVal()
+        if scip.getNSols() >= 1:
+            assert -45308 <= scip.getObjVal()
 
 
 def test_strong_branching_idempotent():
-    scip = create_model()
+    scip = random_mip_1(disable_presolve=False, disable_huer=False, small=True, node_lim=500)
 
     strong_branch_rule = StrongBranchingRule(scip, idempotent=True)
     scip.includeBranchrule(strong_branch_rule, "strong branch rule", "custom strong branching rule",
@@ -195,13 +163,14 @@ def test_strong_branching_idempotent():
 
     scip.optimize()
     if scip.getStatus() == "optimal":
-        assert scip.isEQ(-112196, scip.getObjVal())
+        assert scip.isEQ(-45308, scip.getObjVal())
     else:
-        assert -112196 <= scip.getObjVal()
+        if scip.getNSols() >= 1:
+            assert -45308 <= scip.getObjVal()
 
 
 def test_dummy_feature_selector():
-    scip = create_model()
+    scip = random_mip_1(disable_presolve=False, disable_huer=False, small=True, node_lim=300)
 
     feature_dummy_branch_rule = FeatureSelectorBranchingRule(scip)
     scip.includeBranchrule(feature_dummy_branch_rule, "dummy branch rule", "custom feature creation branching rule",

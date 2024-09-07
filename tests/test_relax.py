@@ -1,7 +1,7 @@
 from pyscipopt import Model, SCIP_RESULT
 from pyscipopt.scip import Relax
 import pytest 
-from helpers.utils import random_MIP_1
+from helpers.utils import random_mip_1
 
 calls = []
 
@@ -65,7 +65,7 @@ def test_empty_relaxator():
         m.optimize()
 
 def test_relax():
-    model = random_MIP_1()
+    model = random_mip_1()
 
     x = model.addVar(vtype="B")
 

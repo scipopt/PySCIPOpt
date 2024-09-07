@@ -11,9 +11,15 @@
   SCIPgetVarStrongbranchLast, SCIPgetVarStrongbranchNode, SCIPallColsInLP, SCIPcolGetAge
 - Added getBipartiteGraphRepresentation
 - Added helper functions that facilitate testing
+- Added Python definitions and wrappers for SCIPgetNImplVars, SCIPgetNContVars, SCIPvarMayRoundUp,
+  SCIPvarMayRoundDown, SCIPcreateLPSol, SCIPfeasFloor, SCIPfeasCeil, SCIPfeasRound, SCIPgetPrioChild,
+  SCIPgetPrioSibling
+- Added additional tests to test_nodesel, test_heur, and test_strong_branching
+- Migrated documentation to Readthedocs
 ### Fixed
 - Fixed too strict getObjVal, getVal check
 ### Changed
+- Changed createSol to now have an option of initialising at the current LP solution
 ### Removed
 
 ## 5.1.1 - 2024-06-22
