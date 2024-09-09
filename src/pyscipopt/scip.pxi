@@ -1043,6 +1043,7 @@ cdef class Model:
 
         self._freescip = True
         self._modelvars = {}
+        self._generated_event_handlers_count = 0
 
         if not createscip:
             # if no SCIP instance should be created, then an empty Model object is created.
@@ -1063,6 +1064,56 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPcopyOrig(sourceModel._scip, self._scip, NULL, NULL, n, enablepricing, threadsafe, True, self._valid))
             else:
                 PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, threadsafe, True, self._valid))
+
+
+    def attachEventHandlerCallback(self, 
+        callback,
+        events: List[SCIP_EVENTTYPE],
+        name="eventhandler",
+        description=""
+        ):
+        """Attach an event handler to the model using a callback function.
+
+        Parameters
+        ----------
+        callback : callable
+            The callback function to be called when an event occurs. 
+            The callback function should have the following signature:
+            callback(model, event)
+        events : list of SCIP_EVENTTYPE
+            List of event types to attach the event handler to.
+        name : str, optional
+            Name of the event handler. If not provided, a unique default name will be generated.
+        description : str, optional
+            Description of the event handler. If not provided, an empty string will be used.
+        """
+
+        self._generated_event_handlers_count += 1
+        model = self
+        
+        class EventHandler(Eventhdlr):
+            def __init__(self, callback):
+                super(EventHandler, self).__init__()
+                self.callback = callback
+
+            def eventinit(self):
+                for event in events:
+                    self.model.catchEvent(event, self)
+                    
+            def eventexit(self):
+                for event in events:
+                    self.model.dropEvent(event, self)
+                
+            def eventexec(self, event):
+                self.callback(model, event)
+        
+        event_handler = EventHandler(callback)
+
+        if name == "eventhandler":
+            name = f"eventhandler_{self._generated_event_handlers_count}"
+        
+        self.includeEventhdlr(event_handler, name, description)
+
 
     def __dealloc__(self):
         # call C function directly, because we can no longer call this object's methods, according to

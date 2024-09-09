@@ -1977,6 +1977,8 @@ cdef class Model:
     cdef SCIP_Bool _freescip
     # map to store python variables
     cdef _modelvars
+    # used to keep track of the number of event handlers generated
+    cdef int _generated_event_handlers_count
 
     @staticmethod
     cdef create(SCIP* scip)
