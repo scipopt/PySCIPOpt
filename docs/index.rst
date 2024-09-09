@@ -18,6 +18,7 @@ Contents
   build
   tutorials/index
   whyscip
+  extend
   similarsoftware
   faq
   api
