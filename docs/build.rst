@@ -184,3 +184,12 @@ Ideally, the status of your tests must be passed or skipped.
 Running tests with pytest creates the __pycache__ directory in tests and, occasionally,
 a model file in the working directory. They can be removed harmlessly.
 
+Building Documentation Locally
+===============================
+
+You can build the documentation locally with the command:
+
+.. code-block:: bash
+
+  pip install -r docs/requirements.txt
+  sphinx-build docs docs/_build

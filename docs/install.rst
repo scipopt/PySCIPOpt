@@ -2,6 +2,8 @@
 Installation Guide
 ##################
 
+**This file is deprecated and will be removed soon. Please see the online documentation.**
+
 This page will detail all methods for installing PySCIPOpt via package managers,
 which come with their own versions of SCIP. For building PySCIPOpt against your
 own custom version of SCIP, or for building PySCIPOpt from source, visit :doc:`this page </build>`.
