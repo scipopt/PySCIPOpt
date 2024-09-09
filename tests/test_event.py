@@ -82,3 +82,22 @@ def test_event():
             s.addCons(quicksum(x[i] for i in range(100) if i%j==0) >= random.randint(10,100))
 
         s.optimize()
+        
+        
+
+def test_event_handler_callback(): 
+    m = Model()
+    m.hideOutput()
+    
+    number_of_calls = 0
+    
+    def callback(model, event):
+        nonlocal number_of_calls
+        number_of_calls += 1
+        
+    m.attachEventHandlerCallback(callback, [SCIP_EVENTTYPE.BESTSOLFOUND])
+    m.attachEventHandlerCallback(callback, [SCIP_EVENTTYPE.BESTSOLFOUND])
+
+    m.optimize()
+    
+    assert number_of_calls == 2
