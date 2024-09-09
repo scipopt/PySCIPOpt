@@ -15,6 +15,9 @@ Documentation
 
 Please consult the [online documentation](https://pyscipopt.readthedocs.io/en/latest/) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
 
+The old documentation, which we are in the process of migrating from,
+is still more complete w.r.t. the API, and can be found [here](https://scipopt.github.io/PySCIPOpt/docs/html/index.html)
+
 See [CHANGELOG.md](https://github.com/scipopt/PySCIPOpt/blob/master/CHANGELOG.md) for added, removed or fixed functionality.
 
 Installation
