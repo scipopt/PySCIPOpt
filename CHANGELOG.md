@@ -16,6 +16,7 @@
   SCIPgetPrioSibling
 - Added additional tests to test_nodesel, test_heur, and test_strong_branching
 - Migrated documentation to Readthedocs
+- `attachEventHandlerCallback` method to Model for a more ergonomic way to attach event handlers
 ### Fixed
 - Fixed too strict getObjVal, getVal check
 ### Changed
