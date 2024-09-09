@@ -20,7 +20,7 @@ See [CHANGELOG.md](https://github.com/scipopt/PySCIPOpt/blob/master/CHANGELOG.md
 Installation
 ------------
 
-Thr recommended installation method is via PyPI
+The recommended installation method is via PyPI
 ```bash
 pip install pyscipopt
 ```
