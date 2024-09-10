@@ -21,5 +21,6 @@ Contents
   extend
   similarsoftware
   faq
+  contributors
   api
 
