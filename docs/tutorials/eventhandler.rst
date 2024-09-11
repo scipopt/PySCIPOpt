@@ -19,7 +19,7 @@ The enum :code:`pyscipopt.SCIP_EVENTTYPE` provides a list of all available event
 
 
 What's an Event Handler?
-==============
+========================
 Event handlers are used to react to events that occur during the solving process.
 They are registered with the solver and are called whenever an event occurs.
 The event handler can then react to the event by performing some action.
