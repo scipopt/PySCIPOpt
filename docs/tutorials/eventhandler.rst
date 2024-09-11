@@ -18,12 +18,16 @@ SCIP provides a number of events that can be used to interact with the solver. T
 The enum :code:`pyscipopt.SCIP_EVENTTYPE` provides a list of all available events.
 
 
-Adding Event Handlers
+What's an Event Handler?
 ==============
 Event handlers are used to react to events that occur during the solving process.
 They are registered with the solver and are called whenever an event occurs.
 The event handler can then react to the event by performing some action.
 For example, an event handler can be used to update the incumbent solution whenever a new best solution is found.
+
+
+Adding Event Handlers with Callbacks
+====================================
 
 The easiest way to create an event handler is providing a callback function to the model using the :code:`Model.attachEventHandlerCallback` method.
 The following is an example the prints the value of the objective function whenever a new best solution is found:
@@ -44,10 +48,14 @@ The callback function should have the following signature: :code:`def callback(m
 The first argument is the model object and the second argument is the event that occurred.
 
 
+Adding Event Handlers with Classes
+==================================
+
 If you need to store additional data in the event handler, you can create a custom event handler class that inherits from :code:`pyscipopt.Eventhdlr`.
 and then include it in the model using the :code:`Model.includeEventHandler` method. The following is an example that stores the number of best solutions found:
 
 .. code-block:: python
+
     from pyscipopt import Model, Eventhdlr, SCIP_EVENTTYPE
 
 
