@@ -22,3 +22,4 @@ more detailed information see `this page <https://www.scipopt.org/doc/html/index
   heuristic
   nodeselector
   lazycons
+  eventhandler
