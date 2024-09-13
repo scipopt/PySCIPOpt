@@ -38,7 +38,7 @@ include "nodesel.pxi"
 
 # recommended SCIP version; major version is required
 MAJOR = 9
-MINOR = 0
+MINOR = 1
 PATCH = 0
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
@@ -300,10 +300,24 @@ def PY_SCIP_CALL(SCIP_RETCODE rc):
         raise Exception('SCIP: unknown return code!')
 
 cdef class Event:
-    """Base class holding a pointer to corresponding SCIP_EVENT"""
+    """Base class holding a pointer to corresponding SCIP_EVENT."""
 
     @staticmethod
     cdef create(SCIP_EVENT* scip_event):
+        """
+        Main method for creating an Event class. Is used instead of __init__.
+        
+        Parameters
+        ----------
+        scip_event : SCIP_EVENT*
+            A pointer to the SCIP_EVENT
+            
+        Returns
+        -------
+        event : Event
+            The Python representative of the SCIP_EVENT
+
+        """
         if scip_event == NULL:
             raise Warning("cannot create Event with SCIP_EVENT* == NULL")
         event = Event()
@@ -311,17 +325,31 @@ cdef class Event:
         return event
 
     def getType(self):
-        """gets type of event"""
+        """
+        Gets type of event.
+
+        Returns
+        -------
+        PY_SCIP_EVENTTYPE
+
+        """
         return SCIPeventGetType(self.event)
 
     def getName(self):
-        """gets name of event"""
+        """
+        Gets name of event.
+
+        Returns
+        -------
+        str
+
+        """
         if not EventNames:
             self._getEventNames()
         return EventNames[self.getType()]
 
     def _getEventNames(self):
-        """gets event names"""
+        """Gets event names."""
         for name in dir(PY_SCIP_EVENTTYPE):
             attr = getattr(PY_SCIP_EVENTTYPE, name)
             if isinstance(attr, int):
@@ -334,25 +362,61 @@ cdef class Event:
         return self.getName()
 
     def getNewBound(self):
-        """gets new bound for a bound change event"""
+        """
+        Gets new bound for a bound change event.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPeventGetNewbound(self.event)
 
     def getOldBound(self):
-        """gets old bound for a bound change event"""
+        """
+        Gets old bound for a bound change event.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPeventGetOldbound(self.event)
 
     def getVar(self):
-        """gets variable for a variable event (var added, var deleted, var fixed, objective value or domain change, domain hole added or removed)"""
+        """
+        Gets variable for a variable event (var added, var deleted, var fixed,
+        objective value or domain change, domain hole added or removed).
+
+        Returns
+        -------
+        Variable
+
+        """
         cdef SCIP_VAR* var = SCIPeventGetVar(self.event)
         return Variable.create(var)
 
     def getNode(self):
-        """gets node for a node or LP event"""
+        """
+        Gets node for a node or LP event.
+
+        Returns
+        -------
+        Node
+
+        """
         cdef SCIP_NODE* node = SCIPeventGetNode(self.event)
         return Node.create(node)
 
     def getRow(self):
-        """gets row for a row event"""
+        """
+        Gets row for a row event.
+
+        Returns
+        -------
+        Row
+
+        """
         cdef SCIP_ROW* row = SCIPeventGetRow(self.event)
         return Row.create(row)
 
@@ -364,10 +428,24 @@ cdef class Event:
                 and self.event == (<Event>other).event)
 
 cdef class Column:
-    """Base class holding a pointer to corresponding SCIP_COL"""
+    """Base class holding a pointer to corresponding SCIP_COL."""
 
     @staticmethod
     cdef create(SCIP_COL* scipcol):
+        """
+        Main method for creating a Column class. Is used instead of __init__.
+        
+        Parameters
+        ----------
+        scipcol : SCIP_COL*
+            A pointer to the SCIP_COL
+
+        Returns
+        -------
+        col : Column
+            The Python representative of the SCIP_COL
+
+        """
         if scipcol == NULL:
             raise Warning("cannot create Column with SCIP_COL* == NULL")
         col = Column()
@@ -375,11 +453,35 @@ cdef class Column:
         return col
 
     def getLPPos(self):
-        """gets position of column in current LP, or -1 if it is not in LP"""
+        """
+        Gets position of column in current LP, or -1 if it is not in LP.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPcolGetLPPos(self.scip_col)
 
     def getBasisStatus(self):
-        """gets the basis status of a column in the LP solution, Note: returns basis status `zero` for columns not in the current SCIP LP"""
+        """
+        Gets the basis status of a column in the LP solution
+
+        Returns
+        -------
+        str
+            Possible values are "lower", "basic", "upper", and "zero"
+
+        Raises
+        ------
+        Exception
+            If SCIP returns an unknown basis status
+
+        Notes
+        -----
+        Returns basis status `zero` for columns not in the current SCIP LP.
+
+        """
         cdef SCIP_BASESTAT stat = SCIPcolGetBasisStatus(self.scip_col)
         if stat == SCIP_BASESTAT_LOWER:
             return "lower"
@@ -393,33 +495,82 @@ cdef class Column:
             raise Exception('SCIP returned unknown base status!')
 
     def isIntegral(self):
-        """returns whether the associated variable is of integral type (binary, integer, implicit integer)"""
+        """
+        Returns whether the associated variable is of integral type (binary, integer, implicit integer).
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPcolIsIntegral(self.scip_col)
 
     def getVar(self):
-        """gets variable this column represents"""
+        """
+        Gets variable this column represents.
+
+        Returns
+        -------
+        Variable
+
+        """
         cdef SCIP_VAR* var = SCIPcolGetVar(self.scip_col)
         return Variable.create(var)
 
     def getPrimsol(self):
-        """gets the primal LP solution of a column"""
+        """
+        Gets the primal LP solution of a column.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPcolGetPrimsol(self.scip_col)
 
     def getLb(self):
-        """gets lower bound of column"""
+        """
+        Gets lower bound of column.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPcolGetLb(self.scip_col)
 
     def getUb(self):
-        """gets upper bound of column"""
+        """
+        Gets upper bound of column.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPcolGetUb(self.scip_col)
 
     def getObjCoeff(self):
-        """gets objective value coefficient of a column"""
+        """
+        Gets objective value coefficient of a column.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPcolGetObj(self.scip_col)
 
     def getAge(self):
-        """Gets the age of the column, i.e., the total number of successive times a column was in the LP
-        and was 0.0 in the solution"""
+        """
+        Gets the age of the column, i.e., the total number of successive times a column was in the LP
+        and was 0.0 in the solution.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPcolGetAge(self.scip_col)
 
     def __hash__(self):
@@ -430,10 +581,24 @@ cdef class Column:
                 and self.scip_col == (<Column>other).scip_col)
 
 cdef class Row:
-    """Base class holding a pointer to corresponding SCIP_ROW"""
+    """Base class holding a pointer to corresponding SCIP_ROW."""
 
     @staticmethod
     cdef create(SCIP_ROW* sciprow):
+        """
+        Main method for creating a Row class. Is used instead of __init__.
+
+        Parameters
+        ----------
+        sciprow : SCIP_ROW*
+            A pointer to the SCIP_ROW
+
+        Returns
+        -------
+        row : Row
+            The Python representative of the SCIP_ROW
+
+        """
         if sciprow == NULL:
             raise Warning("cannot create Row with SCIP_ROW* == NULL")
         row = Row()
@@ -446,23 +611,68 @@ cdef class Row:
             return cname.decode('utf-8')
 
     def getLhs(self):
-        """returns the left hand side of row"""
+        """
+        Returns the left hand side of row.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIProwGetLhs(self.scip_row)
 
     def getRhs(self):
-        """returns the right hand side of row"""
+        """
+        Returns the right hand side of row.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIProwGetRhs(self.scip_row)
 
     def getConstant(self):
-        """gets constant shift of row"""
+        """
+        Gets constant shift of row.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIProwGetConstant(self.scip_row)
 
     def getLPPos(self):
-        """gets position of row in current LP, or -1 if it is not in LP"""
+        """
+        Gets position of row in current LP, or -1 if it is not in LP.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIProwGetLPPos(self.scip_row)
 
     def getBasisStatus(self):
-        """gets the basis status of a row in the LP solution, Note: returns basis status `basic` for rows not in the current SCIP LP"""
+        """
+        Gets the basis status of a row in the LP solution.
+
+        Returns
+        -------
+        str
+            Possible values are "lower", "basic", and "upper"
+
+        Raises
+        ------
+        Exception
+            If SCIP returns an unknown or "zero" basis status
+
+        Notes
+        -----
+        Returns basis status `basic` for rows not in the current SCIP LP.
+
+        """
         cdef SCIP_BASESTAT stat = SCIProwGetBasisStatus(self.scip_row)
         if stat == SCIP_BASESTAT_LOWER:
             return "lower"
@@ -477,58 +687,150 @@ cdef class Row:
             raise Exception('SCIP returned unknown base status!')
 
     def isIntegral(self):
-        """returns TRUE iff the activity of the row (without the row's constant) is always integral in a feasible solution """
+        """
+        Returns TRUE iff the activity of the row (without the row's constant)
+        is always integral in a feasible solution.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIProwIsIntegral(self.scip_row)
 
     def isLocal(self):
-        """returns TRUE iff the row is only valid locally """
+        """
+        Returns TRUE iff the row is only valid locally.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIProwIsLocal(self.scip_row)
 
     def isModifiable(self):
-        """returns TRUE iff row is modifiable during node processing (subject to column generation) """
+        """
+        Returns TRUE iff row is modifiable during node processing (subject to column generation).
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIProwIsModifiable(self.scip_row)
 
     def isRemovable(self):
-        """returns TRUE iff row is removable from the LP (due to aging or cleanup)"""
+        """
+        Returns TRUE iff row is removable from the LP (due to aging or cleanup).
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIProwIsRemovable(self.scip_row)
 
     def isInGlobalCutpool(self):
-        """return TRUE iff row is a member of the global cut pool"""
+        """
+        Return TRUE iff row is a member of the global cut pool.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIProwIsInGlobalCutpool(self.scip_row)
 
     def getOrigintype(self):
-        """returns type of origin that created the row"""
+        """
+        Returns type of origin that created the row.
+
+        Returns
+        -------
+        PY_SCIP_ROWORIGINTYPE
+
+        """
         return SCIProwGetOrigintype(self.scip_row)
 
     def getConsOriginConshdlrtype(self):
-        """returns type of constraint handler that created the row"""
+        """
+        Returns type of constraint handler that created the row.
+
+        Returns
+        -------
+        str
+
+        """
         cdef SCIP_CONS* scip_con = SCIProwGetOriginCons(self.scip_row)
         return bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(scip_con))).decode('UTF-8')
 
     def getNNonz(self):
-        """get number of nonzero entries in row vector"""
+        """
+        Get number of nonzero entries in row vector.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIProwGetNNonz(self.scip_row)
 
     def getNLPNonz(self):
-        """get number of nonzero entries in row vector that correspond to columns currently in the SCIP LP"""
+        """
+        Get number of nonzero entries in row vector that correspond to columns currently in the SCIP LP.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIProwGetNLPNonz(self.scip_row)
 
     def getCols(self):
-        """gets list with columns of nonzero entries"""
+        """
+        Gets list with columns of nonzero entries
+
+        Returns
+        -------
+        list of Column
+
+        """
         cdef SCIP_COL** cols = SCIProwGetCols(self.scip_row)
         return [Column.create(cols[i]) for i in range(self.getNNonz())]
 
     def getVals(self):
-        """gets list with coefficients of nonzero entries"""
+        """
+        Gets list with coefficients of nonzero entries.
+
+        Returns
+        -------
+        list of int
+
+        """
         cdef SCIP_Real* vals = SCIProwGetVals(self.scip_row)
         return [vals[i] for i in range(self.getNNonz())]
 
     def getAge(self):
-        """Gets the age of the row. (The consecutive times the row has been non-active in the LP)"""
+        """
+        Gets the age of the row. (The consecutive times the row has been non-active in the LP).
+
+        Returns
+        -------
+        int
+
+        """
         return SCIProwGetAge(self.scip_row)
 
     def getNorm(self):
-        """gets Euclidean norm of row vector """
+        """
+        Gets Euclidean norm of row vector.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIProwGetNorm(self.scip_row)
 
     def __hash__(self):
@@ -539,10 +841,24 @@ cdef class Row:
                 and self.scip_row == (<Row>other).scip_row)
 
 cdef class NLRow:
-    """Base class holding a pointer to corresponding SCIP_NLROW"""
+    """Base class holding a pointer to corresponding SCIP_NLROW."""
 
     @staticmethod
     cdef create(SCIP_NLROW* scipnlrow):
+        """
+        Main method for creating a NLRow class. Is used instead of __init__.
+
+        Parameters
+        ----------
+        scipnlrow : SCIP_NLROW*
+            A pointer to the SCIP_NLROW
+
+        Returns
+        -------
+        nlrow : NLRow
+            The Python representative of the SCIP_NLROW
+
+        """
         if scipnlrow == NULL:
             raise Warning("cannot create NLRow with SCIP_NLROW* == NULL")
         nlrow = NLRow()
@@ -555,26 +871,61 @@ cdef class NLRow:
             return cname.decode('utf-8')
 
     def getConstant(self):
-        """returns the constant of a nonlinear row"""
+        """
+        Returns the constant of a nonlinear row.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPnlrowGetConstant(self.scip_nlrow)
 
     def getLinearTerms(self):
-        """returns a list of tuples (var, coef) representing the linear part of a nonlinear row"""
+        """
+        Returns a list of tuples (var, coef) representing the linear part of a nonlinear row.
+
+        Returns
+        -------
+        list of tuple
+
+        """
         cdef SCIP_VAR** linvars = SCIPnlrowGetLinearVars(self.scip_nlrow)
         cdef SCIP_Real* lincoefs = SCIPnlrowGetLinearCoefs(self.scip_nlrow)
         cdef int nlinvars = SCIPnlrowGetNLinearVars(self.scip_nlrow)
         return [(Variable.create(linvars[i]), lincoefs[i]) for i in range(nlinvars)]
 
     def getLhs(self):
-        """returns the left hand side of a nonlinear row"""
+        """
+        Returns the left hand side of a nonlinear row.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPnlrowGetLhs(self.scip_nlrow)
 
     def getRhs(self):
-        """returns the right hand side of a nonlinear row"""
+        """
+        Returns the right hand side of a nonlinear row.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPnlrowGetRhs(self.scip_nlrow)
 
     def getDualsol(self):
-        """gets the dual NLP solution of a nonlinear row"""
+        """
+        Gets the dual NLP solution of a nonlinear row.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPnlrowGetDualsol(self.scip_nlrow)
 
     def __hash__(self):
@@ -585,7 +936,7 @@ cdef class NLRow:
                 and self.scip_nlrow == (<NLRow>other).scip_nlrow)
 
 cdef class Solution:
-    """Base class holding a pointer to corresponding SCIP_SOL"""
+    """Base class holding a pointer to corresponding SCIP_SOL."""
 
     # We are raising an error here to avoid creating a solution without an associated model. See Issue #625
     def __init__(self, raise_error = False):
@@ -594,6 +945,23 @@ cdef class Solution:
 
     @staticmethod
     cdef create(SCIP* scip, SCIP_SOL* scip_sol):
+        """
+        Main method for creating a Solution class. Please use createSol method of the Model class
+        when wanting to create a Solution as a user.
+
+        Parameters
+        ----------
+        scip : SCIP*
+            A pointer to the SCIP object
+        scip_sol : SCIP_SOL*
+            A pointer to the SCIP_SOL
+
+        Returns
+        -------
+        sol : Solution
+            The Python representative of the SCIP_SOL
+
+        """
         if scip == NULL:
             raise Warning("cannot create Solution with SCIP* == NULL")
         sol = Solution(True)
@@ -647,6 +1015,20 @@ cdef class BoundChange:
 
     @staticmethod
     cdef create(SCIP_BOUNDCHG* scip_boundchg):
+        """
+        Main method for creating a BoundChange class. Is used instead of __init__.
+
+        Parameters
+        ----------
+        scip_boundchg : SCIP_BOUNDCHG*
+            A pointer to the SCIP_BOUNDCHG
+
+        Returns
+        -------
+        boundchg : BoundChange
+            The Python representative of the SCIP_BOUNDCHG
+
+        """
         if scip_boundchg == NULL:
             raise Warning("cannot create BoundChange with SCIP_BOUNDCHG* == NULL")
         boundchg = BoundChange()
@@ -654,23 +1036,60 @@ cdef class BoundChange:
         return boundchg
 
     def getNewBound(self):
-        """Returns the new value of the bound in the bound change."""
+        """
+        Returns the new value of the bound in the bound change.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPboundchgGetNewbound(self.scip_boundchg)
 
     def getVar(self):
-        """Returns the variable of the bound change."""
+        """
+        Returns the variable of the bound change.
+
+        Returns
+        -------
+        Variable
+
+        """
         return Variable.create(SCIPboundchgGetVar(self.scip_boundchg))
 
     def getBoundchgtype(self):
-        """Returns the bound change type of the bound change."""
+        """
+        Returns the bound change type of the bound change.
+
+        Returns
+        -------
+        int
+            (0 = branching, 1 = consinfer, 2 = propinfer)
+
+        """
         return SCIPboundchgGetBoundchgtype(self.scip_boundchg)
 
     def getBoundtype(self):
-        """Returns the bound type of the bound change."""
+        """
+        Returns the bound type of the bound change.
+
+        Returns
+        -------
+        int
+            (0 = lower, 1 = upper)
+
+        """
         return SCIPboundchgGetBoundtype(self.scip_boundchg)
 
     def isRedundant(self):
-        """Returns whether the bound change is redundant due to a more global bound that is at least as strong."""
+        """
+        Returns whether the bound change is redundant due to a more global bound that is at least as strong.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPboundchgIsRedundant(self.scip_boundchg)
 
     def __repr__(self):
@@ -683,6 +1102,20 @@ cdef class DomainChanges:
 
     @staticmethod
     cdef create(SCIP_DOMCHG* scip_domchg):
+        """
+        Main method for creating a DomainChanges class. Is used instead of __init__.
+
+        Parameters
+        ----------
+        scip_domchg : SCIP_DOMCHG*
+            A pointer to the SCIP_DOMCHG
+
+        Returns
+        -------
+        domchg : DomainChanges
+            The Python representative of the SCIP_DOMCHG
+
+        """
         if scip_domchg == NULL:
             raise Warning("cannot create DomainChanges with SCIP_DOMCHG* == NULL")
         domchg = DomainChanges()
@@ -690,7 +1123,14 @@ cdef class DomainChanges:
         return domchg
 
     def getBoundchgs(self):
-        """Returns the bound changes in the domain change."""
+        """
+        Returns the bound changes in the domain change.
+
+        Returns
+        -------
+        list of BoundChange
+
+        """
         nboundchgs = SCIPdomchgGetNBoundchgs(self.scip_domchg)
         return [BoundChange.create(SCIPdomchgGetBoundchg(self.scip_domchg, i))
                 for i in range(nboundchgs)]
@@ -700,6 +1140,20 @@ cdef class Node:
 
     @staticmethod
     cdef create(SCIP_NODE* scipnode):
+        """
+        Main method for creating a Node class. Is used instead of __init__.
+
+        Parameters
+        ----------
+        scipnode : SCIP_NODE*
+            A pointer to the SCIP_NODE
+
+        Returns
+        -------
+        node : Node
+            The Python representative of the SCIP_NODE
+
+        """
         if scipnode == NULL:
             return None
         node = Node()
@@ -707,31 +1161,80 @@ cdef class Node:
         return node
 
     def getParent(self):
-        """Retrieve parent node (or None if the node has no parent node)."""
+        """
+        Retrieve parent node (or None if the node has no parent node).
+
+        Returns
+        -------
+        Node
+
+        """
         return Node.create(SCIPnodeGetParent(self.scip_node))
 
     def getNumber(self):
-        """Retrieve number of node."""
+        """
+        Retrieve number of node.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPnodeGetNumber(self.scip_node)
 
     def getDepth(self):
-        """Retrieve depth of node."""
+        """
+        Retrieve depth of node.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPnodeGetDepth(self.scip_node)
 
     def getType(self):
-        """Retrieve type of node."""
+        """
+        Retrieve type of node.
+
+        Returns
+        -------
+        PY_SCIP_NODETYPE
+
+        """
         return SCIPnodeGetType(self.scip_node)
 
     def getLowerbound(self):
-        """Retrieve lower bound of node."""
+        """
+        Retrieve lower bound of node.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPnodeGetLowerbound(self.scip_node)
 
     def getEstimate(self):
-        """Retrieve the estimated value of the best feasible solution in subtree of the node"""
+        """
+        Retrieve the estimated value of the best feasible solution in subtree of the node.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPnodeGetEstimate(self.scip_node)
 
     def getAddedConss(self):
-        """Retrieve all constraints added at this node."""
+        """
+        Retrieve all constraints added at this node.
+
+        Returns
+        -------
+        list of Constraint
+
+        """
         cdef int addedconsssize = SCIPnodeGetNAddedConss(self.scip_node)
         if addedconsssize == 0:
             return []
@@ -744,19 +1247,47 @@ cdef class Node:
         return constraints
 
     def getNAddedConss(self):
-        """Retrieve number of added constraints at this node"""
+        """
+        Retrieve number of added constraints at this node.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPnodeGetNAddedConss(self.scip_node)
 
     def isActive(self):
-        """Is the node in the path to the current node?"""
+        """
+        Is the node in the path to the current node?
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPnodeIsActive(self.scip_node)
 
     def isPropagatedAgain(self):
-        """Is the node marked to be propagated again?"""
+        """
+        Is the node marked to be propagated again?
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPnodeIsPropagatedAgain(self.scip_node)
 
     def getNParentBranchings(self):
-        """Retrieve the number of variable branchings that were performed in the parent node to create this node."""
+        """
+        Retrieve the number of variable branchings that were performed in the parent node to create this node.
+
+        Returns
+        -------
+        int
+
+        """
         cdef SCIP_VAR* dummy_branchvars
         cdef SCIP_Real dummy_branchbounds
         cdef SCIP_BOUNDTYPE dummy_boundtypes
@@ -770,7 +1301,16 @@ cdef class Node:
         return nbranchvars
 
     def getParentBranchings(self):
-        """Retrieve the set of variable branchings that were performed in the parent node to create this node."""
+        """
+        Retrieve the set of variable branchings that were performed in the parent node to create this node.
+
+        Returns
+        -------
+        py_variables : list of Variable
+        py_branchbounds : list of float
+        py_boundtypes : list of int
+
+        """
         cdef int nbranchvars = self.getNParentBranchings()
         if nbranchvars == 0:
             return None
@@ -792,7 +1332,16 @@ cdef class Node:
         return py_variables, py_branchbounds, py_boundtypes
 
     def getNDomchg(self):
-        """Retrieve the number of bound changes due to branching, constraint propagation, and propagation."""
+        """
+        Retrieve the number of bound changes due to branching, constraint propagation, and propagation.
+
+        Returns
+        -------
+        nbranchings : int
+        nconsprop : int
+        nprop : int
+
+        """
         cdef int nbranchings
         cdef int nconsprop
         cdef int nprop
@@ -800,7 +1349,14 @@ cdef class Node:
         return nbranchings, nconsprop, nprop
 
     def getDomchg(self):
-        """Retrieve domain changes for this node."""
+        """
+        Retrieve domain changes for this node.
+
+        Returns
+        -------
+        DomainChanges
+
+        """
         cdef SCIP_DOMCHG* domchg = SCIPnodeGetDomchg(self.scip_node)
         if domchg == NULL:
             return None
@@ -818,6 +1374,20 @@ cdef class Variable(Expr):
 
     @staticmethod
     cdef create(SCIP_VAR* scipvar):
+        """
+        Main method for creating a Variable class. Is used instead of __init__.
+
+        Parameters
+        ----------
+        scipvar : SCIP_VAR*
+            A pointer to the SCIP_VAR
+
+        Returns
+        -------
+        var : Variable
+            The Python representative of the SCIP_VAR
+
+        """
         if scipvar == NULL:
             raise Warning("cannot create Variable with SCIP_VAR* == NULL")
         var = Variable()
@@ -838,7 +1408,15 @@ cdef class Variable(Expr):
         return self.name
 
     def vtype(self):
-        """Retrieve the variables type (BINARY, INTEGER, IMPLINT or CONTINUOUS)"""
+        """
+        Retrieve the variables type (BINARY, INTEGER, IMPLINT or CONTINUOUS)
+
+        Returns
+        -------
+        str
+            "BINARY", "INTEGER", "CONTINUOUS", or "IMPLINT"
+
+        """
         vartype = SCIPvarGetType(self.scip_var)
         if vartype == SCIP_VARTYPE_BINARY:
             return "BINARY"
@@ -850,64 +1428,163 @@ cdef class Variable(Expr):
             return "IMPLINT"
 
     def isOriginal(self):
-        """Retrieve whether the variable belongs to the original problem"""
+        """
+        Retrieve whether the variable belongs to the original problem
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPvarIsOriginal(self.scip_var)
 
     def isInLP(self):
-        """Retrieve whether the variable is a COLUMN variable that is member of the current LP"""
+        """
+        Retrieve whether the variable is a COLUMN variable that is member of the current LP.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPvarIsInLP(self.scip_var)
 
 
     def getIndex(self):
-        """Retrieve the unique index of the variable."""
+        """
+        Retrieve the unique index of the variable.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPvarGetIndex(self.scip_var)
 
     def getCol(self):
-        """Retrieve column of COLUMN variable"""
+        """
+        Retrieve column of COLUMN variable.
+
+        Returns
+        -------
+        Column
+
+        """
         cdef SCIP_COL* scip_col
         scip_col = SCIPvarGetCol(self.scip_var)
         return Column.create(scip_col)
 
     def getLbOriginal(self):
-        """Retrieve original lower bound of variable"""
+        """
+        Retrieve original lower bound of variable.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPvarGetLbOriginal(self.scip_var)
 
     def getUbOriginal(self):
-        """Retrieve original upper bound of variable"""
+        """
+        Retrieve original upper bound of variable.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPvarGetUbOriginal(self.scip_var)
 
     def getLbGlobal(self):
-        """Retrieve global lower bound of variable"""
+        """
+        Retrieve global lower bound of variable.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPvarGetLbGlobal(self.scip_var)
 
     def getUbGlobal(self):
-        """Retrieve global upper bound of variable"""
+        """
+        Retrieve global upper bound of variable.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPvarGetUbGlobal(self.scip_var)
 
     def getLbLocal(self):
-        """Retrieve current lower bound of variable"""
+        """
+        Retrieve current lower bound of variable.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPvarGetLbLocal(self.scip_var)
 
     def getUbLocal(self):
-        """Retrieve current upper bound of variable"""
+        """
+        Retrieve current upper bound of variable.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPvarGetUbLocal(self.scip_var)
 
     def getObj(self):
-        """Retrieve current objective value of variable"""
+        """
+        Retrieve current objective value of variable.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPvarGetObj(self.scip_var)
 
     def getLPSol(self):
-        """Retrieve the current LP solution value of variable"""
+        """
+        Retrieve the current LP solution value of variable.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPvarGetLPSol(self.scip_var)
 
     def getAvgSol(self):
-        """Get the weighted average solution of variable in all feasible primal solutions found"""
+        """
+        Get the weighted average solution of variable in all feasible primal solutions found.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPvarGetAvgSol(self.scip_var)
 
     def varMayRound(self, direction="down"):
-        """Checks whether its it possible, to round variable up and stay feasible for the relaxation
+        """
+        Checks whether its it possible to round variable up / down and stay feasible for the relaxation.
 
-        :param direction: direction in which the variable will be rounded
+        Parameters
+        ----------
+        direction : str
+            "up" or "down"
+
+        Returns
+        -------
+        bool
 
         """
         if direction not in ("down", "up"):
@@ -925,6 +1602,20 @@ cdef class Constraint:
 
     @staticmethod
     cdef create(SCIP_CONS* scipcons):
+        """
+        Main method for creating a Constraint class. Is used instead of __init__.
+
+        Parameters
+        ----------
+        scipcons : SCIP_CONS*
+            A pointer to the SCIP_CONS
+
+        Returns
+        -------
+        cons : Constraint
+            The Python representative of the SCIP_CONS
+
+        """
         if scipcons == NULL:
             raise Warning("cannot create Constraint with SCIP_CONS* == NULL")
         cons = Constraint()
@@ -940,65 +1631,170 @@ cdef class Constraint:
         return self.name
 
     def isOriginal(self):
-        """Retrieve whether the constraint belongs to the original problem"""
+        """
+        Retrieve whether the constraint belongs to the original problem.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPconsIsOriginal(self.scip_cons)
 
     def isInitial(self):
-        """Retrieve True if the relaxation of the constraint should be in the initial LP"""
+        """
+        Retrieve True if the relaxation of the constraint should be in the initial LP.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPconsIsInitial(self.scip_cons)
 
     def isSeparated(self):
-        """Retrieve True if constraint should be separated during LP processing"""
+        """
+        Retrieve True if constraint should be separated during LP processing.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPconsIsSeparated(self.scip_cons)
 
     def isEnforced(self):
-        """Retrieve True if constraint should be enforced during node processing"""
+        """
+        Retrieve True if constraint should be enforced during node processing.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPconsIsEnforced(self.scip_cons)
 
     def isChecked(self):
-        """Retrieve True if constraint should be checked for feasibility"""
+        """
+        Retrieve True if constraint should be checked for feasibility.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPconsIsChecked(self.scip_cons)
 
     def isPropagated(self):
-        """Retrieve True if constraint should be propagated during node processing"""
+        """
+        Retrieve True if constraint should be propagated during node processing.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPconsIsPropagated(self.scip_cons)
 
     def isLocal(self):
-        """Retrieve True if constraint is only locally valid or not added to any (sub)problem"""
+        """
+        Retrieve True if constraint is only locally valid or not added to any (sub)problem.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPconsIsLocal(self.scip_cons)
 
     def isModifiable(self):
-        """Retrieve True if constraint is modifiable (subject to column generation)"""
+        """
+        Retrieve True if constraint is modifiable (subject to column generation).
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPconsIsModifiable(self.scip_cons)
 
     def isDynamic(self):
-        """Retrieve True if constraint is subject to aging"""
+        """
+        Retrieve True if constraint is subject to aging.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPconsIsDynamic(self.scip_cons)
 
     def isRemovable(self):
-        """Retrieve True if constraint's relaxation should be removed from the LP due to aging or cleanup"""
+        """
+        Retrieve True if constraint's relaxation should be removed from the LP due to aging or cleanup.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPconsIsRemovable(self.scip_cons)
 
     def isStickingAtNode(self):
-        """Retrieve True if constraint is only locally valid or not added to any (sub)problem"""
+        """
+        Retrieve True if constraint is only locally valid or not added to any (sub)problem.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPconsIsStickingAtNode(self.scip_cons)
 
     def isActive(self):
-        """returns True iff constraint is active in the current node"""
+        """
+        Returns True iff constraint is active in the current node.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPconsIsActive(self.scip_cons)
 
     def isLinear(self):
-        """Retrieve True if constraint is linear"""
+        """
+        Retrieve True if constraint is linear
+
+        Returns
+        -------
+        bool
+
+        """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'linear'
 
     def isNonlinear(self):
-        """Retrieve True if constraint is nonlinear"""
+        """
+        Retrieve True if constraint is nonlinear.
+
+        Returns
+        -------
+        bool
+
+        """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'nonlinear'
 
     def getConshdlrName(self):
-        """Return the constraint handler's name"""
+        """
+        Return the constraint handler's name.
+
+        Returns
+        -------
+        str
+
+        """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype
 
@@ -1023,18 +1819,30 @@ cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg) noex
 #@anchor Model
 ##
 cdef class Model:
-    """Main class holding a pointer to SCIP for managing most interactions"""
 
     def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False, createscip=True, threadsafe=False):
         """
-        :param problemName: name of the problem (default 'model')
-        :param defaultPlugins: use default plugins? (default True)
-        :param sourceModel: create a copy of the given Model instance (default None)
-        :param origcopy: whether to call copy or copyOrig (default False)
-        :param globalcopy: whether to create a global or a local copy (default True)
-        :param enablepricing: whether to enable pricing in copy (default False)
-        :param createscip: initialize the Model object and creates a SCIP instance
-        :param threadsafe: False if data can be safely shared between the source and target problem
+        Main class holding a pointer to SCIP for managing most interactions
+
+        Parameters
+        ----------
+        problemName : str, optional
+            name of the problem (default 'model')
+        defaultPlugins : bool, optional
+            use default plugins? (default True)
+        sourceModel : Model or None, optional
+            create a copy of the given Model instance (default None)
+        origcopy : bool, optional
+            whether to call copy or copyOrig (default False)
+        globalcopy : bool, optional
+            whether to create a global or a local copy (default True)
+        enablepricing : bool, optional
+            whether to enable pricing in copy (default False)
+        createscip : bool, optional
+            initialize the Model object and creates a SCIP instance (default True)
+        threadsafe : bool, optional
+            False if data can be safely shared between the source and target problem (default False)
+
         """
         if self.version() < MAJOR:
             raise Exception("linked SCIP is not compatible to this version of PySCIPOpt - use at least version", MAJOR)
@@ -1068,11 +1876,12 @@ cdef class Model:
 
     def attachEventHandlerCallback(self, 
         callback,
-        events: List[SCIP_EVENTTYPE],
+        events,
         name="eventhandler",
         description=""
         ):
-        """Attach an event handler to the model using a callback function.
+        """
+        Attach an event handler to the model using a callback function.
 
         Parameters
         ----------
@@ -1130,7 +1939,18 @@ cdef class Model:
 
     @staticmethod
     cdef create(SCIP* scip):
-        """Creates a model and appropriately assigns the scip and bestsol parameters
+        """
+        Creates a model and appropriately assigns the scip and bestsol parameters.
+        
+        Parameters
+        ----------
+        scip : SCIP*
+            A pointer to a SCIP object
+
+        Returns
+        -------
+        Model
+
         """
         if scip == NULL:
             raise Warning("cannot create Model with SCIP* == NULL")
@@ -1141,26 +1961,48 @@ cdef class Model:
 
     @property
     def _freescip(self):
-        """Return whether the underlying Scip pointer gets deallocted when the current
+        """
+        Return whether the underlying Scip pointer gets deallocted when the current
         object is deleted.
+
+        Returns
+        -------
+        bool
+
         """
         return self._freescip
 
     @_freescip.setter
     def _freescip(self, val):
-        """Set whether the underlying Scip pointer gets deallocted when the current
+        """
+        Set whether the underlying Scip pointer gets deallocted when the current
         object is deleted.
+
+        Parameters
+        ----------
+        val : bool
+
         """
         self._freescip = val
 
     @cython.always_allow_keywords(True)
     @staticmethod
     def from_ptr(capsule, take_ownership):
-        """Create a Model from a given pointer.
+        """
+        Create a Model from a given pointer.
 
-        :param cpasule: The PyCapsule containing the SCIP pointer under the name "scip".
-        :param take_ownership: Whether the newly created Model assumes ownership of the
-        underlying Scip pointer (see `_freescip`).
+        Parameters
+        ----------
+        capsule
+            The PyCapsule containing the SCIP pointer under the name "scip"
+        take_ownership : bool
+            Whether the newly created Model assumes ownership of the
+            underlying Scip pointer (see ``_freescip``)
+
+        Returns
+        -------
+        Model
+
         """
         if not PyCapsule_IsValid(capsule, "scip"):
             raise ValueError("The given capsule does not contain a valid scip pointer")
@@ -1170,12 +2012,21 @@ cdef class Model:
 
     @cython.always_allow_keywords(True)
     def to_ptr(self, give_ownership):
-        """Return the underlying Scip pointer to the current Model.
+        """
+        Return the underlying Scip pointer to the current Model.
 
-        :param give_ownership: Whether the current Model gives away ownership of the
-        underlying Scip pointer (see `_freescip`).
-        :return capsule: The underlying pointer to the current Model, wrapped in a
-        PyCapsule under the name "scip".
+        Parameters
+        ----------
+        give_ownership : bool
+            Whether the current Model gives away ownership of the
+            underlying Scip pointer (see ``_freescip``)
+
+        Returns
+        -------
+        capsule
+            The underlying pointer to the current Model, wrapped in a
+            PyCapsule under the name "scip".
+
         """
         capsule = PyCapsule_New(<void*>self._scip, "scip", NULL)
         if give_ownership:
@@ -1183,24 +2034,29 @@ cdef class Model:
         return capsule
 
     def includeDefaultPlugins(self):
-        """Includes all default plug-ins into SCIP"""
+        """Includes all default plug-ins into SCIP."""
         PY_SCIP_CALL(SCIPincludeDefaultPlugins(self._scip))
 
     def createProbBasic(self, problemName='model'):
-        """Create new problem instance with given name
+        """
+        Create new problem instance with given name.
 
-        :param problemName: name of model or problem (Default value = 'model')
+        Parameters
+        ----------
+        problemName : str, optional
+            name of model or problem (Default value = 'model')
 
         """
         n = str_conversion(problemName)
         PY_SCIP_CALL(SCIPcreateProbBasic(self._scip, n))
 
     def freeProb(self):
-        """Frees problem and solution process data"""
+        """Frees problem and solution process data."""
         PY_SCIP_CALL(SCIPfreeProb(self._scip))
 
     def freeTransform(self):
-        """Frees all solution process data including presolving and transformed problem, only original problem is kept"""
+        """Frees all solution process data including presolving and
+        transformed problem, only original problem is kept."""
         self._modelvars = {
             var: value
             for var, value in self._modelvars.items()
@@ -1209,11 +2065,18 @@ cdef class Model:
         PY_SCIP_CALL(SCIPfreeTransform(self._scip))
 
     def version(self):
-        """Retrieve SCIP version"""
+        """
+        Retrieve SCIP version.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPversion()
 
     def printVersion(self):
-        """Print version, copyright information and compile mode"""
+        """Print version, copyright information and compile mode."""
         user_locale = locale.getlocale(category=locale.LC_NUMERIC)
         locale.setlocale(locale.LC_NUMERIC, "C")
 
@@ -1222,7 +2085,7 @@ cdef class Model:
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def printExternalCodeVersions(self):
-        """Print external code versions, e.g. symmetry, non-linear solver, lp solver"""
+        """Print external code versions, e.g. symmetry, non-linear solver, lp solver."""
         user_locale = locale.getlocale(category=locale.LC_NUMERIC)
         locale.setlocale(locale.LC_NUMERIC, "C")
 
@@ -1231,149 +2094,474 @@ cdef class Model:
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def getProbName(self):
-        """Retrieve problem name"""
+        """
+        Retrieve problem name.
+
+        Returns
+        -------
+        str
+
+        """
         return bytes(SCIPgetProbName(self._scip)).decode('UTF-8')
 
     def getTotalTime(self):
-        """Retrieve the current total SCIP time in seconds, i.e. the total time since the SCIP instance has been created"""
+        """
+        Retrieve the current total SCIP time in seconds,
+        i.e. the total time since the SCIP instance has been created.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPgetTotalTime(self._scip)
 
     def getSolvingTime(self):
-        """Retrieve the current solving time in seconds"""
+        """
+        Retrieve the current solving time in seconds.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPgetSolvingTime(self._scip)
 
     def getReadingTime(self):
-        """Retrieve the current reading time in seconds"""
+        """
+        Retrieve the current reading time in seconds.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPgetReadingTime(self._scip)
 
     def getPresolvingTime(self):
-        """Retrieve the curernt presolving time in seconds"""
+        """
+        Retrieve the curernt presolving time in seconds.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPgetPresolvingTime(self._scip)
 
     def getNLPIterations(self):
-        """Retrieve the total number of LP iterations so far."""
+        """
+        Retrieve the total number of LP iterations so far.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNLPIterations(self._scip)
 
     def getNNodes(self):
-        """gets number of processed nodes in current run, including the focus node."""
+        """
+        Gets number of processed nodes in current run, including the focus node.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNNodes(self._scip)
 
     def getNTotalNodes(self):
-        """gets number of processed nodes in all runs, including the focus node."""
+        """
+        Gets number of processed nodes in all runs, including the focus node.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNTotalNodes(self._scip)
 
     def getNFeasibleLeaves(self):
-        """Retrieve number of leaf nodes processed with feasible relaxation solution."""
+        """
+        Retrieve number of leaf nodes processed with feasible relaxation solution.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNFeasibleLeaves(self._scip)
 
     def getNInfeasibleLeaves(self):
-        """gets number of infeasible leaf nodes processed."""
+        """
+        Gets number of infeasible leaf nodes processed.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNInfeasibleLeaves(self._scip)
 
     def getNLeaves(self):
-        """gets number of leaves in the tree."""
+        """
+        Gets number of leaves in the tree.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNLeaves(self._scip)
 
     def getNChildren(self):
-        """gets number of children of focus node."""
+        """
+        Gets number of children of focus node.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNChildren(self._scip)
 
     def getNSiblings(self):
-        """gets number of siblings of focus node."""
+        """
+        Gets number of siblings of focus node.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNSiblings(self._scip)
 
     def getCurrentNode(self):
-        """Retrieve current node."""
+        """
+        Retrieve current node.
+
+        Returns
+        -------
+        Node
+
+        """
         return Node.create(SCIPgetCurrentNode(self._scip))
 
     def getGap(self):
-        """Retrieve the gap, i.e. |(primalbound - dualbound)/min(|primalbound|,|dualbound|)|."""
+        """
+        Retrieve the gap,
+        i.e. abs((primalbound - dualbound)/min(abs(primalbound),abs(dualbound)))
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPgetGap(self._scip)
 
     def getDepth(self):
-        """Retrieve the depth of the current node"""
+        """
+        Retrieve the depth of the current node.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetDepth(self._scip)
 
     def infinity(self):
-        """Retrieve SCIP's infinity value"""
+        """
+        Retrieve SCIP's infinity value.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPinfinity(self._scip)
 
     def epsilon(self):
-        """Retrieve epsilon for e.g. equality checks"""
+        """
+        Retrieve epsilon for e.g. equality checks.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPepsilon(self._scip)
 
     def feastol(self):
-        """Retrieve feasibility tolerance"""
+        """
+        Retrieve feasibility tolerance.
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPfeastol(self._scip)
 
     def feasFrac(self, value):
-        """returns fractional part of value, i.e. x - floor(x) in feasible tolerance: x - floor(x+feastol)"""
+        """
+        Returns fractional part of value, i.e. x - floor(x) in feasible tolerance: x - floor(x+feastol).
+
+        Parameters
+        ----------
+        value : float
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPfeasFrac(self._scip, value)
 
     def frac(self, value):
-        """returns fractional part of value, i.e. x - floor(x) in epsilon tolerance: x - floor(x+eps)"""
+        """
+        Returns fractional part of value, i.e. x - floor(x) in epsilon tolerance: x - floor(x+eps).
+
+        Parameters
+        ----------
+        value : float
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPfrac(self._scip, value)
 
     def feasFloor(self, value):
-        """ rounds value + feasibility tolerance down to the next integer"""
+        """
+        Rounds value + feasibility tolerance down to the next integer.
+
+        Parameters
+        ----------
+        value : float
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPfeasFloor(self._scip, value)
 
     def feasCeil(self, value):
-        """rounds value - feasibility tolerance up to the next integer"""
+        """
+        Rounds value - feasibility tolerance up to the next integer.
+
+        Parameters
+        ----------
+        value : float
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPfeasCeil(self._scip, value)
 
     def feasRound(self, value):
-        """rounds value to the nearest integer in feasibility tolerance"""
+        """
+        Rounds value to the nearest integer in feasibility tolerance.
+
+        Parameters
+        ----------
+        value : float
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPfeasRound(self._scip, value)
 
     def isZero(self, value):
-        """returns whether abs(value) < eps"""
+        """
+        Returns whether abs(value) < eps.
+
+        Parameters
+        ----------
+        value : float
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPisZero(self._scip, value)
 
     def isFeasZero(self, value):
-        """returns whether abs(value) < feastol"""
+        """
+        Returns whether abs(value) < feastol.
+
+        Parameters
+        ----------
+        value : float
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPisFeasZero(self._scip, value)
 
     def isInfinity(self, value):
-        """returns whether value is SCIP's infinity"""
+        """
+        Returns whether value is SCIP's infinity.
+
+        Parameters
+        ----------
+        value : float
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPisInfinity(self._scip, value)
 
     def isFeasNegative(self, value):
-        """returns whether value < -feastol"""
+        """
+        Returns whether value < -feastol.
+
+        Parameters
+        ----------
+        value : float
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPisFeasNegative(self._scip, value)
 
     def isFeasIntegral(self, value):
-        """returns whether value is integral within the LP feasibility bounds"""
+        """
+        Returns whether value is integral within the LP feasibility bounds.
+
+        Parameters
+        ----------
+        value : float
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPisFeasIntegral(self._scip, value)
 
     def isEQ(self, val1, val2):
-        """checks, if values are in range of epsilon"""
+        """
+        Checks, if values are in range of epsilon.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPisEQ(self._scip, val1, val2)
 
     def isFeasEQ(self, val1, val2):
-        """checks, if relative difference of values is in range of feasibility tolerance"""
+        """
+        Checks, if relative difference of values is in range of feasibility tolerance.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPisFeasEQ(self._scip, val1, val2)
 
     def isLE(self, val1, val2):
-        """returns whether val1 <= val2 + eps"""
+        """
+        Returns whether val1 <= val2 + eps.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPisLE(self._scip, val1, val2)
 
     def isLT(self, val1, val2):
-        """returns whether val1 < val2 - eps"""
+        """
+        Returns whether val1 < val2 - eps.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPisLT(self._scip, val1, val2)
 
     def isGE(self, val1, val2):
-        """returns whether val1 >= val2 - eps"""
+        """
+        Returns whether val1 >= val2 - eps.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPisGE(self._scip, val1, val2)
 
     def isGT(self, val1, val2):
-        """returns whether val1 > val2 + eps"""
+        """
+        Returns whether val1 > val2 + eps.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : foat
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPisGT(self._scip, val1, val2)
 
     def getCondition(self, exact=False):
-        """Get the current LP's condition number
+        """
+        Get the current LP's condition number.
 
-        :param exact: whether to get an estimate or the exact value (Default value = False)
+        Parameters
+        ----------
+        exact : bool, optional
+            whether to get an estimate or the exact value (Default value = False)
+
+        Returns
+        -------
+        float
 
         """
         cdef SCIP_LPI* lpi
@@ -1387,11 +2575,26 @@ cdef class Model:
         return quality
 
     def enableReoptimization(self, enable=True):
-        """include specific heuristics and branching rules for reoptimization"""
+        """
+        Include specific heuristics and branching rules for reoptimization.
+
+        Parameters
+        ----------
+        enable : bool, optional
+            True to enable and False to disable
+
+        """
         PY_SCIP_CALL(SCIPenableReoptimization(self._scip, enable))
 
     def lpiGetIterations(self):
-        """Get the iteration count of the last solved LP"""
+        """
+        Get the iteration count of the last solved LP.
+
+        Returns
+        -------
+        int
+
+        """
         cdef SCIP_LPI* lpi
         PY_SCIP_CALL(SCIPgetLPI(self._scip, &lpi))
         cdef int iters = 0
@@ -1409,24 +2612,34 @@ cdef class Model:
         PY_SCIP_CALL(SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))
 
     def setObjlimit(self, objlimit):
-        """Set a limit on the objective function.
+        """
+        Set a limit on the objective function.
         Only solutions with objective value better than this limit are accepted.
 
-        :param objlimit: limit on the objective function
+        Parameters
+        ----------
+        objlimit : float
+            limit on the objective function
 
         """
         PY_SCIP_CALL(SCIPsetObjlimit(self._scip, objlimit))
 
     def getObjlimit(self):
-        """returns current limit on objective function."""
+        """Returns current limit on objective function."""
         return SCIPgetObjlimit(self._scip)
 
     def setObjective(self, expr, sense = 'minimize', clear = 'true'):
-        """Establish the objective function as a linear expression.
+        """
+        Establish the objective function as a linear expression.
 
-        :param expr: the objective function SCIP Expr, or constant value
-        :param sense: the objective sense (Default value = 'minimize')
-        :param clear: set all other variables objective coefficient to zero (Default value = 'true')
+        Parameters
+        ----------
+        expr : Expr or float
+            the objective function SCIP Expr, or constant value
+        sense : str, optional
+            the objective sense ("minimize" or "maximize") (Default value = 'minimize')
+        clear : bool, optional
+            set all other variables objective coefficient to zero (Default value = 'true')
 
         """
  
@@ -1467,7 +2680,14 @@ cdef class Model:
             raise Warning("unrecognized optimization sense: %s" % sense)
 
     def getObjective(self):
-        """Retrieve objective function as Expr"""
+        """
+        Retrieve objective function as Expr.
+
+        Returns
+        -------
+        Expr
+
+        """
         variables = self.getVars()
         objective = Expr()
         for var in variables:
@@ -1478,10 +2698,15 @@ cdef class Model:
         return objective
 
     def addObjoffset(self, offset, solutions = False):
-        """Add constant offset to objective
+        """
+        Add constant offset to objective.
 
-        :param offset: offset to add
-        :param solutions: add offset also to existing solutions (Default value = False)
+        Parameters
+        ----------
+        offset : float
+            offset to add
+        solutions : bool, optional
+            add offset also to existing solutions (Default value = False)
 
         """
         if solutions:
@@ -1490,9 +2715,17 @@ cdef class Model:
             PY_SCIP_CALL(SCIPaddOrigObjoffset(self._scip, offset))
 
     def getObjoffset(self, original = True):
-        """Retrieve constant objective offset
+        """
+        Retrieve constant objective offset
 
-        :param original: offset of original or transformed problem (Default value = True)
+        Parameters
+        ----------
+        original : bool, optional
+            offset of original or transformed problem (Default value = True)
+
+        Returns
+        -------
+        float
 
         """
         if original:
@@ -1501,19 +2734,31 @@ cdef class Model:
             return SCIPgetTransObjoffset(self._scip)
 
     def setObjIntegral(self):
-        """informs SCIP that the objective value is always integral in every feasible solution
-        Note: This function should be used to inform SCIP that the objective function is integral, helping to improve the
-        performance. This is useful when using column generation. If no column generation (pricing) is used, SCIP
-        automatically detects whether the objective function is integral or can be scaled to be integral. However, in
-        any case, the user has to make sure that no variable is added during the solving process that destroys this
-        property.
+        """Informs SCIP that the objective value is always integral in every feasible solution.
+
+        Notes
+        -----
+        This function should be used to inform SCIP that the objective function is integral,
+        helping to improve the performance. This is useful when using column generation.
+        If no column generation (pricing) is used, SCIP automatically detects whether the objective
+        function is integral or can be scaled to be integral. However, in any case, the user has to
+        make sure that no variable is added during the solving process that destroys this property.
         """
         PY_SCIP_CALL(SCIPsetObjIntegral(self._scip))
 
     def getLocalEstimate(self, original = False):
-        """gets estimate of best primal solution w.r.t. original or transformed problem contained in current subtree
+        """
+        Gets estimate of best primal solution w.r.t. original or transformed problem contained in current subtree.
 
-        :param original: estimate of original or transformed problem (Default value = False)
+        Parameters
+        ----------
+        original : bool, optional
+            get estimate of original or transformed problem (Default value = False)
+
+        Returns
+        -------
+        float
+
         """
         if original:
             return SCIPgetLocalOrigEstimate(self._scip)
@@ -1522,38 +2767,62 @@ cdef class Model:
 
     # Setting parameters
     def setPresolve(self, setting):
-        """Set presolving parameter settings.
+        """
+        Set presolving parameter settings.
 
-        :param setting: the parameter settings (SCIP_PARAMSETTING)
+
+        Parameters
+        ----------
+        setting : SCIP_PARAMSETTING
+            the parameter settings, e.g. SCIP_PARAMSETTING.OFF
 
         """
         PY_SCIP_CALL(SCIPsetPresolving(self._scip, setting, True))
 
     def setProbName(self, name):
-        """Set problem name"""
+        """
+        Set problem name.
+
+        Parameters
+        ----------
+        name : str
+
+        """
         n = str_conversion(name)
         PY_SCIP_CALL(SCIPsetProbName(self._scip, n))
 
     def setSeparating(self, setting):
-        """Set separating parameter settings.
+        """
+        Set separating parameter settings.
 
-        :param setting: the parameter settings (SCIP_PARAMSETTING)
+        Parameters
+        ----------
+        setting : SCIP_PARAMSETTING
+            the parameter settings, e.g. SCIP_PARAMSETTING.OFF
 
         """
         PY_SCIP_CALL(SCIPsetSeparating(self._scip, setting, True))
 
     def setHeuristics(self, setting):
-        """Set heuristics parameter settings.
+        """
+        Set heuristics parameter settings.
 
-        :param setting: the parameter setting (SCIP_PARAMSETTING)
+        Parameters
+        ----------
+        setting : SCIP_PARAMSETTING
+            the parameter settings, e.g. SCIP_PARAMSETTING.OFF
 
         """
         PY_SCIP_CALL(SCIPsetHeuristics(self._scip, setting, True))
 
     def disablePropagation(self, onlyroot=False):
-        """Disables propagation in SCIP to avoid modifying the original problem during transformation.
+        """
+        Disables propagation in SCIP to avoid modifying the original problem during transformation.
 
-        :param onlyroot: use propagation when root processing is finished (Default value = False)
+        Parameters
+        ----------
+        onlyroot : bool, optional
+            use propagation when root processing is finished (Default value = False)
 
         """
         self.setIntParam("propagating/maxroundsroot", 0)
@@ -1561,12 +2830,23 @@ cdef class Model:
             self.setIntParam("propagating/maxrounds", 0)
 
     def writeProblem(self, filename='model.cip', trans=False, genericnames=False, verbose=True):
-        """Write current model/problem to a file.
+        """
+        Write current model/problem to a file.
 
-        :param filename: the name of the file to be used (Default value = 'model.cip'). Should have an extension corresponding to one of the readable file formats, described in https://www.scipopt.org/doc/html/group__FILEREADERS.php.
-        :param trans: indicates whether the transformed problem is written to file (Default value = False)
-        :param genericnames: indicates whether the problem should be written with generic variable and constraint names (Default value = False)
-        :param verbose: indicates whether a success message should be printed
+        Parameters
+        ----------
+        filename : str, optional
+            the name of the file to be used (Default value = 'model.cip').
+            Should have an extension corresponding to one of the readable file formats,
+            described in https://www.scipopt.org/doc/html/group__FILEREADERS.php.
+        trans : bool, optional
+            indicates whether the transformed problem is written to file (Default value = False)
+        genericnames : bool, optional
+            indicates whether the problem should be written with generic variable
+            and constraint names (Default value = False)
+        verbose : bool, optional
+            indicates whether a success message should be printed
+
         """
         user_locale = locale.getlocale(category=locale.LC_NUMERIC)
         locale.setlocale(locale.LC_NUMERIC, "C")
@@ -1593,16 +2873,30 @@ cdef class Model:
     # Variable Functions
 
     def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0):
-        """Create a new variable. Default variable is non-negative and continuous.
+        """
+        Create a new variable. Default variable is non-negative and continuous.
 
-        :param name: name of the variable, generic if empty (Default value = '')
-        :param vtype: type of the variable: 'C' continuous, 'I' integer, 'B' binary, and 'M' implicit integer
-        (see https://www.scipopt.org/doc/html/FAQ.php#implicitinteger) (Default value = 'C')
-        :param lb: lower bound of the variable, use None for -infinity (Default value = 0.0)
-        :param ub: upper bound of the variable, use None for +infinity (Default value = None)
-        :param obj: objective value of variable (Default value = 0.0)
-        :param pricedVar: is the variable a pricing candidate? (Default value = False)
-        :param pricedVarScore: score of variable in case it is priced, the higher the better (Default value = 1.0)
+        Parameters
+        ----------
+        name : str, optional
+            name of the variable, generic if empty (Default value = '')
+        vtype : str, optional
+            type of the variable: 'C' continuous, 'I' integer, 'B' binary, and 'M' implicit integer
+            (Default value = 'C')
+        lb : float or None, optional
+            lower bound of the variable, use None for -infinity (Default value = 0.0)
+        ub : float or None, optional
+            upper bound of the variable, use None for +infinity (Default value = None)
+        obj : float, optional
+            objective value of variable (Default value = 0.0)
+        pricedVar : bool, optional
+            is the variable a pricing candidate? (Default value = False)
+        pricedVarScore : float, optional
+            score of variable in case it is priced, the higher the better (Default value = 1.0)
+
+        Returns
+        -------
+        Variable
 
         """
         cdef SCIP_VAR* scip_var
@@ -1651,9 +2945,17 @@ cdef class Model:
         return pyVar
 
     def getTransformedVar(self, Variable var):
-        """Retrieve the transformed variable.
+        """
+        Retrieve the transformed variable.
 
-        :param Variable var: original variable to get the transformed of
+        Parameters
+        ----------
+        var : Variable
+            original variable to get the transformed of
+
+        Returns
+        -------
+        Variable
 
         """
         cdef SCIP_VAR* _tvar
@@ -1662,21 +2964,38 @@ cdef class Model:
         return Variable.create(_tvar)
 
     def addVarLocks(self, Variable var, nlocksdown, nlocksup):
-        """adds given values to lock numbers of variable for rounding
+        """
+        Adds given values to lock numbers of variable for rounding.
 
-        :param Variable var: variable to adjust the locks for
-        :param nlocksdown: new number of down locks
-        :param nlocksup: new number of up locks
+        Parameters
+        ----------
+        var : Variable
+            variable to adjust the locks for
+        nlocksdown : int
+            new number of down locks
+        nlocksup : int
+            new number of up locks
 
         """
         PY_SCIP_CALL(SCIPaddVarLocks(self._scip, var.scip_var, nlocksdown, nlocksup))
 
     def fixVar(self, Variable var, val):
-        """Fixes the variable var to the value val if possible.
+        """
+        Fixes the variable var to the value val if possible.
 
-        :param Variable var: variable to fix
-        :param val: float, the fix value
-        :return: tuple (infeasible, fixed) of booleans
+        Parameters
+        ----------
+        var : Variable
+            variable to fix
+        val : float
+            the fix value
+
+        Returns
+        -------
+        infeasible : bool
+            Is the fixing infeasible?
+        fixed : bool
+            Was the fixing performed?
 
         """
         cdef SCIP_Bool infeasible
@@ -1685,10 +3004,18 @@ cdef class Model:
         return infeasible, fixed
 
     def delVar(self, Variable var):
-        """Delete a variable.
+        """
+        Delete a variable.
 
-        :param var: the variable which shall be deleted
-        :return: bool, was deleting succesful
+        Parameters
+        ----------
+        var : Variable
+            the variable which shall be deleted
+
+        Returns
+        -------
+        deleted : bool
+            Whether deleting was successfull
 
         """
         cdef SCIP_Bool deleted
@@ -1698,14 +3025,24 @@ cdef class Model:
         return deleted
 
     def tightenVarLb(self, Variable var, lb, force=False):
-        """Tighten the lower bound in preprocessing or current node, if the bound is tighter.
+        """
+        Tighten the lower bound in preprocessing or current node, if the bound is tighter.
 
-        :param var: SCIP variable
-        :param lb: possible new lower bound
-        :param force: force tightening even if below bound strengthening tolerance
-        :return: tuple of bools, (infeasible, tightened)
-                    infeasible: whether new domain is empty
-                    tightened: whether the bound was tightened
+        Parameters
+        ----------
+        var : Variable
+            SCIP variable
+        lb : float
+            possible new lower bound
+        force : bool, optional
+            force tightening even if below bound strengthening tolerance (default = False)
+
+        Returns
+        -------
+        infeasible : bool
+            Whether new domain is empty
+        tightened : bool
+            Whether the bound was tightened
 
         """
         cdef SCIP_Bool infeasible
@@ -1714,14 +3051,24 @@ cdef class Model:
         return infeasible, tightened
 
     def tightenVarUb(self, Variable var, ub, force=False):
-        """Tighten the upper bound in preprocessing or current node, if the bound is tighter.
+        """
+        Tighten the upper bound in preprocessing or current node, if the bound is tighter.
 
-        :param var: SCIP variable
-        :param ub: possible new upper bound
-        :param force: force tightening even if below bound strengthening tolerance
-        :return: tuple of bools, (infeasible, tightened)
-                    infeasible: whether new domain is empty
-                    tightened: whether the bound was tightened
+        Parameters
+        ----------
+        var : Variable
+            SCIP variable
+        ub : float
+            possible new upper bound
+        force : bool, optional
+            force tightening even if below bound strengthening tolerance
+
+        Returns
+        -------
+        infeasible : bool
+            Whether new domain is empty
+        tightened : bool
+            Whether the bound was tightened
 
         """
         cdef SCIP_Bool infeasible
@@ -1730,14 +3077,24 @@ cdef class Model:
         return infeasible, tightened
 
     def tightenVarUbGlobal(self, Variable var, ub, force=False):
-        """Tighten the global upper bound, if the bound is tighter.
+        """
+        Tighten the global upper bound, if the bound is tighter.
 
-        :param var: SCIP variable
-        :param ub: possible new upper bound
-        :param force: force tightening even if below bound strengthening tolerance
-        :return: tuple of bools, (infeasible, tightened)
-                    infeasible: whether new domain is empty
-                    tightened: whether the bound was tightened
+        Parameters
+        ----------
+        var : Variable
+            SCIP variable
+        ub : float
+            possible new upper bound
+        force : bool, optional
+            force tightening even if below bound strengthening tolerance
+
+        Returns
+        -------
+        infeasible : bool
+            Whether new domain is empty
+        tightened : bool
+            Whether the bound was tightened
 
         """
         cdef SCIP_Bool infeasible
@@ -1746,14 +3103,23 @@ cdef class Model:
         return infeasible, tightened
 
     def tightenVarLbGlobal(self, Variable var, lb, force=False):
-        """Tighten the global upper bound, if the bound is tighter.
+        """Tighten the global lower bound, if the bound is tighter.
 
-        :param var: SCIP variable
-        :param lb: possible new upper bound
-        :param force: force tightening even if below bound strengthening tolerance
-        :return: tuple of bools, (infeasible, tightened)
-                    infeasible: whether new domain is empty
-                    tightened: whether the bound was tightened
+        Parameters
+        ----------
+        var : Variable
+            SCIP variable
+        lb : float
+            possible new lower bound
+        force : bool, optional
+            force tightening even if below bound strengthening tolerance
+
+        Returns
+        -------
+        infeasible : bool
+            Whether new domain is empty
+        tightened : bool
+            Whether the bound was tightened
 
         """
         cdef SCIP_Bool infeasible
@@ -1762,10 +3128,15 @@ cdef class Model:
         return infeasible, tightened
 
     def chgVarLb(self, Variable var, lb):
-        """Changes the lower bound of the specified variable.
+        """
+        Changes the lower bound of the specified variable.
 
-        :param Variable var: variable to change bound of
-        :param lb: new lower bound (set to None for -infinity)
+        Parameters
+        ----------
+        var : Variable
+            variable to change bound of
+        lb : float or None
+            new lower bound (set to None for -infinity)
 
         """
         if lb is None:
@@ -1775,8 +3146,12 @@ cdef class Model:
     def chgVarUb(self, Variable var, ub):
         """Changes the upper bound of the specified variable.
 
-        :param Variable var: variable to change bound of
-        :param ub: new upper bound (set to None for +infinity)
+        Parameters
+        ----------
+        var : Variable
+            variable to change bound of
+        lb : float or None
+            new upper bound (set to None for +infinity)
 
         """
         if ub is None:
@@ -1786,8 +3161,12 @@ cdef class Model:
     def chgVarLbGlobal(self, Variable var, lb):
         """Changes the global lower bound of the specified variable.
 
-        :param Variable var: variable to change bound of
-        :param lb: new lower bound (set to None for -infinity)
+        Parameters
+        ----------
+        var : Variable
+            variable to change bound of
+        lb : float or None
+            new lower bound (set to None for -infinity)
 
         """
         if lb is None:
@@ -1797,8 +3176,12 @@ cdef class Model:
     def chgVarUbGlobal(self, Variable var, ub):
         """Changes the global upper bound of the specified variable.
 
-        :param Variable var: variable to change bound of
-        :param ub: new upper bound (set to None for +infinity)
+        Parameters
+        ----------
+        var : Variable
+            variable to change bound of
+        lb : float or None
+            new upper bound (set to None for +infinity)
 
         """
         if ub is None:
@@ -1808,8 +3191,15 @@ cdef class Model:
     def chgVarLbNode(self, Node node, Variable var, lb):
         """Changes the lower bound of the specified variable at the given node.
 
-        :param Variable var: variable to change bound of
-        :param lb: new lower bound (set to None for -infinity)
+        Parameters
+        ----------
+        node : Node
+            Node at which the variable bound will be changed
+        var : Variable
+            variable to change bound of
+        lb : float or None
+            new lower bound (set to None for -infinity)
+
         """
 
         if lb is None:
@@ -1819,8 +3209,14 @@ cdef class Model:
     def chgVarUbNode(self, Node node, Variable var, ub):
         """Changes the upper bound of the specified variable at the given node.
 
-        :param Variable var: variable to change bound of
-        :param ub: new upper bound (set to None for +infinity)
+        Parameters
+        ----------
+        node : Node
+            Node at which the variable bound will be changed
+        var : Variable
+            variable to change bound of
+        lb : float or None
+            new upper bound (set to None for +infinity)
 
         """
         if ub is None:
@@ -1829,10 +3225,16 @@ cdef class Model:
 
 
     def chgVarType(self, Variable var, vtype):
-        """Changes the type of a variable
+        """
+        Changes the type of a variable.
 
-        :param Variable var: variable to change type of
-        :param vtype: new variable type
+        Parameters
+        ----------
+        var : Variable
+            variable to change type of
+        vtype : str
+            new variable type. 'C' or "CONTINUOUS", 'I' or "INTEGER",
+            'B' or "BINARY", and 'M' "IMPLINT".
 
         """
         cdef SCIP_Bool infeasible
@@ -1850,9 +3252,17 @@ cdef class Model:
             print('could not change variable type of variable %s' % var)
 
     def getVars(self, transformed=False):
-        """Retrieve all variables.
+        """
+        Retrieve all variables.
 
-        :param transformed: get transformed variables instead of original (Default value = False)
+        Parameters
+        ----------
+        transformed : bool, optional
+            Get transformed variables instead of original (Default value = False)
+
+        Returns
+        -------
+        list of Variable
 
         """
         cdef SCIP_VAR** _vars
@@ -1883,9 +3293,18 @@ cdef class Model:
         return vars
 
     def getNVars(self, transformed=True):
-        """Retrieve number of variables in the problems.
-        
-        :param transformed: get transformed variables instead of original (Default value = True)
+        """
+        Retrieve number of variables in the problems.
+
+        Parameters
+        ----------
+        transformed : bool, optional
+            Get transformed variables instead of original (Default value = True)
+
+        Returns
+        -------
+        int
+
         """
         if transformed:
             return SCIPgetNVars(self._scip)
@@ -1893,40 +3312,80 @@ cdef class Model:
             return SCIPgetNOrigVars(self._scip)
 
     def getNIntVars(self):
-        """gets number of integer active problem variables"""
+        """
+        gets number of integer active problem variables.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNIntVars(self._scip)
 
     def getNBinVars(self):
-        """gets number of binary active problem variables"""
+        """
+        Gets number of binary active problem variables.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNBinVars(self._scip)
 
     def getNImplVars(self):
-        """gets number of implicit integer active problem variables"""
+        """
+        Gets number of implicit integer active problem variables.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNImplVars(self._scip)
 
     def getNContVars(self):
-        """gets number of continuous active problem variables"""
+        """
+        Gets number of continuous active problem variables.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNContVars(self._scip)
     
     def getVarDict(self):
-        """gets dictionary with variables names as keys and current variable values as items"""
+        """
+        Gets dictionary with variables names as keys and current variable values as items.
+
+        Returns
+        -------
+        dict of str to float
+
+        """
         var_dict = {}
         for var in self.getVars():
             var_dict[var.name] = self.getVal(var)
         return var_dict
 
     def updateNodeLowerbound(self, Node node, lb):
-        """if given value is larger than the node's lower bound (in transformed problem),
-        sets the node's lower bound to the new value
+        """
+        If given value is larger than the node's lower bound (in transformed problem),
+        sets the node's lower bound to the new value.
 
-        :param node: Node, the node to update
-        :param newbound: float, new bound (if greater) for the node
+        Parameters
+        ----------
+        node : Node
+            the node to update
+        lb : float
+            new bound (if greater) for the node
 
         """
         PY_SCIP_CALL(SCIPupdateNodeLowerbound(self._scip, node.scip_node, lb))
     
     def relax(self):
-        """Relaxes the integrality restrictions of the model"""
+        """Relaxes the integrality restrictions of the model."""
         if self.getStage() != SCIP_STAGE_PROBLEM:
             raise Warning("method can only be called in stage PROBLEM")
 
@@ -1935,37 +3394,93 @@ cdef class Model:
 
     # Node methods
     def getBestChild(self):
-        """gets the best child of the focus node w.r.t. the node selection strategy."""
+        """
+        Gets the best child of the focus node w.r.t. the node selection strategy.
+
+        Returns
+        -------
+        Node
+
+        """
         return Node.create(SCIPgetBestChild(self._scip))
 
     def getBestSibling(self):
-        """gets the best sibling of the focus node w.r.t. the node selection strategy."""
+        """
+        Gets the best sibling of the focus node w.r.t. the node selection strategy.
+
+        Returns
+        -------
+        Node
+
+        """
         return Node.create(SCIPgetBestSibling(self._scip))
 
     def getPrioChild(self):
-        """gets the best child of the focus node w.r.t. the node selection priority assigned by the branching rule."""
+        """
+        Gets the best child of the focus node w.r.t. the node selection priority
+        assigned by the branching rule.
+
+        Returns
+        -------
+        Node
+
+        """
         return Node.create(SCIPgetPrioChild(self._scip))
 
     def getPrioSibling(self):
-        """gets the best sibling of the focus node w.r.t. the node selection priority assigned by the branching rule."""
+        """Gets the best sibling of the focus node w.r.t.
+        the node selection priority assigned by the branching rule.
+
+        Returns
+        -------
+        Node
+
+        """
         return Node.create(SCIPgetPrioSibling(self._scip))
 
     def getBestLeaf(self):
-        """gets the best leaf from the node queue w.r.t. the node selection strategy."""
+        """Gets the best leaf from the node queue w.r.t. the node selection strategy.
+
+        Returns
+        -------
+        Node
+
+        """
         return Node.create(SCIPgetBestLeaf(self._scip))
 
     def getBestNode(self):
-        """gets the best node from the tree (child, sibling, or leaf) w.r.t. the node selection strategy."""
+        """Gets the best node from the tree (child, sibling, or leaf) w.r.t. the node selection strategy.
+
+        Returns
+        -------
+        Node
+
+        """
         return Node.create(SCIPgetBestNode(self._scip))
 
     def getBestboundNode(self):
-        """gets the node with smallest lower bound from the tree (child, sibling, or leaf)."""
+        """Gets the node with smallest lower bound from the tree (child, sibling, or leaf).
+
+        Returns
+        -------
+        Node
+
+        """
         return Node.create(SCIPgetBestboundNode(self._scip))
 
     def getOpenNodes(self):
-        """access to all data of open nodes (leaves, children, and siblings)
+        """
+        Access to all data of open nodes (leaves, children, and siblings).
 
-        :return: three lists containing open leaves, children, siblings
+        Returns
+        -------
+        leaves : list of Node
+            list of all open leaf nodes
+        children : list of Node
+            list of all open children nodes
+        siblings : list of Node
+            list of all open sibling nodes
+
         """
         cdef SCIP_NODE** _leaves
         cdef SCIP_NODE** _children
@@ -1983,21 +3498,33 @@ cdef class Model:
         return leaves, children, siblings
 
     def repropagateNode(self, Node node):
-        """marks the given node to be propagated again the next time a node of its subtree is processed"""
+        """Marks the given node to be propagated again the next time a node of its subtree is processed."""
         PY_SCIP_CALL(SCIPrepropagateNode(self._scip, node.scip_node))
 
 
     # LP Methods
     def getLPSolstat(self):
-        """Gets solution status of current LP"""
+        """
+        Gets solution status of current LP.
+
+        Returns
+        -------
+        SCIP_LPSOLSTAT
+
+        """
         return SCIPgetLPSolstat(self._scip)
 
 
     def constructLP(self):
-        """makes sure that the LP of the current node is loaded and
-         may be accessed through the LP information methods
+        """
+        Makes sure that the LP of the current node is loaded and
+        may be accessed through the LP information methods.
 
-        :return:  bool cutoff, i.e. can the node be cut off?
+
+        Returns
+        -------
+        cutoff : bool
+            Can the node be cutoff?
 
         """
         cdef SCIP_Bool cutoff
@@ -2005,12 +3532,26 @@ cdef class Model:
         return cutoff
 
     def getLPObjVal(self):
-        """gets objective value of current LP (which is the sum of column and loose objective value)"""
+        """
+        Gets objective value of current LP (which is the sum of column and loose objective value).
+
+        Returns
+        -------
+        float
+
+        """
 
         return SCIPgetLPObjval(self._scip)
 
     def getLPColsData(self):
-        """Retrieve current LP columns"""
+        """
+        Retrieve current LP columns.
+
+        Returns
+        -------
+        list of Column
+
+        """
         cdef SCIP_COL** cols
         cdef int ncols
 
@@ -2018,7 +3559,14 @@ cdef class Model:
         return [Column.create(cols[i]) for i in range(ncols)]
 
     def getLPRowsData(self):
-        """Retrieve current LP rows"""
+        """
+        Retrieve current LP rows.
+
+        Returns
+        -------
+        list of Row
+
+        """
         cdef SCIP_ROW** rows
         cdef int nrows
 
@@ -2026,15 +3574,37 @@ cdef class Model:
         return [Row.create(rows[i]) for i in range(nrows)]
 
     def getNLPRows(self):
-        """Retrieve the number of rows currently in the LP"""
+        """
+        Retrieve the number of rows currently in the LP.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNLPRows(self._scip)
 
     def getNLPCols(self):
-        """Retrieve the number of cols currently in the LP"""
+        """
+        Retrieve the number of cols currently in the LP.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNLPCols(self._scip)
 
     def getLPBasisInd(self):
-        """Gets all indices of basic columns and rows: index i >= 0 corresponds to column i, index i < 0 to row -i-1"""
+        """
+        Gets all indices of basic columns and rows:
+        index i >= 0 corresponds to column i, index i < 0 to row -i-1
+
+        Returns
+        -------
+        list of int
+
+        """
         cdef int nrows = SCIPgetNLPRows(self._scip)
         cdef int* inds = <int *> malloc(nrows * sizeof(int))
 
@@ -2044,7 +3614,19 @@ cdef class Model:
         return result
 
     def getLPBInvRow(self, row):
-        """gets a row from the inverse basis matrix B^-1"""
+        """
+        Gets a row from the inverse basis matrix B^-1
+
+        Parameters
+        ----------
+        row : int
+            The row index of the inverse basis matrix
+
+        Returns
+        -------
+        list of float
+
+        """
         # TODO: sparsity information
         cdef int nrows = SCIPgetNLPRows(self._scip)
         cdef SCIP_Real* coefs = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
@@ -2055,7 +3637,19 @@ cdef class Model:
         return result
 
     def getLPBInvARow(self, row):
-        """gets a row from B^-1 * A"""
+        """
+        Gets a row from B^-1 * A.
+
+        Parameters
+        ----------
+        row : int
+            The row index of the inverse basis matrix multiplied by the coefficient matrix
+
+        Returns
+        -------
+        list of float
+
+        """
         # TODO: sparsity information
         cdef int ncols = SCIPgetNLPCols(self._scip)
         cdef SCIP_Real* coefs = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
@@ -2066,35 +3660,72 @@ cdef class Model:
         return result
 
     def isLPSolBasic(self):
-        """returns whether the current LP solution is basic, i.e. is defined by a valid simplex basis"""
+        """
+        Returns whether the current LP solution is basic, i.e. is defined by a valid simplex basis.
+
+        Returns
+        -------
+        bool
+
+        """
         return SCIPisLPSolBasic(self._scip)
 
     def allColsInLP(self):
-        """checks if all columns, i.e. every variable with non-empty column is present in the LP.
-        This is not True when performing pricing for instance."""
+        """
+        Checks if all columns, i.e. every variable with non-empty column is present in the LP.
+        This is not True when performing pricing for instance.
+
+        Returns
+        -------
+        bool
+
+        """
 
         return SCIPallColsInLP(self._scip)
 
     # LP Col Methods
     def getColRedCost(self, Column col):
-        """gets the reduced cost of the column in the current LP
+        """
+        Gets the reduced cost of the column in the current LP.
 
-        :param Column col: the column of the LP for which the reduced cost will be retrieved
+        Parameters
+        ----------
+        col : Column
+
+        Returns
+        -------
+        float
+
         """
         return SCIPgetColRedcost(self._scip, col.scip_col)
 
     #TODO: documentation!!
     # LP Row Methods
     def createEmptyRowSepa(self, Sepa sepa, name="row", lhs = 0.0, rhs = None, local = True, modifiable = False, removable = True):
-        """creates and captures an LP row without any coefficients from a separator
+        """
+        Creates and captures an LP row without any coefficients from a separator.
 
-        :param sepa: separator that creates the row
-        :param name: name of row (Default value = "row")
-        :param lhs: left hand side of row (Default value = 0)
-        :param rhs: right hand side of row (Default value = None)
-        :param local: is row only valid locally? (Default value = True)
-        :param modifiable: is row modifiable during node processing (subject to column generation)? (Default value = False)
-        :param removable: should the row be removed from the LP due to aging or cleanup? (Default value = True)
+        Parameters
+        ----------
+        sepa : Sepa
+            separator that creates the row
+        name : str, optional
+            name of row (Default value = "row")
+        lhs : float or None, optional
+            left hand side of row (Default value = 0)
+        rhs : float or None, optional
+            right hand side of row (Default value = None)
+        local : bool, optional
+            is row only valid locally? (Default value = True)
+        modifiable : bool, optional
+            is row modifiable during node processing (subject to column generation)? (Default value = False)
+        removable : bool, optional
+            should the row be removed from the LP due to aging or cleanup? (Default value = True)
+
+        Returns
+        -------
+        Row
+
         """
         cdef SCIP_ROW* row
         lhs =  -SCIPinfinity(self._scip) if lhs is None else lhs
@@ -2105,14 +3736,28 @@ cdef class Model:
         return PyRow
 
     def createEmptyRowUnspec(self, name="row", lhs = 0.0, rhs = None, local = True, modifiable = False, removable = True):
-        """creates and captures an LP row without any coefficients from an unspecified source
+        """
+        Creates and captures an LP row without any coefficients from an unspecified source.
 
-        :param name: name of row (Default value = "row")
-        :param lhs: left hand side of row (Default value = 0)
-        :param rhs: right hand side of row (Default value = None)
-        :param local: is row only valid locally? (Default value = True)
-        :param modifiable: is row modifiable during node processing (subject to column generation)? (Default value = False)
-        :param removable: should the row be removed from the LP due to aging or cleanup? (Default value = True)
+        Parameters
+        ----------
+        name : str, optional
+            name of row (Default value = "row")
+        lhs : float or None, optional
+            left hand side of row (Default value = 0)
+        rhs : float or None, optional
+            right hand side of row (Default value = None)
+        local : bool, optional
+            is row only valid locally? (Default value = True)
+        modifiable : bool, optional
+            is row modifiable during node processing (subject to column generation)? (Default value = False)
+        removable : bool, optional
+            should the row be removed from the LP due to aging or cleanup? (Default value = True)
+
+        Returns
+        -------
+        Row
+
         """
         cdef SCIP_ROW* row
         lhs =  -SCIPinfinity(self._scip) if lhs is None else lhs
@@ -2122,107 +3767,312 @@ cdef class Model:
         return PyRow
 
     def getRowActivity(self, Row row):
-        """returns the activity of a row in the last LP or pseudo solution"""
+        """
+        Returns the activity of a row in the last LP or pseudo solution.
+
+        Parameters
+        ----------
+        row : Row
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPgetRowActivity(self._scip, row.scip_row)
 
     def getRowLPActivity(self, Row row):
-        """returns the activity of a row in the last LP solution"""
+        """
+        Returns the activity of a row in the last LP solution.
+
+        Parameters
+        ----------
+        row : Row
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPgetRowLPActivity(self._scip, row.scip_row)
 
     # TODO: do we need this? (also do we need release var??)
     def releaseRow(self, Row row not None):
-        """decreases usage counter of LP row, and frees memory if necessary"""
+        """
+        Decreases usage counter of LP row, and frees memory if necessary.
+
+        Parameters
+        ----------
+        row : Row
+
+        """
         PY_SCIP_CALL(SCIPreleaseRow(self._scip, &row.scip_row))
 
     def cacheRowExtensions(self, Row row not None):
-        """informs row, that all subsequent additions of variables to the row should be cached and not directly applied;
+        """
+        Informs row, that all subsequent additions of variables to the row
+        should be cached and not directly applied;
         after all additions were applied, flushRowExtensions() must be called;
-        while the caching of row extensions is activated, information methods of the row give invalid results;
-        caching should be used, if a row is build with addVarToRow() calls variable by variable to increase the performance"""
+        while the caching of row extensions is activated, information methods of the
+        row give invalid results; caching should be used, if a row is build with addVarToRow()
+        calls variable by variable to increase the performance.
+
+        Parameters
+        ----------
+        row : Row
+
+        """
         PY_SCIP_CALL(SCIPcacheRowExtensions(self._scip, row.scip_row))
 
     def flushRowExtensions(self, Row row not None):
-        """flushes all cached row extensions after a call of cacheRowExtensions() and merges coefficients with equal columns into a single coefficient"""
+        """
+        Flushes all cached row extensions after a call of cacheRowExtensions()
+        and merges coefficients with equal columns into a single coefficient
+
+        Parameters
+        ----------
+        row : Row
+
+        """
         PY_SCIP_CALL(SCIPflushRowExtensions(self._scip, row.scip_row))
 
     def addVarToRow(self, Row row not None, Variable var not None, value):
-        """resolves variable to columns and adds them with the coefficient to the row"""
+        """
+        Resolves variable to columns and adds them with the coefficient to the row.
+
+        Parameters
+        ----------
+        row : Row
+            Row in which the variable will be added
+        var : Variable
+            Variable which will be added to the row
+        value : float
+            Coefficient on the variable when placed in the row
+
+        """
         PY_SCIP_CALL(SCIPaddVarToRow(self._scip, row.scip_row, var.scip_var, value))
 
     def printRow(self, Row row not None):
-        """Prints row."""
+        """
+        Prints row.
+
+        Parameters
+        ----------
+        row : Row
+
+        """
         PY_SCIP_CALL(SCIPprintRow(self._scip, row.scip_row, NULL))
 
     def getRowNumIntCols(self, Row row):
-        """Returns number of intergal columns in the row"""
+        """
+        Returns number of intergal columns in the row.
+
+        Parameters
+        ----------
+        row : Row
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetRowNumIntCols(self._scip, row.scip_row)
 
     def getRowObjParallelism(self, Row row):
-        """Returns 1 if the row is parallel, and 0 if orthogonal"""
+        """
+        Returns 1 if the row is parallel, and 0 if orthogonal.
+
+        Parameters
+        ----------
+        row : Row
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPgetRowObjParallelism(self._scip, row.scip_row)
 
     def getRowParallelism(self, Row row1, Row row2, orthofunc=101):
-        """Returns the degree of parallelism between hyplerplanes. 1 if perfectly parallel, 0 if orthogonal.
-        For two row vectors v, w the parallelism is calculated as: |v*w|/(|v|*|w|).
-        101 in this case is an 'e' (euclidean) in ASCII. The other acceptable input is 100 (d for discrete)."""
+        """
+        Returns the degree of parallelism between hyplerplanes. 1 if perfectly parallel, 0 if orthogonal.
+        For two row vectors v, w the parallelism is calculated as: abs(v*w)/(abs(v)*abs(w)).
+        101 in this case is an 'e' (euclidean) in ASCII. The other acceptable input is 100 (d for discrete).
+
+        Parameters
+        ----------
+        row1 : Row
+        row2 : Row
+        orthofunc : int, optional
+            101 (default) is an 'e' (euclidean) in ASCII. Alternate value is 100 (d for discrete)
+
+        Returns
+        -------
+        float
+
+        """
         return SCIProwGetParallelism(row1.scip_row, row2.scip_row, orthofunc)
 
     def getRowDualSol(self, Row row):
-        """Gets the dual LP solution of a row"""
+        """
+        Gets the dual LP solution of a row.
+
+        Parameters
+        ----------
+        row : Row
+
+        Returns
+        -------
+        float
+
+        """
         return SCIProwGetDualsol(row.scip_row)
 
     # Cutting Plane Methods
     def addPoolCut(self, Row row not None):
-        """if not already existing, adds row to global cut pool"""
+        """
+        If not already existing, adds row to global cut pool.
+
+        Parameters
+        ----------
+        row : Row
+
+        """
         PY_SCIP_CALL(SCIPaddPoolCut(self._scip, row.scip_row))
 
     def getCutEfficacy(self, Row cut not None, Solution sol = None):
-        """returns efficacy of the cut with respect to the given primal solution or the current LP solution: e = -feasibility/norm"""
+        """
+        Returns efficacy of the cut with respect to the given primal solution or the
+        current LP solution: e = -feasibility/norm
+
+        Parameters
+        ----------
+        cut : Row
+        sol : Solution or None, optional
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPgetCutEfficacy(self._scip, NULL if sol is None else sol.sol, cut.scip_row)
 
     def isCutEfficacious(self, Row cut not None, Solution sol = None):
-        """ returns whether the cut's efficacy with respect to the given primal solution or the current LP solution is greater than the minimal cut efficacy"""
+        """
+        Returns whether the cut's efficacy with respect to the given primal solution or the
+        current LP solution is greater than the minimal cut efficacy.
+
+        Parameters
+        ----------
+        cut : Row
+        sol : Solution or None, optional
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPisCutEfficacious(self._scip, NULL if sol is None else sol.sol, cut.scip_row)
 
     def getCutLPSolCutoffDistance(self, Row cut not None, Solution sol not None):
-        """ returns row's cutoff distance in the direction of the given primal solution"""
+        """
+        Returns row's cutoff distance in the direction of the given primal solution.
+
+        Parameters
+        ----------
+        cut : Row
+        sol : Solution
+
+        Returns
+        -------
+        float
+
+        """
         return SCIPgetCutLPSolCutoffDistance(self._scip, sol.sol, cut.scip_row)
 
     def addCut(self, Row cut not None, forcecut = False):
-        """adds cut to separation storage and returns whether cut has been detected to be infeasible for local bounds"""
+        """
+        Adds cut to separation storage and returns whether cut has been detected to be infeasible for local bounds.
+
+        Parameters
+        ----------
+        cut : Row
+            The cut that will be added
+        forcecut : bool, optional
+            Whether the cut should be forced or not, i.e., selected no matter what
+
+        Returns
+        -------
+        infeasible : bool
+            Whether the cut has been detected to be infeasible from local bounds
+
+        """
         cdef SCIP_Bool infeasible
         PY_SCIP_CALL(SCIPaddRow(self._scip, cut.scip_row, forcecut, &infeasible))
         return infeasible
 
     def getNCuts(self):
-        """Retrieve total number of cuts in storage"""
+        """
+        Retrieve total number of cuts in storage.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNCuts(self._scip)
 
     def getNCutsApplied(self):
-        """Retrieve number of currently applied cuts"""
+        """
+        Retrieve number of currently applied cuts.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNCutsApplied(self._scip)
 
     def getNSepaRounds(self):
-        """Retrieve the number of separation rounds that have been performed
-        at the current node"""
+        """
+        Retrieve the number of separation rounds that have been performed
+        at the current node.
+
+        Returns
+        -------
+        int
+
+        """
         return SCIPgetNSepaRounds(self._scip)
 
     def separateSol(self, Solution sol = None, pretendroot = False, allowlocal = True, onlydelayed = False):
-        """separates the given primal solution or the current LP solution by calling the separators and constraint handlers'
-        separation methods;
-        the generated cuts are stored in the separation storage and can be accessed with the methods SCIPgetCuts() and
-        SCIPgetNCuts();
+        """
+        Separates the given primal solution or the current LP solution by calling
+        the separators and constraint handlers' separation methods;
+        the generated cuts are stored in the separation storage and can be accessed
+        with the methods SCIPgetCuts() and SCIPgetNCuts();
         after evaluating the cuts, you have to call SCIPclearCuts() in order to remove the cuts from the
-        separation storage;
-        it is possible to call SCIPseparateSol() multiple times with different solutions and evaluate the found cuts
-        afterwards
-        :param Solution sol: solution to separate, None to use current lp solution (Default value = None)
-        :param pretendroot: should the cut separators be called as if we are at the root node? (Default value = "False")
-        :param allowlocal: should the separator be asked to separate local cuts (Default value = True)
-        :param onlydelayed: should only separators be called that were delayed in the previous round? (Default value = False)
-        returns
-        delayed -- whether a separator was delayed
-        cutoff -- whether the node can be cut off
+        separation storage; it is possible to call SCIPseparateSol() multiple times with
+        different solutions and evaluate the found cuts afterwards.
+
+        Parameters
+        ----------
+        sol : Solution or None, optional
+            solution to separate, None to use current lp solution (Default value = None)
+        pretendroot : bool, optional
+            should the cut separators be called as if we are at the root node? (Default value = "False")
+        allowlocal : bool, optional
+            should the separator be asked to separate local cuts (Default value = True)
+        onlydelayed : bool, optional
+            should only separators be called that were delayed in the previous round? (Default value = False)
+
+        Returns
+        -------
+        delayed : bool
+            whether a separator was delayed
+        cutoff : bool
+            whether the node can be cut off
+
         """
         cdef SCIP_Bool delayed
         cdef SCIP_Bool cutoff
@@ -2231,6 +4081,20 @@ cdef class Model:
         return delayed, cutoff
 
     def _createConsLinear(self, ExprCons lincons, **kwargs):
+        """
+        The function for creating a linear constraint, but not adding it to the Model.
+        Please do not use this function directly, but rather use createConsFromExpr
+
+        Parameters
+        ----------
+        lincons : ExprCons
+        kwargs : dict, optional
+
+        Returns
+        -------
+        Constraint
+
+        """
         assert isinstance(lincons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
 
         assert lincons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % lincons.expr.degree()
@@ -2261,6 +4125,20 @@ cdef class Model:
         return PyCons
 
     def _createConsQuadratic(self, ExprCons quadcons, **kwargs):
+        """
+        The function for creating a quadratic constraint, but not adding it to the Model.
+        Please do not use this function directly, but rather use createConsFromExpr
+
+        Parameters
+        ----------
+        quadcons : ExprCons
+        kwargs : dict, optional
+
+        Returns
+        -------
+        Constraint
+
+        """
         terms = quadcons.expr.terms
         assert quadcons.expr.degree() <= 2, "given constraint is not quadratic, degree == %d" % quadcons.expr.degree()
 
@@ -2300,6 +4178,20 @@ cdef class Model:
         return PyCons
 
     def _createConsNonlinear(self, cons, **kwargs):
+        """
+        The function for creating a non-linear constraint, but not adding it to the Model.
+        Please do not use this function directly, but rather use createConsFromExpr
+
+        Parameters
+        ----------
+        cons : ExprCons
+        kwargs : dict, optional
+
+        Returns
+        -------
+        Constraint
+
+        """
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR** varexprs
         cdef SCIP_EXPR** monomials
@@ -2355,6 +4247,20 @@ cdef class Model:
         return PyCons
 
     def _createConsGenNonlinear(self, cons, **kwargs):
+        """
+        The function for creating a general non-linear constraint, but not adding it to the Model.
+        Please do not use this function directly, but rather use createConsFromExpr
+
+        Parameters
+        ----------
+        cons : ExprCons
+        kwargs : dict, optional
+
+        Returns
+        -------
+        Constraint
+
+        """
         cdef SCIP_EXPR** childrenexpr
         cdef SCIP_EXPR** scipexprs
         cdef SCIP_CONS* scip_cons
@@ -2479,23 +4385,44 @@ cdef class Model:
                 enforce=True, check=True, propagate=True, local=False,
                 modifiable=False, dynamic=False, removable=False,
                 stickingatnode=False):
-        """Create a linear or nonlinear constraint without adding it to the SCIP problem. This is useful for creating disjunction constraints
-        without also enforcing the individual constituents. Currently, this can only be used as an argument to `.addConsElemDisjunction`. To add 
+        """
+        Create a linear or nonlinear constraint without adding it to the SCIP problem.
+        This is useful for creating disjunction constraints without also enforcing the individual constituents.
+        Currently, this can only be used as an argument to `.addConsElemDisjunction`. To add
         an individual linear/nonlinear constraint, prefer `.addCons()`.
 
-        :param cons: constraint object
-        :param name: the name of the constraint, generic name if empty (Default value = '')
-        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
-        :param separate: should the constraint be separated during LP processing? (Default value = True)
-        :param enforce: should the constraint be enforced during node processing? (Default value = True)
-        :param check: should the constraint be checked for feasibility? (Default value = True)
-        :param propagate: should the constraint be propagated during node processing? (Default value = True)
-        :param local: is the constraint only valid locally? (Default value = False)
-        :param modifiable: is the constraint modifiable (subject to column generation)? (Default value = False)
-        :param dynamic: is the constraint subject to aging? (Default value = False)
-        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
-        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be  moved to a more global node? (Default value = False)
-        :return The created @ref scip#Constraint "Constraint" object.
+        Parameters
+        ----------
+        cons : ExprCons
+            The expression constraint that is not yet an actual constraint
+        name : str, optional
+            the name of the constraint, generic name if empty (Default value = '')
+        initial : bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool, optional
+            is the constraint only valid locally? (Default value = False)
+        modifiable : bool, optional
+            is the constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool, optional
+            should the constraint always be kept at the node where it was added,
+            even if it may be  moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        Constraint
+            The created Constraint object.
 
         """
         if name == '':
@@ -2525,21 +4452,41 @@ cdef class Model:
                 enforce=True, check=True, propagate=True, local=False,
                 modifiable=False, dynamic=False, removable=False,
                 stickingatnode=False):
-        """Add a linear or nonlinear constraint.
+        """
+        Add a linear or nonlinear constraint.
 
-        :param cons: constraint object
-        :param name: the name of the constraint, generic name if empty (Default value = '')
-        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
-        :param separate: should the constraint be separated during LP processing? (Default value = True)
-        :param enforce: should the constraint be enforced during node processing? (Default value = True)
-        :param check: should the constraint be checked for feasibility? (Default value = True)
-        :param propagate: should the constraint be propagated during node processing? (Default value = True)
-        :param local: is the constraint only valid locally? (Default value = False)
-        :param modifiable: is the constraint modifiable (subject to column generation)? (Default value = False)
-        :param dynamic: is the constraint subject to aging? (Default value = False)
-        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
-        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be  moved to a more global node? (Default value = False)
-        :return The added @ref scip#Constraint "Constraint" object.
+        Parameters
+        ----------
+        cons : ExprCons
+            The expression constraint that is not yet an actual constraint
+        name : str, optional
+            the name of the constraint, generic name if empty (Default value = '')
+        initial : bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool, optional
+            is the constraint only valid locally? (Default value = False)
+        modifiable : bool, optional
+            is the constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool, optional
+            should the constraints always be kept at the node where it was added,
+            even if it may be  @oved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        Constraint
+            The created and added Constraint object.
 
         """
         assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
@@ -2573,25 +4520,45 @@ cdef class Model:
 
         Each of the constraints is added to the model using Model.addCons().
 
-        For all parameters, except @p conss, this method behaves differently depending on the type of the passed argument:
-          1. If the value is iterable, it must be of the same length as @p conss. For each constraint, Model.addCons() will be called with the value at the corresponding index.
-          2. Else, the (default) value will be applied to all of the constraints.
+        For all parameters, except @p conss, this method behaves differently depending on the
+        type of the passed argument:
+        1. If the value is iterable, it must be of the same length as @p conss. For each
+        constraint, Model.addCons() will be called with the value at the corresponding index.
+        2. Else, the (default) value will be applied to all of the constraints.
 
-        :param conss An iterable of constraint objects. Any iterable will be converted into a list before further processing.
-        :param name: the names of the constraints, generic name if empty (Default value = ''). If a single string is passed, it will be suffixed by an underscore and the enumerated index of the constraint (starting with 0).
-        :param initial: should the LP relaxation of constraints be in the initial LP? (Default value = True)
-        :param separate: should the constraints be separated during LP processing? (Default value = True)
-        :param enforce: should the constraints be enforced during node processing? (Default value = True)
-        :param check: should the constraints be checked for feasibility? (Default value = True)
-        :param propagate: should the constraints be propagated during node processing? (Default value = True)
-        :param local: are the constraints only valid locally? (Default value = False)
-        :param modifiable: are the constraints modifiable (subject to column generation)? (Default value = False)
-        :param dynamic: are the constraints subject to aging? (Default value = False)
-        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
-        :param stickingatnode: should the constraints always be kept at the node where it was added, even if it may be  @oved to a more global node? (Default value = False)
-        :return A list of added @ref scip#Constraint "Constraint" objects.
+        Parameters
+        ----------
+        conss : iterable
+            An iterable of constraint objects. Any iterable will be converted into a list before further processing.
+        name : str or iterable, optional
+            the name of the constraint, generic name if empty (Default value = '')
+        initial : bool or iterable, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool or iterable, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool or iterable, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool or iterable, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool or iterable, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool or iterable, optional
+            is the constraint only valid locally? (Default value = False)
+        modifiable : bool or iterable, optional
+            is the constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool or iterable, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool or iterable, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool or iterable, optional
+            should the constraints always be kept at the node where it was added,
+            even if it may be  @oved to a more global node? (Default value = False)
 
-        :see addCons()
+        Returns
+        -------
+        list of Constraint
+            The created and added Constraint objects.
+
         """
         def ensure_iterable(elem, length):
             if isinstance(elem, Iterable):
