@@ -1306,9 +1306,9 @@ cdef class Node:
 
         Returns
         -------
-        py_variables : list of Variable
-        py_branchbounds : list of float
-        py_boundtypes : list of int
+        list of Variable
+        list of float
+        list of int
 
         """
         cdef int nbranchvars = self.getNParentBranchings()
@@ -4460,7 +4460,7 @@ cdef class Model:
         cons : ExprCons
             The expression constraint that is not yet an actual constraint
         name : str, optional
-            the name of the constraint, generic name if empty (Default value = '')
+            the name of the constraint, generic name if empty (Default value = "")
         initial : bool, optional
             should the LP relaxation of constraint be in the initial LP? (Default value = True)
         separate : bool, optional
@@ -4766,8 +4766,6 @@ cdef class Model:
         """
         return PY_SCIP_CALL(SCIPprintCons(self._scip, constraint.scip_cons, NULL))
 
-    # TODO Find a better way to retrieve a scip expression from a python expression. Consider making GenExpr include Expr, to avoid using Union. See PR #760.
-    from typing import Union
     def addExprNonlinear(self, Constraint cons, expr, coef):
         """
         Add coef*expr to nonlinear constraint.
@@ -5046,6 +5044,7 @@ cdef class Model:
             removable=False, stickingatnode=False):
         """
         Add an OR-constraint.
+
         Parameters
         ----------
         vars : list of Variable
@@ -7101,7 +7100,7 @@ cdef class Model:
         Gets branching candidates for LP solution branching (fractional variables) along with solution values,
         fractionalities, and number of branching candidates; The number of branching candidates does NOT account
         for fractional implicit integer variables which should not be used for branching decisions. Fractional
-        implicit integer variables are stored at the positions *nlpcands to *nlpcands + *nfracimplvars - 1
+        implicit integer variables are stored at the positions nlpcands to nlpcands + nfracimplvars - 1
         branching rules should always select the branching candidate among the first npriolpcands of the candidate list
 
         Returns
@@ -8681,7 +8680,7 @@ cdef class Model:
         """
         Set a real-valued parameter.
 
-        :Parameters
+        Parameters
         ----------
         name : str
             name of parameter

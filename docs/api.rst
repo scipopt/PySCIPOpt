@@ -1,79 +1,86 @@
 #############
-API reference
+API Reference
 #############
 
 This page provides an auto-generated summary of PySCIPOpt's API.
 
+.. automodule:: pyscipopt
+
 SCIP Model
 ==========
 
-.. autosummary::
-  :toctree: _autosummary
-  :recursive:
+This is the main class of PySCIPOpt. Most functionality is accessible through functions
+of this class. All functions that require the SCIP object belong to this class.
 
-  pyscipopt.Model
+.. toctree::
+  :maxdepth: 1
+
+  api/model
 
 SCIP Constraint
 ===============
 
-.. autosummary::
-  :toctree: _autosummary
-  :recursive:
+This class wraps a SCIP constraint object. It contains functions that can retrieve basic information
+that is entirely contained within the constraint object.
 
-  pyscipopt.Constraint
+.. toctree::
+  :maxdepth: 1
+
+  api/constraint
 
 SCIP Variable
 =============
 
-.. autosummary::
-  :toctree: _autosummary
-  :recursive:
+This class wraps a SCIP variable object. It contains functions that can retrieve basic information
+that is entirely contained within the variable object.
 
-  pyscipopt.Variable
+.. toctree::
+  :maxdepth: 1
+
+  api/variable
 
 SCIP Row
 ========
 
-.. autosummary::
-  :toctree: _autosummary
-  :recursive:
+This class wraps a SCIP row object. It contains functions that can retrieve basic information
+that is entirely contained within the row object.
 
-  pyscipopt.scip.Row
+.. toctree::
+  :maxdepth: 1
+
+  api/row
 
 SCIP Column
 ===========
 
-.. autosummary::
-  :toctree: _autosummary
-  :recursive:
+This class wraps a SCIP column object. It contains functions that can retrieve basic information
+that is entirely contained within the column object.
 
-  pyscipopt.scip.Column
+.. toctree::
+  :maxdepth: 1
+
+  api/column
 
 SCIP Node
 =========
 
-.. autosummary::
-  :toctree: _autosummary
-  :recursive:
+This class wraps a SCIP node object. It contains functions that can retrieve basic information
+that is entirely contained within the node object.
 
-  pyscipopt.scip.Node
+.. toctree::
+  :maxdepth: 1
 
-SCIP Solution
-=============
-
-.. autosummary::
-  :toctree: _autosummary
-  :recursive:
-
-  pyscipopt.scip.Solution
+  api/node
 
 SCIP Event
-===========
+==========
 
-.. autosummary::
-  :toctree: _autosummary
-  :recursive:
+This class wraps a SCIP event object. It contains functions that can retrieve basic information
+that is entirely contained within the event object.
 
-  pyscipopt.scip.Event
+.. toctree::
+  :maxdepth: 1
+
+  api/event
 
 

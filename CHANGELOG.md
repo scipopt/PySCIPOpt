@@ -21,6 +21,7 @@
 - Fixed too strict getObjVal, getVal check
 ### Changed
 - Changed createSol to now have an option of initialising at the current LP solution
+- Unified documentation style of scip.pxi to numpydocs
 ### Removed
 
 ## 5.1.1 - 2024-06-22
