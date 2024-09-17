@@ -479,7 +479,7 @@ cdef class Column:
 
         Notes
         -----
-        Returns basis status `zero` for columns not in the current SCIP LP.
+        Returns basis status "zero" for columns not in the current SCIP LP.
 
         """
         cdef SCIP_BASESTAT stat = SCIPcolGetBasisStatus(self.scip_col)
@@ -670,7 +670,7 @@ cdef class Row:
 
         Notes
         -----
-        Returns basis status `basic` for rows not in the current SCIP LP.
+        Returns basis status "basic" for rows not in the current SCIP LP.
 
         """
         cdef SCIP_BASESTAT stat = SCIProwGetBasisStatus(self.scip_row)
@@ -4520,9 +4520,9 @@ cdef class Model:
 
         Each of the constraints is added to the model using Model.addCons().
 
-        For all parameters, except @p conss, this method behaves differently depending on the
+        For all parameters, except `conss`, this method behaves differently depending on the
         type of the passed argument:
-        1. If the value is iterable, it must be of the same length as @p conss. For each
+        1. If the value is iterable, it must be of the same length as `conss`. For each
         constraint, Model.addCons() will be called with the value at the corresponding index.
         2. Else, the (default) value will be applied to all of the constraints.
 
