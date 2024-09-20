@@ -3817,7 +3817,7 @@ cdef class Model:
 
     def cacheRowExtensions(self, Row row not None):
         """
-        Informs row, that all subsequent additions of variables to the row
+        Informs row that all subsequent additions of variables to the row
         should be cached and not directly applied;
         after all additions were applied, flushRowExtensions() must be called;
         while the caching of row extensions is activated, information methods of the
