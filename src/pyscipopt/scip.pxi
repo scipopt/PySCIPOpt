@@ -4559,7 +4559,7 @@ cdef class Model:
             should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
         stickingatnode : bool or iterable of bool, optional
             should the constraints always be kept at the node where it was added,
-            even if it may be  @oved to a more global node? (Default value = False)
+            even if it may be moved to a more global node? (Default value = False)
 
         Returns
         -------
