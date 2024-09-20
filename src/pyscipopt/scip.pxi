@@ -3313,7 +3313,7 @@ cdef class Model:
 
     def getNIntVars(self):
         """
-        gets number of integer active problem variables.
+        Gets number of integer active problem variables.
 
         Returns
         -------
