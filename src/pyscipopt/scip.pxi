@@ -2140,7 +2140,7 @@ cdef class Model:
 
     def getPresolvingTime(self):
         """
-        Retrieve the curernt presolving time in seconds.
+        Returns the current presolving time in seconds.
 
         Returns
         -------
