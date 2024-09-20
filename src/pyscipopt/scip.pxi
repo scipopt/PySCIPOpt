@@ -1575,7 +1575,7 @@ cdef class Variable(Expr):
 
     def varMayRound(self, direction="down"):
         """
-        Checks whether its it possible to round variable up / down and stay feasible for the relaxation.
+        Checks whether it is possible to round variable up / down and stay feasible for the relaxation.
 
         Parameters
         ----------
