@@ -9280,7 +9280,7 @@ cdef class Model:
         edge_features : list of list
         row_features : list of list
         dict
-            The feature mappings for the cols, edges, and rows
+            The feature mappings for the columns, edges, and rows
 
         """
 
