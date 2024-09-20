@@ -2625,7 +2625,14 @@ cdef class Model:
         PY_SCIP_CALL(SCIPsetObjlimit(self._scip, objlimit))
 
     def getObjlimit(self):
-        """Returns current limit on objective function."""
+        """
+        Returns current limit on objective function.
+        
+        Returns
+        -------
+        float
+        
+        """
         return SCIPgetObjlimit(self._scip)
 
     def setObjective(self, expr, sense = 'minimize', clear = 'true'):
