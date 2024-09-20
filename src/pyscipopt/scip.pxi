@@ -5985,7 +5985,7 @@ cdef class Model:
 
     def delConsLocal(self, Constraint cons):
         """
-        Delete constraint from the current node and it's children.
+        Delete constraint from the current node and its children.
 
         Parameters
         ----------
