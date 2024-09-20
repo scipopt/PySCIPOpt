@@ -5959,7 +5959,7 @@ cdef class Model:
         Parameters
         ----------
         transformed : bool, optional
-            get num. transformed variables instead of original (Default value = True)
+            get number of transformed variables instead of original (Default value = True)
 
         Returns
         -------
@@ -6132,7 +6132,7 @@ cdef class Model:
 
     def getDualSolVal(self, Constraint cons, boundconstraint=False):
         """
-        Retrieve returns dual solution value of a constraint.
+        Returns dual solution value of a constraint.
 
         Parameters
         ----------
@@ -6420,7 +6420,7 @@ cdef class Model:
         probnumber : int
             the problem number for subproblem that is required
         benders : Benders or None, optional
-            the Benders' decomposition object for the that the subproblem belongs to (Default = None)
+            the Benders' decomposition object that the subproblem belongs to (Default = None)
 
         Returns
         -------
@@ -6774,7 +6774,7 @@ cdef class Model:
         name : str
             name of separator
         desc : str
-            description o separator
+            description of separator
         priority : int, optional
             priority of separator (>= 0: before, < 0: after constraint handlers) (default=0)
         freq : int, optional
@@ -6786,7 +6786,7 @@ cdef class Model:
         usessubscip : bool, optional
             does the separator use a secondary SCIP instance? (Default value = False)
         delay : bool, optional
-            should separator be delayed, if other separators found cuts? (Default value = False)
+            should separator be delayed if other separators found cuts? (Default value = False)
 
         """
         n = str_conversion(name)
@@ -7179,7 +7179,7 @@ cdef class Model:
         Node
             Node created for the down (left) branch
         Node or None
-            Node created for the equal child (middle child). Only exists of branch variable is integer
+            Node created for the equal child (middle child). Only exists if branch variable is integer
         Node
             Node created for the up (right) branch
 
@@ -7208,7 +7208,7 @@ cdef class Model:
         Node
             Node created for the down (left) branch
         Node or None
-            Node created for the equal child (middle child). Only exists of branch variable is integer
+            Node created for the equal child (middle child). Only exists if the branch variable is integer
         Node
             Node created for the up (right) branch
 
@@ -7274,7 +7274,7 @@ cdef class Model:
         nodeselprio : int
             node selection priority of new node
         estimate : float
-            estimate for(transformed) objective value of best feasible solution in subtree
+            estimate for (transformed) objective value of best feasible solution in subtree
 
         Returns
         -------
@@ -7380,7 +7380,7 @@ cdef class Model:
     def chgRowRhsDive(self, Row row, newrhs):
         """
         Changes row rhs in current dive, change will be undone after diving
-        ends, for permanent changes use SCIPchgRowLhs().
+        ends. For permanent changes use SCIPchgRowRhs().
 
         Parameters
         ----------
@@ -7403,18 +7403,18 @@ cdef class Model:
 
     def solveDiveLP(self, itlim = -1):
         """
-        Solves the LP of the current dive no separation or pricing is applied
+        Solves the LP of the current dive. No separation or pricing is applied
         no separation or pricing is applied.
 
         Parameters
         ----------
-        itlim : it, optional
+        itlim : int, optional
             maximal number of LP iterations to perform (Default value = -1, that is, no limit)
 
         Returns
         -------
         lperror : bool
-            if an unresolved lp error occured
+            whether an unresolved lp error occured
         cutoff : bool
             whether the LP was infeasible or the objective limit was reached
 
@@ -7950,9 +7950,9 @@ cdef class Model:
         checkbounds : bool, optional
             should the bounds of the variables be checked? (Default value = True)
         checkintegrality : bool, optional
-            has integrality to be checked? (Default value = True)
+            does integrality have to be checked? (Default value = True)
         checklprows : bool, optional
-            have current LP rows (both local and global) to be checked? (Default value = True)
+            do current LP rows (both local and global) have to be checked? (Default value = True)
         free : bool, optional
             should solution be freed? (Default value = True)
 
@@ -8147,7 +8147,7 @@ cdef class Model:
 
     def getSolTime(self, Solution sol):
         """
-        Get clock time, when this solution was found.
+        Get clock time when this solution was found.
 
         Parameters
         ----------
