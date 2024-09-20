@@ -9202,7 +9202,7 @@ cdef class Model:
     def getBranchScoreMultiple(self, Variable var, gains):
         """
         Calculates the branching score out of the gain predictions for a branching with
-        arbitrary many children.
+        arbitrarily many children.
 
         Parameters
         ----------
