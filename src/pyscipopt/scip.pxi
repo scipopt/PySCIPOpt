@@ -9154,7 +9154,7 @@ cdef class Model:
         upconflict : bool
             store whether a conflict constraint was created for an infeasible upwards branch
         lperror : bool
-            whether an unresolved LP error occurred or the solving process
+            whether an unresolved LP error occurred in the solving process
 
         """
 
