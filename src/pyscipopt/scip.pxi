@@ -1676,7 +1676,7 @@ cdef class Constraint:
 
     def isChecked(self):
         """
-        Retrieve True if constraint should be checked for feasibility.
+        Returns True if constraint should be checked for feasibility.
 
         Returns
         -------
