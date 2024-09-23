@@ -1776,7 +1776,7 @@ cdef class Constraint:
 
     def isNonlinear(self):
         """
-        Retrieve True if constraint is nonlinear.
+        Returns True if constraint is nonlinear.
 
         Returns
         -------
