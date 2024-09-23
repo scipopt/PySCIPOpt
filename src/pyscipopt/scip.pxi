@@ -1709,7 +1709,7 @@ cdef class Constraint:
 
     def isModifiable(self):
         """
-        Retrieve True if constraint is modifiable (subject to column generation).
+        Returns True if constraint is modifiable (subject to column generation).
 
         Returns
         -------
