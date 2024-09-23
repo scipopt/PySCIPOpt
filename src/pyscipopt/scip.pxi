@@ -3593,7 +3593,7 @@ cdef class Model:
 
     def getNLPCols(self):
         """
-        Retrieve the number of cols currently in the LP.
+        Retrieve the number of columns currently in the LP.
 
         Returns
         -------
