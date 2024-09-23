@@ -9235,7 +9235,7 @@ cdef class Model:
 
         Returns
         -------
-        int
+        float
 
         """
         return SCIPgetTreesizeEstimation(self._scip)
