@@ -82,8 +82,9 @@ html_theme = "sphinx_nefertiti"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-autosummary_generate = True
-autoclass_content = "class"
+autosummary_generate = False
+napoleon_numpy_docstring = True
+napoleon_google_docstring = False
 
 pygments_style = "sphinx"
 
