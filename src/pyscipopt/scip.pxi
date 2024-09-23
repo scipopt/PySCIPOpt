@@ -1764,7 +1764,7 @@ cdef class Constraint:
 
     def isLinear(self):
         """
-        Retrieve True if constraint is linear
+        Returns True if constraint is linear
 
         Returns
         -------
