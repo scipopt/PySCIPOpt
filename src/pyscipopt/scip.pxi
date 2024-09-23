@@ -6486,7 +6486,6 @@ cdef class Model:
         ----------
         probnumber : int
             the problem number for which the target variable belongs, -1 for master problem
-            (default=-1)
         benders : Benders or None, optional
             the Benders' decomposition to which the subproblem variables belong to
 
@@ -6972,7 +6971,7 @@ cdef class Model:
         desc : str
             description of branching rule
         priority : int
-        priority of branching rule
+            priority of branching rule
         maxdepth : int
             maximal depth level up to which this branching rule should be used (or -1)
         maxbounddist : float
@@ -7403,8 +7402,7 @@ cdef class Model:
 
     def solveDiveLP(self, itlim = -1):
         """
-        Solves the LP of the current dive. No separation or pricing is applied
-        no separation or pricing is applied.
+        Solves the LP of the current dive. No separation or pricing is applied.
 
         Parameters
         ----------
@@ -7599,7 +7597,7 @@ cdef class Model:
         cutoff : bool
             whether the probing node can be cutoff
         ndomredsfound : int
-            ndomredsfound -- number of domain reductions found
+            number of domain reductions found
 
         """
         cdef SCIP_Bool cutoff
@@ -8458,7 +8456,7 @@ cdef class Model:
 
     def dropEvent(self, eventtype, Eventhdlr eventhdlr):
         """
-        Drops a global event (stops to track event).
+        Drops a global event (stops tracking the event).
 
         Parameters
         ----------
@@ -8497,7 +8495,7 @@ cdef class Model:
 
     def dropVarEvent(self, Variable var, eventtype, Eventhdlr eventhdlr):
         """
-        Drops an objective value or domain change event (stops to track event) on the given transformed variable.
+        Drops an objective value or domain change event (stops tracking the event) on the given transformed variable.
 
         Parameters
         ----------
@@ -8535,7 +8533,7 @@ cdef class Model:
 
     def dropRowEvent(self, Row row, eventtype, Eventhdlr eventhdlr):
         """
-        Drops a row coefficient, constant, or side change event (stops to track event) on the given row.
+        Drops a row coefficient, constant, or side change event (stops tracking the event) on the given row.
 
         Parameters
         ----------
