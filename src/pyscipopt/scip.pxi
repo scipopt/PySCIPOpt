@@ -5476,7 +5476,7 @@ cdef class Model:
         cons : Constraint
             linear or quadratic constraint
         rhs : float or None
-            new right hand side (set to None for +infinity)
+            new right-hand side (set to None for +infinity)
 
         """
 
