@@ -1731,7 +1731,7 @@ cdef class Constraint:
 
     def isRemovable(self):
         """
-        Retrieve True if constraint's relaxation should be removed from the LP due to aging or cleanup.
+        Returns True if constraint's relaxation should be removed from the LP due to aging or cleanup.
 
         Returns
         -------
