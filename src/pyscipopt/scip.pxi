@@ -5469,7 +5469,7 @@ cdef class Model:
 
     def chgRhs(self, Constraint cons, rhs):
         """
-        Change right hand side value of a constraint.
+        Change right-hand side value of a constraint.
 
         Parameters
         ----------
