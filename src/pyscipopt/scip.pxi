@@ -1720,7 +1720,7 @@ cdef class Constraint:
 
     def isDynamic(self):
         """
-        Retrieve True if constraint is subject to aging.
+        Returns True if constraint is subject to aging.
 
         Returns
         -------
