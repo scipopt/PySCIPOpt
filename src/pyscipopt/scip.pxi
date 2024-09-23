@@ -9233,7 +9233,7 @@ cdef class Model:
 
     def getTreesizeEstimation(self):
         """
-        Get an estimation of the final tree size.
+        Get an estimate of the final tree size.
 
         Returns
         -------
