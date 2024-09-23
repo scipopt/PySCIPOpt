@@ -5539,7 +5539,7 @@ cdef class Model:
 
     def getLhs(self, Constraint cons):
         """
-        Retrieve left hand side value of a constraint.
+        Retrieve left-hand side value of a constraint.
 
         Parameters
         ----------
