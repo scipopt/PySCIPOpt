@@ -1665,7 +1665,7 @@ cdef class Constraint:
 
     def isEnforced(self):
         """
-        Retrieve True if constraint should be enforced during node processing.
+        Returns True if constraint should be enforced during node processing.
 
         Returns
         -------
