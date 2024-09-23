@@ -5500,7 +5500,7 @@ cdef class Model:
         cons : Constraint
             linear or quadratic constraint
         lhs : float or None
-            new left hand side (set to None for -infinity)
+            new left-hand side (set to None for -infinity)
 
         """
 
