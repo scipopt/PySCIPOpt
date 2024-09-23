@@ -6374,7 +6374,7 @@ cdef class Model:
         probnumber : int
             the index of the problem that is to be set up
         solvecip : bool
-            should the CIP of the subproblem be solved, if False, then only the convex relaxation is solved.
+            whether the CIP of the subproblem should be solved. If False, then only the convex relaxation is solved.
         benders : Benders or None, optional
             the Benders' decomposition to which the subproblem belongs to
         solution : Solution or None, optional
