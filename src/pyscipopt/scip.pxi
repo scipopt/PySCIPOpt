@@ -1654,7 +1654,7 @@ cdef class Constraint:
 
     def isSeparated(self):
         """
-        Retrieve True if constraint should be separated during LP processing.
+        Returns True if constraint should be separated during LP processing.
 
         Returns
         -------
