@@ -1643,7 +1643,7 @@ cdef class Constraint:
 
     def isInitial(self):
         """
-        Retrieve True if the relaxation of the constraint should be in the initial LP.
+        Returns True if the relaxation of the constraint should be in the initial LP.
 
         Returns
         -------
