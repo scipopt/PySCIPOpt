@@ -2151,7 +2151,7 @@ cdef class Model:
 
     def getNLPIterations(self):
         """
-        Retrieve the total number of LP iterations so far.
+        Returns the total number of LP iterations so far.
 
         Returns
         -------
