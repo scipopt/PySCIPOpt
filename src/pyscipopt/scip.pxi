@@ -1687,7 +1687,7 @@ cdef class Constraint:
 
     def isPropagated(self):
         """
-        Retrieve True if constraint should be propagated during node processing.
+        Returns True if constraint should be propagated during node processing.
 
         Returns
         -------
