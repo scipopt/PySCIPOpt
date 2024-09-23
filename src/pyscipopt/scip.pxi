@@ -1698,7 +1698,7 @@ cdef class Constraint:
 
     def isLocal(self):
         """
-        Retrieve True if constraint is only locally valid or not added to any (sub)problem.
+        Returns True if constraint is only locally valid or not added to any (sub)problem.
 
         Returns
         -------
