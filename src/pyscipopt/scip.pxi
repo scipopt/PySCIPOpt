@@ -7289,7 +7289,7 @@ cdef class Model:
     def startDive(self):
         """Initiates LP diving.
         It allows the user to change the LP in several ways, solve, change again, etc,
-        without affecting the actual LP that has. When endDive() is called,
+        without affecting the actual LP. When endDive() is called,
         SCIP will undo all changes done and recover the LP it had before startDive."""
         PY_SCIP_CALL(SCIPstartDive(self._scip))
 
