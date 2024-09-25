@@ -6164,7 +6164,8 @@ cdef class Model:
 
     def solveConcurrent(self):
         """Transforms, presolves, and solves problem using additional solvers which emphasize on
-        finding solutions."""
+        finding solutions.
+        WARNING: This feature is still experimental and prone to some errors."""
         if SCIPtpiGetNumThreads() == 1:
             warnings.warn("SCIP was compiled without task processing interface. Parallel solve not possible - using optimize() instead of solveConcurrent()") 
             self.optimize()
