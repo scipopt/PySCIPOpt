@@ -46,6 +46,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}/tests"
+          CIBW_MANYLINUX_*_IMAGE: manylinux_2_28
         
       - uses: actions/upload-artifact@v3
         with:
