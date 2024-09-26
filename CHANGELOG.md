@@ -2,6 +2,12 @@
 
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+### Removed
+
+## 5.2.0 - 2024.09.26
+### Added
 - Expanded Statistics class to more problems.
 - Created Statistics class
 - Added parser to read .stats file
