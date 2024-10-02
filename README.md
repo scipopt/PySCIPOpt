@@ -29,7 +29,7 @@ pip install pyscipopt
 ```
 
 For information on specific versions, installation via Conda, and guides for building from source,
-please see the online documentation.
+please see the [online documentation](https://pyscipopt.readthedocs.io/en/latest/install.html).
 
 Building and solving a model
 ----------------------------
