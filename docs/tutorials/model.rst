@@ -109,6 +109,88 @@ all the parameter values that you wish to set, then one can use the command:
 
   scip.readParams(path_to_file)
 
+Automatically set plugin parameters
+===================================
+
+We can influence the behavior of some of SCIP's plugins using ``SCIP_PARAMSETTING``. This can be applied 
+to the heuristics, to the presolvers, and to the separators (respectively with ``setHeuristics``, 
+``setPresolve``, and ``setSeparating``).
+
+.. code-block:: python
+  
+  from pyscipopt import Model, SCIP_PARAMSETTING
+
+  scip = Model()
+  scip.setHeuristics(SCIP_PARAMSETTING.AGGRESSIVE) 
+
+There are four parameter settings:
+
+.. list-table:: A list of the different options and the result
+  :widths: 25 25
+  :align: center
+  :header-rows: 1
+
+  * - Option 
+    - Result
+  * - ``DEFAULT``
+    - set to the default values of all the plugin's parameters
+  * - ``FAST``
+    - the time spend for the plugin is decreased
+  * - ``AGGRESSIVE``
+    - such that the plugin is called more aggressively
+  * - ``OFF``
+    - turn off the plugin
+
+.. note:: This is important to get dual information, as it's necessary to disable presolving and heuristics. 
+  For more information, see the tutorial on getting :doc:`constraint information.</tutorials/constypes/>`
+
+
+Set solver emphasis
+===================
+
+One can also instruct SCIP to focus on different aspects of the search process. To do this, import 
+``SCIP_PARAMEMPHASIS`` from ``pyscipopt`` and set the appropriate value. For example, 
+if the goal is just to find a feasible solution, then we can do the following:
+
+.. code-block:: python
+
+    from pyscipopt import Model, SCIP_PARAMEMPHASIS
+
+    scip = Model()
+    scip.setEmphasis(SCIP_PARAMEMPHASIS.FEASIBILITY)
+
+You can find below a list of the available options, alongside their meaning.
+
+.. list-table:: Parameter emphasis summary
+    :widths: 25 25
+    :align: center
+    :header-rows: 1
+
+    * - Setting 
+      - Meaning
+    * - ``PARAMEMPHASIS.DEFAULT`` 
+      - to use default values
+    * - ``PARAMEMPHASIS.COUNTER``
+      - to get feasible and "fast" counting process
+    * - ``PARAMEMPHASIS.CPSOLVER`` 
+      - to get CP like search (e.g. no LP relaxation)
+    * - ``PARAMEMPHASIS.EASYCIP``
+      - to solve easy problems fast
+    * - ``PARAMEMPHASIS.FEASIBILITY`` 
+      - to detect feasibility fast
+    * - ``PARAMEMPHASIS.HARDLP``
+      - to be capable to handle hard LPs
+    * - ``PARAMEMPHASIS.OPTIMALITY``
+      - to prove optimality fast
+    * - ``PARAMEMPHASIS.PHASEFEAS``
+      - to find feasible solutions during a 3 phase solution process
+    * - ``PARAMEMPHASIS.PHASEIMPROVE``
+      - to find improved solutions during a 3 phase solution process
+    * - ``PARAMEMPHASIS.PHASEPROOF``
+      - to proof optimality during a 3 phase solution process
+    * - ``PARAMEMPHASIS.NUMERICS``
+      - to solve problems which cause numerical issues
+
 Copy a SCIP Model
 ==================
 
@@ -122,7 +204,7 @@ This model is completely independent from the source model. The data has been du
 That is, calling ``scip.optimize()`` at this point will have no effect on ``scip_alternate_model``.
 
 .. note:: After optimizing users often struggle with reoptimization. To make changes to an
-  already optimized model, one must first fo the following:
+  already optimized model, one must first do the following:
 
   .. code-block:: python
 

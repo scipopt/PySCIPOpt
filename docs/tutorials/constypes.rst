@@ -80,7 +80,7 @@ coefficient values, and the constraint handler that created the Row.
 
 
 Constraint Information
-========================
+======================
 
 The Constraint object can be queried like any other object. Some of the information a Constraint
 object contains is the name of the constraint handler responsible for the constraint,
