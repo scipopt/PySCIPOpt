@@ -109,7 +109,7 @@ all the parameter values that you wish to set, then one can use the command:
 
   scip.readParams(path_to_file)
 
-Automatically set plugin parameters
+Set Plugin-wide Parameters (Aggressiveness)
 ===================================
 
 We can influence the behavior of some of SCIP's plugins using ``SCIP_PARAMSETTING``. This can be applied 
