@@ -145,7 +145,7 @@ There are four parameter settings:
   For more information, see the tutorial on getting :doc:`constraint information.</tutorials/constypes/>`
 
 
-Set solver emphasis
+Set Solver Emphasis
 ===================
 
 One can also instruct SCIP to focus on different aspects of the search process. To do this, import 
