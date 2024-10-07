@@ -110,7 +110,7 @@ all the parameter values that you wish to set, then one can use the command:
   scip.readParams(path_to_file)
 
 Set Plugin-wide Parameters (Aggressiveness)
-===================================
+===========================================
 
 We can influence the behavior of some of SCIP's plugins using ``SCIP_PARAMSETTING``. This can be applied 
 to the heuristics, to the presolvers, and to the separators (respectively with ``setHeuristics``, 
