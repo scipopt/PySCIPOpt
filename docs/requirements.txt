@@ -1,4 +1,5 @@
 sphinx
-sphinx-book-theme
+sphinxcontrib-jquery
 sphinxcontrib-bibtex
+sphinx-book-theme
 pyscipopt
