@@ -38,46 +38,29 @@ To create a standard linear or non-linear constraint use the command:
   # Non-linear constraint
   nonlinear_cons = scip.addCons(x * y + z == 1, name="nonlinear_cons")
 
-What is a Row?
-================
 
-In a similar fashion to Variables with columns, see :doc:`this page </tutorials/vartypes>`,
-constraints bring up an interesting feature of SCIP when used in the context of an LP.
-The context of an LP here means that we are after the LP relaxation of the optimization problem
-at some node. Is the constraint even in the LP?
-When you solve an optimization problm with SCIP, the problem is first transformed. This process is
-called presolve, and is done to accelerate the subsequent solving process. Therefore a constraint
-that was originally created may have been transformed entirely, as the original variables that
-featured in the constraint have also been changed. Additionally, maybe the constraint was found to be redundant,
-i.e., trivially true, and was removed. The constraint is also much more general
-than necessary, containing information that is not strictly necessary for solving the LP,
-and may not even be representable by linear constraints.
-Therefore, when representing a constraint in an LP, we use Row objects.
-Be warned however, that this is not necessarily a simple one-to-one matching. Some more complicated
-constraints may either have no Row representation in the LP or have multiple such rows
-necessary to best represent it in the LP. For a standard linear constraint the Row
-that represents the constraint in the LP can be found with the code:
+Quicksum
+========
+
+It is very common that when constructing constraints one wants to use the inbuilt ``sum`` function
+in Python. For example, consider the common scenario where we have a set of binary variables.
 
 .. code-block:: python
 
-  row = scip.getRowLinear(linear_cons)
+  x = [scip.addVar(vtype='B', name=f"x_{i}") for i in range(1000)]
 
-.. note:: Remember that such a Row representation refers only to the latest LP, and is
-  best queried when access to the current LP is clear, e.g. when branching.
-
-From a Row object one can easily obtain information about the current LP. Some quick examples are
-the lhs, rhs, constant shift, the columns with non-zero coefficient values, the matching
-coefficient values, and the constraint handler that created the Row.
+A standard constraint in this example may be that exactly one binary variable can be active.
+To sum these varaibles we recommend using the custom ``quicksum`` function, as it avoids
+intermediate data structure and adds terms inplace. For example:
 
 .. code-block:: python
 
-  lhs = row.getLhs()
-  rhs = row.getRhs()
-  constant = row.getConstant()
-  cols = row.getCols()
-  vals = row.getVals()
-  origin_cons_name = row.getConsOriginConshdlrtype()
+  scip.addCons(quicksum(x[i] for i in range(1000)) == 1, name="sum_cons")
 
+.. note:: While this is often unnecessary for smaller models, for larger models it can have a substantial
+  improvement on time spent in model construction.
+
+.. note:: For ``prod`` there also exists an equivalent ``quickprod`` function.
 
 Constraint Information
 ======================
@@ -156,25 +139,42 @@ An example of such a constraint handler
 is presented in the lazy constraint tutorial for modelling the subtour elimination
 constraints :doc:`here </tutorials/lazycons>`
 
-Quicksum
-========
+What is a Row?
+================
 
-It is very common that when constructing constraints one wants to use the inbuilt ``sum`` function
-in Python. For example, consider the common scenario where we have a set of binary variables.
+In a similar fashion to Variables with columns, see :doc:`this page </tutorials/vartypes>`,
+constraints bring up an interesting feature of SCIP when used in the context of an LP.
+The context of an LP here means that we are after the LP relaxation of the optimization problem
+at some node. Is the constraint even in the LP?
+When you solve an optimization problm with SCIP, the problem is first transformed. This process is
+called presolve, and is done to accelerate the subsequent solving process. Therefore a constraint
+that was originally created may have been transformed entirely, as the original variables that
+featured in the constraint have also been changed. Additionally, maybe the constraint was found to be redundant,
+i.e., trivially true, and was removed. The constraint is also much more general
+than necessary, containing information that is not strictly necessary for solving the LP,
+and may not even be representable by linear constraints.
+Therefore, when representing a constraint in an LP, we use Row objects.
+Be warned however, that this is not necessarily a simple one-to-one matching. Some more complicated
+constraints may either have no Row representation in the LP or have multiple such rows
+necessary to best represent it in the LP. For a standard linear constraint the Row
+that represents the constraint in the LP can be found with the code:
 
 .. code-block:: python
 
-  x = [scip.addVar(vtype='B', name=f"x_{i}") for i in range(1000)]
+  row = scip.getRowLinear(linear_cons)
 
-A standard constraint in this example may be that exactly one binary variable can be active.
-To sum these varaibles we recommend using the custom ``quicksum`` function, as it avoids
-intermediate data structure and adds terms inplace. For example:
+.. note:: Remember that such a Row representation refers only to the latest LP, and is
+  best queried when access to the current LP is clear, e.g. when branching.
+
+From a Row object one can easily obtain information about the current LP. Some quick examples are
+the lhs, rhs, constant shift, the columns with non-zero coefficient values, the matching
+coefficient values, and the constraint handler that created the Row.
 
 .. code-block:: python
 
-  scip.addCons(quicksum(x[i] for i in range(1000)) == 1, name="sum_cons")
-
-.. note:: While this is often unnecessary for smaller models, for larger models it can have a substantial
-  improvement on time spent in model construction.
-
-.. note:: For ``prod`` there also exists an equivalent ``quickprod`` function.
+  lhs = row.getLhs()
+  rhs = row.getRhs()
+  constant = row.getConstant()
+  cols = row.getCols()
+  vals = row.getVals()
+  origin_cons_name = row.getConsOriginConshdlrtype()
