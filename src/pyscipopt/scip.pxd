@@ -671,6 +671,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsolve(SCIP* scip)
     SCIP_RETCODE SCIPsolveConcurrent(SCIP* scip)
     SCIP_RETCODE SCIPfreeTransform(SCIP* scip)
+    SCIP_RETCODE SCIPtransformProb(SCIP* scip)
     SCIP_RETCODE SCIPpresolve(SCIP* scip)
 
     # Node Methods
@@ -1395,6 +1396,16 @@ cdef extern from "scip/cons_linear.h":
                                       SCIP_Bool dynamic,
                                       SCIP_Bool removable,
                                       SCIP_Bool stickingatnode)
+
+    SCIP_RETCODE SCIPcreateConsBasicLinear(SCIP* scip,
+                                           SCIP_CONS** cons,
+                                           char* name,
+                                           int nvars,
+                                           SCIP_VAR** vars,
+                                           SCIP_Real* vals,
+                                           SCIP_Real lhs,
+                                           SCIP_Real rhs)
+
     SCIP_RETCODE SCIPaddCoefLinear(SCIP* scip,
                                    SCIP_CONS* cons,
                                    SCIP_VAR* var,
