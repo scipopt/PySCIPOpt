@@ -4140,14 +4140,16 @@ cdef class Model:
         free(coeffs_array)
         return PyCons
 
-    def _createConsBasicLinear(self, ExprCons lincons, **kwargs):
+    def _createConsBasicLinear(self, ExprCons lincons, name='', **kwargs):
         """
         The function for creating a basic linear constraint, but not adding it to the Model.
 
         Parameters
         ----------
         lincons : ExprCons
-        kwargs : dict, optional
+        name    : str, optional
+            name of constraint
+        kwargs  : dict, optional
 
         Returns
         -------
@@ -4160,6 +4162,13 @@ cdef class Model:
         terms = lincons.expr.terms
 
         cdef SCIP_CONS* scip_cons
+
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+
+        kwargs = dict(name=name)
+        kwargs['lhs'] = -SCIPinfinity(self._scip) if lincons._lhs is None else lincons._lhs
+        kwargs['rhs'] =  SCIPinfinity(self._scip) if lincons._rhs is None else lincons._rhs
 
         cdef int nvars = len(terms.items())
 
@@ -4178,6 +4187,8 @@ cdef class Model:
 
         free(vars_array)
         free(coeffs_array)
+        
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
         return PyCons
 
     def _createConsQuadratic(self, ExprCons quadcons, **kwargs):
@@ -9047,7 +9058,7 @@ cdef class Model:
                                  SCIP_STAGE_SOLVING,
                                  SCIP_STAGE_SOLVED]:
             raise Warning("method cannot be called in stage %i." % self.getStage)
-            
+
         PY_SCIP_CALL(SCIPfreeReoptSolve(self._scip))
 
     def chgReoptObjective(self, coeffs, sense = 'minimize'):
