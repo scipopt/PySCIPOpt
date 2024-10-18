@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added primal_dual_evolution recipe and a plot recipe
 - Expanded Statistics class to more problems.
 - Created Statistics class
 - Added parser to read .stats file
