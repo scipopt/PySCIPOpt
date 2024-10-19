@@ -204,6 +204,18 @@ def test_addConsDisjunction_expr_init():
     assert m.isEQ(m.getVal(y), 5)
     assert m.isEQ(m.getVal(o), 6)
 
+def test__createConsBasicLinear():
+    m = Model()
+    x = m.addVar()
+    y = m.addVar()
+
+    assert m.getNConss() == 0
+
+    c = m._createConsBasicLinear(x+y<=4)
+
+
+    assert m.getNConss() == 0
+    assert c.isLinear()
 
 @pytest.mark.skip(reason="TODO: test getValsLinear()")
 def test_getValsLinear():

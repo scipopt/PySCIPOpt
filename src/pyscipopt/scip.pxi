@@ -2057,6 +2057,15 @@ cdef class Model:
     def freeTransform(self):
         """Frees all solution process data including presolving and
         transformed problem, only original problem is kept."""
+        if self.getStage() not in [SCIP_STAGE_INIT,
+                                 SCIP_STAGE_PROBLEM,
+                                 SCIP_STAGE_TRANSFORMED,
+                                 SCIP_STAGE_PRESOLVING,
+                                 SCIP_STAGE_PRESOLVED,
+                                 SCIP_STAGE_SOLVING,
+                                 SCIP_STAGE_SOLVED]:
+            raise Warning("method cannot be called in stage %i." % self.getStage())
+            
         self._modelvars = {
             var: value
             for var, value in self._modelvars.items()
@@ -4131,6 +4140,57 @@ cdef class Model:
         free(coeffs_array)
         return PyCons
 
+    def _createConsBasicLinear(self, ExprCons lincons, name='', **kwargs):
+        """
+        The function for creating a basic linear constraint, but not adding it to the Model.
+
+        Parameters
+        ----------
+        lincons : ExprCons
+        name    : str, optional
+            name of constraint
+        kwargs  : dict, optional
+
+        Returns
+        -------
+        Constraint
+
+        """
+        assert isinstance(lincons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
+
+        assert lincons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % lincons.expr.degree()
+        terms = lincons.expr.terms
+
+        cdef SCIP_CONS* scip_cons
+
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+
+        kwargs = dict(name=name)
+        kwargs['lhs'] = -SCIPinfinity(self._scip) if lincons._lhs is None else lincons._lhs
+        kwargs['rhs'] =  SCIPinfinity(self._scip) if lincons._rhs is None else lincons._rhs
+
+        cdef int nvars = len(terms.items())
+
+        vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        coeffs_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+
+        for i, (key, coeff) in enumerate(terms.items()):
+            vars_array[i] = <SCIP_VAR*>(<Variable>key[0]).scip_var
+            coeffs_array[i] = <SCIP_Real>coeff
+
+        PY_SCIP_CALL(SCIPcreateConsBasicLinear(
+            self._scip, &scip_cons, str_conversion(kwargs['name']), nvars, vars_array, coeffs_array,
+            kwargs['lhs'], kwargs['rhs']))
+
+        PyCons = Constraint.create(scip_cons)
+
+        free(vars_array)
+        free(coeffs_array)
+        
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+        return PyCons
+
     def _createConsQuadratic(self, ExprCons quadcons, **kwargs):
         """
         The function for creating a quadratic constraint, but not adding it to the Model.
@@ -6173,8 +6233,20 @@ cdef class Model:
             PY_SCIP_CALL(SCIPsolveConcurrent(self._scip))
             self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
 
+    def transformProb(self):
+        """Transform the problem"""
+        if self.getStage() in [SCIP_STAGE_INIT, SCIP_STAGE_TRANSFORMING]:
+            raise Warning("method cannot be called in stage %i." % self.getStage())
+
+        PY_SCIP_CALL(SCIPtransformProb(self._scip))
+
     def presolve(self):
         """Presolve the problem."""
+        if self.getStage() not in [SCIP_STAGE_PROBLEM, SCIP_STAGE_TRANSFORMED,\
+                                 SCIP_STAGE_PRESOLVING, SCIP_STAGE_PRESOLVED, \
+                                 SCIP_STAGE_SOLVED]:
+            raise Warning("method cannot be called in stage %i." % self.getStage())
+
         PY_SCIP_CALL(SCIPpresolve(self._scip))
         self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
 
@@ -8186,7 +8258,7 @@ cdef class Model:
                 min_stage_requirement = SCIP_STAGE_TRANSFORMING
 
             if not self.getStage() >= min_stage_requirement:
-                raise Warning("method cannot be called in stage %i." % self.getStage)
+                raise Warning("method cannot be called in stage %i." % self.getStage())
 
         return self.getSolObjVal(self._bestSol, original)
 
@@ -8977,6 +9049,16 @@ cdef class Model:
 
     def freeReoptSolve(self):
         """Frees all solution process data and prepares for reoptimization."""
+
+        if self.getStage() not in [SCIP_STAGE_INIT,
+                                 SCIP_STAGE_PROBLEM,
+                                 SCIP_STAGE_TRANSFORMED,
+                                 SCIP_STAGE_PRESOLVING,
+                                 SCIP_STAGE_PRESOLVED,
+                                 SCIP_STAGE_SOLVING,
+                                 SCIP_STAGE_SOLVED]:
+            raise Warning("method cannot be called in stage %i." % self.getStage())
+
         PY_SCIP_CALL(SCIPfreeReoptSolve(self._scip))
 
     def chgReoptObjective(self, coeffs, sense = 'minimize'):
