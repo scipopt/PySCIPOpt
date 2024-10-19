@@ -2057,14 +2057,14 @@ cdef class Model:
     def freeTransform(self):
         """Frees all solution process data including presolving and
         transformed problem, only original problem is kept."""
-        if self.getStage not in [SCIP_STAGE_INIT,
+        if self.getStage() not in [SCIP_STAGE_INIT,
                                  SCIP_STAGE_PROBLEM,
                                  SCIP_STAGE_TRANSFORMED,
                                  SCIP_STAGE_PRESOLVING,
                                  SCIP_STAGE_PRESOLVED,
                                  SCIP_STAGE_SOLVING,
                                  SCIP_STAGE_SOLVED]:
-            raise Warning("method cannot be called in stage %i." % self.getStage)
+            raise Warning("method cannot be called in stage %i." % self.getStage())
             
         self._modelvars = {
             var: value
@@ -6236,7 +6236,7 @@ cdef class Model:
     def transformProb(self):
         """Transform the problem"""
         if self.getStage() in [SCIP_STAGE_INIT, SCIP_STAGE_TRANSFORMING]:
-            raise Warning("method cannot be called in stage %i." % self.getStage)
+            raise Warning("method cannot be called in stage %i." % self.getStage())
 
         PY_SCIP_CALL(SCIPtransformProb(self._scip))
 
@@ -6245,7 +6245,7 @@ cdef class Model:
         if self.getStage() not in [SCIP_STAGE_PROBLEM, SCIP_STAGE_TRANSFORMED,\
                                  SCIP_STAGE_PRESOLVING, SCIP_STAGE_PRESOLVED, \
                                  SCIP_STAGE_SOLVED]:
-            raise Warning("method cannot be called in stage %i." % self.getStage)
+            raise Warning("method cannot be called in stage %i." % self.getStage())
 
         PY_SCIP_CALL(SCIPpresolve(self._scip))
         self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
@@ -8258,7 +8258,7 @@ cdef class Model:
                 min_stage_requirement = SCIP_STAGE_TRANSFORMING
 
             if not self.getStage() >= min_stage_requirement:
-                raise Warning("method cannot be called in stage %i." % self.getStage)
+                raise Warning("method cannot be called in stage %i." % self.getStage())
 
         return self.getSolObjVal(self._bestSol, original)
 
@@ -9050,14 +9050,14 @@ cdef class Model:
     def freeReoptSolve(self):
         """Frees all solution process data and prepares for reoptimization."""
 
-        if self.getStage not in [SCIP_STAGE_INIT,
+        if self.getStage() not in [SCIP_STAGE_INIT,
                                  SCIP_STAGE_PROBLEM,
                                  SCIP_STAGE_TRANSFORMED,
                                  SCIP_STAGE_PRESOLVING,
                                  SCIP_STAGE_PRESOLVED,
                                  SCIP_STAGE_SOLVING,
                                  SCIP_STAGE_SOLVED]:
-            raise Warning("method cannot be called in stage %i." % self.getStage)
+            raise Warning("method cannot be called in stage %i." % self.getStage())
 
         PY_SCIP_CALL(SCIPfreeReoptSolve(self._scip))
 
