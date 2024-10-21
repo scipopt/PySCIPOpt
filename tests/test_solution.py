@@ -1,6 +1,7 @@
 import re
 import pytest
-from pyscipopt import Model, scip, SCIP_PARAMSETTING, quicksum, quickprod
+from pyscipopt import Model, scip, SCIP_PARAMSETTING, quicksum, quickprod, SCIP_SOLORIGIN
+from helpers.utils import random_mip_1
 
 
 def test_solution_getbest():
@@ -193,3 +194,15 @@ def test_getSols():
 
     assert len(m.getSols()) >= 1
     assert any(m.isEQ(sol[x], 0.0) for sol in m.getSols())
+
+
+def test_getSolOrigin_retrasform():
+    m = random_mip_1(disable_sepa=False, disable_huer=False, disable_presolve=False, small=True)
+    m.optimize()
+
+    sol = m.getBestSol()
+    assert sol.getSolOrigin() == SCIP_SOLORIGIN.ZERO
+
+    sol.retransform()
+    assert sol.getSolOrigin() == SCIP_SOLORIGIN.ORIGINAL
+
