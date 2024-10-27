@@ -77,7 +77,7 @@ def random_nlp_1():
     return model
 
 
-def knapsack_model(weights=[4, 2, 6, 3, 7, 5], costs=[7, 2, 5, 4, 3, 4], knapsackSize = 15):
+def knapsack_model(weights=[4, 2, 6, 3, 7, 5], costs=[7, 2, 5, 4, 3, 4], knapsack_size = 15):
     # create solver instance
     s = Model("Knapsack")
 
