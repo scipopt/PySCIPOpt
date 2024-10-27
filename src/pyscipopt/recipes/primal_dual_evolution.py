@@ -2,7 +2,7 @@ from pyscipopt import Model, Eventhdlr, SCIP_EVENTTYPE, Eventhdlr
 
 def get_primal_dual_evolution(model: Model):
 
-    class gapEventhdlr(Eventhdlr):
+    class GapEventhdlr(Eventhdlr):
 
         def eventinit(self): # we want to collect best primal solutions and best dual solutions
             self.model.catchEvent(SCIP_EVENTTYPE.BESTSOLFOUND, self)
