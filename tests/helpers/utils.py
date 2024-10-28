@@ -1,14 +1,6 @@
 from pyscipopt import Model, quicksum, SCIP_PARAMSETTING, exp, log, sqrt, sin
 from typing import List
 
-from pyscipopt.scip import is_memory_freed
-
-
-def is_optimized_mode():
-    model = Model()
-    return is_memory_freed()
-
-
 def random_mip_1(disable_sepa=True, disable_huer=True, disable_presolve=True, node_lim=2000, small=False):
     model = Model()
 

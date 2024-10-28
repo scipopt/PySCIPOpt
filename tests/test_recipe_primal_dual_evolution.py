@@ -11,18 +11,18 @@ def test_primal_dual_evolution():
     model = attach_primal_dual_evolution_eventhdlr(model)
 
     assert "test" in model.data
-    assert "primal_solutions" in model.data
+    assert "primal_log" in model.data
 
     model.optimize()
 
-    for i in range(1, len(model.data["primal_solutions"])):
+    for i in range(1, len(model.data["primal_log"])):
         if model.getObjectiveSense() == "minimize":
-            assert model.data["primal_solutions"][i][1] <= model.data["primal_solutions"][i-1][1]
+            assert model.data["primal_log"][i][1] <= model.data["primal_log"][i-1][1]
         else:
-            assert model.data["primal_solutions"][i][1] >= model.data["primal_solutions"][i-1][1]
+            assert model.data["primal_log"][i][1] >= model.data["primal_log"][i-1][1]
     
-    for i in range(1, len(model.data["dual_solutions"])):
+    for i in range(1, len(model.data["dual_log"])):
         if model.getObjectiveSense() == "minimize":
-            assert model.data["dual_solutions"][i][1] >= model.data["dual_solutions"][i-1][1]
+            assert model.data["dual_log"][i][1] >= model.data["dual_log"][i-1][1]
         else:
-            assert model.data["dual_solutions"][i][1] <= model.data["dual_solutions"][i-1][1]
+            assert model.data["dual_log"][i][1] <= model.data["dual_log"][i-1][1]
