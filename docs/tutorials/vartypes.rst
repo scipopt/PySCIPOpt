@@ -21,6 +21,39 @@ For the following let us assume that a Model object is available, which is creat
 
 .. contents:: Contents
 
+Variable Types
+===============
+
+SCIP has four different types of variables:
+
+.. list-table:: Variable Types
+  :widths: 25 25 25
+  :align: center
+  :header-rows: 1
+
+  * - Variable Type
+    - Abbreviation
+    - Description
+  * - Continuous
+    - C
+    - A continuous variable belonging to the reals with some lower and upper bound
+  * - Integer
+    - I
+    - An integer variable unable to take fractional values in a solution with some lower and upper bound
+  * - Binary
+    - B
+    - A variable restricted to the values 0 or 1.
+  * - Implicit Integer
+    - M
+    - A variable that is continuous but can be inferred to be integer in any valid solution
+
+The variable type can be queried from the Variable object.
+
+.. code-block:: python
+
+  x = scip.addVar(vtype='C', name='x')
+  assert x.vtype() == "CONTINUOUS"
+
 Dictionary of Variables
 =========================
 
@@ -95,38 +128,6 @@ Given a Model object, all added variables can be retrieved with the function:
 
     scip_vars = scip.getVars()
 
-Variable Types
-=================
-
-SCIP has four different types of variables:
-
-.. list-table:: Variable Types
-  :widths: 25 25 25
-  :align: center
-  :header-rows: 1
-
-  * - Variable Type
-    - Abbreviation
-    - Description
-  * - Continuous
-    - C
-    - A continuous variable belonging to the reals with some lower and upper bound
-  * - Integer
-    - I
-    - An integer variable unable to take fractional values in a solution with some lower and upper bound
-  * - Binary
-    - B
-    - A variable restricted to the values 0 or 1.
-  * - Implicit Integer
-    - M
-    - A variable that is continuous but can be inferred to be integer in any valid solution
-
-The variable type can be queried from the Variable object.
-
-.. code-block:: python
-
-  x = scip.addVar(vtype='C', name='x')
-  assert x.vtype() == "CONTINUOUS"
 
 Variable Information
 =======================

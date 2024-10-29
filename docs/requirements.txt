@@ -1,5 +1,5 @@
 sphinx
-sphinx-rtd-theme
-sphinx-nefertiti
+sphinxcontrib-jquery
 sphinxcontrib-bibtex
+sphinx-book-theme
 pyscipopt
