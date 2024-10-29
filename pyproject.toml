@@ -38,6 +38,7 @@ version = {attr = "pyscipopt._version.__version__"}
 
 [tool.cibuildwheel]
 skip="pp*" # currently doesn't work with PyPy
+manylinux-x86_64-image = "manylinux_2_28"
 
 
 [tool.cibuildwheel.linux]
