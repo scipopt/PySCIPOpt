@@ -47,7 +47,6 @@ jobs:
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}/tests"
           CIBW_MANYLINUX_*_IMAGE: manylinux_2_28
-          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.architecture == 'x86_64' && '13.0' || '14.0' }}
         
       - uses: actions/upload-artifact@v3
         with:
