@@ -48,7 +48,7 @@ jobs:
           CIBW_TEST_COMMAND: "pytest {project}/tests"
           CIBW_MANYLINUX_*_IMAGE: manylinux_2_28
         
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
 
