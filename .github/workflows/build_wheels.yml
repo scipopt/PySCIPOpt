@@ -50,6 +50,7 @@ jobs:
         
       - uses: actions/upload-artifact@v4
         with:
+          name: wheels-${{ matrix.os}}-${{ matrix.arch }}
           path: ./wheelhouse/*.whl
 
   build_sdist:
@@ -64,16 +65,24 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
+          name: source-distribution
           path: dist/*.tar.gz
 
-  upload_pypi:
+  merge:
     needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+
+  upload_pypi:
+    needs: [build_wheels, build_sdist, merge]
     runs-on: ubuntu-latest
     if: github.event.inputs.upload_to_pypi == 'true'
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          name: merged-artifacts
           path: dist
 
       - uses: pypa/gh-action-pypi-publish@release/v1
