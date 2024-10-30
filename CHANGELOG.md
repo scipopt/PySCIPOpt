@@ -6,7 +6,7 @@
 ### Changed
 ### Removed
 
-## 5.2.0 - 2024.10.29
+## 5.2.1 - 2024.10.29
 ### Added
 - Expanded Statistics class to more problems.
 - Created Statistics class

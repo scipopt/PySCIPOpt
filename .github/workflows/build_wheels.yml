@@ -68,7 +68,8 @@ jobs:
           name: source-distribution
           path: dist/*.tar.gz
 
-  merge:
+  merge_artifacts:
+    name: Merge Artifacts
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     steps:
@@ -76,7 +77,7 @@ jobs:
         uses: actions/upload-artifact/merge@v4
 
   upload_pypi:
-    needs: [build_wheels, build_sdist, merge]
+    needs: [build_wheels, build_sdist, merge_artifacts]
     runs-on: ubuntu-latest
     if: github.event.inputs.upload_to_pypi == 'true'
     steps:
