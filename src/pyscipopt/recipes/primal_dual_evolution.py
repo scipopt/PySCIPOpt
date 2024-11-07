@@ -22,34 +22,20 @@ def attach_primal_dual_evolution_eventhdlr(model: Model):
         def eventexec(self, event):
             # if a new best primal solution was found, we save when it was found and also its objective
             if event.getType() == SCIP_EVENTTYPE.BESTSOLFOUND:
-                self.model.data["primal_log"].append((self.model.getSolvingTime(), self.model.getPrimalbound()))
+                self.model.data["primal_log"].append([self.model.getSolvingTime(), self.model.getPrimalbound()])
             
             if not self.model.data["dual_log"]:
-                self.model.data["dual_log"].append((self.model.getSolvingTime(), self.model.getDualbound()))
+                self.model.data["dual_log"].append([self.model.getSolvingTime(), self.model.getDualbound()])
             
             if self.model.getObjectiveSense() == "minimize":
                 if self.model.isGT(self.model.getDualbound(), self.model.data["dual_log"][-1][1]):
-                    self.model.data["dual_log"].append((self.model.getSolvingTime(), self.model.getDualbound()))
+                    self.model.data["dual_log"].append([self.model.getSolvingTime(), self.model.getDualbound()])
             else:
                 if self.model.isLT(self.model.getDualbound(), self.model.data["dual_log"][-1][1]):
-                    self.model.data["dual_log"].append((self.model.getSolvingTime(), self.model.getDualbound()))
+                    self.model.data["dual_log"].append([self.model.getSolvingTime(), self.model.getDualbound()])
+                    
 
-        def eventexitsol(self):
-            if self.model.data["primal_log"][-1] and self.model.getPrimalbound() != self.model.data["primal_log"][-1][1]:
-                self.model.data["primal_log"].append((self.model.getSolvingTime(), self.model.getPrimalbound()))
-            
-            if not self.model.data["dual_log"]:
-                self.model.data["dual_log"].append((self.model.getSolvingTime(), self.model.getDualbound()))
-            
-            if self.model.getObjectiveSense() == "minimize":
-                if self.model.isGT(self.model.getDualbound(), self.model.data["dual_log"][-1][1]):
-                    self.model.data["dual_log"].append((self.model.getSolvingTime(), self.model.getDualbound()))
-            else:
-                if self.model.isLT(self.model.getDualbound(), self.model.data["dual_log"][-1][1]):
-                    self.model.data["dual_log"].append((self.model.getSolvingTime(), self.model.getDualbound()))
-
-
-    if not hasattr(model, "data"):
+    if not hasattr(model, "data") or model.data==None:
         model.data = {}
 
     model.data["primal_log"] = []
