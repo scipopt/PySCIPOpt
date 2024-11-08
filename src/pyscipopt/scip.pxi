@@ -15,10 +15,9 @@ from libc.stdlib cimport malloc, free
 from libc.stdio cimport fdopen, fclose
 from posix.stdio cimport fileno
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from itertools import repeat
 from dataclasses import dataclass
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 include "expr.pxi"
 include "lp.pxi"
@@ -1033,6 +1032,27 @@ cdef class Solution:
     def retransform(self):
         """ retransforms solution to original problem space """
         PY_SCIP_CALL(SCIPretransformSol(self.scip, self.sol))
+
+    def translate(self, Model target):
+        """
+        translate solution to a target model solution
+
+        Parameters
+        ----------
+        target : Model
+
+        Returns
+        -------
+        targetSol: Solution
+        """
+        if self.getSolOrigin() != SCIP_SOLORIGIN_ORIGINAL:
+            PY_SCIP_CALL(SCIPretransformSol(self.scip, self.sol))
+        cdef Solution targetSol = Solution.create(target._scip, NULL)
+        cdef SCIP_VAR** source_vars = SCIPgetOrigVars(self.scip)
+        
+        PY_SCIP_CALL(SCIPtranslateSubSol(target._scip, self.scip, self.sol, NULL, source_vars, &(targetSol.sol)))
+        return targetSol
+
 
 cdef class BoundChange:
     """Bound change."""
@@ -2074,38 +2094,28 @@ cdef class Model:
         n = str_conversion(problemName)
         PY_SCIP_CALL(SCIPcreateProbBasic(self._scip, n))
 
-    def copyModel(self, problemName='copy_model'):
+    def addOrigVarsConssObjectiveFrom(self, Model source):
         """
-        Create a copy of the model/problem.
+        add original variables and constraints from source model.
 
         Parameters
         ----------
-        problemName : str, optional
-            name of model or problem (Default value = 'model')
-
+        source : Model
+            source model copy original variables and constraints to target(self) model
         """
-        cdef Model cpy
         cdef SCIP_Bool valid
         cdef SCIP_HASHMAP* localvarmap
         cdef SCIP_HASHMAP* localconsmap
 
-        cpy = Model(createscip=False)
-        PY_SCIP_CALL(SCIPcreate(&cpy._scip))
-        cpy._bestSol = None
-        cpy.includeDefaultPlugins()
-        # cpy._bestSol = <Solution> model._bestSol
-        cname = str_conversion(problemName)
+        PY_SCIP_CALL( SCIPhashmapCreate(&localvarmap, SCIPblkmem(self._scip), SCIPgetNVars(source._scip)) )
+        PY_SCIP_CALL( SCIPhashmapCreate(&localconsmap, SCIPblkmem(self._scip), SCIPgetNConss(source._scip)) )
 
-        PY_SCIP_CALL( SCIPhashmapCreate(&localvarmap, SCIPblkmem(cpy._scip), SCIPgetNVars(self._scip)) )
-        PY_SCIP_CALL( SCIPhashmapCreate(&localconsmap, SCIPblkmem(cpy._scip), SCIPgetNConss(self._scip)) )
-
-        PY_SCIP_CALL(SCIPcopyOrigProb(self._scip, cpy._scip, localvarmap, localconsmap, cname))
-        PY_SCIP_CALL(SCIPcopyOrigVars(self._scip, cpy._scip, localvarmap, localconsmap, NULL, NULL, 0))
-        PY_SCIP_CALL(SCIPcopyOrigConss(self._scip, cpy._scip, localvarmap, localconsmap, False, &valid))
+        PY_SCIP_CALL(SCIPcopyOrigVars(source._scip, self._scip, localvarmap, localconsmap, NULL, NULL, 0))
+        PY_SCIP_CALL(SCIPcopyOrigConss(source._scip, self._scip, localvarmap, localconsmap, False, &valid))
+        PY_SCIP_CALL(SCIPsetObjsense(self._scip, SCIPgetObjsense(source._scip)))
 
         SCIPhashmapFree(&localvarmap)
         SCIPhashmapFree(&localconsmap)
-        return cpy
 
     def freeProb(self):
         """Frees problem and solution process data."""
@@ -6227,36 +6237,6 @@ cdef class Model:
         PY_SCIP_CALL(rc)
         self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
 
-    @staticmethod
-    def solveFirstInterruptOthers(executor: ThreadPoolExecutor, models: Sequence[Model]) -> Tuple[int, Model]:
-        """
-        Solve models return the first solved model and interrupt other models.
-        
-        Parameters
-        ----------
-        executor : ThreadPoolExecutor
-        models: Sequence[Model]
-
-        Returns
-        -------
-        first_seq : int
-            returns the index of the first resolved model from models
-        models[first_idx] : Model
-            returns the first resolved model 
-        """
-        futures = [executor.submit(Model.optimizeNogil, model) for model in models]
-        interrupt_callback = lambda model: model.interruptSolve()
-        for future in as_completed(futures):
-            first_future = future
-            break
-        for idx, furture_to_cancel in enumerate(futures):
-            if furture_to_cancel != first_future:
-                interrupt_callback(models[idx])
-                furture_to_cancel.cancel()
-            else:
-                first_idx = idx
-        return first_idx, models[first_idx]
-
     def solveConcurrent(self):
         """Transforms, presolves, and solves problem using additional solvers which emphasize on
         finding solutions.
@@ -8120,23 +8100,6 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPaddSol(self._scip, solution.sol, &stored))
         return stored
-
-    def addCopyModelSol(self, Solution solution):
-        if solution.getSolOrigin() != SCIP_SOLORIGIN_ORIGINAL:
-            PY_SCIP_CALL(SCIPretransformSol(solution.scip, solution.sol))
-        cdef Solution newsol = Solution.create(self._scip, NULL)
-        cdef SCIP_VAR** subvars = SCIPgetOrigVars(solution.scip)
-        SCIPtranslateSubSol(self._scip, solution.scip, solution.sol, NULL, subvars, &(newsol.sol))
-        self.addSol(newsol, free=True)
-
-    def addCopyModelBestSol(self, Model cpy_model):
-        solution = cpy_model.getBestSol()
-        self.addCopyModelSol(solution)
-        
-    def addCopyModelSols(self, Model cpy_model):
-        solutions = cpy_model.getSols()
-        for solution in solutions:
-            self.addCopyModelSol(solution)
 
     def freeSol(self, Solution solution):
         """

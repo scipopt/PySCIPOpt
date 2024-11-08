@@ -543,7 +543,6 @@ cdef extern from "scip/scip.h":
                               SCIP_Bool             threadsafe,
                               SCIP_Bool             passmessagehdlr,
                               SCIP_Bool*            valid)
-    SCIP_RETCODE SCIPcopyOrigProb(SCIP* sourcescip, SCIP* targetscip, SCIP_HASHMAP* varmap, SCIP_HASHMAP* consmap, const char* name )
     SCIP_RETCODE SCIPcopyOrigVars(SCIP* sourcescip, SCIP* targetscip, SCIP_HASHMAP* varmap, SCIP_HASHMAP* consmap, SCIP_VAR** fixedvars, SCIP_Real* fixedvals, int nfixedvars )
     SCIP_RETCODE SCIPcopyOrigConss(SCIP* sourcescip, SCIP* targetscip, SCIP_HASHMAP* varmap, SCIP_HASHMAP* consmap, SCIP_Bool enablepricing, SCIP_Bool* valid)
     SCIP_RETCODE SCIPmessagehdlrCreate(SCIP_MESSAGEHDLR **messagehdlr,
