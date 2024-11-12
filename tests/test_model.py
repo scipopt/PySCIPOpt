@@ -3,6 +3,7 @@ import os
 import itertools
 
 from pyscipopt import Model, SCIP_STAGE, SCIP_PARAMSETTING, quicksum
+from pyscipopt.scip import is_memory_freed
 
 def test_model():
     # create solver instance

@@ -4,7 +4,7 @@ import weakref
 import pytest
 
 from pyscipopt import Model, Heur, SCIP_RESULT, SCIP_PARAMSETTING, SCIP_HEURTIMING, SCIP_LPSOLSTAT
-from pyscipopt.scip import is_memory_freed
+from test_memory import is_optimized_mode
 
 from helpers.utils import random_mip_1
 
@@ -106,7 +106,7 @@ def test_heur():
     assert round(sol[y]) == 0.0
 
 def test_heur_memory():
-    if is_memory_freed():
+    if is_optimized_mode():
        pytest.skip()
 
     def inner():

@@ -16,3 +16,7 @@ def test_freed():
 
 def test_print_memory_in_use():
     print_memory_in_use()
+
+def is_optimized_mode():
+    model = Model()
+    return is_memory_freed()
