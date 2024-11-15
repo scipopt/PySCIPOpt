@@ -28,6 +28,9 @@ To install PySCIPOpt simply run the command:
 
   TLDR: Older linux distributions may not work for newer versions of PySCIPOpt installed via pip.
 
+.. note:: For Mac users: PySCIPOpt versions newer than 5.1.1 installed via PyPI now only support
+  MACOSX 13+ for users running x86_64 architecture, and MACOSX 14+ for users running newer Apple silicon.
+
 .. note:: For versions older than 4.4.0 installed via PyPI SCIP is not automatically installed.
   This means that SCIP must be installed yourself. If it is not installed globally,
   then the ``SCIPOPTDIR`` environment flag must be set, see :doc:`this page </build>` for more details.
