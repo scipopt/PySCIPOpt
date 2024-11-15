@@ -2057,6 +2057,15 @@ cdef class Model:
     def freeTransform(self):
         """Frees all solution process data including presolving and
         transformed problem, only original problem is kept."""
+        if self.getStage() not in [SCIP_STAGE_INIT,
+                                 SCIP_STAGE_PROBLEM,
+                                 SCIP_STAGE_TRANSFORMED,
+                                 SCIP_STAGE_PRESOLVING,
+                                 SCIP_STAGE_PRESOLVED,
+                                 SCIP_STAGE_SOLVING,
+                                 SCIP_STAGE_SOLVED]:
+            raise Warning("method cannot be called in stage %i." % self.getStage())
+            
         self._modelvars = {
             var: value
             for var, value in self._modelvars.items()
@@ -6175,6 +6184,11 @@ cdef class Model:
 
     def presolve(self):
         """Presolve the problem."""
+        if self.getStage() not in [SCIP_STAGE_PROBLEM, SCIP_STAGE_TRANSFORMED,\
+                                SCIP_STAGE_PRESOLVING, SCIP_STAGE_PRESOLVED, \
+                                SCIP_STAGE_SOLVED]:
+            raise Warning("method cannot be called in stage %i." % self.getStage())
+
         PY_SCIP_CALL(SCIPpresolve(self._scip))
         self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
 
@@ -8977,6 +8991,15 @@ cdef class Model:
 
     def freeReoptSolve(self):
         """Frees all solution process data and prepares for reoptimization."""
+
+        if self.getStage() not in [SCIP_STAGE_INIT,
+                                 SCIP_STAGE_PROBLEM,
+                                 SCIP_STAGE_TRANSFORMED,
+                                 SCIP_STAGE_PRESOLVING,
+                                 SCIP_STAGE_PRESOLVED,
+                                 SCIP_STAGE_SOLVING,
+                                 SCIP_STAGE_SOLVED]:
+            raise Warning("method cannot be called in stage %i." % self.getStage())
         PY_SCIP_CALL(SCIPfreeReoptSolve(self._scip))
 
     def chgReoptObjective(self, coeffs, sense = 'minimize'):
