@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added stage checks to presolve, freereoptsolve, freetransform
 - Added primal_dual_evolution recipe and a plot recipe
 ### Fixed
 ### Changed
