@@ -3,6 +3,12 @@
 ## Unreleased
 ### Added
 - Added primal_dual_evolution recipe and a plot recipe
+### Fixed
+### Changed
+### Removed
+
+## 5.2.1 - 2024.10.29
+### Added
 - Expanded Statistics class to more problems.
 - Created Statistics class
 - Added parser to read .stats file
