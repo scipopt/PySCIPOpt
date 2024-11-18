@@ -2094,29 +2094,6 @@ cdef class Model:
         n = str_conversion(problemName)
         PY_SCIP_CALL(SCIPcreateProbBasic(self._scip, n))
 
-    def addOrigVarsConssObjectiveFrom(self, Model source):
-        """
-        add original variables and constraints from source model.
-
-        Parameters
-        ----------
-        source : Model
-            source model copy original variables and constraints to target(self) model
-        """
-        cdef SCIP_Bool valid
-        cdef SCIP_HASHMAP* localvarmap
-        cdef SCIP_HASHMAP* localconsmap
-
-        PY_SCIP_CALL( SCIPhashmapCreate(&localvarmap, SCIPblkmem(self._scip), SCIPgetNVars(source._scip)) )
-        PY_SCIP_CALL( SCIPhashmapCreate(&localconsmap, SCIPblkmem(self._scip), SCIPgetNConss(source._scip)) )
-
-        PY_SCIP_CALL(SCIPcopyOrigVars(source._scip, self._scip, localvarmap, localconsmap, NULL, NULL, 0))
-        PY_SCIP_CALL(SCIPcopyOrigConss(source._scip, self._scip, localvarmap, localconsmap, False, &valid))
-        PY_SCIP_CALL(SCIPsetObjsense(self._scip, SCIPgetObjsense(source._scip)))
-
-        SCIPhashmapFree(&localvarmap)
-        SCIPhashmapFree(&localconsmap)
-
     def freeProb(self):
         """Frees problem and solution process data."""
         PY_SCIP_CALL(SCIPfreeProb(self._scip))

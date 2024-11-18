@@ -23,7 +23,7 @@
 - Added additional tests to test_nodesel, test_heur, and test_strong_branching
 - Migrated documentation to Readthedocs
 - `attachEventHandlerCallback` method to Model for a more ergonomic way to attach event handlers
-- Added Model method: optimizeNogil, addOrigVarsConssObjectiveFrom
+- Added Model method: optimizeNogil
 - Added Solution method: getSolOrigin, retransform, translate
 - Added SCIP.pxd: SCIP_SOLORIGIN, SCIPcopyOrigVars, SCIPcopyOrigConss, SCIPsolve nogil, SCIPretransformSol, SCIPtranslateSubSol, SCIPsolGetOrigin, SCIPhashmapCreate, SCIPhashmapFree
 - Added additional tests to test_multi_threads, test_solution, and test_copy
