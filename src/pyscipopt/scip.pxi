@@ -1019,7 +1019,7 @@ cdef class Solution:
             if not stage_check or self.sol == NULL and SCIPgetStage(self.scip) != SCIP_STAGE_SOLVING:
                 raise Warning(f"{method} can only be called with a valid solution or in stage SOLVING (current stage: {SCIPgetStage(self.scip)})")
 
-    def getSolOrigin(self):
+    def getOrigin(self):
         """
         Returns origin of solution: where to retrieve uncached elements.
 
