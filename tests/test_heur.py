@@ -4,9 +4,9 @@ import weakref
 import pytest
 
 from pyscipopt import Model, Heur, SCIP_RESULT, SCIP_PARAMSETTING, SCIP_HEURTIMING, SCIP_LPSOLSTAT
-from pyscipopt.scip import is_memory_freed
+from test_memory import is_optimized_mode
 
-from helpers.utils import random_mip_1, is_optimized_mode
+from helpers.utils import random_mip_1
 
 class MyHeur(Heur):
 

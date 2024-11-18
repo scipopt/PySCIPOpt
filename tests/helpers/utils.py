@@ -1,14 +1,6 @@
 from pyscipopt import Model, quicksum, SCIP_PARAMSETTING, exp, log, sqrt, sin
 from typing import List
 
-from pyscipopt.scip import is_memory_freed
-
-
-def is_optimized_mode():
-    model = Model()
-    return is_memory_freed()
-
-
 def random_mip_1(disable_sepa=True, disable_huer=True, disable_presolve=True, node_lim=2000, small=False):
     model = Model()
 
@@ -77,18 +69,14 @@ def random_nlp_1():
     return model
 
 
-def knapsack_model(weights=[4, 2, 6, 3, 7, 5], costs=[7, 2, 5, 4, 3, 4]):
+def knapsack_model(weights=[4, 2, 6, 3, 7, 5], costs=[7, 2, 5, 4, 3, 4], knapsack_size = 15):
     # create solver instance
     s = Model("Knapsack")
-    s.hideOutput()
 
     # setting the objective sense to maximise
     s.setMaximize()
 
     assert len(weights) == len(costs)
-
-    # knapsack size
-    knapsackSize = 15
 
     # adding the knapsack variables
     knapsackVars = []
