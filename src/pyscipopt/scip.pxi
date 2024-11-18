@@ -1045,7 +1045,7 @@ cdef class Solution:
         -------
         targetSol: Solution
         """
-        if self.getSolOrigin() != SCIP_SOLORIGIN_ORIGINAL:
+        if self.getOrigin() != SCIP_SOLORIGIN_ORIGINAL:
             PY_SCIP_CALL(SCIPretransformSol(self.scip, self.sol))
         cdef Solution targetSol = Solution.create(target._scip, NULL)
         cdef SCIP_VAR** source_vars = SCIPgetOrigVars(self.scip)

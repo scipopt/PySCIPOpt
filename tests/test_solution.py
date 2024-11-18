@@ -196,15 +196,15 @@ def test_getSols():
     assert any(m.isEQ(sol[x], 0.0) for sol in m.getSols())
 
 
-def test_getSolOrigin_retrasform():
+def test_getOrigin_retrasform():
     m = random_mip_1(disable_sepa=False, disable_huer=False, disable_presolve=False, small=True)
     m.optimize()
 
     sol = m.getBestSol()
-    assert sol.getSolOrigin() == SCIP_SOLORIGIN.ZERO
+    assert sol.getOrigin() == SCIP_SOLORIGIN.ZERO
 
     sol.retransform()
-    assert sol.getSolOrigin() == SCIP_SOLORIGIN.ORIGINAL
+    assert sol.getOrigin() == SCIP_SOLORIGIN.ORIGINAL
 
 
 def test_translate():
