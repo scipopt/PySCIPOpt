@@ -1,4 +1,5 @@
 from pyscipopt import Model
+from helpers.utils import random_mip_1
 
 def test_copy():
     # create solver instance
@@ -18,3 +19,4 @@ def test_copy():
     s2.optimize()
 
     assert s.getObjVal() == s2.getObjVal()
+

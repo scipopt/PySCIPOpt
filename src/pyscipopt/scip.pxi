@@ -258,6 +258,16 @@ cdef class PY_SCIP_ROWORIGINTYPE:
     SEPA   = SCIP_ROWORIGINTYPE_SEPA
     REOPT  = SCIP_ROWORIGINTYPE_REOPT
 
+cdef class PY_SCIP_SOLORIGIN:
+    ORIGINAL  = SCIP_SOLORIGIN_ORIGINAL
+    ZERO      = SCIP_SOLORIGIN_ZERO
+    LPSOL     = SCIP_SOLORIGIN_LPSOL
+    NLPSOL    = SCIP_SOLORIGIN_NLPSOL
+    RELAXSOL  = SCIP_SOLORIGIN_RELAXSOL
+    PSEUDOSOL = SCIP_SOLORIGIN_PSEUDOSOL
+    PARTIAL   = SCIP_SOLORIGIN_PARTIAL
+    UNKNOWN   = SCIP_SOLORIGIN_UNKNOWN
+
 def PY_SCIP_CALL(SCIP_RETCODE rc):
     if rc == SCIP_OKAY:
         pass
@@ -1008,6 +1018,40 @@ cdef class Solution:
 
             if not stage_check or self.sol == NULL and SCIPgetStage(self.scip) != SCIP_STAGE_SOLVING:
                 raise Warning(f"{method} can only be called with a valid solution or in stage SOLVING (current stage: {SCIPgetStage(self.scip)})")
+
+    def getOrigin(self):
+        """
+        Returns origin of solution: where to retrieve uncached elements.
+
+        Returns
+        -------
+        PY_SCIP_SOLORIGIN
+        """
+        return SCIPsolGetOrigin(self.sol)
+
+    def retransform(self):
+        """ retransforms solution to original problem space """
+        PY_SCIP_CALL(SCIPretransformSol(self.scip, self.sol))
+
+    def translate(self, Model target):
+        """
+        translate solution to a target model solution
+
+        Parameters
+        ----------
+        target : Model
+
+        Returns
+        -------
+        targetSol: Solution
+        """
+        if self.getOrigin() != SCIP_SOLORIGIN_ORIGINAL:
+            PY_SCIP_CALL(SCIPretransformSol(self.scip, self.sol))
+        cdef Solution targetSol = Solution.create(target._scip, NULL)
+        cdef SCIP_VAR** source_vars = SCIPgetOrigVars(self.scip)
+        
+        PY_SCIP_CALL(SCIPtranslateSubSol(target._scip, self.scip, self.sol, NULL, source_vars, &(targetSol.sol)))
+        return targetSol
 
 
 cdef class BoundChange:
@@ -6169,6 +6213,14 @@ cdef class Model:
     def optimize(self):
         """Optimize the problem."""
         PY_SCIP_CALL(SCIPsolve(self._scip))
+        self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
+    
+    def optimizeNogil(self):
+        """Optimize the problem without GIL."""
+        cdef SCIP_RETCODE rc;
+        with nogil:
+            rc = SCIPsolve(self._scip)
+        PY_SCIP_CALL(rc)
         self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
 
     def solveConcurrent(self):

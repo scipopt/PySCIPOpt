@@ -320,6 +320,17 @@ cdef extern from "scip/scip.h":
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_SEPA   
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_REOPT  
 
+    ctypedef int SCIP_SOLORIGIN
+    cdef extern from "scip/type_sol.h":
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_ORIGINAL
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_ZERO
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_LPSOL
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_NLPSOL
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_RELAXSOL
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_PSEUDOSOL
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_PARTIAL
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_UNKNOWN
+
     ctypedef bint SCIP_Bool
 
     ctypedef long long SCIP_Longint
@@ -532,6 +543,8 @@ cdef extern from "scip/scip.h":
                               SCIP_Bool             threadsafe,
                               SCIP_Bool             passmessagehdlr,
                               SCIP_Bool*            valid)
+    SCIP_RETCODE SCIPcopyOrigVars(SCIP* sourcescip, SCIP* targetscip, SCIP_HASHMAP* varmap, SCIP_HASHMAP* consmap, SCIP_VAR** fixedvars, SCIP_Real* fixedvals, int nfixedvars )
+    SCIP_RETCODE SCIPcopyOrigConss(SCIP* sourcescip, SCIP* targetscip, SCIP_HASHMAP* varmap, SCIP_HASHMAP* consmap, SCIP_Bool enablepricing, SCIP_Bool* valid)
     SCIP_RETCODE SCIPmessagehdlrCreate(SCIP_MESSAGEHDLR **messagehdlr,
                                        SCIP_Bool bufferedoutput,
                                        const char *filename,
@@ -669,6 +682,7 @@ cdef extern from "scip/scip.h":
 
     # Solve Methods
     SCIP_RETCODE SCIPsolve(SCIP* scip)
+    SCIP_RETCODE SCIPsolve(SCIP* scip) noexcept nogil
     SCIP_RETCODE SCIPsolveConcurrent(SCIP* scip)
     SCIP_RETCODE SCIPfreeTransform(SCIP* scip)
     SCIP_RETCODE SCIPpresolve(SCIP* scip)
@@ -871,7 +885,9 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPreadSolFile(SCIP* scip, const char* filename, SCIP_SOL* sol, SCIP_Bool xml, SCIP_Bool*	partial, SCIP_Bool*	error)
     SCIP_RETCODE SCIPcheckSol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool printreason, SCIP_Bool completely, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* feasible)
     SCIP_RETCODE SCIPcheckSolOrig(SCIP* scip, SCIP_SOL* sol, SCIP_Bool* feasible, SCIP_Bool printreason, SCIP_Bool completely)
-
+    SCIP_RETCODE SCIPretransformSol(SCIP* scip, SCIP_SOL* sol)
+    SCIP_RETCODE SCIPtranslateSubSol(SCIP* scip, SCIP* subscip, SCIP_SOL* subsol, SCIP_HEUR* heur, SCIP_VAR** subvars, SCIP_SOL** newsol)
+    SCIP_SOLORIGIN SCIPsolGetOrigin(SCIP_SOL* sol)
     SCIP_Real SCIPgetSolTime(SCIP* scip, SCIP_SOL* sol)
 
     SCIP_RETCODE SCIPsetRelaxSolVal(SCIP* scip, SCIP_RELAX* relax, SCIP_VAR* var, SCIP_Real val)
@@ -1366,6 +1382,11 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPenableReoptimization(SCIP* scip, SCIP_Bool enable)
 
     BMS_BLKMEM* SCIPblkmem(SCIP* scip)
+
+    # pub_misc.h
+    SCIP_RETCODE SCIPhashmapCreate(SCIP_HASHMAP** hashmap, BMS_BLKMEM* blkmem, int mapsize)
+    void SCIPhashmapFree(SCIP_HASHMAP** hashmap)
+
 
 cdef extern from "scip/tree.h":
     int SCIPnodeGetNAddedConss(SCIP_NODE* node)
