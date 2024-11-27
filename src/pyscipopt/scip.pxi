@@ -1453,29 +1453,38 @@ cdef class Model:
         if not onlyroot:
             self.setIntParam("propagating/maxrounds", 0)
 
-    def writeProblem(self, filename='model.cip', trans=False, genericnames=False):
+    def writeProblem(self, filename='model.cip', trans=False, genericnames=False, verbose=True):
         """Write current model/problem to a file.
 
         :param filename: the name of the file to be used (Default value = 'model.cip'). Should have an extension corresponding to one of the readable file formats, described in https://www.scipopt.org/doc/html/group__FILEREADERS.php.
         :param trans: indicates whether the transformed problem is written to file (Default value = False)
         :param genericnames: indicates whether the problem should be written with generic variable and constraint names (Default value = False)
-
+        :param verbose: whether to print a success message
         """
         user_locale = locale.getlocale()
         locale.setlocale(locale.LC_ALL, "C")
 
-        str_absfile = abspath(filename)
-        absfile = str_conversion(str_absfile)
-        fn, ext = splitext(absfile)
-        if len(ext) == 0:
-            ext = str_conversion('.cip')
-        fn = fn + ext
-        ext = ext[1:]
-        if trans:
-            PY_SCIP_CALL(SCIPwriteTransProblem(self._scip, fn, ext, genericnames))
+        if filename:
+            str_absfile = abspath(filename)
+            absfile = str_conversion(str_absfile)
+            fn, ext = splitext(absfile)
+            if len(ext) == 0:
+                ext = str_conversion('.cip')
+            fn = fn + ext
+            ext = ext[1:]
+            
+            if trans:
+                PY_SCIP_CALL(SCIPwriteTransProblem(self._scip, fn, ext, genericnames))
+            else:
+                PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, fn, ext, genericnames))
+            
+            if verbose:
+                print('wrote problem to file ' + str_absfile)
         else:
-            PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, fn, ext, genericnames))
-        print('wrote problem to file ' + str_absfile)
+            if trans:
+                PY_SCIP_CALL(SCIPwriteTransProblem(self._scip, NULL, str_conversion('.cip')[1:], genericnames))
+            else:
+                PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, NULL, str_conversion('.cip')[1:], genericnames))            
 
         locale.setlocale(locale.LC_ALL, user_locale)
 

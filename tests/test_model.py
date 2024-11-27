@@ -66,6 +66,7 @@ def test_model():
 
     s.writeProblem('model')
     s.writeProblem('model.lp')
+    s.writeProblem(filename=False)
 
     s.freeProb()
     s = Model()
