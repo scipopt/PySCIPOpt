@@ -1,11 +1,14 @@
 name: Integration test
 
 env:
-  version: 9.0.0
+  version: 9.1.0
 
 # runs on branches and pull requests; doesn't run on tags.
 on:
   push:
+    branches:
+      - 'master'
+  pull_request:
     branches:
       - 'master'
 
@@ -109,7 +112,7 @@ jobs:
       - name: Install dependencies (SCIPOptSuite)
         if: steps.cache-scip.outputs.cache-hit != 'true'
         run: |
-          brew install tbb boost
+          brew install tbb boost bison
           wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/scipoptsuite-${{ env.version }}.tgz
           tar xfz scipoptsuite-${{ env.version }}.tgz
           cd scipoptsuite-${{ env.version }}

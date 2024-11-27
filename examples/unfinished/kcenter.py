@@ -6,7 +6,8 @@ of each vertex in the graph to a facility is minimum
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt import Model, quicksum, multidict
+from pyscipopt import Model, quicksum
+
 
 def kcenter(I,J,c,k):
     """kcenter -- minimize the maximum travel cost from customers to k facilities.

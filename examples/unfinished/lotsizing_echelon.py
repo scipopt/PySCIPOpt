@@ -8,7 +8,9 @@ Approaches:
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 import random
+
 from pyscipopt import Model, quicksum, multidict
+
 
 def mils_standard(T,K,P,f,g,c,d,h,a,M,UB,phi):
     """

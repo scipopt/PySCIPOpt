@@ -13,42 +13,23 @@ This project provides an interface from Python to the [SCIP Optimization Suite](
 Documentation
 -------------
 
-Please consult the [online documentation](https://scipopt.github.io/PySCIPOpt/docs/html) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
+Please consult the [online documentation](https://pyscipopt.readthedocs.io/en/latest/) or use the `help()` function directly in Python or `?` in IPython/Jupyter.
+
+The old documentation, which we are in the process of migrating from,
+is still more complete w.r.t. the API, and can be found [here](https://scipopt.github.io/PySCIPOpt/docs/html/index.html)
 
 See [CHANGELOG.md](https://github.com/scipopt/PySCIPOpt/blob/master/CHANGELOG.md) for added, removed or fixed functionality.
 
 Installation
 ------------
 
-**Using Conda**
-
-[![Conda version](https://img.shields.io/conda/vn/conda-forge/pyscipopt?logo=conda-forge)](https://anaconda.org/conda-forge/pyscipopt)
-[![Conda platforms](https://img.shields.io/conda/pn/conda-forge/pyscipopt?logo=conda-forge)](https://anaconda.org/conda-forge/pyscipopt)
-
-***DO NOT USE THE CONDA BASE ENVIRONMENT TO INSTALL PYSCIPOPT.***
-
-Conda will install SCIP automatically, hence everything can be installed in a single command:
+The recommended installation method is via PyPI
 ```bash
-conda install --channel conda-forge pyscipopt
+pip install pyscipopt
 ```
 
-**Using PyPI and from Source**
-
-See [INSTALL.md](https://github.com/scipopt/PySCIPOpt/blob/master/INSTALL.md) for instructions.
-Please note that the latest PySCIPOpt version is usually only compatible with the latest major release of the SCIP Optimization Suite.
-The following table summarizes which version of PySCIPOpt is required for a given SCIP version:
-
-|SCIP| PySCIPOpt |
-|----|----|
-9.0 | 5.x
-8.0 | 4.x
-7.0 | 3.x
-6.0 | 2.x
-5.0 | 1.4, 1.3
-4.0 | 1.2, 1.1
-3.2 | 1.0
-
-Information which version of PySCIPOpt is required for a given SCIP version can also be found in [INSTALL.md](https://github.com/scipopt/PySCIPOpt/blob/master/INSTALL.md).
+For information on specific versions, installation via Conda, and guides for building from source,
+please see the [online documentation](https://pyscipopt.readthedocs.io/en/latest/install.html).
 
 Building and solving a model
 ----------------------------
@@ -100,90 +81,6 @@ examples.
 
 Please notice that in most cases one needs to use a `dictionary` to
 specify the return values needed by SCIP.
-
-Extending the interface
------------------------
-
-PySCIPOpt already covers many of the SCIP callable library methods. You
-may also extend it to increase the functionality of this interface. The
-following will provide some directions on how this can be achieved:
-
-The two most important files in PySCIPOpt are the `scip.pxd` and
-`scip.pxi`. These two files specify the public functions of SCIP that
-can be accessed from your python code.
-
-To make PySCIPOpt aware of the public functions you would like to
-access, you must add them to `scip.pxd`. There are two things that must
-be done in order to properly add the functions:
-
-1)  Ensure any `enum`s, `struct`s or SCIP variable types are included in
-    `scip.pxd` <br>
-2)  Add the prototype of the public function you wish to access to
-    `scip.pxd`
-
-After following the previous two steps, it is then possible to create
-functions in python that reference the SCIP public functions included in
-`scip.pxd`. This is achieved by modifying the `scip.pxi` file to add the
-functionality you require.
-
-We are always happy to accept pull request containing patches or
-extensions!
-
-Please have a look at our [contribution guidelines](https://github.com/scipopt/PySCIPOpt/blob/master/CONTRIBUTING.md).
-
-Gotchas
--------
-
-### Ranged constraints
-
-While ranged constraints of the form
-
-``` {.sourceCode .}
-lhs <= expression <= rhs
-```
-
-are supported, the Python syntax for [chained
-comparisons](https://docs.python.org/3.5/reference/expressions.html#comparisons)
-can't be hijacked with operator overloading. Instead, parenthesis must
-be used, e.g.,
-
-``` {.sourceCode .}
-lhs <= (expression <= rhs)
-```
-
-Alternatively, you may call `model.chgRhs(cons, newrhs)` or
-`model.chgLhs(cons, newlhs)` after the single-sided constraint has been
-created.
-
-### Variable objects
-
-You can't use `Variable` objects as elements of `set`s or as keys of
-`dict`s. They are not hashable and comparable. The issue is that
-comparisons such as `x == y` will be interpreted as linear constraints,
-since `Variable`s are also `Expr` objects.
-
-### Dual values
-
-While PySCIPOpt supports access to the dual values of a solution, there
-are some limitations involved:
-
--   Can only be used when presolving and propagation is disabled to
-    ensure that the LP solver - which is providing the dual
-    information - actually solves the unmodified problem.
--   Heuristics should also be disabled to avoid that the problem is
-    solved before the LP solver is called.
--   There should be no bound constraints, i.e., constraints with only
-    one variable. This can cause incorrect values as explained in
-    [\#136](https://github.com/scipopt/PySCIPOpt/issues/136)
-
-Therefore, you should use the following settings when trying to work
-with dual information:
-
-``` {.sourceCode .python}
-model.setPresolve(pyscipopt.SCIP_PARAMSETTING.OFF)
-model.setHeuristics(pyscipopt.SCIP_PARAMSETTING.OFF)
-model.disablePropagation()
-```
 
 Citing PySCIPOpt
 ----------------
