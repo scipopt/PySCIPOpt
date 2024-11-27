@@ -6,7 +6,7 @@
 - Added primal_dual_evolution recipe and a plot recipe
 ### Fixed
 ### Changed
-- Allowed writeModel to print to standard output
+- Allowed writeProblem to print to standard output
 ### Removed
 
 ## 5.2.1 - 2024.10.29
