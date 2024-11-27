@@ -2890,12 +2890,23 @@ cdef class Model:
             self.setIntParam("propagating/maxrounds", 0)
 
     def writeProblem(self, filename='model.cip', trans=False, genericnames=False, verbose=True):
-        """Write current model/problem to a file.
+        """
+        Write current model/problem to a file.
 
-        :param filename: the name of the file to be used (Default value = 'model.cip'). Should have an extension corresponding to one of the readable file formats, described in https://www.scipopt.org/doc/html/group__FILEREADERS.php.
-        :param trans: indicates whether the transformed problem is written to file (Default value = False)
-        :param genericnames: indicates whether the problem should be written with generic variable and constraint names (Default value = False)
-        :param verbose: whether to print a success message
+        Parameters
+        ----------
+        filename : str, optional
+            the name of the file to be used (Default value = 'model.cip').
+            Should have an extension corresponding to one of the readable file formats,
+            described in https://www.scipopt.org/doc/html/group__FILEREADERS.php.
+        trans : bool, optional
+            indicates whether the transformed problem is written to file (Default value = False)
+        genericnames : bool, optional
+            indicates whether the problem should be written with generic variable
+            and constraint names (Default value = False)
+        verbose : bool, optional
+            indicates whether a success message should be printed
+
         """
         user_locale = locale.getlocale(category=locale.LC_NUMERIC)
         locale.setlocale(locale.LC_NUMERIC, "C")
