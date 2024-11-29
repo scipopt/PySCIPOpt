@@ -5,6 +5,7 @@
 - Added stage checks to presolve, freereoptsolve, freetransform
 - Added primal_dual_evolution recipe and a plot recipe
 ### Fixed
+- Only redirect stdout and stderr in redirectOutput() so that file output still works afterwards
 ### Changed
 ### Removed
 
