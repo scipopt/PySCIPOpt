@@ -101,20 +101,33 @@ def test_SOScons():
 
 def test_cons_indicator():
     m = Model()
-    x = m.addVar(lb=0)
+    x = m.addVar(lb=0, obj=1)
     binvar = m.addVar(vtype="B", lb=1)
 
-    c = m.addConsIndicator(x >= 1, binvar)
+    c1 = m.addConsIndicator(x >= 1, binvar) 
 
-    slack = m.getSlackVarIndicator(c)
+    assert c1.name == "c1"
+
+    c2 = m.addCons(x <= 3)
+
+    c3 = m.addConsIndicator(x >= 0, binvar)
+    assert c3.name == "c4"
+
+    # because addConsIndicator actually adds two constraints
+    assert m.getNConss() == 5
+
+    slack = m.getSlackVarIndicator(c1)
 
     m.optimize()
 
+    assert m.getNConss() == 5
     assert m.isEQ(m.getVal(slack), 0)
     assert m.isEQ(m.getVal(binvar), 1)
     assert m.isEQ(m.getVal(x), 1)
-    assert c.getConshdlrName() == "indicator"
+    assert c1.getConshdlrName() == "indicator"
 
+
+test_cons_indicator()
 
 @pytest.mark.xfail(
     reason="addConsIndicator doesn't behave as expected when binary variable is False. See Issue #717."

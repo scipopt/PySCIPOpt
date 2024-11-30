@@ -6,6 +6,7 @@
 - Added stage checks to presolve, freereoptsolve, freetransform
 - Added primal_dual_evolution recipe and a plot recipe
 ### Fixed
+- Fixed default name for indicator constraints
 ### Changed
 ### Removed
 
