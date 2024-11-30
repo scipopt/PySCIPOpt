@@ -2889,6 +2889,35 @@ cdef class Model:
         if not onlyroot:
             self.setIntParam("propagating/maxrounds", 0)
 
+    def displayProblem(self, ext='.cip', trans=False, genericnames=False):
+        """
+        Write current model/problem to a file.
+
+        Parameters
+        ----------
+        ext   : str, optional
+            the extension to be used (Default value = '.cip').
+            Should have an extension corresponding to one of the readable file formats,
+            described in https://www.scipopt.org/doc/html/group__FILEREADERS.php.
+        trans : bool, optional
+            indicates whether the transformed problem is written to file (Default value = False)
+        genericnames : bool, optional
+            indicates whether the problem should be written with generic variable
+            and constraint names (Default value = False)
+        verbose : bool, optional
+            indicates whether a success message should be printed
+
+        """
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        if trans:
+            PY_SCIP_CALL(SCIPwriteTransProblem(self._scip, NULL, str_conversion(ext)[1:], genericnames))
+        else:
+            PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, NULL, str_conversion(ext)[1:], genericnames))            
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
     def writeProblem(self, filename='model.cip', trans=False, genericnames=False, verbose=True):
         """
         Write current model/problem to a file.
