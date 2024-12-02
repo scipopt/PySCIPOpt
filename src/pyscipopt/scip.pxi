@@ -2889,9 +2889,9 @@ cdef class Model:
         if not onlyroot:
             self.setIntParam("propagating/maxrounds", 0)
 
-    def displayProblem(self, ext='.cip', trans=False, genericnames=False):
+    def printProblem(self, ext='.cip', trans=False, genericnames=False):
         """
-        Write current model/problem to a file.
+        Write current model/problem to standard output.
 
         Parameters
         ----------
@@ -2904,9 +2904,6 @@ cdef class Model:
         genericnames : bool, optional
             indicates whether the problem should be written with generic variable
             and constraint names (Default value = False)
-        verbose : bool, optional
-            indicates whether a success message should be printed
-
         """
         user_locale = locale.getlocale(category=locale.LC_NUMERIC)
         locale.setlocale(locale.LC_NUMERIC, "C")
