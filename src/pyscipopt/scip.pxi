@@ -5339,7 +5339,7 @@ cdef class Model:
 
         return pyCons
 
-    def addConsIndicator(self, cons, binvar=None, activeone=True, name="IndicatorCons",
+    def addConsIndicator(self, cons, binvar=None, activeone=True, name="",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
@@ -5357,7 +5357,7 @@ cdef class Model:
         activeone : bool, optional
             constraint should active if binvar is 1 (0 if activeone = False)
         name : str, optional
-            name of the constraint (Default value = "IndicatorCons")
+            name of the constraint (Default value = "")
         initial : bool, optional
             should the LP relaxation of constraint be in the initial LP? (Default value = True)
         separate : bool, optional
@@ -5389,6 +5389,9 @@ cdef class Model:
         cdef SCIP_VAR* _binVar
         if cons._lhs is not None and cons._rhs is not None:
             raise ValueError("expected inequality that has either only a left or right hand side")
+
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
         if cons.expr.degree() > 1:
             raise ValueError("expected linear inequality, expression has degree %d" % cons.expr.degree())
