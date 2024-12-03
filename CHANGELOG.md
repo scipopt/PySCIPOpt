@@ -8,6 +8,7 @@
 - Added primal_dual_evolution recipe and a plot recipe
 ### Fixed
 ### Changed
+- GitHub actions using Mac now use precompiled SCIP from latest release
 ### Removed
 
 ## 5.2.1 - 2024.10.29
