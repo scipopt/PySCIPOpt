@@ -2,11 +2,14 @@
 
 ## Unreleased
 ### Added
+- Added categorical data example
+- Added printProblem to print problem to stdout
 - Added stage checks to presolve, freereoptsolve, freetransform
 - Added primal_dual_evolution recipe and a plot recipe
 ### Fixed
 - Only redirect stdout and stderr in redirectOutput() so that file output still works afterwards
 ### Changed
+- GitHub actions using Mac now use precompiled SCIP from latest release
 ### Removed
 
 ## 5.2.1 - 2024.10.29
