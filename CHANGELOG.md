@@ -7,6 +7,7 @@
 - Added stage checks to presolve, freereoptsolve, freetransform
 - Added primal_dual_evolution recipe and a plot recipe
 ### Fixed
+- Added default names to indicator constraints
 ### Changed
 - GitHub actions using Mac now use precompiled SCIP from latest release
 ### Removed

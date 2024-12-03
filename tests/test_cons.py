@@ -120,7 +120,7 @@ def test_cons_indicator():
 
     m.optimize()
 
-    assert m.getNConss() == 5
+    assert m.getNConss(transformed=False) == 5
     assert m.isEQ(m.getVal(slack), 0)
     assert m.isEQ(m.getVal(binvar), 1)
     assert m.isEQ(m.getVal(x), 1)
