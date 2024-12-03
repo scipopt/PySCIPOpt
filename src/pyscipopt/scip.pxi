@@ -12,7 +12,7 @@ cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPointer
 from libc.stdlib cimport malloc, free
-from libc.stdio cimport fdopen, fclose
+from libc.stdio cimport stdout, stderr, fdopen, fputs, fflush, fclose
 from posix.stdio cimport fileno
 
 from collections.abc import Iterable
@@ -1851,10 +1851,22 @@ cdef class Constraint:
 
 
 cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) noexcept:
-    sys.stdout.write(msg.decode('UTF-8'))
+    if file is stdout:
+        sys.stdout.write(msg.decode('UTF-8'))
+    elif file is stderr:
+        sys.stderr.write(msg.decode('UTF-8'))
+    else:
+        if msg is not NULL:
+            fputs(msg, file)
+        fflush(file)
 
 cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg) noexcept:
-    sys.stderr.write(msg.decode('UTF-8'))
+    if file is NULL:
+        sys.stderr.write(msg.decode('UTF-8'))
+    else:
+        if msg is not NULL:
+            fputs(msg, file)
+        fflush(file)
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"

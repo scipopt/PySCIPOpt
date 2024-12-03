@@ -3,6 +3,7 @@ import os
 import itertools
 
 from pyscipopt import Model, SCIP_STAGE, SCIP_PARAMSETTING, quicksum
+from helpers.utils import random_mip_1
 
 def test_model():
     # create solver instance
@@ -478,3 +479,35 @@ def test_getObjVal():
 
     assert m.getObjVal() == 16 
     assert m.getVal(x) == 0
+
+# tests writeProblem() after redirectOutput()
+def test_redirection():
+
+    # create problem instances
+    original = random_mip_1(False, False, False, -1, True)
+    redirect = Model()
+
+    # redirect console output
+    original.redirectOutput()
+
+    # write problem instance
+    original.writeProblem("redirection.lp")
+
+    # solve original instance
+    original.optimize()
+
+    # read problem instance
+    redirect.readProblem("redirection.lp")
+
+    # remove problem file
+    os.remove("redirection.lp")
+
+    # compare problem dimensions
+    assert redirect.getNVars(False) == original.getNVars(False)
+    assert redirect.getNConss(False) == original.getNConss(False)
+
+    # solve redirect instance
+    redirect.optimize()
+
+    # compare objective values
+    assert original.isEQ(redirect.getObjVal(), original.getObjVal())
