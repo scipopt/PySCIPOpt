@@ -98,7 +98,7 @@ jobs:
           brew install tbb boost bison
           wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Darwin.sh
           chmod +x SCIPOptSuite-${{ env.version }}-Darwin.sh
-          ./SCIPOptSuite-${{ env.version }}-Darwin.sh
+          ./SCIPOptSuite-${{ env.version }}-Darwin.sh --skip-license --include-subdir
           mv SCIPOptSuite-${{ env.version }}-Darwin ${{ runner.workspace }}/scipoptsuite
 
       - name: Setup python ${{ matrix.python-version }}
