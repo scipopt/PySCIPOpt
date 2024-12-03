@@ -12,7 +12,7 @@ cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPointer
 from libc.stdlib cimport malloc, free
-from libc.stdio cimport fdopen, fclose
+from libc.stdio cimport stdout, stderr, fdopen, fputs, fflush, fclose
 from posix.stdio cimport fileno
 
 from collections.abc import Iterable
@@ -1851,10 +1851,22 @@ cdef class Constraint:
 
 
 cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) noexcept:
-    sys.stdout.write(msg.decode('UTF-8'))
+    if file is stdout:
+        sys.stdout.write(msg.decode('UTF-8'))
+    elif file is stderr:
+        sys.stderr.write(msg.decode('UTF-8'))
+    else:
+        if msg is not NULL:
+            fputs(msg, file)
+        fflush(file)
 
 cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg) noexcept:
-    sys.stderr.write(msg.decode('UTF-8'))
+    if file is NULL:
+        sys.stderr.write(msg.decode('UTF-8'))
+    else:
+        if msg is not NULL:
+            fputs(msg, file)
+        fflush(file)
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
@@ -2889,9 +2901,9 @@ cdef class Model:
         if not onlyroot:
             self.setIntParam("propagating/maxrounds", 0)
 
-    def displayProblem(self, ext='.cip', trans=False, genericnames=False):
+    def printProblem(self, ext='.cip', trans=False, genericnames=False):
         """
-        Write current model/problem to a file.
+        Write current model/problem to standard output.
 
         Parameters
         ----------
@@ -2904,9 +2916,6 @@ cdef class Model:
         genericnames : bool, optional
             indicates whether the problem should be written with generic variable
             and constraint names (Default value = False)
-        verbose : bool, optional
-            indicates whether a success message should be printed
-
         """
         user_locale = locale.getlocale(category=locale.LC_NUMERIC)
         locale.setlocale(locale.LC_NUMERIC, "C")
