@@ -1,0 +1,117 @@
+name: Run Sage CI
+
+## This GitHub Actions workflow provides:
+##
+##  - portability testing, by building and testing this project on many platforms
+##    (Linux variants, macOS)
+##
+##  - continuous integration, by building and testing other software
+##    that depends on this project.
+##
+## It runs on every push to the GitHub repository.
+##
+## The testing can be monitored in the "Actions" tab of the GitHub repository.
+##
+## After all jobs have finished (or are canceled) and a short delay,
+## tar files of all logs are made available as "build artifacts".
+##
+## This GitHub Actions workflow uses the portability testing framework
+## of SageMath (https://www.sagemath.org/).  For more information, see
+## https://doc.sagemath.org/html/en/developer/portability_testing.html
+
+## The workflow consists of two jobs:
+##
+##  - First, it builds a source distribution of the project
+##    and generates a script "update-pkgs.sh".  It uploads them
+##    as a build artifact named upstream.
+##
+##  - Second, it checks out a copy of the SageMath source tree.
+##    It downloads the upstream artifact and replaces the project's
+##    package in the SageMath distribution by the newly packaged one
+##    from the upstream artifact, by running the script "update-pkgs.sh".
+##    Then it builds a small portion of the Sage distribution.
+##
+## Many copies of the second step are run in parallel for each of the tested
+## systems/configurations.
+
+on:
+  push:
+    tags:
+    branches:
+      - main
+  workflow_dispatch:
+    # Allow to run manually
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  # Ubuntu packages to install so that the project can build an sdist
+  DIST_PREREQ:      python3-pip
+  # Name of this project in the Sage distribution
+  SPKG:             pyscipopt
+  ## REMOVE_PATCHES:   "*"
+
+jobs:
+
+  dist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out ${{ env.SPKG }}
+        uses: actions/checkout@v3
+        with:
+          path: build/pkgs/${{ env.SPKG }}/src
+      - name: Install prerequisites
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install $DIST_PREREQ
+          python3 -m pip install --user build
+      - name: Run make dist, prepare upstream artifact
+        run: |
+          (cd build/pkgs/${{ env.SPKG }}/src && python3 -m build --sdist .) \
+          && mkdir -p upstream && cp build/pkgs/${{ env.SPKG }}/src/dist/*.tar.gz upstream/${{ env.SPKG }}-git.tar.gz \
+          && echo "sage-package create ${{ env.SPKG }} --version git --tarball ${{ env.SPKG }}-git.tar.gz --type=standard" > upstream/update-pkgs.sh \
+          && if [ -n "${{ env.REMOVE_PATCHES }}" ]; then echo "(cd ../build/pkgs/${{ env.SPKG }}/patches && rm -f ${{ env.REMOVE_PATCHES }}; :)" >> upstream/update-pkgs.sh; fi \
+          && echo "sed -i.bak \"/pushdef.*LT_VERSION/s/3[0-9.]*/4/\" ../build/pkgs/python3/spkg-configure.m4" >> upstream/update-pkgs.sh \
+          && echo "sed -i.bak \"/export.*proxy/s/export.*/:/\" ../build/bin/sage-spkg" >> upstream/update-pkgs.sh \
+          && ls -l upstream/
+      - uses: actions/upload-artifact@v3
+        with:
+          path: upstream
+          name: upstream
+
+  linux:
+    # https://github.com/sagemath/sage/blob/develop/.github/workflows/docker.yml
+    uses: mkoeppe/sage/.github/workflows/docker.yml@scip_9
+    with:
+      # Extra system packages to install. See available packages at
+      # https://github.com/sagemath/sage/tree/develop/build/pkgs
+      # liblzma, bzip2, and libffi are python3 dependencies.
+      extra_sage_packages: "patch cmake gfortran openblas liblzma bzip2 libffi python3 onetbb"
+      # Sage distribution packages to build
+      targets: SAGE_CHECK=no SAGE_CHECK_PACKAGES="soplex,scipoptsuite,pyscipopt" pyscipopt
+      # Standard setting: Test the current beta release of Sage:
+      sage_repo: sagemath/sage
+      sage_ref:          refs/pull/37494/head
+      upstream_artifact: upstream
+      # Docker targets (stages) to tag
+      docker_targets: "with-targets"
+      # We prefix the image name with the SPKG name ("pyscipopt-") to avoid the error
+      # 'Package "sage-docker-..." is already associated with another repository.'
+      docker_push_repository: ghcr.io/${{ github.repository }}/pyscipopt
+    needs: [dist]
+
+  macos:
+    uses: mkoeppe/sage/.github/workflows/macos.yml@scip_9
+    with:
+      # Extra system packages to install. See available packages at
+      # https://github.com/sagemath/sage/tree/develop/build/pkgs
+      # Use boost_cropped from system because Sage ships 1.66.0, too old for papilo
+      extra_sage_packages: "cmake gfortran openblas boost_cropped onetbb"
+      # Sage distribution packages to build
+      targets:           SAGE_CHECK=no SAGE_CHECK_PACKAGES="soplex,scipoptsuite,pyscipopt" pyscipopt
+      sage_repo:         sagemath/sage
+      sage_ref:          refs/pull/37494/head
+      upstream_artifact: upstream
+    needs: [dist]
