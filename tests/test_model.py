@@ -244,14 +244,21 @@ def test_getVarsDict():
     x = {}
     for i in range(5):
         x[i] = model.addVar(lb = -i, ub = i, vtype="C")
-    for i in range(10,15):
+    for i in range(5,10):
         x[i] = model.addVar(lb = -i, ub = i, vtype="I")
-    for i in range(20,25):
+    for i in range(10,15):
         x[i] = model.addVar(vtype="B")
+
+    model.addConsIndicator(x[0] <= 4, x[10])
     
+    model.setPresolve(0)
     model.hideOutput()
     model.optimize()
     var_dict = model.getVarDict()
+    var_dict_transformed = model.getVarDict(transformed=True)
+    assert len(var_dict) == model.getNVars(transformed=False)
+    assert len(var_dict_transformed) == model.getNVars(transformed=True)
+
     for v in x.values():
         assert v.name in var_dict
         assert model.getVal(v) == var_dict[v.name]
