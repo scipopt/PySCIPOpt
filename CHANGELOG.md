@@ -2,9 +2,61 @@
 
 ## Unreleased
 ### Added
-- Added check for pt_PT locale in test_model.py
+- Added categorical data example
+- Added printProblem to print problem to stdout
+- Added stage checks to presolve, freereoptsolve, freetransform
+- Added primal_dual_evolution recipe and a plot recipe
 ### Fixed
+- Added default names to indicator constraints
 ### Changed
+- GitHub actions using Mac now use precompiled SCIP from latest release
+### Removed
+
+## 5.2.1 - 2024.10.29
+### Added
+- Expanded Statistics class to more problems.
+- Created Statistics class
+- Added parser to read .stats file
+- Release checklist in `RELEASE.md`
+- Added Python definitions and wrappers for SCIPstartStrongbranch, SCIPendStrongbranch SCIPgetBranchScoreMultiple, 
+  SCIPgetVarStrongbranchInt, SCIPupdateVarPseudocost, SCIPgetVarStrongbranchFrac, SCIPcolGetAge, 
+  SCIPgetVarStrongbranchLast, SCIPgetVarStrongbranchNode, SCIPallColsInLP, SCIPcolGetAge
+- Added getBipartiteGraphRepresentation
+- Added helper functions that facilitate testing
+- Added Python definitions and wrappers for SCIPgetNImplVars, SCIPgetNContVars, SCIPvarMayRoundUp,
+  SCIPvarMayRoundDown, SCIPcreateLPSol, SCIPfeasFloor, SCIPfeasCeil, SCIPfeasRound, SCIPgetPrioChild,
+  SCIPgetPrioSibling
+- Added additional tests to test_nodesel, test_heur, and test_strong_branching
+- Migrated documentation to Readthedocs
+- `attachEventHandlerCallback` method to Model for a more ergonomic way to attach event handlers
+- Added Model method: optimizeNogil
+- Added Solution method: getOrigin, retransform, translate
+- Added SCIP.pxd: SCIP_SOLORIGIN, SCIPcopyOrigVars, SCIPcopyOrigConss, SCIPsolve nogil, SCIPretransformSol, SCIPtranslateSubSol, SCIPsolGetOrigin, SCIPhashmapCreate, SCIPhashmapFree
+- Added additional tests to test_multi_threads, test_solution, and test_copy
+### Fixed
+- Fixed too strict getObjVal, getVal check
+### Changed
+- Changed createSol to now have an option of initialising at the current LP solution
+- Unified documentation style of scip.pxi to numpydocs
+### Removed
+
+## 5.1.1 - 2024-06-22
+### Added
+- Added SCIP_STATUS_DUALLIMIT and SCIP_STATUS_PRIMALLIMIT
+- Added SCIPprintExternalCodes (retrieves version of linked symmetry, lp solver, nl solver etc)
+- Added recipe with reformulation for detecting infeasible constraints
+- Wrapped SCIPcreateOrigSol and added tests 
+- Added verbose option for writeProblem and writeParams
+- Expanded locale test
+- Added methods for creating expression constraints without adding to problem
+- Added methods for creating/adding/appending disjunction constraints
+- Added check for pt_PT locale in test_model.py
+- Added SCIPgetOrigConss and SCIPgetNOrigConss Cython bindings. 
+- Added transformed=False option to getConss, getNConss, and getNVars
+### Fixed
+- Fixed locale errors in reading
+### Changed
+- Made readStatistics a standalone function
 ### Removed
 
 ## 5.0.1 - 2024-04-05
@@ -14,6 +66,7 @@
 - Add SCIP function SCIPgetTreesizeEstimation and wrapper getTreesizeEstimation
 - New test for model setLogFile
 ### Fixed
+- Fixed locale fix
 - Fixed model.setLogFile(None) error
 - Add recipes sub-package
 - Fixed "weakly-referenced object no longer exists" when calling dropEvent in test_customizedbenders
