@@ -3458,9 +3458,14 @@ cdef class Model:
         """
         return SCIPgetNContVars(self._scip)
     
-    def getVarDict(self):
+    def getVarDict(self, transformed=False):
         """
         Gets dictionary with variables names as keys and current variable values as items.
+
+        Parameters
+        ----------
+        transformed : bool, optional
+            Get transformed variables instead of original (Default value = False)
 
         Returns
         -------
@@ -3468,7 +3473,7 @@ cdef class Model:
 
         """
         var_dict = {}
-        for var in self.getVars():
+        for var in self.getVars(transformed=transformed):
             var_dict[var.name] = self.getVal(var)
         return var_dict
 
