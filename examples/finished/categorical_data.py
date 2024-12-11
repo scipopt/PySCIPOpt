@@ -51,6 +51,10 @@ for e in employees:
 for s in shift_to_int.values():
     model.addCons(sum(x[e, s] for e in employees) == 1)
 
+# Each employee must be assigned to exactly one shift
+for e in employees:
+    model.addCons(sum(x[e, s] for s in shift_to_int.values()) == 1)
+
 # Employees can only work shifts they are available for
 for e in employees:
     for s in shift_to_int.values():
