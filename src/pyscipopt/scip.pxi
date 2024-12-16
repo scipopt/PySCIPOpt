@@ -2895,6 +2895,7 @@ cdef class Model:
         ----------
         heurname : string, name of the heuristic
         heurtiming : PY_SCIP_HEURTIMING
+		   positions in the node solving loop where heuristic should be executed
         """
         cdef SCIP_HEUR* _heur
         n = str_conversion(heurname)
@@ -2913,7 +2914,8 @@ cdef class Model:
 
         Returns
         -------
-        SCIP_HEURTIMING
+        PY_SCIP_HEURTIMING
+		   positions in the node solving loop where heuristic should be executed
         """
         cdef SCIP_HEUR* _heur
         n = str_conversion(heurname)
