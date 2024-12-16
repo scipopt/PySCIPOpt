@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added wrappers for setting and getting heuristic timing
 - Added transformed option to getVarDict, updated test
 - Added categorical data example
 - Added printProblem to print problem to stdout

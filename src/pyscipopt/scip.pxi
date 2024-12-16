@@ -2887,6 +2887,43 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPsetHeuristics(self._scip, setting, True))
 
+    def setHeurTiming(self, heurname, heurtiming):
+        """
+        Set the timing of a heuristic
+
+        Parameters
+        ----------
+        heurname : string, name of the heuristic
+        heurtiming : PY_SCIP_HEURTIMING
+		   positions in the node solving loop where heuristic should be executed
+        """
+        cdef SCIP_HEUR* _heur
+        n = str_conversion(heurname)
+        _heur = SCIPfindHeur(self._scip, n)
+        if _heur == NULL:
+            raise ValueError("Could not find heuristic <%s>" % heurname)
+        SCIPheurSetTimingmask(_heur, heurtiming)
+
+    def getHeurTiming(self, heurname):
+        """
+        Get the timing of a heuristic
+
+        Parameters
+        ----------
+        heurname : string, name of the heuristic
+
+        Returns
+        -------
+        PY_SCIP_HEURTIMING
+		   positions in the node solving loop where heuristic should be executed
+        """
+        cdef SCIP_HEUR* _heur
+        n = str_conversion(heurname)
+        _heur = SCIPfindHeur(self._scip, n)
+        if _heur == NULL:
+            raise ValueError("Could not find heuristic <%s>" % heurname)
+        return SCIPheurGetTimingmask(_heur)
+
     def disablePropagation(self, onlyroot=False):
         """
         Disables propagation in SCIP to avoid modifying the original problem during transformation.
