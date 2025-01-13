@@ -8,6 +8,7 @@
 - Added printProblem to print problem to stdout
 - Added stage checks to presolve, freereoptsolve, freetransform
 - Added primal_dual_evolution recipe and a plot recipe
+- Added python wrappers for usage of SCIPcopyLargeNeighborhoodSearch, SCIPtranslateSubSol and SCIPhashmapCreate
 ### Fixed
 - Added default names to indicator constraints
 ### Changed
