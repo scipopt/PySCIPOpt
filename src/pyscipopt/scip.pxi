@@ -6838,10 +6838,10 @@ cdef class Model:
         """
 		Creates a copy of the transformed model
 
- 		Parameters
-        ----------  
+		Parameters
+  		----------  
 		to_fix : List[Variable]
- 			A list of variables to fix in the copy
+			A list of variables to fix in the copy
         fix_vals : List[Real]
 			A list of the values to which to fix the variables in the copy (care their order)
    		
