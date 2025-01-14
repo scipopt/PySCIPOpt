@@ -14,7 +14,6 @@ class MyHeur(Heur):
         self.fix_vals = fix_vals
 
     def heurexec(self, heurtiming, nodeinfeasible):
-        print("Hello World")
         self.used = True
         # fix z to 2 and optimize the remaining problem
         m2 = self.original_model.copyLargeNeighborhoodSearch(self.fix_vars, self.fix_vals)
