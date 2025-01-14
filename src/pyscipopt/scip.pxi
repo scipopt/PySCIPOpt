@@ -6836,20 +6836,20 @@ cdef class Model:
         
     def copyLargeNeighborhoodSearch(self, to_fix, fix_vals) -> Model:
         """
-		Creates a copy of the transformed model
-
-		Parameters
-  		----------  
-		to_fix : List[Variable]
-			A list of variables to fix in the copy
+        Creates a copy of the transformed model
+        
+        Parameters
+        ----------  
+        to_fix : List[Variable]
+            A list of variables to fix in the copy
         fix_vals : List[Real]
-			A list of the values to which to fix the variables in the copy (care their order)
-   		
+            A list of the values to which to fix the variables in the copy (care their order)
+        
         Returns
         -------
         model : Model
-			A model containing the created copy
-
+            A model containing the created copy
+        
         """
         orig_vars = SCIPgetVars(self._scip)
         vars = <SCIP_VAR**> malloc(len(to_fix) * sizeof(SCIP_VAR*))
@@ -6880,22 +6880,22 @@ cdef class Model:
 
     def translateSubSol(self, Model sub_model, Solution sol, heur) -> :
         """
-		Translates a solution of a model copy into a solution of the main model
-
-		Parameters
-  		----------
+        Translates a solution of a model copy into a solution of the main model
+        
+        Parameters
+        ----------
         sub_model : Model
-			The python-wrapper of the subscip
+            The python-wrapper of the subscip
         sol : Solution
-			The python-wrapper of the solution of the subscip
+            The python-wrapper of the solution of the subscip
         heur : Heur
-			The python-wrapper of the heuristic that found the solution
-
+            The python-wrapper of the heuristic that found the solution
+        
         Returns
         -------   		
         solution : Solution
-			The corresponding solution in the main model
-
+            The corresponding solution in the main model
+        
         """
         cdef SCIP_SOL* real_sol
         cdef SCIP_SOL* subscip_sol
