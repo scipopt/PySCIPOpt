@@ -6878,7 +6878,7 @@ cdef class Model:
         SCIPhashmapFree(&varmap)
         return sub_model
 
-    def translateSubSol(self, Model sub_model, Solution sol, heur) -> :
+    def translateSubSol(self, Model sub_model, Solution sol, heur) -> Solution:
         """
         Translates a solution of a model copy into a solution of the main model
         
