@@ -6835,11 +6835,20 @@ cdef class Model:
         Py_INCREF(conshdlr)
         
     def copyLargeNeighborhoodSearch(self, to_fix, fix_vals) -> Model:
-        """ Creates a copy of the transformed model
+        """
+		Creates a copy of the transformed model
 
-        :param to_fix: A List[Variable] of variables to fix in the subscip
-        :param fix_vals A List[Real] of the values to which to fix the variables in the subscip (care their order)
-        :return A Model containing the created subscip
+ 		Parameters
+        ----------  
+		to_fix : List[Variable]
+ 			A list of variables to fix in the copy
+        fix_vals : List[Real]
+			A list of the values to which to fix the variables in the copy (care their order)
+   		
+        Returns
+        -------
+        model : Model
+			A model containing the created copy
 
         """
         orig_vars = SCIPgetVars(self._scip)
@@ -6869,13 +6878,23 @@ cdef class Model:
         SCIPhashmapFree(&varmap)
         return sub_model
 
-    def translateSubSol(self, Model sub_model, Solution sol, heur):
-        """ Translates a solution of a subscip into a solution of the main scip
+    def translateSubSol(self, Model sub_model, Solution sol, heur) -> :
+        """
+		Translates a solution of a model copy into a solution of the main model
 
-        :param sub_model The python-wrapper of the subscip
-        :param sol The python-wrapper of the solution of the subscip
-        :param heur Python-wrapper of the heuristic that found the solution
-        :return A python-wrapper of the corresponding solution in the main scip
+		Parameters
+  		----------
+        sub_model : Model
+			The python-wrapper of the subscip
+        sol : Solution
+			The python-wrapper of the solution of the subscip
+        heur : Heur
+			The python-wrapper of the heuristic that found the solution
+
+        Returns
+        -------   		
+        solution : Solution
+			The corresponding solution in the main model
 
         """
         cdef SCIP_SOL* real_sol
