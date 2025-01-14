@@ -6835,7 +6835,7 @@ cdef class Model:
         Py_INCREF(conshdlr)
         
     def copyLargeNeighborhoodSearch(self, to_fix, fix_vals) -> Model:
-        """ Creates a subscip
+        """ Creates a copy of the transformed model
 
         :param to_fix: A List[Variable] of variables to fix in the subscip
         :param fix_vals A List[Real] of the values to which to fix the variables in the subscip (care their order)
