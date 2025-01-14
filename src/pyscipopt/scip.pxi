@@ -6879,7 +6879,7 @@ cdef class Model:
         return sub_model
 
     def translateSubSol(self, Model sub_model, Solution sol, heur) -> Solution:
-		"""
+        """
 		Translates a solution of a model copy into a solution of the main model
 		
 		Parameters
@@ -6895,8 +6895,8 @@ cdef class Model:
 		-------   		
 		solution : Solution
 			The corresponding solution in the main model
-		
-		"""
+   
+        """
         cdef SCIP_SOL* real_sol
         cdef SCIP_SOL* subscip_sol
         cdef SCIP_Bool success
