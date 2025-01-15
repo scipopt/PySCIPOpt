@@ -1825,6 +1825,16 @@ cdef extern from "scip/cons_indicator.h":
 
     SCIP_VAR* SCIPgetSlackVarIndicator(SCIP_CONS* cons)
 
+cdef extern from "scip/misc.h":
+    SCIP_RETCODE SCIPhashmapCreate(SCIP_HASHMAP** hashmap, BMS_BLKMEM* blkmem, int mapsize)
+    void SCIPhashmapFree(SCIP_HASHMAP** hashmap)
+
+cdef extern from "scip/scip_copy.h":
+    SCIP_RETCODE SCIPtranslateSubSol(SCIP* scip, SCIP* subscip, SCIP_SOL* subsol, SCIP_HEUR* heur, SCIP_VAR** subvars, SCIP_SOL** newsol)
+    
+cdef extern from "scip/heuristics.h":
+    SCIP_RETCODE SCIPcopyLargeNeighborhoodSearch(SCIP* sourcescip, SCIP* subscip, SCIP_HASHMAP*	varmap,	const char* suffix, SCIP_VAR** fixedvars, SCIP_Real* fixedvals, int nfixedvars,	SCIP_Bool uselprows, SCIP_Bool copycuts, SCIP_Bool* success, SCIP_Bool* valid)
+
 cdef extern from "scip/cons_countsols.h":
     SCIP_RETCODE SCIPcount(SCIP* scip)
     SCIP_RETCODE SCIPsetParamsCountsols(SCIP* scip)

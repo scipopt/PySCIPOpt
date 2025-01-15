@@ -6833,6 +6833,85 @@ cdef class Model:
         conshdlr.model = <Model>weakref.proxy(self)
         conshdlr.name = name
         Py_INCREF(conshdlr)
+        
+    def copyLargeNeighborhoodSearch(self, to_fix, fix_vals) -> Model:
+        """
+        Creates a configured copy of the transformed problem and applies provided fixings intended for LNS heuristics.
+        
+        Parameters
+        ----------  
+        to_fix : List[Variable]
+            A list of variables to fix in the copy
+        fix_vals : List[Real]
+            A list of the values to which to fix the variables in the copy (care their order)
+        
+        Returns
+        -------
+        model : Model
+            A model containing the created copy
+        """
+	
+        orig_vars = SCIPgetVars(self._scip)
+        vars = <SCIP_VAR**> malloc(len(to_fix) * sizeof(SCIP_VAR*))
+        vals = <SCIP_Real*> malloc(len(fix_vals) * sizeof(SCIP_Real))
+        j = 0
+        name_to_val = {var.name: val for var, val in zip(to_fix, fix_vals)}
+        for i, var in enumerate(self.getVars()):
+            if var.name in name_to_val:
+                vars[j] = orig_vars[i]
+                vals[j] = <SCIP_Real>name_to_val[var.name]
+                j+= 1
+
+        cdef SCIP_Bool success
+        cdef SCIP_Bool valid
+        cdef SCIP* subscip
+        cdef SCIP_HASHMAP* varmap
+
+        PY_SCIP_CALL(SCIPcreate(&subscip))
+        PY_SCIP_CALL( SCIPhashmapCreate(&varmap, SCIPblkmem(subscip), self.getNVars()) )
+        PY_SCIP_CALL( SCIPcopyLargeNeighborhoodSearch(self._scip, subscip, varmap, "LNhS_subscip", vars, vals,
+                                                      <int>len(to_fix), False, False, &success, &valid) )
+        sub_model = Model.create(subscip)
+        sub_model._freescip = True
+        free(vars)
+        free(vals)
+        SCIPhashmapFree(&varmap)
+        return sub_model
+
+    def translateSubSol(self, Model sub_model, Solution sol, heur) -> Solution:
+        """
+		Translates a solution of a model copy into a solution of the main model
+		
+		Parameters
+		----------
+		sub_model : Model
+			The python-wrapper of the subscip
+		sol : Solution
+			The python-wrapper of the solution of the subscip
+		heur : Heur
+			The python-wrapper of the heuristic that found the solution
+		
+		Returns
+		-------   		
+		solution : Solution
+			The corresponding solution in the main model
+        """
+	
+        cdef SCIP_SOL* real_sol
+        cdef SCIP_SOL* subscip_sol
+        cdef SCIP_Bool success
+        subscip_sol = sol.sol
+        vars = <SCIP_VAR**> malloc(self.getNVars() * sizeof(SCIP_VAR*))
+        for i, var in enumerate(sub_model.getVars()):
+            vars[i] = (<Variable>var).scip_var
+
+        cdef SCIP_HEUR* _heur
+        name = str_conversion(heur.name)
+        _heur = SCIPfindHeur(self._scip, name)
+        PY_SCIP_CALL( SCIPtranslateSubSol(self._scip, sub_model._scip, subscip_sol, _heur, vars, &real_sol) )
+        solution = Solution.create(self._scip, real_sol)
+        free(vars)
+        return solution
 
     def createCons(self, Conshdlr conshdlr, name, initial=True, separate=True, enforce=True, check=True, propagate=True,
                    local=False, modifiable=False, dynamic=False, removable=False, stickingatnode=False):
