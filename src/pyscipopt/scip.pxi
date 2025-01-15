@@ -6836,7 +6836,7 @@ cdef class Model:
         
     def copyLargeNeighborhoodSearch(self, to_fix, fix_vals) -> Model:
         """
-        Creates a copy of the transformed model
+        Creates a configured copy of the transformed problem and applies provided fixings intended for LNS heuristics.
         
         Parameters
         ----------  
@@ -6849,8 +6849,8 @@ cdef class Model:
         -------
         model : Model
             A model containing the created copy
-        
         """
+	
         orig_vars = SCIPgetVars(self._scip)
         vars = <SCIP_VAR**> malloc(len(to_fix) * sizeof(SCIP_VAR*))
         vals = <SCIP_Real*> malloc(len(fix_vals) * sizeof(SCIP_Real))
@@ -6895,8 +6895,8 @@ cdef class Model:
 		-------   		
 		solution : Solution
 			The corresponding solution in the main model
-   
         """
+	
         cdef SCIP_SOL* real_sol
         cdef SCIP_SOL* subscip_sol
         cdef SCIP_Bool success
