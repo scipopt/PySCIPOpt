@@ -46,6 +46,7 @@ cdef SCIP_RETCODE PyReaderWrite (SCIP* scip, SCIP_READER* reader, FILE* file,
                                  SCIP_CONS** conss, int nconss, int maxnconss, int startnconss,
                                  SCIP_Bool genericnames, SCIP_RESULT* result) noexcept with gil:
     cdef SCIP_READERDATA* readerdata
+    cdef int i
     readerdata = SCIPreaderGetData(reader)
     cdef int fd = fileno(file)
     PyFile = os.fdopen(fd, "w", closefd=False)
