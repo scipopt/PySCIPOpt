@@ -1,13 +1,14 @@
 name: Integration test
 
 env:
-  version: 9.0.0
+  version: 9.2.0
 
 # runs on branches and pull requests; doesn't run on tags.
 on:
   push:
     branches:
       - 'master'
+
 
 jobs:
 
@@ -54,7 +55,7 @@ jobs:
 
       - name: Download dependencies (SCIPOptSuite)
         shell: powershell
-        run: wget https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-win64-VS15.exe -outfile scipopt-installer.exe
+        run: wget https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-win64.exe -outfile scipopt-installer.exe
 
       - name: Install dependencies (SCIPOptSuite)
         shell: cmd
@@ -90,33 +91,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Cache dependencies (SCIPOptSuite)
-        id: cache-scip
-        uses: actions/cache@v2
-        with:
-          path: |
-            ${{ runner.workspace }}/scipoptsuite
-            ~/Library/Caches/Homebrew/tbb--*
-              /usr/local/opt/tbb*
-            ~/Library/Caches/Homebrew/downloads/*--tbb-*
-            ~/Library/Caches/Homebrew/boost--*
-              /usr/local/opt/boost*
-            ~/Library/Caches/Homebrew/downloads/*--boost-*
-          key: ${{ runner.os }}-scipopt-${{ env.version }}-${{ hashFiles('**/lockfiles') }}
-          restore-keys: |
-            ${{ runner.os }}-scipopt-${{ env.version }}-
-
       - name: Install dependencies (SCIPOptSuite)
-        if: steps.cache-scip.outputs.cache-hit != 'true'
         run: |
-          brew install tbb boost
-          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/scipoptsuite-${{ env.version }}.tgz
-          tar xfz scipoptsuite-${{ env.version }}.tgz
-          cd scipoptsuite-${{ env.version }}
-          mkdir build
-          cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/scipoptsuite -DIPOPT=off -DSYM=none -DTPI=tny -DREADLINE=off
-          make install -j
+          brew install tbb boost bison
+          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Darwin.sh
+          chmod +x SCIPOptSuite-${{ env.version }}-Darwin.sh
+          ./SCIPOptSuite-${{ env.version }}-Darwin.sh --skip-license --include-subdir
+          mv SCIPOptSuite-${{ env.version }}-Darwin ${{ runner.workspace }}/scipoptsuite
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4

@@ -78,7 +78,9 @@ cdef extern from "scip/scip.h":
         SCIP_STATUS SCIP_STATUS_GAPLIMIT       
         SCIP_STATUS SCIP_STATUS_SOLLIMIT       
         SCIP_STATUS SCIP_STATUS_BESTSOLLIMIT   
-        SCIP_STATUS SCIP_STATUS_RESTARTLIMIT   
+        SCIP_STATUS SCIP_STATUS_RESTARTLIMIT
+        SCIP_STATUS SCIP_STATUS_PRIMALLIMIT
+        SCIP_STATUS SCIP_STATUS_DUALLIMIT
         SCIP_STATUS SCIP_STATUS_OPTIMAL        
         SCIP_STATUS SCIP_STATUS_INFEASIBLE     
         SCIP_STATUS SCIP_STATUS_UNBOUNDED      
@@ -318,6 +320,17 @@ cdef extern from "scip/scip.h":
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_SEPA   
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_REOPT  
 
+    ctypedef int SCIP_SOLORIGIN
+    cdef extern from "scip/type_sol.h":
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_ORIGINAL
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_ZERO
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_LPSOL
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_NLPSOL
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_RELAXSOL
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_PSEUDOSOL
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_PARTIAL
+        SCIP_SOLORIGIN SCIP_SOLORIGIN_UNKNOWN
+
     ctypedef bint SCIP_Bool
 
     ctypedef long long SCIP_Longint
@@ -530,6 +543,8 @@ cdef extern from "scip/scip.h":
                               SCIP_Bool             threadsafe,
                               SCIP_Bool             passmessagehdlr,
                               SCIP_Bool*            valid)
+    SCIP_RETCODE SCIPcopyOrigVars(SCIP* sourcescip, SCIP* targetscip, SCIP_HASHMAP* varmap, SCIP_HASHMAP* consmap, SCIP_VAR** fixedvars, SCIP_Real* fixedvals, int nfixedvars )
+    SCIP_RETCODE SCIPcopyOrigConss(SCIP* sourcescip, SCIP* targetscip, SCIP_HASHMAP* varmap, SCIP_HASHMAP* consmap, SCIP_Bool enablepricing, SCIP_Bool* valid)
     SCIP_RETCODE SCIPmessagehdlrCreate(SCIP_MESSAGEHDLR **messagehdlr,
                                        SCIP_Bool bufferedoutput,
                                        const char *filename,
@@ -546,6 +561,7 @@ cdef extern from "scip/scip.h":
     void SCIPsetMessagehdlrLogfile(SCIP* scip, const char* filename)
     SCIP_Real SCIPversion()
     void SCIPprintVersion(SCIP* scip, FILE* outfile)
+    void SCIPprintExternalCodes(SCIP* scip, FILE* outfile)
     SCIP_Real SCIPgetTotalTime(SCIP* scip)
     SCIP_Real SCIPgetSolvingTime(SCIP* scip)
     SCIP_Real SCIPgetReadingTime(SCIP* scip)
@@ -637,6 +653,10 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPdelVar(SCIP* scip, SCIP_VAR* var, SCIP_Bool* deleted)
     SCIP_RETCODE SCIPaddCons(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPdelCons(SCIP* scip, SCIP_CONS* cons)
+    SCIP_CONS**  SCIPgetOrigConss(SCIP* scip)
+    int          SCIPgetNOrigConss(SCIP* scip)
+    SCIP_CONS*   SCIPfindOrigCons(SCIP* scip, const char*)
+    SCIP_CONS*   SCIPfindCons(SCIP* scip, const char*)
     SCIP_RETCODE SCIPsetObjsense(SCIP* scip, SCIP_OBJSENSE objsense)
     SCIP_OBJSENSE SCIPgetObjsense(SCIP* scip)
     SCIP_RETCODE SCIPsetObjlimit(SCIP* scip, SCIP_Real objlimit)
@@ -662,6 +682,7 @@ cdef extern from "scip/scip.h":
 
     # Solve Methods
     SCIP_RETCODE SCIPsolve(SCIP* scip)
+    SCIP_RETCODE SCIPsolve(SCIP* scip) noexcept nogil
     SCIP_RETCODE SCIPsolveConcurrent(SCIP* scip)
     SCIP_RETCODE SCIPfreeTransform(SCIP* scip)
     SCIP_RETCODE SCIPpresolve(SCIP* scip)
@@ -747,6 +768,8 @@ cdef extern from "scip/scip.h":
     int SCIPgetNOrigVars(SCIP* scip)
     int SCIPgetNIntVars(SCIP* scip)
     int SCIPgetNBinVars(SCIP* scip)
+    int SCIPgetNImplVars(SCIP* scip)
+    int SCIPgetNContVars(SCIP* scip)
     SCIP_VARTYPE SCIPvarGetType(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
@@ -766,6 +789,8 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetVarPseudocost(SCIP* scip, SCIP_VAR *var, SCIP_BRANCHDIR dir)
     SCIP_Real SCIPvarGetCutoffSum(SCIP_VAR* var, SCIP_BRANCHDIR dir)
     SCIP_Longint SCIPvarGetNBranchings(SCIP_VAR* var, SCIP_BRANCHDIR dir)
+    SCIP_Bool SCIPvarMayRoundUp(SCIP_VAR* var)
+    SCIP_Bool SCIPvarMayRoundDown(SCIP_VAR * var)
 
     # LP Methods
     SCIP_RETCODE SCIPgetLPColsData(SCIP* scip, SCIP_COL*** cols, int* ncols)
@@ -781,6 +806,7 @@ cdef extern from "scip/scip.h":
     int SCIPgetNLPCols(SCIP* scip)
     SCIP_COL** SCIPgetLPCols(SCIP *scip)
     SCIP_ROW** SCIPgetLPRows(SCIP *scip)
+    SCIP_Bool SCIPallColsInLP(SCIP* scip)
 
     # Cutting Plane Methods
     SCIP_RETCODE SCIPaddPoolCut(SCIP* scip, SCIP_ROW* row)
@@ -832,11 +858,14 @@ cdef extern from "scip/scip.h":
     int SCIPgetNBestSolsFound(SCIP* scip)
     SCIP_SOL* SCIPgetBestSol(SCIP* scip)
     SCIP_Real SCIPgetSolVal(SCIP* scip, SCIP_SOL* sol, SCIP_VAR* var)
+    SCIP_Bool SCIPsolIsOriginal(SCIP_SOL* sol)
     SCIP_RETCODE SCIPwriteVarName(SCIP* scip, FILE* outfile, SCIP_VAR* var, SCIP_Bool vartype)
     SCIP_Real SCIPgetSolOrigObj(SCIP* scip, SCIP_SOL* sol)
     SCIP_Real SCIPgetSolTransObj(SCIP* scip, SCIP_SOL* sol)
     SCIP_RETCODE SCIPcreateSol(SCIP* scip, SCIP_SOL** sol, SCIP_HEUR* heur)
     SCIP_RETCODE SCIPcreatePartialSol(SCIP* scip, SCIP_SOL** sol,SCIP_HEUR* heur)
+    SCIP_RETCODE SCIPcreateOrigSol(SCIP* scip, SCIP_SOL** sol, SCIP_HEUR* heur)
+    SCIP_RETCODE SCIPcreateLPSol(SCIP* scip, SCIP_SOL** sol, SCIP_HEUR* heur)
     SCIP_RETCODE SCIPsetSolVal(SCIP* scip, SCIP_SOL* sol, SCIP_VAR* var, SCIP_Real val)
     SCIP_RETCODE SCIPtrySolFree(SCIP* scip, SCIP_SOL** sol, SCIP_Bool printreason, SCIP_Bool completely, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* stored)
     SCIP_RETCODE SCIPtrySol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool printreason, SCIP_Bool completely, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* stored)
@@ -856,7 +885,9 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPreadSolFile(SCIP* scip, const char* filename, SCIP_SOL* sol, SCIP_Bool xml, SCIP_Bool*	partial, SCIP_Bool*	error)
     SCIP_RETCODE SCIPcheckSol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool printreason, SCIP_Bool completely, SCIP_Bool checkbounds, SCIP_Bool checkintegrality, SCIP_Bool checklprows, SCIP_Bool* feasible)
     SCIP_RETCODE SCIPcheckSolOrig(SCIP* scip, SCIP_SOL* sol, SCIP_Bool* feasible, SCIP_Bool printreason, SCIP_Bool completely)
-
+    SCIP_RETCODE SCIPretransformSol(SCIP* scip, SCIP_SOL* sol)
+    SCIP_RETCODE SCIPtranslateSubSol(SCIP* scip, SCIP* subscip, SCIP_SOL* subsol, SCIP_HEUR* heur, SCIP_VAR** subvars, SCIP_SOL** newsol)
+    SCIP_SOLORIGIN SCIPsolGetOrigin(SCIP_SOL* sol)
     SCIP_Real SCIPgetSolTime(SCIP* scip, SCIP_SOL* sol)
 
     SCIP_RETCODE SCIPsetRelaxSolVal(SCIP* scip, SCIP_RELAX* relax, SCIP_VAR* var, SCIP_Real val)
@@ -1088,6 +1119,8 @@ cdef extern from "scip/scip.h":
                                  SCIP_HEURDATA* heurdata)
     SCIP_HEURDATA* SCIPheurGetData(SCIP_HEUR* heur)
     SCIP_HEUR* SCIPfindHeur(SCIP* scip, const char* name)
+    SCIP_HEURTIMING SCIPheurGetTimingmask(SCIP_HEUR* heur)
+    void SCIPheurSetTimingmask(SCIP_HEUR* heur, SCIP_HEURTIMING timingmask)
 
     #Relaxation plugin
     SCIP_RETCODE SCIPincludeRelax(SCIP* scip,
@@ -1249,12 +1282,23 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPgetLPBranchCands(SCIP* scip, SCIP_VAR*** lpcands, SCIP_Real** lpcandssol,
                                       SCIP_Real** lpcandsfrac, int* nlpcands, int* npriolpcands, int* nfracimplvars)
     SCIP_RETCODE SCIPgetPseudoBranchCands(SCIP* scip, SCIP_VAR*** pseudocands, int* npseudocands, int* npriopseudocands)
-
+    SCIP_RETCODE SCIPstartStrongbranch(SCIP* scip, SCIP_Bool enablepropogation)
+    SCIP_RETCODE SCIPendStrongbranch(SCIP* scip)
+    SCIP_RETCODE SCIPgetVarStrongbranchLast(SCIP* scip, SCIP_VAR* var, SCIP_Real* down, SCIP_Real* up, SCIP_Bool* downvalid, SCIP_Bool* upvalid, SCIP_Real* solval, SCIP_Real* lpobjval)
+    SCIP_Longint SCIPgetVarStrongbranchNode(SCIP* scip, SCIP_VAR* var)
+    SCIP_Real SCIPgetBranchScoreMultiple(SCIP* scip, SCIP_VAR* var, int nchildren, SCIP_Real* gains)
+    SCIP_RETCODE SCIPgetVarStrongbranchWithPropagation(SCIP* scip, SCIP_VAR* var, SCIP_Real solval, SCIP_Real lpobjval, int itlim, int maxproprounds, SCIP_Real* down, SCIP_Real* up, SCIP_Bool* downvalid, SCIP_Bool* upvalid, SCIP_Longint* ndomredsdown, SCIP_Longint* ndomredsup, SCIP_Bool* downinf, SCIP_Bool* upinf, SCIP_Bool* downconflict, SCIP_Bool* upconflict, SCIP_Bool* lperror, SCIP_Real* newlbs, SCIP_Real* newubs)
+    SCIP_RETCODE SCIPgetVarStrongbranchInt(SCIP* scip, SCIP_VAR* var, int itlim, SCIP_Bool idempotent, SCIP_Real* down, SCIP_Real* up, SCIP_Bool* downvalid, SCIP_Bool* upvalid, SCIP_Bool* downinf, SCIP_Bool* upinf, SCIP_Bool* downconflict, SCIP_Bool* upconflict, SCIP_Bool* lperror)
+    SCIP_RETCODE SCIPupdateVarPseudocost(SCIP* scip, SCIP_VAR* var, SCIP_Real solvaldelta, SCIP_Real objdelta, SCIP_Real weight)
+    SCIP_RETCODE SCIPgetVarStrongbranchFrac(SCIP* scip, SCIP_VAR* var, int itlim, SCIP_Bool idempotent, SCIP_Real* down, SCIP_Real* up, SCIP_Bool* downvalid, SCIP_Bool* upvalid, SCIP_Bool* downinf, SCIP_Bool* upinf, SCIP_Bool* downconflict, SCIP_Bool* upconflict, SCIP_Bool* lperror)
 
     # Numerical Methods
     SCIP_Real SCIPinfinity(SCIP* scip)
     SCIP_Real SCIPfrac(SCIP* scip, SCIP_Real val)
     SCIP_Real SCIPfeasFrac(SCIP* scip, SCIP_Real val)
+    SCIP_Real SCIPfeasFloor(SCIP* scip, SCIP_Real val)
+    SCIP_Real SCIPfeasCeil(SCIP* scip, SCIP_Real val)
+    SCIP_Real SCIPfeasRound(SCIP* scip, SCIP_Real val)
     SCIP_Bool SCIPisZero(SCIP* scip, SCIP_Real val)
     SCIP_Bool SCIPisFeasIntegral(SCIP* scip, SCIP_Real val)
     SCIP_Bool SCIPisFeasZero(SCIP* scip, SCIP_Real val)
@@ -1340,6 +1384,11 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPenableReoptimization(SCIP* scip, SCIP_Bool enable)
 
     BMS_BLKMEM* SCIPblkmem(SCIP* scip)
+
+    # pub_misc.h
+    SCIP_RETCODE SCIPhashmapCreate(SCIP_HASHMAP** hashmap, BMS_BLKMEM* blkmem, int mapsize)
+    void SCIPhashmapFree(SCIP_HASHMAP** hashmap)
+
 
 cdef extern from "scip/tree.h":
     int SCIPnodeGetNAddedConss(SCIP_NODE* node)
@@ -1493,6 +1542,24 @@ cdef extern from "scip/cons_sos2.h":
     SCIP_RETCODE SCIPappendVarSOS2(SCIP* scip,
                                    SCIP_CONS* cons,
                                    SCIP_VAR* var)
+
+cdef extern from "scip/cons_disjunction.h":
+    SCIP_RETCODE SCIPcreateConsDisjunction(SCIP *scip,
+                                            SCIP_CONS **cons,
+                                            const char *name,
+                                            int nconss,
+                                            SCIP_CONS **conss,
+                                            SCIP_CONS *relaxcons,
+                                            SCIP_Bool initial,
+                                            SCIP_Bool enforce,
+                                            SCIP_Bool check,
+                                            SCIP_Bool local,
+                                            SCIP_Bool modifiable,
+                                            SCIP_Bool dynamic)
+
+    SCIP_RETCODE SCIPaddConsElemDisjunction(SCIP *scip,
+                                            SCIP_CONS *cons,
+                                            SCIP_CONS *addcons)
 
 cdef extern from "scip/cons_and.h":
     SCIP_RETCODE SCIPcreateConsAnd(SCIP* scip,
@@ -1758,6 +1825,16 @@ cdef extern from "scip/cons_indicator.h":
 
     SCIP_VAR* SCIPgetSlackVarIndicator(SCIP_CONS* cons)
 
+cdef extern from "scip/misc.h":
+    SCIP_RETCODE SCIPhashmapCreate(SCIP_HASHMAP** hashmap, BMS_BLKMEM* blkmem, int mapsize)
+    void SCIPhashmapFree(SCIP_HASHMAP** hashmap)
+
+cdef extern from "scip/scip_copy.h":
+    SCIP_RETCODE SCIPtranslateSubSol(SCIP* scip, SCIP* subscip, SCIP_SOL* subsol, SCIP_HEUR* heur, SCIP_VAR** subvars, SCIP_SOL** newsol)
+    
+cdef extern from "scip/heuristics.h":
+    SCIP_RETCODE SCIPcopyLargeNeighborhoodSearch(SCIP* sourcescip, SCIP* subscip, SCIP_HASHMAP*	varmap,	const char* suffix, SCIP_VAR** fixedvars, SCIP_Real* fixedvals, int nfixedvars,	SCIP_Bool uselprows, SCIP_Bool copycuts, SCIP_Bool* success, SCIP_Bool* valid)
+
 cdef extern from "scip/cons_countsols.h":
     SCIP_RETCODE SCIPcount(SCIP* scip)
     SCIP_RETCODE SCIPsetParamsCountsols(SCIP* scip)
@@ -1814,6 +1891,7 @@ cdef extern from "scip/pub_lp.h":
     int SCIPcolGetNNonz(SCIP_COL* col)
     SCIP_ROW** SCIPcolGetRows(SCIP_COL* col)
     SCIP_Real* SCIPcolGetVals(SCIP_COL* col)
+    int SCIPcolGetAge(SCIP_COL* col)
     int SCIPcolGetIndex(SCIP_COL* col)
     SCIP_Real SCIPcolGetObj(SCIP_COL *col)
 
@@ -1825,6 +1903,8 @@ cdef extern from "scip/scip_tree.h":
     SCIP_NODE* SCIPgetBestChild(SCIP* scip)
     SCIP_NODE* SCIPgetBestSibling(SCIP* scip)
     SCIP_NODE* SCIPgetBestLeaf(SCIP* scip)
+    SCIP_NODE* SCIPgetPrioChild(SCIP* scip)
+    SCIP_NODE* SCIPgetPrioSibling(SCIP* scip)
     SCIP_NODE* SCIPgetBestNode(SCIP* scip)
     SCIP_NODE* SCIPgetBestboundNode(SCIP* scip)
     SCIP_RETCODE SCIPrepropagateNode(SCIP* scip, SCIP_NODE* node)
@@ -1930,6 +2010,8 @@ cdef class Model:
     cdef SCIP_Bool _freescip
     # map to store python variables
     cdef _modelvars
+    # used to keep track of the number of event handlers generated
+    cdef int _generated_event_handlers_count
 
     @staticmethod
     cdef create(SCIP* scip)

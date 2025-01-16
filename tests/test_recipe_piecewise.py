@@ -14,7 +14,6 @@ def test_add_piecewise_linear_cons():
     m.optimize()
     assert m.isEQ(m.getObjVal(), -2)
 
-
 def test_add_piecewise_linear_cons2():
     m = Model()
 

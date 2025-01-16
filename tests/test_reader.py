@@ -1,7 +1,7 @@
 import pytest
 import os
 
-from pyscipopt import Model, quicksum, Reader, SCIP_RESULT
+from pyscipopt import Model, quicksum, Reader, SCIP_RESULT, readStatistics
 
 class SudokuReader(Reader):
 
@@ -79,3 +79,61 @@ def test_sudoku_reader():
     assert input == "sudoku"
 
     deleteFile("model.sod")
+
+@pytest.mark.skip(reason="Test fails on Windows when using cibuildwheel. Cannot find tests/data")
+def test_readStatistics():
+    m = Model(problemName="readStats")
+    x = m.addVar(vtype="I")
+    y = m.addVar()
+
+    m.addCons(x+y <= 3)
+    m.hideOutput()
+    m.optimize()
+    m.writeStatistics(os.path.join("tests", "data", "readStatistics.stats"))
+    result = readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
+
+    assert result.status == "optimal"
+    assert len([k for k, val in result.__dict__.items() if not str(hex(id(val))) in str(val)]) == 20 # number of attributes. See https://stackoverflow.com/a/57431390/9700522
+    assert type(result.total_time) == float
+    assert result.problem_name == "readStats"
+    assert result.presolved_problem_name == "t_readStats"
+    assert type(result.primal_dual_integral) == float
+    assert result.n_solutions_found == 1
+    assert type(result.gap) == float
+    assert result._presolved_constraints == {"initial": 1, "maximal": 1}
+    assert result._variables == {"total": 2, "binary": 0, "integer": 1, "implicit": 0, "continuous": 1}
+    assert result._presolved_variables == {"total": 0, "binary": 0, "integer": 0, "implicit": 0, "continuous": 0}
+    assert result.n_vars == 2
+    assert result.n_presolved_vars == 0
+    assert result.n_binary_vars == 0
+    assert result.n_integer_vars == 1
+
+    m = Model()
+    x = m.addVar()
+    m.setObjective(-x)
+    m.hideOutput()
+    m.optimize()
+    m.writeStatistics(os.path.join("tests", "data", "readStatistics.stats"))
+    result = readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
+    assert result.status == "unbounded"
+
+    m = Model()
+    x = m.addVar()
+    m.addCons(x <= -1)
+    m.hideOutput()
+    m.optimize()
+    m.writeStatistics(os.path.join("tests", "data", "readStatistics.stats"))
+    result = readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
+    assert result.status == "infeasible"
+    assert result.gap == None
+    assert result.n_solutions_found == 0
+
+    m = Model()
+    x = m.addVar()
+    m.hideOutput()
+    m.setParam("limits/solutions", 0)
+    m.optimize()
+    m.writeStatistics(os.path.join("tests", "data", "readStatistics.stats"))
+    result = readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
+    assert result.status == "user_interrupt"
+    assert result.gap == None

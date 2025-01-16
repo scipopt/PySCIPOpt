@@ -1,5 +1,5 @@
 ##@file finished/logical.py
-#@brief Tutorial example on how to use AND/OR/XOR constraints
+# @brief Tutorial example on how to use AND/OR/XOR constraints
 
 from pyscipopt import Model
 from pyscipopt import quicksum
@@ -17,7 +17,8 @@ from pyscipopt import quicksum
 
 """
 
-def printFunc(name,m):
+
+def printFunc(name, m):
     """prints results"""
     print("* %s *" % name)
     objSet = bool(m.getObjective().terms.keys())
@@ -29,54 +30,55 @@ def printFunc(name,m):
             print("%s: %d" % (v, round(m.getVal(v))))
     print("\n")
 
-# AND 
+
+# AND
 model = Model()
 model.hideOutput()
-x = model.addVar("x","B")
-y = model.addVar("y","B")
-z = model.addVar("z","B")
-r = model.addVar("r","B")
-model.addConsAnd([x,y,z],r)
-model.addCons(x==1)
-model.setObjective(r,sense="minimize")
+x = model.addVar("x", "B")
+y = model.addVar("y", "B")
+z = model.addVar("z", "B")
+r = model.addVar("r", "B")
+model.addConsAnd([x, y, z], r)
+model.addCons(x == 1)
+model.setObjective(r, sense="minimize")
 model.optimize()
-printFunc("AND",model)
+printFunc("AND", model)
 
 # OR 
 model = Model()
 model.hideOutput()
-x = model.addVar("x","B")
-y = model.addVar("y","B")
-z = model.addVar("z","B")
-r = model.addVar("r","B")
-model.addConsOr([x,y,z],r)
-model.addCons(x==0)
-model.setObjective(r,sense="maximize")
+x = model.addVar("x", "B")
+y = model.addVar("y", "B")
+z = model.addVar("z", "B")
+r = model.addVar("r", "B")
+model.addConsOr([x, y, z], r)
+model.addCons(x == 0)
+model.setObjective(r, sense="maximize")
 model.optimize()
-printFunc("OR",model)
+printFunc("OR", model)
 
 # XOR (r as boolean, standard) 
 model = Model()
 model.hideOutput()
-x = model.addVar("x","B")
-y = model.addVar("y","B")
-z = model.addVar("z","B")
+x = model.addVar("x", "B")
+y = model.addVar("y", "B")
+z = model.addVar("z", "B")
 r = True
-model.addConsXor([x,y,z],r)
-model.addCons(x==1)
+model.addConsXor([x, y, z], r)
+model.addCons(x == 1)
 model.optimize()
-printFunc("Standard XOR (as boolean)",model)
+printFunc("Standard XOR (as boolean)", model)
 
 # XOR (r as variable, custom) 
 model = Model()
 model.hideOutput()
-x = model.addVar("x","B")
-y = model.addVar("y","B")
-z = model.addVar("z","B")
-r = model.addVar("r","B")
-n = model.addVar("n","I") #auxiliary
-model.addCons(r+quicksum([x,y,z]) == 2*n)
-model.addCons(x==0)
-model.setObjective(r,sense="maximize")
+x = model.addVar("x", "B")
+y = model.addVar("y", "B")
+z = model.addVar("z", "B")
+r = model.addVar("r", "B")
+n = model.addVar("n", "I")  # auxiliary
+model.addCons(r + quicksum([x, y, z]) == 2 * n)
+model.addCons(x == 0)
+model.setObjective(r, sense="maximize")
 model.optimize()
-printFunc("Custom XOR (as variable)",model)
+printFunc("Custom XOR (as variable)", model)

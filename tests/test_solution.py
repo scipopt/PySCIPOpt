@@ -1,6 +1,7 @@
 import re
 import pytest
-from pyscipopt import Model, scip, SCIP_PARAMSETTING, quicksum, quickprod
+from pyscipopt import Model, scip, SCIP_PARAMSETTING, quicksum, quickprod, SCIP_SOLORIGIN
+from helpers.utils import random_mip_1
 
 
 def test_solution_getbest():
@@ -45,6 +46,34 @@ def test_solution_create():
     m.optimize()
 
     assert m.getSolObjVal(s1) == -1
+    m.freeSol(s1)
+
+def test_createOrigSol():
+    m = Model()
+
+    x = m.addVar("x", lb=0, ub=2, obj=-1)
+    y = m.addVar("y", lb=1, ub=4, obj=1)
+    z = m.addVar("z", lb=1, ub=5, obj=10)
+    m.addCons(x * x <= y*z)
+    m.presolve()
+
+    s = m.createOrigSol()
+    s[x] = 2.0
+    s[y] = 5.0
+    s[z] = 10.0
+    assert not m.checkSol(s)
+    assert m.addSol(s, free=True)
+
+    s1 = m.createOrigSol()
+    m.setSolVal(s1, x, 1.0)
+    m.setSolVal(s1, y, 1.0)
+    m.setSolVal(s1, z, 1.0)
+    assert m.checkSol(s1)
+    assert m.addSol(s1, free=False)
+
+    m.optimize()
+
+    assert m.getSolObjVal(s1) == 10.0
     m.freeSol(s1)
 
 
@@ -165,3 +194,28 @@ def test_getSols():
 
     assert len(m.getSols()) >= 1
     assert any(m.isEQ(sol[x], 0.0) for sol in m.getSols())
+
+
+def test_getOrigin_retrasform():
+    m = random_mip_1(disable_sepa=False, disable_huer=False, disable_presolve=False, small=True)
+    m.optimize()
+
+    sol = m.getBestSol()
+    assert sol.getOrigin() == SCIP_SOLORIGIN.ZERO
+
+    sol.retransform()
+    assert sol.getOrigin() == SCIP_SOLORIGIN.ORIGINAL
+
+
+def test_translate():
+    m = random_mip_1(disable_sepa=False, disable_huer=False, disable_presolve=False, small=True)
+    m.optimize()
+    sol = m.getBestSol()
+
+    m1 = random_mip_1(disable_sepa=False, disable_huer=False, disable_presolve=False, small=True)
+    sol1 = sol.translate(m1)
+    assert m1.addSol(sol1) == True
+    assert m1.getNSols() == 1
+    m1.optimize()
+    assert m.getObjVal() == m1.getObjVal()
+
