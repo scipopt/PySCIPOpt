@@ -594,6 +594,7 @@ cdef class Solution:
 
     def __getitem__(self, Expr expr):
         # fast track for Variable
+        cdef SCIP_Real coeff
         if isinstance(expr, Variable):
             self._checkStage("SCIPgetSolVal")
             var = <Variable> expr
@@ -1333,6 +1334,7 @@ cdef class Model:
         cdef SCIP_VAR** _vars
         cdef int _nvars
         cdef int i
+        cdef SCIP_Real coef
 
         # turn the constant value into an Expr instance for further processing
         if not isinstance(coeffs, Expr):
@@ -1369,6 +1371,7 @@ cdef class Model:
 
     def getObjective(self):
         """Retrieve objective function as Expr"""
+        cdef Variable var
         variables = self.getVars()
         objective = Expr()
         for var in variables:
@@ -1799,6 +1802,7 @@ cdef class Model:
     
     def getVarDict(self):
         """gets dictionary with variables names as keys and current variable values as items"""
+        cdef Variable var
         var_dict = {}
         for var in self.getVars():
             var_dict[var.name] = self.getVal(var)
@@ -1816,6 +1820,7 @@ cdef class Model:
     
     def relax(self):
         """Relaxes the integrality restrictions of the model"""
+        cdef Variable var
         if self.getStage() != SCIP_STAGE_PROBLEM:
             raise Warning("method can only be called in stage PROBLEM")
 
@@ -2186,6 +2191,7 @@ cdef class Model:
         assert isinstance(conss, Iterable), "Given constraint list is not iterable."
         cdef int idx
         cdef int i
+        cdef Constraint cons
 
         conss = list(conss)
         n_conss = len(conss)
@@ -2272,6 +2278,7 @@ cdef class Model:
         assert lincons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % lincons.expr.degree()
         terms = lincons.expr.terms
         cdef int i
+        cdef SCIP_Real coeff
 
         cdef SCIP_CONS* scip_cons
 
@@ -2348,6 +2355,10 @@ cdef class Model:
         cdef int* idxs
         cdef SCIP_CONS* scip_cons
         cdef int i
+        cdef int j
+        cdef int idx
+        cdef SCIP_Real coef
+        cdef Variable var
 
         terms = cons.expr.terms
 
@@ -2404,6 +2415,8 @@ cdef class Model:
         cdef SCIP_CONS* scip_cons
         cdef int nchildren
         cdef int i
+        cdef Node node
+        cdef int c
 
         # get arrays from python's expression tree
         expr = cons.expr
@@ -2600,6 +2613,7 @@ cdef class Model:
         cdef SCIP_CONS* scip_cons
         cdef int _nvars
         cdef int i
+        cdef Variable var
 
         PY_SCIP_CALL(SCIPcreateConsSOS1(self._scip, &scip_cons, str_conversion(name), 0, NULL, NULL,
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
@@ -2640,6 +2654,7 @@ cdef class Model:
         cdef SCIP_CONS* scip_cons
         cdef int _nvars
         cdef int i
+        cdef Variable var
 
         PY_SCIP_CALL(SCIPcreateConsSOS2(self._scip, &scip_cons, str_conversion(name), 0, NULL, NULL,
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
@@ -2678,6 +2693,7 @@ cdef class Model:
         """
         cdef SCIP_CONS* scip_cons
         cdef int idx
+        cdef Variable var
 
         nvars = len(vars)
 
@@ -2718,6 +2734,7 @@ cdef class Model:
         """
         cdef SCIP_CONS* scip_cons
         cdef int idx
+        cdef Variable var
 
         nvars = len(vars)
 
@@ -2758,6 +2775,7 @@ cdef class Model:
         """
         cdef SCIP_CONS* scip_cons
         cdef int idx
+        cdef Variable var
 
         nvars = len(vars)
 
@@ -2802,6 +2820,7 @@ cdef class Model:
         cdef SCIP_CONS* scip_cons
         cdef SCIP_VAR* indvar
         cdef int i
+        cdef Variable v
 
         PY_SCIP_CALL(SCIPcreateConsCardinality(self._scip, &scip_cons, str_conversion(name), 0, NULL, cardval, NULL, NULL,
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
@@ -2855,6 +2874,8 @@ cdef class Model:
         assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
         cdef SCIP_CONS* scip_cons
         cdef SCIP_VAR* _binVar
+        cdef SCIP_Real coeff 
+
         if cons._lhs is not None and cons._rhs is not None:
             raise ValueError("expected inequality that has either only a left or right hand side")
 
@@ -3235,6 +3256,7 @@ cdef class Model:
 
         """
         cdef SCIP_EXPR* expr
+        cdef int termidx
 
         # linear terms
         cdef SCIP_EXPR** _linexprs
@@ -3501,6 +3523,7 @@ cdef class Model:
         cdef int nbenders
         cdef int nsubproblems
         cdef int i
+        cdef int j
 
         solvecip = True
 
@@ -3524,6 +3547,7 @@ cdef class Model:
         cdef int nbenders
         cdef int nsubproblems
         cdef int i
+        cdef int j
 
         nbenders = SCIPgetNActiveBenders(self._scip)
         _benders = SCIPgetBenders(self._scip)
@@ -5259,7 +5283,7 @@ cdef class Model:
         :param sense: the objective sense (Default value = 'minimize')
 
         """
-        
+        cdef SCIP_Real coef
         cdef SCIP_OBJSENSE objsense
 
         if sense == "minimize":
@@ -5279,6 +5303,7 @@ cdef class Model:
         cdef SCIP_VAR** _vars
         cdef int _nvars
         cdef int i
+        cdef SCIP_Real coef
         _vars = SCIPgetOrigVars(self._scip)
         _nvars = SCIPgetNOrigVars(self._scip)
         _coeffs = <SCIP_Real*> malloc(_nvars * sizeof(SCIP_Real))
