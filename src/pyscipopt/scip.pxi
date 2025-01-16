@@ -2707,7 +2707,7 @@ cdef class Model:
         """
         return SCIPgetObjlimit(self._scip)
 
-    def setObjective(self, coeffs, str sense = 'minimize', SCIP_Bool clear = True):
+    def setObjective(self, expr: Union[Expr, SCIP_Real], str sense = 'minimize', SCIP_Bool clear = True):
         """
         Establish the objective function as a linear expression.
 
@@ -5424,7 +5424,7 @@ cdef class Model:
 
         return pyCons
 
-    def addConsIndicator(self, cons: Union[Constraint, ExprCons], Variable binvar=None, SCIP_Bool activeone=True, str name="IndicatorCons",
+    def addConsIndicator(self, cons: Union[Constraint, ExprCons], Variable binvar=None, SCIP_Bool activeone=True, str name="",
                 SCIP_Bool initial=True, SCIP_Bool separate=True, SCIP_Bool enforce=True, SCIP_Bool check=True,
                 SCIP_Bool propagate=True, SCIP_Bool local=False, SCIP_Bool dynamic=False,
                 SCIP_Bool removable=False, SCIP_Bool stickingatnode=False):
@@ -9145,7 +9145,7 @@ cdef class Model:
         
         locale.setlocale(locale.LC_NUMERIC, user_locale)
 
-    def writeParams(self, str filename='param.set', SCIP_Bool comments = True, SCIP_Bool onlychanged = True):
+    def writeParams(self, str filename='param.set', SCIP_Bool comments = True, SCIP_Bool onlychanged = True, SCIP_Bool verbose = True):
         """
         Write parameter settings to an external file.
 
@@ -9627,7 +9627,6 @@ cdef class Model:
         cdef SCIP_VAR* var
         cdef SCIP_Real lb, ub, solval
         cdef SCIP_BASESTAT basis_status
-        cdef int i
         for i in range(ncols):
             col_i = SCIPcolGetLPPos(cols[i])
             var = SCIPcolGetVar(cols[i])
@@ -9722,7 +9721,6 @@ cdef class Model:
 
         cdef int nnzrs = 0
         cdef SCIP_Real lhs, rhs, cst
-        cdef int i
         for i in range(nrows):
 
             # lhs <= activity + cst <= rhs
