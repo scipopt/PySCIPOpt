@@ -2906,7 +2906,7 @@ cdef class Model:
         Parameters
         ----------
         heurname : string, name of the heuristic
-        heurtiming : PY_SCIP_HEURTIMING
+        heurtiming : SCIP_HEURTIMING
 		   positions in the node solving loop where heuristic should be executed
         """
         cdef SCIP_HEUR* _heur
@@ -2926,7 +2926,7 @@ cdef class Model:
 
         Returns
         -------
-        PY_SCIP_HEURTIMING
+        SCIP_HEURTIMING
 		   positions in the node solving loop where heuristic should be executed
         """
         cdef SCIP_HEUR* _heur
@@ -6551,7 +6551,7 @@ cdef class Model:
             the Benders' decomposition to which the subproblem belongs to
         solution : Solution or None, optional
             the master problem solution that is used for the set up, if None, then the LP solution is used
-        checktype : PY_SCIP_BENDERSENFOTYPE
+        checktype : SCIP_BENDERSENFOTYPE
             the type of solution check that prompted the solving of the Benders' subproblems, either
             PY_SCIP_BENDERSENFOTYPE: LP, RELAX, PSEUDO or CHECK. Default is LP.
 
@@ -6867,10 +6867,10 @@ cdef class Model:
             should propagation method be delayed, if other propagators found reductions? (Default value = False)
         needscons : bool, optional
             should the constraint handler be skipped, if no constraints are available? (Default value = True)
-        proptiming : PY_SCIP_PROPTIMING
+        proptiming : SCIP_PROPTIMING
             positions in the node solving loop where propagation method of constraint handlers
              should be executed (Default value = SCIP_PROPTIMING.BEFORELP)
-        presoltiming : PY_SCIP_PRESOLTIMING
+        presoltiming : SCIP_PRESOLTIMING
             timing mask of the constraint handler's presolving method (Default value = SCIP_PRESOLTIMING.MEDIUM)
 
         """
@@ -7029,7 +7029,7 @@ cdef class Model:
             priority of the presolver (>= 0: before, < 0: after constraint handlers)
         maxrounds : int
             maximal number of presolving rounds the presolver participates in (-1: no limit)
-        timing : PY_SCIP_PRESOLTIMING, optional
+        timing : SCIP_PRESOLTIMING, optional
              timing mask of presolver (Default value = SCIP_PRESOLTIMING_FAST)
 
         """
@@ -7128,7 +7128,7 @@ cdef class Model:
             maximal number of presolving rounds the propagator participates in (-1: no limit)
         proptiming : SCIP_PROPTIMING
             positions in the node solving loop where propagation method of constraint handlers should be executed
-        presoltiming : PY_SCIP_PRESOLTIMING, optional
+        presoltiming : SCIP_PRESOLTIMING, optional
             timing mask of the constraint handler's presolving method (Default value = SCIP_PRESOLTIMING_FAST)
         priority : int, optional
             priority of the propagator (Default value = 1)
@@ -7173,7 +7173,7 @@ cdef class Model:
             frequency offset for calling heuristic (Default value = 0)
         maxdepth : int, optional
             maximal depth level to call heuristic at (Default value = -1)
-        timingmask : PY_SCIP_HEURTIMING, optional
+        timingmask : SCIP_HEURTIMING, optional
             positions in the node solving loop where heuristic should be executed
             (Default value = SCIP_HEURTIMING_BEFORENODE)
         usessubscip : bool, optional
@@ -7510,7 +7510,7 @@ cdef class Model:
 
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
 
-    def calcNodeselPriority(self, Variable variable, int branchdir, SCIP_Real targetvalue):
+    def calcNodeselPriority(self, Variable variable, SCIP_BRANCHDIR branchdir, SCIP_Real targetvalue):
         """
         calculates the node selection priority for moving the given variable's LP value
         to the given target value;
@@ -7520,7 +7520,7 @@ cdef class Model:
         ----------
         variable : Variable
             variable on which the branching is applied
-        branchdir : PY_SCIP_BRANCHDIR
+        branchdir : SCIP_BRANCHDIR
             type of branching that was performed
         targetvalue : float
             new value of the variable in the child node
@@ -8731,7 +8731,7 @@ cdef class Model:
 
         Parameters
         ----------
-        eventtype : PY_SCIP_EVENTTYPE
+        eventtype : SCIP_EVENTTYPE
         eventhdlr : Eventhdlr
 
         """
@@ -8751,7 +8751,7 @@ cdef class Model:
 
         Parameters
         ----------
-        eventtype : PY_SCIP_EVENTTYPE
+        eventtype : SCIP_EVENTTYPE
         eventhdlr : Eventhdlr
 
         """
@@ -8772,7 +8772,7 @@ cdef class Model:
         Parameters
         ----------
         var : Variable
-        eventtype : PY_SCIP_EVENTTYPE
+        eventtype : SCIP_EVENTTYPE
         eventhdlr : Eventhdlr
 
         """
@@ -8791,7 +8791,7 @@ cdef class Model:
         Parameters
         ----------
         var : Variable
-        eventtype : PY_SCIP_EVENTTYPE
+        eventtype : SCIP_EVENTTYPE
         eventhdlr : Eventhdlr
 
         """
@@ -8810,7 +8810,7 @@ cdef class Model:
         Parameters
         ----------
         row : Row
-        eventtype : PY_SCIP_EVENTTYPE
+        eventtype : SCIP_EVENTTYPE
         eventhdlr : Eventhdlr
 
         """
@@ -8829,7 +8829,7 @@ cdef class Model:
         Parameters
         ----------
         row : Row
-        eventtype : PY_SCIP_EVENTTYPE
+        eventtype : SCIP_EVENTTYPE
         eventhdlr : Eventhdlr
 
         """
@@ -9190,13 +9190,13 @@ cdef class Model:
         """Reset parameter settings to their default values."""
         PY_SCIP_CALL(SCIPresetParams(self._scip))
 
-    def setEmphasis(self, paraemphasis, SCIP_Bool quiet = True):
+    def setEmphasis(self, SCIP_PARAMEMPHASIS paraemphasis, SCIP_Bool quiet = True):
         """
         Set emphasis settings
 
         Parameters
         ----------
-        paraemphasis : PY_SCIP_PARAMEMPHASIS
+        paraemphasis : SCIP_PARAMEMPHASIS
             emphasis to set
         quiet : bool, optional
             hide output? (Default value = True)
