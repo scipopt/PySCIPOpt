@@ -4,7 +4,7 @@ cdef class LP:
     cdef SCIP_LPI* lpi
     cdef readonly str name
 
-    def __init__(self, name="LP", sense="minimize"):
+    def __init__(self, str name="LP", str sense="minimize"):
         """
         Keyword arguments:
         name -- the name of the problem (default 'LP')
@@ -46,7 +46,7 @@ cdef class LP:
         """
         return SCIPlpiInfinity(self.lpi)
 
-    def isInfinity(self, val):
+    def isInfinity(self, SCIP_Real val):
         """Checks if a given value is equal to the infinity value of the LP.
 
         Keyword arguments:
@@ -54,7 +54,7 @@ cdef class LP:
         """
         return SCIPlpiIsInfinity(self.lpi, val)
 
-    def addCol(self, entries, obj = 0.0, lb = 0.0, ub = None):
+    def addCol(self, entries, SCIP_Real obj = 0.0, lb: Union[SCIP_Real, None] = 0.0, ub: Union[SCIP_Real, None] = None):
         """Adds a single column to the LP.
 
         Keyword arguments:
@@ -220,7 +220,7 @@ cdef class LP:
         free(c_lhss)
         free(c_rhss)
 
-    def delRows(self, firstrow, lastrow):
+    def delRows(self, int firstrow, int lastrow):
         """Deletes a range of rows from the LP.
 
         Keyword arguments:
@@ -229,7 +229,7 @@ cdef class LP:
         """
         PY_SCIP_CALL(SCIPlpiDelRows(self.lpi, firstrow, lastrow))
 
-    def getBounds(self, firstcol = 0, lastcol = None):
+    def getBounds(self, int firstcol = 0, lastcol: Union[int, None] = None):
         """Returns all lower and upper bounds for a range of columns.
 
         Keyword arguments:
@@ -259,7 +259,7 @@ cdef class LP:
 
         return lbs, ubs
 
-    def getSides(self, firstrow = 0, lastrow = None):
+    def getSides(self, int firstrow = 0, lastrow: Union[int, None] = None):
         """Returns all left- and right-hand sides for a range of rows.
 
         Keyword arguments:
@@ -300,7 +300,7 @@ cdef class LP:
         cdef SCIP_Real c_obj = obj
         PY_SCIP_CALL(SCIPlpiChgObj(self.lpi, 1, &c_col, &c_obj))
 
-    def chgCoef(self, row, col, newval):
+    def chgCoef(self, int row, int col, SCIP_Real newval):
         """Changes a single coefficient in the LP.
 
         Keyword arguments:
@@ -352,7 +352,7 @@ cdef class LP:
         PY_SCIP_CALL(SCIPlpiGetNCols(self.lpi, &ncols))
         return ncols
 
-    def solve(self, dual=True):
+    def solve(self, SCIP_Bool dual=True):
         """Solves the current LP.
 
         Keyword arguments:

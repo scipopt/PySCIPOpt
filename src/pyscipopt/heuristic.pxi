@@ -24,7 +24,7 @@ cdef class Heur:
         '''informs primal heuristic that the branch and bound process data is being freed'''
         pass
 
-    def heurexec(self, heurtiming, nodeinfeasible):
+    def heurexec(self, SCIP_HEURTIMING heurtiming, SCIP_Bool nodeinfeasible):
         '''should the heuristic the executed at the given depth, frequency, timing,...'''
         print("python error in heurexec: this method needs to be implemented")
         return {}

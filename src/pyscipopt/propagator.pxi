@@ -31,11 +31,11 @@ cdef class Prop:
         '''informs propagator that the presolving process is finished'''
         pass
 
-    def proppresol(self, nrounds, presoltiming, result_dict):
+    def proppresol(self, int nrounds, SCIP_PRESOLTIMING presoltiming, dict result_dict):
         '''executes presolving method of propagator'''
         pass
 
-    def propexec(self, proptiming):
+    def propexec(self, SCIP_PROPTIMING proptiming):
         '''calls execution method of propagator'''
         print("python error in propexec: this method needs to be implemented")
         return {}

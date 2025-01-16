@@ -23,16 +23,16 @@ cdef class Branchrule:
         '''informs branching rule that the branch and bound process data is being freed'''
         pass
 
-    def branchexeclp(self, allowaddcons):
+    def branchexeclp(self, SCIP_Bool allowaddcons):
         '''executes branching rule for fractional LP solution'''
         raise NotImplementedError("branchexeclp() is a fundamental callback and should be implemented in the derived "
                                   "class")
 
-    def branchexecext(self, allowaddcons):
+    def branchexecext(self, SCIP_Bool allowaddcons):
         '''executes branching rule for external branching candidates '''
         raise NotImplementedError("branchexecext() is a fundamental callback and should be implemented in the derived class")
 
-    def branchexecps(self, allowaddcons):
+    def branchexecps(self, SCIP_Bool allowaddcons):
         '''executes branching rule for not completely fixed pseudo solution '''
         # this method needs to be implemented by the user
         raise NotImplementedError("branchexecps() is a fundamental callback and should be implemented in the derived class")

@@ -54,7 +54,7 @@ def _is_number(e):
         return False
 
 
-def _expr_richcmp(self, other, op):
+def _expr_richcmp(self, other, int op):
     if op == 1: # <=
         if isinstance(other, Expr) or isinstance(other, GenExpr):
             return (self - other) <= 0.0
@@ -90,7 +90,7 @@ class Term:
         self.ptrtuple = tuple(v.ptr() for v in self.vartuple)
         self.hashval = sum(self.ptrtuple)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, int idx):
         return self.vartuple[idx]
 
     def __hash__(self):
@@ -144,7 +144,7 @@ def buildGenExprObj(expr):
 #See also the @ref ExprDetails "description" in the expr.pxi. 
 cdef class Expr:
     
-    def __init__(self, terms=None):
+    def __init__(self, terms: Union[None, dict[Variable,SCIP_Real]] = None):
         '''terms is a dict of variables to coefficients.
 
         CONST is used as key for the constant term.'''
@@ -621,23 +621,23 @@ cdef class Constant(GenExpr):
     def __repr__(self):
         return str(self.number)
 
-def exp(expr):
+def exp(expr: Union[Expr, GenExpr]):
     """returns expression with exp-function"""
     return UnaryExpr(Operator.exp, buildGenExprObj(expr))
-def log(expr):
+def log(expr: Union[Expr, GenExpr]):
     """returns expression with log-function"""
     return UnaryExpr(Operator.log, buildGenExprObj(expr))
-def sqrt(expr):
+def sqrt(expr: Union[Expr, GenExpr]):
     """returns expression with sqrt-function"""
     return UnaryExpr(Operator.sqrt, buildGenExprObj(expr))
-def sin(expr):
+def sin(expr: Union[Expr, GenExpr]):
     """returns expression with sin-function"""
     return UnaryExpr(Operator.sin, buildGenExprObj(expr))
-def cos(expr):
+def cos(expr: Union[Expr, GenExpr]):
     """returns expression with cos-function"""
     return UnaryExpr(Operator.cos, buildGenExprObj(expr))
 
-def expr_to_nodes(expr):
+def expr_to_nodes(expr: Union[Expr, GenExpr]):
     '''transforms tree to an array of nodes. each node is an operator and the position of the 
     children of that operator (i.e. the other nodes) in the array'''
     assert isinstance(expr, GenExpr)

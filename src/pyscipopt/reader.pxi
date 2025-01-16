@@ -12,8 +12,8 @@ cdef class Reader:
         '''calls read method of reader'''
         return {}
 
-    def readerwrite(self, file, name, transformed, objsense, objscale, objoffset, binvars, intvars,
-                    implvars, contvars, fixedvars, startnvars, conss, maxnconss, startnconss, genericnames):
+    def readerwrite(self, file, str name, SCIP_Bool transformed, int objsense, SCIP_Real objscale, SCIP_Real objoffset, list[Variable] binvars, list[Variable] intvars,
+                    list[Variable] implvars, list[Variable] contvars, list[Variable] fixedvars, int startnvars, conss: list[Union[Constraint, ExprCons]], int maxnconss, int startnconss, SCIP_Bool genericnames):
         '''calls write method of reader'''
         return {}
 

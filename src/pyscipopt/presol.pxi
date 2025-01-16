@@ -23,7 +23,7 @@ cdef class Presol:
         '''informs presolver that the presolving process is finished'''
         pass
 
-    def presolexec(self, nrounds, presoltiming):
+    def presolexec(self, int nrounds, SCIP_PRESOLTIMING presoltiming):
         '''executes presolver'''
         print("python error in presolexec: this method needs to be implemented")
         return {}

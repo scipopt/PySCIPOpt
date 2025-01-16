@@ -23,7 +23,7 @@ cdef class Cutsel:
     '''executed before the branch-and-bound process is freed'''
     pass
 
-  def cutselselect(self, cuts, forcedcuts, root, maxnselectedcuts):
+  def cutselselect(self, list[SCIP_ROW] cuts, int forcedcuts, SCIP_Bool root, int maxnselectedcuts):
     '''first method called in each iteration in the main solving loop. '''
     # this method needs to be implemented by the user
     return {}
