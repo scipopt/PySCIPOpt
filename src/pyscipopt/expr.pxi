@@ -115,6 +115,7 @@ CONST = Term()
 # helper function
 def buildGenExprObj(expr):
     """helper function to generate an object of type GenExpr"""
+    cdef SCIP_Real coef
     if _is_number(expr):
         return Constant(expr)
     elif isinstance(expr, Expr):

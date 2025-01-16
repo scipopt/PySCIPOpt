@@ -176,6 +176,8 @@ cdef SCIP_RETCODE PyBendersPostsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SO
         SCIP_BENDERSENFOTYPE type, int* mergecands, int npriomergecands, int nmergecands, SCIP_Bool checkint,
         SCIP_Bool infeasible, SCIP_Bool* merged) noexcept with gil:
     cdef SCIP_BENDERSDATA* bendersdata
+    cdef int i
+    
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
     if sol == NULL:

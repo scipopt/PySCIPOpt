@@ -2191,7 +2191,6 @@ cdef class Model:
         assert isinstance(conss, Iterable), "Given constraint list is not iterable."
         cdef int idx
         cdef int i
-        cdef Constraint cons
 
         conss = list(conss)
         n_conss = len(conss)
@@ -2415,7 +2414,6 @@ cdef class Model:
         cdef SCIP_CONS* scip_cons
         cdef int nchildren
         cdef int i
-        cdef Node node
         cdef int c
 
         # get arrays from python's expression tree
@@ -5283,7 +5281,6 @@ cdef class Model:
         :param sense: the objective sense (Default value = 'minimize')
 
         """
-        cdef SCIP_Real coef
         cdef SCIP_OBJSENSE objsense
 
         if sense == "minimize":

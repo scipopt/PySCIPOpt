@@ -76,7 +76,8 @@ cdef SCIP_RETCODE PyCutselSelect (SCIP* scip, SCIP_CUTSEL* cutsel, SCIP_ROW** cu
   cdef SCIP_ROW* scip_row
   cutseldata = SCIPcutselGetData(cutsel)
   PyCutsel = <Cutsel>cutseldata
-
+  cdef int i
+  
   # translate cuts to python
   pycuts = [Row.create(cuts[i]) for i in range(ncuts)]
   pyforcedcuts = [Row.create(forcedcuts[i]) for i in range(nforcedcuts)]
