@@ -330,7 +330,7 @@ def test_CKS():
     # add variables
     x1 = s.addVar("x1", vtype='I')
     x2 = s.addVar("x2", vtype='I')
-    y  = s.addVar("y", obj=-1, vtype='C')
+    y = s.addVar("y", obj=-1, vtype='C')
 
     # add constraint
     s.addCons(-x1      + y <=  0)

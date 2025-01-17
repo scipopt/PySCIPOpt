@@ -169,8 +169,8 @@ cdef SCIP_RETCODE PyConsFree (SCIP* scip, SCIP_CONSHDLR* conshdlr) noexcept with
 
 cdef SCIP_RETCODE PyConsInit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
-    cdef int i
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     PyConshdlr.consinit(constraints)
