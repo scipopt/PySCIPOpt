@@ -2376,88 +2376,88 @@ cdef class Model:
         """
         return SCIPfeastol(self._scip)
 
-    def feasFrac(self, SCIP_Real value):
+    def feasFrac(self, float  value):
         """
         Returns fractional part of value, i.e. x - floor(x) in feasible tolerance: x - floor(x+feastol).
 
         Parameters
         ----------
-        value : float
+        value : float 
 
         Returns
         -------
-        float
+        float 
 
         """
         return SCIPfeasFrac(self._scip, value)
 
-    def frac(self, SCIP_Real value):
+    def frac(self, float  value):
         """
         Returns fractional part of value, i.e. x - floor(x) in epsilon tolerance: x - floor(x+eps).
 
         Parameters
         ----------
-        value : float
+        value : float 
 
         Returns
         -------
-        float
+        float 
 
         """
         return SCIPfrac(self._scip, value)
 
-    def feasFloor(self, SCIP_Real value):
+    def feasFloor(self, float  value):
         """
         Rounds value + feasibility tolerance down to the next integer.
 
         Parameters
         ----------
-        value : float
+        value : float 
 
         Returns
         -------
-        float
+        float 
 
         """
         return SCIPfeasFloor(self._scip, value)
 
-    def feasCeil(self, SCIP_Real value):
+    def feasCeil(self, float  value):
         """
         Rounds value - feasibility tolerance up to the next integer.
 
         Parameters
         ----------
-        value : float
+        value : float 
 
         Returns
         -------
-        float
+        float 
 
         """
         return SCIPfeasCeil(self._scip, value)
 
-    def feasRound(self, SCIP_Real value):
+    def feasRound(self, float  value):
         """
         Rounds value to the nearest integer in feasibility tolerance.
 
         Parameters
         ----------
-        value : float
+        value : float 
 
         Returns
         -------
-        float
+        float 
 
         """
         return SCIPfeasRound(self._scip, value)
 
-    def isZero(self, SCIP_Real value):
+    def isZero(self, float  value):
         """
         Returns whether abs(value) < eps.
 
         Parameters
         ----------
-        value : float
+        value : float 
 
         Returns
         -------
@@ -2466,13 +2466,13 @@ cdef class Model:
         """
         return SCIPisZero(self._scip, value)
 
-    def isFeasZero(self, SCIP_Real value):
+    def isFeasZero(self, float  value):
         """
         Returns whether abs(value) < feastol.
 
         Parameters
         ----------
-        value : float
+        value : float 
 
         Returns
         -------
@@ -2481,13 +2481,13 @@ cdef class Model:
         """
         return SCIPisFeasZero(self._scip, value)
 
-    def isInfinity(self, SCIP_Real value):
+    def isInfinity(self, float  value):
         """
         Returns whether value is SCIP's infinity.
 
         Parameters
         ----------
-        value : float
+        value : float 
 
         Returns
         -------
@@ -2496,13 +2496,13 @@ cdef class Model:
         """
         return SCIPisInfinity(self._scip, value)
 
-    def isFeasNegative(self, SCIP_Real value):
+    def isFeasNegative(self, float  value):
         """
         Returns whether value < -feastol.
 
         Parameters
         ----------
-        value : float
+        value : float 
 
         Returns
         -------
@@ -2511,13 +2511,13 @@ cdef class Model:
         """
         return SCIPisFeasNegative(self._scip, value)
 
-    def isFeasIntegral(self, SCIP_Real value):
+    def isFeasIntegral(self, float  value):
         """
         Returns whether value is integral within the LP feasibility bounds.
 
         Parameters
         ----------
-        value : float
+        value : float 
 
         Returns
         -------
@@ -2526,14 +2526,14 @@ cdef class Model:
         """
         return SCIPisFeasIntegral(self._scip, value)
 
-    def isEQ(self, SCIP_Real val1, SCIP_Real val2):
+    def isEQ(self, float  val1, float  val2):
         """
         Checks, if values are in range of epsilon.
 
         Parameters
         ----------
-        val1 : float
-        val2 : float
+        val1 : float 
+        val2 : float 
 
         Returns
         -------
@@ -2542,14 +2542,14 @@ cdef class Model:
         """
         return SCIPisEQ(self._scip, val1, val2)
 
-    def isFeasEQ(self, SCIP_Real val1, SCIP_Real val2):
+    def isFeasEQ(self, float  val1, float  val2):
         """
         Checks, if relative difference of values is in range of feasibility tolerance.
 
         Parameters
         ----------
-        val1 : float
-        val2 : float
+        val1 : float 
+        val2 : float 
 
         Returns
         -------
@@ -2558,14 +2558,14 @@ cdef class Model:
         """
         return SCIPisFeasEQ(self._scip, val1, val2)
 
-    def isLE(self, SCIP_Real val1, SCIP_Real val2):
+    def isLE(self, float  val1, float  val2):
         """
         Returns whether val1 <= val2 + eps.
 
         Parameters
         ----------
-        val1 : float
-        val2 : float
+        val1 : float 
+        val2 : float 
 
         Returns
         -------
@@ -2574,14 +2574,14 @@ cdef class Model:
         """
         return SCIPisLE(self._scip, val1, val2)
 
-    def isLT(self, SCIP_Real val1, SCIP_Real val2):
+    def isLT(self, float  val1, float  val2):
         """
         Returns whether val1 < val2 - eps.
 
         Parameters
         ----------
-        val1 : float
-        val2 : float
+        val1 : float 
+        val2 : float 
 
         Returns
         -------
@@ -2590,14 +2590,14 @@ cdef class Model:
         """
         return SCIPisLT(self._scip, val1, val2)
 
-    def isGE(self, SCIP_Real val1, SCIP_Real val2):
+    def isGE(self, float  val1, float  val2):
         """
         Returns whether val1 >= val2 - eps.
 
         Parameters
         ----------
-        val1 : float
-        val2 : float
+        val1 : float 
+        val2 : float 
 
         Returns
         -------
@@ -2606,13 +2606,13 @@ cdef class Model:
         """
         return SCIPisGE(self._scip, val1, val2)
 
-    def isGT(self, SCIP_Real val1, SCIP_Real val2):
+    def isGT(self, float  val1, float  val2):
         """
         Returns whether val1 > val2 + eps.
 
         Parameters
         ----------
-        val1 : float
+        val1 : float 
         val2 : foat
 
         Returns
@@ -2633,7 +2633,7 @@ cdef class Model:
 
         Returns
         -------
-        float
+        SCIP_Real 
 
         """
         cdef SCIP_LPI* lpi
@@ -2683,7 +2683,7 @@ cdef class Model:
         """Set the objective sense to maximization."""
         PY_SCIP_CALL(SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MAXIMIZE))
 
-    def setObjlimit(self, SCIP_Real objlimit):
+    def setObjlimit(self, float objlimit):
         """
         Set a limit on the objective function.
         Only solutions with objective value better than this limit are accepted.
@@ -2707,7 +2707,7 @@ cdef class Model:
         """
         return SCIPgetObjlimit(self._scip)
 
-    def setObjective(self, expr: Union[Expr, SCIP_Real], str sense = 'minimize', SCIP_Bool clear = True):
+    def setObjective(self, expr: Union[Expr, float], str sense = 'minimize', SCIP_Bool clear = True):
         """
         Establish the objective function as a linear expression.
 
@@ -2780,7 +2780,7 @@ cdef class Model:
         objective.normalize()
         return objective
 
-    def addObjoffset(self, SCIP_Real offset, SCIP_Bool solutions = False):
+    def addObjoffset(self, float offset, SCIP_Bool solutions = False):
 
         """
         Add constant offset to objective.
@@ -3024,7 +3024,7 @@ cdef class Model:
 
     # Variable Functions
 
-    def addVar(self, str name='', str vtype='C', lb: Union[SCIP_Real, None]=0.0, ub: Union[SCIP_Real, None]=None, SCIP_Real obj=0.0, SCIP_Bool pricedVar=False, SCIP_Real pricedVarScore=1.0):
+    def addVar(self, str name='', str vtype='C', lb: Union[float, None]=0.0, ub: Union[float, None]=None, float obj=0.0, SCIP_Bool pricedVar=False, float pricedVarScore=1.0):
         """
         Create a new variable. Default variable is non-negative and continuous.
 
@@ -3131,7 +3131,7 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPaddVarLocks(self._scip, var.scip_var, nlocksdown, nlocksup))
 
-    def fixVar(self, Variable var, SCIP_Real val):
+    def fixVar(self, Variable var, float val):
         """
         Fixes the variable var to the value val if possible.
 
@@ -3176,7 +3176,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPdelVar(self._scip, var.scip_var, &deleted))
         return deleted
 
-    def tightenVarLb(self, Variable var, lb: Union[SCIP_Real, None], SCIP_Bool force=False):
+    def tightenVarLb(self, Variable var, lb: Union[float, None], SCIP_Bool force=False):
         """
         Tighten the lower bound in preprocessing or current node, if the bound is tighter.
 
@@ -3202,7 +3202,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPtightenVarLb(self._scip, var.scip_var, lb, force, &infeasible, &tightened))
         return infeasible, tightened
 
-    def tightenVarUb(self, Variable var, ub: Union[SCIP_Real, None], SCIP_Bool force=False):
+    def tightenVarUb(self, Variable var, ub: Union[float, None], SCIP_Bool force=False):
         """
         Tighten the upper bound in preprocessing or current node, if the bound is tighter.
 
@@ -3228,7 +3228,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPtightenVarUb(self._scip, var.scip_var, ub, force, &infeasible, &tightened))
         return infeasible, tightened
 
-    def tightenVarUbGlobal(self, Variable var, ub: Union[SCIP_Real, None], SCIP_Bool force=False):
+    def tightenVarUbGlobal(self, Variable var, ub: Union[float, None], SCIP_Bool force=False):
         """
         Tighten the global upper bound, if the bound is tighter.
 
@@ -3254,7 +3254,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPtightenVarUbGlobal(self._scip, var.scip_var, ub, force, &infeasible, &tightened))
         return infeasible, tightened
 
-    def tightenVarLbGlobal(self, Variable var, lb: Union[SCIP_Real, None], SCIP_Bool force=False):
+    def tightenVarLbGlobal(self, Variable var, lb: Union[float, None], SCIP_Bool force=False):
         """Tighten the global lower bound, if the bound is tighter.
 
         Parameters
@@ -3279,7 +3279,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPtightenVarLbGlobal(self._scip, var.scip_var, lb, force, &infeasible, &tightened))
         return infeasible, tightened
 
-    def chgVarLb(self, Variable var, lb: Union[SCIP_Real, None]):
+    def chgVarLb(self, Variable var, lb: Union[float, None]):
         """
         Changes the lower bound of the specified variable.
 
@@ -3295,7 +3295,7 @@ cdef class Model:
            lb = -SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarLb(self._scip, var.scip_var, lb))
 
-    def chgVarUb(self, Variable var, ub: Union[SCIP_Real, None]):
+    def chgVarUb(self, Variable var, ub: Union[float, None]):
         """Changes the upper bound of the specified variable.
 
         Parameters
@@ -3310,7 +3310,7 @@ cdef class Model:
            ub = SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarUb(self._scip, var.scip_var, ub))
 
-    def chgVarLbGlobal(self, Variable var, lb: Union[SCIP_Real, None]):
+    def chgVarLbGlobal(self, Variable var, lb: Union[float, None]):
         """Changes the global lower bound of the specified variable.
 
         Parameters
@@ -3325,7 +3325,7 @@ cdef class Model:
            lb = -SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarLbGlobal(self._scip, var.scip_var, lb))
 
-    def chgVarUbGlobal(self, Variable var, ub: Union[SCIP_Real, None]):
+    def chgVarUbGlobal(self, Variable var, ub: Union[float, None]):
         """Changes the global upper bound of the specified variable.
 
         Parameters
@@ -3340,7 +3340,7 @@ cdef class Model:
            ub = SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarUbGlobal(self._scip, var.scip_var, ub))
 
-    def chgVarLbNode(self, Node node, Variable var, lb: Union[SCIP_Real, None]):
+    def chgVarLbNode(self, Node node, Variable var, lb: Union[float, None]):
         """Changes the lower bound of the specified variable at the given node.
 
         Parameters
@@ -3358,7 +3358,7 @@ cdef class Model:
            lb = -SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarLbNode(self._scip, node.scip_node, var.scip_var, lb))
 
-    def chgVarUbNode(self, Node node, Variable var, ub: Union[SCIP_Real, None]):
+    def chgVarUbNode(self, Node node, Variable var, ub: Union[float, None]):
         """Changes the upper bound of the specified variable at the given node.
 
         Parameters
@@ -3527,7 +3527,7 @@ cdef class Model:
             var_dict[var.name] = self.getVal(var)
         return var_dict
 
-    def updateNodeLowerbound(self, Node node, lb: Union[SCIP_Real, None]):
+    def updateNodeLowerbound(self, Node node, lb: Union[float, None]):
         """
         If given value is larger than the node's lower bound (in transformed problem),
         sets the node's lower bound to the new value.
@@ -3866,7 +3866,7 @@ cdef class Model:
 
     #TODO: documentation!!
     # LP Row Methods
-    def createEmptyRowSepa(self, Sepa sepa, str name="row", lhs: Union[SCIP_Real, None] = 0.0, rhs: Union[SCIP_Real, None] = None, SCIP_Bool local = True, SCIP_Bool modifiable = False, SCIP_Bool removable = True):
+    def createEmptyRowSepa(self, Sepa sepa, str name="row", lhs: Union[float, None] = 0.0, rhs: Union[float, None] = None, SCIP_Bool local = True, SCIP_Bool modifiable = False, SCIP_Bool removable = True):
         """
         Creates and captures an LP row without any coefficients from a separator.
 
@@ -3900,7 +3900,7 @@ cdef class Model:
         PyRow = Row.create(row)
         return PyRow
 
-    def createEmptyRowUnspec(self, str name="row", lhs: Union[SCIP_Real, None] = 0.0, rhs: Union[SCIP_Real, None] = None, SCIP_Bool local = True, SCIP_Bool modifiable = False, SCIP_Bool removable = True):
+    def createEmptyRowUnspec(self, str name="row", lhs: Union[float, None] = 0.0, rhs: Union[float, None] = None, SCIP_Bool local = True, SCIP_Bool modifiable = False, SCIP_Bool removable = True):
         """
         Creates and captures an LP row without any coefficients from an unspecified source.
 
@@ -4001,7 +4001,7 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPflushRowExtensions(self._scip, row.scip_row))
 
-    def addVarToRow(self, Row row not None, Variable var not None, SCIP_Real value):
+    def addVarToRow(self, Row row not None, Variable var not None, float value):
         """
         Resolves variable to columns and adds them with the coefficient to the row.
 
@@ -4686,10 +4686,10 @@ cdef class Model:
 
         return pycons
 
-    def addConss(self, conss: list[Union[Constraint, ExprCons]], name: Union[list[str],str] = '', initial: Union[list[SCIP_Bool], SCIP_Bool] = True, separate: Union[list[SCIP_Bool], SCIP_Bool] = True,
-                enforce: Union[list[SCIP_Bool], SCIP_Bool] = True, check: Union[list[SCIP_Bool], SCIP_Bool] = True, propagate: Union[list[SCIP_Bool], SCIP_Bool] = True, local: Union[list[SCIP_Bool], SCIP_Bool] = False,
-                modifiable: Union[list[SCIP_Bool], SCIP_Bool] = False, dynamic: Union[list[SCIP_Bool], SCIP_Bool] = False, removable: Union[list[SCIP_Bool], SCIP_Bool] = False,
-                stickingatnode: Union[list[SCIP_Bool], SCIP_Bool] = False):
+    def addConss(self, conss: list[Union[Constraint, ExprCons]], name: Union[list[str],str] = '', initial: Union[list[bool], bool] = True, separate: Union[list[bool], bool] = True,
+                enforce: Union[list[bool], bool] = True, check: Union[list[bool], bool] = True, propagate: Union[list[bool], bool] = True, local: Union[list[bool], bool] = False,
+                modifiable: Union[list[bool], bool] = False, dynamic: Union[list[bool], bool] = False, removable: Union[list[bool], bool] = False,
+                stickingatnode: Union[list[bool], bool] = False):
         """Adds multiple linear or quadratic constraints.
 
         Each of the constraints is added to the model using Model.addCons().
@@ -4942,7 +4942,7 @@ cdef class Model:
         """
         return PY_SCIP_CALL(SCIPprintCons(self._scip, constraint.scip_cons, NULL))
 
-    def addExprNonlinear(self, Constraint cons, expr: Union[Expr, GenExpr], SCIP_Real coef):
+    def addExprNonlinear(self, Constraint cons, expr: Union[Expr, GenExpr], float coef):
         """
         Add coef*expr to nonlinear constraint.
 
@@ -4965,7 +4965,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddExprNonlinear(self._scip, cons.scip_cons, scip_expr, coef))
         self.delCons(temp_cons)
 
-    def addConsCoeff(self, Constraint cons, Variable var, SCIP_Real coeff):
+    def addConsCoeff(self, Constraint cons, Variable var, float coeff):
         """
         Add coefficient to the linear constraint (if non-zero).
 
@@ -5019,7 +5019,7 @@ cdef class Model:
             PY_SCIP_CALL(SCIPaddConsLocal(self._scip, cons.scip_cons, NULL))
         Py_INCREF(cons)
 
-    def addConsSOS1(self, list[Variable] vars, list[SCIP_Real] weights=None, str name="SOS1cons",
+    def addConsSOS1(self, list[Variable] vars, list[float] weights=None, str name="SOS1cons",
                 SCIP_Bool initial=True, SCIP_Bool separate=True, SCIP_Bool enforce=True, SCIP_Bool check=True,
                 SCIP_Bool propagate=True, SCIP_Bool local=False, SCIP_Bool dynamic=False,
                 SCIP_Bool removable=False, SCIP_Bool stickingatnode=False):
@@ -5095,7 +5095,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         return Constraint.create(scip_cons)
 
-    def addConsSOS2(self, list[Variable] vars, list[SCIP_Real] weights=None, str name="SOS2cons",
+    def addConsSOS2(self, list[Variable] vars, list[float] weights=None, str name="SOS2cons",
                 SCIP_Bool initial=True, SCIP_Bool separate=True, SCIP_Bool enforce=True, SCIP_Bool check=True,
                 SCIP_Bool propagate=True, SCIP_Bool local=False, SCIP_Bool dynamic=False,
                 SCIP_Bool removable=False, SCIP_Bool stickingatnode=False):
@@ -5346,7 +5346,7 @@ cdef class Model:
 
         return pyCons
 
-    def addConsCardinality(self, list[Variable] consvars, int cardval, list[Varible] indvars=None, list[SCIP_Real] weights=None, str name="CardinalityCons",
+    def addConsCardinality(self, list[Variable] consvars, int cardval, list[Varible] indvars=None, list[float] weights=None, str name="CardinalityCons",
                 SCIP_Bool initial=True, SCIP_Bool separate=True, SCIP_Bool enforce=True, SCIP_Bool check=True,
                 SCIP_Bool propagate=True, SCIP_Bool local=False, SCIP_Bool dynamic=False,
                 SCIP_Bool removable=False, SCIP_Bool stickingatnode=False):
@@ -5545,7 +5545,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, cons.scip_cons))
         Py_INCREF(cons)
 
-    def addVarSOS1(self, Constraint cons, Variable var, SCIP_Real weight):
+    def addVarSOS1(self, Constraint cons, Variable var, float weight):
         """
         Add variable to SOS1 constraint.
 
@@ -5575,7 +5575,7 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPappendVarSOS1(self._scip, cons.scip_cons, var.scip_var))
 
-    def addVarSOS2(self, Constraint cons, Variable var, SCIP_Real weight):
+    def addVarSOS2(self, Constraint cons, Variable var, float weight):
         """
         Add variable to SOS2 constraint.
 
@@ -5653,7 +5653,7 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPsetConsChecked(self._scip, cons.scip_cons, newCheck))
 
-    def chgRhs(self, Constraint cons, rhs: Union[SCIP_Real, None]):
+    def chgRhs(self, Constraint cons, rhs: Union[float, None]):
         """
         Change right-hand side value of a constraint.
 
@@ -5677,7 +5677,7 @@ cdef class Model:
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
-    def chgLhs(self, Constraint cons, lhs: Union[SCIP_Real, None]):
+    def chgLhs(self, Constraint cons, lhs: Union[float, None]):
         """
         Change left-hand side value of a constraint.
 
@@ -5745,7 +5745,7 @@ cdef class Model:
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
-    def chgCoefLinear(self, Constraint cons, Variable var, SCIP_Real value):
+    def chgCoefLinear(self, Constraint cons, Variable var, float value):
         """
         Changes coefficient of variable in linear constraint;
         deletes the variable if coefficient is zero; adds variable if not yet contained in the constraint
@@ -5781,7 +5781,7 @@ cdef class Model:
 
         PY_SCIP_CALL( SCIPdelCoefLinear(self._scip, cons.scip_cons, var.scip_var) )
 
-    def addCoefLinear(self, Constraint cons, Variable var, SCIP_Real value):
+    def addCoefLinear(self, Constraint cons, Variable var, float value):
         """
         Adds coefficient to linear constraint (if it is not zero)
 
@@ -6102,7 +6102,7 @@ cdef class Model:
 
         return (bilinterms, quadterms, linterms)
 
-    def setRelaxSolVal(self, Variable var, SCIP_Real val):
+    def setRelaxSolVal(self, Variable var, float val):
         """
         Sets the value of the given variable in the global relaxation solution.
 
@@ -6888,7 +6888,7 @@ cdef class Model:
         conshdlr.name = name
         Py_INCREF(conshdlr)
         
-    def copyLargeNeighborhoodSearch(self, list[Variable] to_fix, list[SCIP_Real] fix_vals) -> Model:
+    def copyLargeNeighborhoodSearch(self, list[Variable] to_fix, list[float] fix_vals) -> Model:
         """
         Creates a configured copy of the transformed problem and applies provided fixings intended for LNS heuristics.
         
@@ -7040,7 +7040,7 @@ cdef class Model:
         presol.model = <Model>weakref.proxy(self)
         Py_INCREF(presol)
 
-    def includeSepa(self, Sepa sepa, str name, str desc, int priority=0, int freq=10, SCIP_Real maxbounddist=1.0, SCIP_Bool usessubscip=False, SCIP_Bool delay=False):
+    def includeSepa(self, Sepa sepa, str name, str desc, int priority=0, int freq=10, float maxbounddist=1.0, SCIP_Bool usessubscip=False, SCIP_Bool delay=False):
         """
         Include a separator
 
@@ -7246,7 +7246,7 @@ cdef class Model:
         cutsel.model = <Model>weakref.proxy(self)
         Py_INCREF(cutsel)
 
-    def includeBranchrule(self, Branchrule branchrule, str name, str desc, int priority, int maxdepth, SCIP_Real maxbounddist):
+    def includeBranchrule(self, Branchrule branchrule, str name, str desc, int priority, int maxdepth, float maxbounddist):
         """
         Include a branching rule.
 
@@ -7481,7 +7481,7 @@ cdef class Model:
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
 
 
-    def branchVarVal(self, Variable variable, SCIP_Real value):
+    def branchVarVal(self, Variable variable, float value):
         """
         Branches on variable using a value which separates the domain of the variable.
 
@@ -7510,7 +7510,7 @@ cdef class Model:
 
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
 
-    def calcNodeselPriority(self, Variable variable, SCIP_BRANCHDIR branchdir, SCIP_Real targetvalue):
+    def calcNodeselPriority(self, Variable variable, SCIP_BRANCHDIR branchdir, float targetvalue):
         """
         calculates the node selection priority for moving the given variable's LP value
         to the given target value;
@@ -7533,7 +7533,7 @@ cdef class Model:
         """
         return SCIPcalcNodeselPriority(self._scip, variable.scip_var, branchdir, targetvalue)
 
-    def calcChildEstimate(self, Variable variable, SCIP_Real targetvalue):
+    def calcChildEstimate(self, Variable variable, float targetvalue):
         """
         Calculates an estimate for the objective of the best feasible solution
         contained in the subtree after applying the given branching;
@@ -7554,7 +7554,7 @@ cdef class Model:
         """
         return SCIPcalcChildEstimate(self._scip, variable.scip_var, targetvalue)
 
-    def createChild(self, SCIP_Real nodeselprio, SCIP_Real estimate):
+    def createChild(self, float nodeselprio, float estimate):
         """
         Create a child node of the focus node.
 
@@ -7587,7 +7587,7 @@ cdef class Model:
         """Quits probing and resets bounds and constraints to the focus node's environment."""
         PY_SCIP_CALL(SCIPendDive(self._scip))
 
-    def chgVarObjDive(self, Variable var, SCIP_Real newobj):
+    def chgVarObjDive(self, Variable var, float newobj):
         """
         Changes (column) variable's objective value in current dive.
 
@@ -7599,7 +7599,7 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPchgVarObjDive(self._scip, var.scip_var, newobj))
 
-    def chgVarLbDive(self, Variable var, SCIP_Real newbound):
+    def chgVarLbDive(self, Variable var, float newbound):
         """
         Changes variable's current lb in current dive.
 
@@ -7611,7 +7611,7 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPchgVarLbDive(self._scip, var.scip_var, newbound))
 
-    def chgVarUbDive(self, Variable var, SCIP_Real newbound):
+    def chgVarUbDive(self, Variable var, float newbound):
         """
         Changes variable's current ub in current dive.
 
@@ -7653,7 +7653,7 @@ cdef class Model:
         """
         return SCIPgetVarUbDive(self._scip, var.scip_var)
 
-    def chgRowLhsDive(self, Row row, SCIP_Real newlhs):
+    def chgRowLhsDive(self, Row row, float newlhs):
         """
         Changes row lhs in current dive, change will be undone after diving
         ends, for permanent changes use SCIPchgRowLhs().
@@ -7666,7 +7666,7 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPchgRowLhsDive(self._scip, row.scip_row, newlhs))
 
-    def chgRowRhsDive(self, Row row, SCIP_Real newrhs):
+    def chgRowRhsDive(self, Row row, float newrhs):
         """
         Changes row rhs in current dive, change will be undone after diving
         ends. For permanent changes use SCIPchgRowRhs().
@@ -7757,7 +7757,7 @@ cdef class Model:
         """Returns the current probing depth."""
         return SCIPgetProbingDepth(self._scip)
 
-    def chgVarObjProbing(self, Variable var, SCIP_Real newobj):
+    def chgVarObjProbing(self, Variable var, float newobj):
         """Changes (column) variable's objective value during probing mode."""
         PY_SCIP_CALL( SCIPchgVarObjProbing(self._scip, var.scip_var, newobj) )
 
@@ -7777,7 +7777,7 @@ cdef class Model:
            lb = -SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarLbProbing(self._scip, var.scip_var, lb))
 
-    def chgVarUbProbing(self, Variable var, SCIP_Real ub):
+    def chgVarUbProbing(self, Variable var, float ub):
         """
         Changes the variable upper bound during probing mode.
 
@@ -7793,7 +7793,7 @@ cdef class Model:
            ub = SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarUbProbing(self._scip, var.scip_var, ub))
 
-    def fixVarProbing(self, Variable var, SCIP_Real fixedval):
+    def fixVarProbing(self, Variable var, float fixedval):
         """
         Fixes a variable at the current probing node.
 
@@ -8201,7 +8201,7 @@ cdef class Model:
 
         return solution
 
-    def setSolVal(self, Solution solution, Variable var, SCIP_Real val):
+    def setSolVal(self, Solution solution, Variable var, float val):
         """
         Set a variable in a solution.
 
@@ -8972,7 +8972,7 @@ cdef class Model:
         n = str_conversion(name)
         PY_SCIP_CALL(SCIPsetLongintParam(self._scip, n, value))
 
-    def setRealParam(self, str name, SCIP_Real value):
+    def setRealParam(self, str name, float value):
         """
         Set a real-valued parameter.
 
@@ -9477,7 +9477,7 @@ cdef class Model:
 
         return down, up, downvalid, upvalid, downinf, upinf, downconflict, upconflict, lperror
 
-    def updateVarPseudocost(self, Variable var, SCIP_Real valdelta, SCIP_Real objdelta, SCIP_Real weight):
+    def updateVarPseudocost(self, Variable var, float valdelta, float objdelta, float weight):
         """
         Updates the pseudo costs of the given variable and the global pseudo costs after a change of valdelta
         in the variable's solution value and resulting change of objdelta in the LP's objective value.
@@ -9499,7 +9499,7 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPupdateVarPseudocost(self._scip, var.scip_var, valdelta, objdelta, weight))
 
-    def getBranchScoreMultiple(self, Variable var, list[SCIP_Real] gains):
+    def getBranchScoreMultiple(self, Variable var, list[float] gains):
         """
         Calculates the branching score out of the gain predictions for a branching with
         arbitrarily many children.

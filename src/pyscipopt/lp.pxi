@@ -46,7 +46,7 @@ cdef class LP:
         """
         return SCIPlpiInfinity(self.lpi)
 
-    def isInfinity(self, SCIP_Real val):
+    def isInfinity(self, float val):
         """Checks if a given value is equal to the infinity value of the LP.
 
         Keyword arguments:
@@ -54,7 +54,7 @@ cdef class LP:
         """
         return SCIPlpiIsInfinity(self.lpi, val)
 
-    def addCol(self, entries, SCIP_Real obj = 0.0, lb: Union[SCIP_Real, None] = 0.0, ub: Union[SCIP_Real, None] = None):
+    def addCol(self, entries, float obj = 0.0, lb: Union[float, None] = 0.0, ub: Union[float, None] = None):
         """Adds a single column to the LP.
 
         Keyword arguments:
