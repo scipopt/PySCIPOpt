@@ -100,4 +100,3 @@ def test_event_handler_callback():
     m.optimize()
     
     assert number_of_calls == 2
-test_event_handler_callback()
