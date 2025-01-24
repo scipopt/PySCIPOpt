@@ -82,8 +82,7 @@ def test_event():
             s.addCons(quicksum(x[i] for i in range(100) if i%j==0) >= random.randint(10,100))
 
         s.optimize()
-        
-        
+    
 
 def test_event_handler_callback(): 
     m = Model()
@@ -101,3 +100,4 @@ def test_event_handler_callback():
     m.optimize()
     
     assert number_of_calls == 2
+test_event_handler_callback()
