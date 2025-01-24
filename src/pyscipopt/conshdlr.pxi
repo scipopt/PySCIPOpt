@@ -169,6 +169,7 @@ cdef SCIP_RETCODE PyConsFree (SCIP* scip, SCIP_CONSHDLR* conshdlr) noexcept with
 
 cdef SCIP_RETCODE PyConsInit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
+    cdef int i
     cdef constraints = []
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
@@ -178,6 +179,7 @@ cdef SCIP_RETCODE PyConsInit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** c
 cdef SCIP_RETCODE PyConsExit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     PyConshdlr.consexit(constraints)
@@ -186,6 +188,7 @@ cdef SCIP_RETCODE PyConsExit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** c
 cdef SCIP_RETCODE PyConsInitpre (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     PyConshdlr.consinitpre(constraints)
@@ -194,6 +197,7 @@ cdef SCIP_RETCODE PyConsInitpre (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS*
 cdef SCIP_RETCODE PyConsExitpre (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     PyConshdlr.consexitpre(constraints)
@@ -202,6 +206,7 @@ cdef SCIP_RETCODE PyConsExitpre (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS*
 cdef SCIP_RETCODE PyConsInitsol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     PyConshdlr.consinitsol(constraints)
@@ -210,6 +215,7 @@ cdef SCIP_RETCODE PyConsInitsol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS*
 cdef SCIP_RETCODE PyConsExitsol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, SCIP_Bool restart) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     PyConshdlr.consexitsol(constraints, restart)
@@ -246,6 +252,7 @@ cdef SCIP_RETCODE PyConsTrans (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* s
 cdef SCIP_RETCODE PyConsInitlp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, SCIP_Bool* infeasible) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     result_dict = PyConshdlr.consinitlp(constraints)
@@ -255,6 +262,7 @@ cdef SCIP_RETCODE PyConsInitlp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS**
 cdef SCIP_RETCODE PyConsSepalp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, SCIP_RESULT* result) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     result_dict = PyConshdlr.conssepalp(constraints, nusefulconss)
@@ -265,6 +273,7 @@ cdef SCIP_RETCODE PyConsSepasol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS*
                                  SCIP_SOL* sol, SCIP_RESULT* result) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     solution = Solution.create(scip, sol)
@@ -276,6 +285,7 @@ cdef SCIP_RETCODE PyConsEnfolp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS**
                                 SCIP_Bool solinfeasible, SCIP_RESULT* result) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     result_dict = PyConshdlr.consenfolp(constraints, nusefulconss, solinfeasible)
@@ -285,6 +295,7 @@ cdef SCIP_RETCODE PyConsEnfolp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS**
 cdef SCIP_RETCODE PyConsEnforelax (SCIP* scip, SCIP_SOL* sol, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss, int nusefulconss, SCIP_Bool solinfeasible, SCIP_RESULT* result) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     solution = Solution.create(scip, sol)
@@ -296,6 +307,7 @@ cdef SCIP_RETCODE PyConsEnfops (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS**
                                 SCIP_Bool solinfeasible, SCIP_Bool objinfeasible, SCIP_RESULT* result) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     result_dict = PyConshdlr.consenfops(constraints, nusefulconss, solinfeasible, objinfeasible)
@@ -306,6 +318,7 @@ cdef SCIP_RETCODE PyConsCheck (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** 
                                SCIP_Bool checklprows, SCIP_Bool printreason, SCIP_Bool completely, SCIP_RESULT* result) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     solution = Solution.create(scip, sol)
@@ -317,6 +330,7 @@ cdef SCIP_RETCODE PyConsProp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** c
                               SCIP_PROPTIMING proptiming, SCIP_RESULT* result) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     result_dict = PyConshdlr.consprop(constraints, nusefulconss, nmarkedconss, proptiming)
@@ -330,6 +344,7 @@ cdef SCIP_RETCODE PyConsPresol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS**
                                 int* ndelconss, int* naddconss, int* nupgdconss, int* nchgcoefs, int* nchgsides, SCIP_RESULT* result) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     # dictionary for input/output parameters
@@ -403,6 +418,7 @@ cdef SCIP_RETCODE PyConsDisable (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS*
 cdef SCIP_RETCODE PyConsDelvars (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     cdef constraints = []
+    cdef int i
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
     PyConshdlr.consdelvars(constraints)

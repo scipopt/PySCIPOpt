@@ -63,6 +63,7 @@ cdef class LP:
         lb      -- lower bound (default 0.0)
         ub      -- upper bound (default infinity)
         """
+        cdef int i
         nnonz = len(entries)
 
         cdef SCIP_Real* c_coefs  = <SCIP_Real*> malloc(nnonz * sizeof(SCIP_Real))
@@ -95,7 +96,8 @@ cdef class LP:
         lbs   -- lower bounds (default 0.0)
         ubs   -- upper bounds (default infinity)
         """
-
+        cdef int i 
+        
         ncols = len(entrieslist)
         nnonz = sum(len(entries) for entries in entrieslist)
 
@@ -158,6 +160,8 @@ cdef class LP:
         lhs     -- left-hand side of the row (default 0.0)
         rhs     -- right-hand side of the row (default infinity)
         """
+        cdef int i 
+
         beg = 0
         nnonz = len(entries)
 
@@ -188,6 +192,8 @@ cdef class LP:
         lhss        -- left-hand side of the row (default 0.0)
         rhss        -- right-hand side of the row (default infinity)
         """
+        cdef int i 
+
         nrows = len(entrieslist)
         nnonz = sum(len(entries) for entries in entrieslist)
 
@@ -232,6 +238,8 @@ cdef class LP:
         firstcol -- first column (default 0)
         lastcol  -- last column (default ncols - 1)
         """
+        cdef int i 
+
         lastcol = lastcol if lastcol != None else self.ncols() - 1
 
         if firstcol > lastcol:
@@ -261,6 +269,8 @@ cdef class LP:
         firstrow -- first row (default 0)
         lastrow  -- last row (default nrows - 1)
         """
+        cdef int i 
+
         lastrow = lastrow if lastrow != None else self.nrows() - 1
 
         if firstrow > lastrow:
@@ -363,6 +373,8 @@ cdef class LP:
 
     def getPrimal(self):
         """Returns the primal solution of the last LP solve."""
+        cdef int i 
+        
         ncols = self.ncols()
         cdef SCIP_Real* c_primalsol = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
         PY_SCIP_CALL(SCIPlpiGetSol(self.lpi, NULL, c_primalsol, NULL, NULL, NULL))
@@ -379,6 +391,8 @@ cdef class LP:
 
     def getDual(self):
         """Returns the dual solution of the last LP solve."""
+        cdef int i 
+        
         nrows = self.nrows()
         cdef SCIP_Real* c_dualsol = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
         PY_SCIP_CALL(SCIPlpiGetSol(self.lpi, NULL, NULL, c_dualsol, NULL, NULL))
@@ -395,6 +409,8 @@ cdef class LP:
 
     def getPrimalRay(self):
         """Returns a primal ray if possible, None otherwise."""
+        cdef int i 
+        
         if not SCIPlpiHasPrimalRay(self.lpi):
             return None
         ncols = self.ncols()
@@ -409,6 +425,8 @@ cdef class LP:
 
     def getDualRay(self):
         """Returns a dual ray if possible, None otherwise."""
+        cdef int i 
+        
         if not SCIPlpiHasDualRay(self.lpi):
             return None
         nrows = self.nrows()
@@ -429,6 +447,8 @@ cdef class LP:
 
     def getRedcost(self):
         """Returns the reduced cost vector of the last LP solve."""
+        cdef int i 
+        
         ncols = self.ncols()
 
         cdef SCIP_Real* c_redcost = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
@@ -443,6 +463,8 @@ cdef class LP:
 
     def getBasisInds(self):
         """Returns the indices of the basic columns and rows; index i >= 0 corresponds to column i, index i < 0 to row -i-1"""
+        cdef int i 
+        
         nrows = self.nrows()
         cdef int* c_binds  = <int*> malloc(nrows * sizeof(int))
 
