@@ -4342,7 +4342,11 @@ cdef class Model:
         cdef SCIP_EXPR** monomials
         cdef int* idxs
         cdef SCIP_CONS* scip_cons
-
+        cdef int i 
+        cdef int idx
+        cdef int j
+        cdef SCIP_Real coef 
+        
         terms = cons.expr.terms
 
         # collect variables
