@@ -4365,8 +4365,7 @@ cdef class Model:
         cdef int i 
         cdef int idx
         cdef int j
-        cdef SCIP_Real coef 
-        
+
         terms = cons.expr.terms
 
         # collect variables
