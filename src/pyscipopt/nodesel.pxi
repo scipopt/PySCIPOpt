@@ -28,7 +28,7 @@ cdef class Nodesel:
     # this method needs to be implemented by the user
     return {}
 
-  def nodecomp(self, node1, node2):
+  def nodecomp(self, Node node1, Node node2):
     '''
     compare two leaves of the current branching tree
 

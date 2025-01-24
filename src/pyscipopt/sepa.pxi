@@ -28,7 +28,7 @@ cdef class Sepa:
         '''calls LP separation method of separator'''
         return {}
 
-    def sepaexecsol(self, solution):
+    def sepaexecsol(self, Solution solution):
         '''calls primal solution separation method of separator'''
         return {}
 
