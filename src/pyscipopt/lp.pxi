@@ -63,8 +63,7 @@ cdef class LP:
         lb      -- lower bound (default 0.0)
         ub      -- upper bound (default infinity)
         """
-        cdef int i
-        nnonz = len(entries)
+        cdef int nnonz = len(entries)
 
         cdef SCIP_Real* c_coefs  = <SCIP_Real*> malloc(nnonz * sizeof(SCIP_Real))
         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
@@ -72,6 +71,7 @@ cdef class LP:
         cdef SCIP_Real c_lb
         cdef SCIP_Real c_ub
         cdef int c_beg
+        cdef int i
 
         c_obj = obj
         c_lb = lb
@@ -96,10 +96,10 @@ cdef class LP:
         lbs   -- lower bounds (default 0.0)
         ubs   -- upper bounds (default infinity)
         """
-        cdef int i 
         
-        ncols = len(entrieslist)
-        nnonz = sum(len(entries) for entries in entrieslist)
+        cdef ncols = len(entrieslist)
+        cdef nnonz = sum(len(entries) for entries in entrieslist)
+        cdef int i 
 
         cdef SCIP_Real* c_objs   = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
         cdef SCIP_Real* c_lbs    = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
@@ -160,8 +160,6 @@ cdef class LP:
         lhs     -- left-hand side of the row (default 0.0)
         rhs     -- right-hand side of the row (default infinity)
         """
-        cdef int i 
-
         beg = 0
         nnonz = len(entries)
 
@@ -170,6 +168,7 @@ cdef class LP:
         cdef SCIP_Real c_lhs
         cdef SCIP_Real c_rhs
         cdef int c_beg
+        cdef int i 
 
         c_lhs = lhs
         c_rhs = rhs if rhs != None else self.infinity()
@@ -192,8 +191,6 @@ cdef class LP:
         lhss        -- left-hand side of the row (default 0.0)
         rhss        -- right-hand side of the row (default infinity)
         """
-        cdef int i 
-
         nrows = len(entrieslist)
         nnonz = sum(len(entries) for entries in entrieslist)
 
@@ -202,6 +199,7 @@ cdef class LP:
         cdef SCIP_Real* c_coefs = <SCIP_Real*> malloc(nnonz * sizeof(SCIP_Real))
         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
         cdef int* c_beg  = <int*>malloc(nrows * sizeof(int))
+        cdef int i 
 
         tmp = 0
         for i,entries in enumerate(entrieslist):
@@ -302,6 +300,7 @@ cdef class LP:
         """
         cdef int c_col = col
         cdef SCIP_Real c_obj = obj
+
         PY_SCIP_CALL(SCIPlpiChgObj(self.lpi, 1, &c_col, &c_obj))
 
     def chgCoef(self, row, col, newval):
@@ -325,6 +324,7 @@ cdef class LP:
         cdef int c_col = col
         cdef SCIP_Real c_lb = lb
         cdef SCIP_Real c_ub = ub
+
         PY_SCIP_CALL(SCIPlpiChgBounds(self.lpi, 1, &c_col, &c_lb, &c_ub))
 
     def chgSide(self, row, lhs, rhs):
@@ -338,6 +338,7 @@ cdef class LP:
         cdef int c_row = row
         cdef SCIP_Real c_lhs = lhs
         cdef SCIP_Real c_rhs = rhs
+
         PY_SCIP_CALL(SCIPlpiChgSides(self.lpi, 1, &c_row, &c_lhs, &c_rhs))
 
     def clear(self):
@@ -347,12 +348,14 @@ cdef class LP:
     def nrows(self):
         """Returns the number of rows."""
         cdef int nrows
+
         PY_SCIP_CALL(SCIPlpiGetNRows(self.lpi, &nrows))
         return nrows
 
     def ncols(self):
         """Returns the number of columns."""
         cdef int ncols
+
         PY_SCIP_CALL(SCIPlpiGetNCols(self.lpi, &ncols))
         return ncols
 
@@ -442,6 +445,7 @@ cdef class LP:
     def getNIterations(self):
         """Returns the number of LP iterations of the last LP solve."""
         cdef int niters
+
         PY_SCIP_CALL(SCIPlpiGetIterations(self.lpi, &niters))
         return niters
 
@@ -463,10 +467,9 @@ cdef class LP:
 
     def getBasisInds(self):
         """Returns the indices of the basic columns and rows; index i >= 0 corresponds to column i, index i < 0 to row -i-1"""
-        cdef int i 
-        
         nrows = self.nrows()
         cdef int* c_binds  = <int*> malloc(nrows * sizeof(int))
+        cdef int i 
 
         PY_SCIP_CALL(SCIPlpiGetBasisInd(self.lpi, c_binds))
 
