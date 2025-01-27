@@ -1184,9 +1184,9 @@ cdef class DomainChanges:
         list of BoundChange
 
         """
+        cdef nboundchgs = SCIPdomchgGetNBoundchgs(self.scip_domchg)
         cdef int i
 
-        nboundchgs = SCIPdomchgGetNBoundchgs(self.scip_domchg)
         return [BoundChange.create(SCIPdomchgGetBoundchg(self.scip_domchg, i))
                 for i in range(nboundchgs)]
 
@@ -1291,13 +1291,13 @@ cdef class Node:
 
         """
         cdef int addedconsssize = SCIPnodeGetNAddedConss(self.scip_node)
-        cdef int i
 
         if addedconsssize == 0:
             return []
 
         cdef SCIP_CONS** addedconss = <SCIP_CONS**> malloc(addedconsssize * sizeof(SCIP_CONS*))
         cdef int nconss
+        cdef int i
 
         SCIPnodeGetAddedConss(self.scip_node, addedconss, &nconss, addedconsssize)
         assert nconss == addedconsssize
@@ -1372,7 +1372,6 @@ cdef class Node:
 
         """
         cdef int nbranchvars = self.getNParentBranchings()
-        cdef int i
 
         if nbranchvars == 0:
             return None
@@ -1380,6 +1379,7 @@ cdef class Node:
         cdef SCIP_VAR** branchvars = <SCIP_VAR**> malloc(nbranchvars * sizeof(SCIP_VAR*))
         cdef SCIP_Real* branchbounds = <SCIP_Real*> malloc(nbranchvars * sizeof(SCIP_Real))
         cdef SCIP_BOUNDTYPE* boundtypes = <SCIP_BOUNDTYPE*> malloc(nbranchvars * sizeof(SCIP_BOUNDTYPE))
+        cdef int i
 
         SCIPnodeGetParentBranchings(self.scip_node, branchvars, branchbounds,
                                     boundtypes, &nbranchvars, nbranchvars)
@@ -2736,7 +2736,7 @@ cdef class Model:
         """
  
         cdef SCIP_VAR** _vars
-        cdef int _nvars
+        cdef int nvars
         cdef SCIP_Real coef
         cdef int i 
 
@@ -2752,8 +2752,8 @@ cdef class Model:
             # clear existing objective function
             self.addObjoffset(-self.getObjoffset())
             _vars = SCIPgetOrigVars(self._scip)
-            _nvars = SCIPgetNOrigVars(self._scip)
-            for i in range(_nvars):
+            nvars = SCIPgetNOrigVars(self._scip)
+            for i in range(nvars):
                 PY_SCIP_CALL(SCIPchgVarObj(self._scip, _vars[i], 0.0))
 
         if expr[CONST] != 0.0:
@@ -3429,18 +3429,18 @@ cdef class Model:
         """
         cdef SCIP_VAR** _vars
         cdef SCIP_VAR* _var
-        cdef int _nvars
+        cdef int nvars
         cdef int i
 
         vars = []
         if transformed:
             _vars = SCIPgetVars(self._scip)
-            _nvars = SCIPgetNVars(self._scip)
+            nvars = SCIPgetNVars(self._scip)
         else:
             _vars = SCIPgetOrigVars(self._scip)
-            _nvars = SCIPgetNOrigVars(self._scip)
+            nvars = SCIPgetNOrigVars(self._scip)
 
-        for i in range(_nvars):
+        for i in range(nvars):
             ptr = <size_t>(_vars[i])
 
             # check whether the corresponding variable exists already
@@ -4373,7 +4373,6 @@ cdef class Model:
         cdef SCIP_CONS* scip_cons
         cdef int* idxs
         cdef int i 
-        cdef int idx
         cdef int j
 
         terms = cons.expr.terms
@@ -4381,7 +4380,7 @@ cdef class Model:
         # collect variables
         variables = {var.ptr():var for term in terms for var in term}
         variables = list(variables.values())
-        varindex = {var.ptr():idx for (idx,var) in enumerate(variables)}
+        varindex = {var.ptr():i for (i,var) in enumerate(variables)}
 
         # create monomials for terms
         monomials = <SCIP_EXPR**> malloc(len(terms) * sizeof(SCIP_EXPR*))
@@ -4740,7 +4739,6 @@ cdef class Model:
             The created and added Constraint objects.
 
         """
-        cdef int idx 
         cdef int i 
 
         def ensure_iterable(elem, length):
@@ -4756,9 +4754,10 @@ cdef class Model:
 
         if isinstance(name, str):
             if name == "":
-                name = ["" for idx in range(n_conss)]
+                name = ["" for i in range(n_conss)]
             else:
-                name = ["%s_%s" % (name, idx) for idx in range(n_conss)]
+                name = ["%s_%s" % (name, i) for i in range(n_conss)]
+
         initial = ensure_iterable(initial, n_conss)
         separate = ensure_iterable(separate, n_conss)
         enforce = ensure_iterable(enforce, n_conss)
@@ -4919,16 +4918,16 @@ cdef class Model:
 
         """
         cdef SCIP_Bool success
-        cdef int _nvars
+        cdef int nvars
         cdef int i
 
-        SCIPgetConsNVars(self._scip, constraint.scip_cons, &_nvars, &success)
+        SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success)
 
-        cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(_nvars * sizeof(SCIP_VAR*))
-        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, _nvars*sizeof(SCIP_VAR*), &success)
+        cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, nvars*sizeof(SCIP_VAR*), &success)
 
         vars = []
-        for i in range(_nvars):
+        for i in range(nvars):
             ptr = <size_t>(_vars[i])
             # check whether the corresponding variable exists already
             if ptr in self._modelvars:
@@ -5085,7 +5084,6 @@ cdef class Model:
 
         """
         cdef SCIP_CONS* scip_cons
-        cdef int _nvars
         cdef int nvars
         cdef int i
 
@@ -5147,7 +5145,6 @@ cdef class Model:
 
         """
         cdef SCIP_CONS* scip_cons
-        cdef int _nvars
         cdef int nvars
         cdef int i
 
@@ -5210,11 +5207,11 @@ cdef class Model:
         """
         cdef SCIP_CONS* scip_cons
         cdef int nvars = len(vars)
-        cdef int idx
+        cdef int i
 
         _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
-        for idx, var in enumerate(vars):
-            _vars[idx] = (<Variable>var).scip_var
+        for i, var in enumerate(vars):
+            _vars[i] = (<Variable>var).scip_var
         _resVar = (<Variable>resvar).scip_var
 
         PY_SCIP_CALL(SCIPcreateConsAnd(self._scip, &scip_cons, str_conversion(name), _resVar, nvars, _vars,
@@ -5271,12 +5268,11 @@ cdef class Model:
         """
         cdef SCIP_CONS* scip_cons
         cdef int nvars = len(vars)
-        cdef int idx
-
+        cdef int i
 
         _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
-        for idx, var in enumerate(vars):
-            _vars[idx] = (<Variable>var).scip_var
+        for i, var in enumerate(vars):
+            _vars[i] = (<Variable>var).scip_var
         _resVar = (<Variable>resvar).scip_var
 
         PY_SCIP_CALL(SCIPcreateConsOr(self._scip, &scip_cons, str_conversion(name), _resVar, nvars, _vars,
@@ -8583,12 +8579,12 @@ cdef class Model:
 
         """
         assert SCIPhasPrimalRay(self._scip), "The problem does not have a primal ray."
-        cdef int _nvars = SCIPgetNVars(self._scip)
+        cdef int nvars = SCIPgetNVars(self._scip)
         cdef SCIP_VAR ** _vars = SCIPgetVars(self._scip)
         cdef int i
 
         ray = []
-        for i in range(_nvars):
+        for i in range(nvars):
             ray.append(float(SCIPgetPrimalRayVal(self._scip, _vars[i])))
 
         return ray
@@ -9325,13 +9321,13 @@ cdef class Model:
             raise ValueError("Constant offsets in objective are not supported!")
 
         cdef SCIP_VAR** _vars
-        cdef int _nvars
+        cdef int nvars
 
         _vars = SCIPgetOrigVars(self._scip)
-        _nvars = SCIPgetNOrigVars(self._scip)
-        _coeffs = <SCIP_Real*> malloc(_nvars * sizeof(SCIP_Real))
+        nvars = SCIPgetNOrigVars(self._scip)
+        _coeffs = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
 
-        for i in range(_nvars):
+        for i in range(nvars):
             _coeffs[i] = 0.0
 
         for term, coef in coeffs.terms.items():
@@ -9339,11 +9335,11 @@ cdef class Model:
             if term != CONST:
                 assert len(term) == 1
                 var = <Variable>term[0]
-                for i in range(_nvars):
+                for i in range(nvars):
                     if _vars[i] == var.scip_var:
                         _coeffs[i] = coef
 
-        PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, _vars, &_coeffs[0], _nvars))
+        PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, _vars, &_coeffs[0], nvars))
 
         free(_coeffs)
 
