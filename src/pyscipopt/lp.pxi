@@ -97,8 +97,8 @@ cdef class LP:
         ubs   -- upper bounds (default infinity)
         """
         
-        cdef ncols = len(entrieslist)
-        cdef nnonz = sum(len(entries) for entries in entrieslist)
+        cdef int ncols = len(entrieslist)
+        cdef int nnonz = sum(len(entries) for entries in entrieslist)
         cdef int i 
 
         cdef SCIP_Real* c_objs   = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
@@ -161,7 +161,7 @@ cdef class LP:
         rhs     -- right-hand side of the row (default infinity)
         """
         beg = 0
-        nnonz = len(entries)
+        cdef int nnonz = len(entries)
 
         cdef SCIP_Real* c_coefs  = <SCIP_Real*> malloc(nnonz * sizeof(SCIP_Real))
         cdef int* c_inds = <int*>malloc(nnonz * sizeof(int))
@@ -191,8 +191,8 @@ cdef class LP:
         lhss        -- left-hand side of the row (default 0.0)
         rhss        -- right-hand side of the row (default infinity)
         """
-        nrows = len(entrieslist)
-        nnonz = sum(len(entries) for entries in entrieslist)
+        cdef int nrows = len(entrieslist)
+        cdef int nnonz = sum(len(entries) for entries in entrieslist)
 
         cdef SCIP_Real* c_lhss  = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
         cdef SCIP_Real* c_rhss  = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))

@@ -4752,7 +4752,7 @@ cdef class Model:
         assert isinstance(conss, Iterable), "Given constraint list is not iterable."
 
         conss = list(conss)
-        n_conss = len(conss)
+        cdef int n_conss = len(conss)
 
         if isinstance(name, str):
             if name == "":
@@ -4825,7 +4825,7 @@ cdef class Model:
         assert isinstance(conss, Iterable), "Given constraint list is not iterable"
 
         conss = list(conss)
-        n_conss = len(conss)
+        cdef int n_conss = len(conss)
 
         cdef SCIP_CONS* disj_cons
 
@@ -5086,6 +5086,7 @@ cdef class Model:
         """
         cdef SCIP_CONS* scip_cons
         cdef int _nvars
+        cdef int nvars
         cdef int i
 
         PY_SCIP_CALL(SCIPcreateConsSOS1(self._scip, &scip_cons, str_conversion(name), 0, NULL, NULL,
@@ -5147,6 +5148,7 @@ cdef class Model:
         """
         cdef SCIP_CONS* scip_cons
         cdef int _nvars
+        cdef int nvars
         cdef int i
 
         PY_SCIP_CALL(SCIPcreateConsSOS2(self._scip, &scip_cons, str_conversion(name), 0, NULL, NULL,
@@ -5207,9 +5209,8 @@ cdef class Model:
 
         """
         cdef SCIP_CONS* scip_cons
+        cdef int nvars = len(vars)
         cdef int idx
-
-        nvars = len(vars)
 
         _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
         for idx, var in enumerate(vars):
@@ -5269,9 +5270,9 @@ cdef class Model:
 
         """
         cdef SCIP_CONS* scip_cons
+        cdef int nvars = len(vars)
         cdef int idx
 
-        nvars = len(vars)
 
         _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
         for idx, var in enumerate(vars):
@@ -5331,9 +5332,9 @@ cdef class Model:
 
         """
         cdef SCIP_CONS* scip_cons
+        cdef int nvars = len(vars)
         cdef int idx
 
-        nvars = len(vars)
 
         assert type(rhsvar) is type(bool()), "Provide BOOLEAN value as rhsvar, you gave %s." % type(rhsvar)
         _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
@@ -6399,6 +6400,7 @@ cdef class Model:
         """
         cdef SCIP** subprobs
         cdef SCIP_BENDERS* benders
+        cdef int nsubproblems
         cdef int idx
 
         # checking whether subproblems is a dictionary
@@ -9531,8 +9533,9 @@ cdef class Model:
 
         """
         cdef int i
+
         assert isinstance(gains, list)
-        nchildren = len(gains)
+        cdef int nchildren = len(gains)
 
         cdef int _nchildren = nchildren
         _gains = <SCIP_Real*> malloc(_nchildren * sizeof(SCIP_Real))
