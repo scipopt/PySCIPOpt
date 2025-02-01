@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added cdef type declaration of loop variables for slight speedup
 - Added wrappers for setting and getting heuristic timing
 - Added transformed option to getVarDict, updated test
 - Added categorical data example
