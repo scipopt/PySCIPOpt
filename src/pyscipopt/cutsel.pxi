@@ -72,11 +72,10 @@ cdef SCIP_RETCODE PyCutselExitsol (SCIP* scip, SCIP_CUTSEL* cutsel) noexcept wit
 cdef SCIP_RETCODE PyCutselSelect (SCIP* scip, SCIP_CUTSEL* cutsel, SCIP_ROW** cuts, int ncuts,
                                   SCIP_ROW** forcedcuts, int nforcedcuts, SCIP_Bool root, int maxnselectedcuts,
                                   int* nselectedcuts, SCIP_RESULT* result) noexcept with gil:
-  cdef SCIP_CUTSELDATA* cutseldata
+  cdef SCIP_CUTSELDATA* cutseldata = SCIPcutselGetData(cutsel)
   cdef SCIP_ROW* scip_row
   cdef int i
-  
-  cutseldata = SCIPcutselGetData(cutsel)
+
   PyCutsel = <Cutsel>cutseldata
 
   # translate cuts to python
