@@ -1175,7 +1175,7 @@ cdef class DomainChanges:
         list of BoundChange
 
         """
-        cdef nboundchgs = SCIPdomchgGetNBoundchgs(self.scip_domchg)
+        cdef int nboundchgs = SCIPdomchgGetNBoundchgs(self.scip_domchg)
         cdef int i
         return [BoundChange.create(SCIPdomchgGetBoundchg(self.scip_domchg, i))
                 for i in range(nboundchgs)]
@@ -2664,6 +2664,7 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPgetLPI(self._scip, &lpi))
         PY_SCIP_CALL(SCIPlpiGetIterations(lpi, &iters))
+
         return iters
 
     # Objective function
@@ -2714,11 +2715,10 @@ cdef class Model:
             set all other variables objective coefficient to zero (Default value = 'true')
 
         """
- 
-        cdef SCIP_VAR** _vars
+        cdef SCIP_VAR** vars
         cdef int nvars
         cdef SCIP_Real coef
-        cdef int i 
+        cdef int i
 
         # turn the constant value into an Expr instance for further processing
         if not isinstance(expr, Expr):
@@ -2731,10 +2731,10 @@ cdef class Model:
         if clear:
             # clear existing objective function
             self.addObjoffset(-self.getObjoffset())
-            _vars = SCIPgetOrigVars(self._scip)
+            vars = SCIPgetOrigVars(self._scip)
             nvars = SCIPgetNOrigVars(self._scip)
             for i in range(nvars):
-                PY_SCIP_CALL(SCIPchgVarObj(self._scip, _vars[i], 0.0))
+                PY_SCIP_CALL(SCIPchgVarObj(self._scip, vars[i], 0.0))
 
         if expr[CONST] != 0.0:
             self.addObjoffset(expr[CONST])
@@ -3408,7 +3408,6 @@ cdef class Model:
 
         """
         cdef SCIP_VAR** _vars
-        cdef SCIP_VAR* _var
         cdef int nvars
         cdef int i
 
@@ -3706,6 +3705,7 @@ cdef class Model:
         cdef int i
 
         PY_SCIP_CALL(SCIPgetLPColsData(self._scip, &cols, &ncols))
+
         return [Column.create(cols[i]) for i in range(ncols)]
 
     def getLPRowsData(self):
@@ -3722,6 +3722,7 @@ cdef class Model:
         cdef int i
 
         PY_SCIP_CALL(SCIPgetLPRowsData(self._scip, &rows, &nrows))
+
         return [Row.create(rows[i]) for i in range(nrows)]
 
     def getNLPRows(self):
@@ -3763,6 +3764,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPgetLPBasisInd(self._scip, inds))
         result = [inds[i] for i in range(nrows)]
         free(inds)
+
         return result
 
     def getLPBInvRow(self, row):
@@ -3783,10 +3785,11 @@ cdef class Model:
         cdef int nrows = SCIPgetNLPRows(self._scip)
         cdef SCIP_Real* coefs = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
         cdef int i
-        
+
         PY_SCIP_CALL(SCIPgetLPBInvRow(self._scip, row, coefs, NULL, NULL))
         result = [coefs[i] for i in range(nrows)]
         free(coefs)
+
         return result
 
     def getLPBInvARow(self, row):
@@ -3807,10 +3810,11 @@ cdef class Model:
         cdef int ncols = SCIPgetNLPCols(self._scip)
         cdef SCIP_Real* coefs = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
         cdef int i
-        
+
         PY_SCIP_CALL(SCIPgetLPBInvARow(self._scip, row, NULL, coefs, NULL, NULL))
         result = [coefs[i] for i in range(ncols)]
         free(coefs)
+
         return result
 
     def isLPSolBasic(self):
@@ -4254,13 +4258,12 @@ cdef class Model:
         assert lincons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % lincons.expr.degree()
         terms = lincons.expr.terms
 
-        cdef SCIP_CONS* scip_cons
         cdef int nvars = len(terms.items())
+        cdef SCIP_VAR** vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        cdef SCIP_Real* coeffs_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+        cdef SCIP_CONS* scip_cons
         cdef SCIP_Real coeff
         cdef int i
-
-        vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
-        coeffs_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
 
         for i, (key, coeff) in enumerate(terms.items()):
             vars_array[i] = <SCIP_VAR*>(<Variable>key[0]).scip_var
@@ -4277,6 +4280,7 @@ cdef class Model:
 
         free(vars_array)
         free(coeffs_array)
+
         return PyCons
 
     def _createConsQuadratic(self, ExprCons quadcons, **kwargs):
@@ -4358,9 +4362,9 @@ cdef class Model:
         terms = cons.expr.terms
 
         # collect variables
-        variables = {var.ptr():var for term in terms for var in term}
+        variables = {var.ptr(): var for term in terms for var in term}
         variables = list(variables.values())
-        varindex = {var.ptr():i for (i,var) in enumerate(variables)}
+        varindex = {var.ptr(): i for (i, var) in enumerate(variables)}
 
         # create monomials for terms
         monomials = <SCIP_EXPR**> malloc(len(terms) * sizeof(SCIP_EXPR*))
@@ -4401,6 +4405,7 @@ cdef class Model:
             PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &monomials[i]))
         free(monomials)
         free(termcoefs)
+
         return PyCons
 
     def _createConsGenNonlinear(self, cons, **kwargs):
@@ -4719,6 +4724,7 @@ cdef class Model:
             The created and added Constraint objects.
 
         """
+        cdef int n_conss
         cdef int i 
 
         def ensure_iterable(elem, length):
@@ -4730,7 +4736,7 @@ cdef class Model:
         assert isinstance(conss, Iterable), "Given constraint list is not iterable."
 
         conss = list(conss)
-        cdef int n_conss = len(conss)
+        n_conss = len(conss)
 
         if isinstance(name, str):
             if name == "":
@@ -4794,6 +4800,10 @@ cdef class Model:
             The created disjunction constraint
 
         """
+        cdef SCIP_EXPR* scip_expr
+        cdef SCIP_CONS* scip_cons
+        cdef SCIP_CONS* disj_cons
+        cdef int n_conss
         cdef int i
 
         def ensure_iterable(elem, length):
@@ -4804,13 +4814,7 @@ cdef class Model:
         assert isinstance(conss, Iterable), "Given constraint list is not iterable"
 
         conss = list(conss)
-        cdef int n_conss = len(conss)
-
-        cdef SCIP_CONS* disj_cons
-
-        cdef SCIP_CONS* scip_cons
-
-        cdef SCIP_EXPR* scip_expr
+        n_conss = len(conss)
 
         PY_SCIP_CALL(SCIPcreateConsDisjunction(
             self._scip, &disj_cons, str_conversion(name), 0, &scip_cons, NULL, 
@@ -4829,6 +4833,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, disj_cons))
         PyCons = Constraint.create(disj_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &disj_cons))
+
         return PyCons
 
     def addConsElemDisjunction(self, Constraint disj_cons, Constraint cons):
@@ -4897,13 +4902,13 @@ cdef class Model:
         list of Variable
 
         """
-        cdef SCIP_Bool success
+        cdef SCIP_VAR** _vars
         cdef int nvars
+        cdef SCIP_Bool success
         cdef int i
 
         SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success)
-
-        cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
         SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, nvars*sizeof(SCIP_VAR*), &success)
 
         vars = []
@@ -4918,6 +4923,7 @@ cdef class Model:
                 assert var.ptr() == ptr
                 self._modelvars[ptr] = var
                 vars.append(var)
+
         return vars
 
     def printCons(self, Constraint constraint):
@@ -5081,6 +5087,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, scip_cons, var.scip_var, weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+
         return Constraint.create(scip_cons)
 
     def addConsSOS2(self, vars, weights=None, name="SOS2cons",
@@ -5142,7 +5149,8 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, scip_cons, var.scip_var, weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        return Constraint.create(scip_cons)      
+
+        return Constraint.create(scip_cons)
 
     def addConsAnd(self, vars, resvar, name="ANDcons",
             initial=True, separate=True, enforce=True, check=True,
@@ -5185,16 +5193,17 @@ cdef class Model:
             The newly created AND constraint
 
         """
-        cdef SCIP_CONS* scip_cons
         cdef int nvars = len(vars)
+        cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        cdef SCIP_VAR* _resvar
+        cdef SCIP_CONS* scip_cons
         cdef int i
 
-        _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
+        _resvar = (<Variable>resvar).scip_var
         for i, var in enumerate(vars):
             _vars[i] = (<Variable>var).scip_var
-        _resVar = (<Variable>resvar).scip_var
 
-        PY_SCIP_CALL(SCIPcreateConsAnd(self._scip, &scip_cons, str_conversion(name), _resVar, nvars, _vars,
+        PY_SCIP_CALL(SCIPcreateConsAnd(self._scip, &scip_cons, str_conversion(name), _resvar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
@@ -5246,16 +5255,17 @@ cdef class Model:
             The newly created OR constraint
 
         """
-        cdef SCIP_CONS* scip_cons
         cdef int nvars = len(vars)
+        cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        cdef SCIP_VAR* _resvar
+        cdef SCIP_CONS* scip_cons
         cdef int i
 
-        _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
+        _resvar = (<Variable>resvar).scip_var
         for i, var in enumerate(vars):
             _vars[i] = (<Variable>var).scip_var
-        _resVar = (<Variable>resvar).scip_var
 
-        PY_SCIP_CALL(SCIPcreateConsOr(self._scip, &scip_cons, str_conversion(name), _resVar, nvars, _vars,
+        PY_SCIP_CALL(SCIPcreateConsOr(self._scip, &scip_cons, str_conversion(name), _resvar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
@@ -5307,15 +5317,14 @@ cdef class Model:
             The newly created XOR constraint
 
         """
-        cdef SCIP_CONS* scip_cons
         cdef int nvars = len(vars)
-        cdef int idx
-
+        cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        cdef SCIP_CONS* scip_cons
+        cdef int i
 
         assert type(rhsvar) is type(bool()), "Provide BOOLEAN value as rhsvar, you gave %s." % type(rhsvar)
-        _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
-        for idx, var in enumerate(vars):
-            _vars[idx] = (<Variable>var).scip_var
+        for i, var in enumerate(vars):
+            _vars[i] = (<Variable>var).scip_var
 
         PY_SCIP_CALL(SCIPcreateConsXor(self._scip, &scip_cons, str_conversion(name), rhsvar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
@@ -5376,8 +5385,8 @@ cdef class Model:
             The newly created Cardinality constraint
 
         """
-        cdef SCIP_CONS* scip_cons
         cdef SCIP_VAR* indvar
+        cdef SCIP_CONS* scip_cons
         cdef int i
 
         PY_SCIP_CALL(SCIPcreateConsCardinality(self._scip, &scip_cons, str_conversion(name), 0, NULL, cardval, NULL, NULL,
@@ -5450,10 +5459,10 @@ cdef class Model:
             The newly created Indicator constraint
 
         """
-        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
-        cdef SCIP_CONS* scip_cons
         cdef SCIP_VAR* _binVar
-        cdef SCIP_Real coeff 
+        cdef SCIP_CONS* scip_cons
+        cdef SCIP_Real coeff
+        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
 
         if cons._lhs is not None and cons._rhs is not None:
             raise ValueError("expected inequality that has either only a left or right hand side")
@@ -5913,10 +5922,9 @@ cdef class Model:
         list of NLRow
 
         """
-        cdef SCIP_NLROW** nlrows
+        cdef SCIP_NLROW** nlrows = SCIPgetNLPNlRows(self._scip)
         cdef int i
 
-        nlrows = SCIPgetNLPNlRows(self._scip)
         return [NLRow.create(nlrows[i]) for i in range(self.getNNlRows())]
 
     def getNlRowSolActivity(self, NLRow nlrow, Solution sol = None):
@@ -6029,21 +6037,21 @@ cdef class Model:
         cdef int termidx
 
         # linear terms
-        cdef SCIP_EXPR** _linexprs
-        cdef SCIP_Real* _lincoefs
-        cdef int _nlinvars
+        cdef SCIP_EXPR** linexprs
+        cdef SCIP_Real* lincoefs
+        cdef SCIP_Real lincoef
+        cdef int nlinvars
 
         # bilinear terms
-        cdef int _nbilinterms
         cdef SCIP_EXPR* bilinterm1
         cdef SCIP_EXPR* bilinterm2
         cdef SCIP_Real bilincoef
+        cdef int nbilinterms
 
         # quadratic terms
-        cdef int _nquadterms
-        cdef SCIP_Real sqrcoef
-        cdef SCIP_Real lincoef
         cdef SCIP_EXPR* sqrexpr
+        cdef SCIP_Real sqrcoef
+        cdef int nquadterms
 
         # variables
         cdef SCIP_VAR* scipvar1
@@ -6053,17 +6061,17 @@ cdef class Model:
         assert self.checkQuadraticNonlinear(cons), "constraint is not quadratic"
 
         expr = SCIPgetExprNonlinear(cons.scip_cons)
-        SCIPexprGetQuadraticData(expr, NULL, &_nlinvars, &_linexprs, &_lincoefs, &_nquadterms, &_nbilinterms, NULL, NULL)
+        SCIPexprGetQuadraticData(expr, NULL, &nlinvars, &linexprs, &lincoefs, &nquadterms, &nbilinterms, NULL, NULL)
 
         linterms   = []
         bilinterms = []
         quadterms  = []
 
-        for termidx in range(_nlinvars):
-            var = Variable.create(SCIPgetVarExprVar(_linexprs[termidx]))
-            linterms.append((var,_lincoefs[termidx]))
+        for termidx in range(nlinvars):
+            var = Variable.create(SCIPgetVarExprVar(linexprs[termidx]))
+            linterms.append((var, lincoefs[termidx]))
 
-        for termidx in range(_nbilinterms):
+        for termidx in range(nbilinterms):
             SCIPexprGetQuadraticBilinTerm(expr, termidx, &bilinterm1, &bilinterm2, &bilincoef, NULL, NULL)
             scipvar1 = SCIPgetVarExprVar(bilinterm1)
             scipvar2 = SCIPgetVarExprVar(bilinterm2)
@@ -6074,7 +6082,7 @@ cdef class Model:
             else:
                 quadterms.append((var1,bilincoef,0.0))
 
-        for termidx in range(_nquadterms):
+        for termidx in range(nquadterms):
             SCIPexprGetQuadraticQuadTerm(expr, termidx, NULL, &lincoef, &sqrcoef, NULL, NULL, &sqrexpr)
             if sqrexpr == NULL:
                 continue
@@ -6109,19 +6117,18 @@ cdef class Model:
         list of Constraint
 
         """
-        cdef SCIP_CONS** _conss
-        cdef int _nconss
+        cdef SCIP_CONS** conss
+        cdef int nconss
         cdef int i
 
-        conss = []
-
         if transformed:
-            _conss = SCIPgetConss(self._scip)
-            _nconss = SCIPgetNConss(self._scip)
+            conss = SCIPgetConss(self._scip)
+            nconss = SCIPgetNConss(self._scip)
         else:
-            _conss = SCIPgetOrigConss(self._scip)
-            _nconss = SCIPgetNOrigConss(self._scip)
-        return [Constraint.create(_conss[i]) for i in range(_nconss)]
+            conss = SCIPgetOrigConss(self._scip)
+            nconss = SCIPgetNOrigConss(self._scip)
+
+        return [Constraint.create(conss[i]) for i in range(nconss)]
 
     def getNConss(self, transformed=True):
         """
@@ -6180,20 +6187,21 @@ cdef class Model:
         dict of str to float
 
         """
-        cdef SCIP_Real* _vals
-        cdef SCIP_VAR** _vars
+        cdef SCIP_VAR** vars
+        cdef SCIP_Real* vals
         cdef int i
 
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
         if not constype == 'linear':
             raise Warning("coefficients not available for constraints of type ", constype)
 
-        _vals = SCIPgetValsLinear(self._scip, cons.scip_cons)
-        _vars = SCIPgetVarsLinear(self._scip, cons.scip_cons)
+        vals = SCIPgetValsLinear(self._scip, cons.scip_cons)
+        vars = SCIPgetVarsLinear(self._scip, cons.scip_cons)
 
         valsdict = {}
         for i in range(SCIPgetNVarsLinear(self._scip, cons.scip_cons)):
-            valsdict[bytes(SCIPvarGetName(_vars[i])).decode('utf-8')] = _vals[i]
+            valsdict[bytes(SCIPvarGetName(vars[i])).decode('utf-8')] = vals[i]
+
         return valsdict
 
     def getRowLinear(self, Constraint cons):
@@ -6377,7 +6385,7 @@ cdef class Model:
         cdef SCIP** subprobs
         cdef SCIP_BENDERS* benders
         cdef int nsubproblems
-        cdef int idx
+        cdef int i
 
         # checking whether subproblems is a dictionary
         if isinstance(subproblems, dict):
@@ -6392,8 +6400,8 @@ cdef class Model:
 
         # if subproblems is a dictionary, then the dictionary is turned into a c array
         if isdict:
-            for idx, subprob in enumerate(subproblems.values()):
-                subprobs[idx] = (<Model>subprob)._scip
+            for i, subprob in enumerate(subproblems.values()):
+                subprobs[i] = (<Model>subprob)._scip
         else:
             subprobs[0] = (<Model>subproblems)._scip
 
@@ -6413,44 +6421,37 @@ cdef class Model:
         If the user wants to resolve the subproblems, they must free them by
         calling freeBendersSubproblems()
         """
-        cdef SCIP_BENDERS** _benders
-        cdef SCIP_Bool _infeasible
-        cdef int nbenders
+        cdef SCIP_BENDERS** benders = SCIPgetBenders(self._scip)
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool solvecip = True
+        cdef int nbenders = SCIPgetNActiveBenders(self._scip)
         cdef int nsubproblems
         cdef int i
         cdef int j
 
-        solvecip = True
-
-        nbenders = SCIPgetNActiveBenders(self._scip)
-        _benders = SCIPgetBenders(self._scip)
-
         # solving all subproblems from all Benders' decompositions
         for i in range(nbenders):
-            nsubproblems = SCIPbendersGetNSubproblems(_benders[i])
+            nsubproblems = SCIPbendersGetNSubproblems(benders[i])
             for j in range(nsubproblems):
                 PY_SCIP_CALL(SCIPsetupBendersSubproblem(self._scip,
-                    _benders[i], self._bestSol.sol, j, SCIP_BENDERSENFOTYPE_CHECK))
+                    benders[i], self._bestSol.sol, j, SCIP_BENDERSENFOTYPE_CHECK))
                 PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip,
-                    _benders[i], self._bestSol.sol, j, &_infeasible, solvecip, NULL))                
+                    benders[i], self._bestSol.sol, j, &infeasible, solvecip, NULL))                
 
     def freeBendersSubproblems(self):
         """Calls the free subproblem function for the Benders' decomposition.
         This will free all subproblems for all decompositions. """
-        cdef SCIP_BENDERS** _benders
-        cdef int nbenders
+        cdef SCIP_BENDERS** benders = SCIPgetBenders(self._scip)
+        cdef int nbenders = SCIPgetNActiveBenders(self._scip)
         cdef int nsubproblems
         cdef int i
         cdef int j
 
-        nbenders = SCIPgetNActiveBenders(self._scip)
-        _benders = SCIPgetBenders(self._scip)
-
         # solving all subproblems from all Benders' decompositions
         for i in range(nbenders):
-            nsubproblems = SCIPbendersGetNSubproblems(_benders[i])
+            nsubproblems = SCIPbendersGetNSubproblems(benders[i])
             for j in range(nsubproblems):
-                PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, _benders[i],
+                PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, benders[i],
                     j))
 
     def updateBendersLowerbounds(self, lowerbounds, Benders benders=None):
@@ -6887,24 +6888,23 @@ cdef class Model:
         model : Model
             A model containing the created copy
         """
+        cdef SCIP* subscip
+        cdef SCIP_HASHMAP* varmap
+        cdef SCIP_VAR** orig_vars = SCIPgetVars(self._scip)
+        cdef SCIP_VAR** vars = <SCIP_VAR**> malloc(len(to_fix) * sizeof(SCIP_VAR*))
+        cdef SCIP_Real* vals = <SCIP_Real*> malloc(len(fix_vals) * sizeof(SCIP_Real))
         cdef SCIP_Real val
+        cdef SCIP_Bool valid
+        cdef SCIP_Bool success
         cdef int i
+        cdef int j = 0
 
-        orig_vars = SCIPgetVars(self._scip)
-        vars = <SCIP_VAR**> malloc(len(to_fix) * sizeof(SCIP_VAR*))
-        vals = <SCIP_Real*> malloc(len(fix_vals) * sizeof(SCIP_Real))
-        j = 0
         name_to_val = {var.name: val for var, val in zip(to_fix, fix_vals)}
         for i, var in enumerate(self.getVars()):
             if var.name in name_to_val:
                 vars[j] = orig_vars[i]
                 vals[j] = <SCIP_Real>name_to_val[var.name]
                 j+= 1
-
-        cdef SCIP_Bool success
-        cdef SCIP_Bool valid
-        cdef SCIP* subscip
-        cdef SCIP_HASHMAP* varmap
 
         PY_SCIP_CALL(SCIPcreate(&subscip))
         PY_SCIP_CALL( SCIPhashmapCreate(&varmap, SCIPblkmem(subscip), self.getNVars()) )
@@ -6915,6 +6915,7 @@ cdef class Model:
         free(vars)
         free(vals)
         SCIPhashmapFree(&varmap)
+
         return sub_model
 
     def translateSubSol(self, Model sub_model, Solution sol, heur) -> Solution:
@@ -6935,22 +6936,22 @@ cdef class Model:
 		solution : Solution
 			The corresponding solution in the main model
         """
-        cdef int i
-	
+        cdef SCIP_VAR** vars = <SCIP_VAR**> malloc(self.getNVars() * sizeof(SCIP_VAR*))
         cdef SCIP_SOL* real_sol
-        cdef SCIP_SOL* subscip_sol
+        cdef SCIP_SOL* subscip_sol = sol.sol
+        cdef SCIP_HEUR* _heur
         cdef SCIP_Bool success
-        subscip_sol = sol.sol
-        vars = <SCIP_VAR**> malloc(self.getNVars() * sizeof(SCIP_VAR*))
+        cdef int i
+
         for i, var in enumerate(sub_model.getVars()):
             vars[i] = (<Variable>var).scip_var
 
-        cdef SCIP_HEUR* _heur
         name = str_conversion(heur.name)
         _heur = SCIPfindHeur(self._scip, name)
         PY_SCIP_CALL( SCIPtranslateSubSol(self._scip, sub_model._scip, subscip_sol, _heur, vars, &real_sol) )
         solution = Solution.create(self._scip, real_sol)
         free(vars)
+
         return solution
 
     def createCons(self, Conshdlr conshdlr, name, initial=True, separate=True, enforce=True, check=True, propagate=True,
@@ -7399,15 +7400,14 @@ cdef class Model:
             number of fractional implicit integer variables
 
         """
+        cdef SCIP_VAR** lpcands
+        cdef SCIP_Real* lpcandssol
+        cdef SCIP_Real* lpcandsfrac
         cdef int ncands
         cdef int nlpcands
         cdef int npriolpcands
         cdef int nfracimplvars
         cdef int i
-
-        cdef SCIP_VAR** lpcands
-        cdef SCIP_Real* lpcandssol
-        cdef SCIP_Real* lpcandsfrac
 
         PY_SCIP_CALL(SCIPgetLPBranchCands(self._scip, &lpcands, &lpcandssol, &lpcandsfrac,
                                           &nlpcands, &npriolpcands, &nfracimplvars))
@@ -7430,11 +7430,10 @@ cdef class Model:
             number of candidates with maximal priority
 
         """
+        cdef SCIP_VAR** pseudocands
         cdef int npseudocands
         cdef int npriopseudocands
         cdef int i
-
-        cdef SCIP_VAR** pseudocands
 
         PY_SCIP_CALL(SCIPgetPseudoBranchCands(self._scip, &pseudocands, &npseudocands, &npriopseudocands))
 
@@ -8369,12 +8368,10 @@ cdef class Model:
         list of Solution
 
         """
-        cdef SCIP_SOL** _sols
-        cdef SCIP_SOL* _sol
+        cdef SCIP_SOL** _sols = SCIPgetSols(self._scip)
+        cdef int nsols = SCIPgetNSols(self._scip)
         cdef int i
 
-        _sols = SCIPgetSols(self._scip)
-        nsols = SCIPgetNSols(self._scip)
         sols = []
 
         for i in range(nsols):
@@ -8559,13 +8556,13 @@ cdef class Model:
 
         """
         assert SCIPhasPrimalRay(self._scip), "The problem does not have a primal ray."
+        cdef SCIP_VAR** vars = SCIPgetVars(self._scip)
         cdef int nvars = SCIPgetNVars(self._scip)
-        cdef SCIP_VAR ** _vars = SCIPgetVars(self._scip)
         cdef int i
 
         ray = []
         for i in range(nvars):
-            ray.append(float(SCIPgetPrimalRayVal(self._scip, _vars[i])))
+            ray.append(float(SCIPgetPrimalRayVal(self._scip, vars[i])))
 
         return ray
 
@@ -8644,8 +8641,6 @@ cdef class Model:
     
     def _getStageNames(self):
         """Gets names of stages."""
-        cdef str name 
-
         for name in dir(PY_SCIP_STAGE):
             attr = getattr(PY_SCIP_STAGE, name)
             if isinstance(attr, int):
@@ -9092,14 +9087,14 @@ cdef class Model:
             dict mapping parameter names to their values.
 
         """
-        cdef SCIP_PARAM** params
+        cdef SCIP_PARAM** params = SCIPgetParams(self._scip)
         cdef int i
 
-        params = SCIPgetParams(self._scip)
         result = {}
         for i in range(SCIPgetNParams(self._scip)):
           name = SCIPparamGetName(params[i]).decode('utf-8')
           result[name] = self.getParam(name)
+
         return result
 
     def setParams(self, params):
@@ -9112,7 +9107,6 @@ cdef class Model:
             dict mapping parameter names to their values.
 
         """
-        cdef str name
         for name, value in params.items():
           self.setParam(name, value)
 
@@ -9281,7 +9275,9 @@ cdef class Model:
             the objective sense (Default value = 'minimize')
 
         """
-
+        cdef SCIP_VAR** vars
+        cdef int nvars
+        cdef SCIP_Real* _coeffs
         cdef SCIP_OBJSENSE objsense
         cdef SCIP_Real coef
         cdef int i
@@ -9300,10 +9296,7 @@ cdef class Model:
         if coeffs[CONST] != 0.0:
             raise ValueError("Constant offsets in objective are not supported!")
 
-        cdef SCIP_VAR** _vars
-        cdef int nvars
-
-        _vars = SCIPgetOrigVars(self._scip)
+        vars = SCIPgetOrigVars(self._scip)
         nvars = SCIPgetNOrigVars(self._scip)
         _coeffs = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
 
@@ -9316,10 +9309,10 @@ cdef class Model:
                 assert len(term) == 1
                 var = <Variable>term[0]
                 for i in range(nvars):
-                    if _vars[i] == var.scip_var:
+                    if vars[i] == var.scip_var:
                         _coeffs[i] = coef
 
-        PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, _vars, &_coeffs[0], nvars))
+        PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, vars, &_coeffs[0], nvars))
 
         free(_coeffs)
 
@@ -9508,17 +9501,15 @@ cdef class Model:
         float
 
         """
-        cdef int i
-
         assert isinstance(gains, list)
         cdef int nchildren = len(gains)
+        cdef SCIP_Real* _gains = <SCIP_Real*> malloc(nchildren * sizeof(SCIP_Real))
+        cdef int i
 
-        cdef int _nchildren = nchildren
-        _gains = <SCIP_Real*> malloc(_nchildren * sizeof(SCIP_Real))
-        for i in range(_nchildren):
+        for i in range(nchildren):
             _gains[i] = gains[i]
 
-        score = SCIPgetBranchScoreMultiple(self._scip, var.scip_var, _nchildren, _gains)
+        score = SCIPgetBranchScoreMultiple(self._scip, var.scip_var, nchildren, _gains)
 
         free(_gains)
 
@@ -9576,11 +9567,13 @@ cdef class Model:
             The feature mappings for the columns, edges, and rows
 
         """
-
         cdef SCIP* scip = self._scip
         cdef SCIP_VARTYPE vtype
         cdef SCIP_Real sim, prod
-        cdef int i, j, k, col_i
+        cdef int col_i
+        cdef int i
+        cdef int j
+        cdef int k
 
         # Check if SCIP is in the correct stage
         if SCIPgetStage(scip) != SCIP_STAGE_SOLVING:
@@ -9618,8 +9611,11 @@ cdef class Model:
 
         cdef SCIP_SOL* sol = SCIPgetBestSol(scip)
         cdef SCIP_VAR* var
-        cdef SCIP_Real lb, ub, solval
+        cdef SCIP_Real lb
+        cdef SCIP_Real ub
+        cdef SCIP_Real solval
         cdef SCIP_BASESTAT basis_status
+
         for i in range(ncols):
             col_i = SCIPcolGetLPPos(cols[i])
             var = SCIPcolGetVar(cols[i])
@@ -9712,8 +9708,10 @@ cdef class Model:
                 raise Warning(f"Dimension mismatch in provided previous features and new features:"
                               f"{len(prev_row_features[0])} != {n_row_features}")
 
+        cdef SCIP_Real lhs
+        cdef SCIP_Real rhs
+        cdef SCIP_Real cst
         cdef int nnzrs = 0
-        cdef SCIP_Real lhs, rhs, cst
 
         for i in range(nrows):
 
@@ -9771,6 +9769,7 @@ cdef class Model:
         # Generate edge (coefficient) features
         cdef SCIP_COL** row_cols
         cdef SCIP_Real * row_vals
+
         n_edge_features = 3
         edge_feature_map = {"col_idx": 0, "row_idx": 1, "coef": 2}
         if prev_edge_features is None:
@@ -9797,7 +9796,6 @@ cdef class Model:
             if len(prev_edge_features[0]) != 3:
                 raise Warning(f"Dimension mismatch in provided previous features and new features:"
                               f"{len(prev_edge_features[0])} != 3")
-
 
         return (col_features, edge_features, row_features,
                 {"col": col_feature_map, "edge": edge_feature_map, "row": row_feature_map})
@@ -9961,9 +9959,6 @@ def readStatistics(filename):
         Statistics
 
         """
-        cdef str line
-        cdef str var_type
-        cdef str con_type
         cdef int i
 
         result = {}
@@ -10067,6 +10062,7 @@ def readStatistics(filename):
         treated_result = dict((treated_keys[key], value) for (key, value) in result.items())
         
         stats = Statistics(**treated_result)
+
         return stats
 
 # debugging memory management
