@@ -808,7 +808,6 @@ cdef class Row:
         """
         cdef SCIP_COL** cols = SCIProwGetCols(self.scip_row)
         cdef int i
-
         return [Column.create(cols[i]) for i in range(self.getNNonz())]
 
     def getVals(self):
@@ -822,7 +821,6 @@ cdef class Row:
         """
         cdef SCIP_Real* vals = SCIProwGetVals(self.scip_row)
         cdef int i
-
         return [vals[i] for i in range(self.getNNonz())]
 
     def getAge(self):
@@ -908,7 +906,6 @@ cdef class NLRow:
         cdef SCIP_Real* lincoefs = SCIPnlrowGetLinearCoefs(self.scip_nlrow)
         cdef int nlinvars = SCIPnlrowGetNLinearVars(self.scip_nlrow)
         cdef int i
-        
         return [(Variable.create(linvars[i]), lincoefs[i]) for i in range(nlinvars)]
 
     def getLhs(self):
@@ -988,7 +985,6 @@ cdef class Solution:
     def __getitem__(self, Expr expr):
         # fast track for Variable
         cdef SCIP_Real coeff
-
         if isinstance(expr, Variable):
             self._checkStage("SCIPgetSolVal")
             var = <Variable> expr
@@ -1008,23 +1004,19 @@ cdef class Solution:
     def __repr__(self):
         cdef SCIP_VAR* scip_var
         cdef int i
-
         vals = {}
         self._checkStage("SCIPgetSolVal")
         for i in range(SCIPgetNOrigVars(self.scip)):
             scip_var = SCIPgetOrigVars(self.scip)[i]
-
             # extract name
             cname = bytes(SCIPvarGetName(scip_var))
             name = cname.decode('utf-8')
-
             vals[name] = SCIPgetSolVal(self.scip, self.sol, scip_var)
         return str(vals)
     
     def _checkStage(self, method):
         if method in ["SCIPgetSolVal", "getSolObjVal"]:
             stage_check = SCIPgetStage(self.scip) not in [SCIP_STAGE_INIT, SCIP_STAGE_FREE]
-
             if not stage_check or self.sol == NULL and SCIPgetStage(self.scip) != SCIP_STAGE_SOLVING:
                 raise Warning(f"{method} can only be called with a valid solution or in stage SOLVING (current stage: {SCIPgetStage(self.scip)})")
 
@@ -1058,7 +1050,6 @@ cdef class Solution:
             PY_SCIP_CALL(SCIPretransformSol(self.scip, self.sol))
         cdef Solution targetSol = Solution.create(target._scip, NULL)
         cdef SCIP_VAR** source_vars = SCIPgetOrigVars(self.scip)
-        
         PY_SCIP_CALL(SCIPtranslateSubSol(target._scip, self.scip, self.sol, NULL, source_vars, &(targetSol.sol)))
         return targetSol
 
@@ -1186,7 +1177,6 @@ cdef class DomainChanges:
         """
         cdef nboundchgs = SCIPdomchgGetNBoundchgs(self.scip_domchg)
         cdef int i
-
         return [BoundChange.create(SCIPdomchgGetBoundchg(self.scip_domchg, i))
                 for i in range(nboundchgs)]
 
@@ -1291,14 +1281,11 @@ cdef class Node:
 
         """
         cdef int addedconsssize = SCIPnodeGetNAddedConss(self.scip_node)
-
         if addedconsssize == 0:
             return []
-
         cdef SCIP_CONS** addedconss = <SCIP_CONS**> malloc(addedconsssize * sizeof(SCIP_CONS*))
         cdef int nconss
         cdef int i
-
         SCIPnodeGetAddedConss(self.scip_node, addedconss, &nconss, addedconsssize)
         assert nconss == addedconsssize
         constraints = [Constraint.create(addedconss[i]) for i in range(nconss)]
@@ -1351,7 +1338,6 @@ cdef class Node:
         cdef SCIP_Real dummy_branchbounds
         cdef SCIP_BOUNDTYPE dummy_boundtypes
         cdef int nbranchvars
-
         # This is a hack: the SCIP interface has no function to directly get the
         # number of parent branchings, i.e., SCIPnodeGetNParentBranchings() does
         # not exist.
@@ -1372,22 +1358,18 @@ cdef class Node:
 
         """
         cdef int nbranchvars = self.getNParentBranchings()
-
         if nbranchvars == 0:
             return None
-
         cdef SCIP_VAR** branchvars = <SCIP_VAR**> malloc(nbranchvars * sizeof(SCIP_VAR*))
         cdef SCIP_Real* branchbounds = <SCIP_Real*> malloc(nbranchvars * sizeof(SCIP_Real))
         cdef SCIP_BOUNDTYPE* boundtypes = <SCIP_BOUNDTYPE*> malloc(nbranchvars * sizeof(SCIP_BOUNDTYPE))
         cdef int i
-
         SCIPnodeGetParentBranchings(self.scip_node, branchvars, branchbounds,
                                     boundtypes, &nbranchvars, nbranchvars)
 
         py_variables = [Variable.create(branchvars[i]) for i in range(nbranchvars)]
         py_branchbounds = [branchbounds[i] for i in range(nbranchvars)]
         py_boundtypes = [boundtypes[i] for i in range(nbranchvars)]
-
         free(boundtypes)
         free(branchbounds)
         free(branchvars)
@@ -1407,7 +1389,6 @@ cdef class Node:
         cdef int nbranchings
         cdef int nconsprop
         cdef int nprop
-
         SCIPnodeGetNDomchg(self.scip_node, &nbranchings, &nconsprop, &nprop)
         return nbranchings, nconsprop, nprop
 
@@ -1657,7 +1638,6 @@ cdef class Variable(Expr):
             mayround = SCIPvarMayRoundDown(self.scip_var)
         else:
             mayround = SCIPvarMayRoundUp(self.scip_var)
-
         return mayround
 
 cdef class Constraint:
@@ -10088,7 +10068,7 @@ def readStatistics(filename):
         
         stats = Statistics(**treated_result)
         return stats
-            
+
 # debugging memory management
 def is_memory_freed():
     return BMSgetMemoryUsed() == 0
