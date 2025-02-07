@@ -61,7 +61,7 @@ if [[ $CIBW_ARCHS == *"arm"* ]]; then
     wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.7.0/libscip-macos-arm.zip -O scip.zip
     export MACOSX_DEPLOYMENT_TARGET=14.0
 else
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.7.0/libscip-macos.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.7.0/libscip-macos-intel.zip -O scip.zip
     export MACOSX_DEPLOYMENT_TARGET=13.0
 fi
 unzip scip.zip
