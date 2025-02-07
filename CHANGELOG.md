@@ -2,6 +2,12 @@
 
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+### Removed
+
+## 5.3.0 - 2025.02.07
+### Added
 - Added cdef type declaration of loop variables for slight speedup
 - Added wrappers for setting and getting heuristic timing
 - Added transformed option to getVarDict, updated test
