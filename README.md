@@ -82,6 +82,16 @@ examples.
 Please notice that in most cases one needs to use a `dictionary` to
 specify the return values needed by SCIP.
 
+Using PySCIPOpt?
+----------------
+
+If your project or company is using PySCIPOpt, consider letting us know at scip@zib.de. We are always interested
+in knowing how PySCIPOpt is being used, and, given permission, would also appreciate adding your company's logo 
+to our website.  
+
+If you are creating models with some degree of complexity which don't take too long to solve, also consider
+sharing them with us. We might want to add them to [`tests/helpers/utils.py`](tests/helpers/utils.py) to help make our tests more robust, or even adding them to our examples.
+
 Citing PySCIPOpt
 ----------------
 
