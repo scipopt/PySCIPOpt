@@ -6,7 +6,7 @@ N_Threads = 4
 
 
 def test_optimalNogil():
-    ori_model = random_mip_1(disable_sepa=False, disable_huer=False, disable_presolve=False, node_lim=2000, small=True) 
+    ori_model = random_mip_1(disable_sepa=False, disable_heur=False, disable_presolve=False, node_lim=2000, small=True) 
     models = [Model(sourceModel=ori_model) for _ in range(N_Threads)]
     for i in range(N_Threads):
         models[i].setParam("randomization/permutationseed", i)

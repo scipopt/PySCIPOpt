@@ -124,7 +124,7 @@ def test_heur_memory():
 
 def test_simple_round_heur():
     # create solver instance
-    s = random_mip_1(disable_sepa=False, disable_huer=False, node_lim=1)
+    s = random_mip_1(disable_sepa=False, disable_heur=False, node_lim=1)
     heuristic = SimpleRoundingHeuristic()
     s.includeHeur(heuristic, "SimpleRounding", "simple rounding heuristic implemented in python", "Y",
                   timingmask=SCIP_HEURTIMING.DURINGLPLOOP)

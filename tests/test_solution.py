@@ -197,7 +197,7 @@ def test_getSols():
 
 
 def test_getOrigin_retrasform():
-    m = random_mip_1(disable_sepa=False, disable_huer=False, disable_presolve=False, small=True)
+    m = random_mip_1(disable_sepa=False, disable_heur=False, disable_presolve=False, small=True)
     m.optimize()
 
     sol = m.getBestSol()
@@ -208,11 +208,11 @@ def test_getOrigin_retrasform():
 
 
 def test_translate():
-    m = random_mip_1(disable_sepa=False, disable_huer=False, disable_presolve=False, small=True)
+    m = random_mip_1(disable_sepa=False, disable_heur=False, disable_presolve=False, small=True)
     m.optimize()
     sol = m.getBestSol()
 
-    m1 = random_mip_1(disable_sepa=False, disable_huer=False, disable_presolve=False, small=True)
+    m1 = random_mip_1(disable_sepa=False, disable_heur=False, disable_presolve=False, small=True)
     sol1 = sol.translate(m1)
     assert m1.addSol(sol1) == True
     assert m1.getNSols() == 1
