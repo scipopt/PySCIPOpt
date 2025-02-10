@@ -10,7 +10,8 @@ class cutoffEventHdlr(Eventhdlr):
         return {'result': SCIP_RESULT.SUCCESS}
 
 def test_cutoffNode():
-    m = random_mip_1()
+    m = random_mip_1(disable_heur=True, disable_presolve=True, disable_sepa=True)
+    
     hdlr = cutoffEventHdlr()
     
     m.includeEventhdlr(hdlr, "test", "test")
