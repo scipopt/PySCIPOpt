@@ -1,7 +1,7 @@
 from pyscipopt import Model, quicksum, SCIP_PARAMSETTING, exp, log, sqrt, sin
 from typing import List
 
-def random_mip_1(disable_sepa=True, disable_huer=True, disable_presolve=True, node_lim=2000, small=False):
+def random_mip_1(disable_sepa=True, disable_heur=True, disable_presolve=True, node_lim=2000, small=False):
     model = Model()
 
     x0 = model.addVar(lb=-2, ub=4)
@@ -41,7 +41,7 @@ def random_mip_1(disable_sepa=True, disable_huer=True, disable_presolve=True, no
 
     if disable_sepa:
         model.setSeparating(SCIP_PARAMSETTING.OFF)
-    if disable_huer:
+    if disable_heur:
         model.setHeuristics(SCIP_PARAMSETTING.OFF)
     if disable_presolve:
         model.setPresolve(SCIP_PARAMSETTING.OFF)
