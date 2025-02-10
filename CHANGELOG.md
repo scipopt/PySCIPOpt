@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added cutoffNode and test
 ### Fixed
 ### Changed
 ### Removed

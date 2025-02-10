@@ -1313,7 +1313,7 @@ cdef class Node:
 
         """
         return SCIPnodeIsActive(self.scip_node)
-
+    
     def isPropagatedAgain(self):
         """
         Is the node marked to be propagated again?
@@ -2334,6 +2334,16 @@ cdef class Model:
 
         """
         return SCIPgetDepth(self._scip)
+
+    def cutoffNode(self, Node node):
+        """
+        marks node and whole subtree to be cut off from the branch and bound tree.
+        
+        Parameters
+        ----------
+        node : Node
+        """
+        PY_SCIP_CALL( SCIPcutoffNode(self._scip, node.scip_node) )
 
     def infinity(self):
         """
