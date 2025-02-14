@@ -1901,7 +1901,7 @@ cdef class Model:
         """
         if self.getMajorVersion() < MAJOR:
             raise Exception("linked SCIP is not compatible to this version of PySCIPOpt - use at least version", MAJOR)
-        if self.getMinorVersion():
+        if self.getMinorVersion() < MINOR:
             warnings.warn(
                 "linked SCIP {}.{} is not recommended for this version of PySCIPOpt - use version {}.{}.{}".format(
                     self.getMajorVersion(), self.getMinorVersion(), MAJOR, MINOR, PATCH))
