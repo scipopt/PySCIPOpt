@@ -1899,10 +1899,12 @@ cdef class Model:
             False if data can be safely shared between the source and target problem (default False)
 
         """
-        if self.version() < MAJOR:
+        if self.getMajorVersion() < MAJOR:
             raise Exception("linked SCIP is not compatible to this version of PySCIPOpt - use at least version", MAJOR)
-        if self.version() < MAJOR + MINOR/10.0 + PATCH/100.0:
-            warnings.warn("linked SCIP {} is not recommended for this version of PySCIPOpt - use version {}.{}.{}".format(self.version(), MAJOR, MINOR, PATCH))
+        if self.getMinorVersion():
+            warnings.warn(
+                "linked SCIP {}.{} is not recommended for this version of PySCIPOpt - use version {}.{}.{}".format(
+                    self.getMajorVersion(), self.getMinorVersion(), MAJOR, MINOR, PATCH))
 
         self._freescip = True
         self._modelvars = {}
@@ -2138,6 +2140,40 @@ cdef class Model:
 
         """
         return SCIPversion()
+
+    def getMajorVersion(self):
+        """
+        Retrieve SCIP major version.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPmajorVersion()
+
+    def getMinorVersion(self):
+        """
+        Retrieve SCIP minor version.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPminorVersion()
+
+
+    def getTechVersion(self):
+        """
+        Retrieve SCIP technical version.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPtechVersion()
 
     def printVersion(self):
         """Print version, copyright information and compile mode."""
