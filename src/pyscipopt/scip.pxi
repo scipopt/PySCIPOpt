@@ -1641,6 +1641,9 @@ cdef class Variable(Expr):
             mayround = SCIPvarMayRoundUp(self.scip_var)
         return mayround
 
+class MatrixVariable(MatrixExpr):
+    pass
+
 cdef class Constraint:
     """Base class holding a pointer to corresponding SCIP_CONS"""
 
@@ -4927,6 +4930,8 @@ cdef class Model:
                 modifiable=False, dynamic=False, removable=False,
                 stickingatnode=False):
         
+        # TODO refactor addConss to also add matrix constraints
+        #return self.addConss()
         #assert isinstance(cons, MatrixVariable)
 
         all_cons = []

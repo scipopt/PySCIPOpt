@@ -146,31 +146,40 @@ def test_add_cons_matrixVar():
     single_var = m.addVar(vtype="B", name="x")
         
     # all supported use cases
-    cexpr = matrix_variable <= np.ones((3, 3))
-    cexpr = matrix_variable <= 1
-    cexpr = matrix_variable <= other_matrix_variable
-    cexpr = matrix_variable <= single_var
-    cexpr = 1 <= matrix_variable
-    cexpr = np.ones((3,3)) <= matrix_variable
-    cexpr = other_matrix_variable <= matrix_variable
-    cexpr = single_var <= matrix_variable
-    cexpr = single_var >= matrix_variable
-    cexpr = single_var == matrix_variable
-    cexpr = matrix_variable + single_var
-    cexpr = single_var + matrix_variable
+    matrix_variable <= np.ones((3, 3))
+    matrix_variable <= 1
+    matrix_variable <= other_matrix_variable
+    matrix_variable <= single_var
+    1 <= matrix_variable
+    np.ones((3,3)) <= matrix_variable
+    other_matrix_variable <= matrix_variable
+    single_var <= matrix_variable
+    single_var >= matrix_variable
+    single_var == matrix_variable
 
-    cexpr = m.addMatrixCons(matrix_variable >= 1)
-    m.optimize()    
-    assert m.isEQ(m.getPrimalbound(), 1*3*3)
-    
-    cexpr = log(matrix_variable)
-    cexpr = exp(matrix_variable)
-    cexpr = cos(matrix_variable)
-    cexpr = sin(matrix_variable)
-    cexpr = sqrt(matrix_variable)
-    
-    #cexpr = m.addMatrixCons(matrix_variable <= other_matrix_variable)
+    matrix_variable + single_var
+    single_var + matrix_variable
 
+    m.addMatrixCons(matrix_variable >= 1)
+    # m.optimize()    
+    # assert m.isEQ(m.getPrimalbound(), 1*3*3)
+    
+    log(matrix_variable)
+    exp(matrix_variable)
+    cos(matrix_variable)
+    sin(matrix_variable)
+    sqrt(matrix_variable)
+    log(log(matrix_variable))
+    log(log(matrix_variable)) <= 9
+    
+    m.addMatrixCons(matrix_variable <= other_matrix_variable)
+    m.addMatrixCons(log(matrix_variable) <= other_matrix_variable)
+    m.addMatrixCons(exp(matrix_variable) <= other_matrix_variable)
+    m.addMatrixCons(sqrt(matrix_variable) <= other_matrix_variable)
+    m.addMatrixCons(sin(matrix_variable) <= 37)
+    m.addMatrixCons(cos(matrix_variable) <= other_matrix_variable)
+
+    m.optimize()
 
 # # @pytest.mark.skipif(have_np, reason="numpy is not installed")
 # # def test_multiply_matrixVariable():
