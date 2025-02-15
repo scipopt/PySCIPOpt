@@ -3188,9 +3188,11 @@ cdef class Model:
         if isinstance(name, str):
             matrix_names = np.full(shape, name, dtype=object)
             if name != "":
-                with np.nditer(matrix_names, flags=["multi_index"], op_flags=["writeonly"]) as it:
-                    for x in it:
-                        x[...] = name + "_" + "_".join(str(it.multi_index[i]) for i in it.multi_index)
+                # with np.nditer(matrix_names, flags=["multi_index", "refs_ok"], op_flags=["writeonly"]) as it:
+                #   for x in it:
+                #        x[...] = f"{name}_{'_'.join(map(str, it.multi_index))}"
+                for idx in np.ndindex(matrix_variable.shape):
+                    matrix_names[idx] = f"{name}_{'_'.join(map(str, idx))}"
         else:
             matrix_names = name
 
@@ -3203,7 +3205,6 @@ cdef class Model:
             matrix_lbs = np.full(shape, lb, dtype=object)
         else:
             matrix_lbs = lb
-        print(matrix_lbs)
 
         if not isinstance(ub, np.ndarray):
             matrix_ubs = np.full(shape, ub, dtype=object)

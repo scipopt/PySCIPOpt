@@ -1,5 +1,6 @@
+import pprint
 import pytest
-from pyscipopt import Model, Variable
+from pyscipopt import Model, Variable, Expr
 from time import time
 
 try:
@@ -12,6 +13,7 @@ except ImportError:
 @pytest.mark.skipif(not have_np, reason="numpy is not installed")
 def test_add_matrixVar():
     m = Model()
+    m.hideOutput()
     vtypes = np.ndarray((3, 3, 4), dtype=object)
     for i in range(3):
         for j in range(3):
@@ -56,14 +58,66 @@ def test_add_matrixVar():
     assert m.getStatus() == "optimal"
     assert m.getObjVal() == 1
 
-# @pytest.mark.skipif(have_np, reason="numpy is not installed")
-# def test_create_cons_with_matrixVariable():
-#     m = Model()
+def index_from_name(name: str) -> list:
+    name = name[2:]
+    return list(map(int, name.split("_")))    
 
-#     m.addMarixVariable()
-#     m.addMatrixCons()
+@pytest.mark.skipif(not have_np, reason="numpy is not installed")
+def test_expr_from_matrix_vars():
+    m = Model()
 
-#     m.optimize()
+    mvar = m.addMatrixVar(shape=(2, 2), vtype="B", name="A")
+    mvar2 = m.addMatrixVar(shape=(2, 2), vtype="B", name="B")
+
+    mvar_double = 2 * mvar
+    for expr in np.nditer(mvar_double, flags=["refs_ok"]):
+        expr = expr.item()
+        assert(isinstance(expr, Expr))
+        assert expr.degree() == 1
+        expr_list = list(expr.terms.items())
+        assert len(expr_list) == 1
+        first_term, coeff = expr_list[0]
+        assert coeff == 2
+        vars_in_term = list(first_term)
+        first_var_in_term = vars_in_term[0]
+        assert isinstance(first_var_in_term, Variable)
+        assert first_var_in_term.vtype() == "BINARY"
+        
+    sum_expr = mvar + mvar2
+    for expr in np.nditer(sum_expr, flags=["refs_ok"]):
+        expr = expr.item()
+        assert(isinstance(expr, Expr))
+        assert expr.degree() == 1
+        expr_list = list(expr.terms.items())
+        assert len(expr_list) == 2
+    
+    dot_expr = mvar * mvar2
+    for expr in np.nditer(dot_expr, flags=["refs_ok"]):
+        expr = expr.item()
+        assert(isinstance(expr, Expr))
+        assert expr.degree() == 2
+        expr_list = list(expr.terms.items())
+        assert len(expr_list) == 1
+        for term, coeff in expr_list:
+            assert coeff == 1
+            assert len(term) == 2
+            vars_in_term = list(term)
+            indices = [index_from_name(var.name) for var in vars_in_term]
+            assert indices[0] == indices[1]
+
+    mul_expr = mvar @ mvar2
+    for expr in np.nditer(mul_expr, flags=["refs_ok"]):
+        expr = expr.item()
+        assert(isinstance(expr, Expr))
+        assert expr.degree() == 2
+        expr_list = list(expr.terms.items())
+        assert len(expr_list) == 2
+        for term, coeff in expr_list:
+            assert coeff == 1
+
+            assert len(term) == 2
+
+
 
 #     assert False
 
