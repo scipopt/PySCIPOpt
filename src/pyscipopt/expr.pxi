@@ -142,7 +142,7 @@ def buildGenExprObj(expr):
                 sumexpr += coef * prodexpr
         return sumexpr
 
-    elif isinstance(expr, MatrixExpr):
+    elif isinstance(expr, MatrixExpr):   
         GenExprs = np.empty(expr.shape, dtype=object)
         for idx in np.ndindex(expr.shape):
             GenExprs[idx] = buildGenExprObj(expr[idx])
@@ -638,7 +638,7 @@ cdef class Constant(GenExpr):
 
 def exp(expr):
     """returns expression with exp-function"""
-    if isinstance(expr, MatrixExpr):
+    if isinstance(expr, MatrixExpr):   
         unary_exprs = np.empty(shape=expr.shape, dtype=object)
         for idx in np.ndindex(expr.shape):
             unary_exprs[idx] = UnaryExpr(Operator.exp, buildGenExprObj(expr[idx]))
@@ -678,7 +678,7 @@ def sin(expr):
 
 def cos(expr):
     """returns expression with cos-function"""
-    if isinstance(expr, MatrixExpr):
+    if isinstance(expr, MatrixExpr):   
         unary_exprs = np.empty(shape=expr.shape, dtype=object)
         for idx in np.ndindex(expr.shape):
             unary_exprs[idx] = UnaryExpr(Operator.cos, buildGenExprObj(expr[idx]))
