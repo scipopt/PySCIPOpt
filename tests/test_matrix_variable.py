@@ -8,11 +8,6 @@ try:
 except ImportError:
     have_np = False
 
-@pytest.mark.skipif(not have_np, reason="numpy is not installed")
-def test_create_matrixVariable():
-    # will probably scrap create_matrixVariable
-    return
-
 # not repeating reason unnecessarily
 @pytest.mark.skipif(not have_np, reason="numpy is not installed")
 def test_add_matrixVar():
@@ -28,7 +23,7 @@ def test_add_matrixVar():
                 else:
                     vtypes[i][j][k] = "I"
 
-    matrix_variable = m.addMatrixVar(shape=(3, 3, 4), name="", vtype=vtypes, ub=8,
+    matrix_variable = m.addMatrixVar(shape=(3, 3, 4), name="", vtype=vtypes, ub=8.5,
                                      lb=np.ndarray((3, 3, 4), dtype=object))
 
     for i in range(3):
@@ -36,47 +31,46 @@ def test_add_matrixVar():
             for k in range(4):
                 if i == 0:
                     assert matrix_variable[i][j][k].vtype() == "CONTINUOUS"
+                    assert m.isInfinity(-matrix_variable[i][j][k].getLbOriginal())
+                    assert m.isEQ(matrix_variable[i][j][k].getUbOriginal(), 8.5)
                 elif i == 1:
                     assert matrix_variable[i][j][k].vtype() == "BINARY"
+                    assert m.isEQ(matrix_variable[i][j][k].getLbOriginal(), 0)
+                    assert m.isEQ(matrix_variable[i][j][k].getUbOriginal(), 1)
                 else:
                     assert matrix_variable[i][j][k].vtype() == "INTEGER"
+                    assert m.isInfinity(-matrix_variable[i][j][k].getLbOriginal())
+                    assert m.isEQ(matrix_variable[i][j][k].getUbOriginal(), 8.5)
                 
                 assert isinstance(matrix_variable[i][j][k], Variable)
-                assert "x" in matrix_variable[i][j][k].name
-                print(matrix_variable[i][j][k].getLbOriginal())
-                print(i,j,k)
-                # assert m.isInfinity(-matrix_variable[i][j][k].getLbOriginal())
-                # assert matrix_variable[i][j][k].getUbOriginal() == 8
+                assert matrix_variable[i][j][k].name == f"x{i*12 + j*4 + k + 1}"
 
-    assert False
-    return
+# @pytest.mark.skipif(have_np, reason="numpy is not installed")
+# def test_create_cons_with_matrixVariable():
+#     m = Model()
 
-@pytest.mark.skipif(have_np, reason="numpy is not installed")
-def test_create_cons_with_matrixVariable():
-    m = Model()
+#     m.addMarixVariable()
+#     m.addMatrixCons()
 
-    m.addMarixVariable()
-    m.addMatrixCons()
+#     m.optimize()
 
-    m.optimize()
+#     assert False
 
-    assert False
+# @pytest.mark.skipif(have_np, reason="numpy is not installed")
+# def test_multiply_matrixVariable():
+#     m = Model()
 
-@pytest.mark.skipif(have_np, reason="numpy is not installed")
-def test_multiply_matrixVariable():
-    m = Model()
+#     matrix_variable1 = m.addMatrixVar()
+#     matrix_variable2 = m.addMatrixVar()
+#     m.addMatrixCons(matrix_variable1 * matrix_variable2 <= 2)
+#     m.addMatrixCons(matrix_variable1 * matrix_variable2 <= 2)
 
-    matrix_variable1 = m.addMatrixVar()
-    matrix_variable2 = m.addMatrixVar()
-    m.addMatrixCons(matrix_variable1 * matrix_variable2 <= 2)
-    m.addMatrixCons(matrix_variable1 * matrix_variable2 <= 2)
+#     assert False
 
-    assert False
-
-@pytest.mark.skipif(have_np, reason="numpy is not installed")
-def test_matrixVariable_performance():
-    m = Model()
-    start = time()
-    m.addMatrixVar(shape=(10000, 10000))
-    finish = time()
-    assert True
+# @pytest.mark.skipif(have_np, reason="numpy is not installed")
+# def test_matrixVariable_performance():
+#     m = Model()
+#     start = time()
+#     m.addMatrixVar(shape=(10000, 10000))
+#     finish = time()
+#     assert True
