@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 - Added cutoffNode and test
+- Added getMajorVersion, getMinorVersion, and getTechVersion
 ### Fixed
 ### Changed
 ### Removed
