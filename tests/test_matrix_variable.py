@@ -16,31 +16,34 @@ def test_create_matrixVariable():
 @pytest.mark.skipif(not have_np)
 def test_add_matrixVariable():
     m = Model()
-    types=np.shape(3,3)
+    types=np.shape(3,3,4)
     for i in range(3):
         for j in range(3):
-            if i == 0:
-                types[i][j] = "C"
-            elif i == 1:
-                types[i][j] = "B"
-            else:
-                types[i][j] = "I"        
+            for k in range(4):
+                if i == 0:
+                    types[i][j][k] = "C"
+                elif i == 1:
+                    types[i][j][k] = "B"
+                else:
+                    types[i][j][k] = "I"        
 
-    matrix_variable = m.addMatrixVariable(shape=(3,3), name="", vtype=types, ub=8)
+    lb = np.ndarray(3)
+    matrix_variable = m.addMatrixVariable(shape=(3,3,4), name="", vtype=types, ub=8, lb=np.ndarray())
 
     for i in range(3):
         for j in range(3):
-            if i == 0:
-                assert matrix_variable[i][j].getType() == "C"
-            elif i == 1:
-                assert matrix_variable[i][j].getType() == "B"
-            else:
-                assert matrix_variable[i][j].getType() == "I"
-            
-            assert type(matrix_variable)[i][j] == Variable
-            assert matrix_variable[i][j].name() == "????"
-            assert matrix_variable[i][j].ub() == 8
-            assert matrix_variable[i][j].ub() == 0
+            for k in range(4):
+                if i == 0:
+                    assert matrix_variable[i][j][k].getType() == "C"
+                elif i == 1:
+                    assert matrix_variable[i][j][k].getType() == "B"
+                else:
+                    assert matrix_variable[i][j][k].getType() == "I"
+                
+                assert type(matrix_variable)[i][j][k] == Variable
+                assert matrix_variable[i][j][k].name() == "????"
+                assert matrix_variable[i][j][k].ub() == 8
+                assert matrix_variable[i][j][k].ub() == 0
 
     return
 
