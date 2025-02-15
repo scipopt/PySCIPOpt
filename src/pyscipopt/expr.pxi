@@ -42,6 +42,7 @@
 # which should, in princple, modify the expr. However, since we do not implement __isub__, __sub__
 # gets called (I guess) and so a copy is returned.
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
+include "matrix.pxi"
 
 def _is_number(e):
     try:
@@ -58,6 +59,8 @@ def _expr_richcmp(self, other, op):
             return (self - other) <= 0.0
         elif _is_number(other):
             return ExprCons(self, rhs=float(other))
+        elif isinstance(other, MatrixVariable):
+            return _expr_richcmp(other, self, 5)
         else:
             raise NotImplementedError
     elif op == 5: # >=
@@ -65,6 +68,8 @@ def _expr_richcmp(self, other, op):
             return (self - other) >= 0.0
         elif _is_number(other):
             return ExprCons(self, lhs=float(other))
+        elif isinstance(other, MatrixVariable):
+            return _expr_richcmp(other, self, 1)
         else:
             raise NotImplementedError
     elif op == 2: # ==
@@ -72,6 +77,8 @@ def _expr_richcmp(self, other, op):
             return (self - other) == 0.0
         elif _is_number(other):
             return ExprCons(self, lhs=float(other), rhs=float(other))
+        elif isinstance(other, MatrixVariable):
+            return _expr_richcmp(other, self, 2)
         else:
             raise NotImplementedError
     else:
@@ -115,6 +122,7 @@ def buildGenExprObj(expr):
     """helper function to generate an object of type GenExpr"""
     if _is_number(expr):
         return Constant(expr)
+
     elif isinstance(expr, Expr):
         # loop over terms and create a sumexpr with the sum of each term
         # each term is either a variable (which gets transformed into varexpr)
@@ -133,6 +141,13 @@ def buildGenExprObj(expr):
                     prodexpr *= varexpr
                 sumexpr += coef * prodexpr
         return sumexpr
+
+    elif isinstance(expr, MatrixVariable):
+        GenExprs = np.empty(expr.shape, dtype=object)
+        for idx in np.ndindex(expr.shape):
+            GenExprs[idx] = buildGenExprObj(expr[idx])
+        return GenExprs
+
     else:
         assert isinstance(expr, GenExpr)
         return expr
@@ -183,8 +198,11 @@ cdef class Expr:
             terms[CONST] = terms.get(CONST, 0.0) + c
         elif isinstance(right, GenExpr):
             return buildGenExprObj(left) + right
+        elif isinstance(right, MatrixVariable):
+            return right + left
         else:
             raise NotImplementedError
+
         return Expr(terms)
 
     def __iadd__(self, other):
@@ -201,6 +219,7 @@ cdef class Expr:
             return buildGenExprObj(self) + other
         else:
             raise NotImplementedError
+
         return self
 
     def __mul__(self, other):

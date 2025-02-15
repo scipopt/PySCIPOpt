@@ -3134,15 +3134,9 @@ cdef class Model:
         return pyVar
 
     def addMatrixVar(self, 
-        shape: Union[int, Tuple],
-        name: Union[str, np.ndarray] = '',
-        vtype: Union[str, np.ndarray] = 'C',
-        lb: Union[int, float, np.ndarray, None] = 0.0,
-        ub: Union[int, float, np.ndarray, None] = None,
-        obj: Union[int, float, np.ndarray] = 0.0,
-        pricedVar: Union[bool, np.ndarray] = False,
-        pricedVarScore: Union[int, float, np.ndarray] = 1.0
-    ) -> MatrixVariable:
+        shape: Union[int, Tuple], name: Union[str, np.ndarray] = '', vtype: Union[str, np.ndarray] = 'C', lb: Union[int, float, np.ndarray, None] = 0.0,
+        ub: Union[int, float, np.ndarray, None] = None, obj: Union[int, float, np.ndarray] = 0.0, pricedVar: Union[bool, np.ndarray] = False, 
+        pricedVarScore: Union[int, float, np.ndarray] = 1.0) -> MatrixVariable:
         """
         Create a new matrix of variable. Default matrix variables are non-negative and continuous.
 
@@ -4927,6 +4921,19 @@ cdef class Model:
             )
 
         return constraints
+
+    def addMatrixCons(self, cons, name='', initial=True, separate=True,
+                enforce=True, check=True, propagate=True, local=False,
+                modifiable=False, dynamic=False, removable=False,
+                stickingatnode=False):
+        
+        #assert isinstance(cons, MatrixVariable)
+
+        all_cons = []
+        for idx in np.ndindex(cons.shape):
+            all_cons.append(self.addCons(cons[idx]))
+
+        return all_cons
 
     def addConsDisjunction(self, conss, name = '', initial = True, 
         relaxcons = None, enforce=True, check =True, 

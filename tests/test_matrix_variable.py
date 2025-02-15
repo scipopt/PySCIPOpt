@@ -1,6 +1,6 @@
 import pprint
 import pytest
-from pyscipopt import Model, Variable, Expr
+from pyscipopt import Model, Variable, Expr, log, exp, cos, sin, sqrt
 from time import time
 
 try:
@@ -141,22 +141,36 @@ def test_expr_from_matrix_vars():
 @pytest.mark.skipif(not have_np, reason="numpy is not installed")
 def test_add_cons_matrixVar():
     m = Model()
-    m.hideOutput()
-    matrix_variable = m.addMatrixVar(shape=(3, 3), vtype="B", name="A")
+    matrix_variable = m.addMatrixVar(shape=(3, 3), vtype="B", name="A", obj=1)
     other_matrix_variable = m.addMatrixVar(shape=(3, 3), vtype="B", name="B")
-#     single_var = m.addVar(vtype="B", name="x")
-    
-    
-#     # all supported use cases
+    single_var = m.addVar(vtype="B", name="x")
+        
+    # all supported use cases
     cexpr = matrix_variable <= np.ones((3, 3))
     cexpr = matrix_variable <= 1
     cexpr = matrix_variable <= other_matrix_variable
-#     # cexpr = matrix_variable <= single_var
-#     # cexpr = 1 <= matrix_variable
-#     # cexpr = np.ones((3,3)) <= matrix_variable
-#     # cexpr = other_matrix_variable <= matrix_variable
-#     # cexpr = single_var <= matrix_variable
-#     # print(cexpr)
+    cexpr = matrix_variable <= single_var
+    cexpr = 1 <= matrix_variable
+    cexpr = np.ones((3,3)) <= matrix_variable
+    cexpr = other_matrix_variable <= matrix_variable
+    cexpr = single_var <= matrix_variable
+    cexpr = single_var >= matrix_variable
+    cexpr = single_var == matrix_variable
+    cexpr = matrix_variable + single_var
+    cexpr = single_var + matrix_variable
+
+    cexpr = m.addMatrixCons(matrix_variable >= 1)
+    m.optimize()    
+    assert m.isEQ(m.getPrimalbound(), 1*3*3)
+    
+    cexpr = log(matrix_variable)
+    cexpr = exp(matrix_variable)
+    cexpr = cos(matrix_variable)
+    cexpr = sin(matrix_variable)
+    cexpr = sqrt(matrix_variable)
+    
+    #cexpr = m.addMatrixCons(matrix_variable <= other_matrix_variable)
+
 
 # # @pytest.mark.skipif(have_np, reason="numpy is not installed")
 # # def test_multiply_matrixVariable():
