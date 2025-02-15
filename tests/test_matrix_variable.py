@@ -23,7 +23,7 @@ def test_add_matrixVar():
                 else:
                     vtypes[i][j][k] = "I"
 
-    matrix_variable = m.addMatrixVar(shape=(3, 3, 4), name="", vtype=vtypes, ub=8.5,
+    matrix_variable = m.addMatrixVar(shape=(3, 3, 4), name="", vtype=vtypes, ub=8.5, obj=1.0,
                                      lb=np.ndarray((3, 3, 4), dtype=object))
 
     for i in range(3):
@@ -44,6 +44,17 @@ def test_add_matrixVar():
                 
                 assert isinstance(matrix_variable[i][j][k], Variable)
                 assert matrix_variable[i][j][k].name == f"x{i*12 + j*4 + k + 1}"
+
+
+    sum_all_expr = matrix_variable.sum()
+    m.setObjective(sum_all_expr, "maximize")
+    m.addCons(sum_all_expr <= 1)
+    assert m.getNVars() == 3 * 3 * 4
+
+    m.optimize()
+
+    assert m.getStatus() == "optimal"
+    assert m.getObjVal() == 1
 
 # @pytest.mark.skipif(have_np, reason="numpy is not installed")
 # def test_create_cons_with_matrixVariable():
