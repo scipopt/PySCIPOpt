@@ -7,6 +7,7 @@ import os
 import sys
 import warnings
 import locale
+import numpy as np
 
 cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
@@ -1412,6 +1413,15 @@ cdef class Node:
     def __eq__(self, other):
         return (self.__class__ == other.__class__
                 and self.scip_node == (<Node>other).scip_node)
+
+
+cdef class MatrixVariable(np.ndarray):
+
+    @staticmethod
+    cdef create():
+        # TODO (Maybe not needed? All getter functions outside of the class can just iterate, and then "create" Variable)
+
+
 
 cdef class Variable(Expr):
     """Is a linear expression and has SCIP_VAR*"""
@@ -3027,6 +3037,78 @@ cdef class Model:
     def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0):
         """
         Create a new variable. Default variable is non-negative and continuous.
+
+        Parameters
+        ----------
+        name : str, optional
+            name of the variable, generic if empty (Default value = '')
+        vtype : str, optional
+            type of the variable: 'C' continuous, 'I' integer, 'B' binary, and 'M' implicit integer
+            (Default value = 'C')
+        lb : float or None, optional
+            lower bound of the variable, use None for -infinity (Default value = 0.0)
+        ub : float or None, optional
+            upper bound of the variable, use None for +infinity (Default value = None)
+        obj : float, optional
+            objective value of variable (Default value = 0.0)
+        pricedVar : bool, optional
+            is the variable a pricing candidate? (Default value = False)
+        pricedVarScore : float, optional
+            score of variable in case it is priced, the higher the better (Default value = 1.0)
+
+        Returns
+        -------
+        Variable
+
+        """
+        cdef SCIP_VAR* scip_var
+
+        # replace empty name with generic one
+        if name == '':
+            name = 'x'+str(SCIPgetNVars(self._scip)+1)
+        cname = str_conversion(name)
+
+        # replace None with corresponding infinity
+        if lb is None:
+            lb = -SCIPinfinity(self._scip)
+        if ub is None:
+            ub = SCIPinfinity(self._scip)
+
+        vtype = vtype.upper()
+        if vtype in ['C', 'CONTINUOUS']:
+            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_CONTINUOUS))
+        elif vtype in ['B', 'BINARY']:
+            if ub > 1.0:
+                ub = 1.0
+            if lb < 0.0:
+                lb = 0.0
+            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_BINARY))
+        elif vtype in ['I', 'INTEGER']:
+            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_INTEGER))
+        elif vtype in ['M', 'IMPLINT']:
+            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_IMPLINT))
+        else:
+            raise Warning("unrecognized variable type")
+
+        if pricedVar:
+            PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, pricedVarScore))
+        else:
+            PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
+
+        pyVar = Variable.create(scip_var)
+
+        # store variable in the model to avoid creating new python variable objects in getVars()
+        assert not pyVar.ptr() in self._modelvars
+        self._modelvars[pyVar.ptr()] = pyVar
+
+        #setting the variable data
+        SCIPvarSetData(scip_var, <SCIP_VARDATA*>pyVar)
+        PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
+        return pyVar
+
+    def addMatrixVar(self, shape, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0):
+        """
+        Create a new matrix of variable. Default matrix variables are non-negative and continuous.
 
         Parameters
         ----------
