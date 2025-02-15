@@ -43,7 +43,6 @@
 # gets called (I guess) and so a copy is returned.
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
 
-
 def _is_number(e):
     try:
         f = float(e)
@@ -52,8 +51,7 @@ def _is_number(e):
         return False
     except TypeError: # for other types (Variable, Expr)
         return False
-
-
+        
 def _expr_richcmp(self, other, op):
     if op == 1: # <=
         if isinstance(other, Expr) or isinstance(other, GenExpr):

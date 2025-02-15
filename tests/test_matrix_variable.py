@@ -116,26 +116,71 @@ def test_expr_from_matrix_vars():
             assert coeff == 1
 
             assert len(term) == 2
+    
+    power_3_expr = mvar ** 3
+    for expr in np.nditer(power_3_expr, flags=["refs_ok"]):
+        expr = expr.item()
+        assert(isinstance(expr, Expr))
+        assert expr.degree() == 3
+        expr_list = list(expr.terms.items())
+        assert len(expr_list) == 1
+        for term, coeff in expr_list:
+            assert coeff == 1
+            assert len(term) == 3
+    
+    power_3_mat_expr = np.linalg.matrix_power(mvar, 3)
+    for expr in np.nditer(power_3_mat_expr, flags=["refs_ok"]):
+        expr = expr.item()
+        assert(isinstance(expr, Expr))
+        assert expr.degree() == 3
+        expr_list = list(expr.terms.items())
+        for term, coeff in expr_list:
+            assert len(term) == 3
 
 
+@pytest.mark.skipif(not have_np, reason="numpy is not installed")
+def test_add_cons_matrixVar():
+    m = Model()
+    m.hideOutput()
+    matrix_variable = m.addMatrixVar(shape=(3, 3), vtype="B", name="A")
+    other_matrix_variable = m.addMatrixVar(shape=(3, 3), vtype="B", name="B")
+#     single_var = m.addVar(vtype="B", name="x")
+    
+    
+#     # all supported use cases
+    cexpr = matrix_variable <= np.ones((3, 3))
+    cexpr = matrix_variable <= 1
+    cexpr = matrix_variable <= other_matrix_variable
+#     # cexpr = matrix_variable <= single_var
+#     # cexpr = 1 <= matrix_variable
+#     # cexpr = np.ones((3,3)) <= matrix_variable
+#     # cexpr = other_matrix_variable <= matrix_variable
+#     # cexpr = single_var <= matrix_variable
+#     # print(cexpr)
 
-#     assert False
+# # @pytest.mark.skipif(have_np, reason="numpy is not installed")
+# # def test_multiply_matrixVariable():
+# #     m = Model()
 
-# @pytest.mark.skipif(have_np, reason="numpy is not installed")
-# def test_multiply_matrixVariable():
-#     m = Model()
+# #     matrix_variable1 = m.addMatrixVar()
+# #     matrix_variable2 = m.addMatrixVar()
+# #     m.addMatrixCons(matrix_variable1 * matrix_variable2 <= 2)
+# #     m.addMatrixCons(matrix_variable1 * matrix_variable2 <= 2)
 
-#     matrix_variable1 = m.addMatrixVar()
-#     matrix_variable2 = m.addMatrixVar()
-#     m.addMatrixCons(matrix_variable1 * matrix_variable2 <= 2)
-#     m.addMatrixCons(matrix_variable1 * matrix_variable2 <= 2)
+# #     assert False
 
-#     assert False
+# # @pytest.mark.skipif(have_np, reason="numpy is not installed")
+# # def test_matrixVariable_performance():
+# #     m = Model()
+# #     start = time()
+# #     m.addMatrixVar(shape=(10000, 10000))
+# #     finish = time()
+# #     assert True
 
-# @pytest.mark.skipif(have_np, reason="numpy is not installed")
-# def test_matrixVariable_performance():
-#     m = Model()
-#     start = time()
-#     m.addMatrixVar(shape=(10000, 10000))
-#     finish = time()
-#     assert True
+
+if __name__ == "__main__":
+    test_add_matrixVar()
+    test_expr_from_matrix_vars()
+    test_add_cons_matrixVar()
+    # test_multiply_matrixVariable()
+    # test_matrixVariable

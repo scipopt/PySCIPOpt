@@ -7,7 +7,6 @@ import os
 import sys
 import warnings
 import locale
-import numpy as np
 
 cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
@@ -36,6 +35,7 @@ include "sepa.pxi"
 include "reader.pxi"
 include "relax.pxi"
 include "nodesel.pxi"
+include "matrix.pxi"
 
 # recommended SCIP version; major version is required
 MAJOR = 9
@@ -3133,7 +3133,16 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
         return pyVar
 
-    def addMatrixVar(self, shape, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0):
+    def addMatrixVar(self, 
+        shape: Union[int, Tuple],
+        name: Union[str, np.ndarray] = '',
+        vtype: Union[str, np.ndarray] = 'C',
+        lb: Union[int, float, np.ndarray, None] = 0.0,
+        ub: Union[int, float, np.ndarray, None] = None,
+        obj: Union[int, float, np.ndarray] = 0.0,
+        pricedVar: Union[bool, np.ndarray] = False,
+        pricedVarScore: Union[int, float, np.ndarray] = 1.0
+    ) -> MatrixVariable:
         """
         Create a new matrix of variable. Default matrix variables are non-negative and continuous.
 
@@ -3238,7 +3247,7 @@ cdef class Model:
         #                             pricedVarScore=matrix_priced_var_scores[idx])
 
 
-        return matrix_variable
+        return matrix_variable.view(MatrixVariable)
 
     def getTransformedVar(self, Variable var):
         """
