@@ -1414,15 +1414,6 @@ cdef class Node:
         return (self.__class__ == other.__class__
                 and self.scip_node == (<Node>other).scip_node)
 
-
-cdef class MatrixVariable(np.ndarray):
-
-    @staticmethod
-    cdef create():
-        # TODO (Maybe not needed? All getter functions outside of the class can just iterate, and then "create" Variable)
-
-
-
 cdef class Variable(Expr):
     """Is a linear expression and has SCIP_VAR*"""
 
@@ -3112,71 +3103,105 @@ cdef class Model:
 
         Parameters
         ----------
-        name : str, optional
-            name of the variable, generic if empty (Default value = '')
-        vtype : str, optional
-            type of the variable: 'C' continuous, 'I' integer, 'B' binary, and 'M' implicit integer
+        shape : int or tuple
+            the shape of the resultant MatrixVariable
+        name : str or np.ndarray, optional
+            name of the matrix variable, generic if empty (Default value = '')
+        vtype : str or np.ndarray, optional
+            type of the matrix variable: 'C' continuous, 'I' integer, 'B' binary, and 'M' implicit integer
             (Default value = 'C')
-        lb : float or None, optional
-            lower bound of the variable, use None for -infinity (Default value = 0.0)
-        ub : float or None, optional
-            upper bound of the variable, use None for +infinity (Default value = None)
-        obj : float, optional
-            objective value of variable (Default value = 0.0)
-        pricedVar : bool, optional
-            is the variable a pricing candidate? (Default value = False)
-        pricedVarScore : float, optional
-            score of variable in case it is priced, the higher the better (Default value = 1.0)
+        lb : float or np.ndarray or None, optional
+            lower bound of the matrix variable, use None for -infinity (Default value = 0.0)
+        ub : float or np.ndarray or None, optional
+            upper bound of the matrix variable, use None for +infinity (Default value = None)
+        obj : float or np.ndarray, optional
+            objective value of matrix variable (Default value = 0.0)
+        pricedVar : bool or np.ndarray, optional
+            is the matrix variable a pricing candidate? (Default value = False)
+        pricedVarScore : float or np.ndarray, optional
+            score of matrix variable in case it is priced, the higher the better (Default value = 1.0)
 
         Returns
         -------
-        Variable
+        MatrixVariable
 
         """
-        cdef SCIP_VAR* scip_var
+        if isinstance(shape, np.ndarray):
+            if isinstance(name, np.ndarray):
+                assert name.shape == shape
+            if isinstance(vtype, np.ndarray):
+                assert vtype.shape == shape
+            if isinstance(lb, np.ndarray):
+                assert lb.shape == shape
+            if isinstance(ub, np.ndarray):
+                assert ub.shape == shape
+            if isinstance(obj, np.ndarray):
+                assert obj.shape == shape
+            if isinstance(pricedVar, np.ndarray):
+                assert pricedVar.shape == shape
+            if isinstance(pricedVarScore, np.ndarray):
+                assert pricedVarScore.shape == shape
 
-        # replace empty name with generic one
-        if name == '':
-            name = 'x'+str(SCIPgetNVars(self._scip)+1)
-        cname = str_conversion(name)
-
-        # replace None with corresponding infinity
-        if lb is None:
-            lb = -SCIPinfinity(self._scip)
-        if ub is None:
-            ub = SCIPinfinity(self._scip)
-
-        vtype = vtype.upper()
-        if vtype in ['C', 'CONTINUOUS']:
-            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_CONTINUOUS))
-        elif vtype in ['B', 'BINARY']:
-            if ub > 1.0:
-                ub = 1.0
-            if lb < 0.0:
-                lb = 0.0
-            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_BINARY))
-        elif vtype in ['I', 'INTEGER']:
-            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_INTEGER))
-        elif vtype in ['M', 'IMPLINT']:
-            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_IMPLINT))
+        if isinstance(shape, int):
+            ndim = 1
         else:
-            raise Warning("unrecognized variable type")
+            ndim = len(shape)
+        # cdef np.ndarray[object, ndim=ndim] matrix_variable = np.empty(shape, dtype=object)
+        matrix_variable = np.empty(shape, dtype=object)
 
-        if pricedVar:
-            PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, pricedVarScore))
+        if isinstance(name, str):
+            matrix_names = np.full(shape, name, dtype=object)
+            if name != "":
+                with np.nditer(matrix_names, flags=["multi_index"], op_flags=["writeonly"]) as it:
+                    for x in it:
+                        x[...] = name + "_" + "_".join(str(it.multi_index[i]) for i in it.multi_index)
         else:
-            PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
+            matrix_names = name
 
-        pyVar = Variable.create(scip_var)
+        if not isinstance(vtype, np.ndarray):
+            matrix_vtypes = np.full(shape, vtype, dtype=str)
+        else:
+            matrix_vtypes = vtype
 
-        # store variable in the model to avoid creating new python variable objects in getVars()
-        assert not pyVar.ptr() in self._modelvars
-        self._modelvars[pyVar.ptr()] = pyVar
+        if not isinstance(lb, np.ndarray):
+            matrix_lbs = np.full(shape, lb, dtype=object)
+        else:
+            matrix_lbs = lb
+        print(matrix_lbs)
 
-        #setting the variable data
-        SCIPvarSetData(scip_var, <SCIP_VARDATA*>pyVar)
-        PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
-        return pyVar
+        if not isinstance(ub, np.ndarray):
+            matrix_ubs = np.full(shape, ub, dtype=object)
+        else:
+            matrix_ubs = ub
+
+        if not isinstance(obj, np.ndarray):
+            matrix_objs = np.full(shape, obj, dtype=float)
+        else:
+            matrix_objs = obj
+
+        if not isinstance(pricedVar, np.ndarray):
+            matrix_priced_vars = np.full(shape, pricedVar, dtype=bool)
+        else:
+            matrix_priced_vars = pricedVar
+
+        if not isinstance(pricedVarScore, np.ndarray):
+            matrix_priced_var_scores = np.full(shape, pricedVarScore, dtype=float)
+        else:
+            matrix_priced_var_scores = pricedVarScore
+
+        for idx in np.ndindex(matrix_variable.shape):
+            matrix_variable[idx] = self.addVar(name=matrix_names[idx], vtype=matrix_vtypes[idx], lb=matrix_lbs[idx],
+                                               ub=matrix_ubs[idx], obj=matrix_objs[idx], pricedVar=matrix_priced_vars[idx],
+                                               pricedVarScore=matrix_priced_var_scores[idx])
+
+        # with np.nditer(matrix_names, flags=["multi_index"], op_flags=["writeonly"]) as it:
+        #     for x in it:
+        #        x[...] = self.addVar(name=matrix_names[idx], vtype=matrix_vtypes[idx], lb=matrix_lbs[idx],
+        #                             ub=matrix_ubs[idx], obj= matrix_objs[idx], pricedVar=matrix_priced_vars[idx],
+        #                             pricedVarScore=matrix_priced_var_scores[idx])
+
+
+        return matrix_variable
 
     def getTransformedVar(self, Variable var):
         """
