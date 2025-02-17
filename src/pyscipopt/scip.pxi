@@ -2059,7 +2059,202 @@ cdef class Constraint:
                 and self.scip_cons == (<Constraint>other).scip_cons)
 
 class MatrixConstraint(np.ndarray):
-    pass
+
+    def isInitial(self):
+        """
+        Returns True if the relaxation of the constraint should be in the initial LP.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        initial = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            initial[idx] = self[idx].isInitial()
+        return initial
+
+    def isSeparated(self):
+        """
+        Returns True if constraint should be separated during LP processing.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        separated = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            separated[idx] = self[idx].isSeparated()
+        return separated
+
+    def isEnforced(self):
+        """
+        Returns True if constraint should be enforced during node processing.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        enforced = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            enforced[idx] = self[idx].isEnforced()
+        return enforced
+
+    def isChecked(self):
+        """
+        Returns True if constraint should be checked for feasibility.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        checked = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            checked[idx] = self[idx].isCheced()
+        return checked
+
+    def isPropagated(self):
+        """
+        Returns True if constraint should be propagated during node processing.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        propagated = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            propagated[idx] = self[idx].isPropagated()
+        return propagated
+
+    def isLocal(self):
+        """
+        Returns True if constraint is only locally valid or not added to any (sub)problem.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        local = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            local[idx] = self[idx].isLocal()
+        return local
+
+    def isModifiable(self):
+        """
+        Returns True if constraint is modifiable (subject to column generation).
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        modifiable = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            modifiable[idx] = self[idx].isModifiable()
+        return modifiable
+
+    def isDynamic(self):
+        """
+        Returns True if constraint is subject to aging.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        dynamic = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            dynamic[idx] = self[idx].isDynamic()
+        return dynamic
+
+    def isRemovable(self):
+        """
+        Returns True if constraint's relaxation should be removed from the LP due to aging or cleanup.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        removable = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            removable[idx] = self[idx].isRemovable()
+        return removable
+
+    def isStickingAtNode(self):
+        """
+        Returns True if constraint is only locally valid or not added to any (sub)problem.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        stickingatnode = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            stickingatnode[idx] = self[idx].isStickingAtNode()
+        return stickingatnode
+
+    def isActive(self):
+        """
+        Returns True iff constraint is active in the current node.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        active = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            active[idx] = self[idx].isActive()
+        return active
+
+    def isLinear(self):
+        """
+        Returns True if constraint is linear
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        islinear = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            islinear[idx] = self[idx].isLinear()
+        return islinear
+
+    def isNonlinear(self):
+        """
+        Returns True if constraint is nonlinear.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        isnonlinear = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            isnonlinear[idx] = self[idx].isNonlinear()
+        return isnonlinear
+
+    def getConshdlrName(self):
+        """
+        Return the constraint handler's name.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        name = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            name[idx] = self[idx].getConshdlrName()
+        return name
 
 cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) noexcept:
     if file is stdout:
