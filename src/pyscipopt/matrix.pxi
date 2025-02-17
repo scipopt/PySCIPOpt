@@ -1,10 +1,9 @@
-""" 
-# TODO handle nonlinear constraints
-# TODO matrixExpression and matrixExprCons (instead of using MatrixVariable for different things)
-# TODO Properly finish addMatrixCons (docstring, asserts, type hints)
-# TODO Add getter functions from Variable Class to MatrixVariable
+"""
+# TODO Add getter functions from Constraint class to MatrixConstraint
 # TODO Cythonize things. Improve performance.
 # TODO Refactor addConss to also add matrix constraints
+# TODO Add documentation
+# TODO Add tests
 """
 
 import numpy as np
