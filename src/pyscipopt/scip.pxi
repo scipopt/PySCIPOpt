@@ -1852,6 +1852,8 @@ cdef class Constraint:
         return (self.__class__ == other.__class__
                 and self.scip_cons == (<Constraint>other).scip_cons)
 
+class MatrixConstraint(np.ndarray):
+    pass
 
 cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) noexcept:
     if file is stdout:
@@ -3168,21 +3170,20 @@ cdef class Model:
         MatrixVariable
 
         """
-        if isinstance(shape, np.ndarray):
-            if isinstance(name, np.ndarray):
-                assert name.shape == shape
-            if isinstance(vtype, np.ndarray):
-                assert vtype.shape == shape
-            if isinstance(lb, np.ndarray):
-                assert lb.shape == shape
-            if isinstance(ub, np.ndarray):
-                assert ub.shape == shape
-            if isinstance(obj, np.ndarray):
-                assert obj.shape == shape
-            if isinstance(pricedVar, np.ndarray):
-                assert pricedVar.shape == shape
-            if isinstance(pricedVarScore, np.ndarray):
-                assert pricedVarScore.shape == shape
+        if isinstance(name, np.ndarray):
+            assert name.shape == shape
+        if isinstance(vtype, np.ndarray):
+            assert vtype.shape == shape
+        if isinstance(lb, np.ndarray):
+            assert lb.shape == shape
+        if isinstance(ub, np.ndarray):
+            assert ub.shape == shape
+        if isinstance(obj, np.ndarray):
+            assert obj.shape == shape
+        if isinstance(pricedVar, np.ndarray):
+            assert pricedVar.shape == shape
+        if isinstance(pricedVarScore, np.ndarray):
+            assert pricedVarScore.shape == shape
 
         if isinstance(shape, int):
             ndim = 1
@@ -4929,16 +4930,147 @@ cdef class Model:
                 enforce=True, check=True, propagate=True, local=False,
                 modifiable=False, dynamic=False, removable=False,
                 stickingatnode=False):
-        
-        # TODO refactor addConss to also add matrix constraints
-        #return self.addConss()
-        #assert isinstance(cons, MatrixVariable)
+        """
+        Add a linear or nonlinear matrix constraint.
 
-        all_cons = []
+        Parameters
+        ----------
+        cons : MatrixExprCons
+            The matrix expression constraint that is not yet an actual constraint
+        name : str or np.ndarray, optional
+            the name of the matrix constraint, generic name if empty (Default value = "")
+        initial : bool or np.ndarray, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool or np.ndarray, optional
+            should the matrix constraint be separated during LP processing? (Default value = True)
+        enforce : bool or np.ndarray, optional
+            should the matrix constraint be enforced during node processing? (Default value = True)
+        check : bool or np.ndarray, optional
+            should the matrix constraint be checked for feasibility? (Default value = True)
+        propagate : bool or np.ndarray, optional
+            should the matrix constraint be propagated during node processing? (Default value = True)
+        local : bool or np.ndarray, optional
+            is the matrix constraint only valid locally? (Default value = False)
+        modifiable : bool or np.ndarray, optional
+            is the matrix constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool or np.ndarray, optional
+            is the matrix constraint subject to aging? (Default value = False)
+        removable : bool or np.ndarray, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool or np.ndarray, optional
+            should the matrix constraints always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        MatrixConstraint
+            The created and added MatrixConstraint object.
+
+        """
+
+        assert isinstance(cons, MatrixExprCons), (
+                "given constraint is not MatrixExprCons but %s" % cons.__class__.__name__)
+
+        shape = cons.shape
+
+        if isinstance(name, np.ndarray):
+            assert name.shape == shape
+        if isinstance(initial, np.ndarray):
+            assert initial.shape == shape
+        if isinstance(separate, np.ndarray):
+            assert separate.shape == shape
+        if isinstance(enforce, np.ndarray):
+            assert enforce.shape == shape
+        if isinstance(check, np.ndarray):
+            assert check.shape == shape
+        if isinstance(propagate, np.ndarray):
+            assert propagate.shape == shape
+        if isinstance(local, np.ndarray):
+            assert local.shape == shape
+        if isinstance(modifiable, np.ndarray):
+            assert modifiable.shape == shape
+        if isinstance(dynamic, np.ndarray):
+            assert dynamic.shape == shape
+        if isinstance(removable, np.ndarray):
+            assert removable.shape == shape
+        if isinstance(stickingatnode, np.ndarray):
+            assert stickingatnode.shape == shape
+
+        matrix_cons = np.empty(shape, dtype=object)
+
+        if isinstance(shape, int):
+            ndim = 1
+        else:
+            ndim = len(shape)
+        # cdef np.ndarray[object, ndim=ndim] matrix_variable = np.empty(shape, dtype=object)
+        matrix_variable = np.empty(shape, dtype=object)
+
+        if isinstance(name, str):
+            matrix_names = np.full(shape, name, dtype=object)
+            if name != "":
+                for idx in np.ndindex(matrix_variable.shape):
+                    matrix_names[idx] = f"{name}_{'_'.join(map(str, idx))}"
+        else:
+            matrix_names = name
+
+        if not isinstance(initial, np.ndarray):
+            matrix_initial = np.full(shape, initial, dtype=bool)
+        else:
+            matrix_initial = initial
+
+        if not isinstance(separate, np.ndarray):
+            matrix_separate = np.full(shape, separate, dtype=bool)
+        else:
+            matrix_separate = separate
+
+        if not isinstance(enforce, np.ndarray):
+            matrix_enforce = np.full(shape, enforce, dtype=bool)
+        else:
+            matrix_enforce = enforce
+
+        if not isinstance(check, np.ndarray):
+            matrix_check = np.full(shape, check, dtype=bool)
+        else:
+            matrix_check = check
+
+        if not isinstance(propagate, np.ndarray):
+            matrix_propagate = np.full(shape, propagate, dtype=bool)
+        else:
+            matrix_propagate = propagate
+
+        if not isinstance(local, np.ndarray):
+            matrix_local = np.full(shape, local, dtype=bool)
+        else:
+            matrix_local = local
+
+        if not isinstance(modifiable, np.ndarray):
+            matrix_modifiable = np.full(shape, modifiable, dtype=bool)
+        else:
+            matrix_modifiable = modifiable
+
+        if not isinstance(dynamic, np.ndarray):
+            matrix_dynamic = np.full(shape, dynamic, dtype=bool)
+        else:
+            matrix_dynamic = dynamic
+
+        if not isinstance(removable, np.ndarray):
+            matrix_removable = np.full(shape, removable, dtype=bool)
+        else:
+            matrix_removable = removable
+
+        if not isinstance(stickingatnode, np.ndarray):
+            matrix_stickingatnode = np.full(shape, stickingatnode, dtype=bool)
+        else:
+            matrix_stickingatnode = stickingatnode
+
         for idx in np.ndindex(cons.shape):
-            all_cons.append(self.addCons(cons[idx]))
+            matrix_cons[idx] = self.addCons(cons[idx], name=matrix_names[idx], initial=matrix_initial[idx],
+                                            separate=matrix_separate[idx], check=matrix_check[idx],
+                                            propagate=matrix_propagate[idx], local=matrix_local[idx],
+                                            modifiable=matrix_modifiable[idx], dynamic=matrix_dynamic[idx],
+                                            removable=matrix_removable[idx], stickingatnode=matrix_stickingatnode[idx])
 
-        return all_cons
+        return matrix_cons.view(MatrixConstraint)
 
     def addConsDisjunction(self, conss, name = '', initial = True, 
         relaxcons = None, enforce=True, check =True, 

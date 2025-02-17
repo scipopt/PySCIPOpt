@@ -4,6 +4,7 @@
 # TODO Properly finish addMatrixCons (docstring, asserts, type hints)
 # TODO Add getter functions from Variable Class to MatrixVariable
 # TODO Cythonize things. Improve performance.
+# TODO Refactor addConss to also add matrix constraints
 """
 
 import numpy as np
@@ -22,7 +23,7 @@ class MatrixExpr(np.ndarray):
     def sum(self, **kwargs):
         return super().sum(**kwargs).item()
     
-    def __le__(self, other: Union[float, int, Variable, np.ndarray, 'MatrixVariable']) -> np.ndarray:
+    def __le__(self, other: Union[float, int, Variable, np.ndarray, 'MatrixExpr']) -> np.ndarray:
         
         expr_cons_matrix = np.empty(self.shape, dtype=object)
         if _is_number(other) or isinstance(other, Variable):
@@ -37,7 +38,7 @@ class MatrixExpr(np.ndarray):
 
         return expr_cons_matrix.view(MatrixExprCons)
 
-    def __ge__(self, other: Union[float, int, Variable, np.ndarray, 'MatrixVariable']) -> np.ndarray:
+    def __ge__(self, other: Union[float, int, Variable, np.ndarray, 'MatrixExpr']) -> np.ndarray:
         
         expr_cons_matrix = np.empty(self.shape, dtype=object)
         if _is_number(other) or isinstance(other, Variable):
@@ -52,7 +53,7 @@ class MatrixExpr(np.ndarray):
 
         return expr_cons_matrix.view(MatrixExprCons)
 
-    def __eq__(self, other: Union[float, int, Variable, np.ndarray, 'MatrixVariable']) -> np.ndarray:
+    def __eq__(self, other: Union[float, int, Variable, np.ndarray, 'MatrixExpr']) -> np.ndarray:
         
         expr_cons_matrix = np.empty(self.shape, dtype=object)
         if _is_number(other) or isinstance(other, Variable):
