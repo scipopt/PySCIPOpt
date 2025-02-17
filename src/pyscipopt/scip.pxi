@@ -1642,7 +1642,213 @@ cdef class Variable(Expr):
         return mayround
 
 class MatrixVariable(MatrixExpr):
-    pass
+
+    def vtype(self):
+        """
+        Retrieve the matrix variables type (BINARY, INTEGER, IMPLINT or CONTINUOUS)
+
+        Returns
+        -------
+        np.ndarray
+            A matrix containing "BINARY", "INTEGER", "CONTINUOUS", or "IMPLINT"
+
+        """
+        vtypes = np.empty(self.shape, dtype=object)
+        for idx in np.ndindex(self):
+            vtypes[idx] = self[idx].vtype()
+        return vtypes
+
+    def isInLP(self):
+        """
+        Retrieve whether the matrix variable is a COLUMN variable that is member of the current LP.
+
+        Returns
+        -------
+        np.ndarray
+            An array of bools
+
+        """
+        in_lp = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            in_lp[idx] = self[idx].isInLP()
+        return in_lp
+
+
+    def getIndex(self):
+        """
+        Retrieve the unique index of the matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+            An array of integers. No two should be the same
+        """
+        indices = np.empty(self.shape, dtype=int)
+        for idx in np.ndindex(self):
+            indices[idx] = self[idx].getIndex()
+        return indices
+
+    def getCol(self):
+        """
+        Retrieve matrix of columns of COLUMN variables.
+
+        Returns
+        -------
+        np.ndarray
+            An array of Column objects
+        """
+
+        columns = np.empty(self.shape, dtype=object)
+        for idx in np.index(self):
+            columns[idx] = self[idx].getCol()
+        return columns
+
+    def getLbOriginal(self):
+        """
+        Retrieve original lower bound of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        lbs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            lbs[idx] = self[idx].getLbOriginal()
+        return lbs
+
+    def getUbOriginal(self):
+        """
+        Retrieve original upper bound of matrixvariable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        ubs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            ubs[idx] = self[idx].getUbOriginal()
+        return ubs
+
+    def getLbGlobal(self):
+        """
+        Retrieve global lower bound of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        lbs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            lbs[idx] = self[idx].getLbGlobal()
+        return lbs
+
+    def getUbGlobal(self):
+        """
+        Retrieve global upper bound of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        ubs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            ubs[idx] = self[idx].getUbGlobal()
+        return ubs
+
+    def getLbLocal(self):
+        """
+        Retrieve current lower bound of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        lbs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            lbs[idx] = self[idx].getLbLocal()
+        return lbs
+
+    def getUbLocal(self):
+        """
+        Retrieve current upper bound of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        ubs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            ubs[idx] = self[idx].getUbLocal()
+        return ubs
+
+    def getObj(self):
+        """
+        Retrieve current objective value of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        objs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            objs[idx] = self[idx].getObj()
+        return objs
+
+    def getLPSol(self):
+        """
+        Retrieve the current LP solution value of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        lpsols = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            lpsols[idx] = self[idx].getLPSol()
+        return lpsols
+
+    def getAvgSol(self):
+        """
+        Get the weighted average solution of matrix variable in all feasible primal solutions found.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        avgsols = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            avgsols[idx] = self[idx].getAvgSol()
+        return avgsols
+
+    def varMayRound(self, direction="down"):
+        """
+        Checks whether it is possible to round variable up / down and stay feasible for the relaxation.
+
+        Parameters
+        ----------
+        direction : str
+            "up" or "down"
+
+        Returns
+        -------
+        np.ndarray
+            An array of bools
+
+        """
+        mayround = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            mayround[idx] = self[idx].varMayRound()
+        return mayround
+
 
 cdef class Constraint:
     """Base class holding a pointer to corresponding SCIP_CONS"""
@@ -4926,10 +5132,13 @@ cdef class Model:
 
         return constraints
 
-    def addMatrixCons(self, cons, name='', initial=True, separate=True,
-                enforce=True, check=True, propagate=True, local=False,
-                modifiable=False, dynamic=False, removable=False,
-                stickingatnode=False):
+    def addMatrixCons(self, cons: MatrixExprCons, name: Union[str, np.ndarray] ='',
+                      initial: Union[bool, np.ndarray] = True, separate: Union[bool, np.ndarray] = True,
+                      enforce: Union[bool, np.ndarray] = True, check: Union[bool, np.ndarray] = True,
+                      propagate: Union[bool, np.ndarray] = True, local: Union[bool, np.ndarray] = False,
+                      modifiable: Union[bool, np.ndarray] = False, dynamic: Union[bool, np.ndarray] = False,
+                      removable: Union[bool, np.ndarray] = False,
+                      stickingatnode: Union[bool, np.ndarray] = False):
         """
         Add a linear or nonlinear matrix constraint.
 
