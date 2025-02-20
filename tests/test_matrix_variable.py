@@ -1,13 +1,17 @@
+import pdb
 import pprint
 import pytest
-from pyscipopt import Model, Variable, Expr, log, exp, cos, sin, sqrt
+from pyscipopt import Model, Variable, log, exp, cos, sin, sqrt
+from pyscipopt.scip import Expr, MatrixExpr, MatrixVariable, MatrixExprCons
 from time import time
 
 try:
     import numpy as np
+
     have_np = True
 except ImportError:
     have_np = False
+
 
 @pytest.mark.skipif(have_np, reason="numpy is installed")
 def test_missing_numpy():
@@ -16,13 +20,14 @@ def test_missing_numpy():
     with pytest.raises(Exception):
         m.addMatrixVar(shape=(3, 3))
 
+
 @pytest.mark.skipif(not have_np, reason="numpy is not installed")
 def test_catching_errors():
     m = Model()
 
     x = m.addVar()
-    y = m.addMatrixVar(shape=(3,3))
-    rhs = np.ones((2,1))
+    y = m.addMatrixVar(shape=(3, 3))
+    rhs = np.ones((2, 1))
 
     with pytest.raises(Exception):
         m.addMatrixCons(x <= 1)
@@ -52,6 +57,7 @@ def test_add_matrixVar():
     matrix_variable = m.addMatrixVar(shape=(3, 3, 4), name="", vtype=vtypes, ub=8.5, obj=1.0,
                                      lb=np.ndarray((3, 3, 4), dtype=object))
 
+    assert(isinstance(matrix_variable, MatrixVariable))
     for i in range(3):
         for j in range(3):
             for k in range(4):
@@ -67,10 +73,9 @@ def test_add_matrixVar():
                     assert matrix_variable[i][j][k].vtype() == "INTEGER"
                     assert m.isInfinity(-matrix_variable[i][j][k].getLbOriginal())
                     assert m.isEQ(matrix_variable[i][j][k].getUbOriginal(), 8.5)
-                
-                assert isinstance(matrix_variable[i][j][k], Variable)
-                assert matrix_variable[i][j][k].name == f"x{i*12 + j*4 + k + 1}"
 
+                assert isinstance(matrix_variable[i][j][k], Variable)
+                assert matrix_variable[i][j][k].name == f"x{i * 12 + j * 4 + k + 1}"
 
     sum_all_expr = matrix_variable.sum()
     m.setObjective(sum_all_expr, "maximize")
@@ -82,9 +87,11 @@ def test_add_matrixVar():
     assert m.getStatus() == "optimal"
     assert m.getObjVal() == 1
 
+
 def index_from_name(name: str) -> list:
     name = name[2:]
-    return list(map(int, name.split("_")))    
+    return list(map(int, name.split("_")))
+
 
 @pytest.mark.skipif(not have_np, reason="numpy is not installed")
 def test_expr_from_matrix_vars():
@@ -94,9 +101,10 @@ def test_expr_from_matrix_vars():
     mvar2 = m.addMatrixVar(shape=(2, 2), vtype="B", name="B")
 
     mvar_double = 2 * mvar
+    assert isinstance(mvar_double, MatrixExpr)
     for expr in np.nditer(mvar_double, flags=["refs_ok"]):
         expr = expr.item()
-        assert(isinstance(expr, Expr))
+        assert (isinstance(expr, Expr))
         assert expr.degree() == 1
         expr_list = list(expr.terms.items())
         assert len(expr_list) == 1
@@ -106,19 +114,21 @@ def test_expr_from_matrix_vars():
         first_var_in_term = vars_in_term[0]
         assert isinstance(first_var_in_term, Variable)
         assert first_var_in_term.vtype() == "BINARY"
-        
+
     sum_expr = mvar + mvar2
+    assert isinstance(sum_expr, MatrixExpr)
     for expr in np.nditer(sum_expr, flags=["refs_ok"]):
         expr = expr.item()
-        assert(isinstance(expr, Expr))
+        assert (isinstance(expr, Expr))
         assert expr.degree() == 1
         expr_list = list(expr.terms.items())
         assert len(expr_list) == 2
-    
+
     dot_expr = mvar * mvar2
+    assert isinstance(dot_expr, MatrixExpr)
     for expr in np.nditer(dot_expr, flags=["refs_ok"]):
         expr = expr.item()
-        assert(isinstance(expr, Expr))
+        assert (isinstance(expr, Expr))
         assert expr.degree() == 2
         expr_list = list(expr.terms.items())
         assert len(expr_list) == 1
@@ -130,9 +140,10 @@ def test_expr_from_matrix_vars():
             assert indices[0] == indices[1]
 
     mul_expr = mvar @ mvar2
+    assert isinstance(mul_expr, MatrixExpr)
     for expr in np.nditer(mul_expr, flags=["refs_ok"]):
         expr = expr.item()
-        assert(isinstance(expr, Expr))
+        assert (isinstance(expr, Expr))
         assert expr.degree() == 2
         expr_list = list(expr.terms.items())
         assert len(expr_list) == 2
@@ -140,22 +151,24 @@ def test_expr_from_matrix_vars():
             assert coeff == 1
 
             assert len(term) == 2
-    
+
     power_3_expr = mvar ** 3
+    assert isinstance(power_3_expr, MatrixExpr)
     for expr in np.nditer(power_3_expr, flags=["refs_ok"]):
         expr = expr.item()
-        assert(isinstance(expr, Expr))
+        assert (isinstance(expr, Expr))
         assert expr.degree() == 3
         expr_list = list(expr.terms.items())
         assert len(expr_list) == 1
         for term, coeff in expr_list:
             assert coeff == 1
             assert len(term) == 3
-    
+
     power_3_mat_expr = np.linalg.matrix_power(mvar, 3)
+    assert isinstance(power_3_expr, MatrixExpr)
     for expr in np.nditer(power_3_mat_expr, flags=["refs_ok"]):
         expr = expr.item()
-        assert(isinstance(expr, Expr))
+        assert (isinstance(expr, Expr))
         assert expr.degree() == 3
         expr_list = list(expr.terms.items())
         for term, coeff in expr_list:
@@ -168,26 +181,50 @@ def test_add_cons_matrixVar():
     matrix_variable = m.addMatrixVar(shape=(3, 3), vtype="B", name="A", obj=1)
     other_matrix_variable = m.addMatrixVar(shape=(3, 3), vtype="B", name="B")
     single_var = m.addVar(vtype="B", name="x")
-        
-    # all supported use cases
-    matrix_variable <= np.ones((3, 3))
-    matrix_variable <= 1
-    matrix_variable <= other_matrix_variable
-    matrix_variable <= single_var
-    1 <= matrix_variable
-    np.ones((3,3)) <= matrix_variable
-    other_matrix_variable <= matrix_variable
-    single_var <= matrix_variable
-    single_var >= matrix_variable
-    single_var == matrix_variable
 
-    matrix_variable + single_var
-    single_var + matrix_variable
+    # all supported use cases
+    c = matrix_variable <= np.ones((3, 3))
+    assert isinstance(c, MatrixExprCons)
+    d = matrix_variable <= 1
+    assert isinstance(c, MatrixExprCons)
+    for i in range(3):
+        for j in range(3):
+            expr_c = c[i][j].expr
+            expr_d = d[i][j].expr
+            assert isinstance(expr_c, Expr)
+            assert isinstance(expr_d, Expr)
+            assert m.isEQ(c[i][j]._rhs, 1)
+            assert m.isEQ(d[i][j]._rhs, 1)
+            for _, coeff in list(expr_c.terms.items()):
+                assert m.isEQ(coeff, 1)
+            for _, coeff in list(expr_d.terms.items()):
+                assert m.isEQ(coeff, 1)
+    c = matrix_variable <= other_matrix_variable
+    assert isinstance(c, MatrixExprCons)
+    c = matrix_variable <= single_var
+    assert isinstance(c, MatrixExprCons)
+    c = 1 <= matrix_variable
+    assert isinstance(c, MatrixExprCons)
+    c = np.ones((3, 3)) <= matrix_variable
+    assert isinstance(c, MatrixExprCons)
+    c = other_matrix_variable <= matrix_variable
+    assert isinstance(c, MatrixExprCons)
+    c = single_var <= matrix_variable
+    assert isinstance(c, MatrixExprCons)
+    c = single_var >= matrix_variable
+    assert isinstance(c, MatrixExprCons)
+    c = single_var == matrix_variable
+    assert isinstance(c, MatrixExprCons)
+
+    sum_expr = matrix_variable + single_var
+    assert isinstance(sum_expr, MatrixExpr)
+    sum_expr = single_var + matrix_variable
+    assert isinstance(sum_expr, MatrixExpr)
 
     m.addMatrixCons(matrix_variable >= 1)
     # m.optimize()    
     # assert m.isEQ(m.getPrimalbound(), 1*3*3)
-    
+
     log(matrix_variable)
     exp(matrix_variable)
     cos(matrix_variable)
@@ -195,7 +232,7 @@ def test_add_cons_matrixVar():
     sqrt(matrix_variable)
     log(log(matrix_variable))
     log(log(matrix_variable)) <= 9
-    
+
     m.addMatrixCons(matrix_variable <= other_matrix_variable)
     m.addMatrixCons(log(matrix_variable) <= other_matrix_variable)
     m.addMatrixCons(exp(matrix_variable) <= other_matrix_variable)
@@ -205,12 +242,15 @@ def test_add_cons_matrixVar():
 
     m.optimize()
 
+
+# This is a SCIP bug. We should probably report it.
 def test_sefault():
     m = Model()
-    matrix_variable1 = m.addMatrixVar( shape=(3,3), vtype="B", name="test", obj=np.ones((3,3)) )
+    matrix_variable1 = m.addMatrixVar(shape=(3, 3), vtype="B", name="test", obj=np.ones((3, 3)))
 
-    m.addMatrixCons(log(matrix_variable1)**2 >= 0)
-    m.optimize() # should be running without errors
+    a = m.addMatrixCons(log(matrix_variable1) ** 2 >= 0)
+    m.optimize()  # should be running without errors
+
 
 # # @pytest.mark.skipif(have_np, reason="numpy is not installed")
 # # def test_multiply_matrixVariable():
@@ -233,8 +273,9 @@ def test_sefault():
 
 
 if __name__ == "__main__":
-    test_add_matrixVar()
-    test_expr_from_matrix_vars()
+    # test_sefault()
+    # test_add_matrixVar()
+    # test_expr_from_matrix_vars()
     test_add_cons_matrixVar()
     # test_multiply_matrixVariable()
     # test_matrixVariable

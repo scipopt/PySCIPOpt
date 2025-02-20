@@ -3578,7 +3578,7 @@ cdef class Model:
         MatrixVariable
 
         """
-        assert has_numpy, "Numpy is not installed. Please install numpy to use matrix variables."
+        # assert has_numpy, "Numpy is not installed. Please install numpy to use matrix variables."
         
         if isinstance(name, np.ndarray):
             assert name.shape == shape
@@ -5380,7 +5380,7 @@ cdef class Model:
             The created and added MatrixConstraint object.
 
         """
-        assert has_numpy, "Numpy is not installed. Please install numpy to use matrix variables."
+        # assert has_numpy, "Numpy is not installed. Please install numpy to use matrix variables."
 
         assert isinstance(cons, MatrixExprCons), (
                 "given constraint is not MatrixExprCons but %s" % cons.__class__.__name__)
