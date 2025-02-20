@@ -9,7 +9,31 @@ try:
 except ImportError:
     have_np = False
 
-# not repeating reason unnecessarily
+@pytest.mark.skipif(have_np, reason="numpy is installed")
+def test_missing_numpy():
+    m = Model()
+
+    with pytest.raises(Exception):
+        m.addMatrixVar(shape=(3, 3))
+
+@pytest.mark.skipif(not have_np, reason="numpy is not installed")
+def test_catching_errors():
+    m = Model()
+
+    x = m.addVar()
+    y = m.addMatrixVar(shape=(3,3))
+    rhs = np.ones((2,1))
+
+    with pytest.raises(Exception):
+        m.addMatrixCons(x <= 1)
+
+    with pytest.raises(Exception):
+        m.addCons(y <= 3)
+
+    with pytest.raises(Exception):
+        m.addMatrixCons(y <= rhs)
+
+
 @pytest.mark.skipif(not have_np, reason="numpy is not installed")
 def test_add_matrixVar():
     m = Model()
@@ -180,6 +204,13 @@ def test_add_cons_matrixVar():
     m.addMatrixCons(cos(matrix_variable) <= other_matrix_variable)
 
     m.optimize()
+
+def test_sefault():
+    m = Model()
+    matrix_variable1 = m.addMatrixVar( shape=(3,3), vtype="B", name="test", obj=np.ones((3,3)) )
+
+    m.addMatrixCons(log(matrix_variable1)**2 >= 0)
+    m.optimize() # should be running without errors
 
 # # @pytest.mark.skipif(have_np, reason="numpy is not installed")
 # # def test_multiply_matrixVariable():

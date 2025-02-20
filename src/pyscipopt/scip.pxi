@@ -19,6 +19,13 @@ from collections.abc import Iterable
 from itertools import repeat
 from dataclasses import dataclass
 
+# matrix variables
+try:
+    import numpy as np
+    have_np = True
+except ImportError:
+    have_np = False
+
 include "expr.pxi"
 include "lp.pxi"
 include "benders.pxi"
@@ -3571,6 +3578,8 @@ cdef class Model:
         MatrixVariable
 
         """
+        assert has_numpy, "Numpy is not installed. Please install numpy to use matrix variables."
+        
         if isinstance(name, np.ndarray):
             assert name.shape == shape
         if isinstance(vtype, np.ndarray):
@@ -5371,6 +5380,7 @@ cdef class Model:
             The created and added MatrixConstraint object.
 
         """
+        assert has_numpy, "Numpy is not installed. Please install numpy to use matrix variables."
 
         assert isinstance(cons, MatrixExprCons), (
                 "given constraint is not MatrixExprCons but %s" % cons.__class__.__name__)
