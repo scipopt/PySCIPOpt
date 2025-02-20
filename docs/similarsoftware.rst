@@ -85,6 +85,7 @@ Software using PySCIPOpt
 
 This is software that is built on PySCIPOpt
 
+- `PyGCGOpt <https://github.com/scipopt/PyGCGOpt>`_: An extension of SCIP, using generic decompositions for solving MIPs
 - `GeCO <https://github.com/CharJon/GeCO>`_: Generators for Combinatorial Optimization
 - `scip-routing <https://github.com/mmghannam/scip-routing>`_:  An exact VRPTW solver in Python
 - `PySCIPOpt-ML <https://github.com/Opt-Mucca/PySCIPOpt-ML>`_:  Python interface to automatically formulate Machine Learning models into Mixed-Integer Programs

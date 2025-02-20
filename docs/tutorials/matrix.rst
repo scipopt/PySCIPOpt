@@ -29,7 +29,7 @@ object (see :doc:`the constraint tutorial </tutorials/constypes>`).
 
 .. contents:: Contents
 
-What is a matrix API?
+What is a Matrix API?
 ======================
 
 The standard approach explained in the variable and constraint tutorials, is to
