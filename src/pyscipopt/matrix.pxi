@@ -1,7 +1,5 @@
 """
 # TODO Cythonize things. Improve performance.
-# TODO Refactor addConss to also add matrix constraints
-# TODO Add documentation
 # TODO Add tests
 """
 

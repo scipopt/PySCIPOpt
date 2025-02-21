@@ -224,6 +224,15 @@ def test_add_cons_matrixVar():
 
     m.optimize()
 
+def test_add_conss_matrixCons():
+    m = Model()
+    matrix_variable = m.addMatrixVar(shape=(2, 3, 4, 5), vtype="B", name="A", obj=1)
+
+    conss = m.addConss(matrix_variable <= 2)
+
+    assert len(conss) == 2 * 3 * 4 * 5
+    assert m.getNConss() == 2 * 3 * 4 * 5
+
 def test_correctness():
     m = Model() 
     x = m.addMatrixVar(shape=(2, 2), vtype="B", name="x", obj=np.ndarray([[5,1],[4,9]]), lb = np.ndarray([[1,2],[3,4]]))
@@ -233,7 +242,7 @@ def test_correctness():
     m.addMatrixCons(res >= 15)
     m.optimize()
 
-    assert m.getVal(res) == None # finish this test
+    assert m.getVal(res) == None # finish this test after m.getVal is implemented
     assert m.getVar(res[0,0])
 
 # This is a SCIP bug. Already reported

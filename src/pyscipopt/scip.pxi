@@ -5299,6 +5299,9 @@ cdef class Model:
         cdef int n_conss
         cdef int i 
 
+        if isinstance(conss, MatrixExprCons):
+            conss = conss.flatten()
+
         def ensure_iterable(elem, length):
             if isinstance(elem, Iterable):
                 return elem
