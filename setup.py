@@ -1,6 +1,5 @@
 from setuptools import find_packages, setup, Extension
-import os, platform, sys, re
-import numpy as np
+import os, platform, sys
 
 # look for environment variable that specifies path to SCIP
 scipoptdir = os.environ.get("SCIPOPTDIR", "").strip('"')
@@ -20,7 +19,6 @@ if not scipoptdir:
     print("Assuming that SCIP is installed globally, because SCIPOPTDIR is undefined.\n")
 
 else:
-
     # check whether SCIP is installed in the given directory
     if os.path.exists(os.path.join(scipoptdir, "include")):
         includedir = os.path.abspath(os.path.join(scipoptdir, "include"))
@@ -93,7 +91,7 @@ extensions = [
     Extension(
         "pyscipopt.scip",
         [os.path.join(packagedir, f"scip{ext}")],
-        include_dirs=[includedir, np.get_include()],
+        include_dirs=[includedir],
         library_dirs=[libdir],
         libraries=[libname],
         extra_compile_args=extra_compile_args,

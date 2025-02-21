@@ -19,12 +19,7 @@ from collections.abc import Iterable
 from itertools import repeat
 from dataclasses import dataclass
 
-# matrix variables
-try:
-    import numpy as np
-    have_np = True
-except ImportError:
-    have_np = False
+import numpy as np
 
 include "expr.pxi"
 include "lp.pxi"
@@ -3547,9 +3542,15 @@ cdef class Model:
         return pyVar
 
     def addMatrixVar(self, 
-        shape: Union[int, Tuple], name: Union[str, np.ndarray] = '', vtype: Union[str, np.ndarray] = 'C', lb: Union[int, float, np.ndarray, None] = 0.0,
-        ub: Union[int, float, np.ndarray, None] = None, obj: Union[int, float, np.ndarray] = 0.0, pricedVar: Union[bool, np.ndarray] = False, 
-        pricedVarScore: Union[int, float, np.ndarray] = 1.0) -> MatrixVariable:
+                     shape: Union[int, Tuple],
+                     name: Union[str, np.ndarray] = '',
+                     vtype: Union[str, np.ndarray] = 'C',
+                     lb: Union[int, float, np.ndarray, None] = 0.0,
+                     ub: Union[int, float, np.ndarray, None] = None,
+                     obj: Union[int, float, np.ndarray] = 0.0,
+                     pricedVar: Union[bool, np.ndarray] = False,
+                     pricedVarScore: Union[int, float, np.ndarray] = 1.0
+                     ) -> MatrixVariable:
         """
         Create a new matrix of variable. Default matrix variables are non-negative and continuous.
 
@@ -3599,7 +3600,7 @@ cdef class Model:
             ndim = 1
         else:
             ndim = len(shape)
-        # cdef np.ndarray[object, ndim=ndim] matrix_variable = np.empty(shape, dtype=object)
+
         matrix_variable = np.empty(shape, dtype=object)
 
         if isinstance(name, str):
