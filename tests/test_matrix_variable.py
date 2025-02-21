@@ -242,6 +242,14 @@ def test_add_cons_matrixVar():
 
     m.optimize()
 
+def test_add_conss_matrixCons():
+    m = Model()
+    matrix_variable = m.addMatrixVar(shape=(2, 3, 4, 5), vtype="B", name="A", obj=1)
+
+    conss = m.addConss(matrix_variable <= 2)
+
+    assert len(conss) == 2 * 3 * 4 * 5
+    assert m.getNConss() == 2 * 3 * 4 * 5
 
 # This is a SCIP bug. We should probably report it.
 def test_sefault():
