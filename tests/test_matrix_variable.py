@@ -87,6 +87,11 @@ def test_add_matrixVar():
     assert m.getStatus() == "optimal"
     assert m.getObjVal() == 1
 
+    sol = m.getBestSol()
+
+    sol_matrix = sol[matrix_variable]
+    assert sol_matrix.shape == (3, 3, 4)
+    assert m.isEQ(sol_matrix.sum(), 1)
 
 def index_from_name(name: str) -> list:
     name = name[2:]

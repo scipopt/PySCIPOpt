@@ -18,6 +18,7 @@ from posix.stdio cimport fileno
 from collections.abc import Iterable
 from itertools import repeat
 from dataclasses import dataclass
+from typing import Union
 
 import numpy as np
 
@@ -985,7 +986,13 @@ cdef class Solution:
         sol.scip = scip
         return sol
 
-    def __getitem__(self, Expr expr):
+    def __getitem__(self, expr: Union[Expr, MatrixExpr]):
+        if isinstance(expr, MatrixExpr):
+            result = np.zeros(expr.shape, dtype=np.float64)
+            for idx in np.ndindex(expr.shape):
+                result[idx] = self.__getitem__(expr[idx])
+            return result
+
         # fast track for Variable
         cdef SCIP_Real coeff
         if isinstance(expr, Variable):
