@@ -5,23 +5,14 @@ from pyscipopt import Model, Variable, log, exp, cos, sin, sqrt
 from pyscipopt.scip import Expr, MatrixExpr, MatrixVariable, MatrixExprCons
 from time import time
 
-try:
-    import numpy as np
+import numpy as np
 
-    have_np = True
-except ImportError:
-    have_np = False
-
-
-@pytest.mark.skipif(have_np, reason="numpy is installed")
 def test_missing_numpy():
     m = Model()
 
     with pytest.raises(Exception):
         m.addMatrixVar(shape=(3, 3))
 
-
-@pytest.mark.skipif(not have_np, reason="numpy is not installed")
 def test_catching_errors():
     m = Model()
 
@@ -38,8 +29,6 @@ def test_catching_errors():
     with pytest.raises(Exception):
         m.addMatrixCons(y <= rhs)
 
-
-@pytest.mark.skipif(not have_np, reason="numpy is not installed")
 def test_add_matrixVar():
     m = Model()
     m.hideOutput()
@@ -87,13 +76,10 @@ def test_add_matrixVar():
     assert m.getStatus() == "optimal"
     assert m.getObjVal() == 1
 
-
 def index_from_name(name: str) -> list:
     name = name[2:]
     return list(map(int, name.split("_")))
 
-
-@pytest.mark.skipif(not have_np, reason="numpy is not installed")
 def test_expr_from_matrix_vars():
     m = Model()
 
@@ -174,8 +160,6 @@ def test_expr_from_matrix_vars():
         for term, coeff in expr_list:
             assert len(term) == 3
 
-
-@pytest.mark.skipif(not have_np, reason="numpy is not installed")
 def test_add_cons_matrixVar():
     m = Model()
     matrix_variable = m.addMatrixVar(shape=(3, 3), vtype="B", name="A", obj=1)
@@ -222,8 +206,6 @@ def test_add_cons_matrixVar():
     assert isinstance(sum_expr, MatrixExpr)
 
     m.addMatrixCons(matrix_variable >= 1)
-    # m.optimize()    
-    # assert m.isEQ(m.getPrimalbound(), 1*3*3)
 
     log(matrix_variable)
     exp(matrix_variable)
@@ -242,40 +224,47 @@ def test_add_cons_matrixVar():
 
     m.optimize()
 
+def test_correctness():
+    m = Model() 
+    x = m.addMatrixVar(shape=(2, 2), vtype="B", name="x", obj=np.ndarray([[5,1],[4,9]]), lb = np.ndarray([[1,2],[3,4]]))
+    y = m.addMatrixVar(shape=(2, 2), vtype="B", name="y", obj=np.ndarray([3,4],[8,3]), lb = np.ndarray([[5,6],[7,8]]))
 
-# This is a SCIP bug. We should probably report it.
-def test_sefault():
+    res = x*y
+    m.addMatrixCons(res >= 15)
+    m.optimize()
+
+    assert m.getVal(res) == None # finish this test
+    assert m.getVar(res[0,0])
+
+# This is a SCIP bug. Already reported
+def test_SCIP_bug():
     m = Model()
     matrix_variable1 = m.addMatrixVar(shape=(3, 3), vtype="B", name="test", obj=np.ones((3, 3)))
 
-    a = m.addMatrixCons(log(matrix_variable1) ** 2 >= 0)
+    m.addMatrixCons(log(matrix_variable1) ** 2 >= 0)
     m.optimize()  # should be running without errors
 
+def test_performance():
+    start_orig = time()
+    m = Model()
+    x = {}
+    for i in range(1000):
+        for j in range(100):
+            x[(i, j)] = m.addVar(vtype="C", obj=1)
+    
+    for i in range(1000):
+        for j in range(100):
+            m.addCons(x[i,j] <= 1)
 
-# # @pytest.mark.skipif(have_np, reason="numpy is not installed")
-# # def test_multiply_matrixVariable():
-# #     m = Model()
+    end_orig = time()
 
-# #     matrix_variable1 = m.addMatrixVar()
-# #     matrix_variable2 = m.addMatrixVar()
-# #     m.addMatrixCons(matrix_variable1 * matrix_variable2 <= 2)
-# #     m.addMatrixCons(matrix_variable1 * matrix_variable2 <= 2)
+    m = Model()
+    start_matrix = time()
+    x = m.addMatrixVar(shape=(1000, 100), vtype="C", obj=1)
+    m.addMatrixCons(x <= 1)
+    end_matrix = time()
 
-# #     assert False
+    matrix_time = end_matrix - start_matrix
+    orig_time = end_orig - start_orig
 
-# # @pytest.mark.skipif(have_np, reason="numpy is not installed")
-# # def test_matrixVariable_performance():
-# #     m = Model()
-# #     start = time()
-# #     m.addMatrixVar(shape=(10000, 10000))
-# #     finish = time()
-# #     assert True
-
-
-if __name__ == "__main__":
-    # test_sefault()
-    # test_add_matrixVar()
-    # test_expr_from_matrix_vars()
-    test_add_cons_matrixVar()
-    # test_multiply_matrixVariable()
-    # test_matrixVariable
+    assert m.isGT(orig_time, matrix_time)
