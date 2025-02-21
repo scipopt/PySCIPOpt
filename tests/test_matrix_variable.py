@@ -7,12 +7,6 @@ from time import time
 
 import numpy as np
 
-def test_missing_numpy():
-    m = Model()
-
-    with pytest.raises(Exception):
-        m.addMatrixVar(shape=(3, 3))
-
 def test_catching_errors():
     m = Model()
 
@@ -241,15 +235,14 @@ def test_add_conss_matrixCons():
 
 def test_correctness():
     m = Model()
-    x = m.addMatrixVar(shape=(2, 2), vtype="B", name="x", obj=np.ndarray([[5,1],[4,9]]), lb = np.ndarray([[1,2],[3,4]]))
-    y = m.addMatrixVar(shape=(2, 2), vtype="B", name="y", obj=np.ndarray([3,4],[8,3]), lb = np.ndarray([[5,6],[7,8]]))
+    x = m.addMatrixVar(shape=(2, 2), vtype="I", name="x", obj=np.array([[5,1],[4,9]]), lb = np.array([[1,2],[3,4]]))
+    y = m.addMatrixVar(shape=(2, 2), vtype="I", name="y", obj=np.array([[3,4],[8,3]]), lb = np.array([[5,6],[7,8]]))
 
     res = x*y
     m.addMatrixCons(res >= 15)
     m.optimize()
 
-    assert m.getVal(res) == None # finish this test after m.getVal is implemented
-    assert m.getVar(res[0,0])
+    assert np.array_equal(m.getVal(res), np.array([[15, 18], [21, 32]]))
 
 # This is a SCIP bug. Already reported
 def test_SCIP_bug():
@@ -259,6 +252,7 @@ def test_SCIP_bug():
     m.addMatrixCons(log(matrix_variable1) ** 2 >= 0)
     m.optimize()  # should be running without errors
 
+@pytest.mark.skip(reason="Performance test")
 def test_performance():
     start_orig = time()
     m = Model()

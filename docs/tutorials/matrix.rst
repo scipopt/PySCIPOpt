@@ -57,13 +57,13 @@ of type continuous with an ub of 8.
 
     The ``name`` of each variable in the example above becomes ``x_(indices)``
 
-In the case of each ``kwarg``, e.g., ``vtype`` and ``ub``, a ``np.ndarray`` of explicit
+In the case of each ``kwarg``, e.g., ``vtype`` and ``ub``, a ``np.array`` of explicit
 values can be passed. In the example above, this means that each variable within the
 matrix variable can have its own custom information. For example:
 
 .. code-block:: python
 
-    x = scip.addMatrixVar(shape, vtype='C', name='x', ub=np.ndarray([[5, 6], [2, 8]]))
+    x = scip.addMatrixVar(shape, vtype='C', name='x', ub=np.array([[5, 6], [2, 8]]))
 
 Matrix Constraints
 ===================
@@ -87,7 +87,7 @@ and there to purely understand the API):
 
     When creating constraints, one can mix standard variables and values in the same
     expressions. ``numpy`` will then handle this, and broadcast the correct operations.
-    In general this can be viewed as creating an imaginary ``np.ndarray`` of the appropriate
+    In general this can be viewed as creating an imaginary ``np.array`` of the appropriate
     shape and populating it with the variable / value.
 
 Class Properties

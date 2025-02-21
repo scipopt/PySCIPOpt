@@ -9224,7 +9224,7 @@ cdef class Model:
             sol = Solution.create(self._scip, NULL)
         return sol[expr]
 
-    def getVal(self, Expr expr):
+    def getVal(self, expr: Union[Expr, MatrixExpr] ):
         """
         Retrieve the value of the given variable or expression in the best known solution.
         Can only be called after solving is completed.
@@ -9248,7 +9248,14 @@ cdef class Model:
         if not stage_check or self._bestSol.sol == NULL and SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
             raise Warning("Method cannot be called in stage ", self.getStage())
 
-        return self.getSolVal(self._bestSol, expr)
+        if isinstance(expr, MatrixExpr):
+            result = np.empty(expr.shape, dtype=float)
+            for idx in np.ndindex(result.shape):
+                result[idx] = self.getSolVal(self._bestSol, expr[idx])
+        else:
+            result = self.getSolVal(self._bestSol, expr)
+        
+        return result
     
     def hasPrimalRay(self):
         """
