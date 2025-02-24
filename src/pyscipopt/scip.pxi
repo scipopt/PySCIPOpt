@@ -4362,7 +4362,7 @@ cdef class Model:
             if len(v) == 1: # linear
                 var = <Variable>v[0]
                 PY_SCIP_CALL(SCIPaddLinearVarNonlinear(self._scip, scip_cons, var.scip_var, c))
-            else: # quadratic
+            else: # nonlinear
                 assert len(v) == 2, 'term length must be 1 or 2 but it is %s' % len(v)
 
                 varexprs = <SCIP_EXPR**> malloc(2 * sizeof(SCIP_EXPR*))
@@ -4726,7 +4726,7 @@ cdef class Model:
                  enforce=True, check=True, propagate=True, local=False,
                  modifiable=False, dynamic=False, removable=False,
                  stickingatnode=False):
-        """Adds multiple linear or quadratic constraints.
+        """Adds multiple constraints.
 
         Each of the constraints is added to the model using Model.addCons().
 
@@ -5696,7 +5696,7 @@ cdef class Model:
         Parameters
         ----------
         cons : Constraint
-            linear or quadratic constraint
+            constraint to change the right-hand side from
         rhs : float or None
             new right-hand side (set to None for +infinity)
 
@@ -5720,7 +5720,7 @@ cdef class Model:
         Parameters
         ----------
         cons : Constraint
-            linear or quadratic constraint
+            constraint to change the left-hand side from
         lhs : float or None
             new left-hand side (set to None for -infinity)
 
@@ -5744,7 +5744,7 @@ cdef class Model:
         Parameters
         ----------
         cons : Constraint
-            linear or quadratic constraint
+            constraint to get the right-hand side from
 
         Returns
         -------
@@ -5754,7 +5754,7 @@ cdef class Model:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
         if constype == 'linear':
             return SCIPgetRhsLinear(self._scip, cons.scip_cons)
-        elif constype == 'quadratic':
+        elif constype == 'nonlinear':
             return SCIPgetRhsNonlinear(cons.scip_cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
@@ -5766,7 +5766,7 @@ cdef class Model:
         Parameters
         ----------
         cons : Constraint
-            linear or quadratic constraint
+            linear or nonlinear constraint
 
         Returns
         -------
@@ -5776,7 +5776,7 @@ cdef class Model:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
         if constype == 'linear':
             return SCIPgetLhsLinear(self._scip, cons.scip_cons)
-        elif constype == 'quadratic':
+        elif constype == 'nonlinear':
             return SCIPgetLhsNonlinear(cons.scip_cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
@@ -5842,7 +5842,7 @@ cdef class Model:
         Parameters
         ----------
         cons : Constraint
-            linear or quadratic constraint
+            linear constraint
         sol : Solution or None, optional
             solution to compute activity of, None to use current node's solution (Default value = None)
 
@@ -5879,7 +5879,7 @@ cdef class Model:
         Parameters
         ----------
         cons : Constraint
-            linear or quadratic constraint
+            linear constraint
         sol : Solution or None, optional
             solution to compute slack of, None to use current node's solution (Default value = None)
         side : str or None, optional
