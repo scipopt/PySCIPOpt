@@ -2,6 +2,12 @@
 
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+### Removed
+
+## 5.4.0 - 2024.02.24
+### Added
 - Added option to get Lhs, Rhs of nonlinear constraints
 - Added cutoffNode and test
 - Added getMajorVersion, getMinorVersion, and getTechVersion
@@ -11,6 +17,7 @@
 - Warning at Model initialisation now uses new version calls
 ### Changed
 ### Removed
+- Removed universal wheel type from setup.cfg (support for Python 2)
 
 ## 5.3.0 - 2025.02.07
 ### Added
