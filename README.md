@@ -44,20 +44,20 @@ following steps are always required when using the interface:
 1)  It is necessary to import python-scip in your code. This is achieved
     by including the line
 
-``` {.sourceCode .python}
+```python
 from pyscipopt import Model
 ```
 
 2)  Create a solver instance.
 
-``` {.sourceCode .python}
+```python
 model = Model("Example")  # model name is optional
 ```
 
 3)  Access the methods in the `scip.pxi` file using the solver/model
     instance `model`, e.g.:
 
-``` {.sourceCode .python}
+```python
 x = model.addVar("x")
 y = model.addVar("y", vtype="INTEGER")
 model.setObjective(x + y)
