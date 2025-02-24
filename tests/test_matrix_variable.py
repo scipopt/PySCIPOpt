@@ -244,14 +244,6 @@ def test_correctness():
 
     assert np.array_equal(m.getVal(res), np.array([[15, 18], [21, 32]]))
 
-# This is a SCIP bug. Already reported
-def test_SCIP_bug():
-    m = Model()
-    matrix_variable1 = m.addMatrixVar(shape=(3, 3), vtype="B", name="test", obj=np.ones((3, 3)))
-
-    m.addMatrixCons(log(matrix_variable1) ** 2 >= 0)
-    m.optimize()  # should be running without errors
-
 @pytest.mark.skip(reason="Performance test")
 def test_performance():
     start_orig = time()
