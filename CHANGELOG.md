@@ -5,7 +5,10 @@
 - Added option to get Lhs, Rhs of nonlinear constraints
 - Added cutoffNode and test
 - Added getMajorVersion, getMinorVersion, and getTechVersion
+- Added addMatrixVar and addMatriCons
+- Added MatrixVariable, MatrixConstraint, MatrixExpr, and MatrixExprCons
 ### Fixed
+- Warning at Model initialisation now uses new version calls
 ### Changed
 ### Removed
 
