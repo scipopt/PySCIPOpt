@@ -140,7 +140,7 @@ class FeatureSelectorBranchingRule(Branchrule):
 
 
 def test_strong_branching():
-    scip = random_mip_1(disable_presolve=False, disable_huer=False, small=True, node_lim=500)
+    scip = random_mip_1(disable_presolve=False, disable_heur=False, small=True, node_lim=500)
 
     strong_branch_rule = StrongBranchingRule(scip, idempotent=False)
     scip.includeBranchrule(strong_branch_rule, "strong branch rule", "custom strong branching rule",
@@ -155,7 +155,7 @@ def test_strong_branching():
 
 
 def test_strong_branching_idempotent():
-    scip = random_mip_1(disable_presolve=False, disable_huer=False, small=True, node_lim=500)
+    scip = random_mip_1(disable_presolve=False, disable_heur=False, small=True, node_lim=500)
 
     strong_branch_rule = StrongBranchingRule(scip, idempotent=True)
     scip.includeBranchrule(strong_branch_rule, "strong branch rule", "custom strong branching rule",
@@ -170,7 +170,7 @@ def test_strong_branching_idempotent():
 
 
 def test_dummy_feature_selector():
-    scip = random_mip_1(disable_presolve=False, disable_huer=False, small=True, node_lim=300)
+    scip = random_mip_1(disable_presolve=False, disable_heur=False, small=True, node_lim=300)
 
     feature_dummy_branch_rule = FeatureSelectorBranchingRule(scip)
     scip.includeBranchrule(feature_dummy_branch_rule, "dummy branch rule", "custom feature creation branching rule",

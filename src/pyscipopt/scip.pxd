@@ -560,6 +560,9 @@ cdef extern from "scip/scip.h":
     void SCIPmessageSetErrorPrinting(errormessagecallback, void* data)
     void SCIPsetMessagehdlrLogfile(SCIP* scip, const char* filename)
     SCIP_Real SCIPversion()
+    int SCIPmajorVersion()
+    int SCIPminorVersion()
+    int SCIPtechVersion()
     void SCIPprintVersion(SCIP* scip, FILE* outfile)
     void SCIPprintExternalCodes(SCIP* scip, FILE* outfile)
     SCIP_Real SCIPgetTotalTime(SCIP* scip)
@@ -877,6 +880,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetPrimalbound(SCIP* scip)
     SCIP_Real SCIPgetGap(SCIP* scip)
     int SCIPgetDepth(SCIP* scip)
+    SCIP_RETCODE SCIPcutoffNode(SCIP* scip, SCIP_NODE* node)
     SCIP_Bool SCIPhasPrimalRay(SCIP * scip)
     SCIP_Real SCIPgetPrimalRayVal(SCIP * scip, SCIP_VAR * var)
     SCIP_RETCODE SCIPaddSolFree(SCIP* scip, SCIP_SOL** sol, SCIP_Bool* stored)
@@ -1119,6 +1123,8 @@ cdef extern from "scip/scip.h":
                                  SCIP_HEURDATA* heurdata)
     SCIP_HEURDATA* SCIPheurGetData(SCIP_HEUR* heur)
     SCIP_HEUR* SCIPfindHeur(SCIP* scip, const char* name)
+    SCIP_HEURTIMING SCIPheurGetTimingmask(SCIP_HEUR* heur)
+    void SCIPheurSetTimingmask(SCIP_HEUR* heur, SCIP_HEURTIMING timingmask)
 
     #Relaxation plugin
     SCIP_RETCODE SCIPincludeRelax(SCIP* scip,
@@ -1822,6 +1828,16 @@ cdef extern from "scip/cons_indicator.h":
                                      SCIP_Real val)
 
     SCIP_VAR* SCIPgetSlackVarIndicator(SCIP_CONS* cons)
+
+cdef extern from "scip/misc.h":
+    SCIP_RETCODE SCIPhashmapCreate(SCIP_HASHMAP** hashmap, BMS_BLKMEM* blkmem, int mapsize)
+    void SCIPhashmapFree(SCIP_HASHMAP** hashmap)
+
+cdef extern from "scip/scip_copy.h":
+    SCIP_RETCODE SCIPtranslateSubSol(SCIP* scip, SCIP* subscip, SCIP_SOL* subsol, SCIP_HEUR* heur, SCIP_VAR** subvars, SCIP_SOL** newsol)
+    
+cdef extern from "scip/heuristics.h":
+    SCIP_RETCODE SCIPcopyLargeNeighborhoodSearch(SCIP* sourcescip, SCIP* subscip, SCIP_HASHMAP*	varmap,	const char* suffix, SCIP_VAR** fixedvars, SCIP_Real* fixedvals, int nfixedvars,	SCIP_Bool uselprows, SCIP_Bool copycuts, SCIP_Bool* success, SCIP_Bool* valid)
 
 cdef extern from "scip/cons_countsols.h":
     SCIP_RETCODE SCIPcount(SCIP* scip)

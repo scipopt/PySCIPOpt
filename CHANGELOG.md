@@ -3,11 +3,22 @@
 ## Unreleased
 ### Added
 - Added option to get Lhs, Rhs of nonlinear constraints
+- Added cutoffNode and test
+- Added getMajorVersion, getMinorVersion, and getTechVersion
+### Fixed
+### Changed
+### Removed
+
+## 5.3.0 - 2025.02.07
+### Added
+- Added cdef type declaration of loop variables for slight speedup
+- Added wrappers for setting and getting heuristic timing
 - Added transformed option to getVarDict, updated test
 - Added categorical data example
 - Added printProblem to print problem to stdout
 - Added stage checks to presolve, freereoptsolve, freetransform
 - Added primal_dual_evolution recipe and a plot recipe
+- Added python wrappers for usage of SCIPcopyLargeNeighborhoodSearch, SCIPtranslateSubSol and SCIPhashmapCreate
 ### Fixed
 - Added default names to indicator constraints
 ### Changed
