@@ -305,3 +305,14 @@ def test_addExprNonLinear():
     assert m.getNSols() > 0
     assert m.isEQ(m.getVal(y), 2)
     assert m.isEQ(m.getVal(z), 27)
+
+def test_nonlinear_lhs_rhs():
+    from helpers.utils import random_nlp_1
+
+    m = random_nlp_1()
+    c = m.getConss()
+
+    m.hideOutput()
+    m.optimize()
+    assert m.isInfinity(-m.getLhs(c[0])) 
+    assert m.isEQ(m.getRhs(c[0]), 5)

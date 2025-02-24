@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added option to get Lhs, Rhs of nonlinear constraints
 - Added cutoffNode and test
 - Added getMajorVersion, getMinorVersion, and getTechVersion
 ### Fixed
