@@ -3613,9 +3613,6 @@ cdef class Model:
         if isinstance(name, str):
             matrix_names = np.full(shape, name, dtype=object)
             if name != "":
-                # with np.nditer(matrix_names, flags=["multi_index", "refs_ok"], op_flags=["writeonly"]) as it:
-                #   for x in it:
-                #        x[...] = f"{name}_{'_'.join(map(str, it.multi_index))}"
                 for idx in np.ndindex(matrix_variable.shape):
                     matrix_names[idx] = f"{name}_{'_'.join(map(str, idx))}"
         else:
@@ -3655,13 +3652,6 @@ cdef class Model:
             matrix_variable[idx] = self.addVar(name=matrix_names[idx], vtype=matrix_vtypes[idx], lb=matrix_lbs[idx],
                                                ub=matrix_ubs[idx], obj=matrix_objs[idx], pricedVar=matrix_priced_vars[idx],
                                                pricedVarScore=matrix_priced_var_scores[idx])
-
-        # with np.nditer(matrix_names, flags=["multi_index"], op_flags=["writeonly"]) as it:
-        #     for x in it:
-        #        x[...] = self.addVar(name=matrix_names[idx], vtype=matrix_vtypes[idx], lb=matrix_lbs[idx],
-        #                             ub=matrix_ubs[idx], obj= matrix_objs[idx], pricedVar=matrix_priced_vars[idx],
-        #                             pricedVarScore=matrix_priced_var_scores[idx])
-
 
         return matrix_variable.view(MatrixVariable)
 
@@ -5347,11 +5337,17 @@ cdef class Model:
 
         return constraints
 
-    def addMatrixCons(self, cons: MatrixExprCons, name: Union[str, np.ndarray] ='',
-                      initial: Union[bool, np.ndarray] = True, separate: Union[bool, np.ndarray] = True,
-                      enforce: Union[bool, np.ndarray] = True, check: Union[bool, np.ndarray] = True,
-                      propagate: Union[bool, np.ndarray] = True, local: Union[bool, np.ndarray] = False,
-                      modifiable: Union[bool, np.ndarray] = False, dynamic: Union[bool, np.ndarray] = False,
+    def addMatrixCons(self, 
+                      cons: MatrixExprCons, 
+                      name: Union[str, np.ndarray] ='',
+                      initial: Union[bool, np.ndarray] = True, 
+                      separate: Union[bool, np.ndarray] = True,
+                      enforce: Union[bool, np.ndarray] = True, 
+                      check: Union[bool, np.ndarray] = True,
+                      propagate: Union[bool, np.ndarray] = True, 
+                      local: Union[bool, np.ndarray] = False,
+                      modifiable: Union[bool, np.ndarray] = False, 
+                      dynamic: Union[bool, np.ndarray] = False,
                       removable: Union[bool, np.ndarray] = False,
                       stickingatnode: Union[bool, np.ndarray] = False):
         """
@@ -5391,8 +5387,6 @@ cdef class Model:
             The created and added MatrixConstraint object.
 
         """
-        # assert has_numpy, "Numpy is not installed. Please install numpy to use matrix variables."
-
         assert isinstance(cons, MatrixExprCons), (
                 "given constraint is not MatrixExprCons but %s" % cons.__class__.__name__)
 

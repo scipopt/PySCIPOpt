@@ -69,7 +69,8 @@ Matrix Constraints
 ===================
 
 Matrix constraints follow the same logic as matrix variables. They can be constructed quickly
-and added all at once. Some examples are provided below (these examples are nonsensical,
+and added all at once. The standard variable operators, like ``sin``, ``exp``, ``sqrt``, etc.,
+are applied element-wise. Some examples are provided below (these examples are nonsensical,
 and there to purely understand the API):
 
 .. code-block:: python
