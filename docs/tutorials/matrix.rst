@@ -145,4 +145,4 @@ recommended ways to do this.
 .. code-block:: python
 
     sol = scip.getBestSol()
-    matrix_var_vals = sol[x]
+    matrix_var_vals = sol[x] # returns a numpy array of values
