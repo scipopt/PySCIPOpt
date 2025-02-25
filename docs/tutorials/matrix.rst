@@ -81,8 +81,9 @@ and there to purely understand the API):
 
     scip.addMatrixCons(x + y <= z)
     scip.addMatrixCons(exp(x) + sin(sqrt(y)) == z + y)
-    scip.addMatrixCons(y <= x @ y <= x)
-    scip.addMatrixCons(x.sum() <= 2)
+    scip.addMatrixCons(y <= x @ y)
+    scip.addMatrixCons(x @ y <= x)
+    scip.addCons(x.sum() <= 2) # Matrix variables can also appear in standard constraints, if the result expression as type Expr
 
 .. note::
 
@@ -127,8 +128,8 @@ one can always access the individual variables or constraints via their index.
     assert(isinstance(x, MatrixVariable))
     assert(isinstance(x[0][0], Variable))
     cons = x <= 2
-    assert(isinstance(cons, MatrixConstraint))
-    assert(isinstance(cons[0][0]), Constraint)
+    assert(isinstance(cons, MatrixExprCons))
+    assert(isinstance(cons[0][0]), ExprCons)
 
 
 
