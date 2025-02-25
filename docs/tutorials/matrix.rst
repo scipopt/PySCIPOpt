@@ -83,7 +83,7 @@ and there to purely understand the API):
     scip.addMatrixCons(exp(x) + sin(sqrt(y)) == z + y)
     scip.addMatrixCons(y <= x @ y)
     scip.addMatrixCons(x @ y <= x)
-    scip.addCons(x.sum() <= 2) # Matrix variables can also appear in standard constraints, if the result expression as type Expr
+    scip.addCons(x.sum() <= 2) # Matrix variables can also appear in standard constraints, if the result expression is type Expr
 
 .. note::
 
