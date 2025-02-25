@@ -7,6 +7,7 @@ from time import time
 
 import numpy as np
 
+
 def test_catching_errors():
     m = Model()
 
@@ -22,6 +23,7 @@ def test_catching_errors():
 
     with pytest.raises(Exception):
         m.addMatrixCons(y <= rhs)
+
 
 def test_add_matrixVar():
     m = Model()
@@ -40,7 +42,7 @@ def test_add_matrixVar():
     matrix_variable = m.addMatrixVar(shape=(3, 3, 4), name="", vtype=vtypes, ub=8.5, obj=1.0,
                                      lb=np.ndarray((3, 3, 4), dtype=object))
 
-    assert(isinstance(matrix_variable, MatrixVariable))
+    assert (isinstance(matrix_variable, MatrixVariable))
     for i in range(3):
         for j in range(3):
             for k in range(4):
@@ -76,9 +78,11 @@ def test_add_matrixVar():
     assert sol_matrix.shape == (3, 3, 4)
     assert m.isEQ(sol_matrix.sum(), 1)
 
+
 def index_from_name(name: str) -> list:
     name = name[2:]
     return list(map(int, name.split("_")))
+
 
 def test_expr_from_matrix_vars():
     m = Model()
@@ -160,6 +164,7 @@ def test_expr_from_matrix_vars():
         for term, coeff in expr_list:
             assert len(term) == 3
 
+
 def test_add_cons_matrixVar():
     m = Model()
     matrix_variable = m.addMatrixVar(shape=(3, 3), vtype="B", name="A", obj=1)
@@ -224,6 +229,7 @@ def test_add_cons_matrixVar():
 
     m.optimize()
 
+
 def test_add_conss_matrixCons():
     m = Model()
     matrix_variable = m.addMatrixVar(shape=(2, 3, 4, 5), vtype="B", name="A", obj=1)
@@ -233,20 +239,22 @@ def test_add_conss_matrixCons():
     assert len(conss) == 2 * 3 * 4 * 5
     assert m.getNConss() == 2 * 3 * 4 * 5
 
+
 def test_correctness():
     m = Model()
-    x = m.addMatrixVar(shape=(2, 2), vtype="I", name="x", obj=np.array([[5,1],[4,9]]), lb = np.array([[1,2],[3,4]]))
-    y = m.addMatrixVar(shape=(2, 2), vtype="I", name="y", obj=np.array([[3,4],[8,3]]), lb = np.array([[5,6],[7,8]]))
+    x = m.addMatrixVar(shape=(2, 2), vtype="I", name="x", obj=np.array([[5, 1], [4, 9]]), lb=np.array([[1, 2], [3, 4]]))
+    y = m.addMatrixVar(shape=(2, 2), vtype="I", name="y", obj=np.array([[3, 4], [8, 3]]), lb=np.array([[5, 6], [7, 8]]))
 
-    res = x*y
+    res = x * y
     m.addMatrixCons(res >= 15)
     m.optimize()
 
     assert np.array_equal(m.getVal(res), np.array([[15, 18], [21, 32]]))
 
+
 def test_documentation():
     m = Model()
-    shape = (2,2)
+    shape = (2, 2)
     x = m.addMatrixVar(shape, vtype='C', name='x', ub=8)
     assert x[0][0].name == "x_0_0"
     assert x[0][1].name == "x_0_1"
@@ -270,22 +278,22 @@ def test_documentation():
     c4 = m.addMatrixCons(e1 <= x)
     c4 = m.addCons(x.sum() <= 2)
 
-    assert(isinstance(x, MatrixVariable))
-    assert(isinstance(c1, MatrixConstraint))
-    assert(isinstance(e1, MatrixExpr))
+    assert (isinstance(x, MatrixVariable))
+    assert (isinstance(c1, MatrixConstraint))
+    assert (isinstance(e1, MatrixExpr))
 
     x = m.addVar()
-    matrix_x = m.addMatrixVar(shape=(2,2))
+    matrix_x = m.addMatrixVar(shape=(2, 2))
 
-    
-    assert(x.vtype() == matrix_x[0][0].vtype())
+    assert (x.vtype() == matrix_x[0][0].vtype())
 
     x = m.addMatrixVar(shape=(2, 2))
-    assert(isinstance(x, MatrixVariable))
-    assert(isinstance(x[0][0], Variable))
+    assert (isinstance(x, MatrixVariable))
+    assert (isinstance(x[0][0], Variable))
     cons = x <= 2
-    assert(isinstance(cons, MatrixExprCons))
-    assert(isinstance(cons[0][0], ExprCons))
+    assert (isinstance(cons, MatrixExprCons))
+    assert (isinstance(cons[0][0], ExprCons))
+
 
 @pytest.mark.skip(reason="Performance test")
 def test_performance():
@@ -298,7 +306,7 @@ def test_performance():
 
     for i in range(1000):
         for j in range(100):
-            m.addCons(x[i,j] <= 1)
+            m.addCons(x[i, j] <= 1)
 
     end_orig = time()
 
