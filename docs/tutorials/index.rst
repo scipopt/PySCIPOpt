@@ -14,6 +14,7 @@ more detailed information see `this page <https://www.scipopt.org/doc/html/index
   vartypes
   constypes
   expressions
+  matrix
   readwrite
   logfile
   branchrule
@@ -23,3 +24,4 @@ more detailed information see `this page <https://www.scipopt.org/doc/html/index
   nodeselector
   lazycons
   eventhandler
+  scipdex

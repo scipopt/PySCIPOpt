@@ -18,6 +18,9 @@ from posix.stdio cimport fileno
 from collections.abc import Iterable
 from itertools import repeat
 from dataclasses import dataclass
+from typing import Union
+
+import numpy as np
 
 include "expr.pxi"
 include "lp.pxi"
@@ -35,6 +38,7 @@ include "sepa.pxi"
 include "reader.pxi"
 include "relax.pxi"
 include "nodesel.pxi"
+include "matrix.pxi"
 
 # recommended SCIP version; major version is required
 MAJOR = 9
@@ -982,7 +986,13 @@ cdef class Solution:
         sol.scip = scip
         return sol
 
-    def __getitem__(self, Expr expr):
+    def __getitem__(self, expr: Union[Expr, MatrixExpr]):
+        if isinstance(expr, MatrixExpr):
+            result = np.zeros(expr.shape, dtype=np.float64)
+            for idx in np.ndindex(expr.shape):
+                result[idx] = self.__getitem__(expr[idx])
+            return result
+
         # fast track for Variable
         cdef SCIP_Real coeff
         if isinstance(expr, Variable):
@@ -1640,6 +1650,215 @@ cdef class Variable(Expr):
             mayround = SCIPvarMayRoundUp(self.scip_var)
         return mayround
 
+class MatrixVariable(MatrixExpr):
+
+    def vtype(self):
+        """
+        Retrieve the matrix variables type (BINARY, INTEGER, IMPLINT or CONTINUOUS)
+
+        Returns
+        -------
+        np.ndarray
+            A matrix containing "BINARY", "INTEGER", "CONTINUOUS", or "IMPLINT"
+
+        """
+        vtypes = np.empty(self.shape, dtype=object)
+        for idx in np.ndindex(self):
+            vtypes[idx] = self[idx].vtype()
+        return vtypes
+
+    def isInLP(self):
+        """
+        Retrieve whether the matrix variable is a COLUMN variable that is member of the current LP.
+
+        Returns
+        -------
+        np.ndarray
+            An array of bools
+
+        """
+        in_lp = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            in_lp[idx] = self[idx].isInLP()
+        return in_lp
+
+
+    def getIndex(self):
+        """
+        Retrieve the unique index of the matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+            An array of integers. No two should be the same
+        """
+        indices = np.empty(self.shape, dtype=int)
+        for idx in np.ndindex(self):
+            indices[idx] = self[idx].getIndex()
+        return indices
+
+    def getCol(self):
+        """
+        Retrieve matrix of columns of COLUMN variables.
+
+        Returns
+        -------
+        np.ndarray
+            An array of Column objects
+        """
+
+        columns = np.empty(self.shape, dtype=object)
+        for idx in np.index(self):
+            columns[idx] = self[idx].getCol()
+        return columns
+
+    def getLbOriginal(self):
+        """
+        Retrieve original lower bound of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        lbs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            lbs[idx] = self[idx].getLbOriginal()
+        return lbs
+
+    def getUbOriginal(self):
+        """
+        Retrieve original upper bound of matrixvariable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        ubs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            ubs[idx] = self[idx].getUbOriginal()
+        return ubs
+
+    def getLbGlobal(self):
+        """
+        Retrieve global lower bound of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        lbs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            lbs[idx] = self[idx].getLbGlobal()
+        return lbs
+
+    def getUbGlobal(self):
+        """
+        Retrieve global upper bound of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        ubs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            ubs[idx] = self[idx].getUbGlobal()
+        return ubs
+
+    def getLbLocal(self):
+        """
+        Retrieve current lower bound of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        lbs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            lbs[idx] = self[idx].getLbLocal()
+        return lbs
+
+    def getUbLocal(self):
+        """
+        Retrieve current upper bound of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        ubs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            ubs[idx] = self[idx].getUbLocal()
+        return ubs
+
+    def getObj(self):
+        """
+        Retrieve current objective value of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        objs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            objs[idx] = self[idx].getObj()
+        return objs
+
+    def getLPSol(self):
+        """
+        Retrieve the current LP solution value of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        lpsols = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            lpsols[idx] = self[idx].getLPSol()
+        return lpsols
+
+    def getAvgSol(self):
+        """
+        Get the weighted average solution of matrix variable in all feasible primal solutions found.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        avgsols = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self):
+            avgsols[idx] = self[idx].getAvgSol()
+        return avgsols
+
+    def varMayRound(self, direction="down"):
+        """
+        Checks whether it is possible to round variable up / down and stay feasible for the relaxation.
+
+        Parameters
+        ----------
+        direction : str
+            "up" or "down"
+
+        Returns
+        -------
+        np.ndarray
+            An array of bools
+
+        """
+        mayround = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            mayround[idx] = self[idx].varMayRound()
+        return mayround
+
+
 cdef class Constraint:
     """Base class holding a pointer to corresponding SCIP_CONS"""
 
@@ -1848,6 +2067,203 @@ cdef class Constraint:
         return (self.__class__ == other.__class__
                 and self.scip_cons == (<Constraint>other).scip_cons)
 
+class MatrixConstraint(np.ndarray):
+
+    def isInitial(self):
+        """
+        Returns True if the relaxation of the constraint should be in the initial LP.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        initial = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            initial[idx] = self[idx].isInitial()
+        return initial
+
+    def isSeparated(self):
+        """
+        Returns True if constraint should be separated during LP processing.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        separated = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            separated[idx] = self[idx].isSeparated()
+        return separated
+
+    def isEnforced(self):
+        """
+        Returns True if constraint should be enforced during node processing.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        enforced = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            enforced[idx] = self[idx].isEnforced()
+        return enforced
+
+    def isChecked(self):
+        """
+        Returns True if constraint should be checked for feasibility.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        checked = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            checked[idx] = self[idx].isCheced()
+        return checked
+
+    def isPropagated(self):
+        """
+        Returns True if constraint should be propagated during node processing.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        propagated = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            propagated[idx] = self[idx].isPropagated()
+        return propagated
+
+    def isLocal(self):
+        """
+        Returns True if constraint is only locally valid or not added to any (sub)problem.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        local = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            local[idx] = self[idx].isLocal()
+        return local
+
+    def isModifiable(self):
+        """
+        Returns True if constraint is modifiable (subject to column generation).
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        modifiable = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            modifiable[idx] = self[idx].isModifiable()
+        return modifiable
+
+    def isDynamic(self):
+        """
+        Returns True if constraint is subject to aging.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        dynamic = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            dynamic[idx] = self[idx].isDynamic()
+        return dynamic
+
+    def isRemovable(self):
+        """
+        Returns True if constraint's relaxation should be removed from the LP due to aging or cleanup.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        removable = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            removable[idx] = self[idx].isRemovable()
+        return removable
+
+    def isStickingAtNode(self):
+        """
+        Returns True if constraint is only locally valid or not added to any (sub)problem.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        stickingatnode = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            stickingatnode[idx] = self[idx].isStickingAtNode()
+        return stickingatnode
+
+    def isActive(self):
+        """
+        Returns True iff constraint is active in the current node.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        active = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            active[idx] = self[idx].isActive()
+        return active
+
+    def isLinear(self):
+        """
+        Returns True if constraint is linear
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        islinear = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            islinear[idx] = self[idx].isLinear()
+        return islinear
+
+    def isNonlinear(self):
+        """
+        Returns True if constraint is nonlinear.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        isnonlinear = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            isnonlinear[idx] = self[idx].isNonlinear()
+        return isnonlinear
+
+    def getConshdlrName(self):
+        """
+        Return the constraint handler's name.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        name = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            name[idx] = self[idx].getConshdlrName()
+        return name
 
 cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) noexcept:
     if file is stdout:
@@ -3131,6 +3547,113 @@ cdef class Model:
         SCIPvarSetData(scip_var, <SCIP_VARDATA*>pyVar)
         PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
         return pyVar
+
+    def addMatrixVar(self, 
+                     shape: Union[int, Tuple],
+                     name: Union[str, np.ndarray] = '',
+                     vtype: Union[str, np.ndarray] = 'C',
+                     lb: Union[int, float, np.ndarray, None] = 0.0,
+                     ub: Union[int, float, np.ndarray, None] = None,
+                     obj: Union[int, float, np.ndarray] = 0.0,
+                     pricedVar: Union[bool, np.ndarray] = False,
+                     pricedVarScore: Union[int, float, np.ndarray] = 1.0
+                     ) -> MatrixVariable:
+        """
+        Create a new matrix of variable. Default matrix variables are non-negative and continuous.
+
+        Parameters
+        ----------
+        shape : int or tuple
+            the shape of the resultant MatrixVariable
+        name : str or np.ndarray, optional
+            name of the matrix variable, generic if empty (Default value = '')
+        vtype : str or np.ndarray, optional
+            type of the matrix variable: 'C' continuous, 'I' integer, 'B' binary, and 'M' implicit integer
+            (Default value = 'C')
+        lb : float or np.ndarray or None, optional
+            lower bound of the matrix variable, use None for -infinity (Default value = 0.0)
+        ub : float or np.ndarray or None, optional
+            upper bound of the matrix variable, use None for +infinity (Default value = None)
+        obj : float or np.ndarray, optional
+            objective value of matrix variable (Default value = 0.0)
+        pricedVar : bool or np.ndarray, optional
+            is the matrix variable a pricing candidate? (Default value = False)
+        pricedVarScore : float or np.ndarray, optional
+            score of matrix variable in case it is priced, the higher the better (Default value = 1.0)
+
+        Returns
+        -------
+        MatrixVariable
+
+        """
+        # assert has_numpy, "Numpy is not installed. Please install numpy to use matrix variables."
+        
+        if isinstance(name, np.ndarray):
+            assert name.shape == shape
+        if isinstance(vtype, np.ndarray):
+            assert vtype.shape == shape
+        if isinstance(lb, np.ndarray):
+            assert lb.shape == shape
+        if isinstance(ub, np.ndarray):
+            assert ub.shape == shape
+        if isinstance(obj, np.ndarray):
+            assert obj.shape == shape
+        if isinstance(pricedVar, np.ndarray):
+            assert pricedVar.shape == shape
+        if isinstance(pricedVarScore, np.ndarray):
+            assert pricedVarScore.shape == shape
+
+        if isinstance(shape, int):
+            ndim = 1
+        else:
+            ndim = len(shape)
+
+        matrix_variable = np.empty(shape, dtype=object)
+
+        if isinstance(name, str):
+            matrix_names = np.full(shape, name, dtype=object)
+            if name != "":
+                for idx in np.ndindex(matrix_variable.shape):
+                    matrix_names[idx] = f"{name}_{'_'.join(map(str, idx))}"
+        else:
+            matrix_names = name
+
+        if not isinstance(vtype, np.ndarray):
+            matrix_vtypes = np.full(shape, vtype, dtype=str)
+        else:
+            matrix_vtypes = vtype
+
+        if not isinstance(lb, np.ndarray):
+            matrix_lbs = np.full(shape, lb, dtype=object)
+        else:
+            matrix_lbs = lb
+
+        if not isinstance(ub, np.ndarray):
+            matrix_ubs = np.full(shape, ub, dtype=object)
+        else:
+            matrix_ubs = ub
+
+        if not isinstance(obj, np.ndarray):
+            matrix_objs = np.full(shape, obj, dtype=float)
+        else:
+            matrix_objs = obj
+
+        if not isinstance(pricedVar, np.ndarray):
+            matrix_priced_vars = np.full(shape, pricedVar, dtype=bool)
+        else:
+            matrix_priced_vars = pricedVar
+
+        if not isinstance(pricedVarScore, np.ndarray):
+            matrix_priced_var_scores = np.full(shape, pricedVarScore, dtype=float)
+        else:
+            matrix_priced_var_scores = pricedVarScore
+
+        for idx in np.ndindex(matrix_variable.shape):
+            matrix_variable[idx] = self.addVar(name=matrix_names[idx], vtype=matrix_vtypes[idx], lb=matrix_lbs[idx],
+                                               ub=matrix_ubs[idx], obj=matrix_objs[idx], pricedVar=matrix_priced_vars[idx],
+                                               pricedVarScore=matrix_priced_var_scores[idx])
+
+        return matrix_variable.view(MatrixVariable)
 
     def getTransformedVar(self, Variable var):
         """
@@ -4773,6 +5296,9 @@ cdef class Model:
         cdef int n_conss
         cdef int i 
 
+        if isinstance(conss, MatrixExprCons):
+            conss = conss.flatten()
+
         def ensure_iterable(elem, length):
             if isinstance(elem, Iterable):
                 return elem
@@ -4810,6 +5336,160 @@ cdef class Model:
             )
 
         return constraints
+
+    def addMatrixCons(self, 
+                      cons: MatrixExprCons, 
+                      name: Union[str, np.ndarray] ='',
+                      initial: Union[bool, np.ndarray] = True, 
+                      separate: Union[bool, np.ndarray] = True,
+                      enforce: Union[bool, np.ndarray] = True, 
+                      check: Union[bool, np.ndarray] = True,
+                      propagate: Union[bool, np.ndarray] = True, 
+                      local: Union[bool, np.ndarray] = False,
+                      modifiable: Union[bool, np.ndarray] = False, 
+                      dynamic: Union[bool, np.ndarray] = False,
+                      removable: Union[bool, np.ndarray] = False,
+                      stickingatnode: Union[bool, np.ndarray] = False):
+        """
+        Add a linear or nonlinear matrix constraint.
+
+        Parameters
+        ----------
+        cons : MatrixExprCons
+            The matrix expression constraint that is not yet an actual constraint
+        name : str or np.ndarray, optional
+            the name of the matrix constraint, generic name if empty (Default value = "")
+        initial : bool or np.ndarray, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool or np.ndarray, optional
+            should the matrix constraint be separated during LP processing? (Default value = True)
+        enforce : bool or np.ndarray, optional
+            should the matrix constraint be enforced during node processing? (Default value = True)
+        check : bool or np.ndarray, optional
+            should the matrix constraint be checked for feasibility? (Default value = True)
+        propagate : bool or np.ndarray, optional
+            should the matrix constraint be propagated during node processing? (Default value = True)
+        local : bool or np.ndarray, optional
+            is the matrix constraint only valid locally? (Default value = False)
+        modifiable : bool or np.ndarray, optional
+            is the matrix constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool or np.ndarray, optional
+            is the matrix constraint subject to aging? (Default value = False)
+        removable : bool or np.ndarray, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool or np.ndarray, optional
+            should the matrix constraints always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        MatrixConstraint
+            The created and added MatrixConstraint object.
+
+        """
+        assert isinstance(cons, MatrixExprCons), (
+                "given constraint is not MatrixExprCons but %s" % cons.__class__.__name__)
+
+        shape = cons.shape
+
+        if isinstance(name, np.ndarray):
+            assert name.shape == shape
+        if isinstance(initial, np.ndarray):
+            assert initial.shape == shape
+        if isinstance(separate, np.ndarray):
+            assert separate.shape == shape
+        if isinstance(enforce, np.ndarray):
+            assert enforce.shape == shape
+        if isinstance(check, np.ndarray):
+            assert check.shape == shape
+        if isinstance(propagate, np.ndarray):
+            assert propagate.shape == shape
+        if isinstance(local, np.ndarray):
+            assert local.shape == shape
+        if isinstance(modifiable, np.ndarray):
+            assert modifiable.shape == shape
+        if isinstance(dynamic, np.ndarray):
+            assert dynamic.shape == shape
+        if isinstance(removable, np.ndarray):
+            assert removable.shape == shape
+        if isinstance(stickingatnode, np.ndarray):
+            assert stickingatnode.shape == shape
+
+        matrix_cons = np.empty(shape, dtype=object)
+
+        if isinstance(shape, int):
+            ndim = 1
+        else:
+            ndim = len(shape)
+        # cdef np.ndarray[object, ndim=ndim] matrix_variable = np.empty(shape, dtype=object)
+        matrix_variable = np.empty(shape, dtype=object)
+
+        if isinstance(name, str):
+            matrix_names = np.full(shape, name, dtype=object)
+            if name != "":
+                for idx in np.ndindex(matrix_variable.shape):
+                    matrix_names[idx] = f"{name}_{'_'.join(map(str, idx))}"
+        else:
+            matrix_names = name
+
+        if not isinstance(initial, np.ndarray):
+            matrix_initial = np.full(shape, initial, dtype=bool)
+        else:
+            matrix_initial = initial
+
+        if not isinstance(separate, np.ndarray):
+            matrix_separate = np.full(shape, separate, dtype=bool)
+        else:
+            matrix_separate = separate
+
+        if not isinstance(enforce, np.ndarray):
+            matrix_enforce = np.full(shape, enforce, dtype=bool)
+        else:
+            matrix_enforce = enforce
+
+        if not isinstance(check, np.ndarray):
+            matrix_check = np.full(shape, check, dtype=bool)
+        else:
+            matrix_check = check
+
+        if not isinstance(propagate, np.ndarray):
+            matrix_propagate = np.full(shape, propagate, dtype=bool)
+        else:
+            matrix_propagate = propagate
+
+        if not isinstance(local, np.ndarray):
+            matrix_local = np.full(shape, local, dtype=bool)
+        else:
+            matrix_local = local
+
+        if not isinstance(modifiable, np.ndarray):
+            matrix_modifiable = np.full(shape, modifiable, dtype=bool)
+        else:
+            matrix_modifiable = modifiable
+
+        if not isinstance(dynamic, np.ndarray):
+            matrix_dynamic = np.full(shape, dynamic, dtype=bool)
+        else:
+            matrix_dynamic = dynamic
+
+        if not isinstance(removable, np.ndarray):
+            matrix_removable = np.full(shape, removable, dtype=bool)
+        else:
+            matrix_removable = removable
+
+        if not isinstance(stickingatnode, np.ndarray):
+            matrix_stickingatnode = np.full(shape, stickingatnode, dtype=bool)
+        else:
+            matrix_stickingatnode = stickingatnode
+
+        for idx in np.ndindex(cons.shape):
+            matrix_cons[idx] = self.addCons(cons[idx], name=matrix_names[idx], initial=matrix_initial[idx],
+                                            separate=matrix_separate[idx], check=matrix_check[idx],
+                                            propagate=matrix_propagate[idx], local=matrix_local[idx],
+                                            modifiable=matrix_modifiable[idx], dynamic=matrix_dynamic[idx],
+                                            removable=matrix_removable[idx], stickingatnode=matrix_stickingatnode[idx])
+
+        return matrix_cons.view(MatrixConstraint)
 
     def addConsDisjunction(self, conss, name = '', initial = True, 
         relaxcons = None, enforce=True, check =True, 
@@ -8538,7 +9218,7 @@ cdef class Model:
             sol = Solution.create(self._scip, NULL)
         return sol[expr]
 
-    def getVal(self, Expr expr):
+    def getVal(self, expr: Union[Expr, MatrixExpr] ):
         """
         Retrieve the value of the given variable or expression in the best known solution.
         Can only be called after solving is completed.
@@ -8562,7 +9242,14 @@ cdef class Model:
         if not stage_check or self._bestSol.sol == NULL and SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
             raise Warning("Method cannot be called in stage ", self.getStage())
 
-        return self.getSolVal(self._bestSol, expr)
+        if isinstance(expr, MatrixExpr):
+            result = np.empty(expr.shape, dtype=float)
+            for idx in np.ndindex(result.shape):
+                result[idx] = self.getSolVal(self._bestSol, expr[idx])
+        else:
+            result = self.getSolVal(self._bestSol, expr)
+        
+        return result
     
     def hasPrimalRay(self):
         """
