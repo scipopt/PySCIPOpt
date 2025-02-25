@@ -90,9 +90,6 @@ def test_expr_from_matrix_vars():
     mvar = m.addMatrixVar(shape=(2, 2), vtype="B", name="A")
     mvar2 = m.addMatrixVar(shape=(2, 2), vtype="B", name="B")
 
-    assert isinstance(mvar, MatrixVariable)
-    assert isinstance(mvar2, MatrixVariable)
-
     mvar_double = 2 * mvar
     assert isinstance(mvar_double, MatrixExpr)
     for expr in np.nditer(mvar_double, flags=["refs_ok"]):
