@@ -2,7 +2,7 @@ import pdb
 import pprint
 import pytest
 from pyscipopt import Model, Variable, log, exp, cos, sin, sqrt
-from pyscipopt.scip import Expr, MatrixExpr, MatrixVariable, MatrixExprCons
+from pyscipopt.scip import Expr, MatrixExpr, MatrixVariable, MatrixExprCons, MatrixConstraint, ExprCons
 from time import time
 
 import numpy as np
@@ -243,6 +243,49 @@ def test_correctness():
     m.optimize()
 
     assert np.array_equal(m.getVal(res), np.array([[15, 18], [21, 32]]))
+
+def test_documentation():
+    m = Model()
+    shape = (2,2)
+    x = m.addMatrixVar(shape, vtype='C', name='x', ub=8)
+    assert x[0][0].name == "x_0_0"
+    assert x[0][1].name == "x_0_1"
+    assert x[1][0].name == "x_1_0"
+    assert x[1][1].name == "x_1_1"
+
+    x = m.addMatrixVar(shape, vtype='C', name='x', ub=np.array([[5, 6], [2, 8]]))
+    assert x[0][0].getUbGlobal() == 5
+    assert x[0][1].getUbGlobal() == 6
+    assert x[1][0].getUbGlobal() == 2
+    assert x[1][1].getUbGlobal() == 8
+
+    x = m.addMatrixVar(shape=(2, 2), vtype="B", name="x")
+    y = m.addMatrixVar(shape=(2, 2), vtype="C", name="y", ub=5)
+    z = m.addVar(vtype="C", name="z", ub=7)
+
+    c1 = m.addMatrixCons(x + y <= z)
+    c2 = m.addMatrixCons(exp(x) + sin(sqrt(y)) == z + y)
+    e1 = x @ y
+    c3 = m.addMatrixCons(y <= e1)
+    c4 = m.addMatrixCons(e1 <= x)
+    c4 = m.addCons(x.sum() <= 2)
+
+    assert(isinstance(x, MatrixVariable))
+    assert(isinstance(c1, MatrixConstraint))
+    assert(isinstance(e1, MatrixExpr))
+
+    x = m.addVar()
+    matrix_x = m.addMatrixVar(shape=(2,2))
+
+    
+    assert(x.vtype() == matrix_x[0][0].vtype())
+
+    x = m.addMatrixVar(shape=(2, 2))
+    assert(isinstance(x, MatrixVariable))
+    assert(isinstance(x[0][0], Variable))
+    cons = x <= 2
+    assert(isinstance(cons, MatrixExprCons))
+    assert(isinstance(cons[0][0], ExprCons))
 
 @pytest.mark.skip(reason="Performance test")
 def test_performance():
