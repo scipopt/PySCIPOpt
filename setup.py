@@ -19,6 +19,7 @@ if not scipoptdir:
     print("Assuming that SCIP is installed globally, because SCIPOPTDIR is undefined.\n")
 
 else:
+
     # check whether SCIP is installed in the given directory
     if os.path.exists(os.path.join(scipoptdir, "include")):
         includedir = os.path.abspath(os.path.join(scipoptdir, "include"))
@@ -108,7 +109,7 @@ with open("README.md") as f:
 
 setup(
     name="PySCIPOpt",
-    version="5.4.0",
+    version="5.4.1",
     description="Python interface and modeling environment for SCIP",
     long_description=long_description,
     long_description_content_type="text/markdown",

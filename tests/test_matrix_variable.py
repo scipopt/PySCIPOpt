@@ -2,7 +2,7 @@ import pdb
 import pprint
 import pytest
 from pyscipopt import Model, Variable, log, exp, cos, sin, sqrt
-from pyscipopt.scip import Expr, MatrixExpr, MatrixVariable, MatrixExprCons, MatrixConstraint, ExprCons
+from pyscipopt import Expr, MatrixExpr, MatrixVariable, MatrixExprCons, MatrixConstraint, ExprCons
 from time import time
 
 import numpy as np

@@ -6,7 +6,7 @@
 ### Changed
 ### Removed
 
-## 5.4.0 - 2024.02.24
+## 5.4.1 - 2024.02.24
 ### Added
 - Added option to get Lhs, Rhs of nonlinear constraints
 - Added cutoffNode and test
