@@ -10,7 +10,9 @@ if hasattr(os, 'add_dll_directory'):
 from pyscipopt.Multidict import multidict
 from pyscipopt.scip      import Model
 from pyscipopt.scip      import Variable
+from pyscipopt.scip      import MatrixVariable
 from pyscipopt.scip      import Constraint
+from pyscipopt.scip      import MatrixConstraint
 from pyscipopt.scip      import Benders
 from pyscipopt.scip      import Benderscut
 from pyscipopt.scip      import Branchrule
@@ -26,6 +28,9 @@ from pyscipopt.scip      import Sepa
 from pyscipopt.scip      import LP
 from pyscipopt.scip      import readStatistics
 from pyscipopt.scip      import Expr
+from pyscipopt.scip      import MatrixExpr
+from pyscipopt.scip      import MatrixExprCons
+from pyscipopt.scip      import ExprCons
 from pyscipopt.scip      import quicksum
 from pyscipopt.scip      import quickprod
 from pyscipopt.scip      import exp
