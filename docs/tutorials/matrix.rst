@@ -131,5 +131,18 @@ one can always access the individual variables or constraints via their index.
     assert(isinstance(cons, MatrixExprCons))
     assert(isinstance(cons[0][0]), ExprCons)
 
+Accessing Solution Values
+===========================
 
+After optimizing a model, the solution values of a matrix variable can be
+accessed in an identical manner to the standard variant. There are two
+recommended ways to do this.
 
+.. code-block:: python
+
+    matrix_var_vals = scip.getVal(x)
+
+.. code-block:: python
+
+    sol = scip.getBestSol()
+    matrix_var_vals = sol[x]
