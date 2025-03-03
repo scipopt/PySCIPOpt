@@ -38,8 +38,8 @@ We can construct the optimization problem as follows:
   y = scip.addVar(vtype='C', lb=0, ub=None, name='y')
   z = scip.addVar(vtype='C', lb=0, ub=None, name='z')
   cons_1 = scip.addCons(x + y <= 5, name="cons_1")
-  cons_1 = scip.addCons(y + z >= 3, name="cons_2")
-  cons_1 = scip.addCons(x + y == 5, name="cons_3")
+  cons_2 = scip.addCons(y + z >= 3, name="cons_2")
+  cons_3 = scip.addCons(x + y == 5, name="cons_3")
   scip.setObjective(2 * x + 3 * y - 5 * z, sense="minimize")
   scip.optimize()
 
@@ -68,7 +68,7 @@ optimal objective value, and the variable solution values in the optimal solutio
   num_nodes = scip.getNTotalNodes() # Note that getNNodes() is only the number of nodes for the current run (resets at restart)
   obj_val = scip.getObjVal()
   for scip_var in [x, y, z]:
-      print(f"Variable {scip_var.name} has value {scip.getVal(scip_var)})
+      print(f"Variable {scip_var.name} has value {scip.getVal(scip_var)}")
 
 Set / Get a Parameter
 =====================
