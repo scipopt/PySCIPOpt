@@ -6244,7 +6244,9 @@ cdef class Model:
         Constraint
         """
 
-        cdef SCIP_CONS* lincons = SCIPgetLinearConsIndicator(cons.scip_cons);
+        cdef SCIP_CONS* lincons = SCIPgetLinearConsIndicator(cons.scip_cons)
+        if lincons == NULL:
+            return None
         return Constraint.create(lincons)
     
     def getSlackVarIndicator(self, Constraint cons):
@@ -6262,7 +6264,7 @@ cdef class Model:
         Variable
 
         """
-        cdef SCIP_VAR* var = SCIPgetSlackVarIndicator(cons.scip_cons);
+        cdef SCIP_VAR* var = SCIPgetSlackVarIndicator(cons.scip_cons)
         return Variable.create(var)
 
     def addPyCons(self, Constraint cons):
