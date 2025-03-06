@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added getLinearConsIndicator
 ### Fixed
 ### Changed
 ### Removed

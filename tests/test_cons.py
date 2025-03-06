@@ -118,6 +118,8 @@ def test_cons_indicator():
 
     slack = m.getSlackVarIndicator(c1)
 
+    lin_cons = m.getLinearConsIndicator(c1)
+
     m.optimize()
 
     assert m.getNConss(transformed=False) == 5
