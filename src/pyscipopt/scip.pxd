@@ -1828,6 +1828,7 @@ cdef extern from "scip/cons_indicator.h":
                                      SCIP_Real val)
 
     SCIP_VAR* SCIPgetSlackVarIndicator(SCIP_CONS* cons)
+    SCIP_CONS* SCIPgetLinearConsIndicator(SCIP_CONS* cons)
 
 cdef extern from "scip/misc.h":
     SCIP_RETCODE SCIPhashmapCreate(SCIP_HASHMAP** hashmap, BMS_BLKMEM* blkmem, int mapsize)

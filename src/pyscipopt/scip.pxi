@@ -6229,6 +6229,23 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pyCons
+
+    def getLinearConsIndicator(self, Constraint cons):
+        """
+        Get the linear constraint corresponding to the indicator constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            The indicator constraint
+
+        Returns
+        -------
+        Constraint
+        """
+
+        cdef SCIP_CONS* lincons = SCIPgetLinearConsIndicator(cons.scip_cons);
+        return Constraint.create(lincons)
     
     def getSlackVarIndicator(self, Constraint cons):
         """
