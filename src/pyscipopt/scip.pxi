@@ -6241,7 +6241,7 @@ cdef class Model:
 
         Returns
         -------
-        Constraint
+        Constraint or None
         """
 
         cdef SCIP_CONS* lincons = SCIPgetLinearConsIndicator(cons.scip_cons)
