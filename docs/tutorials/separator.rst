@@ -1,5 +1,5 @@
 ##########################
-Seperator (Cutting Planes)
+Separator (Cutting Planes)
 ##########################
 
 For the following let us assume that a Model object is available, which is created as follows:
@@ -307,5 +307,5 @@ The GMI separator can then be included using the following code:
 .. code-block:: python
 
   sepa = GMI()
-  scip.includeSepa(sepa, "python_gmi", "generates gomory mixed integer cuts", priorityS=1000, freq=1)
+  scip.includeSepa(sepa, "python_gmi", "generates gomory mixed integer cuts", priority=1000, freq=1)
 
