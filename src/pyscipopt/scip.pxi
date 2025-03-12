@@ -9244,7 +9244,7 @@ cdef class Model:
 
         Parameters
         ----------
-        expr : Expr
+        expr : Expr ot MatrixExpr
             polynomial expression to query the value of
 
         Returns
