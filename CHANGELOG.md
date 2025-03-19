@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 - Added getLinearConsIndicator
+- Added SCIP_LPPARAM, setIntParam, setRealParam, getIntParam, getRealParam
 ### Fixed
 ### Changed
 ### Removed
