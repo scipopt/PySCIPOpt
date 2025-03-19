@@ -508,7 +508,7 @@ cdef class LP:
         PY_SCIP_CALL(SCIPlpiSetRealpar(self.lpi, param, value))
 
 
-    def getIntParam(self, param):
+    def getRealParam(self, param):
         """
         Get the value of a parameter of type
         float.
