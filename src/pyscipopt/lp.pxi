@@ -509,6 +509,26 @@ cdef class LP:
         """
         PY_SCIP_CALL(SCIPlpiSetRealpar(self.lpi, param, value))
 
+    def getIntParam(self, param):
+        """
+        Get the value of a parameter of type int.
+        If the parameter is not supported by the LP solver, KeyError will be raised.
+
+        Parameters
+        ----------
+        param : SCIP_LPPARAM
+            name of parameter
+
+        Returns
+        -------
+        int
+
+        """
+        cdef int value
+
+        PY_SCIP_CALL(SCIPlpiGetIntpar(self.lpi, param, &value))
+
+        return value
 
     def getRealParam(self, param):
         """
@@ -528,26 +548,5 @@ cdef class LP:
         cdef SCIP_Real value
 
         PY_SCIP_CALL(SCIPlpiGetRealpar(self.lpi, param, &value))
-
-        return value
-
-    def getIntParam(self, param):
-        """
-        Get the value of a parameter of type int.
-        If the parameter is not supported by the LP solver, KeyError will be raised.
-
-        Parameters
-        ----------
-        param : SCIP_LPPARAM
-            name of parameter
-
-        Returns
-        -------
-        int
-
-        """
-        cdef int value
-
-        PY_SCIP_CALL(SCIPlpiGetIntpar(self.lpi, param, &value))
 
         return value
