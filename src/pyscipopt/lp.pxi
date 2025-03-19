@@ -482,6 +482,7 @@ cdef class LP:
     def setIntParam(self, param, value):
         """
         Set an int-valued parameter.
+        If the parameter is not supported by the LP solver, KeyError will be raised.
 
         Parameters
         ----------
@@ -496,6 +497,7 @@ cdef class LP:
     def setRealParam(self, param, value):
         """
         Set a real-valued parameter.
+        If the parameter is not supported by the LP solver, KeyError will be raised.
 
         Parameters
         ----------
@@ -510,8 +512,8 @@ cdef class LP:
 
     def getRealParam(self, param):
         """
-        Get the value of a parameter of type
-        float.
+        Get the value of a parameter of type float.
+        If the parameter is not supported by the LP solver, KeyError will be raised.
 
         Parameters
         ----------
@@ -531,8 +533,8 @@ cdef class LP:
 
     def getIntParam(self, param):
         """
-        Get the value of a parameter of type
-        int.
+        Get the value of a parameter of type int.
+        If the parameter is not supported by the LP solver, KeyError will be raised.
 
         Parameters
         ----------
