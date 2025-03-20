@@ -476,3 +476,77 @@ cdef class LP:
         free(c_binds)
 
         return binds
+
+    # Parameter Methods
+
+    def setIntParam(self, param, value):
+        """
+        Set an int-valued parameter.
+        If the parameter is not supported by the LP solver, KeyError will be raised.
+
+        Parameters
+        ----------
+        param : SCIP_LPPARAM
+            name of parameter
+        value : int
+            value of parameter
+
+        """
+        PY_SCIP_CALL(SCIPlpiSetIntpar(self.lpi, param, value))
+
+    def setRealParam(self, param, value):
+        """
+        Set a real-valued parameter.
+        If the parameter is not supported by the LP solver, KeyError will be raised.
+
+        Parameters
+        ----------
+        param : SCIP_LPPARAM
+            name of parameter
+        value : float
+            value of parameter
+
+        """
+        PY_SCIP_CALL(SCIPlpiSetRealpar(self.lpi, param, value))
+
+    def getIntParam(self, param):
+        """
+        Get the value of a parameter of type int.
+        If the parameter is not supported by the LP solver, KeyError will be raised.
+
+        Parameters
+        ----------
+        param : SCIP_LPPARAM
+            name of parameter
+
+        Returns
+        -------
+        int
+
+        """
+        cdef int value
+
+        PY_SCIP_CALL(SCIPlpiGetIntpar(self.lpi, param, &value))
+
+        return value
+
+    def getRealParam(self, param):
+        """
+        Get the value of a parameter of type float.
+        If the parameter is not supported by the LP solver, KeyError will be raised.
+
+        Parameters
+        ----------
+        param : SCIP_LPPARAM
+            name of parameter
+
+        Returns
+        -------
+        float
+
+        """
+        cdef SCIP_Real value
+
+        PY_SCIP_CALL(SCIPlpiGetRealpar(self.lpi, param, &value))
+
+        return value
