@@ -11,10 +11,8 @@ def test_lp():
     defaultLPParPricing = myLP.getIntParam(SCIP_LPPARAM.PRICING)
     defaultLPParLpinfo = myLP.getIntParam(SCIP_LPPARAM.LPINFO)
     defaultLPParLpitlim = myLP.getIntParam(SCIP_LPPARAM.LPITLIM)
-    # defaultLPParFastmip = myLP.getIntParam(SCIP_LPPARAM.FASTMIP)
     defaultLPParFeastol = myLP.getRealParam(SCIP_LPPARAM.FEASTOL)
     defaultLPParDualfeastol = myLP.getRealParam(SCIP_LPPARAM.DUALFEASTOL)
-    # defaultLPParBarrierconvtol = myLP.getRealParam(SCIP_LPPARAM.BARRIERCONVTOL)
     defaultLPParObjlim = myLP.getRealParam(SCIP_LPPARAM.OBJLIM)
     defaultLPParLptilim = myLP.getRealParam(SCIP_LPPARAM.LPTILIM)
 
@@ -55,10 +53,8 @@ def test_lp():
     myLP.setIntParam(SCIP_LPPARAM.PRICING, defaultLPParPricing)
     myLP.setIntParam(SCIP_LPPARAM.LPINFO, defaultLPParLpinfo)
     myLP.setIntParam(SCIP_LPPARAM.LPITLIM, defaultLPParLpitlim)
-    # myLP.setIntParam(SCIP_LPPARAM.FASTMIP, defaultLPParFastmip)
     myLP.setRealParam(SCIP_LPPARAM.FEASTOL, defaultLPParFeastol)
     myLP.setRealParam(SCIP_LPPARAM.DUALFEASTOL, defaultLPParDualfeastol)
-    # myLP.setRealParam(SCIP_LPPARAM.BARRIERCONVTOL, defaultLPParBarrierconvtol)
     myLP.setRealParam(SCIP_LPPARAM.OBJLIM, defaultLPParObjlim)
     myLP.setRealParam(SCIP_LPPARAM.LPTILIM, defaultLPParLptilim)
 

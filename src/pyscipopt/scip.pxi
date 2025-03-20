@@ -2987,6 +2987,21 @@ cdef class Model:
         """
         return SCIPisFeasNegative(self._scip, value)
 
+    def isFeasPositive(self, value):
+        """
+        Returns whether value > feastol.
+
+        Parameters
+        ----------
+        value : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisFeasPositive(self._scip, value)
+
     def isFeasIntegral(self, value):
         """
         Returns whether value is integral within the LP feasibility bounds.

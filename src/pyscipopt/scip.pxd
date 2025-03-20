@@ -1331,6 +1331,7 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPisFeasIntegral(SCIP* scip, SCIP_Real val)
     SCIP_Bool SCIPisFeasZero(SCIP* scip, SCIP_Real val)
     SCIP_Bool SCIPisFeasNegative(SCIP* scip, SCIP_Real val)
+    SCIP_Bool SCIPisFeasPositive(SCIP* scip, SCIP_Real val)
     SCIP_Bool SCIPisInfinity(SCIP* scip, SCIP_Real val)
     SCIP_Bool SCIPisLE(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
     SCIP_Bool SCIPisLT(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
