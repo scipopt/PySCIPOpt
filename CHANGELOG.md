@@ -3,7 +3,11 @@
 ## Unreleased
 ### Added
 - Added getLinearConsIndicator
+<<<<<<< HEAD
 - Added SCIP_LPPARAM, setIntParam, setRealParam, getIntParam, getRealParam, isOptimal, getObjVal, getRedcost for lpi
+=======
+- Added SCIP_LPPARAM, setIntParam, setRealParam, getIntParam, getRealParam for lpi
+>>>>>>> upstream/master
 - Added isFeasPositive
 ### Fixed
 ### Changed
