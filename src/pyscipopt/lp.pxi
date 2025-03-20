@@ -361,8 +361,39 @@ cdef class LP:
 
         return objval
 
+    def isOptimal(self):
+        """
+        returns true iff LP was solved to optimality.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPlpiIsOptimal(self.lpi)
+
+    def getObjVal(self):
+        """
+        Returns the objective value of the last LP solve.
+        If the value does not exists, None will be returned.
+        """
+        if not self.isOptimal():
+            return None
+
+        cdef SCIP_Real objval
+
+        PY_SCIP_CALL(SCIPlpiGetSol(self.lpi, &objval, NULL, NULL, NULL, NULL))
+
+        return objval
+
     def getPrimal(self):
-        """Returns the primal solution of the last LP solve."""
+        """
+        Returns the primal solution of the last LP solve.
+        If the solution does not exists, None will be returned.
+        """
+        if not self.isOptimal():
+            return None
+
         cdef int ncols = self.ncols()
         cdef SCIP_Real* c_primalsol = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
         cdef int i
@@ -380,7 +411,13 @@ cdef class LP:
         return SCIPlpiIsPrimalFeasible(self.lpi)
 
     def getDual(self):
-        """Returns the dual solution of the last LP solve."""
+        """
+        Returns the dual solution of the last LP solve.
+        If the solution does not exists, None will be returned.
+        """
+        if not self.isOptimal():
+            return None
+
         cdef int nrows = self.nrows()
         cdef SCIP_Real* c_dualsol = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
         cdef int i
@@ -445,17 +482,45 @@ cdef class LP:
 
         return niters
 
+    def getActivity(self):
+        """
+        Returns the row activity vector of the last LP solve.
+        If the vecotr does not exists, None will be returned.
+        """
+        if not self.isOptimal():
+            return None
+
+        cdef int nrows = self.nrows()
+        cdef SCIP_Real* c_activity = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
+        cdef int i
+
+        PY_SCIP_CALL(SCIPlpiGetSol(self.lpi, NULL, NULL, NULL, c_activity, NULL))
+
+        activity = [0.0] * nrows
+        for i in range(nrows):
+            activity[i] = c_activity[i]
+
+        free(c_activity)
+
+        return activity
+
     def getRedcost(self):
-        """Returns the reduced cost vector of the last LP solve."""
+        """
+        Returns the reduced cost vector of the last LP solve.
+        If the vecotr does not exists, None will be returned.
+        """
+        if not self.isOptimal():
+            return None
+
         cdef int ncols = self.ncols()
         cdef SCIP_Real* c_redcost = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
         cdef int i
 
         PY_SCIP_CALL(SCIPlpiGetSol(self.lpi, NULL, NULL, NULL, NULL, c_redcost))
 
-        redcost = []
+        redcost = [0.0] * ncols
         for i in range(ncols):
-            redcost[i].append(c_redcost[i])
+            redcost[i] = c_redcost[i]
 
         free(c_redcost)
 
