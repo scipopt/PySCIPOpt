@@ -82,7 +82,7 @@ def test_lp():
     for i in redcost:
         assert(i is not None)
 
-    activity = myLP().getActivity()
+    activity = myLP.getActivity()
     assert(activity is not None)
     for i in activity:
         assert(i is not None)
