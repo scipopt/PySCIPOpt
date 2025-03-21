@@ -76,8 +76,16 @@ def test_lp():
     assert(myLP.isOptimal())
     assert(myLP.getPrimal() is not None)
     assert(myLP.getDual() is not None)
-    assert(myLP.getRedcost() is not None)
-    assert(myLP.getActivity() is not None)
-    assert round(myLP.getObjVal() == solval)
+    
+    redcost = myLP.getRedcost()
+    assert(redcost is not None)
+    for i in redcost:
+        assert(i is not None)
 
+    activity = myLP().getActivity()
+    assert(activity is not None)
+    for i in activity:
+        assert(i is not None)
+
+    assert round(myLP.getObjVal() == solval)
     assert round(5.0 == solval)
