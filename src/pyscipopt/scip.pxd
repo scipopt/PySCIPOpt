@@ -1393,6 +1393,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPlpiGetNCols(SCIP_LPI* lpi, int* ncols)
     SCIP_RETCODE SCIPlpiSolveDual(SCIP_LPI* lpi)
     SCIP_RETCODE SCIPlpiSolvePrimal(SCIP_LPI* lpi)
+    SCIP_RETCODE SCIPlpiIsOptimal(SCIP_LPI* lpi)
     SCIP_RETCODE SCIPlpiGetObjval(SCIP_LPI* lpi, SCIP_Real* objval)
     SCIP_RETCODE SCIPlpiGetSol(SCIP_LPI* lpi, SCIP_Real* objval, SCIP_Real* primsol, SCIP_Real* dualsol, SCIP_Real* activity, SCIP_Real* redcost)
     SCIP_RETCODE SCIPlpiGetIterations(SCIP_LPI* lpi, int* iterations)
