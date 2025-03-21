@@ -389,7 +389,7 @@ cdef class LP:
     def getPrimal(self):
         """
         Returns the primal solution of the last LP solve.
-        If the solution does not exists, None will be returned.
+        If the solution does not exist, None will be returned.
         """
         if not self.isOptimal():
             return None
