@@ -507,7 +507,7 @@ cdef class LP:
     def getRedcost(self):
         """
         Returns the reduced cost vector of the last LP solve.
-        If the vecotr does not exists, None will be returned.
+        If the vector does not exist, None will be returned.
         """
         if not self.isOptimal():
             return None
