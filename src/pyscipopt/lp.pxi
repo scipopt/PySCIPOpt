@@ -375,7 +375,7 @@ cdef class LP:
     def getObjVal(self):
         """
         Returns the objective value of the last LP solve.
-        If the value does not exists, None will be returned.
+        If the value does not exist, None will be returned.
         """
         if not self.isOptimal():
             return None
