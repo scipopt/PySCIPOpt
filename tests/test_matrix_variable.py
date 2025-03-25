@@ -300,7 +300,6 @@ def test_MatrixVariable_attributes():
     assert x.vtype().tolist() == [['CONTINUOUS', 'CONTINUOUS'], ['CONTINUOUS', 'CONTINUOUS']]
     assert x.isInLP().tolist() == [[False, False], [False, False]]
     assert x.getIndex().tolist() == [[0, 1], [2, 3]]
-    #assert x.getCol().tolist()# == [[5, 6], [2, 8]]
     assert x.getLbGlobal().tolist() == [[0, 0], [0, 0]]
     assert x.getUbGlobal().tolist() == [[5, 6], [2, 8]]
     assert x.getObj().tolist() == [[1, 1], [1, 1]]
