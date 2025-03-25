@@ -294,6 +294,22 @@ def test_documentation():
     assert (isinstance(cons, MatrixExprCons))
     assert (isinstance(cons[0][0], ExprCons))
 
+def test_MatrixVariable_attributes():
+    m = Model()
+    x = m.addMatrixVar(shape=(2,2), vtype='C', name='x', ub=np.array([[5, 6], [2, 8]]), obj=1)
+    assert x.vtype().tolist() == [['CONTINUOUS', 'CONTINUOUS'], ['CONTINUOUS', 'CONTINUOUS']]
+    assert x.isInLP().tolist() == [[False, False], [False, False]]
+    assert x.getIndex().tolist() == [[0, 1], [2, 3]]
+    assert x.getLbGlobal().tolist() == [[0, 0], [0, 0]]
+    assert x.getUbGlobal().tolist() == [[5, 6], [2, 8]]
+    assert x.getObj().tolist() == [[1, 1], [1, 1]]
+    m.setMaximize()
+    m.optimize()
+    assert x.getUbLocal().tolist() == [[5, 6], [2, 8]]
+    assert x.getLbLocal().tolist() == [[5, 6], [2, 8]]
+    assert x.getLPSol().tolist() == [[5, 6], [2, 8]]
+    assert x.getAvgSol().tolist() == [[5, 6], [2, 8]]
+    assert x.varMayRound().tolist() == [[True, True], [True, True]]
 
 @pytest.mark.skip(reason="Performance test")
 def test_performance():

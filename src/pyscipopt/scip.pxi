@@ -1685,7 +1685,7 @@ class MatrixVariable(MatrixExpr):
 
         """
         vtypes = np.empty(self.shape, dtype=object)
-        for idx in np.ndindex(self):
+        for idx in np.ndindex(self.shape):
             vtypes[idx] = self[idx].vtype()
         return vtypes
 
@@ -1700,7 +1700,7 @@ class MatrixVariable(MatrixExpr):
 
         """
         in_lp = np.empty(self.shape, dtype=bool)
-        for idx in np.ndindex(self):
+        for idx in np.ndindex(self.shape):
             in_lp[idx] = self[idx].isInLP()
         return in_lp
 
@@ -1715,7 +1715,7 @@ class MatrixVariable(MatrixExpr):
             An array of integers. No two should be the same
         """
         indices = np.empty(self.shape, dtype=int)
-        for idx in np.ndindex(self):
+        for idx in np.ndindex(self.shape):
             indices[idx] = self[idx].getIndex()
         return indices
 
@@ -1730,7 +1730,7 @@ class MatrixVariable(MatrixExpr):
         """
 
         columns = np.empty(self.shape, dtype=object)
-        for idx in np.index(self):
+        for idx in np.ndindex(self.shape):
             columns[idx] = self[idx].getCol()
         return columns
 
@@ -1744,7 +1744,7 @@ class MatrixVariable(MatrixExpr):
 
         """
         lbs = np.empty(self.shape, dtype=float)
-        for idx in np.ndindex(self):
+        for idx in np.ndindex(self.shape):
             lbs[idx] = self[idx].getLbOriginal()
         return lbs
 
@@ -1758,7 +1758,7 @@ class MatrixVariable(MatrixExpr):
 
         """
         ubs = np.empty(self.shape, dtype=float)
-        for idx in np.ndindex(self):
+        for idx in np.ndindex(self.shape):
             ubs[idx] = self[idx].getUbOriginal()
         return ubs
 
@@ -1772,7 +1772,7 @@ class MatrixVariable(MatrixExpr):
 
         """
         lbs = np.empty(self.shape, dtype=float)
-        for idx in np.ndindex(self):
+        for idx in np.ndindex(self.shape):
             lbs[idx] = self[idx].getLbGlobal()
         return lbs
 
@@ -1786,7 +1786,7 @@ class MatrixVariable(MatrixExpr):
 
         """
         ubs = np.empty(self.shape, dtype=float)
-        for idx in np.ndindex(self):
+        for idx in np.ndindex(self.shape):
             ubs[idx] = self[idx].getUbGlobal()
         return ubs
 
@@ -1800,7 +1800,7 @@ class MatrixVariable(MatrixExpr):
 
         """
         lbs = np.empty(self.shape, dtype=float)
-        for idx in np.ndindex(self):
+        for idx in np.ndindex(self.shape):
             lbs[idx] = self[idx].getLbLocal()
         return lbs
 
@@ -1814,7 +1814,7 @@ class MatrixVariable(MatrixExpr):
 
         """
         ubs = np.empty(self.shape, dtype=float)
-        for idx in np.ndindex(self):
+        for idx in np.ndindex(self.shape):
             ubs[idx] = self[idx].getUbLocal()
         return ubs
 
@@ -1828,7 +1828,7 @@ class MatrixVariable(MatrixExpr):
 
         """
         objs = np.empty(self.shape, dtype=float)
-        for idx in np.ndindex(self):
+        for idx in np.ndindex(self.shape):
             objs[idx] = self[idx].getObj()
         return objs
 
@@ -1842,7 +1842,7 @@ class MatrixVariable(MatrixExpr):
 
         """
         lpsols = np.empty(self.shape, dtype=float)
-        for idx in np.ndindex(self):
+        for idx in np.ndindex(self.shape):
             lpsols[idx] = self[idx].getLPSol()
         return lpsols
 
@@ -1856,7 +1856,7 @@ class MatrixVariable(MatrixExpr):
 
         """
         avgsols = np.empty(self.shape, dtype=float)
-        for idx in np.ndindex(self):
+        for idx in np.ndindex(self.shape):
             avgsols[idx] = self[idx].getAvgSol()
         return avgsols
 
@@ -1876,7 +1876,7 @@ class MatrixVariable(MatrixExpr):
 
         """
         mayround = np.empty(self.shape, dtype=bool)
-        for idx in np.ndindex(self):
+        for idx in np.ndindex(self.shape):
             mayround[idx] = self[idx].varMayRound()
         return mayround
 
