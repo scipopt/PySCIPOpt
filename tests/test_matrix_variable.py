@@ -312,9 +312,6 @@ def test_MatrixVariable_attributes():
     assert x.getAvgSol().tolist() == [[5, 6], [2, 8]]
     assert x.varMayRound().tolist() == [[True, True], [True, True]]
 
-
-test_MatrixVariable_attributes()
-
 @pytest.mark.skip(reason="Performance test")
 def test_performance():
     start_orig = time()
