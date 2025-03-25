@@ -6,6 +6,7 @@
 - Added SCIP_LPPARAM, setIntParam, setRealParam, getIntParam, getRealParam, isOptimal, getObjVal, getRedcost for lpi
 - Added isFeasPositive
 ### Fixed
+- Fixed bug when accessing matrix variable attributes
 ### Changed
 ### Removed
 
