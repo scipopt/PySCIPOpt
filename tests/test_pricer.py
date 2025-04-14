@@ -245,5 +245,3 @@ def test_deactivate_pricer():
     
     # the optimal solution with normal pricing
     assert s.isGT(s.getObjVal(), 452.25)
-
-test_deactivate_pricer()
