@@ -998,6 +998,7 @@ cdef extern from "scip/scip.h":
                                    SCIP_PRICERDATA* pricerdata)
     SCIP_PRICER* SCIPfindPricer(SCIP* scip, const char* name)
     SCIP_RETCODE SCIPactivatePricer(SCIP* scip, SCIP_PRICER* pricer)
+    SCIP_RETCODE SCIPdeactivatePricer(SCIP* scip, SCIP_PRICER* pricer)
     SCIP_PRICERDATA* SCIPpricerGetData(SCIP_PRICER* pricer)
 
     # Constraint handler plugin

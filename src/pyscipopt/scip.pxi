@@ -7593,6 +7593,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPactivatePricer(self._scip, scip_pricer))
         pricer.model = <Model>weakref.proxy(self)
         Py_INCREF(pricer)
+        pricer._name = name
 
     def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority=0,
                         enfopriority=0, chckpriority=0, sepafreq=-1, propfreq=-1,
@@ -7653,6 +7654,19 @@ cdef class Model:
         conshdlr.model = <Model>weakref.proxy(self)
         conshdlr.name = name
         Py_INCREF(conshdlr)
+
+    def deactivatePricer(self, Pricer pricer):
+        """
+        Deactivate the given pricer.
+
+        Parameters
+        ----------
+        pricer : Pricer
+            the pricer to deactivate
+        """
+        cdef SCIP_PRICER* scip_pricer
+        scip_pricer = SCIPfindPricer(self._scip, str_conversion(pricer._name))
+        PY_SCIP_CALL(SCIPdeactivatePricer(self._scip, scip_pricer))
 
     def copyLargeNeighborhoodSearch(self, to_fix, fix_vals) -> Model:
         """

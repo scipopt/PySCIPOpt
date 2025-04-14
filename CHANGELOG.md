@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Wrapper SCIPdeactivatePricer and added deactivatePricer and test
 - Added getLinearConsIndicator
 - Added SCIP_LPPARAM, setIntParam, setRealParam, getIntParam, getRealParam, isOptimal, getObjVal, getRedcost for lpi
 - Added isFeasPositive
