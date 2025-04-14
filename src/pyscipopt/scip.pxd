@@ -875,6 +875,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetConsChecked(SCIP *scip, SCIP_CONS *cons, SCIP_Bool check)
     SCIP_RETCODE SCIPsetConsRemovable(SCIP *scip, SCIP_CONS *cons, SCIP_Bool removable)
     SCIP_RETCODE SCIPsetConsInitial(SCIP *scip, SCIP_CONS *cons, SCIP_Bool initial)
+    SCIP_RETCODE SCIPsetConsModifiable(SCIP *scip, SCIP_CONS *cons, SCIP_Bool modifiable)
     SCIP_RETCODE SCIPsetConsEnforced(SCIP *scip, SCIP_CONS *cons, SCIP_Bool enforce)
 
     # Primal Solution Methods

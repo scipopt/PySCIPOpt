@@ -70,6 +70,8 @@ class CutPricer(Pricer):
         if self.data["deactivate"]:
             # Testing deactivatePricer
             self.model.deactivatePricer(self)
+            for c in self.model.getConss():
+                self.model.setModifiable(c, False)
 
         return {'result':SCIP_RESULT.SUCCESS}
 
@@ -232,8 +234,16 @@ def test_deactivate_pricer():
     pricer.data['redcosts'] = []
     pricer.data["deactivate"] = True
 
+    for c in s.getConss():
+        c.isModifiable()
+
     # solve problem
     s.optimize()
+
+    for c in s.getConss():
+        assert not c.isModifiable()
     
     # the optimal solution with normal pricing
     assert s.isGT(s.getObjVal(), 452.25)
+
+test_deactivate_pricer()

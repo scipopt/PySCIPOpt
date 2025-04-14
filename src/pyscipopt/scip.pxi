@@ -6388,6 +6388,18 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPsetConsInitial(self._scip, cons.scip_cons, newInit))
+    
+    def setModifiable(self, Constraint cons, newMod):
+        """
+        Set "modifiable" flag of a constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+        newMod : bool
+
+        """
+        PY_SCIP_CALL(SCIPsetConsModifiable(self._scip, cons.scip_cons, newMod))
 
     def setRemovable(self, Constraint cons, newRem):
         """
