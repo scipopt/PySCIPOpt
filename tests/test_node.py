@@ -32,6 +32,13 @@ class focusEventHdlr(Eventhdlr):
         for node in self.model.getSiblings():
             assert isinstance(node, scip.Node)
 
+        assert self.model.getNLeaves() >= 0
+
+        assert len(self.model.getLeaves()) == self.model.getNLeaves()
+        
+        for node in self.model.getLeaves():
+            assert isinstance(node, scip.Node)
+
         return {'result': SCIP_RESULT.SUCCESS}
  
 def test_getSiblings():

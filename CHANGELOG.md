@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Wrapped SCIPgetLeaves, SCIPgetNLeaves, and added getLeaves, getNLeaves and test
 - Wrapped SCIPgetSiblings, SCIPgetNSiblings, and added getSiblings, getNSiblings and test
 - Wrapped SCIPdeactivatePricer, SCIPsetConsModifiable, and added deactivatePricer, setModifiable and test
 - Added getLinearConsIndicator

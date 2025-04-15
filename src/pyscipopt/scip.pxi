@@ -4184,6 +4184,34 @@ cdef class Model:
             number of siblings of the focus node
         """
         return SCIPgetNSiblings(self._scip)
+    
+    def getLeaves(self):
+        """
+        Gets the leaves of the tree along with number of leaves.
+
+        Returns
+        -------
+        list of Nodes
+
+        """
+        cdef SCIP_NODE** _leaves
+        cdef int n_leaves
+        cdef int i
+
+        PY_SCIP_CALL(SCIPgetLeaves(self._scip, &_leaves, &n_leaves))
+
+        return [Node.create(_leaves[i]) for i in range(n_leaves)]
+    
+    def getNLeaves(self):
+        """
+        Gets the number of leaves of the tree.
+
+        Returns
+        -------
+        int
+            number of leaves of the focus node
+        """
+        return SCIPgetNLeaves(self._scip)
 
     def getBestSibling(self):
         """

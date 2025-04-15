@@ -1940,6 +1940,8 @@ cdef extern from "scip/scip_tree.h":
     SCIP_NODE* SCIPgetBestChild(SCIP* scip)
     SCIP_RETCODE SCIPgetSiblings(SCIP* scip, SCIP_NODE*** siblings, int* nsiblings)
     SCIP_RETCODE SCIPgetNSiblings(SCIP* scip)
+    SCIP_RETCODE SCIPgetLeaves(SCIP* scip, SCIP_NODE*** leaves, int* nleaves)
+    int SCIPgetNLeaves(SCIP* scip)
     SCIP_NODE* SCIPgetBestSibling(SCIP* scip)
     SCIP_NODE* SCIPgetBestLeaf(SCIP* scip)
     SCIP_NODE* SCIPgetPrioChild(SCIP* scip)
