@@ -4156,6 +4156,23 @@ cdef class Model:
 
         """
         return Node.create(SCIPgetBestChild(self._scip))
+    
+    def getChildren(self):
+        """
+        Gets the children of the focus node.
+
+        Returns
+        -------
+        list of Nodes
+
+        """
+        cdef SCIP_NODE** _children
+        cdef int n_children
+        cdef int i
+
+        PY_SCIP_CALL(SCIPgetChildren(self._scip, &_children, &n_children))
+
+        return [Node.create(_children[i]) for i in range(n_children)]
 
     def getSiblings(self):
         """
@@ -4174,17 +4191,6 @@ cdef class Model:
 
         return [Node.create(_siblings[i]) for i in range(n_siblings)]
     
-    def getNsiblings(self, node):
-        """
-        Gets the number of siblings of focus node.
-
-        Returns
-        -------
-        int
-            number of siblings of the focus node
-        """
-        return SCIPgetNSiblings(self._scip)
-    
     def getLeaves(self):
         """
         Gets the leaves of the tree along with number of leaves.
@@ -4202,17 +4208,6 @@ cdef class Model:
 
         return [Node.create(_leaves[i]) for i in range(n_leaves)]
     
-    def getNLeaves(self):
-        """
-        Gets the number of leaves of the tree.
-
-        Returns
-        -------
-        int
-            number of leaves of the focus node
-        """
-        return SCIPgetNLeaves(self._scip)
-
     def getBestSibling(self):
         """
         Gets the best sibling of the focus node w.r.t. the node selection strategy.

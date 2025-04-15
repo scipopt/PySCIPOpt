@@ -1934,14 +1934,13 @@ cdef extern from "scip/pub_lp.h":
 
 cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
-    SCIP_Longint SCIPgetNLeaves(SCIP* scip)
+    SCIP_RETCODE SCIPgetChildren(SCIP* scip, SCIP_NODE*** children, int* nchildren)
     SCIP_Longint SCIPgetNChildren(SCIP* scip)
-    SCIP_Longint SCIPgetNSiblings(SCIP* scip)
     SCIP_NODE* SCIPgetBestChild(SCIP* scip)
     SCIP_RETCODE SCIPgetSiblings(SCIP* scip, SCIP_NODE*** siblings, int* nsiblings)
     SCIP_RETCODE SCIPgetNSiblings(SCIP* scip)
     SCIP_RETCODE SCIPgetLeaves(SCIP* scip, SCIP_NODE*** leaves, int* nleaves)
-    int SCIPgetNLeaves(SCIP* scip)
+    SCIP_Longint SCIPgetNLeaves(SCIP* scip)
     SCIP_NODE* SCIPgetBestSibling(SCIP* scip)
     SCIP_NODE* SCIPgetBestLeaf(SCIP* scip)
     SCIP_NODE* SCIPgetPrioChild(SCIP* scip)
