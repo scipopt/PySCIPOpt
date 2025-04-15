@@ -4157,6 +4157,34 @@ cdef class Model:
         """
         return Node.create(SCIPgetBestChild(self._scip))
 
+    def getSiblings(self):
+        """
+        Gets the siblings of the focus node.
+
+        Returns
+        -------
+        list of Nodes
+
+        """
+        cdef SCIP_NODE** _siblings
+        cdef int n_siblings
+        cdef int i
+
+        PY_SCIP_CALL(SCIPgetSiblings(self._scip, &_siblings, &n_siblings))
+
+        return [Node.create(_siblings[i]) for i in range(n_siblings)]
+    
+    def getNsiblings(self, node):
+        """
+        Gets the number of siblings of focus node.
+
+        Returns
+        -------
+        int
+            number of siblings of the focus node
+        """
+        return SCIPgetNSiblings(self._scip)
+
     def getBestSibling(self):
         """
         Gets the best sibling of the focus node w.r.t. the node selection strategy.
