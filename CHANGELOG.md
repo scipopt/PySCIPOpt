@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added support for knapsack constraints
 - Added getLinearConsIndicator
 - Added SCIP_LPPARAM, setIntParam, setRealParam, getIntParam, getRealParam, isOptimal, getObjVal, getRedcost for lpi
 - Added isFeasPositive

@@ -2057,6 +2057,19 @@ cdef class Constraint:
         """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'linear'
+    
+    def isKnapsack(self):
+        """
+        Returns True if constraint is a knapsack constraint.
+        This is a special case of a linear constraint.
+
+        Returns
+        -------
+        bool
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
+        return constype == 'knapsack'
 
     def isNonlinear(self):
         """
@@ -4889,6 +4902,50 @@ cdef class Model:
 
         return PyCons
 
+    def _createConsKnapsack(self, ExprCons knapsackcons, **kwargs):
+        """
+        The function for creating a knapsack constraint, but not adding it to the Model.
+        Please do not use this function directly, but rather use createConsFromExpr
+
+        Parameters
+        ----------
+        knapsackcons : ExprCons
+        kwargs : dict, optional
+
+        Returns
+        -------
+        Constraint
+
+        """
+        assert isinstance(knapsackcons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
+
+        cdef int nvars = len(terms.items())
+        cdef SCIP_VAR** vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        cdef SCIP_Real* weights_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+        cdef SCIP_CONS* scip_cons
+        cdef SCIP_Real coeff
+        cdef int i
+
+        assert kwargs["rhs"] >= 0 and isinstance(kwargs["rhs"], int), "knapsack constraint capacity must be non-negative integer"
+        for i, (key, weight) in enumerate(terms.items()):
+            assert weight >= 0 and isinstance(weight, int), "weight must be non-negative integer"
+            assert <Variable>key[0].vtype() == 'B', "knapsack constraint only supports binary variables"     
+            vars_array[i] = <SCIP_VAR*>(<Variable>key[0]).scip_var
+            weights_array[i] = <SCIP_Real>weight
+
+        PY_SCIP_CALL(SCIPcreateConsKnapsack(
+            self._scip, &scip_cons, str_conversion(kwargs['name']), nvars, vars_array, weights_array,
+            kwargs['rhs'], kwargs['initial'], kwargs['separate'], kwargs['enforce'], 
+            kwargs['check'], kwargs['propagate'], kwargs['local'], kwargs['modifiable'],
+            kwargs['dynamic'], kwargs['removable'], kwargs['stickingatnode']))
+
+        PyCons = Constraint.create(scip_cons)
+
+        free(vars_array)
+        free(coeffs_array)
+
+        return PyCons
+
     def _createConsQuadratic(self, ExprCons quadcons, **kwargs):
         """
         The function for creating a quadratic constraint, but not adding it to the Model.
@@ -5154,7 +5211,7 @@ cdef class Model:
     def createConsFromExpr(self, cons, name='', initial=True, separate=True,
                 enforce=True, check=True, propagate=True, local=False,
                 modifiable=False, dynamic=False, removable=False,
-                stickingatnode=False):
+                stickingatnode=False, knapsack=False):
         """
         Create a linear or nonlinear constraint without adding it to the SCIP problem.
         This is useful for creating disjunction constraints without also enforcing the individual constituents.
@@ -5188,6 +5245,8 @@ cdef class Model:
         stickingatnode : bool, optional
             should the constraint always be kept at the node where it was added,
             even if it may be  moved to a more global node? (Default value = False)
+        knapsack : bool, optional
+            should the constraint be treated as a knapsack constraint? (Default value = False)
 
         Returns
         -------
@@ -5203,7 +5262,12 @@ cdef class Model:
                       propagate=propagate, local=local,
                       modifiable=modifiable, dynamic=dynamic,
                       removable=removable,
-                      stickingatnode=stickingatnode)
+                      stickingatnode=stickingatnode,
+                      knapsack=knapsack)
+
+        if kwargs["knapsack"]:
+            return self._createConsKnapsack(cons, **kwargs)
+
         kwargs['lhs'] = -SCIPinfinity(self._scip) if cons._lhs is None else cons._lhs
         kwargs['rhs'] =  SCIPinfinity(self._scip) if cons._rhs is None else cons._rhs
 
@@ -5221,7 +5285,7 @@ cdef class Model:
     def addCons(self, cons, name='', initial=True, separate=True,
                 enforce=True, check=True, propagate=True, local=False,
                 modifiable=False, dynamic=False, removable=False,
-                stickingatnode=False):
+                stickingatnode=False, knapsack=False):
         """
         Add a linear or nonlinear constraint.
 
@@ -5252,6 +5316,8 @@ cdef class Model:
         stickingatnode : bool, optional
             should the constraints always be kept at the node where it was added,
             even if it may be moved to a more global node? (Default value = False)
+        knapsack : bool, optional
+            should the constraint be treated as a knapsack constraint? (Default value = False)
 
         Returns
         -------
@@ -5268,7 +5334,8 @@ cdef class Model:
                       propagate=propagate, local=local,
                       modifiable=modifiable, dynamic=dynamic,
                       removable=removable,
-                      stickingatnode=stickingatnode)
+                      stickingatnode=stickingatnode,
+                      knapsack=knapsack)
         #  we have to pass this back to a SCIP_CONS*
         # object to create a new python constraint & handle constraint release
         # correctly. Otherwise, segfaults when trying to query information
@@ -6446,6 +6513,8 @@ cdef class Model:
             PY_SCIP_CALL(SCIPchgRhsLinear(self._scip, cons.scip_cons, rhs))
         elif constype == 'nonlinear':
             PY_SCIP_CALL(SCIPchgRhsNonlinear(self._scip, cons.scip_cons, rhs))
+        elif constype == "knapsack":
+            PY_SCIP_CALL(SCIPchgCapacityKnapsack(self._scip, cons.scip_cons, rhs))
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
@@ -6475,7 +6544,7 @@ cdef class Model:
 
     def getRhs(self, Constraint cons):
         """
-        Retrieve right-hand side value of a constraint.
+        Retrieve right-hand side value of a linear constraint.
 
         Parameters
         ----------
@@ -6492,6 +6561,8 @@ cdef class Model:
             return SCIPgetRhsLinear(self._scip, cons.scip_cons)
         elif constype == 'nonlinear':
             return SCIPgetRhsNonlinear(cons.scip_cons)
+        elif constype == "knapsack":
+            return SCIPgetCapacityKnapsack(self._scip, cons.scip_cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
@@ -6569,6 +6640,23 @@ cdef class Model:
         """
 
         PY_SCIP_CALL( SCIPaddCoefLinear(self._scip, cons.scip_cons, var.scip_var, value) )
+
+    def addCoefKnapsack(self, Constraint cons, Variable var, weight):
+        """
+        Adds coefficient to knapsack constraint (if it is not zero)
+
+        Parameters
+        ----------
+        cons : Constraint
+            knapsack constraint
+        var : Variable
+            variable of constraint entry
+        weight : float
+            coefficient of constraint entry
+
+        """
+
+        PY_SCIP_CALL( SCIPaddCoefKnapsack(self._scip, cons.scip_cons, var.scip_var, value) )
 
     def getActivity(self, Constraint cons, Solution sol = None):
         """
@@ -6954,7 +7042,7 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPdelConsLocal(self._scip, cons.scip_cons))
-
+    
     def getValsLinear(self, Constraint cons):
         """
         Retrieve the coefficients of a linear constraint
@@ -6986,10 +7074,41 @@ cdef class Model:
 
         return valsdict
 
+    def getWeightsKnapsack(self, Constraint cons):
+        """
+        Retrieve the coefficients of a knapsack constraint
+
+        Parameters
+        ----------
+        cons : Constraint
+            knapsack constraint to get the coefficients of
+
+        Returns
+        -------
+        dict of str to float
+
+        """
+        cdef SCIP_VAR** vars
+        cdef SCIP_Real* vals
+        cdef int i
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        if not constype == 'knapsack':
+            raise Warning("weights not available for constraints of type ", constype)
+
+        vals = SCIPgetWeightsKnapsack(self._scip, cons.scip_cons)
+        vars = SCIPgetVarsKnapsack(self._scip, cons.scip_cons)
+
+        valsdict = {}
+        for i in range(SCIPgetNVarsKnapsack(self._scip, cons.scip_cons)):
+            valsdict[bytes(SCIPvarGetName(vars[i])).decode('utf-8')] = vals[i]
+
+        return valsdict
+
     def getRowLinear(self, Constraint cons):
         """
         Retrieve the linear relaxation of the given linear constraint as a row.
-        may return NULL if no LP row was yet created; the user must not modify the row!
+        May return NULL if no LP row was yet created; the user must not modify the row!
 
         Parameters
         ----------
@@ -7031,6 +7150,29 @@ cdef class Model:
             transcons = cons
         return SCIPgetDualsolLinear(self._scip, transcons.scip_cons)
 
+    def getDualsolKnapsack(self, Constraint cons):
+        """
+        Retrieve the dual solution to a knapsack constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            knapsack constraint
+
+        Returns
+        -------
+        float
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        if not constype == 'knapsack':
+            raise Warning("dual solution values not available for constraints of type ", constype)
+        if cons.isOriginal():
+            transcons = <Constraint>self.getTransformedCons(cons)
+        else:
+            transcons = cons
+        return SCIPgetDualsolKnapsack(self._scip, transcons.scip_cons)
+
     def getDualMultiplier(self, Constraint cons):
         """
         DEPRECATED: Retrieve the dual solution to a linear constraint.
@@ -7068,6 +7210,27 @@ cdef class Model:
             return SCIPgetDualfarkasLinear(self._scip, transcons.scip_cons)
         else:
             return SCIPgetDualfarkasLinear(self._scip, cons.scip_cons)
+    
+    def getDualfarkasKnapsack(self, Constraint cons):
+        """
+        Retrieve the dual farkas value to a knapsack constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            knapsack constraint
+
+        Returns
+        -------
+        float
+
+        """
+        # TODO this should ideally be handled on the SCIP side
+        if cons.isOriginal():
+            transcons = <Constraint>self.getTransformedCons(cons)
+            return SCIPgetDualfarkasKnapsack(self._scip, transcons.scip_cons)
+        else:
+            return SCIPgetDualfarkasKnapsack(self._scip, cons.scip_cons)
 
     def getVarRedcost(self, Variable var):
         """
