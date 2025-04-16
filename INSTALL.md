@@ -41,6 +41,8 @@ contains the corresponding header files:
         > nlpi
         > ...
 
+Please note that some Mac configurations require adding the library installation path to `DYLD_LIBRARY_PATH` when using a locally installed version of SCIP.
+
 If you install SCIP yourself and are not using the installer packages, you need to [install the
 SCIP Optimization Suite using CMake](https://www.scipopt.org/doc/html/md_INSTALL.php#CMAKE).
 The Makefile system is not compatible with PySCIPOpt!
@@ -55,7 +57,7 @@ Installation from PyPI
 
 Please note that if your Python version and OS version are in the combinations at the start of this INSTALL file then
 pip now automatically installs a pre-built version of SCIP. For these combinations, to use your own installation of SCIP,
-plese see the section on building from source. For unavailable combinations this pip command will automatically
+please see the section on building from source. For unavailable combinations this pip command will automatically
 search your global installs or custom set paths as above.
 
 On Windows for combinations not listed at the start of this file, you may need to ensure that the `scip` library can be found
