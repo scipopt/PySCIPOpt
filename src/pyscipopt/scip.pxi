@@ -4926,10 +4926,7 @@ cdef class Model:
         cdef SCIP_Real coeff
         cdef int i
 
-        assert kwargs["rhs"] >= 0 and isinstance(kwargs["rhs"], int), "knapsack constraint capacity must be non-negative integer"
         for i, (key, weight) in enumerate(terms.items()):
-            assert weight >= 0 and isinstance(weight, int), "weight must be non-negative integer"
-            assert <Variable>key[0].vtype() == 'B', "knapsack constraint only supports binary variables"     
             vars_array[i] = <SCIP_VAR*>(<Variable>key[0]).scip_var
             weights_array[i] = <SCIP_Real>weight
 
