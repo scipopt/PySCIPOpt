@@ -4902,47 +4902,6 @@ cdef class Model:
 
         return PyCons
 
-    def _createConsKnapsack(self, ExprCons knapsackcons, **kwargs):
-        """
-        The function for creating a knapsack constraint, but not adding it to the Model.
-        Please do not use this function directly, but rather use createConsFromExpr
-
-        Parameters
-        ----------
-        knapsackcons : ExprCons
-        kwargs : dict, optional
-
-        Returns
-        -------
-        Constraint
-
-        """
-        assert isinstance(knapsackcons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
-
-        cdef int nvars = len(terms.items())
-        cdef SCIP_VAR** vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
-        cdef SCIP_Real* weights_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
-        cdef SCIP_CONS* scip_cons
-        cdef SCIP_Real coeff
-        cdef int i
-
-        for i, (key, weight) in enumerate(terms.items()):
-            vars_array[i] = <SCIP_VAR*>(<Variable>key[0]).scip_var
-            weights_array[i] = <SCIP_Real>weight
-
-        PY_SCIP_CALL(SCIPcreateConsKnapsack(
-            self._scip, &scip_cons, str_conversion(kwargs['name']), nvars, vars_array, weights_array,
-            kwargs['rhs'], kwargs['initial'], kwargs['separate'], kwargs['enforce'], 
-            kwargs['check'], kwargs['propagate'], kwargs['local'], kwargs['modifiable'],
-            kwargs['dynamic'], kwargs['removable'], kwargs['stickingatnode']))
-
-        PyCons = Constraint.create(scip_cons)
-
-        free(vars_array)
-        free(coeffs_array)
-
-        return PyCons
-
     def _createConsQuadratic(self, ExprCons quadcons, **kwargs):
         """
         The function for creating a quadratic constraint, but not adding it to the Model.
@@ -5208,7 +5167,7 @@ cdef class Model:
     def createConsFromExpr(self, cons, name='', initial=True, separate=True,
                 enforce=True, check=True, propagate=True, local=False,
                 modifiable=False, dynamic=False, removable=False,
-                stickingatnode=False, knapsack=False):
+                stickingatnode=False):
         """
         Create a linear or nonlinear constraint without adding it to the SCIP problem.
         This is useful for creating disjunction constraints without also enforcing the individual constituents.
@@ -5242,8 +5201,6 @@ cdef class Model:
         stickingatnode : bool, optional
             should the constraint always be kept at the node where it was added,
             even if it may be  moved to a more global node? (Default value = False)
-        knapsack : bool, optional
-            should the constraint be treated as a knapsack constraint? (Default value = False)
 
         Returns
         -------
@@ -5259,11 +5216,8 @@ cdef class Model:
                       propagate=propagate, local=local,
                       modifiable=modifiable, dynamic=dynamic,
                       removable=removable,
-                      stickingatnode=stickingatnode,
-                      knapsack=knapsack)
-
-        if kwargs["knapsack"]:
-            return self._createConsKnapsack(cons, **kwargs)
+                      stickingatnode=stickingatnode
+                      )
 
         kwargs['lhs'] = -SCIPinfinity(self._scip) if cons._lhs is None else cons._lhs
         kwargs['rhs'] =  SCIPinfinity(self._scip) if cons._rhs is None else cons._rhs
@@ -5282,7 +5236,7 @@ cdef class Model:
     def addCons(self, cons, name='', initial=True, separate=True,
                 enforce=True, check=True, propagate=True, local=False,
                 modifiable=False, dynamic=False, removable=False,
-                stickingatnode=False, knapsack=False):
+                stickingatnode=False):
         """
         Add a linear or nonlinear constraint.
 
@@ -5313,8 +5267,6 @@ cdef class Model:
         stickingatnode : bool, optional
             should the constraints always be kept at the node where it was added,
             even if it may be moved to a more global node? (Default value = False)
-        knapsack : bool, optional
-            should the constraint be treated as a knapsack constraint? (Default value = False)
 
         Returns
         -------
@@ -5331,8 +5283,8 @@ cdef class Model:
                       propagate=propagate, local=local,
                       modifiable=modifiable, dynamic=dynamic,
                       removable=removable,
-                      stickingatnode=stickingatnode,
-                      knapsack=knapsack)
+                      stickingatnode=stickingatnode
+                      )
         #  we have to pass this back to a SCIP_CONS*
         # object to create a new python constraint & handle constraint release
         # correctly. Otherwise, segfaults when trying to query information
@@ -5840,27 +5792,76 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPaddConsLocal(self._scip, cons.scip_cons, NULL))
         Py_INCREF(cons)
+    
+    def addConsKnapsack(self, vars, weights=None, name="",
+                initial=True, separate=True, enforce=True, check=True,
+                modifiable=False, propagate=True, local=False, dynamic=False,
+                removable=False, stickingatnode=False):
+        """
+        Parameters
+        ----------
+        cons : ExprCons
+            The expression constraint that is not yet an actual constraint
+        name : str, optional
+            the name of the constraint, generic name if empty (Default value = "")
+        initial : bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool, optional
+            is the constraint only valid locally? (Default value = False)
+        modifiable : bool, optional
+            is the constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool, optional
+            should the constraints always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+        """
 
-    def addConsSOS1(self, vars, weights=None, name="SOS1cons",
+        assert isinstance(knapsackcons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
+
+        cdef int nvars = len(terms.items())
+        cdef SCIP_VAR** vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        cdef SCIP_Real* weights_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+        cdef SCIP_CONS* scip_cons
+        cdef SCIP_Real coeff
+        cdef int i
+
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"knapsack"
+
+        for i, (key, weight) in enumerate(terms.items()):
+            vars_array[i] = <SCIP_VAR*>(<Variable>key[0]).scip_var
+            weights_array[i] = <SCIP_Real>weight
+
+        PY_SCIP_CALL(SCIPcreateConsKnapsack(
+            self._scip, &scip_cons, str_conversion(kwargs['name']), nvars, vars_array, weights_array,
+            kwargs['rhs'], kwargs['initial'], kwargs['separate'], kwargs['enforce'], 
+            kwargs['check'], kwargs['propagate'], kwargs['local'], kwargs['modifiable'],
+            kwargs['dynamic'], kwargs['removable'], kwargs['stickingatnode']))
+
+        PyCons = Constraint.create(scip_cons)
+
+        free(vars_array)
+        free(coeffs_array)
+
+        return PyCons
+
+    def addConsSOS1(self, vars, weights=None, name="",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
         """
         Add an SOS1 constraint.
-
-        :param vars: list of variables to be included
-        :param weights: list of weights (Default value = None)
-        :param name: name of the constraint (Default value = "SOS1cons")
-        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
-        :param separate: should the constraint be separated during LP processing? (Default value = True)
-        :param enforce: should the constraint be enforced during node processing? (Default value = True)
-        :param check: should the constraint be checked for feasibility? (Default value = True)
-        :param propagate: should the constraint be propagated during node processing? (Default value = True)
-        :param local: is the constraint only valid locally? (Default value = False)
-        :param dynamic: is the constraint subject to aging? (Default value = False)
-        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
-        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (Default value = False)
-
 
         Parameters
         ----------
@@ -5869,7 +5870,7 @@ cdef class Model:
         weights : list of float or None, optional
             list of weights (Default value = None)
         name : str, optional
-            name of the constraint (Default value = "SOS1cons")
+            name of the constraint (Default value = "")
         initial : bool, optional
             should the LP relaxation of constraint be in the initial LP? (Default value = True)
         separate : bool, optional
@@ -5903,6 +5904,9 @@ cdef class Model:
         PY_SCIP_CALL(SCIPcreateConsSOS1(self._scip, &scip_cons, str_conversion(name), 0, NULL, NULL,
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
 
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"SOS1"
+
         if weights is None:
             for v in vars:
                 var = <Variable>v
@@ -5917,7 +5921,7 @@ cdef class Model:
 
         return Constraint.create(scip_cons)
 
-    def addConsSOS2(self, vars, weights=None, name="SOS2cons",
+    def addConsSOS2(self, vars, weights=None, name="",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
@@ -5931,7 +5935,7 @@ cdef class Model:
         weights : list of float or None, optional
             list of weights (Default value = None)
         name : str, optional
-            name of the constraint (Default value = "SOS2cons")
+            name of the constraint (Default value = "")
         initial : bool, optional
             should the LP relaxation of constraint be in the initial LP? (Default value = True)
         separate : bool, optional
@@ -5965,6 +5969,9 @@ cdef class Model:
         PY_SCIP_CALL(SCIPcreateConsSOS2(self._scip, &scip_cons, str_conversion(name), 0, NULL, NULL,
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
 
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"SOS2"
+
         if weights is None:
             for v in vars:
                 var = <Variable>v
@@ -5979,7 +5986,7 @@ cdef class Model:
 
         return Constraint.create(scip_cons)
 
-    def addConsAnd(self, vars, resvar, name="ANDcons",
+    def addConsAnd(self, vars, resvar, name="",
             initial=True, separate=True, enforce=True, check=True,
             propagate=True, local=False, modifiable=False, dynamic=False,
             removable=False, stickingatnode=False):
@@ -5993,7 +6000,7 @@ cdef class Model:
         resvar : Variable
             BINARY variable (resultant)
         name : str, optional
-            name of the constraint (Default value = "ANDcons")
+            name of the constraint (Default value = "")
         initial : bool, optional
             should the LP relaxation of constraint be in the initial LP? (Default value = True)
         separate : bool, optional
@@ -6030,6 +6037,9 @@ cdef class Model:
         for i, var in enumerate(vars):
             _vars[i] = (<Variable>var).scip_var
 
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"AND"
+
         PY_SCIP_CALL(SCIPcreateConsAnd(self._scip, &scip_cons, str_conversion(name), _resvar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
 
@@ -6041,7 +6051,7 @@ cdef class Model:
 
         return pyCons
 
-    def addConsOr(self, vars, resvar, name="ORcons",
+    def addConsOr(self, vars, resvar, name="",
             initial=True, separate=True, enforce=True, check=True,
             propagate=True, local=False, modifiable=False, dynamic=False,
             removable=False, stickingatnode=False):
@@ -6055,7 +6065,7 @@ cdef class Model:
         resvar : Variable
             BINARY variable (resultant)
         name : str, optional
-            name of the constraint (Default value = "ORcons")
+            name of the constraint (Default value = "")
         initial : bool, optional
             should the LP relaxation of constraint be in the initial LP? (Default value = True)
         separate : bool, optional
@@ -6092,6 +6102,9 @@ cdef class Model:
         for i, var in enumerate(vars):
             _vars[i] = (<Variable>var).scip_var
 
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"OR"
+
         PY_SCIP_CALL(SCIPcreateConsOr(self._scip, &scip_cons, str_conversion(name), _resvar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
 
@@ -6103,7 +6116,7 @@ cdef class Model:
 
         return pyCons
 
-    def addConsXor(self, vars, rhsvar, name="XORcons",
+    def addConsXor(self, vars, rhsvar, name="",
             initial=True, separate=True, enforce=True, check=True,
             propagate=True, local=False, modifiable=False, dynamic=False,
             removable=False, stickingatnode=False):
@@ -6117,7 +6130,7 @@ cdef class Model:
         rhsvar : bool
             BOOLEAN value, explicit True, False or bool(obj) is needed (right-hand side)
         name : str, optional
-            name of the constraint (Default value = "XORcons")
+            name of the constraint (Default value = "")
         initial : bool, optional
             should the LP relaxation of constraint be in the initial LP? (Default value = True)
         separate : bool, optional
@@ -6153,6 +6166,9 @@ cdef class Model:
         for i, var in enumerate(vars):
             _vars[i] = (<Variable>var).scip_var
 
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"XOR"
+
         PY_SCIP_CALL(SCIPcreateConsXor(self._scip, &scip_cons, str_conversion(name), rhsvar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
 
@@ -6164,7 +6180,7 @@ cdef class Model:
 
         return pyCons
 
-    def addConsCardinality(self, consvars, cardval, indvars=None, weights=None, name="CardinalityCons",
+    def addConsCardinality(self, consvars, cardval, indvars=None, weights=None, name="",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
@@ -6185,7 +6201,7 @@ cdef class Model:
             weights determining the variable order, or None if variables should be ordered
             in the same way they were added to the constraint (Default value = None)
         name : str, optional
-            name of the constraint (Default value = "CardinalityCons")
+            name of the constraint (Default value = "")
         initial : bool, optional
             should the LP relaxation of constraint be in the initial LP? (Default value = True)
         separate : bool, optional
@@ -6222,6 +6238,9 @@ cdef class Model:
         # circumvent an annoying bug in SCIP 4.0.0 that does not allow uninitialized weights
         if weights is None:
             weights = list(range(1, len(consvars) + 1))
+
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"Cardinality"
 
         for i, v in enumerate(consvars):
             var = <Variable>v
@@ -6295,7 +6314,7 @@ cdef class Model:
             raise ValueError("expected inequality that has either only a left or right hand side")
 
         if name == '':
-            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"Indicator"
 
         if cons.expr.degree() > 1:
             raise ValueError("expected linear inequality, expression has degree %d" % cons.expr.degree())

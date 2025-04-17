@@ -222,7 +222,7 @@ def test_cons_knapsack():
     y = m.addVar("y", lb=0, ub=4, obj=0)
     z = m.addVar("z", lb=0, ub=5, obj=2)
     
-    knapsack_cons = m.addCons(4*x + 2*y <= 10, knapsack=True)
+    knapsack_cons = m.addConsKnapsack(4*x + 2*y <= 10)
 
     assert knapsack_cons.getConshdlrName() == "knapsack"
     assert knapsack_cons.isKnapsack()
