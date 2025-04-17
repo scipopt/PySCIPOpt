@@ -26,7 +26,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             arch: x86_64
           - os: macos-14
             arch: arm64
@@ -55,7 +55,7 @@ jobs:
 
   build_sdist:
     name: Build source distribution
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
@@ -71,14 +71,14 @@ jobs:
   merge_artifacts:
     name: Merge Artifacts
     needs: [build_wheels, build_sdist]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@v4
 
   upload_pypi:
     needs: [build_wheels, build_sdist, merge_artifacts]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     if: github.event.inputs.upload_to_pypi == 'true'
     steps:
       - uses: actions/download-artifact@v4
