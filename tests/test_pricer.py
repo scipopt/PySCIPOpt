@@ -67,6 +67,12 @@ class CutPricer(Pricer):
             self.data['patterns'].append(newPattern)
             self.data['var'].append(newVar)
 
+        if self.data["deactivate"]:
+            # Testing deactivatePricer
+            self.model.deactivatePricer(self)
+            for c in self.model.getConss():
+                self.model.setModifiable(c, False)
+
         return {'result':SCIP_RESULT.SUCCESS}
 
     # The initialisation function for the variable pricer to retrieve the transformed constraints of the problem
@@ -124,6 +130,7 @@ def test_cuttingstock():
     pricer.data['rollLength'] = rollLength
     pricer.data['patterns'] = patterns
     pricer.data['redcosts'] = []
+    pricer.data["deactivate"] = False
 
     # solve problem
     s.optimize()
@@ -175,3 +182,66 @@ def test_incomplete_pricer():
 
     with pytest.raises(Exception):
         model.optimize()
+
+def test_deactivate_pricer():
+    # create solver instance
+    s = Model("CuttingStock")
+
+    s.setPresolve(0)
+    s.data = {}
+    s.data["nSols"] = 0
+
+    # creating a pricer
+    pricer = CutPricer()
+    s.includePricer(pricer, "CuttingStockPricer", "Pricer to identify new cutting stock patterns")
+
+    # item widths
+    widths = [14, 31, 36, 45]
+    # width demand
+    demand = [211, 395, 610, 97]
+    # roll length
+    rollLength = 100
+    assert len(widths) == len(demand)
+
+    # adding the initial variables
+    cutPatternVars = []
+    varNames = []
+    varBaseName = "Pattern"
+    patterns = []
+
+    for i in range(len(widths)):
+        varNames.append(varBaseName + "_" + str(i))
+        cutPatternVars.append(s.addVar(varNames[i], obj = 1.0))
+
+    # adding a linear constraint for the knapsack constraint
+    demandCons = []
+    for i in range(len(widths)):
+        numWidthsPerRoll = float(int(rollLength/widths[i]))
+        demandCons.append(s.addCons(numWidthsPerRoll*cutPatternVars[i] >= demand[i],
+                                    separate = False, modifiable = True))
+        newPattern = [0]*len(widths)
+        newPattern[i] = numWidthsPerRoll
+        patterns.append(newPattern)
+
+    # Setting the pricer_data for use in the init and redcost functions
+    pricer.data = {}
+    pricer.data['var'] = cutPatternVars
+    pricer.data['cons'] = demandCons
+    pricer.data['widths'] = widths
+    pricer.data['demand'] = demand
+    pricer.data['rollLength'] = rollLength
+    pricer.data['patterns'] = patterns
+    pricer.data['redcosts'] = []
+    pricer.data["deactivate"] = True
+
+    for c in s.getConss():
+        c.isModifiable()
+
+    # solve problem
+    s.optimize()
+
+    for c in s.getConss():
+        assert not c.isModifiable()
+    
+    # the optimal solution with normal pricing
+    assert s.isGT(s.getObjVal(), 452.25)
