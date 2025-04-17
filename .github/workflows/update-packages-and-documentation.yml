@@ -28,7 +28,7 @@ jobs:
 
   release-integration-test:
     needs: check-tag
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: true
       matrix:
@@ -100,7 +100,7 @@ jobs:
 
   deploy-packages-and-generate-documentation:
     needs: Windows-test
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
