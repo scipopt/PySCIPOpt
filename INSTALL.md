@@ -18,6 +18,10 @@ Suite](https://www.scipopt.org/). Please, make sure that your SCIP installation 
 
 **Note that the latest PySCIPOpt version is usually only compatible with the latest major release of the SCIP Optimization Suite. See the table on the README.md page for details.**
 
+If you install SCIP yourself and are not using the installer packages, you need to [install the
+SCIP Optimization Suite using CMake](https://www.scipopt.org/doc/html/md_INSTALL.php#CMAKE).
+The Makefile system is not compatible with PySCIPOpt!
+
 If installing SCIP from source or using PyPI with a python and operating system that is not mentioned above, and SCIP is not installed in the global path,
 you need to specify the install location using the environment variable
 `SCIPOPTDIR`:
@@ -43,9 +47,6 @@ contains the corresponding header files:
 
 Please note that some Mac configurations require adding the library installation path to `DYLD_LIBRARY_PATH` when using a locally installed version of SCIP.
 
-If you install SCIP yourself and are not using the installer packages, you need to [install the
-SCIP Optimization Suite using CMake](https://www.scipopt.org/doc/html/md_INSTALL.php#CMAKE).
-The Makefile system is not compatible with PySCIPOpt!
 
 When building SCIP from source using Windows it is highly recommended to use the [Anaconda Python
 Platform](https://www.anaconda.com/).
