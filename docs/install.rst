@@ -35,6 +35,8 @@ To install PySCIPOpt simply run the command:
   This means that SCIP must be installed yourself. If it is not installed globally,
   then the ``SCIPOPTDIR`` environment flag must be set, see :doc:`this page </build>` for more details.
 
+.. note:: Some Mac configurations require adding the library installation path to `DYLD_LIBRARY_PATH` when
+  using a locally installed version of SCIP.
 
 Conda
 =====
