@@ -8,6 +8,7 @@
 ### Fixed
 - Fixed bug when accessing matrix variable attributes
 ### Changed
+- Stopped tests from running in draft PRs
 ### Removed
 
 ## 5.4.1 - 2024.02.24
