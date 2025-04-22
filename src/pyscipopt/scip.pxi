@@ -5837,7 +5837,7 @@ cdef class Model:
         cdef int i
 
         if name == '':
-            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"knapsack"
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
         for i, (key, weight) in enumerate(terms.items()):
             vars_array[i] = <SCIP_VAR*>(<Variable>key[0]).scip_var
@@ -5905,7 +5905,7 @@ cdef class Model:
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
 
         if name == '':
-            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"SOS1"
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
         if weights is None:
             for v in vars:
@@ -5970,7 +5970,7 @@ cdef class Model:
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
 
         if name == '':
-            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"SOS2"
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
         if weights is None:
             for v in vars:
@@ -6038,7 +6038,7 @@ cdef class Model:
             _vars[i] = (<Variable>var).scip_var
 
         if name == '':
-            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"AND"
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
         PY_SCIP_CALL(SCIPcreateConsAnd(self._scip, &scip_cons, str_conversion(name), _resvar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
@@ -6103,7 +6103,7 @@ cdef class Model:
             _vars[i] = (<Variable>var).scip_var
 
         if name == '':
-            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"OR"
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
         PY_SCIP_CALL(SCIPcreateConsOr(self._scip, &scip_cons, str_conversion(name), _resvar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
@@ -6167,7 +6167,7 @@ cdef class Model:
             _vars[i] = (<Variable>var).scip_var
 
         if name == '':
-            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"XOR"
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
         PY_SCIP_CALL(SCIPcreateConsXor(self._scip, &scip_cons, str_conversion(name), rhsvar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
@@ -6240,7 +6240,7 @@ cdef class Model:
             weights = list(range(1, len(consvars) + 1))
 
         if name == '':
-            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"Cardinality"
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
         for i, v in enumerate(consvars):
             var = <Variable>v
@@ -6314,7 +6314,7 @@ cdef class Model:
             raise ValueError("expected inequality that has either only a left or right hand side")
 
         if name == '':
-            name = 'c'+str(SCIPgetNConss(self._scip)+1)+"Indicator"
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
         if cons.expr.degree() > 1:
             raise ValueError("expected linear inequality, expression has degree %d" % cons.expr.degree())
