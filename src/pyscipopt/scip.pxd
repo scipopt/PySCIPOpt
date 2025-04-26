@@ -2001,37 +2001,50 @@ cdef extern from "scip/cons_indicator.h":
                                          SCIP_Bool dynamic,
                                          SCIP_Bool removable,
                                          SCIP_Bool stickingatnode)
+
     SCIP_RETCODE SCIPaddVarIndicator(SCIP* scip,
                                      SCIP_CONS* cons,
                                      SCIP_VAR* var,
                                      SCIP_Real val)
+
     SCIP_CONS* SCIPgetLinearConsIndicator(SCIP_CONS* cons)
+
     SCIP_RETCODE SCIPsetLinearConsIndicator(SCIP* scip,
                                             SCIP_CONS* cons,
                                             SCIP_CONS* lincons)
+
     SCIP_RETCODE SCIPsetBinaryVarIndicator(SCIP* scip,
                                             SCIP_CONS* cons,
                                             SCIP_VAR* binvar)
+
     SCIP_RETCODE SCIPgetActiveOneIndicator(SCIP_Cons* cons,
                                            SCIP_VAR* binvar)
+
     SCIP_VAR* SCIPgetBinaryVarIndicator(SCIP_CONS* cons)
+
     SCIP_VAR* SCIPgetSlackVarIndicator(SCIP_CONS* cons)
+
     SCIP_RETCODE SCIPsetSlackVarIndicator(SCIP* scip,
                                           SCIP_CONS* cons,
                                           SCIP_VAR* slackvar)
+
     SCIP_Bool SCIPisActiveOneIndicator(SCIP* scip,
                                        SCIP_CONS* cons,
                                        SCIP_VAR* binvar)
+
     SCIP_Bool SCIPmakeIndicatorFeasible(SCIP* scip,
                                        SCIP_CONS* cons,
                                        SCIP_SOL* sol,
                                        SCIP_Bool* changed)
+
     SCIP_Bool SCIPmakeIndicatorsFeasible(SCIP* scip,
                                          SCIP_CONSHDLR* conshdlr,
                                          SCIP_SOL* sol)
+
     SCIP_RETCODE SCIPaddLinearConsIndicator(SCIP* scip,
                                             SCIP_CONSHDLR* conshdlr,
                                             SCIP_CONS* cons)
+
     SCIP_RETCODE SCIPaddRowIndicator(SCIP* scip,
                                      SCIP_CONSHDLR* conshdlr,
                                      SCIP_ROW* row)
