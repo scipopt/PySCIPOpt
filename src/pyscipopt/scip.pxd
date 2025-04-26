@@ -1833,6 +1833,18 @@ cdef extern from "scip/cons_cardinality.h":
                                           SCIP_VAR* var,
                                           SCIP_VAR* indvar)
 
+    int SCIPgetNVarsCardinality(SCIP* scip,
+                                SCIP_CONS* cons)
+
+    SCIP_VAR** SCIPgetVarsCardinality(SCIP* scip,
+                                      SCIP_CONS* cons)
+
+    int SCIPgetCardvalCardinality(SCIP* scip,
+                                  SCIP_CONS* cons)
+
+    SCIP_Real* SCIPgetWeightsCardinality(SCIP* scip,
+                                         SCIP_CONS* cons)
+
 cdef extern from "scip/cons_indicator.h":
     SCIP_RETCODE SCIPcreateConsIndicator(SCIP* scip,
                                          SCIP_CONS** cons,
