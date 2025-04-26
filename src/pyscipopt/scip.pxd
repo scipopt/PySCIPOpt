@@ -1648,6 +1648,16 @@ cdef extern from "scip/cons_xor.h":
                                          SCIP_Bool dynamic,
                                          SCIP_Bool removable,
                                          SCIP_Bool stickingatnode)
+
+    int SCIPgetNVarsOr(SCIP* scip,
+                       SCIP_CONS* cons)
+
+    SCIP_VAR** SCIPgetVarsOr(SCIP* scip,
+                             SCIP_CONS* cons)
+
+    SCIP_VAR* SCIPgetResultOr(SCIP* scip,
+                                 SCIP_CONS* cons)
+
 cdef extern from "scip/scip_cons.h":
     SCIP_RETCODE SCIPprintCons(SCIP* scip,
                                SCIP_CONS* cons,

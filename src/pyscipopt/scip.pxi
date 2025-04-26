@@ -6039,6 +6039,81 @@ cdef class Model:
 
         return pyCons
 
+    def getNVarsOr(self, Constraint constraint):
+        """
+        Get number of variables in an OR-constraint.
+
+        Parameters
+        ----------
+        constraint : Constraint
+            Constraint to get the number of variables from.
+
+        Returns
+        -------
+        int
+
+        """
+        cdef int nvars
+        return SCIPgetNVarsOr(self._scip, constraint.scip_cons)
+    
+    def getVarsOr(self, Constraint constraint):
+        """
+        Get variables in an OR-constraint.
+        
+        Parameters
+        ----------
+        constraint : Constraint
+            Constraint to get the variables from.
+        
+        Returns
+        -------
+        list of Variable
+        """
+        cdef SCIP_VAR** _vars
+        cdef int nvars
+        cdef int i
+        cdef list vars = []
+        nvars = SCIPgetNVarsOr(self._scip, constraint.scip_cons)
+        _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        _vars = SCIPgetVarsOr(self._scip, constraint.scip_cons)
+        for i in range(nvars):
+            ptr = <size_t>(_vars[i])
+            # check whether the corresponding variable exists already
+            if ptr in self._modelvars:
+                vars.append(self._modelvars[ptr])
+            else:
+                # create a new variable
+                var = Variable.create(_vars[i])
+                assert var.ptr() == ptr
+                self._modelvars[ptr] = var
+                vars.append(var)
+        free(_vars)
+        return vars
+    
+    def getResultantOr(self, Constraint constraint):
+        """
+        Get the resultant variable of an OR-constraint.
+        
+        Parameters
+        ----------
+        constraint : Constraint
+            Constraint to get the resultant variable from.
+        
+        Returns
+        -------
+        Variable
+        """
+        cdef SCIP_VAR* _resvar
+        _resvar = SCIPgetResultantOr(self._scip, constraint.scip_cons)
+        ptr = <size_t>(_resvar)
+        # check whether the corresponding variable exists already
+        if ptr not in self._modelvars:
+            # create a new variable
+            var = Variable.create(_resvar)
+            assert var.ptr() == ptr
+            self._modelvars[ptr] = var
+        return self._modelvars[ptr]
+
     def addConsXor(self, vars, rhsvar, name="XORcons",
             initial=True, separate=True, enforce=True, check=True,
             propagate=True, local=False, modifiable=False, dynamic=False,
