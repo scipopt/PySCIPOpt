@@ -155,7 +155,7 @@ def test_cons_indicator():
     x = m.addVar(lb=0, obj=1)
     binvar = m.addVar(vtype="B", lb=1)
 
-    c1 = m.addConsIndicator(x >= 1, binvar) 
+    c1 = m.addConsIndicator(x >= 1, binvar)
 
     assert c1.name == "c1"
 
