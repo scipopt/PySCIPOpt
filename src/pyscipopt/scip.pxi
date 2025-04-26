@@ -1671,6 +1671,44 @@ cdef class Variable(Expr):
         else:
             mayround = SCIPvarMayRoundUp(self.scip_var)
         return mayround
+    
+    def varIsSOS1(self, Conshdlr conshdlr, Variable var):
+        """
+        Returns whether variable is part of the SOS1 conflict graph
+
+        Parameters
+        ----------
+        conshdlr : Conshdlr
+            SOS1 constraint handler
+        var : Variable
+            variable to check
+
+        Returns
+        -------
+        bool
+            True if variable is part of the SOS1 conflict graph, False otherwise
+
+        """
+        return SCIPvarIsSOS1(conshdlr.scip_conshdlr, var.scip_var)
+    
+    def varGetNodeSOS1(self, Conshdlr conshdlr, Variable var):
+        """
+        Returns node of variable in the conflict graph or -1 if variable is not part of the SOS1 conflict graph
+
+        Parameters
+        ----------
+        conshdlr : Conshdlr
+            SOS1 constraint handler
+        var : Variable
+            variable
+
+        Returns
+        -------
+        int
+            node of the variable in the SOS1 conflict graph
+
+        """
+        return SCIPvarGetNodeSOS1(conshdlr.scip_conshdlr, var.scip_var)
 
 class MatrixVariable(MatrixExpr):
 
@@ -5853,6 +5891,156 @@ cdef class Model:
 
         return Constraint.create(scip_cons)
 
+    def addVarSOS1(self, Constraint cons, Variable var, weight):
+        """
+        Add variable to SOS1 constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            SOS1 constraint
+        var : Variable
+            new variable
+        weight : weight
+            weight of new variable
+
+        """
+        PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, cons.scip_cons, var.scip_var, weight))
+
+    def appendVarSOS1(self, Constraint cons, Variable var):
+        """
+        Append variable to SOS1 constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            SOS1 constraint
+        var : Variable
+            variable to append
+
+        """
+        PY_SCIP_CALL(SCIPappendVarSOS1(self._scip, cons.scip_cons, var.scip_var))
+
+    def getNVarsSOS1(self, Constraint cons):
+        """
+        Get number of variables in SOS1 constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            SOS1 constraint
+
+        Returns
+        -------
+        int
+            number of variables in SOS1 constraint
+
+        """
+        return SCIPgetNVarsSOS1(self._scip, cons.scip_cons)
+
+    def getVarsSOS1(self, Constraint cons):
+        """
+        Get variables in SOS1 constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            SOS1 constraint
+
+        Returns
+        -------
+        list of Variable
+            list of variables in SOS1 constraint
+
+        """
+        cdef SCIP_VAR** _vars
+        cdef int nvars
+        cdef int i
+        cdef Variable var
+        cdef list vars = []
+        cdef size_t ptr
+        nvars = SCIPgetNVarsSOS1(self._scip, cons.scip_cons)
+        _vars = SCIPgetVarsSOS1(self._scip, cons.scip_cons)
+        for i in range(nvars):
+            ptr = <size_t>(_vars[i])
+            # check whether the corresponding variable exists already
+            if ptr in self._modelvars:
+                vars.append(self._modelvars[ptr])
+            else:
+                # create a new variable
+                var = Variable.create(_vars[i])
+                assert var.ptr() == ptr
+                self._modelvars[ptr] = var
+                vars.append(var)
+        return vars
+    
+    def getWeightsSOS1(self, Constraint cons):
+        """
+        Get array of weights in SOS1 constraint (or NULL if not existent).
+
+        Parameters
+        ----------
+        cons : Constraint
+            SOS1 constraint
+        
+        Returns
+        -------
+        list of float
+            list of weights in SOS1 constraint
+
+        """
+        cdef SCIP_VAR** vars
+        cdef SCIP_Real* weights
+        cdef int i
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        if not constype == 'SOS1':
+            raise Warning("Weights not available for constraints of type ", constype)
+
+        vals = SCIPgetValsSOS1(self._scip, cons.scip_cons)
+        vars = SCIPgetVarsSOS1(self._scip, cons.scip_cons)
+
+        valsdict = {}
+        for i in range(SCIPgetNVarsSOS1(self._scip, cons.scip_cons)):
+            valsdict[bytes(SCIPvarGetName(vars[i])).decode('utf-8')] = vals[i]
+
+        return valsdict
+    
+    def getNSOS1Vars(self, Conshdlr conshdlr):
+        """
+        Gets number of problem variables that are part of the SOS1 conflict graph
+
+        Parameters
+        ----------
+        conshdlr : Conshdlr
+            constraint handler
+
+        Returns
+        -------
+        int
+            number of SOS1 variables in constraint handler
+
+        """
+        return SCIPgetNSOS1Vars(conshdlr.scip_conshdlr)
+
+    def makeSOS1Feasible(self, Conshdlr conshdlr, Solution sol):
+        """
+        Makes the SOS1 conflict graph feasible
+
+        Parameters
+        ----------
+        conshdlr : Conshdlr
+            constraint handler
+        sol : Solution
+            solution to be made feasible
+
+        """
+        cdef SCIP_Bool changed
+        cdef SCIP_Bool success
+        PY_SCIP_CALL(SCIPmakeSOS1Feasible(self._scip, conshdlr.scip_conshdlr, sol.scip_sol, &changed, &success))
+        if not success:
+            raise Warning("SOS1 conflict graph could not be made feasible")
+
     def addConsSOS2(self, vars, weights=None, name="SOS2cons",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
@@ -6316,36 +6504,6 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPaddCons(self._scip, cons.scip_cons))
         Py_INCREF(cons)
-
-    def addVarSOS1(self, Constraint cons, Variable var, weight):
-        """
-        Add variable to SOS1 constraint.
-
-        Parameters
-        ----------
-        cons : Constraint
-            SOS1 constraint
-        var : Variable
-            new variable
-        weight : weight
-            weight of new variable
-
-        """
-        PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, cons.scip_cons, var.scip_var, weight))
-
-    def appendVarSOS1(self, Constraint cons, Variable var):
-        """
-        Append variable to SOS1 constraint.
-
-        Parameters
-        ----------
-        cons : Constraint
-            SOS1 constraint
-        var : Variable
-            variable to append
-
-        """
-        PY_SCIP_CALL(SCIPappendVarSOS1(self._scip, cons.scip_cons, var.scip_var))
 
     def addVarSOS2(self, Constraint cons, Variable var, weight):
         """
