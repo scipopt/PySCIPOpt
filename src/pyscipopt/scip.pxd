@@ -1612,6 +1612,11 @@ cdef extern from "scip/cons_and.h":
                                          SCIP_Bool dynamic,
                                          SCIP_Bool removable,
                                          SCIP_Bool stickingatnode)
+    int          SCIPgetNVarsAnd(SCIP* scip, SCIP_CONS* cons)
+    SCIP_VAR**   SCIPgetVarsAnd(SCIP* scip, SCIP_CONS* cons)
+    SCIP_VAR*    SCIPgetResultantAnd(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Bool    SCIPisAndConsSorted(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RETCODE SCIPsortAndCons(SCIP* scip, SCIP_CONS* cons)
 
 cdef extern from "scip/cons_or.h":
     SCIP_RETCODE SCIPcreateConsOr(SCIP* scip,
