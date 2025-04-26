@@ -6267,6 +6267,22 @@ cdef class Model:
 
         return pyCons
 
+    def addVarIndicator(self, Constraint cons, Variable var, coeff):
+        """
+        Add variable to the inequality of the indicator constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            indicator constraint
+        var : Variable
+            new variable
+        coeff : float
+            coefficient of new variable
+
+        """
+        PY_SCIP_CALL(SCIPaddVarIndicator(self._scip, cons.scip_cons, var.scip_var, coeff))
+
     def getLinearConsIndicator(self, Constraint cons):
         """
         Get the linear constraint corresponding to the indicator constraint.
@@ -6285,6 +6301,77 @@ cdef class Model:
         if lincons == NULL:
             return None
         return Constraint.create(lincons)
+    
+    def setLinearConsIndicator(self, Constraint cons, Constraint lincons):
+        """
+        Sets the linear constraint corresponding to the indicator constraint (may be None).
+
+        Parameters
+        ----------
+        cons : Constraint
+            The indicator constraint
+        lincons : Constraint
+            The linear constraint
+
+        """
+        PY_SCIP_CALL(SCIPsetLinearConsIndicator(self._scip, cons.scip_cons, lincons.scip_cons))
+
+    def setBinaryVarIndicator(self, Constraint cons, Variable binvar):
+        """
+        Set the binary variable of the indicator constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            The indicator constraint
+        binvar : Variable
+            The binary variable
+
+        """
+        PY_SCIP_CALL(SCIPsetBinaryVarIndicator(self._scip, cons.scip_cons, binvar.scip_var))
+    
+    def getActiveOnIndicator(self, Constraint cons):
+        """
+        Gets activation value of an indicator constraint, True for active on 1, False for active on 0.
+
+        Parameters
+        ----------
+        cons : Constraint
+            The indicator constraint
+
+        Returns
+        -------
+        bool
+
+        """
+        cdef SCIP_Bool activeone
+        PY_SCIP_CALL(SCIPgetActiveOneIndicator(cons.scip_cons, &activeone))
+        return activeone
+
+    def getBinaryVarIndicator(self, Constraint cons):
+        """
+        Gets binary variable corresponding to indicator constraint. Returns the negative of the original binary variable if activeone was set to false
+
+        Parameters
+        ----------
+        cons : Constraint
+            The indicator constraint
+
+        Returns
+        -------
+        Variable
+
+        """
+        cdef SCIP_VAR* _var = SCIPgetBinaryVarIndicator(cons.scip_cons)
+        ptr = <size_t>(_var)
+
+        if pts not in self._modelvars:
+            # create a new variable
+            var = Variable.create(_var)
+            assert var.ptr() == ptr
+            self._modelvars[ptr] = var
+
+        return self._modelvars[ptr]
 
     def getSlackVarIndicator(self, Constraint cons):
         """
@@ -6303,6 +6390,107 @@ cdef class Model:
         """
         cdef SCIP_VAR* var = SCIPgetSlackVarIndicator(cons.scip_cons)
         return Variable.create(var)
+
+    def setSlackVarUb(self, Constraint cons, ub):
+        """
+        Set the upper bound of the slack variable of an indicator constraint.
+        Use with care if you know that the maximal violation of the corresponding constraint is at most ub.
+        This bound might be improved automatically during the solution process.
+
+        Parameters
+        ----------
+        cons : Constraint
+            The indicator constraint
+        ub : Variable
+            Upper bound for slack variable
+
+        """
+        PY_SCIP_CALL(SCIPsetSlackVarUb(self._scip, cons.scip_cons, ub))
+
+    def isViolatedIndicator(self, Constraint cons, Solution sol):
+        """
+        Check if the indicator constraint is violated.
+
+        Parameters
+        ----------
+        cons : Constraint
+            The indicator constraint
+        sol : Solution
+            The solution to check, or None for the current solution
+
+        Returns
+        -------
+        bool
+
+        """
+        if sol is None:
+            return SCIPisViolatedIndicator(self._scip, cons.scip_cons, NULL)
+        else:
+            return SCIPisViolatedIndicator(self._scip, cons.scip_cons, sol.scip_sol)
+        
+    def makeIndicatorFeasible(self, Constraint cons, Solution sol):
+        """
+        Based on values of other variables, computes slack and binary variable to turn constraint feasible.
+        Returns whether the solution was changed.
+        For a longer explanation, see SCIP documentation: https://www.scipopt.org/doc-9.2.2/html/group__CONSHDLRS.php#gac50cc1a3e02089a32c8ee04f9d9eb5a8
+
+        Parameters
+        ----------
+        cons : Constraint
+            The indicator constraint
+        sol : Solution
+            The solution.
+
+        """
+        cdef SCIP_Bool changed
+        PY_SCIP_CALL(SCIPmakeIndicatorFeasible(self._scip, cons.scip_cons, sol.scip_sol, &changed))
+        return changed
+
+    def makeIndicatorsFeasible(self, Conshdlr conshdlr, Solution sol):
+        """
+        Based on values of other variables, computes slack and binary variable to turn all constraints feasible
+
+        Parameters
+        ----------
+        conshdlr : Conshdlr
+            The indicator constraint handler
+        sol : Solution
+            The solution.
+
+        """
+        cdef SCIP_Bool changed
+        PY_SCIP_CALL(SCIPmakeIndicatorsFeasible(self._scip, conshdlr.scip_conshdlr, sol.scip_sol, &changed))
+        return changed
+
+    def addLinearConsIndicator(self, Conshdlr conshdlr, Constraint lincons):
+        """
+        Adds additional linear constraint that is not connected with an indicator constraint, but can be used for separation
+
+        Parameters
+        ----------
+        conshdlr : Conshdlr
+            The indicator constraint handler
+        lincons : Constraint
+            The linear constraint
+
+        """
+        PY_SCIP_CALL(SCIPaddLinearConsIndicator(self._scip, conshdlr.scip_conshdlr, lincons.scip_cons))
+    
+    def addRowIndicator(self, Conshdlr conshdlr, Row rowcons):
+        """
+        Adds additional globally valid row constraint that is not connected with an indicator constraint, but can be used for separation
+
+        Note: The row is directly added to the alternative polyhedron and is not stored.
+
+        Parameters
+        ----------
+        conshdlr : Conshdlr
+            The indicator constraint handler
+        rowcons : Constraint
+            The row to add
+
+        """
+        PY_SCIP_CALL(SCIPaddRowIndicator(self._scip, conshdlr.scip_conshdlr, row.scip_row))
 
     def addPyCons(self, Constraint cons):
         """
