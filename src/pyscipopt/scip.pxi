@@ -6177,6 +6177,161 @@ cdef class Model:
 
         return pyCons
 
+    def chgCardvalCardinality(self, Constraint cons, cardval):
+        """
+        Change the cardinality value of a cardinality constraint (i.e., right hand side of cardinality constraint).
+
+        Parameters
+        ----------
+        cons : Constraint
+            Cardinality constraint
+        cardval : int
+            Number of variables allowed to be nonzero
+
+        """
+        PY_SCIP_CALL(SCIPchgCardvalCardinality(self._scip, cons.scip_cons, cardval))
+    
+    def addVarCardinality(self, Constraint cons, Variable var, indvar=None, weight=None):
+        """
+        Add a variable to a cardinality constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            Cardinality constraint
+        var : Variable
+            new variable
+        indvar : Variable or None, optional
+            indicator variable indicating which variables may be treated as nonzero in
+            cardinality constraint, or None if new indicator variables should be
+            introduced automatically (Default value = None)
+        weight : float or None, optional
+            weight determining the variable order, or None if variables should be ordered
+            in the same way they were added to the constraint (Default value = None)
+
+        """
+        if indvar:
+            PY_SCIP_CALL(SCIPaddVarCardinality(self._scip, cons.scip_cons, var.scip_var, indvar.scip_var, weight))
+        else:
+            PY_SCIP_CALL(SCIPappendVarCardinality(self._scip, cons.scip_cons, var.scip_var, NULL, NULL)) ??? <- check what to do with the null weight
+
+    def appendVarCardinality(self, Constraint cons, Variable var, Variable indvar=None):
+        """
+        Append a variable to a cardinality constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            Cardinality constraint
+        var : Variable
+            new variable
+        indvar : Variable or None, optional
+            indicator variable indicating which variables may be treated as nonzero in
+            cardinality constraint, or None if new indicator variables should be
+            introduced automatically (Default value = None)
+        """
+        if indvar:
+            PY_SCIP_CALL(SCIPaddVarCardinality(self._scip, cons.scip_cons, var.scip_var, indvar.scip_var))
+        else:
+            PY_SCIP_CALL(SCIPappendVarCardinality(self._scip, cons.scip_cons, var.scip_var, NULL))
+        
+    def getNVarsCardinality(self, Constraint cons):
+        """
+        Get number of variables in a cardinality constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            Cardinality constraint
+
+        Returns
+        -------
+        int
+            Number of variables in the cardinality constraint
+
+        """
+
+        return SCIPgetNVarsCardinality(self._scip, cons.scip_cons, &nvars, &success)
+
+    def getVarsCardinality(self, Constraint cons):
+        """
+        Get variables in a cardinality constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            Cardinality constraint
+
+        Returns
+        -------
+        list of Variable
+            List of variables in the cardinality constraint
+
+        """
+        cdef SCIP_VAR** _vars
+        cdef int nvars
+        cdef SCIP_Bool success
+        cdef int i
+
+        SCIPgetNVarsCardinality(self._scip, cons.scip_cons, &nvars, &success)
+        _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        SCIPgetVarsCardinality(self._scip, cons.scip_cons, _vars, nvars*sizeof(SCIP_VAR*), &success)
+
+        vars = []
+        for i in range(nvars):
+            ptr = <size_t>(_vars[i])
+            # check whether the corresponding variable exists already
+            if ptr in self._modelvars:
+                vars.append(self._modelvars[ptr])
+            else:
+                # create a new variable
+                var = Variable.create(_vars[i])
+                assert var.ptr() == ptr
+                self._modelvars[ptr] = var
+                vars.append(var)
+
+        return vars
+
+    def getCardvalCardinality(self, Constraint cons):
+        """
+        Get the cardinality value of a cardinality constraint (i.e., right hand side of cardinality constraint).
+
+        Parameters
+        ----------
+        cons : Constraint
+            Cardinality constraint
+
+        Returns
+        -------
+        int
+            Number of variables allowed to be nonzero
+
+        """
+        return SCIPgetCardvalCardinality(self._scip, cons.scip_cons)
+    
+    def getWeightsCardinality(self, Constraint cons):
+        """
+        Get the weights of a cardinality constraint (or NULL if nonexistent).
+
+        Parameters
+        ----------
+        cons : Constraint
+            Cardinality constraint
+
+        Returns
+        -------
+        list of float
+
+        """
+        cdef SCIP_Real* weights
+        cdef int nvars
+
+        nvars = SCIPgetNVarsCardinality(self._scip, cons.scip_cons)
+        weights = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+        weights = SCIPgetWeightsCardinality(self._scip, cons.scip_cons)
+
+        return [weights[i] for i in range(nvars)]
+
     def addConsIndicator(self, cons, binvar=None, activeone=True, name="",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
