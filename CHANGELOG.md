@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- More support for AND-Constraints
 - Added getLinearConsIndicator
 - Added SCIP_LPPARAM, setIntParam, setRealParam, getIntParam, getRealParam, isOptimal, getObjVal, getRedcost for lpi
 - Added isFeasPositive

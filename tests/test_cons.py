@@ -72,6 +72,26 @@ def test_cons_logical():
     assert m.isEQ(m.getVal(result1), 1)
     assert m.isEQ(m.getVal(result2), 0)
 
+def test_cons_and():
+    m = Model()
+    x1 = m.addVar(vtype="B")
+    x2 = m.addVar(vtype="B")
+    result = m.addVar(vtype="B")
+
+    and_cons = m.addConsAnd([x1, x2], result)
+
+    assert m.getNConsAnd(and_cons) == 1
+    vars = m.getVarsAnd(and_cons)
+    assert len(vars) == 2
+    assert vars[0] == x1
+    assert vars[1] == x2
+    resultant_var = m.getResultAnd(and_cons)
+    assert resultant_var == result
+    m.optimize()
+
+    m.sortAndCons(and_cons)
+    assert m.isAndConsSorted(and_cons)
+    
 def test_SOScons():
     m = Model()
     x = {}
