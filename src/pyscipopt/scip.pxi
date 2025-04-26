@@ -1693,7 +1693,7 @@ cdef class Variable(Expr):
     
     def varGetNodeSOS1(self, Conshdlr conshdlr, Variable var):
         """
-        Returns node of variable in the conflict graph or -1 if variable is not part of the SOS1 conflict graph
+        Returns SOS1 index of variable or -1 if variable is not part of the SOS1 conflict graph
 
         Parameters
         ----------
@@ -1705,7 +1705,6 @@ cdef class Variable(Expr):
         Returns
         -------
         int
-            node of the variable in the SOS1 conflict graph
 
         """
         return SCIPvarGetNodeSOS1(conshdlr.scip_conshdlr, var.scip_var)
