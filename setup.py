@@ -10,8 +10,8 @@ extra_link_args = []
 # if SCIPOPTDIR is not set, we assume that SCIP is installed globally
 if not scipoptdir:
     if platform.system() == "Darwin":
-        includedir = "/usr/local/include/"
-        libdir = "/usr/local/lib/"
+        includedir = "/usr/local/include"
+        libdir = "/usr/local/lib"
     else:
         includedir = "."
         libdir = "."
