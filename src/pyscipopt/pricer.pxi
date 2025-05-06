@@ -2,6 +2,7 @@
 #@brief Base class of the Pricers Plugin
 cdef class Pricer:
     cdef public Model model
+    cdef SCIP_PRICER* scip_pricer
 
     def pricerfree(self):
         '''calls destructor and frees memory of variable pricer '''
