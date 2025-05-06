@@ -6,7 +6,7 @@
 ### Changed
 ### Removed
 
-## 5.5.1 - 2025.05.06
+## 5.5.0 - 2025.05.06
 ### Added
 - Wrapped SCIPgetChildren and added getChildren and test (also test getOpenNodes) 
 - Wrapped SCIPgetLeaves, SCIPgetNLeaves, and added getLeaves, getNLeaves and test
