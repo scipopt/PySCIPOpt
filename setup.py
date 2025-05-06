@@ -58,6 +58,7 @@ else:
 
 # set runtime libraries
 if platform.system() in ["Linux", "Darwin"]:
+    extra_compile_args.append("-I/opt/homebrew/include")
     extra_link_args.append(f"-Wl,-rpath,{libdir}")
 
 # enable debug mode if requested
