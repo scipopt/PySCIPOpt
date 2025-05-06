@@ -9,9 +9,12 @@
 - Added getLinearConsIndicator
 - Added SCIP_LPPARAM, setIntParam, setRealParam, getIntParam, getRealParam, isOptimal, getObjVal, getRedcost for lpi
 - Added isFeasPositive
+- Added SCIP function SCIProwGetDualsol and wrapper getDualsol
+- Added SCIP function SCIProwGetDualfarkas and wrapper getDualfarkas
 ### Fixed
 - Fixed bug when accessing matrix variable attributes
 ### Changed
+- Stopped tests from running in draft PRs
 ### Removed
 
 ## 5.4.1 - 2024.02.24

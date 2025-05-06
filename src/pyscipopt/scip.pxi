@@ -679,6 +679,28 @@ cdef class Row:
         """
         return SCIProwGetConstant(self.scip_row)
 
+    def getDualsol(self):
+        """
+        Returns the dual solution of row.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIProwGetDualsol(self.scip_row)
+
+    def getDualfarkas(self):
+        """
+        Returns the dual Farkas solution of row.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIProwGetDualfarkas(self.scip_row)
+
     def getLPPos(self):
         """
         Gets position of row in current LP, or -1 if it is not in LP.

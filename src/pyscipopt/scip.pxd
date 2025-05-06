@@ -1897,6 +1897,8 @@ cdef extern from "scip/pub_lp.h":
     SCIP_Real SCIProwGetLhs(SCIP_ROW* row)
     SCIP_Real SCIProwGetRhs(SCIP_ROW* row)
     SCIP_Real SCIProwGetConstant(SCIP_ROW* row)
+    SCIP_Real SCIProwGetDualsol(SCIP_ROW* row)
+    SCIP_Real SCIProwGetDualfarkas(SCIP_ROW* row)
     int SCIProwGetLPPos(SCIP_ROW* row)
     SCIP_BASESTAT SCIProwGetBasisStatus(SCIP_ROW* row)
     SCIP_Bool SCIProwIsIntegral(SCIP_ROW* row)
