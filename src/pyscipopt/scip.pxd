@@ -875,6 +875,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPsetConsChecked(SCIP *scip, SCIP_CONS *cons, SCIP_Bool check)
     SCIP_RETCODE SCIPsetConsRemovable(SCIP *scip, SCIP_CONS *cons, SCIP_Bool removable)
     SCIP_RETCODE SCIPsetConsInitial(SCIP *scip, SCIP_CONS *cons, SCIP_Bool initial)
+    SCIP_RETCODE SCIPsetConsModifiable(SCIP *scip, SCIP_CONS *cons, SCIP_Bool modifiable)
     SCIP_RETCODE SCIPsetConsEnforced(SCIP *scip, SCIP_CONS *cons, SCIP_Bool enforce)
 
     # Primal Solution Methods
@@ -998,6 +999,7 @@ cdef extern from "scip/scip.h":
                                    SCIP_PRICERDATA* pricerdata)
     SCIP_PRICER* SCIPfindPricer(SCIP* scip, const char* name)
     SCIP_RETCODE SCIPactivatePricer(SCIP* scip, SCIP_PRICER* pricer)
+    SCIP_RETCODE SCIPdeactivatePricer(SCIP* scip, SCIP_PRICER* pricer)
     SCIP_PRICERDATA* SCIPpricerGetData(SCIP_PRICER* pricer)
 
     # Constraint handler plugin
@@ -1895,6 +1897,8 @@ cdef extern from "scip/pub_lp.h":
     SCIP_Real SCIProwGetLhs(SCIP_ROW* row)
     SCIP_Real SCIProwGetRhs(SCIP_ROW* row)
     SCIP_Real SCIProwGetConstant(SCIP_ROW* row)
+    SCIP_Real SCIProwGetDualsol(SCIP_ROW* row)
+    SCIP_Real SCIProwGetDualfarkas(SCIP_ROW* row)
     int SCIProwGetLPPos(SCIP_ROW* row)
     SCIP_BASESTAT SCIProwGetBasisStatus(SCIP_ROW* row)
     SCIP_Bool SCIProwIsIntegral(SCIP_ROW* row)
@@ -1932,10 +1936,13 @@ cdef extern from "scip/pub_lp.h":
 
 cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
-    SCIP_Longint SCIPgetNLeaves(SCIP* scip)
+    SCIP_RETCODE SCIPgetChildren(SCIP* scip, SCIP_NODE*** children, int* nchildren)
     SCIP_Longint SCIPgetNChildren(SCIP* scip)
-    SCIP_Longint SCIPgetNSiblings(SCIP* scip)
     SCIP_NODE* SCIPgetBestChild(SCIP* scip)
+    SCIP_RETCODE SCIPgetSiblings(SCIP* scip, SCIP_NODE*** siblings, int* nsiblings)
+    SCIP_RETCODE SCIPgetNSiblings(SCIP* scip)
+    SCIP_RETCODE SCIPgetLeaves(SCIP* scip, SCIP_NODE*** leaves, int* nleaves)
+    SCIP_Longint SCIPgetNLeaves(SCIP* scip)
     SCIP_NODE* SCIPgetBestSibling(SCIP* scip)
     SCIP_NODE* SCIPgetBestLeaf(SCIP* scip)
     SCIP_NODE* SCIPgetPrioChild(SCIP* scip)
