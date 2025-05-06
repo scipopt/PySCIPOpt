@@ -10,7 +10,7 @@ The following are the steps to follow to make a new PySCIPOpt release. They shou
 pip install -i https://test.pypi.org/simple/ PySCIPOpt
 ```
 - [ ] If it works, release on pypi.org with running the same workflow but with `test-pypi:false`.
-- [ ] Then create a tag wit the new version (from the master branch)
+- [ ] Then create a tag with the new version (from the master branch)
 ```bash
 git tag vX.X.X
 git push origin vX.X.X
