@@ -3,12 +3,19 @@
 ## Unreleased
 ### Added
 - Added support for knapsack constraints
+- Wrapped SCIPgetChildren and added getChildren and test (also test getOpenNodes) 
+- Wrapped SCIPgetLeaves, SCIPgetNLeaves, and added getLeaves, getNLeaves and test
+- Wrapped SCIPgetSiblings, SCIPgetNSiblings, and added getSiblings, getNSiblings and test
+- Wrapped SCIPdeactivatePricer, SCIPsetConsModifiable, and added deactivatePricer, setModifiable and test
 - Added getLinearConsIndicator
 - Added SCIP_LPPARAM, setIntParam, setRealParam, getIntParam, getRealParam, isOptimal, getObjVal, getRedcost for lpi
 - Added isFeasPositive
+- Added SCIP function SCIProwGetDualsol and wrapper getDualsol
+- Added SCIP function SCIProwGetDualfarkas and wrapper getDualfarkas
 ### Fixed
 - Fixed bug when accessing matrix variable attributes
 ### Changed
+- Stopped tests from running in draft PRs
 ### Removed
 
 ## 5.4.1 - 2024.02.24
