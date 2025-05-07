@@ -1502,7 +1502,6 @@ cdef extern from "scip/cons_knapsack.h"
     SCIP_Real SCIPgetDualfarkasKnapsack(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPchgCapacityKnapsack(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
     SCIP_Real SCIPgetCapacityKnapsack(SCIP* scip, SCIP_CONS* cons)
-    SCIP_RETCODE SCIPaddCoefKnapsack(SCIP* scip, SCIP_CONS* cons, SCIP_VAR*, SCIP_Real val)
     SCIP_VAR** SCIPgetVarsKnapsack(SCIP* scip, SCIP_CONS* cons)
     int SCIPgetNVarsKnapsack(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real* SCIPgetWeightsKnapsack(SCIP* scip, SCIP_CONS* cons)

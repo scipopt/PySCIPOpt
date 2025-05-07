@@ -6645,7 +6645,7 @@ cdef class Model:
 
     def getRhs(self, Constraint cons):
         """
-        Retrieve right-hand side value of a linear constraint.
+        Retrieve right-hand side value of a constraint.
 
         Parameters
         ----------
