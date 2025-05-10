@@ -6770,7 +6770,6 @@ cdef class Model:
 
         """
 
-        print(weight)
         PY_SCIP_CALL( SCIPaddCoefKnapsack(self._scip, cons.scip_cons, var.scip_var, weight) )
 
     def getActivity(self, Constraint cons, Solution sol = None):
@@ -7220,10 +7219,6 @@ cdef class Model:
         for i in range(nvars):
             var_name = bytes(SCIPvarGetName(vars[i])).decode('utf-8')
             valsdict[var_name] = vals[i]
-
-        print(f"Number of variables: {nvars}")
-        for i in range(nvars):
-            print(f"Variable: {bytes(SCIPvarGetName(vars[i])).decode('utf-8')}, Weight: {vals[i]}")
 
         return valsdict
 
