@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added support for knapsack constraints
 ### Fixed
 ### Changed
 ### Removed
