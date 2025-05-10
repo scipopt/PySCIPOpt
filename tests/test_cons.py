@@ -253,7 +253,7 @@ def test_getValsLinear():
 
     m.optimize() # just to check if constraint transformation matters
 
-    assert m.getValsLinear(c2) == {'x': 1, 'y': 4}
+    assert m.getValsLinear(c2) == {'x': 1, 'z': 4}
 
 @pytest.mark.skip(reason="TODO: test getRowLinear()")
 def test_getRowLinear():
