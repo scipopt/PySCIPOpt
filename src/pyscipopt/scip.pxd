@@ -1474,15 +1474,14 @@ cdef extern from "scip/cons_linear.h":
     SCIP_Real* SCIPgetValsLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_ROW* SCIPgetRowLinear(SCIP* scip, SCIP_CONS* cons)
 
-cdef extern from "scip/cons_knapsack.h"
+cdef extern from "scip/cons_knapsack.h":
     SCIP_RETCODE SCIPcreateConsKnapsack(SCIP* scip,
                                       SCIP_CONS** cons,
                                       char* name,
                                       int nvars,
                                       SCIP_VAR** vars,
-                                      SCIP_Real* vals,
-                                      SCIP_Real lhs,
-                                      SCIP_Real rhs,
+                                      SCIP_Real* weights,
+                                      SCIP_Real capacity,
                                       SCIP_Bool initial,
                                       SCIP_Bool separate,
                                       SCIP_Bool enforce,
