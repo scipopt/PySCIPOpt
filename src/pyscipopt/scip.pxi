@@ -5900,9 +5900,7 @@ cdef class Model:
             even if it may be moved to a more global node? (Default value = False)
         """
 
-        assert isinstance(knapsackcons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
-
-        cdef int nvars = len(terms.items())
+        cdef int nvars = len(vars)
         cdef SCIP_VAR** vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
         cdef SCIP_Real* weights_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
         cdef SCIP_CONS* scip_cons
@@ -5917,15 +5915,14 @@ cdef class Model:
             weights_array[i] = <SCIP_Real>weight
 
         PY_SCIP_CALL(SCIPcreateConsKnapsack(
-            self._scip, &scip_cons, str_conversion(kwargs['name']), nvars, vars_array, weights_array,
-            kwargs['rhs'], kwargs['initial'], kwargs['separate'], kwargs['enforce'], 
-            kwargs['check'], kwargs['propagate'], kwargs['local'], kwargs['modifiable'],
-            kwargs['dynamic'], kwargs['removable'], kwargs['stickingatnode']))
+            self._scip, &scip_cons, str_conversion(name), nvars, vars_array, weights_array,
+            0, rhs, initial, separate, enforce, check, propagate, local, modifiable,
+            dynamic, removable, stickingatnode))
 
         PyCons = Constraint.create(scip_cons)
 
         free(vars_array)
-        free(coeffs_array)
+        free(weights_array)
 
         return PyCons
 
@@ -6757,7 +6754,7 @@ cdef class Model:
 
         """
 
-        PY_SCIP_CALL( SCIPaddCoefKnapsack(self._scip, cons.scip_cons, var.scip_var, value) )
+        PY_SCIP_CALL( SCIPaddCoefKnapsack(self._scip, cons.scip_cons, var.scip_var, weight) )
 
     def getActivity(self, Constraint cons, Solution sol = None):
         """
