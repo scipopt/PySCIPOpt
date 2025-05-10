@@ -5814,7 +5814,7 @@ cdef class Model:
 
     def addConsCoeff(self, Constraint cons, Variable var, coeff):
         """
-        Add coefficient to the linear constraint (if non-zero).
+        Add coefficient to the constraint (if non-zero).
 
         Parameters
         ----------
@@ -5826,7 +5826,14 @@ cdef class Model:
             coefficient of new variable
 
         """
-        PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, cons.scip_cons, var.scip_var, coeff))
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        if constype == 'linear':
+            PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, cons.scip_cons, var.scip_var, coeff))
+        elif constype == 'knapsack':
+            PY_SCIP_CALL(SCIPaddCoefKnapsack(self._scip, cons.scip_cons, var.scip_var, coeff))
+        else:
+            raise NotImplementedError("Adding coefficients to %s constraints is not implemented." % constype)
 
     def addConsNode(self, Node node, Constraint cons, Node validnode=None):
         """
@@ -5866,17 +5873,21 @@ cdef class Model:
             PY_SCIP_CALL(SCIPaddConsLocal(self._scip, cons.scip_cons, NULL))
         Py_INCREF(cons)
     
-    def addConsKnapsack(self, vars, weights=None, name="",
+    def addConsKnapsack(self, vars, weights, capacity, name="",
                 initial=True, separate=True, enforce=True, check=True,
                 modifiable=False, propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
         """
         Parameters
         ----------
-        cons : ExprCons
-            The expression constraint that is not yet an actual constraint
+        vars : list of Variable
+            list of variables to be included
+        weights : list of int
+            list of weights
+        capacity: int
+            capacity of the knapsack
         name : str, optional
-            the name of the constraint, generic name if empty (Default value = "")
+            name of the constraint (Default value = "")
         initial : bool, optional
             should the LP relaxation of constraint be in the initial LP? (Default value = True)
         separate : bool, optional
@@ -5889,42 +5900,47 @@ cdef class Model:
             should the constraint be propagated during node processing? (Default value = True)
         local : bool, optional
             is the constraint only valid locally? (Default value = False)
-        modifiable : bool, optional
-            is the constraint modifiable (subject to column generation)? (Default value = False)
         dynamic : bool, optional
             is the constraint subject to aging? (Default value = False)
         removable : bool, optional
             should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
         stickingatnode : bool, optional
-            should the constraints always be kept at the node where it was added,
+            should the constraint always be kept at the node where it was added,
             even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        Constraint
+            The newly created knapsack constraint        
         """
 
         cdef int nvars = len(vars)
-        cdef SCIP_VAR** vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
-        cdef SCIP_Real* weights_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
-        cdef SCIP_CONS* scip_cons
-        cdef SCIP_Real coeff
         cdef int i
+        cdef SCIP_VAR** vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        cdef SCIP_Longint* weights_array = <SCIP_Longint*> malloc(nvars * sizeof(SCIP_Real))
+        cdef SCIP_CONS* scip_cons
 
         if name == '':
             name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
-        for i, (key, weight) in enumerate(terms.items()):
-            vars_array[i] = <SCIP_VAR*>(<Variable>key[0]).scip_var
-            weights_array[i] = <SCIP_Real>weight
+        for i in range(nvars):
+            vars_array[i] = (<Variable>vars[i]).scip_var
+            weights_array[i] = <SCIP_Longint>weights[i]
 
         PY_SCIP_CALL(SCIPcreateConsKnapsack(
             self._scip, &scip_cons, str_conversion(name), nvars, vars_array, weights_array,
-            0, rhs, initial, separate, enforce, check, propagate, local, modifiable,
+            capacity, initial, separate, enforce, check, propagate, local, modifiable,
             dynamic, removable, stickingatnode))
-
-        PyCons = Constraint.create(scip_cons)
 
         free(vars_array)
         free(weights_array)
 
-        return PyCons
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+
+        pyCons = Constraint.create(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+        
+        return pyCons
 
     def addConsSOS1(self, vars, weights=None, name="",
                 initial=True, separate=True, enforce=True, check=True,
@@ -6754,6 +6770,7 @@ cdef class Model:
 
         """
 
+        print(weight)
         PY_SCIP_CALL( SCIPaddCoefKnapsack(self._scip, cons.scip_cons, var.scip_var, weight) )
 
     def getActivity(self, Constraint cons, Solution sol = None):
@@ -7187,19 +7204,26 @@ cdef class Model:
 
         """
         cdef SCIP_VAR** vars
-        cdef SCIP_Real* vals
+        cdef SCIP_Longint* vals
+        cdef int nvars
         cdef int i
 
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
         if not constype == 'knapsack':
             raise Warning("weights not available for constraints of type ", constype)
 
+        nvars = SCIPgetNVarsKnapsack(self._scip, cons.scip_cons)
         vals = SCIPgetWeightsKnapsack(self._scip, cons.scip_cons)
         vars = SCIPgetVarsKnapsack(self._scip, cons.scip_cons)
 
         valsdict = {}
-        for i in range(SCIPgetNVarsKnapsack(self._scip, cons.scip_cons)):
-            valsdict[bytes(SCIPvarGetName(vars[i])).decode('utf-8')] = vals[i]
+        for i in range(nvars):
+            var_name = bytes(SCIPvarGetName(vars[i])).decode('utf-8')
+            valsdict[var_name] = vals[i]
+
+        print(f"Number of variables: {nvars}")
+        for i in range(nvars):
+            print(f"Variable: {bytes(SCIPvarGetName(vars[i])).decode('utf-8')}, Weight: {vals[i]}")
 
         return valsdict
 
@@ -7266,9 +7290,9 @@ cdef class Model:
         if not constype == 'knapsack':
             raise Warning("dual solution values not available for constraints of type ", constype)
         if cons.isOriginal():
-            transcons = <Constraint>self.getTransformedCons(cons)
-        else:
             transcons = cons
+        else:
+            transcons = <Constraint>self.getTransformedCons(cons)
         return SCIPgetDualsolKnapsack(self._scip, transcons.scip_cons)
 
     def getDualMultiplier(self, Constraint cons):
@@ -7325,10 +7349,10 @@ cdef class Model:
         """
         # TODO this should ideally be handled on the SCIP side
         if cons.isOriginal():
+            return SCIPgetDualfarkasKnapsack(self._scip, cons.scip_cons)
+        else:
             transcons = <Constraint>self.getTransformedCons(cons)
             return SCIPgetDualfarkasKnapsack(self._scip, transcons.scip_cons)
-        else:
-            return SCIPgetDualfarkasKnapsack(self._scip, cons.scip_cons)
 
     def getVarRedcost(self, Variable var):
         """

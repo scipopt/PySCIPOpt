@@ -1480,8 +1480,8 @@ cdef extern from "scip/cons_knapsack.h":
                                       char* name,
                                       int nvars,
                                       SCIP_VAR** vars,
-                                      SCIP_Real* weights,
-                                      SCIP_Real capacity,
+                                      SCIP_Longint* weights,
+                                      SCIP_Longint capacity,
                                       SCIP_Bool initial,
                                       SCIP_Bool separate,
                                       SCIP_Bool enforce,
@@ -1495,15 +1495,15 @@ cdef extern from "scip/cons_knapsack.h":
     SCIP_RETCODE SCIPaddCoefKnapsack(SCIP* scip,
                                    SCIP_CONS* cons,
                                    SCIP_VAR* var,
-                                   SCIP_Real val)
+                                   SCIP_Longint val)
 
     SCIP_Real SCIPgetDualsolKnapsack(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real SCIPgetDualfarkasKnapsack(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPchgCapacityKnapsack(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
-    SCIP_Real SCIPgetCapacityKnapsack(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Longint SCIPgetCapacityKnapsack(SCIP* scip, SCIP_CONS* cons)
     SCIP_VAR** SCIPgetVarsKnapsack(SCIP* scip, SCIP_CONS* cons)
     int SCIPgetNVarsKnapsack(SCIP* scip, SCIP_CONS* cons)
-    SCIP_Real* SCIPgetWeightsKnapsack(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Longint* SCIPgetWeightsKnapsack(SCIP* scip, SCIP_CONS* cons)
 
 cdef extern from "scip/cons_nonlinear.h":
     SCIP_EXPR* SCIPgetExprNonlinear(SCIP_CONS* cons)
