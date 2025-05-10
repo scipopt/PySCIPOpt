@@ -3,6 +3,12 @@
 ## Unreleased
 ### Added
 - Added support for knapsack constraints
+### Fixed
+### Changed
+### Removed
+
+## 5.5.0 - 2025.05.06
+### Added
 - Wrapped SCIPgetChildren and added getChildren and test (also test getOpenNodes) 
 - Wrapped SCIPgetLeaves, SCIPgetNLeaves, and added getLeaves, getNLeaves and test
 - Wrapped SCIPgetSiblings, SCIPgetNSiblings, and added getSiblings, getNSiblings and test
