@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added support for knapsack constraints
 - More support for AND-Constraints
 ### Fixed
 ### Changed
