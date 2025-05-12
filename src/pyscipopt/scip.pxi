@@ -6675,8 +6675,6 @@ cdef class Model:
             return SCIPgetRhsLinear(self._scip, cons.scip_cons)
         elif constype == 'nonlinear':
             return SCIPgetRhsNonlinear(cons.scip_cons)
-        elif constype == "knapsack":
-            return SCIPgetCapacityKnapsack(self._scip, cons.scip_cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
