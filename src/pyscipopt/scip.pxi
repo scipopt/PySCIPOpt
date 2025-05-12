@@ -5778,14 +5778,14 @@ cdef class Model:
 
         return vars
 
-    def getNVarsAnd(self, Constraint constraint):
+    def getNVarsAnd(self, Constraint and_cons):
         """
         Gets number of variables in and constraint.
 
         Parameters
         ----------
-        constraint : Constraint
-            Constraint to get the number of variables from.
+        and_cons : Constraint
+            AND constraint to get the number of variables from.
 
         Returns
         -------
@@ -5795,16 +5795,16 @@ cdef class Model:
         cdef int nvars
         cdef SCIP_Bool success
 
-        return SCIPgetConsNVarsAnd(self._scip, constraint.scip_cons)
+        return SCIPgetNVarsAnd(self._scip, and_cons.scip_cons)
 
-    def getConsVarsAnd(self, Constraint constraint):
+    def getVarsAnd(self, Constraint and_cons):
         """
-        Gets variables in and constraint.
+        Gets variables in AND constraint.
 
         Parameters
         ----------
-        constraint : Constraint
-            Constraint to get the variables from.
+        and_cons : Constraint
+            AND Constraint to get the variables from.
 
         Returns
         -------
@@ -5816,9 +5816,12 @@ cdef class Model:
         cdef SCIP_Bool success
         cdef int i
 
-        SCIPgetConsNVarsAnd(self._scip, constraint.scip_cons, &nvars, &success)
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(and_cons.scip_cons))).decode('UTF-8')
+        assert(constype == 'and', "The constraint handler %s does not have this functionality." % constype)
+
+        nvars = SCIPgetNVarsAnd(self._scip, and_cons.scip_cons)
         _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
-        _vars = SCIPgetConsVarsAnd(self._scip, constraint.scip_cons)
+        _vars = SCIPgetVarsAnd(self._scip, and_cons.scip_cons)
 
         vars = []
         for i in range(nvars):
@@ -5835,13 +5838,13 @@ cdef class Model:
 
         return vars
 
-    def getResultantAnd(self, Constraint constraint):
+    def getResultantAnd(self, Constraint and_cons):
         """
         Gets the resultant variable in And constraint.
 
         Parameters
         ----------
-        constraint : Constraint
+        and_cons : Constraint
             Constraint to get the resultant variable from.
 
         Returns
@@ -5852,25 +5855,27 @@ cdef class Model:
         cdef SCIP_VAR* _resultant
         cdef SCIP_Bool success
 
-        _resultant = SCIPgetResultantAnd(self._scip, constraint.scip_cons)
+        _resultant = SCIPgetResultantAnd(self._scip, and_cons.scip_cons)
 
         ptr = <size_t>(_resultant)
         # check whether the corresponding variable exists already
         if ptr not in self._modelvars:
             # create a new variable
-            var = Variable.create(_resultant)
-            assert var.ptr() == ptr
-            self._modelvars[ptr] = var
+            resultant = Variable.create(_resultant)
+            assert resultant.ptr() == ptr
+            self._modelvars[ptr] = resultant
+        else:
+            resultant = self._modelvars[ptr]
             
         return resultant
 
-    def isAndConsSorted(self, Constraint constraint):
+    def isAndConsSorted(self, Constraint and_cons):
         """
         Returns if the variables of the AND-constraint are sorted with respect to their indices.
 
         Parameters
         ----------
-        constraint : Constraint
+        and_cons : Constraint
             Constraint to check.
 
         Returns
@@ -5880,21 +5885,21 @@ cdef class Model:
         """
         cdef SCIP_Bool success
 
-        return SCIPisAndConsSorted(self._scip, constraint.scip_cons)
+        return SCIPisAndConsSorted(self._scip, and_cons.scip_cons)
 
-    def sortAndCons(self, Constraint constraint):
+    def sortAndCons(self, Constraint and_cons):
         """
         Sorts the variables of the AND-constraint with respect to their indices.
 
         Parameters
         ----------
-        constraint : Constraint
+        and_cons : Constraint
             Constraint to sort.
 
         """
         cdef SCIP_Bool success
 
-        PY_SCIP_CALL(SCIPsortAndCons(self._scip, constraint.scip_cons))
+        PY_SCIP_CALL(SCIPsortAndCons(self._scip, and_cons.scip_cons))
 
     def printCons(self, Constraint constraint):
         """

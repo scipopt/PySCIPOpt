@@ -80,13 +80,10 @@ def test_cons_and():
 
     and_cons = m.addConsAnd([x1, x2], result)
 
-    assert m.getNConsAnd(and_cons) == 1
-    vars = m.getVarsAnd(and_cons)
-    assert len(vars) == 2
-    assert vars[0] == x1
-    assert vars[1] == x2
-    resultant_var = m.getResultAnd(and_cons)
-    assert resultant_var == result
+    assert m.getNVarsAnd(and_cons) == 2
+    assert m.getVarsAnd(and_cons) == [x1, x2]
+    resultant_var = m.getResultantAnd(and_cons)
+    assert resultant_var is result
     m.optimize()
 
     m.sortAndCons(and_cons)
