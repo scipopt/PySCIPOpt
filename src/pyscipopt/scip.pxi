@@ -679,6 +679,28 @@ cdef class Row:
         """
         return SCIProwGetConstant(self.scip_row)
 
+    def getDualsol(self):
+        """
+        Returns the dual solution of row.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIProwGetDualsol(self.scip_row)
+
+    def getDualfarkas(self):
+        """
+        Returns the dual Farkas solution of row.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIProwGetDualfarkas(self.scip_row)
+
     def getLPPos(self):
         """
         Gets position of row in current LP, or -1 if it is not in LP.
@@ -2339,7 +2361,7 @@ cdef class Model:
         """
         if self.getMajorVersion() < MAJOR:
             raise Exception("linked SCIP is not compatible to this version of PySCIPOpt - use at least version", MAJOR)
-        if self.getMinorVersion() < MINOR:
+        if self.getMajorVersion() == MAJOR and self.getMinorVersion() < MINOR:
             warnings.warn(
                 "linked SCIP {}.{} is not recommended for this version of PySCIPOpt - use version {}.{}.{}".format(
                     self.getMajorVersion(), self.getMinorVersion(), MAJOR, MINOR, PATCH))
@@ -4156,7 +4178,58 @@ cdef class Model:
 
         """
         return Node.create(SCIPgetBestChild(self._scip))
+    
+    def getChildren(self):
+        """
+        Gets the children of the focus node.
 
+        Returns
+        -------
+        list of Nodes
+
+        """
+        cdef SCIP_NODE** _children
+        cdef int n_children
+        cdef int i
+
+        PY_SCIP_CALL(SCIPgetChildren(self._scip, &_children, &n_children))
+
+        return [Node.create(_children[i]) for i in range(n_children)]
+
+    def getSiblings(self):
+        """
+        Gets the siblings of the focus node.
+
+        Returns
+        -------
+        list of Nodes
+
+        """
+        cdef SCIP_NODE** _siblings
+        cdef int n_siblings
+        cdef int i
+
+        PY_SCIP_CALL(SCIPgetSiblings(self._scip, &_siblings, &n_siblings))
+
+        return [Node.create(_siblings[i]) for i in range(n_siblings)]
+    
+    def getLeaves(self):
+        """
+        Gets the leaves of the tree along with number of leaves.
+
+        Returns
+        -------
+        list of Nodes
+
+        """
+        cdef SCIP_NODE** _leaves
+        cdef int n_leaves
+        cdef int i
+
+        PY_SCIP_CALL(SCIPgetLeaves(self._scip, &_leaves, &n_leaves))
+
+        return [Node.create(_leaves[i]) for i in range(n_leaves)]
+    
     def getBestSibling(self):
         """
         Gets the best sibling of the focus node w.r.t. the node selection strategy.
@@ -6506,6 +6579,18 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPsetConsInitial(self._scip, cons.scip_cons, newInit))
+    
+    def setModifiable(self, Constraint cons, newMod):
+        """
+        Set "modifiable" flag of a constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+        newMod : bool
+
+        """
+        PY_SCIP_CALL(SCIPsetConsModifiable(self._scip, cons.scip_cons, newMod))
 
     def setRemovable(self, Constraint cons, newRem):
         """
@@ -7711,6 +7796,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPactivatePricer(self._scip, scip_pricer))
         pricer.model = <Model>weakref.proxy(self)
         Py_INCREF(pricer)
+        pricer.scip_pricer = scip_pricer
 
     def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority=0,
                         enfopriority=0, chckpriority=0, sepafreq=-1, propfreq=-1,
@@ -7771,6 +7857,18 @@ cdef class Model:
         conshdlr.model = <Model>weakref.proxy(self)
         conshdlr.name = name
         Py_INCREF(conshdlr)
+
+    def deactivatePricer(self, Pricer pricer):
+        """
+        Deactivate the given pricer.
+
+        Parameters
+        ----------
+        pricer : Pricer
+            the pricer to deactivate
+        """
+        cdef SCIP_PRICER* scip_pricer
+        PY_SCIP_CALL(SCIPdeactivatePricer(self._scip, pricer.scip_pricer))
 
     def copyLargeNeighborhoodSearch(self, to_fix, fix_vals) -> Model:
         """
