@@ -5920,6 +5920,8 @@ cdef class Model:
         cdef SCIP_Longint* weights_array = <SCIP_Longint*> malloc(nvars * sizeof(SCIP_Real))
         cdef SCIP_CONS* scip_cons
 
+        assert nvars == len(weights), "Number of variables and weights must be the same."
+
         if name == '':
             name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
