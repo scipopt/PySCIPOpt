@@ -6629,10 +6629,28 @@ cdef class Model:
             PY_SCIP_CALL(SCIPchgRhsLinear(self._scip, cons.scip_cons, rhs))
         elif constype == 'nonlinear':
             PY_SCIP_CALL(SCIPchgRhsNonlinear(self._scip, cons.scip_cons, rhs))
-        elif constype == "knapsack":
-            PY_SCIP_CALL(SCIPchgCapacityKnapsack(self._scip, cons.scip_cons, rhs))
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
+
+    def chgCapacityKnapsack(self, Constraint cons, capacity):
+        """
+        Change capacity of a knapsack constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            knapsack constraint to change the capacity from
+        capacity : float or None
+            new capacity (set to None for +infinity)
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        assert constype == 'knapsack', "method cannot be called for constraints of type " + constype
+
+        if capacity is None:
+           capacity = SCIPinfinity(self._scip)
+
+        PY_SCIP_CALL(SCIPchgCapacityKnapsack(self._scip, cons.scip_cons, capacity))
 
     def chgLhs(self, Constraint cons, lhs):
         """
@@ -6679,6 +6697,25 @@ cdef class Model:
             return SCIPgetRhsNonlinear(cons.scip_cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
+
+    def getCapacityKnapsack(self, Constraint cons):
+        """
+        Retrieve capacity of a knapsack constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            knapsack constraint to get the capacity from
+
+        Returns
+        -------
+        float
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        assert constype == 'knapsack', "method cannot be called for constraints of type " + constype
+
+        return SCIPgetCapacityKnapsack(self._scip, cons.scip_cons)
 
     def getLhs(self, Constraint cons):
         """

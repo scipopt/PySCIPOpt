@@ -223,13 +223,15 @@ def test_cons_knapsack():
     z = m.addVar("z", vtype="B", obj=2)
     
     knapsack_cons = m.addConsKnapsack([x,y], [4,2], 10)
-
     assert knapsack_cons.getConshdlrName() == "knapsack"
     assert knapsack_cons.isKnapsack()
 
-    m.chgRhs(knapsack_cons, 5)
+    assert m.getConsNVars(knapsack_cons) == 2
+    assert m.getConsVars(knapsack_cons) == [x, y]
 
-    assert m.getRhs(knapsack_cons) == 5
+    m.chgCapacityKnapsack(knapsack_cons, 5)
+
+    assert m.getCapacityKnapsack(knapsack_cons) == 5
 
     m.addCoefKnapsack(knapsack_cons, z, 3)
     weights = m.getWeightsKnapsack(knapsack_cons)
