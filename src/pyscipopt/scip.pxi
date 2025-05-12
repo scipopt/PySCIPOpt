@@ -6036,6 +6036,8 @@ cdef class Model:
         """
         cdef SCIP_Bool changed
         cdef SCIP_Bool success
+
+        assert bytes(SCIPconshdlrGetName(conshdlr.scip_conshdlr)).decode('UTF-8') == "SOS1"
         PY_SCIP_CALL(SCIPmakeSOS1Feasible(self._scip, conshdlr.scip_conshdlr, sol.scip_sol, &changed, &success))
         if not success:
             raise Warning("SOS1 conflict graph could not be made feasible")
