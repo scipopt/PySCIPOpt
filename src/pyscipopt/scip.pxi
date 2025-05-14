@@ -9628,6 +9628,9 @@ cdef class Model:
         if not stage_check or self._bestSol.sol == NULL and SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
             raise Warning("Method cannot be called in stage ", self.getStage())
 
+        # update best sol
+        self.getBestSol()
+        
         if isinstance(expr, MatrixExpr):
             result = np.empty(expr.shape, dtype=float)
             for idx in np.ndindex(result.shape):
