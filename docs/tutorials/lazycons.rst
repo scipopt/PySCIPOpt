@@ -24,7 +24,7 @@ Why use a Constraint Handler?
 =============================
 
 SCIP does not have a lazy constraint plug-in, rather its definition of constraint is broad enough to
-naturally encompass lazy constraints already. Therefore the user must simply create an appropriate
+naturally encompass lazy constraints already. Therefore, the user must simply create an appropriate
 constraint handler.
 
 
@@ -48,7 +48,7 @@ integer programming formulation for the problem is:
     & & & x_{i,j} \in \{0,1\}, \quad \forall (i,j) \in \mathcal{V} \times \mathcal{V}
 
 In the above formulation, the second set of constraints (marked with an \*) are called subtour elimination constraints.
-They are called such as a valid solution in absense of those constraints might consist of a collection
+They are called such as a valid solution in absence of those constraints might consist of a collection
 of smaller cycles instead of a single large cycle. As the constraint set requires checking every subset of nodes
 there are exponentially many. Moreover, we know that most of the constraints are probably unnecessary,
 because it is clear from the objective that a minimum tour does not exist with a mini-cycle of nodes that are
@@ -147,7 +147,7 @@ Now we will create the code on how to implement such a constraint handler.
 
                   # add subtour elimination constraint for each subtour
                   for S in subtours:
-                      print("Constraint added!)
+                      print("Constraint added!")
                       self.model.addCons(quicksum(x[i][j] for i in S for j in S if j>i) <= len(S)-1)
                       consadded = True
 
@@ -164,7 +164,7 @@ Now we will create the code on how to implement such a constraint handler.
 
 In the above we've created our problem and custom constraint handler! We now need to actually
 add the constraint handler to the problem. After that, we can simply call ``optimize`` whenever we are ready.
-To add the costraint handler use something along the lines of the following:
+To add the constraint handler use something along the lines of the following:
 
 .. code-block:: python
 

@@ -100,8 +100,8 @@ and researchers to use SCIP for their own custom algorithms.
 
 The same logic is true for other plug-ins. These include branching rules, node selection rules,
 separators (cutting planes), cut selection rules, event handlers, and constraint handlers!
-Therefore if a user wants to include their own custom algorithm for one specific aspect of the solving
-process, SCIP is a perfectly designed tool to do so. It's design let's users easily test the
+Therefore, if a user wants to include their own custom algorithm for one specific aspect of the solving
+process, SCIP is a perfectly designed tool to do so. Its design lets users easily test the
 performance impact of one rule compared to another.
 
 Another advantage of SCIP is in how each plug-in is called. Let's consider primal heuristics again.
@@ -135,4 +135,4 @@ such rules are written. This is less of an issue for Python users (see the note 
   If the branching plug-in in Python has access to the node selector object, then it can query information
   as desired.
 
-The structure of SCIP is therefore extremely modular, extendable, and user friendly.
+The structure of SCIP is therefore extremely modular, extendable, and user-friendly.
