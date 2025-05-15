@@ -51,7 +51,7 @@ The first argument is the model object and the second argument is the event that
 Adding Event Handlers with Classes
 ==================================
 
-If you need to store additional data in the event handler, you can create a custom event handler class that inherits from :code:`pyscipopt.Eventhdlr`.
+If you need to store additional data in the event handler, you can create a custom event handler class that inherits from :code:`pyscipopt.Eventhdlr`,
 and then include it in the model using the :code:`Model.includeEventHandler` method. The following is an example that stores the number of best solutions found:
 
 .. code-block:: python

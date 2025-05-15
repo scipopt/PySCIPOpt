@@ -51,7 +51,7 @@ what formats those are and the model types they're associated with.
 
 .. note:: In general we recommend sharing files using the ``.mps`` extension when possible.
 
-  For a more human readable format for equivalent problems we recommend the ``.lp`` extension.
+  For a more human-readable format for equivalent problems we recommend the ``.lp`` extension.
 
   For general non-linearities that are to be shared with others we recommend the ``.osil`` extension.
 
