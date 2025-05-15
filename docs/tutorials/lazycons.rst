@@ -49,7 +49,7 @@ integer programming formulation for the problem is:
 
 In the above formulation, the second set of constraints (marked with an \*) are called subtour elimination constraints.
 They are called such as a valid solution in absence of those constraints might consist of a collection
-of smaller cycles instead of a single large cycle. As the constraint set requires checking every subset of nodes
+of smaller cycles instead of a single large cycle. As the constraint set requires checking every subset of nodes,
 there are exponentially many. Moreover, we know that most of the constraints are probably unnecessary,
 because it is clear from the objective that a minimum tour does not exist with a mini-cycle of nodes that are
 extremely far away from each other. Therefore, we want to model them as lazy constraints!
