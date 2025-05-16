@@ -3148,6 +3148,52 @@ cdef class Model:
         """
         return SCIPisGT(self._scip, val1, val2)
 
+    def isHugeValue(self, val):
+        """
+        Checks if value is huge and should be
+        handled separately (e.g., in activity computation).
+
+        Parameters
+        ----------
+        val : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisHugeValue(self._scip, val)
+
+    def isPositive(self, val):
+        """
+        Returns whether val > eps.
+
+        Parameters
+        ----------
+        val : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisPositive(self._scip, val)
+
+    def isNegative(self, val):
+        """
+        Returns whether val < -eps.
+
+        Parameters
+        ----------
+        val : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisNegative(self._scip, val)
+
     def getCondition(self, exact=False):
         """
         Get the current LP's condition number.
