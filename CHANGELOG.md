@@ -4,7 +4,7 @@
 ### Added
 - Added support for knapsack constraints
 - Added isFeasLE, isFeasLT, isFeasGE, isFeasGT, and tests
-### Fixed 
+### Fixed
 ### Changed
 ### Removed
 
