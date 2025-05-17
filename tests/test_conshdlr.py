@@ -85,6 +85,10 @@ class MyConshdlr(Conshdlr):
             assert n_locks_down_model == 2
             assert n_locks_down_conflict == 0
 
+            self.model.addVarLocksType(var, SCIP_LOCKTYPE.CONFLICT, nlockspos, nlocksneg)
+            assert var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT) != n_locks_up_conflict or var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT) != n_locks_down_conflict            
+            assert var.getNLocksUpType(SCIP_LOCKTYPE.MODEL) == n_locks_up_conflict and var.getNLocksDownType(SCIP_LOCKTYPE.MODEL) == n_locks_down_conflict
+
             if locktype == SCIP_LOCKTYPE.MODEL:
                 self.model.addVarLocks(var, nlockspos, nlocksneg)
                 assert var.getNLocksUpType(SCIP_LOCKTYPE.MODEL) != n_locks_up_model or var.getNLocksDownType(SCIP_LOCKTYPE.MODEL) != n_locks_down_model
