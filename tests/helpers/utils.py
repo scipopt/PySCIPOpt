@@ -51,17 +51,18 @@ def random_mip_1(disable_sepa=True, disable_heur=True, disable_presolve=True, no
 
 
 def random_lp_1():
-    return random_mip_1().relax()
+    random_mip_1().relax()
+    return random_mip_1()
 
 
 def random_nlp_1():
     model = Model()
 
-    v = model.addVar()
-    w = model.addVar()
-    x = model.addVar()
-    y = model.addVar()
-    z = model.addVar()
+    v = model.addVar(name="v", ub=2)
+    w = model.addVar(name="w", ub=3)
+    x = model.addVar(name="x", ub=4)
+    y = model.addVar(name="y", ub=1.4)
+    z = model.addVar(name="z", ub=4)
 
     model.addCons(exp(v) + log(w) + sqrt(x) + sin(y) + z ** 3 * y <= 5)
     model.setObjective(v + w + x + y + z, sense='maximize')
@@ -87,7 +88,7 @@ def knapsack_model(weights=[4, 2, 6, 3, 7, 5], costs=[7, 2, 5, 4, 3, 4], knapsac
         knapsackVars.append(s.addVar(varNames[i], vtype='I', obj=costs[i], ub=1.0))
 
     # adding a linear constraint for the knapsack constraint
-    s.addCons(quicksum(w * v for (w, v) in zip(weights, knapsackVars)) <= knapsackSize)
+    s.addCons(quicksum(w * v for (w, v) in zip(weights, knapsackVars)) <= knapsack_size)
 
     return s
 
@@ -249,4 +250,6 @@ def bin_packing_lp(sizes, capacity):
 
 
 def gastrans_lp():
-    return gastrans_model().relax()
+    gastrans_model().relax()
+
+    return gastrans_model()

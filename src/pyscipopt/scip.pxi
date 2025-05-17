@@ -3070,7 +3070,7 @@ cdef class Model:
 
     def isFeasEQ(self, val1, val2):
         """
-        Checks, if relative difference of values is in range of feasibility tolerance.
+        Returns if relative difference of values is below feasibility tolerance.
 
         Parameters
         ----------
@@ -3083,6 +3083,70 @@ cdef class Model:
 
         """
         return SCIPisFeasEQ(self._scip, val1, val2)
+    
+    def isFeasLT(self, val1, val2):
+        """
+        Returns if relative difference val1 and val2 is less than feasibility tolerance.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisFeasLT(self._scip, val1, val2)
+    
+    def isFeasLE(self, val1, val2):
+        """
+        Returns if relative difference val1 and val2 is less that or equal to feasibility tolerance.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisFeasLE(self._scip, val1, val2)
+    
+    def isFeasGT(self, val1, val2):
+        """
+        Returns if relative difference val1 and val2 is greater than feasibility tolerance.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisFeasGT(self._scip, val1, val2)
+    
+    def isFeasGE(self, val1, val2):
+        """
+        Returns if relative difference val1 and val2 is greater than or equal to feasibility tolerance.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisFeasGE(self._scip, val1, val2)
 
     def isLE(self, val1, val2):
         """
