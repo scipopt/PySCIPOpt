@@ -295,11 +295,6 @@ cdef extern from "scip/scip.h":
         SCIP_EVENTTYPE SCIP_EVENTTYPE_ROWCHANGED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_ROWEVENT
 
-    ctypedef int SCIP_LOCKTYPE
-    cdef extern from "scip/type_var.h":
-        SCIP_LOCKTYPE SCIP_LOCKTYPE_MODEL
-        SCIP_LOCKTYPE SCIP_LOCKTYPE_CONFLICT
-
     ctypedef int SCIP_LPSOLQUALITY
     cdef extern from "lpi/type_lpi.h":
         SCIP_LPSOLQUALITY SCIP_LPSOLQUALITY_ESTIMCONDITION
@@ -316,11 +311,6 @@ cdef extern from "scip/scip.h":
         SCIP_BENDERSENFOTYPE SCIP_BENDERSENFOTYPE_RELAX
         SCIP_BENDERSENFOTYPE SCIP_BENDERSENFOTYPE_PSEUDO
         SCIP_BENDERSENFOTYPE SCIP_BENDERSENFOTYPE_CHECK
-
-    ctypedef int SCIP_LOCKTYPE
-    cdef extern from "scip/type_var.h":
-        SCIP_LOCKTYPE SCIP_LOCKTYPE_MODEL
-        SCIP_LOCKTYPE SCIP_LOCKTYPE_CONFLICT
 
     ctypedef int SCIP_LPSOLSTAT
     cdef extern from "scip/type_lp.h":
