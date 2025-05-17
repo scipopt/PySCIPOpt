@@ -1,4 +1,4 @@
-from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PRESOLTIMING, SCIP_PROPTIMING
+from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PRESOLTIMING, SCIP_PROPTIMING, SCIP_LOCKTYPE
 from sys import version_info
 
 if version_info >= (3, 3):
@@ -42,6 +42,7 @@ class MyConshdlr(Conshdlr):
     def __init__(self, shouldtrans, shouldcopy):
         self.shouldtrans = shouldtrans
         self.shouldcopy = shouldcopy
+        self.first_time = True
 
     def createData(self, constraint, nvars, othername):
         print("Creating data for my constraint: %s"%constraint.name)
@@ -67,6 +68,31 @@ class MyConshdlr(Conshdlr):
     def conslock(self, constraint, locktype, nlockspos, nlocksneg):
         calls.add("conslock")
         assert id(constraint) in ids
+
+        if self.first_time:
+            self.first_time = False
+            var = self.model.getVars()[0]
+            n_locks_up = var.getNLocksUp()
+            n_locks_down = var.getNLocksDown()
+            n_locks_up_model = var.getNLocksUpType(SCIP_LOCKTYPE.MODEL)
+            n_locks_up_conflict = var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT)
+            n_locks_down_model = var.getNLocksDownType(SCIP_LOCKTYPE.MODEL)
+            n_locks_down_conflict = var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT)
+            assert n_locks_down == 2
+            assert n_locks_up == 2
+            assert n_locks_up_model == 2
+            assert n_locks_up_conflict == 0
+            assert n_locks_down_model == 2
+            assert n_locks_down_conflict == 0
+
+            if locktype == SCIP_LOCKTYPE.MODEL:
+                self.model.addVarLocks(var, nlockspos, nlocksneg)
+                assert var.getNLocksUpType(SCIP_LOCKTYPE.MODEL) != n_locks_up_model or var.getNLocksDownType(SCIP_LOCKTYPE.MODEL) != n_locks_down_model
+            elif locktype == SCIP_LOCKTYPE.CONFLICT:
+                self.model.addVarLocks(var, nlockspos, nlocksneg)
+                assert var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT) != n_locks_up_conflict or var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT) != n_locks_down_conflict
+
+            assert var.getNLocksDown() != n_locks_down or var.getNLocksUp() != n_locks_up
 
     ## callbacks ##
     def consfree(self):

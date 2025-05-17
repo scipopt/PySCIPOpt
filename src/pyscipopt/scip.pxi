@@ -1674,6 +1674,60 @@ cdef class Variable(Expr):
         """
         return SCIPvarGetAvgSol(self.scip_var)
 
+    def getNLocksDown(self):
+        """
+        Returns the number of locks for rounding down.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPvarGetNLocksDown(self.scip_var)
+    
+    def getNLocksUp(self):
+        """
+        Returns the number of locks for rounding up.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPvarGetNLocksUp(self.scip_var)
+
+    def getNLocksUpType(self, locktype):
+        """
+        Returns the number of locks for rounding up of a certain type.
+
+        Parameters
+        ----------
+        locktype: PY_SCIP_LOCKTYPE
+            types of variable locks
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPvarGetNLocksUpType(self.scip_var, locktype)
+    
+    def getNLocksDownType(self, locktype):
+        """
+        Returns the number of locks for rounding down of a certain type.
+
+        Parameters
+        ----------
+        locktype: PY_SCIP_LOCKTYPE
+            types of variable locks
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPvarGetNLocksDownType(self.scip_var, locktype)
+
     def varMayRound(self, direction="down"):
         """
         Checks whether it is possible to round variable up / down and stay feasible for the relaxation.

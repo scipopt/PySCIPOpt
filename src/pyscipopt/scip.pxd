@@ -295,6 +295,10 @@ cdef extern from "scip/scip.h":
         SCIP_EVENTTYPE SCIP_EVENTTYPE_ROWCHANGED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_ROWEVENT
 
+    ctypedef int SCIP_LOCKTYPE
+    cdef extern from "scip/type_var.h":
+        SCIP_LOCKTYPE SCIP_LOCKTYPE_MODEL
+        SCIP_LOCKTYPE SCIP_LOCKTYPE_CONFLICT
 
     ctypedef int SCIP_LPSOLQUALITY
     cdef extern from "lpi/type_lpi.h":
@@ -793,6 +797,10 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPgetTransformedVar(SCIP* scip, SCIP_VAR* var, SCIP_VAR** transvar)
     SCIP_RETCODE SCIPaddVarLocks(SCIP* scip, SCIP_VAR* var, int nlocksdown, int nlocksup)
     SCIP_RETCODE SCIPaddVarLocksType(SCIP* scip, SCIP_VAR* var, SCIP_LOCKTYPE locktype, int nlocksdown, int nlocksup)
+    int SCIPvarGetNLocksDown(SCIP_VAR* var)
+    int SCIPvarGetNLocksUp(SCIP_VAR* var)
+    int SCIPvarGetNLocksUpType(SCIP_VAR* var, SCIP_LOCKTYPE locktype)
+    int SCIPvarGetNLocksDownType(SCIP_VAR* var, SCIP_LOCKTYPE locktype)
     SCIP_VAR** SCIPgetVars(SCIP* scip)
     SCIP_VAR** SCIPgetOrigVars(SCIP* scip)
     const char* SCIPvarGetName(SCIP_VAR* var)
