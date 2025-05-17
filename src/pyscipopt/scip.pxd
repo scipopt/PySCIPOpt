@@ -313,6 +313,11 @@ cdef extern from "scip/scip.h":
         SCIP_BENDERSENFOTYPE SCIP_BENDERSENFOTYPE_PSEUDO
         SCIP_BENDERSENFOTYPE SCIP_BENDERSENFOTYPE_CHECK
 
+    ctypedef int SCIP_LOCKTYPE
+    cdef extern from "scip/type_var.h":
+        SCIP_LOCKTYPE SCIP_LOCKTYPE_MODEL
+        SCIP_LOCKTYPE SCIP_LOCKTYPE_CONFLICT
+
     ctypedef int SCIP_LPSOLSTAT
     cdef extern from "scip/type_lp.h":
         SCIP_LPSOLSTAT SCIP_LPSOLSTAT_NOTSOLVED

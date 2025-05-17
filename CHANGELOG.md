@@ -4,6 +4,7 @@
 ### Added
 - Added support for knapsack constraints
 - Added isFeasLE, isFeasLT, isFeasGE, isFeasGT, and tests
+- Added SCIP_LOCKTYPE
 ### Fixed
 ### Changed
 ### Removed
