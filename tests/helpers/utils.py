@@ -251,5 +251,4 @@ def bin_packing_lp(sizes, capacity):
 
 def gastrans_lp():
     gastrans_model().relax()
-
     return gastrans_model()
