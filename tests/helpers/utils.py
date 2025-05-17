@@ -64,7 +64,7 @@ def random_nlp_1():
     w = model.addVar(name="w")
     x = model.addVar(name="x")
     y = model.addVar(name="y", ub=1.4)
-    z = model.addVar(name="z")
+    z = model.addVar(name="z", ub=4)
 
     model.addCons(exp(v) + log(w) + sqrt(x) + sin(y) + z ** 3 * y <= 5)
     model.setObjective(v + w + x + y + z, sense='maximize')
@@ -260,3 +260,4 @@ def gastrans_lp():
     model.relax()
 
     return model
+ 

@@ -1696,22 +1696,6 @@ cdef class Variable(Expr):
         """
         return SCIPvarGetNLocksUp(self.scip_var)
 
-    def getNLocksUpType(self, locktype):
-        """
-        Returns the number of locks for rounding up of a certain type.
-
-        Parameters
-        ----------
-        locktype: PY_SCIP_LOCKTYPE
-            types of variable locks
-
-        Returns
-        -------
-        int
-
-        """
-        return SCIPvarGetNLocksUpType(self.scip_var, locktype)
-    
     def getNLocksDownType(self, locktype):
         """
         Returns the number of locks for rounding down of a certain type.
@@ -1719,7 +1703,7 @@ cdef class Variable(Expr):
         Parameters
         ----------
         locktype: PY_SCIP_LOCKTYPE
-            types of variable locks
+            type of variable locks
 
         Returns
         -------
@@ -1727,6 +1711,22 @@ cdef class Variable(Expr):
 
         """
         return SCIPvarGetNLocksDownType(self.scip_var, locktype)
+
+    def getNLocksUpType(self, locktype):
+        """
+        Returns the number of locks for rounding up of a certain type.
+
+        Parameters
+        ----------
+        locktype: PY_SCIP_LOCKTYPE
+            type of variable locks
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPvarGetNLocksUpType(self.scip_var, locktype)
 
     def varMayRound(self, direction="down"):
         """
@@ -3159,7 +3159,7 @@ cdef class Model:
     
     def isFeasLE(self, val1, val2):
         """
-        Returns whether relative difference between val1 and val2 is lower than feasibility tolerance.
+        Returns whether relative difference between val1 and val2 is not greater than feasibility tolerance.
 
         Parameters
         ----------
@@ -3191,7 +3191,7 @@ cdef class Model:
     
     def isFeasGE(self, val1, val2):
         """
-        Returns whether relative difference of val1 and val2 is greater than minus feasibility tolerance.
+        Returns whether relative difference of val1 and val2 is not lower than minus feasibility tolerance.
 
         Parameters
         ----------
@@ -3937,12 +3937,12 @@ cdef class Model:
         ----------
         var : Variable
             variable to adjust the locks for
-        type : str
-            type of the variable locks
+        locktype : PY_SCIP_LOCKTYPE
+            type of variable locks
         nlocksdown : int
-            modification in number of rounding down locks
+            modification in number of down locks
         nlocksup : int
-            modification in number of rounding up locks
+            modification in number of up locks
 
         """
         PY_SCIP_CALL(SCIPaddVarLocksType(self._scip, var.scip_var, locktype, nlocksdown, nlocksup))
