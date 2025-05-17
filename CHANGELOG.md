@@ -3,7 +3,7 @@
 ## Unreleased
 ### Added
 - Added support for knapsack constraints
-- Added isFeasLE, isFeasLT, isFeasGE, isFeasGT, and tests
+- Added isPositive(), isNegative(), isFeasLE(), isFeasLT(), isFeasGE(), isFeasGT(), isHugeValue(), and tests
 - Added SCIP_LOCKTYPE, addVarLocksType
 ### Fixed
 ### Changed

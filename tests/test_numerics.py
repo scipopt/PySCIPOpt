@@ -16,5 +16,6 @@ def test_numerical_checks():
     assert m.isFeasGE(1, 1.00001)
     assert not m.isGE(1, 1.00001)
 
-    assert not m.isFeasGT(1, 0.9999)
-    assert m.isGT(1, 0.9999)
+    assert not m.isFeasGT(1, 0.99999)
+    assert m.isGT(1, 0.99999)
+ 
