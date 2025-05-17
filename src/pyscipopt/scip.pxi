@@ -3891,7 +3891,7 @@ cdef class Model:
             modification in number of rounding up locks
 
         """
-        PY_SCIP_CALL(SCIPaddVarLocksType(self._scip, var.scip_var, locktype, nlocksdown, nlocksup, ))
+        PY_SCIP_CALL(SCIPaddVarLocksType(self._scip, var.scip_var, locktype, nlocksdown, nlocksup))
 
     def fixVar(self, Variable var, val):
         """
