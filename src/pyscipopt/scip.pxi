@@ -3073,7 +3073,7 @@ cdef class Model:
 
     def isFeasEQ(self, val1, val2):
         """
-        Returns if relative difference of values is below feasibility tolerance.
+        Returns if |val1 - val2| <= feastol.
 
         Parameters
         ----------
@@ -3089,7 +3089,7 @@ cdef class Model:
     
     def isFeasLT(self, val1, val2):
         """
-        Returns if relative difference between val1 and val2 is less than feasibility tolerance.
+        Returns if relative difference between val1 - val2 <= -feastol.
 
         Parameters
         ----------
@@ -3105,7 +3105,7 @@ cdef class Model:
     
     def isFeasLE(self, val1, val2):
         """
-        Returns if relative difference between val1 and val2 is less than or equal to feasibility tolerance.
+        Returns if val1 - val2 <= feastol.
 
         Parameters
         ----------
@@ -3121,7 +3121,7 @@ cdef class Model:
     
     def isFeasGT(self, val1, val2):
         """
-        Returns if relative difference between val1 and val2 is greater than feasibility tolerance.
+        Returns if val1 - val2 > feastol.
 
         Parameters
         ----------
@@ -3137,7 +3137,7 @@ cdef class Model:
     
     def isFeasGE(self, val1, val2):
         """
-        Returns if relative difference between val1 and val2 is greater than or equal to feasibility tolerance.
+        Returns if val1 - val2 >= -feastol.
 
         Parameters
         ----------
