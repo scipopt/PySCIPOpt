@@ -5824,6 +5824,129 @@ cdef class Model:
 
         return vars
 
+    def getNVarsAnd(self, Constraint and_cons):
+        """
+        Gets number of variables in and constraint.
+
+        Parameters
+        ----------
+        and_cons : Constraint
+            AND constraint to get the number of variables from.
+
+        Returns
+        -------
+        int
+
+        """
+        cdef int nvars
+        cdef SCIP_Bool success
+
+        return SCIPgetNVarsAnd(self._scip, and_cons.scip_cons)
+
+    def getVarsAnd(self, Constraint and_cons):
+        """
+        Gets variables in AND constraint.
+
+        Parameters
+        ----------
+        and_cons : Constraint
+            AND Constraint to get the variables from.
+
+        Returns
+        -------
+        list of Variable
+
+        """
+        cdef SCIP_VAR** _vars
+        cdef int nvars
+        cdef SCIP_Bool success
+        cdef int i
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(and_cons.scip_cons))).decode('UTF-8')
+        assert(constype == 'and', "The constraint handler %s does not have this functionality." % constype)
+
+        nvars = SCIPgetNVarsAnd(self._scip, and_cons.scip_cons)
+        _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        _vars = SCIPgetVarsAnd(self._scip, and_cons.scip_cons)
+
+        vars = []
+        for i in range(nvars):
+            ptr = <size_t>(_vars[i])
+            # check whether the corresponding variable exists already
+            if ptr in self._modelvars:
+                vars.append(self._modelvars[ptr])
+            else:
+                # create a new variable
+                var = Variable.create(_vars[i])
+                assert var.ptr() == ptr
+                self._modelvars[ptr] = var
+                vars.append(var)
+
+        return vars
+
+    def getResultantAnd(self, Constraint and_cons):
+        """
+        Gets the resultant variable in And constraint.
+
+        Parameters
+        ----------
+        and_cons : Constraint
+            Constraint to get the resultant variable from.
+
+        Returns
+        -------
+        Variable
+
+        """
+        cdef SCIP_VAR* _resultant
+        cdef SCIP_Bool success
+
+        _resultant = SCIPgetResultantAnd(self._scip, and_cons.scip_cons)
+
+        ptr = <size_t>(_resultant)
+        # check whether the corresponding variable exists already
+        if ptr not in self._modelvars:
+            # create a new variable
+            resultant = Variable.create(_resultant)
+            assert resultant.ptr() == ptr
+            self._modelvars[ptr] = resultant
+        else:
+            resultant = self._modelvars[ptr]
+            
+        return resultant
+
+    def isAndConsSorted(self, Constraint and_cons):
+        """
+        Returns if the variables of the AND-constraint are sorted with respect to their indices.
+
+        Parameters
+        ----------
+        and_cons : Constraint
+            Constraint to check.
+
+        Returns
+        -------
+        bool
+
+        """
+        cdef SCIP_Bool success
+
+        return SCIPisAndConsSorted(self._scip, and_cons.scip_cons)
+
+    def sortAndCons(self, Constraint and_cons):
+        """
+        Sorts the variables of the AND-constraint with respect to their indices.
+
+        Parameters
+        ----------
+        and_cons : Constraint
+            Constraint to sort.
+
+        """
+        cdef SCIP_Bool success
+
+        PY_SCIP_CALL(SCIPsortAndCons(self._scip, and_cons.scip_cons))
+
     def printCons(self, Constraint constraint):
         """
         Print the constraint
