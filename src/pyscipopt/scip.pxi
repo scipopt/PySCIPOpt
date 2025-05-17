@@ -3073,7 +3073,7 @@ cdef class Model:
 
     def isFeasEQ(self, val1, val2):
         """
-        Returns if |val1 - val2| <= feastol.
+        Returns if relative difference between val1 and val2 is in range of feasibility tolerance.
 
         Parameters
         ----------
@@ -3089,7 +3089,7 @@ cdef class Model:
     
     def isFeasLT(self, val1, val2):
         """
-        Returns if relative difference between val1 - val2 <= -feastol.
+        Returns whether relative difference between val1 and val2 is lower than minus feasibility tolerance.
 
         Parameters
         ----------
@@ -3105,7 +3105,7 @@ cdef class Model:
     
     def isFeasLE(self, val1, val2):
         """
-        Returns if val1 - val2 <= feastol.
+        Returns whether relative difference between val1 and val2 is lower than feasibility tolerance.
 
         Parameters
         ----------
@@ -3121,7 +3121,7 @@ cdef class Model:
     
     def isFeasGT(self, val1, val2):
         """
-        Returns if val1 - val2 > feastol.
+        Returns whether relative difference between val1 and val2 is greater than feasibility tolerance.
 
         Parameters
         ----------
@@ -3137,7 +3137,7 @@ cdef class Model:
     
     def isFeasGE(self, val1, val2):
         """
-        Returns if val1 - val2 >= -feastol.
+        Returns whether relative difference of val1 and val2 is greater than minus feasibility tolerance.
 
         Parameters
         ----------
@@ -3875,7 +3875,7 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPaddVarLocks(self._scip, var.scip_var, nlocksdown, nlocksup))
 
-    def addVarLocksType(self, Variable var, int locktype, int nlocksdown, int nlocksup):
+    def addVarLocksType(self, Variable var, PY_SCIP_LOCKTYPE locktype, int nlocksdown, int nlocksup):
         """
         adds given values to lock numbers of type locktype of variable for rounding
 

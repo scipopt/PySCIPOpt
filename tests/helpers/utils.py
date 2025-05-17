@@ -51,18 +51,20 @@ def random_mip_1(disable_sepa=True, disable_heur=True, disable_presolve=True, no
 
 
 def random_lp_1():
-    random_mip_1().relax()
-    return random_mip_1()
+    model = random_mip_1()
+    model.relax()
+    
+    return model
 
 
 def random_nlp_1():
     model = Model()
 
-    v = model.addVar(name="v", ub=2)
-    w = model.addVar(name="w", ub=3)
-    x = model.addVar(name="x", ub=4)
+    v = model.addVar(name="v")
+    w = model.addVar(name="w")
+    x = model.addVar(name="x")
     y = model.addVar(name="y", ub=1.4)
-    z = model.addVar(name="z", ub=4)
+    z = model.addVar(name="z")
 
     model.addCons(exp(v) + log(w) + sqrt(x) + sin(y) + z ** 3 * y <= 5)
     model.setObjective(v + w + x + y + z, sense='maximize')
@@ -242,13 +244,19 @@ def gastrans_model():
 
 
 def knapsack_lp(weights, costs):
-    return knapsack_model(weights, costs).relax()
+    model = knapsack_model(weights, costs)
+    model.relax()
 
+    return model
 
 def bin_packing_lp(sizes, capacity):
-    return bin_packing_model(sizes, capacity).relax()
+    model = bin_packing_model(sizes, capacity)
+    model.relax()
 
+    return model
 
 def gastrans_lp():
-    gastrans_model().relax()
-    return gastrans_model()
+    model = gastrans_model()
+    model.relax()
+
+    return model
