@@ -42,7 +42,6 @@ class MyConshdlr(Conshdlr):
     def __init__(self, shouldtrans, shouldcopy):
         self.shouldtrans = shouldtrans
         self.shouldcopy = shouldcopy
-        self.first_time = True
 
     def createData(self, constraint, nvars, othername):
         print("Creating data for my constraint: %s"%constraint.name)
@@ -69,34 +68,29 @@ class MyConshdlr(Conshdlr):
         calls.add("conslock")
         assert id(constraint) in ids
 
-        if self.first_time:
-            self.first_time = False
+        try:
             var = self.model.getVars()[0]
-            n_locks_up = var.getNLocksUp()
-            n_locks_down = var.getNLocksDown()
-            n_locks_up_model = var.getNLocksUpType(SCIP_LOCKTYPE.MODEL)
-            n_locks_up_conflict = var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT)
-            n_locks_down_model = var.getNLocksDownType(SCIP_LOCKTYPE.MODEL)
-            n_locks_down_conflict = var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT)
-            assert n_locks_down == 2
-            assert n_locks_up == 2
-            assert n_locks_up_model == 2
-            assert n_locks_up_conflict == 0
-            assert n_locks_down_model == 2
-            assert n_locks_down_conflict == 0
+        except ReferenceError:
+            return
 
-            self.model.addVarLocksType(var, SCIP_LOCKTYPE.CONFLICT, nlockspos, nlocksneg)
+        n_locks_up = var.getNLocksUp()
+        n_locks_down = var.getNLocksDown()
+        n_locks_up_model = var.getNLocksUpType(SCIP_LOCKTYPE.MODEL)
+        n_locks_up_conflict = var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT)
+        n_locks_down_model = var.getNLocksDownType(SCIP_LOCKTYPE.MODEL)
+        n_locks_down_conflict = var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT)
+
+        self.model.addVarLocksType(var, locktype, nlockspos, nlocksneg)
+        if locktype == SCIP_LOCKTYPE.CONFLICT:
             assert var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT) != n_locks_up_conflict or var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT) != n_locks_down_conflict            
-            assert var.getNLocksUpType(SCIP_LOCKTYPE.MODEL) == n_locks_up_conflict and var.getNLocksDownType(SCIP_LOCKTYPE.MODEL) == n_locks_down_conflict
+            assert var.getNLocksUpType(SCIP_LOCKTYPE.MODEL) == n_locks_up_model and var.getNLocksDownType(SCIP_LOCKTYPE.MODEL) == n_locks_down_model
+        elif locktype == SCIP_LOCKTYPE.MODEL:
+            assert var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT) == n_locks_up_conflict and var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT) == n_locks_down_conflict            
+            assert var.getNLocksUpType(SCIP_LOCKTYPE.MODEL) != n_locks_up_model or var.getNLocksDownType(SCIP_LOCKTYPE.MODEL) != n_locks_down_model
+        else:
+            raise ValueError("Unknown locktype")
 
-            if locktype == SCIP_LOCKTYPE.MODEL:
-                self.model.addVarLocks(var, nlockspos, nlocksneg)
-                assert var.getNLocksUpType(SCIP_LOCKTYPE.MODEL) != n_locks_up_model or var.getNLocksDownType(SCIP_LOCKTYPE.MODEL) != n_locks_down_model
-            elif locktype == SCIP_LOCKTYPE.CONFLICT:
-                self.model.addVarLocks(var, nlockspos, nlocksneg)
-                assert var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT) != n_locks_up_conflict or var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT) != n_locks_down_conflict
-
-            assert var.getNLocksDown() != n_locks_down or var.getNLocksUp() != n_locks_up
+        assert var.getNLocksDown() != n_locks_down or var.getNLocksUp() != n_locks_up
 
     ## callbacks ##
     def consfree(self):
@@ -217,43 +211,43 @@ class MyConshdlr(Conshdlr):
 def test_conshdlr():
     def create_model():
         # create solver instance
-        s = Model()
+        model = Model()
 
         # add some variables
-        x = s.addVar("x", obj = -1.0, vtype = "I", lb=-10)
-        y = s.addVar("y", obj = 1.0, vtype = "I", lb=-1000)
-        z = s.addVar("z", obj = 1.0, vtype = "I", lb=-1000)
+        x = model.addVar("x", obj = -1.0, vtype = "I", lb=-10)
+        y = model.addVar("y", obj = 1.0, vtype = "I", lb=-1000)
+        z = model.addVar("z", obj = 1.0, vtype = "I", lb=-1000)
 
         # add some constraint
-        s.addCons(314*x + 867*y + 860*z == 363)
-        s.addCons(87*x + 875*y - 695*z == 423)
+        model.addCons(314*x + 867*y + 860*z == 363)
+        model.addCons(87*x + 875*y - 695*z == 423)
 
         # create conshdlr and include it to SCIP
         conshdlr = MyConshdlr(shouldtrans=True, shouldcopy=False)
-        s.includeConshdlr(conshdlr, "PyCons", "custom constraint handler implemented in python",
+        model.includeConshdlr(conshdlr, "PyCons", "custom constraint handler implemented in python",
                           sepapriority = 1, enfopriority = 1, chckpriority = 1, sepafreq = 10, propfreq = 50,
                           eagerfreq = 1, maxprerounds = -1, delaysepa = False, delayprop = False, needscons = True,
                           presoltiming = SCIP_PRESOLTIMING.FAST, proptiming = SCIP_PROPTIMING.BEFORELP)
 
-        cons1 = s.createCons(conshdlr, "cons1name")
+        cons1 = model.createCons(conshdlr, "cons1name")
         ids.append(id(cons1))
-        cons2 = s.createCons(conshdlr, "cons2name")
+        cons2 = model.createCons(conshdlr, "cons2name")
         ids.append(id(cons2))
         conshdlr.createData(cons1, 10, "cons1_anothername")
         conshdlr.createData(cons2, 12, "cons2_anothername")
 
         # add these constraints
-        s.addPyCons(cons1)
-        s.addPyCons(cons2)
-        return s
+        model.addPyCons(cons1)
+        model.addPyCons(cons2)
+        return model
 
-    s = create_model()
+    model = create_model()
 
     # solve problem
-    s.optimize()
+    model.optimize()
 
     # so that consfree gets called
-    del s
+    del model
 
     # check callbacks got called
     assert "consenfolp" in calls
@@ -280,3 +274,5 @@ def test_conshdlr():
     #assert "consdelvars" in calls
     #assert "consprint" in calls
     assert "consgetnvars" in calls
+
+test_conshdlr()

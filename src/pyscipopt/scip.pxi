@@ -3929,7 +3929,7 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPaddVarLocks(self._scip, var.scip_var, nlocksdown, nlocksup))
 
-    def addVarLocksType(self, Variable var, PY_SCIP_LOCKTYPE locktype, int nlocksdown, int nlocksup):
+    def addVarLocksType(self, Variable var, int locktype, int nlocksdown, int nlocksup):
         """
         adds given values to lock numbers of type locktype of variable for rounding
 
