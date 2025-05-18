@@ -260,4 +260,3 @@ def gastrans_lp():
     model.relax()
 
     return model
- 

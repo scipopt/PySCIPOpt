@@ -1702,7 +1702,7 @@ cdef class Variable(Expr):
 
         Parameters
         ----------
-        locktype: PY_SCIP_LOCKTYPE
+        locktype : SCIP_LOCKTYPE
             type of variable locks
 
         Returns
@@ -1718,7 +1718,7 @@ cdef class Variable(Expr):
 
         Parameters
         ----------
-        locktype: PY_SCIP_LOCKTYPE
+        locktype : SCIP_LOCKTYPE
             type of variable locks
 
         Returns
@@ -3937,7 +3937,7 @@ cdef class Model:
         ----------
         var : Variable
             variable to adjust the locks for
-        locktype : PY_SCIP_LOCKTYPE
+        locktype : SCIP_LOCKTYPE
             type of variable locks
         nlocksdown : int
             modification in number of down locks

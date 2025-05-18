@@ -73,20 +73,20 @@ class MyConshdlr(Conshdlr):
         except ReferenceError:
             return
 
-        n_locks_up = var.getNLocksUp()
         n_locks_down = var.getNLocksDown()
-        n_locks_up_model = var.getNLocksUpType(SCIP_LOCKTYPE.MODEL)
-        n_locks_up_conflict = var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT)
+        n_locks_up = var.getNLocksUp()
         n_locks_down_model = var.getNLocksDownType(SCIP_LOCKTYPE.MODEL)
         n_locks_down_conflict = var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT)
+        n_locks_up_model = var.getNLocksUpType(SCIP_LOCKTYPE.MODEL)
+        n_locks_up_conflict = var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT)
 
         self.model.addVarLocksType(var, locktype, nlockspos, nlocksneg)
-        if locktype == SCIP_LOCKTYPE.CONFLICT:
-            assert var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT) != n_locks_up_conflict or var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT) != n_locks_down_conflict            
-            assert var.getNLocksUpType(SCIP_LOCKTYPE.MODEL) == n_locks_up_model and var.getNLocksDownType(SCIP_LOCKTYPE.MODEL) == n_locks_down_model
-        elif locktype == SCIP_LOCKTYPE.MODEL:
-            assert var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT) == n_locks_up_conflict and var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT) == n_locks_down_conflict            
-            assert var.getNLocksUpType(SCIP_LOCKTYPE.MODEL) != n_locks_up_model or var.getNLocksDownType(SCIP_LOCKTYPE.MODEL) != n_locks_down_model
+        if locktype == SCIP_LOCKTYPE.MODEL:
+            assert var.getNLocksDownType(SCIP_LOCKTYPE.MODEL) != n_locks_down_model or var.getNLocksUpType(SCIP_LOCKTYPE.MODEL) != n_locks_up_model
+            assert var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT) == n_locks_down_conflict and var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT) == n_locks_up_conflict
+        elif locktype == SCIP_LOCKTYPE.CONFLICT:
+            assert var.getNLocksDownType(SCIP_LOCKTYPE.MODEL) == n_locks_down_model and var.getNLocksUpType(SCIP_LOCKTYPE.MODEL) == n_locks_up_model
+            assert var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT) != n_locks_down_conflict or var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT) != n_locks_up_conflict
         else:
             raise ValueError("Unknown locktype")
 
