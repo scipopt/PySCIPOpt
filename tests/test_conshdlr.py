@@ -69,7 +69,7 @@ class MyConshdlr(Conshdlr):
         assert id(constraint) in ids
 
         try:
-            var = self.model.getVars()[0]
+            var = self.model.data["x"]
         except ReferenceError:
             return
 
@@ -218,6 +218,9 @@ def test_conshdlr():
         y = model.addVar("y", obj = 1.0, vtype = "I", lb=-1000)
         z = model.addVar("z", obj = 1.0, vtype = "I", lb=-1000)
 
+        model.data = {}
+        model.data["x"] = x
+
         # add some constraint
         model.addCons(314*x + 867*y + 860*z == 363)
         model.addCons(87*x + 875*y - 695*z == 423)
@@ -274,5 +277,3 @@ def test_conshdlr():
     #assert "consdelvars" in calls
     #assert "consprint" in calls
     assert "consgetnvars" in calls
-
-test_conshdlr()
