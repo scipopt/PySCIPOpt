@@ -255,6 +255,9 @@ cdef class PY_SCIP_EVENTTYPE:
     ROWCHANGED      = SCIP_EVENTTYPE_ROWCHANGED
     ROWEVENT        = SCIP_EVENTTYPE_ROWEVENT
 
+cdef class PY_SCIP_LOCKTYPE:
+    MODEL    = SCIP_LOCKTYPE_MODEL
+    CONFLICT = SCIP_LOCKTYPE_CONFLICT
 
 cdef class PY_SCIP_LPSOLSTAT:
     NOTSOLVED    = SCIP_LPSOLSTAT_NOTSOLVED
@@ -1671,6 +1674,60 @@ cdef class Variable(Expr):
         """
         return SCIPvarGetAvgSol(self.scip_var)
 
+    def getNLocksDown(self):
+        """
+        Returns the number of locks for rounding down.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPvarGetNLocksDown(self.scip_var)
+    
+    def getNLocksUp(self):
+        """
+        Returns the number of locks for rounding up.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPvarGetNLocksUp(self.scip_var)
+
+    def getNLocksDownType(self, locktype):
+        """
+        Returns the number of locks for rounding down of a certain type.
+
+        Parameters
+        ----------
+        locktype : SCIP_LOCKTYPE
+            type of variable locks
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPvarGetNLocksDownType(self.scip_var, locktype)
+
+    def getNLocksUpType(self, locktype):
+        """
+        Returns the number of locks for rounding up of a certain type.
+
+        Parameters
+        ----------
+        locktype : SCIP_LOCKTYPE
+            type of variable locks
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPvarGetNLocksUpType(self.scip_var, locktype)
+
     def varMayRound(self, direction="down"):
         """
         Checks whether it is possible to round variable up / down and stay feasible for the relaxation.
@@ -3070,7 +3127,7 @@ cdef class Model:
 
     def isFeasEQ(self, val1, val2):
         """
-        Checks, if relative difference of values is in range of feasibility tolerance.
+        Returns if relative difference between val1 and val2 is in range of feasibility tolerance.
 
         Parameters
         ----------
@@ -3083,6 +3140,70 @@ cdef class Model:
 
         """
         return SCIPisFeasEQ(self._scip, val1, val2)
+    
+    def isFeasLT(self, val1, val2):
+        """
+        Returns whether relative difference between val1 and val2 is lower than minus feasibility tolerance.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisFeasLT(self._scip, val1, val2)
+    
+    def isFeasLE(self, val1, val2):
+        """
+        Returns whether relative difference between val1 and val2 is not greater than feasibility tolerance.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisFeasLE(self._scip, val1, val2)
+    
+    def isFeasGT(self, val1, val2):
+        """
+        Returns whether relative difference between val1 and val2 is greater than feasibility tolerance.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisFeasGT(self._scip, val1, val2)
+    
+    def isFeasGE(self, val1, val2):
+        """
+        Returns whether relative difference of val1 and val2 is not lower than minus feasibility tolerance.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisFeasGE(self._scip, val1, val2)
 
     def isLE(self, val1, val2):
         """
@@ -3792,7 +3913,7 @@ cdef class Model:
 
         return Variable.create(_tvar)
 
-    def addVarLocks(self, Variable var, nlocksdown, nlocksup):
+    def addVarLocks(self, Variable var, int nlocksdown, int nlocksup):
         """
         Adds given values to lock numbers of variable for rounding.
 
@@ -3807,6 +3928,24 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPaddVarLocks(self._scip, var.scip_var, nlocksdown, nlocksup))
+
+    def addVarLocksType(self, Variable var, int locktype, int nlocksdown, int nlocksup):
+        """
+        adds given values to lock numbers of type locktype of variable for rounding
+
+        Parameters
+        ----------
+        var : Variable
+            variable to adjust the locks for
+        locktype : SCIP_LOCKTYPE
+            type of variable locks
+        nlocksdown : int
+            modification in number of down locks
+        nlocksup : int
+            modification in number of up locks
+
+        """
+        PY_SCIP_CALL(SCIPaddVarLocksType(self._scip, var.scip_var, locktype, nlocksdown, nlocksup))
 
     def fixVar(self, Variable var, val):
         """

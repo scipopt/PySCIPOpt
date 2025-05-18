@@ -295,7 +295,6 @@ cdef extern from "scip/scip.h":
         SCIP_EVENTTYPE SCIP_EVENTTYPE_ROWCHANGED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_ROWEVENT
 
-
     ctypedef int SCIP_LPSOLQUALITY
     cdef extern from "lpi/type_lpi.h":
         SCIP_LPSOLQUALITY SCIP_LPSOLQUALITY_ESTIMCONDITION
@@ -541,9 +540,9 @@ cdef extern from "scip/scip.h":
     ctypedef union SCIP_DOMCHG:
         pass
 
-    ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) noexcept
-    ctypedef void (*errormessagecallback) (void *data, FILE *file, const char *msg)
-    ctypedef SCIP_RETCODE (*messagehdlrfree) (SCIP_MESSAGEHDLR *messagehdlr)
+    ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR* messagehdlr, FILE* file, const char* msg) noexcept
+    ctypedef void (*errormessagecallback) (void* data, FILE* file, const char* msg)
+    ctypedef SCIP_RETCODE (*messagehdlrfree) (SCIP_MESSAGEHDLR* messagehdlr)
 
     # General SCIP Methods
     SCIP_RETCODE SCIPcreate(SCIP** scip)
@@ -569,15 +568,15 @@ cdef extern from "scip/scip.h":
                               SCIP_Bool*            valid)
     SCIP_RETCODE SCIPcopyOrigVars(SCIP* sourcescip, SCIP* targetscip, SCIP_HASHMAP* varmap, SCIP_HASHMAP* consmap, SCIP_VAR** fixedvars, SCIP_Real* fixedvals, int nfixedvars )
     SCIP_RETCODE SCIPcopyOrigConss(SCIP* sourcescip, SCIP* targetscip, SCIP_HASHMAP* varmap, SCIP_HASHMAP* consmap, SCIP_Bool enablepricing, SCIP_Bool* valid)
-    SCIP_RETCODE SCIPmessagehdlrCreate(SCIP_MESSAGEHDLR **messagehdlr,
+    SCIP_RETCODE SCIPmessagehdlrCreate(SCIP_MESSAGEHDLR** messagehdlr,
                                        SCIP_Bool bufferedoutput,
-                                       const char *filename,
+                                       const char* filename,
                                        SCIP_Bool quiet,
                                        messagecallback,
                                        messagecallback,
                                        messagecallback,
                                        messagehdlrfree,
-                                       SCIP_MESSAGEHDLRDATA *messagehdlrdata)
+                                       SCIP_MESSAGEHDLRDATA* messagehdlrdata)
 
     SCIP_RETCODE SCIPsetMessagehdlr(SCIP* scip, SCIP_MESSAGEHDLR* messagehdlr)
     void SCIPsetMessagehdlrQuiet(SCIP* scip, SCIP_Bool quiet)
@@ -787,6 +786,11 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPtransformVar(SCIP* scip, SCIP_VAR* var, SCIP_VAR** transvar)
     SCIP_RETCODE SCIPgetTransformedVar(SCIP* scip, SCIP_VAR* var, SCIP_VAR** transvar)
     SCIP_RETCODE SCIPaddVarLocks(SCIP* scip, SCIP_VAR* var, int nlocksdown, int nlocksup)
+    SCIP_RETCODE SCIPaddVarLocksType(SCIP* scip, SCIP_VAR* var, SCIP_LOCKTYPE locktype, int nlocksdown, int nlocksup)
+    int SCIPvarGetNLocksDown(SCIP_VAR* var)
+    int SCIPvarGetNLocksUp(SCIP_VAR* var)
+    int SCIPvarGetNLocksDownType(SCIP_VAR* var, SCIP_LOCKTYPE locktype)
+    int SCIPvarGetNLocksUpType(SCIP_VAR* var, SCIP_LOCKTYPE locktype)
     SCIP_VAR** SCIPgetVars(SCIP* scip)
     SCIP_VAR** SCIPgetOrigVars(SCIP* scip)
     const char* SCIPvarGetName(SCIP_VAR* var)
@@ -813,11 +817,11 @@ cdef extern from "scip/scip.h":
     void SCIPvarSetData(SCIP_VAR* var, SCIP_VARDATA* vardata)
     SCIP_VARDATA* SCIPvarGetData(SCIP_VAR* var)
     SCIP_Real SCIPvarGetAvgSol(SCIP_VAR* var)
-    SCIP_Real SCIPgetVarPseudocost(SCIP* scip, SCIP_VAR *var, SCIP_BRANCHDIR dir)
+    SCIP_Real SCIPgetVarPseudocost(SCIP* scip, SCIP_VAR* var, SCIP_BRANCHDIR dir)
     SCIP_Real SCIPvarGetCutoffSum(SCIP_VAR* var, SCIP_BRANCHDIR dir)
     SCIP_Longint SCIPvarGetNBranchings(SCIP_VAR* var, SCIP_BRANCHDIR dir)
     SCIP_Bool SCIPvarMayRoundUp(SCIP_VAR* var)
-    SCIP_Bool SCIPvarMayRoundDown(SCIP_VAR * var)
+    SCIP_Bool SCIPvarMayRoundDown(SCIP_VAR* var)
 
     # LP Methods
     SCIP_RETCODE SCIPgetLPColsData(SCIP* scip, SCIP_COL*** cols, int* ncols)
@@ -831,8 +835,8 @@ cdef extern from "scip/scip.h":
     SCIP_LPSOLSTAT SCIPgetLPSolstat(SCIP* scip)
     int SCIPgetNLPRows(SCIP* scip)
     int SCIPgetNLPCols(SCIP* scip)
-    SCIP_COL** SCIPgetLPCols(SCIP *scip)
-    SCIP_ROW** SCIPgetLPRows(SCIP *scip)
+    SCIP_COL** SCIPgetLPCols(SCIP* scip)
+    SCIP_ROW** SCIPgetLPRows(SCIP* scip)
     SCIP_Bool SCIPallColsInLP(SCIP* scip)
 
     # Cutting Plane Methods
@@ -872,11 +876,11 @@ cdef extern from "scip/scip.h":
     const char* SCIPconshdlrGetName(SCIP_CONSHDLR* conshdlr)
     SCIP_RETCODE SCIPdelConsLocal(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPdelCons(SCIP* scip, SCIP_CONS* cons)
-    SCIP_RETCODE SCIPsetConsChecked(SCIP *scip, SCIP_CONS *cons, SCIP_Bool check)
-    SCIP_RETCODE SCIPsetConsRemovable(SCIP *scip, SCIP_CONS *cons, SCIP_Bool removable)
-    SCIP_RETCODE SCIPsetConsInitial(SCIP *scip, SCIP_CONS *cons, SCIP_Bool initial)
-    SCIP_RETCODE SCIPsetConsModifiable(SCIP *scip, SCIP_CONS *cons, SCIP_Bool modifiable)
-    SCIP_RETCODE SCIPsetConsEnforced(SCIP *scip, SCIP_CONS *cons, SCIP_Bool enforce)
+    SCIP_RETCODE SCIPsetConsChecked(SCIP* scip, SCIP_CONS* cons, SCIP_Bool check)
+    SCIP_RETCODE SCIPsetConsRemovable(SCIP* scip, SCIP_CONS* cons, SCIP_Bool removable)
+    SCIP_RETCODE SCIPsetConsInitial(SCIP* scip, SCIP_CONS* cons, SCIP_Bool initial)
+    SCIP_RETCODE SCIPsetConsModifiable(SCIP* scip, SCIP_CONS* cons, SCIP_Bool modifiable)
+    SCIP_RETCODE SCIPsetConsEnforced(SCIP* scip, SCIP_CONS* cons, SCIP_Bool enforce)
 
     # Primal Solution Methods
     SCIP_SOL** SCIPgetSols(SCIP* scip)
@@ -906,8 +910,8 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetGap(SCIP* scip)
     int SCIPgetDepth(SCIP* scip)
     SCIP_RETCODE SCIPcutoffNode(SCIP* scip, SCIP_NODE* node)
-    SCIP_Bool SCIPhasPrimalRay(SCIP * scip)
-    SCIP_Real SCIPgetPrimalRayVal(SCIP * scip, SCIP_VAR * var)
+    SCIP_Bool SCIPhasPrimalRay(SCIP* scip)
+    SCIP_Real SCIPgetPrimalRayVal(SCIP* scip, SCIP_VAR* var)
     SCIP_RETCODE SCIPaddSolFree(SCIP* scip, SCIP_SOL** sol, SCIP_Bool* stored)
     SCIP_RETCODE SCIPaddSol(SCIP* scip, SCIP_SOL* sol, SCIP_Bool* stored)
     SCIP_RETCODE SCIPreadSol(SCIP* scip, const char* filename)
@@ -1051,7 +1055,7 @@ cdef extern from "scip/scip.h":
                                      SCIP_RETCODE (*consgetnvars) (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, int* nvars, SCIP_Bool* success),
                                      SCIP_RETCODE (*consgetdivebdchgs) (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_DIVESET* diveset, SCIP_SOL* sol, SCIP_Bool* success, SCIP_Bool* infeasible),
                                      SCIP_RETCODE (*consgetpermsymgraph)(SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SYM_GRAPH* graph, SCIP_Bool* success),
-                                     SCIP_RETCODE (*consgetsignedpermsymgraph)(SCIP * scip, SCIP_CONSHDLR * conshdlr, SCIP_CONS * cons, SYM_GRAPH * graph, SCIP_Bool * success),
+                                     SCIP_RETCODE (*consgetsignedpermsymgraph)(SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SYM_GRAPH* graph, SCIP_Bool* success),
                                      SCIP_CONSHDLRDATA* conshdlrdata)
     SCIP_CONSHDLRDATA* SCIPconshdlrGetData(SCIP_CONSHDLR* conshdlr)
     SCIP_CONSHDLR* SCIPfindConshdlr(SCIP* scip, const char* name)
@@ -1339,13 +1343,17 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPisLT(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
     SCIP_Bool SCIPisGE(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
     SCIP_Bool SCIPisGT(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
-    SCIP_Bool SCIPisEQ(SCIP *scip, SCIP_Real val1, SCIP_Real val2)
-    SCIP_Bool SCIPisFeasEQ(SCIP *scip, SCIP_Real val1, SCIP_Real val2)
-    SCIP_Bool SCIPisHugeValue(SCIP *scip, SCIP_Real val)
-    SCIP_Bool SCIPisPositive(SCIP *scip, SCIP_Real val)
-    SCIP_Bool SCIPisNegative(SCIP *scip, SCIP_Real val)
-    SCIP_Bool SCIPisIntegral(SCIP *scip, SCIP_Real val)
-    SCIP_Real SCIPgetTreesizeEstimation(SCIP *scip)
+    SCIP_Bool SCIPisEQ(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
+    SCIP_Bool SCIPisFeasEQ(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
+    SCIP_Bool SCIPisFeasLT(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
+    SCIP_Bool SCIPisFeasGT(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
+    SCIP_Bool SCIPisFeasLE(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
+    SCIP_Bool SCIPisFeasGE(SCIP* scip, SCIP_Real val1, SCIP_Real val2)
+    SCIP_Bool SCIPisHugeValue(SCIP* scip, SCIP_Real val)
+    SCIP_Bool SCIPisPositive(SCIP* scip, SCIP_Real val)
+    SCIP_Bool SCIPisNegative(SCIP* scip, SCIP_Real val)
+    SCIP_Bool SCIPisIntegral(SCIP* scip, SCIP_Real val)
+    SCIP_Real SCIPgetTreesizeEstimation(SCIP* scip)
 
     # Statistic Methods
     SCIP_RETCODE SCIPprintStatistics(SCIP* scip, FILE* outfile)
@@ -1611,12 +1619,12 @@ cdef extern from "scip/cons_sos2.h":
                                    SCIP_VAR* var)
 
 cdef extern from "scip/cons_disjunction.h":
-    SCIP_RETCODE SCIPcreateConsDisjunction(SCIP *scip,
-                                            SCIP_CONS **cons,
-                                            const char *name,
+    SCIP_RETCODE SCIPcreateConsDisjunction(SCIP* scip,
+                                            SCIP_CONS** cons,
+                                            const char* name,
                                             int nconss,
-                                            SCIP_CONS **conss,
-                                            SCIP_CONS *relaxcons,
+                                            SCIP_CONS** conss,
+                                            SCIP_CONS* relaxcons,
                                             SCIP_Bool initial,
                                             SCIP_Bool enforce,
                                             SCIP_Bool check,
@@ -1624,9 +1632,9 @@ cdef extern from "scip/cons_disjunction.h":
                                             SCIP_Bool modifiable,
                                             SCIP_Bool dynamic)
 
-    SCIP_RETCODE SCIPaddConsElemDisjunction(SCIP *scip,
-                                            SCIP_CONS *cons,
-                                            SCIP_CONS *addcons)
+    SCIP_RETCODE SCIPaddConsElemDisjunction(SCIP* scip,
+                                            SCIP_CONS* cons,
+                                            SCIP_CONS* addcons)
 
 cdef extern from "scip/cons_and.h":
     SCIP_RETCODE SCIPcreateConsAnd(SCIP* scip,
@@ -1963,7 +1971,7 @@ cdef extern from "scip/pub_lp.h":
     SCIP_Real* SCIPcolGetVals(SCIP_COL* col)
     int SCIPcolGetAge(SCIP_COL* col)
     int SCIPcolGetIndex(SCIP_COL* col)
-    SCIP_Real SCIPcolGetObj(SCIP_COL *col)
+    SCIP_Real SCIPcolGetObj(SCIP_COL* col)
 
 cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
