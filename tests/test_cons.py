@@ -98,6 +98,21 @@ def test_SOScons():
     assert c1.getConshdlrName() == "SOS1"
     assert c2.getConshdlrName() == "SOS2"
 
+def test_cons_cumulative():
+    m = Model()
+
+    s1 = m.addVar("s1", vtype="I")
+    s2 = m.addVar("s2", vtype="I")
+    s3 = m.addVar("s3", vtype="I")
+
+    dur = [3, 2, 4]
+    dem = [2, 1, 3]
+    cap = 4
+
+    c = m.addConsCumulative([s1, s2, s3], dur, dem, cap)
+    assert c.isCumulative()
+    assert m.getCapacityCumulative(c) == cap
+    assert m.getDurationsCumulative(c) == { "s1": 3, "s2": 2, "s3": 4 }
 
 def test_cons_indicator():
     m = Model()

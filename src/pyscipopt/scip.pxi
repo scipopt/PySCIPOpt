@@ -2080,6 +2080,18 @@ cdef class Constraint:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'linear'
     
+    def isCumulative(self):
+        """
+        Returns True if constraint is cumulative
+
+        Returns
+        -------
+        bool
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
+        return constype == 'cumulative'
+
     def isKnapsack(self):
         """
         Returns True if constraint is a knapsack constraint.
@@ -5872,7 +5884,50 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPaddConsLocal(self._scip, cons.scip_cons, NULL))
         Py_INCREF(cons)
-    
+
+    def addConsCumulative(self, vars, durations, demands, capacity, name="",
+                          initial=True, separate=True, enforce=True, check=True,
+                          propagate=True, local=False, modifiable=False,
+                          dynamic=False, removable=False, stickingatnode=False):
+
+        cdef int n = len(vars)
+        assert n == len(durations) == len(demands)
+
+        if name == "":
+            name = "c" + str(SCIPgetNConss(self._scip) + 1)
+
+        cdef SCIP_VAR** c_vars = <SCIP_VAR**> malloc(n * sizeof(SCIP_VAR*))
+        cdef int*       c_durs = <int*>       malloc(n * sizeof(int))
+        cdef int*       c_dem  = <int*>       malloc(n * sizeof(int))
+        cdef SCIP_CONS* cons
+        cdef int i
+
+        for i in range(n):
+            c_vars[i] = (<Variable> vars[i]).scip_var
+            c_durs[i] = <int> durations[i]
+            c_dem[i]  = <int> demands[i]
+
+        # --- Constraint erzeugen
+        PY_SCIP_CALL(SCIPcreateConsCumulative(
+            self._scip, &cons, str_conversion(name),
+            n, c_vars, c_durs, c_dem, <int>capacity,
+            initial, separate, enforce, check, propagate,
+            local, modifiable, dynamic, removable, stickingatnode))
+
+        # --- Constraint dem Modell hinzufügen  (verhindert spätere Segfaults!)
+        PY_SCIP_CALL(SCIPaddCons(self._scip, cons))
+
+        # --- Hilfs‑Arrays freigeben
+        free(c_vars)
+        free(c_durs)
+        free(c_dem)
+
+        # --- Python‑Wrapper erstellen und zurückgeben
+        pyCons = Constraint.create(cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &cons))
+        return pyCons
+
+
     def addConsKnapsack(self, vars, weights, capacity, name="",
                 initial=True, separate=True, enforce=True, check=True,
                 modifiable=False, propagate=True, local=False, dynamic=False,
@@ -6631,6 +6686,97 @@ cdef class Model:
             PY_SCIP_CALL(SCIPchgRhsNonlinear(self._scip, cons.scip_cons, rhs))
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
+
+    def getCapacityCumulative(self, Constraint cons):
+        """
+        Liefert die Kapazität einer cumulative‑Constraint.
+        """
+        constype = bytes(SCIPconshdlrGetName(
+                         SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        assert constype == 'cumulative', \
+            "Methode nur für cumulative‑Constraints geeignet"
+        return SCIPgetCapacityCumulative(self._scip, cons.scip_cons)
+
+    def getNVarsCumulative(self, Constraint cons):
+        constype = bytes(SCIPconshdlrGetName(
+                         SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        assert constype == 'cumulative'
+        return SCIPgetNVarsCumulative(self._scip, cons.scip_cons)
+
+    def getVarsCumulative(self, Constraint cons):
+        """
+        Gibt die Startzeit‑Variablen als Python‑Liste zurück.
+        """
+        constype = bytes(SCIPconshdlrGetName(
+                         SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        assert constype == 'cumulative'
+        cdef int nvars = SCIPgetNVarsCumulative(self._scip, cons.scip_cons)
+        cdef SCIP_VAR** _vars = SCIPgetVarsCumulative(self._scip,
+                                                      cons.scip_cons)
+
+        return [ Variable.create(_vars[i]) for i in range(nvars) ]
+
+    def getDurationsCumulative(self, Constraint cons):
+        """
+        Dict {varname: duration}
+        """
+        constype = bytes(SCIPconshdlrGetName(
+                         SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        assert constype == 'cumulative'
+        cdef int nvars = SCIPgetNVarsCumulative(self._scip, cons.scip_cons)
+        cdef SCIP_VAR** _vars = SCIPgetVarsCumulative(self._scip,
+                                                      cons.scip_cons)
+        cdef int* _durs = SCIPgetDurationsCumulative(self._scip,
+                                                     cons.scip_cons)
+
+        cdef dict durs = {}
+        cdef int i
+        for i in range(nvars):
+            durs[ bytes(SCIPvarGetName(_vars[i])).decode('utf-8') ] = _durs[i]
+        return durs
+
+    def getDemandsCumulative(self, Constraint cons):
+        """
+        Dict {varname: demand}
+        """
+        constype = bytes(SCIPconshdlrGetName(
+                         SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        assert constype == 'cumulative'
+        cdef int nvars = SCIPgetNVarsCumulative(self._scip, cons.scip_cons)
+        cdef SCIP_VAR** _vars = SCIPgetVarsCumulative(self._scip,
+                                                      cons.scip_cons)
+        cdef int* _dem = SCIPgetDemandsCumulative(self._scip,
+                                                  cons.scip_cons)
+
+        cdef dict demands = {}
+        cdef int i
+        for i in range(nvars):
+            demands[ bytes(SCIPvarGetName(_vars[i])).decode('utf-8') ] = _dem[i]
+        return demands
+
+    def getHminCumulative(self, Constraint cons):
+        constype = bytes(SCIPconshdlrGetName(
+                         SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        assert constype == 'cumulative'
+        return SCIPgetHminCumulative(self._scip, cons.scip_cons)
+
+    def setHminCumulative(self, Constraint cons, hmin):
+        constype = bytes(SCIPconshdlrGetName(
+                         SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        assert constype == 'cumulative'
+        PY_SCIP_CALL(SCIPsetHminCumulative(self._scip, cons.scip_cons, hmin))
+
+    def getHmaxCumulative(self, Constraint cons):
+        constype = bytes(SCIPconshdlrGetName(
+                         SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        assert constype == 'cumulative'
+        return SCIPgetHmaxCumulative(self._scip, cons.scip_cons)
+
+    def setHmaxCumulative(self, Constraint cons, hmax):
+        constype = bytes(SCIPconshdlrGetName(
+                         SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        assert constype == 'cumulative'
+        PY_SCIP_CALL(SCIPsetHmaxCumulative(self._scip, cons.scip_cons, hmax))
 
     def chgCapacityKnapsack(self, Constraint cons, capacity):
         """
