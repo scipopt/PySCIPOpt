@@ -518,3 +518,15 @@ def test_redirection():
 
     # compare objective values
     assert original.isEQ(redirect.getObjVal(), original.getObjVal())
+
+def test_comparisons():
+    from math import inf
+    model = Model()
+
+    assert model.isPositive(1.)
+    assert model.isNegative(-1.)
+
+    assert not model.isPositive(0.)
+    assert not model.isNegative(0.)
+
+    assert model.isHugeValue(inf)

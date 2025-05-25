@@ -1,4 +1,4 @@
-from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PRESOLTIMING, SCIP_PROPTIMING
+from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PRESOLTIMING, SCIP_PROPTIMING, SCIP_LOCKTYPE
 from sys import version_info
 
 if version_info >= (3, 3):
@@ -67,6 +67,30 @@ class MyConshdlr(Conshdlr):
     def conslock(self, constraint, locktype, nlockspos, nlocksneg):
         calls.add("conslock")
         assert id(constraint) in ids
+
+        try:
+            var = self.model.data["x"]
+        except ReferenceError:
+            return
+
+        n_locks_down = var.getNLocksDown()
+        n_locks_up = var.getNLocksUp()
+        n_locks_down_model = var.getNLocksDownType(SCIP_LOCKTYPE.MODEL)
+        n_locks_down_conflict = var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT)
+        n_locks_up_model = var.getNLocksUpType(SCIP_LOCKTYPE.MODEL)
+        n_locks_up_conflict = var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT)
+
+        self.model.addVarLocksType(var, locktype, nlockspos, nlocksneg)
+        if locktype == SCIP_LOCKTYPE.MODEL:
+            assert var.getNLocksDownType(SCIP_LOCKTYPE.MODEL) != n_locks_down_model or var.getNLocksUpType(SCIP_LOCKTYPE.MODEL) != n_locks_up_model
+            assert var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT) == n_locks_down_conflict and var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT) == n_locks_up_conflict
+        elif locktype == SCIP_LOCKTYPE.CONFLICT:
+            assert var.getNLocksDownType(SCIP_LOCKTYPE.MODEL) == n_locks_down_model and var.getNLocksUpType(SCIP_LOCKTYPE.MODEL) == n_locks_up_model
+            assert var.getNLocksDownType(SCIP_LOCKTYPE.CONFLICT) != n_locks_down_conflict or var.getNLocksUpType(SCIP_LOCKTYPE.CONFLICT) != n_locks_up_conflict
+        else:
+            raise ValueError("Unknown locktype")
+
+        assert var.getNLocksDown() != n_locks_down or var.getNLocksUp() != n_locks_up
 
     ## callbacks ##
     def consfree(self):
@@ -187,43 +211,46 @@ class MyConshdlr(Conshdlr):
 def test_conshdlr():
     def create_model():
         # create solver instance
-        s = Model()
+        model = Model()
 
         # add some variables
-        x = s.addVar("x", obj = -1.0, vtype = "I", lb=-10)
-        y = s.addVar("y", obj = 1.0, vtype = "I", lb=-1000)
-        z = s.addVar("z", obj = 1.0, vtype = "I", lb=-1000)
+        x = model.addVar("x", obj = -1.0, vtype = "I", lb=-10)
+        y = model.addVar("y", obj = 1.0, vtype = "I", lb=-1000)
+        z = model.addVar("z", obj = 1.0, vtype = "I", lb=-1000)
+
+        model.data = {}
+        model.data["x"] = x
 
         # add some constraint
-        s.addCons(314*x + 867*y + 860*z == 363)
-        s.addCons(87*x + 875*y - 695*z == 423)
+        model.addCons(314*x + 867*y + 860*z == 363)
+        model.addCons(87*x + 875*y - 695*z == 423)
 
         # create conshdlr and include it to SCIP
         conshdlr = MyConshdlr(shouldtrans=True, shouldcopy=False)
-        s.includeConshdlr(conshdlr, "PyCons", "custom constraint handler implemented in python",
+        model.includeConshdlr(conshdlr, "PyCons", "custom constraint handler implemented in python",
                           sepapriority = 1, enfopriority = 1, chckpriority = 1, sepafreq = 10, propfreq = 50,
                           eagerfreq = 1, maxprerounds = -1, delaysepa = False, delayprop = False, needscons = True,
                           presoltiming = SCIP_PRESOLTIMING.FAST, proptiming = SCIP_PROPTIMING.BEFORELP)
 
-        cons1 = s.createCons(conshdlr, "cons1name")
+        cons1 = model.createCons(conshdlr, "cons1name")
         ids.append(id(cons1))
-        cons2 = s.createCons(conshdlr, "cons2name")
+        cons2 = model.createCons(conshdlr, "cons2name")
         ids.append(id(cons2))
         conshdlr.createData(cons1, 10, "cons1_anothername")
         conshdlr.createData(cons2, 12, "cons2_anothername")
 
         # add these constraints
-        s.addPyCons(cons1)
-        s.addPyCons(cons2)
-        return s
+        model.addPyCons(cons1)
+        model.addPyCons(cons2)
+        return model
 
-    s = create_model()
+    model = create_model()
 
     # solve problem
-    s.optimize()
+    model.optimize()
 
     # so that consfree gets called
-    del s
+    del model
 
     # check callbacks got called
     assert "consenfolp" in calls
