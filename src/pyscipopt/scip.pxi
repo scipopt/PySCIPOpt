@@ -2402,23 +2402,22 @@ cdef class _VarArray:
     cdef int size
 
     def __cinit__(self, object vars):
-        cdef int size
-
         if isinstance(vars, Variable):
-            self.ptr = <SCIP_VAR**> malloc(sizeof(SCIP_VAR*))
-            self.ptr[0] = (<Variable>vars).scip_var
+            self.size = 1
+            self.ptr = malloc(sizeof(SCIP_VAR*))
+            self.ptr[0] = vars.scip_var
         else:
             if not isinstance(vars, (list, tuple)):
                 raise TypeError("Expected Variable or list of Variable, got %s." % type(vars))
 
-            size = len(vars)
-            self.ptr = <SCIP_VAR**> malloc(size * sizeof(SCIP_VAR*))
+            self.size = len(vars)
+            self.ptr = malloc(self.size * sizeof(SCIP_VAR*))
 
             for i, var in enumerate(vars):
                 if not isinstance(var, Variable):
                     raise TypeError("Expected Variable, got %s." % type(var))
 
-                self.ptr[i] = (<Variable>var).scip_var
+                self.ptr[i] = var.scip_var
 
     def __dealloc__(self):
         if self.ptr != NULL:
