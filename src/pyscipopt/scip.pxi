@@ -2403,21 +2403,23 @@ cdef class _VarArray:
 
     def __cinit__(self, object vars):
         if isinstance(vars, Variable):
-            self.size = 1
-            self.ptr = malloc(sizeof(SCIP_VAR*))
-            self.ptr[0] = vars.scip_var
+            self.ptr = <SCIP_VAR**> malloc(sizeof(SCIP_VAR*))
+            self.ptr[0] = (<Variable>vars).scip_var
         else:
             if not isinstance(vars, (list, tuple)):
                 raise TypeError("Expected Variable or list of Variable, got %s." % type(vars))
 
-            self.size = len(vars)
-            self.ptr = malloc(self.size * sizeof(SCIP_VAR*))
+            size = len(vars)
+            if size == 0:
+                self.ptr = NULL
+            else:
+                self.ptr = <SCIP_VAR**> malloc(size * sizeof(SCIP_VAR*))
 
-            for i, var in enumerate(vars):
-                if not isinstance(var, Variable):
-                    raise TypeError("Expected Variable, got %s." % type(var))
+                for i, var in enumerate(vars):
+                    if not isinstance(var, Variable):
+                        raise TypeError("Expected Variable, got %s." % type(var))
 
-                self.ptr[i] = var.scip_var
+                    self.ptr[i] = (<Variable>var).scip_var
 
     def __dealloc__(self):
         if self.ptr != NULL:
@@ -8266,7 +8268,7 @@ cdef class Model:
 		solution : Solution
 			The corresponding solution in the main model
         """
-        cdef SCIP_VAR** vars = <SCIP_VAR**> malloc(self.getNVars() * sizeof(SCIP_VAR*))
+        cdef SCIP_VAR** vars = <SCIP_VAR**> malloc(sub_model.getNVars() * sizeof(SCIP_VAR*))
         cdef SCIP_SOL* real_sol
         cdef SCIP_SOL* subscip_sol = sol.sol
         cdef SCIP_HEUR* _heur
