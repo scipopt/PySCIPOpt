@@ -2403,19 +2403,24 @@ cdef class _VarArray:
 
     def __cinit__(self, object vars):
         if isinstance(vars, Variable):
+            print("a")
             self.ptr = <SCIP_VAR**> malloc(sizeof(SCIP_VAR*))
             self.ptr[0] = (<Variable>vars).scip_var
         else:
+            print("b")
+
             if not isinstance(vars, (list, tuple)):
                 raise TypeError("Expected Variable or list of Variable, got %s." % type(vars))
 
             size = len(vars)
+            print(size)
             if size == 0:
                 self.ptr = NULL
             else:
                 self.ptr = <SCIP_VAR**> malloc(size * sizeof(SCIP_VAR*))
 
                 for i, var in enumerate(vars):
+                    print(i)
                     if not isinstance(var, Variable):
                         raise TypeError("Expected Variable, got %s." % type(var))
 
@@ -8283,7 +8288,6 @@ cdef class Model:
         _heur = SCIPfindHeur(self._scip, name)
         PY_SCIP_CALL( SCIPtranslateSubSol(self._scip, sub_model._scip, subscip_sol, _heur, vars, &real_sol) )
         solution = Solution.create(self._scip, real_sol)
-        free(vars)
 
         return solution
 
