@@ -6352,8 +6352,6 @@ cdef class Model:
         pyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
-        free(_vars)
-
         return pyCons
 
     def addConsOr(self, vars, resvar, name="",
@@ -6479,8 +6477,6 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         pyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-
-        free(_vars)
 
         return pyCons
 
