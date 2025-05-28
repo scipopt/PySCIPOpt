@@ -2401,9 +2401,15 @@ cdef class VarArrayWrapper:
     cdef SCIP_VAR** ptr
     cdef int size
 
-    def __cinit__(self, int size):
-        self.size = size
+    def __cinit__(self, object vars):
+        cdef int size = len(vars)
         self.ptr = <SCIP_VAR**> malloc(size * sizeof(SCIP_VAR*))
+
+        for i, var in enumerate(vars):
+            if not isinstance(var, Variable):
+                raise TypeError("Expected Variable, got %s." % type(var))
+
+            self.ptr[i] = (<Variable>var).scip_var
 
     def __dealloc__(self):
         if self.ptr != NULL:
@@ -6397,7 +6403,7 @@ cdef class Model:
         cdef int i
 
         _resvar = (<Variable>resvar).scip_var
-        cdef VarArrayWrapper wrapper = self._convert_var_to_scipvar(vars, nvars)
+        cdef VarArrayWrapper wrapper = VarArrayWrapper(vars)
         cdef SCIP_VAR** _vars = wrapper.ptr
 
         if name == '':
