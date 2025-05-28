@@ -2397,6 +2397,18 @@ cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg) noex
             fputs(msg, file)
         fflush(file)
 
+cdef class VarArrayWrapper:
+    cdef SCIP_VAR** ptr
+    cdef int size
+
+    def __cinit__(self, int size):
+        self.size = size
+        self.ptr = <SCIP_VAR**> malloc(size * sizeof(SCIP_VAR*))
+
+    def __dealloc__(self):
+        if self.ptr != NULL:
+            free(self.ptr)
+
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
 # - interface SCIPfreeProb()
@@ -6327,6 +6339,17 @@ cdef class Model:
 
         return pyCons
 
+    def _convert_var_to_scipvar(self, vars, nvars):
+        cdef VarArrayWrapper wrapper = VarArrayWrapper(nvars)
+
+        for i, var in enumerate(vars):
+            if not isinstance(var, Variable):
+                raise TypeError("Expected Variable, got %s." % type(var))
+
+            wrapper.ptr[i] = (<Variable>var).scip_var
+
+        return wrapper
+
     def addConsOr(self, vars, resvar, name="",
             initial=True, separate=True, enforce=True, check=True,
             propagate=True, local=False, modifiable=False, dynamic=False,
@@ -6369,17 +6392,13 @@ cdef class Model:
 
         """
         cdef int nvars = len(vars)
-        cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
         cdef SCIP_VAR* _resvar
         cdef SCIP_CONS* scip_cons
         cdef int i
 
         _resvar = (<Variable>resvar).scip_var
-        for i, var in enumerate(vars):
-            if not isinstance(var, Variable):
-                raise TypeError("Expected Variable, got %s." % type(var))
-
-            _vars[i] = (<Variable>var).scip_var
+        cdef VarArrayWrapper wrapper = self._convert_var_to_scipvar(vars, nvars)
+        cdef SCIP_VAR** _vars = wrapper.ptr
 
         if name == '':
             name = 'c'+str(SCIPgetNConss(self._scip)+1)
@@ -6390,8 +6409,6 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         pyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-
-        free(_vars)
 
         return pyCons
 
