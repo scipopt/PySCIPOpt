@@ -84,7 +84,7 @@ def test_cons_logical_fail():
     m.addCons(x3 == 1 - x1)
     m.addCons(x4 == 1 - x2)
 
-    # result1 true
+    # result1 false
     m.addConsOr([x1*x3, x2*x4], result1)
 
     m.optimize()
