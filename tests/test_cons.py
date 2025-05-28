@@ -72,6 +72,25 @@ def test_cons_logical():
     assert m.isEQ(m.getVal(result1), 1)
     assert m.isEQ(m.getVal(result2), 0)
 
+@pytest.mark.xfail(
+    reason="Logical constraints expect lists of binary variables"
+)
+def test_cons_logical_fail():
+    m = Model()
+    x1 = m.addVar(vtype="B")
+    x2 = m.addVar(vtype="B")
+    x3 = m.addVar(vtype="B")
+    x4 = m.addVar(vtype="B")
+    result1 = m.addVar(vtype="B")
+
+    m.addCons(x3 == 1 - x1)
+    m.addCons(x4 == 1 - x2)
+
+    # result1 true
+    m.addConsOr([x1*x3, x2*x4], result1)
+
+    m.optimize()
+
 def test_SOScons():
     m = Model()
     x = {}

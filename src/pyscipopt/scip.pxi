@@ -6308,6 +6308,9 @@ cdef class Model:
 
         _resvar = (<Variable>resvar).scip_var
         for i, var in enumerate(vars):
+            if not isinstance(var, Variable):
+                raise TypeError("Expected Variable, got %s." % type(var))
+
             _vars[i] = (<Variable>var).scip_var
 
         if name == '':
@@ -6373,6 +6376,9 @@ cdef class Model:
 
         _resvar = (<Variable>resvar).scip_var
         for i, var in enumerate(vars):
+            if not isinstance(var, Variable):
+                raise TypeError("Expected Variable, got %s." % type(var))
+
             _vars[i] = (<Variable>var).scip_var
 
         if name == '':
@@ -6437,6 +6443,9 @@ cdef class Model:
 
         assert type(rhsvar) is type(bool()), "Provide BOOLEAN value as rhsvar, you gave %s." % type(rhsvar)
         for i, var in enumerate(vars):
+            if not isinstance(var, Variable):
+                raise TypeError("Expected Variable, got %s." % type(var))
+
             _vars[i] = (<Variable>var).scip_var
 
         if name == '':
@@ -8763,7 +8772,7 @@ cdef class Model:
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
 
 
-    def branchVarVal(self, variable, value):
+    def branchVarVal(self, Variable variable, value):
         """
         Branches on variable using a value which separates the domain of the variable.
 

@@ -6,6 +6,7 @@
 - Added isPositive(), isNegative(), isFeasLE(), isFeasLT(), isFeasGE(), isFeasGT(), isHugeValue(), and tests
 - Added SCIP_LOCKTYPE, addVarLocksType(), getNLocksDown(), getNLocksUp(), getNLocksDownType(), getNLocksUpType(), and tests
 ### Fixed
+- Fixed segmentation fault when logical constraints were used with expressions rather than variables.
 ### Changed
 ### Removed
 
