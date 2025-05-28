@@ -1357,6 +1357,7 @@ cdef extern from "scip/scip.h":
 
     # Statistic Methods
     SCIP_RETCODE SCIPprintStatistics(SCIP* scip, FILE* outfile)
+    SCIP_RETCODE SCIPprintStatisticsJson(SCIP* scip, FILE* file)
     SCIP_Longint SCIPgetNNodes(SCIP* scip)
     SCIP_Longint SCIPgetNTotalNodes(SCIP* scip)
     SCIP_Longint SCIPgetNFeasibleLeaves(SCIP* scip)

@@ -41,9 +41,9 @@ include "nodesel.pxi"
 include "matrix.pxi"
 
 # recommended SCIP version; major version is required
-MAJOR = 9
-MINOR = 2
-PATCH = 1
+MAJOR = 10
+MINOR = 0
+PATCH = 0
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
@@ -10131,12 +10131,45 @@ cdef class Model:
 
     # Statistic Methods
 
-    def printStatistics(self):
-        """Print statistics."""
+    def printStatistics(self, filename=None):
+        """
+        Print statistics.
+
+        Parameters
+        ----------
+        filename : str, optional
+            name of the output file (Default = None)
+
+        """ 
+
         user_locale = locale.getlocale(category=locale.LC_NUMERIC)
         locale.setlocale(locale.LC_NUMERIC, "C")
 
-        PY_SCIP_CALL(SCIPprintStatistics(self._scip, NULL))
+        if not filename:
+            PY_SCIP_CALL(SCIPprintStatistics(self._scip, NULL))
+        else:
+            PY_SCIP_CALL(SCIPprintStatistics(self._scip, str_conversion(filename)))
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
+    def printStatisticsJson(self, filename=None):
+        """
+        Print statistics in JSON format.
+
+        Parameters
+        ----------
+        filename : str, optional
+            name of the output file (Default = None)
+
+        """ 
+
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        if not filename:
+            PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, NULL))
+        else:
+            PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, str_conversion(filename)))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
