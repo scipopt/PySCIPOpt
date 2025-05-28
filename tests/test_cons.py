@@ -72,7 +72,6 @@ def test_cons_logical():
     assert m.isEQ(m.getVal(result1), 1)
     assert m.isEQ(m.getVal(result2), 0)
 
-@pytest.mark.xfail()
 def test_cons_logical_fail():
     m = Model()
     x1 = m.addVar(vtype="B")
@@ -85,7 +84,8 @@ def test_cons_logical_fail():
     m.addCons(x4 == 1 - x2)
 
     # result1 false
-    m.addConsOr([x1*x3, x2*x4], result1)
+    with pytest.raises(TypeError):
+        m.addConsOr([x1*x3, x2*x4], result1)
 
     m.optimize()
 

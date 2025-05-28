@@ -2405,7 +2405,7 @@ cdef class _VarArray:
         if isinstance(vars, Variable):
             self.size = 1
             self.ptr = <SCIP_VAR**> malloc(sizeof(SCIP_VAR*))
-            self.ptr[0] = vars.scip_var
+            self.ptr[0] = (<Variable>vars).scip_var
         else:
             if not isinstance(vars, (list, tuple)):
                 raise TypeError("Expected Variable or list of Variable, got %s." % type(vars))
@@ -2419,7 +2419,7 @@ cdef class _VarArray:
                 for i, var in enumerate(vars):
                     if not isinstance(var, Variable):
                         raise TypeError("Expected Variable, got %s." % type(var))
-                    self.ptr[i] = var.scip_var
+                    self.ptr[i] = (<Variable>var).scip_var
 
     def __dealloc__(self):
         if self.ptr != NULL:
@@ -6401,10 +6401,10 @@ cdef class Model:
         cdef SCIP_VAR* _resvar
         cdef SCIP_CONS* scip_cons
         cdef int i
-        cdef _VarArray wrapper
+        cdef _VarArray wrapper = _VarArray(vars)
+        cdef _VarArray resvar_wrapper = _VarArray(resvar)
 
-        _resvar = _VarArray(resvar).ptr[0]
-        wrapper = _VarArray(vars)
+        _resvar = resvar_wrapper.ptr[0]
         _vars = wrapper.ptr
 
         if name == '':
@@ -8266,7 +8266,6 @@ cdef class Model:
 		solution : Solution
 			The corresponding solution in the main model
         """
-        cdef SCIP_VAR** vars = <SCIP_VAR**> malloc(sub_model.getNVars() * sizeof(SCIP_VAR*))
         cdef SCIP_SOL* real_sol
         cdef SCIP_SOL* subscip_sol = sol.sol
         cdef SCIP_HEUR* _heur
@@ -8274,6 +8273,8 @@ cdef class Model:
         cdef int i
         cdef _VarArray wrapper
         
+        assert sub_model.getNVars(False) >= self.getNVars(False), "The sub_model must have at least as many variables as the main model."
+
         wrapper = _VarArray(sub_model.getVars())
         vars = wrapper.ptr
 
