@@ -2397,7 +2397,7 @@ cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg) noex
             fputs(msg, file)
         fflush(file)
 
-cdef class VarArrayWrapper:
+cdef class _VarArrayWrapper:
     cdef SCIP_VAR** ptr
     cdef int size
 
@@ -2405,11 +2405,17 @@ cdef class VarArrayWrapper:
         cdef int size = len(vars)
         self.ptr = <SCIP_VAR**> malloc(size * sizeof(SCIP_VAR*))
 
-        for i, var in enumerate(vars):
-            if not isinstance(var, Variable):
-                raise TypeError("Expected Variable, got %s." % type(var))
+        if size == 1:
+            if not isinstance(vars, Variable):
+                raise TypeError("Expected Variable, got %s." % type(vars))
+            else:
+                self.ptr[0] = (<Variable>vars).scip_var
+        else:
+            for i, var in enumerate(vars):
+                if not isinstance(var, Variable):
+                    raise TypeError("Expected Variable, got %s." % type(var))
 
-            self.ptr[i] = (<Variable>var).scip_var
+                self.ptr[i] = (<Variable>var).scip_var
 
     def __dealloc__(self):
         if self.ptr != NULL:
@@ -6345,17 +6351,6 @@ cdef class Model:
 
         return pyCons
 
-    def _convert_var_to_scipvar(self, vars, nvars):
-        cdef VarArrayWrapper wrapper = VarArrayWrapper(nvars)
-
-        for i, var in enumerate(vars):
-            if not isinstance(var, Variable):
-                raise TypeError("Expected Variable, got %s." % type(var))
-
-            wrapper.ptr[i] = (<Variable>var).scip_var
-
-        return wrapper
-
     def addConsOr(self, vars, resvar, name="",
             initial=True, separate=True, enforce=True, check=True,
             propagate=True, local=False, modifiable=False, dynamic=False,
@@ -6398,13 +6393,17 @@ cdef class Model:
 
         """
         cdef int nvars = len(vars)
+        cdef SCIP_VAR** _vars
         cdef SCIP_VAR* _resvar
         cdef SCIP_CONS* scip_cons
         cdef int i
+        cdef _VarArrayWrapper wrapper
 
-        _resvar = (<Variable>resvar).scip_var
-        cdef VarArrayWrapper wrapper = VarArrayWrapper(vars)
-        cdef SCIP_VAR** _vars = wrapper.ptr
+        wrapper = _VarArrayWrapper(resvar)
+        _resvar = wrapper.ptr
+
+        wrapper = _VarArrayWrapper(vars)
+        _vars = wrapper.ptr
 
         if name == '':
             name = 'c'+str(SCIPgetNConss(self._scip)+1)
@@ -8271,9 +8270,10 @@ cdef class Model:
         cdef SCIP_HEUR* _heur
         cdef SCIP_Bool success
         cdef int i
-
-        for i, var in enumerate(sub_model.getVars()):
-            vars[i] = (<Variable>var).scip_var
+        cdef _VarArrayWrapper wrapper
+        
+        wrapper = _VarArrayWrapper(sub_model.getVars())
+        vars = wrapper.ptr
 
         name = str_conversion(heur.name)
         _heur = SCIPfindHeur(self._scip, name)

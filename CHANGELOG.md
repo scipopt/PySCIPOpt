@@ -5,6 +5,7 @@
 - Added support for knapsack constraints
 - Added isPositive(), isNegative(), isFeasLE(), isFeasLT(), isFeasGE(), isFeasGT(), isHugeValue(), and tests
 - Added SCIP_LOCKTYPE, addVarLocksType(), getNLocksDown(), getNLocksUp(), getNLocksDownType(), getNLocksUpType(), and tests
+- Added internal class _VarArrayWrapper to get the scip variables from PySCIPOpt variables
 ### Fixed
 - Fixed segmentation fault when logical constraints were used with expressions rather than variables.
 ### Changed
