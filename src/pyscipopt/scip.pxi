@@ -2397,7 +2397,7 @@ cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg) noex
             fputs(msg, file)
         fflush(file)
 
-cdef class _VarArrayWrapper:
+cdef class _VarArray:
     cdef SCIP_VAR** ptr
     cdef int size
 
@@ -6400,12 +6400,12 @@ cdef class Model:
         cdef SCIP_VAR* _resvar
         cdef SCIP_CONS* scip_cons
         cdef int i
-        cdef _VarArrayWrapper wrapper
+        cdef _VarArray wrapper
 
-        wrapper = _VarArrayWrapper(resvar)
+        wrapper = _VarArray(resvar)
         _resvar = wrapper.ptr[0]
 
-        wrapper = _VarArrayWrapper(vars)
+        wrapper = _VarArray(vars)
         _vars = wrapper.ptr
 
         if name == '':
@@ -8273,9 +8273,9 @@ cdef class Model:
         cdef SCIP_HEUR* _heur
         cdef SCIP_Bool success
         cdef int i
-        cdef _VarArrayWrapper wrapper
+        cdef _VarArray wrapper
         
-        wrapper = _VarArrayWrapper(sub_model.getVars())
+        wrapper = _VarArray(sub_model.getVars())
         vars = wrapper.ptr
 
         name = str_conversion(heur.name)
