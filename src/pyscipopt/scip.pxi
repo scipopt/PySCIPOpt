@@ -6332,7 +6332,7 @@ cdef class Model:
 
         """
         cdef int nvars = len(vars)
-        cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        cdef SCIP_VAR** _vars
         cdef SCIP_VAR* _resvar
         cdef _VarArray resvar_wrapper = _VarArray(resvar)
         cdef _VarArray vars_wrapper = _VarArray(vars)
@@ -6459,13 +6459,13 @@ cdef class Model:
             The newly created XOR constraint
 
         """
+        assert type(rhsvar) is type(bool()), "Provide BOOLEAN value as rhsvar, you gave %s." % type(rhsvar)
+
         cdef int nvars = len(vars)
-        cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        cdef SCIP_VAR** _vars
         cdef SCIP_CONS* scip_cons
         cdef int i
         cdef _VarArray wrapper = _VarArray(vars)
-
-        assert type(rhsvar) is type(bool()), "Provide BOOLEAN value as rhsvar, you gave %s." % type(rhsvar)
         _vars = wrapper.ptr
 
         if name == '':
