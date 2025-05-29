@@ -8275,7 +8275,7 @@ cdef class Model:
         cdef int i
         cdef _VarArray wrapper
         
-        assert sub_model.getNVars(False) >= self.getNVars(False), "The sub_model must have at least as many variables as the main model."
+        assert sub_model.getNVars(False) >= self.getNVars(True), "The sub_model must have at least as many variables as the main model."
 
         wrapper = _VarArray(sub_model.getVars())
         vars = wrapper.ptr
