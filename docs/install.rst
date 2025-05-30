@@ -21,6 +21,20 @@ To install PySCIPOpt simply run the command:
 
   pip install pyscipopt
 
+To avoid interfering with system packages, it's best to use a `virtual environment <https://docs.python.org/3/library/venv.html>`.
+
+.. warning::
+
+  Using a virtual environment is **mandatory** in some newer Python configurations
+  to avoid permission and package conflicts.
+
+.. code-block:: bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows use: venv\Scripts\activate
+pip install pyscipopt
+
+Remember to activate the environment (``source venv/bin/activate``) in each terminal session where you use PySCIPOpt.
+
 .. note:: For Linux users: PySCIPOpt versions newer than 5.1.1 installed via PyPI now require glibc 2.28+
 
   For our build infrastructure we use `manylinux <https://github.com/pypa/manylinux>`_.
