@@ -259,6 +259,11 @@ cdef class PY_SCIP_LOCKTYPE:
     MODEL    = SCIP_LOCKTYPE_MODEL
     CONFLICT = SCIP_LOCKTYPE_CONFLICT
 
+cdef class PY_SCIP_IMPLINTTYPE:
+    NONE   = SCIP_IMPLINTTYPE_NONE
+    WEAK   = SCIP_IMPLINTTYPE_WEAK
+    STRONG = SCIP_IMPLINTTYPE_STRONG
+
 cdef class PY_SCIP_LPSOLSTAT:
     NOTSOLVED    = SCIP_LPSOLSTAT_NOTSOLVED
     OPTIMAL      = SCIP_LPSOLSTAT_OPTIMAL
@@ -1510,7 +1515,7 @@ cdef class Variable(Expr):
 
     def vtype(self):
         """
-        Retrieve the variables type (BINARY, INTEGER, IMPLINT or CONTINUOUS)
+        Retrieve the variables type (BINARY, INTEGER, CONTINUOUS, or IMPLINT)
 
         Returns
         -------
@@ -1527,6 +1532,56 @@ cdef class Variable(Expr):
             return "CONTINUOUS"
         elif vartype == SCIP_VARTYPE_IMPLINT:
             return "IMPLINT"
+    
+    def isBinary(self):
+        """
+        Returns whether variable is of BINARY type.
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPvarIsBinary(self.scip_var)
+    
+    def isIntegral(self):
+        """
+        Returns whether variable is of INTEGER type.
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPvarIsInteger(self.scip_var)
+    
+    def isImpliedIntegral(self):
+        """
+        Returns whether variable is implied integral (weakly or strongly).
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPvarIsImpliedIntegral(self.scip_var)
+    
+    def isNonImpliedIntegral(self):
+        """
+        Returns TRUE if the variable is integral, but not implied integral..
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPvarIsImpliedIntegral(self.scip_var)
+
+    def getImplType(self):
+        """
+        Returns the implied integral type of the variable
+
+        Returns
+        -------
+        PY_SCIP_IMPLINTTYPE
+        """
+        return SCIPvarGetImplType(self.scip_var)
 
     def isOriginal(self):
         """

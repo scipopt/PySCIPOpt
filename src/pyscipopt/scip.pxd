@@ -304,6 +304,12 @@ cdef extern from "scip/scip.h":
     cdef extern from "scip/type_var.h":
         SCIP_LOCKTYPE SCIP_LOCKTYPE_MODEL
         SCIP_LOCKTYPE SCIP_LOCKTYPE_CONFLICT
+    
+    ctypedef int SCIP_IMPLINTTYPE
+    cdef extern from "scip/type_var.h":
+        SCIP_IMPLINTTYPE SCIP_IMPLINTTYPE_NONE
+        SCIP_IMPLINTTYPE SCIP_IMPLINTTYPE_WEAK
+        SCIP_IMPLINTTYPE SCIP_IMPLINTTYPE_STRONG
 
     ctypedef int SCIP_BENDERSENFOTYPE
     cdef extern from "scip/type_benders.h":
@@ -802,6 +808,11 @@ cdef extern from "scip/scip.h":
     int SCIPgetNImplVars(SCIP* scip)
     int SCIPgetNContVars(SCIP* scip)
     SCIP_VARTYPE SCIPvarGetType(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsBinary(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsIntegral(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsImpliedIntegral(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsNonImpliedIntegral(SCIP_VAR* var)
+    SCIP_IMPLINTTYPE SCIPvarGetImplType(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
     SCIP_COL* SCIPvarGetCol(SCIP_VAR* var)
