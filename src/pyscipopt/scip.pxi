@@ -8531,6 +8531,33 @@ cdef class Model:
         heur.model = <Model>weakref.proxy(self)
         heur.name = name
         Py_INCREF(heur)
+    
+    def includeIISFinder(self, IISfinder iisfinder, name, desc, priority=10000, freq=1):
+        """
+        Include an IIS (Irreducible Infeasible Set) finder handler.
+
+        Parameters
+        ----------
+        iisfinder : IISfinder
+            IIS finder
+        name : str
+            name of IIS finder
+        desc : str
+            description of IIS finder
+        priority : int, optional
+            priority of the IISfinder (#todo description)
+        freq : int, optional
+            frequency for calling IIS finder
+
+        """
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeIISFinder(self._scip, nam, des, priority, freq, PyIISFinderCopy, PyIISFinderFree,
+                                         PyIISFinderExec, <SCIP_IISFinderDATA*> iisfinder))
+        iisfinder.model = <Model>weakref.proxy(self)
+        iisfinder.name = name
+
+        Py_INCREF(iisfinder)
 
     def includeRelax(self, Relax relax, name, desc, priority=10000, freq=1):
         """

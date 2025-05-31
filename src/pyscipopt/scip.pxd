@@ -436,6 +436,15 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_HEURDATA:
         pass
 
+    ctypedef struct SCIP_IISFINDER:
+        pass
+    
+    ctypedef struct SCIP_IISFINDERDATA:
+        pass
+    
+    ctypedef struct SCIP_IIS:
+        pass
+
     ctypedef struct SCIP_RELAX:
         pass
 
@@ -1171,6 +1180,16 @@ cdef extern from "scip/scip.h":
     SCIP_HEURTIMING SCIPheurGetTimingmask(SCIP_HEUR* heur)
     void SCIPheurSetTimingmask(SCIP_HEUR* heur, SCIP_HEURTIMING timingmask)
 
+    #IIS finder plugin
+    SCIP_RETCODE SCIPincludeIISFinder(SCIP* scip,
+                                      const char* name,
+                                      const char* desc,
+                                      int         priority,
+                                      SCIP_RETCODE (*iisfindercopy) (SCIP* scip, SCIP_IISFINDER* iisfinder),
+                                      SCIP_RETCODE (*iisfinderfree) (SCIP* scip, SCIP_IISFINDER* iisfinder),
+                                      SCIP_DECL_IISFINDEREXEC (*iisfinderexec) (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_Real timelim, SCIP_Longint nodelim, SCIP_Bool removebounds, SCIP_Bool silent, SCIP_RESULT* result)
+                                      SCIP_IISFINDERDATA*   iisfinderdata)
+
     #Relaxation plugin
     SCIP_RETCODE SCIPincludeRelax(SCIP* scip,
 		                         const char* name,
@@ -1449,7 +1468,6 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPhashmapCreate(SCIP_HASHMAP** hashmap, BMS_BLKMEM* blkmem, int mapsize)
     void SCIPhashmapFree(SCIP_HASHMAP** hashmap)
 
-
 cdef extern from "scip/tree.h":
     int SCIPnodeGetNAddedConss(SCIP_NODE* node)
 
@@ -1607,7 +1625,6 @@ cdef extern from "scip/cons_sos1.h":
                                    SCIP_CONS* cons,
                                    SCIP_VAR* var)
 
-
 cdef extern from "scip/cons_sos2.h":
     SCIP_RETCODE SCIPcreateConsSOS2(SCIP* scip,
                                     SCIP_CONS** cons,
@@ -1705,6 +1722,7 @@ cdef extern from "scip/cons_xor.h":
                                          SCIP_Bool dynamic,
                                          SCIP_Bool removable,
                                          SCIP_Bool stickingatnode)
+
 cdef extern from "scip/scip_cons.h":
     SCIP_RETCODE SCIPprintCons(SCIP* scip,
                                SCIP_CONS* cons,
@@ -1858,7 +1876,6 @@ cdef extern from "scip/scip_nlp.h":
     SCIP_RETCODE SCIPgetNlRowSolFeasibility(SCIP* scip, SCIP_NLROW* nlrow, SCIP_SOL* sol, SCIP_Real* feasibility)
     SCIP_RETCODE SCIPgetNlRowActivityBounds(SCIP* scip, SCIP_NLROW* nlrow, SCIP_Real* minactivity, SCIP_Real* maxactivity)
     SCIP_RETCODE SCIPprintNlRow(SCIP* scip, SCIP_NLROW* nlrow, FILE* file)
-
 
 cdef extern from "scip/cons_cardinality.h":
     SCIP_RETCODE SCIPcreateConsCardinality(SCIP* scip,
