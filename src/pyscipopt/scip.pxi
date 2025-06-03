@@ -31,6 +31,7 @@ include "conshdlr.pxi"
 include "cutsel.pxi"
 include "event.pxi"
 include "heuristic.pxi"
+# include "iisfinder.pxi"
 include "presol.pxi"
 include "pricer.pxi"
 include "propagator.pxi"
@@ -1551,7 +1552,7 @@ cdef class Variable(Expr):
         -------
         bool
         """
-        return SCIPvarIsInteger(self.scip_var)
+        return SCIPvarIsIntegral(self.scip_var)
     
     def isImpliedIntegral(self):
         """
@@ -8532,32 +8533,32 @@ cdef class Model:
         heur.name = name
         Py_INCREF(heur)
     
-    def includeIISFinder(self, IISfinder iisfinder, name, desc, priority=10000, freq=1):
-        """
-        Include an IIS (Irreducible Infeasible Set) finder handler.
+    # def includeIISFinder(self, IISfinder iisfinder, name, desc, priority=10000, freq=1):
+    #     """
+    #     Include an IIS (Irreducible Infeasible Set) finder handler.
 
-        Parameters
-        ----------
-        iisfinder : IISfinder
-            IIS finder
-        name : str
-            name of IIS finder
-        desc : str
-            description of IIS finder
-        priority : int, optional
-            priority of the IISfinder (#todo description)
-        freq : int, optional
-            frequency for calling IIS finder
+    #     Parameters
+    #     ----------
+    #     iisfinder : IISfinder
+    #         IIS finder
+    #     name : str
+    #         name of IIS finder
+    #     desc : str
+    #         description of IIS finder
+    #     priority : int, optional
+    #         priority of the IISfinder (#todo description)
+    #     freq : int, optional
+    #         frequency for calling IIS finder
 
-        """
-        nam = str_conversion(name)
-        des = str_conversion(desc)
-        PY_SCIP_CALL(SCIPincludeIISFinder(self._scip, nam, des, priority, freq, PyIISFinderCopy, PyIISFinderFree,
-                                         PyIISFinderExec, <SCIP_IISFinderDATA*> iisfinder))
-        iisfinder.model = <Model>weakref.proxy(self)
-        iisfinder.name = name
+    #     """
+    #     nam = str_conversion(name)
+    #     des = str_conversion(desc)
+    #     PY_SCIP_CALL(SCIPincludeIISFinder(self._scip, nam, des, priority, freq, PyIISFinderCopy, PyIISFinderFree,
+    #                                      PyIISFinderExec, <SCIP_IISFinderDATA*> iisfinder))
+    #     iisfinder.model = <Model>weakref.proxy(self)
+    #     iisfinder.name = name
 
-        Py_INCREF(iisfinder)
+    #     Py_INCREF(iisfinder)
 
     def includeRelax(self, Relax relax, name, desc, priority=10000, freq=1):
         """
@@ -10230,7 +10231,9 @@ cdef class Model:
         if not filename:
             PY_SCIP_CALL(SCIPprintStatistics(self._scip, NULL))
         else:
-            PY_SCIP_CALL(SCIPprintStatistics(self._scip, str_conversion(filename)))
+            with open(filename, "w") as f:
+                cfile = fdopen(f.fileno(), "w")
+                PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
     
@@ -10251,7 +10254,9 @@ cdef class Model:
         if not filename:
             PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, NULL))
         else:
-            PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, str_conversion(filename)))
+            with open(filename, "w") as f:
+                cfile = fdopen(f.fileno(), "w")
+                PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 

@@ -1180,15 +1180,15 @@ cdef extern from "scip/scip.h":
     SCIP_HEURTIMING SCIPheurGetTimingmask(SCIP_HEUR* heur)
     void SCIPheurSetTimingmask(SCIP_HEUR* heur, SCIP_HEURTIMING timingmask)
 
-    #IIS finder plugin
-    SCIP_RETCODE SCIPincludeIISFinder(SCIP* scip,
-                                      const char* name,
-                                      const char* desc,
-                                      int         priority,
-                                      SCIP_RETCODE (*iisfindercopy) (SCIP* scip, SCIP_IISFINDER* iisfinder),
-                                      SCIP_RETCODE (*iisfinderfree) (SCIP* scip, SCIP_IISFINDER* iisfinder),
-                                      SCIP_DECL_IISFINDEREXEC (*iisfinderexec) (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_Real timelim, SCIP_Longint nodelim, SCIP_Bool removebounds, SCIP_Bool silent, SCIP_RESULT* result)
-                                      SCIP_IISFINDERDATA*   iisfinderdata)
+    # #IIS finder plugin
+    # SCIP_RETCODE SCIPincludeIISFinder(SCIP* scip,
+    #                                   const char* name,
+    #                                   const char* desc,
+    #                                   int         priority,
+    #                                   SCIP_RETCODE (*iisfindercopy) (SCIP* scip, SCIP_IISFINDER* iisfinder),
+    #                                   SCIP_RETCODE (*iisfinderfree) (SCIP* scip, SCIP_IISFINDER* iisfinder),
+    #                                   SCIP_RETCODE (*iisfinderexec) (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_Real timelim, SCIP_Longint nodelim, SCIP_Bool removebounds, SCIP_Bool silent, SCIP_RESULT* result),
+    #                                   SCIP_IISFINDERDATA*   iisfinderdata)
 
     #Relaxation plugin
     SCIP_RETCODE SCIPincludeRelax(SCIP* scip,
@@ -1463,10 +1463,6 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPenableReoptimization(SCIP* scip, SCIP_Bool enable)
 
     BMS_BLKMEM* SCIPblkmem(SCIP* scip)
-
-    # pub_misc.h
-    SCIP_RETCODE SCIPhashmapCreate(SCIP_HASHMAP** hashmap, BMS_BLKMEM* blkmem, int mapsize)
-    void SCIPhashmapFree(SCIP_HASHMAP** hashmap)
 
 cdef extern from "scip/tree.h":
     int SCIPnodeGetNAddedConss(SCIP_NODE* node)
