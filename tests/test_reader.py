@@ -137,3 +137,7 @@ def test_readStatistics():
     result = readStatistics(os.path.join("tests", "data", "readStatistics.stats"))
     assert result.status == "user_interrupt"
     assert result.gap == None
+
+def test_writeStatisticsJson():
+
+    assert False

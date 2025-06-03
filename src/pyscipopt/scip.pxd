@@ -370,6 +370,9 @@ cdef extern from "scip/scip.h":
 
     ctypedef double SCIP_Real
 
+    ctypedef struct SCIP_RATIONAL:
+        pass
+
     ctypedef struct SCIP:
         pass
 
@@ -986,8 +989,9 @@ cdef extern from "scip/scip.h":
                                    SCIP_RETCODE (*readerwrite) (SCIP* scip, SCIP_READER* reader, FILE* file,
                                                                 const char* name, SCIP_PROBDATA* probdata, SCIP_Bool transformed,
                                                                 SCIP_OBJSENSE objsense, SCIP_Real objscale, SCIP_Real objoffset,
-                                                                SCIP_VAR** vars, int nvars, int nbinvars, int nintvars, int nimplvars, int ncontvars,
-                                                                SCIP_VAR** fixedvars, int nfixedvars, int startnvars,
+                                                                SCIP_RATIONAL* objoffsetexact, SCIP_RATIONAL* objscaleexact, 
+                                                                SCIP_VAR** vars, int nvars, int nbinvars, int nintvars, int nimplvars,
+                                                                int ncontvars, SCIP_VAR** fixedvars, int nfixedvars, int startnvars,
                                                                 SCIP_CONS** conss, int nconss, int maxnconss, int startnconss,
                                                                 SCIP_Bool genericnames, SCIP_RESULT* result),
                                    SCIP_READERDATA* readerdata)
