@@ -40,7 +40,8 @@ cdef SCIP_RETCODE PyReaderRead (SCIP* scip, SCIP_READER* reader, const char* fil
 
 cdef SCIP_RETCODE PyReaderWrite (SCIP* scip, SCIP_READER* reader, FILE* file,
                                  const char* name, SCIP_PROBDATA* probdata, SCIP_Bool transformed,
-                                 SCIP_OBJSENSE objsense, SCIP_Real objscale, SCIP_Real objoffset, 
+                                 SCIP_OBJSENSE objsense, SCIP_Real objoffset, SCIP_Real objscale, 
+                                 SCIP_RATIONAL* objoffsetexact, SCIP_RATIONAL* objscaleexact, 
                                  SCIP_VAR** vars, int nvars, int nbinvars, int nintvars, int nimplvars, int ncontvars,
                                  SCIP_VAR** fixedvars, int nfixedvars, int startnvars,
                                  SCIP_CONS** conss, int nconss, int maxnconss, int startnconss,

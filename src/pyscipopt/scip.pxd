@@ -408,12 +408,6 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_PROPDATA:
         pass
 
-    ctypedef struct SCIP_PROPTIMING:
-        pass
-
-    ctypedef struct SCIP_PRESOLTIMING:
-        pass
-
     ctypedef struct SCIP_PRESOL:
         pass
 
@@ -454,9 +448,6 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_PRESOL:
-        pass
-
-    ctypedef struct SCIP_HEURTIMING:
         pass
 
     ctypedef struct SCIP_SEPA:
@@ -510,9 +501,6 @@ cdef extern from "scip/scip.h":
     ctypedef struct BMS_BLKMEM:
         pass
 
-    ctypedef struct SCIP_EXPR:
-        pass
-
     ctypedef struct SCIP_EXPRHDLR:
         pass
 
@@ -538,6 +526,9 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef union SCIP_DOMCHG:
+        pass
+
+    ctypedef struct SCIP_RATIONAL:
         pass
 
     ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR* messagehdlr, FILE* file, const char* msg) noexcept
@@ -961,7 +952,8 @@ cdef extern from "scip/scip.h":
                                    SCIP_RETCODE (*readerread) (SCIP* scip, SCIP_READER* reader, const char* filename, SCIP_RESULT* result),
                                    SCIP_RETCODE (*readerwrite) (SCIP* scip, SCIP_READER* reader, FILE* file,
                                                                 const char* name, SCIP_PROBDATA* probdata, SCIP_Bool transformed,
-                                                                SCIP_OBJSENSE objsense, SCIP_Real objscale, SCIP_Real objoffset,
+                                                                SCIP_OBJSENSE objsense, SCIP_Real objoffset, SCIP_Real objscale,
+                                                                SCIP_RATIONAL* objoffsetexact, SCIP_RATIONAL* objscaleexact,
                                                                 SCIP_VAR** vars, int nvars, int nbinvars, int nintvars, int nimplvars, int ncontvars,
                                                                 SCIP_VAR** fixedvars, int nfixedvars, int startnvars,
                                                                 SCIP_CONS** conss, int nconss, int maxnconss, int startnconss,
@@ -1357,6 +1349,7 @@ cdef extern from "scip/scip.h":
 
     # Statistic Methods
     SCIP_RETCODE SCIPprintStatistics(SCIP* scip, FILE* outfile)
+    SCIP_RETCODE SCIPprintStatisticsJson(SCIP* scip, FILE* outfile)
     SCIP_Longint SCIPgetNNodes(SCIP* scip)
     SCIP_Longint SCIPgetNTotalNodes(SCIP* scip)
     SCIP_Longint SCIPgetNFeasibleLeaves(SCIP* scip)

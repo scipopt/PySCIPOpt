@@ -10139,6 +10139,15 @@ cdef class Model:
         PY_SCIP_CALL(SCIPprintStatistics(self._scip, NULL))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
+    def printStatisticsJson(self):
+        """Print statistics in JSON format."""
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, NULL))
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def writeStatistics(self, filename="origprob.stats"):
         """
@@ -10158,6 +10167,28 @@ cdef class Model:
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
+
+    def writeStatisticsJson(self, filename="origprob.stats.json"):
+        """
+        Write statistics to a JSON file.
+
+        Parameters
+        ----------
+        filename : str, optional
+            name of the output file (Default = "origprob.stats.json")
+
+        """
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        # use this doubled opening pattern to ensure that IOErrors are
+        #   triggered early and in Python not in C,Cython or SCIP.
+        with open(filename, "w") as f:
+            cfile = fdopen(f.fileno(), "w")
+            PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, cfile))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
