@@ -63,5 +63,17 @@ def test_vtype():
     m.chgVarType(x, 'I')
     assert x.vtype() == "INTEGER"
 
-    m.chgVarType(y, 'M')
-    assert y.vtype() == "IMPLINT"
+    m.chgVarType(y, 'C')
+    assert y.vtype() == "CONTINUOUS"
+
+    is_int = lambda x: x.isIntegral() == True
+    is_implint = lambda x: x.isImpliedIntegral() == True
+    is_nonimplint = lambda x: x.isNonImpliedIntegral() == True
+    is_bin = lambda x: x.isBinary() == True
+
+    assert not is_int(y) and not is_implint(y) and not is_nonimplint(y) and not is_bin(y)
+    assert is_int(x) and not is_implint(x) and not is_nonimplint(x) and not is_bin(x)
+    assert is_int(z) and not is_implint(z) and not is_nonimplint(z) and is_bin(z)
+    assert w.vtype() == "CONTINUOUS" and is_int(w) and is_implint(w) and is_nonimplint(w) and not is_bin(w)
+
+    assert w.getImplType() == 1
