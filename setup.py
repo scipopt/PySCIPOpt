@@ -1,5 +1,5 @@
 from setuptools import find_packages, setup, Extension
-import os, platform, sys, re
+import os, platform, sys
 
 # look for environment variable that specifies path to SCIP
 scipoptdir = os.environ.get("SCIPOPTDIR", "").strip('"')
@@ -10,8 +10,8 @@ extra_link_args = []
 # if SCIPOPTDIR is not set, we assume that SCIP is installed globally
 if not scipoptdir:
     if platform.system() == "Darwin":
-        includedir = "/usr/local/include/"
-        libdir = "/usr/local/lib/"
+        includedir = "/usr/local/include"
+        libdir = "/usr/local/lib"
     else:
         includedir = "."
         libdir = "."
@@ -58,6 +58,7 @@ else:
 
 # set runtime libraries
 if platform.system() in ["Linux", "Darwin"]:
+    extra_compile_args.append("-I/opt/homebrew/include")
     extra_link_args.append(f"-Wl,-rpath,{libdir}")
 
 # enable debug mode if requested
@@ -109,7 +110,7 @@ with open("README.md") as f:
 
 setup(
     name="PySCIPOpt",
-    version="5.2.1",
+    version="5.5.0",
     description="Python interface and modeling environment for SCIP",
     long_description=long_description,
     long_description_content_type="text/markdown",

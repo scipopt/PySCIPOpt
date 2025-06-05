@@ -17,7 +17,7 @@ What is a Node Selector?
 ========================
 
 In the branch-and-bound tree an important question that must be answered is which node should currently
-be processed. That is, given a branch-and-bound tree in an intermediate state, select a a leaf node of the tree
+be processed. That is, given a branch-and-bound tree in an intermediate state, select a leaf node of the tree
 that will be processed next (most likely branched on). In SCIP this problem has its own plug-in,
 and thus custom algorithms can easily be included into the solving process!
 

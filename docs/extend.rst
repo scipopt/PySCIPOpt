@@ -44,7 +44,7 @@ Code contributions are very welcome and should comply to a few rules:
 - Before implementing a new PySCIPOpt feature, check whether the
   feature exists in SCIP. If so, implement it as a pure wrapper,
   mimicking SCIP whenever possible. If the new feature does not exist
-  in SCIP but it is close to an existing one, consider if implementing
+  in SCIP, but it is close to an existing one, consider if implementing
   that way is substantially convenient (e.g. Pythonic). If it does
   something completely different, you are welcome to pull your request
   and discuss the implementation.
@@ -77,7 +77,7 @@ API. By design, we distinguish different functions in PySCIPOPT:
 Ideally speaking, we want every SCIP function to be wrapped in PySCIPOpt.
 
 **Convenience functions** are additional, non-detrimental features meant
-to help prototyping the Python way. Since these functions are not in
+to help prototype the Python way. Since these functions are not in
 SCIP, we wish to limit them to prevent difference in features between
 SCIP and PySCIPOPT, which are always difficult to maintain. A few
 convenience functions survive in PySCIPOpt when keeping them is

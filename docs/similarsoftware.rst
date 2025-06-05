@@ -9,7 +9,7 @@ Alternate MIP Solvers (with Python interfaces)
 
 In the following we will give a list of other mixed-integer optimizers with available python interfaces.
 As each solver has its own set of problem classes that it can solve we will use a table with reference
-keys to summarise these problem classes.
+keys to summarize these problem classes.
 
 .. note:: This table is by no means complete.
 
@@ -85,9 +85,10 @@ Software using PySCIPOpt
 
 This is software that is built on PySCIPOpt
 
+- `PyGCGOpt <https://github.com/scipopt/PyGCGOpt>`_: An extension of SCIP, using generic decompositions for solving MIPs
 - `GeCO <https://github.com/CharJon/GeCO>`_: Generators for Combinatorial Optimization
-- `scip-routing <https://github.com/mmghannam/scip-routing>`_:  An exact VRPTW solver in Python
-- `PySCIPOpt-ML <https://github.com/Opt-Mucca/PySCIPOpt-ML>`_:  Python interface to automatically formulate Machine Learning models into Mixed-Integer Programs
+- `scip-routing <https://github.com/mmghannam/scip-routing>`_: An exact VRPTW solver in Python
+- `PySCIPOpt-ML <https://github.com/Opt-Mucca/PySCIPOpt-ML>`_: Python interface to automatically formulate Machine Learning models into Mixed-Integer Programs
 -  `SCIP Book <https://scipbook.readthedocs.io/en/latest/>`_: Mathematical Optimization: Solving Problems using SCIP and Python
 
 Additional SCIP Resources

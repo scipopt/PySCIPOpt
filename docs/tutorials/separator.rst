@@ -1,5 +1,5 @@
 ##########################
-Seperator (Cutting Planes)
+Separator (Cutting Planes)
 ##########################
 
 For the following let us assume that a Model object is available, which is created as follows:
@@ -19,7 +19,7 @@ What is a Separator?
 A separator is an algorithm for generating cutting planes (often abbreviated as cuts).
 A cut is an inequality that does not remove any feasible solutions of the optimization problem but is intended
 to remove some fractional solutions from the relaxation. For the purpose of this introduction we restrict ourselves
-to linear cuts in this paper. A cut would then be denoted by a an array of coefficients
+to linear cuts in this paper. A cut would then be denoted by an array of coefficients
 (:math:`\boldsymbol{\alpha} \in \mathbb{R}^{n}`) on each variable and a right-hand-side value
 (:math:`\beta \in \mathbb{R}`).
 
@@ -54,10 +54,10 @@ needs to be quite substantial to construct the cuts from scratch.
       def getGMIFromRow(self, cols, rows, binvrow, binvarow, primsol):
           """ Given the row (binvarow, binvrow) of the tableau, computes gomory cut
 
-          :param primsol: is the rhs of the tableau row.
-          :param cols:    are the variables
-          :param rows:    are the slack variables
-          :param binvrow: components of the tableau row associated to the basis inverse
+          :param primsol:  is the rhs of the tableau row.
+          :param cols:     are the variables
+          :param rows:     are the slack variables
+          :param binvrow:  components of the tableau row associated to the basis inverse
           :param binvarow: components of the tableau row associated to the basis inverse * A
 
           The GMI is given by
@@ -70,7 +70,7 @@ needs to be quite substantial to construct the cuts from scratch.
           a_j is the j-th coefficient of the row and f_j its fractional part
           Note: we create -% <= -f_0 !!
           Note: this formula is valid for a problem of the form Ax = b, x>= 0. Since we do not have
-          such problem structure in general, we have to (implicitely) transform whatever we are given
+          such problem structure in general, we have to (implicitly) transform whatever we are given
           to that form. Specifically, non-basic variables at their lower bound are shifted so that the lower
           bound is 0 and non-basic at their upper bound are complemented.
           """
@@ -92,7 +92,7 @@ needs to be quite substantial to construct the cuts from scratch.
           # Generate cut coefficients for the original variables
           for c in range(len(cols)):
               col = cols[c]
-              assert col is not None # is this the equivalent of col != NULL? does it even make sense to have this assert?
+              assert col is not None
               status = col.getBasisStatus()
 
               # Get simplex tableau coefficient
@@ -285,7 +285,7 @@ needs to be quite substantial to construct the cuts from scratch.
 
 
                   # Only take efficacious cuts, except for cuts with one non-zero coefficient (= bound changes)
-                  # the latter cuts will be handeled internally in sepastore.
+                  # the latter cuts will be handled internally in sepastore.
                   if cut.getNNonz() == 1 or scip.isCutEfficacious(cut):
 
                       # flush all changes before adding the cut
@@ -307,5 +307,5 @@ The GMI separator can then be included using the following code:
 .. code-block:: python
 
   sepa = GMI()
-  scip.includeSepa(sepa, "python_gmi", "generates gomory mixed integer cuts", priorityS=1000, freq=1)
+  scip.includeSepa(sepa, "python_gmi", "generates gomory mixed integer cuts", priority=1000, freq=1)
 

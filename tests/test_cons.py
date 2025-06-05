@@ -72,6 +72,23 @@ def test_cons_logical():
     assert m.isEQ(m.getVal(result1), 1)
     assert m.isEQ(m.getVal(result2), 0)
 
+def test_cons_logical_fail():
+    m = Model()
+    x1 = m.addVar(vtype="B")
+    x2 = m.addVar(vtype="B")
+    x3 = m.addVar(vtype="B")
+    x4 = m.addVar(vtype="B")
+    result1 = m.addVar(vtype="B")
+
+    m.addCons(x3 == 1 - x1)
+    m.addCons(x4 == 1 - x2)
+
+    # result1 false
+    with pytest.raises(TypeError):
+        m.addConsOr([x1*x3, x2*x4], result1)
+
+    m.optimize()
+
 def test_SOScons():
     m = Model()
     x = {}
@@ -117,6 +134,8 @@ def test_cons_indicator():
     assert m.getNConss() == 5
 
     slack = m.getSlackVarIndicator(c1)
+
+    lin_cons = m.getLinearConsIndicator(c1)
 
     m.optimize()
 
@@ -214,11 +233,46 @@ def test_addConsDisjunction_expr_init():
     assert m.isEQ(m.getVal(y), 5)
     assert m.isEQ(m.getVal(o), 6)
 
+def test_cons_knapsack():
+    m = Model()
+    x = m.addVar("x", vtype="B", obj=-1)
+    y = m.addVar("y", vtype="B", obj=0)
+    z = m.addVar("z", vtype="B", obj=2)
+    
+    knapsack_cons = m.addConsKnapsack([x,y], [4,2], 10)
+    assert knapsack_cons.getConshdlrName() == "knapsack"
+    assert knapsack_cons.isKnapsack()
 
-@pytest.mark.skip(reason="TODO: test getValsLinear()")
+    assert m.getConsNVars(knapsack_cons) == 2
+    assert m.getConsVars(knapsack_cons) == [x, y]
+
+    m.chgCapacityKnapsack(knapsack_cons, 5)
+
+    assert m.getCapacityKnapsack(knapsack_cons) == 5
+
+    m.addCoefKnapsack(knapsack_cons, z, 3)
+    weights = m.getWeightsKnapsack(knapsack_cons)
+    assert weights["x"] == 4
+    assert weights["y"] == 2
+    assert weights["z"] == 3
+
+    m.optimize()
+    assert m.getDualsolKnapsack(knapsack_cons) == 0
+    assert m.getDualfarkasKnapsack(knapsack_cons) == 0
+
 def test_getValsLinear():
-    assert True
+    m = Model()
+    x = m.addVar("x", lb=0, ub=2, obj=-1)
+    y = m.addVar("y", lb=0, ub=4, obj=0)
+    z = m.addVar("z", lb=0, ub=5, obj=2)
+    
+    c1 = m.addCons(2*x + y <= 5)
+    c2 = m.addCons(x + 4*z <= 5)
+    assert m.getValsLinear(c1) == {'x': 2, 'y': 1}
 
+    m.optimize() # just to check if constraint transformation matters
+
+    assert m.getValsLinear(c2) == {'x': 1, 'z': 4}
 
 @pytest.mark.skip(reason="TODO: test getRowLinear()")
 def test_getRowLinear():

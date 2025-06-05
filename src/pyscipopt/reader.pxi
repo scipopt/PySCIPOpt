@@ -45,9 +45,10 @@ cdef SCIP_RETCODE PyReaderWrite (SCIP* scip, SCIP_READER* reader, FILE* file,
                                  SCIP_VAR** fixedvars, int nfixedvars, int startnvars,
                                  SCIP_CONS** conss, int nconss, int maxnconss, int startnconss,
                                  SCIP_Bool genericnames, SCIP_RESULT* result) noexcept with gil:
-    cdef SCIP_READERDATA* readerdata
-    readerdata = SCIPreaderGetData(reader)
+    cdef SCIP_READERDATA* readerdata = SCIPreaderGetData(reader)
     cdef int fd = fileno(file)
+    cdef int i
+
     PyFile = os.fdopen(fd, "w", closefd=False)
     PyName = name.decode('utf-8')
     PyBinVars = [Variable.create(vars[i]) for i in range(nbinvars)]
@@ -61,4 +62,5 @@ cdef SCIP_RETCODE PyReaderWrite (SCIP* scip, SCIP_READER* reader, FILE* file,
                                        PyBinVars, PyIntVars, PyImplVars, PyContVars, PyFixedVars, startnvars,
                                        PyConss, maxnconss, startnconss, genericnames)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
+
     return SCIP_OKAY

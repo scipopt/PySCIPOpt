@@ -8,7 +8,7 @@ description = "Python interface and modeling environment for SCIP"
 authors = [
     {name = "Zuse Institute Berlin", email = "scip@zib.de"},
 ]
-dependencies = []
+dependencies = ['numpy >=1.16.0']
 requires-python = ">=3.8"
 readme = "README.md"
 license = {text = "MIT"}
@@ -45,7 +45,7 @@ manylinux-x86_64-image = "manylinux_2_28"
 skip="pp* cp36* cp37* *musllinux*"
 before-all = [
     "(apt-get update && apt-get install --yes wget) || yum install -y wget zlib libgfortran || brew install wget",
-    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.5.0/libscip-linux.zip -O scip.zip",
+    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.7.0/libscip-linux.zip -O scip.zip",
     "unzip scip.zip",
     "mv scip_install scip"
     ]
@@ -58,10 +58,10 @@ before-all = '''
 #!/bin/bash
 brew install wget zlib gcc
 if [[ $CIBW_ARCHS == *"arm"* ]]; then
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.5.0/libscip-macos-arm.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.7.0/libscip-macos-arm.zip -O scip.zip
     export MACOSX_DEPLOYMENT_TARGET=14.0
 else
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.5.0/libscip-macos.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.7.0/libscip-macos-intel.zip -O scip.zip
     export MACOSX_DEPLOYMENT_TARGET=13.0
 fi
 unzip scip.zip
@@ -87,7 +87,7 @@ repair-wheel-command = '''
 skip="pp* cp36* cp37*"
 before-all = [
     "choco install 7zip wget",
-    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.5.0/libscip-windows.zip -O scip.zip",
+    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.7.0/libscip-windows.zip -O scip.zip",
     "\"C:\\Program Files\\7-Zip\\7z.exe\" x \"scip.zip\" -o\"scip-test\"",
     "mv .\\scip-test\\scip_install .\\test",
     "mv .\\test .\\scip"

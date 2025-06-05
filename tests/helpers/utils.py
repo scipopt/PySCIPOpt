@@ -1,7 +1,7 @@
 from pyscipopt import Model, quicksum, SCIP_PARAMSETTING, exp, log, sqrt, sin
 from typing import List
 
-def random_mip_1(disable_sepa=True, disable_huer=True, disable_presolve=True, node_lim=2000, small=False):
+def random_mip_1(disable_sepa=True, disable_heur=True, disable_presolve=True, node_lim=2000, small=False):
     model = Model()
 
     x0 = model.addVar(lb=-2, ub=4)
@@ -41,7 +41,7 @@ def random_mip_1(disable_sepa=True, disable_huer=True, disable_presolve=True, no
 
     if disable_sepa:
         model.setSeparating(SCIP_PARAMSETTING.OFF)
-    if disable_huer:
+    if disable_heur:
         model.setHeuristics(SCIP_PARAMSETTING.OFF)
     if disable_presolve:
         model.setPresolve(SCIP_PARAMSETTING.OFF)
@@ -51,17 +51,20 @@ def random_mip_1(disable_sepa=True, disable_huer=True, disable_presolve=True, no
 
 
 def random_lp_1():
-    return random_mip_1().relax()
+    model = random_mip_1()
+    model.relax()
+    
+    return model
 
 
 def random_nlp_1():
     model = Model()
 
-    v = model.addVar()
-    w = model.addVar()
-    x = model.addVar()
-    y = model.addVar()
-    z = model.addVar()
+    v = model.addVar(name="v")
+    w = model.addVar(name="w")
+    x = model.addVar(name="x")
+    y = model.addVar(name="y", ub=1.4)
+    z = model.addVar(name="z", ub=4)
 
     model.addCons(exp(v) + log(w) + sqrt(x) + sin(y) + z ** 3 * y <= 5)
     model.setObjective(v + w + x + y + z, sense='maximize')
@@ -87,7 +90,7 @@ def knapsack_model(weights=[4, 2, 6, 3, 7, 5], costs=[7, 2, 5, 4, 3, 4], knapsac
         knapsackVars.append(s.addVar(varNames[i], vtype='I', obj=costs[i], ub=1.0))
 
     # adding a linear constraint for the knapsack constraint
-    s.addCons(quicksum(w * v for (w, v) in zip(weights, knapsackVars)) <= knapsackSize)
+    s.addCons(quicksum(w * v for (w, v) in zip(weights, knapsackVars)) <= knapsack_size)
 
     return s
 
@@ -241,12 +244,19 @@ def gastrans_model():
 
 
 def knapsack_lp(weights, costs):
-    return knapsack_model(weights, costs).relax()
+    model = knapsack_model(weights, costs)
+    model.relax()
 
+    return model
 
 def bin_packing_lp(sizes, capacity):
-    return bin_packing_model(sizes, capacity).relax()
+    model = bin_packing_model(sizes, capacity)
+    model.relax()
 
+    return model
 
 def gastrans_lp():
-    return gastrans_model().relax()
+    model = gastrans_model()
+    model.relax()
+
+    return model

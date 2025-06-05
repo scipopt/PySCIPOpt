@@ -58,7 +58,7 @@ whose LP solution is most fractional.
 
           return {"result": SCIP_RESULT.BRANCHED}
 
-Let's talk about some features of this branching rule. Currently we only explicitly programmed
+Let's talk about some features of this branching rule. Currently, we only explicitly programmed
 a single function, which is called ``branchexeclp``. This is the function that gets called
 when branching on an LP optimal solution. While this is the main case, it is not the only
 case that SCIP handles. What if there was an LP error at the node, or you are given a set of external
@@ -108,7 +108,7 @@ strong branching or obtain some strong branching information.
 
   - What happens if a new primal solution is found and the bound is larger than the cutoff bound?
   - What happens if the bound for one of the children is above a cutoff bound?
-  - If probing is enabled then one would need to handle new found bounds appropriately.
+  - If probing is enabled then one would need to handle new-found bounds appropriately.
 
 .. code-block:: python
 

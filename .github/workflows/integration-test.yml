@@ -8,14 +8,12 @@ on:
   push:
     branches:
       - 'master'
-  pull_request:
-    branches:
-      - 'master'
+
 
 jobs:
 
   Integration-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: true
       matrix:
@@ -36,7 +34,7 @@ jobs:
       - name: Prepare python environment
         run: |
           python -m pip install --upgrade pip
-          python -m pip install networkx pytest-cov
+          python -m pip install networkx pytest-cov numpy
 
       - name: Install PySCIPOpt
         run: python -m pip install .
@@ -72,7 +70,7 @@ jobs:
         shell: powershell
         run: |
           python -m pip install --upgrade pip
-          python -m pip install networkx pytest-cov
+          python -m pip install networkx pytest-cov numpy
 
       - name: Install PySCIPOpt
         shell: powershell
@@ -109,7 +107,7 @@ jobs:
       - name: Prepare python environment
         run: |
           python -m pip install --upgrade pip
-          python -m pip install networkx pytest-cov pytest
+          python -m pip install networkx pytest-cov pytest numpy
 
       - name: Install PySCIPOpt
         run: |

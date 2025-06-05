@@ -2,10 +2,54 @@
 
 ## Unreleased
 ### Added
+- Added support for knapsack constraints
+- Added isPositive(), isNegative(), isFeasLE(), isFeasLT(), isFeasGE(), isFeasGT(), isHugeValue(), and tests
+- Added SCIP_LOCKTYPE, addVarLocksType(), getNLocksDown(), getNLocksUp(), getNLocksDownType(), getNLocksUpType(), and tests
+### Fixed
+- Raised an error when an expression is used when a variable is required
+### Changed
+### Removed
+
+## 5.5.0 - 2025.05.06
+### Added
+- Wrapped SCIPgetChildren and added getChildren and test (also test getOpenNodes) 
+- Wrapped SCIPgetLeaves, SCIPgetNLeaves, and added getLeaves, getNLeaves and test
+- Wrapped SCIPgetSiblings, SCIPgetNSiblings, and added getSiblings, getNSiblings and test
+- Wrapped SCIPdeactivatePricer, SCIPsetConsModifiable, and added deactivatePricer, setModifiable and test
+- Added getLinearConsIndicator
+- Added SCIP_LPPARAM, setIntParam, setRealParam, getIntParam, getRealParam, isOptimal, getObjVal, getRedcost for lpi
+- Added isFeasPositive
+- Added SCIP function SCIProwGetDualsol and wrapper getDualsol
+- Added SCIP function SCIProwGetDualfarkas and wrapper getDualfarkas
+### Fixed
+- Fixed bug when accessing matrix variable attributes
+### Changed
+- Stopped tests from running in draft PRs
+### Removed
+
+## 5.4.1 - 2024.02.24
+### Added
+- Added option to get Lhs, Rhs of nonlinear constraints
+- Added cutoffNode and test
+- Added getMajorVersion, getMinorVersion, and getTechVersion
+- Added addMatrixVar and addMatriCons
+- Added MatrixVariable, MatrixConstraint, MatrixExpr, and MatrixExprCons
+### Fixed
+- Warning at Model initialisation now uses new version calls
+### Changed
+### Removed
+- Removed universal wheel type from setup.cfg (support for Python 2)
+
+## 5.3.0 - 2025.02.07
+### Added
+- Added cdef type declaration of loop variables for slight speedup
+- Added wrappers for setting and getting heuristic timing
+- Added transformed option to getVarDict, updated test
 - Added categorical data example
 - Added printProblem to print problem to stdout
 - Added stage checks to presolve, freereoptsolve, freetransform
 - Added primal_dual_evolution recipe and a plot recipe
+- Added python wrappers for usage of SCIPcopyLargeNeighborhoodSearch, SCIPtranslateSubSol and SCIPhashmapCreate
 ### Fixed
 - Added default names to indicator constraints
 ### Changed

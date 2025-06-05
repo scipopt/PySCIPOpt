@@ -18,6 +18,10 @@ Suite](https://www.scipopt.org/). Please, make sure that your SCIP installation 
 
 **Note that the latest PySCIPOpt version is usually only compatible with the latest major release of the SCIP Optimization Suite. See the table on the README.md page for details.**
 
+If you install SCIP yourself and are not using the installer packages, you need to [install the
+SCIP Optimization Suite using CMake](https://www.scipopt.org/doc/html/md_INSTALL.php#CMAKE).
+The Makefile system is not compatible with PySCIPOpt!
+
 If installing SCIP from source or using PyPI with a python and operating system that is not mentioned above, and SCIP is not installed in the global path,
 you need to specify the install location using the environment variable
 `SCIPOPTDIR`:
@@ -41,9 +45,8 @@ contains the corresponding header files:
         > nlpi
         > ...
 
-If you install SCIP yourself and are not using the installer packages, you need to [install the
-SCIP Optimization Suite using CMake](https://www.scipopt.org/doc/html/md_INSTALL.php#CMAKE).
-The Makefile system is not compatible with PySCIPOpt!
+Please note that some Mac configurations require adding the library installation path to `DYLD_LIBRARY_PATH` when using a locally installed version of SCIP.
+
 
 When building SCIP from source using Windows it is highly recommended to use the [Anaconda Python
 Platform](https://www.anaconda.com/).
@@ -53,9 +56,18 @@ Installation from PyPI
 
     python -m pip install pyscipopt
 
+To avoid interfering with system packages, it's best to use a [virtual environment](https://docs.python.org/3/library/venv.html).<br>
+<span style="color:orange">**Warning!**</span> This is mandatory in some newer configurations.
+
+```bash
+python3 -m venv venv source venv/bin/activate  # On Windows use: venv\Scripts\activate pip install pyscipopt
+pip install pyscipopt
+```
+Remember to activate the environment (`source venv/bin/activate`) in each terminal session where you use PySCIPOpt.
+
 Please note that if your Python version and OS version are in the combinations at the start of this INSTALL file then
 pip now automatically installs a pre-built version of SCIP. For these combinations, to use your own installation of SCIP,
-plese see the section on building from source. For unavailable combinations this pip command will automatically
+please see the section on building from source. For unavailable combinations this pip command will automatically
 search your global installs or custom set paths as above.
 
 On Windows for combinations not listed at the start of this file, you may need to ensure that the `scip` library can be found

@@ -1,8 +1,6 @@
 ##@file sudoku.py
 # @brief Simple example of modeling a Sudoku as a binary program
 
-# !/usr/bin/env python
-
 from pyscipopt import Model, quicksum
 
 # initial Sudoku values

@@ -23,10 +23,21 @@ See [CHANGELOG.md](https://github.com/scipopt/PySCIPOpt/blob/master/CHANGELOG.md
 Installation
 ------------
 
-The recommended installation method is via PyPI
+The recommended installation method is via [PyPI](https://pypi.org/project/PySCIPOpt/):
+
 ```bash
 pip install pyscipopt
 ```
+
+To avoid interfering with system packages, it's best to use a [virtual environment](https://docs.python.org/3/library/venv.html):
+
+```bash
+python3 -m venv venv     # creates a virtual environment called venv
+source venv/bin/activate # activates the environment. On Windows use: venv\Scripts\activate
+pip install pyscipopt
+```
+Remember to activate the environment (`source venv/bin/activate` or equivalent) in each terminal session where you use PySCIPOpt.
+Note that some configurations require the use of virtual environments.
 
 For information on specific versions, installation via Conda, and guides for building from source,
 please see the [online documentation](https://pyscipopt.readthedocs.io/en/latest/install.html).
@@ -44,20 +55,20 @@ following steps are always required when using the interface:
 1)  It is necessary to import python-scip in your code. This is achieved
     by including the line
 
-``` {.sourceCode .python}
+```python
 from pyscipopt import Model
 ```
 
 2)  Create a solver instance.
 
-``` {.sourceCode .python}
+```python
 model = Model("Example")  # model name is optional
 ```
 
 3)  Access the methods in the `scip.pxi` file using the solver/model
     instance `model`, e.g.:
 
-``` {.sourceCode .python}
+```python
 x = model.addVar("x")
 y = model.addVar("y", vtype="INTEGER")
 model.setObjective(x + y)
@@ -81,6 +92,16 @@ examples.
 
 Please notice that in most cases one needs to use a `dictionary` to
 specify the return values needed by SCIP.
+
+Using PySCIPOpt?
+----------------
+
+If your project or company is using PySCIPOpt, consider letting us know at scip@zib.de. We are always interested
+in knowing how PySCIPOpt is being used, and, given permission, would also appreciate adding your company's logo 
+to our website.  
+
+If you are creating models with some degree of complexity which don't take too long to solve, also consider
+sharing them with us. We might want to add them to [`tests/helpers/utils.py`](tests/helpers/utils.py) to help make our tests more robust, or add them to our examples.
 
 Citing PySCIPOpt
 ----------------

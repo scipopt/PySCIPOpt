@@ -38,8 +38,8 @@ We can construct the optimization problem as follows:
   y = scip.addVar(vtype='C', lb=0, ub=None, name='y')
   z = scip.addVar(vtype='C', lb=0, ub=None, name='z')
   cons_1 = scip.addCons(x + y <= 5, name="cons_1")
-  cons_1 = scip.addCons(y + z >= 3, name="cons_2")
-  cons_1 = scip.addCons(x + y == 5, name="cons_3")
+  cons_2 = scip.addCons(y + z >= 3, name="cons_2")
+  cons_3 = scip.addCons(x + y == 5, name="cons_3")
   scip.setObjective(2 * x + 3 * y - 5 * z, sense="minimize")
   scip.optimize()
 
@@ -47,7 +47,7 @@ That's it! We've built the optimization problem defined above and we've optimize
 For how to read a Model from file see :doc:`this page </tutorials/readwrite>` and for best practices
 on how to create more variables see :doc:`this page </tutorials/vartypes>`.
 
-.. note:: ``vtype='C'`` here refers to a continuous variables.
+.. note:: ``vtype='C'`` here refers to a continuous variable.
   Providing the lb, ub was not necessary as they default to (0, None) for continuous variables.
   Providing the name attribute is not necessary either but is good practice.
   Providing the objective sense was also not necessary as it defaults to "minimize".
@@ -68,7 +68,7 @@ optimal objective value, and the variable solution values in the optimal solutio
   num_nodes = scip.getNTotalNodes() # Note that getNNodes() is only the number of nodes for the current run (resets at restart)
   obj_val = scip.getObjVal()
   for scip_var in [x, y, z]:
-      print(f"Variable {scip_var.name} has value {scip.getVal(scip_var)})
+      print(f"Variable {scip_var.name} has value {scip.getVal(scip_var)}")
 
 Set / Get a Parameter
 =====================
@@ -173,7 +173,7 @@ You can find below a list of the available options, alongside their meaning.
     * - ``PARAMEMPHASIS.COUNTER``
       - to get feasible and "fast" counting process
     * - ``PARAMEMPHASIS.CPSOLVER`` 
-      - to get CP like search (e.g. no LP relaxation)
+      - to get CP-like search (e.g. no LP relaxation)
     * - ``PARAMEMPHASIS.EASYCIP``
       - to solve easy problems fast
     * - ``PARAMEMPHASIS.FEASIBILITY`` 
@@ -200,7 +200,7 @@ A SCIP Model can also be copied. This can be done with the following logic:
 
   scip_alternate_model = Model(sourceModel=scip) # Assuming scip is a pyscipopt Model
 
-This model is completely independent from the source model. The data has been duplicated.
+This model is completely independent of the source model. The data has been duplicated.
 That is, calling ``scip.optimize()`` at this point will have no effect on ``scip_alternate_model``.
 
 .. note:: After optimizing users often struggle with reoptimization. To make changes to an

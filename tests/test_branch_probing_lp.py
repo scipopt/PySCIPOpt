@@ -39,7 +39,6 @@ class MyBranching(Branchrule):
             return {"result": SCIP_RESULT.BRANCHED}
 
 
-
 def test_branching():
     m = Model()
     m.setHeuristics(SCIP_PARAMSETTING.OFF)
@@ -63,7 +62,6 @@ def test_branching():
     for i in range(1000):
         more_vars.append(m.addVar(vtype="I", lb= -52, ub=10))
         m.addCons(quicksum(v for v in more_vars[50::2]) <= (40 - i) * quicksum(v for v in more_vars[405::2]))
-
 
 
     m.addCons(r1 >= x0)

@@ -18,6 +18,9 @@ from posix.stdio cimport fileno
 from collections.abc import Iterable
 from itertools import repeat
 from dataclasses import dataclass
+from typing import Union
+
+import numpy as np
 
 include "expr.pxi"
 include "lp.pxi"
@@ -35,10 +38,11 @@ include "sepa.pxi"
 include "reader.pxi"
 include "relax.pxi"
 include "nodesel.pxi"
+include "matrix.pxi"
 
 # recommended SCIP version; major version is required
 MAJOR = 9
-MINOR = 0
+MINOR = 2
 PATCH = 1
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
@@ -80,6 +84,28 @@ cdef class PY_SCIP_PARAMSETTING:
     AGGRESSIVE  = SCIP_PARAMSETTING_AGGRESSIVE
     FAST        = SCIP_PARAMSETTING_FAST
     OFF         = SCIP_PARAMSETTING_OFF
+
+cdef class PY_SCIP_LPPARAM:
+    FROMSCRATCH    = SCIP_LPPAR_FROMSCRATCH
+    FASTMIP        = SCIP_LPPAR_FASTMIP
+    SCALING        = SCIP_LPPAR_SCALING
+    PRESOLVING     = SCIP_LPPAR_PRESOLVING
+    PRICING        = SCIP_LPPAR_PRICING
+    LPINFO         = SCIP_LPPAR_LPINFO
+    FEASTOL        = SCIP_LPPAR_FEASTOL
+    DUALFEASTOL    = SCIP_LPPAR_DUALFEASTOL
+    BARRIERCONVTOL = SCIP_LPPAR_BARRIERCONVTOL
+    OBJLIM         = SCIP_LPPAR_OBJLIM
+    LPITLIM        = SCIP_LPPAR_LPITLIM
+    LPTILIM        = SCIP_LPPAR_LPTILIM
+    MARKOWITZ      = SCIP_LPPAR_MARKOWITZ
+    ROWREPSWITCH   = SCIP_LPPAR_ROWREPSWITCH
+    THREADS        = SCIP_LPPAR_THREADS
+    CONDITIONLIMIT = SCIP_LPPAR_CONDITIONLIMIT
+    TIMING         = SCIP_LPPAR_TIMING
+    RANDOMSEED     = SCIP_LPPAR_RANDOMSEED
+    POLISHING      = SCIP_LPPAR_POLISHING
+    REFACTOR       = SCIP_LPPAR_REFACTOR
 
 cdef class PY_SCIP_PARAMEMPHASIS:
     DEFAULT      = SCIP_PARAMEMPHASIS_DEFAULT
@@ -229,6 +255,9 @@ cdef class PY_SCIP_EVENTTYPE:
     ROWCHANGED      = SCIP_EVENTTYPE_ROWCHANGED
     ROWEVENT        = SCIP_EVENTTYPE_ROWEVENT
 
+cdef class PY_SCIP_LOCKTYPE:
+    MODEL    = SCIP_LOCKTYPE_MODEL
+    CONFLICT = SCIP_LOCKTYPE_CONFLICT
 
 cdef class PY_SCIP_LPSOLSTAT:
     NOTSOLVED    = SCIP_LPSOLSTAT_NOTSOLVED
@@ -316,12 +345,12 @@ cdef class Event:
     cdef create(SCIP_EVENT* scip_event):
         """
         Main method for creating an Event class. Is used instead of __init__.
-        
+
         Parameters
         ----------
         scip_event : SCIP_EVENT*
             A pointer to the SCIP_EVENT
-            
+
         Returns
         -------
         event : Event
@@ -364,7 +393,7 @@ cdef class Event:
             attr = getattr(PY_SCIP_EVENTTYPE, name)
             if isinstance(attr, int):
                 EventNames[attr] = name
-        
+
     def __repr__(self):
         return str(self.getType())
 
@@ -444,7 +473,7 @@ cdef class Column:
     cdef create(SCIP_COL* scipcol):
         """
         Main method for creating a Column class. Is used instead of __init__.
-        
+
         Parameters
         ----------
         scipcol : SCIP_COL*
@@ -653,6 +682,28 @@ cdef class Row:
         """
         return SCIProwGetConstant(self.scip_row)
 
+    def getDualsol(self):
+        """
+        Returns the dual solution of row.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIProwGetDualsol(self.scip_row)
+
+    def getDualfarkas(self):
+        """
+        Returns the dual Farkas solution of row.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIProwGetDualfarkas(self.scip_row)
+
     def getLPPos(self):
         """
         Gets position of row in current LP, or -1 if it is not in LP.
@@ -807,6 +858,7 @@ cdef class Row:
 
         """
         cdef SCIP_COL** cols = SCIProwGetCols(self.scip_row)
+        cdef int i
         return [Column.create(cols[i]) for i in range(self.getNNonz())]
 
     def getVals(self):
@@ -819,6 +871,7 @@ cdef class Row:
 
         """
         cdef SCIP_Real* vals = SCIProwGetVals(self.scip_row)
+        cdef int i
         return [vals[i] for i in range(self.getNNonz())]
 
     def getAge(self):
@@ -903,6 +956,7 @@ cdef class NLRow:
         cdef SCIP_VAR** linvars = SCIPnlrowGetLinearVars(self.scip_nlrow)
         cdef SCIP_Real* lincoefs = SCIPnlrowGetLinearCoefs(self.scip_nlrow)
         cdef int nlinvars = SCIPnlrowGetNLinearVars(self.scip_nlrow)
+        cdef int i
         return [(Variable.create(linvars[i]), lincoefs[i]) for i in range(nlinvars)]
 
     def getLhs(self):
@@ -979,19 +1033,29 @@ cdef class Solution:
         sol.scip = scip
         return sol
 
-    def __getitem__(self, Expr expr):
+    def __getitem__(self, expr: Union[Expr, MatrixExpr]):
+        if isinstance(expr, MatrixExpr):
+            result = np.zeros(expr.shape, dtype=np.float64)
+            for idx in np.ndindex(expr.shape):
+                result[idx] = self.__getitem__(expr[idx])
+            return result
+
         # fast track for Variable
+        cdef SCIP_Real coeff
+        cdef _VarArray wrapper
         if isinstance(expr, Variable):
+            wrapper = _VarArray(expr)
             self._checkStage("SCIPgetSolVal")
-            var = <Variable> expr
-            return SCIPgetSolVal(self.scip, self.sol, var.scip_var)
+            return SCIPgetSolVal(self.scip, self.sol, wrapper.ptr[0])
         return sum(self._evaluate(term)*coeff for term, coeff in expr.terms.items() if coeff != 0)
-    
+
     def _evaluate(self, term):
         self._checkStage("SCIPgetSolVal")
         result = 1
-        for var in term.vartuple:
-            result *= SCIPgetSolVal(self.scip, self.sol, (<Variable> var).scip_var)
+        cdef _VarArray wrapper
+        wrapper = _VarArray(term.vartuple)
+        for i in range(len(term.vartuple)):
+            result *= SCIPgetSolVal(self.scip, self.sol, wrapper.ptr[i])
         return result
 
     def __setitem__(self, Variable var, value):
@@ -999,23 +1063,20 @@ cdef class Solution:
 
     def __repr__(self):
         cdef SCIP_VAR* scip_var
-
+        cdef int i
         vals = {}
         self._checkStage("SCIPgetSolVal")
         for i in range(SCIPgetNOrigVars(self.scip)):
             scip_var = SCIPgetOrigVars(self.scip)[i]
-
             # extract name
             cname = bytes(SCIPvarGetName(scip_var))
             name = cname.decode('utf-8')
-
             vals[name] = SCIPgetSolVal(self.scip, self.sol, scip_var)
         return str(vals)
-    
+
     def _checkStage(self, method):
         if method in ["SCIPgetSolVal", "getSolObjVal"]:
             stage_check = SCIPgetStage(self.scip) not in [SCIP_STAGE_INIT, SCIP_STAGE_FREE]
-
             if not stage_check or self.sol == NULL and SCIPgetStage(self.scip) != SCIP_STAGE_SOLVING:
                 raise Warning(f"{method} can only be called with a valid solution or in stage SOLVING (current stage: {SCIPgetStage(self.scip)})")
 
@@ -1049,7 +1110,6 @@ cdef class Solution:
             PY_SCIP_CALL(SCIPretransformSol(self.scip, self.sol))
         cdef Solution targetSol = Solution.create(target._scip, NULL)
         cdef SCIP_VAR** source_vars = SCIPgetOrigVars(self.scip)
-        
         PY_SCIP_CALL(SCIPtranslateSubSol(target._scip, self.scip, self.sol, NULL, source_vars, &(targetSol.sol)))
         return targetSol
 
@@ -1175,7 +1235,8 @@ cdef class DomainChanges:
         list of BoundChange
 
         """
-        nboundchgs = SCIPdomchgGetNBoundchgs(self.scip_domchg)
+        cdef int nboundchgs = SCIPdomchgGetNBoundchgs(self.scip_domchg)
+        cdef int i
         return [BoundChange.create(SCIPdomchgGetBoundchg(self.scip_domchg, i))
                 for i in range(nboundchgs)]
 
@@ -1284,6 +1345,7 @@ cdef class Node:
             return []
         cdef SCIP_CONS** addedconss = <SCIP_CONS**> malloc(addedconsssize * sizeof(SCIP_CONS*))
         cdef int nconss
+        cdef int i
         SCIPnodeGetAddedConss(self.scip_node, addedconss, &nconss, addedconsssize)
         assert nconss == addedconsssize
         constraints = [Constraint.create(addedconss[i]) for i in range(nconss)]
@@ -1358,18 +1420,16 @@ cdef class Node:
         cdef int nbranchvars = self.getNParentBranchings()
         if nbranchvars == 0:
             return None
-
         cdef SCIP_VAR** branchvars = <SCIP_VAR**> malloc(nbranchvars * sizeof(SCIP_VAR*))
         cdef SCIP_Real* branchbounds = <SCIP_Real*> malloc(nbranchvars * sizeof(SCIP_Real))
         cdef SCIP_BOUNDTYPE* boundtypes = <SCIP_BOUNDTYPE*> malloc(nbranchvars * sizeof(SCIP_BOUNDTYPE))
-
+        cdef int i
         SCIPnodeGetParentBranchings(self.scip_node, branchvars, branchbounds,
                                     boundtypes, &nbranchvars, nbranchvars)
 
         py_variables = [Variable.create(branchvars[i]) for i in range(nbranchvars)]
         py_branchbounds = [branchbounds[i] for i in range(nbranchvars)]
         py_boundtypes = [boundtypes[i] for i in range(nbranchvars)]
-
         free(boundtypes)
         free(branchbounds)
         free(branchvars)
@@ -1617,6 +1677,60 @@ cdef class Variable(Expr):
         """
         return SCIPvarGetAvgSol(self.scip_var)
 
+    def getNLocksDown(self):
+        """
+        Returns the number of locks for rounding down.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPvarGetNLocksDown(self.scip_var)
+    
+    def getNLocksUp(self):
+        """
+        Returns the number of locks for rounding up.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPvarGetNLocksUp(self.scip_var)
+
+    def getNLocksDownType(self, locktype):
+        """
+        Returns the number of locks for rounding down of a certain type.
+
+        Parameters
+        ----------
+        locktype : SCIP_LOCKTYPE
+            type of variable locks
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPvarGetNLocksDownType(self.scip_var, locktype)
+
+    def getNLocksUpType(self, locktype):
+        """
+        Returns the number of locks for rounding up of a certain type.
+
+        Parameters
+        ----------
+        locktype : SCIP_LOCKTYPE
+            type of variable locks
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPvarGetNLocksUpType(self.scip_var, locktype)
+
     def varMayRound(self, direction="down"):
         """
         Checks whether it is possible to round variable up / down and stay feasible for the relaxation.
@@ -1638,8 +1752,216 @@ cdef class Variable(Expr):
             mayround = SCIPvarMayRoundDown(self.scip_var)
         else:
             mayround = SCIPvarMayRoundUp(self.scip_var)
-
         return mayround
+
+class MatrixVariable(MatrixExpr):
+
+    def vtype(self):
+        """
+        Retrieve the matrix variables type (BINARY, INTEGER, IMPLINT or CONTINUOUS)
+
+        Returns
+        -------
+        np.ndarray
+            A matrix containing "BINARY", "INTEGER", "CONTINUOUS", or "IMPLINT"
+
+        """
+        vtypes = np.empty(self.shape, dtype=object)
+        for idx in np.ndindex(self.shape):
+            vtypes[idx] = self[idx].vtype()
+        return vtypes
+
+    def isInLP(self):
+        """
+        Retrieve whether the matrix variable is a COLUMN variable that is member of the current LP.
+
+        Returns
+        -------
+        np.ndarray
+            An array of bools
+
+        """
+        in_lp = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self.shape):
+            in_lp[idx] = self[idx].isInLP()
+        return in_lp
+
+
+    def getIndex(self):
+        """
+        Retrieve the unique index of the matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+            An array of integers. No two should be the same
+        """
+        indices = np.empty(self.shape, dtype=int)
+        for idx in np.ndindex(self.shape):
+            indices[idx] = self[idx].getIndex()
+        return indices
+
+    def getCol(self):
+        """
+        Retrieve matrix of columns of COLUMN variables.
+
+        Returns
+        -------
+        np.ndarray
+            An array of Column objects
+        """
+
+        columns = np.empty(self.shape, dtype=object)
+        for idx in np.ndindex(self.shape):
+            columns[idx] = self[idx].getCol()
+        return columns
+
+    def getLbOriginal(self):
+        """
+        Retrieve original lower bound of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        lbs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self.shape):
+            lbs[idx] = self[idx].getLbOriginal()
+        return lbs
+
+    def getUbOriginal(self):
+        """
+        Retrieve original upper bound of matrixvariable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        ubs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self.shape):
+            ubs[idx] = self[idx].getUbOriginal()
+        return ubs
+
+    def getLbGlobal(self):
+        """
+        Retrieve global lower bound of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        lbs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self.shape):
+            lbs[idx] = self[idx].getLbGlobal()
+        return lbs
+
+    def getUbGlobal(self):
+        """
+        Retrieve global upper bound of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        ubs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self.shape):
+            ubs[idx] = self[idx].getUbGlobal()
+        return ubs
+
+    def getLbLocal(self):
+        """
+        Retrieve current lower bound of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        lbs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self.shape):
+            lbs[idx] = self[idx].getLbLocal()
+        return lbs
+
+    def getUbLocal(self):
+        """
+        Retrieve current upper bound of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        ubs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self.shape):
+            ubs[idx] = self[idx].getUbLocal()
+        return ubs
+
+    def getObj(self):
+        """
+        Retrieve current objective value of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        objs = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self.shape):
+            objs[idx] = self[idx].getObj()
+        return objs
+
+    def getLPSol(self):
+        """
+        Retrieve the current LP solution value of matrix variable.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        lpsols = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self.shape):
+            lpsols[idx] = self[idx].getLPSol()
+        return lpsols
+
+    def getAvgSol(self):
+        """
+        Get the weighted average solution of matrix variable in all feasible primal solutions found.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        avgsols = np.empty(self.shape, dtype=float)
+        for idx in np.ndindex(self.shape):
+            avgsols[idx] = self[idx].getAvgSol()
+        return avgsols
+
+    def varMayRound(self, direction="down"):
+        """
+        Checks whether it is possible to round variable up / down and stay feasible for the relaxation.
+
+        Parameters
+        ----------
+        direction : str
+            "up" or "down"
+
+        Returns
+        -------
+        np.ndarray
+            An array of bools
+
+        """
+        mayround = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self.shape):
+            mayround[idx] = self[idx].varMayRound()
+        return mayround
+
 
 cdef class Constraint:
     """Base class holding a pointer to corresponding SCIP_CONS"""
@@ -1817,6 +2139,19 @@ cdef class Constraint:
         """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'linear'
+    
+    def isKnapsack(self):
+        """
+        Returns True if constraint is a knapsack constraint.
+        This is a special case of a linear constraint.
+
+        Returns
+        -------
+        bool
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
+        return constype == 'knapsack'
 
     def isNonlinear(self):
         """
@@ -1974,6 +2309,204 @@ cdef class Decomposition:
         else:
             PY_SCIP_CALL(SCIPdecompClear(self.scip_decomp, varlabels, conslabels))
 
+class MatrixConstraint(np.ndarray):
+
+    def isInitial(self):
+        """
+        Returns True if the relaxation of the constraint should be in the initial LP.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        initial = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            initial[idx] = self[idx].isInitial()
+        return initial
+
+    def isSeparated(self):
+        """
+        Returns True if constraint should be separated during LP processing.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        separated = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            separated[idx] = self[idx].isSeparated()
+        return separated
+
+    def isEnforced(self):
+        """
+        Returns True if constraint should be enforced during node processing.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        enforced = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            enforced[idx] = self[idx].isEnforced()
+        return enforced
+
+    def isChecked(self):
+        """
+        Returns True if constraint should be checked for feasibility.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        checked = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            checked[idx] = self[idx].isCheced()
+        return checked
+
+    def isPropagated(self):
+        """
+        Returns True if constraint should be propagated during node processing.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        propagated = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            propagated[idx] = self[idx].isPropagated()
+        return propagated
+
+    def isLocal(self):
+        """
+        Returns True if constraint is only locally valid or not added to any (sub)problem.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        local = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            local[idx] = self[idx].isLocal()
+        return local
+
+    def isModifiable(self):
+        """
+        Returns True if constraint is modifiable (subject to column generation).
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        modifiable = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            modifiable[idx] = self[idx].isModifiable()
+        return modifiable
+
+    def isDynamic(self):
+        """
+        Returns True if constraint is subject to aging.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        dynamic = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            dynamic[idx] = self[idx].isDynamic()
+        return dynamic
+
+    def isRemovable(self):
+        """
+        Returns True if constraint's relaxation should be removed from the LP due to aging or cleanup.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        removable = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            removable[idx] = self[idx].isRemovable()
+        return removable
+
+    def isStickingAtNode(self):
+        """
+        Returns True if constraint is only locally valid or not added to any (sub)problem.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        stickingatnode = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            stickingatnode[idx] = self[idx].isStickingAtNode()
+        return stickingatnode
+
+    def isActive(self):
+        """
+        Returns True iff constraint is active in the current node.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        active = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            active[idx] = self[idx].isActive()
+        return active
+
+    def isLinear(self):
+        """
+        Returns True if constraint is linear
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        islinear = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            islinear[idx] = self[idx].isLinear()
+        return islinear
+
+    def isNonlinear(self):
+        """
+        Returns True if constraint is nonlinear.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        isnonlinear = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            isnonlinear[idx] = self[idx].isNonlinear()
+        return isnonlinear
+
+    def getConshdlrName(self):
+        """
+        Return the constraint handler's name.
+
+        Returns
+        -------
+        np.ndarray
+
+        """
+        name = np.empty(self.shape, dtype=bool)
+        for idx in np.ndindex(self):
+            name[idx] = self[idx].getConshdlrName()
+        return name
+
 cdef void relayMessage(SCIP_MESSAGEHDLR *messagehdlr, FILE *file, const char *msg) noexcept:
     if file is stdout:
         sys.stdout.write(msg.decode('UTF-8'))
@@ -1991,6 +2524,32 @@ cdef void relayErrorMessage(void *messagehdlr, FILE *file, const char *msg) noex
         if msg is not NULL:
             fputs(msg, file)
         fflush(file)
+
+cdef class _VarArray:
+    cdef SCIP_VAR** ptr
+    cdef int size
+
+    def __cinit__(self, object vars):
+        if isinstance(vars, Variable):
+            self.size = 1
+            self.ptr = <SCIP_VAR**> malloc(sizeof(SCIP_VAR*))
+            self.ptr[0] = (<Variable>vars).scip_var
+        else:
+            if not isinstance(vars, (list, tuple)):
+                raise TypeError("Expected Variable or list of Variable, got %s." % type(vars))
+            self.size = len(vars)
+            if self.size == 0:
+                self.ptr = NULL
+            else:
+                self.ptr = <SCIP_VAR**> malloc(self.size * sizeof(SCIP_VAR*))
+                for i, var in enumerate(vars):
+                    if not isinstance(var, Variable):
+                        raise TypeError("Expected Variable, got %s." % type(var))
+                    self.ptr[i] = (<Variable>var).scip_var
+
+    def __dealloc__(self):
+        if self.ptr != NULL:
+            free(self.ptr)
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
@@ -2024,10 +2583,12 @@ cdef class Model:
             False if data can be safely shared between the source and target problem (default False)
 
         """
-        if self.version() < MAJOR:
+        if self.getMajorVersion() < MAJOR:
             raise Exception("linked SCIP is not compatible to this version of PySCIPOpt - use at least version", MAJOR)
-        if self.version() < MAJOR + MINOR/10.0 + PATCH/100.0:
-            warnings.warn("linked SCIP {} is not recommended for this version of PySCIPOpt - use version {}.{}.{}".format(self.version(), MAJOR, MINOR, PATCH))
+        if self.getMajorVersion() == MAJOR and self.getMinorVersion() < MINOR:
+            warnings.warn(
+                "linked SCIP {}.{} is not recommended for this version of PySCIPOpt - use version {}.{}.{}".format(
+                    self.getMajorVersion(), self.getMinorVersion(), MAJOR, MINOR, PATCH))
 
         self._freescip = True
         self._modelvars = {}
@@ -2054,7 +2615,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, threadsafe, True, self._valid))
 
 
-    def attachEventHandlerCallback(self, 
+    def attachEventHandlerCallback(self,
         callback,
         events,
         name="eventhandler",
@@ -2066,7 +2627,7 @@ cdef class Model:
         Parameters
         ----------
         callback : callable
-            The callback function to be called when an event occurs. 
+            The callback function to be called when an event occurs.
             The callback function should have the following signature:
             callback(model, event)
         events : list of SCIP_EVENTTYPE
@@ -2079,7 +2640,7 @@ cdef class Model:
 
         self._generated_event_handlers_count += 1
         model = self
-        
+
         class EventHandler(Eventhdlr):
             def __init__(self, callback):
                 super(EventHandler, self).__init__()
@@ -2088,19 +2649,19 @@ cdef class Model:
             def eventinit(self):
                 for event in events:
                     self.model.catchEvent(event, self)
-                    
+
             def eventexit(self):
                 for event in events:
                     self.model.dropEvent(event, self)
-                
+
             def eventexec(self, event):
                 self.callback(model, event)
-        
+
         event_handler = EventHandler(callback)
 
         if name == "eventhandler":
             name = f"eventhandler_{self._generated_event_handlers_count}"
-        
+
         self.includeEventhdlr(event_handler, name, description)
 
 
@@ -2121,7 +2682,7 @@ cdef class Model:
     cdef create(SCIP* scip):
         """
         Creates a model and appropriately assigns the scip and bestsol parameters.
-        
+
         Parameters
         ----------
         scip : SCIP*
@@ -2245,7 +2806,7 @@ cdef class Model:
                                  SCIP_STAGE_SOLVING,
                                  SCIP_STAGE_SOLVED]:
             raise Warning("method cannot be called in stage %i." % self.getStage())
-            
+
         self._modelvars = {
             var: value
             for var, value in self._modelvars.items()
@@ -2263,6 +2824,40 @@ cdef class Model:
 
         """
         return SCIPversion()
+
+    def getMajorVersion(self):
+        """
+        Retrieve SCIP major version.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPmajorVersion()
+
+    def getMinorVersion(self):
+        """
+        Retrieve SCIP minor version.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPminorVersion()
+
+
+    def getTechVersion(self):
+        """
+        Retrieve SCIP technical version.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPtechVersion()
 
     def printVersion(self):
         """Print version, copyright information and compile mode."""
@@ -2460,6 +3055,16 @@ cdef class Model:
         """
         return SCIPgetDepth(self._scip)
 
+    def cutoffNode(self, Node node):
+        """
+        marks node and whole subtree to be cut off from the branch and bound tree.
+
+        Parameters
+        ----------
+        node : Node
+        """
+        PY_SCIP_CALL( SCIPcutoffNode(self._scip, node.scip_node) )
+
     def infinity(self):
         """
         Retrieve SCIP's infinity value.
@@ -2628,6 +3233,21 @@ cdef class Model:
         """
         return SCIPisFeasNegative(self._scip, value)
 
+    def isFeasPositive(self, value):
+        """
+        Returns whether value > feastol.
+
+        Parameters
+        ----------
+        value : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisFeasPositive(self._scip, value)
+
     def isFeasIntegral(self, value):
         """
         Returns whether value is integral within the LP feasibility bounds.
@@ -2661,7 +3281,7 @@ cdef class Model:
 
     def isFeasEQ(self, val1, val2):
         """
-        Checks, if relative difference of values is in range of feasibility tolerance.
+        Returns if relative difference between val1 and val2 is in range of feasibility tolerance.
 
         Parameters
         ----------
@@ -2674,6 +3294,70 @@ cdef class Model:
 
         """
         return SCIPisFeasEQ(self._scip, val1, val2)
+    
+    def isFeasLT(self, val1, val2):
+        """
+        Returns whether relative difference between val1 and val2 is lower than minus feasibility tolerance.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisFeasLT(self._scip, val1, val2)
+    
+    def isFeasLE(self, val1, val2):
+        """
+        Returns whether relative difference between val1 and val2 is not greater than feasibility tolerance.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisFeasLE(self._scip, val1, val2)
+    
+    def isFeasGT(self, val1, val2):
+        """
+        Returns whether relative difference between val1 and val2 is greater than feasibility tolerance.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisFeasGT(self._scip, val1, val2)
+    
+    def isFeasGE(self, val1, val2):
+        """
+        Returns whether relative difference of val1 and val2 is not lower than minus feasibility tolerance.
+
+        Parameters
+        ----------
+        val1 : float
+        val2 : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisFeasGE(self._scip, val1, val2)
 
     def isLE(self, val1, val2):
         """
@@ -2739,6 +3423,52 @@ cdef class Model:
         """
         return SCIPisGT(self._scip, val1, val2)
 
+    def isHugeValue(self, val):
+        """
+        Checks if value is huge and should be
+        handled separately (e.g., in activity computation).
+
+        Parameters
+        ----------
+        val : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisHugeValue(self._scip, val)
+
+    def isPositive(self, val):
+        """
+        Returns whether val > eps.
+
+        Parameters
+        ----------
+        val : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisPositive(self._scip, val)
+
+    def isNegative(self, val):
+        """
+        Returns whether val < -eps.
+
+        Parameters
+        ----------
+        val : float
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisNegative(self._scip, val)
+
     def getCondition(self, exact=False):
         """
         Get the current LP's condition number.
@@ -2785,9 +3515,11 @@ cdef class Model:
 
         """
         cdef SCIP_LPI* lpi
-        PY_SCIP_CALL(SCIPgetLPI(self._scip, &lpi))
         cdef int iters = 0
+
+        PY_SCIP_CALL(SCIPgetLPI(self._scip, &lpi))
         PY_SCIP_CALL(SCIPlpiGetIterations(lpi, &iters))
+
         return iters
 
     # Objective function
@@ -2816,11 +3548,11 @@ cdef class Model:
     def getObjlimit(self):
         """
         Returns current limit on objective function.
-        
+
         Returns
         -------
         float
-        
+
         """
         return SCIPgetObjlimit(self._scip)
 
@@ -2838,9 +3570,11 @@ cdef class Model:
             set all other variables objective coefficient to zero (Default value = 'true')
 
         """
- 
-        cdef SCIP_VAR** _vars
-        cdef int _nvars
+        cdef SCIP_VAR** vars
+        cdef int nvars
+        cdef SCIP_Real coef
+        cdef int i
+        cdef _VarArray wrapper
 
         # turn the constant value into an Expr instance for further processing
         if not isinstance(expr, Expr):
@@ -2849,14 +3583,14 @@ cdef class Model:
 
         if expr.degree() > 1:
             raise ValueError("SCIP does not support nonlinear objective functions. Consider using set_nonlinear_objective in the pyscipopt.recipe.nonlinear")
-        
+
         if clear:
             # clear existing objective function
             self.addObjoffset(-self.getObjoffset())
-            _vars = SCIPgetOrigVars(self._scip)
-            _nvars = SCIPgetNOrigVars(self._scip)
-            for i in range(_nvars):
-                PY_SCIP_CALL(SCIPchgVarObj(self._scip, _vars[i], 0.0))
+            vars = SCIPgetOrigVars(self._scip)
+            nvars = SCIPgetNOrigVars(self._scip)
+            for i in range(nvars):
+                PY_SCIP_CALL(SCIPchgVarObj(self._scip, vars[i], 0.0))
 
         if expr[CONST] != 0.0:
             self.addObjoffset(expr[CONST])
@@ -2865,8 +3599,8 @@ cdef class Model:
             # avoid CONST term of Expr
             if term != CONST:
                 assert len(term) == 1
-                var = <Variable>term[0]
-                PY_SCIP_CALL(SCIPchgVarObj(self._scip, var.scip_var, coef))
+                wrapper = _VarArray(term[0])
+                PY_SCIP_CALL(SCIPchgVarObj(self._scip, wrapper.ptr[0], coef))
 
         if sense == "minimize":
             self.setMinimize()
@@ -3011,6 +3745,43 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPsetHeuristics(self._scip, setting, True))
 
+    def setHeurTiming(self, heurname, heurtiming):
+        """
+        Set the timing of a heuristic
+
+        Parameters
+        ----------
+        heurname : string, name of the heuristic
+        heurtiming : PY_SCIP_HEURTIMING
+		   positions in the node solving loop where heuristic should be executed
+        """
+        cdef SCIP_HEUR* _heur
+        n = str_conversion(heurname)
+        _heur = SCIPfindHeur(self._scip, n)
+        if _heur == NULL:
+            raise ValueError("Could not find heuristic <%s>" % heurname)
+        SCIPheurSetTimingmask(_heur, heurtiming)
+
+    def getHeurTiming(self, heurname):
+        """
+        Get the timing of a heuristic
+
+        Parameters
+        ----------
+        heurname : string, name of the heuristic
+
+        Returns
+        -------
+        PY_SCIP_HEURTIMING
+		   positions in the node solving loop where heuristic should be executed
+        """
+        cdef SCIP_HEUR* _heur
+        n = str_conversion(heurname)
+        _heur = SCIPfindHeur(self._scip, n)
+        if _heur == NULL:
+            raise ValueError("Could not find heuristic <%s>" % heurname)
+        return SCIPheurGetTimingmask(_heur)
+
     def disablePropagation(self, onlyroot=False):
         """
         Disables propagation in SCIP to avoid modifying the original problem during transformation.
@@ -3047,10 +3818,10 @@ cdef class Model:
         if trans:
             PY_SCIP_CALL(SCIPwriteTransProblem(self._scip, NULL, str_conversion(ext)[1:], genericnames))
         else:
-            PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, NULL, str_conversion(ext)[1:], genericnames))            
+            PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, NULL, str_conversion(ext)[1:], genericnames))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
-    
+
     def writeProblem(self, filename='model.cip', trans=False, genericnames=False, verbose=True):
         """
         Write current model/problem to a file.
@@ -3081,19 +3852,19 @@ cdef class Model:
                 ext = str_conversion('.cip')
             fn = fn + ext
             ext = ext[1:]
-            
+
             if trans:
                 PY_SCIP_CALL(SCIPwriteTransProblem(self._scip, fn, ext, genericnames))
             else:
                 PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, fn, ext, genericnames))
-            
+
             if verbose:
                 print('wrote problem to file ' + str_absfile)
         else:
             if trans:
                 PY_SCIP_CALL(SCIPwriteTransProblem(self._scip, NULL, str_conversion('.cip')[1:], genericnames))
             else:
-                PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, NULL, str_conversion('.cip')[1:], genericnames))            
+                PY_SCIP_CALL(SCIPwriteOrigProblem(self._scip, NULL, str_conversion('.cip')[1:], genericnames))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
@@ -3171,6 +3942,113 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
         return pyVar
 
+    def addMatrixVar(self,
+                     shape: Union[int, Tuple],
+                     name: Union[str, np.ndarray] = '',
+                     vtype: Union[str, np.ndarray] = 'C',
+                     lb: Union[int, float, np.ndarray, None] = 0.0,
+                     ub: Union[int, float, np.ndarray, None] = None,
+                     obj: Union[int, float, np.ndarray] = 0.0,
+                     pricedVar: Union[bool, np.ndarray] = False,
+                     pricedVarScore: Union[int, float, np.ndarray] = 1.0
+                     ) -> MatrixVariable:
+        """
+        Create a new matrix of variable. Default matrix variables are non-negative and continuous.
+
+        Parameters
+        ----------
+        shape : int or tuple
+            the shape of the resultant MatrixVariable
+        name : str or np.ndarray, optional
+            name of the matrix variable, generic if empty (Default value = '')
+        vtype : str or np.ndarray, optional
+            type of the matrix variable: 'C' continuous, 'I' integer, 'B' binary, and 'M' implicit integer
+            (Default value = 'C')
+        lb : float or np.ndarray or None, optional
+            lower bound of the matrix variable, use None for -infinity (Default value = 0.0)
+        ub : float or np.ndarray or None, optional
+            upper bound of the matrix variable, use None for +infinity (Default value = None)
+        obj : float or np.ndarray, optional
+            objective value of matrix variable (Default value = 0.0)
+        pricedVar : bool or np.ndarray, optional
+            is the matrix variable a pricing candidate? (Default value = False)
+        pricedVarScore : float or np.ndarray, optional
+            score of matrix variable in case it is priced, the higher the better (Default value = 1.0)
+
+        Returns
+        -------
+        MatrixVariable
+
+        """
+        # assert has_numpy, "Numpy is not installed. Please install numpy to use matrix variables."
+
+        if isinstance(name, np.ndarray):
+            assert name.shape == shape
+        if isinstance(vtype, np.ndarray):
+            assert vtype.shape == shape
+        if isinstance(lb, np.ndarray):
+            assert lb.shape == shape
+        if isinstance(ub, np.ndarray):
+            assert ub.shape == shape
+        if isinstance(obj, np.ndarray):
+            assert obj.shape == shape
+        if isinstance(pricedVar, np.ndarray):
+            assert pricedVar.shape == shape
+        if isinstance(pricedVarScore, np.ndarray):
+            assert pricedVarScore.shape == shape
+
+        if isinstance(shape, int):
+            ndim = 1
+        else:
+            ndim = len(shape)
+
+        matrix_variable = np.empty(shape, dtype=object)
+
+        if isinstance(name, str):
+            matrix_names = np.full(shape, name, dtype=object)
+            if name != "":
+                for idx in np.ndindex(matrix_variable.shape):
+                    matrix_names[idx] = f"{name}_{'_'.join(map(str, idx))}"
+        else:
+            matrix_names = name
+
+        if not isinstance(vtype, np.ndarray):
+            matrix_vtypes = np.full(shape, vtype, dtype=str)
+        else:
+            matrix_vtypes = vtype
+
+        if not isinstance(lb, np.ndarray):
+            matrix_lbs = np.full(shape, lb, dtype=object)
+        else:
+            matrix_lbs = lb
+
+        if not isinstance(ub, np.ndarray):
+            matrix_ubs = np.full(shape, ub, dtype=object)
+        else:
+            matrix_ubs = ub
+
+        if not isinstance(obj, np.ndarray):
+            matrix_objs = np.full(shape, obj, dtype=float)
+        else:
+            matrix_objs = obj
+
+        if not isinstance(pricedVar, np.ndarray):
+            matrix_priced_vars = np.full(shape, pricedVar, dtype=bool)
+        else:
+            matrix_priced_vars = pricedVar
+
+        if not isinstance(pricedVarScore, np.ndarray):
+            matrix_priced_var_scores = np.full(shape, pricedVarScore, dtype=float)
+        else:
+            matrix_priced_var_scores = pricedVarScore
+
+        for idx in np.ndindex(matrix_variable.shape):
+            matrix_variable[idx] = self.addVar(name=matrix_names[idx], vtype=matrix_vtypes[idx], lb=matrix_lbs[idx],
+                                               ub=matrix_ubs[idx], obj=matrix_objs[idx], pricedVar=matrix_priced_vars[idx],
+                                               pricedVarScore=matrix_priced_var_scores[idx])
+
+        return matrix_variable.view(MatrixVariable)
+
     def getTransformedVar(self, Variable var):
         """
         Retrieve the transformed variable.
@@ -3190,7 +4068,7 @@ cdef class Model:
 
         return Variable.create(_tvar)
 
-    def addVarLocks(self, Variable var, nlocksdown, nlocksup):
+    def addVarLocks(self, Variable var, int nlocksdown, int nlocksup):
         """
         Adds given values to lock numbers of variable for rounding.
 
@@ -3205,6 +4083,24 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPaddVarLocks(self._scip, var.scip_var, nlocksdown, nlocksup))
+
+    def addVarLocksType(self, Variable var, int locktype, int nlocksdown, int nlocksup):
+        """
+        adds given values to lock numbers of type locktype of variable for rounding
+
+        Parameters
+        ----------
+        var : Variable
+            variable to adjust the locks for
+        locktype : SCIP_LOCKTYPE
+            type of variable locks
+        nlocksdown : int
+            modification in number of down locks
+        nlocksup : int
+            modification in number of up locks
+
+        """
+        PY_SCIP_CALL(SCIPaddVarLocksType(self._scip, var.scip_var, locktype, nlocksdown, nlocksup))
 
     def fixVar(self, Variable var, val):
         """
@@ -3493,18 +4389,18 @@ cdef class Model:
 
         """
         cdef SCIP_VAR** _vars
-        cdef SCIP_VAR* _var
-        cdef int _nvars
-        vars = []
+        cdef int nvars
+        cdef int i
 
+        vars = []
         if transformed:
             _vars = SCIPgetVars(self._scip)
-            _nvars = SCIPgetNVars(self._scip)
+            nvars = SCIPgetNVars(self._scip)
         else:
             _vars = SCIPgetOrigVars(self._scip)
-            _nvars = SCIPgetNOrigVars(self._scip)
+            nvars = SCIPgetNOrigVars(self._scip)
 
-        for i in range(_nvars):
+        for i in range(nvars):
             ptr = <size_t>(_vars[i])
 
             # check whether the corresponding variable exists already
@@ -3581,10 +4477,15 @@ cdef class Model:
 
         """
         return SCIPgetNContVars(self._scip)
-    
-    def getVarDict(self):
+
+    def getVarDict(self, transformed=False):
         """
         Gets dictionary with variables names as keys and current variable values as items.
+
+        Parameters
+        ----------
+        transformed : bool, optional
+            Get transformed variables instead of original (Default value = False)
 
         Returns
         -------
@@ -3592,7 +4493,7 @@ cdef class Model:
 
         """
         var_dict = {}
-        for var in self.getVars():
+        for var in self.getVars(transformed=transformed):
             var_dict[var.name] = self.getVal(var)
         return var_dict
 
@@ -3610,7 +4511,7 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPupdateNodeLowerbound(self._scip, node.scip_node, lb))
-    
+
     def relax(self):
         """Relaxes the integrality restrictions of the model."""
         if self.getStage() != SCIP_STAGE_PROBLEM:
@@ -3630,7 +4531,58 @@ cdef class Model:
 
         """
         return Node.create(SCIPgetBestChild(self._scip))
+    
+    def getChildren(self):
+        """
+        Gets the children of the focus node.
 
+        Returns
+        -------
+        list of Nodes
+
+        """
+        cdef SCIP_NODE** _children
+        cdef int n_children
+        cdef int i
+
+        PY_SCIP_CALL(SCIPgetChildren(self._scip, &_children, &n_children))
+
+        return [Node.create(_children[i]) for i in range(n_children)]
+
+    def getSiblings(self):
+        """
+        Gets the siblings of the focus node.
+
+        Returns
+        -------
+        list of Nodes
+
+        """
+        cdef SCIP_NODE** _siblings
+        cdef int n_siblings
+        cdef int i
+
+        PY_SCIP_CALL(SCIPgetSiblings(self._scip, &_siblings, &n_siblings))
+
+        return [Node.create(_siblings[i]) for i in range(n_siblings)]
+    
+    def getLeaves(self):
+        """
+        Gets the leaves of the tree along with number of leaves.
+
+        Returns
+        -------
+        list of Nodes
+
+        """
+        cdef SCIP_NODE** _leaves
+        cdef int n_leaves
+        cdef int i
+
+        PY_SCIP_CALL(SCIPgetLeaves(self._scip, &_leaves, &n_leaves))
+
+        return [Node.create(_leaves[i]) for i in range(n_leaves)]
+    
     def getBestSibling(self):
         """
         Gets the best sibling of the focus node w.r.t. the node selection strategy.
@@ -3715,6 +4667,7 @@ cdef class Model:
         cdef int _nleaves
         cdef int _nchildren
         cdef int _nsiblings
+        cdef int i
 
         PY_SCIP_CALL(SCIPgetOpenNodesData(self._scip, &_leaves, &_children, &_siblings, &_nleaves, &_nchildren, &_nsiblings))
 
@@ -3781,8 +4734,10 @@ cdef class Model:
         """
         cdef SCIP_COL** cols
         cdef int ncols
+        cdef int i
 
         PY_SCIP_CALL(SCIPgetLPColsData(self._scip, &cols, &ncols))
+
         return [Column.create(cols[i]) for i in range(ncols)]
 
     def getLPRowsData(self):
@@ -3796,8 +4751,10 @@ cdef class Model:
         """
         cdef SCIP_ROW** rows
         cdef int nrows
+        cdef int i
 
         PY_SCIP_CALL(SCIPgetLPRowsData(self._scip, &rows, &nrows))
+
         return [Row.create(rows[i]) for i in range(nrows)]
 
     def getNLPRows(self):
@@ -3834,10 +4791,12 @@ cdef class Model:
         """
         cdef int nrows = SCIPgetNLPRows(self._scip)
         cdef int* inds = <int *> malloc(nrows * sizeof(int))
+        cdef int i
 
         PY_SCIP_CALL(SCIPgetLPBasisInd(self._scip, inds))
         result = [inds[i] for i in range(nrows)]
         free(inds)
+
         return result
 
     def getLPBInvRow(self, row):
@@ -3857,10 +4816,12 @@ cdef class Model:
         # TODO: sparsity information
         cdef int nrows = SCIPgetNLPRows(self._scip)
         cdef SCIP_Real* coefs = <SCIP_Real*> malloc(nrows * sizeof(SCIP_Real))
+        cdef int i
 
         PY_SCIP_CALL(SCIPgetLPBInvRow(self._scip, row, coefs, NULL, NULL))
         result = [coefs[i] for i in range(nrows)]
         free(coefs)
+
         return result
 
     def getLPBInvARow(self, row):
@@ -3880,10 +4841,12 @@ cdef class Model:
         # TODO: sparsity information
         cdef int ncols = SCIPgetNLPCols(self._scip)
         cdef SCIP_Real* coefs = <SCIP_Real*> malloc(ncols * sizeof(SCIP_Real))
+        cdef int i
 
         PY_SCIP_CALL(SCIPgetLPBInvARow(self._scip, row, NULL, coefs, NULL, NULL))
         result = [coefs[i] for i in range(ncols)]
         free(coefs)
+
         return result
 
     def isLPSolBasic(self):
@@ -4327,15 +5290,17 @@ cdef class Model:
         assert lincons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % lincons.expr.degree()
         terms = lincons.expr.terms
 
-        cdef SCIP_CONS* scip_cons
-
         cdef int nvars = len(terms.items())
-
-        vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
-        coeffs_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+        cdef SCIP_VAR** vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        cdef SCIP_Real* coeffs_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+        cdef SCIP_CONS* scip_cons
+        cdef SCIP_Real coeff
+        cdef int i
+        cdef _VarArray wrapper
 
         for i, (key, coeff) in enumerate(terms.items()):
-            vars_array[i] = <SCIP_VAR*>(<Variable>key[0]).scip_var
+            wrapper = _VarArray(key[0])
+            vars_array[i] = wrapper.ptr[0]
             coeffs_array[i] = <SCIP_Real>coeff
 
         PY_SCIP_CALL(SCIPcreateConsLinear(
@@ -4349,6 +5314,7 @@ cdef class Model:
 
         free(vars_array)
         free(coeffs_array)
+
         return PyCons
 
     def _createConsQuadratic(self, ExprCons quadcons, **kwargs):
@@ -4371,6 +5337,7 @@ cdef class Model:
 
         cdef SCIP_CONS* scip_cons
         cdef SCIP_EXPR* prodexpr
+        cdef _VarArray wrapper
         PY_SCIP_CALL(SCIPcreateConsQuadraticNonlinear(
             self._scip, &scip_cons, str_conversion(kwargs['name']),
             0, NULL, NULL,        # linear
@@ -4382,15 +5349,16 @@ cdef class Model:
 
         for v, c in terms.items():
             if len(v) == 1: # linear
-                var = <Variable>v[0]
-                PY_SCIP_CALL(SCIPaddLinearVarNonlinear(self._scip, scip_cons, var.scip_var, c))
-            else: # quadratic
+                wrapper = _VarArray(v[0])
+                PY_SCIP_CALL(SCIPaddLinearVarNonlinear(self._scip, scip_cons, wrapper.ptr[0], c))
+            else: # nonlinear
                 assert len(v) == 2, 'term length must be 1 or 2 but it is %s' % len(v)
 
                 varexprs = <SCIP_EXPR**> malloc(2 * sizeof(SCIP_EXPR*))
-                var1, var2 = <Variable>v[0], <Variable>v[1]
-                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[0], var1.scip_var, NULL, NULL) )
-                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[1], var2.scip_var, NULL, NULL) )
+                wrapper = _VarArray(v[0])
+                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[0], wrapper.ptr[0], NULL, NULL) )
+                wrapper = _VarArray(v[1])
+                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[1], wrapper.ptr[0], NULL, NULL) )
                 PY_SCIP_CALL( SCIPcreateExprProduct(self._scip, &prodexpr, 2, varexprs, 1.0, NULL, NULL) )
 
                 PY_SCIP_CALL( SCIPaddExprNonlinear(self._scip, scip_cons, prodexpr, c) )
@@ -4422,26 +5390,25 @@ cdef class Model:
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR** varexprs
         cdef SCIP_EXPR** monomials
-        cdef int* idxs
         cdef SCIP_CONS* scip_cons
+        cdef _VarArray wrapper
+        cdef int* idxs
+        cdef int i
+        cdef int j
 
         terms = cons.expr.terms
 
         # collect variables
-        variables = {var.ptr():var for term in terms for var in term}
-        variables = list(variables.values())
-        varindex = {var.ptr():idx for (idx,var) in enumerate(variables)}
+        variables = {i: [var for var in term] for i, term in enumerate(terms)}
 
         # create monomials for terms
         monomials = <SCIP_EXPR**> malloc(len(terms) * sizeof(SCIP_EXPR*))
         termcoefs = <SCIP_Real*> malloc(len(terms) * sizeof(SCIP_Real))
         for i, (term, coef) in enumerate(terms.items()):
-            termvars = <SCIP_VAR**> malloc(len(term) * sizeof(SCIP_VAR*))
-            for j, var in enumerate(term):
-                termvars[j] = (<Variable>var).scip_var
-            PY_SCIP_CALL( SCIPcreateExprMonomial(self._scip, &monomials[i], <int>len(term), termvars, NULL, NULL, NULL) )
+            wrapper = _VarArray(variables[i])
+
+            PY_SCIP_CALL( SCIPcreateExprMonomial(self._scip, &monomials[i], wrapper.size, wrapper.ptr, NULL, NULL, NULL) )
             termcoefs[i] = <SCIP_Real>coef
-            free(termvars)
 
         # create polynomial from monomials
         PY_SCIP_CALL( SCIPcreateExprSum(self._scip, &expr, <int>len(terms), monomials, termcoefs, 0.0, NULL, NULL))
@@ -4471,6 +5438,7 @@ cdef class Model:
             PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &monomials[i]))
         free(monomials)
         free(termcoefs)
+
         return PyCons
 
     def _createConsGenNonlinear(self, cons, **kwargs):
@@ -4491,7 +5459,10 @@ cdef class Model:
         cdef SCIP_EXPR** childrenexpr
         cdef SCIP_EXPR** scipexprs
         cdef SCIP_CONS* scip_cons
+        cdef _VarArray wrapper
         cdef int nchildren
+        cdef int c
+        cdef int i
 
         # get arrays from python's expression tree
         expr = cons.expr
@@ -4509,18 +5480,15 @@ cdef class Model:
         for node in nodes:
             if node[0] == Operator.varidx:
                 nvars += 1
-        vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
 
-        varpos = 0
         scipexprs = <SCIP_EXPR**> malloc(len(nodes) * sizeof(SCIP_EXPR*))
         for i,node in enumerate(nodes):
             opidx = node[0]
             if opidx == Operator.varidx:
                 assert len(node[1]) == 1
                 pyvar = node[1][0] # for vars we store the actual var!
-                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &scipexprs[i], (<Variable>pyvar).scip_var, NULL, NULL) )
-                vars[varpos] = (<Variable>pyvar).scip_var
-                varpos += 1
+                wrapper = _VarArray(pyvar)
+                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &scipexprs[i], wrapper.ptr[0], NULL, NULL) )
                 continue
             if opidx == Operator.const:
                 assert len(node[1]) == 1
@@ -4579,7 +5547,6 @@ cdef class Model:
                 continue
             # default:
             raise NotImplementedError
-        assert varpos == nvars
 
         # create nonlinear constraint for the expression root
         PY_SCIP_CALL( SCIPcreateConsNonlinear(
@@ -4604,7 +5571,6 @@ cdef class Model:
 
         # free more memory
         free(scipexprs)
-        free(vars)
 
         return PyCons
 
@@ -4660,7 +5626,9 @@ cdef class Model:
                       propagate=propagate, local=local,
                       modifiable=modifiable, dynamic=dynamic,
                       removable=removable,
-                      stickingatnode=stickingatnode)
+                      stickingatnode=stickingatnode
+                      )
+
         kwargs['lhs'] = -SCIPinfinity(self._scip) if cons._lhs is None else cons._lhs
         kwargs['rhs'] =  SCIPinfinity(self._scip) if cons._rhs is None else cons._rhs
 
@@ -4725,7 +5693,8 @@ cdef class Model:
                       propagate=propagate, local=local,
                       modifiable=modifiable, dynamic=dynamic,
                       removable=removable,
-                      stickingatnode=stickingatnode)
+                      stickingatnode=stickingatnode
+                      )
         #  we have to pass this back to a SCIP_CONS*
         # object to create a new python constraint & handle constraint release
         # correctly. Otherwise, segfaults when trying to query information
@@ -4743,7 +5712,7 @@ cdef class Model:
                  enforce=True, check=True, propagate=True, local=False,
                  modifiable=False, dynamic=False, removable=False,
                  stickingatnode=False):
-        """Adds multiple linear or quadratic constraints.
+        """Adds multiple constraints.
 
         Each of the constraints is added to the model using Model.addCons().
 
@@ -4787,6 +5756,12 @@ cdef class Model:
             The created and added Constraint objects.
 
         """
+        cdef int n_conss
+        cdef int i
+
+        if isinstance(conss, MatrixExprCons):
+            conss = conss.flatten()
+
         def ensure_iterable(elem, length):
             if isinstance(elem, Iterable):
                 return elem
@@ -4800,9 +5775,10 @@ cdef class Model:
 
         if isinstance(name, str):
             if name == "":
-                name = ["" for idx in range(n_conss)]
+                name = ["" for i in range(n_conss)]
             else:
-                name = ["%s_%s" % (name, idx) for idx in range(n_conss)]
+                name = ["%s_%s" % (name, i) for i in range(n_conss)]
+
         initial = ensure_iterable(initial, n_conss)
         separate = ensure_iterable(separate, n_conss)
         enforce = ensure_iterable(enforce, n_conss)
@@ -4824,8 +5800,162 @@ cdef class Model:
 
         return constraints
 
-    def addConsDisjunction(self, conss, name = '', initial = True, 
-        relaxcons = None, enforce=True, check =True, 
+    def addMatrixCons(self,
+                      cons: MatrixExprCons,
+                      name: Union[str, np.ndarray] ='',
+                      initial: Union[bool, np.ndarray] = True,
+                      separate: Union[bool, np.ndarray] = True,
+                      enforce: Union[bool, np.ndarray] = True,
+                      check: Union[bool, np.ndarray] = True,
+                      propagate: Union[bool, np.ndarray] = True,
+                      local: Union[bool, np.ndarray] = False,
+                      modifiable: Union[bool, np.ndarray] = False,
+                      dynamic: Union[bool, np.ndarray] = False,
+                      removable: Union[bool, np.ndarray] = False,
+                      stickingatnode: Union[bool, np.ndarray] = False):
+        """
+        Add a linear or nonlinear matrix constraint.
+
+        Parameters
+        ----------
+        cons : MatrixExprCons
+            The matrix expression constraint that is not yet an actual constraint
+        name : str or np.ndarray, optional
+            the name of the matrix constraint, generic name if empty (Default value = "")
+        initial : bool or np.ndarray, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool or np.ndarray, optional
+            should the matrix constraint be separated during LP processing? (Default value = True)
+        enforce : bool or np.ndarray, optional
+            should the matrix constraint be enforced during node processing? (Default value = True)
+        check : bool or np.ndarray, optional
+            should the matrix constraint be checked for feasibility? (Default value = True)
+        propagate : bool or np.ndarray, optional
+            should the matrix constraint be propagated during node processing? (Default value = True)
+        local : bool or np.ndarray, optional
+            is the matrix constraint only valid locally? (Default value = False)
+        modifiable : bool or np.ndarray, optional
+            is the matrix constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool or np.ndarray, optional
+            is the matrix constraint subject to aging? (Default value = False)
+        removable : bool or np.ndarray, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool or np.ndarray, optional
+            should the matrix constraints always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        MatrixConstraint
+            The created and added MatrixConstraint object.
+
+        """
+        assert isinstance(cons, MatrixExprCons), (
+                "given constraint is not MatrixExprCons but %s" % cons.__class__.__name__)
+
+        shape = cons.shape
+
+        if isinstance(name, np.ndarray):
+            assert name.shape == shape
+        if isinstance(initial, np.ndarray):
+            assert initial.shape == shape
+        if isinstance(separate, np.ndarray):
+            assert separate.shape == shape
+        if isinstance(enforce, np.ndarray):
+            assert enforce.shape == shape
+        if isinstance(check, np.ndarray):
+            assert check.shape == shape
+        if isinstance(propagate, np.ndarray):
+            assert propagate.shape == shape
+        if isinstance(local, np.ndarray):
+            assert local.shape == shape
+        if isinstance(modifiable, np.ndarray):
+            assert modifiable.shape == shape
+        if isinstance(dynamic, np.ndarray):
+            assert dynamic.shape == shape
+        if isinstance(removable, np.ndarray):
+            assert removable.shape == shape
+        if isinstance(stickingatnode, np.ndarray):
+            assert stickingatnode.shape == shape
+
+        matrix_cons = np.empty(shape, dtype=object)
+
+        if isinstance(shape, int):
+            ndim = 1
+        else:
+            ndim = len(shape)
+        # cdef np.ndarray[object, ndim=ndim] matrix_variable = np.empty(shape, dtype=object)
+        matrix_variable = np.empty(shape, dtype=object)
+
+        if isinstance(name, str):
+            matrix_names = np.full(shape, name, dtype=object)
+            if name != "":
+                for idx in np.ndindex(matrix_variable.shape):
+                    matrix_names[idx] = f"{name}_{'_'.join(map(str, idx))}"
+        else:
+            matrix_names = name
+
+        if not isinstance(initial, np.ndarray):
+            matrix_initial = np.full(shape, initial, dtype=bool)
+        else:
+            matrix_initial = initial
+
+        if not isinstance(separate, np.ndarray):
+            matrix_separate = np.full(shape, separate, dtype=bool)
+        else:
+            matrix_separate = separate
+
+        if not isinstance(enforce, np.ndarray):
+            matrix_enforce = np.full(shape, enforce, dtype=bool)
+        else:
+            matrix_enforce = enforce
+
+        if not isinstance(check, np.ndarray):
+            matrix_check = np.full(shape, check, dtype=bool)
+        else:
+            matrix_check = check
+
+        if not isinstance(propagate, np.ndarray):
+            matrix_propagate = np.full(shape, propagate, dtype=bool)
+        else:
+            matrix_propagate = propagate
+
+        if not isinstance(local, np.ndarray):
+            matrix_local = np.full(shape, local, dtype=bool)
+        else:
+            matrix_local = local
+
+        if not isinstance(modifiable, np.ndarray):
+            matrix_modifiable = np.full(shape, modifiable, dtype=bool)
+        else:
+            matrix_modifiable = modifiable
+
+        if not isinstance(dynamic, np.ndarray):
+            matrix_dynamic = np.full(shape, dynamic, dtype=bool)
+        else:
+            matrix_dynamic = dynamic
+
+        if not isinstance(removable, np.ndarray):
+            matrix_removable = np.full(shape, removable, dtype=bool)
+        else:
+            matrix_removable = removable
+
+        if not isinstance(stickingatnode, np.ndarray):
+            matrix_stickingatnode = np.full(shape, stickingatnode, dtype=bool)
+        else:
+            matrix_stickingatnode = stickingatnode
+
+        for idx in np.ndindex(cons.shape):
+            matrix_cons[idx] = self.addCons(cons[idx], name=matrix_names[idx], initial=matrix_initial[idx],
+                                            separate=matrix_separate[idx], check=matrix_check[idx],
+                                            propagate=matrix_propagate[idx], local=matrix_local[idx],
+                                            modifiable=matrix_modifiable[idx], dynamic=matrix_dynamic[idx],
+                                            removable=matrix_removable[idx], stickingatnode=matrix_stickingatnode[idx])
+
+        return matrix_cons.view(MatrixConstraint)
+
+    def addConsDisjunction(self, conss, name = '', initial = True,
+        relaxcons = None, enforce=True, check =True,
         local=False, modifiable = False, dynamic = False):
         """
         Add a disjunction constraint.
@@ -4859,6 +5989,12 @@ cdef class Model:
             The created disjunction constraint
 
         """
+        cdef SCIP_EXPR* scip_expr
+        cdef SCIP_CONS* scip_cons
+        cdef SCIP_CONS* disj_cons
+        cdef int n_conss
+        cdef int i
+
         def ensure_iterable(elem, length):
             if isinstance(elem, Iterable):
                 return elem
@@ -4869,14 +6005,8 @@ cdef class Model:
         conss = list(conss)
         n_conss = len(conss)
 
-        cdef SCIP_CONS* disj_cons
-
-        cdef SCIP_CONS* scip_cons
-
-        cdef SCIP_EXPR* scip_expr
-
         PY_SCIP_CALL(SCIPcreateConsDisjunction(
-            self._scip, &disj_cons, str_conversion(name), 0, &scip_cons, NULL, 
+            self._scip, &disj_cons, str_conversion(name), 0, &scip_cons, NULL,
             initial, enforce, check, local, modifiable, dynamic
         ))
 
@@ -4892,6 +6022,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, disj_cons))
         PyCons = Constraint.create(disj_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &disj_cons))
+
         return PyCons
 
     def addConsElemDisjunction(self, Constraint disj_cons, Constraint cons):
@@ -4934,10 +6065,10 @@ cdef class Model:
             If the associated constraint handler does not have this functionality
 
         """
-        cdef int nvars 
+        cdef int nvars
         cdef SCIP_Bool success
 
-        PY_SCIP_CALL(SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success))   
+        PY_SCIP_CALL(SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success))
 
         if not success:
             conshdlr = SCIPconsGetHdlr(constraint.scip_cons)
@@ -4960,16 +6091,17 @@ cdef class Model:
         list of Variable
 
         """
+        cdef SCIP_VAR** _vars
+        cdef int nvars
         cdef SCIP_Bool success
-        cdef int _nvars
+        cdef int i
 
-        SCIPgetConsNVars(self._scip, constraint.scip_cons, &_nvars, &success)
-
-        cdef SCIP_VAR** _vars = <SCIP_VAR**> malloc(_nvars * sizeof(SCIP_VAR*))
-        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, _nvars*sizeof(SCIP_VAR*), &success)
+        SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success)
+        _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, nvars*sizeof(SCIP_VAR*), &success)
 
         vars = []
-        for i in range(_nvars):
+        for i in range(nvars):
             ptr = <size_t>(_vars[i])
             # check whether the corresponding variable exists already
             if ptr in self._modelvars:
@@ -4980,6 +6112,7 @@ cdef class Model:
                 assert var.ptr() == ptr
                 self._modelvars[ptr] = var
                 vars.append(var)
+
         return vars
 
     def printCons(self, Constraint constraint):
@@ -5008,7 +6141,7 @@ cdef class Model:
         assert cons.isNonlinear(), "addExprNonlinear can only be called with nonlinear constraints."
 
         cdef Constraint temp_cons
-        cdef SCIP_EXPR* scip_expr 
+        cdef SCIP_EXPR* scip_expr
 
         temp_cons = self.addCons(expr <= 0)
         scip_expr = SCIPgetExprNonlinear(temp_cons.scip_cons)
@@ -5018,7 +6151,7 @@ cdef class Model:
 
     def addConsCoeff(self, Constraint cons, Variable var, coeff):
         """
-        Add coefficient to the linear constraint (if non-zero).
+        Add coefficient to the constraint (if non-zero).
 
         Parameters
         ----------
@@ -5030,7 +6163,14 @@ cdef class Model:
             coefficient of new variable
 
         """
-        PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, cons.scip_cons, var.scip_var, coeff))
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        if constype == 'linear':
+            PY_SCIP_CALL(SCIPaddCoefLinear(self._scip, cons.scip_cons, var.scip_var, coeff))
+        elif constype == 'knapsack':
+            PY_SCIP_CALL(SCIPaddCoefKnapsack(self._scip, cons.scip_cons, var.scip_var, coeff))
+        else:
+            raise NotImplementedError("Adding coefficients to %s constraints is not implemented." % constype)
 
     def addConsNode(self, Node node, Constraint cons, Node validnode=None):
         """
@@ -5069,27 +6209,83 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPaddConsLocal(self._scip, cons.scip_cons, NULL))
         Py_INCREF(cons)
+    
+    def addConsKnapsack(self, vars, weights, capacity, name="",
+                initial=True, separate=True, enforce=True, check=True,
+                modifiable=False, propagate=True, local=False, dynamic=False,
+                removable=False, stickingatnode=False):
+        """
+        Parameters
+        ----------
+        vars : list of Variable
+            list of variables to be included
+        weights : list of int
+            list of weights
+        capacity: int
+            capacity of the knapsack
+        name : str, optional
+            name of the constraint (Default value = "")
+        initial : bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool, optional
+            is the constraint only valid locally? (Default value = False)
+        dynamic : bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool, optional
+            should the constraint always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
 
-    def addConsSOS1(self, vars, weights=None, name="SOS1cons",
+        Returns
+        -------
+        Constraint
+            The newly created knapsack constraint        
+        """
+
+        cdef int nvars = len(vars)
+        cdef int i
+        cdef SCIP_Longint* weights_array = <SCIP_Longint*> malloc(nvars * sizeof(SCIP_Real))
+        cdef SCIP_CONS* scip_cons
+        cdef _VarArray wrapper
+
+        assert nvars == len(weights), "Number of variables and weights must be the same."
+
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+
+        wrapper = _VarArray(vars)
+        for i in range(nvars):
+            weights_array[i] = <SCIP_Longint>weights[i]
+
+        PY_SCIP_CALL(SCIPcreateConsKnapsack(
+            self._scip, &scip_cons, str_conversion(name), nvars, wrapper.ptr, weights_array,
+            capacity, initial, separate, enforce, check, propagate, local, modifiable,
+            dynamic, removable, stickingatnode))
+
+        free(weights_array)
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+
+        pyCons = Constraint.create(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+        
+        return pyCons
+
+    def addConsSOS1(self, vars, weights=None, name="",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
         """
         Add an SOS1 constraint.
-
-        :param vars: list of variables to be included
-        :param weights: list of weights (Default value = None)
-        :param name: name of the constraint (Default value = "SOS1cons")
-        :param initial: should the LP relaxation of constraint be in the initial LP? (Default value = True)
-        :param separate: should the constraint be separated during LP processing? (Default value = True)
-        :param enforce: should the constraint be enforced during node processing? (Default value = True)
-        :param check: should the constraint be checked for feasibility? (Default value = True)
-        :param propagate: should the constraint be propagated during node processing? (Default value = True)
-        :param local: is the constraint only valid locally? (Default value = False)
-        :param dynamic: is the constraint subject to aging? (Default value = False)
-        :param removable: should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
-        :param stickingatnode: should the constraint always be kept at the node where it was added, even if it may be moved to a more global node? (Default value = False)
-
 
         Parameters
         ----------
@@ -5098,7 +6294,7 @@ cdef class Model:
         weights : list of float or None, optional
             list of weights (Default value = None)
         name : str, optional
-            name of the constraint (Default value = "SOS1cons")
+            name of the constraint (Default value = "")
         initial : bool, optional
             should the LP relaxation of constraint be in the initial LP? (Default value = True)
         separate : bool, optional
@@ -5126,25 +6322,30 @@ cdef class Model:
 
         """
         cdef SCIP_CONS* scip_cons
-        cdef int _nvars
+        cdef int nvars
+        cdef int i
+        cdef _VarArray wrapper 
 
         PY_SCIP_CALL(SCIPcreateConsSOS1(self._scip, &scip_cons, str_conversion(name), 0, NULL, NULL,
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
 
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+
+        nvars = len(vars)
+        wrapper = _VarArray(vars)
         if weights is None:
-            for v in vars:
-                var = <Variable>v
-                PY_SCIP_CALL(SCIPappendVarSOS1(self._scip, scip_cons, var.scip_var))
-        else:
-            nvars = len(vars)
             for i in range(nvars):
-                var = <Variable>vars[i]
-                PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, scip_cons, var.scip_var, weights[i]))
+                PY_SCIP_CALL(SCIPappendVarSOS1(self._scip, scip_cons, wrapper.ptr[i]))
+        else:
+            for i in range(nvars):
+                PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, scip_cons, wrapper.ptr[i], weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+
         return Constraint.create(scip_cons)
 
-    def addConsSOS2(self, vars, weights=None, name="SOS2cons",
+    def addConsSOS2(self, vars, weights=None, name="",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
@@ -5158,7 +6359,7 @@ cdef class Model:
         weights : list of float or None, optional
             list of weights (Default value = None)
         name : str, optional
-            name of the constraint (Default value = "SOS2cons")
+            name of the constraint (Default value = "")
         initial : bool, optional
             should the LP relaxation of constraint be in the initial LP? (Default value = True)
         separate : bool, optional
@@ -5186,25 +6387,30 @@ cdef class Model:
 
         """
         cdef SCIP_CONS* scip_cons
-        cdef int _nvars
+        cdef int nvars
+        cdef int i
+        cdef _VarArray wrapper
 
         PY_SCIP_CALL(SCIPcreateConsSOS2(self._scip, &scip_cons, str_conversion(name), 0, NULL, NULL,
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
 
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+
+        nvars = len(vars)
+        wrapper = _VarArray(vars)
         if weights is None:
-            for v in vars:
-                var = <Variable>v
-                PY_SCIP_CALL(SCIPappendVarSOS2(self._scip, scip_cons, var.scip_var))
-        else:
-            nvars = len(vars)
             for i in range(nvars):
-                var = <Variable>vars[i]
-                PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, scip_cons, var.scip_var, weights[i]))
+                PY_SCIP_CALL(SCIPappendVarSOS2(self._scip, scip_cons, wrapper.ptr[i]))
+        else:
+            for i in range(nvars):
+                PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, scip_cons, wrapper.ptr[i], weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        return Constraint.create(scip_cons)      
 
-    def addConsAnd(self, vars, resvar, name="ANDcons",
+        return Constraint.create(scip_cons)
+
+    def addConsAnd(self, vars, resvar, name="",
             initial=True, separate=True, enforce=True, check=True,
             propagate=True, local=False, modifiable=False, dynamic=False,
             removable=False, stickingatnode=False):
@@ -5218,7 +6424,7 @@ cdef class Model:
         resvar : Variable
             BINARY variable (resultant)
         name : str, optional
-            name of the constraint (Default value = "ANDcons")
+            name of the constraint (Default value = "")
         initial : bool, optional
             should the LP relaxation of constraint be in the initial LP? (Default value = True)
         separate : bool, optional
@@ -5245,27 +6451,30 @@ cdef class Model:
             The newly created AND constraint
 
         """
+        cdef int nvars = len(vars)
+        cdef SCIP_VAR** _vars
+        cdef SCIP_VAR* _resvar
+        cdef _VarArray resvar_wrapper = _VarArray(resvar)
+        cdef _VarArray vars_wrapper = _VarArray(vars)
         cdef SCIP_CONS* scip_cons
+        cdef int i
 
-        nvars = len(vars)
+        _resvar = resvar_wrapper.ptr[0]
+        _vars = vars_wrapper.ptr
 
-        _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
-        for idx, var in enumerate(vars):
-            _vars[idx] = (<Variable>var).scip_var
-        _resVar = (<Variable>resvar).scip_var
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
-        PY_SCIP_CALL(SCIPcreateConsAnd(self._scip, &scip_cons, str_conversion(name), _resVar, nvars, _vars,
+        PY_SCIP_CALL(SCIPcreateConsAnd(self._scip, &scip_cons, str_conversion(name), _resvar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         pyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
-        free(_vars)
-
         return pyCons
 
-    def addConsOr(self, vars, resvar, name="ORcons",
+    def addConsOr(self, vars, resvar, name="",
             initial=True, separate=True, enforce=True, check=True,
             propagate=True, local=False, modifiable=False, dynamic=False,
             removable=False, stickingatnode=False):
@@ -5279,7 +6488,7 @@ cdef class Model:
         resvar : Variable
             BINARY variable (resultant)
         name : str, optional
-            name of the constraint (Default value = "ORcons")
+            name of the constraint (Default value = "")
         initial : bool, optional
             should the LP relaxation of constraint be in the initial LP? (Default value = True)
         separate : bool, optional
@@ -5306,27 +6515,30 @@ cdef class Model:
             The newly created OR constraint
 
         """
+        cdef int nvars = len(vars)
+        cdef SCIP_VAR** _vars
+        cdef SCIP_VAR* _resvar
+        cdef _VarArray resvar_wrapper = _VarArray(resvar)
+        cdef _VarArray vars_wrapper = _VarArray(vars)
         cdef SCIP_CONS* scip_cons
+        cdef int i
 
-        nvars = len(vars)
+        _resvar = resvar_wrapper.ptr[0]
+        _vars = vars_wrapper.ptr
 
-        _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
-        for idx, var in enumerate(vars):
-            _vars[idx] = (<Variable>var).scip_var
-        _resVar = (<Variable>resvar).scip_var
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
-        PY_SCIP_CALL(SCIPcreateConsOr(self._scip, &scip_cons, str_conversion(name), _resVar, nvars, _vars,
+        PY_SCIP_CALL(SCIPcreateConsOr(self._scip, &scip_cons, str_conversion(name), _resvar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         pyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
-        free(_vars)
-
         return pyCons
 
-    def addConsXor(self, vars, rhsvar, name="XORcons",
+    def addConsXor(self, vars, rhsvar, name="",
             initial=True, separate=True, enforce=True, check=True,
             propagate=True, local=False, modifiable=False, dynamic=False,
             removable=False, stickingatnode=False):
@@ -5340,7 +6552,7 @@ cdef class Model:
         rhsvar : bool
             BOOLEAN value, explicit True, False or bool(obj) is needed (right-hand side)
         name : str, optional
-            name of the constraint (Default value = "XORcons")
+            name of the constraint (Default value = "")
         initial : bool, optional
             should the LP relaxation of constraint be in the initial LP? (Default value = True)
         separate : bool, optional
@@ -5367,14 +6579,18 @@ cdef class Model:
             The newly created XOR constraint
 
         """
-        cdef SCIP_CONS* scip_cons
-
-        nvars = len(vars)
-
         assert type(rhsvar) is type(bool()), "Provide BOOLEAN value as rhsvar, you gave %s." % type(rhsvar)
-        _vars = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*))
-        for idx, var in enumerate(vars):
-            _vars[idx] = (<Variable>var).scip_var
+
+        cdef int nvars = len(vars)
+        cdef SCIP_VAR** _vars
+        cdef SCIP_CONS* scip_cons
+        cdef int i
+        cdef _VarArray wrapper = _VarArray(vars)
+
+        _vars = wrapper.ptr
+
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
         PY_SCIP_CALL(SCIPcreateConsXor(self._scip, &scip_cons, str_conversion(name), rhsvar, nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
@@ -5383,11 +6599,9 @@ cdef class Model:
         pyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
-        free(_vars)
-
         return pyCons
 
-    def addConsCardinality(self, consvars, cardval, indvars=None, weights=None, name="CardinalityCons",
+    def addConsCardinality(self, consvars, cardval, indvars=None, weights=None, name="",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
                 removable=False, stickingatnode=False):
@@ -5408,7 +6622,7 @@ cdef class Model:
             weights determining the variable order, or None if variables should be ordered
             in the same way they were added to the constraint (Default value = None)
         name : str, optional
-            name of the constraint (Default value = "CardinalityCons")
+            name of the constraint (Default value = "")
         initial : bool, optional
             should the LP relaxation of constraint be in the initial LP? (Default value = True)
         separate : bool, optional
@@ -5435,8 +6649,12 @@ cdef class Model:
             The newly created Cardinality constraint
 
         """
-        cdef SCIP_CONS* scip_cons
         cdef SCIP_VAR* indvar
+        cdef SCIP_CONS* scip_cons
+        cdef int i
+        cdef _VarArray v_wrapper
+        cdef _VarArray indvar_wrapper
+        cdef SCIP_VAR* scip_var
 
         PY_SCIP_CALL(SCIPcreateConsCardinality(self._scip, &scip_cons, str_conversion(name), 0, NULL, cardval, NULL, NULL,
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
@@ -5445,16 +6663,22 @@ cdef class Model:
         if weights is None:
             weights = list(range(1, len(consvars) + 1))
 
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+
+        v_wrapper = _VarArray(consvars)
         for i, v in enumerate(consvars):
-            var = <Variable>v
+            scip_var = v_wrapper.ptr[i]
             if indvars:
-                indvar = (<Variable>indvars[i]).scip_var
+                indvar_wrapper = _VarArray(indvars[i])
+                indvar = indvar_wrapper.ptr[0]
             else:
                 indvar = NULL
+
             if weights is None:
-                PY_SCIP_CALL(SCIPappendVarCardinality(self._scip, scip_cons, var.scip_var, indvar))
+                PY_SCIP_CALL(SCIPappendVarCardinality(self._scip, scip_cons, scip_var, indvar))
             else:
-                PY_SCIP_CALL(SCIPaddVarCardinality(self._scip, scip_cons, var.scip_var, indvar, <SCIP_Real>weights[i]))
+                PY_SCIP_CALL(SCIPaddVarCardinality(self._scip, scip_cons, scip_var, indvar, <SCIP_Real>weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         pyCons = Constraint.create(scip_cons)
@@ -5508,9 +6732,13 @@ cdef class Model:
             The newly created Indicator constraint
 
         """
-        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
-        cdef SCIP_CONS* scip_cons
         cdef SCIP_VAR* _binVar
+        cdef SCIP_CONS* scip_cons
+        cdef SCIP_Real coeff
+        cdef _VarArray wrapper
+
+        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
+
         if cons._lhs is not None and cons._rhs is not None:
             raise ValueError("expected inequality that has either only a left or right hand side")
 
@@ -5528,7 +6756,8 @@ cdef class Model:
             negate = True
 
         if binvar is not None:
-            _binVar = (<Variable>binvar).scip_var
+            wrapper = _VarArray(binvar)
+            _binVar = wrapper.ptr[0]
             if not activeone:
                 PY_SCIP_CALL(SCIPgetNegatedVar(self._scip, _binVar, &_binVar))
         else:
@@ -5539,10 +6768,10 @@ cdef class Model:
         terms = cons.expr.terms
 
         for key, coeff in terms.items():
-            var = <Variable>key[0]
             if negate:
                 coeff = -coeff
-            PY_SCIP_CALL(SCIPaddVarIndicator(self._scip, scip_cons, var.scip_var, <SCIP_Real>coeff))
+            wrapper = _VarArray(key[0])
+            PY_SCIP_CALL(SCIPaddVarIndicator(self._scip, scip_cons, wrapper.ptr[0], <SCIP_Real>coeff))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         pyCons = Constraint.create(scip_cons)
@@ -5550,7 +6779,26 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pyCons
-    
+
+    def getLinearConsIndicator(self, Constraint cons):
+        """
+        Get the linear constraint corresponding to the indicator constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            The indicator constraint
+
+        Returns
+        -------
+        Constraint or None
+        """
+
+        cdef SCIP_CONS* lincons = SCIPgetLinearConsIndicator(cons.scip_cons)
+        if lincons == NULL:
+            return None
+        return Constraint.create(lincons)
+
     def getSlackVarIndicator(self, Constraint cons):
         """
         Get slack variable of an indicator constraint.
@@ -5566,7 +6814,7 @@ cdef class Model:
         Variable
 
         """
-        cdef SCIP_VAR* var = SCIPgetSlackVarIndicator(cons.scip_cons);
+        cdef SCIP_VAR* var = SCIPgetSlackVarIndicator(cons.scip_cons)
         return Variable.create(var)
 
     def addPyCons(self, Constraint cons):
@@ -5653,6 +6901,18 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPsetConsInitial(self._scip, cons.scip_cons, newInit))
+    
+    def setModifiable(self, Constraint cons, newMod):
+        """
+        Set "modifiable" flag of a constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+        newMod : bool
+
+        """
+        PY_SCIP_CALL(SCIPsetConsModifiable(self._scip, cons.scip_cons, newMod))
 
     def setRemovable(self, Constraint cons, newRem):
         """
@@ -5697,7 +6957,7 @@ cdef class Model:
         Parameters
         ----------
         cons : Constraint
-            linear or quadratic constraint
+            constraint to change the right-hand side from
         rhs : float or None
             new right-hand side (set to None for +infinity)
 
@@ -5714,6 +6974,26 @@ cdef class Model:
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
+    def chgCapacityKnapsack(self, Constraint cons, capacity):
+        """
+        Change capacity of a knapsack constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            knapsack constraint to change the capacity from
+        capacity : float or None
+            new capacity (set to None for +infinity)
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        assert constype == 'knapsack', "method cannot be called for constraints of type " + constype
+
+        if capacity is None:
+           capacity = SCIPinfinity(self._scip)
+
+        PY_SCIP_CALL(SCIPchgCapacityKnapsack(self._scip, cons.scip_cons, capacity))
+
     def chgLhs(self, Constraint cons, lhs):
         """
         Change left-hand side value of a constraint.
@@ -5721,7 +7001,7 @@ cdef class Model:
         Parameters
         ----------
         cons : Constraint
-            linear or quadratic constraint
+            constraint to change the left-hand side from
         lhs : float or None
             new left-hand side (set to None for -infinity)
 
@@ -5745,7 +7025,7 @@ cdef class Model:
         Parameters
         ----------
         cons : Constraint
-            linear or quadratic constraint
+            constraint to get the right-hand side from
 
         Returns
         -------
@@ -5755,10 +7035,29 @@ cdef class Model:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
         if constype == 'linear':
             return SCIPgetRhsLinear(self._scip, cons.scip_cons)
-        elif constype == 'quadratic':
+        elif constype == 'nonlinear':
             return SCIPgetRhsNonlinear(cons.scip_cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
+
+    def getCapacityKnapsack(self, Constraint cons):
+        """
+        Retrieve capacity of a knapsack constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            knapsack constraint to get the capacity from
+
+        Returns
+        -------
+        float
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        assert constype == 'knapsack', "method cannot be called for constraints of type " + constype
+
+        return SCIPgetCapacityKnapsack(self._scip, cons.scip_cons)
 
     def getLhs(self, Constraint cons):
         """
@@ -5767,7 +7066,7 @@ cdef class Model:
         Parameters
         ----------
         cons : Constraint
-            linear or quadratic constraint
+            linear or nonlinear constraint
 
         Returns
         -------
@@ -5777,7 +7076,7 @@ cdef class Model:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
         if constype == 'linear':
             return SCIPgetLhsLinear(self._scip, cons.scip_cons)
-        elif constype == 'quadratic':
+        elif constype == 'nonlinear':
             return SCIPgetLhsNonlinear(cons.scip_cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
@@ -5835,6 +7134,23 @@ cdef class Model:
 
         PY_SCIP_CALL( SCIPaddCoefLinear(self._scip, cons.scip_cons, var.scip_var, value) )
 
+    def addCoefKnapsack(self, Constraint cons, Variable var, weight):
+        """
+        Adds coefficient to knapsack constraint (if it is not zero)
+
+        Parameters
+        ----------
+        cons : Constraint
+            knapsack constraint
+        var : Variable
+            variable of constraint entry
+        weight : float
+            coefficient of constraint entry
+
+        """
+
+        PY_SCIP_CALL( SCIPaddCoefKnapsack(self._scip, cons.scip_cons, var.scip_var, weight) )
+
     def getActivity(self, Constraint cons, Solution sol = None):
         """
         Retrieve activity of given constraint.
@@ -5843,7 +7159,7 @@ cdef class Model:
         Parameters
         ----------
         cons : Constraint
-            linear or quadratic constraint
+            linear constraint
         sol : Solution or None, optional
             solution to compute activity of, None to use current node's solution (Default value = None)
 
@@ -5880,7 +7196,7 @@ cdef class Model:
         Parameters
         ----------
         cons : Constraint
-            linear or quadratic constraint
+            linear constraint
         sol : Solution or None, optional
             solution to compute slack of, None to use current node's solution (Default value = None)
         side : str or None, optional
@@ -5969,9 +7285,9 @@ cdef class Model:
         list of NLRow
 
         """
-        cdef SCIP_NLROW** nlrows
+        cdef SCIP_NLROW** nlrows = SCIPgetNLPNlRows(self._scip)
+        cdef int i
 
-        nlrows = SCIPgetNLPNlRows(self._scip)
         return [NLRow.create(nlrows[i]) for i in range(self.getNNlRows())]
 
     def getNlRowSolActivity(self, NLRow nlrow, Solution sol = None):
@@ -6081,23 +7397,24 @@ cdef class Model:
 
         """
         cdef SCIP_EXPR* expr
+        cdef int termidx
 
         # linear terms
-        cdef SCIP_EXPR** _linexprs
-        cdef SCIP_Real* _lincoefs
-        cdef int _nlinvars
+        cdef SCIP_EXPR** linexprs
+        cdef SCIP_Real* lincoefs
+        cdef SCIP_Real lincoef
+        cdef int nlinvars
 
         # bilinear terms
-        cdef int _nbilinterms
         cdef SCIP_EXPR* bilinterm1
         cdef SCIP_EXPR* bilinterm2
         cdef SCIP_Real bilincoef
+        cdef int nbilinterms
 
         # quadratic terms
-        cdef int _nquadterms
-        cdef SCIP_Real sqrcoef
-        cdef SCIP_Real lincoef
         cdef SCIP_EXPR* sqrexpr
+        cdef SCIP_Real sqrcoef
+        cdef int nquadterms
 
         # variables
         cdef SCIP_VAR* scipvar1
@@ -6107,17 +7424,17 @@ cdef class Model:
         assert self.checkQuadraticNonlinear(cons), "constraint is not quadratic"
 
         expr = SCIPgetExprNonlinear(cons.scip_cons)
-        SCIPexprGetQuadraticData(expr, NULL, &_nlinvars, &_linexprs, &_lincoefs, &_nquadterms, &_nbilinterms, NULL, NULL)
+        SCIPexprGetQuadraticData(expr, NULL, &nlinvars, &linexprs, &lincoefs, &nquadterms, &nbilinterms, NULL, NULL)
 
         linterms   = []
         bilinterms = []
         quadterms  = []
 
-        for termidx in range(_nlinvars):
-            var = Variable.create(SCIPgetVarExprVar(_linexprs[termidx]))
-            linterms.append((var,_lincoefs[termidx]))
+        for termidx in range(nlinvars):
+            var = Variable.create(SCIPgetVarExprVar(linexprs[termidx]))
+            linterms.append((var, lincoefs[termidx]))
 
-        for termidx in range(_nbilinterms):
+        for termidx in range(nbilinterms):
             SCIPexprGetQuadraticBilinTerm(expr, termidx, &bilinterm1, &bilinterm2, &bilincoef, NULL, NULL)
             scipvar1 = SCIPgetVarExprVar(bilinterm1)
             scipvar2 = SCIPgetVarExprVar(bilinterm2)
@@ -6128,7 +7445,7 @@ cdef class Model:
             else:
                 quadterms.append((var1,bilincoef,0.0))
 
-        for termidx in range(_nquadterms):
+        for termidx in range(nquadterms):
             SCIPexprGetQuadraticQuadTerm(expr, termidx, NULL, &lincoef, &sqrcoef, NULL, NULL, &sqrexpr)
             if sqrexpr == NULL:
                 continue
@@ -6163,17 +7480,18 @@ cdef class Model:
         list of Constraint
 
         """
-        cdef SCIP_CONS** _conss
-        cdef int _nconss
-        conss = []
+        cdef SCIP_CONS** conss
+        cdef int nconss
+        cdef int i
 
         if transformed:
-            _conss = SCIPgetConss(self._scip)
-            _nconss = SCIPgetNConss(self._scip)
+            conss = SCIPgetConss(self._scip)
+            nconss = SCIPgetNConss(self._scip)
         else:
-            _conss = SCIPgetOrigConss(self._scip)
-            _nconss = SCIPgetNOrigConss(self._scip)
-        return [Constraint.create(_conss[i]) for i in range(_nconss)]
+            conss = SCIPgetOrigConss(self._scip)
+            nconss = SCIPgetNOrigConss(self._scip)
+
+        return [Constraint.create(conss[i]) for i in range(nconss)]
 
     def getNConss(self, transformed=True):
         """
@@ -6217,7 +7535,7 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPdelConsLocal(self._scip, cons.scip_cons))
-
+    
     def getValsLinear(self, Constraint cons):
         """
         Retrieve the coefficients of a linear constraint
@@ -6232,25 +7550,61 @@ cdef class Model:
         dict of str to float
 
         """
-        cdef SCIP_Real* _vals
-        cdef SCIP_VAR** _vars
+        cdef SCIP_VAR** vars
+        cdef SCIP_Real* vals
+        cdef int i
 
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
         if not constype == 'linear':
             raise Warning("coefficients not available for constraints of type ", constype)
 
-        _vals = SCIPgetValsLinear(self._scip, cons.scip_cons)
-        _vars = SCIPgetVarsLinear(self._scip, cons.scip_cons)
+        vals = SCIPgetValsLinear(self._scip, cons.scip_cons)
+        vars = SCIPgetVarsLinear(self._scip, cons.scip_cons)
 
         valsdict = {}
         for i in range(SCIPgetNVarsLinear(self._scip, cons.scip_cons)):
-            valsdict[bytes(SCIPvarGetName(_vars[i])).decode('utf-8')] = _vals[i]
+            valsdict[bytes(SCIPvarGetName(vars[i])).decode('utf-8')] = vals[i]
+
+        return valsdict
+
+    def getWeightsKnapsack(self, Constraint cons):
+        """
+        Retrieve the coefficients of a knapsack constraint
+
+        Parameters
+        ----------
+        cons : Constraint
+            knapsack constraint to get the coefficients of
+
+        Returns
+        -------
+        dict of str to float
+
+        """
+        cdef SCIP_VAR** vars
+        cdef SCIP_Longint* vals
+        cdef int nvars
+        cdef int i
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        if not constype == 'knapsack':
+            raise Warning("weights not available for constraints of type ", constype)
+
+        nvars = SCIPgetNVarsKnapsack(self._scip, cons.scip_cons)
+        vals = SCIPgetWeightsKnapsack(self._scip, cons.scip_cons)
+        vars = SCIPgetVarsKnapsack(self._scip, cons.scip_cons)
+
+        valsdict = {}
+        for i in range(nvars):
+            var_name = bytes(SCIPvarGetName(vars[i])).decode('utf-8')
+            valsdict[var_name] = vals[i]
+
         return valsdict
 
     def getRowLinear(self, Constraint cons):
         """
         Retrieve the linear relaxation of the given linear constraint as a row.
-        may return NULL if no LP row was yet created; the user must not modify the row!
+        May return NULL if no LP row was yet created; the user must not modify the row!
 
         Parameters
         ----------
@@ -6292,6 +7646,29 @@ cdef class Model:
             transcons = cons
         return SCIPgetDualsolLinear(self._scip, transcons.scip_cons)
 
+    def getDualsolKnapsack(self, Constraint cons):
+        """
+        Retrieve the dual solution to a knapsack constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            knapsack constraint
+
+        Returns
+        -------
+        float
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        if not constype == 'knapsack':
+            raise Warning("dual solution values not available for constraints of type ", constype)
+        if cons.isOriginal():
+            transcons = cons
+        else:
+            transcons = <Constraint>self.getTransformedCons(cons)
+        return SCIPgetDualsolKnapsack(self._scip, transcons.scip_cons)
+
     def getDualMultiplier(self, Constraint cons):
         """
         DEPRECATED: Retrieve the dual solution to a linear constraint.
@@ -6329,6 +7706,27 @@ cdef class Model:
             return SCIPgetDualfarkasLinear(self._scip, transcons.scip_cons)
         else:
             return SCIPgetDualfarkasLinear(self._scip, cons.scip_cons)
+    
+    def getDualfarkasKnapsack(self, Constraint cons):
+        """
+        Retrieve the dual farkas value to a knapsack constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            knapsack constraint
+
+        Returns
+        -------
+        float
+
+        """
+        # TODO this should ideally be handled on the SCIP side
+        if cons.isOriginal():
+            return SCIPgetDualfarkasKnapsack(self._scip, cons.scip_cons)
+        else:
+            transcons = <Constraint>self.getTransformedCons(cons)
+            return SCIPgetDualfarkasKnapsack(self._scip, transcons.scip_cons)
 
     def getVarRedcost(self, Variable var):
         """
@@ -6384,7 +7782,7 @@ cdef class Model:
         """Optimize the problem."""
         PY_SCIP_CALL(SCIPsolve(self._scip))
         self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
-    
+
     def optimizeNogil(self):
         """Optimize the problem without GIL."""
         cdef SCIP_RETCODE rc;
@@ -6398,7 +7796,7 @@ cdef class Model:
         finding solutions.
         WARNING: This feature is still experimental and prone to some errors."""
         if SCIPtpiGetNumThreads() == 1:
-            warnings.warn("SCIP was compiled without task processing interface. Parallel solve not possible - using optimize() instead of solveConcurrent()") 
+            warnings.warn("SCIP was compiled without task processing interface. Parallel solve not possible - using optimize() instead of solveConcurrent()")
             self.optimize()
         else:
             PY_SCIP_CALL(SCIPsolveConcurrent(self._scip))
@@ -6430,6 +7828,8 @@ cdef class Model:
         """
         cdef SCIP** subprobs
         cdef SCIP_BENDERS* benders
+        cdef int nsubproblems
+        cdef int i
 
         # checking whether subproblems is a dictionary
         if isinstance(subproblems, dict):
@@ -6444,8 +7844,8 @@ cdef class Model:
 
         # if subproblems is a dictionary, then the dictionary is turned into a c array
         if isdict:
-            for idx, subprob in enumerate(subproblems.values()):
-                subprobs[idx] = (<Model>subprob)._scip
+            for i, subprob in enumerate(subproblems.values()):
+                subprobs[i] = (<Model>subprob)._scip
         else:
             subprobs[0] = (<Model>subproblems)._scip
 
@@ -6465,40 +7865,37 @@ cdef class Model:
         If the user wants to resolve the subproblems, they must free them by
         calling freeBendersSubproblems()
         """
-        cdef SCIP_BENDERS** _benders
-        cdef SCIP_Bool _infeasible
-        cdef int nbenders
+        cdef SCIP_BENDERS** benders = SCIPgetBenders(self._scip)
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool solvecip = True
+        cdef int nbenders = SCIPgetNActiveBenders(self._scip)
         cdef int nsubproblems
-
-        solvecip = True
-
-        nbenders = SCIPgetNActiveBenders(self._scip)
-        _benders = SCIPgetBenders(self._scip)
+        cdef int i
+        cdef int j
 
         # solving all subproblems from all Benders' decompositions
         for i in range(nbenders):
-            nsubproblems = SCIPbendersGetNSubproblems(_benders[i])
+            nsubproblems = SCIPbendersGetNSubproblems(benders[i])
             for j in range(nsubproblems):
                 PY_SCIP_CALL(SCIPsetupBendersSubproblem(self._scip,
-                    _benders[i], self._bestSol.sol, j, SCIP_BENDERSENFOTYPE_CHECK))
+                    benders[i], self._bestSol.sol, j, SCIP_BENDERSENFOTYPE_CHECK))
                 PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip,
-                    _benders[i], self._bestSol.sol, j, &_infeasible, solvecip, NULL))                
+                    benders[i], self._bestSol.sol, j, &infeasible, solvecip, NULL))
 
     def freeBendersSubproblems(self):
         """Calls the free subproblem function for the Benders' decomposition.
         This will free all subproblems for all decompositions. """
-        cdef SCIP_BENDERS** _benders
-        cdef int nbenders
+        cdef SCIP_BENDERS** benders = SCIPgetBenders(self._scip)
+        cdef int nbenders = SCIPgetNActiveBenders(self._scip)
         cdef int nsubproblems
-
-        nbenders = SCIPgetNActiveBenders(self._scip)
-        _benders = SCIPgetBenders(self._scip)
+        cdef int i
+        cdef int j
 
         # solving all subproblems from all Benders' decompositions
         for i in range(nbenders):
-            nsubproblems = SCIPbendersGetNSubproblems(_benders[i])
+            nsubproblems = SCIPbendersGetNSubproblems(benders[i])
             for j in range(nsubproblems):
-                PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, _benders[i],
+                PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, benders[i],
                     j))
 
     def updateBendersLowerbounds(self, lowerbounds, Benders benders=None):
@@ -6858,6 +8255,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPactivatePricer(self._scip, scip_pricer))
         pricer.model = <Model>weakref.proxy(self)
         Py_INCREF(pricer)
+        pricer.scip_pricer = scip_pricer
 
     def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority=0,
                         enfopriority=0, chckpriority=0, sepafreq=-1, propfreq=-1,
@@ -6918,6 +8316,99 @@ cdef class Model:
         conshdlr.model = <Model>weakref.proxy(self)
         conshdlr.name = name
         Py_INCREF(conshdlr)
+
+    def deactivatePricer(self, Pricer pricer):
+        """
+        Deactivate the given pricer.
+
+        Parameters
+        ----------
+        pricer : Pricer
+            the pricer to deactivate
+        """
+        cdef SCIP_PRICER* scip_pricer
+        PY_SCIP_CALL(SCIPdeactivatePricer(self._scip, pricer.scip_pricer))
+
+    def copyLargeNeighborhoodSearch(self, to_fix, fix_vals) -> Model:
+        """
+        Creates a configured copy of the transformed problem and applies provided fixings intended for LNS heuristics.
+
+        Parameters
+        ----------
+        to_fix : List[Variable]
+            A list of variables to fix in the copy
+        fix_vals : List[Real]
+            A list of the values to which to fix the variables in the copy (care their order)
+
+        Returns
+        -------
+        model : Model
+            A model containing the created copy
+        """
+        cdef SCIP* subscip
+        cdef SCIP_HASHMAP* varmap
+        cdef SCIP_VAR** orig_vars = SCIPgetVars(self._scip)
+        cdef SCIP_VAR** vars = <SCIP_VAR**> malloc(len(to_fix) * sizeof(SCIP_VAR*))
+        cdef SCIP_Real* vals = <SCIP_Real*> malloc(len(fix_vals) * sizeof(SCIP_Real))
+        cdef SCIP_Real val
+        cdef SCIP_Bool valid
+        cdef SCIP_Bool success
+        cdef int i
+        cdef int j = 0
+
+        name_to_val = {var.name: val for var, val in zip(to_fix, fix_vals)}
+        for i, var in enumerate(self.getVars()):
+            if var.name in name_to_val:
+                vars[j] = orig_vars[i]
+                vals[j] = <SCIP_Real>name_to_val[var.name]
+                j+= 1
+
+        PY_SCIP_CALL(SCIPcreate(&subscip))
+        PY_SCIP_CALL( SCIPhashmapCreate(&varmap, SCIPblkmem(subscip), self.getNVars()) )
+        PY_SCIP_CALL( SCIPcopyLargeNeighborhoodSearch(self._scip, subscip, varmap, "LNhS_subscip", vars, vals,
+                                                      <int>len(to_fix), False, False, &success, &valid) )
+        sub_model = Model.create(subscip)
+        sub_model._freescip = True
+        free(vars)
+        free(vals)
+        SCIPhashmapFree(&varmap)
+
+        return sub_model
+
+    def translateSubSol(self, Model sub_model, Solution sol, heur) -> Solution:
+        """
+		Translates a solution of a model copy into a solution of the main model
+
+		Parameters
+		----------
+		sub_model : Model
+			The python-wrapper of the subscip
+		sol : Solution
+			The python-wrapper of the solution of the subscip
+		heur : Heur
+			The python-wrapper of the heuristic that found the solution
+
+		Returns
+		-------
+		solution : Solution
+			The corresponding solution in the main model
+        """
+        cdef SCIP_VAR** vars
+        cdef SCIP_SOL* real_sol
+        cdef SCIP_SOL* subscip_sol = sol.sol
+        cdef SCIP_HEUR* _heur
+        cdef SCIP_Bool success
+        cdef int i
+        cdef _VarArray wrapper
+        
+        assert sub_model.getNVars(False) >= self.getNVars(True), "The sub_model must have at least as many variables as the main model."
+
+        wrapper = _VarArray(sub_model.getVars(False))
+        _heur = SCIPfindHeur(self._scip, str_conversion(heur.name))
+        PY_SCIP_CALL( SCIPtranslateSubSol(self._scip, sub_model._scip, subscip_sol, _heur, wrapper.ptr, &real_sol) )
+        solution = Solution.create(self._scip, real_sol)
+
+        return solution
 
     def createCons(self, Conshdlr conshdlr, name, initial=True, separate=True, enforce=True, check=True, propagate=True,
                    local=False, modifiable=False, dynamic=False, removable=False, stickingatnode=False):
@@ -7365,14 +8856,14 @@ cdef class Model:
             number of fractional implicit integer variables
 
         """
+        cdef SCIP_VAR** lpcands
+        cdef SCIP_Real* lpcandssol
+        cdef SCIP_Real* lpcandsfrac
         cdef int ncands
         cdef int nlpcands
         cdef int npriolpcands
         cdef int nfracimplvars
-
-        cdef SCIP_VAR** lpcands
-        cdef SCIP_Real* lpcandssol
-        cdef SCIP_Real* lpcandsfrac
+        cdef int i
 
         PY_SCIP_CALL(SCIPgetLPBranchCands(self._scip, &lpcands, &lpcandssol, &lpcandsfrac,
                                           &nlpcands, &npriolpcands, &nfracimplvars))
@@ -7395,10 +8886,10 @@ cdef class Model:
             number of candidates with maximal priority
 
         """
+        cdef SCIP_VAR** pseudocands
         cdef int npseudocands
         cdef int npriopseudocands
-
-        cdef SCIP_VAR** pseudocands
+        cdef int i
 
         PY_SCIP_CALL(SCIPgetPseudoBranchCands(self._scip, &pseudocands, &npseudocands, &npriopseudocands))
 
@@ -7426,12 +8917,13 @@ cdef class Model:
         cdef SCIP_NODE* downchild
         cdef SCIP_NODE* eqchild
         cdef SCIP_NODE* upchild
+        cdef _VarArray wrapper = _VarArray(variable)
 
-        PY_SCIP_CALL(SCIPbranchVar(self._scip, (<Variable>variable).scip_var, &downchild, &eqchild, &upchild))
+        PY_SCIP_CALL(SCIPbranchVar(self._scip, wrapper.ptr[0], &downchild, &eqchild, &upchild))
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
 
 
-    def branchVarVal(self, variable, value):
+    def branchVarVal(self, Variable variable, value):
         """
         Branches on variable using a value which separates the domain of the variable.
 
@@ -7455,8 +8947,9 @@ cdef class Model:
         cdef SCIP_NODE* downchild
         cdef SCIP_NODE* eqchild
         cdef SCIP_NODE* upchild
+        cdef _VarArray wrapper = _VarArray(variable)
 
-        PY_SCIP_CALL(SCIPbranchVarVal(self._scip, (<Variable>variable).scip_var, value, &downchild, &eqchild, &upchild))
+        PY_SCIP_CALL(SCIPbranchVarVal(self._scip, wrapper.ptr[0], value, &downchild, &eqchild, &upchild))
 
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
 
@@ -7953,7 +9446,7 @@ cdef class Model:
             _heur = SCIPfindHeur(self._scip, n)
         else:
             _heur = NULL
-            
+
         PY_SCIP_CALL(SCIPcreateOrigSol(self._scip, &_sol, _heur))
         solution = Solution.create(self._scip, _sol)
         return solution
@@ -7995,7 +9488,7 @@ cdef class Model:
             PY_SCIP_CALL(SCIPprintSol(self._scip, NULL, NULL, write_zeros))
         else:
             PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, NULL, write_zeros))
-        
+
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def writeBestSol(self, filename="origprob.sol", write_zeros=False):
@@ -8042,7 +9535,7 @@ cdef class Model:
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintBestTransSol(self._scip, cfile, write_zeros))
-        
+
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def writeSol(self, Solution solution, filename="origprob.sol", write_zeros=False):
@@ -8067,7 +9560,7 @@ cdef class Model:
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, cfile, write_zeros))
-        
+
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def writeTransSol(self, Solution solution, filename="transprob.sol", write_zeros=False):
@@ -8092,7 +9585,7 @@ cdef class Model:
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintTransSol(self._scip, solution.sol, cfile, write_zeros))
-        
+
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     # perhaps this should not be included as it implements duplicated functionality
@@ -8169,7 +9662,7 @@ cdef class Model:
         """
         cdef SCIP_SOL* _sol
         _sol = <SCIP_SOL*>solution.sol
-        
+
         assert _sol != NULL, "Cannot set value to a freed solution."
         PY_SCIP_CALL(SCIPsetSolVal(self._scip, _sol, var.scip_var, val))
 
@@ -8333,10 +9826,10 @@ cdef class Model:
         list of Solution
 
         """
-        cdef SCIP_SOL** _sols
-        cdef SCIP_SOL* _sol
-        _sols = SCIPgetSols(self._scip)
-        nsols = SCIPgetNSols(self._scip)
+        cdef SCIP_SOL** _sols = SCIPgetSols(self._scip)
+        cdef int nsols = SCIPgetNSols(self._scip)
+        cdef int i
+
         sols = []
 
         for i in range(nsols):
@@ -8418,7 +9911,7 @@ cdef class Model:
                 raise Warning("Without a solution, method can only be called in stage SOLVING.")
         else:
             assert self._bestSol.sol != NULL
-            
+
             if SCIPsolIsOriginal(self._bestSol.sol):
                 min_stage_requirement = SCIP_STAGE_PROBLEM
             else:
@@ -8450,21 +9943,22 @@ cdef class Model:
 
         """
         # no need to create a NULL solution wrapper in case we have a variable
+        cdef _VarArray wrapper
         if sol == None and isinstance(expr, Variable):
-            var = <Variable> expr
-            return SCIPgetSolVal(self._scip, NULL, var.scip_var)
+            wrapper = _VarArray(expr)
+            return SCIPgetSolVal(self._scip, NULL, wrapper.ptr[0])
         if sol == None:
             sol = Solution.create(self._scip, NULL)
         return sol[expr]
 
-    def getVal(self, Expr expr):
+    def getVal(self, expr: Union[Expr, MatrixExpr] ):
         """
         Retrieve the value of the given variable or expression in the best known solution.
         Can only be called after solving is completed.
 
         Parameters
         ----------
-        expr : Expr
+        expr : Expr ot MatrixExpr
             polynomial expression to query the value of
 
         Returns
@@ -8481,8 +9975,15 @@ cdef class Model:
         if not stage_check or self._bestSol.sol == NULL and SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
             raise Warning("Method cannot be called in stage ", self.getStage())
 
-        return self.getSolVal(self._bestSol, expr)
-    
+        if isinstance(expr, MatrixExpr):
+            result = np.empty(expr.shape, dtype=float)
+            for idx in np.ndindex(result.shape):
+                result[idx] = self.getSolVal(self._bestSol, expr[idx])
+        else:
+            result = self.getSolVal(self._bestSol, expr)
+
+        return result
+
     def hasPrimalRay(self):
         """
         Returns whether a primal ray is stored that proves unboundedness of the LP relaxation.
@@ -8493,7 +9994,7 @@ cdef class Model:
 
         """
         return SCIPhasPrimalRay(self._scip)
-        
+
     def getPrimalRayVal(self, Variable var):
         """
         Gets value of given variable in primal ray causing unboundedness of the LP relaxation.
@@ -8508,7 +10009,7 @@ cdef class Model:
 
         """
         assert SCIPhasPrimalRay(self._scip), "The problem does not have a primal ray."
-        
+
         return SCIPgetPrimalRayVal(self._scip, var.scip_var)
 
     def getPrimalRay(self):
@@ -8521,13 +10022,13 @@ cdef class Model:
 
         """
         assert SCIPhasPrimalRay(self._scip), "The problem does not have a primal ray."
-
-        cdef int _nvars = SCIPgetNVars(self._scip)
-        cdef SCIP_VAR ** _vars = SCIPgetVars(self._scip)
+        cdef SCIP_VAR** vars = SCIPgetVars(self._scip)
+        cdef int nvars = SCIPgetNVars(self._scip)
+        cdef int i
 
         ray = []
-        for i in range(_nvars):
-            ray.append(float(SCIPgetPrimalRayVal(self._scip, _vars[i])))
+        for i in range(nvars):
+            ray.append(float(SCIPgetPrimalRayVal(self._scip, vars[i])))
 
         return ray
 
@@ -8590,7 +10091,7 @@ cdef class Model:
 
         """
         return SCIPgetStage(self._scip)
-    
+
     def getStageName(self):
         """
         Returns name of current stage as string.
@@ -8603,7 +10104,7 @@ cdef class Model:
         if not StageNames:
             self._getStageNames()
         return StageNames[self.getStage()]
-    
+
     def _getStageNames(self):
         """Gets names of stages."""
         for name in dir(PY_SCIP_STAGE):
@@ -8690,7 +10191,7 @@ cdef class Model:
             _eventhdlr = SCIPfindEventhdlr(self._scip, n)
         else:
             raise Warning("event handler not found")
-        
+
         Py_INCREF(self)
         PY_SCIP_CALL(SCIPcatchEvent(self._scip, eventtype, _eventhdlr, NULL, NULL))
 
@@ -8710,7 +10211,7 @@ cdef class Model:
             _eventhdlr = SCIPfindEventhdlr(self._scip, n)
         else:
             raise Warning("event handler not found")
-        
+
         Py_DECREF(self)
         PY_SCIP_CALL(SCIPdropEvent(self._scip, eventtype, _eventhdlr, NULL, -1))
 
@@ -8819,7 +10320,7 @@ cdef class Model:
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
-        
+
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def getNLPs(self):
@@ -9052,13 +10553,14 @@ cdef class Model:
             dict mapping parameter names to their values.
 
         """
-        cdef SCIP_PARAM** params
+        cdef SCIP_PARAM** params = SCIPgetParams(self._scip)
+        cdef int i
 
-        params = SCIPgetParams(self._scip)
         result = {}
         for i in range(SCIPgetNParams(self._scip)):
           name = SCIPparamGetName(params[i]).decode('utf-8')
           result[name] = self.getParam(name)
+
         return result
 
     def setParams(self, params):
@@ -9085,12 +10587,12 @@ cdef class Model:
 
         """
         absfile = str_conversion(abspath(file))
-        
+
         user_locale = locale.getlocale(category=locale.LC_NUMERIC)
         locale.setlocale(locale.LC_NUMERIC, "C")
-        
+
         PY_SCIP_CALL(SCIPreadParams(self._scip, absfile))
-        
+
         locale.setlocale(locale.LC_NUMERIC, user_locale)
 
     def writeParams(self, filename='param.set', comments=True, onlychanged=True, verbose=True):
@@ -9239,8 +10741,13 @@ cdef class Model:
             the objective sense (Default value = 'minimize')
 
         """
-
+        cdef SCIP_VAR** vars
+        cdef int nvars
+        cdef SCIP_Real* _coeffs
         cdef SCIP_OBJSENSE objsense
+        cdef SCIP_Real coef
+        cdef int i
+        cdef _VarArray wrapper
 
         if sense == "minimize":
             objsense = SCIP_OBJSENSE_MINIMIZE
@@ -9256,25 +10763,23 @@ cdef class Model:
         if coeffs[CONST] != 0.0:
             raise ValueError("Constant offsets in objective are not supported!")
 
-        cdef SCIP_VAR** _vars
-        cdef int _nvars
-        _vars = SCIPgetOrigVars(self._scip)
-        _nvars = SCIPgetNOrigVars(self._scip)
-        _coeffs = <SCIP_Real*> malloc(_nvars * sizeof(SCIP_Real))
+        vars = SCIPgetOrigVars(self._scip)
+        nvars = SCIPgetNOrigVars(self._scip)
+        _coeffs = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
 
-        for i in range(_nvars):
+        for i in range(nvars):
             _coeffs[i] = 0.0
 
         for term, coef in coeffs.terms.items():
             # avoid CONST term of Expr
             if term != CONST:
                 assert len(term) == 1
-                var = <Variable>term[0]
-                for i in range(_nvars):
-                    if _vars[i] == var.scip_var:
+                for i in range(nvars):
+                    wrapper = _VarArray(term[0])
+                    if vars[i] == wrapper.ptr[0]:
                         _coeffs[i] = coef
 
-        PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, _vars, &_coeffs[0], _nvars))
+        PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, vars, &_coeffs[0], nvars))
 
         free(_coeffs)
 
@@ -9416,10 +10921,10 @@ cdef class Model:
         cdef SCIP_Bool lperror
 
         if integral:
-            PY_SCIP_CALL(SCIPgetVarStrongbranchInt(self._scip, var.scip_var, itlim, idempotent, &down, &up, &downvalid, 
+            PY_SCIP_CALL(SCIPgetVarStrongbranchInt(self._scip, var.scip_var, itlim, idempotent, &down, &up, &downvalid,
                                                    &upvalid, &downinf, &upinf, &downconflict, &upconflict, &lperror))
         else:
-            PY_SCIP_CALL(SCIPgetVarStrongbranchFrac(self._scip, var.scip_var, itlim, idempotent, &down, &up, &downvalid, 
+            PY_SCIP_CALL(SCIPgetVarStrongbranchFrac(self._scip, var.scip_var, itlim, idempotent, &down, &up, &downvalid,
                                                     &upvalid, &downinf, &upinf, &downconflict, &upconflict, &lperror))
 
         return down, up, downvalid, upvalid, downinf, upinf, downconflict, upconflict, lperror
@@ -9463,16 +10968,15 @@ cdef class Model:
         float
 
         """
-
         assert isinstance(gains, list)
-        nchildren = len(gains)
+        cdef int nchildren = len(gains)
+        cdef SCIP_Real* _gains = <SCIP_Real*> malloc(nchildren * sizeof(SCIP_Real))
+        cdef int i
 
-        cdef int _nchildren = nchildren
-        _gains = <SCIP_Real*> malloc(_nchildren * sizeof(SCIP_Real))
-        for i in range(_nchildren):
+        for i in range(nchildren):
             _gains[i] = gains[i]
 
-        score = SCIPgetBranchScoreMultiple(self._scip, var.scip_var, _nchildren, _gains)
+        score = SCIPgetBranchScoreMultiple(self._scip, var.scip_var, nchildren, _gains)
 
         free(_gains)
 
@@ -9530,11 +11034,13 @@ cdef class Model:
             The feature mappings for the columns, edges, and rows
 
         """
-
         cdef SCIP* scip = self._scip
-        cdef int i, j, k, col_i
         cdef SCIP_VARTYPE vtype
         cdef SCIP_Real sim, prod
+        cdef int col_i
+        cdef int i
+        cdef int j
+        cdef int k
 
         # Check if SCIP is in the correct stage
         if SCIPgetStage(scip) != SCIP_STAGE_SOLVING:
@@ -9556,7 +11062,7 @@ cdef class Model:
                                "basis_zero": 15, "best_incumbent_val": 16, "avg_incumbent_val": 17, "age": 18}
 
         if prev_col_features is None:
-            col_features = [[0 for _ in range(n_col_features)] for _ in range(ncols)]
+            col_features = [[0 for i in range(n_col_features)] for j in range(ncols)]
         else:
             assert len(prev_col_features) > 0, "Previous column features is empty"
             col_features = prev_col_features
@@ -9564,7 +11070,7 @@ cdef class Model:
                 if not suppress_warnings:
                     raise Warning(f"The number of columns has changed. Previous column data being ignored")
                 else:
-                    col_features = [[0 for _ in range(n_col_features)] for _ in range(ncols)]
+                    col_features = [[0 for i in range(n_col_features)] for j in range(ncols)]
                     prev_col_features = None
             if len(prev_col_features[0]) != n_col_features:
                 raise Warning(f"Dimension mismatch in provided previous features and new features:"
@@ -9572,8 +11078,11 @@ cdef class Model:
 
         cdef SCIP_SOL* sol = SCIPgetBestSol(scip)
         cdef SCIP_VAR* var
-        cdef SCIP_Real lb, ub, solval
+        cdef SCIP_Real lb
+        cdef SCIP_Real ub
+        cdef SCIP_Real solval
         cdef SCIP_BASESTAT basis_status
+
         for i in range(ncols):
             col_i = SCIPcolGetLPPos(cols[i])
             var = SCIPcolGetVar(cols[i])
@@ -9639,8 +11148,8 @@ cdef class Model:
                     col_features[col_i][col_feature_map["avg_incumbent_val"]] = SCIPvarGetAvgSol(var)
 
         # Generate row features
-        cdef int nrows = SCIPgetNLPRows(scip)
         cdef SCIP_ROW** rows = SCIPgetLPRows(scip)
+        cdef int nrows = SCIPgetNLPRows(scip)
 
         if static_only:
             n_row_features = 6
@@ -9652,7 +11161,7 @@ cdef class Model:
                                "basis_lower": 10, "basis_basic": 11, "basis_upper": 12, "basis_zero": 13}
 
         if prev_row_features is None:
-            row_features = [[0 for _ in range(n_row_features)] for _ in range(nrows)]
+            row_features = [[0 for i in range(n_row_features)] for j in range(nrows)]
         else:
             assert len(prev_row_features) > 0, "Previous row features is empty"
             row_features = prev_row_features
@@ -9660,14 +11169,17 @@ cdef class Model:
                 if not suppress_warnings:
                     raise Warning(f"The number of rows has changed. Previous row data being ignored")
                 else:
-                    row_features = [[0 for _ in range(n_row_features)] for _ in range(nrows)]
+                    row_features = [[0 for i in range(n_row_features)] for j in range(nrows)]
                     prev_row_features = None
             if len(prev_row_features[0]) != n_row_features:
                 raise Warning(f"Dimension mismatch in provided previous features and new features:"
                               f"{len(prev_row_features[0])} != {n_row_features}")
 
+        cdef SCIP_Real lhs
+        cdef SCIP_Real rhs
+        cdef SCIP_Real cst
         cdef int nnzrs = 0
-        cdef SCIP_Real lhs, rhs, cst
+
         for i in range(nrows):
 
             # lhs <= activity + cst <= rhs
@@ -9724,10 +11236,11 @@ cdef class Model:
         # Generate edge (coefficient) features
         cdef SCIP_COL** row_cols
         cdef SCIP_Real * row_vals
+
         n_edge_features = 3
         edge_feature_map = {"col_idx": 0, "row_idx": 1, "coef": 2}
         if prev_edge_features is None:
-            edge_features = [[0 for _ in range(n_edge_features)] for _ in range(nnzrs)]
+            edge_features = [[0 for i in range(n_edge_features)] for j in range(nnzrs)]
             j = 0
             for i in range(nrows):
                 # coefficient indexes and values
@@ -9745,12 +11258,11 @@ cdef class Model:
                 if not suppress_warnings:
                     raise Warning(f"The number of coefficients in the LP has changed. Previous edge data being ignored")
                 else:
-                    edge_features = [[0 for _ in range(3)] for _ in range(nnzrs)]
+                    edge_features = [[0 for i in range(3)] for j in range(nnzrs)]
                     prev_edge_features = None
             if len(prev_edge_features[0]) != 3:
                 raise Warning(f"Dimension mismatch in provided previous features and new features:"
                               f"{len(prev_edge_features[0])} != 3")
-
 
         return (col_features, edge_features, row_features,
                 {"col": col_feature_map, "edge": edge_feature_map, "row": row_feature_map})
@@ -9775,7 +11287,7 @@ class Statistics:
     problem_name: str
         Name of problem
     presolved_problem_name: str
-        Name of presolved problem    
+        Name of presolved problem
     n_nodes: int
         The number of nodes explored in the branch-and-bound tree
     n_solutions_found: int
@@ -9783,20 +11295,20 @@ class Statistics:
     first_solution: float
         objective value of first found solution
     primal_bound: float
-        The best primal bound found 
+        The best primal bound found
     dual_bound: float
         The best dual bound found
     gap: float
         The gap between the primal and dual bounds
     primal_dual_integral: float
-        The primal-dual integral 
+        The primal-dual integral
     n_vars: int
         number of variables in the model
     n_binary_vars: int
         number of binary variables in the model
-    n_integer_vars: int 
+    n_integer_vars: int
         number of integer variables in the model
-    n_implicit_integer_vars: int 
+    n_implicit_integer_vars: int
         number of implicit integer variables in the model
     n_continuous_vars: int
         number of continuous variables in the model
@@ -9828,14 +11340,14 @@ class Statistics:
     copying_time: float
     problem_name: str
     presolved_problem_name: str
-    _variables: dict             # Dictionary with number of variables by type 
+    _variables: dict             # Dictionary with number of variables by type
     _presolved_variables: dict   # Dictionary with number of presolved variables by type
     _constraints: dict           # Dictionary with number of constraints by type
     _presolved_constraints: dict # Dictionary with number of presolved constraints by type
     n_runs: int = None
     n_nodes: int = None
     n_solutions_found: int = -1
-    first_solution: float = None   
+    first_solution: float = None
     primal_bound: float = None
     dual_bound: float = None
     gap: float = None
@@ -9914,10 +11426,12 @@ def readStatistics(filename):
         Statistics
 
         """
+        cdef int i
+
         result = {}
         file = open(filename)
         data = file.readlines()
-        
+
         if "optimal solution found" in data[0]:
             result["status"] = "optimal"
         elif "infeasible" in data[0]:
@@ -9930,9 +11444,9 @@ def readStatistics(filename):
             raise "readStatistics can only be called if the problem was solved"
 
         available_stats = ["Total Time", "solving", "presolving", "reading", "copying",
-                "Problem name", "Variables", "Constraints", "number of runs", 
+                "Problem name", "Variables", "Constraints", "number of runs",
                 "nodes", "Solutions found"]
-            
+
         if result["status"] in ["optimal", "user_interrupt"]:
             available_stats.extend(["First Solution", "Primal Bound", "Dual Bound", "Gap", "primal-dual"])
 
@@ -9958,12 +11472,12 @@ def readStatistics(filename):
                     for var_type in split_var:
                         split_result = var_type.strip().split(" ")
                         var_stats[split_result[1]] = int(split_result[0])
-                    
+
                     if "Original" in data[i-2]:
                         result["Variables"] = var_stats
                     else:
                         result["Presolved Variables"] = var_stats
-                    
+
                     continue
 
                 if stat_name == "Constraints":
@@ -9979,7 +11493,7 @@ def readStatistics(filename):
                     else:
                         result["Presolved Constraints"] = con_stats
                     continue
-                
+
                 relevant_value = relevant_value.split(" ")[0]
                 if stat_name == "Problem name":
                     if "Original" in data[i-1]:
@@ -9987,7 +11501,7 @@ def readStatistics(filename):
                     else:
                         result["Presolved Problem name"] = relevant_value
                     continue
-                
+
                 if stat_name == "Gap":
                     relevant_value = relevant_value[:-1] # removing %
 
@@ -9997,11 +11511,11 @@ def readStatistics(filename):
                         break
 
                 else: # it's a string
-                    result[stat_name] = relevant_value                    
+                    result[stat_name] = relevant_value
 
         # changing keys to pythonic variable names
-        treated_keys = {"status": "status", "Total Time": "total_time", "solving":"solving_time", "presolving":"presolving_time", "reading":"reading_time", 
-                        "copying":"copying_time", "Problem name": "problem_name", "Presolved Problem name": "presolved_problem_name", "Variables":"_variables", 
+        treated_keys = {"status": "status", "Total Time": "total_time", "solving":"solving_time", "presolving":"presolving_time", "reading":"reading_time",
+                        "copying":"copying_time", "Problem name": "problem_name", "Presolved Problem name": "presolved_problem_name", "Variables":"_variables",
                         "Presolved Variables":"_presolved_variables", "Constraints": "_constraints", "Presolved Constraints":"_presolved_constraints",
                         "number of runs": "n_runs", "nodes":"n_nodes", "Solutions found": "n_solutions_found"}
 
@@ -10013,10 +11527,11 @@ def readStatistics(filename):
                 treated_keys["Gap"]         = "gap"
                 treated_keys["primal-dual"]     = "primal_dual_integral"
         treated_result = dict((treated_keys[key], value) for (key, value) in result.items())
-        
+
         stats = Statistics(**treated_result)
+
         return stats
-            
+
 # debugging memory management
 def is_memory_freed():
     return BMSgetMemoryUsed() == 0
