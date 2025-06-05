@@ -1042,8 +1042,6 @@ cdef class Solution:
 
         # fast track for Variable
         cdef SCIP_Real coeff
-        cdef _VarArray wrapper
-    
         if isinstance(expr, Variable):
             self._checkStage("SCIPgetSolVal")
             return SCIPgetSolVal(self.scip, self.sol, _VarArray(expr).ptr[0])
@@ -2410,13 +2408,11 @@ cdef class _VarArray:
         else:
             if not isinstance(vars, (list, tuple)):
                 raise TypeError("Expected Variable or list of Variable, got %s." % type(vars))
-
             self.size = len(vars)
             if self.size == 0:
                 self.ptr = NULL
             else:
                 self.ptr = <SCIP_VAR**> malloc(self.size * sizeof(SCIP_VAR*))
-
                 for i, var in enumerate(vars):
                     if not isinstance(var, Variable):
                         raise TypeError("Expected Variable, got %s." % type(var))
@@ -6466,6 +6462,7 @@ cdef class Model:
         cdef SCIP_CONS* scip_cons
         cdef int i
         cdef _VarArray wrapper = _VarArray(vars)
+
         _vars = wrapper.ptr
 
         if name == '':
@@ -8268,6 +8265,7 @@ cdef class Model:
 		solution : Solution
 			The corresponding solution in the main model
         """
+        cdef SCIP_VAR** vars
         cdef SCIP_SOL* real_sol
         cdef SCIP_SOL* subscip_sol = sol.sol
         cdef SCIP_HEUR* _heur
@@ -8277,12 +8275,9 @@ cdef class Model:
         
         assert sub_model.getNVars(False) >= self.getNVars(True), "The sub_model must have at least as many variables as the main model."
 
-        wrapper = _VarArray(sub_model.getVars())
-        vars = wrapper.ptr
-
-        name = str_conversion(heur.name)
-        _heur = SCIPfindHeur(self._scip, name)
-        PY_SCIP_CALL( SCIPtranslateSubSol(self._scip, sub_model._scip, subscip_sol, _heur, vars, &real_sol) )
+        wrapper = _VarArray(sub_model.getVars(False))
+        _heur = SCIPfindHeur(self._scip, str_conversion(heur.name))
+        PY_SCIP_CALL( SCIPtranslateSubSol(self._scip, sub_model._scip, subscip_sol, _heur, wrapper.ptr, &real_sol) )
         solution = Solution.create(self._scip, real_sol)
 
         return solution
