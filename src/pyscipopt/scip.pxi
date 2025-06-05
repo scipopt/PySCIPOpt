@@ -1042,16 +1042,20 @@ cdef class Solution:
 
         # fast track for Variable
         cdef SCIP_Real coeff
+        cdef _VarArray wrapper
         if isinstance(expr, Variable):
+            wrapper = _VarArray(expr)
             self._checkStage("SCIPgetSolVal")
-            return SCIPgetSolVal(self.scip, self.sol, _VarArray(expr).ptr[0])
+            return SCIPgetSolVal(self.scip, self.sol, wrapper.ptr[0])
         return sum(self._evaluate(term)*coeff for term, coeff in expr.terms.items() if coeff != 0)
 
     def _evaluate(self, term):
         self._checkStage("SCIPgetSolVal")
         result = 1
-        for var in term.vartuple:
-            result *= SCIPgetSolVal(self.scip, self.sol, _VarArray(var).ptr[0])
+        cdef _VarArray wrapper
+        wrapper = _VarArray(term.vartuple)
+        for i in range(len(term.vartuple)):
+            result *= SCIPgetSolVal(self.scip, self.sol, wrapper.ptr[i])
         return result
 
     def __setitem__(self, Variable var, value):
@@ -3445,6 +3449,7 @@ cdef class Model:
         cdef int nvars
         cdef SCIP_Real coef
         cdef int i
+        cdef _VarArray wrapper
 
         # turn the constant value into an Expr instance for further processing
         if not isinstance(expr, Expr):
@@ -3469,7 +3474,8 @@ cdef class Model:
             # avoid CONST term of Expr
             if term != CONST:
                 assert len(term) == 1
-                PY_SCIP_CALL(SCIPchgVarObj(self._scip, _VarArray(term[0]).ptr[0], coef))
+                wrapper = _VarArray(term[0])
+                PY_SCIP_CALL(SCIPchgVarObj(self._scip, wrapper.ptr[0], coef))
 
         if sense == "minimize":
             self.setMinimize()
@@ -5206,6 +5212,7 @@ cdef class Model:
 
         cdef SCIP_CONS* scip_cons
         cdef SCIP_EXPR* prodexpr
+        cdef _VarArray wrapper
         PY_SCIP_CALL(SCIPcreateConsQuadraticNonlinear(
             self._scip, &scip_cons, str_conversion(kwargs['name']),
             0, NULL, NULL,        # linear
@@ -5217,13 +5224,16 @@ cdef class Model:
 
         for v, c in terms.items():
             if len(v) == 1: # linear
-                PY_SCIP_CALL(SCIPaddLinearVarNonlinear(self._scip, scip_cons, _VarArray(v[0]).ptr[0], c))
+                wrapper = _VarArray(v[0])
+                PY_SCIP_CALL(SCIPaddLinearVarNonlinear(self._scip, scip_cons, wrapper.ptr[0], c))
             else: # nonlinear
                 assert len(v) == 2, 'term length must be 1 or 2 but it is %s' % len(v)
 
                 varexprs = <SCIP_EXPR**> malloc(2 * sizeof(SCIP_EXPR*))
-                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[0], _VarArray(v[0]).ptr[0], NULL, NULL) )
-                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[1], _VarArray(v[1]).ptr[0], NULL, NULL) )
+                wrapper = _VarArray(v[0])
+                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[0], wrapper.ptr[0], NULL, NULL) )
+                wrapper = _VarArray(v[1])
+                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[1], wrapper.ptr[0], NULL, NULL) )
                 PY_SCIP_CALL( SCIPcreateExprProduct(self._scip, &prodexpr, 2, varexprs, 1.0, NULL, NULL) )
 
                 PY_SCIP_CALL( SCIPaddExprNonlinear(self._scip, scip_cons, prodexpr, c) )
@@ -5351,9 +5361,7 @@ cdef class Model:
         for node in nodes:
             if node[0] == Operator.varidx:
                 nvars += 1
-        vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
 
-        varpos = 0
         scipexprs = <SCIP_EXPR**> malloc(len(nodes) * sizeof(SCIP_EXPR*))
         for i,node in enumerate(nodes):
             opidx = node[0]
@@ -5361,9 +5369,7 @@ cdef class Model:
                 assert len(node[1]) == 1
                 pyvar = node[1][0] # for vars we store the actual var!
                 wrapper = _VarArray(pyvar)
-                vars[varpos] = wrapper.ptr[0]
-                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &scipexprs[i], vars[varpos], NULL, NULL) )
-                varpos += 1
+                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &scipexprs[i], wrapper.ptr[0], NULL, NULL) )
                 continue
             if opidx == Operator.const:
                 assert len(node[1]) == 1
@@ -5422,7 +5428,6 @@ cdef class Model:
                 continue
             # default:
             raise NotImplementedError
-        assert varpos == nvars
 
         # create nonlinear constraint for the expression root
         PY_SCIP_CALL( SCIPcreateConsNonlinear(
@@ -5447,7 +5452,6 @@ cdef class Model:
 
         # free more memory
         free(scipexprs)
-        free(vars)
 
         return PyCons
 
@@ -6140,13 +6144,12 @@ cdef class Model:
         if name == '':
             name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
+        wrapper = _VarArray(vars)
         for i in range(nvars):
-            wrapper = _VarArray(vars[i])
-            vars_array[i] = wrapper.ptr[0]
             weights_array[i] = <SCIP_Longint>weights[i]
 
         PY_SCIP_CALL(SCIPcreateConsKnapsack(
-            self._scip, &scip_cons, str_conversion(name), nvars, vars_array, weights_array,
+            self._scip, &scip_cons, str_conversion(name), nvars, wrapper.ptr, weights_array,
             capacity, initial, separate, enforce, check, propagate, local, modifiable,
             dynamic, removable, stickingatnode))
 
@@ -6204,6 +6207,7 @@ cdef class Model:
         cdef SCIP_CONS* scip_cons
         cdef int nvars
         cdef int i
+        cdef _VarArray wrapper 
 
         PY_SCIP_CALL(SCIPcreateConsSOS1(self._scip, &scip_cons, str_conversion(name), 0, NULL, NULL,
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
@@ -6211,13 +6215,14 @@ cdef class Model:
         if name == '':
             name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
+        nvars = len(vars)
+        wrapper = _VarArray(vars)
         if weights is None:
-            for v in vars:
-                PY_SCIP_CALL(SCIPappendVarSOS1(self._scip, scip_cons, _VarArray(v).ptr[0]))
-        else:
-            nvars = len(vars)
             for i in range(nvars):
-                PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, scip_cons, _VarArray(vars[i]).ptr[0], weights[i]))
+                PY_SCIP_CALL(SCIPappendVarSOS1(self._scip, scip_cons, wrapper.ptr[i]))
+        else:
+            for i in range(nvars):
+                PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, scip_cons, wrapper.ptr[i], weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
 
@@ -6267,6 +6272,7 @@ cdef class Model:
         cdef SCIP_CONS* scip_cons
         cdef int nvars
         cdef int i
+        cdef _VarArray wrapper
 
         PY_SCIP_CALL(SCIPcreateConsSOS2(self._scip, &scip_cons, str_conversion(name), 0, NULL, NULL,
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
@@ -6274,13 +6280,14 @@ cdef class Model:
         if name == '':
             name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
+        nvars = len(vars)
+        wrapper = _VarArray(vars)
         if weights is None:
-            for v in vars:
-                PY_SCIP_CALL(SCIPappendVarSOS2(self._scip, scip_cons, _VarArray(v).ptr[0]))
-        else:
-            nvars = len(vars)
             for i in range(nvars):
-                PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, scip_cons, _VarArray(vars[i]).ptr[0], weights[i]))
+                PY_SCIP_CALL(SCIPappendVarSOS2(self._scip, scip_cons, wrapper.ptr[i]))
+        else:
+            for i in range(nvars):
+                PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, scip_cons, wrapper.ptr[i], weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
 
@@ -6394,13 +6401,13 @@ cdef class Model:
         cdef int nvars = len(vars)
         cdef SCIP_VAR** _vars
         cdef SCIP_VAR* _resvar
+        cdef _VarArray resvar_wrapper = _VarArray(resvar)
+        cdef _VarArray vars_wrapper = _VarArray(vars)
         cdef SCIP_CONS* scip_cons
         cdef int i
-        cdef _VarArray wrapper = _VarArray(vars)
-        cdef _VarArray resvar_wrapper = _VarArray(resvar)
 
         _resvar = resvar_wrapper.ptr[0]
-        _vars = wrapper.ptr
+        _vars = vars_wrapper.ptr
 
         if name == '':
             name = 'c'+str(SCIPgetNConss(self._scip)+1)
@@ -6542,9 +6549,9 @@ cdef class Model:
         if name == '':
             name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
+        v_wrapper = _VarArray(consvars)
         for i, v in enumerate(consvars):
-            v_wrapper = _VarArray(v)
-            scip_var = v_wrapper.ptr[0]
+            scip_var = v_wrapper.ptr[i]
             if indvars:
                 indvar_wrapper = _VarArray(indvars[i])
                 indvar = indvar_wrapper.ptr[0]
@@ -6646,7 +6653,8 @@ cdef class Model:
         for key, coeff in terms.items():
             if negate:
                 coeff = -coeff
-            PY_SCIP_CALL(SCIPaddVarIndicator(self._scip, scip_cons, _VarArray(key[0]).ptr[0], <SCIP_Real>coeff))
+            wrapper = _VarArray(key[0])
+            PY_SCIP_CALL(SCIPaddVarIndicator(self._scip, scip_cons, wrapper.ptr[0], <SCIP_Real>coeff))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         pyCons = Constraint.create(scip_cons)
@@ -9815,8 +9823,10 @@ cdef class Model:
 
         """
         # no need to create a NULL solution wrapper in case we have a variable
+        cdef _VarArray wrapper
         if sol == None and isinstance(expr, Variable):
-            return SCIPgetSolVal(self._scip, NULL, _VarArray(expr).ptr[0])
+            wrapper = _VarArray(expr)
+            return SCIPgetSolVal(self._scip, NULL, wrapper.ptr[0])
         if sol == None:
             sol = Solution.create(self._scip, NULL)
         return sol[expr]
@@ -10617,6 +10627,7 @@ cdef class Model:
         cdef SCIP_OBJSENSE objsense
         cdef SCIP_Real coef
         cdef int i
+        cdef _VarArray wrapper
 
         if sense == "minimize":
             objsense = SCIP_OBJSENSE_MINIMIZE
@@ -10644,7 +10655,8 @@ cdef class Model:
             if term != CONST:
                 assert len(term) == 1
                 for i in range(nvars):
-                    if vars[i] == _VarArray(term[0]).ptr[0]:
+                    wrapper = _VarArray(term[0])
+                    if vars[i] == wrapper.ptr[0]:
                         _coeffs[i] = coef
 
         PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, vars, &_coeffs[0], nvars))
