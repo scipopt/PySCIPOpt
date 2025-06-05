@@ -1,7 +1,9 @@
 import pytest
 import os
+from json import load
 
 from pyscipopt import Model, quicksum, Reader, SCIP_RESULT, readStatistics
+from helpers.utils import random_mip_1
 
 class SudokuReader(Reader):
 
@@ -140,4 +142,13 @@ def test_readStatistics():
 
 def test_writeStatisticsJson():
 
-    assert False
+    model = random_mip_1()
+    model.optimize()
+    json_output = model.writeStatisticsJson("statistics.json")
+    model.writeStatisticsJson("statistics.json")
+
+    with open("statistics.json", "r") as f:
+        data = load(f)
+        assert data["origprob"]["problem_name"] == "model"
+    
+    os.remove("statistics.json")

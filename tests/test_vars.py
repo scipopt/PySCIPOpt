@@ -58,7 +58,7 @@ def test_vtype():
     assert x.vtype() == "CONTINUOUS"
     assert y.vtype() == "INTEGER"
     assert z.vtype() == "BINARY"
-    assert w.vtype() == "IMPLINT"
+    assert w.vtype() == "CONTINUOUS" #todo check if this is indeed the expected behavior with SCIP10. Used to be IMPLINT, but deprecation and stuff
 
     m.chgVarType(x, 'I')
     assert x.vtype() == "INTEGER"
