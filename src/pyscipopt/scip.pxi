@@ -10290,7 +10290,7 @@ cdef class Model:
         else:
             with open(filename, "w") as f:
                 cfile = fdopen(f.fileno(), "w")
-                PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
+                PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, cfile))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 

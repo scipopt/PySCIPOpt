@@ -3,7 +3,7 @@ import os
 from json import load
 
 from pyscipopt import Model, quicksum, Reader, SCIP_RESULT, readStatistics
-from helpers.utils import random_mip_1
+from helpers.utils import random_lp_1
 
 class SudokuReader(Reader):
 
@@ -142,10 +142,9 @@ def test_readStatistics():
 
 def test_writeStatisticsJson():
 
-    model = random_mip_1()
+    model = random_lp_1()
     model.optimize()
-    json_output = model.writeStatisticsJson("statistics.json")
-    model.writeStatisticsJson("statistics.json")
+    model.printStatisticsJson("statistics.json")
 
     with open("statistics.json", "r") as f:
         data = load(f)
