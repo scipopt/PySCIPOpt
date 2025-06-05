@@ -40,8 +40,6 @@ class DummyFeatureExtractingBranchRule(Branchrule):
 
 
 
-
-
 def create_model():
     scip = Model()
     scip.setHeuristics(SCIP_PARAMSETTING.OFF)

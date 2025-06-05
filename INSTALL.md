@@ -56,6 +56,15 @@ Installation from PyPI
 
     python -m pip install pyscipopt
 
+To avoid interfering with system packages, it's best to use a [virtual environment](https://docs.python.org/3/library/venv.html).<br>
+<span style="color:orange">**Warning!**</span> This is mandatory in some newer configurations.
+
+```bash
+python3 -m venv venv source venv/bin/activate  # On Windows use: venv\Scripts\activate pip install pyscipopt
+pip install pyscipopt
+```
+Remember to activate the environment (`source venv/bin/activate`) in each terminal session where you use PySCIPOpt.
+
 Please note that if your Python version and OS version are in the combinations at the start of this INSTALL file then
 pip now automatically installs a pre-built version of SCIP. For these combinations, to use your own installation of SCIP,
 please see the section on building from source. For unavailable combinations this pip command will automatically

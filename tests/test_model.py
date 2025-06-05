@@ -288,13 +288,11 @@ def test_getStage():
     x = m.addVar()
     m.addCons(x >= 1)    
     
-    print(m.getStage())
     assert m.getStage() == SCIP_STAGE.PROBLEM
     assert m.getStageName() == "PROBLEM" 
 
     m.optimize()
 
-    print(m.getStage())
     assert m.getStage() == SCIP_STAGE.SOLVED
     assert m.getStageName() == "SOLVED"
 

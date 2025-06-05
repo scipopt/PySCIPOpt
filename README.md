@@ -23,10 +23,21 @@ See [CHANGELOG.md](https://github.com/scipopt/PySCIPOpt/blob/master/CHANGELOG.md
 Installation
 ------------
 
-The recommended installation method is via PyPI
+The recommended installation method is via [PyPI](https://pypi.org/project/PySCIPOpt/):
+
 ```bash
 pip install pyscipopt
 ```
+
+To avoid interfering with system packages, it's best to use a [virtual environment](https://docs.python.org/3/library/venv.html):
+
+```bash
+python3 -m venv venv     # creates a virtual environment called venv
+source venv/bin/activate # activates the environment. On Windows use: venv\Scripts\activate
+pip install pyscipopt
+```
+Remember to activate the environment (`source venv/bin/activate` or equivalent) in each terminal session where you use PySCIPOpt.
+Note that some configurations require the use of virtual environments.
 
 For information on specific versions, installation via Conda, and guides for building from source,
 please see the [online documentation](https://pyscipopt.readthedocs.io/en/latest/install.html).

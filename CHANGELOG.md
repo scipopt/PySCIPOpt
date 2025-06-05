@@ -7,6 +7,7 @@
 - Added SCIP_LOCKTYPE, addVarLocksType(), getNLocksDown(), getNLocksUp(), getNLocksDownType(), getNLocksUpType(), and tests
 - Wrapped SCIPprintStatisticsJson
 ### Fixed
+- Raised an error when an expression is used when a variable is required
 ### Changed
 ### Removed
 
