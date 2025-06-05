@@ -6,6 +6,7 @@
 - Added isPositive(), isNegative(), isFeasLE(), isFeasLT(), isFeasGE(), isFeasGT(), isHugeValue(), and tests
 - Added SCIP_LOCKTYPE, addVarLocksType(), getNLocksDown(), getNLocksUp(), getNLocksDownType(), getNLocksUpType(), and tests
 ### Fixed
+- Raised an error when an expression is used when a variable is required
 ### Changed
 ### Removed
 
