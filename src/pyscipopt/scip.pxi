@@ -5274,22 +5274,16 @@ cdef class Model:
         terms = cons.expr.terms
 
         # collect variables
-        variables = {var.ptr(): var for term in terms for var in term}
-        variables = list(variables.values())
-        varindex = {var.ptr(): i for (i, var) in enumerate(variables)}
+        variables = {i: [var for var in term] for i, term in enumerate(terms)}
 
         # create monomials for terms
         monomials = <SCIP_EXPR**> malloc(len(terms) * sizeof(SCIP_EXPR*))
         termcoefs = <SCIP_Real*> malloc(len(terms) * sizeof(SCIP_Real))
         for i, (term, coef) in enumerate(terms.items()):
-            termvars = <SCIP_VAR**> malloc(len(term) * sizeof(SCIP_VAR*))
-            for j, var in enumerate(term):
-                wrapper = _VarArray(var)
-                termvars[j] = wrapper.ptr[0]
+            wrapper = _VarArray(variables[i])
 
-            PY_SCIP_CALL( SCIPcreateExprMonomial(self._scip, &monomials[i], <int>len(term), termvars, NULL, NULL, NULL) )
+            PY_SCIP_CALL( SCIPcreateExprMonomial(self._scip, &monomials[i], wrapper.size, wrapper.ptr, NULL, NULL, NULL) )
             termcoefs[i] = <SCIP_Real>coef
-            free(termvars)
 
         # create polynomial from monomials
         PY_SCIP_CALL( SCIPcreateExprSum(self._scip, &expr, <int>len(terms), monomials, termcoefs, 0.0, NULL, NULL))
@@ -6134,7 +6128,6 @@ cdef class Model:
 
         cdef int nvars = len(vars)
         cdef int i
-        cdef SCIP_VAR** vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
         cdef SCIP_Longint* weights_array = <SCIP_Longint*> malloc(nvars * sizeof(SCIP_Real))
         cdef SCIP_CONS* scip_cons
         cdef _VarArray wrapper
@@ -6153,7 +6146,6 @@ cdef class Model:
             capacity, initial, separate, enforce, check, propagate, local, modifiable,
             dynamic, removable, stickingatnode))
 
-        free(vars_array)
         free(weights_array)
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
