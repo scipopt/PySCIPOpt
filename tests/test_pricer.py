@@ -42,8 +42,6 @@ class CutPricer(Pricer):
         assert type(self.model.getNSolsFound()) == int
         assert type(self.model.getNBestSolsFound()) == int
         assert self.model.getNBestSolsFound() <= self.model.getNSolsFound()
-        
-        self.model.data["nSols"] = self.model.getNSolsFound()
 
         # Adding the column to the master problem (model.LT because of numerics)
         if self.model.isLT(objval, 0): 
@@ -51,7 +49,6 @@ class CutPricer(Pricer):
 
             # Creating new var; must set pricedVar to True
             newVar = self.model.addVar("NewPattern_" + str(currentNumVar), vtype = "C", obj = 1.0, pricedVar = True)
-
             # Adding the new variable to the constraints of the master problem
             newPattern = []
             for i, c in enumerate(self.data['cons']):
@@ -87,7 +84,6 @@ def test_cuttingstock():
 
     s.setPresolve(0)
     s.data = {}
-    s.data["nSols"] = 0
 
     # creating a pricer
     pricer = CutPricer()
@@ -164,7 +160,7 @@ def test_cuttingstock():
     
     assert s.getObjVal() == 452.25
     assert type(s.getNSols()) == int
-    assert s.getNSols() == s.data["nSols"]
+    assert s.getNSols() == s.getNSolsFound()
 
     # Testing freeTransform
     s.freeTransform()
@@ -189,7 +185,6 @@ def test_deactivate_pricer():
 
     s.setPresolve(0)
     s.data = {}
-    s.data["nSols"] = 0
 
     # creating a pricer
     pricer = CutPricer()
