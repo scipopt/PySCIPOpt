@@ -1184,15 +1184,19 @@ cdef extern from "scip/scip.h":
     SCIP_HEURTIMING SCIPheurGetTimingmask(SCIP_HEUR* heur)
     void SCIPheurSetTimingmask(SCIP_HEUR* heur, SCIP_HEURTIMING timingmask)
 
-    # #IIS finder plugin
-    # SCIP_RETCODE SCIPincludeIISFinder(SCIP* scip,
-    #                                   const char* name,
-    #                                   const char* desc,
-    #                                   int         priority,
-    #                                   SCIP_RETCODE (*iisfindercopy) (SCIP* scip, SCIP_IISFINDER* iisfinder),
-    #                                   SCIP_RETCODE (*iisfinderfree) (SCIP* scip, SCIP_IISFINDER* iisfinder),
-    #                                   SCIP_RETCODE (*iisfinderexec) (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_Real timelim, SCIP_Longint nodelim, SCIP_Bool removebounds, SCIP_Bool silent, SCIP_RESULT* result),
-    #                                   SCIP_IISFINDERDATA*   iisfinderdata)
+    #IIS finder plugin
+    SCIP_RETCODE SCIPincludeIISfinder(SCIP* scip,
+                                      const char* name,
+                                      const char* desc,
+                                      int         priority,
+                                      SCIP_RETCODE (*iisfindercopy) (SCIP* scip, SCIP_IISFINDER* iisfinder),
+                                      SCIP_RETCODE (*iisfinderfree) (SCIP* scip, SCIP_IISFINDER* iisfinder),
+                                      SCIP_RETCODE (*iisfinderexec) (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_Real timelim, SCIP_Longint nodelim, SCIP_Bool removebounds, SCIP_Bool silent, SCIP_RESULT* result),
+                                      SCIP_IISFINDERDATA*   iisfinderdata)
+
+    SCIP_IISFINDERDATA* SCIPiisfinderGetData(SCIP_IISFINDER* iisfinder)
+    SCIP_RETCODE SCIPincludeIISfinderGreedy(SCIP* scip)
+    SCIP_RETCODE SCIPiisGreedyMinimize(SCIP_IIS* iis);
 
     #Relaxation plugin
     SCIP_RETCODE SCIPincludeRelax(SCIP* scip,

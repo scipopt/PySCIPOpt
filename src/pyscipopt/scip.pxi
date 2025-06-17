@@ -31,7 +31,7 @@ include "conshdlr.pxi"
 include "cutsel.pxi"
 include "event.pxi"
 include "heuristic.pxi"
-# include "iisfinder.pxi"
+include "iisfinder.pxi"
 include "presol.pxi"
 include "pricer.pxi"
 include "propagator.pxi"
@@ -8545,7 +8545,10 @@ cdef class Model:
         maxdepth : int, optional
             maximal depth level to call heuristic at (Default value = -1)
         timingmask : PY_SCIP_HEURTIMING, optional
-            positions in the node solving loop where heuristic should be executed
+            positions in the node solvingreturn {
+            'result': SCIP_RESULT.SUCCESS,
+            'lowerbound': 10e4
+        } loop where heuristic should be executed
             (Default value = SCIP_HEURTIMING_BEFORENODE)
         usessubscip : bool, optional
             does the heuristic use a secondary SCIP instance? (Default value = False)
@@ -8564,32 +8567,51 @@ cdef class Model:
         heur.name = name
         Py_INCREF(heur)
     
-    # def includeIISFinder(self, IISfinder iisfinder, name, desc, priority=10000, freq=1):
-    #     """
-    #     Include an IIS (Irreducible Infeasible Set) finder handler.
+    def includeIISfinder(self, IISfinder iisfinder, name, desc, priority=10000, freq=1):
+        """
+        Include an IIS (Irreducible Infeasible Set) finder handler.
 
-    #     Parameters
-    #     ----------
-    #     iisfinder : IISfinder
-    #         IIS finder
-    #     name : str
-    #         name of IIS finder
-    #     desc : str
-    #         description of IIS finder
-    #     priority : int, optional
-    #         priority of the IISfinder (#todo description)
-    #     freq : int, optional
-    #         frequency for calling IIS finder
+        Parameters
+        ----------
+        iisfinder : IISfinder
+            IIS finder
+        name : str
+            name of IIS finder
+        desc : str
+            description of IIS finder
+        priority : int, optional
+            priority of the IISfinder (#todo description)
+        freq : int, optional
+            frequency for calling IIS finder
 
-    #     """
-    #     nam = str_conversion(name)
-    #     des = str_conversion(desc)
-    #     PY_SCIP_CALL(SCIPincludeIISFinder(self._scip, nam, des, priority, freq, PyIISFinderCopy, PyIISFinderFree,
-    #                                      PyIISFinderExec, <SCIP_IISFinderDATA*> iisfinder))
-    #     iisfinder.model = <Model>weakref.proxy(self)
-    #     iisfinder.name = name
+        """
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeIISfinder(self._scip, nam, des, priority, PyiisfinderCopy, PyiisfinderFree,
+                                         PyiisfinderExec, <SCIP_IISFINDERDATA*> iisfinder))
+        iisfinder.model = <Model>weakref.proxy(self)
+        iisfinder.name = name
 
-    #     Py_INCREF(iisfinder)
+        Py_INCREF(iisfinder)
+
+    def includeIISfinderGreedy(self):
+        """
+        Include the default greedy IIS finder.
+
+        Returns
+        -------
+        IISfinder
+            the greedy IIS finder
+
+        """
+        PY_SCIP_CALL(SCIPincludeIISfinderGreedy(self._scip))
+
+    # def iisGreedyMinimize(self, IISfinder iisfinder):
+    #    """
+    #    Perform the greedy deletion algorithm with singleton batches to obtain an irreducible infeasible subsystem (IIS)
+    #    """
+
+    #    PY_SCIP_CALL(SCIPiisGreedyMinimize(iisfinder._iisfinder))
 
     def includeRelax(self, Relax relax, name, desc, priority=10000, freq=1):
         """
