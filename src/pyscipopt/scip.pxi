@@ -1000,8 +1000,8 @@ cdef class Solution:
     """Base class holding a pointer to corresponding SCIP_SOL."""
 
     # We are raising an error here to avoid creating a solution without an associated model. See Issue #625
-    def __init__(self, raise_error = False):
-        if not raise_error:
+    def __init__(self, raise_error = True):
+        if raise_error:
             raise ValueError("To create a solution you should use the createSol method of the Model class.")
 
     @staticmethod
@@ -1025,7 +1025,7 @@ cdef class Solution:
         """
         if scip == NULL:
             raise Warning("cannot create Solution with SCIP* == NULL")
-        sol = Solution(True)
+        sol = Solution(raise_error=False)
         sol.sol = scip_sol
         sol.scip = scip
         return sol
