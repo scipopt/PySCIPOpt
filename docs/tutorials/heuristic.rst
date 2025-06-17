@@ -97,10 +97,10 @@ To include the heuristic in the SCIP model one would use the following code:
 
 .. note:: The ``timingmask`` is especially important when programming your own heuristic. See
   `here <https://www.scipopt.org/doc/html/HEUR.php>`_ for information on timing options and how the affect
-  when the heuristic can be called. Note also that heuristic are as other plugins, called in order of
+  when the heuristic can be called. Note also that heuristics are, as other plugins, called in order of
   their priorities.
 
 .. note:: When you create a SCIP solution object it is important that you eventually free the object.
   This is done by calling ``scip.freeSol(sol)``, although this is not necessary when the solution has been
-  passed to ``scip.trySol(sol)`` with ``free=True`` (default behaviour).
+  passed to ``scip.trySol(sol)`` with ``free=True`` (default behavior).
 

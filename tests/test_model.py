@@ -288,13 +288,11 @@ def test_getStage():
     x = m.addVar()
     m.addCons(x >= 1)    
     
-    print(m.getStage())
     assert m.getStage() == SCIP_STAGE.PROBLEM
     assert m.getStageName() == "PROBLEM" 
 
     m.optimize()
 
-    print(m.getStage())
     assert m.getStage() == SCIP_STAGE.SOLVED
     assert m.getStageName() == "SOLVED"
 
@@ -518,3 +516,15 @@ def test_redirection():
 
     # compare objective values
     assert original.isEQ(redirect.getObjVal(), original.getObjVal())
+
+def test_comparisons():
+    from math import inf
+    model = Model()
+
+    assert model.isPositive(1.)
+    assert model.isNegative(-1.)
+
+    assert not model.isPositive(0.)
+    assert not model.isNegative(0.)
+
+    assert model.isHugeValue(inf)

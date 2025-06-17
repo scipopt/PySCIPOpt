@@ -89,6 +89,23 @@ def test_cons_and():
     m.sortAndCons(and_cons)
     assert m.isAndConsSorted(and_cons)
     
+def test_cons_logical_fail():
+    m = Model()
+    x1 = m.addVar(vtype="B")
+    x2 = m.addVar(vtype="B")
+    x3 = m.addVar(vtype="B")
+    x4 = m.addVar(vtype="B")
+    result1 = m.addVar(vtype="B")
+
+    m.addCons(x3 == 1 - x1)
+    m.addCons(x4 == 1 - x2)
+
+    # result1 false
+    with pytest.raises(TypeError):
+        m.addConsOr([x1*x3, x2*x4], result1)
+
+    m.optimize()
+
 def test_SOScons():
     m = Model()
     x = {}
