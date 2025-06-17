@@ -6112,6 +6112,38 @@ cdef class Model:
         cdef SCIP_Bool success
 
         PY_SCIP_CALL(SCIPsortAndCons(self._scip, and_cons.scip_cons))
+    
+    def chgAndConsCheckFlagWhenUpgr(self, Constraint cons, flag):
+        """
+        when 'upgrading' the given AND-constraint, should the check flag for the upgraded 
+        constraint be set to TRUE, even if the check flag of this AND-constraint is set to FALSE?
+        
+        Parameters
+        ----------
+        cons : Constraint
+            The AND constraint to change.
+        flag : bool
+            The new value for the check flag.
+
+        """
+
+        PY_SCIP_CALL(SCIPchgAndConsCheckFlagWhenUpgr(self._scip, cons.scip_cons, flag))
+
+    def chgAndConsRemovableFlagWhenUpgr(self, Constraint cons, flag):
+        """
+        when 'upgrading' the given AND-constraint, should the removable flag for the upgraded 
+        constraint be set to TRUE, even if the removable flag of this AND-constraint is set to FALSE?
+        
+        Parameters
+        ----------
+        cons : Constraint
+            The AND constraint to change.
+        flag : bool
+            The new value for the removable flag.
+
+        """
+
+        PY_SCIP_CALL(SCIPchgAndConsRemovableFlagWhenUpgr(self._scip, cons.scip_cons, flag))
 
     def printCons(self, Constraint constraint):
         """
