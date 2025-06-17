@@ -384,11 +384,17 @@ cdef extern from "scip/scip.h":
 
     ctypedef struct SCIP_ROW:
         pass
+    
+    ctypedef struct SCIP_ROW_EXACT:
+        pass
 
     ctypedef struct SCIP_NLROW:
         pass
 
     ctypedef struct SCIP_COL:
+        pass
+    
+    ctypedef struct SCIP_COL_EXACT:
         pass
 
     ctypedef struct SCIP_SOL:
@@ -1397,6 +1403,30 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPisIntegral(SCIP* scip, SCIP_Real val)
     SCIP_Real SCIPgetTreesizeEstimation(SCIP* scip)
 
+    # Exact SCIP methods
+    SCIP_RETCODE SCIPenableExactSolving(SCIP* scip, SCIP_Bool enable);
+    SCIP_Bool SCIPisExact(SCIP* scip);
+    SCIP_Bool SCIPallowNegSlack(SCIP* scip);
+    SCIP_RETCODE SCIPbranchLPExact(SCIP* scip, SCIP_RESULT* result);
+    SCIP_RETCODE SCIPaddRowExact(SCIP* scip, SCIP_ROWEXACT* rowexact);
+
+    # Exact LP SCIP methods
+    SCIP_VAR* SCIPcolExactGetVar(SCIP_COLEXACT* col);
+    SCIP_RATIONAL* SCIProwExactGetLhs(SCIP_ROWEXACT* row);
+    SCIP_RATIONAL* SCIProwExactGetRhs(SCIP_ROWEXACT* row);
+    SCIP_RATIONAL* SCIProwExactGetConstant(SCIP_ROWEXACT* row);
+    int SCIProwExactGetNNonz(SCIP_ROWEXACT* row);
+    SCIP_RATIONAL** SCIProwExactGetVals(SCIP_ROWEXACT* row);
+    SCIP_Bool SCIProwExactIsInLP(SCIP_ROWEXACT* row);
+    void SCIProwExactSort(SCIP_ROWEXACT* row);
+    SCIP_COLEXACT** SCIProwExactGetCols(SCIP_ROWEXACT* row);
+    void SCIProwExactLock(SCIP_ROWEXACT* row);
+    void SCIProwExactUnlock(SCIP_ROWEXACT* row);
+    SCIP_ROW* SCIProwExactGetRow(SCIP_ROWEXACT* row);
+    SCIP_ROW* SCIProwExactGetRowRhs(SCIP_ROWEXACT* row);
+    SCIP_Bool SCIProwExactHasFpRelax(SCIP_ROWEXACT* row);
+    SCIP_Bool SCIPlpExactDiving(SCIP_LPEXACT* lpexact);
+
     # Statistic Methods
     SCIP_RETCODE SCIPprintStatistics(SCIP* scip, FILE* outfile)
     SCIP_RETCODE SCIPprintStatisticsJson(SCIP* scip, FILE* file)
@@ -2053,6 +2083,14 @@ cdef class Column:
     @staticmethod
     cdef create(SCIP_COL* scipcol)
 
+cdef class Column:
+    cdef SCIP_COLEXACT* scip_col_exact
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_COLEXACT* scipcol_exact)
+
 cdef class Row:
     cdef SCIP_ROW* scip_row
     # can be used to store problem data
@@ -2060,6 +2098,14 @@ cdef class Row:
 
     @staticmethod
     cdef create(SCIP_ROW* sciprow)
+
+cdef class RowExact:
+    cdef SCIP_ROWEXACT* scip_row_exact
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_ROWEXACT* sciprow_exact)
 
 cdef class NLRow:
     cdef SCIP_NLROW* scip_nlrow

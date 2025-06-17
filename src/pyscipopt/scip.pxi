@@ -11008,6 +11008,64 @@ cdef class Model:
         return SCIPgetTreesizeEstimation(self._scip)
 
 
+    # Exact SCIP methods
+    def enableExactSolving(self, SCIP_Bool enable):
+        """
+        Enables or disables exact solving mode in SCIP.
+
+        Parameters
+        ----------
+        enable : SCIP_Bool
+            Whether to enable exact solving mode (True) or disable it (False).
+        """
+
+        PY_SCIP_CALL(SCIPenableExactSolving(self._scip, enable))
+
+    def isExact(self):
+        """
+        Returns whether exact solving mode is enabled in SCIP.
+
+        Returns
+        -------
+        bool
+        """
+
+        return SCIPisExact(self._scip)
+
+    def allowNegSlack(self):
+        """
+        Returns whether negative slack is allowed in exact solving mode.
+
+        Returns
+        -------
+        bool
+        """
+
+        return SCIPallowNegSlack(self._scip)
+    
+    def branchLPExact(self):
+        """
+        Performs exact LP branching.
+
+        Returns
+        -------
+        SCIP_RESULT
+        """
+        cdef SCIP_RESULT result
+        PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
+        return result
+
+    def addRowExact(self, rowexact):
+        """
+        Adds an exact row to the LP.
+
+        Parameters
+        ----------
+        rowexact : RowExact
+            The exact row to add.
+        """
+        PY_SCIP_CALL(SCIPaddRowExact(self._scip, rowexact.scip_row_exact))
+
     def getBipartiteGraphRepresentation(self, prev_col_features=None, prev_edge_features=None, prev_row_features=None,
                                         static_only=False, suppress_warnings=False):
         """
