@@ -6032,7 +6032,6 @@ cdef class Model:
         assert(constype == 'and', "The constraint handler %s does not have this functionality." % constype)
 
         nvars = SCIPgetNVarsAnd(self._scip, and_cons.scip_cons)
-        _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
         _vars = SCIPgetVarsAnd(self._scip, and_cons.scip_cons)
 
         vars = []
