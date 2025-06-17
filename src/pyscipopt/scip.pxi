@@ -1575,7 +1575,7 @@ cdef class Variable(Expr):
         -------
         bool
         """
-        return SCIPvarIsNonImpliedIntegral(self.scip_var)
+        return SCIPvarIsNonimpliedIntegral(self.scip_var)
 
     def getImplType(self):
         """

@@ -827,7 +827,7 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPvarIsBinary(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsIntegral(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsImpliedIntegral(SCIP_VAR* var)
-    SCIP_Bool SCIPvarIsNonImpliedIntegral(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsNonimpliedIntegral(SCIP_VAR* var)
     SCIP_IMPLINTTYPE SCIPvarGetImplType(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
