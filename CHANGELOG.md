@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added enableDebugSol
 - More support for AND-Constraints
 - Added support for knapsack constraints
 - Added isPositive(), isNegative(), isFeasLE(), isFeasLT(), isFeasGE(), isFeasGT(), isHugeValue(), and tests
