@@ -7495,14 +7495,6 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPsetRelaxSolVal(self._scip, NULL, var.scip_var, val))
 
-    def enableDebugSol(self):
-        """
-        Enables the debug solution mechanism, which allows tracing back the invalidation of
-        a debug solution during the solution process of SCIP. It must be explicitly
-        enabled for the SCIP data structure.
-        """
-        SCIPenableDebugSol(self._scip)
-
     def getConss(self, transformed=True):
         """
         Retrieve all constraints.
