@@ -13,7 +13,7 @@ def localconss(model, event):
         model.data["local_cons1"] = model.addCons(vars[0] + vars[1] <= 1, name="c1", local=True)
         assert getNLocalConss(model) == 1
         assert getLocalConss(model)[0] == model.data["local_cons1"]
-    elif model.getCurrentNode().getParent().getNumber() == 2:
+    elif model.getCurrentNode().getNumber() == 4:
         local_conss = getLocalConss(model)
         model.data["local_cons2"] = model.addCons(vars[1] + vars[2] <= 1, name="c2", local=True)
         model.data["local_cons3"] = model.addCons(vars[2] + vars[3] <= 1, name="c3", local=True)
@@ -21,6 +21,8 @@ def localconss(model, event):
         assert getLocalConss(model)[0] == model.data["local_cons1"]
         assert getLocalConss(model)[1] == model.data["local_cons2"]
         assert getLocalConss(model)[2] == model.data["local_cons3"]
+    elif model.getCurrentNode().getParent().getNumber() not in [2,4]:
+        assert getLocalConss(model) == []
 
 def test_getLocalConss():
     model = random_mip_1(node_lim=4)
