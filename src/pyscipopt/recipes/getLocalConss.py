@@ -1,12 +1,15 @@
-from pyscipopt import Model
+from pyscipopt import Model, Constraint
 
-def getLocalConss(model: Model) -> list:
+def getLocalConss(model: Model, node = None) -> list[Constraint]:
     """
     Returns the local constraints of a node.
     """
-    assert model.getStageName() == "SOLVING", "Model must be in SOLVING stage to get local constraints."
 
-    cur_node = model.getCurrentNode()
+    if not node:
+        assert model.getStageName() in ["INITPRESOLVE", "PRESOLVING", "EXITPRESOLVE", "SOLVING"], "Model cannot be called in stage %s." % model.getStageName()
+        cur_node = model.getCurrentNode()
+    else:
+        cur_node = node
 
     local_conss = []
     while cur_node is not None:
