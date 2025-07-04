@@ -64,8 +64,6 @@ cdef extern from "scip/config.h":
     """
     bint WITH_DEBUG_SOLUTION
 
-cdef bint with_debug_solution = WITH_DEBUG_SOLUTION
-
 # Mapping the SCIP_RESULT enum to a python class
 # This is required to return SCIP_RESULT in the python code
 # In __init__.py this is imported as SCIP_RESULT to keep the
@@ -7508,7 +7506,7 @@ cdef class Model:
         a debug solution during the solution process of SCIP. It must be explicitly
         enabled for the SCIP data structure.
         """
-        if not with_debug_solution:
+        if not WITH_DEBUG_SOLUTION:
             raise RuntimeError("SCIP must be built with `DEBUGSOL=true` to enable the debug solution mechanism.")
         SCIPenableDebugSol(self._scip)
     
@@ -7516,7 +7514,7 @@ cdef class Model:
         """
         Disables the debug solution mechanism.
         """
-        if not with_debug_solution:
+        if not WITH_DEBUG_SOLUTION:
             raise RuntimeError("SCIP must be built with `DEBUGSOL=true` to disable the debug solution mechanism.")
         SCIPdisableDebugSol(self._scip)
 
