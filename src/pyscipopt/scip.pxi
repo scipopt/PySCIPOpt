@@ -56,6 +56,16 @@ else:
 _SCIP_BOUNDTYPE_TO_STRING = {SCIP_BOUNDTYPE_UPPER: '<=',
                              SCIP_BOUNDTYPE_LOWER: '>='}
 
+cdef extern from "scip/config.h":
+    """
+    #ifndef WITH_DEBUG_SOLUTION
+    #define WITH_DEBUG_SOLUTION 0
+    #endif
+    """
+    bint WITH_DEBUG_SOLUTION
+
+cdef bint with_debug_solution = WITH_DEBUG_SOLUTION
+
 # Mapping the SCIP_RESULT enum to a python class
 # This is required to return SCIP_RESULT in the python code
 # In __init__.py this is imported as SCIP_RESULT to keep the
@@ -141,7 +151,6 @@ cdef class PY_SCIP_STATUS:
     INFORUNBD      = SCIP_STATUS_INFORUNBD
 
 StageNames = {}
-
 cdef class PY_SCIP_STAGE:
     INIT         = SCIP_STAGE_INIT
     PROBLEM      = SCIP_STAGE_PROBLEM
@@ -171,7 +180,6 @@ cdef class PY_SCIP_NODETYPE:
     SUBROOT     = SCIP_NODETYPE_SUBROOT
     REFOCUSNODE = SCIP_NODETYPE_REFOCUSNODE
 
-
 cdef class PY_SCIP_PROPTIMING:
     BEFORELP     = SCIP_PROPTIMING_BEFORELP
     DURINGLPLOOP = SCIP_PROPTIMING_DURINGLPLOOP
@@ -198,7 +206,6 @@ cdef class PY_SCIP_HEURTIMING:
     AFTERPROPLOOP     = SCIP_HEURTIMING_AFTERPROPLOOP
 
 EventNames = {}
-
 cdef class PY_SCIP_EVENTTYPE:
     DISABLED        = SCIP_EVENTTYPE_DISABLED
     VARADDED        = SCIP_EVENTTYPE_VARADDED
@@ -7501,7 +7508,17 @@ cdef class Model:
         a debug solution during the solution process of SCIP. It must be explicitly
         enabled for the SCIP data structure.
         """
+        if not with_debug_solution:
+            raise RuntimeError("SCIP was not built with the WITH_DEBUG_SOLUTION flag. Please rebuild SCIP with this flag enabled.")
         SCIPenableDebugSol(self._scip)
+    
+    def disableDebugSol(self):
+        """
+        Disables the debug solution mechanism.
+        """
+        if not with_debug_solution:
+            raise RuntimeError("SCIP was not built with the WITH_DEBUG_SOLUTION flag. Please rebuild SCIP with this flag enabled.")
+        SCIPdisableDebugSol(self._scip)
 
     def getConss(self, transformed=True):
         """
