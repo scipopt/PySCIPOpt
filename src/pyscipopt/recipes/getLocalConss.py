@@ -2,7 +2,19 @@ from pyscipopt import Model, Constraint
 
 def getLocalConss(model: Model, node = None) -> list[Constraint]:
     """
-    Returns the local constraints of a node.
+    Returns local constraints.
+
+    Parameters
+    ----------
+    model : Model
+        The model from which to retrieve the local constraints.
+    node : Node, optional
+        The node from which to retrieve the local constraints. If not provided, the current node is used.
+
+    Returns
+    -------
+    list[Constraint]
+        A list of local constraints. First entry are global constraints, second entry are all the added constraints.
     """
 
     if not node:
@@ -11,14 +23,15 @@ def getLocalConss(model: Model, node = None) -> list[Constraint]:
     else:
         cur_node = node
 
-    local_conss = []
+    added_conss = []
     while cur_node is not None:
-        local_conss = cur_node.getAddedConss() + local_conss
+        added_conss = cur_node.getAddedConss() + added_conss
         cur_node = cur_node.getParent()
-    return local_conss
+    
+    return [model.getConss(), added_conss]
 
-def getNLocalConss(model: Model) -> int:
+def getNAddedConss(model: Model) -> int:
     """
     Returns the number of local constraints of a node.
     """
-    return len(getLocalConss(model))
+    return len(getLocalConss(model)[1])
