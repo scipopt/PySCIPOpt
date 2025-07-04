@@ -7509,7 +7509,7 @@ cdef class Model:
         enabled for the SCIP data structure.
         """
         if not with_debug_solution:
-            raise RuntimeError("SCIP was not built with the WITH_DEBUG_SOLUTION flag. Please rebuild SCIP with this flag enabled.")
+            raise RuntimeError("SCIP must be built with `DEBUGSOL=true` to enable the debug solution mechanism.")
         SCIPenableDebugSol(self._scip)
     
     def disableDebugSol(self):
@@ -7517,7 +7517,7 @@ cdef class Model:
         Disables the debug solution mechanism.
         """
         if not with_debug_solution:
-            raise RuntimeError("SCIP was not built with the WITH_DEBUG_SOLUTION flag. Please rebuild SCIP with this flag enabled.")
+            raise RuntimeError("SCIP must be built with `DEBUGSOL=true` to disable the debug solution mechanism.")
         SCIPdisableDebugSol(self._scip)
 
     def getConss(self, transformed=True):
