@@ -625,6 +625,31 @@ cdef class Column:
         return (self.__class__ == other.__class__
                 and self.scip_col == (<Column>other).scip_col)
 
+cdef class ColumnExact:
+    """Base class holding a pointer to corresponding SCIP_COLEXACT."""
+
+    @staticmethod
+    cdef create(SCIP_COLEXACT* scipcolexact):
+        """
+        Main method for creating a ColumnExact class. Is used instead of __init__.
+
+        Parameters
+        ----------
+        scipcolexact : SCIP_COLEXACT*
+            A pointer to the SCIP_COLEXACT
+
+        Returns
+        -------
+        col : ColumnExact
+            The Python representative of the SCIP_COLEXACT
+
+        """
+        if scipcolexact == NULL:
+            raise Warning("cannot create ColumnExact with SCIP_COLEXACT* == NULL")
+        col = ColumnExact()
+        col.scip_col_exact = scipcolexact
+        return col
+
 cdef class Row:
     """Base class holding a pointer to corresponding SCIP_ROW."""
 
@@ -908,6 +933,31 @@ cdef class Row:
     def __eq__(self, other):
         return (self.__class__ == other.__class__
                 and self.scip_row == (<Row>other).scip_row)
+
+cdef class RowExact:
+    """Base class holding a pointer to corresponding SCIP_ROW."""
+
+    @staticmethod
+    cdef create(SCIP_ROWEXACT* sciprowexact):
+        """
+        Main method for creating a RowExact class. Is used instead of __init__.
+
+        Parameters
+        ----------
+        sciprow : SCIP_ROWEXACT*
+            A pointer to the SCIP_ROWEXACT
+
+        Returns
+        -------
+        row : Row
+            The Python representative of the SCIP_ROWEXACT
+
+        """
+        if sciprowexact == NULL:
+            raise Warning("cannot create Row with SCIP_ROWEXACT* == NULL")
+        row_exact = RowExact()
+        row_exact.scip_row_exact = sciprowexact
+        return row_exact
 
 cdef class NLRow:
     """Base class holding a pointer to corresponding SCIP_NLROW."""
@@ -7615,7 +7665,6 @@ cdef class Model:
 
         """
         raise Warning("model.getDualMultiplier(cons) is deprecated: please use model.getDualsolLinear(cons)")
-        return self.getDualsolLinear(cons)
 
     def getDualfarkasLinear(self, Constraint cons):
         """

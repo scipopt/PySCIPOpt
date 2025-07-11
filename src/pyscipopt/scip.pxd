@@ -385,7 +385,7 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_ROW:
         pass
     
-    ctypedef struct SCIP_ROW_EXACT:
+    ctypedef struct SCIP_ROWEXACT:
         pass
 
     ctypedef struct SCIP_NLROW:
@@ -394,7 +394,7 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_COL:
         pass
     
-    ctypedef struct SCIP_COL_EXACT:
+    ctypedef struct SCIP_COLEXACT:
         pass
 
     ctypedef struct SCIP_SOL:
@@ -425,12 +425,6 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_PROPDATA:
-        pass
-
-    ctypedef struct SCIP_PROPTIMING:
-        pass
-
-    ctypedef struct SCIP_PRESOLTIMING:
         pass
 
     ctypedef struct SCIP_PRESOL:
@@ -484,9 +478,6 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_PRESOL:
         pass
 
-    ctypedef struct SCIP_HEURTIMING:
-        pass
-
     ctypedef struct SCIP_SEPA:
         pass
 
@@ -535,10 +526,10 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_LPI:
         pass
 
-    ctypedef struct BMS_BLKMEM:
+    ctypedef struct SCIP_LPEXACT:
         pass
 
-    ctypedef struct SCIP_EXPR:
+    ctypedef struct BMS_BLKMEM:
         pass
 
     ctypedef struct SCIP_EXPRHDLR:
@@ -2083,13 +2074,13 @@ cdef class Column:
     @staticmethod
     cdef create(SCIP_COL* scipcol)
 
-cdef class Column:
+cdef class ColumnExact:
     cdef SCIP_COLEXACT* scip_col_exact
     # can be used to store problem data
     cdef public object data
 
     @staticmethod
-    cdef create(SCIP_COLEXACT* scipcol_exact)
+    cdef create(SCIP_COLEXACT* scip_col_exact)
 
 cdef class Row:
     cdef SCIP_ROW* scip_row
@@ -2105,7 +2096,7 @@ cdef class RowExact:
     cdef public object data
 
     @staticmethod
-    cdef create(SCIP_ROWEXACT* sciprow_exact)
+    cdef create(SCIP_ROWEXACT* scip_row_exact)
 
 cdef class NLRow:
     cdef SCIP_NLROW* scip_nlrow
