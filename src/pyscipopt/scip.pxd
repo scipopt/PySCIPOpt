@@ -726,7 +726,6 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetLocalTransEstimate(SCIP* scip)
 
     # Solve Methods
-    SCIP_RETCODE SCIPsolve(SCIP* scip)
     SCIP_RETCODE SCIPsolve(SCIP* scip) noexcept nogil
     SCIP_RETCODE SCIPsolveConcurrent(SCIP* scip)
     SCIP_RETCODE SCIPfreeTransform(SCIP* scip)
@@ -1193,7 +1192,7 @@ cdef extern from "scip/scip.h":
 
     SCIP_IISFINDERDATA* SCIPiisfinderGetData(SCIP_IISFINDER* iisfinder)
     SCIP_RETCODE SCIPincludeIISfinderGreedy(SCIP* scip)
-    SCIP_RETCODE SCIPiisGreedyMinimize(SCIP_IIS* iis);
+    SCIP_RETCODE SCIPiisGreedyMakeIrreducible(SCIP_IIS* iis);
 
     #Relaxation plugin
     SCIP_RETCODE SCIPincludeRelax(SCIP* scip,
