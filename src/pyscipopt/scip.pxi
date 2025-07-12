@@ -1676,6 +1676,21 @@ cdef class Variable(Expr):
 
         """
         return SCIPvarGetAvgSol(self.scip_var)
+    
+    def markRelaxationOnly(self):
+        """
+        marks that this variable has only been introduced to define a relaxation
+
+        The variable must not have a coefficient in the objective and must be deletable.
+        If it is not marked deletable, it will be marked as deletable, which is only possible before
+        the variable is added to a problem.
+
+        Returns
+        -------
+        None
+
+        """
+        PY_SCIP_CALL(SCIPvarMarkRelaxationOnly(self.scip_var))
 
     def getNLocksDown(self):
         """
