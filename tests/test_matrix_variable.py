@@ -336,3 +336,35 @@ def test_performance():
     orig_time = end_orig - start_orig
 
     assert m.isGT(orig_time, matrix_time)
+
+
+def test_matrix_cons_indicator():
+    m = Model()
+    x = m.addMatrixVar((2, 3), vtype="I", ub=10)
+    y = m.addMatrixVar(x.shape, vtype="I", ub=10)
+    is_equal = m.addMatrixVar((1, 2), vtype="B")
+
+    # shape of cons is not equal to shape of is_equal
+    with pytest.raises(Exception):
+        m.addMatrixConsIndicator(x >= y, is_equal)
+
+    for i in range(2):
+        # test ndim=1 binvar
+        m.addMatrixConsIndicator(x[i] >= y[i], is_equal[0, i])
+        m.addMatrixConsIndicator(x[i] <= y[i], is_equal[0, i])
+
+        # test ndim=1 binvar
+        m.addMatrixConsIndicator(x[i] >= 5, is_equal[0, i])
+        m.addMatrixConsIndicator(y[i] <= 5, is_equal[0, i])
+
+    for i in range(3):
+        # test ndim=2 binvar
+        m.addMatrixConsIndicator(x[:, i] >= y[:, i], is_equal[0])
+        m.addMatrixConsIndicator(x[:, i] <= y[:, i], is_equal[0])
+
+    m.setObjective(is_equal.sum(), "maximize")
+    m.optimize()
+
+    assert m.getVal(is_equal).sum() == 2
+    assert (m.getVal(x) == m.getVal(y)).all().all()
+    assert (m.getVal(x) == np.array([[5, 5, 5], [5, 5, 5]])).all().all()
