@@ -6824,22 +6824,22 @@ cdef class Model:
 
         Parameters
         ----------
-        cons : MatrixExprCons, optional
+        cons : MatrixExprCons
             a linear inequality of the form "<=".
-        binvar : Variable or MatrixVariable, default None
-            binary indicator variable / matrix variable, or None if it should be created.
-        activeone : bool or np.ndarray, default True
+        binvar : Variable or MatrixVariable, optional
+            binary indicator variable / matrix variable, or None if it should be created. (Default value = None)
+        activeone : bool or np.ndarray, optional
             the matrix constraint should be active if binvar is 1 (0 if activeone = False).
-        name : str or np.ndarray, default ""
-            name of the matrix constraint.
+        name : str or np.ndarray, optional
+            name of the matrix constraint.  (Default value = "")
         initial : bool or np.ndarray, optional
-            should the LP relaxation of matrix constraint be in the initial LP?
+            should the LP relaxation of matrix constraint be in the initial LP?  (Default value = True)
         separate : bool or np.ndarray, optional
-            should the matrix constraint be separated during LP processing?
+            should the matrix constraint be separated during LP processing?  (Default value = True)
         enforce : bool or np.ndarray, optional
-            should the matrix constraint be enforced during node processing?
+            should the matrix constraint be enforced during node processing?  (Default value = True)
         check : bool or np.ndarray, optional
-            should the matrix constraint be checked for feasibility?
+            should the matrix constraint be checked for feasibility?  (Default value = True)
         propagate : bool or np.ndarray, optional
             should the matrix constraint be propagated during node processing? (Default value = True)
         local : bool or np.ndarray, optional
