@@ -6810,22 +6810,13 @@ cdef class Model:
         return pyCons
 
 
-    def addMatrixConsIndicator(
-        self,
-        cons: MatrixExprCons,
-        binvar: Union[Variable, MatrixVariable] = None,
-        activeone: Union[bool, np.ndarray] = True,
-        name: Union[str, np.ndarray] = "",
-        initial: Union[bool, np.ndarray] = True,
-        separate: Union[bool, np.ndarray] = True,
-        enforce: Union[bool, np.ndarray] = True,
-        check: Union[bool, np.ndarray] = True,
-        propagate: Union[bool, np.ndarray] = True,
-        local: Union[bool, np.ndarray] = False,
-        dynamic: Union[bool, np.ndarray] = False,
-        removable: Union[bool, np.ndarray] = False,
-        stickingatnode: Union[bool, np.ndarray] = False,
-    ):
+    def addMatrixConsIndicator(self, cons: MatrixExprCons, binvar: Union[Variable, MatrixVariable] = None,
+                               activeone: Union[bool, np.ndarray] = True, name: Union[str, np.ndarray] = "",
+                               initial: Union[bool, np.ndarray] = True, separate: Union[bool, np.ndarray] = True,
+                               enforce: Union[bool, np.ndarray] = True, check: Union[bool, np.ndarray] = True,
+                               propagate: Union[bool, np.ndarray] = True, local: Union[bool, np.ndarray] = False,
+                               dynamic: Union[bool, np.ndarray] = False, removable: Union[bool, np.ndarray] = False,
+                               stickingatnode: Union[bool, np.ndarray] = False):
         """Add an indicator matrix constraint for the linear inequality `cons`.
 
         The `binvar` argument models the redundancy of the linear constraint. A solution
@@ -6833,45 +6824,33 @@ cdef class Model:
 
         Parameters
         ----------
-        cons : MatrixExprCons
-            A linear inequality of the form "<=".
-
+        cons : MatrixExprCons, optional
+            a linear inequality of the form "<=".
         binvar : Variable or MatrixVariable, default None
-            Binary indicator variable / matrix variable, or None if it should be created.
-
+            binary indicator variable / matrix variable, or None if it should be created.
         activeone : bool or np.ndarray, default True
-            The matrix constraint should be active if binvar is 1 (0 if activeone = False).
-
+            the matrix constraint should be active if binvar is 1 (0 if activeone = False).
         name : str or np.ndarray, default ""
-            Name of the matrix constraint.
-
-        initial : bool or np.ndarray, default True
-            Should the LP relaxation of matrix constraint be in the initial LP?
-
-        separate : bool or np.ndarray, default True
-            Should the matrix constraint be separated during LP processing?
-
-        enforce : bool or np.ndarray, default True
-            Should the matrix constraint be enforced during node processing?
-
-        check : bool or np.ndarray, default True
-            Should the matrix constraint be checked for feasibility?
-
-        propagate : bool or np.ndarray, default True
-            Should the matrix constraint be propagated during node processing?
-
-        local : bool or np.ndarray, default False
-            Is the matrix constraint only valid locally?
-
-        dynamic : bool or np.ndarray, default False
-            Is the matrix constraint subject to aging?
-
-        removable : bool or np.ndarray, default False
-            Should the relaxation be removed from the LP due to aging or cleanup?
-
-        stickingatnode : bool or np.ndarray, default False
-            Should the matrix constraint always be kept at the node where it was added,
-            even if it may be moved to a more global node?
+            name of the matrix constraint.
+        initial : bool or np.ndarray, optional
+            should the LP relaxation of matrix constraint be in the initial LP?
+        separate : bool or np.ndarray, optional
+            should the matrix constraint be separated during LP processing?
+        enforce : bool or np.ndarray, optional
+            should the matrix constraint be enforced during node processing?
+        check : bool or np.ndarray, optional
+            should the matrix constraint be checked for feasibility?
+        propagate : bool or np.ndarray, optional
+            should the matrix constraint be propagated during node processing? (Default value = True)
+        local : bool or np.ndarray, optional
+            is the matrix constraint only valid locally? (Default value = False)
+        dynamic : bool or np.ndarray, optional
+            is the matrix constraint subject to aging? (Default value = False)
+        removable : bool or np.ndarray, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool or np.ndarray, optional
+            should the matrix constraint always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
 
         Returns
         -------
