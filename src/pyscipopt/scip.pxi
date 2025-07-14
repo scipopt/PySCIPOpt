@@ -6816,7 +6816,7 @@ cdef class Model:
                                enforce: Union[bool, np.ndarray] = True, check: Union[bool, np.ndarray] = True,
                                propagate: Union[bool, np.ndarray] = True, local: Union[bool, np.ndarray] = False,
                                dynamic: Union[bool, np.ndarray] = False, removable: Union[bool, np.ndarray] = False,
-                               stickingatnode: Union[bool, np.ndarray] = False):
+                               stickingatnode: Union[bool, np.ndarray] = False) -> MatrixConstraint:
         """Add an indicator matrix constraint for the linear inequality `cons`.
 
         The `binvar` argument models the redundancy of the linear constraint. A solution
