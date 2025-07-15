@@ -167,11 +167,18 @@ def test_expr_from_matrix_vars():
 def test_matrix_sum_argument():
     m = Model()
 
+    # sum with 2d array
     x = m.addMatrixVar((2, 3), "x", "I", ub=10)
-    m.addMatrixCons(x.sum(axis=1) == np.ndarray([0, 0]))
+    m.addMatrixCons(x.sum(axis=1) == np.zeros(2))
 
-    m.optimize(x.sum(), "maximize")
-    assert m.getVal(x) == np.ndarray([[0, 0, 0], [0, 0, 0]])
+    # sum with 3d array, set axis=2
+    y = m.addMatrixVar((2, 3, 4), "y", "I", ub=10)
+    m.addMatrixCons(y.sum(2) == np.zeros((2, 3)))
+
+    m.optimize(x.sum() + y.sum(), "maximize")
+
+    assert (m.getVal(x) == np.zeros((2, 3))).all().all()
+    assert (m.getVal(y) == np.zeros((2, 3, 4))).all().all().all()
 
 def test_add_cons_matrixVar():
     m = Model()
