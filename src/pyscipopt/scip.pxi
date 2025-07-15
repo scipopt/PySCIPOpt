@@ -6972,7 +6972,6 @@ cdef class Model:
 
         return matrix_cons.view(MatrixConstraint)
 
-
     def getLinearConsIndicator(self, Constraint cons):
         """
         Get the linear constraint corresponding to the indicator constraint.

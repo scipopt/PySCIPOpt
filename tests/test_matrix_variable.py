@@ -349,16 +349,13 @@ def test_matrix_cons_indicator():
         m.addMatrixConsIndicator(x >= y, is_equal)
 
     for i in range(2):
-        # test ndim=1 binvar
         m.addMatrixConsIndicator(x[i] >= y[i], is_equal[0, i])
         m.addMatrixConsIndicator(x[i] <= y[i], is_equal[0, i])
 
-        # test ndim=1 binvar
         m.addMatrixConsIndicator(x[i] >= 5, is_equal[0, i])
         m.addMatrixConsIndicator(y[i] <= 5, is_equal[0, i])
 
     for i in range(3):
-        # test ndim=2 binvar
         m.addMatrixConsIndicator(x[:, i] >= y[:, i], is_equal[0])
         m.addMatrixConsIndicator(x[:, i] <= y[:, i], is_equal[0])
 
