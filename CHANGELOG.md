@@ -9,6 +9,7 @@
 ### Fixed
 - Raised an error when an expression is used when a variable is required
 ### Changed
+- MatrixExpr.sum() could return MatrixExpr
 ### Removed
 
 ## 5.5.0 - 2025.05.06
