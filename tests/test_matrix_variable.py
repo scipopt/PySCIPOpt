@@ -173,7 +173,7 @@ def test_matrix_sum_argument():
 
     # sum with 3d array, set axis=2
     y = m.addMatrixVar((2, 3, 4), "y", "I", ub=10)
-    m.addMatrixCons(y.sum(2) == np.zeros((2, 3)))
+    m.addMatrixCons(y.sum(axis=2) == np.zeros((2, 3)))
 
     m.optimize(x.sum() + y.sum(), "maximize")
 
