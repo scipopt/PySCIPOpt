@@ -1690,7 +1690,24 @@ cdef class Variable(Expr):
         None
 
         """
-        PY_SCIP_CALL(SCIPvarMarkRelaxationOnly(self.scip_var))
+        SCIPvarMarkRelaxationOnly(self.scip_var)
+    
+    def isRelaxationOnly(self):
+        """
+        returns whether a variable has been introduced to define a relaxation
+
+        These variables are only valid for the current SCIP solve round, they are not contained in any (checked)
+        constraints, but may be used in cutting planes, for example. Relaxation-only variables are not copied 
+        by SCIPcopyVars and cuts that contain these variables are not added as linear constraints when 
+        restarting or transferring information from a copied SCIP to a SCIP. Also conflicts with relaxation-only
+        variables are not generated at the moment. Relaxation-only variables do not appear in the objective.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPvarIsRelaxationOnly(self.scip_var)
 
     def getNLocksDown(self):
         """
