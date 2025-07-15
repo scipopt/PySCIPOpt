@@ -16,9 +16,6 @@ def _is_number(e):
         return False
 
 class MatrixExpr(np.ndarray):
-    def sum(self, **kwargs):
-        return super().sum(**kwargs).item()
-    
     def __le__(self, other: Union[float, int, Variable, np.ndarray, 'MatrixExpr']) -> np.ndarray:
         
         expr_cons_matrix = np.empty(self.shape, dtype=object)
