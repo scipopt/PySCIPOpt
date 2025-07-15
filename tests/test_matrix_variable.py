@@ -175,7 +175,8 @@ def test_matrix_sum_argument():
     y = m.addMatrixVar((2, 3, 4), "y", "I", ub=10)
     m.addMatrixCons(y.sum(axis=2) == np.zeros((2, 3)))
 
-    m.optimize(x.sum() + y.sum(), "maximize")
+    m.setObjective(x.sum() + y.sum(), "maximize")
+    m.optimize()
 
     assert (m.getVal(x) == np.zeros((2, 3))).all().all()
     assert (m.getVal(y) == np.zeros((2, 3, 4))).all().all().all()
