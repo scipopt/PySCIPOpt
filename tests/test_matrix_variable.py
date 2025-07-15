@@ -164,6 +164,14 @@ def test_expr_from_matrix_vars():
         for term, coeff in expr_list:
             assert len(term) == 3
 
+def test_matrix_sum_argument():
+    m = Model()
+
+    x = m.addMatrixVar((2, 3), "x", "I", ub=10)
+    m.addMatrixCons(x.sum(axis=1) == np.ndarray([0, 0]))
+
+    m.optimize(x.sum(), "maximize")
+    assert m.getVal(x) == np.ndarray([[0, 0, 0], [0, 0, 0]])
 
 def test_add_cons_matrixVar():
     m = Model()
