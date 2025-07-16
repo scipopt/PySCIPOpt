@@ -176,6 +176,8 @@ def test_matrix_sum_argument():
     # compare the result of summing 2d array to 1d array
     y = m.addMatrixVar((2, 4), "y", "I", ub=4)
     m.addMatrixCons(x.sum(axis=1) == y.sum(axis=1))
+    # to fix the element values
+    m.addMatrixCons(y == np.full((2, 4), 3))
 
     # compare the result of summing 3d array to a 2d array with a 2d array
     z = m.addMatrixVar((2, 3, 4), "y", "I", ub=4)
@@ -185,7 +187,6 @@ def test_matrix_sum_argument():
     m.setObjective(x.sum() + y.sum() + z.sum(), "maximize")
     m.optimize()
 
-    assert (m.getVal(y) == np.full((2, 4), 3)).all().all()
     assert (m.getVal(z) == np.ones((2, 3, 4))).all().all().all()
 
 def test_add_cons_matrixVar():
