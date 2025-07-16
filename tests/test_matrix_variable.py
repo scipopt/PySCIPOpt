@@ -169,7 +169,7 @@ def test_matrix_sum_argument():
 
     # compare the result of summing 2d array to a scaler with a scaler
     x = m.addMatrixVar((2, 3), "x", "I", ub=4)
-    m.addMatrixCons(x.sum() == 24)
+    m.addCons(x.sum() == 24)
     # to fix the element values
     m.addMatrixCons(x == np.full((2, 3), 4))
 
