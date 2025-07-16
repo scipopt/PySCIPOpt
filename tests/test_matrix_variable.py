@@ -167,19 +167,26 @@ def test_expr_from_matrix_vars():
 def test_matrix_sum_argument():
     m = Model()
 
-    # sum with 2d array
-    x = m.addMatrixVar((2, 3), "x", "I", ub=10)
-    m.addMatrixCons(x.sum(axis=1) == np.zeros(2))
+    # compare the result of summing 2d array to a scaler with a scaler
+    x = m.addMatrixVar((2, 3), "x", "I", ub=4)
+    m.addMatrixCons(x.sum() == 24)
+    # to fix the element values
+    m.addMatrixCons(x == np.full((2, 3), 4))
 
-    # sum with 3d array, set axis=2
-    y = m.addMatrixVar((2, 3, 4), "y", "I", ub=10)
-    m.addMatrixCons(y.sum(axis=2) == np.zeros((2, 3)))
+    # compare the result of summing 2d array to 1d array
+    y = m.addMatrixVar((2, 4), "y", "I", ub=4)
+    m.addMatrixCons(x.sum(axis=1) == y.sum(axis=1))
 
-    m.setObjective(x.sum() + y.sum(), "maximize")
+    # compare the result of summing 3d array to a 2d array with a 2d array
+    z = m.addMatrixVar((2, 3, 4), "y", "I", ub=4)
+    m.addMatrixCons(z.sum(axis=2) == x)
+    m.addMatrixCons(z.sum(axis=1) == y)
+
+    m.setObjective(x.sum() + y.sum() + z.sum(), "maximize")
     m.optimize()
 
-    assert (m.getVal(x) == np.zeros((2, 3))).all().all()
-    assert (m.getVal(y) == np.zeros((2, 3, 4))).all().all().all()
+    assert (m.getVal(y) == np.full((2, 4), 3)).all().all()
+    assert (m.getVal(z) == np.ones((2, 3, 4))).all().all().all()
 
 def test_add_cons_matrixVar():
     m = Model()
