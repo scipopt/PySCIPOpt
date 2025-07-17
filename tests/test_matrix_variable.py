@@ -164,6 +164,30 @@ def test_expr_from_matrix_vars():
         for term, coeff in expr_list:
             assert len(term) == 3
 
+def test_matrix_sum_argument():
+    m = Model()
+
+    # compare the result of summing 2d array to a scalar with a scalar
+    x = m.addMatrixVar((2, 3), "x", "I", ub=4)
+    m.addCons(x.sum() == 24)
+
+    # compare the result of summing 2d array to 1d array
+    y = m.addMatrixVar((2, 4), "y", "I", ub=4)
+    m.addMatrixCons(x.sum(axis=1) == y.sum(axis=1))
+
+    # compare the result of summing 3d array to a 2d array with a 2d array
+    z = m.addMatrixVar((2, 3, 4), "z", "I", ub=4)
+    m.addMatrixCons(z.sum(axis=2) == x)
+    m.addMatrixCons(z.sum(axis=1) == y)
+
+    # to fix the element values
+    m.addMatrixCons(z == np.ones((2, 3, 4)))
+
+    m.setObjective(x.sum() + y.sum() + z.sum(), "maximize")
+    m.optimize()
+
+    assert (m.getVal(x) == np.full((2, 3), 4)).all().all()
+    assert (m.getVal(y) == np.full((2, 4), 3)).all().all()
 
 def test_add_cons_matrixVar():
     m = Model()
