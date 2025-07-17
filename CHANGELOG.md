@@ -6,7 +6,8 @@
 - Added support for knapsack constraints
 - Added isPositive(), isNegative(), isFeasLE(), isFeasLT(), isFeasGE(), isFeasGT(), isHugeValue(), and tests
 - Added SCIP_LOCKTYPE, addVarLocksType(), getNLocksDown(), getNLocksUp(), getNLocksDownType(), getNLocksUpType(), and tests
-- Added SCIPvarMarkRelaxationOnly, SCIPvarIsRelaxationOnly
+- Added addMatrixConsIndicator(), and tests
+- Added SCIPvarMarkRelaxationOnly, SCIPvarIsRelaxationOnly, and tests
 ### Fixed
 - Raised an error when an expression is used when a variable is required
 ### Changed
