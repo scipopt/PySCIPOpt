@@ -167,7 +167,7 @@ def test_expr_from_matrix_vars():
 def test_matrix_sum_argument():
     m = Model()
 
-    # compare the result of summing 2d array to a scaler with a scaler
+    # compare the result of summing 2d array to a scalar with a scalar
     x = m.addMatrixVar((2, 3), "x", "I", ub=4)
     m.addCons(x.sum() == 24)
 
