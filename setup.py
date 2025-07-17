@@ -4,7 +4,7 @@ import os, platform, sys
 # look for environment variable that specifies path to SCIP
 scipoptdir = os.environ.get("SCIPOPTDIR", "").strip('"')
 
-extra_compile_args = ["-UNDEBUG"]
+extra_compile_args = []
 extra_link_args = []
 
 # if SCIPOPTDIR is not set, we assume that SCIP is installed globally
