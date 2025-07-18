@@ -11,6 +11,7 @@
 ### Fixed
 - Raised an error when an expression is used when a variable is required
 ### Changed
+- MatrixExpr.sum() now supports axis arguments and can return either a scalar or MatrixExpr depending on the result dimensions
 ### Removed
 
 ## 5.5.0 - 2025.05.06
