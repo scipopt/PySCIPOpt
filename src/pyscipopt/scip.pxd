@@ -819,6 +819,8 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPvarGetAvgSol(SCIP_VAR* var)
     void SCIPvarMarkRelaxationOnly(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsRelaxationOnly(SCIP_VAR* var)
+    void SCIPvarMarkDeletable(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsDeletable(SCIP_VAR* var)
     SCIP_Real SCIPgetVarPseudocost(SCIP* scip, SCIP_VAR* var, SCIP_BRANCHDIR dir)
     SCIP_Real SCIPvarGetCutoffSum(SCIP_VAR* var, SCIP_BRANCHDIR dir)
     SCIP_Longint SCIPvarGetNBranchings(SCIP_VAR* var, SCIP_BRANCHDIR dir)

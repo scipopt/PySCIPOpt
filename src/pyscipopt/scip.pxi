@@ -1708,6 +1708,17 @@ cdef class Variable(Expr):
 
         """
         return SCIPvarIsRelaxationOnly(self.scip_var)
+    
+    def isDeletable(self):
+        """
+        Returns whether variable is allowed to be deleted completely from the problem.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPvarIsDeletable(self.scip_var)
 
     def getNLocksDown(self):
         """
@@ -3777,7 +3788,7 @@ cdef class Model:
 
     # Variable Functions
 
-    def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0):
+    def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0, deletable=False):
         """
         Create a new variable. Default variable is non-negative and continuous.
 
@@ -3832,6 +3843,9 @@ cdef class Model:
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_IMPLINT))
         else:
             raise Warning("unrecognized variable type")
+
+        if deletable:
+            SCIPvarMarkDeletable(scip_var)
 
         if pricedVar:
             PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, pricedVarScore))
