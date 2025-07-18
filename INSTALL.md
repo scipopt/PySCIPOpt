@@ -26,7 +26,7 @@ If installing SCIP from source or using PyPI with a python and operating system 
 you need to specify the install location using the environment variable
 `SCIPOPTDIR`:
 
--   on Linux and OS X:\
+-   on Linux and MacOS:\
     `export SCIPOPTDIR=<path_to_install_dir>`
 -   on Windows:\
     `set SCIPOPTDIR=<path_to_install_dir>` (**cmd**, **Cmder**, **WSL**)\
@@ -45,8 +45,9 @@ contains the corresponding header files:
         > nlpi
         > ...
 
-Please note that some Mac configurations require adding the library installation path to `DYLD_LIBRARY_PATH` when using a locally installed version of SCIP.
+On MacOS, to ensure that the SCIP dynamic library can be located at runtime by PySCIPOpt, you should add your SCIP installation path to the ``DYLD_LIBRARY_PATH`` environment variable by running:
 
+`export DYLD_LIBRARY_PATH="<path_to_install_dir>/lib:$DYLD_LIBRARY_PATH"`
 
 When building SCIP from source using Windows it is highly recommended to use the [Anaconda Python
 Platform](https://www.anaconda.com/).
@@ -75,7 +76,7 @@ at runtime by adjusting your `PATH` environment variable:
 
 -   on Windows: `set PATH=%PATH%;%SCIPOPTDIR%\bin`
 
-On Linux and OS X this is encoded in the generated PySCIPOpt library and
+On Linux and MacOS this is encoded in the generated PySCIPOpt library and
 therefore not necessary.
 
 Building everything from source
