@@ -1677,6 +1677,49 @@ cdef class Variable(Expr):
         """
         return SCIPvarGetAvgSol(self.scip_var)
 
+    def markRelaxationOnly(self):
+        """
+        marks that this variable has only been introduced to define a relaxation
+
+        The variable must not have a coefficient in the objective and must be deletable.
+        If it is not marked deletable, it will be marked as deletable, which is only possible before
+        the variable is added to a problem.
+
+        Returns
+        -------
+        None
+
+        """
+        SCIPvarMarkRelaxationOnly(self.scip_var)
+    
+    def isRelaxationOnly(self):
+        """
+        returns whether a variable has been introduced to define a relaxation
+
+        These variables are only valid for the current SCIP solve round, they are not contained in any (checked)
+        constraints, but may be used in cutting planes, for example. Relaxation-only variables are not copied 
+        by SCIPcopyVars and cuts that contain these variables are not added as linear constraints when 
+        restarting or transferring information from a copied SCIP to a SCIP. Also conflicts with relaxation-only
+        variables are not generated at the moment. Relaxation-only variables do not appear in the objective.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPvarIsRelaxationOnly(self.scip_var)
+    
+    def isDeletable(self):
+        """
+        Returns whether variable is allowed to be deleted completely from the problem.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPvarIsDeletable(self.scip_var)
+
     def getNLocksDown(self):
         """
         Returns the number of locks for rounding down.
@@ -3745,7 +3788,7 @@ cdef class Model:
 
     # Variable Functions
 
-    def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0):
+    def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0, deletable=False):
         """
         Create a new variable. Default variable is non-negative and continuous.
 
@@ -3800,6 +3843,9 @@ cdef class Model:
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_IMPLINT))
         else:
             raise Warning("unrecognized variable type")
+
+        if deletable:
+            SCIPvarMarkDeletable(scip_var)
 
         if pricedVar:
             PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, pricedVarScore))
