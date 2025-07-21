@@ -187,7 +187,7 @@ class GMI(Sepa):
         if not scip.isLPSolBasic():
             return {"result": result}
 
-        assert type(self.model.getNLPBranchCands()) == int
+        assert type(scip.getNLPBranchCands()) == int
         # get var data ---> this is the same as getVars!
         vars = scip.getVars(transformed = True)
 
