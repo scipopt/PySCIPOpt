@@ -8,6 +8,7 @@
 - Added SCIP_LOCKTYPE, addVarLocksType(), getNLocksDown(), getNLocksUp(), getNLocksDownType(), getNLocksUpType(), and tests
 - Added addMatrixConsIndicator(), and tests
 - Added SCIPvarMarkRelaxationOnly, SCIPvarIsRelaxationOnly, SCIPvarMarkDeletable, SCIPvarIsDeletable, and tests
+- Wrapped SCIPgetNLPBranchCands
 ### Fixed
 - Raised an error when an expression is used when a variable is required
 ### Changed

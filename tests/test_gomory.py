@@ -187,7 +187,7 @@ class GMI(Sepa):
         if not scip.isLPSolBasic():
             return {"result": result}
 
-        #TODO: add SCIPgetNLPBranchCands
+        self.model.getNLPBranchCands()
         # get var data ---> this is the same as getVars!
         vars = scip.getVars(transformed = True)
 
