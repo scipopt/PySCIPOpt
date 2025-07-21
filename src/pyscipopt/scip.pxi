@@ -9106,6 +9106,18 @@ cdef class Model:
         return ([Variable.create(lpcands[i]) for i in range(nlpcands)], [lpcandssol[i] for i in range(nlpcands)],
                 [lpcandsfrac[i] for i in range(nlpcands)], nlpcands, npriolpcands, nfracimplvars)
 
+    def getNLPBranchCands(self):
+        """
+        Gets number of branching candidates for LP solution branching (number of fractional variables)
+
+ 	Returns
+  	-------
+   	int
+    	    number of LP branching candidates
+
+        """
+        return SCIPgetNLPBranchCands(self._scip)
+
     def getPseudoBranchCands(self):
         """
         Gets branching candidates for pseudo solution branching (non-fixed variables)
