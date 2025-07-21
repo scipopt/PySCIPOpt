@@ -9109,6 +9109,12 @@ cdef class Model:
     def getNLPBranchCands(self):
         """
         Gets number of branching candidates for LP solution branching (number of fractional variables)
+
+ 	Returns
+  	-------
+   	int
+    	    number of LP branching candidates
+
         """
         return SCIPgetNLPBranchCands(self._scip)
 
