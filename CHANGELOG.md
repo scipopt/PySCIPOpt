@@ -9,6 +9,7 @@
 - Added addMatrixConsIndicator(), and tests
 - Added SCIPvarMarkRelaxationOnly, SCIPvarIsRelaxationOnly, SCIPvarMarkDeletable, SCIPvarIsDeletable, and tests
 - Wrapped SCIPgetNLPBranchCands
+- Added getConsVals, generalized getRhs, and tests
 ### Fixed
 - Raised an error when an expression is used when a variable is required
 ### Changed

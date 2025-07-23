@@ -6035,6 +6035,31 @@ cdef class Model:
                 vars.append(var)
 
         return vars
+    
+    def getConsVals(self, Constraint constraint):
+        """
+        Returns the value array of an arbitrary SCIP constraint that can be represented as a single linear constraint.
+
+        Parameters
+        ----------
+        constraint : Constraint
+            Constraint to get the values from.
+
+        Returns
+        -------
+        list of float
+
+        """
+        cdef SCIP_Real* vals
+        cdef int nvars
+        cdef SCIP_Bool success
+        cdef int i
+
+        nvars = self.getConsNVars(constraint)
+        vals = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+        PY_SCIP_CALL(SCIPgetConsVals(self._scip, constraint.scip_cons, vals, nvars*sizeof(SCIP_Real), &success))
+
+        return [vals[i] for i in range(nvars)]
 
     def getNVarsAnd(self, Constraint and_cons):
         """
@@ -7275,6 +7300,8 @@ cdef class Model:
             return SCIPgetRhsLinear(self._scip, cons.scip_cons)
         elif constype == 'nonlinear':
             return SCIPgetRhsNonlinear(cons.scip_cons)
+        elif constype == 'knapsack':
+            return SCIPgetCapacityKnapsack(self._scip, cons.scip_cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
