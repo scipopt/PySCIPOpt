@@ -6077,8 +6077,6 @@ cdef class Model:
         int
 
         """
-        cdef int nvars
-        cdef SCIP_Bool success
 
         return SCIPgetNVarsAnd(self._scip, and_cons.scip_cons)
 
@@ -6096,9 +6094,9 @@ cdef class Model:
         list of Variable
 
         """
+        
         cdef SCIP_VAR** _vars
         cdef int nvars
-        cdef SCIP_Bool success
         cdef int i
 
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(and_cons.scip_cons))).decode('UTF-8')
@@ -6136,8 +6134,8 @@ cdef class Model:
         Variable
 
         """
+        
         cdef SCIP_VAR* _resultant
-        cdef SCIP_Bool success
 
         _resultant = SCIPgetResultantAnd(self._scip, and_cons.scip_cons)
 
@@ -6167,8 +6165,7 @@ cdef class Model:
         bool
 
         """
-        cdef SCIP_Bool success
-
+        
         return SCIPisAndConsSorted(self._scip, and_cons.scip_cons)
 
     def sortAndCons(self, Constraint and_cons):
@@ -6181,7 +6178,6 @@ cdef class Model:
             Constraint to sort.
 
         """
-        cdef SCIP_Bool success
 
         PY_SCIP_CALL(SCIPsortAndCons(self._scip, and_cons.scip_cons))
     
