@@ -6059,7 +6059,9 @@ cdef class Model:
         vals = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
         PY_SCIP_CALL(SCIPgetConsVals(self._scip, constraint.scip_cons, vals, nvars*sizeof(SCIP_Real), &success))
 
-        return [vals[i] for i in range(nvars)]
+        result = [vals[i] for i in range(nvars)]
+        free(vals)
+        return result
 
     def getNVarsAnd(self, Constraint and_cons):
         """
