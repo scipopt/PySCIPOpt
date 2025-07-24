@@ -840,6 +840,10 @@ cdef extern from "scip/scip.h":
     void SCIPvarSetData(SCIP_VAR* var, SCIP_VARDATA* vardata)
     SCIP_VARDATA* SCIPvarGetData(SCIP_VAR* var)
     SCIP_Real SCIPvarGetAvgSol(SCIP_VAR* var)
+    void SCIPvarMarkRelaxationOnly(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsRelaxationOnly(SCIP_VAR* var)
+    void SCIPvarMarkDeletable(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsDeletable(SCIP_VAR* var)
     SCIP_Real SCIPgetVarPseudocost(SCIP* scip, SCIP_VAR* var, SCIP_BRANCHDIR dir)
     SCIP_Real SCIPvarGetCutoffSum(SCIP_VAR* var, SCIP_BRANCHDIR dir)
     SCIP_Longint SCIPvarGetNBranchings(SCIP_VAR* var, SCIP_BRANCHDIR dir)
@@ -1710,6 +1714,13 @@ cdef extern from "scip/cons_and.h":
                                          SCIP_Bool dynamic,
                                          SCIP_Bool removable,
                                          SCIP_Bool stickingatnode)
+    int          SCIPgetNVarsAnd(SCIP* scip, SCIP_CONS* cons)
+    SCIP_VAR**   SCIPgetVarsAnd(SCIP* scip, SCIP_CONS* cons)
+    SCIP_VAR*    SCIPgetResultantAnd(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Bool    SCIPisAndConsSorted(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RETCODE SCIPsortAndCons(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RETCODE SCIPchgAndConsCheckFlagWhenUpgr(SCIP* scip, SCIP_CONS* cons, SCIP_Bool flag)
+    SCIP_RETCODE SCIPchgAndConsRemovableFlagWhenUpgr(SCIP* scip, SCIP_CONS* cons, SCIP_Bool flag)
 
 cdef extern from "scip/cons_or.h":
     SCIP_RETCODE SCIPcreateConsOr(SCIP* scip,

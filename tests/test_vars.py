@@ -77,3 +77,21 @@ def test_vtype():
     assert w.vtype() == "CONTINUOUS" and is_int(w) and is_implint(w) and is_nonimplint(w) and not is_bin(w)
 
     assert w.getImplType() == 1
+
+    m.chgVarType(y, 'M')
+    assert y.vtype() == "IMPLINT"
+
+def test_markRelaxationOnly():
+    m = Model()
+
+    x = m.addVar(vtype='C', lb=-5.5, ub=8, deletable=True)
+    y = m.addVar(vtype='I', lb=-5.2, ub=8)
+
+    assert not x.isRelaxationOnly()
+    assert not y.isRelaxationOnly()
+
+    x.markRelaxationOnly()
+    assert x.isRelaxationOnly()
+    assert x.isDeletable()
+    assert not y.isRelaxationOnly()
+    assert not y.isDeletable()

@@ -1783,6 +1783,49 @@ cdef class Variable(Expr):
         """
         return SCIPvarGetAvgSol(self.scip_var)
 
+    def markRelaxationOnly(self):
+        """
+        marks that this variable has only been introduced to define a relaxation
+
+        The variable must not have a coefficient in the objective and must be deletable.
+        If it is not marked deletable, it will be marked as deletable, which is only possible before
+        the variable is added to a problem.
+
+        Returns
+        -------
+        None
+
+        """
+        SCIPvarMarkRelaxationOnly(self.scip_var)
+    
+    def isRelaxationOnly(self):
+        """
+        returns whether a variable has been introduced to define a relaxation
+
+        These variables are only valid for the current SCIP solve round, they are not contained in any (checked)
+        constraints, but may be used in cutting planes, for example. Relaxation-only variables are not copied 
+        by SCIPcopyVars and cuts that contain these variables are not added as linear constraints when 
+        restarting or transferring information from a copied SCIP to a SCIP. Also conflicts with relaxation-only
+        variables are not generated at the moment. Relaxation-only variables do not appear in the objective.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPvarIsRelaxationOnly(self.scip_var)
+    
+    def isDeletable(self):
+        """
+        Returns whether variable is allowed to be deleted completely from the problem.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPvarIsDeletable(self.scip_var)
+
     def getNLocksDown(self):
         """
         Returns the number of locks for rounding down.
@@ -3851,7 +3894,7 @@ cdef class Model:
 
     # Variable Functions
 
-    def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0):
+    def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0, deletable=False):
         """
         Create a new variable. Default variable is non-negative and continuous.
 
@@ -3906,6 +3949,9 @@ cdef class Model:
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_IMPLINT))
         else:
             raise Warning("unrecognized variable type")
+
+        if deletable:
+            SCIPvarMarkDeletable(scip_var)
 
         if pricedVar:
             PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, pricedVarScore))
@@ -6096,6 +6142,160 @@ cdef class Model:
 
         return vars
 
+    def getNVarsAnd(self, Constraint and_cons):
+        """
+        Gets number of variables in and constraint.
+
+        Parameters
+        ----------
+        and_cons : Constraint
+            AND constraint to get the number of variables from.
+
+        Returns
+        -------
+        int
+
+        """
+        cdef int nvars
+        cdef SCIP_Bool success
+
+        return SCIPgetNVarsAnd(self._scip, and_cons.scip_cons)
+
+    def getVarsAnd(self, Constraint and_cons):
+        """
+        Gets variables in AND constraint.
+
+        Parameters
+        ----------
+        and_cons : Constraint
+            AND Constraint to get the variables from.
+
+        Returns
+        -------
+        list of Variable
+
+        """
+        cdef SCIP_VAR** _vars
+        cdef int nvars
+        cdef SCIP_Bool success
+        cdef int i
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(and_cons.scip_cons))).decode('UTF-8')
+        assert(constype == 'and', "The constraint handler %s does not have this functionality." % constype)
+
+        nvars = SCIPgetNVarsAnd(self._scip, and_cons.scip_cons)
+        _vars = SCIPgetVarsAnd(self._scip, and_cons.scip_cons)
+
+        vars = []
+        for i in range(nvars):
+            ptr = <size_t>(_vars[i])
+            # check whether the corresponding variable exists already
+            if ptr in self._modelvars:
+                vars.append(self._modelvars[ptr])
+            else:
+                # create a new variable
+                var = Variable.create(_vars[i])
+                assert var.ptr() == ptr
+                self._modelvars[ptr] = var
+                vars.append(var)
+
+        return vars
+
+    def getResultantAnd(self, Constraint and_cons):
+        """
+        Gets the resultant variable in And constraint.
+
+        Parameters
+        ----------
+        and_cons : Constraint
+            Constraint to get the resultant variable from.
+
+        Returns
+        -------
+        Variable
+
+        """
+        cdef SCIP_VAR* _resultant
+        cdef SCIP_Bool success
+
+        _resultant = SCIPgetResultantAnd(self._scip, and_cons.scip_cons)
+
+        ptr = <size_t>(_resultant)
+        # check whether the corresponding variable exists already
+        if ptr not in self._modelvars:
+            # create a new variable
+            resultant = Variable.create(_resultant)
+            assert resultant.ptr() == ptr
+            self._modelvars[ptr] = resultant
+        else:
+            resultant = self._modelvars[ptr]
+            
+        return resultant
+
+    def isAndConsSorted(self, Constraint and_cons):
+        """
+        Returns if the variables of the AND-constraint are sorted with respect to their indices.
+
+        Parameters
+        ----------
+        and_cons : Constraint
+            Constraint to check.
+
+        Returns
+        -------
+        bool
+
+        """
+        cdef SCIP_Bool success
+
+        return SCIPisAndConsSorted(self._scip, and_cons.scip_cons)
+
+    def sortAndCons(self, Constraint and_cons):
+        """
+        Sorts the variables of the AND-constraint with respect to their indices.
+
+        Parameters
+        ----------
+        and_cons : Constraint
+            Constraint to sort.
+
+        """
+        cdef SCIP_Bool success
+
+        PY_SCIP_CALL(SCIPsortAndCons(self._scip, and_cons.scip_cons))
+    
+    def chgAndConsCheckFlagWhenUpgr(self, Constraint cons, flag):
+        """
+        when 'upgrading' the given AND-constraint, should the check flag for the upgraded 
+        constraint be set to TRUE, even if the check flag of this AND-constraint is set to FALSE?
+        
+        Parameters
+        ----------
+        cons : Constraint
+            The AND constraint to change.
+        flag : bool
+            The new value for the check flag.
+
+        """
+
+        PY_SCIP_CALL(SCIPchgAndConsCheckFlagWhenUpgr(self._scip, cons.scip_cons, flag))
+
+    def chgAndConsRemovableFlagWhenUpgr(self, Constraint cons, flag):
+        """
+        when 'upgrading' the given AND-constraint, should the removable flag for the upgraded 
+        constraint be set to TRUE, even if the removable flag of this AND-constraint is set to FALSE?
+        
+        Parameters
+        ----------
+        cons : Constraint
+            The AND constraint to change.
+        flag : bool
+            The new value for the removable flag.
+
+        """
+
+        PY_SCIP_CALL(SCIPchgAndConsRemovableFlagWhenUpgr(self._scip, cons.scip_cons, flag))
+
     def printCons(self, Constraint constraint):
         """
         Print the constraint
@@ -6760,6 +6960,169 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pyCons
+
+
+    def addMatrixConsIndicator(self, cons: MatrixExprCons, binvar: Union[Variable, MatrixVariable] = None,
+                               activeone: Union[bool, np.ndarray] = True, name: Union[str, np.ndarray] = "",
+                               initial: Union[bool, np.ndarray] = True, separate: Union[bool, np.ndarray] = True,
+                               enforce: Union[bool, np.ndarray] = True, check: Union[bool, np.ndarray] = True,
+                               propagate: Union[bool, np.ndarray] = True, local: Union[bool, np.ndarray] = False,
+                               dynamic: Union[bool, np.ndarray] = False, removable: Union[bool, np.ndarray] = False,
+                               stickingatnode: Union[bool, np.ndarray] = False) -> MatrixConstraint:
+        """Add an indicator matrix constraint for the linear inequality `cons`.
+
+        The `binvar` argument models the redundancy of the linear constraint. A solution
+        for which `binvar` is 1 must satisfy the constraint.
+
+        Parameters
+        ----------
+        cons : MatrixExprCons
+            a linear inequality of the form "<=".
+        binvar : Variable or MatrixVariable, optional
+            binary indicator variable / matrix variable, or None if it should be created. (Default value = None)
+        activeone : bool or np.ndarray, optional
+            the matrix constraint should be active if binvar is 1 (0 if activeone = False).
+        name : str or np.ndarray, optional
+            name of the matrix constraint.  (Default value = "")
+        initial : bool or np.ndarray, optional
+            should the LP relaxation of matrix constraint be in the initial LP?  (Default value = True)
+        separate : bool or np.ndarray, optional
+            should the matrix constraint be separated during LP processing?  (Default value = True)
+        enforce : bool or np.ndarray, optional
+            should the matrix constraint be enforced during node processing?  (Default value = True)
+        check : bool or np.ndarray, optional
+            should the matrix constraint be checked for feasibility?  (Default value = True)
+        propagate : bool or np.ndarray, optional
+            should the matrix constraint be propagated during node processing? (Default value = True)
+        local : bool or np.ndarray, optional
+            is the matrix constraint only valid locally? (Default value = False)
+        dynamic : bool or np.ndarray, optional
+            is the matrix constraint subject to aging? (Default value = False)
+        removable : bool or np.ndarray, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool or np.ndarray, optional
+            should the matrix constraint always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        MatrixConstraint
+            The newly created Indicator MatrixConstraint object.
+        """
+
+        assert isinstance(cons, MatrixExprCons), (
+            f"given constraint is not MatrixExprCons but {cons.__class__.__name__}"
+        )
+
+        shape = cons.shape
+
+        if isinstance(binvar, MatrixVariable):
+            assert binvar.shape == shape
+        if isinstance(activeone, np.ndarray):
+            assert activeone.shape == shape
+        if isinstance(name, np.ndarray):
+            assert name.shape == shape
+        if isinstance(initial, np.ndarray):
+            assert initial.shape == shape
+        if isinstance(separate, np.ndarray):
+            assert separate.shape == shape
+        if isinstance(enforce, np.ndarray):
+            assert enforce.shape == shape
+        if isinstance(check, np.ndarray):
+            assert check.shape == shape
+        if isinstance(propagate, np.ndarray):
+            assert propagate.shape == shape
+        if isinstance(local, np.ndarray):
+            assert local.shape == shape
+        if isinstance(dynamic, np.ndarray):
+            assert dynamic.shape == shape
+        if isinstance(removable, np.ndarray):
+            assert removable.shape == shape
+        if isinstance(stickingatnode, np.ndarray):
+            assert stickingatnode.shape == shape
+
+        if not isinstance(binvar, MatrixVariable):
+            matrix_binvar = np.full(shape, binvar, dtype=Variable)
+        else:
+            matrix_binvar = binvar
+
+        if not isinstance(activeone, np.ndarray):
+            matrix_activeone = np.full(shape, activeone, dtype=bool)
+        else:
+            matrix_activeone = activeone
+
+        if isinstance(name, str):
+            matrix_names = np.full(shape, name, dtype=object)
+            if name != "":
+                for idx in np.ndindex(shape):
+                    matrix_names[idx] = f"{name}_{'_'.join(map(str, idx))}"
+        else:
+            matrix_names = name
+
+        if not isinstance(initial, np.ndarray):
+            matrix_initial = np.full(shape, initial, dtype=bool)
+        else:
+            matrix_initial = initial
+
+        if not isinstance(enforce, np.ndarray):
+            matrix_enforce = np.full(shape, enforce, dtype=bool)
+        else:
+            matrix_enforce = enforce
+
+        if not isinstance(separate, np.ndarray):
+            matrix_separate = np.full(shape, separate, dtype=bool)
+        else:
+            matrix_separate = separate
+
+        if not isinstance(check, np.ndarray):
+            matrix_check = np.full(shape, check, dtype=bool)
+        else:
+            matrix_check = check
+
+        if not isinstance(propagate, np.ndarray):
+            matrix_propagate = np.full(shape, propagate, dtype=bool)
+        else:
+            matrix_propagate = propagate
+
+        if not isinstance(local, np.ndarray):
+            matrix_local = np.full(shape, local, dtype=bool)
+        else:
+            matrix_local = local
+
+        if not isinstance(dynamic, np.ndarray):
+            matrix_dynamic = np.full(shape, dynamic, dtype=bool)
+        else:
+            matrix_dynamic = dynamic
+
+        if not isinstance(removable, np.ndarray):
+            matrix_removable = np.full(shape, removable, dtype=bool)
+        else:
+            matrix_removable = removable
+
+        if not isinstance(stickingatnode, np.ndarray):
+            matrix_stickingatnode = np.full(shape, stickingatnode, dtype=bool)
+        else:
+            matrix_stickingatnode = stickingatnode
+
+        matrix_cons = np.empty(shape, dtype=object)
+        for idx in np.ndindex(shape):
+            matrix_cons[idx] = self.addConsIndicator(
+                cons[idx],
+                binvar=matrix_binvar[idx],
+                activeone=matrix_activeone[idx],
+                name=matrix_names[idx],
+                initial=matrix_initial[idx],
+                separate=matrix_separate[idx],
+                enforce=matrix_enforce[idx],
+                check=matrix_check[idx],
+                propagate=matrix_propagate[idx],
+                local=matrix_local[idx],
+                dynamic=matrix_dynamic[idx],
+                removable=matrix_removable[idx],
+                stickingatnode=matrix_stickingatnode[idx],
+            )
+
+        return matrix_cons.view(MatrixConstraint)
 
     def getLinearConsIndicator(self, Constraint cons):
         """
@@ -8896,6 +9259,18 @@ cdef class Model:
 
         return ([Variable.create(lpcands[i]) for i in range(nlpcands)], [lpcandssol[i] for i in range(nlpcands)],
                 [lpcandsfrac[i] for i in range(nlpcands)], nlpcands, npriolpcands, nfracimplvars)
+
+    def getNLPBranchCands(self):
+        """
+        Gets number of branching candidates for LP solution branching (number of fractional variables)
+
+ 	Returns
+  	-------
+   	int
+    	    number of LP branching candidates
+
+        """
+        return SCIPgetNLPBranchCands(self._scip)
 
     def getPseudoBranchCands(self):
         """
