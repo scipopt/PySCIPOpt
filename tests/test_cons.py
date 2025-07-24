@@ -35,7 +35,7 @@ def test_getConsVals():
         x[i] = m.addVar("%i" % i, vtype="B")
 
     c1 = m.addCons(quicksum(x[i] for i in x) <= 1)
-    c2 = m.addConsKnapsack([x[i] for i in x], [1]*n_vars, 10)
+    c2 = m.addConsKnapsack([x[i] for i in x], [i for i in range(1, n_vars+1)], 10)
     vals1 = m.getConsVals(c1)
     vals2 = m.getConsVals(c2)
 
@@ -43,6 +43,7 @@ def test_getConsVals():
     assert all(isinstance(v, float) for v in vals1)
     assert len(vals2) == n_vars
     assert all(isinstance(v, float) for v in vals2)
+    assert m.getConsVals(c2) == [i for i in range(1, n_vars+1)]
 
 def test_constraint_option_setting():
     m = Model()
