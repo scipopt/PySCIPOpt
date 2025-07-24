@@ -2206,7 +2206,7 @@ cdef class Constraint:
 
         """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
-        return constype in ('linear', 'knapsack', 'setppc')
+        return constype in ('linear', 'knapsack', 'setppc', 'logicor', 'varbound')
 
     def isNonlinear(self):
         """
