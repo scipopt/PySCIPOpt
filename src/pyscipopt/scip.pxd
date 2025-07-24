@@ -1196,10 +1196,10 @@ cdef extern from "scip/scip.h":
 
     SCIP_IISFINDERDATA* SCIPiisfinderGetData(SCIP_IISFINDER* iisfinder)
     SCIP_RETCODE SCIPincludeIISfinderGreedy(SCIP* scip)
-    SCIP_RETCODE SCIPiisGreedyMakeIrreducible(SCIP_IIS* iis);
-    SCIP_Bool SCIPiisIsSubscipInfeasible(SCIP_IIS* iis);
-    SCIP_Bool SCIPiisIsSubscipIrreducible(SCIP_IIS* iis);
-    SCIP* SCIPiisGetSubscip(SCIP_IIS* iis);
+    SCIP_RETCODE SCIPiisGreedyMakeIrreducible(SCIP_IIS* iis)
+    SCIP_Bool SCIPiisIsSubscipInfeasible(SCIP_IIS* iis)
+    SCIP_Bool SCIPiisIsSubscipIrreducible(SCIP_IIS* iis)
+    SCIP* SCIPiisGetSubscip(SCIP_IIS* iis)
 
     #Relaxation plugin
     SCIP_RETCODE SCIPincludeRelax(SCIP* scip,
