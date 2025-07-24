@@ -9,6 +9,8 @@
 - Added addMatrixConsIndicator(), and tests
 - Added SCIPvarMarkRelaxationOnly, SCIPvarIsRelaxationOnly, SCIPvarMarkDeletable, SCIPvarIsDeletable, and tests
 - Wrapped SCIPgetNLPBranchCands
+- Added getConsVals() to get coefficients of any linear type constraint
+- Generalized getLhs() and getRhs() to additionally support any linear type constraint
 ### Fixed
 - Raised an error when an expression is used when a variable is required
 ### Changed
