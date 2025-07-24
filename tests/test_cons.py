@@ -283,6 +283,7 @@ def test_cons_knapsack():
 
     assert m.getCapacityKnapsack(knapsack_cons) == 5
     assert m.getRhs(knapsack_cons) == 5
+    assert m.getLhs(knapsack_cons) == -m.infinity()
 
     m.addCoefKnapsack(knapsack_cons, z, 3)
     weights = m.getWeightsKnapsack(knapsack_cons)

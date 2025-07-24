@@ -2196,6 +2196,18 @@ cdef class Constraint:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'knapsack'
 
+    def isLinearRepresentable(self):
+        """
+        Returns True if constraint can be represented as a linear constraint.
+
+        Returns
+        -------
+        bool
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
+        return constype in ('linear', 'knapsack', 'setppc')
+
     def isNonlinear(self):
         """
         Returns True if constraint is nonlinear.
@@ -7293,13 +7305,13 @@ cdef class Model:
         float
 
         """
+        cdef SCIP_Bool success
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
-        if constype == 'linear':
-            return SCIPgetRhsLinear(self._scip, cons.scip_cons)
+
+        if cons.isLinearRepresentable():
+            return SCIPconsGetRhs(self._scip, cons.scip_cons, &success)
         elif constype == 'nonlinear':
             return SCIPgetRhsNonlinear(cons.scip_cons)
-        elif constype == 'knapsack':
-            return SCIPgetCapacityKnapsack(self._scip, cons.scip_cons)
         else:
             raise Warning("method cannot be called for constraints of type " + constype)
 
@@ -7336,9 +7348,11 @@ cdef class Model:
         float
 
         """
+        cdef SCIP_Bool success
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
-        if constype == 'linear':
-            return SCIPgetLhsLinear(self._scip, cons.scip_cons)
+
+        if cons.isLinearRepresentable():
+            return SCIPconsGetLhs(self._scip, cons.scip_cons, &success)
         elif constype == 'nonlinear':
             return SCIPgetLhsNonlinear(cons.scip_cons)
         else:

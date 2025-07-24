@@ -1478,6 +1478,8 @@ cdef extern from "scip/cons_linear.h":
     SCIP_RETCODE SCIPchgRhsLinear(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
     SCIP_Real SCIPgetLhsLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real SCIPgetRhsLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Real SCIPconsGetRhs(SCIP* scip, SCIP_CONS* cons, SCIP_Bool* success)
+    SCIP_Real SCIPconsGetLhs(SCIP* scip, SCIP_CONS* cons, SCIP_Bool* success)
     SCIP_RETCODE SCIPchgCoefLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR* var, SCIP_Real newval)
     SCIP_RETCODE SCIPdelCoefLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR*)
     SCIP_RETCODE SCIPaddCoefLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR*, SCIP_Real val)
