@@ -7318,7 +7318,9 @@ cdef class Model:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
 
         if cons.isLinearType():
-            return SCIPconsGetRhs(self._scip, cons.scip_cons, &success)
+            rhs = SCIPconsGetRhs(self._scip, cons.scip_cons, &success)
+            assert(success)
+            return rhs
         elif constype == 'nonlinear':
             return SCIPgetRhsNonlinear(cons.scip_cons)
         else:
