@@ -6067,22 +6067,22 @@ cdef class Model:
         list of float
 
         """
-        cdef SCIP_Real* vals
+        cdef SCIP_Real* _vals
         cdef int nvars
         cdef SCIP_Bool success
         cdef int i
 
         nvars = self.getConsNVars(constraint)
-        vals = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
-        PY_SCIP_CALL(SCIPgetConsVals(self._scip, constraint.scip_cons, vals, nvars, &success))
+        _vals = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+        PY_SCIP_CALL(SCIPgetConsVals(self._scip, constraint.scip_cons, _vals, nvars, &success))
 
         if not success:
-            free(vals)
+            free(_vals)
             return None
 
-        result = [vals[i] for i in range(nvars)]
-        free(vals)
-        return result
+        vals = [_vals[i] for i in range(nvars)]
+        free(_vals)
+        return vals
 
     def getNVarsAnd(self, Constraint and_cons):
         """
