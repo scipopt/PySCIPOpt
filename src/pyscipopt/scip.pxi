@@ -11479,7 +11479,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
         return result
 
-    def addRowExact(self, rowexact):
+    def addRowExact(self, RowExact rowexact):
         """
         Adds an exact row to the LP.
 
