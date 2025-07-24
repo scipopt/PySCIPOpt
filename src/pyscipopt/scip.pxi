@@ -6031,7 +6031,7 @@ cdef class Model:
 
         SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success)
         _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
-        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, nvars*sizeof(SCIP_VAR*), &success)
+        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, nvars, &success)
 
         vars = []
         for i in range(nvars):
