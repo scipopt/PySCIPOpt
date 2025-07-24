@@ -9,6 +9,11 @@
 - Added addMatrixConsIndicator(), and tests
 - Added SCIPvarMarkRelaxationOnly, SCIPvarIsRelaxationOnly, SCIPvarMarkDeletable, SCIPvarIsDeletable, and tests
 - Wrapped SCIPgetNLPBranchCands
+- Wrapped SCIPprintStatisticsJson
+- Added 4 new events: TYPECHANGED, IMPLTYPECHANGED, DUALBOUNDIMPROVED, GAPUPDATED.
+- Support for new implied integrality
+- Wrapped varIsBinary(), varIsIntegral(), varIsImpliedIntegral(), varIsNonImpliedIntegral(), varGetImplType()
+- Added support for IISFinder
 ### Fixed
 - Raised an error when an expression is used when a variable is required
 ### Changed

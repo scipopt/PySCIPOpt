@@ -257,12 +257,15 @@ cdef extern from "scip/scip.h":
         SCIP_EVENTTYPE SCIP_EVENTTYPE_LHOLEADDED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_LHOLEREMOVED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_IMPLADDED
+        SCIP_EVENTTYPE SCIP_EVENTTYPE_TYPECHANGED
+        SCIP_EVENTTYPE SCIP_EVENTTYPE_IMPLTYPECHANGED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_PRESOLVEROUND
         SCIP_EVENTTYPE SCIP_EVENTTYPE_NODEFOCUSED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_NODEFEASIBLE
         SCIP_EVENTTYPE SCIP_EVENTTYPE_NODEINFEASIBLE
         SCIP_EVENTTYPE SCIP_EVENTTYPE_NODEBRANCHED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_NODEDELETE
+        SCIP_EVENTTYPE SCIP_EVENTTYPE_DUALBOUNDIMPROVED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_FIRSTLPSOLVED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_LPSOLVED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_POORSOLFOUND
@@ -292,6 +295,7 @@ cdef extern from "scip/scip.h":
         SCIP_EVENTTYPE SCIP_EVENTTYPE_LPEVENT
         SCIP_EVENTTYPE SCIP_EVENTTYPE_SOLFOUND
         SCIP_EVENTTYPE SCIP_EVENTTYPE_SOLEVENT
+        SCIP_EVENTTYPE SCIP_EVENTTYPE_GAPUPDATED        
         SCIP_EVENTTYPE SCIP_EVENTTYPE_ROWCHANGED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_ROWEVENT
 
@@ -304,6 +308,12 @@ cdef extern from "scip/scip.h":
     cdef extern from "scip/type_var.h":
         SCIP_LOCKTYPE SCIP_LOCKTYPE_MODEL
         SCIP_LOCKTYPE SCIP_LOCKTYPE_CONFLICT
+    
+    ctypedef int SCIP_IMPLINTTYPE
+    cdef extern from "scip/type_var.h":
+        SCIP_IMPLINTTYPE SCIP_IMPLINTTYPE_NONE
+        SCIP_IMPLINTTYPE SCIP_IMPLINTTYPE_WEAK
+        SCIP_IMPLINTTYPE SCIP_IMPLINTTYPE_STRONG
 
     ctypedef int SCIP_BENDERSENFOTYPE
     cdef extern from "scip/type_benders.h":
@@ -360,6 +370,9 @@ cdef extern from "scip/scip.h":
 
     ctypedef double SCIP_Real
 
+    ctypedef struct SCIP_RATIONAL:
+        pass
+
     ctypedef struct SCIP:
         pass
 
@@ -371,11 +384,17 @@ cdef extern from "scip/scip.h":
 
     ctypedef struct SCIP_ROW:
         pass
+    
+    ctypedef struct SCIP_ROWEXACT:
+        pass
 
     ctypedef struct SCIP_NLROW:
         pass
 
     ctypedef struct SCIP_COL:
+        pass
+    
+    ctypedef struct SCIP_COLEXACT:
         pass
 
     ctypedef struct SCIP_SOL:
@@ -408,12 +427,6 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_PROPDATA:
         pass
 
-    ctypedef struct SCIP_PROPTIMING:
-        pass
-
-    ctypedef struct SCIP_PRESOLTIMING:
-        pass
-
     ctypedef struct SCIP_PRESOL:
         pass
 
@@ -424,6 +437,15 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_HEURDATA:
+        pass
+
+    ctypedef struct SCIP_IISFINDER:
+        pass
+    
+    ctypedef struct SCIP_IISFINDERDATA:
+        pass
+    
+    ctypedef struct SCIP_IIS:
         pass
 
     ctypedef struct SCIP_RELAX:
@@ -454,9 +476,6 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_PRESOL:
-        pass
-
-    ctypedef struct SCIP_HEURTIMING:
         pass
 
     ctypedef struct SCIP_SEPA:
@@ -507,10 +526,10 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_LPI:
         pass
 
-    ctypedef struct BMS_BLKMEM:
+    ctypedef struct SCIP_LPEXACT:
         pass
 
-    ctypedef struct SCIP_EXPR:
+    ctypedef struct BMS_BLKMEM:
         pass
 
     ctypedef struct SCIP_EXPRHDLR:
@@ -707,7 +726,6 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetLocalTransEstimate(SCIP* scip)
 
     # Solve Methods
-    SCIP_RETCODE SCIPsolve(SCIP* scip)
     SCIP_RETCODE SCIPsolve(SCIP* scip) noexcept nogil
     SCIP_RETCODE SCIPsolveConcurrent(SCIP* scip)
     SCIP_RETCODE SCIPfreeTransform(SCIP* scip)
@@ -802,6 +820,11 @@ cdef extern from "scip/scip.h":
     int SCIPgetNImplVars(SCIP* scip)
     int SCIPgetNContVars(SCIP* scip)
     SCIP_VARTYPE SCIPvarGetType(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsBinary(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsIntegral(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsImpliedIntegral(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsNonimpliedIntegral(SCIP_VAR* var)
+    SCIP_IMPLINTTYPE SCIPvarGetImplType(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
     SCIP_COL* SCIPvarGetCol(SCIP_VAR* var)
@@ -965,9 +988,10 @@ cdef extern from "scip/scip.h":
                                    SCIP_RETCODE (*readerread) (SCIP* scip, SCIP_READER* reader, const char* filename, SCIP_RESULT* result),
                                    SCIP_RETCODE (*readerwrite) (SCIP* scip, SCIP_READER* reader, FILE* file,
                                                                 const char* name, SCIP_PROBDATA* probdata, SCIP_Bool transformed,
-                                                                SCIP_OBJSENSE objsense, SCIP_Real objscale, SCIP_Real objoffset,
-                                                                SCIP_VAR** vars, int nvars, int nbinvars, int nintvars, int nimplvars, int ncontvars,
-                                                                SCIP_VAR** fixedvars, int nfixedvars, int startnvars,
+                                                                SCIP_OBJSENSE objsense, SCIP_Real objoffset, SCIP_Real objscale,
+                                                                SCIP_RATIONAL* objoffsetexact, SCIP_RATIONAL* objscaleexact,
+                                                                SCIP_VAR** vars, int nvars, int nbinvars, int nintvars, int nimplvars,
+                                                                int ncontvars, SCIP_VAR** fixedvars, int nfixedvars, int startnvars,
                                                                 SCIP_CONS** conss, int nconss, int maxnconss, int startnconss,
                                                                 SCIP_Bool genericnames, SCIP_RESULT* result),
                                    SCIP_READERDATA* readerdata)
@@ -1159,6 +1183,23 @@ cdef extern from "scip/scip.h":
     SCIP_HEUR* SCIPfindHeur(SCIP* scip, const char* name)
     SCIP_HEURTIMING SCIPheurGetTimingmask(SCIP_HEUR* heur)
     void SCIPheurSetTimingmask(SCIP_HEUR* heur, SCIP_HEURTIMING timingmask)
+
+    #IIS finder plugin
+    SCIP_RETCODE SCIPincludeIISfinder(SCIP* scip,
+                                      const char* name,
+                                      const char* desc,
+                                      int         priority,
+                                      SCIP_RETCODE (*iisfindercopy) (SCIP* scip, SCIP_IISFINDER* iisfinder),
+                                      SCIP_RETCODE (*iisfinderfree) (SCIP* scip, SCIP_IISFINDER* iisfinder),
+                                      SCIP_RETCODE (*iisfinderexec) (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_Real timelim, SCIP_Longint nodelim, SCIP_Bool removebounds, SCIP_Bool silent, SCIP_RESULT* result),
+                                      SCIP_IISFINDERDATA*   iisfinderdata)
+
+    SCIP_IISFINDERDATA* SCIPiisfinderGetData(SCIP_IISFINDER* iisfinder)
+    SCIP_RETCODE SCIPincludeIISfinderGreedy(SCIP* scip)
+    SCIP_RETCODE SCIPiisGreedyMakeIrreducible(SCIP_IIS* iis)
+    SCIP_Bool SCIPiisIsSubscipInfeasible(SCIP_IIS* iis)
+    SCIP_Bool SCIPiisIsSubscipIrreducible(SCIP_IIS* iis)
+    SCIP* SCIPiisGetSubscip(SCIP_IIS* iis)
 
     #Relaxation plugin
     SCIP_RETCODE SCIPincludeRelax(SCIP* scip,
@@ -1359,8 +1400,33 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPisIntegral(SCIP* scip, SCIP_Real val)
     SCIP_Real SCIPgetTreesizeEstimation(SCIP* scip)
 
+    # Exact SCIP methods
+    SCIP_RETCODE SCIPenableExactSolving(SCIP* scip, SCIP_Bool enable);
+    SCIP_Bool SCIPisExact(SCIP* scip);
+    SCIP_Bool SCIPallowNegSlack(SCIP* scip);
+    SCIP_RETCODE SCIPbranchLPExact(SCIP* scip, SCIP_RESULT* result);
+    SCIP_RETCODE SCIPaddRowExact(SCIP* scip, SCIP_ROWEXACT* rowexact);
+
+    # Exact LP SCIP methods
+    SCIP_VAR* SCIPcolExactGetVar(SCIP_COLEXACT* col);
+    SCIP_RATIONAL* SCIProwExactGetLhs(SCIP_ROWEXACT* row);
+    SCIP_RATIONAL* SCIProwExactGetRhs(SCIP_ROWEXACT* row);
+    SCIP_RATIONAL* SCIProwExactGetConstant(SCIP_ROWEXACT* row);
+    int SCIProwExactGetNNonz(SCIP_ROWEXACT* row);
+    SCIP_RATIONAL** SCIProwExactGetVals(SCIP_ROWEXACT* row);
+    SCIP_Bool SCIProwExactIsInLP(SCIP_ROWEXACT* row);
+    void SCIProwExactSort(SCIP_ROWEXACT* row);
+    SCIP_COLEXACT** SCIProwExactGetCols(SCIP_ROWEXACT* row);
+    void SCIProwExactLock(SCIP_ROWEXACT* row);
+    void SCIProwExactUnlock(SCIP_ROWEXACT* row);
+    SCIP_ROW* SCIProwExactGetRow(SCIP_ROWEXACT* row);
+    SCIP_ROW* SCIProwExactGetRowRhs(SCIP_ROWEXACT* row);
+    SCIP_Bool SCIProwExactHasFpRelax(SCIP_ROWEXACT* row);
+    SCIP_Bool SCIPlpExactDiving(SCIP_LPEXACT* lpexact);
+
     # Statistic Methods
     SCIP_RETCODE SCIPprintStatistics(SCIP* scip, FILE* outfile)
+    SCIP_RETCODE SCIPprintStatisticsJson(SCIP* scip, FILE* file)
     SCIP_Longint SCIPgetNNodes(SCIP* scip)
     SCIP_Longint SCIPgetNTotalNodes(SCIP* scip)
     SCIP_Longint SCIPgetNFeasibleLeaves(SCIP* scip)
@@ -1432,11 +1498,6 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPenableReoptimization(SCIP* scip, SCIP_Bool enable)
 
     BMS_BLKMEM* SCIPblkmem(SCIP* scip)
-
-    # pub_misc.h
-    SCIP_RETCODE SCIPhashmapCreate(SCIP_HASHMAP** hashmap, BMS_BLKMEM* blkmem, int mapsize)
-    void SCIPhashmapFree(SCIP_HASHMAP** hashmap)
-
 
 cdef extern from "scip/tree.h":
     int SCIPnodeGetNAddedConss(SCIP_NODE* node)
@@ -1595,7 +1656,6 @@ cdef extern from "scip/cons_sos1.h":
                                    SCIP_CONS* cons,
                                    SCIP_VAR* var)
 
-
 cdef extern from "scip/cons_sos2.h":
     SCIP_RETCODE SCIPcreateConsSOS2(SCIP* scip,
                                     SCIP_CONS** cons,
@@ -1700,6 +1760,7 @@ cdef extern from "scip/cons_xor.h":
                                          SCIP_Bool dynamic,
                                          SCIP_Bool removable,
                                          SCIP_Bool stickingatnode)
+
 cdef extern from "scip/scip_cons.h":
     SCIP_RETCODE SCIPprintCons(SCIP* scip,
                                SCIP_CONS* cons,
@@ -1853,7 +1914,6 @@ cdef extern from "scip/scip_nlp.h":
     SCIP_RETCODE SCIPgetNlRowSolFeasibility(SCIP* scip, SCIP_NLROW* nlrow, SCIP_SOL* sol, SCIP_Real* feasibility)
     SCIP_RETCODE SCIPgetNlRowActivityBounds(SCIP* scip, SCIP_NLROW* nlrow, SCIP_Real* minactivity, SCIP_Real* maxactivity)
     SCIP_RETCODE SCIPprintNlRow(SCIP* scip, SCIP_NLROW* nlrow, FILE* file)
-
 
 cdef extern from "scip/cons_cardinality.h":
     SCIP_RETCODE SCIPcreateConsCardinality(SCIP* scip,
@@ -2027,6 +2087,14 @@ cdef class Column:
     @staticmethod
     cdef create(SCIP_COL* scipcol)
 
+cdef class ColumnExact:
+    cdef SCIP_COLEXACT* scip_col_exact
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_COLEXACT* scip_col_exact)
+
 cdef class Row:
     cdef SCIP_ROW* scip_row
     # can be used to store problem data
@@ -2034,6 +2102,14 @@ cdef class Row:
 
     @staticmethod
     cdef create(SCIP_ROW* sciprow)
+
+cdef class RowExact:
+    cdef SCIP_ROWEXACT* scip_row_exact
+    # can be used to store problem data
+    cdef public object data
+
+    @staticmethod
+    cdef create(SCIP_ROWEXACT* scip_row_exact)
 
 cdef class NLRow:
     cdef SCIP_NLROW* scip_nlrow

@@ -31,6 +31,7 @@ include "conshdlr.pxi"
 include "cutsel.pxi"
 include "event.pxi"
 include "heuristic.pxi"
+include "iisfinder.pxi"
 include "presol.pxi"
 include "pricer.pxi"
 include "propagator.pxi"
@@ -41,9 +42,9 @@ include "nodesel.pxi"
 include "matrix.pxi"
 
 # recommended SCIP version; major version is required
-MAJOR = 9
-MINOR = 2
-PATCH = 1
+MAJOR = 10
+MINOR = 0
+PATCH = 0
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
@@ -258,6 +259,11 @@ cdef class PY_SCIP_EVENTTYPE:
 cdef class PY_SCIP_LOCKTYPE:
     MODEL    = SCIP_LOCKTYPE_MODEL
     CONFLICT = SCIP_LOCKTYPE_CONFLICT
+
+cdef class PY_SCIP_IMPLINTTYPE:
+    NONE   = SCIP_IMPLINTTYPE_NONE
+    WEAK   = SCIP_IMPLINTTYPE_WEAK
+    STRONG = SCIP_IMPLINTTYPE_STRONG
 
 cdef class PY_SCIP_LPSOLSTAT:
     NOTSOLVED    = SCIP_LPSOLSTAT_NOTSOLVED
@@ -619,6 +625,31 @@ cdef class Column:
         return (self.__class__ == other.__class__
                 and self.scip_col == (<Column>other).scip_col)
 
+cdef class ColumnExact:
+    """Base class holding a pointer to corresponding SCIP_COLEXACT."""
+
+    @staticmethod
+    cdef create(SCIP_COLEXACT* scipcolexact):
+        """
+        Main method for creating a ColumnExact class. Is used instead of __init__.
+
+        Parameters
+        ----------
+        scipcolexact : SCIP_COLEXACT*
+            A pointer to the SCIP_COLEXACT
+
+        Returns
+        -------
+        col : ColumnExact
+            The Python representative of the SCIP_COLEXACT
+
+        """
+        if scipcolexact == NULL:
+            raise Warning("cannot create ColumnExact with SCIP_COLEXACT* == NULL")
+        col = ColumnExact()
+        col.scip_col_exact = scipcolexact
+        return col
+
 cdef class Row:
     """Base class holding a pointer to corresponding SCIP_ROW."""
 
@@ -902,6 +933,31 @@ cdef class Row:
     def __eq__(self, other):
         return (self.__class__ == other.__class__
                 and self.scip_row == (<Row>other).scip_row)
+
+cdef class RowExact:
+    """Base class holding a pointer to corresponding SCIP_ROW."""
+
+    @staticmethod
+    cdef create(SCIP_ROWEXACT* sciprowexact):
+        """
+        Main method for creating a RowExact class. Is used instead of __init__.
+
+        Parameters
+        ----------
+        sciprow : SCIP_ROWEXACT*
+            A pointer to the SCIP_ROWEXACT
+
+        Returns
+        -------
+        row : Row
+            The Python representative of the SCIP_ROWEXACT
+
+        """
+        if sciprowexact == NULL:
+            raise Warning("cannot create Row with SCIP_ROWEXACT* == NULL")
+        row_exact = RowExact()
+        row_exact.scip_row_exact = sciprowexact
+        return row_exact
 
 cdef class NLRow:
     """Base class holding a pointer to corresponding SCIP_NLROW."""
@@ -1513,7 +1569,7 @@ cdef class Variable(Expr):
 
     def vtype(self):
         """
-        Retrieve the variables type (BINARY, INTEGER, IMPLINT or CONTINUOUS)
+        Retrieve the variables type (BINARY, INTEGER, CONTINUOUS, or IMPLINT)
 
         Returns
         -------
@@ -1530,6 +1586,56 @@ cdef class Variable(Expr):
             return "CONTINUOUS"
         elif vartype == SCIP_VARTYPE_IMPLINT:
             return "IMPLINT"
+    
+    def isBinary(self):
+        """
+        Returns whether variable is of BINARY type.
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPvarIsBinary(self.scip_var)
+    
+    def isIntegral(self):
+        """
+        Returns whether variable is of INTEGER type.
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPvarIsIntegral(self.scip_var)
+    
+    def isImpliedIntegral(self):
+        """
+        Returns whether variable is implied integral (weakly or strongly).
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPvarIsImpliedIntegral(self.scip_var)
+    
+    def isNonImpliedIntegral(self):
+        """
+        Returns TRUE if the variable is integral, but not implied integral..
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPvarIsNonimpliedIntegral(self.scip_var)
+
+    def getImplType(self):
+        """
+        Returns the implied integral type of the variable
+
+        Returns
+        -------
+        PY_SCIP_IMPLINTTYPE
+        """
+        return SCIPvarGetImplType(self.scip_var)
 
     def isOriginal(self):
         """
@@ -7922,7 +8028,6 @@ cdef class Model:
 
         """
         raise Warning("model.getDualMultiplier(cons) is deprecated: please use model.getDualsolLinear(cons)")
-        return self.getDualsolLinear(cons)
 
     def getDualfarkasLinear(self, Constraint cons):
         """
@@ -8852,7 +8957,10 @@ cdef class Model:
         maxdepth : int, optional
             maximal depth level to call heuristic at (Default value = -1)
         timingmask : PY_SCIP_HEURTIMING, optional
-            positions in the node solving loop where heuristic should be executed
+            positions in the node solvingreturn {
+            'result': SCIP_RESULT.SUCCESS,
+            'lowerbound': 10e4
+        } loop where heuristic should be executed
             (Default value = SCIP_HEURTIMING_BEFORENODE)
         usessubscip : bool, optional
             does the heuristic use a secondary SCIP instance? (Default value = False)
@@ -8870,6 +8978,52 @@ cdef class Model:
         heur.model = <Model>weakref.proxy(self)
         heur.name = name
         Py_INCREF(heur)
+    
+    def includeIISfinder(self, IISfinder iisfinder, name, desc, priority=10000, freq=1):
+        """
+        Include an IIS (Irreducible Infeasible Set) finder handler.
+
+        Parameters
+        ----------
+        iisfinder : IISfinder
+            IIS finder
+        name : str
+            name of IIS finder
+        desc : str
+            description of IIS finder
+        priority : int, optional
+            priority of the IISfinder (#todo description)
+        freq : int, optional
+            frequency for calling IIS finder
+
+        """
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeIISfinder(self._scip, nam, des, priority, PyiisfinderCopy, PyiisfinderFree,
+                                         PyiisfinderExec, <SCIP_IISFINDERDATA*> iisfinder))
+        iisfinder.model = <Model>weakref.proxy(self)
+        iisfinder.name = name
+
+        Py_INCREF(iisfinder)
+
+    def includeIISfinderGreedy(self):
+        """
+        Include the default greedy IIS finder.
+
+        Returns
+        -------
+        IISfinder
+            the greedy IIS finder
+
+        """
+        PY_SCIP_CALL(SCIPincludeIISfinderGreedy(self._scip))
+
+    def iisGreedyMakeIrreducible(self, IISfinder iisfinder):
+       """
+       Perform the greedy deletion algorithm with singleton batches to obtain an irreducible infeasible subsystem (IIS)
+       """
+
+       PY_SCIP_CALL(SCIPiisGreedyMakeIrreducible(iisfinder._iisfinder))
 
     def includeRelax(self, Relax relax, name, desc, priority=10000, freq=1):
         """
@@ -10540,12 +10694,49 @@ cdef class Model:
 
     # Statistic Methods
 
-    def printStatistics(self):
-        """Print statistics."""
+    def printStatistics(self, filename=None):
+        """
+        Print statistics.
+
+        Parameters
+        ----------
+        filename : str, optional
+            name of the output file (Default = None)
+
+        """ 
+
         user_locale = locale.getlocale(category=locale.LC_NUMERIC)
         locale.setlocale(locale.LC_NUMERIC, "C")
 
-        PY_SCIP_CALL(SCIPprintStatistics(self._scip, NULL))
+        if not filename:
+            PY_SCIP_CALL(SCIPprintStatistics(self._scip, NULL))
+        else:
+            with open(filename, "w") as f:
+                cfile = fdopen(f.fileno(), "w")
+                PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
+    def printStatisticsJson(self, filename=None):
+        """
+        Print statistics in JSON format.
+
+        Parameters
+        ----------
+        filename : str, optional
+            name of the output file (Default = None)
+
+        """ 
+
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        if not filename:
+            PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, NULL))
+        else:
+            with open(filename, "w") as f:
+                cfile = fdopen(f.fileno(), "w")
+                PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, cfile))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
@@ -11240,6 +11431,64 @@ cdef class Model:
         """
         return SCIPgetTreesizeEstimation(self._scip)
 
+
+    # Exact SCIP methods
+    def enableExactSolving(self, SCIP_Bool enable):
+        """
+        Enables or disables exact solving mode in SCIP.
+
+        Parameters
+        ----------
+        enable : SCIP_Bool
+            Whether to enable exact solving mode (True) or disable it (False).
+        """
+
+        PY_SCIP_CALL(SCIPenableExactSolving(self._scip, enable))
+
+    def isExact(self):
+        """
+        Returns whether exact solving mode is enabled in SCIP.
+
+        Returns
+        -------
+        bool
+        """
+
+        return SCIPisExact(self._scip)
+
+    def allowNegSlack(self):
+        """
+        Returns whether negative slack is allowed in exact solving mode.
+
+        Returns
+        -------
+        bool
+        """
+
+        return SCIPallowNegSlack(self._scip)
+    
+    def branchLPExact(self):
+        """
+        Performs exact LP branching.
+
+        Returns
+        -------
+        SCIP_RESULT
+        """
+        cdef SCIP_RESULT result
+        PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
+        return result
+
+    def addRowExact(self, RowExact rowexact):
+        """
+        Adds an exact row to the LP.
+
+        Parameters
+        ----------
+        rowexact : RowExact
+            The exact row to add.
+        """
+        PY_SCIP_CALL(SCIPaddRowExact(self._scip, rowexact.scip_row_exact))
 
     def getBipartiteGraphRepresentation(self, prev_col_features=None, prev_edge_features=None, prev_row_features=None,
                                         static_only=False, suppress_warnings=False):
