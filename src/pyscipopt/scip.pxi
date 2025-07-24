@@ -6033,6 +6033,10 @@ cdef class Model:
         _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
         SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, nvars, &success)
 
+        if not success:
+            free(_vars)
+            return None
+
         vars = []
         for i in range(nvars):
             ptr = <size_t>(_vars[i])
@@ -6046,6 +6050,7 @@ cdef class Model:
                 self._modelvars[ptr] = var
                 vars.append(var)
 
+        free(_vars)
         return vars
     
     def getConsVals(self, Constraint constraint):
@@ -6070,6 +6075,10 @@ cdef class Model:
         nvars = self.getConsNVars(constraint)
         vals = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
         PY_SCIP_CALL(SCIPgetConsVals(self._scip, constraint.scip_cons, vals, nvars, &success))
+
+        if not success:
+            free(vals)
+            return None
 
         result = [vals[i] for i in range(nvars)]
         free(vals)
