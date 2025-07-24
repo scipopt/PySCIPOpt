@@ -9018,12 +9018,12 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPincludeIISfinderGreedy(self._scip))
 
-    # def iisGreedyMinimize(self, IISfinder iisfinder):
-    #    """
-    #    Perform the greedy deletion algorithm with singleton batches to obtain an irreducible infeasible subsystem (IIS)
-    #    """
+    def iisGreedyMakeIrreducible(self, IISfinder iisfinder):
+       """
+       Perform the greedy deletion algorithm with singleton batches to obtain an irreducible infeasible subsystem (IIS)
+       """
 
-    #    PY_SCIP_CALL(SCIPiisGreedyMakeIrreducible(iisfinder._iisfinder))
+       PY_SCIP_CALL(SCIPiisGreedyMakeIrreducible(iisfinder._iisfinder))
 
     def includeRelax(self, Relax relax, name, desc, priority=10000, freq=1):
         """

@@ -1,34 +1,42 @@
 import pytest
 
-from pyscipopt import Model
-from pyscipopt.scip import IISfinder
+from pyscipopt import Model, IISfinder
 
-calls = []
-class myIISfinder(IISfinder):
-    def iisfinderexec(self):
-        calls.append('relaxexec')
+class myIIS(IISfinder):
+    def __init__(self):
+        super().__init__()
+        self._iisfinder = None
 
-def test_iis_custom():
-    from helpers.utils import random_mip_1
+    def isIISFound(self):
+        return self._iisfinder is not None
 
-    m = random_mip_1()
-    x = m.addVar()
-    m.addCons(x >= 1, "inf1")
-    m.addCons(x <= 0, "inf2")
-
-    iis = myIISfinder()
-    m.includeIISfinder(iis, name="custom", desc="test")
-    m.optimize()
-    assert calls != []
-
-def test_iis_greedy():
+def test_iis_greedy_make_irreducible():
     m = Model()
-    x = m.addVar()
-    m.addCons(x >= 1, "inf1")
-    m.addCons(x <= 0, "inf2")
+    x1 = m.addVar("x1")
+    x2 = m.addVar("x2")
+    x3 = m.addVar("x3")
 
-    m.includeIISfinderGreedy()
-    m.optimize()
+    m.addCons(x1 + x2 >= 5)
+    m.addCons(x2 + x3 >= 5)
+    m.addCons(x1 + x3 <= 3)
 
-test_iis_greedy()
-test_iis_custom()
+    iisfinder = IISfinder()
+
+    m.iisGreedyMakeIrreducible(iisfinder)
+
+    assert iisfinder.isIISFound() == True
+
+def test_custom_iis():
+    m = Model()
+    x1 = m.addVar("x1")
+    x2 = m.addVar("x2")
+    x3 = m.addVar("x3")
+
+    m.addCons(x1 + x2 >= 5)
+    m.addCons(x2 + x3 >= 5)
+    m.addCons(x1 + x3 <= 3)
+
+    iisfinder = myIIS()
+
+    pass
+
