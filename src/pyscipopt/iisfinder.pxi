@@ -3,6 +3,7 @@
 cdef class IISfinder:
     cdef public Model model
     cdef public str name
+    cdef SCIP_IIS* _iisfinder
 
     def iisfinderfree(self):
         '''calls destructor and frees memory of iis finder'''
