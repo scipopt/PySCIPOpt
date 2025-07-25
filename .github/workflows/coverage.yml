@@ -41,7 +41,7 @@ jobs:
       - name: Install PySCIPOpt
         run: |
           export CFLAGS="-O0 -ggdb" # disable compiler optimizations for faster builds
-          python -m pip install .
+          python -m pip install . -v
 
       - name: Run pyscipopt tests
         run: |
