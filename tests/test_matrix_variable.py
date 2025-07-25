@@ -169,7 +169,7 @@ def test_matrix_sum_argument():
 
     # compare the result of summing 2d array to a scalar with a scalar
     x = m.addMatrixVar((2, 3), "x", "I", ub=4)
-    m.addCons(x.sum() == 24)
+    m.addMatrixCons(x.sum() == 24)
 
     # compare the result of summing 2d array to 1d array
     y = m.addMatrixVar((2, 4), "y", "I", ub=4)
