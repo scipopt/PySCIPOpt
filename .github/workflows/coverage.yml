@@ -40,8 +40,9 @@ jobs:
 
       - name: Install PySCIPOpt
         run: |
-          export CFLAGS="-O0 -ggdb" # disable compiler optimizations for faster builds
-          python -m pip install . -v
+          export CFLAGS="-O0 -ggdb -Wall -Wextra -Werror" # Optimization mode. More warnings. Warnings as errors.
+          python -m pip install . -v 2>&1 | tee build.log
+          grep -i "warning" build.log || true
 
       - name: Run pyscipopt tests
         run: |
