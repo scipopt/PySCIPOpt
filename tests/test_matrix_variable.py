@@ -16,7 +16,7 @@ def test_catching_errors():
     rhs = np.ones((2, 1))
 
     with pytest.raises(Exception):
-        m.addMatrixCons(x <= 1)
+        m.addMatrixCons(x)
 
     with pytest.raises(Exception):
         m.addCons(y <= 3)
