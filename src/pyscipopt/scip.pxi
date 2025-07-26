@@ -9006,17 +9006,13 @@ cdef class Model:
 
         Py_INCREF(iisfinder)
 
-    def includeIISfinderGreedy(self):
+    def generateIIS(self):
         """
-        Include the default greedy IIS finder.
-
-        Returns
-        -------
-        IISfinder
-            the greedy IIS finder
-
+        Generates an Irreducible Infeasible Subsystem (IIS) from the current
+        problem.
         """
-        PY_SCIP_CALL(SCIPincludeIISfinderGreedy(self._scip))
+
+        PY_SCIP_CALL(SCIPgenerateIIS(self._scip))
 
     def iisGreedyMakeIrreducible(self, IISfinder iisfinder):
        """
