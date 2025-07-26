@@ -1,6 +1,6 @@
 from pyscipopt import Model, Constraint
 
-def getLocalConss(model: Model, node = None) -> list[Constraint]:
+def getLocalConss(model: Model, node = None) -> list[list[Constraint]]:
     """
     Returns local constraints.
 
@@ -17,7 +17,7 @@ def getLocalConss(model: Model, node = None) -> list[Constraint]:
         A list of local constraints. First entry are global constraints, second entry are all the added constraints.
     """
 
-    if not node:
+    if node is None:
         assert model.getStageName() in ["INITPRESOLVE", "PRESOLVING", "EXITPRESOLVE", "SOLVING"], "Model cannot be called in stage %s." % model.getStageName()
         cur_node = model.getCurrentNode()
     else:
@@ -30,7 +30,7 @@ def getLocalConss(model: Model, node = None) -> list[Constraint]:
     
     return [model.getConss(), added_conss]
 
-def getNLocalConss(model: Model, node = None) -> list[int]:
+def getNLocalConss(model: Model, node = None) -> tuple[int,int]:
     """
     Returns the number of local constraints of a node.
 
