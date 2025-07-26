@@ -17,6 +17,7 @@
 - Fixed some compile warnings
 ### Changed
 - MatrixExpr.sum() now supports axis arguments and can return either a scalar or MatrixExpr depending on the result dimensions
+- AddMatrixCons supports accepting ExprCons following matrix dimension reduction via MatrixExpr.sum() or more operation.
 ### Removed
 
 ## 5.5.0 - 2025.05.06
