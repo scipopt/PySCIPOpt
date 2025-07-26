@@ -168,8 +168,10 @@ Build with Debug
 To use debug information in PySCIPOpt you need to build it with the following command:
 
 .. code-block::
-
-  python -m pip install --install-option="--debug" .
+  
+  export CFLAGS="-UNDEBUG"
+  export CXXFLAGS="-UNDEBUG"
+  python -m pip install .
 
 .. note:: Be aware that you will need the debug library of the SCIP Optimization Suite for this to work
   (cmake .. -DCMAKE_BUILD_TYPE=Debug).
