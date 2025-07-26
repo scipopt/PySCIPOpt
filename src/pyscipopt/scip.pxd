@@ -408,12 +408,6 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_PROPDATA:
         pass
 
-    ctypedef struct SCIP_PROPTIMING:
-        pass
-
-    ctypedef struct SCIP_PRESOLTIMING:
-        pass
-
     ctypedef struct SCIP_PRESOL:
         pass
 
@@ -454,9 +448,6 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_PRESOL:
-        pass
-
-    ctypedef struct SCIP_HEURTIMING:
         pass
 
     ctypedef struct SCIP_SEPA:
@@ -508,9 +499,6 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct BMS_BLKMEM:
-        pass
-
-    ctypedef struct SCIP_EXPR:
         pass
 
     ctypedef struct SCIP_EXPRHDLR:
@@ -707,7 +695,6 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetLocalTransEstimate(SCIP* scip)
 
     # Solve Methods
-    SCIP_RETCODE SCIPsolve(SCIP* scip)
     SCIP_RETCODE SCIPsolve(SCIP* scip) noexcept nogil
     SCIP_RETCODE SCIPsolveConcurrent(SCIP* scip)
     SCIP_RETCODE SCIPfreeTransform(SCIP* scip)

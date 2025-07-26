@@ -358,7 +358,7 @@ cdef class ExprCons:
     def __repr__(self):
         return 'ExprCons(%s, %s, %s)' % (self.expr, self._lhs, self._rhs)
 
-    def __nonzero__(self):
+    def __bool__(self):
         '''Make sure that equality of expressions is not asserted with =='''
 
         msg = """Can't evaluate constraints as booleans.

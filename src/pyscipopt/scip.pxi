@@ -7974,7 +7974,6 @@ cdef class Model:
 
         """
         raise Warning("model.getDualMultiplier(cons) is deprecated: please use model.getDualsolLinear(cons)")
-        return self.getDualsolLinear(cons)
 
     def getDualfarkasLinear(self, Constraint cons):
         """
