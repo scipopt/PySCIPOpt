@@ -58,7 +58,8 @@ cdef class LP:
         """Adds a single column to the LP.
 
         Keyword arguments:
-        entries -- list of tuples, each tuple consists of a row index and a coefficient
+        entries -- a list of tuples; if p is the index of the new column, then each tuple (i, k) indicates that
+        A[i][p] = k, where A is the constraint matrix and k is a nonzero entry.
         obj     -- objective coefficient (default 0.0)
         lb      -- lower bound (default 0.0)
         ub      -- upper bound (default infinity)
@@ -85,7 +86,8 @@ cdef class LP:
         """Adds multiple columns to the LP.
 
         Keyword arguments:
-        entrieslist -- list containing lists of tuples, each tuple contains a coefficient and a row index
+        entrieslist -- a list of lists, where the j-th inner list contains tuples (i, k) such that A[i][p] = k,
+        where A is the constraint matrix, p is the index of the j-th new column, and k is a nonzero entry.
         objs  -- objective coefficient (default 0.0)
         lbs   -- lower bounds (default 0.0)
         ubs   -- upper bounds (default infinity)
@@ -147,7 +149,8 @@ cdef class LP:
         """Adds a single row to the LP.
 
         Keyword arguments:
-        entries -- list of tuples, each tuple contains a coefficient and a column index
+        entries -- a list of tuples; if q is the index of the new row, then each tuple (j, k) indicates that
+        A[q][j] = k, where A is the constraint matrix and k is a nonzero entry.
         lhs     -- left-hand side of the row (default 0.0)
         rhs     -- right-hand side of the row (default infinity)
         """
@@ -172,7 +175,8 @@ cdef class LP:
         """Adds multiple rows to the LP.
 
         Keyword arguments:
-        entrieslist -- list containing lists of tuples, each tuple contains a coefficient and a column index
+        entrieslist -- a list of lists, where the i-th inner list contains tuples (j, k) such that A[q][j] = k,
+        where A is the constraint matrix, q is the index of the i-th new row, and k is a nonzero entry.
         lhss        -- left-hand side of the row (default 0.0)
         rhss        -- right-hand side of the row (default infinity)
         """
