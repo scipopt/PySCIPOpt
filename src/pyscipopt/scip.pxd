@@ -687,6 +687,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPwriteOrigProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
     SCIP_RETCODE SCIPwriteTransProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
     SCIP_RETCODE SCIPwriteLP(SCIP* scip, const char*)
+    SCIP_RETCODE SCIPwriteMIP(SCIP * scip, const char * filename, SCIP_Bool genericnames, SCIP_Bool origobj, SCIP_Bool lazyconss)
     SCIP_STATUS SCIPgetStatus(SCIP* scip)
     SCIP_Real SCIPepsilon(SCIP* scip)
     SCIP_Real SCIPfeastol(SCIP* scip)
