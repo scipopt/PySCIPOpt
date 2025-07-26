@@ -14,6 +14,7 @@
 - Generalized getLhs() and getRhs() to additionally support any linear type constraint
 ### Fixed
 - Raised an error when an expression is used when a variable is required
+- Fixed some compile warnings
 ### Changed
 - MatrixExpr.sum() now supports axis arguments and can return either a scalar or MatrixExpr depending on the result dimensions
 ### Removed
