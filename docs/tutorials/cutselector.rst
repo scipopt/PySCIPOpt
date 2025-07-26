@@ -33,7 +33,7 @@ A cut selector in PySCIPOpt takes the following structure:
         """
         :param cuts: the cuts which we want to select from. Is a list of scip Rows
         :param forcedcuts: the cuts which we must add. Is a list of scip Rows
-        :param root: boolean indicating whether weare at the root node
+        :param root: boolean indicating whether we are at the root node
         :param maxnselectedcuts: int which is the maximum amount of cuts that can be selected
         :return: sorted cuts and forcedcuts
         """
@@ -58,14 +58,14 @@ To include a cut selector one would need to do something like the following code
 
 The final argument of the ``includeCutsel`` function in the example above was the
 priority. If the priority is higher than all other cut selectors then it will be called
-first. In the case of some failure or non-success return code, then the second highest
+first. In the case of some failure or non-success return code, then the second-highest
 priority cut selector is called and so on.
 
 Example Cut Selector
 ======================
 
 In this example we will program a cut selector that selects the 10 most
-efficacious cuts. Efficacy is the standard measure for cut quality and can be calcuated
+efficacious cuts. Efficacy is the standard measure for cut quality and can be calculated
 via SCIP directly.
 
 .. code-block:: python
