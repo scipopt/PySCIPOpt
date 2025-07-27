@@ -408,12 +408,6 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_PROPDATA:
         pass
 
-    ctypedef struct SCIP_PROPTIMING:
-        pass
-
-    ctypedef struct SCIP_PRESOLTIMING:
-        pass
-
     ctypedef struct SCIP_PRESOL:
         pass
 
@@ -454,9 +448,6 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_PRESOL:
-        pass
-
-    ctypedef struct SCIP_HEURTIMING:
         pass
 
     ctypedef struct SCIP_SEPA:
@@ -508,9 +499,6 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct BMS_BLKMEM:
-        pass
-
-    ctypedef struct SCIP_EXPR:
         pass
 
     ctypedef struct SCIP_EXPRHDLR:
@@ -699,6 +687,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPwriteOrigProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
     SCIP_RETCODE SCIPwriteTransProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
     SCIP_RETCODE SCIPwriteLP(SCIP* scip, const char*)
+    SCIP_RETCODE SCIPwriteMIP(SCIP * scip, const char * filename, SCIP_Bool genericnames, SCIP_Bool origobj, SCIP_Bool lazyconss)
     SCIP_STATUS SCIPgetStatus(SCIP* scip)
     SCIP_Real SCIPepsilon(SCIP* scip)
     SCIP_Real SCIPfeastol(SCIP* scip)
@@ -707,7 +696,6 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetLocalTransEstimate(SCIP* scip)
 
     # Solve Methods
-    SCIP_RETCODE SCIPsolve(SCIP* scip)
     SCIP_RETCODE SCIPsolve(SCIP* scip) noexcept nogil
     SCIP_RETCODE SCIPsolveConcurrent(SCIP* scip)
     SCIP_RETCODE SCIPfreeTransform(SCIP* scip)

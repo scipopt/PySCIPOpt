@@ -7979,7 +7979,6 @@ cdef class Model:
 
         """
         raise Warning("model.getDualMultiplier(cons) is deprecated: please use model.getDualsolLinear(cons)")
-        return self.getDualsolLinear(cons)
 
     def getDualfarkasLinear(self, Constraint cons):
         """
@@ -9668,6 +9667,29 @@ cdef class Model:
 
         absfile = str_conversion(abspath(filename))
         PY_SCIP_CALL( SCIPwriteLP(self._scip, absfile) )
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
+    def writeMIP(self, filename, genericnames=False, origobj=False, lazyconss=False):
+        """
+        Writes MIP relaxation of the current branch-and-bound node to a file
+
+        Parameters
+        ----------
+        filename : str
+            name of the output file
+        genericnames : bool, optional
+            should generic names like x_i and row_j be used in order to avoid troubles with reserved symbols? (Default value = False)
+        origobj : bool, optional
+            should the original objective function be used (Default value = False)
+        lazyconss : bool, optional
+            output removable rows as lazy constraints? (Default value = False)
+        """
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        absfile = str_conversion(abspath(filename))
+        PY_SCIP_CALL(SCIPwriteMIP(self._scip, absfile, genericnames, origobj, lazyconss))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 

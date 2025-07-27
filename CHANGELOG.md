@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added recipe for getting local constraints
 - More support for AND-Constraints
 - Added support for knapsack constraints
 - Added isPositive(), isNegative(), isFeasLE(), isFeasLT(), isFeasGE(), isFeasGT(), isHugeValue(), and tests
@@ -13,6 +14,7 @@
 - Generalized getLhs() and getRhs() to additionally support any linear type constraint
 ### Fixed
 - Raised an error when an expression is used when a variable is required
+- Fixed some compile warnings
 ### Changed
 - MatrixExpr.sum() now supports axis arguments and can return either a scalar or MatrixExpr depending on the result dimensions
 - AddMatrixCons supports accepting ExprCons following matrix dimension reduction via MatrixExpr.sum() or more operation.
