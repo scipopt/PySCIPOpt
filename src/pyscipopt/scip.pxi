@@ -5752,7 +5752,7 @@ cdef class Model:
         Parameters
         ----------
         cons : ExprCons or MatrixExprCons
-            the matrix expression constraint or expression constraint following matrix dimension reduction
+            The matrix expression constraint or expression constraint
         name : str or np.ndarray, optional
             the name of the matrix constraint, generic name if empty (Default value = "")
         initial : bool or np.ndarray, optional
@@ -5780,10 +5780,10 @@ cdef class Model:
         Returns
         -------
         Constraint or MatrixConstraint
-            The created and added Constraint or MatrixConstraint object based on inputting.
+            The created and added Constraint or MatrixConstraint object based on the input.
         """
         assert isinstance(cons, (ExprCons, MatrixExprCons)), (
-            "given constraint is not ExprCons or MatrixExprCons but %s" % cons.__class__.__name__)
+            "given constraint is not MatrixExprCons nor ExprCons but %s" % cons.__class__.__name__)
 
         if isinstance(cons, ExprCons):
             return self.addCons(cons, name=name, initial=initial, separate=separate,
