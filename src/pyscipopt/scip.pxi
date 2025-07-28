@@ -1684,6 +1684,49 @@ cdef class Variable(Expr):
         """
         return SCIPvarGetAvgSol(self.scip_var)
 
+    def markRelaxationOnly(self):
+        """
+        marks that this variable has only been introduced to define a relaxation
+
+        The variable must not have a coefficient in the objective and must be deletable.
+        If it is not marked deletable, it will be marked as deletable, which is only possible before
+        the variable is added to a problem.
+
+        Returns
+        -------
+        None
+
+        """
+        SCIPvarMarkRelaxationOnly(self.scip_var)
+    
+    def isRelaxationOnly(self):
+        """
+        returns whether a variable has been introduced to define a relaxation
+
+        These variables are only valid for the current SCIP solve round, they are not contained in any (checked)
+        constraints, but may be used in cutting planes, for example. Relaxation-only variables are not copied 
+        by SCIPcopyVars and cuts that contain these variables are not added as linear constraints when 
+        restarting or transferring information from a copied SCIP to a SCIP. Also conflicts with relaxation-only
+        variables are not generated at the moment. Relaxation-only variables do not appear in the objective.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPvarIsRelaxationOnly(self.scip_var)
+    
+    def isDeletable(self):
+        """
+        Returns whether variable is allowed to be deleted completely from the problem.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPvarIsDeletable(self.scip_var)
+
     def getNLocksDown(self):
         """
         Returns the number of locks for rounding down.
@@ -2159,6 +2202,18 @@ cdef class Constraint:
         """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'knapsack'
+
+    def isLinearType(self):
+        """
+        Returns True if constraint can be represented as a linear constraint.
+
+        Returns
+        -------
+        bool
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
+        return constype in ('linear', 'knapsack', 'setppc', 'logicor', 'varbound')
 
     def isNonlinear(self):
         """
@@ -3752,7 +3807,7 @@ cdef class Model:
 
     # Variable Functions
 
-    def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0):
+    def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0, deletable=False):
         """
         Create a new variable. Default variable is non-negative and continuous.
 
@@ -3807,6 +3862,9 @@ cdef class Model:
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_IMPLINT))
         else:
             raise Warning("unrecognized variable type")
+
+        if deletable:
+            SCIPvarMarkDeletable(scip_var)
 
         if pricedVar:
             PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, pricedVarScore))
@@ -5980,7 +6038,11 @@ cdef class Model:
 
         SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success)
         _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
-        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, nvars*sizeof(SCIP_VAR*), &success)
+        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, nvars, &success)
+
+        if not success:
+            free(_vars)
+            return None
 
         vars = []
         for i in range(nvars):
@@ -5995,7 +6057,39 @@ cdef class Model:
                 self._modelvars[ptr] = var
                 vars.append(var)
 
+        free(_vars)
         return vars
+    
+    def getConsVals(self, Constraint constraint):
+        """
+        Returns the value array of an arbitrary SCIP constraint that can be represented as a single linear constraint.
+
+        Parameters
+        ----------
+        constraint : Constraint
+            Constraint to get the values from.
+
+        Returns
+        -------
+        list of float
+
+        """
+        cdef SCIP_Real* _vals
+        cdef int nvars
+        cdef SCIP_Bool success
+        cdef int i
+
+        nvars = self.getConsNVars(constraint)
+        _vals = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+        PY_SCIP_CALL(SCIPgetConsVals(self._scip, constraint.scip_cons, _vals, nvars, &success))
+
+        if not success:
+            free(_vals)
+            return None
+
+        vals = [_vals[i] for i in range(nvars)]
+        free(_vals)
+        return vals
 
     def getNVarsAnd(self, Constraint and_cons):
         """
@@ -6011,8 +6105,6 @@ cdef class Model:
         int
 
         """
-        cdef int nvars
-        cdef SCIP_Bool success
 
         return SCIPgetNVarsAnd(self._scip, and_cons.scip_cons)
 
@@ -6030,9 +6122,9 @@ cdef class Model:
         list of Variable
 
         """
+        
         cdef SCIP_VAR** _vars
         cdef int nvars
-        cdef SCIP_Bool success
         cdef int i
 
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(and_cons.scip_cons))).decode('UTF-8')
@@ -6070,8 +6162,8 @@ cdef class Model:
         Variable
 
         """
+        
         cdef SCIP_VAR* _resultant
-        cdef SCIP_Bool success
 
         _resultant = SCIPgetResultantAnd(self._scip, and_cons.scip_cons)
 
@@ -6101,8 +6193,7 @@ cdef class Model:
         bool
 
         """
-        cdef SCIP_Bool success
-
+        
         return SCIPisAndConsSorted(self._scip, and_cons.scip_cons)
 
     def sortAndCons(self, Constraint and_cons):
@@ -6115,7 +6206,6 @@ cdef class Model:
             Constraint to sort.
 
         """
-        cdef SCIP_Bool success
 
         PY_SCIP_CALL(SCIPsortAndCons(self._scip, and_cons.scip_cons))
     
@@ -6816,6 +6906,169 @@ cdef class Model:
 
         return pyCons
 
+
+    def addMatrixConsIndicator(self, cons: MatrixExprCons, binvar: Union[Variable, MatrixVariable] = None,
+                               activeone: Union[bool, np.ndarray] = True, name: Union[str, np.ndarray] = "",
+                               initial: Union[bool, np.ndarray] = True, separate: Union[bool, np.ndarray] = True,
+                               enforce: Union[bool, np.ndarray] = True, check: Union[bool, np.ndarray] = True,
+                               propagate: Union[bool, np.ndarray] = True, local: Union[bool, np.ndarray] = False,
+                               dynamic: Union[bool, np.ndarray] = False, removable: Union[bool, np.ndarray] = False,
+                               stickingatnode: Union[bool, np.ndarray] = False) -> MatrixConstraint:
+        """Add an indicator matrix constraint for the linear inequality `cons`.
+
+        The `binvar` argument models the redundancy of the linear constraint. A solution
+        for which `binvar` is 1 must satisfy the constraint.
+
+        Parameters
+        ----------
+        cons : MatrixExprCons
+            a linear inequality of the form "<=".
+        binvar : Variable or MatrixVariable, optional
+            binary indicator variable / matrix variable, or None if it should be created. (Default value = None)
+        activeone : bool or np.ndarray, optional
+            the matrix constraint should be active if binvar is 1 (0 if activeone = False).
+        name : str or np.ndarray, optional
+            name of the matrix constraint.  (Default value = "")
+        initial : bool or np.ndarray, optional
+            should the LP relaxation of matrix constraint be in the initial LP?  (Default value = True)
+        separate : bool or np.ndarray, optional
+            should the matrix constraint be separated during LP processing?  (Default value = True)
+        enforce : bool or np.ndarray, optional
+            should the matrix constraint be enforced during node processing?  (Default value = True)
+        check : bool or np.ndarray, optional
+            should the matrix constraint be checked for feasibility?  (Default value = True)
+        propagate : bool or np.ndarray, optional
+            should the matrix constraint be propagated during node processing? (Default value = True)
+        local : bool or np.ndarray, optional
+            is the matrix constraint only valid locally? (Default value = False)
+        dynamic : bool or np.ndarray, optional
+            is the matrix constraint subject to aging? (Default value = False)
+        removable : bool or np.ndarray, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool or np.ndarray, optional
+            should the matrix constraint always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        MatrixConstraint
+            The newly created Indicator MatrixConstraint object.
+        """
+
+        assert isinstance(cons, MatrixExprCons), (
+            f"given constraint is not MatrixExprCons but {cons.__class__.__name__}"
+        )
+
+        shape = cons.shape
+
+        if isinstance(binvar, MatrixVariable):
+            assert binvar.shape == shape
+        if isinstance(activeone, np.ndarray):
+            assert activeone.shape == shape
+        if isinstance(name, np.ndarray):
+            assert name.shape == shape
+        if isinstance(initial, np.ndarray):
+            assert initial.shape == shape
+        if isinstance(separate, np.ndarray):
+            assert separate.shape == shape
+        if isinstance(enforce, np.ndarray):
+            assert enforce.shape == shape
+        if isinstance(check, np.ndarray):
+            assert check.shape == shape
+        if isinstance(propagate, np.ndarray):
+            assert propagate.shape == shape
+        if isinstance(local, np.ndarray):
+            assert local.shape == shape
+        if isinstance(dynamic, np.ndarray):
+            assert dynamic.shape == shape
+        if isinstance(removable, np.ndarray):
+            assert removable.shape == shape
+        if isinstance(stickingatnode, np.ndarray):
+            assert stickingatnode.shape == shape
+
+        if not isinstance(binvar, MatrixVariable):
+            matrix_binvar = np.full(shape, binvar, dtype=Variable)
+        else:
+            matrix_binvar = binvar
+
+        if not isinstance(activeone, np.ndarray):
+            matrix_activeone = np.full(shape, activeone, dtype=bool)
+        else:
+            matrix_activeone = activeone
+
+        if isinstance(name, str):
+            matrix_names = np.full(shape, name, dtype=object)
+            if name != "":
+                for idx in np.ndindex(shape):
+                    matrix_names[idx] = f"{name}_{'_'.join(map(str, idx))}"
+        else:
+            matrix_names = name
+
+        if not isinstance(initial, np.ndarray):
+            matrix_initial = np.full(shape, initial, dtype=bool)
+        else:
+            matrix_initial = initial
+
+        if not isinstance(enforce, np.ndarray):
+            matrix_enforce = np.full(shape, enforce, dtype=bool)
+        else:
+            matrix_enforce = enforce
+
+        if not isinstance(separate, np.ndarray):
+            matrix_separate = np.full(shape, separate, dtype=bool)
+        else:
+            matrix_separate = separate
+
+        if not isinstance(check, np.ndarray):
+            matrix_check = np.full(shape, check, dtype=bool)
+        else:
+            matrix_check = check
+
+        if not isinstance(propagate, np.ndarray):
+            matrix_propagate = np.full(shape, propagate, dtype=bool)
+        else:
+            matrix_propagate = propagate
+
+        if not isinstance(local, np.ndarray):
+            matrix_local = np.full(shape, local, dtype=bool)
+        else:
+            matrix_local = local
+
+        if not isinstance(dynamic, np.ndarray):
+            matrix_dynamic = np.full(shape, dynamic, dtype=bool)
+        else:
+            matrix_dynamic = dynamic
+
+        if not isinstance(removable, np.ndarray):
+            matrix_removable = np.full(shape, removable, dtype=bool)
+        else:
+            matrix_removable = removable
+
+        if not isinstance(stickingatnode, np.ndarray):
+            matrix_stickingatnode = np.full(shape, stickingatnode, dtype=bool)
+        else:
+            matrix_stickingatnode = stickingatnode
+
+        matrix_cons = np.empty(shape, dtype=object)
+        for idx in np.ndindex(shape):
+            matrix_cons[idx] = self.addConsIndicator(
+                cons[idx],
+                binvar=matrix_binvar[idx],
+                activeone=matrix_activeone[idx],
+                name=matrix_names[idx],
+                initial=matrix_initial[idx],
+                separate=matrix_separate[idx],
+                enforce=matrix_enforce[idx],
+                check=matrix_check[idx],
+                propagate=matrix_propagate[idx],
+                local=matrix_local[idx],
+                dynamic=matrix_dynamic[idx],
+                removable=matrix_removable[idx],
+                stickingatnode=matrix_stickingatnode[idx],
+            )
+
+        return matrix_cons.view(MatrixConstraint)
+
     def getLinearConsIndicator(self, Constraint cons):
         """
         Get the linear constraint corresponding to the indicator constraint.
@@ -7068,9 +7321,13 @@ cdef class Model:
         float
 
         """
+        cdef SCIP_Bool success
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
-        if constype == 'linear':
-            return SCIPgetRhsLinear(self._scip, cons.scip_cons)
+
+        if cons.isLinearType():
+            rhs = SCIPconsGetRhs(self._scip, cons.scip_cons, &success)
+            assert(success)
+            return rhs
         elif constype == 'nonlinear':
             return SCIPgetRhsNonlinear(cons.scip_cons)
         else:
@@ -7109,9 +7366,13 @@ cdef class Model:
         float
 
         """
+        cdef SCIP_Bool success
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
-        if constype == 'linear':
-            return SCIPgetLhsLinear(self._scip, cons.scip_cons)
+
+        if cons.isLinearType():
+            lhs = SCIPconsGetLhs(self._scip, cons.scip_cons, &success)
+            assert(success)
+            return lhs
         elif constype == 'nonlinear':
             return SCIPgetLhsNonlinear(cons.scip_cons)
         else:
@@ -7738,7 +7999,6 @@ cdef class Model:
 
         """
         raise Warning("model.getDualMultiplier(cons) is deprecated: please use model.getDualsolLinear(cons)")
-        return self.getDualsolLinear(cons)
 
     def getDualfarkasLinear(self, Constraint cons):
         """
@@ -8922,6 +9182,18 @@ cdef class Model:
         return ([Variable.create(lpcands[i]) for i in range(nlpcands)], [lpcandssol[i] for i in range(nlpcands)],
                 [lpcandsfrac[i] for i in range(nlpcands)], nlpcands, npriolpcands, nfracimplvars)
 
+    def getNLPBranchCands(self):
+        """
+        Gets number of branching candidates for LP solution branching (number of fractional variables)
+
+ 	Returns
+  	-------
+   	int
+    	    number of LP branching candidates
+
+        """
+        return SCIPgetNLPBranchCands(self._scip)
+
     def getPseudoBranchCands(self):
         """
         Gets branching candidates for pseudo solution branching (non-fixed variables)
@@ -9415,6 +9687,29 @@ cdef class Model:
 
         absfile = str_conversion(abspath(filename))
         PY_SCIP_CALL( SCIPwriteLP(self._scip, absfile) )
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
+    def writeMIP(self, filename, genericnames=False, origobj=False, lazyconss=False):
+        """
+        Writes MIP relaxation of the current branch-and-bound node to a file
+
+        Parameters
+        ----------
+        filename : str
+            name of the output file
+        genericnames : bool, optional
+            should generic names like x_i and row_j be used in order to avoid troubles with reserved symbols? (Default value = False)
+        origobj : bool, optional
+            should the original objective function be used (Default value = False)
+        lazyconss : bool, optional
+            output removable rows as lazy constraints? (Default value = False)
+        """
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        absfile = str_conversion(abspath(filename))
+        PY_SCIP_CALL(SCIPwriteMIP(self._scip, absfile, genericnames, origobj, lazyconss))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 

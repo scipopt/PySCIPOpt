@@ -17,8 +17,13 @@ def _is_number(e):
 
 class MatrixExpr(np.ndarray):
     def sum(self, **kwargs):
-        return super().sum(**kwargs).item()
-    
+        """
+        Based on `numpy.ndarray.sum`, but returns a scalar if the result is a single value.
+        This is useful for matrix expressions where the sum might reduce to a single value.
+        """
+        res = super().sum(**kwargs)
+        return res if res.size > 1 else res.item()
+
     def __le__(self, other: Union[float, int, Variable, np.ndarray, 'MatrixExpr']) -> np.ndarray:
         
         expr_cons_matrix = np.empty(self.shape, dtype=object)

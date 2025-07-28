@@ -408,12 +408,6 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_PROPDATA:
         pass
 
-    ctypedef struct SCIP_PROPTIMING:
-        pass
-
-    ctypedef struct SCIP_PRESOLTIMING:
-        pass
-
     ctypedef struct SCIP_PRESOL:
         pass
 
@@ -454,9 +448,6 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct SCIP_PRESOL:
-        pass
-
-    ctypedef struct SCIP_HEURTIMING:
         pass
 
     ctypedef struct SCIP_SEPA:
@@ -508,9 +499,6 @@ cdef extern from "scip/scip.h":
         pass
 
     ctypedef struct BMS_BLKMEM:
-        pass
-
-    ctypedef struct SCIP_EXPR:
         pass
 
     ctypedef struct SCIP_EXPRHDLR:
@@ -699,6 +687,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPwriteOrigProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
     SCIP_RETCODE SCIPwriteTransProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
     SCIP_RETCODE SCIPwriteLP(SCIP* scip, const char*)
+    SCIP_RETCODE SCIPwriteMIP(SCIP * scip, const char * filename, SCIP_Bool genericnames, SCIP_Bool origobj, SCIP_Bool lazyconss)
     SCIP_STATUS SCIPgetStatus(SCIP* scip)
     SCIP_Real SCIPepsilon(SCIP* scip)
     SCIP_Real SCIPfeastol(SCIP* scip)
@@ -707,7 +696,6 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetLocalTransEstimate(SCIP* scip)
 
     # Solve Methods
-    SCIP_RETCODE SCIPsolve(SCIP* scip)
     SCIP_RETCODE SCIPsolve(SCIP* scip) noexcept nogil
     SCIP_RETCODE SCIPsolveConcurrent(SCIP* scip)
     SCIP_RETCODE SCIPfreeTransform(SCIP* scip)
@@ -817,6 +805,10 @@ cdef extern from "scip/scip.h":
     void SCIPvarSetData(SCIP_VAR* var, SCIP_VARDATA* vardata)
     SCIP_VARDATA* SCIPvarGetData(SCIP_VAR* var)
     SCIP_Real SCIPvarGetAvgSol(SCIP_VAR* var)
+    void SCIPvarMarkRelaxationOnly(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsRelaxationOnly(SCIP_VAR* var)
+    void SCIPvarMarkDeletable(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsDeletable(SCIP_VAR* var)
     SCIP_Real SCIPgetVarPseudocost(SCIP* scip, SCIP_VAR* var, SCIP_BRANCHDIR dir)
     SCIP_Real SCIPvarGetCutoffSum(SCIP_VAR* var, SCIP_BRANCHDIR dir)
     SCIP_Longint SCIPvarGetNBranchings(SCIP_VAR* var, SCIP_BRANCHDIR dir)
@@ -854,6 +846,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPtransformCons(SCIP* scip, SCIP_CONS* cons, SCIP_CONS** transcons)
     SCIP_RETCODE SCIPgetTransformedCons(SCIP* scip, SCIP_CONS* cons, SCIP_CONS** transcons)
     SCIP_RETCODE SCIPgetConsVars(SCIP* scip, SCIP_CONS* cons, SCIP_VAR** vars, int varssize, SCIP_Bool* success)
+    SCIP_RETCODE SCIPgetConsVals(SCIP* scip, SCIP_CONS* cons, SCIP_Real* vals, int valssize, SCIP_Bool* success)
     SCIP_RETCODE SCIPgetConsNVars(SCIP* scip, SCIP_CONS* cons, int* nvars, SCIP_Bool* success)
     SCIP_CONS** SCIPgetConss(SCIP* scip)
     const char* SCIPconsGetName(SCIP_CONS* cons)
@@ -1475,6 +1468,8 @@ cdef extern from "scip/cons_linear.h":
     SCIP_RETCODE SCIPchgRhsLinear(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
     SCIP_Real SCIPgetLhsLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real SCIPgetRhsLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Real SCIPconsGetLhs(SCIP* scip, SCIP_CONS* cons, SCIP_Bool* success)
+    SCIP_Real SCIPconsGetRhs(SCIP* scip, SCIP_CONS* cons, SCIP_Bool* success)
     SCIP_RETCODE SCIPchgCoefLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR* var, SCIP_Real newval)
     SCIP_RETCODE SCIPdelCoefLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR*)
     SCIP_RETCODE SCIPaddCoefLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR*, SCIP_Real val)
