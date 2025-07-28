@@ -27,6 +27,23 @@ def test_getConsVars():
     c = m.addCons(quicksum(x[i] for i in x) <= 1)
     assert m.getConsVars(c) == [x[i] for i in x]
 
+def test_getConsVals():
+    n_vars = 100
+    m = Model()
+    x = {}
+    for i in range(n_vars):
+        x[i] = m.addVar("%i" % i, vtype="B")
+
+    c1 = m.addCons(quicksum(x[i] for i in x) <= 1)
+    c2 = m.addConsKnapsack([x[i] for i in x], [i for i in range(1, n_vars+1)], 10)
+    vals1 = m.getConsVals(c1)
+    vals2 = m.getConsVals(c2)
+
+    assert len(vals1) == n_vars
+    assert all(isinstance(v, float) for v in vals1)
+    assert len(vals2) == n_vars
+    assert all(isinstance(v, float) for v in vals2)
+    assert m.getConsVals(c2) == [i for i in range(1, n_vars+1)]
 
 def test_constraint_option_setting():
     m = Model()
@@ -266,6 +283,8 @@ def test_cons_knapsack():
     m.chgCapacityKnapsack(knapsack_cons, 5)
 
     assert m.getCapacityKnapsack(knapsack_cons) == 5
+    assert m.getRhs(knapsack_cons) == 5
+    assert m.getLhs(knapsack_cons) == -m.infinity()
 
     m.addCoefKnapsack(knapsack_cons, z, 3)
     weights = m.getWeightsKnapsack(knapsack_cons)

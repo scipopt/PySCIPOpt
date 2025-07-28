@@ -1708,6 +1708,17 @@ cdef class Variable(Expr):
 
         """
         return SCIPvarIsRelaxationOnly(self.scip_var)
+    
+    def isDeletable(self):
+        """
+        Returns whether variable is allowed to be deleted completely from the problem.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPvarIsDeletable(self.scip_var)
 
     def getNLocksDown(self):
         """
@@ -2184,6 +2195,18 @@ cdef class Constraint:
         """
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'knapsack'
+
+    def isLinearType(self):
+        """
+        Returns True if constraint can be represented as a linear constraint.
+
+        Returns
+        -------
+        bool
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
+        return constype in ('linear', 'knapsack', 'setppc', 'logicor', 'varbound')
 
     def isNonlinear(self):
         """
@@ -3777,7 +3800,7 @@ cdef class Model:
 
     # Variable Functions
 
-    def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0):
+    def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0, deletable=False):
         """
         Create a new variable. Default variable is non-negative and continuous.
 
@@ -3832,6 +3855,9 @@ cdef class Model:
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_IMPLINT))
         else:
             raise Warning("unrecognized variable type")
+
+        if deletable:
+            SCIPvarMarkDeletable(scip_var)
 
         if pricedVar:
             PY_SCIP_CALL(SCIPaddPricedVar(self._scip, scip_var, pricedVarScore))
@@ -6005,7 +6031,11 @@ cdef class Model:
 
         SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success)
         _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
-        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, nvars*sizeof(SCIP_VAR*), &success)
+        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, nvars, &success)
+
+        if not success:
+            free(_vars)
+            return None
 
         vars = []
         for i in range(nvars):
@@ -6020,7 +6050,39 @@ cdef class Model:
                 self._modelvars[ptr] = var
                 vars.append(var)
 
+        free(_vars)
         return vars
+    
+    def getConsVals(self, Constraint constraint):
+        """
+        Returns the value array of an arbitrary SCIP constraint that can be represented as a single linear constraint.
+
+        Parameters
+        ----------
+        constraint : Constraint
+            Constraint to get the values from.
+
+        Returns
+        -------
+        list of float
+
+        """
+        cdef SCIP_Real* _vals
+        cdef int nvars
+        cdef SCIP_Bool success
+        cdef int i
+
+        nvars = self.getConsNVars(constraint)
+        _vals = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+        PY_SCIP_CALL(SCIPgetConsVals(self._scip, constraint.scip_cons, _vals, nvars, &success))
+
+        if not success:
+            free(_vals)
+            return None
+
+        vals = [_vals[i] for i in range(nvars)]
+        free(_vals)
+        return vals
 
     def getNVarsAnd(self, Constraint and_cons):
         """
@@ -6036,8 +6098,6 @@ cdef class Model:
         int
 
         """
-        cdef int nvars
-        cdef SCIP_Bool success
 
         return SCIPgetNVarsAnd(self._scip, and_cons.scip_cons)
 
@@ -6055,9 +6115,9 @@ cdef class Model:
         list of Variable
 
         """
+        
         cdef SCIP_VAR** _vars
         cdef int nvars
-        cdef SCIP_Bool success
         cdef int i
 
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(and_cons.scip_cons))).decode('UTF-8')
@@ -6095,8 +6155,8 @@ cdef class Model:
         Variable
 
         """
+        
         cdef SCIP_VAR* _resultant
-        cdef SCIP_Bool success
 
         _resultant = SCIPgetResultantAnd(self._scip, and_cons.scip_cons)
 
@@ -6126,8 +6186,7 @@ cdef class Model:
         bool
 
         """
-        cdef SCIP_Bool success
-
+        
         return SCIPisAndConsSorted(self._scip, and_cons.scip_cons)
 
     def sortAndCons(self, Constraint and_cons):
@@ -6140,7 +6199,6 @@ cdef class Model:
             Constraint to sort.
 
         """
-        cdef SCIP_Bool success
 
         PY_SCIP_CALL(SCIPsortAndCons(self._scip, and_cons.scip_cons))
     
@@ -7256,9 +7314,13 @@ cdef class Model:
         float
 
         """
+        cdef SCIP_Bool success
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
-        if constype == 'linear':
-            return SCIPgetRhsLinear(self._scip, cons.scip_cons)
+
+        if cons.isLinearType():
+            rhs = SCIPconsGetRhs(self._scip, cons.scip_cons, &success)
+            assert(success)
+            return rhs
         elif constype == 'nonlinear':
             return SCIPgetRhsNonlinear(cons.scip_cons)
         else:
@@ -7297,9 +7359,13 @@ cdef class Model:
         float
 
         """
+        cdef SCIP_Bool success
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
-        if constype == 'linear':
-            return SCIPgetLhsLinear(self._scip, cons.scip_cons)
+
+        if cons.isLinearType():
+            lhs = SCIPconsGetLhs(self._scip, cons.scip_cons, &success)
+            assert(success)
+            return lhs
         elif constype == 'nonlinear':
             return SCIPgetLhsNonlinear(cons.scip_cons)
         else:
@@ -7908,7 +7974,6 @@ cdef class Model:
 
         """
         raise Warning("model.getDualMultiplier(cons) is deprecated: please use model.getDualsolLinear(cons)")
-        return self.getDualsolLinear(cons)
 
     def getDualfarkasLinear(self, Constraint cons):
         """
@@ -9092,6 +9157,18 @@ cdef class Model:
         return ([Variable.create(lpcands[i]) for i in range(nlpcands)], [lpcandssol[i] for i in range(nlpcands)],
                 [lpcandsfrac[i] for i in range(nlpcands)], nlpcands, npriolpcands, nfracimplvars)
 
+    def getNLPBranchCands(self):
+        """
+        Gets number of branching candidates for LP solution branching (number of fractional variables)
+
+ 	Returns
+  	-------
+   	int
+    	    number of LP branching candidates
+
+        """
+        return SCIPgetNLPBranchCands(self._scip)
+
     def getPseudoBranchCands(self):
         """
         Gets branching candidates for pseudo solution branching (non-fixed variables)
@@ -9585,6 +9662,29 @@ cdef class Model:
 
         absfile = str_conversion(abspath(filename))
         PY_SCIP_CALL( SCIPwriteLP(self._scip, absfile) )
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
+    def writeMIP(self, filename, genericnames=False, origobj=False, lazyconss=False):
+        """
+        Writes MIP relaxation of the current branch-and-bound node to a file
+
+        Parameters
+        ----------
+        filename : str
+            name of the output file
+        genericnames : bool, optional
+            should generic names like x_i and row_j be used in order to avoid troubles with reserved symbols? (Default value = False)
+        origobj : bool, optional
+            should the original objective function be used (Default value = False)
+        lazyconss : bool, optional
+            output removable rows as lazy constraints? (Default value = False)
+        """
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        absfile = str_conversion(abspath(filename))
+        PY_SCIP_CALL(SCIPwriteMIP(self._scip, absfile, genericnames, origobj, lazyconss))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
