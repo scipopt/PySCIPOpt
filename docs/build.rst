@@ -168,7 +168,6 @@ Build with Debug
 To use debug information in PySCIPOpt you need to build it with the following command:
 
 .. code-block::
-
   export PYSCIPOPT_DEBUG=True
   python -m pip install .
 
