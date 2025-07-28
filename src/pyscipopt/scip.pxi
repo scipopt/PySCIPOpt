@@ -58,11 +58,13 @@ _SCIP_BOUNDTYPE_TO_STRING = {SCIP_BOUNDTYPE_UPPER: '<=',
 
 cdef extern from "scip/config.h":
     """
-    #ifndef WITH_DEBUG_SOLUTION
-    #define WITH_DEBUG_SOLUTION 0
+    #ifdef WITH_DEBUG_SOLUTION
+    #define PYSCIPOPT_WITH_DEBUG_SOLUTION 1
+    #else
+    #define PYSCIPOPT_WITH_DEBUG_SOLUTION 0
     #endif
     """
-    bint WITH_DEBUG_SOLUTION
+    bint PYSCIPOPT_WITH_DEBUG_SOLUTION
 
 # Mapping the SCIP_RESULT enum to a python class
 # This is required to return SCIP_RESULT in the python code
@@ -7506,7 +7508,7 @@ cdef class Model:
         a debug solution during the solution process of SCIP. It must be explicitly
         enabled for the SCIP data structure.
         """
-        if not WITH_DEBUG_SOLUTION:
+        if not PYSCIPOPT_WITH_DEBUG_SOLUTION:
             raise RuntimeError("SCIP must be built with `DEBUGSOL=true` to enable the debug solution mechanism.")
         SCIPenableDebugSol(self._scip)
     
@@ -7514,7 +7516,7 @@ cdef class Model:
         """
         Disables the debug solution mechanism.
         """
-        if not WITH_DEBUG_SOLUTION:
+        if not PYSCIPOPT_WITH_DEBUG_SOLUTION:
             raise RuntimeError("SCIP must be built with `DEBUGSOL=true` to disable the debug solution mechanism.")
         SCIPdisableDebugSol(self._scip)
 
