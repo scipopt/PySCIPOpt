@@ -4430,6 +4430,40 @@ cdef class Model:
             var_dict[var.name] = self.getVal(var)
         return var_dict
 
+    def getVarPseudocostScore(self, Variable var, solVal):
+        """
+        gets the variable's pseudo cost score value for the given LP solution value
+
+        Parameters
+        ----------
+        variable : Variable
+            problem variable
+        solVal : float
+            difference of variable's new LP value - old LP value
+
+        Returns
+        -------
+        float
+        """
+        return SCIPgetVarPseudocostScore(self._scip, var.scip_var, solVal)
+
+    def getVarPseudocost(self, Variable var, branchdir):
+        """
+        gets the variable's pseudo cost value for the given direction
+
+        Parameters
+        ----------
+        variable : Variable
+            problem variable
+        branchdir : PY_SCIP_BRANCHDIR
+            branching direction (downwards, or upwards)
+
+        Returns
+        -------
+        float
+        """
+        return SCIPgetVarPseudocost(self._scip, var.scip_var, branchdir)
+
     def updateNodeLowerbound(self, Node node, lb):
         """
         If given value is larger than the node's lower bound (in transformed problem),
