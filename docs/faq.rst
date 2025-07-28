@@ -60,6 +60,6 @@ is not automatically deleted, and thus stops a new optimization call.
 Why can I not add a non-linear objective?
 =========================================
 
-SCIP does not support non-linear objectives, however, an equivalent optimization
+SCIP does not support non-linear objectives. However, an equivalent optimization
 problem can easily be constructed by introducing a single new variable and a constraint.
 Please see :doc:`this page <tutorials/expressions>` for a guide.

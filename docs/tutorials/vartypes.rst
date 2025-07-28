@@ -14,7 +14,7 @@ For the following let us assume that a Model object is available, which is creat
 
   scip = Model()
 
-.. note:: In general you want to keep track of your variable objects.
+.. note:: In general, you want to keep track of your variable objects.
   They can always be obtained from the model after they are added, but then
   the responsibility falls to the user to match them, e.g. by name or constraints
   they feature in.
@@ -178,7 +178,7 @@ We can easily check this.
       print("Variable is not in LP!")
 
 When you solve an optimization problem with SCIP, the problem is first transformed. This process is
-called presolve, and is done to accelerate the subsequent solving process. Therefore a variable
+called presolve, and is done to accelerate the subsequent solving process. Therefore, a variable
 that was originally created may have been transformed to another variable, or may have just been removed
 from the transformed problem entirely. The variable may also not exist because you
 are currently doing some pricing, and the LP only contains a subset of the variables. The summary is:
@@ -230,4 +230,4 @@ in the solution values of the transformed variables at the end of the solving pr
 in the solution values of the original variables. This is because they can be interpreted easily as they
 belong to some user defined formulation.
 
-.. note:: By default SCIP places a ``t_`` in front of all transformed variable names.
+.. note:: By default, SCIP places a ``t_`` in front of all transformed variable names.

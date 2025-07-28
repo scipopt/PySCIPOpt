@@ -100,6 +100,15 @@ For Linux and MacOS systems set the variable with the following command:
 
   export SCIPOPTDIR=<path_to_install_dir>
 
+.. note::
+
+  For macOS users, to ensure that the SCIP dynamic library can be found at runtime by PySCIPOpt,
+  you should add your SCIP installation path to the ``DYLD_LIBRARY_PATH`` environment variable by running:
+
+  .. code-block::
+
+    export DYLD_LIBRARY_PATH="<path_to_install_dir>/lib:$DYLD_LIBRARY_PATH"
+
 For Windows use the following command:
 
 .. code-block:: bash
@@ -159,8 +168,10 @@ Build with Debug
 To use debug information in PySCIPOpt you need to build it with the following command:
 
 .. code-block::
-
-  python -m pip install --install-option="--debug" .
+  
+  export CFLAGS="-UNDEBUG"
+  export CXXFLAGS="-UNDEBUG"
+  python -m pip install .
 
 .. note:: Be aware that you will need the debug library of the SCIP Optimization Suite for this to work
   (cmake .. -DCMAKE_BUILD_TYPE=Debug).

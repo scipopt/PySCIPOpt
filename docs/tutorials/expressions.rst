@@ -24,7 +24,7 @@ Non-Linear Objectives
 ======================
 
 While SCIP supports general non-linearities, it only supports linear objective functions.
-With some basic reformulation this is not a restriction however. Let's consider the general
+With some basic reformulation this is not a restriction, however. Let's consider the general
 optimization problem:
 
 .. math::
@@ -118,7 +118,7 @@ Absolute (Abs)
 ===============
 
 Absolute values of expressions is supported by overloading how ``__abs__`` function of
-SCIP expression objects. Therefore one does not need to import any functions.
+SCIP expression objects. Therefore, one does not need to import any functions.
 Let's see an example for constructing the following constraint:
 
 .. math::

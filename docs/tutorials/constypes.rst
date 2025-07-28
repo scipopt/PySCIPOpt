@@ -134,7 +134,7 @@ constraint, you'd use the code:
 
 SCIP also allows the creation of custom constraint handlers. These could be empty and just
 there to record data, there to provide custom handling of some user defined function, or they could be there to
-enforce a constraint that is  incredibly inefficient to enforce via linear constraints.
+enforce a constraint that is incredibly inefficient to enforce via linear constraints.
 An example of such a constraint handler
 is presented in the lazy constraint tutorial for modelling the subtour elimination
 constraints :doc:`here </tutorials/lazycons>`
@@ -146,8 +146,8 @@ In a similar fashion to Variables with columns, see :doc:`this page </tutorials/
 constraints bring up an interesting feature of SCIP when used in the context of an LP.
 The context of an LP here means that we are after the LP relaxation of the optimization problem
 at some node. Is the constraint even in the LP?
-When you solve an optimization problm with SCIP, the problem is first transformed. This process is
-called presolve, and is done to accelerate the subsequent solving process. Therefore a constraint
+When you solve an optimization problem with SCIP, the problem is first transformed. This process is
+called presolve, and is done to accelerate the subsequent solving process. Therefore, a constraint
 that was originally created may have been transformed entirely, as the original variables that
 featured in the constraint have also been changed. Additionally, maybe the constraint was found to be redundant,
 i.e., trivially true, and was removed. The constraint is also much more general

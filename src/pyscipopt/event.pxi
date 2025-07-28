@@ -39,7 +39,7 @@ cdef class Eventhdlr:
 
 
 # local helper functions for the interface
-cdef Eventhdlr getPyEventhdlr(SCIP_EVENTHDLR* eventhdlr) noexcept with gil:
+cdef Eventhdlr getPyEventhdlr(SCIP_EVENTHDLR* eventhdlr):
     cdef SCIP_EVENTHDLRDATA* eventhdlrdata
     eventhdlrdata = SCIPeventhdlrGetData(eventhdlr)
     return <Eventhdlr>eventhdlrdata

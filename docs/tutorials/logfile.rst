@@ -226,7 +226,7 @@ how much memory is being used, and predicted amount of the tree search completed
 It should be mentioned that in the log file above there is a pause in between the branch-and-bound
 output and SCIP provides more presolve information. This is due to SCIP identifying that
 it is beneficial to start the branch-and-bound tree again but this time applying information
-it has learnt to the beginning of the search process. In the example above this is explained by the lines:
+it has learned to the beginning of the search process. In the example above this is explained by the lines:
 
 .. code-block:: RST
 
@@ -248,7 +248,7 @@ and finally the gap (the relative difference between the primal and dual bound).
 How to Redirect SCIP Output
 ===========================
 
-If you do not want this information output to your terminal than before calling ``optimize`` one can
+If you do not want this information output to your terminal, then before calling ``optimize`` one can
 call the following function:
 
 .. code-block:: python

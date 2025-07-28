@@ -27,6 +27,23 @@ def test_getConsVars():
     c = m.addCons(quicksum(x[i] for i in x) <= 1)
     assert m.getConsVars(c) == [x[i] for i in x]
 
+def test_getConsVals():
+    n_vars = 100
+    m = Model()
+    x = {}
+    for i in range(n_vars):
+        x[i] = m.addVar("%i" % i, vtype="B")
+
+    c1 = m.addCons(quicksum(x[i] for i in x) <= 1)
+    c2 = m.addConsKnapsack([x[i] for i in x], [i for i in range(1, n_vars+1)], 10)
+    vals1 = m.getConsVals(c1)
+    vals2 = m.getConsVals(c2)
+
+    assert len(vals1) == n_vars
+    assert all(isinstance(v, float) for v in vals1)
+    assert len(vals2) == n_vars
+    assert all(isinstance(v, float) for v in vals2)
+    assert m.getConsVals(c2) == [i for i in range(1, n_vars+1)]
 
 def test_constraint_option_setting():
     m = Model()
@@ -71,6 +88,40 @@ def test_cons_logical():
 
     assert m.isEQ(m.getVal(result1), 1)
     assert m.isEQ(m.getVal(result2), 0)
+
+def test_cons_and():
+    m = Model()
+    x1 = m.addVar(vtype="B")
+    x2 = m.addVar(vtype="B")
+    result = m.addVar(vtype="B")
+
+    and_cons = m.addConsAnd([x1, x2], result)
+
+    assert m.getNVarsAnd(and_cons) == 2
+    assert m.getVarsAnd(and_cons) == [x1, x2]
+    resultant_var = m.getResultantAnd(and_cons)
+    assert resultant_var is result
+    m.optimize()
+
+    m.sortAndCons(and_cons)
+    assert m.isAndConsSorted(and_cons)
+    
+def test_cons_logical_fail():
+    m = Model()
+    x1 = m.addVar(vtype="B")
+    x2 = m.addVar(vtype="B")
+    x3 = m.addVar(vtype="B")
+    x4 = m.addVar(vtype="B")
+    result1 = m.addVar(vtype="B")
+
+    m.addCons(x3 == 1 - x1)
+    m.addCons(x4 == 1 - x2)
+
+    # result1 false
+    with pytest.raises(TypeError):
+        m.addConsOr([x1*x3, x2*x4], result1)
+
+    m.optimize()
 
 def test_SOScons():
     m = Model()
@@ -216,11 +267,48 @@ def test_addConsDisjunction_expr_init():
     assert m.isEQ(m.getVal(y), 5)
     assert m.isEQ(m.getVal(o), 6)
 
+def test_cons_knapsack():
+    m = Model()
+    x = m.addVar("x", vtype="B", obj=-1)
+    y = m.addVar("y", vtype="B", obj=0)
+    z = m.addVar("z", vtype="B", obj=2)
+    
+    knapsack_cons = m.addConsKnapsack([x,y], [4,2], 10)
+    assert knapsack_cons.getConshdlrName() == "knapsack"
+    assert knapsack_cons.isKnapsack()
 
-@pytest.mark.skip(reason="TODO: test getValsLinear()")
+    assert m.getConsNVars(knapsack_cons) == 2
+    assert m.getConsVars(knapsack_cons) == [x, y]
+
+    m.chgCapacityKnapsack(knapsack_cons, 5)
+
+    assert m.getCapacityKnapsack(knapsack_cons) == 5
+    assert m.getRhs(knapsack_cons) == 5
+    assert m.getLhs(knapsack_cons) == -m.infinity()
+
+    m.addCoefKnapsack(knapsack_cons, z, 3)
+    weights = m.getWeightsKnapsack(knapsack_cons)
+    assert weights["x"] == 4
+    assert weights["y"] == 2
+    assert weights["z"] == 3
+
+    m.optimize()
+    assert m.getDualsolKnapsack(knapsack_cons) == 0
+    assert m.getDualfarkasKnapsack(knapsack_cons) == 0
+
 def test_getValsLinear():
-    assert True
+    m = Model()
+    x = m.addVar("x", lb=0, ub=2, obj=-1)
+    y = m.addVar("y", lb=0, ub=4, obj=0)
+    z = m.addVar("z", lb=0, ub=5, obj=2)
+    
+    c1 = m.addCons(2*x + y <= 5)
+    c2 = m.addCons(x + 4*z <= 5)
+    assert m.getValsLinear(c1) == {'x': 2, 'y': 1}
 
+    m.optimize() # just to check if constraint transformation matters
+
+    assert m.getValsLinear(c2) == {'x': 1, 'z': 4}
 
 @pytest.mark.skip(reason="TODO: test getRowLinear()")
 def test_getRowLinear():
