@@ -27,6 +27,9 @@ def test_catching_errors():
     with pytest.raises(Exception):
         m.addMatrixCons(y <= rhs)
 
+    # test shape mismatch
+    with pytest.raises(ValueError):
+        m.addMatrixCons(x == y.sum(), initial=np.array([False, True]))
 
 def test_add_matrixVar():
     m = Model()
