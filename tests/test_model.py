@@ -546,7 +546,6 @@ def test_getVarPseudocostScore():
     p = m.getVarPseudocostScore(var, 0.5)
     assert m.isEQ(p, 0.25)
 
-
 def test_getVarPseudocost():
     m = Model()
 
@@ -564,5 +563,5 @@ def test_getVarPseudocost():
     m.updateVarPseudocost(var, 1, 12, 1)
     p = m.getVarPseudocost(var, SCIP_BRANCHDIR.UPWARDS)
 
-    # Not exactly 12 because thw new value is a weighted sum of the all the updates
+    # Not exactly 12 because the new value is a weighted sum of all the updates
     assert m.isEQ(p, 12.0001)
