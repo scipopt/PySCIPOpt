@@ -1,6 +1,7 @@
 from pyscipopt import Model, Constraint
+from typing import List
 
-def getLocalConss(model: Model, node = None) -> list[list[Constraint]]:
+def getLocalConss(model: Model, node = None) -> List[List[Constraint]]:
     """
     Returns local constraints.
 
@@ -30,7 +31,7 @@ def getLocalConss(model: Model, node = None) -> list[list[Constraint]]:
     
     return [model.getConss(), added_conss]
 
-def getNLocalConss(model: Model, node = None) -> tuple[int,int]:
+def getNLocalConss(model: Model, node = None) -> List[int]:
     """
     Returns the number of local constraints of a node.
 
