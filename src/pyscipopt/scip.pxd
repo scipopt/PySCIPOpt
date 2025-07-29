@@ -1594,8 +1594,6 @@ cdef extern from "scip/cons_sos1.h":
 
     SCIP_Real* SCIPgetWeightsSOS1(SCIP* scip, SCIP_CONS* cons)
 
-    int SCIPgetNSOS1Vars(SCIP_CONSHDLR* conshdlr)
-
     SCIP_RETCODE SCIPmakeSOS1Feasible(SCIP* scip,
                                       SCIP_CONSHDLR* conshdlr,
                                       SCIP_SOL* solution,
