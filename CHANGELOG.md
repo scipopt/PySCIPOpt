@@ -13,6 +13,7 @@
 - Generalized getLhs() and getRhs() to additionally support any linear type constraint
 - Added recipe for getting local constraints
 - Added enableDebugSol() and disableDebugSol() for controlling the debug solution mechanism if DEBUGSOL=true
+- Added getVarPseudocostScore() and getVarPseudocost()
 ### Fixed
 - Raised an error when an expression is used when a variable is required
 - Fixed some compile warnings
