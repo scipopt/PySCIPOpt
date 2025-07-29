@@ -15,13 +15,13 @@ def test_catching_errors():
     y = m.addMatrixVar(shape=(3, 3))
     rhs = np.ones((2, 1))
 
-    # require MatrixExprCons or ExprCons
-    with pytest.raises(Exception):
-        m.addMatrixCons(x)
-
     # require ExprCons
     with pytest.raises(Exception):
         m.addCons(y <= 3)
+
+    # require MatrixExprCons or ExprCons
+    with pytest.raises(Exception):
+        m.addMatrixCons(x)
 
     # test shape mismatch
     with pytest.raises(Exception):
