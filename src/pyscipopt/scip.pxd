@@ -1589,6 +1589,17 @@ cdef extern from "scip/cons_sos1.h":
                                    SCIP_CONS* cons,
                                    SCIP_VAR* var)
 
+    int SCIPgetNVarsSOS1(SCIP* scip, SCIP_CONS* cons)
+
+    SCIP_VAR** SCIPgetVarsSOS1(SCIP* scip, SCIP_CONS* cons)
+
+    SCIP_Real* SCIPgetWeightsSOS1(SCIP* scip, SCIP_CONS* cons)
+
+    SCIP_RETCODE SCIPmakeSOS1Feasible(SCIP* scip,
+                                      SCIP_CONSHDLR* conshdlr,
+                                      SCIP_SOL* solution,
+                                      SCIP_Bool* changed,
+                                      SCIP_Bool* success)
 
 cdef extern from "scip/cons_sos2.h":
     SCIP_RETCODE SCIPcreateConsSOS2(SCIP* scip,

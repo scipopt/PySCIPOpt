@@ -1803,6 +1803,43 @@ cdef class Variable(Expr):
         else:
             mayround = SCIPvarMayRoundUp(self.scip_var)
         return mayround
+    
+    def varIsSOS1(self, Conshdlr conshdlr, Variable var):
+        """
+        Returns whether variable is part of the SOS1 conflict graph
+
+        Parameters
+        ----------
+        conshdlr : Conshdlr
+            SOS1 constraint handler
+        var : Variable
+            variable to check
+
+        Returns
+        -------
+        bool
+            True if variable is part of the SOS1 conflict graph, False otherwise
+
+        """
+        return SCIPvarIsSOS1(conshdlr.scip_conshdlr, var.scip_var)
+    
+    def varGetNodeSOS1(self, Conshdlr conshdlr, Variable var):
+        """
+        Returns SOS1 index of variable or -1 if variable is not part of the SOS1 conflict graph
+
+        Parameters
+        ----------
+        conshdlr : Conshdlr
+            SOS1 constraint handler
+        var : Variable
+            variable
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPvarGetNodeSOS1(conshdlr.scip_conshdlr, var.scip_var)
 
 class MatrixVariable(MatrixExpr):
 
@@ -6505,6 +6542,40 @@ cdef class Model:
 
         return Constraint.create(scip_cons)
 
+    def getWeightsSOS1(self, Constraint cons):
+        """
+        Retrieve the coefficients of an SOS1 constraint
+
+        Parameters
+        ----------
+        cons : Constraint
+            SOS1 constraint to get the coefficients of
+
+        Returns
+        -------
+        dict of str to float
+
+        """
+        cdef SCIP_VAR** vars
+        cdef SCIP_Longint* vals
+        cdef int nvars
+        cdef int i
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        if not constype == 'SOS1':
+            raise Warning("weights not available for constraints of type ", constype)
+
+        nvars = SCIPgetNVarsSOS1(self._scip, cons.scip_cons)
+        vals = SCIPgetWeightsSOS1(self._scip, cons.scip_cons)
+        vars = SCIPgetVarsSOS1(self._scip, cons.scip_cons)
+
+        valsdict = {}
+        for i in range(nvars):
+            var_name = bytes(SCIPvarGetName(vars[i])).decode('utf-8')
+            valsdict[var_name] = vals[i]
+
+        return valsdict
+    
     def addConsSOS2(self, vars, weights=None, name="",
                 initial=True, separate=True, enforce=True, check=True,
                 propagate=True, local=False, dynamic=False,
@@ -7152,36 +7223,6 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPaddCons(self._scip, cons.scip_cons))
         Py_INCREF(cons)
-
-    def addVarSOS1(self, Constraint cons, Variable var, weight):
-        """
-        Add variable to SOS1 constraint.
-
-        Parameters
-        ----------
-        cons : Constraint
-            SOS1 constraint
-        var : Variable
-            new variable
-        weight : weight
-            weight of new variable
-
-        """
-        PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, cons.scip_cons, var.scip_var, weight))
-
-    def appendVarSOS1(self, Constraint cons, Variable var):
-        """
-        Append variable to SOS1 constraint.
-
-        Parameters
-        ----------
-        cons : Constraint
-            SOS1 constraint
-        var : Variable
-            variable to append
-
-        """
-        PY_SCIP_CALL(SCIPappendVarSOS1(self._scip, cons.scip_cons, var.scip_var))
 
     def addVarSOS2(self, Constraint cons, Variable var, weight):
         """
