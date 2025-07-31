@@ -62,7 +62,7 @@ if platform.system() in ["Linux", "Darwin"]:
     extra_link_args.append(f"-Wl,-rpath,{libdir}")
 
 # enable debug mode if requested
-if os.environ.get("PYSCIPOPT_DEBUG")==True:
+if os.environ.get("PYSCIPOPT_DEBUG")=="True":
     extra_compile_args.append("-UNDEBUG")
 
 use_cython = True
