@@ -185,9 +185,10 @@ def test_cons_indicator_with_matrix_binvar():
     x = m.addVar(vtype="B")
     binvar = m.addMatrixVar(1, vtype="B")
     # binvar is a matrix variable to fix #1043
-    m.addConsIndicator(x >= 1, binvar)
+    m.addConsIndicator(x >= 1, binvar, activeone=True)
+    m.addConsIndicator(x <= 0, binvar, activeone=False)
 
-    m.setObjective(binvar, "maximize")
+    m.setObjective(binvar.sum(), "maximize")
     m.optimize()
 
     assert m.getVal(x) == 1
