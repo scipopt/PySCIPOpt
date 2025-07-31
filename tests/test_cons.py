@@ -179,6 +179,19 @@ def test_cons_indicator():
     assert m.isEQ(m.getVal(x), 1)
     assert c1.getConshdlrName() == "indicator"
 
+def test_cons_indicator_with_matrix_binvar():
+    m = Model()
+
+    x = m.addVar(vtype="B")
+    binvar = m.addMatrixVar(1, vtype="B")
+    # binvar is a matrix variable to fix #1043
+    m.addConsIndicator(x >= 1, binvar)
+
+    m.setObjective(binvar, "maximize")
+    m.optimize()
+
+    assert m.getVal(x) == 1
+
 @pytest.mark.xfail(
     reason="addConsIndicator doesn't behave as expected when binary variable is False. See Issue #717."
 )
