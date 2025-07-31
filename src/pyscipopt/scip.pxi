@@ -2471,18 +2471,17 @@ cdef class _VarArray:
             self.size = 1
             self.ptr = <SCIP_VAR**> malloc(sizeof(SCIP_VAR*))
             self.ptr[0] = (<Variable>vars).scip_var
-        else:
-            if not isinstance(vars, (list, tuple)):
-                raise TypeError("Expected Variable or list of Variable, got %s." % type(vars))
+
+        elif isinstance(vars, (list, tuple)):
             self.size = len(vars)
-            if self.size == 0:
-                self.ptr = NULL
-            else:
-                self.ptr = <SCIP_VAR**> malloc(self.size * sizeof(SCIP_VAR*))
-                for i, var in enumerate(vars):
-                    if not isinstance(var, Variable):
-                        raise TypeError("Expected Variable, got %s." % type(var))
-                    self.ptr[i] = (<Variable>var).scip_var
+            self.ptr = <SCIP_VAR**> malloc(self.size * sizeof(SCIP_VAR*)) if self.size > 0 else NULL
+            for i, var in enumerate(vars):
+                if not isinstance(var, Variable):
+                    raise TypeError(f"Expected Variable, got {type(var)}.")
+                self.ptr[i] = (<Variable>var).scip_var
+
+        else:
+            raise TypeError(f"Expected Variable or list of Variable, got {type(vars)}.")
 
     def __dealloc__(self):
         if self.ptr != NULL:
