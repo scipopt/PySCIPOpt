@@ -2467,26 +2467,22 @@ cdef class _VarArray:
     cdef int size
 
     def __cinit__(self, object vars):
-        def create_ptr(vars: Union[list, tuple, MatrixVariable]):
-            cdef SCIP_VAR** ptr
-            ptr = <SCIP_VAR**> malloc(len(vars) * sizeof(SCIP_VAR*)) if len(vars) > 0 else NULL
-            for i, var in enumerate(vars):
-                if not isinstance(var, Variable):
-                    raise TypeError(f"Expected Variable, got {type(var)}.")
-                ptr[i] = (<Variable>var).scip_var
-            return ptr
-
         if isinstance(vars, Variable):
             self.size = 1
-            self.ptr = create_ptr([vars])
+            vars = [vars]
         elif isinstance(vars, (list, tuple)):
             self.size = len(vars)
-            self.ptr = create_ptr(vars)
         elif isinstance(vars, MatrixVariable):
             self.size = vars.size
-            self.ptr = create_ptr(np.ravel(vars))
+            vars = np.ravel(vars)
         else:
             raise TypeError(f"Expected Variable or list of Variable, got {type(vars)}.")
+
+        self.ptr = <SCIP_VAR**> malloc(self.size * sizeof(SCIP_VAR*)) if self.size else NULL
+        for i, var in enumerate(vars):
+            if not isinstance(var, Variable):
+                raise TypeError(f"Expected Variable, got {type(var)}.")
+            self.ptr[i] = (<Variable>var).scip_var
 
     def __dealloc__(self):
         if self.ptr != NULL:
