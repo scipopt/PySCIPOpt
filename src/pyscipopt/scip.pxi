@@ -2468,6 +2468,7 @@ cdef class _VarArray:
 
     def __cinit__(self, object vars):
         def create_ptr(size: int, vars: Union[list, tuple, MatrixVariable]):
+            cdef SCIP_VAR** ptr
             ptr = <SCIP_VAR**> malloc(self.size * sizeof(SCIP_VAR*)) if size > 0 else NULL
             for i, var in enumerate(vars):
                 if not isinstance(var, Variable):
