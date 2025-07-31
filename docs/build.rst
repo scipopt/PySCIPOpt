@@ -168,7 +168,7 @@ Build with Debug
 To use debug information in PySCIPOpt you need to build it with the following command:
 
 .. code-block::
-  export PYSCIPOPT_DEBUG=True
+  export PYSCIPOPT_DEBUG=True # With Windows CMD: set PYSCIPOPT_DEBUG=True
   python -m pip install .
 
 .. note:: Be aware that you will need the debug library of the SCIP Optimization Suite for this to work
