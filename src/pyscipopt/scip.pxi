@@ -2474,12 +2474,11 @@ cdef class _VarArray:
             self.size = len(vars)
         elif isinstance(vars, MatrixVariable):
             self.size = vars.size
-            vars = np.ravel(vars)
         else:
             raise TypeError(f"Expected Variable or list of Variable, got {type(vars)}.")
 
         self.ptr = <SCIP_VAR**> malloc(self.size * sizeof(SCIP_VAR*)) if self.size else NULL
-        for i, var in enumerate(vars):
+        for i, var in enumerate(np.ravel(vars)):
             if not isinstance(var, Variable):
                 raise TypeError(f"Expected Variable, got {type(var)}.")
             self.ptr[i] = (<Variable>var).scip_var
