@@ -19,7 +19,8 @@
 - Fixed some compile warnings
 - _VarArray can accept MatrixVariable now
 ### Changed
-- MatrixExpr.sum() now supports axis arguments and can return either a scalar or MatrixExpr depending on the result dimensions
+- MatrixExpr.sum() now supports axis arguments and can return either a scalar or MatrixExpr, depending on the result dimensions.
+- AddMatrixCons() also accepts ExprCons.
 ### Removed
 
 ## 5.5.0 - 2025.05.06
