@@ -5823,8 +5823,8 @@ cdef class Model:
         Constraint or MatrixConstraint
             The created and added Constraint or MatrixConstraint.
         """
-        assert isinstance(cons, (ExprCons, MatrixExprCons)), (
-            "given constraint is not MatrixExprCons nor ExprCons but %s" % cons.__class__.__name__)
+	if not isinstance(cons, (ExprCons, MatrixExprCons)):
+            raise TypeError("given constraint is not MatrixExprCons nor ExprCons but %s" % cons.__class__.__name__)
 
         if isinstance(cons, ExprCons):
             return self.addCons(cons, name=name, initial=initial, separate=separate,
