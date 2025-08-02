@@ -5775,7 +5775,7 @@ cdef class Model:
         return constraints
 
     def addMatrixCons(self,
-                      cons: MatrixExprCons,
+                      cons: Union[ExprCons, MatrixExprCons],
                       name: Union[str, np.ndarray] ='',
                       initial: Union[bool, np.ndarray] = True,
                       separate: Union[bool, np.ndarray] = True,
@@ -5792,8 +5792,8 @@ cdef class Model:
 
         Parameters
         ----------
-        cons : MatrixExprCons
-            The matrix expression constraint that is not yet an actual constraint
+        cons : ExprCons or MatrixExprCons
+            The matrix expression constraint or expression constraint, that are not yet an actual constraint
         name : str or np.ndarray, optional
             the name of the matrix constraint, generic name if empty (Default value = "")
         initial : bool or np.ndarray, optional
@@ -5820,12 +5820,17 @@ cdef class Model:
 
         Returns
         -------
-        MatrixConstraint
-            The created and added MatrixConstraint object.
-
+        Constraint or MatrixConstraint
+            The created and added Constraint or MatrixConstraint.
         """
-        assert isinstance(cons, MatrixExprCons), (
-                "given constraint is not MatrixExprCons but %s" % cons.__class__.__name__)
+        if not isinstance(cons, (ExprCons, MatrixExprCons)):
+            raise TypeError("given constraint is not MatrixExprCons nor ExprCons but %s" % cons.__class__.__name__)
+
+        if isinstance(cons, ExprCons):
+            return self.addCons(cons, name=name, initial=initial, separate=separate,
+                        enforce=enforce, check=check, propagate=propagate,
+                        local=local, modifiable=modifiable, dynamic=dynamic,
+                        removable=removable, stickingatnode=stickingatnode)
 
         shape = cons.shape
 

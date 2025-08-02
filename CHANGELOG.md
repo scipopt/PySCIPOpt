@@ -18,7 +18,8 @@
 - Raised an error when an expression is used when a variable is required
 - Fixed some compile warnings
 ### Changed
-- MatrixExpr.sum() now supports axis arguments and can return either a scalar or MatrixExpr depending on the result dimensions
+- MatrixExpr.sum() now supports axis arguments and can return either a scalar or MatrixExpr, depending on the result dimensions.
+- AddMatrixCons() also accepts ExprCons.
 ### Removed
 
 ## 5.5.0 - 2025.05.06
