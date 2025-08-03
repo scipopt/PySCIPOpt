@@ -202,7 +202,7 @@ def test_cons_indicator_with_matrix_binvar():
     m.addConsIndicator(z <= 0, binvar3, activeone=False)
 
     m.setObjective(
-        binvar1.sum() + binvar2.sum() + binvar3[0][0] + binvar3[0][1], "maximize"
+        binvar1.sum() + binvar2.sum() + binvar3[0][0] + binvar3[1][0], "maximize"
     )
     m.optimize()
 
