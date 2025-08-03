@@ -195,11 +195,20 @@ def test_cons_indicator_with_matrix_binvar():
     m.addConsIndicator(y >= 1, binvar2, activeone=True)
     m.addConsIndicator(y <= 0, binvar2, activeone=False)
 
-    m.setObjective(binvar1.sum() + binvar2.sum(), "maximize")
+    # test binvar with (2, 1) shape of list of lists
+    z = m.addVar(vtype="B")
+    binvar3 = [[m.addVar(vtype="B")], [m.addVar(vtype="B")]]
+    m.addConsIndicator(z >= 1, binvar3, activeone=True)
+    m.addConsIndicator(z <= 0, binvar3, activeone=False)
+
+    m.setObjective(
+        binvar1.sum() + binvar2.sum() + binvar3[0][0] + binvar3[0][1], "maximize"
+    )
     m.optimize()
 
     assert m.getVal(x) == 1
     assert m.getVal(y) == 1
+    assert m.getVal(z) == 1
 
 @pytest.mark.xfail(
     reason="addConsIndicator doesn't behave as expected when binary variable is False. See Issue #717."
