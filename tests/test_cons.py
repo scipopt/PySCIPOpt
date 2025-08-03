@@ -180,11 +180,12 @@ def test_cons_indicator():
     assert c1.getConshdlrName() == "indicator"
 
 def test_cons_indicator_with_matrix_binvar():
+    # test matrix variable binvar #1043
     m = Model()
 
     x = m.addVar(vtype="B")
-    binvar = m.addMatrixVar(1, vtype="B")
-    # binvar is a matrix variable to fix #1043
+    # test binvar with (1, 1, 1) shape of matrix variable
+    binvar = m.addMatrixVar(((1, 1, 1)), vtype="B")
     m.addConsIndicator(x >= 1, binvar, activeone=True)
     m.addConsIndicator(x <= 0, binvar, activeone=False)
 
