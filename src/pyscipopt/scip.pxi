@@ -6946,7 +6946,7 @@ cdef class Model:
         return pyCons
 
 
-    def addMatrixConsIndicator(self, cons: Union[MatrixExprCons], binvar: Union[Variable, MatrixVariable] = None,
+    def addMatrixConsIndicator(self, cons: Union[ExprCons, MatrixExprCons], binvar: Union[Variable, MatrixVariable] = None,
                                activeone: Union[bool, np.ndarray] = True, name: Union[str, np.ndarray] = "",
                                initial: Union[bool, np.ndarray] = True, separate: Union[bool, np.ndarray] = True,
                                enforce: Union[bool, np.ndarray] = True, check: Union[bool, np.ndarray] = True,
