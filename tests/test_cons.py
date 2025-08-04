@@ -183,6 +183,9 @@ def test_cons_indicator_with_matrix_binvar():
     # test matrix variable binvar #1043
     m = Model()
 
+    with pytest.raises(TypeError):
+        m.addConsIndicator(m.addVar(vtype="B") <= 1, 1)
+
     # test binvar with (1, 1, 1) shape of matrix variable
     x = m.addVar(vtype="B")
     binvar1 = m.addMatrixVar(((1, 1, 1)), vtype="B")
