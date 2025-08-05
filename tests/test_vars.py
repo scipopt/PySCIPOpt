@@ -80,3 +80,37 @@ def test_markRelaxationOnly():
     assert x.isDeletable()
     assert not y.isRelaxationOnly()
     assert not y.isDeletable()
+
+def test_getNBranchings():
+    m = Model()
+
+    x = m.addVar("x", vtype='I', obj=-1.0)
+    y = m.addVar("y", vtype='I', obj=-2.0)
+
+    m.addCons(2*x + 1*y <= 3.5)
+    m.addCons(x + 2*y <= 3.5)
+
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    m.setHeuristics(SCIP_PARAMSETTING.OFF)
+    m.disablePropagation()
+    m.presolve()
+
+    assert x.getNBranchings(SCIP_BRANCHDIR.UPWARDS) == 0
+    assert x.getNBranchings(SCIP_BRANCHDIR.DOWNWARDS) == 0
+
+def test_getNBranchingsCurrentRun():
+    m = Model()
+
+    x = m.addVar("x", vtype='I', obj=-1.0)
+    y = m.addVar("y", vtype='I', obj=-2.0)
+
+    m.addCons(2 * x + 1 * y <= 3.5)
+    m.addCons(x + 2 * y <= 3.5)
+
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    m.setHeuristics(SCIP_PARAMSETTING.OFF)
+    m.disablePropagation()
+    m.presolve()
+
+    assert x.getNBranchingsCurrentRun(SCIP_BRANCHDIR.UPWARDS) == 0
+    assert x.getNBranchingsCurrentRun(SCIP_BRANCHDIR.DOWNWARDS) == 0
