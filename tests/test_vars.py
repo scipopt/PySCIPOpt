@@ -1,4 +1,4 @@
-from pyscipopt import Model
+from pyscipopt import Model, SCIP_PARAMSETTING, SCIP_BRANCHDIR
 
 def test_variablebounds():
 
