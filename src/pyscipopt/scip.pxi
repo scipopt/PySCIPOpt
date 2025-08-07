@@ -1821,7 +1821,7 @@ cdef class Variable(Expr):
 
     def getNBranchingsCurrentRun(self, branchdir):
         """
-        returns the number of times, a bound of the variable was changed in given direction due to branching in the
+        returns the number of times a bound of the variable was changed in given direction due to branching in the
         current run
 
         Parameters
