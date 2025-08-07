@@ -1,5 +1,8 @@
 from pyscipopt import Model, SCIP_PARAMSETTING, SCIP_BRANCHDIR
 
+from tests.helpers.utils import random_mip_1
+
+
 def test_variablebounds():
 
     m = Model()
@@ -82,35 +85,31 @@ def test_markRelaxationOnly():
     assert not y.isDeletable()
 
 def test_getNBranchings():
-    m = Model()
+    m = random_mip_1(True, True, True, 100, True)
+    m.setParam("branching/mostinf/priority", 999999)
 
-    x = m.addVar("x", vtype='I', obj=-1.0)
-    y = m.addVar("y", vtype='I', obj=-2.0)
+    m.optimize()
 
-    m.addCons(2*x + 1*y <= 3.5)
-    m.addCons(x + 2*y <= 3.5)
+    m.setParam("limits/nodes", 200)
+    m.restartSolve()
+    m.optimize()
 
-    m.setPresolve(SCIP_PARAMSETTING.OFF)
-    m.setHeuristics(SCIP_PARAMSETTING.OFF)
-    m.disablePropagation()
-    m.presolve()
+    n_branchings = 0
+    for var in m.getVars():
+        n_branchings += var.getNBranchings(SCIP_BRANCHDIR.UPWARDS)
+        n_branchings += var.getNBranchings(SCIP_BRANCHDIR.DOWNWARDS)
 
-    assert x.getNBranchings(SCIP_BRANCHDIR.UPWARDS) == 0
-    assert x.getNBranchings(SCIP_BRANCHDIR.DOWNWARDS) == 0
+    assert n_branchings == m.getNTotalNodes() - 2 # "-2" comes from the two root nodes because of the restart
 
 def test_getNBranchingsCurrentRun():
-    m = Model()
+    m = random_mip_1(True, True, True, 100, True)
+    m.setParam( "branching/mostinf/priority", 999999)
 
-    x = m.addVar("x", vtype='I', obj=-1.0)
-    y = m.addVar("y", vtype='I', obj=-2.0)
+    m.optimize()
 
-    m.addCons(2 * x + 1 * y <= 3.5)
-    m.addCons(x + 2 * y <= 3.5)
+    n_branchings = 0
+    for var in m.getVars():
+        n_branchings += var.getNBranchingsCurrentRun(SCIP_BRANCHDIR.UPWARDS)
+        n_branchings += var.getNBranchingsCurrentRun(SCIP_BRANCHDIR.DOWNWARDS)
 
-    m.setPresolve(SCIP_PARAMSETTING.OFF)
-    m.setHeuristics(SCIP_PARAMSETTING.OFF)
-    m.disablePropagation()
-    m.presolve()
-
-    assert x.getNBranchingsCurrentRun(SCIP_BRANCHDIR.UPWARDS) == 0
-    assert x.getNBranchingsCurrentRun(SCIP_BRANCHDIR.DOWNWARDS) == 0
+    assert n_branchings == m.getNNodes() - 1
