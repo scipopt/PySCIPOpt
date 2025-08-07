@@ -1804,6 +1804,37 @@ cdef class Variable(Expr):
             mayround = SCIPvarMayRoundUp(self.scip_var)
         return mayround
 
+    def getNBranchings(self, branchdir):
+        """
+        returns the number of times a bound of the variable was changed in given direction due to branching
+
+        Parameters
+        ----------
+        branchdir : PY_SCIP_BRANCHDIR
+            branching direction (downwards, or upwards)
+
+        Returns
+        -------
+        int
+        """
+        return SCIPvarGetNBranchings(self.scip_var, branchdir)
+
+    def getNBranchingsCurrentRun(self, branchdir):
+        """
+        returns the number of times a bound of the variable was changed in given direction due to branching in the
+        current run
+
+        Parameters
+        ----------
+        branchdir : PY_SCIP_BRANCHDIR
+            branching direction (downwards, or upwards)
+
+        Returns
+        -------
+        int
+        """
+        return SCIPvarGetNBranchingsCurrentRun(self.scip_var, branchdir)
+        
 class MatrixVariable(MatrixExpr):
 
     def vtype(self):
