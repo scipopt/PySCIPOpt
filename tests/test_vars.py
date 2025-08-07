@@ -1,10 +1,7 @@
 from pyscipopt import Model, SCIP_PARAMSETTING, SCIP_BRANCHDIR
-
-from tests.helpers.utils import random_mip_1
-
+from helpers.utils import random_mip_1
 
 def test_variablebounds():
-
     m = Model()
 
     x0 = m.addVar(lb=-5, ub=8)
