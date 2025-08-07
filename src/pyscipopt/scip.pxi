@@ -1834,7 +1834,7 @@ cdef class Variable(Expr):
         int
         """
         return SCIPvarGetNBranchingsCurrentRun(self.scip_var, branchdir)
-
+        
 class MatrixVariable(MatrixExpr):
 
     def vtype(self):
@@ -4737,6 +4737,11 @@ cdef class Model:
         list of Column
 
         """
+        stage_check = SCIPgetStage(self._scip) in [SCIP_STAGE_SOLVING]
+
+        if not stage_check:
+            raise Warning("Method cannot be called in stage ", self.getStage())
+
         cdef SCIP_COL** cols
         cdef int ncols
         cdef int i
@@ -9738,6 +9743,11 @@ cdef class Model:
 
     def restartSolve(self):
         """Restarts the solving process as soon as possible."""
+        stage_check = SCIPgetStage(self._scip) in [SCIP_STAGE_INITPRESOLVE, SCIP_STAGE_PRESOLVING, SCIP_STAGE_EXITPRESOLVE, SCIP_STAGE_SOLVING]
+
+        if not stage_check:
+            raise Warning("Method cannot be called in stage ", self.getStage())
+
         PY_SCIP_CALL(SCIPrestartSolve(self._scip))
 
     # Solution functions
@@ -10109,6 +10119,11 @@ cdef class Model:
             whether given solution was feasible and good enough to keep
 
         """
+        stage_check = SCIPgetStage(self._scip) in [SCIP_STAGE_TRANSFORMED, SCIP_STAGE_INITPRESOLVE, SCIP_STAGE_PRESOLVING, SCIP_STAGE_EXITPRESOLVE, SCIP_STAGE_PRESOLVED, SCIP_STAGE_SOLVING]
+
+        if not stage_check:
+            raise Warning("Method cannot be called in stage ", self.getStage())
+
         cdef SCIP_Bool stored
         if free:
             PY_SCIP_CALL(SCIPtrySolFree(self._scip, &solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
