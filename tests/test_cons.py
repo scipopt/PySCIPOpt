@@ -179,6 +179,40 @@ def test_cons_indicator():
     assert m.isEQ(m.getVal(x), 1)
     assert c1.getConshdlrName() == "indicator"
 
+def test_cons_indicator_with_matrix_binvar():
+    # test matrix variable binvar #1043
+    m = Model()
+
+    with pytest.raises(TypeError):
+        m.addConsIndicator(m.addVar(vtype="B") <= 1, 1)
+
+    # test binvar with (1, 1, 1) shape of matrix variable
+    x = m.addVar(vtype="B")
+    binvar1 = m.addMatrixVar(((1, 1, 1)), vtype="B")
+    m.addConsIndicator(x >= 1, binvar1, activeone=True)
+    m.addConsIndicator(x <= 0, binvar1, activeone=False)
+
+    # test binvar with (2, 3) shape of matrix variable
+    y = m.addVar(vtype="B")
+    binvar2 = m.addMatrixVar(((2, 3)), vtype="B")
+    m.addConsIndicator(y >= 1, binvar2, activeone=True)
+    m.addConsIndicator(y <= 0, binvar2, activeone=False)
+
+    # test binvar with (2, 1) shape of list of lists
+    z = m.addVar(vtype="B")
+    binvar3 = [[m.addVar(vtype="B")], [m.addVar(vtype="B")]]
+    m.addConsIndicator(z >= 1, binvar3, activeone=True)
+    m.addConsIndicator(z <= 0, binvar3, activeone=False)
+
+    m.setObjective(
+        binvar1.sum() + binvar2.sum() + binvar3[0][0] + binvar3[1][0], "maximize"
+    )
+    m.optimize()
+
+    assert m.getVal(x) == 1
+    assert m.getVal(y) == 1
+    assert m.getVal(z) == 1
+
 @pytest.mark.xfail(
     reason="addConsIndicator doesn't behave as expected when binary variable is False. See Issue #717."
 )
