@@ -87,6 +87,7 @@ def test_markRelaxationOnly():
 def test_getNBranchings():
     m = random_mip_1(True, True, True, 100, True)
     m.setParam("branching/mostinf/priority", 999999)
+    m.setParam("limits/restarts", 0)
 
     m.optimize()
 
