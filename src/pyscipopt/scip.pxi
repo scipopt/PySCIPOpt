@@ -1804,37 +1804,6 @@ cdef class Variable(Expr):
             mayround = SCIPvarMayRoundUp(self.scip_var)
         return mayround
 
-    def getNBranchings(self, branchdir):
-        """
-        returns the number of times a bound of the variable was changed in given direction due to branching
-
-        Parameters
-        ----------
-        branchdir : PY_SCIP_BRANCHDIR
-            branching direction (downwards, or upwards)
-
-        Returns
-        -------
-        int
-        """
-        return SCIPvarGetNBranchings(self.scip_var, branchdir)
-
-    def getNBranchingsCurrentRun(self, branchdir):
-        """
-        returns the number of times a bound of the variable was changed in given direction due to branching in the
-        current run
-
-        Parameters
-        ----------
-        branchdir : PY_SCIP_BRANCHDIR
-            branching direction (downwards, or upwards)
-
-        Returns
-        -------
-        int
-        """
-        return SCIPvarGetNBranchingsCurrentRun(self.scip_var, branchdir)
-
 class MatrixVariable(MatrixExpr):
 
     def vtype(self):
@@ -4737,6 +4706,11 @@ cdef class Model:
         list of Column
 
         """
+        stage_check = SCIPgetStage(self._scip) in [SCIP_STAGE_SOLVING]
+
+        if not stage_check:
+            raise Warning("Method cannot be called in stage ", self.getStage())
+
         cdef SCIP_COL** cols
         cdef int ncols
         cdef int i
@@ -9738,6 +9712,11 @@ cdef class Model:
 
     def restartSolve(self):
         """Restarts the solving process as soon as possible."""
+        stage_check = SCIPgetStage(self._scip) in [SCIP_STAGE_INITPRESOLVE, SCIP_STAGE_PRESOLVING, SCIP_STAGE_EXITPRESOLVE, SCIP_STAGE_SOLVING]
+
+        if not stage_check:
+            raise Warning("Method cannot be called in stage ", self.getStage())
+
         PY_SCIP_CALL(SCIPrestartSolve(self._scip))
 
     # Solution functions
@@ -10109,6 +10088,11 @@ cdef class Model:
             whether given solution was feasible and good enough to keep
 
         """
+        stage_check = SCIPgetStage(self._scip) in [SCIP_STAGE_TRANSFORMED, SCIP_STAGE_INITPRESOLVE, SCIP_STAGE_PRESOLVING, SCIP_STAGE_EXITPRESOLVE, SCIP_STAGE_PRESOLVED, SCIP_STAGE_SOLVING]
+
+        if not stage_check:
+            raise Warning("Method cannot be called in stage ", self.getStage())
+
         cdef SCIP_Bool stored
         if free:
             PY_SCIP_CALL(SCIPtrySolFree(self._scip, &solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
