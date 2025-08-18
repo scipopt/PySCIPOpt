@@ -18,7 +18,7 @@
 ### Fixed
 - Raised an error when an expression is used when a variable is required
 - Fixed some compile warnings
-- _VarArray can accept MatrixVariable now
+- _VarArray raised an error when the inputting wasn't 1D array.
 ### Changed
 - MatrixExpr.sum() now supports axis arguments and can return either a scalar or MatrixExpr, depending on the result dimensions.
 - AddMatrixCons() also accepts ExprCons.
