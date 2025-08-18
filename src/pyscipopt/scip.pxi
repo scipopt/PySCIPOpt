@@ -2502,7 +2502,7 @@ cdef class _VarArray:
             vars = [vars]
         elif isinstance(vars, (list, tuple, MatrixVariable)):
             if (ndim := np.ndim(vars)) != 1:
-                raise ValueError(f"vars must be a 1D array, but got {ndim}D array.")
+                raise ValueError(f"Expected a 1D array, but got a {ndim}D array.")
         else:
             raise TypeError(f"Expected Variable or list of Variable, got {type(vars)}.")
 
