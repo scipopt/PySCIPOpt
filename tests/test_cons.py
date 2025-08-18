@@ -193,11 +193,11 @@ def test_cons_indicator_with_matrix_binvar():
         m.addConsIndicator(x <= 0, m.addMatrixVar(((1, 1, 1)), vtype="B"))
 
     # test binvar with (2, 3) shape of matrix variable
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         m.addConsIndicator(x <= 0, m.addMatrixVar(((2, 3)), vtype="B"))
 
     # test binvar with (2, 1) shape of list of lists
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         m.addConsIndicator(x <= 0, [[m.addVar(vtype="B")], [m.addVar(vtype="B")]])
 
     # test binvar with requiring type and dimension
