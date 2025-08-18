@@ -182,36 +182,33 @@ def test_cons_indicator():
 def test_cons_indicator_with_matrix_binvar():
     # test matrix variable binvar #1043
     m = Model()
+    x = m.addVar(vtype="B")
 
+    # test binvar with int
     with pytest.raises(TypeError):
-        m.addConsIndicator(m.addVar(vtype="B") <= 1, 1)
+        m.addConsIndicator(x <= 0, 1)
 
     # test binvar with (1, 1, 1) shape of matrix variable
-    x = m.addVar(vtype="B")
-    binvar1 = m.addMatrixVar(((1, 1, 1)), vtype="B")
-    m.addConsIndicator(x >= 1, binvar1, activeone=True)
-    m.addConsIndicator(x <= 0, binvar1, activeone=False)
+    with pytest.raises(ValueError):
+        m.addConsIndicator(x <= 0, m.addMatrixVar(((1, 1, 1)), vtype="B"))
 
     # test binvar with (2, 3) shape of matrix variable
-    y = m.addVar(vtype="B")
-    binvar2 = m.addMatrixVar(((2, 3)), vtype="B")
-    m.addConsIndicator(y >= 1, binvar2, activeone=True)
-    m.addConsIndicator(y <= 0, binvar2, activeone=False)
+    with pytest.raises(TypeError):
+        m.addConsIndicator(x <= 0, m.addMatrixVar(((2, 3)), vtype="B"))
 
     # test binvar with (2, 1) shape of list of lists
-    z = m.addVar(vtype="B")
-    binvar3 = [[m.addVar(vtype="B")], [m.addVar(vtype="B")]]
-    m.addConsIndicator(z >= 1, binvar3, activeone=True)
-    m.addConsIndicator(z <= 0, binvar3, activeone=False)
+    with pytest.raises(TypeError):
+        m.addConsIndicator(x <= 0, [[m.addVar(vtype="B")], [m.addVar(vtype="B")]])
 
-    m.setObjective(
-        binvar1.sum() + binvar2.sum() + binvar3[0][0] + binvar3[1][0], "maximize"
-    )
+    # test binvar with requiring type and dimension
+    binvar = m.addMatrixVar(1, vtype="B")
+    m.addConsIndicator(x >= 1, binvar, activeone=True)
+    m.addConsIndicator(x <= 0, binvar, activeone=False)
+
+    m.setObjective(binvar.sum(), "maximize")
     m.optimize()
 
     assert m.getVal(x) == 1
-    assert m.getVal(y) == 1
-    assert m.getVal(z) == 1
 
 @pytest.mark.xfail(
     reason="addConsIndicator doesn't behave as expected when binary variable is False. See Issue #717."
