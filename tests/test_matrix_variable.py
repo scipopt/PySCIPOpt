@@ -400,12 +400,12 @@ def test_matrix_matmul_return_type():
 
     # test 1D @ 1D → 0D
     x = m.addMatrixVar(3)
-    assert isinstance(x @ x, MatrixExpr)
+    assert type(x @ x) is MatrixExpr
 
     # test 1D @ 1D → 2D
-    assert isinstance(x[:, None] @ x[None, :], MatrixExpr)
+    assert type(x[:, None] @ x[None, :]) is MatrixExpr
 
     # test 2D @ 2D → 2D
     y = m.addMatrixVar((3, 4))
     z = m.addMatrixVar((2, 3))
-    assert isinstance(y @ z, MatrixExpr)
+    assert type(y @ z) is MatrixExpr
