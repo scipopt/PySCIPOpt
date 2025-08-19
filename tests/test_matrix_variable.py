@@ -406,6 +406,6 @@ def test_matrix_matmul_return_type():
     assert type(x[:, None] @ x[None, :]) is MatrixExpr
 
     # test 2D @ 2D → 2D
-    y = m.addMatrixVar((3, 4))
-    z = m.addMatrixVar((2, 3))
+    y = m.addMatrixVar((2, 3))
+    z = m.addMatrixVar((3, 4))
     assert type(y @ z) is MatrixExpr
