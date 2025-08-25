@@ -2498,22 +2498,24 @@ cdef class _VarArray:
     cdef int size
 
     def __cinit__(self, object vars):
+        self.ptr = NULL
+        self.size = 0
+
         if isinstance(vars, Variable):
-            self.size = 1
-            self.ptr = <SCIP_VAR**> malloc(sizeof(SCIP_VAR*))
-            self.ptr[0] = (<Variable>vars).scip_var
+            vars = [vars]
+        elif isinstance(vars, (list, tuple, MatrixVariable)):
+            if (ndim := np.ndim(vars)) != 1:
+                raise ValueError(f"Expected a 1D array, but got a {ndim}D array.")
         else:
-            if not isinstance(vars, (list, tuple)):
-                raise TypeError("Expected Variable or list of Variable, got %s." % type(vars))
+            raise TypeError(f"Expected Variable or list of Variable, got {type(vars)}.")
+
+        if vars:
             self.size = len(vars)
-            if self.size == 0:
-                self.ptr = NULL
-            else:
-                self.ptr = <SCIP_VAR**> malloc(self.size * sizeof(SCIP_VAR*))
-                for i, var in enumerate(vars):
-                    if not isinstance(var, Variable):
-                        raise TypeError("Expected Variable, got %s." % type(var))
-                    self.ptr[i] = (<Variable>var).scip_var
+            self.ptr = <SCIP_VAR**> malloc(self.size * sizeof(SCIP_VAR*))
+            for i, var in enumerate(vars):
+                if not isinstance(var, Variable):
+                    raise TypeError(f"Expected Variable, got {type(var)}.")
+                self.ptr[i] = (<Variable>var).scip_var
 
     def __dealloc__(self):
         if self.ptr != NULL:
