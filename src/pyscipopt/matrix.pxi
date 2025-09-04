@@ -85,4 +85,4 @@ class MatrixExprCons(np.ndarray):
         return _matrixexpr_richcmp(self, other, 5)
 
     def __eq__(self, other):
-        raise TypeError
+        raise NotImplementedError("Cannot compare MatrixExprCons with '=='.")
