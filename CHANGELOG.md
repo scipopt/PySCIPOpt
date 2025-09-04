@@ -4,7 +4,7 @@
 ### Added
 ### Fixed
 ### Changed
-- MatrixVariable and MatrixExprCons supported to compare with Expr
+- MatrixVariable supported to compare with Expr
 ### Removed
 
 ## 5.6.0 - 2025.08.26
