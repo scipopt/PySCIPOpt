@@ -428,8 +428,8 @@ def test_matrix_cons_compare_with_expr():
 
     m.setObjective(x.sum() + y.sum())
 
-    assert (x == np.ones(3)).all().all()
-    assert (y == np.ones(3)).all().all()
+    assert (x == np.ones(3)).all()
+    assert (y == np.ones(3)).all()
 
 
 def test_ranged_matrix_cons():
@@ -446,4 +446,4 @@ def test_ranged_matrix_cons():
 
     m.setObjective(x.sum())
 
-    assert (x == np.ones(3)).all().all()
+    assert (x == np.ones(3)).all()
