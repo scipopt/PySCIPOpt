@@ -424,7 +424,7 @@ def test_ranged_matrix_cons_with_expr():
 
     # test "<=" and ">=" operator
     x = m.addMatrixVar(3)
-    m.addMatrixCons((x <= 1) >= var + 1)
+    m.addMatrixCons((x <= 1) >= 1)
 
     m.setObjective(x.sum())
     m.optimize()

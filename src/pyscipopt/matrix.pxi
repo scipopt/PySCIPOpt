@@ -96,10 +96,10 @@ class MatrixGenExpr(MatrixExpr):
 
 class MatrixExprCons(np.ndarray):
 
-    def __le__(self, other: Union[float, int, Expr, np.ndarray, MatrixExpr]) -> MatrixExprCons:
+    def __le__(self, other: Union[float, int, np.ndarray]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 1)
 
-    def __ge__(self, other: Union[float, int, Expr, np.ndarray, MatrixExpr]) -> MatrixExprCons:
+    def __ge__(self, other: Union[float, int, np.ndarray]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 5)
 
     def __eq__(self, other):
