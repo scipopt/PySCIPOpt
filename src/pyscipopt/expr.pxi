@@ -190,7 +190,7 @@ cdef class Expr:
             terms[CONST] = terms.get(CONST, 0.0) + c
         elif isinstance(right, GenExpr):
             return buildGenExprObj(left) + right
-        elif isinstance(right, (MatrixExpr, MatrixExprCons)):
+        elif isinstance(right, MatrixExpr):
             return right + left
         else:
             raise TypeError(f"Unsupported type {type(right)}")
