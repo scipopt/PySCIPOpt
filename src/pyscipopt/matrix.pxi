@@ -6,14 +6,24 @@
 import numpy as np
 from typing import Union
 
-def _is_number(e):
-    try:
-        f = float(e)
-        return True
-    except ValueError: # for malformed strings
-        return False
-    except TypeError: # for other types (Variable, Expr)
-        return False
+include "expr.pxi"
+
+
+def _matrixexpr_richcmp(self, other, op):
+    res = np.empty(shape, dtype=object)
+    if _is_number(other) or isinstance(other, Expr):
+        for idx in np.ndindex(self.shape):
+            res[idx] = _expr_richcmp(self[idx], other, op)
+
+    elif isinstance(other, np.ndarray):
+        for idx in np.ndindex(self.shape):
+            res[idx] = _expr_richcmp(self[idx], other[idx], op)
+
+    else:
+        raise TypeError(f"Unsupported type {type(other)}")
+
+    return res.view(MatrixExprCons)
+
 
 class MatrixExpr(np.ndarray):
     def sum(self, **kwargs):
@@ -24,51 +34,15 @@ class MatrixExpr(np.ndarray):
         res = super().sum(**kwargs)
         return res if res.size > 1 else res.item()
 
-    def __le__(self, other: Union[float, int, Expr, np.ndarray, 'MatrixExpr']) -> np.ndarray:
-        
-        expr_cons_matrix = np.empty(self.shape, dtype=object)
-        if _is_number(other) or isinstance(other, Expr):
-            for idx in np.ndindex(self.shape):
-                expr_cons_matrix[idx] = self[idx] <= other
-        
-        elif isinstance(other, np.ndarray):
-            for idx in np.ndindex(self.shape):
-                expr_cons_matrix[idx] = self[idx] <= other[idx]    
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
+    def __le__(self, other: Union[float, int, Expr, np.ndarray, 'MatrixExpr']) -> MatrixExprCons:
+        return _matrixexpr_richcmp(self, other, 1)
 
-        return expr_cons_matrix.view(MatrixExprCons)
+    def __ge__(self, other: Union[float, int, Expr, np.ndarray, 'MatrixExpr']) -> MatrixExprCons:
+        return _matrixexpr_richcmp(self, other, 5)
 
-    def __ge__(self, other: Union[float, int, Expr, np.ndarray, 'MatrixExpr']) -> np.ndarray:
-        
-        expr_cons_matrix = np.empty(self.shape, dtype=object)
-        if _is_number(other) or isinstance(other, Expr):
-            for idx in np.ndindex(self.shape):
-                expr_cons_matrix[idx] = self[idx] >= other
-        
-        elif isinstance(other, np.ndarray):
-            for idx in np.ndindex(self.shape):
-                expr_cons_matrix[idx] = self[idx] >= other[idx]    
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
+    def __eq__(self, other: Union[float, int, Expr, np.ndarray, 'MatrixExpr']) -> MatrixExprCons:
+        return _matrixexpr_richcmp(self, other, 2)
 
-        return expr_cons_matrix.view(MatrixExprCons)
-
-    def __eq__(self, other: Union[float, int, Expr, np.ndarray, 'MatrixExpr']) -> np.ndarray:
-        
-        expr_cons_matrix = np.empty(self.shape, dtype=object)
-        if _is_number(other) or isinstance(other, Expr):
-            for idx in np.ndindex(self.shape):
-                expr_cons_matrix[idx] = self[idx] == other
-        
-        elif isinstance(other, np.ndarray):
-            for idx in np.ndindex(self.shape):
-                expr_cons_matrix[idx] = self[idx] == other[idx]    
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
-
-        return expr_cons_matrix.view(MatrixExprCons)
-    
     def __add__(self, other):
         return super().__add__(other).view(MatrixExpr)
     
@@ -104,41 +78,11 @@ class MatrixGenExpr(MatrixExpr):
 
 class MatrixExprCons(np.ndarray):
 
-    def __le__(self, other: Union[float, int, Expr, MatrixExpr]) -> np.ndarray:
-       
-        if not _is_number(other) or not isinstance(other, MatrixExpr):
-                raise TypeError('Ranged MatrixExprCons is not well defined!')
+    def __le__(self, other: Union[float, int, Expr, np.ndarray, MatrixExpr]) -> MatrixExprCons:
+        return _matrixexpr_richcmp(self, other, 1)
 
-        expr_cons_matrix = np.empty(self.shape, dtype=object)
-        if _is_number(other) or isinstance(other, Expr):
-            for idx in np.ndindex(self.shape):
-                expr_cons_matrix[idx] = self[idx] <= other
-        
-        elif isinstance(other, np.ndarray):
-            for idx in np.ndindex(self.shape):
-                expr_cons_matrix[idx] = self[idx] <= other[idx]    
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
-
-        return expr_cons_matrix.view(MatrixExprCons)
-
-    def __ge__(self, other: Union[float, int, Expr, MatrixExpr]) -> np.ndarray:
-        
-        if not _is_number(other) or not isinstance(other, MatrixExpr):
-                raise TypeError('Ranged MatrixExprCons is not well defined!')
-                
-        expr_cons_matrix = np.empty(self.shape, dtype=object)
-        if _is_number(other) or isinstance(other, Expr):
-            for idx in np.ndindex(self.shape):
-                expr_cons_matrix[idx] = self[idx] >= other
-        
-        elif isinstance(other, np.ndarray):
-            for idx in np.ndindex(self.shape):
-                expr_cons_matrix[idx] = self[idx] >= other[idx]    
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
-
-        return expr_cons_matrix.view(MatrixExprCons)
+    def __ge__(self, other: Union[float, int, Expr, np.ndarray, MatrixExpr]) -> MatrixExprCons:
+        return _matrixexpr_richcmp(self, other, 5)
 
     def __eq__(self, other):
         raise TypeError
