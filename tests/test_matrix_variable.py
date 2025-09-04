@@ -414,13 +414,13 @@ def test_matrix_compare_with_expr():
     assert (m.getVal(y) == np.ones(3)).all()
 
 
-def test_ranged_matrix_cons():
+def test_ranged_matrix_cons_with_expr():
     m = Model()
     var = m.addVar(vtype="B", ub=0)
 
     # test "==" operator
     with pytest.raises(NotImplementedError):
-        m.addMatrixCons(0 == (m.addMatrixVar(3) <= 1))
+        m.addMatrixCons(var + 1 == (m.addMatrixVar(3) <= 1))
 
     # test "<=" and ">=" operator
     x = m.addMatrixVar(3)
