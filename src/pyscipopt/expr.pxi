@@ -326,26 +326,26 @@ cdef class ExprCons:
     def __richcmp__(self, other, op):
         '''turn it into a constraint'''
         if op == 1: # <=
-           if not self._rhs is None:
-               raise TypeError('ExprCons already has upper bound')
-           assert not self._lhs is None
+            if not self._rhs is None:
+                raise TypeError('ExprCons already has upper bound')
+            assert not self._lhs is None
 
-           if not _is_number(other):
-               raise TypeError('Ranged ExprCons is not well defined!')
+            if not _is_number(other):
+                raise TypeError('Ranged ExprCons is not well defined!')
 
-           return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
+            return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
         elif op == 5: # >=
-           if not self._lhs is None:
-               raise TypeError('ExprCons already has lower bound')
-           assert self._lhs is None
-           assert not self._rhs is None
+            if not self._lhs is None:
+                raise TypeError('ExprCons already has lower bound')
+            assert self._lhs is None
+            assert not self._rhs is None
 
-           if not _is_number(other):
-               raise TypeError('Ranged ExprCons is not well defined!')
+            if not _is_number(other):
+                raise TypeError('Ranged ExprCons is not well defined!')
 
-           return ExprCons(self.expr, lhs=float(other), rhs=self._rhs)
+            return ExprCons(self.expr, lhs=float(other), rhs=self._rhs)
         else:
-            raise TypeError
+            raise NotImplementedError("Ranged ExprCons can only support with '<=' or '>='.")
 
     def __repr__(self):
         return 'ExprCons(%s, %s, %s)' % (self.expr, self._lhs, self._rhs)
