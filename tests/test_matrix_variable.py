@@ -392,3 +392,22 @@ def test_matrix_cons_indicator():
     assert m.getVal(is_equal).sum() == 2
     assert (m.getVal(x) == m.getVal(y)).all().all()
     assert (m.getVal(x) == np.array([[5, 5, 5], [5, 5, 5]])).all().all()
+
+
+def test_matrix_compare_with_expr():
+    m = Model()
+    var = m.addVar(vtype="B", ub=0)
+
+    # test "<=" and ">=" operator
+    x = m.addMatrixVar(3)
+    m.addMatrixCons(x <= var + 1)
+    m.addMatrixCons(x >= var + 1)
+
+    # test "==" operator
+    y = m.addMatrixVar(3)
+    m.addMatrixCons(y == var + 1)
+
+    m.setObjective(x.sum() + y.sum())
+
+    assert (x == np.ones(3)).all().all()
+    assert (y == np.ones(3)).all().all()
