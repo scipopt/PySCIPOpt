@@ -430,3 +430,15 @@ def test_matrix_cons_compare_with_expr():
 
     assert (x == np.ones(3)).all().all()
     assert (y == np.ones(3)).all().all()
+
+
+def test_ranged_matrix_cons():
+    m = Model()
+    var = m.addVar(vtype="B", ub=0)
+
+    x = m.addMatrixVar(3)
+    m.addMatrixCons(var + 1 <= (x <= 1))
+
+    m.setObjective(x.sum())
+
+    assert (x == np.ones(3)).all().all()
