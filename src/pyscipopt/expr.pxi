@@ -181,7 +181,7 @@ cdef class Expr:
             left,right = right,left
         terms = left.terms.copy()
 
-        if isinstance(right, (Expr, ExprCons)):
+        if isinstance(right, Expr):
             # merge the terms by component-wise addition
             for v,c in right.terms.items():
                 terms[v] = terms.get(v, 0.0) + c
