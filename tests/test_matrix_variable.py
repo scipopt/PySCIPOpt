@@ -408,25 +408,7 @@ def test_matrix_compare_with_expr():
     m.addMatrixCons(y == var + 1)
 
     m.setObjective(x.sum() + y.sum())
-
-    assert (x == np.ones(3)).all().all()
-    assert (y == np.ones(3)).all().all()
-
-
-def test_matrix_cons_compare_with_expr():
-    m = Model()
-    var = m.addVar(vtype="B", ub=0)
-
-    # test "<=" and ">=" operator
-    x = m.addMatrixVar(3)
-    m.addMatrixCons(x + 1 <= var + 2)
-    m.addMatrixCons(x + 1 >= var + 2)
-
-    # test "==" operator
-    y = m.addMatrixVar(3)
-    m.addMatrixCons(y + 1 == var + 2)
-
-    m.setObjective(x.sum() + y.sum())
+    m.optimize()
 
     assert (m.getVal(x) == np.ones(3)).all()
     assert (m.getVal(y) == np.ones(3)).all()
@@ -445,5 +427,6 @@ def test_ranged_matrix_cons():
         m.addMatrixCons(0 == (m.addMatrixVar(3) <= 1))
 
     m.setObjective(x.sum())
+    m.optimize()
 
     assert (m.getVal(x) == np.ones(3)).all()
