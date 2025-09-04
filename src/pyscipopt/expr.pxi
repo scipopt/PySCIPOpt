@@ -193,7 +193,7 @@ cdef class Expr:
         elif isinstance(right, (MatrixExpr, MatrixExprCons)):
             return right + left
         else:
-            raise NotImplementedError
+            raise TypeError(f"Unsupported type {type(right)}")
 
         return Expr(terms)
 
