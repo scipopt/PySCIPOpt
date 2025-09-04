@@ -418,13 +418,13 @@ def test_ranged_matrix_cons():
     m = Model()
     var = m.addVar(vtype="B", ub=0)
 
-    # test "<=" and ">=" operator
-    x = m.addMatrixVar(3)
-    m.addMatrixCons(var + 1 <= (x <= 1))
-
     # test "==" operator
     with pytest.raises(NotImplementedError):
         m.addMatrixCons(0 == (m.addMatrixVar(3) <= 1))
+
+    # test "<=" and ">=" operator
+    x = m.addMatrixVar(3)
+    m.addMatrixCons(var + 1 <= (x <= 1))
 
     m.setObjective(x.sum())
     m.optimize()
