@@ -24,10 +24,10 @@ class MatrixExpr(np.ndarray):
         res = super().sum(**kwargs)
         return res if res.size > 1 else res.item()
 
-    def __le__(self, other: Union[float, int, Variable, np.ndarray, 'MatrixExpr']) -> np.ndarray:
+    def __le__(self, other: Union[float, int, Expr, np.ndarray, 'MatrixExpr']) -> np.ndarray:
         
         expr_cons_matrix = np.empty(self.shape, dtype=object)
-        if _is_number(other) or isinstance(other, Variable):
+        if _is_number(other) or isinstance(other, Expr):
             for idx in np.ndindex(self.shape):
                 expr_cons_matrix[idx] = self[idx] <= other
         
@@ -39,10 +39,10 @@ class MatrixExpr(np.ndarray):
 
         return expr_cons_matrix.view(MatrixExprCons)
 
-    def __ge__(self, other: Union[float, int, Variable, np.ndarray, 'MatrixExpr']) -> np.ndarray:
+    def __ge__(self, other: Union[float, int, Expr, np.ndarray, 'MatrixExpr']) -> np.ndarray:
         
         expr_cons_matrix = np.empty(self.shape, dtype=object)
-        if _is_number(other) or isinstance(other, Variable):
+        if _is_number(other) or isinstance(other, Expr):
             for idx in np.ndindex(self.shape):
                 expr_cons_matrix[idx] = self[idx] >= other
         
@@ -54,10 +54,10 @@ class MatrixExpr(np.ndarray):
 
         return expr_cons_matrix.view(MatrixExprCons)
 
-    def __eq__(self, other: Union[float, int, Variable, np.ndarray, 'MatrixExpr']) -> np.ndarray:
+    def __eq__(self, other: Union[float, int, Expr, np.ndarray, 'MatrixExpr']) -> np.ndarray:
         
         expr_cons_matrix = np.empty(self.shape, dtype=object)
-        if _is_number(other) or isinstance(other, Variable):
+        if _is_number(other) or isinstance(other, Expr):
             for idx in np.ndindex(self.shape):
                 expr_cons_matrix[idx] = self[idx] == other
         
