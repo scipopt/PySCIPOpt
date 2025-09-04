@@ -104,13 +104,13 @@ class MatrixGenExpr(MatrixExpr):
 
 class MatrixExprCons(np.ndarray):
 
-    def __le__(self, other: Union[float, int, Variable, MatrixExpr]) -> np.ndarray:
+    def __le__(self, other: Union[float, int, Expr, MatrixExpr]) -> np.ndarray:
        
         if not _is_number(other) or not isinstance(other, MatrixExpr):
                 raise TypeError('Ranged MatrixExprCons is not well defined!')
 
         expr_cons_matrix = np.empty(self.shape, dtype=object)
-        if _is_number(other) or isinstance(other, Variable):
+        if _is_number(other) or isinstance(other, Expr):
             for idx in np.ndindex(self.shape):
                 expr_cons_matrix[idx] = self[idx] <= other
         
@@ -122,13 +122,13 @@ class MatrixExprCons(np.ndarray):
 
         return expr_cons_matrix.view(MatrixExprCons)
 
-    def __ge__(self, other: Union[float, int, Variable, MatrixExpr]) -> np.ndarray:
+    def __ge__(self, other: Union[float, int, Expr, MatrixExpr]) -> np.ndarray:
         
         if not _is_number(other) or not isinstance(other, MatrixExpr):
                 raise TypeError('Ranged MatrixExprCons is not well defined!')
                 
         expr_cons_matrix = np.empty(self.shape, dtype=object)
-        if _is_number(other) or isinstance(other, Variable):
+        if _is_number(other) or isinstance(other, Expr):
             for idx in np.ndindex(self.shape):
                 expr_cons_matrix[idx] = self[idx] >= other
         
