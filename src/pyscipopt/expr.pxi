@@ -210,7 +210,7 @@ cdef class Expr:
             # TypeError: Cannot convert pyscipopt.scip.SumExpr to pyscipopt.scip.Expr
             return buildGenExprObj(self) + other
         else:
-            raise NotImplementedError
+            raise TypeError(f"Unsupported type {type(other)}")
 
         return self
 
