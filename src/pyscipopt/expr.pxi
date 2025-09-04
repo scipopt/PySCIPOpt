@@ -44,15 +44,7 @@
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
 include "matrix.pxi"
 
-def _is_number(e):
-    try:
-        f = float(e)
-        return True
-    except ValueError: # for malformed strings
-        return False
-    except TypeError: # for other types (Variable, Expr)
-        return False
-        
+
 def _expr_richcmp(self, other, op):
     if op == 1: # <=
         if isinstance(other, Expr) or isinstance(other, GenExpr):

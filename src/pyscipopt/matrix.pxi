@@ -6,18 +6,36 @@
 import numpy as np
 from typing import Union
 
-include "expr.pxi"
+
+def _is_number(e):
+    try:
+        f = float(e)
+        return True
+    except ValueError: # for malformed strings
+        return False
+    except TypeError: # for other types (Variable, Expr)
+        return False
 
 
 def _matrixexpr_richcmp(self, other, op):
+    def _richcmp(self, other, op):
+        if op == 1: # <=
+            return self.__le__(other)
+        elif op == 5: # >=
+            return self.__ge__(other)
+        elif op == 2: # ==
+            return self.__eq__(other)
+        else:
+            raise NotImplementedError("Can only support constraints with '<=', '>=', or '=='.")
+
     res = np.empty(shape, dtype=object)
     if _is_number(other) or isinstance(other, Expr):
         for idx in np.ndindex(self.shape):
-            res[idx] = _expr_richcmp(self[idx], other, op)
+            res[idx] = _richcmp(self[idx], other, op)
 
     elif isinstance(other, np.ndarray):
         for idx in np.ndindex(self.shape):
-            res[idx] = _expr_richcmp(self[idx], other[idx], op)
+            res[idx] = _richcmp(self[idx], other[idx], op)
 
     else:
         raise TypeError(f"Unsupported type {type(other)}")
