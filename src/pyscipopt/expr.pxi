@@ -51,7 +51,7 @@ def _expr_richcmp(self, other, op):
             return (self - other) <= 0.0
         elif _is_number(other):
             return ExprCons(self, rhs=float(other))
-        elif isinstance(other, MatrixExpr):
+        elif isinstance(other, (MatrixExpr, MatrixExprCons)):
             return _expr_richcmp(other, self, 5)
         else:
             raise NotImplementedError
@@ -60,7 +60,7 @@ def _expr_richcmp(self, other, op):
             return (self - other) >= 0.0
         elif _is_number(other):
             return ExprCons(self, lhs=float(other))
-        elif isinstance(other, MatrixExpr):
+        elif isinstance(other, (MatrixExpr, MatrixExprCons)):
             return _expr_richcmp(other, self, 1)
         else:
             raise NotImplementedError
