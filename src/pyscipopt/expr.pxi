@@ -54,7 +54,7 @@ def _expr_richcmp(self, other, op):
         elif isinstance(other, MatrixExpr):
             return _expr_richcmp(other, self, 5)
         else:
-            raise NotImplementedError
+            raise TypeError(f"Unsupported type {type(other)}")
     elif op == 5: # >=
         if isinstance(other, Expr) or isinstance(other, GenExpr):
             return (self - other) >= 0.0
@@ -63,7 +63,7 @@ def _expr_richcmp(self, other, op):
         elif isinstance(other, MatrixExpr):
             return _expr_richcmp(other, self, 1)
         else:
-            raise NotImplementedError
+            raise TypeError(f"Unsupported type {type(other)}")
     elif op == 2: # ==
         if isinstance(other, Expr) or isinstance(other, GenExpr):
             return (self - other) == 0.0
@@ -72,7 +72,7 @@ def _expr_richcmp(self, other, op):
         elif isinstance(other, MatrixExpr):
             return _expr_richcmp(other, self, 2)
         else:
-            raise NotImplementedError
+            raise TypeError(f"Unsupported type {type(other)}")
     else:
         raise NotImplementedError("Can only support constraints with '<=', '>=', or '=='.")
 
@@ -181,7 +181,7 @@ cdef class Expr:
             left,right = right,left
         terms = left.terms.copy()
 
-        if isinstance(right, Expr):
+        if isinstance(right, (Expr, ExprCons)):
             # merge the terms by component-wise addition
             for v,c in right.terms.items():
                 terms[v] = terms.get(v, 0.0) + c
