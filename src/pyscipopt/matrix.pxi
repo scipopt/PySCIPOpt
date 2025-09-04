@@ -28,7 +28,7 @@ def _matrixexpr_richcmp(self, other, op):
         else:
             raise NotImplementedError("Can only support constraints with '<=', '>=', or '=='.")
 
-    res = np.empty(shape, dtype=object)
+    res = np.empty(self.shape, dtype=object)
     if _is_number(other) or isinstance(other, Expr):
         for idx in np.ndindex(self.shape):
             res[idx] = _richcmp(self[idx], other, op)
