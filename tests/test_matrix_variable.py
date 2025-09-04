@@ -420,11 +420,11 @@ def test_ranged_matrix_cons_with_expr():
 
     # test "==" operator
     with pytest.raises(NotImplementedError):
-        m.addMatrixCons(var + 1 == (m.addMatrixVar(3) <= 1))
+        m.addMatrixCons((m.addMatrixVar(3) <= 1) == var + 1)
 
     # test "<=" and ">=" operator
     x = m.addMatrixVar(3)
-    m.addMatrixCons(var + 1 <= (x <= 1))
+    m.addMatrixCons((x <= 1) >= var + 1)
 
     m.setObjective(x.sum())
     m.optimize()
