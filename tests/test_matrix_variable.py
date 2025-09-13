@@ -1,8 +1,10 @@
+import operator
 import pdb
 import pprint
 import pytest
 from pyscipopt import Model, Variable, log, exp, cos, sin, sqrt
 from pyscipopt import Expr, MatrixExpr, MatrixVariable, MatrixExprCons, MatrixConstraint, ExprCons
+from pyscipopt.scip import GenExpr
 from time import time
 
 import numpy as np
@@ -392,3 +394,22 @@ def test_matrix_cons_indicator():
     assert m.getVal(is_equal).sum() == 2
     assert (m.getVal(x) == m.getVal(y)).all().all()
     assert (m.getVal(x) == np.array([[5, 5, 5], [5, 5, 5]])).all().all()
+
+
+_binop_model = Model()
+
+def var():
+    return _binop_model.addVar()
+
+def genexpr():
+    return _binop_model.addVar() ** 0.6
+
+def matvar():
+    return _binop_model.addMatrixVar((1,))
+
+@pytest.mark.parametrize("right", [var(), genexpr(), matvar()], ids=["var", "genexpr", "matvar"])
+@pytest.mark.parametrize("left", [var(), genexpr(), matvar()], ids=["var", "genexpr", "matvar"])
+@pytest.mark.parametrize("op", [operator.add, operator.sub, operator.mul, operator.truediv])
+def test_binop(op, left, right):
+    res = op(left, right)
+    assert isinstance(res, (Expr, GenExpr, MatrixExpr))
