@@ -1,0 +1,3 @@
+from pyscipopt import Model as Model, quicksum as quicksum
+
+def get_infeasible_constraints(orig_model: Model, verbose: bool = False): ...
