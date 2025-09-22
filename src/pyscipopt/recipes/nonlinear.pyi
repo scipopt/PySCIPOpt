@@ -1,3 +1,0 @@
-from pyscipopt import Model as Model
-
-def set_nonlinear_objective(model: Model, expr, sense: str = 'minimize'): ...

@@ -1,3 +1,0 @@
-from pyscipopt import Constraint as Constraint, Model as Model, Variable as Variable, quicksum as quicksum
-
-def add_piecewise_linear_cons(model: Model, X: Variable, Y: Variable, a: list[float], b: list[float]) -> Constraint: ...
