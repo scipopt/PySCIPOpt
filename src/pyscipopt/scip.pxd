@@ -1722,8 +1722,6 @@ cdef extern from "scip/cons_and.h":
     SCIP_VAR*    SCIPgetResultantAnd(SCIP* scip, SCIP_CONS* cons)
     SCIP_Bool    SCIPisAndConsSorted(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPsortAndCons(SCIP* scip, SCIP_CONS* cons)
-    SCIP_RETCODE SCIPchgAndConsCheckFlagWhenUpgr(SCIP* scip, SCIP_CONS* cons, SCIP_Bool flag)
-    SCIP_RETCODE SCIPchgAndConsRemovableFlagWhenUpgr(SCIP* scip, SCIP_CONS* cons, SCIP_Bool flag)
 
 cdef extern from "scip/cons_or.h":
     SCIP_RETCODE SCIPcreateConsOr(SCIP* scip,
