@@ -27,6 +27,23 @@ def test_getConsVars():
     c = m.addCons(quicksum(x[i] for i in x) <= 1)
     assert m.getConsVars(c) == [x[i] for i in x]
 
+def test_getConsVals():
+    n_vars = 100
+    m = Model()
+    x = {}
+    for i in range(n_vars):
+        x[i] = m.addVar("%i" % i, vtype="B")
+
+    c1 = m.addCons(quicksum(x[i] for i in x) <= 1)
+    c2 = m.addConsKnapsack([x[i] for i in x], [i for i in range(1, n_vars+1)], 10)
+    vals1 = m.getConsVals(c1)
+    vals2 = m.getConsVals(c2)
+
+    assert len(vals1) == n_vars
+    assert all(isinstance(v, float) for v in vals1)
+    assert len(vals2) == n_vars
+    assert all(isinstance(v, float) for v in vals2)
+    assert m.getConsVals(c2) == [i for i in range(1, n_vars+1)]
 
 def test_constraint_option_setting():
     m = Model()
@@ -162,6 +179,37 @@ def test_cons_indicator():
     assert m.isEQ(m.getVal(x), 1)
     assert c1.getConshdlrName() == "indicator"
 
+def test_cons_indicator_with_matrix_binvar():
+    # test matrix variable binvar #1043
+    m = Model()
+    x = m.addVar(vtype="B")
+
+    # test binvar with int
+    with pytest.raises(TypeError):
+        m.addConsIndicator(x <= 0, 1)
+
+    # test binvar with (1, 1, 1) shape of matrix variable
+    with pytest.raises(ValueError):
+        m.addConsIndicator(x <= 0, m.addMatrixVar(((1, 1, 1)), vtype="B"))
+
+    # test binvar with (2, 3) shape of matrix variable
+    with pytest.raises(ValueError):
+        m.addConsIndicator(x <= 0, m.addMatrixVar(((2, 3)), vtype="B"))
+
+    # test binvar with (2, 1) shape of list of lists
+    with pytest.raises(ValueError):
+        m.addConsIndicator(x <= 0, [[m.addVar(vtype="B")], [m.addVar(vtype="B")]])
+
+    # test binvar with requiring type and dimension
+    binvar = m.addMatrixVar(1, vtype="B")
+    m.addConsIndicator(x >= 1, binvar, activeone=True)
+    m.addConsIndicator(x <= 0, binvar, activeone=False)
+
+    m.setObjective(binvar.sum(), "maximize")
+    m.optimize()
+
+    assert m.isEQ(m.getVal(x), 1)
+
 @pytest.mark.xfail(
     reason="addConsIndicator doesn't behave as expected when binary variable is False. See Issue #717."
 )
@@ -266,6 +314,8 @@ def test_cons_knapsack():
     m.chgCapacityKnapsack(knapsack_cons, 5)
 
     assert m.getCapacityKnapsack(knapsack_cons) == 5
+    assert m.getRhs(knapsack_cons) == 5
+    assert m.getLhs(knapsack_cons) == -m.infinity()
 
     m.addCoefKnapsack(knapsack_cons, z, 3)
     weights = m.getWeightsKnapsack(knapsack_cons)

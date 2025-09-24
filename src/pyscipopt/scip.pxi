@@ -57,6 +57,16 @@ else:
 _SCIP_BOUNDTYPE_TO_STRING = {SCIP_BOUNDTYPE_UPPER: '<=',
                              SCIP_BOUNDTYPE_LOWER: '>='}
 
+cdef extern from "scip/config.h":
+    """
+    #ifdef WITH_DEBUG_SOLUTION
+    #define PYSCIPOPT_WITH_DEBUG_SOLUTION 1
+    #else
+    #define PYSCIPOPT_WITH_DEBUG_SOLUTION 0
+    #endif
+    """
+    bint PYSCIPOPT_WITH_DEBUG_SOLUTION
+
 # Mapping the SCIP_RESULT enum to a python class
 # This is required to return SCIP_RESULT in the python code
 # In __init__.py this is imported as SCIP_RESULT to keep the
@@ -142,7 +152,6 @@ cdef class PY_SCIP_STATUS:
     INFORUNBD      = SCIP_STATUS_INFORUNBD
 
 StageNames = {}
-
 cdef class PY_SCIP_STAGE:
     INIT         = SCIP_STAGE_INIT
     PROBLEM      = SCIP_STAGE_PROBLEM
@@ -172,7 +181,6 @@ cdef class PY_SCIP_NODETYPE:
     SUBROOT     = SCIP_NODETYPE_SUBROOT
     REFOCUSNODE = SCIP_NODETYPE_REFOCUSNODE
 
-
 cdef class PY_SCIP_PROPTIMING:
     BEFORELP     = SCIP_PROPTIMING_BEFORELP
     DURINGLPLOOP = SCIP_PROPTIMING_DURINGLPLOOP
@@ -199,7 +207,6 @@ cdef class PY_SCIP_HEURTIMING:
     AFTERPROPLOOP     = SCIP_HEURTIMING_AFTERPROPLOOP
 
 EventNames = {}
-
 cdef class PY_SCIP_EVENTTYPE:
     DISABLED        = SCIP_EVENTTYPE_DISABLED
     VARADDED        = SCIP_EVENTTYPE_VARADDED
@@ -1903,6 +1910,37 @@ cdef class Variable(Expr):
             mayround = SCIPvarMayRoundUp(self.scip_var)
         return mayround
 
+    def getNBranchings(self, branchdir):
+        """
+        returns the number of times a bound of the variable was changed in given direction due to branching
+
+        Parameters
+        ----------
+        branchdir : PY_SCIP_BRANCHDIR
+            branching direction (downwards, or upwards)
+
+        Returns
+        -------
+        int
+        """
+        return SCIPvarGetNBranchings(self.scip_var, branchdir)
+
+    def getNBranchingsCurrentRun(self, branchdir):
+        """
+        returns the number of times a bound of the variable was changed in given direction due to branching in the
+        current run
+
+        Parameters
+        ----------
+        branchdir : PY_SCIP_BRANCHDIR
+            branching direction (downwards, or upwards)
+
+        Returns
+        -------
+        int
+        """
+        return SCIPvarGetNBranchingsCurrentRun(self.scip_var, branchdir)
+
 class MatrixVariable(MatrixExpr):
 
     def vtype(self):
@@ -2302,6 +2340,18 @@ cdef class Constraint:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'knapsack'
 
+    def isLinearType(self):
+        """
+        Returns True if constraint can be represented as a linear constraint.
+
+        Returns
+        -------
+        bool
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
+        return constype in ('linear', 'knapsack', 'setppc', 'logicor', 'varbound')
+
     def isNonlinear(self):
         """
         Returns True if constraint is nonlinear.
@@ -2554,22 +2604,24 @@ cdef class _VarArray:
     cdef int size
 
     def __cinit__(self, object vars):
+        self.ptr = NULL
+        self.size = 0
+
         if isinstance(vars, Variable):
-            self.size = 1
-            self.ptr = <SCIP_VAR**> malloc(sizeof(SCIP_VAR*))
-            self.ptr[0] = (<Variable>vars).scip_var
+            vars = [vars]
+        elif isinstance(vars, (list, tuple, MatrixVariable)):
+            if (ndim := np.ndim(vars)) != 1:
+                raise ValueError(f"Expected a 1D array, but got a {ndim}D array.")
         else:
-            if not isinstance(vars, (list, tuple)):
-                raise TypeError("Expected Variable or list of Variable, got %s." % type(vars))
+            raise TypeError(f"Expected Variable or list of Variable, got {type(vars)}.")
+
+        if vars:
             self.size = len(vars)
-            if self.size == 0:
-                self.ptr = NULL
-            else:
-                self.ptr = <SCIP_VAR**> malloc(self.size * sizeof(SCIP_VAR*))
-                for i, var in enumerate(vars):
-                    if not isinstance(var, Variable):
-                        raise TypeError("Expected Variable, got %s." % type(var))
-                    self.ptr[i] = (<Variable>var).scip_var
+            self.ptr = <SCIP_VAR**> malloc(self.size * sizeof(SCIP_VAR*))
+            for i, var in enumerate(vars):
+                if not isinstance(var, Variable):
+                    raise TypeError(f"Expected Variable, got {type(var)}.")
+                self.ptr[i] = (<Variable>var).scip_var
 
     def __dealloc__(self):
         if self.ptr != NULL:
@@ -4524,6 +4576,40 @@ cdef class Model:
             var_dict[var.name] = self.getVal(var)
         return var_dict
 
+    def getVarPseudocostScore(self, Variable var, solVal):
+        """
+        gets the variable's pseudo cost score value for the given LP solution value
+
+        Parameters
+        ----------
+        variable : Variable
+            problem variable
+        solVal : float
+            difference of variable's new LP value - old LP value
+
+        Returns
+        -------
+        float
+        """
+        return SCIPgetVarPseudocostScore(self._scip, var.scip_var, solVal)
+
+    def getVarPseudocost(self, Variable var, branchdir):
+        """
+        gets the variable's pseudo cost value for the given direction
+
+        Parameters
+        ----------
+        variable : Variable
+            problem variable
+        branchdir : PY_SCIP_BRANCHDIR
+            branching direction (downwards, or upwards)
+
+        Returns
+        -------
+        float
+        """
+        return SCIPgetVarPseudocost(self._scip, var.scip_var, branchdir)
+
     def updateNodeLowerbound(self, Node node, lb):
         """
         If given value is larger than the node's lower bound (in transformed problem),
@@ -5828,7 +5914,7 @@ cdef class Model:
         return constraints
 
     def addMatrixCons(self,
-                      cons: MatrixExprCons,
+                      cons: Union[ExprCons, MatrixExprCons],
                       name: Union[str, np.ndarray] ='',
                       initial: Union[bool, np.ndarray] = True,
                       separate: Union[bool, np.ndarray] = True,
@@ -5845,8 +5931,8 @@ cdef class Model:
 
         Parameters
         ----------
-        cons : MatrixExprCons
-            The matrix expression constraint that is not yet an actual constraint
+        cons : ExprCons or MatrixExprCons
+            The matrix expression constraint or expression constraint, that are not yet an actual constraint
         name : str or np.ndarray, optional
             the name of the matrix constraint, generic name if empty (Default value = "")
         initial : bool or np.ndarray, optional
@@ -5873,12 +5959,17 @@ cdef class Model:
 
         Returns
         -------
-        MatrixConstraint
-            The created and added MatrixConstraint object.
-
+        Constraint or MatrixConstraint
+            The created and added Constraint or MatrixConstraint.
         """
-        assert isinstance(cons, MatrixExprCons), (
-                "given constraint is not MatrixExprCons but %s" % cons.__class__.__name__)
+        if not isinstance(cons, (ExprCons, MatrixExprCons)):
+            raise TypeError("given constraint is not MatrixExprCons nor ExprCons but %s" % cons.__class__.__name__)
+
+        if isinstance(cons, ExprCons):
+            return self.addCons(cons, name=name, initial=initial, separate=separate,
+                        enforce=enforce, check=check, propagate=propagate,
+                        local=local, modifiable=modifiable, dynamic=dynamic,
+                        removable=removable, stickingatnode=stickingatnode)
 
         shape = cons.shape
 
@@ -6125,7 +6216,11 @@ cdef class Model:
 
         SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success)
         _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
-        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, nvars*sizeof(SCIP_VAR*), &success)
+        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, nvars, &success)
+
+        if not success:
+            free(_vars)
+            return None
 
         vars = []
         for i in range(nvars):
@@ -6140,7 +6235,39 @@ cdef class Model:
                 self._modelvars[ptr] = var
                 vars.append(var)
 
+        free(_vars)
         return vars
+    
+    def getConsVals(self, Constraint constraint):
+        """
+        Returns the value array of an arbitrary SCIP constraint that can be represented as a single linear constraint.
+
+        Parameters
+        ----------
+        constraint : Constraint
+            Constraint to get the values from.
+
+        Returns
+        -------
+        list of float
+
+        """
+        cdef SCIP_Real* _vals
+        cdef int nvars
+        cdef SCIP_Bool success
+        cdef int i
+
+        nvars = self.getConsNVars(constraint)
+        _vals = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+        PY_SCIP_CALL(SCIPgetConsVals(self._scip, constraint.scip_cons, _vals, nvars, &success))
+
+        if not success:
+            free(_vals)
+            return None
+
+        vals = [_vals[i] for i in range(nvars)]
+        free(_vals)
+        return vals
 
     def getNVarsAnd(self, Constraint and_cons):
         """
@@ -6156,8 +6283,6 @@ cdef class Model:
         int
 
         """
-        cdef int nvars
-        cdef SCIP_Bool success
 
         return SCIPgetNVarsAnd(self._scip, and_cons.scip_cons)
 
@@ -6175,9 +6300,9 @@ cdef class Model:
         list of Variable
 
         """
+        
         cdef SCIP_VAR** _vars
         cdef int nvars
-        cdef SCIP_Bool success
         cdef int i
 
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(and_cons.scip_cons))).decode('UTF-8')
@@ -6215,8 +6340,8 @@ cdef class Model:
         Variable
 
         """
+        
         cdef SCIP_VAR* _resultant
-        cdef SCIP_Bool success
 
         _resultant = SCIPgetResultantAnd(self._scip, and_cons.scip_cons)
 
@@ -6246,8 +6371,7 @@ cdef class Model:
         bool
 
         """
-        cdef SCIP_Bool success
-
+        
         return SCIPisAndConsSorted(self._scip, and_cons.scip_cons)
 
     def sortAndCons(self, Constraint and_cons):
@@ -6260,7 +6384,6 @@ cdef class Model:
             Constraint to sort.
 
         """
-        cdef SCIP_Bool success
 
         PY_SCIP_CALL(SCIPsortAndCons(self._scip, and_cons.scip_cons))
 
@@ -7344,9 +7467,13 @@ cdef class Model:
         float
 
         """
+        cdef SCIP_Bool success
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
-        if constype == 'linear':
-            return SCIPgetRhsLinear(self._scip, cons.scip_cons)
+
+        if cons.isLinearType():
+            rhs = SCIPconsGetRhs(self._scip, cons.scip_cons, &success)
+            assert(success)
+            return rhs
         elif constype == 'nonlinear':
             return SCIPgetRhsNonlinear(cons.scip_cons)
         else:
@@ -7385,9 +7512,13 @@ cdef class Model:
         float
 
         """
+        cdef SCIP_Bool success
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
-        if constype == 'linear':
-            return SCIPgetLhsLinear(self._scip, cons.scip_cons)
+
+        if cons.isLinearType():
+            lhs = SCIPconsGetLhs(self._scip, cons.scip_cons, &success)
+            assert(success)
+            return lhs
         elif constype == 'nonlinear':
             return SCIPgetLhsNonlinear(cons.scip_cons)
         else:
@@ -7777,6 +7908,24 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPsetRelaxSolVal(self._scip, NULL, var.scip_var, val))
+
+    def enableDebugSol(self):
+        """
+        Enables the debug solution mechanism, which allows tracing back the invalidation of
+        a debug solution during the solution process of SCIP. It must be explicitly
+        enabled for the SCIP data structure.
+        """
+        if not PYSCIPOPT_WITH_DEBUG_SOLUTION:
+            raise RuntimeError("SCIP must be built with `DEBUGSOL=true` to enable the debug solution mechanism.")
+        SCIPenableDebugSol(self._scip)
+    
+    def disableDebugSol(self):
+        """
+        Disables the debug solution mechanism.
+        """
+        if not PYSCIPOPT_WITH_DEBUG_SOLUTION:
+            raise RuntimeError("SCIP must be built with `DEBUGSOL=true` to disable the debug solution mechanism.")
+        SCIPdisableDebugSol(self._scip)
 
     def getConss(self, transformed=True):
         """
@@ -9729,6 +9878,29 @@ cdef class Model:
 
         absfile = str_conversion(abspath(filename))
         PY_SCIP_CALL( SCIPwriteLP(self._scip, absfile) )
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
+    def writeMIP(self, filename, genericnames=False, origobj=False, lazyconss=False):
+        """
+        Writes MIP relaxation of the current branch-and-bound node to a file
+
+        Parameters
+        ----------
+        filename : str
+            name of the output file
+        genericnames : bool, optional
+            should generic names like x_i and row_j be used in order to avoid troubles with reserved symbols? (Default value = False)
+        origobj : bool, optional
+            should the original objective function be used (Default value = False)
+        lazyconss : bool, optional
+            output removable rows as lazy constraints? (Default value = False)
+        """
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        absfile = str_conversion(abspath(filename))
+        PY_SCIP_CALL(SCIPwriteMIP(self._scip, absfile, genericnames, origobj, lazyconss))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
@@ -11943,6 +12115,9 @@ def readStatistics(filename):
 
         seen_cons = 0
         for i, line in enumerate(data):
+            if line == "\n":
+                continue
+
             split_line = line.split(":")
             split_line[1] = split_line[1][:-1] # removing \n
             stat_name = split_line[0].strip()
