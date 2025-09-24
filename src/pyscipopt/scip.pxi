@@ -1591,7 +1591,7 @@ cdef class Variable(Expr):
             return "INTEGER"
         elif vartype == SCIP_VARTYPE_CONTINUOUS:
             return "CONTINUOUS"
-        elif vartype == SCIP_VARTYPE_IMPLINT:
+        elif vartype == SCIP_DEPRECATED_VARTYPE_IMPLINT:
             return "IMPLINT"
     
     def isBinary(self):
@@ -3998,7 +3998,7 @@ cdef class Model:
         elif vtype in ['I', 'INTEGER']:
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_INTEGER))
         elif vtype in ['M', 'IMPLINT']:
-            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_IMPLINT))
+            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_DEPRECATED_VARTYPE_IMPLINT))
         else:
             raise Warning("unrecognized variable type")
 
@@ -4447,7 +4447,7 @@ cdef class Model:
         elif vtype in ['I', 'INTEGER']:
             PY_SCIP_CALL(SCIPchgVarType(self._scip, var.scip_var, SCIP_VARTYPE_INTEGER, &infeasible))
         elif vtype in ['M', 'IMPLINT']:
-            PY_SCIP_CALL(SCIPchgVarType(self._scip, var.scip_var, SCIP_VARTYPE_IMPLINT, &infeasible))
+            PY_SCIP_CALL(SCIPchgVarType(self._scip, var.scip_var, SCIP_DEPRECATED_VARTYPE_IMPLINT, &infeasible))
         else:
             raise Warning("unrecognized variable type")
         if infeasible:

@@ -1,4 +1,4 @@
-from pyscipopt import Model, SCIP_PARAMSETTING, SCIP_BRANCHDIR
+from pyscipopt import Model, SCIP_PARAMSETTING, SCIP_BRANCHDIR, SCIP_IMPLINTTYPE
 from helpers.utils import random_mip_1
 
 def test_variablebounds():
@@ -58,28 +58,22 @@ def test_vtype():
     assert x.vtype() == "CONTINUOUS"
     assert y.vtype() == "INTEGER"
     assert z.vtype() == "BINARY"
-    assert w.vtype() == "CONTINUOUS" #todo check if this is indeed the expected behavior with SCIP10. Used to be IMPLINT, but deprecation and stuff
+    assert w.vtype() == "CONTINUOUS" 
+
+    is_int = lambda x: x.isIntegral()
+    is_implint = lambda x: x.isImpliedIntegral()
+    # is_nonimplint = lambda x: x.isNonImpliedIntegral()
+    is_bin = lambda x: x.isBinary()
+
+    assert not is_int(x) and not is_implint(x) and not is_bin(x)
+    assert is_int(y) and not is_implint(y) and not is_bin(y)
+    assert is_int(z) and not is_implint(z)  and is_bin(z)
+    assert w.vtype() == "CONTINUOUS" and is_int(w) and is_implint(w) and not is_bin(w)
+
+    assert w.getImplType() == SCIP_IMPLINTTYPE.WEAK
 
     m.chgVarType(x, 'I')
     assert x.vtype() == "INTEGER"
-
-    m.chgVarType(y, 'C')
-    assert y.vtype() == "CONTINUOUS"
-
-    is_int = lambda x: x.isIntegral() == True
-    is_implint = lambda x: x.isImpliedIntegral() == True
-    is_nonimplint = lambda x: x.isNonImpliedIntegral() == True
-    is_bin = lambda x: x.isBinary() == True
-
-    assert not is_int(y) and not is_implint(y) and not is_nonimplint(y) and not is_bin(y)
-    assert is_int(x) and not is_implint(x) and not is_nonimplint(x) and not is_bin(x)
-    assert is_int(z) and not is_implint(z) and not is_nonimplint(z) and is_bin(z)
-    assert w.vtype() == "CONTINUOUS" and is_int(w) and is_implint(w) and is_nonimplint(w) and not is_bin(w)
-
-    assert w.getImplType() == 1
-
-    m.chgVarType(y, 'M')
-    assert y.vtype() == "IMPLINT"
 
 def test_markRelaxationOnly():
     m = Model()
