@@ -38,8 +38,8 @@ We can construct the optimization problem as follows:
   y = scip.addVar(vtype='C', lb=0, ub=None, name='y')
   z = scip.addVar(vtype='C', lb=0, ub=None, name='z')
   cons_1 = scip.addCons(x + y <= 5, name="cons_1")
-  cons_2 = scip.addCons(y + z >= 3, name="cons_2")
-  cons_3 = scip.addCons(x + y == 5, name="cons_3")
+  cons_2 = scip.addCons(x + z >= 3, name="cons_2")
+  cons_3 = scip.addCons(y + z == 4, name="cons_3")
   scip.setObjective(2 * x + 3 * y - 5 * z, sense="minimize")
   scip.optimize()
 

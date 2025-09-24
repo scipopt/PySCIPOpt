@@ -164,6 +164,30 @@ def test_expr_from_matrix_vars():
         for term, coeff in expr_list:
             assert len(term) == 3
 
+def test_matrix_sum_argument():
+    m = Model()
+
+    # compare the result of summing 2d array to a scalar with a scalar
+    x = m.addMatrixVar((2, 3), "x", "I", ub=4)
+    m.addCons(x.sum() == 24)
+
+    # compare the result of summing 2d array to 1d array
+    y = m.addMatrixVar((2, 4), "y", "I", ub=4)
+    m.addMatrixCons(x.sum(axis=1) == y.sum(axis=1))
+
+    # compare the result of summing 3d array to a 2d array with a 2d array
+    z = m.addMatrixVar((2, 3, 4), "z", "I", ub=4)
+    m.addMatrixCons(z.sum(axis=2) == x)
+    m.addMatrixCons(z.sum(axis=1) == y)
+
+    # to fix the element values
+    m.addMatrixCons(z == np.ones((2, 3, 4)))
+
+    m.setObjective(x.sum() + y.sum() + z.sum(), "maximize")
+    m.optimize()
+
+    assert (m.getVal(x) == np.full((2, 3), 4)).all().all()
+    assert (m.getVal(y) == np.full((2, 4), 3)).all().all()
 
 def test_add_cons_matrixVar():
     m = Model()
@@ -336,3 +360,32 @@ def test_performance():
     orig_time = end_orig - start_orig
 
     assert m.isGT(orig_time, matrix_time)
+
+
+def test_matrix_cons_indicator():
+    m = Model()
+    x = m.addMatrixVar((2, 3), vtype="I", ub=10)
+    y = m.addMatrixVar(x.shape, vtype="I", ub=10)
+    is_equal = m.addMatrixVar((1, 2), vtype="B")
+
+    # shape of cons is not equal to shape of is_equal
+    with pytest.raises(Exception):
+        m.addMatrixConsIndicator(x >= y, is_equal)
+
+    for i in range(2):
+        m.addMatrixConsIndicator(x[i] >= y[i], is_equal[0, i])
+        m.addMatrixConsIndicator(x[i] <= y[i], is_equal[0, i])
+
+        m.addMatrixConsIndicator(x[i] >= 5, is_equal[0, i])
+        m.addMatrixConsIndicator(y[i] <= 5, is_equal[0, i])
+
+    for i in range(3):
+        m.addMatrixConsIndicator(x[:, i] >= y[:, i], is_equal[0])
+        m.addMatrixConsIndicator(x[:, i] <= y[:, i], is_equal[0])
+
+    m.setObjective(is_equal.sum(), "maximize")
+    m.optimize()
+
+    assert m.getVal(is_equal).sum() == 2
+    assert (m.getVal(x) == m.getVal(y)).all().all()
+    assert (m.getVal(x) == np.array([[5, 5, 5], [5, 5, 5]])).all().all()

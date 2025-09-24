@@ -2,11 +2,22 @@
 
 ## Unreleased
 ### Added
+- More support for AND-Constraints
 - Added support for knapsack constraints
 - Added isPositive(), isNegative(), isFeasLE(), isFeasLT(), isFeasGE(), isFeasGT(), isHugeValue(), and tests
 - Added SCIP_LOCKTYPE, addVarLocksType(), getNLocksDown(), getNLocksUp(), getNLocksDownType(), getNLocksUpType(), and tests
+- Added addMatrixConsIndicator(), and tests
+- Added SCIPvarMarkRelaxationOnly, SCIPvarIsRelaxationOnly, SCIPvarMarkDeletable, SCIPvarIsDeletable, and tests
+- Wrapped SCIPgetNLPBranchCands
+- Wrapped SCIPprintStatisticsJson
+- Added 4 new events: TYPECHANGED, IMPLTYPECHANGED, DUALBOUNDIMPROVED, GAPUPDATED.
+- Support for new implied integrality
+- Wrapped varIsBinary(), varIsIntegral(), varIsImpliedIntegral(), varIsNonImpliedIntegral(), varGetImplType()
+- Added support for IISFinder
 ### Fixed
+- Raised an error when an expression is used when a variable is required
 ### Changed
+- MatrixExpr.sum() now supports axis arguments and can return either a scalar or MatrixExpr depending on the result dimensions
 ### Removed
 
 ## 5.5.0 - 2025.05.06
