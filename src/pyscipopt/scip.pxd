@@ -989,7 +989,7 @@ cdef extern from "scip/scip.h":
                                    SCIP_RETCODE (*readercopy) (SCIP* scip, SCIP_READER* reader),
                                    SCIP_RETCODE (*readerfree) (SCIP* scip, SCIP_READER* reader),
                                    SCIP_RETCODE (*readerread) (SCIP* scip, SCIP_READER* reader, const char* filename, SCIP_RESULT* result),
-                                   SCIP_RETCODE (*readerwrite) (SCIP* scip, SCIP_READER* reader, FILE* file,
+                                   SCIP_RETCODE (*readerwrite) (SCIP* scip, SCIP_READER* reader, FILE* file, const char* filename,
                                                                 const char* name, SCIP_PROBDATA* probdata, SCIP_Bool transformed,
                                                                 SCIP_OBJSENSE objsense, SCIP_Real objoffset, SCIP_Real objscale,
                                                                 SCIP_RATIONAL* objoffsetexact, SCIP_RATIONAL* objscaleexact,
@@ -1194,7 +1194,7 @@ cdef extern from "scip/scip.h":
                                       int         priority,
                                       SCIP_RETCODE (*iisfindercopy) (SCIP* scip, SCIP_IISFINDER* iisfinder),
                                       SCIP_RETCODE (*iisfinderfree) (SCIP* scip, SCIP_IISFINDER* iisfinder),
-                                      SCIP_RETCODE (*iisfinderexec) (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_Real timelim, SCIP_Longint nodelim, SCIP_Bool removebounds, SCIP_Bool silent, SCIP_RESULT* result),
+                                      SCIP_RETCODE (*iisfinderexec) (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_RESULT* result),
                                       SCIP_IISFINDERDATA*   iisfinderdata)
 
     SCIP_IISFINDERDATA* SCIPiisfinderGetData(SCIP_IISFINDER* iisfinder)
