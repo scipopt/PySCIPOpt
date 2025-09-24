@@ -26,8 +26,7 @@ cdef class Relax:
         
     def relaxexec(self):
         '''calls execution method of relaxation handler'''
-        print("relaxexec() is a fundamental callback and should be implemented in the derived class")
-        return {}
+        raise NotImplementedError("relaxexec() is a fundamental callback and should be implemented in the derived class")
 
 cdef SCIP_RETCODE PyRelaxCopy (SCIP* scip, SCIP_RELAX* relax) noexcept with gil:
     return SCIP_OKAY

@@ -41,9 +41,7 @@ def test_relaxator():
     assert m.getObjVal() > 10e4
 
 class EmptyRelaxator(Relax):
-    def relaxexec(self):
-        pass
-        # doesn't return anything
+    pass
 
 def test_empty_relaxator():
     m = Model()
