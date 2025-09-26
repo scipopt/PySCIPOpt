@@ -1727,6 +1727,16 @@ cdef class Variable(Expr):
         """
         return SCIPvarIsDeletable(self.scip_var)
 
+    def isActive(self):
+        """
+        Returns whether variable is an active (neither fixed nor aggregated) variable.
+
+        Returns
+        -------
+        boolean
+        """
+        return SCIPvarIsActive(self.scip_var)
+
     def getNLocksDown(self):
         """
         Returns the number of locks for rounding down.

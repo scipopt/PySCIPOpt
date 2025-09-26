@@ -816,6 +816,7 @@ cdef extern from "scip/scip.h":
     SCIP_Longint SCIPvarGetNBranchingsCurrentRun(SCIP_VAR* var, SCIP_BRANCHDIR dir)
     SCIP_Bool SCIPvarMayRoundUp(SCIP_VAR* var)
     SCIP_Bool SCIPvarMayRoundDown(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsActive(SCIP_VAR* var)
 
     # LP Methods
     SCIP_RETCODE SCIPgetLPColsData(SCIP* scip, SCIP_COL*** cols, int* ncols)
