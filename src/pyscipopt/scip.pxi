@@ -4130,6 +4130,39 @@ cdef class Model:
         PY_SCIP_CALL(SCIPdelVar(self._scip, var.scip_var, &deleted))
         return deleted
 
+    def aggregateVars(self, Variable varx, Variable vary, scalarx=1.0, scalary=-1.0, rhs=0.0):
+        """
+        Aggregate varx and vary: calls SCIPaggregateVars and returns
+        (infeasible, redundant, aggregated) as Python bools.
+
+        Parameters
+        ----------
+        varx : Variable
+        vary : Variable
+        scalarx : float
+        scalary : float
+        rhs : float
+
+        Returns
+        -------
+        infeasible : bool
+        redundant : bool
+        aggregated : bool
+        """
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool redundant
+        cdef SCIP_Bool aggregated
+        PY_SCIP_CALL(SCIPaggregateVars(self._scip,
+                                    varx.scip_var,
+                                    vary.scip_var,
+                                    scalarx,
+                                    scalary,
+                                    rhs,
+                                    &infeasible,
+                                    &redundant,
+                                    &aggregated))
+        return infeasible, redundant, aggregated
+
     def tightenVarLb(self, Variable var, lb, force=False):
         """
         Tighten the lower bound in preprocessing or current node, if the bound is tighter.
