@@ -1,5 +1,6 @@
 from pyscipopt import (
-    Model
+    Model,
+    SCIP_PARAMSETTING
 )
 from typing import List, Optional
 
@@ -71,6 +72,26 @@ if __name__ == "__main__":
     )
 
     model = Model()
+
+    # isolate test: disable many automatic presolvers/propagators
+    model.setSeparating(SCIP_PARAMSETTING.OFF)
+    model.setHeuristics(SCIP_PARAMSETTING.OFF)
+    model.disablePropagation()
+    for key in (
+        "presolving/boundshift/maxrounds",
+        "presolving/domcol/maxrounds",
+        "presolving/dualsparsify/maxrounds",
+        "presolving/implics/maxrounds",
+        "presolving/inttobinary/maxrounds",
+        "presolving/milp/maxrounds",
+        "presolving/sparsify/maxrounds",
+        "presolving/trivial/maxrounds",
+        "propagating/dualfix/maxprerounds",
+        "propagating/probing/maxprerounds",
+        "propagating/symmetry/maxprerounds",
+        "constraints/linear/maxprerounds",
+    ):
+        model.setParam(key, 0)
 
     # run presolve on instance
     model.presolve()
