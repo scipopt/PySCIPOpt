@@ -1,3 +1,18 @@
+"""
+Example showing a custom presolver using PySCIPOpt's Presol plugin.
+
+This example reproduces the logic of boundshift.c from the SCIP source
+as closely as possible. Some additional wrappers were required to expose
+SCIP functionality to Python (e.g., scip.aggregateVars()). Other logic
+(e.g., REALABS()) can be implemented in Python to mirror SCIP behaviour
+without extra wrappers. This illustrates that users can implement
+presolvers in Python by combining existing PySCIPOpt wrappers with
+Python code and SCIP documentation.
+
+A simple knapsack problem was chosen to let the presolver plugin
+operate on.
+"""
+
 import math
 from pyscipopt import (
     Model,
