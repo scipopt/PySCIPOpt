@@ -119,4 +119,6 @@ def test_isActive():
     assert x.isActive()
     m.freeProb()
 
-    # TODO lacks tests for cases when returned false due to fixed (probably during probing) or aggregated
+    # TODO lacks tests for cases when returned false due to 
+    # - fixed (probably during probing)
+    # - aggregated
