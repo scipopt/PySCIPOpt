@@ -1,8 +1,176 @@
+import math
 from pyscipopt import (
     Model,
-    SCIP_PARAMSETTING
+    SCIP_PARAMSETTING,
+    SCIP_PRESOLTIMING,
+    Presol,
+    SCIP_RESULT
 )
 from typing import List, Optional
+
+
+class ShiftboundPresolver(Presol):
+    """
+    A presolver that converts variable domains from [a, b] to [0, b - a].
+
+    Attributes:
+    maxshift: float - Maximum absolute shift allowed.
+    flipping: bool - Whether to allow flipping (multiplying by -1) for
+                     differentiation.
+    integer: bool - Whether to shift only integer ranges.
+    """
+
+    def __init__(
+        self,
+        maxshift: float = float("inf"),
+        flipping: bool = True,
+        integer: bool = True,
+    ):
+        self.maxshift = maxshift
+        self.flipping = flipping
+        self.integer = integer
+
+    def presolexec(self, nrounds, presoltiming):
+        # the greatest absolute value by which bounds can be shifted to avoid
+        # large constant offsets
+        MAXABSBOUND = 1000.0
+
+        scip = self.model
+
+        def REALABS(x):
+            return math.fabs(x)
+
+        # scip.isIntegral() not implemented in wrapper. Work-around:
+        # compute integrality using epsilon from SCIP settings.
+        def SCIPisIntegral(val):
+            return val - math.floor(val + scip.epsilon()) <= scip.epsilon()
+
+        # SCIPadjustedVarLb() not implemented in wrapper. Work-around:
+        # return the adjusted (i.e., rounded, if var is integral type) bound.
+        # Does not change the bounds of the variable.
+        def SCIPadjustedVarBound(var, val):
+            if val < 0 and -val >= scip.infinity():
+                return -scip.infinity()
+            elif val > 0 and val >= scip.infinity():
+                return scip.infinity()
+            elif var.vtype() != "CONTINUOUS":
+                return scip.feasCeil(val)
+            elif REALABS(val) <= scip.epsilon():
+                return 0.0
+            else:
+                return val
+
+        # check whether aggregation of variables is not allowed
+        if scip.getParam("presolving/donotaggr"):
+            return {"result": SCIP_RESULT.DIDNOTRUN}
+
+        scipvars = scip.getVars()
+        nbinvars = scip.getNBinVars()  # number of binary variables
+        # infer number of non-binary variables
+        nvars = scip.getNVars() - nbinvars
+
+        # if number of non-binary variables equals zero
+        if nvars == 0:
+            return {"result": SCIP_RESULT.DIDNOTRUN}
+
+        # copy the non-binary variables into a separate list.
+        # this slice works because SCIP orders variables by type, starting with
+        # binary variables
+        vars = scipvars[nbinvars:]
+
+        # loop over the non-binary variables
+        for var in reversed(vars):
+            # sanity check that variable is indeed not binary
+            assert var.vtype() != "BINARY"
+
+            # do not shift non-active (fixed or (multi-)aggregated) variables
+            if not var.isActive():
+                continue
+
+            # get current variable's bounds
+            lb = var.getLbGlobal()
+            ub = var.getUbGlobal()
+
+            # It can happen that integer variable bounds have not been
+            # propagated yet or contain small noise. This could result in an
+            # aggregation that might trigger assertions when updating bounds of
+            # aggregated variables (floating-point rounding errors).
+            # check if variable is integer
+            if var.vtype != "CONTINUOUS":
+                # assert if bounds are integral
+                assert SCIPisIntegral(lb)
+                assert SCIPisIntegral(ub)
+
+                # round the bound values for integral variables
+                lb = SCIPadjustedVarBound(var, lb)
+                ub = SCIPadjustedVarBound(var, ub)
+
+            # sanity check lb < ub
+            assert scip.isLE(lb, ub)
+            # check if variable is already fixed
+            if scip.isEQ(lb, ub):
+                continue
+            # only operate on integer variables
+            if self.integer and not SCIPisIntegral(ub - lb):
+                continue
+
+            # bounds are shiftable if all following conditions hold
+            cases = [
+                not scip.isEQ(lb, 0.0),
+                scip.isLT(ub, scip.infinity()),
+                scip.isGT(lb, -scip.infinity()),
+                scip.isLT(ub - lb, self.maxshift),
+                scip.isLE(REALABS(lb), MAXABSBOUND),
+                scip.isLE(REALABS(ub), MAXABSBOUND),
+            ]
+            if all(cases):
+                # indicators for status of aggregation
+                infeasible = False
+                redundant = False
+                aggregated = False
+
+                # create new variable with same properties as the current
+                # variable but with an added "_shift" suffix
+                orig_name = var.name
+                newvar = scip.addVar(
+                    name=f"{orig_name}_shift",
+                    vtype=f"{var.vtype()}",
+                    lb=0.0,
+                    ub=(ub - lb),
+                    obj=0.0,
+                )
+
+                # aggregate old variable with new variable
+                # check if self.flipping is True
+                if self.flipping:
+                    # check if |ub| < |lb|
+                    if REALABS(ub) < REALABS(lb):
+                        infeasible, redundant, aggregated = scip.aggregateVars(
+                            var, newvar, 1.0, 1.0, ub
+                        )
+                    else:
+                        infeasible, redundant, aggregated = scip.aggregateVars(
+                            var, newvar, 1.0, -1.0, lb
+                        )
+                else:
+                    infeasible, redundant, aggregated = scip.aggregateVars(
+                        var, newvar, 1.0, -1.0, lb
+                    )
+
+                # problem has now become infeasible
+                if infeasible:
+                    result = SCIP_RESULT.CUTOFF
+                else:
+                    # sanity check flags
+                    assert redundant
+                    assert aggregated
+
+                    result = SCIP_RESULT.SUCCESS
+
+            else:
+                result = SCIP_RESULT.DIDNOTFIND
+
+        return {"result": result}
 
 
 def knapsack(
@@ -92,6 +260,19 @@ if __name__ == "__main__":
         "constraints/linear/maxprerounds",
     ):
         model.setParam(key, 0)
+
+    # register and apply custom boundshift presolver
+    presolver = ShiftboundPresolver(
+        maxshift=float("inf"), flipping=True, integer=True
+    )
+    model.includePresol(
+        presolver,
+        "shiftbound",
+        "converts variables with domain [a,b] to variables with domain [0,b-a]",
+        priority=7900000,
+        maxrounds=-1,
+        timing=SCIP_PRESOLTIMING.FAST,
+    )
 
     # run presolve on instance
     model.presolve()
