@@ -67,3 +67,29 @@ def test_aggregate_vars_success():
     assert aggregated
     # model should stay consistent
     model.optimize()
+
+
+def test_aggregate_vars_infeasible_binary_sum_exceeds_domain():
+    """
+    Aggregation detects infeasibility for x + y = 3 on binary variables,
+    since max(x + y) = 2 in {0,1} x {0,1}.
+    """
+    model, x, y = _build_model_xy(
+        vtype="B", lbx=0.0, ubx=1.0, lby=0.0, uby=1.0
+    )
+
+    presol = _AggPresol(x, y, 1.0, 1.0, 3.0)
+    model.includePresol(
+        presol,
+        "agg-infeas",
+        "aggregate x and y to infeasibility",
+        priority=10**7,
+        maxrounds=1,
+        timing=SCIP_PRESOLTIMING.FAST,
+    )
+
+    model.presolve()
+    assert presol.last is not None
+    infeasible, redundant, aggregated = presol.last
+
+    assert infeasible
