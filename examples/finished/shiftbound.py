@@ -111,7 +111,7 @@ class ShiftboundPresolver(Presol):
             # aggregation that might trigger assertions when updating bounds of
             # aggregated variables (floating-point rounding errors).
             # check if variable is integer
-            if var.vtype != "CONTINUOUS":
+            if var.vtype() != "CONTINUOUS":
                 # assert if bounds are integral
                 assert SCIPisIntegral(lb)
                 assert SCIPisIntegral(ub)
@@ -254,7 +254,6 @@ if __name__ == "__main__":
         instance_name, sizes, values, upper_bounds, lower_bounds, capacity
     )
 
-    model = Model()
 
     # isolate test: disable many automatic presolvers/propagators
     model.setSeparating(SCIP_PARAMSETTING.OFF)
