@@ -2509,8 +2509,8 @@ cdef class _VarArray:
         else:
             raise TypeError(f"Expected Variable or list of Variable, got {type(vars)}.")
 
-        if vars:
-            self.size = len(vars)
+        self.size = len(vars)
+        if self.size:
             self.ptr = <SCIP_VAR**> malloc(self.size * sizeof(SCIP_VAR*))
             for i, var in enumerate(vars):
                 if not isinstance(var, Variable):
