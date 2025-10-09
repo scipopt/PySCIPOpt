@@ -170,6 +170,10 @@ def test_expr_from_matrix_vars():
 def test_matrix_sum_argument():
     m = Model()
 
+    # Return a array when axis isn't None
+    res = m.addMatrixVar((3, 1)).sum(axis=0)
+    assert isinstance(res, MatrixExpr) and res.shape == (1, 1)
+
     # compare the result of summing 2d array to a scalar with a scalar
     x = m.addMatrixVar((2, 3), "x", "I", ub=4)
     m.addMatrixCons(x.sum() == 24)
