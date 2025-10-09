@@ -4,6 +4,7 @@
 ### Added
 ### Fixed
 ### Changed
+- Add a PEP 735 dependency group for test dependencies in `pyproject.toml`
 ### Removed
 
 ## v5.6.0 - 2025.08.26

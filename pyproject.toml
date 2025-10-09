@@ -26,6 +26,14 @@ dynamic = ["version"]
 [project.urls]
 Homepage = "https://github.com/SCIP-Interfaces/PySCIPOpt"
 
+[dependency-groups]
+test = [
+    "coverage",
+    "networkx",
+    "pytest",
+    "pytest-xdist",
+]
+
 [tool.pytest.ini_options]
 norecursedirs = ["check"]
 testpaths = ["tests"]

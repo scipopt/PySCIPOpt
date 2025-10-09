@@ -36,7 +36,7 @@ jobs:
       - name: Prepare python environment
         run: |
           python -m pip install --upgrade pip
-          python -m pip install networkx cython pytest-cov numpy
+          python -m pip install --group test
 
       - name: Install PySCIPOpt
         run: |
@@ -47,7 +47,7 @@ jobs:
       - name: Run pyscipopt tests
         run: |
           sudo apt-get install tzdata locales -y && sudo locale-gen pt_PT && sudo update-locale # add pt_PT locale that is used in tests
-          coverage run -m pytest
+          coverage run -m pytest -nauto
           coverage report -m
           coverage xml
       
