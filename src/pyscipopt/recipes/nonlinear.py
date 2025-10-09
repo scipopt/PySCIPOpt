@@ -1,6 +1,6 @@
 from pyscipopt import Model
 
-def set_nonlinear_objective(model: Model, expr, sense="minimize"):
+def set_nonlinear_objective(model: Model, expr, sense: str = "minimize"):
     """
     Takes a nonlinear expression and performs an epigraph reformulation.
     """
