@@ -39,16 +39,25 @@ version = {attr = "pyscipopt._version.__version__"}
 [tool.cibuildwheel]
 skip="pp*" # currently doesn't work with PyPy
 manylinux-x86_64-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"
 
 
 [tool.cibuildwheel.linux]
 skip="pp* cp36* cp37* *musllinux*"
-before-all = [
-    "(apt-get update && apt-get install --yes wget) || yum install -y wget zlib libgfortran || brew install wget",
-    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.7.0/libscip-linux.zip -O scip.zip",
-    "unzip scip.zip",
-    "mv scip_install scip"
-    ]
+before-all = '''
+#!/bin/bash
+(apt-get update && apt-get install --yes wget) || yum install -y wget zlib libgfortran || brew install wget
+AARCH=$(uname -m)
+echo "------"
+echo $AARCH
+if [[ $AARCH == "aarch64" ]]; then
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.8.0/libscip-linux-arm.zip -O scip.zip
+else
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.8.0/libscip-linux.zip -O scip.zip
+fi
+unzip scip.zip
+mv scip_install scip
+'''
 environment = { SCIPOPTDIR="$(pwd)/scip", LD_LIBRARY_PATH="$(pwd)/scip/lib:$LD_LIBRARY_PATH", DYLD_LIBRARY_PATH="$(pwd)/scip/lib:$DYLD_LIBRARY_PATH", PATH="$(pwd)/scip/bin:$PATH", PKG_CONFIG_PATH="$(pwd)/scip/lib/pkgconfig:$PKG_CONFIG_PATH", RELEASE="true"}
 
 
@@ -58,10 +67,10 @@ before-all = '''
 #!/bin/bash
 brew install wget zlib gcc
 if [[ $CIBW_ARCHS == *"arm"* ]]; then
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.7.0/libscip-macos-arm.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.8.0/libscip-macos-arm.zip -O scip.zip
     export MACOSX_DEPLOYMENT_TARGET=14.0
 else
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.7.0/libscip-macos-intel.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.8.0/libscip-macos-intel.zip -O scip.zip
     export MACOSX_DEPLOYMENT_TARGET=13.0
 fi
 unzip scip.zip
@@ -87,7 +96,7 @@ repair-wheel-command = '''
 skip="pp* cp36* cp37*"
 before-all = [
     "choco install 7zip wget",
-    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.7.0/libscip-windows.zip -O scip.zip",
+    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.8.0/libscip-windows.zip -O scip.zip",
     "\"C:\\Program Files\\7-Zip\\7z.exe\" x \"scip.zip\" -o\"scip-test\"",
     "mv .\\scip-test\\scip_install .\\test",
     "mv .\\test .\\scip"
