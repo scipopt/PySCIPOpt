@@ -29,6 +29,7 @@ Homepage = "https://github.com/SCIP-Interfaces/PySCIPOpt"
 [dependency-groups]
 test = [
     "coverage",
+    "cython",
     "networkx",
     "pytest",
     "pytest-xdist",
