@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 ### Fixed
+- Implemented all binary operations between MatrixExpr and GenExpr
 ### Changed
 ### Removed
 
