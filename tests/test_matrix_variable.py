@@ -211,19 +211,19 @@ def test_matrix_sum_argument():
 
 
 def test_sum_performance():
-    n = 200
+    m, n = 1000, 100
     start_orig = time()
 
     m = Model()
     x = {}
-    for i in range(n):
+    for i in range(m):
         for j in range(n):
             x[(i, j)] = m.addVar(vtype="C", obj=1)
-    quicksum(x[i, j] for i in range(n) for j in range(n))
+    quicksum(x[i, j] for i in range(m) for j in range(n))
     end_orig = start_matrix = time()
 
     m = Model()
-    m.addMatrixVar((n, n), vtype="C", obj=1).sum()
+    m.addMatrixVar((m, n), vtype="C", obj=1).sum()
     end_matrix = time()
 
     matrix_time = end_matrix - start_matrix
