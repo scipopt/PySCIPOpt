@@ -396,6 +396,8 @@ def test_matrix_cons_indicator():
     assert (m.getVal(x) == np.array([[5, 5, 5], [5, 5, 5]])).all().all()
 
 
+_binop_model = Model()
+
 def var():
     return _binop_model.addVar()
 
@@ -409,7 +411,6 @@ def matvar():
 @pytest.mark.parametrize("left", [var(), genexpr(), matvar()], ids=["var", "genexpr", "matvar"])
 @pytest.mark.parametrize("op", [operator.add, operator.sub, operator.mul, operator.truediv])
 def test_binop(op, left, right):
-    _binop_model = Model()
     res = op(left, right)
     assert isinstance(res, (Expr, GenExpr, MatrixExpr))
 
