@@ -11870,6 +11870,9 @@ def readStatistics(filename):
 
         seen_cons = 0
         for i, line in enumerate(data):
+            if line == "\n":
+                continue
+
             split_line = line.split(":")
             split_line[1] = split_line[1][:-1] # removing \n
             stat_name = split_line[0].strip()

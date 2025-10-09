@@ -62,8 +62,9 @@ if platform.system() in ["Linux", "Darwin"]:
     extra_link_args.append(f"-Wl,-rpath,{libdir}")
 
 # enable debug mode if requested
-if os.environ.get("PYSCIPOPT_DEBUG")=="True":
+if "--debug" in sys.argv:
     extra_compile_args.append("-UNDEBUG")
+    sys.argv.remove("--debug")
 
 use_cython = True
 
@@ -109,7 +110,7 @@ with open("README.md") as f:
 
 setup(
     name="PySCIPOpt",
-    version="5.5.0",
+    version="5.6.0",
     description="Python interface and modeling environment for SCIP",
     long_description=long_description,
     long_description_content_type="text/markdown",
