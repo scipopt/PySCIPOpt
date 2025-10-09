@@ -396,8 +396,6 @@ def test_matrix_cons_indicator():
     assert (m.getVal(x) == np.array([[5, 5, 5], [5, 5, 5]])).all().all()
 
 
-_binop_model = Model()
-
 def var():
     return _binop_model.addVar()
 
@@ -411,5 +409,23 @@ def matvar():
 @pytest.mark.parametrize("left", [var(), genexpr(), matvar()], ids=["var", "genexpr", "matvar"])
 @pytest.mark.parametrize("op", [operator.add, operator.sub, operator.mul, operator.truediv])
 def test_binop(op, left, right):
+    _binop_model = Model()
     res = op(left, right)
     assert isinstance(res, (Expr, GenExpr, MatrixExpr))
+
+
+def test_matrix_matmul_return_type():
+    # test #1058, require returning type is MatrixExpr not MatrixVariable
+    m = Model()
+
+    # test 1D @ 1D → 0D
+    x = m.addMatrixVar(3)
+    assert type(x @ x) is MatrixExpr
+
+    # test 1D @ 1D → 2D
+    assert type(x[:, None] @ x[None, :]) is MatrixExpr
+
+    # test 2D @ 2D → 2D
+    y = m.addMatrixVar((2, 3))
+    z = m.addMatrixVar((3, 4))
+    assert type(y @ z) is MatrixExpr
