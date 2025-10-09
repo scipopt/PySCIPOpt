@@ -214,16 +214,16 @@ def test_sum_performance():
     m, n = 1000, 100
     start_orig = time()
 
-    m = Model()
+    model = Model()
     x = {}
     for i in range(m):
         for j in range(n):
-            x[(i, j)] = m.addVar(vtype="C", obj=1)
+            x[(i, j)] = model.addVar(vtype="C", obj=1)
     quicksum(x[i, j] for i in range(m) for j in range(n))
     end_orig = start_matrix = time()
 
-    m = Model()
-    m.addMatrixVar((m, n), vtype="C", obj=1).sum()
+    model = Model()
+    model.addMatrixVar((m, n), vtype="C", obj=1).sum()
     end_matrix = time()
 
     matrix_time = end_matrix - start_matrix
