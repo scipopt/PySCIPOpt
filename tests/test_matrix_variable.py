@@ -1,11 +1,24 @@
-import pdb
-import pprint
-import pytest
-from pyscipopt import Model, Variable, log, exp, cos, sin, sqrt
-from pyscipopt import Expr, MatrixExpr, MatrixVariable, MatrixExprCons, MatrixConstraint, ExprCons
 from time import time
 
 import numpy as np
+import pytest
+
+from pyscipopt import (
+    Expr,
+    ExprCons,
+    MatrixConstraint,
+    MatrixExpr,
+    MatrixExprCons,
+    MatrixVariable,
+    Model,
+    Variable,
+    cos,
+    exp,
+    log,
+    quicksum,
+    sin,
+    sqrt,
+)
 
 
 def test_catching_errors():
@@ -196,6 +209,28 @@ def test_matrix_sum_argument():
     assert (m.getVal(x) == np.full((2, 3), 4)).all().all()
     assert (m.getVal(y) == np.full((2, 4), 3)).all().all()
 
+
+def test_sum_performance():
+    n = 200
+    start_orig = time()
+
+    m = Model()
+    x = {}
+    for i in range(n):
+        for j in range(n):
+            x[(i, j)] = m.addVar(vtype="C", obj=1)
+    quicksum(x[i, j] for i in range(n) for j in range(n))
+    end_orig = start_matrix = time()
+
+    m = Model()
+    m.addMatrixVar((n, n), vtype="C", obj=1).sum()
+    end_matrix = time()
+
+    matrix_time = end_matrix - start_matrix
+    orig_time = end_orig - start_orig
+    assert m.isGT(orig_time, matrix_time)
+
+
 def test_add_cons_matrixVar():
     m = Model()
     matrix_variable = m.addMatrixVar(shape=(3, 3), vtype="B", name="A", obj=1)
@@ -343,7 +378,7 @@ def test_MatrixVariable_attributes():
     assert x.varMayRound().tolist() == [[True, True], [True, True]]
 
 @pytest.mark.skip(reason="Performance test")
-def test_performance():
+def test_add_cons_performance():
     start_orig = time()
     m = Model()
     x = {}
