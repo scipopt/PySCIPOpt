@@ -4,6 +4,7 @@
 ### Added
 ### Fixed
 ### Changed
+- Speed up MatrixVariable.sum(axis=None) via quicksum
 ### Removed
 
 ## v5.6.0 - 2025.08.26
