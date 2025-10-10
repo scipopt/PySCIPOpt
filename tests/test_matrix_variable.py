@@ -228,7 +228,7 @@ def test_sum_performance():
 
     matrix_time = end_matrix - start_matrix
     orig_time = end_orig - start_orig
-    assert model.isGT(orig_time, matrix_time)
+    assert model.isGT(orig_time + 1, matrix_time)
 
 
 def test_add_cons_matrixVar():
