@@ -211,7 +211,7 @@ def test_matrix_sum_argument():
 
 
 def test_sum_performance():
-    m, n = 1000, 100
+    m, n = 2000, 1000
     start_orig = time()
 
     model = Model()
