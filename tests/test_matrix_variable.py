@@ -431,3 +431,20 @@ def test_matrix_cons_indicator():
     assert m.getVal(is_equal).sum() == 2
     assert (m.getVal(x) == m.getVal(y)).all().all()
     assert (m.getVal(x) == np.array([[5, 5, 5], [5, 5, 5]])).all().all()
+
+
+def test_matrix_matmul_return_type():
+    # test #1058, require returning type is MatrixExpr not MatrixVariable
+    m = Model()
+
+    # test 1D @ 1D → 0D
+    x = m.addMatrixVar(3)
+    assert type(x @ x) is MatrixExpr
+
+    # test 1D @ 1D → 2D
+    assert type(x[:, None] @ x[None, :]) is MatrixExpr
+
+    # test 2D @ 2D → 2D
+    y = m.addMatrixVar((2, 3))
+    z = m.addMatrixVar((3, 4))
+    assert type(y @ z) is MatrixExpr

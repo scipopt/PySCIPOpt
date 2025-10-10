@@ -101,7 +101,10 @@ class MatrixExpr(np.ndarray):
     
     def __rsub__(self, other):
         return super().__rsub__(other).view(MatrixExpr)
-    
+
+    def __matmul__(self, other):
+        return super().__matmul__(other).view(MatrixExpr)
+
 class MatrixGenExpr(MatrixExpr):
     pass
 

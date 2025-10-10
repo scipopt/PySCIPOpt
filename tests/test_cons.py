@@ -210,6 +210,17 @@ def test_cons_indicator_with_matrix_binvar():
 
     assert m.isEQ(m.getVal(x), 1)
 
+def test_cons_knapsack_with_matrix_vars():
+    # test matrix variable vars #1043
+    m = Model()
+    vars = m.addMatrixVar(3, vtype="B")
+    m.addConsKnapsack(vars, [1, 2, 3], 5)
+
+    m.setObjective(vars.sum(), "maximize")
+    m.optimize()
+
+    assert (m.getVal(vars) == [0, 1, 1]).all()
+
 @pytest.mark.xfail(
     reason="addConsIndicator doesn't behave as expected when binary variable is False. See Issue #717."
 )
