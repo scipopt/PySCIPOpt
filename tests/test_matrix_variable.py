@@ -430,3 +430,20 @@ def test_ranged_matrix_cons_with_expr():
     m.optimize()
 
     assert (m.getVal(x) == np.ones(3)).all()
+
+
+def test_matrix_matmul_return_type():
+    # test #1058, require returning type is MatrixExpr not MatrixVariable
+    m = Model()
+
+    # test 1D @ 1D → 0D
+    x = m.addMatrixVar(3)
+    assert type(x @ x) is MatrixExpr
+
+    # test 1D @ 1D → 2D
+    assert type(x[:, None] @ x[None, :]) is MatrixExpr
+
+    # test 2D @ 2D → 2D
+    y = m.addMatrixVar((2, 3))
+    z = m.addMatrixVar((3, 4))
+    assert type(y @ z) is MatrixExpr
