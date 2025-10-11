@@ -211,24 +211,21 @@ def test_matrix_sum_argument():
 
 
 def test_sum_performance():
-    m, n = 2000, 1000
+    n = 500
+    model = Model()
+    x = model.addMatrixVar((n, n))
+
+    # Original sum via `np.sum`
     start_orig = time()
+    np.sum(x)
+    end_orig = time()
 
-    model = Model()
-    x = {}
-    for i in range(m):
-        for j in range(n):
-            x[(i, j)] = model.addVar(vtype="C", obj=1)
-    quicksum(x[i, j] for i in range(m) for j in range(n))
-    end_orig = start_matrix = time()
-
-    model = Model()
-    model.addMatrixVar((m, n), vtype="C", obj=1).sum()
+    # Optimized sum via `quicksum`
+    start_matrix = time()
+    x.sum()
     end_matrix = time()
 
-    matrix_time = end_matrix - start_matrix
-    orig_time = end_orig - start_orig
-    assert model.isGT(orig_time + 1, matrix_time)
+    assert model.isGT(end_orig - start_orig, end_matrix - start_matrix)
 
 
 def test_add_cons_matrixVar():
