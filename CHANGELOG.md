@@ -2,7 +2,9 @@
 
 ## Unreleased
 ### Added
+- Added basic type stubs to help with IDE autocompletion and type checking.
 ### Fixed
+- Fixed the type of @ matrix operation result from MatrixVariable to MatrixExpr.
 ### Changed
 - Speed up MatrixVariable.sum(axis=None) via quicksum
 ### Removed
@@ -25,7 +27,6 @@
 ### Fixed
 - Raised an error when an expression is used when a variable is required
 - Fixed some compile warnings
-- Fixed the type of @ matrix operation result from MatrixVariable to MatrixExpr.
 ### Changed
 - MatrixExpr.sum() now supports axis arguments and can return either a scalar or MatrixExpr, depending on the result dimensions.
 - AddMatrixCons() also accepts ExprCons.
