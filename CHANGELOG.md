@@ -6,9 +6,10 @@
 ### Fixed
 - Fixed the type of @ matrix operation result from MatrixVariable to MatrixExpr.
 ### Changed
+- MatrixVariable now supports comparison with Expr
 ### Removed
 
-## v5.6.0 - 2025.08.26
+## 5.6.0 - 2025.08.26
 ### Added
 - More support for AND-Constraints
 - Added support for knapsack constraints
