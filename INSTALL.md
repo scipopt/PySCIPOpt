@@ -116,17 +116,16 @@ Testing new installation
 ========================
 
 To test your brand-new installation of PySCIPOpt you need
-[pytest](https://pytest.org/) on your system.
+some dependencies which can be installed via pip. The testing
+dependencies are in the `test` dependency group.
 
-    pip install pytest
-
-Here is the complete [installation
-procedure](https://docs.pytest.org/en/latest/getting-started.html).
+    pip install --group test
 
 Tests can be run in the `PySCIPOpt` directory with: :
 
     py.test # all the available tests
     py.test tests/test_name.py # a specific tests/test_name.py (Unix)
+    py.test -nauto # run tests in parallel using all available cores
 
 Ideally, the status of your tests must be passed or skipped. Running
 tests with pytest creates the `__pycache__` directory in `tests` and,

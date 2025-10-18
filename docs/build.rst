@@ -177,12 +177,13 @@ To use debug information in PySCIPOpt you need to build it with the following co
 Testing the Installation
 ==========================
 
-To test your brand-new installation of PySCIPOpt you need `pytest <https://docs.pytest.org/en/stable/>`_
-on your system. To get pytest simply run the command:
+To test your brand-new installation of PySCIPOpt you need to
+install some dependencies via pip. The testing dependencies are in
+the `test` dependency group.
 
 .. code-block:: bash
 
-  pip install pytest
+  pip install --group test
 
 Tests can be run in the PySCIPOpt directory with the commands:
 
@@ -190,6 +191,7 @@ Tests can be run in the PySCIPOpt directory with the commands:
 
   pytest # Will run all the available tests
   pytest tests/test_name.py # Will run a specific tests/test_name.py (Unix)
+  pytest -nauto # Will run tests in parallel using all available cores
 
 Ideally, the status of your tests must be passed or skipped.
 Running tests with pytest creates the __pycache__ directory in tests and, occasionally,
