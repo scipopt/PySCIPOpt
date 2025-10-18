@@ -52,13 +52,13 @@ class MatrixExpr(np.ndarray):
         res = super().sum(**kwargs)
         return res if res.size > 1 else res.item()
 
-    def __le__(self, other: Union[float, int, Expr, np.ndarray, 'MatrixExpr']) -> MatrixExprCons:
+    def __le__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 1)
 
-    def __ge__(self, other: Union[float, int, Expr, np.ndarray, 'MatrixExpr']) -> MatrixExprCons:
+    def __ge__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 5)
 
-    def __eq__(self, other: Union[float, int, Expr, np.ndarray, 'MatrixExpr']) -> MatrixExprCons:
+    def __eq__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 2)
 
     def __add__(self, other):
