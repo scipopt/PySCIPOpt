@@ -6,7 +6,7 @@
 ### Fixed
 - Fixed the type of @ matrix operation result from MatrixVariable to MatrixExpr.
 ### Changed
-- MatrixVariable supported to compare with Expr
+- MatrixVariable now supports comparison with Expr
 ### Removed
 
 ## 5.6.0 - 2025.08.26
