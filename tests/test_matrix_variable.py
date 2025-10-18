@@ -211,7 +211,7 @@ def test_matrix_sum_argument():
 
 
 def test_sum_performance():
-    n = 500
+    n = 1000
     model = Model()
     x = model.addMatrixVar((n, n))
 
