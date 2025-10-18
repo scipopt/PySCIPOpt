@@ -375,6 +375,11 @@ def test_matrix_cons_indicator():
     with pytest.raises(Exception):
         m.addMatrixConsIndicator(x >= y, is_equal)
 
+    # require MatrixExprCons or ExprCons
+    with pytest.raises(TypeError):
+        m.addMatrixConsIndicator(x)
+
+    # test MatrixExprCons
     for i in range(2):
         m.addMatrixConsIndicator(x[i] >= y[i], is_equal[0, i])
         m.addMatrixConsIndicator(x[i] <= y[i], is_equal[0, i])
@@ -386,12 +391,19 @@ def test_matrix_cons_indicator():
         m.addMatrixConsIndicator(x[:, i] >= y[:, i], is_equal[0])
         m.addMatrixConsIndicator(x[:, i] <= y[:, i], is_equal[0])
 
-    m.setObjective(is_equal.sum(), "maximize")
+    # test ExprCons
+    z = m.addVar(vtype="B")
+    binvar = m.addVar(vtype="B")
+    m.addMatrixConsIndicator(z >= 1, binvar, activeone=True)
+    m.addMatrixConsIndicator(z <= 0, binvar, activeone=False)
+
+    m.setObjective(is_equal.sum() + binvar, "maximize")
     m.optimize()
 
     assert m.getVal(is_equal).sum() == 2
     assert (m.getVal(x) == m.getVal(y)).all().all()
     assert (m.getVal(x) == np.array([[5, 5, 5], [5, 5, 5]])).all().all()
+    assert m.getVal(z) == 1
 
 
 def test_matrix_compare_with_expr():
