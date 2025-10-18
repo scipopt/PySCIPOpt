@@ -31,11 +31,14 @@ test = [
     "pytest",
     "pytest-xdist",
 ]
-test-cov = [
-    { "include-group" = "test" },
+test-full = [
+    {"include-group" = "test" },
+    "networkx",  # only needed for a few tests
+]
+coverage = [
+    { "include-group" = "test-full" },
     "coverage",
     "cython",
-    "networkx",  # optional, only needed for some tests
 ]
 
 [tool.pytest.ini_options]
