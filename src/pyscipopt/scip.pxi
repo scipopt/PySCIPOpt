@@ -6979,7 +6979,7 @@ cdef class Model:
         return pyCons
 
 
-    def addMatrixConsIndicator(self, cons: MatrixExprCons, binvar: Union[Variable, MatrixVariable] = None,
+    def addMatrixConsIndicator(self, cons: Union[ExprCons, MatrixExprCons], binvar: Union[Variable, MatrixVariable] = None,
                                activeone: Union[bool, np.ndarray] = True, name: Union[str, np.ndarray] = "",
                                initial: Union[bool, np.ndarray] = True, separate: Union[bool, np.ndarray] = True,
                                enforce: Union[bool, np.ndarray] = True, check: Union[bool, np.ndarray] = True,
@@ -6993,7 +6993,7 @@ cdef class Model:
 
         Parameters
         ----------
-        cons : MatrixExprCons
+        cons : ExprCons or MatrixExprCons
             a linear inequality of the form "<=".
         binvar : Variable or MatrixVariable, optional
             binary indicator variable / matrix variable, or None if it should be created. (Default value = None)
@@ -7027,9 +7027,14 @@ cdef class Model:
             The newly created Indicator MatrixConstraint object.
         """
 
-        assert isinstance(cons, MatrixExprCons), (
-            f"given constraint is not MatrixExprCons but {cons.__class__.__name__}"
-        )
+        if not isinstance(cons, (ExprCons, MatrixExprCons)):
+            raise TypeError("given constraint is not MatrixExprCons nor ExprCons but %s" % cons.__class__.__name__)
+
+        if isinstance(cons, ExprCons):
+            return self.addConsIndicator(cons, binvar=binvar, activeone=activeone, name=name,
+                        initial=initial, separate=separate, enforce=enforce, check=check,
+                        propagate=propagate, local=local, dynamic=dynamic, removable=removable,
+                        stickingatnode=stickingatnode)
 
         shape = cons.shape
 
