@@ -7,6 +7,7 @@
 - Implemented all binary operations between MatrixExpr and GenExpr
 - Fixed the type of @ matrix operation result from MatrixVariable to MatrixExpr.
 ### Changed
+- Add a PEP 735 dependency group for test dependencies in `pyproject.toml`
 - Speed up MatrixVariable.sum(axis=None) via quicksum
 ### Removed
 

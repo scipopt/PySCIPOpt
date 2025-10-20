@@ -5,3 +5,4 @@ omit =
     tests
     __init__.py
     scip.pyx
+patch = subprocess

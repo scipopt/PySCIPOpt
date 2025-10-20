@@ -44,7 +44,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.21.1
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
-          CIBW_TEST_REQUIRES: pytest
+          CIBW_TEST_GROUPS: test
           CIBW_TEST_COMMAND: "pytest {project}/tests"
           CIBW_MANYLINUX_*_IMAGE: manylinux_2_28
         
