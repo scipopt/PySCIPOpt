@@ -8,6 +8,24 @@ from pyscipopt.scip import GenExpr
 from time import time
 
 import numpy as np
+import pytest
+
+from pyscipopt import (
+    Expr,
+    ExprCons,
+    MatrixConstraint,
+    MatrixExpr,
+    MatrixExprCons,
+    MatrixVariable,
+    Model,
+    Variable,
+    cos,
+    exp,
+    log,
+    quicksum,
+    sin,
+    sqrt,
+)
 
 
 def test_catching_errors():
@@ -172,6 +190,10 @@ def test_expr_from_matrix_vars():
 def test_matrix_sum_argument():
     m = Model()
 
+    # Return a array when axis isn't None
+    res = m.addMatrixVar((3, 1)).sum(axis=0)
+    assert isinstance(res, MatrixExpr) and res.shape == (1,)
+
     # compare the result of summing 2d array to a scalar with a scalar
     x = m.addMatrixVar((2, 3), "x", "I", ub=4)
     m.addMatrixCons(x.sum() == 24)
@@ -193,6 +215,25 @@ def test_matrix_sum_argument():
 
     assert (m.getVal(x) == np.full((2, 3), 4)).all().all()
     assert (m.getVal(y) == np.full((2, 4), 3)).all().all()
+
+@pytest.mark.skip(reason="Performance test")
+def test_sum_performance():
+    n = 1000
+    model = Model()
+    x = model.addMatrixVar((n, n))
+
+    # Original sum via `np.sum`
+    start_orig = time()
+    np.sum(x)
+    end_orig = time()
+
+    # Optimized sum via `quicksum`
+    start_matrix = time()
+    x.sum()
+    end_matrix = time()
+
+    assert model.isGT(end_orig - start_orig, end_matrix - start_matrix)
+
 
 def test_add_cons_matrixVar():
     m = Model()
@@ -341,7 +382,7 @@ def test_MatrixVariable_attributes():
     assert x.varMayRound().tolist() == [[True, True], [True, True]]
 
 @pytest.mark.skip(reason="Performance test")
-def test_performance():
+def test_add_cons_performance():
     start_orig = time()
     m = Model()
     x = {}

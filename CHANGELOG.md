@@ -7,6 +7,7 @@
 - Implemented all binary operations between MatrixExpr and GenExpr
 - Fixed the type of @ matrix operation result from MatrixVariable to MatrixExpr.
 ### Changed
+- Speed up MatrixVariable.sum(axis=None) via quicksum
 ### Removed
 
 ## v5.6.0 - 2025.08.26
