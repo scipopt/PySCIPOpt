@@ -4,6 +4,7 @@
 ### Added
 - Added basic type stubs to help with IDE autocompletion and type checking.
 ### Fixed
+- Implemented all binary operations between MatrixExpr and GenExpr
 - Fixed the type of @ matrix operation result from MatrixVariable to MatrixExpr.
 ### Changed
 - Speed up MatrixVariable.sum(axis=None) via quicksum
