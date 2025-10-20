@@ -4,6 +4,7 @@
 ### Added
 - Added basic type stubs to help with IDE autocompletion and type checking.
 ### Fixed
+- Implemented all binary operations between MatrixExpr and GenExpr
 - Fixed the type of @ matrix operation result from MatrixVariable to MatrixExpr.
 ### Changed
 - Add a PEP 735 dependency group for test dependencies in `pyproject.toml`

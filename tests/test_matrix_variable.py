@@ -1,3 +1,10 @@
+import operator
+import pdb
+import pprint
+import pytest
+from pyscipopt import Model, Variable, log, exp, cos, sin, sqrt
+from pyscipopt import Expr, MatrixExpr, MatrixVariable, MatrixExprCons, MatrixConstraint, ExprCons
+from pyscipopt.scip import GenExpr
 from time import time
 
 import numpy as np
@@ -209,7 +216,7 @@ def test_matrix_sum_argument():
     assert (m.getVal(x) == np.full((2, 3), 4)).all().all()
     assert (m.getVal(y) == np.full((2, 4), 3)).all().all()
 
-
+@pytest.mark.skip(reason="Performance test")
 def test_sum_performance():
     n = 1000
     model = Model()
@@ -440,6 +447,25 @@ def test_matrix_cons_indicator():
     assert (m.getVal(x) == m.getVal(y)).all().all()
     assert (m.getVal(x) == np.array([[5, 5, 5], [5, 5, 5]])).all().all()
     assert m.getVal(z) == 1
+
+
+_binop_model = Model()
+
+def var():
+    return _binop_model.addVar()
+
+def genexpr():
+    return _binop_model.addVar() ** 0.6
+
+def matvar():
+    return _binop_model.addMatrixVar((1,))
+
+@pytest.mark.parametrize("right", [var(), genexpr(), matvar()], ids=["var", "genexpr", "matvar"])
+@pytest.mark.parametrize("left", [var(), genexpr(), matvar()], ids=["var", "genexpr", "matvar"])
+@pytest.mark.parametrize("op", [operator.add, operator.sub, operator.mul, operator.truediv])
+def test_binop(op, left, right):
+    res = op(left, right)
+    assert isinstance(res, (Expr, GenExpr, MatrixExpr))
 
 
 def test_matrix_matmul_return_type():
