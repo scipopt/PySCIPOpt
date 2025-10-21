@@ -222,9 +222,9 @@ def test_sum_performance(n):
     model = Model()
     x = model.addMatrixVar((n, n))
 
-    # Original sum via `np.sum`
+    # Original sum via `np.ndarray.sum`, `np.sum` will call subclass method
     start_orig = time()
-    np.sum(x)
+    np.ndarray.sum(x)
     end_orig = time()
 
     # Optimized sum via `quicksum`
