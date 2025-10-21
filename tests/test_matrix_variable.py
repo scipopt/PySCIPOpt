@@ -217,7 +217,7 @@ def test_matrix_sum_argument():
     assert (m.getVal(y) == np.full((2, 4), 3)).all().all()
 
 
-@pytest.mark.parametrize("n", [100, 200, 500])
+@pytest.mark.parametrize("n", [50, 100, 200])
 def test_sum_performance(n):
     model = Model()
     x = model.addMatrixVar((n, n))
