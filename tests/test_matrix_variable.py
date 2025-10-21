@@ -216,15 +216,15 @@ def test_matrix_sum_argument():
     assert (m.getVal(x) == np.full((2, 3), 4)).all().all()
     assert (m.getVal(y) == np.full((2, 4), 3)).all().all()
 
-@pytest.mark.skip(reason="Performance test")
-def test_sum_performance():
-    n = 1000
+
+@pytest.mark.parametrize("n", [50, 100, 200])
+def test_sum_performance(n):
     model = Model()
     x = model.addMatrixVar((n, n))
 
-    # Original sum via `np.sum`
+    # Original sum via `np.ndarray.sum`, `np.sum` will call subclass method
     start_orig = time()
-    np.sum(x)
+    np.ndarray.sum(x)
     end_orig = time()
 
     # Optimized sum via `quicksum`
