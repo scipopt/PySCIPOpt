@@ -46,11 +46,14 @@ def _matrixexpr_richcmp(self, other, op):
 class MatrixExpr(np.ndarray):
     def sum(self, **kwargs):
         """
-        Based on `numpy.ndarray.sum`, but returns a scalar if the result is a single value.
-        This is useful for matrix expressions where the sum might reduce to a single value.
+        Based on `numpy.ndarray.sum`, but returns a scalar if `axis=None`.
+        This is useful for matrix expressions to compare with a matrix or a scalar.
         """
-        res = super().sum(**kwargs)
-        return res if res.size > 1 else res.item()
+
+        if kwargs.get("axis") is None:
+            # Speed up `.sum()` #1070
+            return quicksum(self.flat)
+        return super().sum(**kwargs)
 
     def __le__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 1)

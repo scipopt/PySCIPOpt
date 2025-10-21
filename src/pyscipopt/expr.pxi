@@ -148,7 +148,7 @@ def buildGenExprObj(expr):
         GenExprs = np.empty(expr.shape, dtype=object)
         for idx in np.ndindex(expr.shape):
             GenExprs[idx] = buildGenExprObj(expr[idx])
-        return GenExprs
+        return GenExprs.view(MatrixExpr)
 
     else:
         assert isinstance(expr, GenExpr)
@@ -225,6 +225,9 @@ cdef class Expr:
         return self
 
     def __mul__(self, other):
+        if isinstance(other, MatrixExpr):
+            return other * self
+
         if _is_number(other):
             f = float(other)
             return Expr({v:f*c for v,c in self.terms.items()})
@@ -422,6 +425,9 @@ cdef class GenExpr:
         return UnaryExpr(Operator.fabs, self)
 
     def __add__(self, other):
+        if isinstance(other, MatrixExpr):
+            return other + self
+
         left = buildGenExprObj(self)
         right = buildGenExprObj(other)
         ans = SumExpr()
@@ -477,6 +483,9 @@ cdef class GenExpr:
     #    return self
 
     def __mul__(self, other):
+        if isinstance(other, MatrixExpr):
+            return other * self
+
         left = buildGenExprObj(self)
         right = buildGenExprObj(other)
         ans = ProdExpr()
@@ -539,7 +548,7 @@ cdef class GenExpr:
     def __truediv__(self,other):
         divisor = buildGenExprObj(other)
         # we can't divide by 0
-        if divisor.getOp() == Operator.const and divisor.number == 0.0:
+        if isinstance(divisor, GenExpr) and divisor.getOp() == Operator.const and divisor.number == 0.0:
             raise ZeroDivisionError("cannot divide by 0")
         return self * divisor**(-1)
 
