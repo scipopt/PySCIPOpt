@@ -33,6 +33,9 @@ def _matrixexpr_richcmp(self, other, op):
         res.flat = [_richcmp(i, other, op) for i in self.flat]
 
     elif isinstance(other, np.ndarray):
+        if self.shape != other.shape:
+            raise ValueError("Shapes do not match for comparison.")
+
         res.flat = [_richcmp(i, j, op) for i, j in zip(self.flat, other.flat)]
 
     else:
