@@ -471,14 +471,18 @@ def test_matrix_compare_with_expr():
 
 def test_ranged_matrix_cons_with_expr():
     m = Model()
+    x = m.addMatrixVar(3)
     var = m.addVar(vtype="B", ub=0)
+
+    # test MatrixExprCons vs Variable
+    with pytest.raises(TypeError):
+        m.addMatrixCons((x <= 1) >= var)
 
     # test "==" operator
     with pytest.raises(NotImplementedError):
-        m.addMatrixCons((m.addMatrixVar(3) <= 1) == var + 1)
+        m.addMatrixCons((x <= 1) == 1)
 
     # test "<=" and ">=" operator
-    x = m.addMatrixVar(3)
     m.addMatrixCons((x <= 1) >= 1)
 
     m.setObjective(x.sum())
