@@ -30,12 +30,10 @@ def _matrixexpr_richcmp(self, other, op):
 
     res = np.empty(self.shape, dtype=object)
     if _is_number(other) or isinstance(other, Expr):
-        for idx in np.ndindex(self.shape):
-            res[idx] = _richcmp(self[idx], other, op)
+        res.flat = [_richcmp(i, other, op) for i in self.flat]
 
     elif isinstance(other, np.ndarray):
-        for idx in np.ndindex(self.shape):
-            res[idx] = _richcmp(self[idx], other[idx], op)
+        res.flat = [_richcmp(i, j, op) for i, j in zip(self.flat, other.flat)]
 
     else:
         raise TypeError(f"Unsupported type {type(other)}")
