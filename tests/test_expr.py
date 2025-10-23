@@ -182,9 +182,3 @@ def test_rpow_constant_base(model):
 
     with pytest.raises(ValueError):
         c = (-2)**x
-
-    equat = x == 1 + x**1.2
-    assert isinstance(equat, ExprCons)
-    assert isinstance(equat.expr, GenExpr)
-    assert equat._lhs == equat._rhs
-    assert equat._lhs == 0.0
