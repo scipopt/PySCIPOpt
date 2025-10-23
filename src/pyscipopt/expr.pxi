@@ -274,7 +274,7 @@ cdef class Expr:
 
     def __rpow__(self, other):
         """
-        Implements base**x as scip.exp(x * scip.log(base)). 
+        Implements base**x as scip.exp(x * scip.log(base)).
         Note: base must be positive.
         """
         if _is_number(other):
