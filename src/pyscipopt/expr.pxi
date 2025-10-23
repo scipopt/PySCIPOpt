@@ -559,8 +559,8 @@ cdef class GenExpr:
 
     def __rpow__(self, other):
         """
-            Implements base**x as scip.exp(x * scip.log(base)). 
-            Note: base must be positive.
+        Implements base**x as scip.exp(x * scip.log(base)). 
+        Note: base must be positive.
         """
         if _is_number(other):
             base = float(other)
