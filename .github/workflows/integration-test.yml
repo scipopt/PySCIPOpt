@@ -45,7 +45,11 @@ jobs:
 
       - name: Run pyscipopt tests
         run: |
-          py.test -nauto
+          if python -m pip help install | grep -q -- '--group'; then
+            py.test -nauto
+          else
+            py.test
+          fi
 
   Windows-test:
     env:
@@ -73,12 +77,13 @@ jobs:
       - name: Prepare python environment
         shell: powershell
         run: |
-          python -m pip install --upgrade pip
-          if python -m pip help install | grep -q -- '--group'; then
+          $pipHelp = python -m pip help install
+          if ($pipHelp -match '--group') {
             python -m pip install --group test-full
-          else
-            python -m pip install networkx pytest-cov numpy
-          fi
+          }
+          else {
+            python -m pip install wheel cython networkx pytest-cov
+          }
 
       - name: Install PySCIPOpt
         shell: powershell
@@ -89,7 +94,12 @@ jobs:
       - name: Run pyscipopt tests
         shell: powershell
         run: |
-          py.test -nauto
+          $pipHelp = python -m pip help install
+          if ($pipHelp -match '--group') {
+            py.test -nauto
+          } else {
+            py.test
+          }
 
   MacOS-test:
     runs-on: macos-latest

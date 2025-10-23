@@ -60,7 +60,11 @@ jobs:
 
       - name: Run pyscipopt tests
         run: |
-          py.test -nauto
+          if python -m pip help install | grep -q -- '--group'; then
+            py.test -nauto
+          else
+            py.test
+          fi
 
   windows-test:
     needs: release-integration-test
@@ -103,7 +107,11 @@ jobs:
       - name: Run pyscipopt tests
         shell: powershell
         run: |
-          py.test -nauto
+          if python -m pip help install | grep -q -- '--group'; then
+            py.test -nauto
+          else
+            py.test
+          fi
 
 
   deploy-packages-and-generate-documentation:
