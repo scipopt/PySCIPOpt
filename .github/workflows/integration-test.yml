@@ -94,11 +94,12 @@ jobs:
       - name: Run pyscipopt tests
         shell: powershell
         run: |
-          if python -m pip help install | grep -q -- '--group'; then
+          $pipHelp = python -m pip help install
+          if ($pipHelp -match '--group') {
             py.test -nauto
-          else
+          } else {
             py.test
-          fi
+          }
 
   MacOS-test:
     runs-on: macos-latest
