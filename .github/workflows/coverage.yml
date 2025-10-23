@@ -51,8 +51,12 @@ jobs:
       - name: Run pyscipopt tests
         run: |
           sudo apt-get install tzdata locales -y && sudo locale-gen pt_PT && sudo update-locale # add pt_PT locale that is used in tests
-          coverage run -m pytest -nauto
-          coverage combine
+          if python -m pip help install | grep -q -- '--group'; then
+            coverage run -m pytest -nauto
+            coverage combine
+          else
+            coverage run -m pytest
+          fi
           coverage report -m
           coverage xml
       
