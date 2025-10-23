@@ -9,9 +9,10 @@
 ### Changed
 - Add a PEP 735 dependency group for test dependencies in `pyproject.toml`
 - Speed up MatrixVariable.sum(axis=None) via quicksum
+- MatrixVariable now supports comparison with Expr
 ### Removed
 
-## v5.6.0 - 2025.08.26
+## 5.6.0 - 2025.08.26
 ### Added
 - More support for AND-Constraints
 - Added support for knapsack constraints

@@ -44,6 +44,7 @@
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
 include "matrix.pxi"
 
+
 def _is_number(e):
     try:
         f = float(e)
@@ -52,7 +53,8 @@ def _is_number(e):
         return False
     except TypeError: # for other types (Variable, Expr)
         return False
-        
+
+
 def _expr_richcmp(self, other, op):
     if op == 1: # <=
         if isinstance(other, Expr) or isinstance(other, GenExpr):
@@ -62,7 +64,7 @@ def _expr_richcmp(self, other, op):
         elif isinstance(other, MatrixExpr):
             return _expr_richcmp(other, self, 5)
         else:
-            raise NotImplementedError
+            raise TypeError(f"Unsupported type {type(other)}")
     elif op == 5: # >=
         if isinstance(other, Expr) or isinstance(other, GenExpr):
             return (self - other) >= 0.0
@@ -71,7 +73,7 @@ def _expr_richcmp(self, other, op):
         elif isinstance(other, MatrixExpr):
             return _expr_richcmp(other, self, 1)
         else:
-            raise NotImplementedError
+            raise TypeError(f"Unsupported type {type(other)}")
     elif op == 2: # ==
         if isinstance(other, Expr) or isinstance(other, GenExpr):
             return (self - other) == 0.0
@@ -80,7 +82,7 @@ def _expr_richcmp(self, other, op):
         elif isinstance(other, MatrixExpr):
             return _expr_richcmp(other, self, 2)
         else:
-            raise NotImplementedError
+            raise TypeError(f"Unsupported type {type(other)}")
     else:
         raise NotImplementedError("Can only support constraints with '<=', '>=', or '=='.")
 
@@ -201,7 +203,7 @@ cdef class Expr:
         elif isinstance(right, MatrixExpr):
             return right + left
         else:
-            raise NotImplementedError
+            raise TypeError(f"Unsupported type {type(right)}")
 
         return Expr(terms)
 
@@ -218,7 +220,7 @@ cdef class Expr:
             # TypeError: Cannot convert pyscipopt.scip.SumExpr to pyscipopt.scip.Expr
             return buildGenExprObj(self) + other
         else:
-            raise NotImplementedError
+            raise TypeError(f"Unsupported type {type(other)}")
 
         return self
 
@@ -337,26 +339,26 @@ cdef class ExprCons:
     def __richcmp__(self, other, op):
         '''turn it into a constraint'''
         if op == 1: # <=
-           if not self._rhs is None:
-               raise TypeError('ExprCons already has upper bound')
-           assert not self._lhs is None
+            if not self._rhs is None:
+                raise TypeError('ExprCons already has upper bound')
+            assert not self._lhs is None
 
-           if not _is_number(other):
-               raise TypeError('Ranged ExprCons is not well defined!')
+            if not _is_number(other):
+                raise TypeError('Ranged ExprCons is not well defined!')
 
-           return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
+            return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
         elif op == 5: # >=
-           if not self._lhs is None:
-               raise TypeError('ExprCons already has lower bound')
-           assert self._lhs is None
-           assert not self._rhs is None
+            if not self._lhs is None:
+                raise TypeError('ExprCons already has lower bound')
+            assert self._lhs is None
+            assert not self._rhs is None
 
-           if not _is_number(other):
-               raise TypeError('Ranged ExprCons is not well defined!')
+            if not _is_number(other):
+                raise TypeError('Ranged ExprCons is not well defined!')
 
-           return ExprCons(self.expr, lhs=float(other), rhs=self._rhs)
+            return ExprCons(self.expr, lhs=float(other), rhs=self._rhs)
         else:
-            raise TypeError
+            raise NotImplementedError("Ranged ExprCons can only support with '<=' or '>='.")
 
     def __repr__(self):
         return 'ExprCons(%s, %s, %s)' % (self.expr, self._lhs, self._rhs)

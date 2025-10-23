@@ -449,6 +449,48 @@ def test_matrix_cons_indicator():
     assert m.getVal(z) == 1
 
 
+def test_matrix_compare_with_expr():
+    m = Model()
+    var = m.addVar(vtype="B", ub=0)
+
+    # test "<=" and ">=" operator
+    x = m.addMatrixVar(3)
+    m.addMatrixCons(x <= var + 1)
+    m.addMatrixCons(x >= var + 1)
+
+    # test "==" operator
+    y = m.addMatrixVar(3)
+    m.addMatrixCons(y == var + 1)
+
+    m.setObjective(x.sum() + y.sum())
+    m.optimize()
+
+    assert (m.getVal(x) == np.ones(3)).all()
+    assert (m.getVal(y) == np.ones(3)).all()
+
+
+def test_ranged_matrix_cons_with_expr():
+    m = Model()
+    x = m.addMatrixVar(3)
+    var = m.addVar(vtype="B", ub=0)
+
+    # test MatrixExprCons vs Variable
+    with pytest.raises(TypeError):
+        m.addMatrixCons((x <= 1) >= var)
+
+    # test "==" operator
+    with pytest.raises(NotImplementedError):
+        m.addMatrixCons((x <= 1) == 1)
+
+    # test "<=" and ">=" operator
+    m.addMatrixCons((x <= 1) >= 1)
+
+    m.setObjective(x.sum())
+    m.optimize()
+
+    assert (m.getVal(x) == np.ones(3)).all()
+
+
 _binop_model = Model()
 
 def var():
