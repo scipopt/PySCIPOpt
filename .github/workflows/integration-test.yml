@@ -34,14 +34,22 @@ jobs:
       - name: Prepare python environment
         run: |
           python -m pip install --upgrade pip
-          python -m pip install networkx pytest-cov numpy
+          if python -m pip help install | grep -q -- '--group'; then
+            python -m pip install --group test-full
+          else
+            python -m pip install networkx pytest-cov numpy
+          fi
 
       - name: Install PySCIPOpt
         run: python -m pip install .
 
       - name: Run pyscipopt tests
         run: |
-          py.test
+          if python -m pip help install | grep -q -- '--group'; then
+            py.test -nauto
+          else
+            py.test
+          fi
 
   Windows-test:
     env:
@@ -69,8 +77,13 @@ jobs:
       - name: Prepare python environment
         shell: powershell
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install networkx pytest-cov numpy
+          $pipHelp = python -m pip help install
+          if ($pipHelp -match '--group') {
+            python -m pip install --group test-full
+          }
+          else {
+            python -m pip install wheel cython networkx pytest-cov
+          }
 
       - name: Install PySCIPOpt
         shell: powershell
@@ -81,7 +94,12 @@ jobs:
       - name: Run pyscipopt tests
         shell: powershell
         run: |
-          py.test
+          $pipHelp = python -m pip help install
+          if ($pipHelp -match '--group') {
+            py.test -nauto
+          } else {
+            py.test
+          }
 
   MacOS-test:
     runs-on: macos-latest
@@ -107,7 +125,11 @@ jobs:
       - name: Prepare python environment
         run: |
           python -m pip install --upgrade pip
-          python -m pip install networkx pytest-cov pytest numpy
+          if python -m pip help install | grep -q -- '--group'; then
+            python -m pip install --group test-full
+          else
+            python -m pip install networkx pytest-cov pytest numpy
+          fi
 
       - name: Install PySCIPOpt
         run: |

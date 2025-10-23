@@ -179,6 +179,48 @@ def test_cons_indicator():
     assert m.isEQ(m.getVal(x), 1)
     assert c1.getConshdlrName() == "indicator"
 
+def test_cons_indicator_with_matrix_binvar():
+    # test matrix variable binvar #1043
+    m = Model()
+    x = m.addVar(vtype="B")
+
+    # test binvar with int
+    with pytest.raises(TypeError):
+        m.addConsIndicator(x <= 0, 1)
+
+    # test binvar with (1, 1, 1) shape of matrix variable
+    with pytest.raises(ValueError):
+        m.addConsIndicator(x <= 0, m.addMatrixVar(((1, 1, 1)), vtype="B"))
+
+    # test binvar with (2, 3) shape of matrix variable
+    with pytest.raises(ValueError):
+        m.addConsIndicator(x <= 0, m.addMatrixVar(((2, 3)), vtype="B"))
+
+    # test binvar with (2, 1) shape of list of lists
+    with pytest.raises(ValueError):
+        m.addConsIndicator(x <= 0, [[m.addVar(vtype="B")], [m.addVar(vtype="B")]])
+
+    # test binvar with requiring type and dimension
+    binvar = m.addMatrixVar(1, vtype="B")
+    m.addConsIndicator(x >= 1, binvar, activeone=True)
+    m.addConsIndicator(x <= 0, binvar, activeone=False)
+
+    m.setObjective(binvar.sum(), "maximize")
+    m.optimize()
+
+    assert m.isEQ(m.getVal(x), 1)
+
+def test_cons_knapsack_with_matrix_vars():
+    # test matrix variable vars #1043
+    m = Model()
+    vars = m.addMatrixVar(3, vtype="B")
+    m.addConsKnapsack(vars, [1, 2, 3], 5)
+
+    m.setObjective(vars.sum(), "maximize")
+    m.optimize()
+
+    assert (m.getVal(vars) == [0, 1, 1]).all()
+
 @pytest.mark.xfail(
     reason="addConsIndicator doesn't behave as expected when binary variable is False. See Issue #717."
 )
