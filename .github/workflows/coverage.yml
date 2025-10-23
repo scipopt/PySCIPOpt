@@ -36,11 +36,7 @@ jobs:
       - name: Prepare python environment
         run: |
           python -m pip install --upgrade pip
-          if python -m pip help install | grep -q -- '--group'; then
-            python -m pip install --group coverage
-          else
-            python -m pip install networkx cython pytest-cov numpy
-          fi
+          python -m pip install --group coverage || python -m pip install networkx cython pytest-cov numpy
 
       - name: Install PySCIPOpt
         run: |
