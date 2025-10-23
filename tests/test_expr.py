@@ -172,6 +172,12 @@ def test_equation(model):
     assert equat._lhs == equat._rhs
     assert equat._lhs == 0.0
 
+    equat = x == 1 + x**1.2
+    assert isinstance(equat, ExprCons)
+    assert isinstance(equat.expr, GenExpr)
+    assert equat._lhs == equat._rhs
+    assert equat._lhs == 0.0
+
 def test_rpow_constant_base(model):
     m, x, y, z = model
     a = 2**x
