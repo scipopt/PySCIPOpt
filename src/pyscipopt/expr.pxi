@@ -272,6 +272,19 @@ cdef class Expr:
             res *= self
         return res
 
+    def __rpow__(self, other):
+        """
+        Implements base**x as scip.exp(x * scip.log(base)). 
+        Note: base must be positive.
+        """
+        if _is_number(other):
+            base = float(other)
+            if base <= 0.0:
+                raise ValueError("Base of a**x must be positive; got %g" % base)
+            return exp(self * log(base))
+        else:
+            raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
+
     def __neg__(self):
         return Expr({v:-c for v,c in self.terms.items()})
 
@@ -543,6 +556,19 @@ cdef class GenExpr:
         ans.expo = expo.number
 
         return ans
+
+    def __rpow__(self, other):
+        """
+            Implements base**x as scip.exp(x * scip.log(base)). 
+            Note: base must be positive.
+        """
+        if _is_number(other):
+            base = float(other)
+            if base <= 0.0:
+                raise ValueError("Base of a**x must be positive; got %g" % base)
+            return exp(self * log(base))
+        else:
+            raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
 
     #TODO: ipow, idiv, etc
     def __truediv__(self,other):
