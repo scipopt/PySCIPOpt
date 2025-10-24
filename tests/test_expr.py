@@ -177,3 +177,14 @@ def test_equation(model):
     assert isinstance(equat.expr, GenExpr)
     assert equat._lhs == equat._rhs
     assert equat._lhs == 0.0
+
+def test_rpow_constant_base(model):
+    m, x, y, z = model
+    a = 2**x
+    b = exp(x * log(2.0))
+    assert isinstance(a, GenExpr)
+    assert repr(a) == repr(b) # Structural equality is not implemented; compare strings
+    m.addCons(2**x <= 1)
+
+    with pytest.raises(ValueError):
+        c = (-2)**x
