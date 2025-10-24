@@ -525,3 +525,13 @@ def test_matrix_matmul_return_type():
     y = m.addMatrixVar((2, 3))
     z = m.addMatrixVar((3, 4))
     assert type(y @ z) is MatrixExpr
+
+
+def test_broadcast():
+    # test #1065
+    m = Model()
+    x = m.addMatrixVar((2, 3))
+
+    m.addMatrixCons(x == np.zeros((2, 1)))
+
+    assert (m.getVal(x) == np.zeros((2, 3))).all().all()
