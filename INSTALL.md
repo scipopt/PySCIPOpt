@@ -117,9 +117,9 @@ Testing new installation
 
 To test your brand-new installation of PySCIPOpt you need
 some dependencies which can be installed via pip. The testing
-dependencies are in the `test` dependency group.
+dependencies are in the `test` extra.
 
-    pip install --group test
+    pip install ".[test]"
 
 Tests can be run in the `PySCIPOpt` directory with: :
 

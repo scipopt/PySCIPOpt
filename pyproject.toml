@@ -26,17 +26,16 @@ dynamic = ["version"]
 [project.urls]
 Homepage = "https://github.com/SCIP-Interfaces/PySCIPOpt"
 
-[dependency-groups]
+[project.optional-dependencies]
 test = [
     "pytest",
     "pytest-xdist",
-]
-test-full = [
-    {"include-group" = "test" },
     "networkx",  # only needed for a few tests
 ]
 coverage = [
-    { "include-group" = "test-full" },
+    "pytest",
+    "pytest-xdist",
+    "networkx",
     "coverage",
     "cython",
 ]
