@@ -524,11 +524,11 @@ def test_matrix_matmul_return_type():
 def test_broadcast():
     # test #1065
     m = Model()
-    x = m.addMatrixVar((2, 3))
+    x = m.addMatrixVar((2, 3), ub=10)
 
     m.addMatrixCons(x == np.zeros((2, 1)))
 
-    m.setObjective(x.sum())
+    m.setObjective(x.sum(), "maximize")
     m.optimize()
 
     assert (m.getVal(x) == np.zeros((2, 3))).all().all()
