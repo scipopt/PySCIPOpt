@@ -6,8 +6,8 @@ env:
 # runs on branches and pull requests; doesn't run on tags.
 on:
   push:
-    branches:
-      - 'master'
+    # branches:
+      # - 'master'
 
 
 jobs:
