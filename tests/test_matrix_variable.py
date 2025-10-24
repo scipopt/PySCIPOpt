@@ -528,4 +528,7 @@ def test_broadcast():
 
     m.addMatrixCons(x == np.zeros((2, 1)))
 
+    m.setObjective(x.sum())
+    m.optimize()
+
     assert (m.getVal(x) == np.zeros((2, 3))).all().all()
