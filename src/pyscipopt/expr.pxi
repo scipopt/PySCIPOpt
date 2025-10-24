@@ -280,7 +280,7 @@ cdef class Expr:
         if _is_number(other):
             base = float(other)
             if base <= 0.0:
-                raise ValueError("Base of a**x must be positive; got %g" % base)
+                raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x + scip.log(a)); got %g" % base)
             return exp(self * log(base))
         else:
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
@@ -565,7 +565,7 @@ cdef class GenExpr:
         if _is_number(other):
             base = float(other)
             if base <= 0.0:
-                raise ValueError("Base of a**x must be positive; got %g" % base)
+                raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x + scip.log(a)); got %g" % base)
             return exp(self * log(base))
         else:
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
