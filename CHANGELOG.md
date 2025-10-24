@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 - Added basic type stubs to help with IDE autocompletion and type checking.
+- MatrixVariable now supports numpy broadcast feature.
 ### Fixed
 - Implemented all binary operations between MatrixExpr and GenExpr
 - Fixed the type of @ matrix operation result from MatrixVariable to MatrixExpr.
