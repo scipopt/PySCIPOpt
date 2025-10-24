@@ -28,15 +28,14 @@ def _matrixexpr_richcmp(self, other, op):
         else:
             raise NotImplementedError("Can only support constraints with '<=', '>=', or '=='.")
 
-    res = np.empty(self.shape, dtype=object)
     if _is_number(other) or isinstance(other, Expr):
+        res = np.empty(self.shape, dtype=object)
         res.flat = [_richcmp(i, other, op) for i in self.flat]
 
     elif isinstance(other, np.ndarray):
-        if self.shape != other.shape:
-            raise ValueError("Shapes do not match for comparison.")
-
-        res.flat = [_richcmp(i, j, op) for i, j in zip(self.flat, other.flat)]
+        out = np.broadcast(self, other)
+        res = np.empty(out.shape, dtype=object)
+        res.flat = [_richcmp(i, j, op) for i, j in out]
 
     else:
         raise TypeError(f"Unsupported type {type(other)}")
