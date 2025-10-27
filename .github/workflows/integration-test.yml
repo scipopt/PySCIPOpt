@@ -1,7 +1,7 @@
 name: Integration test
 
 env:
-  version: 9.2.0
+  version: 9.2.4
 
 on:
   push:
@@ -16,14 +16,14 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v3
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Linux-ubuntu20.deb
-          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu20.deb
+          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Linux-ubuntu22.deb
+          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu22.deb
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -33,14 +33,13 @@ jobs:
       - name: Prepare python environment
         run: |
           python -m pip install --upgrade pip
-          python -m pip install ".[test]"
+          python -m pip install -r requirements/test.txt
 
       - name: Install PySCIPOpt
         run: python -m pip install .
 
       - name: Run pyscipopt tests
-        run: |
-          py.test -nauto
+        run: pytest -nauto
 
   Windows-test:
     env:
@@ -48,7 +47,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v3
 
@@ -69,7 +68,7 @@ jobs:
         shell: powershell
         run: |
           python -m pip install --upgrade pip
-          python -m pip install ".[test]"
+          python -m pip install -r requirements/test.txt
 
       - name: Install PySCIPOpt
         shell: powershell
@@ -79,14 +78,13 @@ jobs:
 
       - name: Run pyscipopt tests
         shell: powershell
-        run: |
-          py.test -nauto
+        run: pytest -nauto
 
   MacOS-test:
     runs-on: macos-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v3
 
@@ -96,7 +94,7 @@ jobs:
           wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Darwin.sh
           chmod +x SCIPOptSuite-${{ env.version }}-Darwin.sh
           ./SCIPOptSuite-${{ env.version }}-Darwin.sh --skip-license --include-subdir
-          mv SCIPOptSuite-${{ env.version }}-Darwin ${{ runner.workspace }}/scipoptsuite
+          mv SCIPOptSuite-${{ env.version }}-Darwin ${{ github.workspace }}/scipoptsuite
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -106,19 +104,19 @@ jobs:
       - name: Prepare python environment
         run: |
           python -m pip install --upgrade pip
-          python -m pip install ".[test]"
+          python -m pip install -r requirements/test.txt
 
       - name: Install PySCIPOpt
         run: |
-          export SCIPOPTDIR=${{ runner.workspace }}/scipoptsuite/
-          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${{ runner.workspace }}/scipoptsuite/lib
+          export SCIPOPTDIR=${{ github.workspace }}/scipoptsuite/
+          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${{ github.workspace }}/scipoptsuite/lib
           python -m pip install .
 
 #      - name: Run pyscipopt tests
 #        run: |
-#          export SCIPOPTDIR=${{ runner.workspace }}/scipoptsuite/
-#          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${{ runner.workspace }}/scipoptsuite/lib
-#          py.test
+#          export SCIPOPTDIR=${{ github.workspace }}/scipoptsuite/
+#          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${{ github.workspace }}/scipoptsuite/lib
+#          pytest
 
   ### if you need valgrind on mac, you can install it via
   # brew tap LouisBrunner/valgrind
