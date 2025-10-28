@@ -73,7 +73,7 @@ cdef class Expr:
             raise StopIteration
 
     def __abs__(self):
-        return _unary(self, AbsExpr)
+        return _to_unary_expr(self, AbsExpr)
 
     def __add__(self, other):
         other = Expr.to_const_or_var(other)
@@ -504,7 +504,7 @@ def quickprod(termlist):
     return result
 
 
-def _unary(expr: Union[Expr, MatrixExpr], cls: Type[UnaryExpr]):
+def _to_unary_expr(expr: Union[Expr, MatrixExpr], cls: Type[UnaryExpr]):
     if isinstance(expr, MatrixExpr):   
         res = np.empty(shape=expr.shape, dtype=object)
         res.flat = [cls(i) for i in expr.flat]
@@ -514,24 +514,24 @@ def _unary(expr: Union[Expr, MatrixExpr], cls: Type[UnaryExpr]):
 
 def exp(expr: Union[Expr, MatrixExpr]):
     """returns expression with exp-function"""
-    return _unary(expr, ExpExpr)
+    return _to_unary_expr(expr, ExpExpr)
 
 
 def log(expr: Union[Expr, MatrixExpr]):
     """returns expression with log-function"""
-    return _unary(expr, LogExpr)
+    return _to_unary_expr(expr, LogExpr)
 
 
 def sqrt(expr: Union[Expr, MatrixExpr]):
     """returns expression with sqrt-function"""
-    return _unary(expr, SqrtExpr)
+    return _to_unary_expr(expr, SqrtExpr)
 
 
 def sin(expr: Union[Expr, MatrixExpr]):
     """returns expression with sin-function"""
-    return _unary(expr, SinExpr)
+    return _to_unary_expr(expr, SinExpr)
 
 
 def cos(expr: Union[Expr, MatrixExpr]):
     """returns expression with cos-function"""
-    return _unary(expr, CosExpr)
+    return _to_unary_expr(expr, CosExpr)
