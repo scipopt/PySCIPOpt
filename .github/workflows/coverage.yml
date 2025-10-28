@@ -1,6 +1,6 @@
 name: Run tests with coverage
 env:
-  version: 9.2.1
+  version: 9.2.3
 
 on:
   push:
@@ -25,8 +25,8 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Linux-ubuntu20.deb
-          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu20.deb
+          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Linux-ubuntu22.deb
+          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu22.deb
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -36,7 +36,7 @@ jobs:
       - name: Prepare python environment
         run: |
           python -m pip install --upgrade pip
-          python -m pip install ".[coverage]"
+          python -m pip install -r requirements/coverage.txt
 
       - name: Install PySCIPOpt
         run: |

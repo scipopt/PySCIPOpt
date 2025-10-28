@@ -1,0 +1,3 @@
+-r ./test.txt
+coverage>=7
+cython>=3
