@@ -2067,13 +2067,10 @@ cdef class Node:
     @staticmethod
     cdef create(SCIP_NODE* scipnode)
 
-cdef class Variable(Expr):
+cdef class Variable:
     cdef SCIP_VAR* scip_var
     # can be used to store problem data
     cdef public object data
-
-    @staticmethod
-    cdef create(SCIP_VAR* scipvar)
 
 cdef class Constraint:
     cdef SCIP_CONS* scip_cons

@@ -440,7 +440,7 @@ cdef class Event:
 
         """
         cdef SCIP_VAR* var = SCIPeventGetVar(self.event)
-        return Variable.create(var)
+        return Variable(var)
 
     def getNode(self):
         """
@@ -561,7 +561,7 @@ cdef class Column:
 
         """
         cdef SCIP_VAR* var = SCIPcolGetVar(self.scip_col)
-        return Variable.create(var)
+        return Variable(var)
 
     def getPrimsol(self):
         """
@@ -964,7 +964,7 @@ cdef class NLRow:
         cdef SCIP_Real* lincoefs = SCIPnlrowGetLinearCoefs(self.scip_nlrow)
         cdef int nlinvars = SCIPnlrowGetNLinearVars(self.scip_nlrow)
         cdef int i
-        return [(Variable.create(linvars[i]), lincoefs[i]) for i in range(nlinvars)]
+        return [(Variable(linvars[i]), lincoefs[i]) for i in range(nlinvars)]
 
     def getLhs(self):
         """
@@ -1166,7 +1166,7 @@ cdef class BoundChange:
         Variable
 
         """
-        return Variable.create(SCIPboundchgGetVar(self.scip_boundchg))
+        return Variable(SCIPboundchgGetVar(self.scip_boundchg))
 
     def getBoundchgtype(self):
         """
@@ -1434,7 +1434,7 @@ cdef class Node:
         SCIPnodeGetParentBranchings(self.scip_node, branchvars, branchbounds,
                                     boundtypes, &nbranchvars, nbranchvars)
 
-        py_variables = [Variable.create(branchvars[i]) for i in range(nbranchvars)]
+        py_variables = [Variable(branchvars[i]) for i in range(nbranchvars)]
         py_branchbounds = [branchbounds[i] for i in range(nbranchvars)]
         py_boundtypes = [boundtypes[i] for i in range(nbranchvars)]
         free(boundtypes)
@@ -1480,43 +1480,66 @@ cdef class Node:
         return (self.__class__ == other.__class__
                 and self.scip_node == (<Node>other).scip_node)
 
-cdef class Variable(Expr):
-    """Is a linear expression and has SCIP_VAR*"""
 
-    @staticmethod
-    cdef create(SCIP_VAR* scipvar):
-        """
-        Main method for creating a Variable class. Is used instead of __init__.
+cdef class Variable:
+    def __init__(self, scip_var):
+        self.scip_var = scip_var
 
-        Parameters
-        ----------
-        scipvar : SCIP_VAR*
-            A pointer to the SCIP_VAR
-
-        Returns
-        -------
-        var : Variable
-            The Python representative of the SCIP_VAR
-
-        """
-        if scipvar == NULL:
-            raise Warning("cannot create Variable with SCIP_VAR* == NULL")
-        var = Variable()
-        var.scip_var = scipvar
-        Expr.__init__(var, {Term(var) : 1.0})
-        return var
-
-    property name:
-        def __get__(self):
-            cname = bytes( SCIPvarGetName(self.scip_var) )
-            return cname.decode('utf-8')
+    @property
+    def name(self):
+        return bytes(SCIPvarGetName(self.scip_var)).decode("utf-8")
 
     def ptr(self):
-        """ """
         return <size_t>(self.scip_var)
 
     def __repr__(self):
         return self.name
+
+    def __add__(self, other):
+        return self.to_expr().__add__(other)
+
+    def __iadd__(self, other):
+        self = self.__add__(other)
+        return self
+
+    def __radd__(self, other):
+        return self.to_expr().__radd__(other)
+
+    def __mul__(self, other):
+        return self.to_expr().__mul__(other)
+
+    def __rmul__(self, other):
+        return self.to_expr().__rmul__(other)
+
+    def __truediv__(self, other):
+        return self.to_expr().__truediv__(other)
+
+    def __rtruediv__(self, other):
+        return self.to_expr().__rtruediv__(other)
+
+    def __pow__(self, other):
+        return self.to_expr().__pow__(other)
+
+    def __neg__(self):
+        return self.to_expr().__neg__()
+
+    def __sub__(self, other):
+        return self.to_expr().__sub__(other)
+
+    def __rsub__(self, other):
+        return self.to_expr().__rsub__(other)
+
+    def __lt__(self, other):
+        return self.to_expr().__lt__(other)
+    
+    def __gt__(self, other):
+        return self.to_expr().__gt__(other)
+
+    def __eq__(self, other):
+        return self.to_expr().__eq__(other)
+
+    def to_expr(self):
+        return MonomialExpr.from_var(self)
 
     def vtype(self):
         """
@@ -3594,8 +3617,7 @@ cdef class Model:
             coeff = var.getObj()
             if coeff != 0:
                 objective += coeff * var
-        objective.normalize()
-        return objective
+        return objective._normalize()
 
     def addObjoffset(self, offset, solutions = False):
         """
@@ -3904,7 +3926,7 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
 
-        pyVar = Variable.create(scip_var)
+        pyVar = Variable(scip_var)
 
         # store variable in the model to avoid creating new python variable objects in getVars()
         assert not pyVar.ptr() in self._modelvars
@@ -4039,7 +4061,7 @@ cdef class Model:
         cdef SCIP_VAR* _tvar
         PY_SCIP_CALL(SCIPgetTransformedVar(self._scip, var.scip_var, &_tvar))
 
-        return Variable.create(_tvar)
+        return Variable(_tvar)
 
     def addVarLocks(self, Variable var, int nlocksdown, int nlocksup):
         """
@@ -4381,7 +4403,7 @@ cdef class Model:
                 vars.append(self._modelvars[ptr])
             else:
                 # create a new variable
-                var = Variable.create(_vars[i])
+                var = Variable(_vars[i])
                 assert var.ptr() == ptr
                 self._modelvars[ptr] = var
                 vars.append(var)
@@ -5439,7 +5461,6 @@ cdef class Model:
             kwargs['removable']) )
 
         PyCons = Constraint.create(scip_cons)
-
         PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &expr) )
         for i in range(<int>len(terms)):
             PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &monomials[i]))
@@ -6124,7 +6145,7 @@ cdef class Model:
                 vars.append(self._modelvars[ptr])
             else:
                 # create a new variable
-                var = Variable.create(_vars[i])
+                var = Variable(_vars[i])
                 assert var.ptr() == ptr
                 self._modelvars[ptr] = var
                 vars.append(var)
@@ -6213,7 +6234,7 @@ cdef class Model:
                 vars.append(self._modelvars[ptr])
             else:
                 # create a new variable
-                var = Variable.create(_vars[i])
+                var = Variable(_vars[i])
                 assert var.ptr() == ptr
                 self._modelvars[ptr] = var
                 vars.append(var)
@@ -6243,7 +6264,7 @@ cdef class Model:
         # check whether the corresponding variable exists already
         if ptr not in self._modelvars:
             # create a new variable
-            resultant = Variable.create(_resultant)
+            resultant = Variable(_resultant)
             assert resultant.ptr() == ptr
             self._modelvars[ptr] = resultant
         else:
@@ -7181,7 +7202,7 @@ cdef class Model:
 
         """
         cdef SCIP_VAR* var = SCIPgetSlackVarIndicator(cons.scip_cons)
-        return Variable.create(var)
+        return Variable(var)
 
     def addPyCons(self, Constraint cons):
         """
@@ -7805,15 +7826,15 @@ cdef class Model:
         quadterms  = []
 
         for termidx in range(nlinvars):
-            var = Variable.create(SCIPgetVarExprVar(linexprs[termidx]))
+            var = Variable(SCIPgetVarExprVar(linexprs[termidx]))
             linterms.append((var, lincoefs[termidx]))
 
         for termidx in range(nbilinterms):
             SCIPexprGetQuadraticBilinTerm(expr, termidx, &bilinterm1, &bilinterm2, &bilincoef, NULL, NULL)
             scipvar1 = SCIPgetVarExprVar(bilinterm1)
             scipvar2 = SCIPgetVarExprVar(bilinterm2)
-            var1 = Variable.create(scipvar1)
-            var2 = Variable.create(scipvar2)
+            var1 = Variable(scipvar1)
+            var2 = Variable(scipvar2)
             if scipvar1 != scipvar2:
                 bilinterms.append((var1,var2,bilincoef))
             else:
@@ -7823,7 +7844,7 @@ cdef class Model:
             SCIPexprGetQuadraticQuadTerm(expr, termidx, NULL, &lincoef, &sqrcoef, NULL, NULL, &sqrexpr)
             if sqrexpr == NULL:
                 continue
-            var = Variable.create(SCIPgetVarExprVar(sqrexpr))
+            var = Variable(SCIPgetVarExprVar(sqrexpr))
             quadterms.append((var,sqrcoef,lincoef))
 
         return (bilinterms, quadterms, linterms)
@@ -8499,7 +8520,7 @@ cdef class Model:
         if _mappedvar == NULL:
             mappedvar = None
         else:
-            mappedvar = Variable.create(_mappedvar)
+            mappedvar = Variable(_mappedvar)
 
         return mappedvar
 
@@ -8528,7 +8549,7 @@ cdef class Model:
             _benders = benders._benders
 
         _auxvar = SCIPbendersGetAuxiliaryVar(_benders, probnumber)
-        auxvar = Variable.create(_auxvar)
+        auxvar = Variable(_auxvar)
 
         return auxvar
 
@@ -9256,7 +9277,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPgetLPBranchCands(self._scip, &lpcands, &lpcandssol, &lpcandsfrac,
                                           &nlpcands, &npriolpcands, &nfracimplvars))
 
-        return ([Variable.create(lpcands[i]) for i in range(nlpcands)], [lpcandssol[i] for i in range(nlpcands)],
+        return ([Variable(lpcands[i]) for i in range(nlpcands)], [lpcandssol[i] for i in range(nlpcands)],
                 [lpcandsfrac[i] for i in range(nlpcands)], nlpcands, npriolpcands, nfracimplvars)
 
     def getNLPBranchCands(self):
@@ -9293,7 +9314,7 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPgetPseudoBranchCands(self._scip, &pseudocands, &npseudocands, &npriopseudocands))
 
-        return ([Variable.create(pseudocands[i]) for i in range(npseudocands)], npseudocands, npriopseudocands)
+        return ([Variable(pseudocands[i]) for i in range(npseudocands)], npseudocands, npriopseudocands)
 
     def branchVar(self, Variable variable):
         """
