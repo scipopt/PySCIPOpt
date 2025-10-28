@@ -26,21 +26,6 @@ dynamic = ["version"]
 [project.urls]
 Homepage = "https://github.com/SCIP-Interfaces/PySCIPOpt"
 
-[dependency-groups]
-test = [
-    "pytest",
-    "pytest-xdist",
-]
-test-full = [
-    {"include-group" = "test" },
-    "networkx",  # only needed for a few tests
-]
-coverage = [
-    { "include-group" = "test-full" },
-    "coverage",
-    "cython",
-]
-
 [tool.pytest.ini_options]
 norecursedirs = ["check"]
 testpaths = ["tests"]
