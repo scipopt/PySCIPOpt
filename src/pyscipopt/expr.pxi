@@ -1,47 +1,6 @@
 ##@file expr.pxi
-#@brief In this file we implemenet the handling of expressions
-#@details @anchor ExprDetails <pre> We have two types of expressions: Expr and GenExpr.
-# The Expr can only handle polynomial expressions.
-# In addition, one can recover easily information from them.
-# A polynomial is a dictionary between `terms` and coefficients.
-# A `term` is a tuple of variables
-# For examples, 2*x*x*y*z - 1.3 x*y*y + 1 is stored as a
-# {Term(x,x,y,z) : 2, Term(x,y,y) : -1.3, Term() : 1}
-# Addition of common terms and expansion of exponents occur automatically.
-# Given the way `Expr`s are stored, it is easy to access the terms: e.g.
-# expr = 2*x*x*y*z - 1.3 x*y*y + 1
-# expr[Term(x,x,y,z)] returns 1.3
-# expr[Term(x)] returns 0.0
-#
-# On the other hand, when dealing with expressions more general than polynomials,
-# that is, absolute values, exp, log, sqrt or any general exponent, we use GenExpr.
-# GenExpr stores expression trees in a rudimentary way.
-# Basically, it stores the operator and the list of children.
-# We have different types of general expressions that in addition
-# to the operation and list of children stores
-# SumExpr: coefficients and constant
-# ProdExpr: constant
-# Constant: constant
-# VarExpr: variable
-# PowExpr: exponent
-# UnaryExpr: nothing
-# We do not provide any way of accessing the internal information of the expression tree,
-# nor we simplify common terms or do any other type of simplification.
-# The `GenExpr` is pass as is to SCIP and SCIP will do what it see fits during presolving.
-#
-# TODO: All this is very complicated, so we might wanna unify Expr and GenExpr.
-# Maybe when consexpr is released it makes sense to revisit this.
-# TODO: We have to think about the operations that we define: __isub__, __add__, etc
-# and when to copy expressions and when to not copy them.
-# For example: when creating a ExprCons from an Expr expr, we store the expression expr
-# and then we normalize. When doing the normalization, we do
-# ```
-# c = self.expr[CONST]
-# self.expr -= c
-# ```
-# which should, in princple, modify the expr. However, since we do not implement __isub__, __sub__
-# gets called (I guess) and so a copy is returned.
-# Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
+from typing import Optional, Union, Type
+
 include "matrix.pxi"
 
 
@@ -55,241 +14,124 @@ def _is_number(e):
         return False
 
 
-def _expr_richcmp(self, other, op):
-    if op == 1: # <=
-        if isinstance(other, Expr) or isinstance(other, GenExpr):
-            return (self - other) <= 0.0
-        elif _is_number(other):
-            return ExprCons(self, rhs=float(other))
-        elif isinstance(other, MatrixExpr):
-            return _expr_richcmp(other, self, 5)
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
-    elif op == 5: # >=
-        if isinstance(other, Expr) or isinstance(other, GenExpr):
-            return (self - other) >= 0.0
-        elif _is_number(other):
-            return ExprCons(self, lhs=float(other))
-        elif isinstance(other, MatrixExpr):
-            return _expr_richcmp(other, self, 1)
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
-    elif op == 2: # ==
-        if isinstance(other, Expr) or isinstance(other, GenExpr):
-            return (self - other) == 0.0
-        elif _is_number(other):
-            return ExprCons(self, lhs=float(other), rhs=float(other))
-        elif isinstance(other, MatrixExpr):
-            return _expr_richcmp(other, self, 2)
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
-    else:
-        raise NotImplementedError("Can only support constraints with '<=', '>=', or '=='.")
-
-
 class Term:
-    '''This is a monomial term'''
+    """A monomial term consisting of one or more variables."""
 
-    __slots__ = ('vartuple', 'ptrtuple', 'hashval')
+    __slots__ = ("vars", "ptrs")
 
-    def __init__(self, *vartuple):
-        self.vartuple = tuple(sorted(vartuple, key=lambda v: v.ptr()))
-        self.ptrtuple = tuple(v.ptr() for v in self.vartuple)
-        self.hashval = sum(self.ptrtuple)
+    def __init__(self, *vars):
+        self.vars = tuple(sorted(vars, key=lambda v: v.ptr()))
+        self.ptrs = tuple(v.ptr() for v in self.vars)
 
     def __getitem__(self, idx):
-        return self.vartuple[idx]
+        return self.vars[idx]
 
     def __hash__(self):
-        return self.hashval
+        return self.ptrs.__hash__()
 
     def __eq__(self, other):
-        return self.ptrtuple == other.ptrtuple
+        return self.ptrs == other.ptrs
 
     def __len__(self):
-        return len(self.vartuple)
+        return len(self.vars)
 
-    def __add__(self, other):
-        both = self.vartuple + other.vartuple
-        return Term(*both)
+    def __mul__(self, other):
+        if not isinstance(other, Term):
+            raise TypeError(
+                f"unsupported operand type(s) for *: 'Term' and '{type(other)}'"
+            )
+        return Term(*self.vars, *other.vars)
 
     def __repr__(self):
-        return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
+        return f"Term({', '.join(map(str, self.vars))})"
 
 
 CONST = Term()
 
-# helper function
-def buildGenExprObj(expr):
-    """helper function to generate an object of type GenExpr"""
-    if _is_number(expr):
-        return Constant(expr)
 
-    elif isinstance(expr, Expr):
-        # loop over terms and create a sumexpr with the sum of each term
-        # each term is either a variable (which gets transformed into varexpr)
-        # or a product of variables (which gets tranformed into a prod)
-        sumexpr = SumExpr()
-        for vars, coef in expr.terms.items():
-            if len(vars) == 0:
-                sumexpr += coef
-            elif len(vars) == 1:
-                varexpr = VarExpr(vars[0])
-                sumexpr += coef * varexpr
-            else:
-                prodexpr = ProdExpr()
-                for v in vars:
-                    varexpr = VarExpr(v)
-                    prodexpr *= varexpr
-                sumexpr += coef * prodexpr
-        return sumexpr
-
-    elif isinstance(expr, MatrixExpr):   
-        GenExprs = np.empty(expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            GenExprs[idx] = buildGenExprObj(expr[idx])
-        return GenExprs.view(MatrixExpr)
-
-    else:
-        assert isinstance(expr, GenExpr)
-        return expr
-
-##@details Polynomial expressions of variables with operator overloading. \n
-#See also the @ref ExprDetails "description" in the expr.pxi. 
 cdef class Expr:
-    
-    def __init__(self, terms=None):
-        '''terms is a dict of variables to coefficients.
+    """Base class for mathematical expressions."""
 
-        CONST is used as key for the constant term.'''
-        self.terms = {} if terms is None else terms
+    cdef public dict children
 
-        if len(self.terms) == 0:
-            self.terms[CONST] = 0.0
+    def __init__(self, children: Optional[dict] = None):
+        self.children = children or {}
+
+    def __hash__(self):
+        return frozenset(self.children.items()).__hash__()
 
     def __getitem__(self, key):
-        if not isinstance(key, Term):
-            key = Term(key)
-        return self.terms.get(key, 0.0)
+        return self.children.get(key, 0.0)
 
     def __iter__(self):
-        return iter(self.terms)
+        return iter(self.children)
 
     def __next__(self):
-        try: return next(self.terms)
-        except: raise StopIteration
+        try:
+            return next(self.children)
+        except:
+            raise StopIteration
 
     def __abs__(self):
-        return abs(buildGenExprObj(self))
+        return _unary(self, AbsExpr)
 
     def __add__(self, other):
-        left = self
-        right = other
-
-        if _is_number(self):
-            assert isinstance(other, Expr)
-            left,right = right,left
-        terms = left.terms.copy()
-
-        if isinstance(right, Expr):
-            # merge the terms by component-wise addition
-            for v,c in right.terms.items():
-                terms[v] = terms.get(v, 0.0) + c
-        elif _is_number(right):
-            c = float(right)
-            terms[CONST] = terms.get(CONST, 0.0) + c
-        elif isinstance(right, GenExpr):
-            return buildGenExprObj(left) + right
-        elif isinstance(right, MatrixExpr):
-            return right + left
-        else:
-            raise TypeError(f"Unsupported type {type(right)}")
-
-        return Expr(terms)
-
-    def __iadd__(self, other):
+        other = Expr.to_const_or_var(other)
         if isinstance(other, Expr):
-            for v,c in other.terms.items():
-                self.terms[v] = self.terms.get(v, 0.0) + c
-        elif _is_number(other):
-            c = float(other)
-            self.terms[CONST] = self.terms.get(CONST, 0.0) + c
-        elif isinstance(other, GenExpr):
-            # is no longer in place, might affect performance?
-            # can't do `self = buildGenExprObj(self) + other` since I get
-            # TypeError: Cannot convert pyscipopt.scip.SumExpr to pyscipopt.scip.Expr
-            return buildGenExprObj(self) + other
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
-
-        return self
+            return SumExpr({self: 1.0, other: 1.0})
+        elif isinstance(other, MatrixExpr):
+            return other.__add__(self)
+        raise TypeError(
+            f"unsupported operand type(s) for +: 'Expr' and '{type(other)}'"
+        )
 
     def __mul__(self, other):
-        if isinstance(other, MatrixExpr):
-            return other * self
+        other = Expr.to_const_or_var(other)
+        if isinstance(other, Expr):
+            return ProdExpr(self, other)
+        elif isinstance(other, MatrixExpr):
+            return other.__mul__(self)
+        raise TypeError(
+            f"unsupported operand type(s) for *: 'Expr' and '{type(other)}'"
+        )
 
-        if _is_number(other):
-            f = float(other)
-            return Expr({v:f*c for v,c in self.terms.items()})
-        elif _is_number(self):
-            f = float(self)
-            return Expr({v:f*c for v,c in other.terms.items()})
-        elif isinstance(other, Expr):
-            terms = {}
-            for v1, c1 in self.terms.items():
-                for v2, c2 in other.terms.items():
-                    v = v1 + v2
-                    terms[v] = terms.get(v, 0.0) + c1 * c2
-            return Expr(terms)
-        elif isinstance(other, GenExpr):
-            return buildGenExprObj(self) * other
-        else:
-            raise NotImplementedError
-
-    def __truediv__(self,other):
-        if _is_number(other):
-            f = 1.0/float(other)
-            return f * self
-        selfexpr = buildGenExprObj(self)
-        return selfexpr.__truediv__(other)
+    def __truediv__(self, other):
+        other = Expr.to_const_or_var(other)
+        if isinstance(other, ConstExpr) and other[CONST] == 0:
+            raise ZeroDivisionError("division by zero")
+        if hash(self) == hash(other):
+            return ConstExpr(1.0)
+        return self.__mul__(other.__pow__(-1.0))
 
     def __rtruediv__(self, other):
-        ''' other / self '''
-        if _is_number(self):
-            f = 1.0/float(self)
-            return f * other
-        otherexpr = buildGenExprObj(other)
-        return otherexpr.__truediv__(self)
+        return Expr.to_const_or_var(other).__truediv__(self)
 
-    def __pow__(self, other, modulo):
-        if float(other).is_integer() and other >= 0:
-            exp = int(other)
-        else: # need to transform to GenExpr
-            return buildGenExprObj(self)**other
+    def __pow__(self, other):
+        other = Expr.to_const_or_var(other)
+        if not isinstance(other, ConstExpr):
+            raise TypeError("exponent must be a number")
 
-        res = 1
-        for _ in range(exp):
-            res *= self
-        return res
+        if other[CONST] == 0:
+            return ConstExpr(1.0)
+        return PowerExpr(self, other[CONST])
 
     def __rpow__(self, other):
-        """
-        Implements base**x as scip.exp(x * scip.log(base)).
-        Note: base must be positive.
-        """
-        if _is_number(other):
-            base = float(other)
-            if base <= 0.0:
-                raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
-            return exp(self * log(base))
-        else:
-            raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
-
-    def __neg__(self):
-        return Expr({v:-c for v,c in self.terms.items()})
+        other = Expr.to_const_or_var(other)
+        if not isinstance(other, ConstExpr):
+            raise TypeError("base must be a number")
+        if other[CONST] <= 0.0:
+            raise ValueError("base must be positive")
+        return exp(self * log(other[CONST]))
 
     def __sub__(self, other):
-        return self + (-other)
+        return self.__add__(-other)
+
+    def __neg__(self):
+        return self.__mul__(-1.0)
+
+    def __iadd__(self, other):
+        self = self.__add__(other)
+        return self
 
     def __radd__(self, other):
         return self.__add__(other)
@@ -298,30 +140,287 @@ cdef class Expr:
         return self.__mul__(other)
 
     def __rsub__(self, other):
-        return -1.0 * self + other
+        return self.__neg__().__add__(other)
 
-    def __richcmp__(self, other, op):
-        '''turn it into a constraint'''
-        return _expr_richcmp(self, other, op)
+    def __lt__(self, other):
+        other = Expr.to_const_or_var(other)
+        if isinstance(other, Expr):
+            if isinstance(other, ConstExpr):
+                return ExprCons(self, rhs=other[CONST])
+            return (self - other) <= 0
+        elif isinstance(other, MatrixExpr):
+            return other.__gt__(self)
+        raise TypeError(f"Unsupported type {type(other)}")
 
-    def normalize(self):
-        '''remove terms with coefficient of 0'''
-        self.terms =  {t:c for (t,c) in self.terms.items() if c != 0.0}
+    def __gt__(self, other):
+        other = Expr.to_const_or_var(other)
+        if isinstance(other, Expr):
+            if isinstance(other, ConstExpr):
+                return ExprCons(self, lhs=other[CONST])
+            return (self - other) >= 0
+        elif isinstance(other, MatrixExpr):
+            return self.__lt__(other)
+        raise TypeError(f"Unsupported type {type(other)}")
+
+    def __ge__(self, other):
+        other = Expr.to_const_or_var(other)
+        if isinstance(other, Expr):
+            if isinstance(other, ConstExpr):
+                return ExprCons(self, lhs=other[CONST], rhs=other[CONST])
+            return (self - other) == 0
+        elif isinstance(other, MatrixExpr):
+            return other.__ge__(self)
+        raise TypeError(f"Unsupported type {type(other)}")
 
     def __repr__(self):
-        return 'Expr(%s)' % repr(self.terms)
+        return f"Expr({self.children})"
+
+    @staticmethod
+    def to_const_or_var(x):
+        """Convert a number or variable to an expression."""
+
+        if _is_number(x):
+            return PolynomialExpr.to_subclass({CONST: x})
+        elif isinstance(x, Variable):
+            return PolynomialExpr.to_subclass({Term(x): 1.0})
+        return x
+
+    def to_dict(self, other: Optional[dict] = None) -> dict:
+        """Merge two dictionaries by summing values of common keys"""
+        other = other or {}
+        if not isinstance(other, dict):
+            raise TypeError("other must be a dict")
+
+        res = self.children.copy()
+        for child, coef in other.items():
+            res[child] = res.get(child, 0.0) + coef
+
+        return res
+
+    def _normalize(self) -> Expr:
+        return self
+
+
+class SumExpr(Expr):
+    """Expression like `expression1 + expression2 + constant`."""
+
+    def __add__(self, other):
+        other = Expr.to_const_or_var(other)
+        if isinstance(other, SumExpr):
+            return SumExpr(self.to_dict(other.children))
+        return super().__add__(other)
+
+    def __mul__(self, other):
+        other = Expr.to_const_or_var(other)
+        if isinstance(other, ConstExpr):
+            if other[CONST] == 0:
+                return ConstExpr(0.0)
+            return SumExpr({i: self[i] * other[CONST] for i in self if self[i] != 0})
+        return super().__mul__(other)
 
     def degree(self):
-        '''computes highest degree of terms'''
-        if len(self.terms) == 0:
-            return 0
-        else:
-            return max(len(v) for v in self.terms)
+        return float("inf")
+
+
+class PolynomialExpr(SumExpr):
+    """Expression like `2*x**3 + 4*x*y + constant`."""
+
+    def __init__(self, children: Optional[dict] = None):
+        if children and not all(isinstance(t, Term) for t in children):
+            raise TypeError("All keys must be Term instances")
+
+        super().__init__(children)
+
+    def __add__(self, other):
+        other = Expr.to_const_or_var(other)
+        if isinstance(other, PolynomialExpr):
+            return PolynomialExpr.to_subclass(self.to_dict(other.children))
+        return super().__add__(other)
+
+    def __mul__(self, other):
+        other = Expr.to_const_or_var(other)
+        if isinstance(other, PolynomialExpr):
+            children = {}
+            for i in self:
+                for j in other:
+                    child = i * j
+                    children[child] = children.get(child, 0.0) + self[i] * other[j]
+            return PolynomialExpr.to_subclass(children)
+        return super().__mul__(other)
+
+    def __truediv__(self, other):
+        other = Expr.to_const_or_var(other)
+        if isinstance(other, ConstExpr):
+            return self.__mul__(1.0 / other[CONST])
+        return super().__truediv__(other)
+
+    def __pow__(self, other):
+        other = Expr.to_const_or_var(other)
+        if (
+            isinstance(other, Expr)
+            and isinstance(other, ConstExpr)
+            and other[CONST].is_integer()
+            and other[CONST] > 0
+        ):
+            res = 1
+            for _ in range(int(other[CONST])):
+                res *= self
+            return res
+        return super().__pow__(other)
+
+    def degree(self):
+        """Computes the highest degree of children"""
+
+        return max(map(len, self.children)) if self.children else 0
+
+    @classmethod
+    def to_subclass(cls, children: dict):
+        if len(children) == 0:
+            return ConstExpr(0.0)
+        elif len(children) == 1:
+            if CONST in children:
+                return ConstExpr(children[CONST])
+            return MonomialExpr(children)
+        return cls(children)
+
+    def _normalize(self):
+        return PolynomialExpr.to_subclass(
+            {k: v for k, v in self.children.items() if v != 0.0}
+        )
+
+
+class ConstExpr(PolynomialExpr):
+    """Expression representing for `constant`."""
+
+    def __init__(self, constant: float = 0):
+        super().__init__({CONST: constant})
+
+    def __abs__(self):
+        return ConstExpr(abs(self[CONST]))
+
+    def __pow__(self, other):
+        other = Expr.to_const_or_var(other)
+        if isinstance(other, ConstExpr):
+            return ConstExpr(self[CONST] ** other[CONST])
+        return super().__pow__(other)
+
+
+class MonomialExpr(PolynomialExpr):
+    """Expression like `x**3`."""
+
+    def __init__(self, children: Optional[dict] = None):
+        if children and len(children) != 1:
+            raise ValueError("MonomialExpr must have exactly one child")
+
+        super().__init__(children)
+
+    @staticmethod
+    def from_var(var: Variable, coef: float = 1.0):
+        return MonomialExpr({Term(var): coef})
+
+
+class FuncExpr(Expr):
+    def degree(self):
+        return float("inf")
+
+
+class ProdExpr(FuncExpr):
+    """Expression like `coefficient * expression`."""
+
+    def __init__(self, *children, coef: float = 1.0):
+        super().__init__({i: 1.0 for i in children})
+        self.coef = coef
+
+    def __hash__(self):
+        return (frozenset(self), self.coef).__hash__()
+
+    def __add__(self, other):
+        other = Expr.to_const_or_var(other)
+        if isinstance(other, ProdExpr) and hash(frozenset(self)) == hash(
+            frozenset(other)
+        ):
+            return ProdExpr(*self, coef=self.coef + other.coef)
+        return super().__add__(other)
+
+    def __mul__(self, other):
+        other = Expr.to_const_or_var(other)
+        if isinstance(other, ConstExpr):
+            if other[CONST] == 0:
+                return ConstExpr(0.0)
+            return ProdExpr(*self, coef=self.coef * other[CONST])
+        return super().__mul__(other)
+
+    def __repr__(self):
+        return f"ProdExpr({{{tuple(self)}: {self.coef}}})"
+
+    def _normalize(self):
+        if self.coef == 0:
+            return ConstExpr(0.0)
+        return self
+
+
+class PowerExpr(FuncExpr):
+    """Expression like `pow(expression, exponent)`."""
+
+    def __init__(self, base, expo: float = 1.0):
+        super().__init__({base: 1.0})
+        self.expo = expo
+
+    def __hash__(self):
+        return (frozenset(self), self.expo).__hash__()
+
+    def __repr__(self):
+        return f"PowerExpr({tuple(self)}, {self.expo})"
+
+    def _normalize(self):
+        if self.expo == 0:
+            return ConstExpr(1.0)
+        elif self.expo == 1:
+            return tuple(self)[0]
+        return self
+
+
+class UnaryExpr(FuncExpr):
+    """Expression like `f(expression)`."""
+
+    def __init__(self, expr: Expr):
+        super().__init__({expr: 1.0})
+
+    def __hash__(self):
+        return frozenset(self).__hash__()
+
+    def __repr__(self):
+        return f"{type(self).__name__}({tuple(self)[0]})"
+
+
+class AbsExpr(UnaryExpr):
+    """Expression like `abs(expression)`."""
+
+
+class ExpExpr(UnaryExpr):
+    """Expression like `exp(expression)`."""
+
+
+class LogExpr(UnaryExpr):
+    """Expression like `log(expression)`."""
+
+
+class SqrtExpr(UnaryExpr):
+    """Expression like `sqrt(expression)`."""
+
+
+class SinExpr(UnaryExpr):
+    """Expression like `sin(expression)`."""
+
+
+class CosExpr(UnaryExpr):
+    """Expression like `cos(expression)`."""
 
 
 cdef class ExprCons:
-    '''Constraints with a polynomial expressions and lower/upper bounds.'''
-    cdef public expr
+    """Constraints with a polynomial expressions and lower/upper bounds."""
+
+    cdef public Expr expr
     cdef public _lhs
     cdef public _rhs
 
@@ -329,436 +428,110 @@ cdef class ExprCons:
         self.expr = expr
         self._lhs = lhs
         self._rhs = rhs
-        assert not (lhs is None and rhs is None)
-        self.normalize()
+        self._normalize()
 
-    def normalize(self):
-        '''move constant terms in expression to bounds'''
-        if isinstance(self.expr, Expr):
-            c = self.expr[CONST]
-            self.expr -= c
-            assert self.expr[CONST] == 0.0
-            self.expr.normalize()
-        else:
-            assert isinstance(self.expr, GenExpr)
-            return
+    def _normalize(self):
+        """Move constant children in expression to bounds"""
 
-        if not self._lhs is None:
+        if self._lhs is None and self._rhs is None:
+            raise ValueError(
+                "Ranged ExprCons (with both lhs and rhs) doesn't supported."
+            )
+        if not isinstance(self.expr, Expr):
+            raise TypeError("expr must be an Expr instance")
+
+        c = self.expr[CONST]
+        self.expr = (self.expr - c)._normalize()
+
+        if self._lhs is not None:
             self._lhs -= c
-        if not self._rhs is None:
+        if self._rhs is not None:
             self._rhs -= c
 
+    def __lt__(self, other):
+        if not self._rhs is None:
+            raise TypeError("ExprCons already has upper bound")
+        if self._lhs is None:
+            raise TypeError("ExprCons must have a lower bound")
+        if not _is_number(other):
+            raise TypeError("Ranged ExprCons is not well defined!")
 
-    def __richcmp__(self, other, op):
-        '''turn it into a constraint'''
-        if op == 1: # <=
-            if not self._rhs is None:
-                raise TypeError('ExprCons already has upper bound')
-            assert not self._lhs is None
+        return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
 
-            if not _is_number(other):
-                raise TypeError('Ranged ExprCons is not well defined!')
+    def __gt__(self, other):
+        if not self._lhs is None:
+            raise TypeError("ExprCons already has lower bound")
+        if self._rhs is None:
+            raise TypeError("ExprCons must have an upper bound")
+        if not _is_number(other):
+            raise TypeError("Ranged ExprCons is not well defined!")
 
-            return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
-        elif op == 5: # >=
-            if not self._lhs is None:
-                raise TypeError('ExprCons already has lower bound')
-            assert self._lhs is None
-            assert not self._rhs is None
-
-            if not _is_number(other):
-                raise TypeError('Ranged ExprCons is not well defined!')
-
-            return ExprCons(self.expr, lhs=float(other), rhs=self._rhs)
-        else:
-            raise NotImplementedError("Ranged ExprCons can only support with '<=' or '>='.")
+        return ExprCons(self.expr, lhs=float(other), rhs=self._rhs)
 
     def __repr__(self):
-        return 'ExprCons(%s, %s, %s)' % (self.expr, self._lhs, self._rhs)
+        return f"ExprCons({self.expr}, {self._lhs}, {self._rhs})"
 
     def __bool__(self):
-        '''Make sure that equality of expressions is not asserted with =='''
+        """Make sure that equality of expressions is not asserted with =="""
 
         msg = """Can't evaluate constraints as booleans.
 
-If you want to add a ranged constraint of the form
-   lhs <= expression <= rhs
+If you want to add a ranged constraint of the form:
+    lhs <= expression <= rhs
 you have to use parenthesis to break the Python syntax for chained comparisons:
-   lhs <= (expression <= rhs)
+    lhs <= (expression <= rhs)
 """
         raise TypeError(msg)
 
+
 def quicksum(termlist):
-    '''add linear expressions and constants much faster than Python's sum
+    """add linear expressions and constants much faster than Python's sum
     by avoiding intermediate data structures and adding terms inplace
-    '''
+    """
     result = Expr()
     for term in termlist:
         result += term
     return result
 
+
 def quickprod(termlist):
-    '''multiply linear expressions and constants by avoiding intermediate 
+    """multiply linear expressions and constants by avoiding intermediate
     data structures and multiplying terms inplace
-    '''
+    """
     result = Expr() + 1
     for term in termlist:
         result *= term
     return result
 
 
-class Op:
-    const = 'const'
-    varidx = 'var'
-    exp, log, sqrt, sin, cos = 'exp', 'log', 'sqrt', 'sin', 'cos'
-    plus, minus, mul, div, power = '+', '-', '*', '/', '**'
-    add = 'sum'
-    prod = 'prod'
-    fabs = 'abs'
-
-Operator = Op()
-
-##@details <pre> General expressions of variables with operator overloading.
-#
-#@note
-#   - these expressions are not smart enough to identify equal terms
-#   - in contrast to polynomial expressions, __getitem__ is not implemented
-#     so expr[x] will generate an error instead of returning the coefficient of x </pre>
-#
-#See also the @ref ExprDetails "description" in the expr.pxi. 
-cdef class GenExpr:
-    cdef public _op
-    cdef public children
+def _unary(expr: Union[Expr, MatrixExpr], cls: Type[UnaryExpr]):
+    if isinstance(expr, MatrixExpr):   
+        res = np.empty(shape=expr.shape, dtype=object)
+        res.flat = [cls(i) for i in expr.flat]
+        return res.view(MatrixExpr)
+    return cls(expr)
 
 
-    def __init__(self): # do we need it
-        ''' '''
-
-    def __abs__(self):
-        return UnaryExpr(Operator.fabs, self)
-
-    def __add__(self, other):
-        if isinstance(other, MatrixExpr):
-            return other + self
-
-        left = buildGenExprObj(self)
-        right = buildGenExprObj(other)
-        ans = SumExpr()
-
-        # add left term
-        if left.getOp() == Operator.add:
-            ans.coefs.extend(left.coefs)
-            ans.children.extend(left.children)
-            ans.constant += left.constant
-        elif left.getOp() == Operator.const:
-            ans.constant += left.number
-        else:
-            ans.coefs.append(1.0)
-            ans.children.append(left)
-
-        # add right term
-        if right.getOp() == Operator.add:
-            ans.coefs.extend(right.coefs)
-            ans.children.extend(right.children)
-            ans.constant += right.constant
-        elif right.getOp() == Operator.const:
-            ans.constant += right.number
-        else:
-            ans.coefs.append(1.0)
-            ans.children.append(right)
-
-        return ans
-
-    #def __iadd__(self, other):
-    #''' in-place addition, i.e., expr += other '''
-    #    assert isinstance(self, Expr)
-    #    right = buildGenExprObj(other)
-    #
-    #    # transform self into sum
-    #    if self.getOp() != Operator.add:
-    #        newsum = SumExpr()
-    #        if self.getOp() == Operator.const:
-    #            newsum.constant += self.number
-    #        else:
-    #            newsum.coefs.append(1.0)
-    #            newsum.children.append(self.copy()) # TODO: what is copy?
-    #        self = newsum
-    #    # add right term
-    #    if right.getOp() == Operator.add:
-    #        self.coefs.extend(right.coefs)
-    #        self.children.extend(right.children)
-    #        self.constant += right.constant
-    #    elif right.getOp() == Operator.const:
-    #        self.constant += right.number
-    #    else:
-    #        self.coefs.append(1.0)
-    #        self.children.append(right)
-    #    return self
-
-    def __mul__(self, other):
-        if isinstance(other, MatrixExpr):
-            return other * self
-
-        left = buildGenExprObj(self)
-        right = buildGenExprObj(other)
-        ans = ProdExpr()
-
-        # multiply left factor
-        if left.getOp() == Operator.prod:
-            ans.children.extend(left.children)
-            ans.constant *= left.constant
-        elif left.getOp() == Operator.const:
-            ans.constant *= left.number
-        else:
-            ans.children.append(left)
-
-        # multiply right factor
-        if right.getOp() == Operator.prod:
-            ans.children.extend(right.children)
-            ans.constant *= right.constant
-        elif right.getOp() == Operator.const:
-            ans.constant *= right.number
-        else:
-            ans.children.append(right)
-
-        return ans
-
-    #def __imul__(self, other):
-    #''' in-place multiplication, i.e., expr *= other '''
-    #    assert isinstance(self, Expr)
-    #    right = buildGenExprObj(other)
-    #    # transform self into prod
-    #    if self.getOp() != Operator.prod:
-    #        newprod = ProdExpr()
-    #        if self.getOp() == Operator.const:
-    #            newprod.constant *= self.number
-    #        else:
-    #            newprod.children.append(self.copy()) # TODO: what is copy?
-    #        self = newprod
-    #    # multiply right factor
-    #    if right.getOp() == Operator.prod:
-    #        self.children.extend(right.children)
-    #        self.constant *= right.constant
-    #    elif right.getOp() == Operator.const:
-    #        self.constant *= right.number
-    #    else:
-    #        self.children.append(right)
-    #    return self
-
-    def __pow__(self, other, modulo):
-        expo = buildGenExprObj(other)
-        if expo.getOp() != Operator.const:
-            raise NotImplementedError("exponents must be numbers")
-        if self.getOp() == Operator.const:
-            return Constant(self.number**expo.number)
-        ans = PowExpr()
-        ans.children.append(self)
-        ans.expo = expo.number
-
-        return ans
-
-    def __rpow__(self, other):
-        """
-        Implements base**x as scip.exp(x * scip.log(base)). 
-        Note: base must be positive.
-        """
-        if _is_number(other):
-            base = float(other)
-            if base <= 0.0:
-                raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
-            return exp(self * log(base))
-        else:
-            raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
-
-    #TODO: ipow, idiv, etc
-    def __truediv__(self,other):
-        divisor = buildGenExprObj(other)
-        # we can't divide by 0
-        if isinstance(divisor, GenExpr) and divisor.getOp() == Operator.const and divisor.number == 0.0:
-            raise ZeroDivisionError("cannot divide by 0")
-        return self * divisor**(-1)
-
-    def __rtruediv__(self, other):
-        ''' other / self '''
-        otherexpr = buildGenExprObj(other)
-        return otherexpr.__truediv__(self)
-
-    def __neg__(self):
-        return -1.0 * self
-
-    def __sub__(self, other):
-        return self + (-other)
-
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    def __rsub__(self, other):
-        return -1.0 * self + other
-
-    def __richcmp__(self, other, op):
-        '''turn it into a constraint'''
-        return _expr_richcmp(self, other, op)
-
-    def degree(self):
-        '''Note: none of these expressions should be polynomial'''
-        return float('inf') 
-
-    def getOp(self):
-        '''returns operator of GenExpr'''
-        return self._op
-
-
-# Sum Expressions
-cdef class SumExpr(GenExpr):
-
-    cdef public constant
-    cdef public coefs
-
-    def __init__(self):
-        self.constant = 0.0
-        self.coefs = []
-        self.children = []
-        self._op = Operator.add
-    def __repr__(self):
-        return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
-
-# Prod Expressions
-cdef class ProdExpr(GenExpr):
-    cdef public constant
-    def __init__(self):
-        self.constant = 1.0
-        self.children = []
-        self._op = Operator.prod
-    def __repr__(self):
-        return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
-
-# Var Expressions
-cdef class VarExpr(GenExpr):
-    cdef public var
-    def __init__(self, var):
-        self.children = [var]
-        self._op = Operator.varidx
-    def __repr__(self):
-        return self.children[0].__repr__()
-
-# Pow Expressions
-cdef class PowExpr(GenExpr):
-    cdef public expo
-    def __init__(self):
-        self.expo = 1.0
-        self.children = []
-        self._op = Operator.power
-    def __repr__(self):
-        return self._op + "(" + self.children[0].__repr__() + "," + str(self.expo) + ")"
-
-# Exp, Log, Sqrt, Sin, Cos Expressions
-cdef class UnaryExpr(GenExpr):
-    def __init__(self, op, expr):
-        self.children = []
-        self.children.append(expr)
-        self._op = op
-    def __repr__(self):
-        return self._op + "(" + self.children[0].__repr__() + ")"
-
-# class for constant expressions
-cdef class Constant(GenExpr):
-    cdef public number
-    def __init__(self,number):
-        self.number = number
-        self._op = Operator.const
-
-    def __repr__(self):
-        return str(self.number)
-
-def exp(expr):
+def exp(expr: Union[Expr, MatrixExpr]):
     """returns expression with exp-function"""
-    if isinstance(expr, MatrixExpr):   
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.exp, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.exp, buildGenExprObj(expr))
+    return _unary(expr, ExpExpr)
 
-def log(expr):
+
+def log(expr: Union[Expr, MatrixExpr]):
     """returns expression with log-function"""
-    if isinstance(expr, MatrixExpr):
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.log, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.log, buildGenExprObj(expr))
+    return _unary(expr, LogExpr)
 
-def sqrt(expr):
+
+def sqrt(expr: Union[Expr, MatrixExpr]):
     """returns expression with sqrt-function"""
-    if isinstance(expr, MatrixExpr):
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.sqrt, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.sqrt, buildGenExprObj(expr))
+    return _unary(expr, SqrtExpr)
 
-def sin(expr):
+
+def sin(expr: Union[Expr, MatrixExpr]):
     """returns expression with sin-function"""
-    if isinstance(expr, MatrixExpr):
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.sin, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.sin, buildGenExprObj(expr))
+    return _unary(expr, SinExpr)
 
-def cos(expr):
+
+def cos(expr: Union[Expr, MatrixExpr]):
     """returns expression with cos-function"""
-    if isinstance(expr, MatrixExpr):   
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.cos, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.cos, buildGenExprObj(expr))
-
-def expr_to_nodes(expr):
-    '''transforms tree to an array of nodes. each node is an operator and the position of the 
-    children of that operator (i.e. the other nodes) in the array'''
-    assert isinstance(expr, GenExpr)
-    nodes = []
-    expr_to_array(expr, nodes)
-    return nodes
-
-def value_to_array(val, nodes):
-    """adds a given value to an array"""
-    nodes.append(tuple(['const', [val]]))
-    return len(nodes) - 1
-
-# there many hacky things here: value_to_array is trying to mimick
-# the multiple dispatch of julia. Also that we have to ask which expression is which
-# in order to get the constants correctly
-# also, for sums, we are not considering coefficients, because basically all coefficients are 1
-# haven't even consider substractions, but I guess we would interpret them as a - b = a + (-1) * b
-def expr_to_array(expr, nodes):
-    """adds expression to array"""
-    op = expr._op
-    if op == Operator.const: # FIXME: constant expr should also have children!
-        nodes.append(tuple([op, [expr.number]]))
-    elif op != Operator.varidx:
-        indices = []
-        nchildren = len(expr.children)
-        for child in expr.children:
-            pos = expr_to_array(child, nodes) # position of child in the final array of nodes, 'nodes'
-            indices.append(pos)
-        if op == Operator.power:
-            pos = value_to_array(expr.expo, nodes)
-            indices.append(pos)
-        elif (op == Operator.add and expr.constant != 0.0) or (op == Operator.prod and expr.constant != 1.0):
-            pos = value_to_array(expr.constant, nodes)
-            indices.append(pos)
-        nodes.append( tuple( [op, indices] ) )
-    else: # var
-        nodes.append( tuple( [op, expr.children] ) )
-    return len(nodes) - 1
+    return _unary(expr, CosExpr)
