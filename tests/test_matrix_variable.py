@@ -531,4 +531,4 @@ def test_broadcast():
     m.setObjective(x.sum(), "maximize")
     m.optimize()
 
-    assert (m.getVal(x) == np.zeros((2, 3))).all().all()
+    assert (m.getVal(x) == np.zeros((2, 3))).all()
