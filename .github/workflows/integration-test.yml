@@ -1,13 +1,13 @@
 name: Integration test
 
 env:
-  version: 9.2.0
+  version: 9.2.3
 
-# runs on branches and pull requests; doesn't run on tags.
 on:
   push:
     branches:
       - 'master'
+  workflow_dispatch:
 
 
 jobs:
@@ -17,14 +17,14 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v3
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Linux-ubuntu20.deb
-          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu20.deb
+          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Linux-ubuntu22.deb
+          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu22.deb
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -34,22 +34,13 @@ jobs:
       - name: Prepare python environment
         run: |
           python -m pip install --upgrade pip
-          if python -m pip help install | grep -q -- '--group'; then
-            python -m pip install --group test-full
-          else
-            python -m pip install networkx pytest-cov numpy
-          fi
+          python -m pip install -r requirements/test.txt
 
       - name: Install PySCIPOpt
         run: python -m pip install .
 
       - name: Run pyscipopt tests
-        run: |
-          if python -m pip help install | grep -q -- '--group'; then
-            py.test -nauto
-          else
-            py.test
-          fi
+        run: pytest -nauto
 
   Windows-test:
     env:
@@ -57,7 +48,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v3
 
@@ -77,13 +68,8 @@ jobs:
       - name: Prepare python environment
         shell: powershell
         run: |
-          $pipHelp = python -m pip help install
-          if ($pipHelp -match '--group') {
-            python -m pip install --group test-full
-          }
-          else {
-            python -m pip install wheel cython networkx pytest-cov
-          }
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements/test.txt
 
       - name: Install PySCIPOpt
         shell: powershell
@@ -93,19 +79,13 @@ jobs:
 
       - name: Run pyscipopt tests
         shell: powershell
-        run: |
-          $pipHelp = python -m pip help install
-          if ($pipHelp -match '--group') {
-            py.test -nauto
-          } else {
-            py.test
-          }
+        run: pytest -nauto
 
   MacOS-test:
     runs-on: macos-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v3
 
@@ -115,7 +95,7 @@ jobs:
           wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Darwin.sh
           chmod +x SCIPOptSuite-${{ env.version }}-Darwin.sh
           ./SCIPOptSuite-${{ env.version }}-Darwin.sh --skip-license --include-subdir
-          mv SCIPOptSuite-${{ env.version }}-Darwin ${{ runner.workspace }}/scipoptsuite
+          mv SCIPOptSuite-${{ env.version }}-Darwin ${{ github.workspace }}/scipoptsuite
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -125,23 +105,19 @@ jobs:
       - name: Prepare python environment
         run: |
           python -m pip install --upgrade pip
-          if python -m pip help install | grep -q -- '--group'; then
-            python -m pip install --group test-full
-          else
-            python -m pip install networkx pytest-cov pytest numpy
-          fi
+          python -m pip install -r requirements/test.txt
 
       - name: Install PySCIPOpt
         run: |
-          export SCIPOPTDIR=${{ runner.workspace }}/scipoptsuite/
-          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${{ runner.workspace }}/scipoptsuite/lib
+          export SCIPOPTDIR=${{ github.workspace }}/scipoptsuite/
+          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${{ github.workspace }}/scipoptsuite/lib
           python -m pip install .
 
 #      - name: Run pyscipopt tests
 #        run: |
-#          export SCIPOPTDIR=${{ runner.workspace }}/scipoptsuite/
-#          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${{ runner.workspace }}/scipoptsuite/lib
-#          py.test
+#          export SCIPOPTDIR=${{ github.workspace }}/scipoptsuite/
+#          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${{ github.workspace }}/scipoptsuite/lib
+#          pytest
 
   ### if you need valgrind on mac, you can install it via
   # brew tap LouisBrunner/valgrind
