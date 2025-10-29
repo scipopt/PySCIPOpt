@@ -41,7 +41,6 @@ from pyscipopt.scip      import sin as sin
 from pyscipopt.scip      import cos as cos
 from pyscipopt.scip      import PY_SCIP_RESULT          as SCIP_RESULT
 from pyscipopt.scip      import PY_SCIP_PARAMSETTING    as SCIP_PARAMSETTING
-from pyscipopt.scip      import PY_SCIP_LPPARAM         as SCIP_LPPARAM
 from pyscipopt.scip      import PY_SCIP_PARAMEMPHASIS   as SCIP_PARAMEMPHASIS
 from pyscipopt.scip      import PY_SCIP_STATUS          as SCIP_STATUS
 from pyscipopt.scip      import PY_SCIP_STAGE           as SCIP_STAGE
