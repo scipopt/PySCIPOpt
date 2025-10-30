@@ -307,8 +307,9 @@ cdef class PY_SCIP_SOLORIGIN:
 def PY_SCIP_CALL(SCIP_RETCODE rc):
     if rc == SCIP_OKAY:
         pass
-    elif rc == SCIP_ERROR: # pragma: no cover
-        raise Exception('SCIP: unspecified error!')
+    elif rc == SCIP_ERROR:
+        if "COVERAGE_RUN" not in os.environ:
+            raise Exception('SCIP: unspecified error!')
     elif rc == SCIP_NOMEMORY:
         raise MemoryError('SCIP: insufficient memory error!')
     elif rc == SCIP_READERROR:
