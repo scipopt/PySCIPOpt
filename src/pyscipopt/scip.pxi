@@ -1052,12 +1052,10 @@ cdef class Solution:
         cdef _VarArray wrapper
         if isinstance(expr, Variable):
             wrapper = _VarArray(expr)
-            self._checkStage("SCIPgetSolVal")
             return SCIPgetSolVal(self.scip, self.sol, wrapper.ptr[0])
         return sum(self._evaluate(term)*coeff for term, coeff in expr.terms.items() if coeff != 0)
 
     def _evaluate(self, term):
-        self._checkStage("SCIPgetSolVal")
         result = 1
         cdef _VarArray wrapper
         wrapper = _VarArray(term.vartuple)
@@ -1072,7 +1070,6 @@ cdef class Solution:
         cdef SCIP_VAR* scip_var
         cdef int i
         vals = {}
-        self._checkStage("SCIPgetSolVal")
         for i in range(SCIPgetNOrigVars(self.scip)):
             scip_var = SCIPgetOrigVars(self.scip)[i]
             # extract name
@@ -1080,12 +1077,6 @@ cdef class Solution:
             name = cname.decode('utf-8')
             vals[name] = SCIPgetSolVal(self.scip, self.sol, scip_var)
         return str(vals)
-
-    def _checkStage(self, method):
-        if method in ["SCIPgetSolVal", "getSolObjVal"]:
-            stage_check = SCIPgetStage(self.scip) not in [SCIP_STAGE_INIT, SCIP_STAGE_FREE]
-            if not stage_check or self.sol == NULL and SCIPgetStage(self.scip) != SCIP_STAGE_SOLVING:
-                raise Warning(f"{method} can only be called with a valid solution or in stage SOLVING (current stage: {SCIPgetStage(self.scip)})")
 
     def getOrigin(self):
         """
@@ -2768,14 +2759,6 @@ cdef class Model:
     def freeTransform(self):
         """Frees all solution process data including presolving and
         transformed problem, only original problem is kept."""
-        if self.getStage() not in [SCIP_STAGE_INIT,
-                                 SCIP_STAGE_PROBLEM,
-                                 SCIP_STAGE_TRANSFORMED,
-                                 SCIP_STAGE_PRESOLVING,
-                                 SCIP_STAGE_PRESOLVED,
-                                 SCIP_STAGE_SOLVING,
-                                 SCIP_STAGE_SOLVED]:
-            raise Warning("method cannot be called in stage %i." % self.getStage())
 
         self._modelvars = {
             var: value
@@ -6335,7 +6318,6 @@ cdef class Model:
         coef : float
 
         """
-        assert self.getStage() == 1, "addExprNonlinear cannot be called in stage %i." % self.getStage()
         assert cons.isNonlinear(), "addExprNonlinear can only be called with nonlinear constraints."
 
         cdef Constraint temp_cons
@@ -7545,9 +7527,6 @@ cdef class Model:
         cdef SCIP_Real activity
         cdef SCIP_SOL* scip_sol
 
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
-            raise Warning("method cannot be called before problem is solved")
-
         if isinstance(sol, Solution):
             scip_sol = sol.sol
         else:
@@ -7583,10 +7562,6 @@ cdef class Model:
         """
         cdef SCIP_Real activity
         cdef SCIP_SOL* scip_sol
-
-
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
-            raise Warning("method cannot be called before problem is solved")
 
         if isinstance(sol, Solution):
             scip_sol = sol.sol
@@ -8195,10 +8170,6 @@ cdef class Model:
 
     def presolve(self):
         """Presolve the problem."""
-        if self.getStage() not in [SCIP_STAGE_PROBLEM, SCIP_STAGE_TRANSFORMED,\
-                                SCIP_STAGE_PRESOLVING, SCIP_STAGE_PRESOLVED, \
-                                SCIP_STAGE_SOLVED]:
-            raise Warning("method cannot be called in stage %i." % self.getStage())
 
         PY_SCIP_CALL(SCIPpresolve(self._scip))
         self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
@@ -10290,8 +10261,6 @@ cdef class Model:
         if sol == None:
             sol = Solution.create(self._scip, NULL)
 
-        sol._checkStage("getSolObjVal")
-
         if original:
             objval = SCIPgetSolOrigObj(self._scip, sol.sol)
         else:
@@ -10328,20 +10297,8 @@ cdef class Model:
         float
 
         """
-
-        if SCIPgetNSols(self._scip) == 0:
-            if self.getStage() != SCIP_STAGE_SOLVING:
-                raise Warning("Without a solution, method can only be called in stage SOLVING.")
-        else:
+        if SCIPgetNSols(self._scip) != 0:
             assert self._bestSol.sol != NULL
-
-            if SCIPsolIsOriginal(self._bestSol.sol):
-                min_stage_requirement = SCIP_STAGE_PROBLEM
-            else:
-                min_stage_requirement = SCIP_STAGE_TRANSFORMING
-
-            if not self.getStage() >= min_stage_requirement:
-                raise Warning("method cannot be called in stage %i." % self.getStage)
 
         return self.getSolObjVal(self._bestSol, original)
 
@@ -10393,10 +10350,6 @@ cdef class Model:
         A variable is also an expression.
 
         """
-        stage_check = SCIPgetStage(self._scip) not in [SCIP_STAGE_INIT, SCIP_STAGE_FREE]
-
-        if not stage_check or self._bestSol.sol == NULL and SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
-            raise Warning("Method cannot be called in stage ", self.getStage())
 
         if isinstance(expr, MatrixExpr):
             result = np.empty(expr.shape, dtype=float)
@@ -11142,14 +11095,6 @@ cdef class Model:
     def freeReoptSolve(self):
         """Frees all solution process data and prepares for reoptimization."""
 
-        if self.getStage() not in [SCIP_STAGE_INIT,
-                                 SCIP_STAGE_PROBLEM,
-                                 SCIP_STAGE_TRANSFORMED,
-                                 SCIP_STAGE_PRESOLVING,
-                                 SCIP_STAGE_PRESOLVED,
-                                 SCIP_STAGE_SOLVING,
-                                 SCIP_STAGE_SOLVED]:
-            raise Warning("method cannot be called in stage %i." % self.getStage())
         PY_SCIP_CALL(SCIPfreeReoptSolve(self._scip))
 
     def chgReoptObjective(self, coeffs, sense = 'minimize'):
