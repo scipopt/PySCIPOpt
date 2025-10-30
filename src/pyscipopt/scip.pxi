@@ -3025,6 +3025,72 @@ cdef class Model:
         """
         return SCIPgetDepth(self._scip)
 
+    def getMaxDepth(self):
+        """
+        Gets maximal depth of the branch-and-bound tree reached during solving.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetMaxDepth(self._scip)
+
+    def getPlungeDepth(self):
+        """
+        Gets current plunging depth (successive selections of child/sibling nodes).
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetPlungeDepth(self._scip)
+
+    def getLowerbound(self):
+        """
+        Gets global lower (dual) bound.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetLowerbound(self._scip)
+
+    def getCutoffbound(self):
+        """
+        Gets the cutoff bound.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetCutoffbound(self._scip)
+
+    def getNNodeLPIterations(self):
+        """
+        Gets number of LP iterations used for solving node relaxations so far.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNNodeLPIterations(self._scip)
+
+    def getNStrongbranchLPIterations(self):
+        """
+        Gets number of LP iterations used for strong branching so far.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNStrongbranchLPIterations(self._scip)
+
     def cutoffNode(self, Node node):
         """
         marks node and whole subtree to be cut off from the branch and bound tree.
