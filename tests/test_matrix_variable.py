@@ -1,10 +1,4 @@
 import operator
-import pdb
-import pprint
-import pytest
-from pyscipopt import Model, Variable, log, exp, cos, sin, sqrt
-from pyscipopt import Expr, MatrixExpr, MatrixVariable, MatrixExprCons, MatrixConstraint, ExprCons
-from pyscipopt.scip import GenExpr
 from time import time
 
 import numpy as np
@@ -22,10 +16,10 @@ from pyscipopt import (
     cos,
     exp,
     log,
-    quicksum,
     sin,
     sqrt,
 )
+from pyscipopt.scip import GenExpr
 
 
 def test_catching_errors():
@@ -525,3 +519,16 @@ def test_matrix_matmul_return_type():
     y = m.addMatrixVar((2, 3))
     z = m.addMatrixVar((3, 4))
     assert type(y @ z) is MatrixExpr
+
+
+def test_broadcast():
+    # test #1065
+    m = Model()
+    x = m.addMatrixVar((2, 3), ub=10)
+
+    m.addMatrixCons(x == np.zeros((2, 1)))
+
+    m.setObjective(x.sum(), "maximize")
+    m.optimize()
+
+    assert (m.getVal(x) == np.zeros((2, 3))).all()

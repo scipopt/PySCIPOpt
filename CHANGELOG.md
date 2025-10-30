@@ -10,6 +10,7 @@
 ### Added
 - Added possibility of having variables in exponent.
 - Added basic type stubs to help with IDE autocompletion and type checking.
+- MatrixVariable comparisons (<=, >=, ==) now support numpy's broadcast feature.
 ### Fixed
 - Implemented all binary operations between MatrixExpr and GenExpr
 - Fixed the type of @ matrix operation result from MatrixVariable to MatrixExpr.
