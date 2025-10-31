@@ -303,7 +303,12 @@ def test_getObjective():
 
     assert str(m.getObjective()) == "Expr({Term(x1): 2.0, Term(x2): 3.0})"
     
-    
+def test_SCIP_stage_check():
+    m = Model()
+
+    with pytest.raises(Exception): # default interface preset should check the stage inside SCIP
+        m.getPrimalbound()
+
 def test_getTreesizeEstimation():
     m = Model()
 
