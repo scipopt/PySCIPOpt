@@ -3049,7 +3049,7 @@ cdef class Model:
 
     def getLowerbound(self):
         """
-        Gets global lower (dual) bound.
+        Gets global lower (dual) bound of the transformed problem.
 
         Returns
         -------
@@ -3060,7 +3060,7 @@ cdef class Model:
 
     def getCutoffbound(self):
         """
-        Gets the cutoff bound.
+        Gets the cutoff bound of the transformed problem.
 
         Returns
         -------
