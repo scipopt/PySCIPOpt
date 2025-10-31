@@ -1361,6 +1361,12 @@ cdef extern from "scip/scip.h":
     SCIP_Longint SCIPgetNLPs(SCIP* scip)
     SCIP_Longint SCIPgetNLPIterations(SCIP* scip)
     int SCIPgetNSepaRounds(SCIP* scip)
+    SCIP_Real SCIPgetLowerbound(SCIP* scip)
+    SCIP_Real SCIPgetCutoffbound(SCIP* scip)
+    int SCIPgetMaxDepth(SCIP* scip)
+    int SCIPgetPlungeDepth(SCIP* scip)
+    SCIP_Longint SCIPgetNNodeLPIterations(SCIP* scip)
+    SCIP_Longint SCIPgetNStrongbranchLPIterations(SCIP* scip)
 
     # Parameter Functions
     SCIP_RETCODE SCIPsetBoolParam(SCIP* scip, char* name, SCIP_Bool value)
