@@ -3027,7 +3027,7 @@ cdef class Model:
 
     def getMaxDepth(self):
         """
-        Gets maximal depth of the branch-and-bound tree reached during solving.
+        Gets maximal depth of the branch-and-bound tree processed during solving (excluding probing nodes).
 
         Returns
         -------
