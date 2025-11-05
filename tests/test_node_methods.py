@@ -98,7 +98,6 @@ def test_getLowerbound():
     obj_val = m.getObjVal()
 
     print(f"Lower bound after solving: {lower_bound}")
-    print(f"Objective value: {obj_val}")
     print(f"Status: {m.getStatus()}")
 
     assert initial_lb < lower_bound, f"Expected initial lower bound {initial_lb} to be less than final lower bound {lower_bound}"
