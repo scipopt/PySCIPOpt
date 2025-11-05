@@ -1,33 +1,55 @@
 from helpers.utils import random_mip_1
+from pyscipopt import Eventhdlr, SCIP_EVENTTYPE, SCIP_RESULT
+
+class MaxDepthTracker(Eventhdlr):
+    def __init__(self):
+        super().__init__()
+        self.max_depth = -1
+
+    def eventinit(self):
+        self.model.catchEvent(SCIP_EVENTTYPE.NODEFOCUSED, self)
+
+    def eventexec(self, event):
+        current_node = self.model.getCurrentNode()
+        if current_node is not None:
+            depth = current_node.getDepth()
+            self.max_depth = max(self.max_depth, depth)
+        return {'result': SCIP_RESULT.SUCCESS}
 
 def test_getMaxDepth():
     m = random_mip_1(
         disable_sepa=True,
         disable_heur=True,
-        disable_presolve=True,  
-        small=True 
+        disable_presolve=True,
+        small=True
     )
-    
+
     print(f"Initial max depth: {m.getMaxDepth()}")
     assert m.getMaxDepth() == -1
-    
+
+    tracker = MaxDepthTracker()
+    m.includeEventhdlr(tracker, "maxdepth_tracker", "Tracks maximum depth of nodes")
+
     m.optimize()
 
     max_depth = m.getMaxDepth()
+    tracked_max_depth = tracker.max_depth
     nodes = m.getNNodes()
 
     print(f"Max depth after solving: {max_depth}")
+    print(f"Tracked max depth: {tracked_max_depth}")
     print(f"Number of nodes explored: {nodes}")
     print(f"Optimization status: {m.getStatus()}")
-
 
     assert max_depth >= 0, f"Expected max_depth >= 0, got {max_depth}"
 
     if nodes > 1:
         assert max_depth >= 1, f"Expected max_depth >= 1 with {nodes} nodes, got {max_depth}"
 
-
     assert max_depth <= nodes, f"Max depth {max_depth} shouldn't exceed nodes {nodes}"
+
+    # Verify that getMaxDepth() matches the actual maximum depth of all nodes
+    assert max_depth == tracked_max_depth, f"getMaxDepth() returned {max_depth} but tracked max depth is {tracked_max_depth}"
 
 
 def test_getPlungeDepth():
