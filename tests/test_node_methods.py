@@ -160,12 +160,3 @@ def test_getNStrongbranchLPIterations():
 
     assert sb_iters >= 0, f"Expected non-negative strong branching iterations, got {sb_iters}"
     assert sb_iters <= total_lp_iters, f"Strong branching iterations {sb_iters} should not exceed total LP iterations {total_lp_iters}"
-
-
-if __name__ == "__main__":
-    test_getMaxDepth()
-    test_getPlungeDepth()
-    test_getLowerbound()
-    test_getCutoffbound()
-    test_getNNodeLPIterations()
-    test_getNStrongbranchLPIterations()
