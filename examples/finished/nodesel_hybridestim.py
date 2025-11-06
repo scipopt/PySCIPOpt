@@ -101,7 +101,7 @@ class HybridEstim(Nodesel):
             lowerbound = self.scip.getLowerbound()
             cutoffbound = self.scip.getCutoffbound()
 
-            # If we didn't find a solution yet, use only 20% of the gap as cutoff bound
+            # If we didn't find a solution yet, tighten the cutoff bound to 20% of the range between it and the lowerbound.
             if self.scip.getNSols() == 0:
                 cutoffbound = lowerbound + 0.2 * (cutoffbound - lowerbound)
 
