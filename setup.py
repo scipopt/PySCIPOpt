@@ -7,16 +7,28 @@ scipoptdir = os.environ.get("SCIPOPTDIR", "").strip('"')
 extra_compile_args = []
 extra_link_args = []
 
-# if SCIPOPTDIR is not set, we assume that SCIP is installed globally
+# if SCIPOPTDIR is not set, try to detect conda environment, otherwise assume global installation
 if not scipoptdir:
-    if platform.system() == "Darwin":
-        includedir = "/usr/local/include"
-        libdir = "/usr/local/lib"
+    # check if we're in a conda environment
+    conda_prefix = os.environ.get("CONDA_PREFIX", "").strip('"')
+
+    if conda_prefix and os.path.exists(os.path.join(conda_prefix, "include")):
+        includedir = os.path.join(conda_prefix, "include")
+        libdir = os.path.join(conda_prefix, "lib")
+        libname = "libscip" if platform.system() == "Windows" else "scip"
+        print(f"Detected conda environment at {conda_prefix}.")
+        print(f"Using include path {includedir}.")
+        print(f"Using library directory {libdir}.\n")
     else:
-        includedir = "."
-        libdir = "."
-    libname = "libscip" if platform.system() in ["Windows"] else "scip"
-    print("Assuming that SCIP is installed globally, because SCIPOPTDIR is undefined.\n")
+        # fall back to global installation
+        if platform.system() == "Darwin":
+            includedir = "/usr/local/include"
+            libdir = "/usr/local/lib"
+        else:
+            includedir = "."
+            libdir = "."
+        libname = "libscip" if platform.system() == "Windows" else "scip"
+        print("Assuming that SCIP is installed globally, because SCIPOPTDIR is undefined.\n")
 
 else:
 
@@ -51,7 +63,7 @@ else:
     else:
         # assume that SCIP is installed on the system
         libdir = os.path.abspath(os.path.join(scipoptdir, "lib"))
-        libname = "libscip" if platform.system() in ["Windows"] else "scip"
+        libname = "libscip" if platform.system() == "Windows" else "scip"
 
     print(f"Using include path {includedir}.")
     print(f"Using SCIP library {libname} at {libdir}.\n")
