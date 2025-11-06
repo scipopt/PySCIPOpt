@@ -1,4 +1,4 @@
-from pyscipopt import Model, SCIP_PARAMSETTING, Nodesel, SCIP_NODETYPE, quicksum
+from pyscipopt import Model, SCIP_PARAMSETTING, Nodesel, SCIP_NODETYPE
 from pyscipopt.scip import Node
 
 
@@ -197,80 +197,47 @@ class HybridEstim(Nodesel):
         else:
             return 1
         
-def random_mip_1(disable_sepa=True, disable_heur=True, disable_presolve=True, node_lim=2000, small=False):
-    model = Model()
-
-    x0 = model.addVar(lb=-2, ub=4)
-    r1 = model.addVar()
-    r2 = model.addVar()
-    y0 = model.addVar(lb=3)
-    t = model.addVar(lb=None)
-    l = model.addVar(vtype="I", lb=-9, ub=18)
-    u = model.addVar(vtype="I", lb=-3, ub=99)
-
-    more_vars = []
-    if small:
-        n = 100
-    else:
-        n = 500
-    for i in range(n):
-        more_vars.append(model.addVar(vtype="I", lb=-12, ub=40))
-        model.addCons(quicksum(v for v in more_vars) <= (40 - i) * quicksum(v for v in more_vars[::2]))
-
-    for i in range(100):
-        more_vars.append(model.addVar(vtype="I", lb=-52, ub=10))
-        if small:
-            model.addCons(quicksum(v for v in more_vars[50::2]) <= (40 - i) * quicksum(v for v in more_vars[65::2]))
-        else:
-            model.addCons(quicksum(v for v in more_vars[50::2]) <= (40 - i) * quicksum(v for v in more_vars[405::2]))
-
-    model.addCons(r1 >= x0)
-    model.addCons(r2 >= -x0)
-    model.addCons(y0 == r1 + r2)
-    model.addCons(t + l + 7 * u <= 300)
-    model.addCons(t >= quicksum(v for v in more_vars[::3]) - 10 * more_vars[5] + 5 * more_vars[9])
-    model.addCons(more_vars[3] >= l + 2)
-    model.addCons(7 <= quicksum(v for v in more_vars[::4]) - x0)
-    model.addCons(quicksum(v for v in more_vars[::2]) + l <= quicksum(v for v in more_vars[::4]))
-
-    model.setObjective(t - quicksum(j * v for j, v in enumerate(more_vars[20:-40])))
-
-    if disable_sepa:
-        model.setSeparating(SCIP_PARAMSETTING.OFF)
-    if disable_heur:
-        model.setHeuristics(SCIP_PARAMSETTING.OFF)
-    if disable_presolve:
-        model.setPresolve(SCIP_PARAMSETTING.OFF)
-    model.setParam("limits/nodes", node_lim)
-
-    return model
-
 def test_hybridestim_vs_default():
     """
     Test that the Python hybrid estimate node selector performs similarly
     to the default SCIP C implementation.
     """
-    import random
-    random.seed(42)
+    import os
+
+    # Get the path to the 10teams instance
+    instance_path = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data", "10teams.mps")
 
     # Test with default SCIP hybrid estimate node selector
-    m_default = random_mip_1(node_lim=2000, small=True)
+    m_default = Model()
+    m_default.readProblem(instance_path)
 
+    # Disable presolving, heuristics, and separation to focus on node selection
+    m_default.setPresolve(SCIP_PARAMSETTING.OFF)
+    m_default.setHeuristics(SCIP_PARAMSETTING.OFF)
+    m_default.setSeparating(SCIP_PARAMSETTING.OFF)
+    m_default.setParam("limits/nodes", 2000)
     m_default.setParam("nodeselection/hybridestim/stdpriority", 1_000_000)
 
     m_default.optimize()
 
     default_lp_iterations = m_default.getNLPIterations()
     default_nodes = m_default.getNNodes()
-    default_obj = m_default.getObjVal()
-    
+    default_obj = m_default.getObjVal() if m_default.getNSols() > 0 else None
+
     print(f"Default SCIP hybrid estimate node selector (C implementation):")
     print(f"  Nodes: {default_nodes}")
     print(f"  LP iterations: {default_lp_iterations}")
     print(f"  Objective: {default_obj}")
 
     # Test with Python implementation
-    m_python = random_mip_1(node_lim=2000, small=True)
+    m_python = Model()
+    m_python.readProblem(instance_path)
+
+    # Disable presolving, heuristics, and separation to focus on node selection
+    m_python.setPresolve(SCIP_PARAMSETTING.OFF)
+    m_python.setHeuristics(SCIP_PARAMSETTING.OFF)
+    m_python.setSeparating(SCIP_PARAMSETTING.OFF)
+    m_python.setParam("limits/nodes", 2000)
 
     # Include our Python hybrid estimate node selector
     hybridestim_nodesel = HybridEstim(
