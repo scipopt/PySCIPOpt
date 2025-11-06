@@ -116,31 +116,26 @@ class HybridEstim(Nodesel):
             # but only select a child or sibling if its estimate is small enough
             selnode = None
 
-            # Try priority child first
-            node = self.scip.getPrioChild()
-            if node is not None and node.getEstimate() < maxbound:
-                selnode = node
-            else:
-                # Try best child
-                node = self.scip.getBestChild()
+            # Try each node type in priority order
+            node_getters = [
+                self.scip.getPrioChild,
+                self.scip.getBestChild,
+                self.scip.getPrioSibling,
+                self.scip.getBestSibling,
+            ]
+
+            for get_node in node_getters:
+                node = get_node()
                 if node is not None and node.getEstimate() < maxbound:
                     selnode = node
+                    break
+
+            # If no suitable child or sibling found, select from leaves
+            if selnode is None:
+                if self.scip.getNNodes() % self.bestnodefreq == 0:
+                    selnode = self.scip.getBestboundNode()
                 else:
-                    # Try priority sibling
-                    node = self.scip.getPrioSibling()
-                    if node is not None and node.getEstimate() < maxbound:
-                        selnode = node
-                    else:
-                        # Try best sibling
-                        node = self.scip.getBestSibling()
-                        if node is not None and node.getEstimate() < maxbound:
-                            selnode = node
-                        else:
-                            # Select from leaves
-                            if self.scip.getNNodes() % self.bestnodefreq == 0:
-                                selnode = self.scip.getBestboundNode()
-                            else:
-                                selnode = self.scip.getBestNode()
+                    selnode = self.scip.getBestNode()
 
         return {"selnode": selnode}
 
