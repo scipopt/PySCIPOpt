@@ -32,6 +32,8 @@ you need to specify the install location using the environment variable
     `set SCIPOPTDIR=<path_to_install_dir>` (**cmd**, **Cmder**, **WSL**)\
     `$Env:SCIPOPTDIR = "<path_to_install_dir>"` (**powershell**)
 
+**Note:** If `SCIPOPTDIR` is not set, the setup script will automatically attempt to detect a conda environment (via the `CONDA_PREFIX` environment variable) and use it if available. If no conda environment is detected, it will fall back to searching global installation paths.
+
 `SCIPOPTDIR` needs to have a subdirectory `lib` that contains the
 library, e.g. `libscip.so` (for Linux) and a subdirectory `include` that
 contains the corresponding header files:
