@@ -161,8 +161,7 @@ class HybridEstim(Nodesel):
         score2 = self._get_nodesel_score(node2)
 
         # Check if scores are equal or both infinite
-        any_infinite = (self.scip.isInfinity(score1) or self.scip.isInfinity(-score1) or
-                        self.scip.isInfinity(score2) or self.scip.isInfinity(-score2))
+        any_infinite = self.scip.isInfinity(abs(score1)) or self.scip.isInfinity(abs(score2))
         if ( (not any_infinite and self.scip.isEQ(score1, score2)) or
             (self.scip.isInfinity(score1) and self.scip.isInfinity(score2)) or
             (self.scip.isInfinity(-score1) and self.scip.isInfinity(-score2))):
