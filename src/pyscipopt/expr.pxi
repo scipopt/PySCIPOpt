@@ -421,8 +421,8 @@ cdef class ExprCons:
     """Constraints with a polynomial expressions and lower/upper bounds."""
 
     cdef public Expr expr
-    cdef public _lhs
-    cdef public _rhs
+    cdef public object _lhs
+    cdef public object _rhs
 
     def __init__(self, expr, lhs=None, rhs=None):
         self.expr = expr
