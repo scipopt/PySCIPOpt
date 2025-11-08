@@ -5712,26 +5712,31 @@ cdef class Model:
             The created Constraint object.
 
         """
-        if name == '':
-            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+        if name == "":
+            name = "c" + str(SCIPgetNConss(self._scip) + 1)
 
-        kwargs = dict(name=name, initial=initial, separate=separate,
-                      enforce=enforce, check=check,
-                      propagate=propagate, local=local,
-                      modifiable=modifiable, dynamic=dynamic,
-                      removable=removable,
-                      stickingatnode=stickingatnode
-                      )
-
-        kwargs['lhs'] = -SCIPinfinity(self._scip) if cons._lhs is None else cons._lhs
-        kwargs['rhs'] =  SCIPinfinity(self._scip) if cons._rhs is None else cons._rhs
+        kwargs = dict(
+            name=name,
+            initial=initial,
+            separate=separate,
+            enforce=enforce,
+            check=check,
+            propagate=propagate,
+            local=local,
+            modifiable=modifiable,
+            dynamic=dynamic,
+            removable=removable,
+            stickingatnode=stickingatnode,
+            lhs=-SCIPinfinity(self._scip) if cons._lhs is None else cons._lhs,
+            rhs=SCIPinfinity(self._scip) if cons._rhs is None else cons._rhs,
+        )
 
         deg = cons.expr.degree()
         if deg <= 1:
             return self._createConsLinear(cons, **kwargs)
         elif deg <= 2:
             return self._createConsQuadratic(cons, **kwargs)
-        elif deg == float('inf'): # general nonlinear
+        elif deg == float("inf"): # general nonlinear
             return self._createConsGenNonlinear(cons, **kwargs)
         else:
             return self._createConsNonlinear(cons, **kwargs)
