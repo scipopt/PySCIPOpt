@@ -1482,7 +1482,7 @@ cdef class Node:
 
 
 cdef class Variable:
-    def __init__(self, scip_var):
+    def __cinit__(self, SCIP_VAR* scip_var):
         self.scip_var = scip_var
 
     @property
