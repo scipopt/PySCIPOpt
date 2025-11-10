@@ -1538,6 +1538,32 @@ cdef class Variable(Expr):
         elif vartype == SCIP_VARTYPE_IMPLINT:
             return "IMPLINT"
 
+    def vstatus(self):
+        """
+        Retrieve the variable status (ORIGINAL, LOOSE, COLUMN, FIXED, AGGREGATED, MULTAGGR, NEGATED)
+
+        Returns
+        -------
+        str
+            "ORIGINAL", "LOOSE", "COLUMN", "FIXED", "AGGREGATED", "MULTAGGR", "NEGATED"
+
+        """
+        varstatus = SCIPvarGetStatus(self.scip_var)
+        if varstatus == SCIP_VARSTATUS_ORIGINAL:
+            return "ORIGINAL"
+        elif varstatus == SCIP_VARSTATUS_LOOSE:
+            return "LOOSE"
+        elif varstatus == SCIP_VARSTATUS_COLUMN:
+            return "COLUMN"
+        elif varstatus == SCIP_VARSTATUS_FIXED:
+            return "FIXED"
+        elif varstatus == SCIP_VARSTATUS_AGGREGATED:
+            return "AGGREGATED"
+        elif varstatus == SCIP_VARSTATUS_MULTAGGR:
+            return "MULTAGGR"
+        elif varstatus == SCIP_VARSTATUS_NEGATED:
+            return "NEGATED"
+
     def isOriginal(self):
         """
         Retrieve whether the variable belongs to the original problem

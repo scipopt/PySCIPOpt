@@ -30,6 +30,16 @@ cdef extern from "scip/scip.h":
         SCIP_VARTYPE SCIP_VARTYPE_IMPLINT
         SCIP_VARTYPE SCIP_VARTYPE_CONTINUOUS
 
+    ctypedef int SCIP_VARSTATUS
+    cdef extern from "scip/type_var.h":
+        SCIP_VARSTATUS SCIP_VARSTATUS_ORIGINAL
+        SCIP_VARSTATUS SCIP_VARSTATUS_LOOSE
+        SCIP_VARSTATUS SCIP_VARSTATUS_COLUMN
+        SCIP_VARSTATUS SCIP_VARSTATUS_FIXED
+        SCIP_VARSTATUS SCIP_VARSTATUS_AGGREGATED
+        SCIP_VARSTATUS SCIP_VARSTATUS_MULTAGGR
+        SCIP_VARSTATUS SCIP_VARSTATUS_NEGATED
+
     ctypedef int SCIP_OBJSENSE
     cdef extern from "scip/type_prob.h":
         SCIP_OBJSENSE SCIP_OBJSENSE_MAXIMIZE
@@ -790,6 +800,7 @@ cdef extern from "scip/scip.h":
     int SCIPgetNImplVars(SCIP* scip)
     int SCIPgetNContVars(SCIP* scip)
     SCIP_VARTYPE SCIPvarGetType(SCIP_VAR* var)
+    SCIP_VARSTATUS SCIPvarGetStatus(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
     SCIP_COL* SCIPvarGetCol(SCIP_VAR* var)
