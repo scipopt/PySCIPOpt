@@ -56,7 +56,7 @@ CONST = Term()
 
 
 cdef float _evaluate(dict children, SCIP* scip, SCIP_SOL* sol):
-    return sum([i._evaluate(scip, sol) * j for i, j in children.items()])
+    return sum([i._evaluate(scip, sol) * j for i, j in children.items() if j != 0])
 
 
 cdef class Expr:
