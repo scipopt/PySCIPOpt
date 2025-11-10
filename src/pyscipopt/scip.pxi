@@ -1041,29 +1041,15 @@ cdef class Solution:
         return sol
 
     def __getitem__(self, expr: Union[Expr, MatrixExpr]):
+        self._checkStage("SCIPgetSolVal")
+
         if isinstance(expr, MatrixExpr):
             result = np.zeros(expr.shape, dtype=np.float64)
             for idx in np.ndindex(expr.shape):
                 result[idx] = self.__getitem__(expr[idx])
             return result
 
-        # fast track for Variable
-        cdef SCIP_Real coeff
-        cdef _VarArray wrapper
-        if isinstance(expr, Variable):
-            wrapper = _VarArray(expr)
-            self._checkStage("SCIPgetSolVal")
-            return SCIPgetSolVal(self.scip, self.sol, wrapper.ptr[0])
-        return sum(self._evaluate(term)*coeff for term, coeff in expr.terms.items() if coeff != 0)
-
-    def _evaluate(self, term):
-        self._checkStage("SCIPgetSolVal")
-        result = 1
-        cdef _VarArray wrapper
-        wrapper = _VarArray(term.vartuple)
-        for i in range(len(term.vartuple)):
-            result *= SCIPgetSolVal(self.scip, self.sol, wrapper.ptr[i])
-        return result
+        return expr._evaluate(self.scip, self.sol)
 
     def __setitem__(self, Variable var, value):
         PY_SCIP_CALL(SCIPsetSolVal(self.scip, self.sol, var.scip_var, value))
@@ -1540,6 +1526,9 @@ cdef class Variable:
 
     def to_expr(self):
         return MonomialExpr.from_var(self)
+
+    def _evaluate(self, SCIP* scip, SCIP_SOL* sol) -> float:
+        return SCIPgetSolVal(scip, sol, self.ptr())
 
     def vtype(self):
         """
