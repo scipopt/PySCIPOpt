@@ -4450,6 +4450,17 @@ cdef class Model:
         if infeasible:
             print('could not change variable type of variable %s' % var)
 
+    def markDoNotMultaggrVar(self, Variable var):
+        """
+        Marks a variable to not allowed to be multi-aggregated.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to mark
+        """
+        PY_SCIP_CALL(SCIPmarkDoNotMultaggrVar(self._scip, var.scip_var))
+
     def getVars(self, transformed=False):
         """
         Retrieve all variables.
