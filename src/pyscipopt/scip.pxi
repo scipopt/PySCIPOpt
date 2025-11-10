@@ -3643,7 +3643,7 @@ cdef class Model:
         if expr[CONST] != 0.0:
             self.addObjoffset(expr[CONST])
 
-        for term, coef in expr.terms.items():
+        for term, coef in expr.children.items():
             # avoid CONST term of Expr
             if term != CONST:
                 assert len(term) == 1
@@ -5370,10 +5370,9 @@ cdef class Model:
 
         """
         assert isinstance(lincons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
-
         assert lincons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % lincons.expr.degree()
-        terms = lincons.expr.terms
 
+        terms = lincons.expr.children
         cdef int nvars = len(terms.items())
         cdef SCIP_VAR** vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
         cdef SCIP_Real* coeffs_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
@@ -5382,8 +5381,8 @@ cdef class Model:
         cdef int i
         cdef _VarArray wrapper
 
-        for i, (key, coeff) in enumerate(terms.items()):
-            wrapper = _VarArray(key[0])
+        for i, (term, coeff) in enumerate(terms.items()):
+            wrapper = _VarArray(term[0])
             vars_array[i] = wrapper.ptr[0]
             coeffs_array[i] = <SCIP_Real>coeff
 
@@ -5416,8 +5415,8 @@ cdef class Model:
         Constraint
 
         """
-        terms = quadcons.expr.terms
         assert quadcons.expr.degree() <= 2, "given constraint is not quadratic, degree == %d" % quadcons.expr.degree()
+        terms = quadcons.expr.children
 
         cdef SCIP_CONS* scip_cons
         cdef SCIP_EXPR* prodexpr
@@ -5479,8 +5478,7 @@ cdef class Model:
         cdef int* idxs
         cdef int i
         cdef int j
-
-        terms = cons.expr.terms
+        terms = cons.expr.children
 
         # collect variables
         variables = {i: [var for var in term] for i, term in enumerate(terms)}
@@ -7044,12 +7042,11 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPcreateConsIndicator(self._scip, &scip_cons, str_conversion(name), _binVar, 0, NULL, NULL, rhs,
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
-        terms = cons.expr.terms
 
-        for key, coeff in terms.items():
+        for term, coeff in cons.expr.children.items():
             if negate:
                 coeff = -coeff
-            wrapper = _VarArray(key[0])
+            wrapper = _VarArray(term[0])
             PY_SCIP_CALL(SCIPaddVarIndicator(self._scip, scip_cons, wrapper.ptr[0], <SCIP_Real>coeff))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
@@ -11274,7 +11271,7 @@ cdef class Model:
         for i in range(nvars):
             _coeffs[i] = 0.0
 
-        for term, coef in coeffs.terms.items():
+        for term, coef in coeffs.children.items():
             # avoid CONST term of Expr
             if term != CONST:
                 assert len(term) == 1
