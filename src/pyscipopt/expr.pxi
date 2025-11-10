@@ -1,5 +1,6 @@
 ##@file expr.pxi
-from typing import Optional, Union, Type
+import math
+from typing import Optional, Type, Union
 
 include "matrix.pxi"
 
@@ -45,8 +46,17 @@ class Term:
     def __repr__(self):
         return f"Term({', '.join(map(str, self.vars))})"
 
+    def _evaluate(self, SCIP* scip, SCIP_SOL* sol) -> float:
+        if self.vars:
+            return math.prod(SCIPgetSolVal(scip, sol, ptr) for ptr in self.ptrs)
+        return 1.0  # constant term
+
 
 CONST = Term()
+
+
+cdef float _evaluate(dict children, SCIP* scip, SCIP_SOL* sol):
+    return sum([i._evaluate(scip, sol) * j for i, j in children.items()])
 
 
 cdef class Expr:
@@ -201,7 +211,7 @@ cdef class Expr:
         return self
 
 
-class SumExpr(Expr):
+cdef class SumExpr(Expr):
     """Expression like `expression1 + expression2 + constant`."""
 
     def __add__(self, other):
@@ -220,6 +230,9 @@ class SumExpr(Expr):
 
     def degree(self):
         return float("inf")
+
+    def _evaluate(self, SCIP* scip, SCIP_SOL* sol) -> float:
+        return _evaluate(self.children, scip, sol)
 
 
 class PolynomialExpr(SumExpr):
@@ -324,7 +337,7 @@ class FuncExpr(Expr):
         return float("inf")
 
 
-class ProdExpr(FuncExpr):
+cdef class ProdExpr(FuncExpr):
     """Expression like `coefficient * expression`."""
 
     def __init__(self, *children, coef: float = 1.0):
@@ -358,8 +371,11 @@ class ProdExpr(FuncExpr):
             return ConstExpr(0.0)
         return self
 
+    def _evaluate(self, SCIP* scip, SCIP_SOL* sol) -> float:
+        return self.coef * _evaluate(self.children, scip, sol)
 
-class PowerExpr(FuncExpr):
+
+cdef class PowerExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
 
     def __init__(self, base, expo: float = 1.0):
@@ -379,8 +395,11 @@ class PowerExpr(FuncExpr):
             return tuple(self)[0]
         return self
 
+    def _evaluate(self, SCIP* scip, SCIP_SOL* sol) -> float:
+        return pow(_evaluate(self.children, scip, sol), self.expo)
 
-class UnaryExpr(FuncExpr):
+
+cdef class UnaryExpr(FuncExpr):
     """Expression like `f(expression)`."""
 
     def __init__(self, expr: Expr):
@@ -392,29 +411,38 @@ class UnaryExpr(FuncExpr):
     def __repr__(self):
         return f"{type(self).__name__}({tuple(self)[0]})"
 
+    def _evaluate(self, SCIP* scip, SCIP_SOL* sol) -> float:
+        return self.op(_evaluate(self.children, scip, sol))
+
 
 class AbsExpr(UnaryExpr):
     """Expression like `abs(expression)`."""
+    op = abs
 
 
 class ExpExpr(UnaryExpr):
     """Expression like `exp(expression)`."""
+    op = math.exp
 
 
 class LogExpr(UnaryExpr):
     """Expression like `log(expression)`."""
+    op = math.log
 
 
 class SqrtExpr(UnaryExpr):
     """Expression like `sqrt(expression)`."""
+    op = math.sqrt
 
 
 class SinExpr(UnaryExpr):
     """Expression like `sin(expression)`."""
+    op = math.sin
 
 
 class CosExpr(UnaryExpr):
     """Expression like `cos(expression)`."""
+    op = math.cos
 
 
 cdef class ExprCons:
