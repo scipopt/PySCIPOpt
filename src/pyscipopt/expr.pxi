@@ -296,7 +296,7 @@ class PolynomialExpr(SumExpr):
             return MonomialExpr(children)
         return cls(children)
 
-    def _normalize(self):
+    def _normalize(self) -> Expr:
         return PolynomialExpr.to_subclass(
             {k: v for k, v in self.children.items() if v != 0.0}
         )
@@ -366,7 +366,7 @@ cdef class ProdExpr(FuncExpr):
     def __repr__(self):
         return f"ProdExpr({{{tuple(self)}: {self.coef}}})"
 
-    def _normalize(self):
+    def _normalize(self) -> Expr:
         if self.coef == 0:
             return ConstExpr(0.0)
         return self
@@ -388,7 +388,7 @@ cdef class PowerExpr(FuncExpr):
     def __repr__(self):
         return f"PowerExpr({tuple(self)}, {self.expo})"
 
-    def _normalize(self):
+    def _normalize(self) -> Expr:
         if self.expo == 0:
             return ConstExpr(1.0)
         elif self.expo == 1:
@@ -458,7 +458,7 @@ cdef class ExprCons:
         self._rhs = rhs
         self._normalize()
 
-    def _normalize(self):
+    def _normalize(self) -> Expr:
         """Move constant children in expression to bounds"""
 
         if self._lhs is None and self._rhs is None:
