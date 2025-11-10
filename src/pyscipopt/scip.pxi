@@ -5387,17 +5387,29 @@ cdef class Model:
             coeffs_array[i] = <SCIP_Real>coeff
 
         PY_SCIP_CALL(SCIPcreateConsLinear(
-            self._scip, &scip_cons, str_conversion(kwargs['name']), nvars, vars_array, coeffs_array,
-            kwargs['lhs'], kwargs['rhs'], kwargs['initial'],
-            kwargs['separate'], kwargs['enforce'], kwargs['check'],
-            kwargs['propagate'], kwargs['local'], kwargs['modifiable'],
-            kwargs['dynamic'], kwargs['removable'], kwargs['stickingatnode']))
+            self._scip,
+            &scip_cons,
+            str_conversion(kwargs['name']),
+            nvars,
+            vars_array,
+            coeffs_array,
+            kwargs['lhs'],
+            kwargs['rhs'],
+            kwargs['initial'],
+            kwargs['separate'],
+            kwargs['enforce'],
+            kwargs['check'],
+            kwargs['propagate'],
+            kwargs['local'],
+            kwargs['modifiable'],
+            kwargs['dynamic'],
+            kwargs['removable'],
+            kwargs['stickingatnode'],
+        ))
 
         PyCons = Constraint.create(scip_cons)
-
         free(vars_array)
         free(coeffs_array)
-
         return PyCons
 
     def _createConsQuadratic(self, ExprCons quadcons, **kwargs):
@@ -5416,21 +5428,35 @@ cdef class Model:
 
         """
         assert quadcons.expr.degree() <= 2, "given constraint is not quadratic, degree == %d" % quadcons.expr.degree()
-        terms = quadcons.expr.children
 
         cdef SCIP_CONS* scip_cons
         cdef SCIP_EXPR* prodexpr
         cdef _VarArray wrapper
         PY_SCIP_CALL(SCIPcreateConsQuadraticNonlinear(
-            self._scip, &scip_cons, str_conversion(kwargs['name']),
-            0, NULL, NULL,        # linear
-            0, NULL, NULL, NULL,  # quadratc
-            kwargs['lhs'], kwargs['rhs'],
-            kwargs['initial'], kwargs['separate'], kwargs['enforce'],
-            kwargs['check'], kwargs['propagate'], kwargs['local'],
-            kwargs['modifiable'], kwargs['dynamic'], kwargs['removable']))
+            self._scip,
+            &scip_cons,
+            str_conversion(kwargs['name']),
+            0,
+            NULL,
+            NULL,  # linear
+            0,
+            NULL,
+            NULL,
+            NULL,  # quadratc
+            kwargs['lhs'],
+            kwargs['rhs'],
+            kwargs['initial'],
+            kwargs['separate'],
+            kwargs['enforce'],
+            kwargs['check'],
+            kwargs['propagate'],
+            kwargs['local'],
+            kwargs['modifiable'],
+            kwargs['dynamic'],
+            kwargs['removable'],
+        ))
 
-        for v, c in terms.items():
+        for v, c in quadcons.expr.children.items():
             if len(v) == 1: # linear
                 wrapper = _VarArray(v[0])
                 PY_SCIP_CALL(SCIPaddLinearVarNonlinear(self._scip, scip_cons, wrapper.ptr[0], c))
@@ -5439,21 +5465,17 @@ cdef class Model:
 
                 varexprs = <SCIP_EXPR**> malloc(2 * sizeof(SCIP_EXPR*))
                 wrapper = _VarArray(v[0])
-                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[0], wrapper.ptr[0], NULL, NULL) )
+                PY_SCIP_CALL(SCIPcreateExprVar(self._scip, &varexprs[0], wrapper.ptr[0], NULL, NULL))
                 wrapper = _VarArray(v[1])
-                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[1], wrapper.ptr[0], NULL, NULL) )
-                PY_SCIP_CALL( SCIPcreateExprProduct(self._scip, &prodexpr, 2, varexprs, 1.0, NULL, NULL) )
-
-                PY_SCIP_CALL( SCIPaddExprNonlinear(self._scip, scip_cons, prodexpr, c) )
-
-                PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &prodexpr) )
-                PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &varexprs[1]) )
-                PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &varexprs[0]) )
+                PY_SCIP_CALL(SCIPcreateExprVar(self._scip, &varexprs[1], wrapper.ptr[0], NULL, NULL))
+                PY_SCIP_CALL(SCIPcreateExprProduct(self._scip, &prodexpr, 2, varexprs, 1.0, NULL, NULL))
+                PY_SCIP_CALL(SCIPaddExprNonlinear(self._scip, scip_cons, prodexpr, c))
+                PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &prodexpr))
+                PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &varexprs[1]))
+                PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &varexprs[0]))
                 free(varexprs)
 
-        PyCons = Constraint.create(scip_cons)
-
-        return PyCons
+        return Constraint.create(scip_cons)
 
     def _createConsNonlinear(self, cons, **kwargs):
         """
@@ -5488,15 +5510,13 @@ cdef class Model:
         termcoefs = <SCIP_Real*> malloc(len(terms) * sizeof(SCIP_Real))
         for i, (term, coef) in enumerate(terms.items()):
             wrapper = _VarArray(variables[i])
-
-            PY_SCIP_CALL( SCIPcreateExprMonomial(self._scip, &monomials[i], wrapper.size, wrapper.ptr, NULL, NULL, NULL) )
+            PY_SCIP_CALL(SCIPcreateExprMonomial(self._scip, &monomials[i], wrapper.size, wrapper.ptr, NULL, NULL, NULL))
             termcoefs[i] = <SCIP_Real>coef
 
         # create polynomial from monomials
-        PY_SCIP_CALL( SCIPcreateExprSum(self._scip, &expr, <int>len(terms), monomials, termcoefs, 0.0, NULL, NULL))
-
+        PY_SCIP_CALL(SCIPcreateExprSum(self._scip, &expr, <int>len(terms), monomials, termcoefs, 0.0, NULL, NULL))
         # create nonlinear constraint for expr
-        PY_SCIP_CALL( SCIPcreateConsNonlinear(
+        PY_SCIP_CALL(SCIPcreateConsNonlinear(
             self._scip,
             &scip_cons,
             str_conversion(kwargs['name']),
@@ -5511,15 +5531,15 @@ cdef class Model:
             kwargs['local'],
             kwargs['modifiable'],
             kwargs['dynamic'],
-            kwargs['removable']) )
+            kwargs['removable'],
+        ))
 
         PyCons = Constraint.create(scip_cons)
-        PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &expr) )
+        PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &expr))
         for i in range(<int>len(terms)):
             PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &monomials[i]))
         free(monomials)
         free(termcoefs)
-
         return PyCons
 
     def _createConsGenNonlinear(self, cons, **kwargs):
@@ -5546,8 +5566,7 @@ cdef class Model:
         cdef int i
 
         # get arrays from python's expression tree
-        expr = cons.expr
-        nodes = expr_to_nodes(expr)
+        nodes = expr_to_nodes(cons.expr)
 
         # in nodes we have a list of tuples: each tuple is of the form
         # (operator, [indices]) where indices are the indices of the tuples
@@ -5630,7 +5649,7 @@ cdef class Model:
             raise NotImplementedError
 
         # create nonlinear constraint for the expression root
-        PY_SCIP_CALL( SCIPcreateConsNonlinear(
+        PY_SCIP_CALL(SCIPcreateConsNonlinear(
             self._scip,
             &scip_cons,
             str_conversion(kwargs['name']),
@@ -5645,14 +5664,15 @@ cdef class Model:
             kwargs['local'],
             kwargs['modifiable'],
             kwargs['dynamic'],
-            kwargs['removable']) )
+            kwargs['removable']),
+        )
+
         PyCons = Constraint.create(scip_cons)
         for i in range(len(nodes)):
             PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &scipexprs[i]) )
 
         # free more memory
         free(scipexprs)
-
         return PyCons
 
     def createConsFromExpr(self, cons, name='', initial=True, separate=True,
