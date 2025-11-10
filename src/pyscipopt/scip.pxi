@@ -1575,6 +1575,17 @@ cdef class Variable(Expr):
         """
         return SCIPvarIsOriginal(self.scip_var)
 
+    def isActive(self):
+        """
+        Retrieve whether the variable is active
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPvarIsActive(self.scip_var)
+
     def isInLP(self):
         """
         Retrieve whether the variable is a COLUMN variable that is member of the current LP.
