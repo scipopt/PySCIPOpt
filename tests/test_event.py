@@ -4,15 +4,50 @@ from pyscipopt import Model, Eventhdlr, SCIP_RESULT, SCIP_EVENTTYPE, SCIP_PARAMS
 
 calls = []
 
+
 class MyEvent(Eventhdlr):
 
     def eventinit(self):
         calls.append('eventinit')
-        self.model.catchEvent(self.event_type, self)        
+
+        self._tracked_vars = []
+        self._tracked_rows = []
+        if self.event_type & SCIP_EVENTTYPE.VARCHANGED:
+            vars = self.model.getVars(transformed=True)
+            if not vars:
+                vars = [self.model.getTransformedVar(var) for var in self.model.getVars()]
+            for var in vars:
+                self.model.catchVarEvent(var, self.event_type, self)
+                self._tracked_vars.append(var)
+        elif self.event_type & SCIP_EVENTTYPE.ROWCHANGED:
+            try:
+                if self.model.getNLPRows() == 0:
+                    return
+                rows = self.model.getLPRowsData()
+            except Exception:
+                return
+            for row in rows:
+                self.model.catchRowEvent(row, self.event_type, self)
+                self._tracked_rows.append(row)
+        else:
+            self.model.catchEvent(self.event_type, self)
 
     def eventexit(self):
         # PR #828 fixes an error here, but the underlying cause might not be solved (self.model being deleted before dropEvent is called)
-        self.model.dropEvent(self.event_type, self)
+        if self.event_type & SCIP_EVENTTYPE.VARCHANGED:
+            for var in self._tracked_vars:
+                try:
+                    self.model.dropVarEvent(var, self.event_type, self)
+                except ReferenceError:
+                    pass
+        elif self.event_type & SCIP_EVENTTYPE.ROWCHANGED:
+            for row in self._tracked_rows:
+                try:
+                    self.model.dropRowEvent(row, self.event_type, self)
+                except ReferenceError:
+                    pass
+        else:
+            self.model.dropEvent(self.event_type, self)
 
     def eventexec(self, event):
         assert str(event) == event.getName()
@@ -32,7 +67,7 @@ class MyEvent(Eventhdlr):
         elif self.event_type == SCIP_EVENTTYPE.BOUNDRELAXED:
             assert event.getType() in [SCIP_EVENTTYPE.LBRELAXED, SCIP_EVENTTYPE.UBRELAXED]
         elif self.event_type == SCIP_EVENTTYPE.BOUNDCHANGED:
-            assert event.getType() in [SCIP_EVENTTYPE.LBCHANGED, SCIP_EVENTTYPE.UBCHANGED]
+            assert event.getType() & SCIP_EVENTTYPE.BOUNDCHANGED
         elif self.event_type == SCIP_EVENTTYPE.GHOLECHANGED:
             assert event.getType() in [SCIP_EVENTTYPE.GHOLEADDED, SCIP_EVENTTYPE.GHOLEREMOVED]
         elif self.event_type == SCIP_EVENTTYPE.LHOLECHANGED:
@@ -40,11 +75,11 @@ class MyEvent(Eventhdlr):
         elif self.event_type == SCIP_EVENTTYPE.HOLECHANGED:
             assert event.getType() in [SCIP_EVENTTYPE.GHOLECHANGED, SCIP_EVENTTYPE.LHOLECHANGED]
         elif self.event_type == SCIP_EVENTTYPE.DOMCHANGED:
-            assert event.getType() in [SCIP_EVENTTYPE.BOUNDCHANGED, SCIP_EVENTTYPE.HOLECHANGED]
+            assert event.getType() & SCIP_EVENTTYPE.DOMCHANGED
         elif self.event_type == SCIP_EVENTTYPE.VARCHANGED:
-            assert event.getType() in [SCIP_EVENTTYPE.VARFIXED, SCIP_EVENTTYPE.VARUNLOCKED,  SCIP_EVENTTYPE.OBJCHANGED, SCIP_EVENTTYPE.GBDCHANGED, SCIP_EVENTTYPE.DOMCHANGED, SCIP_EVENTTYPE.IMPLADDED, SCIP_EVENTTYPE.VARDELETED, SCIP_EVENTTYPE.TYPECHANGED]
+            assert event.getType() & SCIP_EVENTTYPE.VARCHANGED
         elif self.event_type == SCIP_EVENTTYPE.VAREVENT:
-            assert event.getType() in [SCIP_EVENTTYPE.VARADDED, SCIP_EVENTTYPE.VARCHANGED, SCIP_EVENTTYPE.TYPECHANGED]
+            assert event.getType() & SCIP_EVENTTYPE.VAREVENT
         elif self.event_type == SCIP_EVENTTYPE.NODESOLVED:
             assert event.getType() in [SCIP_EVENTTYPE.NODEFEASIBLE, SCIP_EVENTTYPE.NODEINFEASIBLE, SCIP_EVENTTYPE.NODEBRANCHED]
         elif self.event_type == SCIP_EVENTTYPE.NODEEVENT:
@@ -54,9 +89,9 @@ class MyEvent(Eventhdlr):
         elif self.event_type == SCIP_EVENTTYPE.SOLFOUND:
             assert event.getType() in [SCIP_EVENTTYPE.POORSOLFOUND, SCIP_EVENTTYPE.BESTSOLFOUND]        
         elif self.event_type == SCIP_EVENTTYPE.ROWCHANGED:
-            assert event.getType() in [SCIP_EVENTTYPE.ROWCOEFCHANGED, SCIP_EVENTTYPE.ROWCONSTCHANGED, SCIP_EVENTTYPE.ROWSIDECHANGED]
+            assert event.getType() & SCIP_EVENTTYPE.ROWCHANGED
         elif self.event_type == SCIP_EVENTTYPE.ROWEVENT:
-            assert event.getType() in [SCIP_EVENTTYPE.ROWADDEDSEPA, SCIP_EVENTTYPE.ROWDELETEDSEPA, SCIP_EVENTTYPE.ROWADDEDLP, SCIP_EVENTTYPE.ROWDELETEDLP, SCIP_EVENTTYPE.ROWCHANGED]
+            assert event.getType() & SCIP_EVENTTYPE.ROWEVENT
         else:
             assert event.getType() == self.event_type
 

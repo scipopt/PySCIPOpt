@@ -396,6 +396,9 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_PROBDATA:
         pass
 
+    ctypedef struct SCIP_RATIONAL:
+        pass
+
     ctypedef struct SCIP_PRICER:
         pass
 
@@ -957,8 +960,9 @@ cdef extern from "scip/scip.h":
                                    SCIP_RETCODE (*readerfree) (SCIP* scip, SCIP_READER* reader),
                                    SCIP_RETCODE (*readerread) (SCIP* scip, SCIP_READER* reader, const char* filename, SCIP_RESULT* result),
                                    SCIP_RETCODE (*readerwrite) (SCIP* scip, SCIP_READER* reader, FILE* file,
-                                                                const char* name, SCIP_PROBDATA* probdata, SCIP_Bool transformed,
-                                                                SCIP_OBJSENSE objsense, SCIP_Real objscale, SCIP_Real objoffset,
+                                                                const char* filename, const char* name, SCIP_PROBDATA* probdata, SCIP_Bool transformed,
+                                                                SCIP_OBJSENSE objsense, SCIP_Real objoffset, SCIP_Real objscale,
+                                                                SCIP_RATIONAL* objoffsetexact, SCIP_RATIONAL* objscaleexact,
                                                                 SCIP_VAR** vars, int nvars, int nbinvars, int nintvars, int nimplvars, int ncontvars,
                                                                 SCIP_VAR** fixedvars, int nfixedvars, int startnvars,
                                                                 SCIP_CONS** conss, int nconss, int maxnconss, int startnconss,
@@ -1663,8 +1667,6 @@ cdef extern from "scip/cons_and.h":
     SCIP_VAR*    SCIPgetResultantAnd(SCIP* scip, SCIP_CONS* cons)
     SCIP_Bool    SCIPisAndConsSorted(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPsortAndCons(SCIP* scip, SCIP_CONS* cons)
-    SCIP_RETCODE SCIPchgAndConsCheckFlagWhenUpgr(SCIP* scip, SCIP_CONS* cons, SCIP_Bool flag)
-    SCIP_RETCODE SCIPchgAndConsRemovableFlagWhenUpgr(SCIP* scip, SCIP_CONS* cons, SCIP_Bool flag)
 
 cdef extern from "scip/cons_or.h":
     SCIP_RETCODE SCIPcreateConsOr(SCIP* scip,

@@ -58,13 +58,13 @@ def test_vtype():
     assert x.vtype() == "CONTINUOUS"
     assert y.vtype() == "INTEGER"
     assert z.vtype() == "BINARY"
-    assert w.vtype() == "IMPLINT"
+    assert w.vtype() == "CONTINUOUS"
 
     m.chgVarType(x, 'I')
     assert x.vtype() == "INTEGER"
 
     m.chgVarType(y, 'M')
-    assert y.vtype() == "IMPLINT"
+    assert y.vtype() == "INTEGER"
 
 def test_markRelaxationOnly():
     m = Model()
