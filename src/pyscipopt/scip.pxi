@@ -4452,7 +4452,7 @@ cdef class Model:
 
     def markDoNotMultaggrVar(self, Variable var):
         """
-        Marks a variable to not allowed to be multi-aggregated.
+        Marks a variable preventing it from being multi-aggregated.
 
         Parameters
         ----------
