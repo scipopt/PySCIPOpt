@@ -1538,7 +1538,7 @@ cdef class Variable(Expr):
         elif vartype == SCIP_VARTYPE_IMPLINT:
             return "IMPLINT"
 
-    def vstatus(self):
+    def getStatus(self):
         """
         Retrieve the variable status (ORIGINAL, LOOSE, COLUMN, FIXED, AGGREGATED, MULTAGGR, NEGATED)
 
