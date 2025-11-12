@@ -1,7 +1,7 @@
-from pyscipopt import Model
+from pyscipopt import Model, SCIP_PARAMSETTING, SCIP_BRANCHDIR
+from helpers.utils import random_mip_1
 
 def test_variablebounds():
-
     m = Model()
 
     x0 = m.addVar(lb=-5, ub=8)
@@ -95,3 +95,67 @@ def test_markRelaxationOnly():
     assert x.isDeletable()
     assert not y.isRelaxationOnly()
     assert not y.isDeletable()
+
+def test_getNBranchings():
+    m = random_mip_1(True, True, True, 100, True)
+    m.setParam("branching/mostinf/priority", 999999)
+    m.setParam("limits/restarts", 0)
+
+    m.optimize()
+
+    m.setParam("limits/nodes", 200)
+    m.restartSolve()
+    m.optimize()
+
+    n_branchings = 0
+    for var in m.getVars():
+        n_branchings += var.getNBranchings(SCIP_BRANCHDIR.UPWARDS)
+        n_branchings += var.getNBranchings(SCIP_BRANCHDIR.DOWNWARDS)
+
+    assert n_branchings == m.getNTotalNodes() - 2 # "-2" comes from the two root nodes because of the restart
+
+def test_getNBranchingsCurrentRun():
+    m = random_mip_1(True, True, True, 100, True)
+    m.setParam( "branching/mostinf/priority", 999999)
+
+    m.optimize()
+
+    n_branchings = 0
+    for var in m.getVars():
+        n_branchings += var.getNBranchingsCurrentRun(SCIP_BRANCHDIR.UPWARDS)
+        n_branchings += var.getNBranchingsCurrentRun(SCIP_BRANCHDIR.DOWNWARDS)
+
+    assert n_branchings == m.getNNodes() - 1
+
+def test_markDoNotAggrVar_and_getStatus():
+    model = Model()
+    x = model.addVar("x", obj=2, lb=0, ub=10)
+    y = model.addVar("y", obj=3, lb=0, ub=20)
+    z = model.addVar("z", obj=1, lb=0, ub=10)
+    w = model.addVar("w", obj=4, lb=0, ub=15)
+
+    model.addCons(y - 2*x == 0)
+    model.addCons(x + z + w == 10)
+    model.addCons(x*y*z >= 21) # to prevent presolve from removing all variables
+    model.presolve()
+
+    assert z.getStatus() == "ORIGINAL"
+    assert model.getTransformedVar(z).getStatus() == "AGGREGATED"
+    assert model.getTransformedVar(w).getStatus() == "MULTAGGR"
+
+    assert model.getNVars(True) == 1
+
+    model.freeTransform()
+    model.markDoNotMultaggrVar(w)
+    model.presolve()
+
+    assert model.getTransformedVar(w).getStatus() != "MULTAGGR"
+    assert model.getNVars(True) == 3
+
+    model.freeTransform()
+    model.markDoNotAggrVar(y)
+    model.presolve()
+    assert model.getTransformedVar(z).getStatus() != "AGGREGATED"
+    assert model.getNVars(True) == 4
+
+    assert x.getStatus() == "ORIGINAL"

@@ -168,8 +168,8 @@ Build with Debug
 To use debug information in PySCIPOpt you need to build it with the following command:
 
 .. code-block::
-
-  python -m pip install --install-option="--debug" .
+  export PYSCIPOPT_DEBUG=True # With Windows CMD: set PYSCIPOPT_DEBUG=True
+  python -m pip install .
 
 .. note:: Be aware that you will need the debug library of the SCIP Optimization Suite for this to work
   (cmake .. -DCMAKE_BUILD_TYPE=Debug).
@@ -177,12 +177,12 @@ To use debug information in PySCIPOpt you need to build it with the following co
 Testing the Installation
 ==========================
 
-To test your brand-new installation of PySCIPOpt you need `pytest <https://docs.pytest.org/en/stable/>`_
-on your system. To get pytest simply run the command:
+To test your brand-new installation of PySCIPOpt you need to
+install some dependencies.
 
 .. code-block:: bash
 
-  pip install pytest
+  pip install -r requirements/test.txt
 
 Tests can be run in the PySCIPOpt directory with the commands:
 
@@ -190,6 +190,7 @@ Tests can be run in the PySCIPOpt directory with the commands:
 
   pytest # Will run all the available tests
   pytest tests/test_name.py # Will run a specific tests/test_name.py (Unix)
+  pytest -nauto # Will run tests in parallel using all available cores
 
 Ideally, the status of your tests must be passed or skipped.
 Running tests with pytest creates the __pycache__ directory in tests and, occasionally,

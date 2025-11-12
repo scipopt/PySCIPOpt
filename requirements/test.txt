@@ -1,0 +1,3 @@
+pytest>=8
+pytest-xdist>=3
+networkx>=3  # only needed for a few tests

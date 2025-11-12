@@ -2,6 +2,32 @@
 
 ## Unreleased
 ### Added
+- Added possibility of having variables in exponent.
+- Added basic type stubs to help with IDE autocompletion and type checking.
+- MatrixVariable comparisons (<=, >=, ==) now support numpy's broadcast feature.
+- Added methods: getMaxDepth(), getPlungeDepth(), getLowerbound(), getCutoffbound(), getNNodeLPIterations(), getNStrongbranchLPIterations().
+- setup.py now automatically detects conda environments when SCIPOPTDIR is not defined.
+- Added function getStatus() to get variable status in variable class
+- Added function isActive() to get whether a variable is active in variable class
+- Added function markDoNotAggrVar() to prevent a variable from being aggregated
+- Added function markDoNotMultaggrVar() to prevent a variable from being multi-aggregated
+- Wrapped SCIPprintStatisticsJson
+- Added 4 new events: TYPECHANGED, IMPLTYPECHANGED, DUALBOUNDIMPROVED, GAPUPDATED.
+- Support for new implied integrality
+- Wrapped varIsBinary(), varIsIntegral(), varIsImpliedIntegral(), varIsNonImpliedIntegral(), varGetImplType()
+- Added support for IISFinder
+### Fixed
+- Implemented all binary operations between MatrixExpr and GenExpr
+- Fixed the type of @ matrix operation result from MatrixVariable to MatrixExpr.
+- Fixed the case for returning None from the nodeselect callback in Node Selector plugins.
+### Changed
+- Add package extras for test dependencies in `pyproject.toml`
+- Speed up MatrixVariable.sum(axis=None) via quicksum
+- MatrixVariable now supports comparison with Expr
+### Removed
+
+## 5.6.0 - 2025.08.26
+### Added
 - More support for AND-Constraints
 - Added support for knapsack constraints
 - Added isPositive(), isNegative(), isFeasLE(), isFeasLT(), isFeasGE(), isFeasGT(), isHugeValue(), and tests
@@ -9,15 +35,18 @@
 - Added addMatrixConsIndicator(), and tests
 - Added SCIPvarMarkRelaxationOnly, SCIPvarIsRelaxationOnly, SCIPvarMarkDeletable, SCIPvarIsDeletable, and tests
 - Wrapped SCIPgetNLPBranchCands
-- Wrapped SCIPprintStatisticsJson
-- Added 4 new events: TYPECHANGED, IMPLTYPECHANGED, DUALBOUNDIMPROVED, GAPUPDATED.
-- Support for new implied integrality
-- Wrapped varIsBinary(), varIsIntegral(), varIsImpliedIntegral(), varIsNonImpliedIntegral(), varGetImplType()
-- Added support for IISFinder
+- Added getConsVals() to get coefficients of any linear type constraint
+- Generalized getLhs() and getRhs() to additionally support any linear type constraint
+- Added recipe for getting local constraints
+- Added enableDebugSol() and disableDebugSol() for controlling the debug solution mechanism if DEBUGSOL=true
+- Added getVarPseudocostScore() and getVarPseudocost()
+- Added getNBranchings() and getNBranchingsCurrentRun()
 ### Fixed
 - Raised an error when an expression is used when a variable is required
+- Fixed some compile warnings
 ### Changed
-- MatrixExpr.sum() now supports axis arguments and can return either a scalar or MatrixExpr depending on the result dimensions
+- MatrixExpr.sum() now supports axis arguments and can return either a scalar or MatrixExpr, depending on the result dimensions.
+- AddMatrixCons() also accepts ExprCons.
 ### Removed
 
 ## 5.5.0 - 2025.05.06

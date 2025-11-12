@@ -30,6 +30,16 @@ cdef extern from "scip/scip.h":
         SCIP_VARTYPE SCIP_VARTYPE_IMPLINT
         SCIP_VARTYPE SCIP_VARTYPE_CONTINUOUS
 
+    ctypedef int SCIP_VARSTATUS
+    cdef extern from "scip/type_var.h":
+        SCIP_VARSTATUS SCIP_VARSTATUS_ORIGINAL
+        SCIP_VARSTATUS SCIP_VARSTATUS_LOOSE
+        SCIP_VARSTATUS SCIP_VARSTATUS_COLUMN
+        SCIP_VARSTATUS SCIP_VARSTATUS_FIXED
+        SCIP_VARSTATUS SCIP_VARSTATUS_AGGREGATED
+        SCIP_VARSTATUS SCIP_VARSTATUS_MULTAGGR
+        SCIP_VARSTATUS SCIP_VARSTATUS_NEGATED
+
     ctypedef int SCIP_OBJSENSE
     cdef extern from "scip/type_prob.h":
         SCIP_OBJSENSE SCIP_OBJSENSE_MAXIMIZE
@@ -718,6 +728,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPwriteOrigProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
     SCIP_RETCODE SCIPwriteTransProblem(SCIP* scip, char* filename, char* extension, SCIP_Bool genericnames)
     SCIP_RETCODE SCIPwriteLP(SCIP* scip, const char*)
+    SCIP_RETCODE SCIPwriteMIP(SCIP * scip, const char * filename, SCIP_Bool genericnames, SCIP_Bool origobj, SCIP_Bool lazyconss)
     SCIP_STATUS SCIPgetStatus(SCIP* scip)
     SCIP_Real SCIPepsilon(SCIP* scip)
     SCIP_Real SCIPfeastol(SCIP* scip)
@@ -798,6 +809,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPdelVar(SCIP* scip, SCIP_VAR* var, SCIP_Bool* deleted)
 
     SCIP_RETCODE SCIPchgVarType(SCIP* scip, SCIP_VAR* var, SCIP_VARTYPE vartype, SCIP_Bool* infeasible)
+    SCIP_RETCODE SCIPmarkDoNotAggrVar(SCIP* scip, SCIP_VAR* var)
+    SCIP_RETCODE SCIPmarkDoNotMultaggrVar(SCIP* scip, SCIP_VAR* var)
     SCIP_RETCODE SCIPcaptureVar(SCIP* scip, SCIP_VAR* var)
     SCIP_RETCODE SCIPaddPricedVar(SCIP* scip, SCIP_VAR* var, SCIP_Real score)
     SCIP_RETCODE SCIPreleaseVar(SCIP* scip, SCIP_VAR** var)
@@ -825,8 +838,10 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPvarIsImpliedIntegral(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsNonimpliedIntegral(SCIP_VAR* var)
     SCIP_IMPLINTTYPE SCIPvarGetImplType(SCIP_VAR* var)
+    SCIP_VARSTATUS SCIPvarGetStatus(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsActive(SCIP_VAR* var)
     SCIP_COL* SCIPvarGetCol(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsInLP(SCIP_VAR* var)
     SCIP_Real SCIPvarGetLbOriginal(SCIP_VAR* var)
@@ -845,8 +860,10 @@ cdef extern from "scip/scip.h":
     void SCIPvarMarkDeletable(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsDeletable(SCIP_VAR* var)
     SCIP_Real SCIPgetVarPseudocost(SCIP* scip, SCIP_VAR* var, SCIP_BRANCHDIR dir)
+    SCIP_Real SCIPgetVarPseudocostScore(SCIP* scip, SCIP_VAR* var, SCIP_Real solval)
     SCIP_Real SCIPvarGetCutoffSum(SCIP_VAR* var, SCIP_BRANCHDIR dir)
     SCIP_Longint SCIPvarGetNBranchings(SCIP_VAR* var, SCIP_BRANCHDIR dir)
+    SCIP_Longint SCIPvarGetNBranchingsCurrentRun(SCIP_VAR* var, SCIP_BRANCHDIR dir)
     SCIP_Bool SCIPvarMayRoundUp(SCIP_VAR* var)
     SCIP_Bool SCIPvarMayRoundDown(SCIP_VAR* var)
 
@@ -881,6 +898,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPtransformCons(SCIP* scip, SCIP_CONS* cons, SCIP_CONS** transcons)
     SCIP_RETCODE SCIPgetTransformedCons(SCIP* scip, SCIP_CONS* cons, SCIP_CONS** transcons)
     SCIP_RETCODE SCIPgetConsVars(SCIP* scip, SCIP_CONS* cons, SCIP_VAR** vars, int varssize, SCIP_Bool* success)
+    SCIP_RETCODE SCIPgetConsVals(SCIP* scip, SCIP_CONS* cons, SCIP_Real* vals, int valssize, SCIP_Bool* success)
     SCIP_RETCODE SCIPgetConsNVars(SCIP* scip, SCIP_CONS* cons, int* nvars, SCIP_Bool* success)
     SCIP_CONS** SCIPgetConss(SCIP* scip)
     const char* SCIPconsGetName(SCIP_CONS* cons)
@@ -951,6 +969,8 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetSolTime(SCIP* scip, SCIP_SOL* sol)
 
     SCIP_RETCODE SCIPsetRelaxSolVal(SCIP* scip, SCIP_RELAX* relax, SCIP_VAR* var, SCIP_Real val)
+    void SCIPenableDebugSol(SCIP* scip)
+    void SCIPdisableDebugSol(SCIP* scip)
 
     # Row Methods
     SCIP_RETCODE SCIPcreateRow(SCIP* scip, SCIP_ROW** row, const char* name, int len, SCIP_COL** cols, SCIP_Real* vals,
@@ -1434,6 +1454,12 @@ cdef extern from "scip/scip.h":
     SCIP_Longint SCIPgetNLPs(SCIP* scip)
     SCIP_Longint SCIPgetNLPIterations(SCIP* scip)
     int SCIPgetNSepaRounds(SCIP* scip)
+    SCIP_Real SCIPgetLowerbound(SCIP* scip)
+    SCIP_Real SCIPgetCutoffbound(SCIP* scip)
+    int SCIPgetMaxDepth(SCIP* scip)
+    int SCIPgetPlungeDepth(SCIP* scip)
+    SCIP_Longint SCIPgetNNodeLPIterations(SCIP* scip)
+    SCIP_Longint SCIPgetNStrongbranchLPIterations(SCIP* scip)
 
     # Parameter Functions
     SCIP_RETCODE SCIPsetBoolParam(SCIP* scip, char* name, SCIP_Bool value)
@@ -1538,6 +1564,8 @@ cdef extern from "scip/cons_linear.h":
     SCIP_RETCODE SCIPchgRhsLinear(SCIP* scip, SCIP_CONS* cons, SCIP_Real rhs)
     SCIP_Real SCIPgetLhsLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_Real SCIPgetRhsLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Real SCIPconsGetLhs(SCIP* scip, SCIP_CONS* cons, SCIP_Bool* success)
+    SCIP_Real SCIPconsGetRhs(SCIP* scip, SCIP_CONS* cons, SCIP_Bool* success)
     SCIP_RETCODE SCIPchgCoefLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR* var, SCIP_Real newval)
     SCIP_RETCODE SCIPdelCoefLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR*)
     SCIP_RETCODE SCIPaddCoefLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR*, SCIP_Real val)
