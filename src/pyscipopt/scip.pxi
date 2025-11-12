@@ -1111,7 +1111,6 @@ cdef class Solution:
         PY_SCIP_CALL(SCIPtranslateSubSol(target._scip, self.scip, self.sol, NULL, source_vars, &(targetSol.sol)))
         return targetSol
 
-
 cdef class BoundChange:
     """Bound change."""
 
@@ -1529,6 +1528,32 @@ cdef class Variable(Expr):
         elif vartype == SCIP_VARTYPE_IMPLINT:
             return "IMPLINT"
 
+    def getStatus(self):
+        """
+        Retrieve the variable status (ORIGINAL, LOOSE, COLUMN, FIXED, AGGREGATED, MULTAGGR, NEGATED)
+
+        Returns
+        -------
+        str
+            "ORIGINAL", "LOOSE", "COLUMN", "FIXED", "AGGREGATED", "MULTAGGR", "NEGATED"
+
+        """
+        varstatus = SCIPvarGetStatus(self.scip_var)
+        if varstatus == SCIP_VARSTATUS_ORIGINAL:
+            return "ORIGINAL"
+        elif varstatus == SCIP_VARSTATUS_LOOSE:
+            return "LOOSE"
+        elif varstatus == SCIP_VARSTATUS_COLUMN:
+            return "COLUMN"
+        elif varstatus == SCIP_VARSTATUS_FIXED:
+            return "FIXED"
+        elif varstatus == SCIP_VARSTATUS_AGGREGATED:
+            return "AGGREGATED"
+        elif varstatus == SCIP_VARSTATUS_MULTAGGR:
+            return "MULTAGGR"
+        elif varstatus == SCIP_VARSTATUS_NEGATED:
+            return "NEGATED"
+
     def isOriginal(self):
         """
         Retrieve whether the variable belongs to the original problem
@@ -1540,6 +1565,17 @@ cdef class Variable(Expr):
         """
         return SCIPvarIsOriginal(self.scip_var)
 
+    def isActive(self):
+        """
+        Retrieve whether the variable is active
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPvarIsActive(self.scip_var)
+
     def isInLP(self):
         """
         Retrieve whether the variable is a COLUMN variable that is member of the current LP.
@@ -1550,7 +1586,6 @@ cdef class Variable(Expr):
 
         """
         return SCIPvarIsInLP(self.scip_var)
-
 
     def getIndex(self):
         """
@@ -2033,7 +2068,6 @@ class MatrixVariable(MatrixExpr):
         for idx in np.ndindex(self.shape):
             mayround[idx] = self[idx].varMayRound()
         return mayround
-
 
 cdef class Constraint:
     """Base class holding a pointer to corresponding SCIP_CONS"""
@@ -2575,7 +2609,6 @@ cdef class Model:
             else:
                 PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, threadsafe, True, self._valid))
 
-
     def attachEventHandlerCallback(self,
         callback,
         events,
@@ -2624,7 +2657,6 @@ cdef class Model:
             name = f"eventhandler_{self._generated_event_handlers_count}"
 
         self.includeEventhdlr(event_handler, name, description)
-
 
     def __dealloc__(self):
         # call C function directly, because we can no longer call this object's methods, according to
@@ -2799,7 +2831,6 @@ cdef class Model:
 
         """
         return SCIPminorVersion()
-
 
     def getTechVersion(self):
         """
@@ -3007,6 +3038,72 @@ cdef class Model:
 
         """
         return SCIPgetDepth(self._scip)
+
+    def getMaxDepth(self):
+        """
+        Gets maximal depth of the branch-and-bound tree processed during solving (excluding probing nodes).
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetMaxDepth(self._scip)
+
+    def getPlungeDepth(self):
+        """
+        Gets current plunging depth (successive selections of child/sibling nodes).
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetPlungeDepth(self._scip)
+
+    def getLowerbound(self):
+        """
+        Gets global lower (dual) bound of the transformed problem.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetLowerbound(self._scip)
+
+    def getCutoffbound(self):
+        """
+        Gets the cutoff bound of the transformed problem.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetCutoffbound(self._scip)
+
+    def getNNodeLPIterations(self):
+        """
+        Gets number of LP iterations used for solving node relaxations so far.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNNodeLPIterations(self._scip)
+
+    def getNStrongbranchLPIterations(self):
+        """
+        Gets number of LP iterations used for strong branching so far.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNStrongbranchLPIterations(self._scip)
 
     def cutoffNode(self, Node node):
         """
@@ -3476,7 +3573,6 @@ cdef class Model:
         return iters
 
     # Objective function
-
     def setMinimize(self):
         """Set the objective sense to minimization."""
         PY_SCIP_CALL(SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MINIMIZE))
@@ -3822,7 +3918,6 @@ cdef class Model:
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     # Variable Functions
-
     def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0, deletable=False):
         """
         Create a new variable. Default variable is non-negative and continuous.
@@ -4302,7 +4397,6 @@ cdef class Model:
            ub = SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarUbNode(self._scip, node.scip_node, var.scip_var, ub))
 
-
     def chgVarType(self, Variable var, vtype):
         """
         Changes the type of a variable.
@@ -4329,6 +4423,28 @@ cdef class Model:
             raise Warning("unrecognized variable type")
         if infeasible:
             print('could not change variable type of variable %s' % var)
+
+    def markDoNotAggrVar(self, Variable var):
+        """
+        Marks a variable preventing it from being aggregated.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to mark
+        """
+        PY_SCIP_CALL(SCIPmarkDoNotAggrVar(self._scip, var.scip_var))
+
+    def markDoNotMultaggrVar(self, Variable var):
+        """
+        Marks a variable preventing it from being multi-aggregated.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to mark
+        """
+        PY_SCIP_CALL(SCIPmarkDoNotMultaggrVar(self._scip, var.scip_var))
 
     def getVars(self, transformed=False):
         """
@@ -4671,7 +4787,6 @@ cdef class Model:
         """Marks the given node to be propagated again the next time a node of its subtree is processed."""
         PY_SCIP_CALL(SCIPrepropagateNode(self._scip, node.scip_node))
 
-
     # LP Methods
     def getLPSolstat(self):
         """
@@ -4683,7 +4798,6 @@ cdef class Model:
 
         """
         return SCIPgetLPSolstat(self._scip)
-
 
     def constructLP(self):
         """
@@ -6960,7 +7074,6 @@ cdef class Model:
 
         return pyCons
 
-
     def addMatrixConsIndicator(self, cons: Union[ExprCons, MatrixExprCons], binvar: Union[Variable, MatrixVariable] = None,
                                activeone: Union[bool, np.ndarray] = True, name: Union[str, np.ndarray] = "",
                                initial: Union[bool, np.ndarray] = True, separate: Union[bool, np.ndarray] = True,
@@ -7539,7 +7652,6 @@ cdef class Model:
             raise Warning("method cannot be called for constraints of type " + constype)
 
         return activity
-
 
     def getSlack(self, Constraint cons, Solution sol = None, side = None):
         """
@@ -8553,7 +8665,6 @@ cdef class Model:
         """
         PY_SCIP_CALL( SCIPincludeBendersDefaultCuts(self._scip, benders._benders) )
 
-
     def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):
         """
         Include an event handler.
@@ -9190,7 +9301,6 @@ cdef class Model:
         # TODO: It might be necessary in increment the reference to benders i.e Py_INCREF(benders)
         Py_INCREF(benderscut)
 
-
     def getLPBranchCands(self):
         """
         Gets branching candidates for LP solution branching (fractional variables) along with solution values,
@@ -9234,9 +9344,9 @@ cdef class Model:
         """
         Gets number of branching candidates for LP solution branching (number of fractional variables)
 
- 	Returns
-  	-------
-   	int
+        Returns
+        -------
+        int
     	    number of LP branching candidates
 
         """
@@ -9292,7 +9402,6 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPbranchVar(self._scip, wrapper.ptr[0], &downchild, &eqchild, &upchild))
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
-
 
     def branchVarVal(self, Variable variable, value):
         """
@@ -10879,7 +10988,6 @@ cdef class Model:
             v = str_conversion(value)
             PY_SCIP_CALL(SCIPsetStringParam(self._scip, n, v))
 
-
     def getParam(self, name):
         """
         Get the value of a parameter of type
@@ -11360,7 +11468,6 @@ cdef class Model:
 
         """
         return SCIPgetTreesizeEstimation(self._scip)
-
 
     def getBipartiteGraphRepresentation(self, prev_col_features=None, prev_edge_features=None, prev_row_features=None,
                                         static_only=False, suppress_warnings=False):

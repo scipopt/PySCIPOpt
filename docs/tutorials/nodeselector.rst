@@ -87,6 +87,8 @@ To include the node selector in your SCIP Model one would use the following code
     dfs_node_sel = DFS(scip)
     scip.includeNodesel(dfs_node_sel, "DFS", "Depth First Search Nodesel.", 1000000, 1000000)
 
+For a more complex example, see the `Hybrid Estimate Node Selector <https://github.com/scipopt/PySCIPOpt/blob/master/examples/finished/nodesel_hybridestim.py>`_ on GitHub.
+
 
 
 

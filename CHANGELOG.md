@@ -11,9 +11,16 @@
 - Added possibility of having variables in exponent.
 - Added basic type stubs to help with IDE autocompletion and type checking.
 - MatrixVariable comparisons (<=, >=, ==) now support numpy's broadcast feature.
+- Added methods: getMaxDepth(), getPlungeDepth(), getLowerbound(), getCutoffbound(), getNNodeLPIterations(), getNStrongbranchLPIterations().
+- setup.py now automatically detects conda environments when SCIPOPTDIR is not defined.
+- Added function getStatus() to get variable status in variable class
+- Added function isActive() to get whether a variable is active in variable class
+- Added function markDoNotAggrVar() to prevent a variable from being aggregated
+- Added function markDoNotMultaggrVar() to prevent a variable from being multi-aggregated
 ### Fixed
 - Implemented all binary operations between MatrixExpr and GenExpr
 - Fixed the type of @ matrix operation result from MatrixVariable to MatrixExpr.
+- Fixed the case for returning None from the nodeselect callback in Node Selector plugins.
 ### Changed
 - Add package extras for test dependencies in `pyproject.toml`
 - Speed up MatrixVariable.sum(axis=None) via quicksum
