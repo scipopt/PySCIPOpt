@@ -7,6 +7,10 @@
 - MatrixVariable comparisons (<=, >=, ==) now support numpy's broadcast feature.
 - Added methods: getMaxDepth(), getPlungeDepth(), getLowerbound(), getCutoffbound(), getNNodeLPIterations(), getNStrongbranchLPIterations().
 - setup.py now automatically detects conda environments when SCIPOPTDIR is not defined.
+- Added function getStatus() to get variable status in variable class
+- Added function isActive() to get whether a variable is active in variable class
+- Added function markDoNotAggrVar() to prevent a variable from being aggregated
+- Added function markDoNotMultaggrVar() to prevent a variable from being multi-aggregated
 ### Fixed
 - Implemented all binary operations between MatrixExpr and GenExpr
 - Fixed the type of @ matrix operation result from MatrixVariable to MatrixExpr.
