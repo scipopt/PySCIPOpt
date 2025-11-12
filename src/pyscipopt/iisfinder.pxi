@@ -25,7 +25,7 @@ cdef SCIP_RETCODE PyiisfinderFree (SCIP* scip, SCIP_IISFINDER* iisfinder) noexce
     Py_DECREF(PyIIS)
     return SCIP_OKAY
 
-cdef SCIP_RETCODE PyiisfinderExec (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_Real timelim, SCIP_Longint nodelim, SCIP_Bool removebounds, SCIP_Bool silent, SCIP_RESULT* result) noexcept with gil:
+cdef SCIP_RETCODE PyiisfinderExec (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_RESULT* result) noexcept with gil:
     cdef SCIP_IISFINDERDATA* iisfinderdata
     iisfinderdata = SCIPiisfinderGetData(iisfinder)
     PyIIS = <IISfinder>iisfinderdata

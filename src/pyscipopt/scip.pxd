@@ -28,6 +28,7 @@ cdef extern from "scip/scip.h":
         SCIP_VARTYPE SCIP_VARTYPE_BINARY
         SCIP_VARTYPE SCIP_VARTYPE_INTEGER
         SCIP_VARTYPE SCIP_VARTYPE_IMPLINT
+        SCIP_VARTYPE SCIP_DEPRECATED_VARTYPE_IMPLINT
         SCIP_VARTYPE SCIP_VARTYPE_CONTINUOUS
 
     ctypedef int SCIP_VARSTATUS
@@ -569,6 +570,9 @@ cdef extern from "scip/scip.h":
     ctypedef union SCIP_DOMCHG:
         pass
 
+    ctypedef struct SCIP_RATIONAL:
+        pass
+
     ctypedef void (*messagecallback) (SCIP_MESSAGEHDLR* messagehdlr, FILE* file, const char* msg) noexcept
     ctypedef void (*errormessagecallback) (void* data, FILE* file, const char* msg)
     ctypedef SCIP_RETCODE (*messagehdlrfree) (SCIP_MESSAGEHDLR* messagehdlr)
@@ -1006,7 +1010,7 @@ cdef extern from "scip/scip.h":
                                    SCIP_RETCODE (*readercopy) (SCIP* scip, SCIP_READER* reader),
                                    SCIP_RETCODE (*readerfree) (SCIP* scip, SCIP_READER* reader),
                                    SCIP_RETCODE (*readerread) (SCIP* scip, SCIP_READER* reader, const char* filename, SCIP_RESULT* result),
-                                   SCIP_RETCODE (*readerwrite) (SCIP* scip, SCIP_READER* reader, FILE* file,
+                                   SCIP_RETCODE (*readerwrite) (SCIP* scip, SCIP_READER* reader, FILE* file, const char* filename,
                                                                 const char* name, SCIP_PROBDATA* probdata, SCIP_Bool transformed,
                                                                 SCIP_OBJSENSE objsense, SCIP_Real objoffset, SCIP_Real objscale,
                                                                 SCIP_RATIONAL* objoffsetexact, SCIP_RATIONAL* objscaleexact,
@@ -1211,7 +1215,7 @@ cdef extern from "scip/scip.h":
                                       int         priority,
                                       SCIP_RETCODE (*iisfindercopy) (SCIP* scip, SCIP_IISFINDER* iisfinder),
                                       SCIP_RETCODE (*iisfinderfree) (SCIP* scip, SCIP_IISFINDER* iisfinder),
-                                      SCIP_RETCODE (*iisfinderexec) (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_Real timelim, SCIP_Longint nodelim, SCIP_Bool removebounds, SCIP_Bool silent, SCIP_RESULT* result),
+                                      SCIP_RETCODE (*iisfinderexec) (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_RESULT* result),
                                       SCIP_IISFINDERDATA*   iisfinderdata)
 
     SCIP_IISFINDERDATA* SCIPiisfinderGetData(SCIP_IISFINDER* iisfinder)
@@ -1750,8 +1754,6 @@ cdef extern from "scip/cons_and.h":
     SCIP_VAR*    SCIPgetResultantAnd(SCIP* scip, SCIP_CONS* cons)
     SCIP_Bool    SCIPisAndConsSorted(SCIP* scip, SCIP_CONS* cons)
     SCIP_RETCODE SCIPsortAndCons(SCIP* scip, SCIP_CONS* cons)
-    SCIP_RETCODE SCIPchgAndConsCheckFlagWhenUpgr(SCIP* scip, SCIP_CONS* cons, SCIP_Bool flag)
-    SCIP_RETCODE SCIPchgAndConsRemovableFlagWhenUpgr(SCIP* scip, SCIP_CONS* cons, SCIP_Bool flag)
 
 cdef extern from "scip/cons_or.h":
     SCIP_RETCODE SCIPcreateConsOr(SCIP* scip,

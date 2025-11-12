@@ -1590,7 +1590,7 @@ cdef class Variable(Expr):
             return "INTEGER"
         elif vartype == SCIP_VARTYPE_CONTINUOUS:
             return "CONTINUOUS"
-        elif vartype == SCIP_VARTYPE_IMPLINT:
+        elif vartype == SCIP_DEPRECATED_VARTYPE_IMPLINT:
             return "IMPLINT"
     
     def isBinary(self):
@@ -4093,7 +4093,7 @@ cdef class Model:
         elif vtype in ['I', 'INTEGER']:
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_INTEGER))
         elif vtype in ['M', 'IMPLINT']:
-            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_IMPLINT))
+            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_DEPRECATED_VARTYPE_IMPLINT))
         else:
             raise Warning("unrecognized variable type")
 
@@ -4541,7 +4541,7 @@ cdef class Model:
         elif vtype in ['I', 'INTEGER']:
             PY_SCIP_CALL(SCIPchgVarType(self._scip, var.scip_var, SCIP_VARTYPE_INTEGER, &infeasible))
         elif vtype in ['M', 'IMPLINT']:
-            PY_SCIP_CALL(SCIPchgVarType(self._scip, var.scip_var, SCIP_VARTYPE_IMPLINT, &infeasible))
+            PY_SCIP_CALL(SCIPchgVarType(self._scip, var.scip_var, SCIP_DEPRECATED_VARTYPE_IMPLINT, &infeasible))
         else:
             raise Warning("unrecognized variable type")
         if infeasible:
@@ -6500,38 +6500,6 @@ cdef class Model:
         """
 
         PY_SCIP_CALL(SCIPsortAndCons(self._scip, and_cons.scip_cons))
-    
-    def chgAndConsCheckFlagWhenUpgr(self, Constraint cons, flag):
-        """
-        when 'upgrading' the given AND-constraint, should the check flag for the upgraded 
-        constraint be set to TRUE, even if the check flag of this AND-constraint is set to FALSE?
-        
-        Parameters
-        ----------
-        cons : Constraint
-            The AND constraint to change.
-        flag : bool
-            The new value for the check flag.
-
-        """
-
-        PY_SCIP_CALL(SCIPchgAndConsCheckFlagWhenUpgr(self._scip, cons.scip_cons, flag))
-
-    def chgAndConsRemovableFlagWhenUpgr(self, Constraint cons, flag):
-        """
-        when 'upgrading' the given AND-constraint, should the removable flag for the upgraded 
-        constraint be set to TRUE, even if the removable flag of this AND-constraint is set to FALSE?
-        
-        Parameters
-        ----------
-        cons : Constraint
-            The AND constraint to change.
-        flag : bool
-            The new value for the removable flag.
-
-        """
-
-        PY_SCIP_CALL(SCIPchgAndConsRemovableFlagWhenUpgr(self._scip, cons.scip_cons, flag))
 
     def printCons(self, Constraint constraint):
         """
@@ -11021,6 +10989,15 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, cfile))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
+    def printStatisticsJson(self):
+        """Print statistics in JSON format."""
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, NULL))
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     def writeStatistics(self, filename="origprob.stats"):
         """
@@ -11040,6 +11017,28 @@ cdef class Model:
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
+
+    def writeStatisticsJson(self, filename="origprob.stats.json"):
+        """
+        Write statistics to a JSON file.
+
+        Parameters
+        ----------
+        filename : str, optional
+            name of the output file (Default = "origprob.stats.json")
+
+        """
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        # use this doubled opening pattern to ensure that IOErrors are
+        #   triggered early and in Python not in C,Cython or SCIP.
+        with open(filename, "w") as f:
+            cfile = fdopen(f.fileno(), "w")
+            PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, cfile))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 

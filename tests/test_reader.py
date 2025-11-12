@@ -144,7 +144,7 @@ def test_writeStatisticsJson():
 
     model = random_lp_1()
     model.optimize()
-    model.printStatisticsJson("statistics.json")
+    model.writeStatisticsJson("statistics.json")
 
     with open("statistics.json", "r") as f:
         data = load(f)
