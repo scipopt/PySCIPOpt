@@ -111,3 +111,36 @@ def test_getNBranchingsCurrentRun():
         n_branchings += var.getNBranchingsCurrentRun(SCIP_BRANCHDIR.DOWNWARDS)
 
     assert n_branchings == m.getNNodes() - 1
+
+def test_markDoNotAggrVar_and_getStatus():
+    model = Model()
+    x = model.addVar("x", obj=2, lb=0, ub=10)
+    y = model.addVar("y", obj=3, lb=0, ub=20)
+    z = model.addVar("z", obj=1, lb=0, ub=10)
+    w = model.addVar("w", obj=4, lb=0, ub=15)
+
+    model.addCons(y - 2*x == 0)
+    model.addCons(x + z + w == 10)
+    model.addCons(x*y*z >= 21) # to prevent presolve from removing all variables
+    model.presolve()
+
+    assert z.getStatus() == "ORIGINAL"
+    assert model.getTransformedVar(z).getStatus() == "AGGREGATED"
+    assert model.getTransformedVar(w).getStatus() == "MULTAGGR"
+
+    assert model.getNVars(True) == 1
+
+    model.freeTransform()
+    model.markDoNotMultaggrVar(w)
+    model.presolve()
+
+    assert model.getTransformedVar(w).getStatus() != "MULTAGGR"
+    assert model.getNVars(True) == 3
+
+    model.freeTransform()
+    model.markDoNotAggrVar(y)
+    model.presolve()
+    assert model.getTransformedVar(z).getStatus() != "AGGREGATED"
+    assert model.getNVars(True) == 4
+
+    assert x.getStatus() == "ORIGINAL"
