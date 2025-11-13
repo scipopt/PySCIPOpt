@@ -164,7 +164,9 @@ def test_cuttingstock():
     
     assert s.getObjVal() == 452.25
     assert type(s.getNSols()) == int
-    assert s.getNSols() == s.data["nSols"]
+    # Additional primal solutions can be found after the pricer updated the data,
+    # so the stored value is a lower bound on the final solution count.
+    assert s.getNSols() >= s.data["nSols"]
 
     # Testing freeTransform
     s.freeTransform()
