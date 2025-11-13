@@ -12,7 +12,7 @@ cdef class Reader:
         '''calls read method of reader'''
         return {}
 
-    def readerwrite(self, file, name, transformed, objsense, objscale, objoffset, binvars, intvars,
+    def readerwrite(self, file, name, transformed, objsense, objoffset, objscale, binvars, intvars,
                     implvars, contvars, fixedvars, startnvars, conss, maxnconss, startnconss, genericnames):
         '''calls write method of reader'''
         return {}
@@ -39,10 +39,11 @@ cdef SCIP_RETCODE PyReaderRead (SCIP* scip, SCIP_READER* reader, const char* fil
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyReaderWrite (SCIP* scip, SCIP_READER* reader, FILE* file,
-                                 const char* name, SCIP_PROBDATA* probdata, SCIP_Bool transformed,
-                                 SCIP_OBJSENSE objsense, SCIP_Real objscale, SCIP_Real objoffset, 
-                                 SCIP_VAR** vars, int nvars, int nbinvars, int nintvars, int nimplvars, int ncontvars,
-                                 SCIP_VAR** fixedvars, int nfixedvars, int startnvars,
+                                 const char* filename, const char* name, SCIP_PROBDATA* probdata, SCIP_Bool transformed,
+                                 SCIP_OBJSENSE objsense, SCIP_Real objoffset, SCIP_Real objscale,
+                                 SCIP_RATIONAL* objoffsetexact, SCIP_RATIONAL* objscaleexact,
+                                 SCIP_VAR** vars, int nvars, int nbinvars, int nintvars, int nimplvars,
+                                 int ncontvars, SCIP_VAR** fixedvars, int nfixedvars, int startnvars,
                                  SCIP_CONS** conss, int nconss, int maxnconss, int startnconss,
                                  SCIP_Bool genericnames, SCIP_RESULT* result) noexcept with gil:
     cdef SCIP_READERDATA* readerdata = SCIPreaderGetData(reader)
@@ -58,7 +59,8 @@ cdef SCIP_RETCODE PyReaderWrite (SCIP* scip, SCIP_READER* reader, FILE* file,
     PyFixedVars = [Variable.create(fixedvars[i]) for i in range(nfixedvars)]
     PyConss = [Constraint.create(conss[i]) for i in range(nconss)]
     PyReader = <Reader>readerdata
-    result_dict = PyReader.readerwrite(PyFile, PyName, transformed, objsense, objscale, objoffset,
+    #TODO: provide rational objoffsetexact and objscaleexact
+    result_dict = PyReader.readerwrite(PyFile, PyName, transformed, objsense, objoffset, objscale,
                                        PyBinVars, PyIntVars, PyImplVars, PyContVars, PyFixedVars, startnvars,
                                        PyConss, maxnconss, startnconss, genericnames)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
