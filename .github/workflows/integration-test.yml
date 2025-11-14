@@ -1,7 +1,7 @@
 name: Integration test
 
 env:
-  version: 9.2.3
+  version: 9.2.4
 
 on:
   push:

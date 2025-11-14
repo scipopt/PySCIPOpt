@@ -148,7 +148,6 @@ def test_multiple_cons_names():
     assert conss == m.getConss()
     assert m.getNConss() == 5
 
-
 def test_multiple_cons_params():
     """Test if setting the remaining parameters works as expected"""
     def assert_conss_neq(a, b):
@@ -302,8 +301,7 @@ def test_getObjective():
     m.addVar(obj=3, name="x2")
 
     assert str(m.getObjective()) == "Expr({Term(x1): 2.0, Term(x2): 3.0})"
-    
-    
+
 def test_getTreesizeEstimation():
     m = Model()
 
