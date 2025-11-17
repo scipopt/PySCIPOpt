@@ -15,11 +15,14 @@
 - Implemented all binary operations between MatrixExpr and GenExpr
 - Fixed the type of @ matrix operation result from MatrixVariable to MatrixExpr.
 - Fixed the case for returning None from the nodeselect callback in Node Selector plugins.
+- Fixed segmentation fault during Benders decomposition cleanup caused by double-free bug
 ### Changed
 - Add package extras for test dependencies in `pyproject.toml`
 - Speed up MatrixVariable.sum(axis=None) via quicksum
 - MatrixVariable now supports comparison with Expr
+- Benders subproblem memory is now automatically managed by the master Model - `freeBendersSubproblems()` is deprecated and no longer needed
 ### Removed
+
 
 ## 5.6.0 - 2025.08.26
 ### Added
