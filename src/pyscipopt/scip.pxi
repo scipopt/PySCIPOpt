@@ -8424,7 +8424,7 @@ cdef class Model:
         Benders subproblems are now automatically managed and freed by the master
         Model when it is deallocated. Calling this method explicitly has no effect.
 
-        .. deprecated:: 5.2.0
+        .. deprecated:: 5.7.0
             This method is deprecated and will be removed in a future version.
             Subproblem memory management is now handled automatically.
         """
