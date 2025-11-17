@@ -15,7 +15,7 @@ def _is_number(e):
         return False
 
 
-class Term:
+cdef class Term:
     """A monomial term consisting of one or more variables."""
 
     __slots__ = ("vars", "ptrs")
@@ -46,7 +46,7 @@ class Term:
     def __repr__(self):
         return f"Term({', '.join(map(str, self.vars))})"
 
-    def _evaluate(self, SCIP* scip, SCIP_SOL* sol) -> float:
+    cdef float _evaluate(self, SCIP* scip, SCIP_SOL* sol):
         if self.vars:
             return math.prod(SCIPgetSolVal(scip, sol, ptr) for ptr in self.ptrs)
         return 1.0  # constant term
@@ -231,7 +231,7 @@ cdef class SumExpr(Expr):
     def degree(self):
         return float("inf")
 
-    def _evaluate(self, SCIP* scip, SCIP_SOL* sol) -> float:
+    cdef float _evaluate(self, SCIP* scip, SCIP_SOL* sol):
         return _evaluate(self.children, scip, sol)
 
 
@@ -371,7 +371,7 @@ cdef class ProdExpr(FuncExpr):
             return ConstExpr(0.0)
         return self
 
-    def _evaluate(self, SCIP* scip, SCIP_SOL* sol) -> float:
+    cdef float _evaluate(self, SCIP* scip, SCIP_SOL* sol):
         return self.coef * _evaluate(self.children, scip, sol)
 
 
@@ -395,7 +395,7 @@ cdef class PowerExpr(FuncExpr):
             return tuple(self)[0]
         return self
 
-    def _evaluate(self, SCIP* scip, SCIP_SOL* sol) -> float:
+    cdef float _evaluate(self, SCIP* scip, SCIP_SOL* sol):
         return pow(_evaluate(self.children, scip, sol), self.expo)
 
 
@@ -411,7 +411,7 @@ cdef class UnaryExpr(FuncExpr):
     def __repr__(self):
         return f"{type(self).__name__}({tuple(self)[0]})"
 
-    def _evaluate(self, SCIP* scip, SCIP_SOL* sol) -> float:
+    cdef float _evaluate(self, SCIP* scip, SCIP_SOL* sol):
         return self.op(_evaluate(self.children, scip, sol))
 
 
