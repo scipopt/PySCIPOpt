@@ -43,7 +43,7 @@ include "matrix.pxi"
 # recommended SCIP version; major version is required
 MAJOR = 9
 MINOR = 2
-PATCH = 1
+PATCH = 4
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this

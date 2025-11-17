@@ -2,6 +2,12 @@
 
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+### Removed
+
+## 5.7.0 - 2025.11.17
+### Added
 - Added possibility of having variables in exponent.
 - Added basic type stubs to help with IDE autocompletion and type checking.
 - MatrixVariable comparisons (<=, >=, ==) now support numpy's broadcast feature.
