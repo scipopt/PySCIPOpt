@@ -2,6 +2,14 @@
 
 ## Unreleased
 ### Added
+### Fixed
+- Fixed segmentation fault during Benders decomposition cleanup caused by double-free bug
+### Changed
+- Benders subproblem memory is now automatically managed by the master Model - `freeBendersSubproblems()` is deprecated and no longer needed
+### Removed
+
+## 5.6.0 - 2025.11.01
+### Added
 - Added possibility of having variables in exponent.
 - Added basic type stubs to help with IDE autocompletion and type checking.
 - MatrixVariable comparisons (<=, >=, ==) now support numpy's broadcast feature.
