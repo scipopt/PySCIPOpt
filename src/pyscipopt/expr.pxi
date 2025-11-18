@@ -161,12 +161,12 @@ class Expr:
             return self.__le__(other)
         raise TypeError(f"Unsupported type {type(other)}")
 
-    def __ge__(self, other):
+    def __eq__(self, other):
         other = Expr.to_const_or_var(other)
         if isinstance(other, Expr):
             if isinstance(other, ConstExpr):
                 return ExprCons(self, lhs=other[CONST], rhs=other[CONST])
-            return (self - other).__ge__(0)
+            return (self - other).__eq__(0)
         elif isinstance(other, MatrixExpr):
             return other.__ge__(self)
         raise TypeError(f"Unsupported type {type(other)}")
