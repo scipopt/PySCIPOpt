@@ -5455,7 +5455,7 @@ cdef class Model:
         PY_SCIP_CALL( SCIPseparateSol(self._scip, NULL if sol is None else sol.sol, pretendroot, allowlocal, onlydelayed, &delayed, &cutoff) )
         return delayed, cutoff
 
-    def _createConsLinear(self, ExprCons lincons, **kwargs):
+    def _createConsLinear(self, lincons, **kwargs):
         """
         The function for creating a linear constraint, but not adding it to the Model.
         Please do not use this function directly, but rather use createConsFromExpr
@@ -5513,7 +5513,7 @@ cdef class Model:
         free(coeffs_array)
         return PyCons
 
-    def _createConsQuadratic(self, ExprCons quadcons, **kwargs):
+    def _createConsQuadratic(self, quadcons, **kwargs):
         """
         The function for creating a quadratic constraint, but not adding it to the Model.
         Please do not use this function directly, but rather use createConsFromExpr
@@ -10518,7 +10518,7 @@ cdef class Model:
 
         return self.getSolObjVal(self._bestSol, original)
 
-    def getSolVal(self, Solution sol, Expr expr):
+    def getSolVal(self, Solution sol, expr):
         """
         Retrieve value of given variable or expression in the given solution or in
         the LP/pseudo solution if sol == None
