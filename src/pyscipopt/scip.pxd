@@ -2092,6 +2092,9 @@ cdef class Variable:
     # can be used to store problem data
     cdef public object data
 
+    @staticmethod
+    cdef create(SCIP_VAR* scipvar)
+
 cdef class Constraint:
     cdef SCIP_CONS* scip_cons
     # can be used to store problem data

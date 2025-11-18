@@ -150,7 +150,7 @@ cdef SCIP_RETCODE PyPropResProp (SCIP* scip, SCIP_PROP* prop, SCIP_VAR* infervar
                                  SCIP_BOUNDTYPE boundtype, SCIP_BDCHGIDX* bdchgidx, SCIP_Real relaxedbd, SCIP_RESULT* result) noexcept with gil:
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
-    confvar = Variable(infervar)
+    confvar = Variable.create(infervar)
 
     #TODO: parse bdchgidx?
 
