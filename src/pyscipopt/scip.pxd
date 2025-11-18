@@ -2024,9 +2024,6 @@ cdef extern from "scip/scip_var.h":
 cdef extern from "tpi/tpi.h":
     int SCIPtpiGetNumThreads()
 
-cdef class Expr:
-    cdef public terms
-
 cdef class Event:
     cdef SCIP_EVENT* event
     # can be used to store problem data
