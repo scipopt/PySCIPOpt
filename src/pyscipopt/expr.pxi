@@ -217,7 +217,7 @@ class Expr:
         return nodes
 
 
-cdef class SumExpr(Expr):
+class SumExpr(Expr):
     """Expression like `expression1 + expression2 + constant`."""
 
     def __add__(self, other):
@@ -358,7 +358,7 @@ class FuncExpr(Expr):
         return float("inf")
 
 
-cdef class ProdExpr(FuncExpr):
+class ProdExpr(FuncExpr):
     """Expression like `coefficient * expression`."""
 
     def __init__(self, *children, coef: float = 1.0):
@@ -391,7 +391,7 @@ cdef class ProdExpr(FuncExpr):
         return self
 
 
-cdef class PowExpr(FuncExpr):
+class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
 
     def __init__(self, base, expo: float = 1.0):
