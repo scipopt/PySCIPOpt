@@ -59,10 +59,8 @@ cdef float _evaluate(dict children, SCIP* scip, SCIP_SOL* sol):
     return sum([i._evaluate(scip, sol) * j for i, j in children.items() if j != 0])
 
 
-cdef class Expr:
+class Expr:
     """Base class for mathematical expressions."""
-
-    cdef public dict children
 
     def __init__(self, children: Optional[dict] = None):
         self.children = children or {}
