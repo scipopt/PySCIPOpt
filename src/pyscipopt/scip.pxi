@@ -1512,6 +1512,9 @@ cdef class Variable:
     def ptr(self):
         return <size_t>(self.scip_var)
 
+    def __hash__(self):
+        return hash(self.ptr())
+
     def __repr__(self):
         return self.name
 
