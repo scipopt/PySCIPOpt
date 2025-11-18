@@ -1054,7 +1054,7 @@ cdef class Solution:
             wrapper = _VarArray(expr)
             self._checkStage("SCIPgetSolVal")
             return SCIPgetSolVal(self.scip, self.sol, wrapper.ptr[0])
-        return sum(self._evaluate(term)*coeff for term, coeff in expr.terms.items() if coeff != 0)
+        return sum(self._evaluate(term)*coeff for term, coeff in expr.children.items() if coeff != 0)
 
     def _evaluate(self, term):
         self._checkStage("SCIPgetSolVal")

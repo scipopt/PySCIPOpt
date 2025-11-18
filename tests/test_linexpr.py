@@ -93,10 +93,10 @@ def test_power_for_quadratic(model):
     assert expr[Term(x,x)] == 1.0
     assert expr[x] == 1.0
     assert expr[CONST] == 1.0
-    assert len(expr.terms) == 3
+    assert len(expr.children) == 3
 
-    assert (x**2).terms == (x*x).terms
-    assert ((x + 3)**2).terms == (x**2 + 6*x + 9).terms
+    assert (x**2).children == (x*x).children
+    assert ((x + 3)**2).children == (x**2 + 6*x + 9).children
 
 def test_operations_poly(model):
     m, x, y, z = model
@@ -107,7 +107,7 @@ def test_operations_poly(model):
     assert expr[CONST] == 0.0
     assert expr[Term(x,x,x)] == 1.0
     assert expr[Term(y,y)] == 2.0
-    assert expr.terms == (x**3 + 2*y**2).terms
+    assert expr.children == (x**3 + 2*y**2).children
 
 def test_degree(model):
     m, x, y, z = model
@@ -137,7 +137,7 @@ def test_inequality(model):
     assert cons.expr[y] == 2.0
     assert cons.expr[z] == 0.0
     assert cons.expr[CONST] == 0.0
-    assert CONST not in cons.expr.terms
+    assert CONST not in cons.expr.children
 
     cons = expr >= 5
     assert isinstance(cons, ExprCons)
@@ -147,7 +147,7 @@ def test_inequality(model):
     assert cons.expr[y] == 2.0
     assert cons.expr[z] == 0.0
     assert cons.expr[CONST] == 0.0
-    assert CONST not in cons.expr.terms
+    assert CONST not in cons.expr.children
 
     cons = 5 <= x + 2*y - 3
     assert isinstance(cons, ExprCons)
@@ -157,7 +157,7 @@ def test_inequality(model):
     assert cons.expr[y] == 2.0
     assert cons.expr[z] == 0.0
     assert cons.expr[CONST] == 0.0
-    assert CONST not in cons.expr.terms
+    assert CONST not in cons.expr.children
 
 def test_ranged(model):
     m, x, y, z = model

@@ -24,7 +24,7 @@ def _init():
 def _optimize(name, m):
     m.optimize()
     print("* %s constraint *" % name)
-    objSet = bool(m.getObjective().terms.keys())
+    objSet = bool(m.getObjective().children.keys())
     print("* Is objective set? %s" % objSet)
     if objSet:
         print("* Sense: %s" % m.getObjectiveSense())

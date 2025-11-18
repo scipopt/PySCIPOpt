@@ -13,12 +13,12 @@ def test_quickprod_model():
     q = quickprod([x,y,z,c]) == 0.0
     s = functools.reduce(mul,[x,y,z,c],1) == 0.0
 
-    assert(q.expr.terms == s.expr.terms)
+    assert(q.expr.children == s.expr.children)
 
 def test_quickprod():
     empty = quickprod(1 for i in [])
-    assert len(empty.terms) == 1
-    assert CONST in empty.terms
+    assert len(empty.children) == 1
+    assert CONST in empty.children
 
 def test_largequadratic():
     # inspired from performance issue on

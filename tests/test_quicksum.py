@@ -11,12 +11,12 @@ def test_quicksum_model():
     q = quicksum([x,y,z,c]) == 0.0
     s =      sum([x,y,z,c]) == 0.0
 
-    assert(q.expr.terms == s.expr.terms)
+    assert(q.expr.children == s.expr.children)
 
 def test_quicksum():
     empty = quicksum(1 for i in [])
-    assert len(empty.terms) == 1
-    assert CONST in empty.terms
+    assert len(empty.children) == 1
+    assert CONST in empty.children
 
 def test_largequadratic():
     # inspired from performance issue on
@@ -30,6 +30,6 @@ def test_largequadratic():
                     for j in range(dim))
     cons = expr <= 1.0
     #                              upper triangle,     diagonal
-    assert len(cons.expr.terms) == dim * (dim-1) / 2 + dim
+    assert len(cons.expr.children) == dim * (dim-1) / 2 + dim
     m.addCons(cons)
     # TODO: what can we test beyond the lack of crashes?
