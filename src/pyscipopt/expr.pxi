@@ -123,7 +123,7 @@ cdef class Expr:
 
         if other[CONST] == 0:
             return ConstExpr(1.0)
-        return PowerExpr(self, other[CONST])
+        return PowExpr(self, other[CONST])
 
     def __rpow__(self, other):
         other = Expr.to_const_or_var(other)
@@ -375,7 +375,7 @@ cdef class ProdExpr(FuncExpr):
         return self.coef * _evaluate(self.children, scip, sol)
 
 
-cdef class PowerExpr(FuncExpr):
+cdef class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
 
     def __init__(self, base, expo: float = 1.0):
@@ -386,7 +386,7 @@ cdef class PowerExpr(FuncExpr):
         return (frozenset(self), self.expo).__hash__()
 
     def __repr__(self):
-        return f"PowerExpr({tuple(self)}, {self.expo})"
+        return f"PowExpr({tuple(self)}, {self.expo})"
 
     def _normalize(self) -> Expr:
         if self.expo == 0:
