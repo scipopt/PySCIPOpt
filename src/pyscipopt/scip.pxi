@@ -1552,11 +1552,11 @@ cdef class Variable:
     def __rsub__(self, other):
         return self.to_expr().__rsub__(other)
 
-    def __lt__(self, other):
-        return self.to_expr().__lt__(other)
-    
-    def __gt__(self, other):
-        return self.to_expr().__gt__(other)
+    def __le__(self, other):
+        return self.to_expr().__le__(other)
+
+    def __ge__(self, other):
+        return self.to_expr().__ge__(other)
 
     def __eq__(self, other):
         return self.to_expr().__eq__(other)

@@ -141,24 +141,24 @@ class Expr:
     def __rsub__(self, other):
         return self.__neg__().__add__(other)
 
-    def __lt__(self, other):
+    def __le__(self, other):
         other = Expr.to_const_or_var(other)
         if isinstance(other, Expr):
             if isinstance(other, ConstExpr):
                 return ExprCons(self, rhs=other[CONST])
             return (self - other) <= 0
         elif isinstance(other, MatrixExpr):
-            return other.__gt__(self)
+            return other.__ge__(self)
         raise TypeError(f"Unsupported type {type(other)}")
 
-    def __gt__(self, other):
+    def __ge__(self, other):
         other = Expr.to_const_or_var(other)
         if isinstance(other, Expr):
             if isinstance(other, ConstExpr):
                 return ExprCons(self, lhs=other[CONST])
             return (self - other) >= 0
         elif isinstance(other, MatrixExpr):
-            return self.__lt__(other)
+            return self.__le__(other)
         raise TypeError(f"Unsupported type {type(other)}")
 
     def __ge__(self, other):
@@ -491,7 +491,7 @@ class ExprCons:
         if self._rhs is not None:
             self._rhs -= c
 
-    def __lt__(self, other):
+    def __le__(self, other):
         if not self._rhs is None:
             raise TypeError("ExprCons already has upper bound")
         if self._lhs is None:
@@ -501,7 +501,7 @@ class ExprCons:
 
         return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
 
-    def __gt__(self, other):
+    def __ge__(self, other):
         if not self._lhs is None:
             raise TypeError("ExprCons already has lower bound")
         if self._rhs is None:
