@@ -6493,7 +6493,7 @@ cdef class Model:
         Parameters
         ----------
         cons : Constraint
-        expr : Expr or GenExpr
+        expr : Expr
         coef : float
 
         """

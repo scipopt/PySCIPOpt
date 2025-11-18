@@ -19,7 +19,6 @@ from pyscipopt import (
     sin,
     sqrt,
 )
-from pyscipopt.scip import GenExpr
 
 
 def test_catching_errors():
@@ -501,7 +500,7 @@ def matvar():
 @pytest.mark.parametrize("op", [operator.add, operator.sub, operator.mul, operator.truediv])
 def test_binop(op, left, right):
     res = op(left, right)
-    assert isinstance(res, (Expr, GenExpr, MatrixExpr))
+    assert isinstance(res, (Expr, MatrixExpr))
 
 
 def test_matrix_matmul_return_type():
