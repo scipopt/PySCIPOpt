@@ -210,6 +210,23 @@ cdef class Expr:
     def _normalize(self) -> Expr:
         return self
 
+    def _to_nodes(self, start: int = 0) -> list[tuple]:
+        """Convert expression to list of nodes for SCIP expression construction"""
+        nodes, indices = [], []
+        for i in self:
+            nodes.extend(i._to_nodes(start + len(nodes)))
+            indices.append(start + len(nodes) - 1)
+
+        if type(self) is PowExpr:
+            nodes.append((ConstExpr, self.expo))
+            indices.append(start + len(nodes) - 1)
+        elif type(self) is ProdExpr and self.coef != 1:
+            nodes.append((ConstExpr, self.coef))
+            indices.append(start + len(nodes) - 1)
+
+        nodes.append((type(self), indices))
+        return nodes
+
 
 cdef class SumExpr(Expr):
     """Expression like `expression1 + expression2 + constant`."""
@@ -300,6 +317,24 @@ class PolynomialExpr(SumExpr):
         return PolynomialExpr.to_subclass(
             {k: v for k, v in self.children.items() if v != 0.0}
         )
+
+    def _to_nodes(self, start: int = 0) -> list[tuple]:
+        """Convert expression to list of nodes for SCIP expression construction"""
+        nodes = []
+        for child, coef in self.children.items():
+            if coef != 0:
+                if child == CONST:
+                    nodes.append((ConstExpr, coef))
+                else:
+                    ind = start + len(nodes)
+                    nodes.extend([(Term, i) for i in child.vars])
+                    if coef != 1:
+                        nodes.append((ConstExpr, coef))
+                    if len(child) > 1:
+                        nodes.append((ProdExpr, list(range(ind, len(nodes)))))
+        if len(nodes) > 1:
+            nodes.append((SumExpr, list(range(start, start + len(nodes)))))
+        return nodes
 
 
 class ConstExpr(PolynomialExpr):
@@ -410,6 +445,15 @@ cdef class UnaryExpr(FuncExpr):
 
     def __repr__(self):
         return f"{type(self).__name__}({tuple(self)[0]})"
+
+    def _to_nodes(self, start: int = 0) -> list[tuple]:
+        """Convert expression to list of nodes for SCIP expression construction"""
+        nodes = []
+        for i in self:
+            nodes.extend(i._to_nodes(start + len(nodes)))
+
+        nodes.append((type(self), start + len(nodes) - 1))
+        return nodes
 
     cdef float _evaluate(self, SCIP* scip, SCIP_SOL* sol):
         return self.op(_evaluate(self.children, scip, sol))

@@ -5557,122 +5557,84 @@ cdef class Model:
         Constraint
 
         """
-        cdef SCIP_EXPR** childrenexpr
-        cdef SCIP_EXPR** scipexprs
+        cdef SCIP_EXPR** children_expr
+        cdef SCIP_EXPR** scip_exprs
         cdef SCIP_CONS* scip_cons
         cdef _VarArray wrapper
         cdef int nchildren
         cdef int c
         cdef int i
 
-        # get arrays from python's expression tree
-        nodes = expr_to_nodes(cons.expr)
+        nodes = cons.expr._to_nodes()
+        scip_exprs = <SCIP_EXPR**> malloc(len(nodes) * sizeof(SCIP_EXPR*))
+        for i, (e_type, value) in enumerate(nodes):
+            if e_type is Term:
+                wrapper = _VarArray(value)
+                PY_SCIP_CALL(SCIPcreateExprVar(self._scip, &scip_exprs[i], wrapper.ptr[0], NULL, NULL))
+            elif e_type is ConstExpr:
+                PY_SCIP_CALL(SCIPcreateExprValue(self._scip, &scip_exprs[i], <SCIP_Real>value, NULL, NULL))
 
-        # in nodes we have a list of tuples: each tuple is of the form
-        # (operator, [indices]) where indices are the indices of the tuples
-        # that are the children of this operator. This is sorted,
-        # so we are going to do is:
-        # loop over the nodes and create the expression of each
-        # Note1: when the operator is Operator.const, [indices] stores the value
-        # Note2: we need to compute the number of variable operators to find out
-        # how many variables are there.
-        nvars = 0
-        for node in nodes:
-            if node[0] == Operator.varidx:
-                nvars += 1
-
-        scipexprs = <SCIP_EXPR**> malloc(len(nodes) * sizeof(SCIP_EXPR*))
-        for i,node in enumerate(nodes):
-            opidx = node[0]
-            if opidx == Operator.varidx:
-                assert len(node[1]) == 1
-                pyvar = node[1][0] # for vars we store the actual var!
-                wrapper = _VarArray(pyvar)
-                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &scipexprs[i], wrapper.ptr[0], NULL, NULL) )
-                continue
-            if opidx == Operator.const:
-                assert len(node[1]) == 1
-                value = node[1][0]
-                PY_SCIP_CALL( SCIPcreateExprValue(self._scip, &scipexprs[i], <SCIP_Real>value, NULL, NULL) )
-                continue
-            if opidx == Operator.add:
-                nchildren = len(node[1])
-                childrenexpr = <SCIP_EXPR**> malloc(nchildren * sizeof(SCIP_EXPR*))
+            elif e_type is SumExpr:
+                nchildren = len(value)
+                children_expr = <SCIP_EXPR**> malloc(nchildren * sizeof(SCIP_EXPR*))
                 coefs = <SCIP_Real*> malloc(nchildren * sizeof(SCIP_Real))
-                for c, pos in enumerate(node[1]):
-                    childrenexpr[c] = scipexprs[pos]
+                for c, pos in enumerate(value):
+                    children_expr[c] = scip_exprs[pos]
                     coefs[c] = 1
-                PY_SCIP_CALL( SCIPcreateExprSum(self._scip, &scipexprs[i], nchildren, childrenexpr, coefs, 0, NULL, NULL))
+
+                PY_SCIP_CALL(SCIPcreateExprSum(self._scip, &scip_exprs[i], nchildren, children_expr, coefs, 0, NULL, NULL))
                 free(coefs)
-                free(childrenexpr)
-                continue
-            if opidx == Operator.prod:
-                nchildren = len(node[1])
-                childrenexpr = <SCIP_EXPR**> malloc(nchildren * sizeof(SCIP_EXPR*))
-                for c, pos in enumerate(node[1]):
-                    childrenexpr[c] = scipexprs[pos]
-                PY_SCIP_CALL( SCIPcreateExprProduct(self._scip, &scipexprs[i], nchildren, childrenexpr, 1, NULL, NULL) )
-                free(childrenexpr)
-                continue
-            if opidx == Operator.power:
-                # the second child is the exponent which is a const
-                valuenode = nodes[node[1][1]]
-                assert valuenode[0] == Operator.const
-                exponent = valuenode[1][0]
-                PY_SCIP_CALL( SCIPcreateExprPow(self._scip, &scipexprs[i], scipexprs[node[1][0]], <SCIP_Real>exponent, NULL, NULL ))
-                continue
-            if opidx == Operator.exp:
-                assert len(node[1]) == 1
-                PY_SCIP_CALL( SCIPcreateExprExp(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL ))
-                continue
-            if opidx == Operator.log:
-                assert len(node[1]) == 1
-                PY_SCIP_CALL( SCIPcreateExprLog(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL ))
-                continue
-            if opidx == Operator.sqrt:
-                assert len(node[1]) == 1
-                PY_SCIP_CALL( SCIPcreateExprPow(self._scip, &scipexprs[i], scipexprs[node[1][0]], <SCIP_Real>0.5, NULL, NULL) )
-                continue
-            if opidx == Operator.sin:
-                assert len(node[1]) == 1
-                PY_SCIP_CALL( SCIPcreateExprSin(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL) )
-                continue
-            if opidx == Operator.cos:
-                assert len(node[1]) == 1
-                PY_SCIP_CALL( SCIPcreateExprCos(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL) )
-                continue
-            if opidx == Operator.fabs:
-                assert len(node[1]) == 1
-                PY_SCIP_CALL( SCIPcreateExprAbs(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL ))
-                continue
-            # default:
-            raise NotImplementedError
+                free(children_expr)
+
+            elif e_type is ProdExpr:
+                nchildren = len(value)
+                children_expr = <SCIP_EXPR**> malloc(nchildren * sizeof(SCIP_EXPR*))
+                for c, pos in enumerate(value):
+                    children_expr[c] = scip_exprs[pos]
+
+                PY_SCIP_CALL(SCIPcreateExprProduct(self._scip, &scip_exprs[i], nchildren, children_expr, 1, NULL, NULL))
+                free(children_expr)
+
+            elif e_type is PowExpr:
+                PY_SCIP_CALL(SCIPcreateExprPow(self._scip, &scip_exprs[i], scip_exprs[value[0]], <SCIP_Real>nodes[value[1]][1], NULL, NULL))
+            elif e_type is ExpExpr:
+                PY_SCIP_CALL(SCIPcreateExprExp(self._scip, &scip_exprs[i], scip_exprs[value], NULL, NULL))
+            elif e_type is LogExpr:
+                PY_SCIP_CALL(SCIPcreateExprLog(self._scip, &scip_exprs[i], scip_exprs[value], NULL, NULL))
+            elif e_type is SqrtExpr:
+                PY_SCIP_CALL(SCIPcreateExprPow(self._scip, &scip_exprs[i], scip_exprs[value], <SCIP_Real>0.5, NULL, NULL))
+            elif e_type is SinExpr:
+                PY_SCIP_CALL(SCIPcreateExprSin(self._scip, &scip_exprs[i], scip_exprs[value], NULL, NULL))
+            elif e_type is CosExpr:
+                PY_SCIP_CALL(SCIPcreateExprCos(self._scip, &scip_exprs[i], scip_exprs[value], NULL, NULL))
+            elif e_type is AbsExpr:
+                PY_SCIP_CALL(SCIPcreateExprAbs(self._scip, &scip_exprs[i], scip_exprs[value], NULL, NULL))
+            else:
+                raise NotImplementedError(f"{e_type} not implemented yet")
 
         # create nonlinear constraint for the expression root
         PY_SCIP_CALL(SCIPcreateConsNonlinear(
             self._scip,
             &scip_cons,
-            str_conversion(kwargs['name']),
-            scipexprs[len(nodes) - 1],
-            kwargs['lhs'],
-            kwargs['rhs'],
-            kwargs['initial'],
-            kwargs['separate'],
-            kwargs['enforce'],
-            kwargs['check'],
-            kwargs['propagate'],
-            kwargs['local'],
-            kwargs['modifiable'],
-            kwargs['dynamic'],
-            kwargs['removable']),
+            str_conversion(kwargs["name"]),
+            scip_exprs[len(nodes) - 1],
+            kwargs["lhs"],
+            kwargs["rhs"],
+            kwargs["initial"],
+            kwargs["separate"],
+            kwargs["enforce"],
+            kwargs["check"],
+            kwargs["propagate"],
+            kwargs["local"],
+            kwargs["modifiable"],
+            kwargs["dynamic"],
+            kwargs["removable"]),
         )
-
         PyCons = Constraint.create(scip_cons)
         for i in range(len(nodes)):
-            PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &scipexprs[i]) )
+            PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &scip_exprs[i]))
 
-        # free more memory
-        free(scipexprs)
+        free(scip_exprs)
         return PyCons
 
     def createConsFromExpr(self, cons, name='', initial=True, separate=True,
