@@ -112,7 +112,7 @@ def test_operations_poly(model):
 def test_degree(model):
     m, x, y, z = model
     expr = Expr()
-    assert expr.degree() == 0
+    assert expr.degree() == float("inf")
 
     expr = Expr() + 3.0
     assert expr.degree() == 0
