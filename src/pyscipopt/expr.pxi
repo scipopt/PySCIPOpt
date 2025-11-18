@@ -552,7 +552,7 @@ def quickprod(termlist):
 
 
 def _to_unary_expr(expr: Union[Expr, MatrixExpr], cls: Type[UnaryExpr]):
-    if isinstance(expr, MatrixExpr):   
+    if isinstance(expr, MatrixExpr):
         res = np.empty(shape=expr.shape, dtype=object)
         res.flat = [cls(i) for i in expr.flat]
         return res.view(MatrixExpr)
