@@ -43,7 +43,7 @@ include "matrix.pxi"
 # recommended SCIP version; major version is required
 MAJOR = 9
 MINOR = 2
-PATCH = 1
+PATCH = 4
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
@@ -1106,7 +1106,6 @@ cdef class Solution:
         PY_SCIP_CALL(SCIPtranslateSubSol(target._scip, self.scip, self.sol, NULL, source_vars, &(targetSol.sol)))
         return targetSol
 
-
 cdef class BoundChange:
     """Bound change."""
 
@@ -1550,6 +1549,32 @@ cdef class Variable:
         elif vartype == SCIP_VARTYPE_IMPLINT:
             return "IMPLINT"
 
+    def getStatus(self):
+        """
+        Retrieve the variable status (ORIGINAL, LOOSE, COLUMN, FIXED, AGGREGATED, MULTAGGR, NEGATED)
+
+        Returns
+        -------
+        str
+            "ORIGINAL", "LOOSE", "COLUMN", "FIXED", "AGGREGATED", "MULTAGGR", "NEGATED"
+
+        """
+        varstatus = SCIPvarGetStatus(self.scip_var)
+        if varstatus == SCIP_VARSTATUS_ORIGINAL:
+            return "ORIGINAL"
+        elif varstatus == SCIP_VARSTATUS_LOOSE:
+            return "LOOSE"
+        elif varstatus == SCIP_VARSTATUS_COLUMN:
+            return "COLUMN"
+        elif varstatus == SCIP_VARSTATUS_FIXED:
+            return "FIXED"
+        elif varstatus == SCIP_VARSTATUS_AGGREGATED:
+            return "AGGREGATED"
+        elif varstatus == SCIP_VARSTATUS_MULTAGGR:
+            return "MULTAGGR"
+        elif varstatus == SCIP_VARSTATUS_NEGATED:
+            return "NEGATED"
+
     def isOriginal(self):
         """
         Retrieve whether the variable belongs to the original problem
@@ -1561,6 +1586,17 @@ cdef class Variable:
         """
         return SCIPvarIsOriginal(self.scip_var)
 
+    def isActive(self):
+        """
+        Retrieve whether the variable is active
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPvarIsActive(self.scip_var)
+
     def isInLP(self):
         """
         Retrieve whether the variable is a COLUMN variable that is member of the current LP.
@@ -1571,7 +1607,6 @@ cdef class Variable:
 
         """
         return SCIPvarIsInLP(self.scip_var)
-
 
     def getIndex(self):
         """
@@ -2054,7 +2089,6 @@ class MatrixVariable(MatrixExpr):
         for idx in np.ndindex(self.shape):
             mayround[idx] = self[idx].varMayRound()
         return mayround
-
 
 cdef class Constraint:
     """Base class holding a pointer to corresponding SCIP_CONS"""
@@ -2575,6 +2609,7 @@ cdef class Model:
         self._freescip = True
         self._modelvars = {}
         self._generated_event_handlers_count = 0
+        self._benders_subproblems = []  # Keep references to Benders subproblem Models
 
         if not createscip:
             # if no SCIP instance should be created, then an empty Model object is created.
@@ -2595,7 +2630,6 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPcopyOrig(sourceModel._scip, self._scip, NULL, NULL, n, enablepricing, threadsafe, True, self._valid))
             else:
                 PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, threadsafe, True, self._valid))
-
 
     def attachEventHandlerCallback(self,
         callback,
@@ -2646,12 +2680,30 @@ cdef class Model:
 
         self.includeEventhdlr(event_handler, name, description)
 
-
     def __dealloc__(self):
+        # Declare all C variables at the beginning for Cython compatibility
+        cdef SCIP_BENDERS** benders
+        cdef int nbenders
+        cdef int nsubproblems
+        cdef int i, j
+
         # call C function directly, because we can no longer call this object's methods, according to
         # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
         if self._scip is not NULL and self._freescip and PY_SCIP_CALL:
-           PY_SCIP_CALL( SCIPfree(&self._scip) )
+            # Free Benders subproblems before freeing the main SCIP instance
+            if self._benders_subproblems:
+                benders = SCIPgetBenders(self._scip)
+                nbenders = SCIPgetNActiveBenders(self._scip)
+
+                for i in range(nbenders):
+                    nsubproblems = SCIPbendersGetNSubproblems(benders[i])
+                    for j in range(nsubproblems):
+                        PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, benders[i], j))
+
+                # Clear the references to allow Python GC to clean up the Model objects
+                self._benders_subproblems = []
+
+            PY_SCIP_CALL( SCIPfree(&self._scip) )
 
     def __hash__(self):
         return hash(<size_t>self._scip)
@@ -2680,6 +2732,7 @@ cdef class Model:
         model = Model(createscip=False)
         model._scip = scip
         model._bestSol = Solution.create(scip, SCIPgetBestSol(scip))
+        model._benders_subproblems = []  # Initialize Benders subproblems list
         return model
 
     @property
@@ -2828,7 +2881,6 @@ cdef class Model:
 
         """
         return SCIPminorVersion()
-
 
     def getTechVersion(self):
         """
@@ -3571,7 +3623,6 @@ cdef class Model:
         return iters
 
     # Objective function
-
     def setMinimize(self):
         """Set the objective sense to minimization."""
         PY_SCIP_CALL(SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MINIMIZE))
@@ -3916,7 +3967,6 @@ cdef class Model:
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     # Variable Functions
-
     def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0, deletable=False):
         """
         Create a new variable. Default variable is non-negative and continuous.
@@ -4396,7 +4446,6 @@ cdef class Model:
            ub = SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarUbNode(self._scip, node.scip_node, var.scip_var, ub))
 
-
     def chgVarType(self, Variable var, vtype):
         """
         Changes the type of a variable.
@@ -4423,6 +4472,28 @@ cdef class Model:
             raise Warning("unrecognized variable type")
         if infeasible:
             print('could not change variable type of variable %s' % var)
+
+    def markDoNotAggrVar(self, Variable var):
+        """
+        Marks a variable preventing it from being aggregated.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to mark
+        """
+        PY_SCIP_CALL(SCIPmarkDoNotAggrVar(self._scip, var.scip_var))
+
+    def markDoNotMultaggrVar(self, Variable var):
+        """
+        Marks a variable preventing it from being multi-aggregated.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to mark
+        """
+        PY_SCIP_CALL(SCIPmarkDoNotMultaggrVar(self._scip, var.scip_var))
 
     def getVars(self, transformed=False):
         """
@@ -4765,7 +4836,6 @@ cdef class Model:
         """Marks the given node to be propagated again the next time a node of its subtree is processed."""
         PY_SCIP_CALL(SCIPrepropagateNode(self._scip, node.scip_node))
 
-
     # LP Methods
     def getLPSolstat(self):
         """
@@ -4777,7 +4847,6 @@ cdef class Model:
 
         """
         return SCIPgetLPSolstat(self._scip)
-
 
     def constructLP(self):
         """
@@ -7038,7 +7107,6 @@ cdef class Model:
 
         return pyCons
 
-
     def addMatrixConsIndicator(self, cons: Union[ExprCons, MatrixExprCons], binvar: Union[Variable, MatrixVariable] = None,
                                activeone: Union[bool, np.ndarray] = True, name: Union[str, np.ndarray] = "",
                                initial: Union[bool, np.ndarray] = True, separate: Union[bool, np.ndarray] = True,
@@ -7620,7 +7688,6 @@ cdef class Model:
             raise Warning("method cannot be called for constraints of type " + constype)
 
         return activity
-
 
     def getSlack(self, Constraint cons, Solution sol = None, side = None):
         """
@@ -8301,6 +8368,21 @@ cdef class Model:
         PY_SCIP_CALL(SCIPcreateBendersDefault(self._scip, subprobs, nsubproblems))
         benders = SCIPfindBenders(self._scip, "default")
 
+        # Free the temporary array (SCIPcreateBendersDefault copies the pointers internally)
+        free(subprobs)
+
+        # Store references to subproblem Models and transfer ownership to master.
+        # The master will free the Benders subproblems in its __dealloc__ method.
+        # Set _freescip = False on the subproblem Model(s) to prevent double-free
+        # if they are deallocated before the master.
+        if isdict:
+            self._benders_subproblems = list(subproblems.values())
+            for subprob in self._benders_subproblems:
+                (<Model>subprob)._freescip = False
+        else:
+            self._benders_subproblems = [subproblems]
+            (<Model>subproblems)._freescip = False
+
         # activating the Benders' decomposition constraint handlers
         self.setBoolParam("constraints/benderslp/active", True)
         self.setBoolParam("constraints/benders/active", True)
@@ -8331,20 +8413,22 @@ cdef class Model:
                     benders[i], self._bestSol.sol, j, &infeasible, solvecip, NULL))
 
     def freeBendersSubproblems(self):
-        """Calls the free subproblem function for the Benders' decomposition.
-        This will free all subproblems for all decompositions. """
-        cdef SCIP_BENDERS** benders = SCIPgetBenders(self._scip)
-        cdef int nbenders = SCIPgetNActiveBenders(self._scip)
-        cdef int nsubproblems
-        cdef int i
-        cdef int j
+        """Deprecated: This method is no longer needed.
 
-        # solving all subproblems from all Benders' decompositions
-        for i in range(nbenders):
-            nsubproblems = SCIPbendersGetNSubproblems(benders[i])
-            for j in range(nsubproblems):
-                PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, benders[i],
-                    j))
+        Benders subproblems are now automatically managed and freed by the master
+        Model when it is deallocated. Calling this method explicitly has no effect.
+
+        .. deprecated:: 5.7.0
+            This method is deprecated and will be removed in a future version.
+            Subproblem memory management is now handled automatically.
+        """
+        warnings.warn(
+            "freeBendersSubproblems() is deprecated and no longer needed. "
+            "Benders subproblems are automatically freed when the master Model "
+            "is deallocated.",
+            DeprecationWarning,
+            stacklevel=2
+        )
 
     def updateBendersLowerbounds(self, lowerbounds, Benders benders=None):
         """
@@ -8641,7 +8725,6 @@ cdef class Model:
 
         """
         PY_SCIP_CALL( SCIPincludeBendersDefaultCuts(self._scip, benders._benders) )
-
 
     def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):
         """
@@ -9279,7 +9362,6 @@ cdef class Model:
         # TODO: It might be necessary in increment the reference to benders i.e Py_INCREF(benders)
         Py_INCREF(benderscut)
 
-
     def getLPBranchCands(self):
         """
         Gets branching candidates for LP solution branching (fractional variables) along with solution values,
@@ -9323,9 +9405,9 @@ cdef class Model:
         """
         Gets number of branching candidates for LP solution branching (number of fractional variables)
 
- 	Returns
-  	-------
-   	int
+        Returns
+        -------
+        int
     	    number of LP branching candidates
 
         """
@@ -9381,7 +9463,6 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPbranchVar(self._scip, wrapper.ptr[0], &downchild, &eqchild, &upchild))
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
-
 
     def branchVarVal(self, Variable variable, value):
         """
@@ -10986,7 +11067,6 @@ cdef class Model:
             v = str_conversion(value)
             PY_SCIP_CALL(SCIPsetStringParam(self._scip, n, v))
 
-
     def getParam(self, name):
         """
         Get the value of a parameter of type
@@ -11475,7 +11555,6 @@ cdef class Model:
 
         """
         return SCIPgetTreesizeEstimation(self._scip)
-
 
     def getBipartiteGraphRepresentation(self, prev_col_features=None, prev_edge_features=None, prev_row_features=None,
                                         static_only=False, suppress_warnings=False):

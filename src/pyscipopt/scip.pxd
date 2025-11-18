@@ -30,6 +30,16 @@ cdef extern from "scip/scip.h":
         SCIP_VARTYPE SCIP_VARTYPE_IMPLINT
         SCIP_VARTYPE SCIP_VARTYPE_CONTINUOUS
 
+    ctypedef int SCIP_VARSTATUS
+    cdef extern from "scip/type_var.h":
+        SCIP_VARSTATUS SCIP_VARSTATUS_ORIGINAL
+        SCIP_VARSTATUS SCIP_VARSTATUS_LOOSE
+        SCIP_VARSTATUS SCIP_VARSTATUS_COLUMN
+        SCIP_VARSTATUS SCIP_VARSTATUS_FIXED
+        SCIP_VARSTATUS SCIP_VARSTATUS_AGGREGATED
+        SCIP_VARSTATUS SCIP_VARSTATUS_MULTAGGR
+        SCIP_VARSTATUS SCIP_VARSTATUS_NEGATED
+
     ctypedef int SCIP_OBJSENSE
     cdef extern from "scip/type_prob.h":
         SCIP_OBJSENSE SCIP_OBJSENSE_MAXIMIZE
@@ -768,6 +778,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPdelVar(SCIP* scip, SCIP_VAR* var, SCIP_Bool* deleted)
 
     SCIP_RETCODE SCIPchgVarType(SCIP* scip, SCIP_VAR* var, SCIP_VARTYPE vartype, SCIP_Bool* infeasible)
+    SCIP_RETCODE SCIPmarkDoNotAggrVar(SCIP* scip, SCIP_VAR* var)
+    SCIP_RETCODE SCIPmarkDoNotMultaggrVar(SCIP* scip, SCIP_VAR* var)
     SCIP_RETCODE SCIPcaptureVar(SCIP* scip, SCIP_VAR* var)
     SCIP_RETCODE SCIPaddPricedVar(SCIP* scip, SCIP_VAR* var, SCIP_Real score)
     SCIP_RETCODE SCIPreleaseVar(SCIP* scip, SCIP_VAR** var)
@@ -790,8 +802,10 @@ cdef extern from "scip/scip.h":
     int SCIPgetNImplVars(SCIP* scip)
     int SCIPgetNContVars(SCIP* scip)
     SCIP_VARTYPE SCIPvarGetType(SCIP_VAR* var)
+    SCIP_VARSTATUS SCIPvarGetStatus(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsActive(SCIP_VAR* var)
     SCIP_COL* SCIPvarGetCol(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsInLP(SCIP_VAR* var)
     SCIP_Real SCIPvarGetLbOriginal(SCIP_VAR* var)
@@ -2102,6 +2116,8 @@ cdef class Model:
     cdef _modelvars
     # used to keep track of the number of event handlers generated
     cdef int _generated_event_handlers_count
+    # store references to Benders subproblem Models for proper cleanup
+    cdef _benders_subproblems
 
     @staticmethod
     cdef create(SCIP* scip)
