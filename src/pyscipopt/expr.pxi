@@ -146,7 +146,7 @@ class Expr:
         if isinstance(other, Expr):
             if isinstance(other, ConstExpr):
                 return ExprCons(self, rhs=other[CONST])
-            return (self - other) <= 0
+            return (self - other).__le__(0)
         elif isinstance(other, MatrixExpr):
             return other.__ge__(self)
         raise TypeError(f"Unsupported type {type(other)}")
@@ -156,7 +156,7 @@ class Expr:
         if isinstance(other, Expr):
             if isinstance(other, ConstExpr):
                 return ExprCons(self, lhs=other[CONST])
-            return (self - other) >= 0
+            return (self - other).__ge__(0)
         elif isinstance(other, MatrixExpr):
             return self.__le__(other)
         raise TypeError(f"Unsupported type {type(other)}")
@@ -166,7 +166,7 @@ class Expr:
         if isinstance(other, Expr):
             if isinstance(other, ConstExpr):
                 return ExprCons(self, lhs=other[CONST], rhs=other[CONST])
-            return (self - other) == 0
+            return (self - other).__ge__(0)
         elif isinstance(other, MatrixExpr):
             return other.__ge__(self)
         raise TypeError(f"Unsupported type {type(other)}")
