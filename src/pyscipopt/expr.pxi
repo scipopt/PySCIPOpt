@@ -464,14 +464,10 @@ class CosExpr(UnaryExpr):
     op = math.cos
 
 
-cdef class ExprCons:
+class ExprCons:
     """Constraints with a polynomial expressions and lower/upper bounds."""
 
-    cdef public Expr expr
-    cdef public object _lhs
-    cdef public object _rhs
-
-    def __init__(self, expr, lhs=None, rhs=None):
+    def __init__(self, expr: Expr, lhs: float = None, rhs: float = None):
         self.expr = expr
         self._lhs = lhs
         self._rhs = rhs
