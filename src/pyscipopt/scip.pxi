@@ -1060,8 +1060,8 @@ cdef class Solution:
         self._checkStage("SCIPgetSolVal")
         result = 1
         cdef _VarArray wrapper
-        wrapper = _VarArray(term.vartuple)
-        for i in range(len(term.vartuple)):
+        wrapper = _VarArray(term.vars)
+        for i in range(len(term.vars)):
             result *= SCIPgetSolVal(self.scip, self.sol, wrapper.ptr[i])
         return result
 
