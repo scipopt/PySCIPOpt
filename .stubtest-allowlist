@@ -1,0 +1,3 @@
+.*.__reduce_cython__
+.*.__setstate_cython__
+pyscipopt.scip.__test__
