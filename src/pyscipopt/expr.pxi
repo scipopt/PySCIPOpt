@@ -15,7 +15,7 @@ def _is_number(e):
         return False
 
 
-cdef class Term:
+class Term:
     """A monomial term consisting of one or more variables."""
 
     __slots__ = ("vars", "ptrs")
@@ -46,17 +46,8 @@ cdef class Term:
     def __repr__(self):
         return f"Term({', '.join(map(str, self.vars))})"
 
-    cdef float _evaluate(self, SCIP* scip, SCIP_SOL* sol):
-        if self.vars:
-            return math.prod(SCIPgetSolVal(scip, sol, ptr) for ptr in self.ptrs)
-        return 1.0  # constant term
-
 
 CONST = Term()
-
-
-cdef float _evaluate(dict children, SCIP* scip, SCIP_SOL* sol):
-    return sum([i._evaluate(scip, sol) * j for i, j in children.items() if j != 0])
 
 
 class Expr:
@@ -246,9 +237,6 @@ cdef class SumExpr(Expr):
     def degree(self):
         return float("inf")
 
-    cdef float _evaluate(self, SCIP* scip, SCIP_SOL* sol):
-        return _evaluate(self.children, scip, sol)
-
 
 class PolynomialExpr(SumExpr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
@@ -402,9 +390,6 @@ cdef class ProdExpr(FuncExpr):
             return ConstExpr(0.0)
         return self
 
-    cdef float _evaluate(self, SCIP* scip, SCIP_SOL* sol):
-        return self.coef * _evaluate(self.children, scip, sol)
-
 
 cdef class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
@@ -426,11 +411,8 @@ cdef class PowExpr(FuncExpr):
             return tuple(self)[0]
         return self
 
-    cdef float _evaluate(self, SCIP* scip, SCIP_SOL* sol):
-        return pow(_evaluate(self.children, scip, sol), self.expo)
 
-
-cdef class UnaryExpr(FuncExpr):
+class UnaryExpr(FuncExpr):
     """Expression like `f(expression)`."""
 
     def __init__(self, expr: Expr):
@@ -450,9 +432,6 @@ cdef class UnaryExpr(FuncExpr):
 
         nodes.append((type(self), start + len(nodes) - 1))
         return nodes
-
-    cdef float _evaluate(self, SCIP* scip, SCIP_SOL* sol):
-        return self.op(_evaluate(self.children, scip, sol))
 
 
 class AbsExpr(UnaryExpr):
