@@ -216,6 +216,9 @@ class Expr:
         nodes.append((type(self), indices))
         return nodes
 
+    def degree(self):
+        return float("inf")
+
 
 class SumExpr(Expr):
     """Expression like `expression1 + expression2 + constant`."""
@@ -233,9 +236,6 @@ class SumExpr(Expr):
                 return ConstExpr(0.0)
             return SumExpr({i: self[i] * other[CONST] for i in self if self[i] != 0})
         return super().__mul__(other)
-
-    def degree(self):
-        return float("inf")
 
 
 class PolynomialExpr(SumExpr):
@@ -354,8 +354,7 @@ class MonomialExpr(PolynomialExpr):
 
 
 class FuncExpr(Expr):
-    def degree(self):
-        return float("inf")
+    ...
 
 
 class ProdExpr(FuncExpr):
