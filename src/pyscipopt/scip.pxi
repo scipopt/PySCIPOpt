@@ -1515,6 +1515,9 @@ cdef class Variable:
     def __hash__(self):
         return hash(self.ptr())
 
+    def __getitem__(self, key):
+        return self.to_expr().__getitem__(key)
+
     def __repr__(self):
         return self.name
 
