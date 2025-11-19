@@ -1518,6 +1518,12 @@ cdef class Variable:
     def __getitem__(self, key):
         return self.to_expr().__getitem__(key)
 
+    def __iter__(self):
+        return self.to_expr().__iter__()
+
+    def __next__(self):
+        return self.to_expr().__next__()
+
     def __repr__(self):
         return self.name
 
