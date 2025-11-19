@@ -3720,10 +3720,9 @@ cdef class Model:
         cdef _VarArray wrapper
 
         # turn the constant value into an Expr instance for further processing
+        expr = Expr.to_const_or_var(expr)
         if not isinstance(expr, Expr):
-            assert(_is_number(expr)), "given coefficients are neither Expr or number but %s" % expr.__class__.__name__
-            expr = Expr() + expr
-
+            raise TypeError(f"given coefficients are neither Expr but {type(expr)}")
         if expr.degree() > 1:
             raise ValueError("SCIP does not support nonlinear objective functions. Consider using set_nonlinear_objective in the pyscipopt.recipe.nonlinear")
 
