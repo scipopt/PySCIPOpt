@@ -13,11 +13,11 @@ if not scipoptdir:
     conda_prefix = os.environ.get("CONDA_PREFIX", "").strip('"')
 
     if conda_prefix and os.path.exists(os.path.join(conda_prefix, "include")):
-        includedir = os.path.join(conda_prefix, "include")
+        includedirs = os.path.join(conda_prefix, "include")
         libdir = os.path.join(conda_prefix, "lib")
         libname = "libscip" if platform.system() == "Windows" else "scip"
         print(f"Detected conda environment at {conda_prefix}.")
-        print(f"Using include path {includedir}.")
+        print(f"Using include path {includedirs}.")
         print(f"Using library directory {libdir}.\n")
     else:
         # fall back to global installation
