@@ -79,7 +79,7 @@ class Expr:
         if isinstance(other, Expr):
             return SumExpr({self: 1.0, other: 1.0}) if self.children else other
         elif isinstance(other, MatrixExpr):
-            return other.__add__(self) if self.children else other
+            return other.__add__(self)
         raise TypeError(
             f"unsupported operand type(s) for +: 'Expr' and '{type(other)}'"
         )
