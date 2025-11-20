@@ -533,7 +533,7 @@ def quicksum(termlist):
     """add linear expressions and constants much faster than Python's sum
     by avoiding intermediate data structures and adding terms inplace
     """
-    result = Expr()
+    result = PolynomialExpr()
     for term in termlist:
         result += term
     return result
@@ -543,7 +543,7 @@ def quickprod(termlist):
     """multiply linear expressions and constants by avoiding intermediate
     data structures and multiplying terms inplace
     """
-    result = Expr() + 1
+    result = PolynomialExpr() + 1
     for term in termlist:
         result *= term
     return result
