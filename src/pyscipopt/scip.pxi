@@ -1552,6 +1552,9 @@ cdef class Variable:
     def __pow__(self, other):
         return self.to_expr().__pow__(other)
 
+    def __rpow__(self, other):
+        return self.to_expr().__rpow__(other)
+
     def __neg__(self):
         return self.to_expr().__neg__()
 
