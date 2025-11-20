@@ -1524,6 +1524,9 @@ cdef class Variable:
     def __next__(self):
         return self.to_expr().__next__()
 
+    def __abs__(self):
+        return self.to_expr().__abs__()
+
     def __add__(self, other):
         return self.to_expr().__add__(other)
 
