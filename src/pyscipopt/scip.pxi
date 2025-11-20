@@ -1524,9 +1524,6 @@ cdef class Variable:
     def __next__(self):
         return self.to_expr().__next__()
 
-    def __repr__(self):
-        return self.name
-
     def __add__(self, other):
         return self.to_expr().__add__(other)
 
@@ -1572,6 +1569,9 @@ cdef class Variable:
 
     def __eq__(self, other):
         return self.to_expr().__eq__(other)
+
+    def __repr__(self):
+        return self.name
 
     def _to_nodes(self, start: int = 0) -> list[tuple]:
         return self.to_expr()._to_nodes(start)

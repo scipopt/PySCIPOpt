@@ -84,6 +84,13 @@ class Expr:
             f"unsupported operand type(s) for +: 'Expr' and '{type(other)}'"
         )
 
+    def __iadd__(self, other):
+        self = self.__add__(other)
+        return self
+
+    def __radd__(self, other):
+        return self.__add__(other)
+
     def __mul__(self, other):
         other = Expr.to_const_or_var(other)
         if isinstance(other, Expr):
@@ -93,6 +100,9 @@ class Expr:
         raise TypeError(
             f"unsupported operand type(s) for *: 'Expr' and '{type(other)}'"
         )
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
 
     def __truediv__(self, other):
         other = Expr.to_const_or_var(other)
@@ -122,21 +132,11 @@ class Expr:
             raise ValueError("base must be positive")
         return exp(self * log(other[CONST]))
 
-    def __sub__(self, other):
-        return self.__add__(-other)
-
     def __neg__(self):
         return self.__mul__(-1.0)
 
-    def __iadd__(self, other):
-        self = self.__add__(other)
-        return self
-
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    def __rmul__(self, other):
-        return self.__mul__(other)
+    def __sub__(self, other):
+        return self.__add__(-other)
 
     def __rsub__(self, other):
         return self.__neg__().__add__(other)
