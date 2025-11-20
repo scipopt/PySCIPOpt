@@ -1570,6 +1570,9 @@ cdef class Variable:
     def __eq__(self, other):
         return self.to_expr().__eq__(other)
 
+    def _to_nodes(self, start: int = 0) -> list[tuple]:
+        return self.to_expr()._to_nodes(start)
+
     def to_expr(self):
         return MonomialExpr.from_var(self)
 
