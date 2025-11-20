@@ -87,7 +87,7 @@ class Expr:
     def __mul__(self, other):
         other = Expr.to_const_or_var(other)
         if isinstance(other, Expr):
-            return ProdExpr(self, other)
+            return ProdExpr(self, other) if self.children else ConstExpr()
         elif isinstance(other, MatrixExpr):
             return other.__mul__(self)
         raise TypeError(
