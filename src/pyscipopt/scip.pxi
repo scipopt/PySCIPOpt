@@ -1576,9 +1576,6 @@ cdef class Variable:
     def __repr__(self):
         return self.name
 
-    def _to_nodes(self, start: int = 0) -> list[tuple]:
-        return self.to_expr()._to_nodes(start)
-
     def to_expr(self):
         return MonomialExpr.from_var(self)
 

@@ -54,7 +54,17 @@ class Expr:
     """Base class for mathematical expressions."""
 
     def __init__(self, children: Optional[dict] = None):
-        self.children = children or {}
+        children = children or {}
+        if children and not all(isinstance(i, (Variable, Term, Expr)) for i in children):
+            raise TypeError(
+                "All children must be Variable, Term, or Expr instances"
+            )
+        self.children = dict(
+            zip(
+                (i.to_expr() if isinstance(i, Variable) else i for i in children),
+                children.values(),
+            )
+        )
 
     def __hash__(self):
         return frozenset(self.children.items()).__hash__()
@@ -130,7 +140,7 @@ class Expr:
             raise TypeError("base must be a number")
         if other[CONST] <= 0.0:
             raise ValueError("base must be positive")
-        return exp(self * log(other[CONST]))
+        return exp(self * log(other))
 
     def __neg__(self):
         return self.__mul__(-1.0)
@@ -393,7 +403,7 @@ class ProdExpr(FuncExpr):
 class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
 
-    def __init__(self, base, expo: float = 1.0):
+    def __init__(self, base: Union[Term, Expr], expo: float = 1.0):
         super().__init__({base: 1.0})
         self.expo = expo
 
@@ -414,7 +424,7 @@ class PowExpr(FuncExpr):
 class UnaryExpr(FuncExpr):
     """Expression like `f(expression)`."""
 
-    def __init__(self, expr: Expr):
+    def __init__(self, expr: Union[Term, Expr]):
         super().__init__({expr: 1.0})
 
     def __hash__(self):
