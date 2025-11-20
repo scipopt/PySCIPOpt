@@ -61,6 +61,8 @@ class Expr:
         return frozenset(self.children.items()).__hash__()
 
     def __getitem__(self, key):
+        if not isinstance(key, Expr):
+            key = Term(key)
         return self.children.get(key, 0.0)
 
     def __iter__(self):
