@@ -55,16 +55,7 @@ class Expr:
 
     def __init__(self, children: Optional[dict] = None):
         children = children or {}
-        if children and not all(isinstance(i, (Variable, Term, Expr)) for i in children):
-            raise TypeError(
-                "All children must be Variable, Term, or Expr instances"
-            )
-        self.children = dict(
-            zip(
-                (i.to_expr() if isinstance(i, Variable) else i for i in children),
-                children.values(),
-            )
-        )
+        self.children = {Expr.from_const_or_var(i): j for i, j in children.items()}
 
     def __hash__(self):
         return frozenset(self.children.items()).__hash__()
@@ -85,7 +76,7 @@ class Expr:
         return _to_unary_expr(self, AbsExpr)
 
     def __add__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
             return SumExpr({self: 1.0, other: 1.0}) if self.children else other
         elif isinstance(other, MatrixExpr):
@@ -102,7 +93,7 @@ class Expr:
         return self.__add__(other)
 
     def __mul__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
             return ProdExpr(self, other) if self.children else ConstExpr()
         elif isinstance(other, MatrixExpr):
@@ -115,7 +106,7 @@ class Expr:
         return self.__mul__(other)
 
     def __truediv__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if isinstance(other, ConstExpr) and other[CONST] == 0:
             raise ZeroDivisionError("division by zero")
         if hash(self) == hash(other):
@@ -123,10 +114,10 @@ class Expr:
         return self.__mul__(other.__pow__(-1.0))
 
     def __rtruediv__(self, other):
-        return Expr.to_const_or_var(other).__truediv__(self)
+        return Expr.from_const_or_var(other).__truediv__(self)
 
     def __pow__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if not isinstance(other, ConstExpr):
             raise TypeError("exponent must be a number")
 
@@ -135,7 +126,7 @@ class Expr:
         return PowExpr(self, other[CONST])
 
     def __rpow__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if not isinstance(other, ConstExpr):
             raise TypeError("base must be a number")
         if other[CONST] <= 0.0:
@@ -152,7 +143,7 @@ class Expr:
         return self.__neg__().__add__(other)
 
     def __le__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
             if isinstance(other, ConstExpr):
                 return ExprCons(self, rhs=other[CONST])
@@ -162,7 +153,7 @@ class Expr:
         raise TypeError(f"Unsupported type {type(other)}")
 
     def __ge__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
             if isinstance(other, ConstExpr):
                 return ExprCons(self, lhs=other[CONST])
@@ -172,7 +163,7 @@ class Expr:
         raise TypeError(f"Unsupported type {type(other)}")
 
     def __eq__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
             if isinstance(other, ConstExpr):
                 return ExprCons(self, lhs=other[CONST], rhs=other[CONST])
@@ -185,7 +176,7 @@ class Expr:
         return f"Expr({self.children})"
 
     @staticmethod
-    def to_const_or_var(x):
+    def from_const_or_var(x):
         """Convert a number or variable to an expression."""
 
         if _is_number(x):
@@ -234,13 +225,13 @@ class SumExpr(Expr):
     """Expression like `expression1 + expression2 + constant`."""
 
     def __add__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if isinstance(other, SumExpr):
             return SumExpr(self.to_dict(other.children))
         return super().__add__(other)
 
     def __mul__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if isinstance(other, ConstExpr):
             if other[CONST] == 0:
                 return ConstExpr(0.0)
@@ -258,13 +249,13 @@ class PolynomialExpr(SumExpr):
         super().__init__(children)
 
     def __add__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if isinstance(other, PolynomialExpr):
             return PolynomialExpr.to_subclass(self.to_dict(other.children))
         return super().__add__(other)
 
     def __mul__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if isinstance(other, PolynomialExpr):
             children = {}
             for i in self:
@@ -275,13 +266,13 @@ class PolynomialExpr(SumExpr):
         return super().__mul__(other)
 
     def __truediv__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if isinstance(other, ConstExpr):
             return self.__mul__(1.0 / other[CONST])
         return super().__truediv__(other)
 
     def __pow__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if (
             isinstance(other, Expr)
             and isinstance(other, ConstExpr)
@@ -343,7 +334,7 @@ class ConstExpr(PolynomialExpr):
         return ConstExpr(abs(self[CONST]))
 
     def __pow__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if isinstance(other, ConstExpr):
             return ConstExpr(self[CONST] ** other[CONST])
         return super().__pow__(other)
@@ -378,13 +369,13 @@ class ProdExpr(FuncExpr):
         return (frozenset(self), self.coef).__hash__()
 
     def __add__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if isinstance(other, ProdExpr) and hash(self) == hash(other):
             return ProdExpr(*self, coef=self.coef + other.coef)
         return super().__add__(other)
 
     def __mul__(self, other):
-        other = Expr.to_const_or_var(other)
+        other = Expr.from_const_or_var(other)
         if isinstance(other, ConstExpr):
             if other[CONST] == 0:
                 return ConstExpr(0.0)

@@ -3726,7 +3726,7 @@ cdef class Model:
         cdef _VarArray wrapper
 
         # turn the constant value into an Expr instance for further processing
-        expr = Expr.to_const_or_var(expr)
+        expr = Expr.from_const_or_var(expr)
         if not isinstance(expr, Expr):
             raise TypeError(f"given coefficients are neither Expr but {type(expr)}")
         if expr.degree() > 1:
