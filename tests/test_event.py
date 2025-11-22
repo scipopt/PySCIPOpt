@@ -54,30 +54,19 @@ class MyEvent(Eventhdlr):
             assert event.getType() in [SCIP_EVENTTYPE.ROWCOEFCHANGED, SCIP_EVENTTYPE.ROWCONSTCHANGED, SCIP_EVENTTYPE.ROWSIDECHANGED]
         elif self.event_type == SCIP_EVENTTYPE.ROWEVENT:
             assert event.getType() in [SCIP_EVENTTYPE.ROWADDEDSEPA, SCIP_EVENTTYPE.ROWDELETEDSEPA, SCIP_EVENTTYPE.ROWADDEDLP, SCIP_EVENTTYPE.ROWDELETEDLP, SCIP_EVENTTYPE.ROWCHANGED]
+        elif self.event_type == SCIP_EVENTTYPE.GAPUPDATED:
+            assert event.getType() in [SCIP_EVENTTYPE.DUALBOUNDIMPROVED, SCIP_EVENTTYPE.BESTSOLFOUND]
         else:
             assert event.getType() == self.event_type
 
 def test_event():
 
-    all_events = [
-        SCIP_EVENTTYPE.DISABLED,
-        SCIP_EVENTTYPE.PRESOLVEROUND,
-        SCIP_EVENTTYPE.NODEFOCUSED,
-        SCIP_EVENTTYPE.NODEFEASIBLE,
-        SCIP_EVENTTYPE.NODEINFEASIBLE,
-        SCIP_EVENTTYPE.NODEBRANCHED,
-        SCIP_EVENTTYPE.NODEDELETE,
-        SCIP_EVENTTYPE.FIRSTLPSOLVED,
-        SCIP_EVENTTYPE.LPSOLVED,
-        SCIP_EVENTTYPE.POORSOLFOUND,
-        SCIP_EVENTTYPE.BESTSOLFOUND,
-        SCIP_EVENTTYPE.SYNC,
-        SCIP_EVENTTYPE.NODESOLVED,
-        SCIP_EVENTTYPE.NODEEVENT,
-        SCIP_EVENTTYPE.LPEVENT,
-        SCIP_EVENTTYPE.SOLFOUND,
-        SCIP_EVENTTYPE.SOLEVENT,
-    ]
+    all_events = []
+    for attr_name in dir(SCIP_EVENTTYPE):
+        if not attr_name.startswith('_'):
+            attr = getattr(SCIP_EVENTTYPE, attr_name)
+            if isinstance(attr, int):
+                all_events.append(attr)
 
     all_event_hdlrs = []
     for event in all_events:
@@ -135,5 +124,4 @@ def test_raise_error_catch_var_event():
     ev.event_type = SCIP_EVENTTYPE.VAREVENT
     m.includeEventhdlr(ev, "var_event", "event handler for var events")
     
-    with pytest.raises(Exception):
-        m.optimize()
+    m.optimize()

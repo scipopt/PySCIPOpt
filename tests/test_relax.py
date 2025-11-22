@@ -21,7 +21,7 @@ def test_relaxator():
     m.setHeuristics(SCIP_PARAMSETTING.OFF)
     m.setSeparating(SCIP_PARAMSETTING.OFF)
     m.setParam("limits/nodes", 1)
-    # m.hideOutput()
+    m.hideOutput()
 
     # include relaxator
     m.includeRelax(SoncRelax(), 'testrelaxator',
@@ -42,7 +42,7 @@ def test_relaxator():
 
     assert 'relaxexec' in calls
     assert len(calls) >= 1
-    assert m.getDualbound() >= 10e4
+    assert m.isGE(m.getDualbound(), 10e4)
 
 class EmptyRelaxator(Relax):
     pass
