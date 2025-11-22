@@ -6,6 +6,19 @@
 ### Changed
 ### Removed
 
+## 6.0.0 - 2025.xx.yy
+### Added
+- Support for SCIP 10.0
+- Added support for IIS - Irreducible Inconsistent Subsystems
+- Interfaced events TYPECHANGED, IMPLTYPECHANGED, DUALBOUNDIMPROVED, and GAPUPDATED
+- Support for new implied integrality
+- Interfaced some exact SCIP methods
+- wrapped SCIPprintStatisticsJson
+### Fixed
+### Changed
+### Removed
+- Removed methods chgAndConsCheckFlagWhenUpgr, chgAndConsRemovableFlagWhenUpgr
+
 ## 5.7.0 - 2025.11.17
 ### Added
 - Added possibility of having variables in exponent.
