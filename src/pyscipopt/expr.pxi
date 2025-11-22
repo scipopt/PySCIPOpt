@@ -240,6 +240,9 @@ class SumExpr(Expr):
             return SumExpr({i: self[i] * other[CONST] for i in self if self[i] != 0})
         return super().__mul__(other)
 
+    def _normalize(self) -> SumExpr:
+        return SumExpr({k: v for k, v in self.children.items() if v != 0})
+        
 
 class PolynomialExpr(SumExpr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
@@ -304,7 +307,7 @@ class PolynomialExpr(SumExpr):
 
     def _normalize(self) -> Expr:
         return PolynomialExpr.to_subclass(
-            {k: v for k, v in self.children.items() if v != 0.0}
+            {k: v for k, v in self.children.items() if v != 0}
         )
 
     def _to_nodes(self, start: int = 0) -> list[tuple]:
