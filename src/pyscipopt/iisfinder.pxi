@@ -31,8 +31,4 @@ cdef SCIP_RETCODE PyiisfinderExec (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCI
     PyIIS = <IISfinder>iisfinderdata
     result_dict = PyIIS.iisfinderexec()
     assert isinstance(result_dict, dict), "iisfinderexec() must return a dictionary."
-    #TODO
-    assert False
-    # lowerbound[0] = result_dict.get("lowerbound", <SCIP_Real>lowerbound[0])
-    # result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
-    # return SCIP_OKAY
+    return SCIP_OKAY
