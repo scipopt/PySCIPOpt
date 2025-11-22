@@ -2703,6 +2703,7 @@ cdef class Model:
         self._freescip = True
         self._modelvars = {}
         self._generated_event_handlers_count = 0
+        self._benders_subproblems = []  # Keep references to Benders subproblem Models
 
         if not createscip:
             # if no SCIP instance should be created, then an empty Model object is created.
@@ -2774,10 +2775,29 @@ cdef class Model:
         self.includeEventhdlr(event_handler, name, description)
 
     def __dealloc__(self):
+        # Declare all C variables at the beginning for Cython compatibility
+        cdef SCIP_BENDERS** benders
+        cdef int nbenders
+        cdef int nsubproblems
+        cdef int i, j
+
         # call C function directly, because we can no longer call this object's methods, according to
         # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
         if self._scip is not NULL and self._freescip and PY_SCIP_CALL:
-           PY_SCIP_CALL( SCIPfree(&self._scip) )
+            # Free Benders subproblems before freeing the main SCIP instance
+            if self._benders_subproblems:
+                benders = SCIPgetBenders(self._scip)
+                nbenders = SCIPgetNActiveBenders(self._scip)
+
+                for i in range(nbenders):
+                    nsubproblems = SCIPbendersGetNSubproblems(benders[i])
+                    for j in range(nsubproblems):
+                        PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, benders[i], j))
+
+                # Clear the references to allow Python GC to clean up the Model objects
+                self._benders_subproblems = []
+
+            PY_SCIP_CALL( SCIPfree(&self._scip) )
 
     def __hash__(self):
         return hash(<size_t>self._scip)
@@ -2806,6 +2826,7 @@ cdef class Model:
         model = Model(createscip=False)
         model._scip = scip
         model._bestSol = Solution.create(scip, SCIPgetBestSol(scip))
+        model._benders_subproblems = []  # Initialize Benders subproblems list
         return model
 
     @property
@@ -8427,6 +8448,21 @@ cdef class Model:
         PY_SCIP_CALL(SCIPcreateBendersDefault(self._scip, subprobs, nsubproblems))
         benders = SCIPfindBenders(self._scip, "default")
 
+        # Free the temporary array (SCIPcreateBendersDefault copies the pointers internally)
+        free(subprobs)
+
+        # Store references to subproblem Models and transfer ownership to master.
+        # The master will free the Benders subproblems in its __dealloc__ method.
+        # Set _freescip = False on the subproblem Model(s) to prevent double-free
+        # if they are deallocated before the master.
+        if isdict:
+            self._benders_subproblems = list(subproblems.values())
+            for subprob in self._benders_subproblems:
+                (<Model>subprob)._freescip = False
+        else:
+            self._benders_subproblems = [subproblems]
+            (<Model>subproblems)._freescip = False
+
         # activating the Benders' decomposition constraint handlers
         self.setBoolParam("constraints/benderslp/active", True)
         self.setBoolParam("constraints/benders/active", True)
@@ -8457,20 +8493,22 @@ cdef class Model:
                     benders[i], self._bestSol.sol, j, &infeasible, solvecip, NULL))
 
     def freeBendersSubproblems(self):
-        """Calls the free subproblem function for the Benders' decomposition.
-        This will free all subproblems for all decompositions. """
-        cdef SCIP_BENDERS** benders = SCIPgetBenders(self._scip)
-        cdef int nbenders = SCIPgetNActiveBenders(self._scip)
-        cdef int nsubproblems
-        cdef int i
-        cdef int j
+        """Deprecated: This method is no longer needed.
 
-        # solving all subproblems from all Benders' decompositions
-        for i in range(nbenders):
-            nsubproblems = SCIPbendersGetNSubproblems(benders[i])
-            for j in range(nsubproblems):
-                PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, benders[i],
-                    j))
+        Benders subproblems are now automatically managed and freed by the master
+        Model when it is deallocated. Calling this method explicitly has no effect.
+
+        .. deprecated:: 5.7.0
+            This method is deprecated and will be removed in a future version.
+            Subproblem memory management is now handled automatically.
+        """
+        warnings.warn(
+            "freeBendersSubproblems() is deprecated and no longer needed. "
+            "Benders subproblems are automatically freed when the master Model "
+            "is deallocated.",
+            DeprecationWarning,
+            stacklevel=2
+        )
 
     def updateBendersLowerbounds(self, lowerbounds, Benders benders=None):
         """

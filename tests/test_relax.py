@@ -65,7 +65,8 @@ def test_empty_relaxator():
     m.setObjective(x1 + x0)
 
     with pytest.raises(Exception):
-        m.optimize()
+        with pytest.raises(AssertionError):
+            m.optimize()
 
 def test_relax():
     model = random_mip_1()

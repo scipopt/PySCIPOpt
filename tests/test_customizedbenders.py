@@ -228,11 +228,6 @@ def flpbenders_defcuts_test():
 
     master.printStatistics()
 
-    # since the subproblems were setup and then solved, we need to free the
-    # subproblems. This must happen after the solution is extracted, otherwise
-    # the solution will be lost
-    master.freeBendersSubproblems()
-
     return master.getObjVal()
 
 def flpbenders_customcuts_test():
@@ -277,11 +272,6 @@ def flpbenders_customcuts_test():
     print("Edges:", edges)
 
     master.printStatistics()
-
-    # since the subproblems were setup and then solved, we need to free the
-    # subproblems. This must happen after the solution is extracted, otherwise
-    # the solution will be lost
-    master.freeBendersSubproblems()
 
     return master.getObjVal()
 

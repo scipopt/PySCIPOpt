@@ -2210,6 +2210,8 @@ cdef class Model:
     cdef _modelvars
     # used to keep track of the number of event handlers generated
     cdef int _generated_event_handlers_count
+    # store references to Benders subproblem Models for proper cleanup
+    cdef _benders_subproblems
 
     @staticmethod
     cdef create(SCIP* scip)

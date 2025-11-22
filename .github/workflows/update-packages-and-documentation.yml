@@ -1,7 +1,7 @@
 name: Test and Release PyPI Package
 
 env:
-  version: 9.2.3
+  version: 9.2.4
 
 
 # runs only when a release is published, not on drafts
