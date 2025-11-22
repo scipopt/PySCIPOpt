@@ -63,6 +63,9 @@ def test_event():
 
     all_events = []
     for attr_name in dir(SCIP_EVENTTYPE):
+        if attr_name in ["VARCHANGED", "ROWCHANGED", "VAREVENT"]: # not supported
+            continue
+
         if not attr_name.startswith('_'):
             attr = getattr(SCIP_EVENTTYPE, attr_name)
             if isinstance(attr, int):
@@ -110,7 +113,7 @@ def test_raise_error_catch_var_event():
     
     class MyEventVar(Eventhdlr):
         def eventinit(self):
-            self.model.catchEvent(self.event_type, self)        
+            self.model.catchEvent(SCIP_EVENTTYPE.VAREVENT, self)        
 
         def eventexit(self):
             self.model.dropEvent(self.event_type, self)
@@ -121,7 +124,7 @@ def test_raise_error_catch_var_event():
     v = m.addVar("x", vtype="I")
     ev = MyEventVar()
     ev.var = v
-    ev.event_type = SCIP_EVENTTYPE.VAREVENT
     m.includeEventhdlr(ev, "var_event", "event handler for var events")
-    
-    m.optimize()
+
+    with pytest.raises(Exception):
+        m.optimize()
