@@ -86,7 +86,7 @@ class Expr:
             raise StopIteration
 
     def __abs__(self) -> AbsExpr:
-        return _to_unary_expr(self, AbsExpr)
+        return UnaryExpr.from_expr(self, AbsExpr)
 
     def __add__(self, other):
         other = Expr.from_const_or_var(other)
@@ -440,6 +440,14 @@ class UnaryExpr(FuncExpr):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({tuple(self)[0]})"
 
+    @staticmethod
+    def from_expr(expr: Union[Expr, MatrixExpr], cls: Type[UnaryExpr]) -> UnaryExpr:
+        if isinstance(expr, MatrixExpr):
+            res = np.empty(shape=expr.shape, dtype=object)
+            res.flat = [cls(i) for i in expr.flat]
+            return res.view(MatrixExpr)
+        return cls(expr)
+
     def _to_nodes(self, start: int = 0, coef: float = 1) -> list[tuple]:
         """Convert expression to list of nodes for SCIP expression construction"""
         nodes = []
@@ -562,34 +570,26 @@ def quickprod(termlist) -> Expr:
     return result
 
 
-def _to_unary_expr(expr: Union[Expr, MatrixExpr], cls: Type[UnaryExpr]) -> UnaryExpr:
-    if isinstance(expr, MatrixExpr):
-        res = np.empty(shape=expr.shape, dtype=object)
-        res.flat = [cls(i) for i in expr.flat]
-        return res.view(MatrixExpr)
-    return cls(expr)
-
-
 def exp(expr: Union[Expr, MatrixExpr]) -> ExpExpr:
     """returns expression with exp-function"""
-    return _to_unary_expr(expr, ExpExpr)
+    return UnaryExpr.from_expr(expr, ExpExpr)
 
 
 def log(expr: Union[Expr, MatrixExpr]) -> LogExpr:
     """returns expression with log-function"""
-    return _to_unary_expr(expr, LogExpr)
+    return UnaryExpr.from_expr(expr, LogExpr)
 
 
 def sqrt(expr: Union[Expr, MatrixExpr]) -> SqrtExpr:
     """returns expression with sqrt-function"""
-    return _to_unary_expr(expr, SqrtExpr)
+    return UnaryExpr.from_expr(expr, SqrtExpr)
 
 
 def sin(expr: Union[Expr, MatrixExpr]) -> SinExpr:
     """returns expression with sin-function"""
-    return _to_unary_expr(expr, SinExpr)
+    return UnaryExpr.from_expr(expr, SinExpr)
 
 
 def cos(expr: Union[Expr, MatrixExpr]) -> CosExpr:
     """returns expression with cos-function"""
-    return _to_unary_expr(expr, CosExpr)
+    return UnaryExpr.from_expr(expr, CosExpr)
