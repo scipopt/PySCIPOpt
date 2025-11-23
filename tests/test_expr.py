@@ -115,7 +115,7 @@ def test_expr_op_expr(model):
     assert isinstance(y / x - exp(expr), Expr)
     # sqrt(2) is not a constant expression and
     # we can only power to constant expressions!
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(TypeError):
         expr **= sqrt(2)
 
 
