@@ -91,6 +91,8 @@ class Expr:
     def __add__(self, other):
         other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
+            if isinstance(other, SumExpr):
+                return SumExpr(other.to_dict({self: 1.0}))
             return SumExpr({self: 1.0, other: 1.0}) if self.children else other
         elif isinstance(other, MatrixExpr):
             return other.__add__(self)
@@ -240,8 +242,10 @@ class SumExpr(Expr):
 
     def __add__(self, other):
         other = Expr.from_const_or_var(other)
-        if isinstance(other, SumExpr):
-            return SumExpr(self.to_dict(other.children))
+        if isinstance(other, Expr):
+            if isinstance(other, SumExpr):
+                return SumExpr(self.to_dict(other.children))
+            return SumExpr(self.to_dict({other: 1.0}))
         return super().__add__(other)
 
     def __mul__(self, other):
