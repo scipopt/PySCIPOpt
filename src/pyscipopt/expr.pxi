@@ -1,5 +1,6 @@
 ##@file expr.pxi
 import math
+from collections.abc import Hashable
 from typing import Optional, Type, Union
 
 include "matrix.pxi"
@@ -111,7 +112,7 @@ class Expr:
         other = Expr.from_const_or_var(other)
         if isinstance(other, ConstExpr) and other[CONST] == 0:
             raise ZeroDivisionError("division by zero")
-        if hasattr(other, "__hash__") and hash(self) == hash(other):
+        if isinstance(other, Hashable) and hash(self) == hash(other):
             return ConstExpr(1.0)
         return self.__mul__(other.__pow__(-1.0))
 
