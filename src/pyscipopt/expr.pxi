@@ -1,19 +1,10 @@
 ##@file expr.pxi
 import math
 from collections.abc import Hashable
+from numbers import Number
 from typing import Optional, Type, Union
 
 include "matrix.pxi"
-
-
-def _is_number(e):
-    try:
-        f = float(e)
-        return True
-    except ValueError: # for malformed strings
-        return False
-    except TypeError: # for other types (Variable, Expr)
-        return False
 
 
 class Term:
@@ -202,7 +193,7 @@ class Expr:
     def from_const_or_var(x):
         """Convert a number or variable to an expression."""
 
-        if _is_number(x):
+        if isinstance(x, Number):
             return PolynomialExpr.to_subclass({CONST: x})
         elif isinstance(x, Variable):
             return PolynomialExpr.to_subclass({Term(x): 1.0})
@@ -437,7 +428,7 @@ class PowExpr(FuncExpr):
 class UnaryExpr(FuncExpr):
     """Expression like `f(expression)`."""
 
-    def __init__(self, expr: Union[Variable, Term, Expr]):
+    def __init__(self, expr: Union[int, float, Variable, Term, Expr]):
         super().__init__({expr: 1.0})
 
     def __hash__(self):
@@ -517,7 +508,7 @@ class ExprCons:
             raise TypeError("ExprCons already has upper bound")
         if self._lhs is None:
             raise TypeError("ExprCons must have a lower bound")
-        if not _is_number(other):
+        if not isinstance(other, Number):
             raise TypeError("Ranged ExprCons is not well defined!")
 
         return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
@@ -527,7 +518,7 @@ class ExprCons:
             raise TypeError("ExprCons already has lower bound")
         if self._rhs is None:
             raise TypeError("ExprCons must have an upper bound")
-        if not _is_number(other):
+        if not isinstance(other, Number):
             raise TypeError("Ranged ExprCons is not well defined!")
 
         return ExprCons(self.expr, lhs=float(other), rhs=self._rhs)

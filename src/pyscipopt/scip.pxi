@@ -1,12 +1,10 @@
 ##@file scip.pxi
 #@brief holding functions in python that reference the SCIP public functions included in scip.pxd
-import weakref
-from os.path import abspath
-from os.path import splitext
+import locale
 import os
 import sys
 import warnings
-import locale
+import weakref
 
 cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
@@ -14,10 +12,11 @@ from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPo
 from libc.stdlib cimport malloc, free
 from libc.stdio cimport stdout, stderr, fdopen, fputs, fflush, fclose
 from posix.stdio cimport fileno
-
 from collections.abc import Iterable
-from itertools import repeat
 from dataclasses import dataclass
+from itertools import repeat
+from numbers import Number
+from os.path import abspath, splitext
 from typing import Union
 
 import numpy as np
@@ -4092,15 +4091,15 @@ cdef class Model:
         return pyVar
 
     def addMatrixVar(self,
-                     shape: Union[int, Tuple],
-                     name: Union[str, np.ndarray] = '',
-                     vtype: Union[str, np.ndarray] = 'C',
-                     lb: Union[int, float, np.ndarray, None] = 0.0,
-                     ub: Union[int, float, np.ndarray, None] = None,
-                     obj: Union[int, float, np.ndarray] = 0.0,
-                     pricedVar: Union[bool, np.ndarray] = False,
-                     pricedVarScore: Union[int, float, np.ndarray] = 1.0
-                     ) -> MatrixVariable:
+            shape: Union[int, Tuple],
+            name: Union[str, np.ndarray] = '',
+            vtype: Union[str, np.ndarray] = 'C',
+            lb: Union[Number, np.ndarray, None] = 0.0,
+            ub: Union[Number, np.ndarray, None] = None,
+            obj: Union[Number, np.ndarray] = 0.0,
+            pricedVar: Union[bool, np.ndarray] = False,
+            pricedVarScore: Union[Number, np.ndarray] = 1.0,
+        ) -> MatrixVariable:
         """
         Create a new matrix of variable. Default matrix variables are non-negative and continuous.
 
@@ -12119,7 +12118,7 @@ def readStatistics(filename):
                 if stat_name == "Gap":
                     relevant_value = relevant_value[:-1] # removing %
 
-                if _is_number(relevant_value):
+                if isinstance(relevant_value, Number):
                     result[stat_name] = float(relevant_value)
                     if stat_name == "Solutions found" and result[stat_name] == 0:
                         break

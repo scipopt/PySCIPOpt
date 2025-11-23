@@ -3,18 +3,10 @@
 # TODO Add tests
 """
 
-import numpy as np
+from numbers import Number
 from typing import Union
 
-
-def _is_number(e):
-    try:
-        f = float(e)
-        return True
-    except ValueError: # for malformed strings
-        return False
-    except TypeError: # for other types (Variable, Expr)
-        return False
+import numpy as np
 
 
 def _matrixexpr_richcmp(self, other, op):
@@ -28,7 +20,7 @@ def _matrixexpr_richcmp(self, other, op):
         else:
             raise NotImplementedError("Can only support constraints with '<=', '>=', or '=='.")
 
-    if _is_number(other) or isinstance(other, (Variable, Expr)):
+    if isinstance(other, Number) or isinstance(other, (Variable, Expr)):
         res = np.empty(self.shape, dtype=object)
         res.flat = [_richcmp(i, other, op) for i in self.flat]
 
@@ -55,13 +47,13 @@ class MatrixExpr(np.ndarray):
             return quicksum(self.flat)
         return super().sum(**kwargs)
 
-    def __le__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
+    def __le__(self, other: Union[Number, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 1)
 
-    def __ge__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
+    def __ge__(self, other: Union[Number, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 5)
 
-    def __eq__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
+    def __eq__(self, other: Union[Number, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 2)
 
     def __add__(self, other):
@@ -102,10 +94,10 @@ class MatrixGenExpr(MatrixExpr):
 
 class MatrixExprCons(np.ndarray):
 
-    def __le__(self, other: Union[float, int, np.ndarray]) -> MatrixExprCons:
+    def __le__(self, other: Union[Number, np.ndarray]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 1)
 
-    def __ge__(self, other: Union[float, int, np.ndarray]) -> MatrixExprCons:
+    def __ge__(self, other: Union[Number, np.ndarray]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 5)
 
     def __eq__(self, other):
