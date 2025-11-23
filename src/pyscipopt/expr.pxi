@@ -54,9 +54,15 @@ CONST = Term()
 class Expr:
     """Base class for mathematical expressions."""
 
-    def __init__(self, children: Optional[dict] = None):
+    def __init__(self, children: Optional[dict[Union[Variable, Term, Expr], float]] = None):
         children = children or {}
-        self.children = {Expr.from_const_or_var(i): j for i, j in children.items()}
+        if not all(isinstance(i, (Variable, Term, Expr)) for i in children):
+            raise TypeError("All keys must be Variable, Term or Expr instances")
+
+        self.children = {
+            (MonomialExpr.from_var(i) if isinstance(i, Variable) else i): j
+            for i, j in children.items()
+        }
 
     def __hash__(self):
         return frozenset(self.children.items()).__hash__()
@@ -243,7 +249,7 @@ class SumExpr(Expr):
 
     def _normalize(self) -> SumExpr:
         return SumExpr({k: v for k, v in self.children.items() if v != 0})
-        
+
 
 class PolynomialExpr(SumExpr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
@@ -361,7 +367,10 @@ class MonomialExpr(PolynomialExpr):
 
 
 class FuncExpr(Expr):
-    ...
+    def __init__(self, children: Optional[dict] = None):
+        if children and any((i is CONST) for i in children):
+            raise ValueError("FuncExpr can't have Term without Variable as a child")
+        super().__init__(children)
 
 
 class ProdExpr(FuncExpr):
