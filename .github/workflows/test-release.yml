@@ -1,7 +1,7 @@
 name: TestPyPI release
 
 env:
-  version: 10.0
+  version: 10.0.0
 
 
 # runs only when a release is published, not on drafts
