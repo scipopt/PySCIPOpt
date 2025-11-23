@@ -496,7 +496,13 @@ class CosExpr(UnaryExpr):
 class ExprCons:
     """Constraints with a polynomial expressions and lower/upper bounds."""
 
-    def __init__(self, expr: Expr, lhs: float = None, rhs: float = None):
+    def __init__(self, expr: Expr, lhs: Optional[float] = None, rhs: Optional[float] = None):
+        if not isinstance(expr, Expr):
+            raise TypeError("expr must be an Expr instance")
+        if lhs is None and rhs is None:
+            raise ValueError(
+                "Ranged ExprCons (with both lhs and rhs) doesn't supported"
+            )
         self.expr = expr
         self._lhs = lhs
         self._rhs = rhs
@@ -504,17 +510,8 @@ class ExprCons:
 
     def _normalize(self):
         """Move constant children in expression to bounds"""
-
-        if self._lhs is None and self._rhs is None:
-            raise ValueError(
-                "Ranged ExprCons (with both lhs and rhs) doesn't supported."
-            )
-        if not isinstance(self.expr, Expr):
-            raise TypeError("expr must be an Expr instance")
-
         c = self.expr[CONST]
         self.expr = (self.expr - c)._normalize()
-
         if self._lhs is not None:
             self._lhs -= c
         if self._rhs is not None:
