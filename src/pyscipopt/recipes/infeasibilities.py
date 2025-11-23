@@ -36,7 +36,7 @@ def get_infeasible_constraints(orig_model: Model, verbose: bool = False):
 
     n_infeasibilities_detected = 0
     for c in binary:
-        if model.isGT(model.getVal(binary[c]), 0):
+        if model.isInfinity(binary[c]) or model.isGT(model.getVal(binary[c]), 0):
             n_infeasibilities_detected += 1
             print("Constraint %s is causing an infeasibility." % c)
 
