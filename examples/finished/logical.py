@@ -21,7 +21,7 @@ from pyscipopt import quicksum
 def printFunc(name, m):
     """prints results"""
     print("* %s *" % name)
-    objSet = bool(m.getObjective().terms.keys())
+    objSet = bool(m.getObjective().children.keys())
     print("* Is objective set? %s" % objSet)
     if objSet:
         print("* Sense: %s" % m.getObjectiveSense())
