@@ -47,6 +47,20 @@ class Term:
     def __repr__(self):
         return f"Term({', '.join(map(str, self.vars))})"
 
+    def _to_nodes(self, start: int = 0, coef: float = 1) -> list[tuple]:
+        """Convert term to list of nodes for SCIP expression construction"""
+        if coef == 0:
+            return []
+        elif len(self.vars) == 0:
+            return [(ConstExpr, coef)]
+        else:
+            nodes = [(Term, i) for i in self.vars]
+            if coef != 1:
+                nodes += [(ConstExpr, coef)]
+            if len(self.vars) > 1:
+                nodes += [(ProdExpr, list(range(start, start + len(nodes))))]
+            return nodes
+
 
 CONST = Term()
 
@@ -209,22 +223,20 @@ class Expr:
     def _normalize(self) -> Expr:
         return self
 
-    def _to_nodes(self, start: int = 0) -> list[tuple]:
+    def _to_nodes(self, start: int = 0, coef: float = 1) -> list[tuple]:
         """Convert expression to list of nodes for SCIP expression construction"""
         nodes, indices = [], []
-        for i in self:
-            nodes.extend(i._to_nodes(start + len(nodes)))
-            indices.append(start + len(nodes) - 1)
+        for child, c in self.children.items():
+            nodes += child._to_nodes(start + len(nodes), c)
+            indices += [start + len(nodes) - 1]
 
         if type(self) is PowExpr:
-            nodes.append((ConstExpr, self.expo))
-            indices.append(start + len(nodes) - 1)
+            nodes += [(ConstExpr, self.expo)]
+            indices += [start + len(nodes) - 1]
         elif type(self) is ProdExpr and self.coef != 1:
-            nodes.append((ConstExpr, self.coef))
-            indices.append(start + len(nodes) - 1)
-
-        nodes.append((type(self), indices))
-        return nodes
+            nodes += [(ConstExpr, self.coef)]
+            indices += [start + len(nodes) - 1]
+        return nodes + [(type(self), indices)]
 
     def degree(self):
         return float("inf")
@@ -317,22 +329,14 @@ class PolynomialExpr(SumExpr):
             {k: v for k, v in self.children.items() if v != 0}
         )
 
-    def _to_nodes(self, start: int = 0) -> list[tuple]:
+    def _to_nodes(self, start: int = 0, coef: float = 1) -> list[tuple]:
         """Convert expression to list of nodes for SCIP expression construction"""
         nodes = []
-        for child, coef in self.children.items():
-            if coef != 0:
-                if child == CONST:
-                    nodes.append((ConstExpr, coef))
-                else:
-                    ind = start + len(nodes)
-                    nodes.extend([(Term, i) for i in child.vars])
-                    if coef != 1:
-                        nodes.append((ConstExpr, coef))
-                    if len(child) > 1:
-                        nodes.append((ProdExpr, list(range(ind, len(nodes)))))
+        for child, c in self.children.items():
+            nodes += child._to_nodes(start + len(nodes), c)
+
         if len(nodes) > 1:
-            nodes.append((SumExpr, list(range(start, start + len(nodes)))))
+            return nodes + [(SumExpr, list(range(start, start + len(nodes))))]
         return nodes
 
 
@@ -439,14 +443,13 @@ class UnaryExpr(FuncExpr):
     def __repr__(self):
         return f"{type(self).__name__}({tuple(self)[0]})"
 
-    def _to_nodes(self, start: int = 0) -> list[tuple]:
+    def _to_nodes(self, start: int = 0, coef: float = 1) -> list[tuple]:
         """Convert expression to list of nodes for SCIP expression construction"""
         nodes = []
-        for i in self:
-            nodes.extend(i._to_nodes(start + len(nodes)))
+        for child, c in self.children.items():
+            nodes += child._to_nodes(start + len(nodes), c)
 
-        nodes.append((type(self), start + len(nodes) - 1))
-        return nodes
+        return nodes + [(type(self), start + len(nodes) - 1)]
 
 
 class AbsExpr(UnaryExpr):
