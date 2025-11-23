@@ -428,7 +428,9 @@ class PowExpr(FuncExpr):
 class UnaryExpr(FuncExpr):
     """Expression like `f(expression)`."""
 
-    def __init__(self, expr: Union[int, float, Variable, Term, Expr]):
+    def __init__(self, expr: Union[Number, Variable, Term, Expr]):
+        if isinstance(expr, Number):
+            expr = ConstExpr(expr)
         super().__init__({expr: 1.0})
 
     def __hash__(self):
