@@ -37,6 +37,9 @@ class Term:
     def __repr__(self) -> str:
         return f"Term({', '.join(map(str, self.vars))})"
 
+    def degree(self) -> int:
+        return self.__len__()
+
     def _to_nodes(self, start: int = 0, coef: float = 1) -> list[tuple]:
         """Convert term to list of nodes for SCIP expression construction"""
         if coef == 0:
@@ -218,6 +221,9 @@ class Expr:
     def _normalize(self) -> Expr:
         return self
 
+    def degree(self) -> float:
+        return max((i.degree() for i in self), default=0)
+
     def _to_nodes(self, start: int = 0, coef: float = 1) -> list[tuple]:
         """Convert expression to list of nodes for SCIP expression construction"""
         nodes, indices = [], []
@@ -232,9 +238,6 @@ class Expr:
             nodes += [(ConstExpr, self.coef)]
             indices += [start + len(nodes) - 1]
         return nodes + [(type(self), indices)]
-
-    def degree(self) -> float:
-        return float("inf")
 
 
 class SumExpr(Expr):
@@ -305,11 +308,6 @@ class PolynomialExpr(SumExpr):
             return res
         return super().__pow__(other)
 
-    def degree(self) -> int:
-        """Computes the highest degree of children"""
-
-        return max(map(len, self.children)) if self.children else 0
-
     @classmethod
     def to_subclass(cls, children: dict[Term, float]) -> PolynomialExpr:
         if len(children) == 0:
@@ -374,6 +372,9 @@ class FuncExpr(Expr):
         if children and any((i is CONST) for i in children):
             raise ValueError("FuncExpr can't have Term without Variable as a child")
         super().__init__(children)
+
+    def degree(self) -> float:
+        return float("inf")
 
 
 class ProdExpr(FuncExpr):
