@@ -550,24 +550,24 @@ you have to use parenthesis to break the Python syntax for chained comparisons:
         raise TypeError(msg)
 
 
-def quicksum(termlist) -> Expr:
+def quicksum(expressions) -> Expr:
     """add linear expressions and constants much faster than Python's sum
     by avoiding intermediate data structures and adding terms inplace
     """
-    result = PolynomialExpr()
-    for term in termlist:
-        result += term
-    return result
+    res = ConstExpr(0.0)
+    for i in expressions:
+        res += i
+    return res
 
 
-def quickprod(termlist) -> Expr:
+def quickprod(expressions) -> Expr:
     """multiply linear expressions and constants by avoiding intermediate
     data structures and multiplying terms inplace
     """
-    result = PolynomialExpr() + 1
-    for term in termlist:
-        result *= term
-    return result
+    res = ConstExpr(1.0)
+    for i in expressions:
+        res *= i
+    return res
 
 
 def exp(expr: Union[Expr, MatrixExpr]) -> ExpExpr:
