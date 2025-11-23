@@ -1,5 +1,4 @@
 ##@file expr.pxi
-import math
 from collections.abc import Hashable
 from numbers import Number
 from typing import Optional, Type, Union
@@ -12,20 +11,20 @@ class Term:
 
     __slots__ = ("vars", "ptrs")
 
-    def __init__(self, *vars):
+    def __init__(self, *vars: Variable):
         self.vars = tuple(sorted(vars, key=lambda v: v.ptr()))
         self.ptrs = tuple(v.ptr() for v in self.vars)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> Variable:
         return self.vars[idx]
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return self.ptrs.__hash__()
 
     def __eq__(self, other: Term) -> bool:
         return self.ptrs == other.ptrs
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.vars)
 
     def __mul__(self, other: Term) -> Term:
@@ -35,7 +34,7 @@ class Term:
             )
         return Term(*self.vars, *other.vars)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Term({', '.join(map(str, self.vars))})"
 
     def _to_nodes(self, start: int = 0, coef: float = 1) -> list[tuple]:
@@ -65,11 +64,11 @@ class Expr:
             raise TypeError("All keys must be Variable, Term or Expr instances")
 
         self.children = {
-            (MonomialExpr.from_var(i) if isinstance(i, Variable) else i): j
-            for i, j in children.items()
+            (MonomialExpr.from_var(k) if isinstance(k, Variable) else k): v
+            for k, v in children.items()
         }
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return frozenset(self.children.items()).__hash__()
 
     def __getitem__(self, key: Union[Variable, Term, Expr]) -> float:
@@ -186,7 +185,7 @@ class Expr:
             return other.__ge__(self)
         raise TypeError(f"Unsupported type {type(other)}")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Expr({self.children})"
 
     @staticmethod
@@ -292,8 +291,7 @@ class PolynomialExpr(SumExpr):
     def __pow__(self, other):
         other = Expr.from_const_or_var(other)
         if (
-            isinstance(other, Expr)
-            and isinstance(other, ConstExpr)
+            isinstance(other, ConstExpr)
             and other[CONST].is_integer()
             and other[CONST] > 0
         ):
@@ -318,7 +316,7 @@ class PolynomialExpr(SumExpr):
             return MonomialExpr(children)
         return cls(children)
 
-    def _normalize(self) -> Expr:
+    def _normalize(self) -> PolynomialExpr:
         return PolynomialExpr.to_subclass(
             {k: v for k, v in self.children.items() if v != 0}
         )
@@ -340,7 +338,7 @@ class ConstExpr(PolynomialExpr):
     def __init__(self, constant: float = 0):
         super().__init__({CONST: constant})
 
-    def __abs__(self):
+    def __abs__(self) -> ConstExpr:
         return ConstExpr(abs(self[CONST]))
 
     def __pow__(self, other):
@@ -365,7 +363,10 @@ class MonomialExpr(PolynomialExpr):
 
 
 class FuncExpr(Expr):
-    def __init__(self, children: Optional[dict[Union[Variable, Term, Expr], float]] = None):
+    def __init__(
+        self,
+        children: Optional[dict[Union[Variable, Term, Expr], float]] = None,
+    ):
         if children and any((i is CONST) for i in children):
             raise ValueError("FuncExpr can't have Term without Variable as a child")
         super().__init__(children)
@@ -378,7 +379,7 @@ class ProdExpr(FuncExpr):
         super().__init__({i: 1.0 for i in children})
         self.coef = coef
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return (frozenset(self), self.coef).__hash__()
 
     def __add__(self, other):
@@ -395,7 +396,7 @@ class ProdExpr(FuncExpr):
             return ProdExpr(*self, coef=self.coef * other[CONST])
         return super().__mul__(other)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"ProdExpr({{{tuple(self)}: {self.coef}}})"
 
     def _normalize(self) -> Union[ConstExpr, ProdExpr]:
@@ -411,10 +412,10 @@ class PowExpr(FuncExpr):
         super().__init__({base: 1.0})
         self.expo = expo
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return (frozenset(self), self.expo).__hash__()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"PowExpr({tuple(self)}, {self.expo})"
 
     def _normalize(self) -> Expr:
@@ -433,10 +434,10 @@ class UnaryExpr(FuncExpr):
             expr = ConstExpr(expr)
         super().__init__({expr: 1.0})
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return frozenset(self).__hash__()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{type(self).__name__}({tuple(self)[0]})"
 
     def _to_nodes(self, start: int = 0, coef: float = 1) -> list[tuple]:
@@ -450,32 +451,32 @@ class UnaryExpr(FuncExpr):
 
 class AbsExpr(UnaryExpr):
     """Expression like `abs(expression)`."""
-    op = abs
+    ...
 
 
 class ExpExpr(UnaryExpr):
     """Expression like `exp(expression)`."""
-    op = math.exp
+    ...
 
 
 class LogExpr(UnaryExpr):
     """Expression like `log(expression)`."""
-    op = math.log
+    ...
 
 
 class SqrtExpr(UnaryExpr):
     """Expression like `sqrt(expression)`."""
-    op = math.sqrt
+    ...
 
 
 class SinExpr(UnaryExpr):
     """Expression like `sin(expression)`."""
-    op = math.sin
+    ...
 
 
 class CosExpr(UnaryExpr):
     """Expression like `cos(expression)`."""
-    op = math.cos
+    ...
 
 
 class ExprCons:
@@ -525,7 +526,7 @@ class ExprCons:
 
         return ExprCons(self.expr, lhs=float(other), rhs=self._rhs)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"ExprCons({self.expr}, {self._lhs}, {self._rhs})"
 
     def __bool__(self):
