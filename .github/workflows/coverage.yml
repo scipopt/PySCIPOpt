@@ -1,6 +1,6 @@
 name: Run tests with coverage
 env:
-  version: 9.2.4
+  version: 10.0
 
 on:
   push:
