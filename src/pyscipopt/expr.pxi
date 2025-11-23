@@ -50,7 +50,7 @@ class Term:
             nodes = [(Term, i) for i in self.vars]
             if coef != 1:
                 nodes += [(ConstExpr, coef)]
-            if len(self.vars) > 1:
+            if len(nodes) > 1:
                 nodes += [(ProdExpr, list(range(start, start + len(nodes))))]
             return nodes
 
@@ -228,8 +228,9 @@ class Expr:
         """Convert expression to list of nodes for SCIP expression construction"""
         nodes, indices = [], []
         for child, c in self.children.items():
-            nodes += child._to_nodes(start + len(nodes), c)
-            indices += [start + len(nodes) - 1]
+            if (child_nodes := child._to_nodes(start + len(nodes), c)):
+                nodes += child_nodes
+                indices += [start + len(nodes) - 1]
 
         if type(self) is PowExpr:
             nodes += [(ConstExpr, self.expo)]
