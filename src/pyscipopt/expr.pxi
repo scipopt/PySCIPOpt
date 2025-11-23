@@ -31,13 +31,13 @@ class Term:
     def __hash__(self):
         return self.ptrs.__hash__()
 
-    def __eq__(self, other):
+    def __eq__(self, other: Term) -> bool:
         return self.ptrs == other.ptrs
 
     def __len__(self):
         return len(self.vars)
 
-    def __mul__(self, other):
+    def __mul__(self, other: Term) -> Term:
         if not isinstance(other, Term):
             raise TypeError(
                 f"unsupported operand type(s) for *: 'Term' and '{type(other)}'"
@@ -81,21 +81,21 @@ class Expr:
     def __hash__(self):
         return frozenset(self.children.items()).__hash__()
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[Variable, Term, Expr]) -> float:
         if not isinstance(key, (Term, Expr)):
             key = Term(key)
         return self.children.get(key, 0.0)
 
-    def __iter__(self):
+    def __iter__(self) -> Union[Term, Expr]:
         return iter(self.children)
 
-    def __next__(self):
+    def __next__(self) -> Union[Term, Expr]:
         try:
             return next(self.children)
         except:
             raise StopIteration
 
-    def __abs__(self):
+    def __abs__(self) -> AbsExpr:
         return _to_unary_expr(self, AbsExpr)
 
     def __add__(self, other):
@@ -156,13 +156,13 @@ class Expr:
             raise ValueError("base must be positive")
         return exp(self * log(other))
 
-    def __neg__(self):
+    def __neg__(self) -> Expr:
         return self.__mul__(-1.0)
 
-    def __sub__(self, other):
+    def __sub__(self, other) -> Expr:
         return self.__add__(-other)
 
-    def __rsub__(self, other):
+    def __rsub__(self, other) -> Expr:
         return self.__neg__().__add__(other)
 
     def __le__(self, other):
@@ -208,7 +208,10 @@ class Expr:
             return PolynomialExpr.to_subclass({Term(x): 1.0})
         return x
 
-    def to_dict(self, other: Optional[dict] = None) -> dict:
+    def to_dict(
+        self,
+        other: Optional[dict[Union[Term, Expr], float]] = None,
+    ) -> dict[Union[Term, Expr], float]:
         """Merge two dictionaries by summing values of common keys"""
         other = other or {}
         if not isinstance(other, dict):
@@ -238,7 +241,7 @@ class Expr:
             indices += [start + len(nodes) - 1]
         return nodes + [(type(self), indices)]
 
-    def degree(self):
+    def degree(self) -> float:
         return float("inf")
 
 
@@ -266,7 +269,7 @@ class SumExpr(Expr):
 class PolynomialExpr(SumExpr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
 
-    def __init__(self, children: Optional[dict] = None):
+    def __init__(self, children: Optional[dict[Term, float]] = None):
         if children and not all(isinstance(t, Term) for t in children):
             raise TypeError("All keys must be Term instances")
 
@@ -309,13 +312,13 @@ class PolynomialExpr(SumExpr):
             return res
         return super().__pow__(other)
 
-    def degree(self):
+    def degree(self) -> int:
         """Computes the highest degree of children"""
 
         return max(map(len, self.children)) if self.children else 0
 
     @classmethod
-    def to_subclass(cls, children: dict):
+    def to_subclass(cls, children: dict[Term, float]) -> PolynomialExpr:
         if len(children) == 0:
             return ConstExpr(0.0)
         elif len(children) == 1:
@@ -359,19 +362,19 @@ class ConstExpr(PolynomialExpr):
 class MonomialExpr(PolynomialExpr):
     """Expression like `x**3`."""
 
-    def __init__(self, children: Optional[dict] = None):
-        if children and len(children) != 1:
+    def __init__(self, children: dict[Term, float]):
+        if len(children) != 1:
             raise ValueError("MonomialExpr must have exactly one child")
 
         super().__init__(children)
 
     @staticmethod
-    def from_var(var: Variable, coef: float = 1.0):
+    def from_var(var: Variable, coef: float = 1.0) -> MonomialExpr:
         return MonomialExpr({Term(var): coef})
 
 
 class FuncExpr(Expr):
-    def __init__(self, children: Optional[dict] = None):
+    def __init__(self, children: Optional[dict[Union[Variable, Term, Expr], float]] = None):
         if children and any((i is CONST) for i in children):
             raise ValueError("FuncExpr can't have Term without Variable as a child")
         super().__init__(children)
@@ -404,7 +407,7 @@ class ProdExpr(FuncExpr):
     def __repr__(self):
         return f"ProdExpr({{{tuple(self)}: {self.coef}}})"
 
-    def _normalize(self) -> Expr:
+    def _normalize(self) -> Union[ConstExpr, ProdExpr]:
         if self.coef == 0:
             return ConstExpr(0.0)
         return self
@@ -413,7 +416,7 @@ class ProdExpr(FuncExpr):
 class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
 
-    def __init__(self, base: Union[Term, Expr], expo: float = 1.0):
+    def __init__(self, base: Union[Variable, Term, Expr], expo: float = 1.0):
         super().__init__({base: 1.0})
         self.expo = expo
 
@@ -434,7 +437,7 @@ class PowExpr(FuncExpr):
 class UnaryExpr(FuncExpr):
     """Expression like `f(expression)`."""
 
-    def __init__(self, expr: Union[Term, Expr]):
+    def __init__(self, expr: Union[Variable, Term, Expr]):
         super().__init__({expr: 1.0})
 
     def __hash__(self):
@@ -491,7 +494,7 @@ class ExprCons:
         self._rhs = rhs
         self._normalize()
 
-    def _normalize(self) -> Expr:
+    def _normalize(self):
         """Move constant children in expression to bounds"""
 
         if self._lhs is None and self._rhs is None:
@@ -509,7 +512,7 @@ class ExprCons:
         if self._rhs is not None:
             self._rhs -= c
 
-    def __le__(self, other):
+    def __le__(self, other) -> ExprCons:
         if not self._rhs is None:
             raise TypeError("ExprCons already has upper bound")
         if self._lhs is None:
@@ -519,7 +522,7 @@ class ExprCons:
 
         return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
 
-    def __ge__(self, other):
+    def __ge__(self, other) -> ExprCons:
         if not self._lhs is None:
             raise TypeError("ExprCons already has lower bound")
         if self._rhs is None:
@@ -545,7 +548,7 @@ you have to use parenthesis to break the Python syntax for chained comparisons:
         raise TypeError(msg)
 
 
-def quicksum(termlist):
+def quicksum(termlist) -> Expr:
     """add linear expressions and constants much faster than Python's sum
     by avoiding intermediate data structures and adding terms inplace
     """
@@ -555,7 +558,7 @@ def quicksum(termlist):
     return result
 
 
-def quickprod(termlist):
+def quickprod(termlist) -> Expr:
     """multiply linear expressions and constants by avoiding intermediate
     data structures and multiplying terms inplace
     """
@@ -565,7 +568,7 @@ def quickprod(termlist):
     return result
 
 
-def _to_unary_expr(expr: Union[Expr, MatrixExpr], cls: Type[UnaryExpr]):
+def _to_unary_expr(expr: Union[Expr, MatrixExpr], cls: Type[UnaryExpr]) -> UnaryExpr:
     if isinstance(expr, MatrixExpr):
         res = np.empty(shape=expr.shape, dtype=object)
         res.flat = [cls(i) for i in expr.flat]
@@ -573,26 +576,26 @@ def _to_unary_expr(expr: Union[Expr, MatrixExpr], cls: Type[UnaryExpr]):
     return cls(expr)
 
 
-def exp(expr: Union[Expr, MatrixExpr]):
+def exp(expr: Union[Expr, MatrixExpr]) -> ExpExpr:
     """returns expression with exp-function"""
     return _to_unary_expr(expr, ExpExpr)
 
 
-def log(expr: Union[Expr, MatrixExpr]):
+def log(expr: Union[Expr, MatrixExpr]) -> LogExpr:
     """returns expression with log-function"""
     return _to_unary_expr(expr, LogExpr)
 
 
-def sqrt(expr: Union[Expr, MatrixExpr]):
+def sqrt(expr: Union[Expr, MatrixExpr]) -> SqrtExpr:
     """returns expression with sqrt-function"""
     return _to_unary_expr(expr, SqrtExpr)
 
 
-def sin(expr: Union[Expr, MatrixExpr]):
+def sin(expr: Union[Expr, MatrixExpr]) -> SinExpr:
     """returns expression with sin-function"""
     return _to_unary_expr(expr, SinExpr)
 
 
-def cos(expr: Union[Expr, MatrixExpr]):
+def cos(expr: Union[Expr, MatrixExpr]) -> CosExpr:
     """returns expression with cos-function"""
     return _to_unary_expr(expr, CosExpr)
