@@ -10,8 +10,9 @@
 ### Added
 - Support for SCIP 10.0.0
 - Added support for IIS - Irreducible Inconsistent Subsystems
-- Interfaced events TYPECHANGED, IMPLTYPECHANGED, DUALBOUNDIMPROVED, and GAPUPDATED
+- Added 4 new events: TYPECHANGED, IMPLTYPECHANGED, DUALBOUNDIMPROVED, GAPUPDATED.
 - Support for new implied integrality
+- Wrapped varIsBinary(), varIsIntegral(), varIsImpliedIntegral(), varIsNonImpliedIntegral(), varGetImplType()
 - Interfaced some exact SCIP methods
 - wrapped SCIPprintStatisticsJson
 ### Fixed
@@ -30,11 +31,6 @@
 - Added function isActive() to get whether a variable is active in variable class
 - Added function markDoNotAggrVar() to prevent a variable from being aggregated
 - Added function markDoNotMultaggrVar() to prevent a variable from being multi-aggregated
-- Wrapped SCIPprintStatisticsJson
-- Added 4 new events: TYPECHANGED, IMPLTYPECHANGED, DUALBOUNDIMPROVED, GAPUPDATED.
-- Support for new implied integrality
-- Wrapped varIsBinary(), varIsIntegral(), varIsImpliedIntegral(), varIsNonImpliedIntegral(), varGetImplType()
-- Added support for IISFinder
 ### Fixed
 - Implemented all binary operations between MatrixExpr and GenExpr
 - Fixed the type of @ matrix operation result from MatrixVariable to MatrixExpr.

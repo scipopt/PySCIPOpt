@@ -11776,7 +11776,7 @@ cdef class Model:
 
         return SCIPisExact(self._scip)
 
-    def allowNegSlack(self):
+    def allowNegSlackExact(self):
         """
         Returns whether negative slack is allowed in exact solving mode.
 
