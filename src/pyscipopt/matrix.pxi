@@ -53,7 +53,7 @@ class MatrixExpr(np.ndarray):
         if kwargs.get("axis") is None:
             # Speed up `.sum()` #1070
             return quicksum(self.flat)
-        return super().sum(**kwargs)
+        return super().sum(**kwargs).view(MatrixExpr)
 
     def __le__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 1)
