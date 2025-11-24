@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 ### Fixed
+- Fixed the type of MatrixExpr.sum(axis=...) result from MatrixVariable to MatrixExpr.
 ### Changed
 ### Removed
 
