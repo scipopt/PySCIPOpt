@@ -23,8 +23,11 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Linux-ubuntu22.deb
-          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu22.deb
+          # Debian package (trixie_amd64) for Linux
+          wget --quiet --no-check-certificate \
+            https://scipopt.org/download/release/scipoptsuite_${{ env.version }}-1+trixie_amd64.deb
+          sudo apt-get update
+          sudo apt-get install -y ./scipoptsuite_${{ env.version }}-1+trixie_amd64.deb
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -54,11 +57,16 @@ jobs:
 
       - name: Download dependencies (SCIPOptSuite)
         shell: powershell
-        run: wget https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-win64.exe -outfile scipopt-installer.exe
+        run: |
+          $url = "https://scipopt.org/download/release/scipoptsuite-${{ env.version }}-win-x64.zip"
+          wget $url -outfile scipoptsuite.zip
 
       - name: Install dependencies (SCIPOptSuite)
-        shell: cmd
-        run: scipopt-installer.exe /S /D=${{ env.SCIPOPTDIR }}
+        shell: powershell
+        run: |
+          7z x scipoptsuite.zip -oscipoptsuite
+          New-Item -ItemType Directory -Path "${{ env.SCIPOPTDIR }}" -Force | Out-Null
+          Copy-Item -Path ".\scipoptsuite\*" -Destination "${{ env.SCIPOPTDIR }}" -Recurse -Force
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -92,10 +100,10 @@ jobs:
       - name: Install dependencies (SCIPOptSuite)
         run: |
           brew install tbb boost bison
-          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Darwin.sh
-          chmod +x SCIPOptSuite-${{ env.version }}-Darwin.sh
-          ./SCIPOptSuite-${{ env.version }}-Darwin.sh --skip-license --include-subdir
-          mv SCIPOptSuite-${{ env.version }}-Darwin ${{ github.workspace }}/scipoptsuite
+          URL="https://scipopt.org/download/release/scipoptsuite-${{ env.version }}-macos13-arm64.tgz"
+          wget --quiet --no-check-certificate "$URL"
+          tar xzf "scipoptsuite-${{ env.version }}-macos13-arm64.tgz"
+          mv "scipoptsuite-${{ env.version }}" "${{ github.workspace }}/scipoptsuite"
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
