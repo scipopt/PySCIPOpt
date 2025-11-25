@@ -94,9 +94,11 @@ class Expr:
     def __add__(self, other):
         other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
+            if not self.children:
+                return other
             if isinstance(other, SumExpr):
                 return SumExpr(other.to_dict({self: 1.0}))
-            return SumExpr({self: 1.0, other: 1.0}) if self.children else other
+            return SumExpr({self: 1.0, other: 1.0})
         elif isinstance(other, MatrixExpr):
             return other.__add__(self)
         raise TypeError(
