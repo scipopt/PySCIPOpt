@@ -171,13 +171,13 @@ def test_equation(model):
     assert isinstance(equat, ExprCons)
     assert isinstance(equat.expr, Expr)
     assert equat._lhs == equat._rhs
-    assert equat._lhs == 0.0
+    assert equat._lhs == 1
 
     equat = x == 1 + x**1.2
     assert isinstance(equat, ExprCons)
     assert isinstance(equat.expr, Expr)
     assert equat._lhs == equat._rhs
-    assert equat._lhs == 0.0
+    assert equat._lhs == 1
 
 
 def test_rpow_constant_base(model):
