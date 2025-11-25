@@ -62,7 +62,7 @@ class Expr:
     """Base class for mathematical expressions."""
 
     def __init__(self, children: Optional[dict[Union[Variable, Term, Expr], float]] = None):
-        children = children or {}
+        children = children or {CONST: 0.0}
         if not all(isinstance(i, (Variable, Term, Expr)) for i in children):
             raise TypeError("All keys must be Variable, Term or Expr instances")
 
