@@ -44,6 +44,7 @@ manylinux-aarch64-image = "manylinux_2_28"
 
 [tool.cibuildwheel.linux]
 skip="pp* cp36* cp37* *musllinux*"
+before-build = "rm -f src/pyscipopt/*.c"
 before-all = '''
 #!/bin/bash
 (apt-get update && apt-get install --yes wget) || yum install -y wget zlib libgfortran || brew install wget
@@ -63,6 +64,7 @@ environment = { SCIPOPTDIR="$(pwd)/scip", LD_LIBRARY_PATH="$(pwd)/scip/lib:$LD_L
 
 [tool.cibuildwheel.macos]
 skip="pp* cp36* cp37*"
+before-build = "rm -f src/pyscipopt/*.c"
 before-all = '''
 #!/bin/bash
 brew install wget zlib gcc
@@ -94,6 +96,7 @@ repair-wheel-command = '''
 
 [tool.cibuildwheel.windows]
 skip="pp* cp36* cp37*"
+before-build = "python -c \"import os, glob; [os.remove(f) for f in glob.glob('src/pyscipopt/*.c')]\""
 before-all = [
     "choco install 7zip wget",
     "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.10.0/libscip-windows.zip -O scip.zip",
