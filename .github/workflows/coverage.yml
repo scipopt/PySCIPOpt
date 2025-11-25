@@ -40,7 +40,7 @@ jobs:
 
       - name: Install PySCIPOpt
         run: |
-          export CFLAGS="-O0 -ggdb -Wall -Wextra -Werror" # Debug mode. More warnings. Warnings as errors.
+          export CFLAGS="-O0 -ggdb -Wall -Wextra -Werror -Wno-error=deprecated-declarations" # Debug mode. More warnings. Warnings as errors, but allow deprecated declarations.
           python -m pip install . -v 2>&1 | tee build.log
           grep -i "warning" build.log || true
 
