@@ -23,8 +23,8 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/scipoptsuite_${{ env.version }}-1+jammy_amd64.deb
-          sudo apt-get update && sudo apt install -y ./scipoptsuite_${{ env.version }}-1+jammy_amd64.deb
+          wget --quiet --no-check-certificate "https://github.com/scipopt/scip/releases/download/v${version}/scipoptsuite_${version}-1+jammy_amd64.deb"
+          sudo apt-get update && sudo apt install -y ./scipoptsuite_${version}-1+jammy_amd64.deb
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -92,11 +92,11 @@ jobs:
       - name: Install dependencies (SCIPOptSuite)
         run: |
           brew install tbb boost bison
-          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/scipoptsuite-${{ env.version }}-macos13-arm64.tgz
-          tar xzf scipoptsuite-${{ env.version }}-macos13-arm64.tgz
-          chmod +x scipoptsuite-${{ env.version }}-macos13-arm64.sh
-          ./scipoptsuite-${{ env.version }}-macos13-arm64.sh --skip-license --include-subdir
-          mv scipoptsuite-${{ env.version }}-macos13-arm64 ${{ github.workspace }}/scipoptsuite
+          wget --quiet --no-check-certificate "https://github.com/scipopt/scip/releases/download/v${version}/scipoptsuite-${version}-macos13-arm64.tgz"
+          tar xzf "scipoptsuite-${version}-macos13-arm64.tgz"
+          chmod +x "scipoptsuite-${version}-macos13-arm64.sh"
+          "./scipoptsuite-${version}-macos13-arm64.sh" --skip-license --include-subdir
+          mv "scipoptsuite-${version}-macos13-arm64" "${{ github.workspace }}/scipoptsuite"
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4

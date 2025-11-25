@@ -71,7 +71,9 @@ jobs:
 
       - name: Download dependencies (SCIPOptSuite)
         shell: powershell
-        run: wget https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/scipoptsuite-${{ env.version }}-win-x64.exe -outfile scipopt-installer.exe
+        run: |
+          $url = "https://github.com/scipopt/scip/releases/download/v${{ env.version }}/scipoptsuite-${{ env.version }}-win-x64.exe"
+          Invoke-WebRequest -Uri $url -OutFile scipopt-installer.exe
 
       - name: Install dependencies (SCIPOptSuite)
         shell: cmd
