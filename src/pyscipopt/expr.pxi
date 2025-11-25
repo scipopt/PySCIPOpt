@@ -113,7 +113,13 @@ class Expr:
     def __mul__(self, other):
         other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
-            return ProdExpr(self, other) if self.children else ConstExpr()
+            if not self.children:
+                return ConstExpr(0.0)
+            if isinstance(other, ConstExpr):
+                if other[CONST] == 0:
+                    return ConstExpr(0.0)
+                return ProdExpr(self, coef=other[CONST])
+            return ProdExpr(self, other)
         elif isinstance(other, MatrixExpr):
             return other.__mul__(self)
         raise TypeError(
@@ -338,7 +344,7 @@ class PolynomialExpr(SumExpr):
 class ConstExpr(PolynomialExpr):
     """Expression representing for `constant`."""
 
-    def __init__(self, constant: float = 0):
+    def __init__(self, constant: float = 0.0):
         super().__init__({CONST: constant})
 
     def __abs__(self) -> ConstExpr:
@@ -396,10 +402,14 @@ class ProdExpr(FuncExpr):
 
     def __mul__(self, other):
         other = Expr.from_const_or_var(other)
-        if isinstance(other, ConstExpr):
-            if other[CONST] == 0:
-                return ConstExpr(0.0)
-            return ProdExpr(*self, coef=self.coef * other[CONST])
+        if isinstance(other, Expr):
+            if isinstance(other, ConstExpr):
+                if other[CONST] == 0:
+                    return ConstExpr(0.0)
+                return ProdExpr(*self, coef=self.coef * other[CONST])
+            elif isinstance(other, ProdExpr):
+                return ProdExpr(*self, *other, coef=self.coef * other.coef)
+            return ProdExpr(*self, other, coef=self.coef)
         return super().__mul__(other)
 
     def __repr__(self) -> str:
