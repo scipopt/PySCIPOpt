@@ -23,11 +23,8 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          # Debian package (trixie_amd64) for Linux
-          wget --quiet --no-check-certificate \
-            https://scipopt.org/download/release/scipoptsuite_${{ env.version }}-1+trixie_amd64.deb
-          sudo apt-get update
-          sudo apt-get install -y ./scipoptsuite_${{ env.version }}-1+trixie_amd64.deb
+          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/scipoptsuite_${{ env.version }}-1+jammy_amd64.deb
+          sudo apt-get update && sudo apt install -y ./scipoptsuite_${{ env.version }}-1+jammy_amd64.deb
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -57,16 +54,11 @@ jobs:
 
       - name: Download dependencies (SCIPOptSuite)
         shell: powershell
-        run: |
-          $url = "https://scipopt.org/download/release/scipoptsuite-${{ env.version }}-win-x64.zip"
-          wget $url -outfile scipoptsuite.zip
+        run: wget https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/scipoptsuite-${{ env.version }}-win-x64.exe -outfile scipopt-installer.exe
 
       - name: Install dependencies (SCIPOptSuite)
-        shell: powershell
-        run: |
-          7z x scipoptsuite.zip -oscipoptsuite
-          New-Item -ItemType Directory -Path "${{ env.SCIPOPTDIR }}" -Force | Out-Null
-          Copy-Item -Path ".\scipoptsuite\*" -Destination "${{ env.SCIPOPTDIR }}" -Recurse -Force
+        shell: cmd
+        run: scipopt-installer.exe /S /D=${{ env.SCIPOPTDIR }}
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -100,10 +92,11 @@ jobs:
       - name: Install dependencies (SCIPOptSuite)
         run: |
           brew install tbb boost bison
-          URL="https://scipopt.org/download/release/scipoptsuite-${{ env.version }}-macos13-arm64.tgz"
-          wget --quiet --no-check-certificate "$URL"
-          tar xzf "scipoptsuite-${{ env.version }}-macos13-arm64.tgz"
-          mv "scipoptsuite-${{ env.version }}" "${{ github.workspace }}/scipoptsuite"
+          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/scipoptsuite-${{ env.version }}-macos13-arm64.tgz
+          tar xzf scipoptsuite-${{ env.version }}-macos13-arm64.tgz
+          chmod +x scipoptsuite-${{ env.version }}-macos13-arm64.sh
+          ./scipoptsuite-${{ env.version }}-macos13-arm64.sh --skip-license --include-subdir
+          mv scipoptsuite-${{ env.version }}-macos13-arm64 ${{ github.workspace }}/scipoptsuite
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -130,4 +123,3 @@ jobs:
   ### if you need valgrind on mac, you can install it via
   # brew tap LouisBrunner/valgrind
   # brew install --HEAD LouisBrunner/valgrind/valgrind
-

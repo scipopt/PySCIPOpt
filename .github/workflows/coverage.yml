@@ -25,8 +25,8 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Linux-ubuntu22.deb
-          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu22.deb
+          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/scipoptsuite_${{ env.version }}-1+jammy_amd64.deb
+          sudo apt-get update && sudo apt install -y ./scipoptsuite_${{ env.version }}-1+jammy_amd64.deb
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
