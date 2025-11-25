@@ -266,8 +266,11 @@ class SumExpr(Expr):
             return SumExpr({i: self[i] * other[CONST] for i in self if self[i] != 0})
         return super().__mul__(other)
 
+    def _remove_zero(self) -> dict:
+        return {k: v for k, v in self.children.items() if v != 0}
+
     def _normalize(self) -> SumExpr:
-        return SumExpr({k: v for k, v in self.children.items() if v != 0})
+        return SumExpr(self._remove_zero())
 
 
 class PolynomialExpr(SumExpr):
@@ -326,9 +329,7 @@ class PolynomialExpr(SumExpr):
         return cls(children)
 
     def _normalize(self) -> PolynomialExpr:
-        return PolynomialExpr.to_subclass(
-            {k: v for k, v in self.children.items() if v != 0}
-        )
+        return PolynomialExpr(self._remove_zero())
 
     def _to_nodes(self, start: int = 0, coef: float = 1) -> list[tuple]:
         """Convert expression to list of nodes for SCIP expression construction"""
