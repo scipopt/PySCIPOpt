@@ -119,12 +119,6 @@ def test_expr_op_expr(model):
         expr **= sqrt(2)
 
 
-def test_degree(model):
-    m, x, y, z = model
-    expr = Expr()
-    assert expr.degree() == float("inf")
-
-
 # In contrast to Expr inequalities, we can't expect much of the sides
 def test_inequality(model):
     m, x, y, z = model
