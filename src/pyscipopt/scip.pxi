@@ -2663,6 +2663,23 @@ cdef class _VarArray:
         if self.ptr != NULL:
             free(self.ptr)
 
+cdef class IIS:
+    cdef SCIP_IIS* _iis
+    cdef SCIP* subscip
+    cdef public object time
+    cdef public object irreducible
+    cdef public object nodes
+    cdef public object model
+
+    def __init__(self, Model model):
+        self._iis = SCIPgetIIS(model._scip)
+        self.time = SCIPiisGetTime(self._iis)
+        self.irreducible = SCIPiisIsSubscipIrreducible(self._iis)
+        self.nodes = SCIPiisGetNNodes(self._iis)
+        subscip = SCIPiisGetSubscip(self._iis)
+        self.model = Model.create(subscip)
+        model._iis = self._iis
+
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
 # - interface SCIPfreeProb()
@@ -2706,6 +2723,7 @@ cdef class Model:
         self._modelvars = {}
         self._generated_event_handlers_count = 0
         self._benders_subproblems = []  # Keep references to Benders subproblem Models
+        self._iis = NULL
 
         if not createscip:
             # if no SCIP instance should be created, then an empty Model object is created.
@@ -9283,16 +9301,40 @@ cdef class Model:
         """
         Generates an Irreducible Infeasible Subsystem (IIS) from the current
         problem.
+
+        Returns
+        -------
+        IIS
+
         """
+        PY_SCIP_CALL( SCIPgenerateIIS(self._scip) )
+        iis = IIS(self)
+        return iis
+    
+    def getIIS(self):
+        """
+        Get the IIS object.
+        Note: Needs to be called after generateIIS, or after a single execution of the iisfinderExec.
+        
+        Returns
+        -------
+        IIS 
+        """
+        assert self._iis != NULL, "No IIS exists. You need to first call generateIIS() or run the iisfinderexec method of your custom IISfinder class."
 
-        PY_SCIP_CALL(SCIPgenerateIIS(self._scip))
+        return IIS(self)
 
-    def iisGreedyMakeIrreducible(self, IISfinder iisfinder):
+    def iisGreedyMakeIrreducible(self, IIS iis):
        """
        Perform the greedy deletion algorithm with singleton batches to obtain an irreducible infeasible subsystem (IIS)
+
+       Parameters
+       ----------
+       iis : IIS
+            The IIS to apply the greedy deletion algorithm to.
        """
 
-       PY_SCIP_CALL(SCIPiisGreedyMakeIrreducible(iisfinder._iisfinder))
+       PY_SCIP_CALL(SCIPiisGreedyMakeIrreducible(iis._iis))
 
     def includeRelax(self, Relax relax, name, desc, priority=10000, freq=1):
         """

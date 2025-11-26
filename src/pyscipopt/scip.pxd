@@ -1223,6 +1223,10 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPiisGreedyMakeIrreducible(SCIP_IIS* iis)
     SCIP_Bool SCIPiisIsSubscipInfeasible(SCIP_IIS* iis)
     SCIP_Bool SCIPiisIsSubscipIrreducible(SCIP_IIS* iis)
+    SCIP_IIS* SCIPgetIIS(SCIP* scip)
+    SCIP_Real SCIPiisGetTime(SCIP_IIS* scip)
+    SCIP_Bool SCIPiisIsSubscipIrreducible(SCIP_IIS* scip)
+    SCIP_Longint SCIPiisGetNNodes(SCIP_IIS* scip)
     SCIP* SCIPiisGetSubscip(SCIP_IIS* iis)
 
     #Relaxation plugin
@@ -2212,6 +2216,8 @@ cdef class Model:
     cdef int _generated_event_handlers_count
     # store references to Benders subproblem Models for proper cleanup
     cdef _benders_subproblems
+    # store iis, if found
+    cdef SCIP_IIS* _iis
 
     @staticmethod
     cdef create(SCIP* scip)
