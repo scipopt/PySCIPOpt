@@ -5690,8 +5690,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPcreateExprVar(self._scip, &scip_exprs[i], wrapper.ptr[0], NULL, NULL))
             elif e_type is ConstExpr:
                 PY_SCIP_CALL(SCIPcreateExprValue(self._scip, &scip_exprs[i], <SCIP_Real>value, NULL, NULL))
-
-            elif e_type is SumExpr:
+            elif e_type is Expr:
                 nchildren = len(value)
                 children_expr = <SCIP_EXPR**> malloc(nchildren * sizeof(SCIP_EXPR*))
                 coefs = <SCIP_Real*> malloc(nchildren * sizeof(SCIP_Real))

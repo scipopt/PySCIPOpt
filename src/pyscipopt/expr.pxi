@@ -91,14 +91,22 @@ class Expr:
     def __abs__(self) -> AbsExpr:
         return UnaryExpr.from_expr(self, AbsExpr)
 
+    @staticmethod
+    def _is_sum(expr: Expr) -> bool:
+        return type(expr) is Expr or isinstance(expr, PolynomialExpr)
+
     def __add__(self, other):
         other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
             if not self.children:
                 return other
-            if isinstance(other, SumExpr):
-                return SumExpr(other.to_dict({self: 1.0}))
-            return SumExpr({self: 1.0, other: 1.0})
+            if Expr._is_sum(self):
+                if Expr._is_sum(other):
+                    return Expr(self.to_dict(other.children))
+                return Expr(self.to_dict({other: 1.0}))
+            elif Expr._is_sum(other):
+                return Expr(other.to_dict({self: 1.0}))
+            return Expr({self: 1.0, other: 1.0})
         elif isinstance(other, MatrixExpr):
             return other.__add__(self)
         raise TypeError(
@@ -226,8 +234,11 @@ class Expr:
 
         return res
 
+    def _remove_zero(self) -> dict:
+        return {k: v for k, v in self.children.items() if v != 0}
+
     def _normalize(self) -> Expr:
-        return self
+        return Expr(self._remove_zero())
 
     def degree(self) -> float:
         return max((i.degree() for i in self)) if self.children else float("inf")
@@ -249,33 +260,7 @@ class Expr:
         return nodes + [(type(self), indices)]
 
 
-class SumExpr(Expr):
-    """Expression like `expression1 + expression2 + constant`."""
-
-    def __add__(self, other):
-        other = Expr.from_const_or_var(other)
-        if isinstance(other, Expr):
-            if isinstance(other, SumExpr):
-                return SumExpr(self.to_dict(other.children))
-            return SumExpr(self.to_dict({other: 1.0}))
-        return super().__add__(other)
-
-    def __mul__(self, other):
-        other = Expr.from_const_or_var(other)
-        if isinstance(other, ConstExpr):
-            if other[CONST] == 0:
-                return ConstExpr(0.0)
-            return SumExpr({i: self[i] * other[CONST] for i in self if self[i] != 0})
-        return super().__mul__(other)
-
-    def _remove_zero(self) -> dict:
-        return {k: v for k, v in self.children.items() if v != 0}
-
-    def _normalize(self) -> SumExpr:
-        return SumExpr(self._remove_zero())
-
-
-class PolynomialExpr(SumExpr):
+class PolynomialExpr(Expr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
 
     def __init__(self, children: Optional[dict[Term, float]] = None):
@@ -340,7 +325,7 @@ class PolynomialExpr(SumExpr):
             nodes += child._to_nodes(start + len(nodes), c)
 
         if len(nodes) > 1:
-            return nodes + [(SumExpr, list(range(start, start + len(nodes))))]
+            return nodes + [(Expr, list(range(start, start + len(nodes))))]
         return nodes
 
 
