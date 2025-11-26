@@ -5,13 +5,6 @@ import os
 import sys
 import warnings
 import weakref
-
-cimport cython
-from cpython cimport Py_INCREF, Py_DECREF
-from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPointer
-from libc.stdlib cimport malloc, free
-from libc.stdio cimport stdout, stderr, fdopen, fputs, fflush, fclose
-from posix.stdio cimport fileno
 from collections.abc import Iterable
 from dataclasses import dataclass
 from itertools import repeat
@@ -19,6 +12,12 @@ from numbers import Number
 from os.path import abspath, splitext
 from typing import Union
 
+cimport cython
+from cpython cimport Py_INCREF, Py_DECREF
+from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPointer
+from libc.stdlib cimport malloc, free
+from libc.stdio cimport stdout, stderr, fdopen, fputs, fflush, fclose
+from posix.stdio cimport fileno
 import numpy as np
 
 include "expr.pxi"
@@ -4090,7 +4089,8 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
         return pyVar
 
-    def addMatrixVar(self,
+    def addMatrixVar(
+            self,
             shape: Union[int, Tuple],
             name: Union[str, np.ndarray] = '',
             vtype: Union[str, np.ndarray] = 'C',
@@ -6135,11 +6135,19 @@ cdef class Model:
             matrix_stickingatnode = stickingatnode
 
         for idx in np.ndindex(cons.shape):
-            matrix_cons[idx] = self.addCons(cons[idx], name=matrix_names[idx], initial=matrix_initial[idx],
-                                            separate=matrix_separate[idx], check=matrix_check[idx],
-                                            propagate=matrix_propagate[idx], local=matrix_local[idx],
-                                            modifiable=matrix_modifiable[idx], dynamic=matrix_dynamic[idx],
-                                            removable=matrix_removable[idx], stickingatnode=matrix_stickingatnode[idx])
+            matrix_cons[idx] = self.addCons(
+                cons[idx],
+                name=matrix_names[idx],
+                initial=matrix_initial[idx],
+                separate=matrix_separate[idx],
+                check=matrix_check[idx],
+                propagate=matrix_propagate[idx],
+                local=matrix_local[idx],
+                modifiable=matrix_modifiable[idx],
+                dynamic=matrix_dynamic[idx],
+                removable=matrix_removable[idx],
+                stickingatnode=matrix_stickingatnode[idx]
+            )
 
         return matrix_cons.view(MatrixConstraint)
 
