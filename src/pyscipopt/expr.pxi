@@ -275,6 +275,14 @@ class PolynomialExpr(Expr):
             return PolynomialExpr.to_subclass(self.to_dict(other.children))
         return super().__add__(other)
 
+    def __iadd__(self, other):
+        other = Expr.from_const_or_var(other)
+        if isinstance(other, PolynomialExpr):
+            for child, coef in other.children.items():
+                self.children[child] = self.children.get(child, 0.0) + coef
+            return self
+        return super().__iadd__(other)
+
     def __mul__(self, other):
         other = Expr.from_const_or_var(other)
         if isinstance(other, PolynomialExpr):
