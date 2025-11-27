@@ -394,7 +394,9 @@ class ProdExpr(FuncExpr):
 
     def __add__(self, other):
         other = Expr.from_const_or_var(other)
-        if isinstance(other, ProdExpr) and hash(self) == hash(other):
+        if isinstance(other, ProdExpr) and hash(frozenset(self)) == hash(
+            frozenset(other)
+        ):
             return ProdExpr(*self, coef=self.coef + other.coef)
         return super().__add__(other)
 
