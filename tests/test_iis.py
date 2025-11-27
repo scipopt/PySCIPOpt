@@ -58,6 +58,8 @@ def test_custom_iis_finder():
 
 def test_iisGreddyMakeIrreducible():
     m = infeasible_model()
+
+    m.setParam("iis/greedy/priority", -1)
     my_iis = myIIS(m, skip=True)
     m.includeIISfinder(my_iis, "", "")
     iis = m.generateIIS()
