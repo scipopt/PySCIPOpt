@@ -19,12 +19,15 @@ def infeasible_model():
 def test_generate_iis():
     m = infeasible_model()
 
+    m.optimize()
+
     # make sure IIS generation doesn't raise any exceptions
     iis = m.generateIIS()
-    assert iis.irreducible
-    assert iis.model.getNConss() == 2
-    assert iis.nodes == 0
-    iis.time
+    subscip = iis.getSubscip()
+    assert iis.isSubscipIrreducible()
+    assert subscip.getNConss() == 2
+    assert iis.getNNodes() == 0
+    assert iis.getTime() > 0
 
 class myIIS(IISfinder):
     def __init__(self, model, skip=False):
@@ -50,21 +53,22 @@ def test_custom_iis_finder():
     m = infeasible_model()
     my_iis = myIIS(m)
 
+    m.setParam("iis/greedy/priority", -1)
     m.includeIISfinder(my_iis, "", "")
 
     m.generateIIS()
     iis = m.getIIS()
-    assert iis.model.getNConss() == my_iis.size
+    subscip = iis.getSubscip()
+    assert subscip.getNConss() == my_iis.size
 
 def test_iisGreddyMakeIrreducible():
     m = infeasible_model()
 
-    m.setParam("iis/greedy/priority", -1)
     my_iis = myIIS(m, skip=True)
-    m.includeIISfinder(my_iis, "", "")
+    m.includeIISfinder(my_iis, "", "", priority=9999999)
     iis = m.generateIIS()
     with pytest.raises(AssertionError):
-        assert not iis.irreducible # currently breaking. do SCIP IIS methods enter after custom iisfinder?
+        assert not iis.isSubscipIrreducible() # currently breaking. do SCIP IIS methods enter after custom iisfinder?
 
     m.iisGreedyMakeIrreducible(iis)
-    assert iis.irreducible
+    assert iis.isSubscipIrreducible()

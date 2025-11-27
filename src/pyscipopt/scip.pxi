@@ -2665,20 +2665,55 @@ cdef class _VarArray:
 
 cdef class IIS:
     cdef SCIP_IIS* _iis
-    cdef SCIP* subscip
-    cdef public object time
-    cdef public object irreducible
-    cdef public object nodes
-    cdef public object model
 
     def __init__(self, Model model):
         self._iis = SCIPgetIIS(model._scip)
-        self.time = SCIPiisGetTime(self._iis)
-        self.irreducible = SCIPiisIsSubscipIrreducible(self._iis)
-        self.nodes = SCIPiisGetNNodes(self._iis)
-        subscip = SCIPiisGetSubscip(self._iis)
-        self.model = Model.create(subscip)
         model._iis = self._iis
+    
+    def getTime(self):
+        """
+        Retrieve the solving time of the IIS.
+
+        Returns
+        -------
+        float
+        """
+        return SCIPiisGetTime(self._iis)
+
+    def isSubscipIrreducible(self):
+        """
+        Returns whether the IIS is irreducible.
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPiisIsSubscipIrreducible(self._iis)
+    
+    def getNNodes(self):
+        """
+        Gets number of nodes in the IIS solve.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPiisGetNNodes(self._iis)
+    
+    def getSubscip(self):
+        """
+        Get the subscip of an IIS.
+
+        Returns
+        -------
+        Model
+        """
+        cdef SCIP* subscip
+
+        subscip = SCIPiisGetSubscip(self._iis)
+        model = Model.create(subscip)
+        return model
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
