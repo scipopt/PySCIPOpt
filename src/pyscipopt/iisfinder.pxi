@@ -3,6 +3,7 @@
 cdef class IISfinder:
     cdef public IIS iis
     cdef SCIP_IIS* scip_iis 
+    cdef SCIP_IISFINDER* scip_iisfinder
 
     def iisfinderfree(self):
         '''calls destructor and frees memory of iis finder'''

@@ -1,7 +1,6 @@
 import pytest
 
 from pyscipopt import Model, SCIP_RESULT, IISfinder
-from pyscipopt.recipes.infeasibilities import get_infeasible_constraints
 
 def infeasible_model():
     m = Model()
@@ -31,8 +30,6 @@ def test_generate_iis():
 
 class myIIS(IISfinder):
     def __init__(self, skip=False):
-        super().__init__()
-        self.size = 0
         self.skip = skip
         self.called = False
     
@@ -58,29 +55,31 @@ def test_custom_iis_finder():
     my_iis = myIIS()
 
     m.setParam("iis/irreducible", False)
-    m.setParam("iis/greedy/timelimperiter", 0) # disabling greedy iis finder
+    m.setParam("iis/greedy/priority", -1000000) # lowering priority of greedy iis finder
     m.includeIISfinder(my_iis, "", "")
 
     m.generateIIS()
     assert my_iis.called
 
     iis = m.getIIS()
-    iis.setSubscipInfeasible(True)
+    assert iis.isSubscipIrreducible()
+    assert iis.isSubscipInfeasible()
     subscip = iis.getSubscip()
     assert subscip.getNConss() == 2
 
 def test_iisGreddyMakeIrreducible():
     m = infeasible_model()
     m.setParam("iis/irreducible", False)
-    m.setParam("iis/greedy/timelimperiter", 0) # disabling greedy iis finder
+    m.setParam("iis/greedy/priority", 1) # lowering priority of greedy iis finder
 
     my_iis = myIIS(skip=True)
-    m.includeIISfinder(my_iis, "", "", priority=99999999)
-    m.optimize()
+    m.includeIISfinder(my_iis, "", "", priority=10000)
 
     iis = m.generateIIS()
-    iis.setSubscipInfeasible(True)
-    assert not iis.isSubscipIrreducible()
+    with pytest.raises(AssertionError):
+        assert not iis.isSubscipIrreducible() # this should not fail
+
+    assert iis.isSubscipInfeasible()
 
     iis.greedyMakeIrreducible()
     assert iis.isSubscipIrreducible()

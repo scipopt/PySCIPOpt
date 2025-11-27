@@ -2704,6 +2704,16 @@ cdef class IIS:
         bool
         """
         return SCIPiisIsSubscipIrreducible(self._iis)
+
+    def isSubscipInfeasible(self):
+        """
+        Returns whether the IIS is infeasible.
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPiisIsSubscipInfeasible(self._iis)
     
     def setSubscipIrreducible(self, irreducible):
         """
@@ -9370,6 +9380,8 @@ cdef class Model:
             frequency for calling IIS finder
 
         """
+        cdef SCIP_IISFINDER* scip_iisfinder
+
         nam = str_conversion(name)
         des = str_conversion(desc)
 
@@ -9377,9 +9389,11 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPincludeIISfinder(self._scip, nam, des, priority, PyiisfinderCopy, PyiisfinderFree,
                                          PyiisfinderExec, <SCIP_IISFINDERDATA*> iisfinder))
-        iisfinder.name = name
 
+        scip_iisfinder = SCIPfindIISfinder(self._scip, nam)
+        iisfinder.name = name
         Py_INCREF(iisfinder)
+        iisfinder.scip_iisfinder = scip_iisfinder
 
     def generateIIS(self):
         """
