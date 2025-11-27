@@ -9,20 +9,20 @@ include "matrix.pxi"
 class Term:
     """A monomial term consisting of one or more variables."""
 
-    __slots__ = ("vars", "ptrs")
+    __slots__ = ("vars", "HASH")
 
     def __init__(self, *vars: Variable):
-        self.vars = tuple(sorted(vars, key=lambda v: v.ptr()))
-        self.ptrs = tuple(v.ptr() for v in self.vars)
+        self.vars = tuple(sorted(vars, key=hash))
+        self.HASH = hash(self.vars)
 
     def __getitem__(self, idx: int) -> Variable:
         return self.vars[idx]
 
     def __hash__(self) -> int:
-        return self.ptrs.__hash__()
+        return self.HASH
 
     def __eq__(self, other: Term) -> bool:
-        return self.ptrs == other.ptrs
+        return self.HASH == other.HASH
 
     def __len__(self) -> int:
         return len(self.vars)
@@ -44,7 +44,7 @@ class Term:
         """Convert term to list of nodes for SCIP expression construction"""
         if coef == 0:
             return []
-        elif len(self.vars) == 0:
+        elif self.degree() == 0:
             return [(ConstExpr, coef)]
         else:
             nodes = [(Term, i) for i in self.vars]
