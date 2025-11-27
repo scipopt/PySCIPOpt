@@ -2705,6 +2705,30 @@ cdef class IIS:
         """
         return SCIPiisIsSubscipIrreducible(self._iis)
     
+    def setSubscipIrreducible(self, irreducible):
+        """
+        Sets the flag that states whether the IIS subscip is irreducible.
+
+        Parameters
+        ----------
+        irreducible : bool
+            the value to set the irreducible flag to
+        """
+
+        SCIPiisSetSubscipIrreducible(self._iis, irreducible)
+
+    def setSubscipInfeasible(self, infeasible):
+        """
+        Sets the flag that states whether the IIS subscip is infeasible.
+
+        Parameters
+        ----------
+        infeasible : bool
+            the value to set the infeasible flag to
+        """
+
+        SCIPiisSetSubscipInfeasible(self._iis, infeasible)
+
     def getNNodes(self):
         """
         Gets number of nodes in the IIS solve.
@@ -2729,6 +2753,14 @@ cdef class IIS:
         subscip = SCIPiisGetSubscip(self._iis)
         model = Model.create(subscip)
         return model
+
+    def greedyMakeIrreducible(self):
+       """
+       Perform the greedy deletion algorithm with singleton batches to obtain an irreducible infeasible subsystem (IIS)
+       """
+
+       PY_SCIP_CALL(SCIPiisGreedyMakeIrreducible(self._iis))
+
 
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
@@ -9379,18 +9411,6 @@ cdef class Model:
         assert _iis != NULL, "No IIS exists. You need to first call generateIIS() or run the iisfinderexec method of your custom IISfinder class."
 
         return IIS.create(_iis)
-
-    def iisGreedyMakeIrreducible(self, IIS iis):
-       """
-       Perform the greedy deletion algorithm with singleton batches to obtain an irreducible infeasible subsystem (IIS)
-
-       Parameters
-       ----------
-       iis : IIS
-            The IIS to apply the greedy deletion algorithm to.
-       """
-
-       PY_SCIP_CALL(SCIPiisGreedyMakeIrreducible(iis._iis))
 
     def includeRelax(self, Relax relax, name, desc, priority=10000, freq=1):
         """

@@ -1223,6 +1223,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPiisGreedyMakeIrreducible(SCIP_IIS* iis)
     SCIP_Bool SCIPiisIsSubscipInfeasible(SCIP_IIS* iis)
     SCIP_Bool SCIPiisIsSubscipIrreducible(SCIP_IIS* iis)
+    SCIP_RETCODE SCIPiisSetSubscipIrreducible(SCIP_IIS* iis, SCIP_Bool irreducible)
+    SCIP_RETCODE SCIPiisSetSubscipInfeasible(SCIP_IIS* iis, SCIP_Bool infeasible)
     SCIP_IIS* SCIPgetIIS(SCIP* scip)
     SCIP_Real SCIPiisGetTime(SCIP_IIS* scip)
     SCIP_Bool SCIPiisIsSubscipIrreducible(SCIP_IIS* scip)

@@ -1,10 +1,8 @@
 ##@file iisfinder.pxi
 #@brief Base class of the IIS finder Plugin
 cdef class IISfinder:
-    cdef public Model model
-    cdef public str name
-    cdef SCIP_IISFINDER* _iisfinder
-    cdef SCIP_IIS* _iis
+    cdef public IIS iis
+    cdef SCIP_IIS* scip_iis 
 
     def iisfinderfree(self):
         '''calls destructor and frees memory of iis finder'''

@@ -36,8 +36,10 @@ class myIIS(IISfinder):
         self.size = 0
         self.iis = None
         self.skip = skip
+        self.called = False
     
     def iisfinderexec(self):
+        self.called = True
         if self.skip:
             return {"result": SCIP_RESULT.SUCCESS} # success to attempt to skip further processing
 
@@ -48,27 +50,34 @@ class myIIS(IISfinder):
         self.size = n_infeasibilities
         return {"result": SCIP_RESULT.SUCCESS}
 
-def test_custom_iis_finder():        
-    
+def test_custom_iis_finder():
+
     m = infeasible_model()
     my_iis = myIIS(m)
 
-    m.setParam("iis/greedy/priority", -1)
+    m.setParam("iis/irreducible", False)
     m.includeIISfinder(my_iis, "", "")
 
     m.generateIIS()
+    assert my_iis.called
+
     iis = m.getIIS()
+    iis.setSubscipInfeasible(True)
     subscip = iis.getSubscip()
     assert subscip.getNConss() == my_iis.size
 
 def test_iisGreddyMakeIrreducible():
     m = infeasible_model()
+    m.setParam("iis/irreducible", False)
+    m.setParam("iis/greedy/timelimperiter", 0) # disabling greedy iis finder
 
     my_iis = myIIS(m, skip=True)
-    m.includeIISfinder(my_iis, "", "", priority=9999999)
-    iis = m.generateIIS()
-    with pytest.raises(AssertionError):
-        assert not iis.isSubscipIrreducible() # currently breaking. do SCIP IIS methods enter after custom iisfinder?
+    m.includeIISfinder(my_iis, "", "", priority=99999999)
+    m.optimize()
 
-    m.iisGreedyMakeIrreducible(iis)
+    iis = m.generateIIS()
+    iis.setSubscipInfeasible(True)
+    assert not iis.isSubscipIrreducible()
+
+    iis.greedyMakeIrreducible()
     assert iis.isSubscipIrreducible()
