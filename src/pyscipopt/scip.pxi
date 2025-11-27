@@ -9372,9 +9372,11 @@ cdef class Model:
         """
         nam = str_conversion(name)
         des = str_conversion(desc)
+
+        iisfinder.iis = IIS()
+
         PY_SCIP_CALL(SCIPincludeIISfinder(self._scip, nam, des, priority, PyiisfinderCopy, PyiisfinderFree,
                                          PyiisfinderExec, <SCIP_IISFINDERDATA*> iisfinder))
-        iisfinder.model = <Model>weakref.proxy(self)
         iisfinder.name = name
 
         Py_INCREF(iisfinder)

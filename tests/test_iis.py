@@ -30,32 +30,35 @@ def test_generate_iis():
     assert m.isGE(iis.getTime(), 0)
 
 class myIIS(IISfinder):
-    def __init__(self, model, skip=False):
+    def __init__(self, skip=False):
         super().__init__()
-        self.model = model
         self.size = 0
-        self.iis = None
         self.skip = skip
         self.called = False
     
     def iisfinderexec(self):
         self.called = True
         if self.skip:
+            self.iis.setSubscipInfeasible(True)
+            self.iis.setSubscipIrreducible(False)
             return {"result": SCIP_RESULT.SUCCESS} # success to attempt to skip further processing
 
-        n_infeasibilities, _ = get_infeasible_constraints(self.model.__repr__.__self__)
-        if n_infeasibilities == 0:
-            return {"result": SCIP_RESULT.DIDNOTFIND}
+        subscip = self.iis.getSubscip()
+        for c in subscip.getConss():
+            if c.name in ["c2", "c4"]:
+                subscip.delCons(c)
 
-        self.size = n_infeasibilities
+        self.iis.setSubscipInfeasible(True)
+        self.iis.setSubscipIrreducible(True)
         return {"result": SCIP_RESULT.SUCCESS}
 
 def test_custom_iis_finder():
 
     m = infeasible_model()
-    my_iis = myIIS(m)
+    my_iis = myIIS()
 
     m.setParam("iis/irreducible", False)
+    m.setParam("iis/greedy/timelimperiter", 0) # disabling greedy iis finder
     m.includeIISfinder(my_iis, "", "")
 
     m.generateIIS()
@@ -64,14 +67,14 @@ def test_custom_iis_finder():
     iis = m.getIIS()
     iis.setSubscipInfeasible(True)
     subscip = iis.getSubscip()
-    assert subscip.getNConss() == my_iis.size
+    assert subscip.getNConss() == 2
 
 def test_iisGreddyMakeIrreducible():
     m = infeasible_model()
     m.setParam("iis/irreducible", False)
     m.setParam("iis/greedy/timelimperiter", 0) # disabling greedy iis finder
 
-    my_iis = myIIS(m, skip=True)
+    my_iis = myIIS(skip=True)
     m.includeIISfinder(my_iis, "", "", priority=99999999)
     m.optimize()
 

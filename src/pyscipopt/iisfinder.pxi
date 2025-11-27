@@ -28,6 +28,8 @@ cdef SCIP_RETCODE PyiisfinderExec (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCI
     cdef SCIP_IISFINDERDATA* iisfinderdata
     iisfinderdata = SCIPiisfinderGetData(iisfinder)
     PyIIS = <IISfinder>iisfinderdata
+
+    PyIIS.iis._iis = iis
     result_dict = PyIIS.iisfinderexec()
     assert isinstance(result_dict, dict), "iisfinderexec() must return a dictionary."
     return SCIP_OKAY
