@@ -61,6 +61,8 @@ CONST = Term()
 class Expr:
     """Base class for mathematical expressions."""
 
+    __slots__ = ("children",)
+
     def __init__(self, children: Optional[dict[Union[Variable, Term, Expr], float]] = None):
         children = children or {}
         if not all(isinstance(i, (Variable, Term, Expr)) for i in children):
@@ -383,6 +385,8 @@ class FuncExpr(Expr):
 class ProdExpr(FuncExpr):
     """Expression like `coefficient * expression`."""
 
+    __slots__ = ("children", "coef")
+
     def __init__(self, *children: Expr, coef: float = 1.0):
         if len(set(children)) != len(children):
             raise ValueError("ProdExpr can't have duplicate children")
@@ -419,6 +423,8 @@ class ProdExpr(FuncExpr):
 
 class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
+
+    __slots__ = ("children", "expo")
 
     def __init__(self, base: Union[Variable, Term, Expr], expo: float = 1.0):
         super().__init__({base: 1.0})
