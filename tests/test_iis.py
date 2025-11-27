@@ -27,7 +27,7 @@ def test_generate_iis():
     assert iis.isSubscipIrreducible()
     assert subscip.getNConss() == 2
     assert iis.getNNodes() == 0
-    assert iis.getTime() > 0
+    assert m.isGE(iis.getTime(), 0)
 
 class myIIS(IISfinder):
     def __init__(self, model, skip=False):
