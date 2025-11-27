@@ -11959,7 +11959,7 @@ cdef class Model:
                     col_features[col_i][col_feature_map["integer"]] = 1
                 elif vtype == SCIP_VARTYPE_CONTINUOUS:
                     col_features[col_i][col_feature_map["continuous"]] = 1
-                elif vtype == SCIP_VARTYPE_IMPLINT:
+                elif vtype == SCIP_DEPRECATED_VARTYPE_IMPLINT:
                     col_features[col_i][col_feature_map["implicit_integer"]] = 1
                 # Objective coefficient
                 col_features[col_i][col_feature_map["obj_coef"]] = SCIPcolGetObj(cols[i])
