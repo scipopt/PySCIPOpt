@@ -2198,6 +2198,12 @@ cdef class Constraint:
     @staticmethod
     cdef create(SCIP_CONS* scipcons)
 
+cdef class IIS:
+    cdef SCIP_IIS* _iis
+
+    @staticmethod
+    cdef create(SCIP_IIS* iis)
+
 cdef class Model:
     cdef SCIP* _scip
     cdef SCIP_Bool* _valid

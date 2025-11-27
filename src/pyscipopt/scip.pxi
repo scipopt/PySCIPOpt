@@ -2664,11 +2664,26 @@ cdef class _VarArray:
             free(self.ptr)
 
 cdef class IIS:
-    cdef SCIP_IIS* _iis
 
-    def __init__(self, Model model):
-        self._iis = SCIPgetIIS(model._scip)
-        model._iis = self._iis
+    @staticmethod
+    cdef create(SCIP_IIS* scip_iis):
+        """
+        Main method for creating an IIS class.
+
+        Parameters
+        ----------
+        scip : SCIP_IIS*
+            A pointer to the SCIP_IIS
+
+        Returns
+        -------
+        sol : IIS
+            The Python representative of the IIS
+
+        """
+        iis = IIS()
+        iis._iis = scip_iis
+        return iis
     
     def getTime(self):
         """
@@ -9342,9 +9357,12 @@ cdef class Model:
         IIS
 
         """
+        cdef SCIP_IIS* _iis
+
         PY_SCIP_CALL( SCIPgenerateIIS(self._scip) )
-        iis = IIS(self)
-        return iis
+
+        _iis = SCIPgetIIS(self._scip)
+        return IIS.create(_iis)
     
     def getIIS(self):
         """
@@ -9355,9 +9373,12 @@ cdef class Model:
         -------
         IIS 
         """
-        assert self._iis != NULL, "No IIS exists. You need to first call generateIIS() or run the iisfinderexec method of your custom IISfinder class."
+        cdef SCIP_IIS* _iis
 
-        return IIS(self)
+        _iis = SCIPgetIIS(self._scip)
+        assert _iis != NULL, "No IIS exists. You need to first call generateIIS() or run the iisfinderexec method of your custom IISfinder class."
+
+        return IIS.create(_iis)
 
     def iisGreedyMakeIrreducible(self, IIS iis):
        """
