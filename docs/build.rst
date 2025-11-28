@@ -21,8 +21,10 @@ To download SCIP please either use the pre-built SCIP Optimization Suite availab
 
     * - SCIP
       - PySCIPOpt
+    * - 10.0.0
+      - 6.0
     * - 9.2
-      - 5.3, 5.4+
+      - 5.3, 5.4, 5.5, 5.6, 5.7 
     * - 9.1
       - 5.1, 5.2.x
     * - 9.0
@@ -177,12 +179,12 @@ To use debug information in PySCIPOpt you need to build it with the following co
 Testing the Installation
 ==========================
 
-To test your brand-new installation of PySCIPOpt you need `pytest <https://docs.pytest.org/en/stable/>`_
-on your system. To get pytest simply run the command:
+To test your brand-new installation of PySCIPOpt you need to
+install some dependencies.
 
 .. code-block:: bash
 
-  pip install pytest
+  pip install -r requirements/test.txt
 
 Tests can be run in the PySCIPOpt directory with the commands:
 
@@ -190,6 +192,7 @@ Tests can be run in the PySCIPOpt directory with the commands:
 
   pytest # Will run all the available tests
   pytest tests/test_name.py # Will run a specific tests/test_name.py (Unix)
+  pytest -nauto # Will run tests in parallel using all available cores
 
 Ideally, the status of your tests must be passed or skipped.
 Running tests with pytest creates the __pycache__ directory in tests and, occasionally,

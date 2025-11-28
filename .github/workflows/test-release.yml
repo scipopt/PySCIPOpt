@@ -1,7 +1,7 @@
 name: TestPyPI release
 
 env:
-  version: 9.0.0
+  version: 10.0.0
 
 
 # runs only when a release is published, not on drafts
@@ -17,8 +17,8 @@ jobs:
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
-          wget --quiet --no-check-certificate https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/SCIPOptSuite-${{ env.version }}-Linux-ubuntu20.deb
-          sudo apt-get update && sudo apt install -y ./SCIPOptSuite-${{ env.version }}-Linux-ubuntu20.deb
+          wget --quiet --no-check-certificate "https://github.com/scipopt/scip/releases/download/v${version}/scipoptsuite_${version}-1+jammy_amd64.deb"
+          sudo apt-get update && sudo apt install -y ./scipoptsuite_${version}-1+jammy_amd64.deb
 
       - name: Setup python 3
         uses: actions/setup-python@v4
@@ -28,7 +28,7 @@ jobs:
       - name: Prepare python environment
         run: |
           python -m pip install --upgrade pip
-          python -m pip install wheel cython networkx pytest-cov build
+          python -m pip install wheel cython build
 
       - name: Build package
         run: |

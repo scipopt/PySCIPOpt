@@ -30,7 +30,7 @@ jobs:
             arch: x86_64
           - os: macos-14
             arch: arm64
-          - os: macos-13
+          - os: macos-15-intel
             arch: x86_64
           - os: windows-latest
             arch: AMD64
@@ -39,15 +39,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-    
+
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.21.1
+        uses: pypa/cibuildwheel@v3.2.1
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
-          CIBW_TEST_REQUIRES: pytest
+          CIBW_BEFORE_TEST: "pip install -r {project}/requirements/test.txt"
           CIBW_TEST_COMMAND: "pytest {project}/tests"
-          CIBW_MANYLINUX_*_IMAGE: manylinux_2_28
-        
+
       - uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ matrix.os}}-${{ matrix.arch }}

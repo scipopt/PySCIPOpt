@@ -1,4 +1,4 @@
-from pyscipopt import Model, SCIP_PARAMSETTING, SCIP_BRANCHDIR
+from pyscipopt import Model, SCIP_PARAMSETTING, SCIP_BRANCHDIR, SCIP_IMPLINTTYPE
 from helpers.utils import random_mip_1
 
 def test_variablebounds():
@@ -58,13 +58,22 @@ def test_vtype():
     assert x.vtype() == "CONTINUOUS"
     assert y.vtype() == "INTEGER"
     assert z.vtype() == "BINARY"
-    assert w.vtype() == "IMPLINT"
+    assert w.vtype() == "CONTINUOUS" 
+
+    is_int = lambda x: x.isIntegral()
+    is_implint = lambda x: x.isImpliedIntegral()
+    # is_nonimplint = lambda x: x.isNonImpliedIntegral()
+    is_bin = lambda x: x.isBinary()
+
+    assert not is_int(x) and not is_implint(x) and not is_bin(x)
+    assert is_int(y) and not is_implint(y) and not is_bin(y)
+    assert is_int(z) and not is_implint(z)  and is_bin(z)
+    assert w.vtype() == "CONTINUOUS" and is_int(w) and is_implint(w) and not is_bin(w)
+
+    assert w.getImplType() == SCIP_IMPLINTTYPE.WEAK
 
     m.chgVarType(x, 'I')
     assert x.vtype() == "INTEGER"
-
-    m.chgVarType(y, 'M')
-    assert y.vtype() == "IMPLINT"
 
 def test_markRelaxationOnly():
     m = Model()
@@ -122,3 +131,36 @@ def test_isActive():
     # TODO lacks tests for cases when returned false due to 
     # - fixed (probably during probing)
     # - aggregated
+
+def test_markDoNotAggrVar_and_getStatus():
+    model = Model()
+    x = model.addVar("x", obj=2, lb=0, ub=10)
+    y = model.addVar("y", obj=3, lb=0, ub=20)
+    z = model.addVar("z", obj=1, lb=0, ub=10)
+    w = model.addVar("w", obj=4, lb=0, ub=15)
+
+    model.addCons(y - 2*x == 0)
+    model.addCons(x + z + w == 10)
+    model.addCons(x*y*z >= 21) # to prevent presolve from removing all variables
+    model.presolve()
+
+    assert z.getStatus() == "ORIGINAL"
+    assert model.getTransformedVar(z).getStatus() == "AGGREGATED"
+    assert model.getTransformedVar(w).getStatus() == "MULTAGGR"
+
+    assert model.getNVars(True) == 1
+
+    model.freeTransform()
+    model.markDoNotMultaggrVar(w)
+    model.presolve()
+
+    assert model.getTransformedVar(w).getStatus() != "MULTAGGR"
+    assert model.getNVars(True) == 3
+
+    model.freeTransform()
+    model.markDoNotAggrVar(y)
+    model.presolve()
+    assert model.getTransformedVar(z).getStatus() != "AGGREGATED"
+    assert model.getNVars(True) == 4
+
+    assert x.getStatus() == "ORIGINAL"
