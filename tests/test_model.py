@@ -558,6 +558,7 @@ def test_getVarPseudocost():
     p = m.getVarPseudocost(var, SCIP_BRANCHDIR.UPWARDS)
     assert m.isEQ(p, 1)
 
+    m.optimize()
     m.updateVarPseudocost(var, 1, 12, 1)
     p = m.getVarPseudocost(var, SCIP_BRANCHDIR.UPWARDS)
 
