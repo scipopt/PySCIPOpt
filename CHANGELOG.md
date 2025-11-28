@@ -6,7 +6,7 @@
 ### Changed
 ### Removed
 
-## 6.0.0 - 2025.xx.yy
+## 6.0.0 - 2025.11.28
 ### Added
 - Support for SCIP 10.0.0
 - Added support for IIS - Irreducible Inconsistent Subsystems
