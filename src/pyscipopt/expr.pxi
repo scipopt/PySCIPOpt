@@ -518,7 +518,7 @@ class ExprCons:
         self._rhs = rhs
         self._normalize()
 
-    def _normalize(self):
+    def _normalize(self) -> ExprCons:
         """Move constant children in expression to bounds"""
         c = self.expr[CONST]
         self.expr = (self.expr - c)._normalize()
@@ -528,23 +528,23 @@ class ExprCons:
             self._rhs -= c
         return self
 
-    def __le__(self, other) -> ExprCons:
+    def __le__(self, other: Number) -> ExprCons:
+        if not isinstance(other, Number):
+            raise TypeError("Ranged ExprCons is not well defined!")
         if not self._rhs is None:
             raise TypeError("ExprCons already has upper bound")
         if self._lhs is None:
             raise TypeError("ExprCons must have a lower bound")
-        if not isinstance(other, Number):
-            raise TypeError("Ranged ExprCons is not well defined!")
 
         return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
 
-    def __ge__(self, other) -> ExprCons:
+    def __ge__(self, other: Number) -> ExprCons:
+        if not isinstance(other, Number):
+            raise TypeError("Ranged ExprCons is not well defined!")
         if not self._lhs is None:
             raise TypeError("ExprCons already has lower bound")
         if self._rhs is None:
             raise TypeError("ExprCons must have an upper bound")
-        if not isinstance(other, Number):
-            raise TypeError("Ranged ExprCons is not well defined!")
 
         return ExprCons(self.expr, lhs=float(other), rhs=self._rhs)
 
