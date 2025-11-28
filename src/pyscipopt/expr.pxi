@@ -49,9 +49,9 @@ class Term:
         else:
             nodes = [(Term, i) for i in self.vars]
             if coef != 1:
-                nodes += [(ConstExpr, coef)]
+                nodes.append((ConstExpr, coef))
             if len(nodes) > 1:
-                nodes += [(ProdExpr, list(range(start, start + len(nodes))))]
+                nodes.append((ProdExpr, list(range(start, start + len(nodes)))))
             return nodes
 
 
@@ -245,16 +245,18 @@ class Expr:
         nodes, indices = [], []
         for child, c in self.children.items():
             if (child_nodes := child._to_nodes(start + len(nodes), c)):
-                nodes += child_nodes
-                indices += [start + len(nodes) - 1]
+                nodes.extend(child_nodes)
+                indices.append(start + len(nodes) - 1)
 
         if type(self) is PowExpr:
-            nodes += [(ConstExpr, self.expo)]
-            indices += [start + len(nodes) - 1]
+            nodes.append((ConstExpr, self.expo))
+            indices.append(start + len(nodes) - 1)
         elif type(self) is ProdExpr and self.coef != 1:
-            nodes += [(ConstExpr, self.coef)]
-            indices += [start + len(nodes) - 1]
-        return nodes + [(type(self), indices)]
+            nodes.append((ConstExpr, self.coef))
+            indices.append(start + len(nodes) - 1)
+
+        nodes.append((type(self), indices))
+        return nodes
 
     def _first_child(self) -> Union[Term, Expr]:
         return next(self.__iter__())
@@ -327,10 +329,10 @@ class PolynomialExpr(Expr):
         """Convert expression to list of nodes for SCIP expression construction"""
         nodes = []
         for child, c in self.children.items():
-            nodes += child._to_nodes(start + len(nodes), c)
+            nodes.extend(child._to_nodes(start + len(nodes), c))
 
         if len(nodes) > 1:
-            return nodes + [(Expr, list(range(start, start + len(nodes))))]
+            nodes.append((Expr, list(range(start, start + len(nodes)))))
         return nodes
 
 
@@ -465,9 +467,10 @@ class UnaryExpr(FuncExpr):
         """Convert expression to list of nodes for SCIP expression construction"""
         nodes = []
         for child, c in self.children.items():
-            nodes += child._to_nodes(start + len(nodes), c)
+            nodes.extend(child._to_nodes(start + len(nodes), c))
 
-        return nodes + [(type(self), start + len(nodes) - 1)]
+        nodes.append((type(self), start + len(nodes) - 1))
+        return nodes
 
 
 class AbsExpr(UnaryExpr):
