@@ -186,9 +186,9 @@ We will put these parameters into the ``__init__`` method to help us initialise 
                )
 
                # Aggregate old variable with new variable:
-               #   x  =  y + lb      (no flip), or
-               #   x  = -y + ub      (flip), whichever yields smaller |offset|
-               if self.flipping and abs(ub) < abs(lb):
+               #   1.0 * var + 1.0 * newvar = ub        (flip), whichever yields smaller |offset|, or
+               #   1.0 * var + (-1.0) * newvar = lb     (no flip)
+               if self.flipping and (REALABS(ub) < REALABS(lb)):
                    infeasible, redundant, aggregated = scip.aggregateVars(var, newvar, 1.0,  1.0, ub)
                else:
                    infeasible, redundant, aggregated = scip.aggregateVars(var, newvar, 1.0, -1.0, lb)
@@ -197,7 +197,7 @@ We will put these parameters into the ``__init__`` method to help us initialise 
                if infeasible:
                    return {"result": SCIP_RESULT.CUTOFF}
 
-               # Aggregation succeeded; SCIP marks x as redundant and keeps y for further search
+               # Aggregation succeeded; SCIP marks var as redundant and keeps newvar for further search
                assert redundant
                assert aggregated
                result = SCIP_RESULT.SUCCESS
