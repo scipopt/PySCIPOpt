@@ -1519,9 +1519,6 @@ cdef class Variable:
     def __iter__(self):
         return self.to_expr().__iter__()
 
-    def __next__(self):
-        return self.to_expr().__next__()
-
     def __abs__(self):
         return self.to_expr().__abs__()
 

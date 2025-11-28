@@ -84,12 +84,6 @@ class Expr:
     def __iter__(self) -> Union[Term, Expr]:
         return iter(self.children)
 
-    def __next__(self) -> Union[Term, Expr]:
-        try:
-            return next(self.children)
-        except:
-            raise StopIteration
-
     def __abs__(self) -> AbsExpr:
         return UnaryExpr.from_expr(self, AbsExpr)
 
