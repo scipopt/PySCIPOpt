@@ -240,7 +240,8 @@ class Expr:
         return {k: v for k, v in self.children.items() if v != 0}
 
     def _normalize(self) -> Expr:
-        return Expr(self._remove_zero())
+        self.children = self._remove_zero()
+        return self
 
     def degree(self) -> float:
         return max((i.degree() for i in self)) if self.children else float("inf")
@@ -324,9 +325,6 @@ class PolynomialExpr(Expr):
                 return ConstExpr(children[CONST])
             return MonomialExpr(children)
         return cls(children)
-
-    def _normalize(self) -> PolynomialExpr:
-        return PolynomialExpr(self._remove_zero())
 
     def _to_nodes(self, start: int = 0, coef: float = 1) -> list[tuple]:
         """Convert expression to list of nodes for SCIP expression construction"""
@@ -417,7 +415,7 @@ class ProdExpr(FuncExpr):
 
     def _normalize(self) -> Union[ConstExpr, ProdExpr]:
         if self.coef == 0:
-            return ConstExpr(0.0)
+            self = ConstExpr(0.0)
         return self
 
 
@@ -438,9 +436,9 @@ class PowExpr(FuncExpr):
 
     def _normalize(self) -> Expr:
         if self.expo == 0:
-            return ConstExpr(1.0)
+            self = ConstExpr(1.0)
         elif self.expo == 1:
-            return tuple(self)[0]
+            self = tuple(self)[0]
         return self
 
 
@@ -528,6 +526,7 @@ class ExprCons:
             self._lhs -= c
         if self._rhs is not None:
             self._rhs -= c
+        return self
 
     def __le__(self, other) -> ExprCons:
         if not self._rhs is None:
