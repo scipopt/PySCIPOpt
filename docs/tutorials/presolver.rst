@@ -2,7 +2,7 @@
 Presolvers
 ###########
 
-For the following let us assume that a Model object is available, which is created as follows:
+For the following, let us assume that a Model object is available, which is created as follows:
 
 .. code-block:: python
 
@@ -41,7 +41,7 @@ the class method ``pyscipopt.Model.includePresol``.
 
 Here is a high-level flow:
 
-1. Subclass ``MyPresolver`` and capture any parameters in ``__init__``.
+1. Create subclass ``MyPresolver`` and capture any parameters in ``__init__``.
 2. Implement ``presolexec``: inspect variables, compute transformations, call SCIP aggregation APIs, and return a result code.
 3. Register your presolver using ``includePresol`` with a priority, maximal rounds, and timing.
 4. Solve the model, e.g. by calling ``presolve`` or ``optimize``.
@@ -74,7 +74,7 @@ PySCIPOpt's ``Presol`` plugin interface. We will implement a small
 presolver that shifts variable bounds from ``[a, b]`` to ``[0, b - a]``
 and optionally flips signs to reduce constant offsets.
 
-For educational purposes, we keep our example as close as possible to SCIP's implementation, which can be found `here <https://scipopt.org/doc-5.0.1/html/presol__boundshift_8c_source.php>`__. However, one may implement Boundshift differently as SCIP's logic does not translate perfectly to Python. To avoid any confusion with the already implemented version of Boundshift, we will call our custom presolver *Shiftbound*.
+For educational purposes, we keep our example as close as possible to SCIP's implementation, which can be found `here <https://scipopt.org/doc-5.0.1/html/presol__boundshift_8c_source.php>`__. However, one may implement Boundshift differently, as SCIP's logic does not translate perfectly to Python. To avoid any confusion with the already implemented version of Boundshift, we will call our custom presolver *Shiftbound*.
 
 A complete working example can be found in the directory:
 
