@@ -21,8 +21,10 @@ To download SCIP please either use the pre-built SCIP Optimization Suite availab
 
     * - SCIP
       - PySCIPOpt
+    * - 10.0.0
+      - 6.0
     * - 9.2
-      - 5.3, 5.4+
+      - 5.3, 5.4, 5.5, 5.6, 5.7 
     * - 9.1
       - 5.1, 5.2.x
     * - 9.0
@@ -178,12 +180,11 @@ Testing the Installation
 ==========================
 
 To test your brand-new installation of PySCIPOpt you need to
-install some dependencies via pip. The testing dependencies are in
-the `test` dependency group.
+install some dependencies.
 
 .. code-block:: bash
 
-  pip install --group test
+  pip install -r requirements/test.txt
 
 Tests can be run in the PySCIPOpt directory with the commands:
 

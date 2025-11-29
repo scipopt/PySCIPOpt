@@ -31,6 +31,7 @@ include "conshdlr.pxi"
 include "cutsel.pxi"
 include "event.pxi"
 include "heuristic.pxi"
+include "iisfinder.pxi"
 include "presol.pxi"
 include "pricer.pxi"
 include "propagator.pxi"
@@ -41,9 +42,9 @@ include "nodesel.pxi"
 include "matrix.pxi"
 
 # recommended SCIP version; major version is required
-MAJOR = 9
-MINOR = 2
-PATCH = 1
+MAJOR = 10
+MINOR = 0
+PATCH = 0
 
 # for external user functions use def; for functions used only inside the interface (starting with _) use cdef
 # todo: check whether this is currently done like this
@@ -207,64 +208,71 @@ cdef class PY_SCIP_HEURTIMING:
 
 EventNames = {}
 cdef class PY_SCIP_EVENTTYPE:
-    DISABLED        = SCIP_EVENTTYPE_DISABLED
-    VARADDED        = SCIP_EVENTTYPE_VARADDED
-    VARDELETED      = SCIP_EVENTTYPE_VARDELETED
-    VARFIXED        = SCIP_EVENTTYPE_VARFIXED
-    VARUNLOCKED     = SCIP_EVENTTYPE_VARUNLOCKED
-    OBJCHANGED      = SCIP_EVENTTYPE_OBJCHANGED
-    GLBCHANGED      = SCIP_EVENTTYPE_GLBCHANGED
-    GUBCHANGED      = SCIP_EVENTTYPE_GUBCHANGED
-    LBTIGHTENED     = SCIP_EVENTTYPE_LBTIGHTENED
-    LBRELAXED       = SCIP_EVENTTYPE_LBRELAXED
-    UBTIGHTENED     = SCIP_EVENTTYPE_UBTIGHTENED
-    UBRELAXED       = SCIP_EVENTTYPE_UBRELAXED
-    GHOLEADDED      = SCIP_EVENTTYPE_GHOLEADDED
-    GHOLEREMOVED    = SCIP_EVENTTYPE_GHOLEREMOVED
-    LHOLEADDED      = SCIP_EVENTTYPE_LHOLEADDED
-    LHOLEREMOVED    = SCIP_EVENTTYPE_LHOLEREMOVED
-    IMPLADDED       = SCIP_EVENTTYPE_IMPLADDED
-    PRESOLVEROUND   = SCIP_EVENTTYPE_PRESOLVEROUND
-    NODEFOCUSED     = SCIP_EVENTTYPE_NODEFOCUSED
-    NODEFEASIBLE    = SCIP_EVENTTYPE_NODEFEASIBLE
-    NODEINFEASIBLE  = SCIP_EVENTTYPE_NODEINFEASIBLE
-    NODEBRANCHED    = SCIP_EVENTTYPE_NODEBRANCHED
-    NODEDELETE      = SCIP_EVENTTYPE_NODEDELETE
-    FIRSTLPSOLVED   = SCIP_EVENTTYPE_FIRSTLPSOLVED
-    LPSOLVED        = SCIP_EVENTTYPE_LPSOLVED
-    LPEVENT         = SCIP_EVENTTYPE_LPEVENT
-    POORSOLFOUND    = SCIP_EVENTTYPE_POORSOLFOUND
-    BESTSOLFOUND    = SCIP_EVENTTYPE_BESTSOLFOUND
-    ROWADDEDSEPA    = SCIP_EVENTTYPE_ROWADDEDSEPA
-    ROWDELETEDSEPA  = SCIP_EVENTTYPE_ROWDELETEDSEPA
-    ROWADDEDLP      = SCIP_EVENTTYPE_ROWADDEDLP
-    ROWDELETEDLP    = SCIP_EVENTTYPE_ROWDELETEDLP
-    ROWCOEFCHANGED  = SCIP_EVENTTYPE_ROWCOEFCHANGED
-    ROWCONSTCHANGED = SCIP_EVENTTYPE_ROWCONSTCHANGED
-    ROWSIDECHANGED  = SCIP_EVENTTYPE_ROWSIDECHANGED
-    SYNC            = SCIP_EVENTTYPE_SYNC
-    GBDCHANGED      = SCIP_EVENTTYPE_GBDCHANGED
-    LBCHANGED       = SCIP_EVENTTYPE_LBCHANGED
-    UBCHANGED       = SCIP_EVENTTYPE_UBCHANGED
-    BOUNDTIGHTENED  = SCIP_EVENTTYPE_BOUNDTIGHTENED
-    BOUNDRELAXED    = SCIP_EVENTTYPE_BOUNDRELAXED
-    BOUNDCHANGED    = SCIP_EVENTTYPE_BOUNDCHANGED
-    GHOLECHANGED    = SCIP_EVENTTYPE_GHOLECHANGED
-    LHOLECHANGED    = SCIP_EVENTTYPE_LHOLECHANGED
-    HOLECHANGED     = SCIP_EVENTTYPE_HOLECHANGED
-    DOMCHANGED      = SCIP_EVENTTYPE_DOMCHANGED
-    VARCHANGED      = SCIP_EVENTTYPE_VARCHANGED
-    VAREVENT        = SCIP_EVENTTYPE_VAREVENT
-    NODESOLVED      = SCIP_EVENTTYPE_NODESOLVED
-    NODEEVENT       = SCIP_EVENTTYPE_NODEEVENT
-    SOLFOUND        = SCIP_EVENTTYPE_SOLFOUND
-    SOLEVENT        = SCIP_EVENTTYPE_SOLEVENT
-    ROWCHANGED      = SCIP_EVENTTYPE_ROWCHANGED
-    ROWEVENT        = SCIP_EVENTTYPE_ROWEVENT
+    DISABLED          = SCIP_EVENTTYPE_DISABLED
+    VARADDED          = SCIP_EVENTTYPE_VARADDED
+    VARDELETED        = SCIP_EVENTTYPE_VARDELETED
+    VARFIXED          = SCIP_EVENTTYPE_VARFIXED
+    VARUNLOCKED       = SCIP_EVENTTYPE_VARUNLOCKED
+    OBJCHANGED        = SCIP_EVENTTYPE_OBJCHANGED
+    GLBCHANGED        = SCIP_EVENTTYPE_GLBCHANGED
+    GUBCHANGED        = SCIP_EVENTTYPE_GUBCHANGED
+    LBTIGHTENED       = SCIP_EVENTTYPE_LBTIGHTENED
+    LBRELAXED         = SCIP_EVENTTYPE_LBRELAXED
+    UBTIGHTENED       = SCIP_EVENTTYPE_UBTIGHTENED
+    UBRELAXED         = SCIP_EVENTTYPE_UBRELAXED
+    GHOLEADDED        = SCIP_EVENTTYPE_GHOLEADDED
+    GHOLEREMOVED      = SCIP_EVENTTYPE_GHOLEREMOVED
+    LHOLEADDED        = SCIP_EVENTTYPE_LHOLEADDED
+    LHOLEREMOVED      = SCIP_EVENTTYPE_LHOLEREMOVED
+    IMPLADDED         = SCIP_EVENTTYPE_IMPLADDED
+    PRESOLVEROUND     = SCIP_EVENTTYPE_PRESOLVEROUND
+    NODEFOCUSED       = SCIP_EVENTTYPE_NODEFOCUSED
+    NODEFEASIBLE      = SCIP_EVENTTYPE_NODEFEASIBLE
+    NODEINFEASIBLE    = SCIP_EVENTTYPE_NODEINFEASIBLE
+    NODEBRANCHED      = SCIP_EVENTTYPE_NODEBRANCHED
+    NODEDELETE        = SCIP_EVENTTYPE_NODEDELETE
+    DUALBOUNDIMPROVED = SCIP_EVENTTYPE_DUALBOUNDIMPROVED
+    FIRSTLPSOLVED     = SCIP_EVENTTYPE_FIRSTLPSOLVED
+    LPSOLVED          = SCIP_EVENTTYPE_LPSOLVED
+    LPEVENT           = SCIP_EVENTTYPE_LPEVENT
+    POORSOLFOUND      = SCIP_EVENTTYPE_POORSOLFOUND
+    BESTSOLFOUND      = SCIP_EVENTTYPE_BESTSOLFOUND
+    ROWADDEDSEPA      = SCIP_EVENTTYPE_ROWADDEDSEPA
+    ROWDELETEDSEPA    = SCIP_EVENTTYPE_ROWDELETEDSEPA
+    ROWADDEDLP        = SCIP_EVENTTYPE_ROWADDEDLP
+    ROWDELETEDLP      = SCIP_EVENTTYPE_ROWDELETEDLP
+    ROWCOEFCHANGED    = SCIP_EVENTTYPE_ROWCOEFCHANGED
+    ROWCONSTCHANGED   = SCIP_EVENTTYPE_ROWCONSTCHANGED
+    ROWSIDECHANGED    = SCIP_EVENTTYPE_ROWSIDECHANGED
+    SYNC              = SCIP_EVENTTYPE_SYNC
+    GBDCHANGED        = SCIP_EVENTTYPE_GBDCHANGED
+    LBCHANGED         = SCIP_EVENTTYPE_LBCHANGED
+    UBCHANGED         = SCIP_EVENTTYPE_UBCHANGED
+    BOUNDTIGHTENED    = SCIP_EVENTTYPE_BOUNDTIGHTENED
+    BOUNDRELAXED      = SCIP_EVENTTYPE_BOUNDRELAXED
+    BOUNDCHANGED      = SCIP_EVENTTYPE_BOUNDCHANGED
+    GHOLECHANGED      = SCIP_EVENTTYPE_GHOLECHANGED
+    LHOLECHANGED      = SCIP_EVENTTYPE_LHOLECHANGED
+    HOLECHANGED       = SCIP_EVENTTYPE_HOLECHANGED
+    DOMCHANGED        = SCIP_EVENTTYPE_DOMCHANGED
+    VARCHANGED        = SCIP_EVENTTYPE_VARCHANGED
+    VAREVENT          = SCIP_EVENTTYPE_VAREVENT
+    NODESOLVED        = SCIP_EVENTTYPE_NODESOLVED
+    NODEEVENT         = SCIP_EVENTTYPE_NODEEVENT
+    SOLFOUND          = SCIP_EVENTTYPE_SOLFOUND
+    SOLEVENT          = SCIP_EVENTTYPE_SOLEVENT
+    GAPUPDATED        = SCIP_EVENTTYPE_GAPUPDATED
+    ROWCHANGED        = SCIP_EVENTTYPE_ROWCHANGED
+    ROWEVENT          = SCIP_EVENTTYPE_ROWEVENT
 
 cdef class PY_SCIP_LOCKTYPE:
     MODEL    = SCIP_LOCKTYPE_MODEL
     CONFLICT = SCIP_LOCKTYPE_CONFLICT
+
+cdef class PY_SCIP_IMPLINTTYPE:
+    NONE   = SCIP_IMPLINTTYPE_NONE
+    WEAK   = SCIP_IMPLINTTYPE_WEAK
+    STRONG = SCIP_IMPLINTTYPE_STRONG
 
 cdef class PY_SCIP_LPSOLSTAT:
     NOTSOLVED    = SCIP_LPSOLSTAT_NOTSOLVED
@@ -626,6 +634,31 @@ cdef class Column:
         return (self.__class__ == other.__class__
                 and self.scip_col == (<Column>other).scip_col)
 
+cdef class ColumnExact:
+    """Base class holding a pointer to corresponding SCIP_COLEXACT."""
+
+    @staticmethod
+    cdef create(SCIP_COLEXACT* scipcolexact):
+        """
+        Main method for creating a ColumnExact class. Is used instead of __init__.
+
+        Parameters
+        ----------
+        scipcolexact : SCIP_COLEXACT*
+            A pointer to the SCIP_COLEXACT
+
+        Returns
+        -------
+        col : ColumnExact
+            The Python representative of the SCIP_COLEXACT
+
+        """
+        if scipcolexact == NULL:
+            raise Warning("cannot create ColumnExact with SCIP_COLEXACT* == NULL")
+        col = ColumnExact()
+        col.scip_col_exact = scipcolexact
+        return col
+
 cdef class Row:
     """Base class holding a pointer to corresponding SCIP_ROW."""
 
@@ -910,6 +943,31 @@ cdef class Row:
         return (self.__class__ == other.__class__
                 and self.scip_row == (<Row>other).scip_row)
 
+cdef class RowExact:
+    """Base class holding a pointer to corresponding SCIP_ROW."""
+
+    @staticmethod
+    cdef create(SCIP_ROWEXACT* sciprowexact):
+        """
+        Main method for creating a RowExact class. Is used instead of __init__.
+
+        Parameters
+        ----------
+        sciprow : SCIP_ROWEXACT*
+            A pointer to the SCIP_ROWEXACT
+
+        Returns
+        -------
+        row : Row
+            The Python representative of the SCIP_ROWEXACT
+
+        """
+        if sciprowexact == NULL:
+            raise Warning("cannot create Row with SCIP_ROWEXACT* == NULL")
+        row_exact = RowExact()
+        row_exact.scip_row_exact = sciprowexact
+        return row_exact
+
 cdef class NLRow:
     """Base class holding a pointer to corresponding SCIP_NLROW."""
 
@@ -1119,7 +1177,6 @@ cdef class Solution:
         cdef SCIP_VAR** source_vars = SCIPgetOrigVars(self.scip)
         PY_SCIP_CALL(SCIPtranslateSubSol(target._scip, self.scip, self.sol, NULL, source_vars, &(targetSol.sol)))
         return targetSol
-
 
 cdef class BoundChange:
     """Bound change."""
@@ -1520,7 +1577,7 @@ cdef class Variable(Expr):
 
     def vtype(self):
         """
-        Retrieve the variables type (BINARY, INTEGER, IMPLINT or CONTINUOUS)
+        Retrieve the variables type (BINARY, INTEGER, CONTINUOUS, or IMPLINT)
 
         Returns
         -------
@@ -1535,8 +1592,84 @@ cdef class Variable(Expr):
             return "INTEGER"
         elif vartype == SCIP_VARTYPE_CONTINUOUS:
             return "CONTINUOUS"
-        elif vartype == SCIP_VARTYPE_IMPLINT:
+        elif vartype == SCIP_DEPRECATED_VARTYPE_IMPLINT:
             return "IMPLINT"
+    
+    def isBinary(self):
+        """
+        Returns whether variable is of BINARY type.
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPvarIsBinary(self.scip_var)
+    
+    def isIntegral(self):
+        """
+        Returns whether variable is of INTEGER type.
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPvarIsIntegral(self.scip_var)
+    
+    def isImpliedIntegral(self):
+        """
+        Returns whether variable is implied integral (weakly or strongly).
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPvarIsImpliedIntegral(self.scip_var)
+    
+    def isNonImpliedIntegral(self):
+        """
+        Returns TRUE if the variable is integral, but not implied integral..
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPvarIsNonimpliedIntegral(self.scip_var)
+
+    def getImplType(self):
+        """
+        Returns the implied integral type of the variable
+
+        Returns
+        -------
+        PY_SCIP_IMPLINTTYPE
+        """
+        return SCIPvarGetImplType(self.scip_var)
+
+    def getStatus(self):
+        """
+        Retrieve the variable status (ORIGINAL, LOOSE, COLUMN, FIXED, AGGREGATED, MULTAGGR, NEGATED)
+
+        Returns
+        -------
+        str
+            "ORIGINAL", "LOOSE", "COLUMN", "FIXED", "AGGREGATED", "MULTAGGR", "NEGATED"
+
+        """
+        varstatus = SCIPvarGetStatus(self.scip_var)
+        if varstatus == SCIP_VARSTATUS_ORIGINAL:
+            return "ORIGINAL"
+        elif varstatus == SCIP_VARSTATUS_LOOSE:
+            return "LOOSE"
+        elif varstatus == SCIP_VARSTATUS_COLUMN:
+            return "COLUMN"
+        elif varstatus == SCIP_VARSTATUS_FIXED:
+            return "FIXED"
+        elif varstatus == SCIP_VARSTATUS_AGGREGATED:
+            return "AGGREGATED"
+        elif varstatus == SCIP_VARSTATUS_MULTAGGR:
+            return "MULTAGGR"
+        elif varstatus == SCIP_VARSTATUS_NEGATED:
+            return "NEGATED"
 
     def isOriginal(self):
         """
@@ -1549,6 +1682,17 @@ cdef class Variable(Expr):
         """
         return SCIPvarIsOriginal(self.scip_var)
 
+    def isActive(self):
+        """
+        Retrieve whether the variable is active
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPvarIsActive(self.scip_var)
+
     def isInLP(self):
         """
         Retrieve whether the variable is a COLUMN variable that is member of the current LP.
@@ -1559,7 +1703,6 @@ cdef class Variable(Expr):
 
         """
         return SCIPvarIsInLP(self.scip_var)
-
 
     def getIndex(self):
         """
@@ -2043,7 +2186,6 @@ class MatrixVariable(MatrixExpr):
             mayround[idx] = self[idx].varMayRound()
         return mayround
 
-
 cdef class Constraint:
     """Base class holding a pointer to corresponding SCIP_CONS"""
 
@@ -2521,6 +2663,115 @@ cdef class _VarArray:
         if self.ptr != NULL:
             free(self.ptr)
 
+cdef class IIS:
+
+    @staticmethod
+    cdef create(SCIP_IIS* scip_iis):
+        """
+        Main method for creating an IIS class.
+
+        Parameters
+        ----------
+        scip : SCIP_IIS*
+            A pointer to the SCIP_IIS
+
+        Returns
+        -------
+        sol : IIS
+            The Python representative of the IIS
+
+        """
+        iis = IIS()
+        iis._iis = scip_iis
+        return iis
+    
+    def getTime(self):
+        """
+        Retrieve the solving time of the IIS.
+
+        Returns
+        -------
+        float
+        """
+        return SCIPiisGetTime(self._iis)
+
+    def isSubscipIrreducible(self):
+        """
+        Returns whether the IIS is irreducible.
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPiisIsSubscipIrreducible(self._iis)
+
+    def isSubscipInfeasible(self):
+        """
+        Returns whether the IIS is infeasible.
+
+        Returns
+        -------
+        bool
+        """
+        return SCIPiisIsSubscipInfeasible(self._iis)
+    
+    def setSubscipIrreducible(self, irreducible):
+        """
+        Sets the flag that states whether the IIS subscip is irreducible.
+
+        Parameters
+        ----------
+        irreducible : bool
+            the value to set the irreducible flag to
+        """
+
+        SCIPiisSetSubscipIrreducible(self._iis, irreducible)
+
+    def setSubscipInfeasible(self, infeasible):
+        """
+        Sets the flag that states whether the IIS subscip is infeasible.
+
+        Parameters
+        ----------
+        infeasible : bool
+            the value to set the infeasible flag to
+        """
+
+        SCIPiisSetSubscipInfeasible(self._iis, infeasible)
+
+    def getNNodes(self):
+        """
+        Gets number of nodes in the IIS solve.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPiisGetNNodes(self._iis)
+    
+    def getSubscip(self):
+        """
+        Get the subscip of an IIS.
+
+        Returns
+        -------
+        Model
+        """
+        cdef SCIP* subscip
+
+        subscip = SCIPiisGetSubscip(self._iis)
+        model = Model.create(subscip)
+        return model
+
+    def greedyMakeIrreducible(self):
+       """
+       Perform the greedy deletion algorithm with singleton batches to obtain an irreducible infeasible subsystem (IIS)
+       """
+
+       PY_SCIP_CALL(SCIPiisGreedyMakeIrreducible(self._iis))
+
+
 # - remove create(), includeDefaultPlugins(), createProbBasic() methods
 # - replace free() by "destructor"
 # - interface SCIPfreeProb()
@@ -2563,6 +2814,8 @@ cdef class Model:
         self._freescip = True
         self._modelvars = {}
         self._generated_event_handlers_count = 0
+        self._benders_subproblems = []  # Keep references to Benders subproblem Models
+        self._iis = NULL
 
         if not createscip:
             # if no SCIP instance should be created, then an empty Model object is created.
@@ -2583,7 +2836,6 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPcopyOrig(sourceModel._scip, self._scip, NULL, NULL, n, enablepricing, threadsafe, True, self._valid))
             else:
                 PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, threadsafe, True, self._valid))
-
 
     def attachEventHandlerCallback(self,
         callback,
@@ -2634,12 +2886,30 @@ cdef class Model:
 
         self.includeEventhdlr(event_handler, name, description)
 
-
     def __dealloc__(self):
+        # Declare all C variables at the beginning for Cython compatibility
+        cdef SCIP_BENDERS** benders
+        cdef int nbenders
+        cdef int nsubproblems
+        cdef int i, j
+
         # call C function directly, because we can no longer call this object's methods, according to
         # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
         if self._scip is not NULL and self._freescip and PY_SCIP_CALL:
-           PY_SCIP_CALL( SCIPfree(&self._scip) )
+            # Free Benders subproblems before freeing the main SCIP instance
+            if self._benders_subproblems:
+                benders = SCIPgetBenders(self._scip)
+                nbenders = SCIPgetNActiveBenders(self._scip)
+
+                for i in range(nbenders):
+                    nsubproblems = SCIPbendersGetNSubproblems(benders[i])
+                    for j in range(nsubproblems):
+                        PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, benders[i], j))
+
+                # Clear the references to allow Python GC to clean up the Model objects
+                self._benders_subproblems = []
+
+            PY_SCIP_CALL( SCIPfree(&self._scip) )
 
     def __hash__(self):
         return hash(<size_t>self._scip)
@@ -2668,6 +2938,7 @@ cdef class Model:
         model = Model(createscip=False)
         model._scip = scip
         model._bestSol = Solution.create(scip, SCIPgetBestSol(scip))
+        model._benders_subproblems = []  # Initialize Benders subproblems list
         return model
 
     @property
@@ -2816,7 +3087,6 @@ cdef class Model:
 
         """
         return SCIPminorVersion()
-
 
     def getTechVersion(self):
         """
@@ -3024,6 +3294,72 @@ cdef class Model:
 
         """
         return SCIPgetDepth(self._scip)
+
+    def getMaxDepth(self):
+        """
+        Gets maximal depth of the branch-and-bound tree processed during solving (excluding probing nodes).
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetMaxDepth(self._scip)
+
+    def getPlungeDepth(self):
+        """
+        Gets current plunging depth (successive selections of child/sibling nodes).
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetPlungeDepth(self._scip)
+
+    def getLowerbound(self):
+        """
+        Gets global lower (dual) bound of the transformed problem.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetLowerbound(self._scip)
+
+    def getCutoffbound(self):
+        """
+        Gets the cutoff bound of the transformed problem.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetCutoffbound(self._scip)
+
+    def getNNodeLPIterations(self):
+        """
+        Gets number of LP iterations used for solving node relaxations so far.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNNodeLPIterations(self._scip)
+
+    def getNStrongbranchLPIterations(self):
+        """
+        Gets number of LP iterations used for strong branching so far.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNStrongbranchLPIterations(self._scip)
 
     def cutoffNode(self, Node node):
         """
@@ -3493,7 +3829,6 @@ cdef class Model:
         return iters
 
     # Objective function
-
     def setMinimize(self):
         """Set the objective sense to minimization."""
         PY_SCIP_CALL(SCIPsetObjsense(self._scip, SCIP_OBJSENSE_MINIMIZE))
@@ -3839,7 +4174,6 @@ cdef class Model:
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     # Variable Functions
-
     def addVar(self, name='', vtype='C', lb=0.0, ub=None, obj=0.0, pricedVar=False, pricedVarScore=1.0, deletable=False):
         """
         Create a new variable. Default variable is non-negative and continuous.
@@ -3892,7 +4226,7 @@ cdef class Model:
         elif vtype in ['I', 'INTEGER']:
             PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_INTEGER))
         elif vtype in ['M', 'IMPLINT']:
-            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_VARTYPE_IMPLINT))
+            PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname, lb, ub, obj, SCIP_DEPRECATED_VARTYPE_IMPLINT))
         else:
             raise Warning("unrecognized variable type")
 
@@ -4319,7 +4653,6 @@ cdef class Model:
            ub = SCIPinfinity(self._scip)
         PY_SCIP_CALL(SCIPchgVarUbNode(self._scip, node.scip_node, var.scip_var, ub))
 
-
     def chgVarType(self, Variable var, vtype):
         """
         Changes the type of a variable.
@@ -4341,11 +4674,33 @@ cdef class Model:
         elif vtype in ['I', 'INTEGER']:
             PY_SCIP_CALL(SCIPchgVarType(self._scip, var.scip_var, SCIP_VARTYPE_INTEGER, &infeasible))
         elif vtype in ['M', 'IMPLINT']:
-            PY_SCIP_CALL(SCIPchgVarType(self._scip, var.scip_var, SCIP_VARTYPE_IMPLINT, &infeasible))
+            PY_SCIP_CALL(SCIPchgVarType(self._scip, var.scip_var, SCIP_DEPRECATED_VARTYPE_IMPLINT, &infeasible))
         else:
             raise Warning("unrecognized variable type")
         if infeasible:
             print('could not change variable type of variable %s' % var)
+
+    def markDoNotAggrVar(self, Variable var):
+        """
+        Marks a variable preventing it from being aggregated.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to mark
+        """
+        PY_SCIP_CALL(SCIPmarkDoNotAggrVar(self._scip, var.scip_var))
+
+    def markDoNotMultaggrVar(self, Variable var):
+        """
+        Marks a variable preventing it from being multi-aggregated.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to mark
+        """
+        PY_SCIP_CALL(SCIPmarkDoNotMultaggrVar(self._scip, var.scip_var))
 
     def getVars(self, transformed=False):
         """
@@ -4688,7 +5043,6 @@ cdef class Model:
         """Marks the given node to be propagated again the next time a node of its subtree is processed."""
         PY_SCIP_CALL(SCIPrepropagateNode(self._scip, node.scip_node))
 
-
     # LP Methods
     def getLPSolstat(self):
         """
@@ -4700,7 +5054,6 @@ cdef class Model:
 
         """
         return SCIPgetLPSolstat(self._scip)
-
 
     def constructLP(self):
         """
@@ -6280,38 +6633,6 @@ cdef class Model:
         """
 
         PY_SCIP_CALL(SCIPsortAndCons(self._scip, and_cons.scip_cons))
-    
-    def chgAndConsCheckFlagWhenUpgr(self, Constraint cons, flag):
-        """
-        when 'upgrading' the given AND-constraint, should the check flag for the upgraded 
-        constraint be set to TRUE, even if the check flag of this AND-constraint is set to FALSE?
-        
-        Parameters
-        ----------
-        cons : Constraint
-            The AND constraint to change.
-        flag : bool
-            The new value for the check flag.
-
-        """
-
-        PY_SCIP_CALL(SCIPchgAndConsCheckFlagWhenUpgr(self._scip, cons.scip_cons, flag))
-
-    def chgAndConsRemovableFlagWhenUpgr(self, Constraint cons, flag):
-        """
-        when 'upgrading' the given AND-constraint, should the removable flag for the upgraded 
-        constraint be set to TRUE, even if the removable flag of this AND-constraint is set to FALSE?
-        
-        Parameters
-        ----------
-        cons : Constraint
-            The AND constraint to change.
-        flag : bool
-            The new value for the removable flag.
-
-        """
-
-        PY_SCIP_CALL(SCIPchgAndConsRemovableFlagWhenUpgr(self._scip, cons.scip_cons, flag))
 
     def printCons(self, Constraint constraint):
         """
@@ -6978,7 +7299,6 @@ cdef class Model:
 
         return pyCons
 
-
     def addMatrixConsIndicator(self, cons: Union[ExprCons, MatrixExprCons], binvar: Union[Variable, MatrixVariable] = None,
                                activeone: Union[bool, np.ndarray] = True, name: Union[str, np.ndarray] = "",
                                initial: Union[bool, np.ndarray] = True, separate: Union[bool, np.ndarray] = True,
@@ -7560,7 +7880,6 @@ cdef class Model:
             raise Warning("method cannot be called for constraints of type " + constype)
 
         return activity
-
 
     def getSlack(self, Constraint cons, Solution sol = None, side = None):
         """
@@ -8241,6 +8560,21 @@ cdef class Model:
         PY_SCIP_CALL(SCIPcreateBendersDefault(self._scip, subprobs, nsubproblems))
         benders = SCIPfindBenders(self._scip, "default")
 
+        # Free the temporary array (SCIPcreateBendersDefault copies the pointers internally)
+        free(subprobs)
+
+        # Store references to subproblem Models and transfer ownership to master.
+        # The master will free the Benders subproblems in its __dealloc__ method.
+        # Set _freescip = False on the subproblem Model(s) to prevent double-free
+        # if they are deallocated before the master.
+        if isdict:
+            self._benders_subproblems = list(subproblems.values())
+            for subprob in self._benders_subproblems:
+                (<Model>subprob)._freescip = False
+        else:
+            self._benders_subproblems = [subproblems]
+            (<Model>subproblems)._freescip = False
+
         # activating the Benders' decomposition constraint handlers
         self.setBoolParam("constraints/benderslp/active", True)
         self.setBoolParam("constraints/benders/active", True)
@@ -8271,20 +8605,22 @@ cdef class Model:
                     benders[i], self._bestSol.sol, j, &infeasible, solvecip, NULL))
 
     def freeBendersSubproblems(self):
-        """Calls the free subproblem function for the Benders' decomposition.
-        This will free all subproblems for all decompositions. """
-        cdef SCIP_BENDERS** benders = SCIPgetBenders(self._scip)
-        cdef int nbenders = SCIPgetNActiveBenders(self._scip)
-        cdef int nsubproblems
-        cdef int i
-        cdef int j
+        """Deprecated: This method is no longer needed.
 
-        # solving all subproblems from all Benders' decompositions
-        for i in range(nbenders):
-            nsubproblems = SCIPbendersGetNSubproblems(benders[i])
-            for j in range(nsubproblems):
-                PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, benders[i],
-                    j))
+        Benders subproblems are now automatically managed and freed by the master
+        Model when it is deallocated. Calling this method explicitly has no effect.
+
+        .. deprecated:: 5.7.0
+            This method is deprecated and will be removed in a future version.
+            Subproblem memory management is now handled automatically.
+        """
+        warnings.warn(
+            "freeBendersSubproblems() is deprecated and no longer needed. "
+            "Benders subproblems are automatically freed when the master Model "
+            "is deallocated.",
+            DeprecationWarning,
+            stacklevel=2
+        )
 
     def updateBendersLowerbounds(self, lowerbounds, Benders benders=None):
         """
@@ -8581,7 +8917,6 @@ cdef class Model:
 
         """
         PY_SCIP_CALL( SCIPincludeBendersDefaultCuts(self._scip, benders._benders) )
-
 
     def includeEventhdlr(self, Eventhdlr eventhdlr, name, desc):
         """
@@ -9005,7 +9340,10 @@ cdef class Model:
         maxdepth : int, optional
             maximal depth level to call heuristic at (Default value = -1)
         timingmask : PY_SCIP_HEURTIMING, optional
-            positions in the node solving loop where heuristic should be executed
+            positions in the node solvingreturn {
+            'result': SCIP_RESULT.SUCCESS,
+            'lowerbound': 10e4
+        } loop where heuristic should be executed
             (Default value = SCIP_HEURTIMING_BEFORENODE)
         usessubscip : bool, optional
             does the heuristic use a secondary SCIP instance? (Default value = False)
@@ -9023,6 +9361,72 @@ cdef class Model:
         heur.model = <Model>weakref.proxy(self)
         heur.name = name
         Py_INCREF(heur)
+    
+    def includeIISfinder(self, IISfinder iisfinder, name, desc, priority=10000, freq=1):
+        """
+        Include an IIS (Irreducible Infeasible Set) finder handler.
+
+        Parameters
+        ----------
+        iisfinder : IISfinder
+            IIS finder
+        name : str
+            name of IIS finder
+        desc : str
+            description of IIS finder
+        priority : int, optional
+            priority of the IISfinder (#todo description)
+        freq : int, optional
+            frequency for calling IIS finder
+
+        """
+        cdef SCIP_IISFINDER* scip_iisfinder
+
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+
+        iisfinder.iis = IIS()
+
+        PY_SCIP_CALL(SCIPincludeIISfinder(self._scip, nam, des, priority, PyiisfinderCopy, PyiisfinderFree,
+                                         PyiisfinderExec, <SCIP_IISFINDERDATA*> iisfinder))
+
+        scip_iisfinder = SCIPfindIISfinder(self._scip, nam)
+        iisfinder.name = name
+        Py_INCREF(iisfinder)
+        iisfinder.scip_iisfinder = scip_iisfinder
+
+    def generateIIS(self):
+        """
+        Generates an Irreducible Infeasible Subsystem (IIS) from the current
+        problem.
+
+        Returns
+        -------
+        IIS
+
+        """
+        cdef SCIP_IIS* _iis
+
+        PY_SCIP_CALL( SCIPgenerateIIS(self._scip) )
+
+        _iis = SCIPgetIIS(self._scip)
+        return IIS.create(_iis)
+    
+    def getIIS(self):
+        """
+        Get the IIS object.
+        Note: Needs to be called after generateIIS, or after a single execution of the iisfinderExec.
+        
+        Returns
+        -------
+        IIS 
+        """
+        cdef SCIP_IIS* _iis
+
+        _iis = SCIPgetIIS(self._scip)
+        assert _iis != NULL, "No IIS exists. You need to first call generateIIS() or run the iisfinderexec method of your custom IISfinder class."
+
+        return IIS.create(_iis)
 
     def includeRelax(self, Relax relax, name, desc, priority=10000, freq=1):
         """
@@ -9219,7 +9623,6 @@ cdef class Model:
         # TODO: It might be necessary in increment the reference to benders i.e Py_INCREF(benders)
         Py_INCREF(benderscut)
 
-
     def getLPBranchCands(self):
         """
         Gets branching candidates for LP solution branching (fractional variables) along with solution values,
@@ -9263,9 +9666,9 @@ cdef class Model:
         """
         Gets number of branching candidates for LP solution branching (number of fractional variables)
 
- 	Returns
-  	-------
-   	int
+        Returns
+        -------
+        int
     	    number of LP branching candidates
 
         """
@@ -9321,7 +9724,6 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPbranchVar(self._scip, wrapper.ptr[0], &downchild, &eqchild, &upchild))
         return Node.create(downchild), Node.create(eqchild), Node.create(upchild)
-
 
     def branchVarVal(self, Variable variable, value):
         """
@@ -10719,12 +11121,58 @@ cdef class Model:
 
     # Statistic Methods
 
-    def printStatistics(self):
-        """Print statistics."""
+    def printStatistics(self, filename=None):
+        """
+        Print statistics.
+
+        Parameters
+        ----------
+        filename : str, optional
+            name of the output file (Default = None)
+
+        """ 
+
         user_locale = locale.getlocale(category=locale.LC_NUMERIC)
         locale.setlocale(locale.LC_NUMERIC, "C")
 
-        PY_SCIP_CALL(SCIPprintStatistics(self._scip, NULL))
+        if not filename:
+            PY_SCIP_CALL(SCIPprintStatistics(self._scip, NULL))
+        else:
+            with open(filename, "w") as f:
+                cfile = fdopen(f.fileno(), "w")
+                PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
+    def printStatisticsJson(self, filename=None):
+        """
+        Print statistics in JSON format.
+
+        Parameters
+        ----------
+        filename : str, optional
+            name of the output file (Default = None)
+
+        """ 
+
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        if not filename:
+            PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, NULL))
+        else:
+            with open(filename, "w") as f:
+                cfile = fdopen(f.fileno(), "w")
+                PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, cfile))
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
+    def printStatisticsJson(self):
+        """Print statistics in JSON format."""
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, NULL))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
@@ -10746,6 +11194,28 @@ cdef class Model:
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintStatistics(self._scip, cfile))
+
+        locale.setlocale(locale.LC_NUMERIC,user_locale)
+    
+
+    def writeStatisticsJson(self, filename="origprob.stats.json"):
+        """
+        Write statistics to a JSON file.
+
+        Parameters
+        ----------
+        filename : str, optional
+            name of the output file (Default = "origprob.stats.json")
+
+        """
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+
+        # use this doubled opening pattern to ensure that IOErrors are
+        #   triggered early and in Python not in C,Cython or SCIP.
+        with open(filename, "w") as f:
+            cfile = fdopen(f.fileno(), "w")
+            PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, cfile))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
@@ -10928,7 +11398,6 @@ cdef class Model:
         elif paramtype == SCIP_PARAMTYPE_STRING:
             v = str_conversion(value)
             PY_SCIP_CALL(SCIPsetStringParam(self._scip, n, v))
-
 
     def getParam(self, name):
         """
@@ -11420,6 +11889,64 @@ cdef class Model:
         return SCIPgetTreesizeEstimation(self._scip)
 
 
+    # Exact SCIP methods
+    def enableExactSolving(self, SCIP_Bool enable):
+        """
+        Enables or disables exact solving mode in SCIP.
+
+        Parameters
+        ----------
+        enable : SCIP_Bool
+            Whether to enable exact solving mode (True) or disable it (False).
+        """
+
+        PY_SCIP_CALL(SCIPenableExactSolving(self._scip, enable))
+
+    def isExact(self):
+        """
+        Returns whether exact solving mode is enabled in SCIP.
+
+        Returns
+        -------
+        bool
+        """
+
+        return SCIPisExact(self._scip)
+
+    def allowNegSlackExact(self):
+        """
+        Returns whether negative slack is allowed in exact solving mode.
+
+        Returns
+        -------
+        bool
+        """
+
+        return SCIPallowNegSlack(self._scip)
+    
+    def branchLPExact(self):
+        """
+        Performs exact LP branching.
+
+        Returns
+        -------
+        SCIP_RESULT
+        """
+        cdef SCIP_RESULT result
+        PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
+        return result
+
+    def addRowExact(self, RowExact rowexact):
+        """
+        Adds an exact row to the LP.
+
+        Parameters
+        ----------
+        rowexact : RowExact
+            The exact row to add.
+        """
+        PY_SCIP_CALL(SCIPaddRowExact(self._scip, rowexact.scip_row_exact))
+
     def getBipartiteGraphRepresentation(self, prev_col_features=None, prev_edge_features=None, prev_row_features=None,
                                         static_only=False, suppress_warnings=False):
         """
@@ -11527,7 +12054,7 @@ cdef class Model:
                     col_features[col_i][col_feature_map["integer"]] = 1
                 elif vtype == SCIP_VARTYPE_CONTINUOUS:
                     col_features[col_i][col_feature_map["continuous"]] = 1
-                elif vtype == SCIP_VARTYPE_IMPLINT:
+                elif vtype == SCIP_DEPRECATED_VARTYPE_IMPLINT:
                     col_features[col_i][col_feature_map["implicit_integer"]] = 1
                 # Objective coefficient
                 col_features[col_i][col_feature_map["obj_coef"]] = SCIPcolGetObj(cols[i])

@@ -1,4 +1,4 @@
-from pyscipopt import Model, SCIP_RESULT
+from pyscipopt import Model, SCIP_RESULT, SCIP_PARAMSETTING
 from pyscipopt.scip import Relax
 import pytest 
 from helpers.utils import random_mip_1
@@ -17,6 +17,10 @@ class SoncRelax(Relax):
 
 def test_relaxator():
     m = Model()
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    m.setHeuristics(SCIP_PARAMSETTING.OFF)
+    m.setSeparating(SCIP_PARAMSETTING.OFF)
+    m.setParam("limits/nodes", 1)
     m.hideOutput()
 
     # include relaxator
@@ -38,15 +42,14 @@ def test_relaxator():
 
     assert 'relaxexec' in calls
     assert len(calls) >= 1
-    assert m.getObjVal() > 10e4
+    assert m.isGE(m.getDualbound(), 10e4)
 
 class EmptyRelaxator(Relax):
-    def relaxexec(self):
-        pass
-        # doesn't return anything
+    pass
 
 def test_empty_relaxator():
     m = Model()
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
     m.hideOutput()
 
     m.includeRelax(EmptyRelaxator(), "", "")
@@ -62,7 +65,8 @@ def test_empty_relaxator():
     m.setObjective(x1 + x0)
 
     with pytest.raises(Exception):
-        m.optimize()
+        with pytest.raises(AssertionError):
+            m.optimize()
 
 def test_relax():
     model = random_mip_1()

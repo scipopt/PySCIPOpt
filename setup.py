@@ -7,54 +7,63 @@ scipoptdir = os.environ.get("SCIPOPTDIR", "").strip('"')
 extra_compile_args = []
 extra_link_args = []
 
-# if SCIPOPTDIR is not set, we assume that SCIP is installed globally
+# if SCIPOPTDIR is not set, try to detect conda environment, otherwise assume global installation
 if not scipoptdir:
-    if platform.system() == "Darwin":
-        includedir = "/usr/local/include"
-        libdir = "/usr/local/lib"
+    # check if we're in a conda environment
+    conda_prefix = os.environ.get("CONDA_PREFIX", "").strip('"')
+
+    if conda_prefix and os.path.exists(os.path.join(conda_prefix, "include")):
+        includedirs = os.path.join(conda_prefix, "include")
+        libdir = os.path.join(conda_prefix, "lib")
+        libname = "libscip" if platform.system() == "Windows" else "scip"
+        print(f"Detected conda environment at {conda_prefix}.")
+        print(f"Using include path {includedirs}.")
+        print(f"Using library directory {libdir}.\n")
     else:
-        includedir = "."
-        libdir = "."
-    libname = "libscip" if platform.system() in ["Windows"] else "scip"
-    print("Assuming that SCIP is installed globally, because SCIPOPTDIR is undefined.\n")
+        # fall back to global installation
+        if platform.system() == "Darwin":
+            includedirs = ["/usr/local/include"]
+            libdir = "/usr/local/lib"
+        else:
+            includedirs = ["."]
+            libdir = "."
+        libname = "libscip" if platform.system() == "Windows" else "scip"
+        print("Assuming that SCIP is installed globally, because SCIPOPTDIR is undefined.\n")
 
 else:
 
     # check whether SCIP is installed in the given directory
     if os.path.exists(os.path.join(scipoptdir, "include")):
-        includedir = os.path.abspath(os.path.join(scipoptdir, "include"))
+        includedirs = [os.path.abspath(os.path.join(scipoptdir, "include"))]
     else:
-        print(f"SCIPOPTDIR={scipoptdir} does not contain an include directory; searching for include files in src or ../src directory.")
+        print("SCIPOPTDIR=%s does not contain an include directory; searching for include files in src or ../src directory.\n" % scipoptdir)
 
         if os.path.exists(os.path.join(scipoptdir, "src")):
             # SCIP seems to be installed in-place; check whether it was built using make or cmake
             if os.path.exists(os.path.join(scipoptdir, "src", "scip")):
                 # assume that SCIPOPTDIR pointed to the main source directory (make)
-                includedir = os.path.abspath(os.path.join(scipoptdir, "src"))
+                includedirs = [os.path.abspath(os.path.join(scipoptdir, "src")), os.path.abspath(os.path.join(scipoptdir, "lib/shared/include"))]
             else:
                 # assume that SCIPOPTDIR pointed to a cmake build directory; try one level up (this is just a heuristic)
                 if os.path.exists(os.path.join(scipoptdir, "..", "src", "scip")):
-                    includedir = os.path.abspath(os.path.join(scipoptdir, "..", "src"))
+                    includedirs = [os.path.abspath(os.path.join(scipoptdir, "..", "src"))]
                 else:
-                    sys.exit(f"Could neither find src/scip nor ../src/scip directory in SCIPOPTDIR={scipoptdir}. Consider installing SCIP in a separate directory.")
+                    sys.exit("Could neither find src/scip nor ../src/scip directory in SCIPOPTDIR=%s. Consider installing SCIP in a separate directory." % scipoptdir)
         else:                    
-            sys.exit(f"Could not find a src directory in SCIPOPTDIR={scipoptdir}; maybe it points to a wrong directory.")
+            sys.exit("Could not find a src directory in SCIPOPTDIR=%s; maybe it points to a wrong directory." % scipoptdir)
 
     # determine library
     if os.path.exists(os.path.join(scipoptdir, "lib", "shared", "libscip.so")):
         # SCIP seems to be created with make
         libdir = os.path.abspath(os.path.join(scipoptdir, "lib", "shared"))
         libname = "scip"
-        extra_compile_args.append("-DNO_CONFIG_HEADER")
-        # the following is a temporary hack to make it compile with SCIP/make:
-        extra_compile_args.append("-DTPI_NONE")  # if other TPIs are used, please modify
     else:
         # assume that SCIP is installed on the system
         libdir = os.path.abspath(os.path.join(scipoptdir, "lib"))
-        libname = "libscip" if platform.system() in ["Windows"] else "scip"
+        libname = "libscip" if platform.system() == "Windows" else "scip"
 
-    print(f"Using include path {includedir}.")
-    print(f"Using SCIP library {libname} at {libdir}.\n")
+    print("Using include path %s." % includedirs)
+    print("Using SCIP library %s at %s.\n" % (libname, libdir))
 
 # set runtime libraries
 if platform.system() in ["Linux", "Darwin"]:
@@ -84,7 +93,6 @@ if not os.path.exists(os.path.join(packagedir, "scip.pyx")):
 
 ext = ".pyx" if use_cython else ".c"
 
-
 on_github_actions = os.getenv('GITHUB_ACTIONS') == 'true'
 release_mode = os.getenv('RELEASE') == 'true'
 compile_with_line_tracing = on_github_actions and not release_mode    
@@ -92,8 +100,8 @@ compile_with_line_tracing = on_github_actions and not release_mode
 extensions = [
     Extension(
         "pyscipopt.scip",
-        [os.path.join(packagedir, f"scip{ext}")],
-        include_dirs=[includedir],
+        [os.path.join(packagedir, "scip%s" % ext)],
+        include_dirs=includedirs,
         library_dirs=[libdir],
         libraries=[libname],
         extra_compile_args=extra_compile_args,
@@ -110,7 +118,7 @@ with open("README.md") as f:
 
 setup(
     name="PySCIPOpt",
-    version="5.6.0",
+    version="6.0.0",
     description="Python interface and modeling environment for SCIP",
     long_description=long_description,
     long_description_content_type="text/markdown",

@@ -26,21 +26,6 @@ dynamic = ["version"]
 [project.urls]
 Homepage = "https://github.com/SCIP-Interfaces/PySCIPOpt"
 
-[dependency-groups]
-test = [
-    "pytest",
-    "pytest-xdist",
-]
-test-full = [
-    {"include-group" = "test" },
-    "networkx",  # only needed for a few tests
-]
-coverage = [
-    { "include-group" = "test-full" },
-    "coverage",
-    "cython",
-]
-
 [tool.pytest.ini_options]
 norecursedirs = ["check"]
 testpaths = ["tests"]
@@ -66,9 +51,9 @@ AARCH=$(uname -m)
 echo "------"
 echo $AARCH
 if [[ $AARCH == "aarch64" ]]; then
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.8.0/libscip-linux-arm.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.10.0/libscip-linux-arm.zip -O scip.zip
 else
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.8.0/libscip-linux.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.10.0/libscip-linux.zip -O scip.zip
 fi
 unzip scip.zip
 mv scip_install scip
@@ -82,11 +67,11 @@ before-all = '''
 #!/bin/bash
 brew install wget zlib gcc
 if [[ $CIBW_ARCHS == *"arm"* ]]; then
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.8.0/libscip-macos-arm.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.10.0/libscip-macos-arm.zip -O scip.zip
     export MACOSX_DEPLOYMENT_TARGET=14.0
 else
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.8.0/libscip-macos-intel.zip -O scip.zip
-    export MACOSX_DEPLOYMENT_TARGET=13.0
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.10.0/libscip-macos-intel.zip -O scip.zip
+    export MACOSX_DEPLOYMENT_TARGET=14.0
 fi
 unzip scip.zip
 mv scip_install src/scip
@@ -99,7 +84,7 @@ repair-wheel-command = '''
         delocate-listdeps {wheel}
         delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}
     else
-        export MACOSX_DEPLOYMENT_TARGET=13.0
+        export MACOSX_DEPLOYMENT_TARGET=14.0
         delocate-listdeps {wheel}
         delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}
     fi
@@ -111,7 +96,7 @@ repair-wheel-command = '''
 skip="pp* cp36* cp37*"
 before-all = [
     "choco install 7zip wget",
-    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.8.0/libscip-windows.zip -O scip.zip",
+    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.10.0/libscip-windows.zip -O scip.zip",
     "\"C:\\Program Files\\7-Zip\\7z.exe\" x \"scip.zip\" -o\"scip-test\"",
     "mv .\\scip-test\\scip_install .\\test",
     "mv .\\test .\\scip"
