@@ -4,6 +4,7 @@
 ### Added
 ### Fixed
 ### Changed
+- Switched license from MIT to Apache-2.0
 ### Removed
 
 ## 6.0.0 - 2025.xx.yy
