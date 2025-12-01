@@ -88,7 +88,7 @@ class Expr:
         return UnaryExpr.from_expr(self, AbsExpr)
 
     @staticmethod
-    def _is_sum(expr: Expr) -> bool:
+    def _is_SumExpr(expr: Expr) -> bool:
         return type(expr) is Expr or isinstance(expr, PolynomialExpr)
 
     def __add__(self, other):
@@ -96,11 +96,11 @@ class Expr:
         if isinstance(other, Expr):
             if not self.children:
                 return other
-            if Expr._is_sum(self):
-                if Expr._is_sum(other):
+            if Expr._is_SumExpr(self):
+                if Expr._is_SumExpr(other):
                     return Expr(self.to_dict(other.children))
                 return Expr(self.to_dict({other: 1.0}))
-            elif Expr._is_sum(other):
+            elif Expr._is_SumExpr(other):
                 return Expr(other.to_dict({self: 1.0}))
             return Expr({self: 1.0, other: 1.0})
         elif isinstance(other, MatrixExpr):
@@ -124,7 +124,11 @@ class Expr:
             if isinstance(other, ConstExpr):
                 if other[CONST] == 0:
                     return ConstExpr(0.0)
-                return Expr({i: self[i] * other[CONST] for i in self if self[i] != 0})
+                if Expr._is_SumExpr(self):
+                    return Expr({i: self[i] * other[CONST] for i in self if self[i] != 0})
+                return Expr({self: other[CONST]})
+            if hash(self) == hash(other):
+                return PowExpr(self, 2)
             return ProdExpr(self, other)
         elif isinstance(other, MatrixExpr):
             return other.__mul__(self)
