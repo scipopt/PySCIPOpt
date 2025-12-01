@@ -309,7 +309,7 @@ class PolynomialExpr(Expr):
             and other[CONST].is_integer()
             and other[CONST] > 0
         ):
-            res = 1
+            res = ConstExpr(1.0)
             for _ in range(int(other[CONST])):
                 res *= self
             return res
