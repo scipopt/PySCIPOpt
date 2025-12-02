@@ -235,11 +235,8 @@ cdef class Expr:
 
         return res
 
-    def _remove_zero(self) -> dict:
-        return {k: v for k, v in self.children.items() if v != 0}
-
     def _normalize(self) -> Expr:
-        self.children = self._remove_zero()
+        self.children = {k: v for k, v in self.children.items() if v != 0}
         return self
 
     def degree(self) -> float:
