@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 ### Fixed
+- all fundamental callbacks now raise an error if not implemented
 ### Changed
 ### Removed
 
