@@ -37,13 +37,11 @@ cdef class Prop:
 
     def propexec(self, proptiming):
         '''calls execution method of propagator'''
-        print("python error in propexec: this method needs to be implemented")
-        return {}
+        raise NotImplementedError("propexec() is a fundamental callback and should be implemented in the derived class")
 
     def propresprop(self, confvar, inferinfo, bdtype, relaxedbd):
         '''resolves the given conflicting bound, that was reduced by the given propagator'''
-        print("python error in propresprop: this method needs to be implemented")
-        return {}
+        raise NotImplementedError("propresprop() is a fundamental callback and should be implemented in the derived class")
 
 
 
