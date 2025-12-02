@@ -8,9 +8,11 @@ import numpy as np
 include "matrix.pxi"
 
 
-class Term:
+cdef class Term:
     """A monomial term consisting of one or more variables."""
 
+    cdef public tuple vars
+    cdef int HASH
     __slots__ = ("vars", "HASH")
 
     def __init__(self, *vars: Variable):
@@ -23,17 +25,13 @@ class Term:
     def __hash__(self) -> int:
         return self.HASH
 
-    def __eq__(self, other: Term) -> bool:
+    def __eq__(self, Term other) -> bool:
         return self.HASH == other.HASH
 
     def __len__(self) -> int:
         return len(self.vars)
 
-    def __mul__(self, other: Term) -> Term:
-        if not isinstance(other, Term):
-            raise TypeError(
-                f"unsupported operand type(s) for *: 'Term' and '{type(other)}'"
-            )
+    def __mul__(self, Term other) -> Term:
         return Term(*self.vars, *other.vars)
 
     def __repr__(self) -> str:
