@@ -21,8 +21,7 @@ cdef class Benderscut:
         pass
 
     def benderscutexec(self, solution, probnumber, enfotype):
-        print("python error in benderscutexec: this method needs to be implemented")
-        return {}
+        raise NotImplementedError("benderscutexec() is a fundamental callback and should be implemented in the derived class")
 
 cdef SCIP_RETCODE PyBenderscutCopy (SCIP* scip, SCIP_BENDERS* benders, SCIP_BENDERSCUT* benderscut) noexcept with gil:
     return SCIP_OKAY
