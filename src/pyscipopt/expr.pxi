@@ -3,6 +3,8 @@ from collections.abc import Hashable
 from numbers import Number
 from typing import Optional, Type, Union
 
+import numpy as np
+
 include "matrix.pxi"
 
 
@@ -58,9 +60,10 @@ class Term:
 CONST = Term()
 
 
-class Expr:
+cdef class Expr:
     """Base class for mathematical expressions."""
 
+    cdef public dict children
     __slots__ = ("children",)
 
     def __init__(self, children: Optional[dict[Union[Variable, Term, Expr], float]] = None):
@@ -507,12 +510,19 @@ class CosExpr(UnaryExpr):
     ...
 
 
-class ExprCons:
+cdef class ExprCons:
     """Constraints with a polynomial expressions and lower/upper bounds."""
 
-    def __init__(self, expr: Expr, lhs: Optional[float] = None, rhs: Optional[float] = None):
-        if not isinstance(expr, Expr):
-            raise TypeError("expr must be an Expr instance")
+    cdef public Expr expr
+    cdef public object _lhs
+    cdef public object _rhs
+
+    def __init__(
+        self,
+        Expr expr,
+        lhs: Optional[float] = None,
+        rhs: Optional[float] = None,
+    ):
         if lhs is None and rhs is None:
             raise ValueError(
                 "Ranged ExprCons (with both lhs and rhs) doesn't supported"

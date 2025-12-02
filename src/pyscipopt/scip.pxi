@@ -5468,14 +5468,14 @@ cdef class Model:
         PY_SCIP_CALL( SCIPseparateSol(self._scip, NULL if sol is None else sol.sol, pretendroot, allowlocal, onlydelayed, &delayed, &cutoff) )
         return delayed, cutoff
 
-    def _createConsLinear(self, lincons, **kwargs):
+    def _createConsLinear(self, ExprCons cons, **kwargs):
         """
         The function for creating a linear constraint, but not adding it to the Model.
         Please do not use this function directly, but rather use createConsFromExpr
 
         Parameters
         ----------
-        lincons : ExprCons
+        cons : ExprCons
         kwargs : dict, optional
 
         Returns
@@ -5483,10 +5483,9 @@ cdef class Model:
         Constraint
 
         """
-        assert isinstance(lincons, ExprCons), "given constraint is not ExprCons but %s" % lincons.__class__.__name__
-        assert lincons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % lincons.expr.degree()
+        assert cons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % cons.expr.degree()
 
-        terms = lincons.expr.children
+        terms = cons.expr.children
         cdef int nvars = len(terms.items())
         cdef SCIP_VAR** vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
         cdef SCIP_Real* coeffs_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
@@ -5526,14 +5525,14 @@ cdef class Model:
         free(coeffs_array)
         return PyCons
 
-    def _createConsQuadratic(self, quadcons, **kwargs):
+    def _createConsQuadratic(self, ExprCons cons, **kwargs):
         """
         The function for creating a quadratic constraint, but not adding it to the Model.
         Please do not use this function directly, but rather use createConsFromExpr
 
         Parameters
         ----------
-        quadcons : ExprCons
+        cons : ExprCons
         kwargs : dict, optional
 
         Returns
@@ -5541,7 +5540,7 @@ cdef class Model:
         Constraint
 
         """
-        assert quadcons.expr.degree() <= 2, "given constraint is not quadratic, degree == %d" % quadcons.expr.degree()
+        assert cons.expr.degree() <= 2, "given constraint is not quadratic, degree == %d" % cons.expr.degree()
 
         cdef SCIP_CONS* scip_cons
         cdef SCIP_EXPR* prodexpr
@@ -5570,7 +5569,7 @@ cdef class Model:
             kwargs['removable'],
         ))
 
-        for v, c in quadcons.expr.children.items():
+        for v, c in cons.expr.children.items():
             if len(v) == 1: # linear
                 wrapper = _VarArray(v[0])
                 PY_SCIP_CALL(SCIPaddLinearVarNonlinear(self._scip, scip_cons, wrapper.ptr[0], c))
@@ -5591,7 +5590,7 @@ cdef class Model:
 
         return Constraint.create(scip_cons)
 
-    def _createConsNonlinear(self, cons, **kwargs):
+    def _createConsNonlinear(self, ExprCons cons, **kwargs):
         """
         The function for creating a non-linear constraint, but not adding it to the Model.
         Please do not use this function directly, but rather use createConsFromExpr
@@ -5656,7 +5655,7 @@ cdef class Model:
         free(termcoefs)
         return PyCons
 
-    def _createConsGenNonlinear(self, cons, **kwargs):
+    def _createConsGenNonlinear(self, ExprCons cons, **kwargs):
         """
         The function for creating a general non-linear constraint, but not adding it to the Model.
         Please do not use this function directly, but rather use createConsFromExpr
@@ -5750,10 +5749,21 @@ cdef class Model:
         free(scip_exprs)
         return PyCons
 
-    def createConsFromExpr(self, cons, name='', initial=True, separate=True,
-                enforce=True, check=True, propagate=True, local=False,
-                modifiable=False, dynamic=False, removable=False,
-                stickingatnode=False):
+    def createConsFromExpr(
+            self,
+            ExprCons cons,
+            name='',
+            initial=True,
+            separate=True,
+            enforce=True,
+            check=True,
+            propagate=True,
+            local=False,
+            modifiable=False,
+            dynamic=False,
+            removable=False,
+            stickingatnode=False,
+        ):
         """
         Create a linear or nonlinear constraint without adding it to the SCIP problem.
         This is useful for creating disjunction constraints without also enforcing the individual constituents.
@@ -5824,10 +5834,21 @@ cdef class Model:
             return self._createConsNonlinear(cons, **kwargs)
 
     # Constraint functions
-    def addCons(self, cons, name='', initial=True, separate=True,
-                enforce=True, check=True, propagate=True, local=False,
-                modifiable=False, dynamic=False, removable=False,
-                stickingatnode=False):
+    def addCons(
+            self,
+            ExprCons cons,
+            name='',
+            initial=True,
+            separate=True,
+            enforce=True,
+            check=True,
+            propagate=True,
+            local=False,
+            modifiable=False,
+            dynamic=False,
+            removable=False,
+            stickingatnode=False,
+        ):
         """
         Add a linear or nonlinear constraint.
 
@@ -5865,8 +5886,6 @@ cdef class Model:
             The created and added Constraint object.
 
         """
-        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
-
         cdef SCIP_CONS* scip_cons
 
         kwargs = dict(name=name, initial=initial, separate=separate,
