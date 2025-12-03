@@ -1571,6 +1571,9 @@ cdef class Variable:
     def __repr__(self):
         return self.name
 
+    def degree(self) -> int:
+        return MonomialExpr.from_var(self).degree()
+
     def vtype(self):
         """
         Retrieve the variables type (BINARY, INTEGER, IMPLINT or CONTINUOUS)
