@@ -25,11 +25,11 @@ cdef class Term:
     def __hash__(self) -> int:
         return self.HASH
 
-    def __eq__(self, Term other) -> bool:
-        return self.HASH == other.HASH
-
     def __len__(self) -> int:
         return len(self.vars)
+
+    def __eq__(self, Term other) -> bool:
+        return self.HASH == other.HASH
 
     def __mul__(self, Term other) -> Term:
         return Term(*self.vars, *other.vars)
@@ -38,7 +38,7 @@ cdef class Term:
         return f"Term({', '.join(map(str, self.vars))})"
 
     def degree(self) -> int:
-        return self.__len__()
+        return len(self)
 
     def _to_node(self, start: int = 0, coef: float = 1) -> list[tuple]:
         """Convert term to list of node for SCIP expression construction"""
@@ -245,8 +245,8 @@ cdef class Expr:
     def _to_node(self, start: int = 0, coef: float = 1) -> list[tuple]:
         """Convert expression to list of node for SCIP expression construction"""
         node, index = [], []
-        for child, c in self.children.items():
-            if (child_node := child._to_node(start + len(node), c)):
+        for i in self:
+            if (child_node := i._to_node(start + len(node), self[i])):
                 node.extend(child_node)
                 index.append(start + len(node) - 1)
 
@@ -286,7 +286,7 @@ class PolynomialExpr(Expr):
         other = Expr.from_const_or_var(other)
         if isinstance(other, PolynomialExpr):
             for child, coef in other.children.items():
-                self.children[child] = self.children.get(child, 0.0) + coef
+                self.children[child] = self[child] + coef
             return self
         return super().__iadd__(other)
 
@@ -333,8 +333,8 @@ class PolynomialExpr(Expr):
     def _to_node(self, start: int = 0, coef: float = 1) -> list[tuple]:
         """Convert expression to list of node for SCIP expression construction"""
         node = []
-        for child, c in self.children.items():
-            node.extend(child._to_node(start + len(node), c))
+        for i in self:
+            node.extend(i._to_node(start + len(node), self[i]))
 
         if len(node) > 1:
             node.append((Expr, list(range(start, start + len(node)))))
@@ -474,8 +474,8 @@ class UnaryExpr(FuncExpr):
     def _to_node(self, start: int = 0, coef: float = 1) -> list[tuple]:
         """Convert expression to list of node for SCIP expression construction"""
         node = []
-        for child, c in self.children.items():
-            node.extend(child._to_node(start + len(node), c))
+        for i in self.children:
+            node.extend(i._to_node(start + len(node), self[i]))
 
         if node:
             node.append((type(self), start + len(node) - 1))
