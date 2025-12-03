@@ -1526,8 +1526,7 @@ cdef class Variable:
         return MonomialExpr.from_var(self).__add__(other)
 
     def __iadd__(self, other):
-        self = self.__add__(other)
-        return self
+        return MonomialExpr.from_var(self).__iadd__(other)
 
     def __radd__(self, other):
         return MonomialExpr.from_var(self).__radd__(other)
