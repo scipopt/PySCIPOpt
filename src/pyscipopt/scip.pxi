@@ -5675,7 +5675,7 @@ cdef class Model:
         cdef int c
         cdef int i
 
-        nodes = cons.expr._to_nodes()
+        nodes = cons.expr._to_node()
         scip_exprs = <SCIP_EXPR**> malloc(len(nodes) * sizeof(SCIP_EXPR*))
         for i, (e_type, value) in enumerate(nodes):
             if e_type is Term:
