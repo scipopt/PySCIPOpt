@@ -26,19 +26,27 @@ jobs:
     strategy:
       matrix:
         include:
+          # - os: ubuntu-22.04
+          #   arch: x86_64
           - os: ubuntu-22.04
-            arch: x86_64
-          - os: macos-14
-            arch: arm64
-          - os: macos-15-intel
-            arch: x86_64
-          - os: windows-latest
-            arch: AMD64
+            arch: aarch64
+          # - os: macos-14
+          #   arch: arm64
+          # - os: macos-15-intel
+          #   arch: x86_64
+          # - os: windows-latest
+          #   arch: AMD64
 
 
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        if: runner.os == 'Linux' && matrix.arch == 'aarch64'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.2.1
@@ -99,4 +107,3 @@ jobs:
           user: __token__
           password: ${{ secrets.TESTPYPI_API_TOKEN }}
           verbose: true
-
