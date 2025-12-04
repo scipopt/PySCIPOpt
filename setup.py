@@ -14,7 +14,7 @@ if not scipoptdir:
 
     if conda_prefix and os.path.exists(os.path.join(conda_prefix, "include")):
         if platform.system() == "Windows":
-            includedirs = [os.path.join(conda_prefix, "Library/include" )]
+            includedirs = [os.path.join(conda_prefix, "Library/include")]
             libdir = os.path.join(conda_prefix, "Library/lib")
             libname = "libscip"
         else:
