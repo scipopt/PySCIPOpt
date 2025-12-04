@@ -118,7 +118,7 @@ with open("README.md") as f:
 
 setup(
     name="PySCIPOpt",
-    version="5.7.1",
+    version="6.0.0",
     description="Python interface and modeling environment for SCIP",
     long_description=long_description,
     long_description_content_type="text/markdown",

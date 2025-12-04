@@ -24,4 +24,5 @@ more detailed information see `this page <https://www.scipopt.org/doc/html/index
   nodeselector
   lazycons
   eventhandler
+  iis
   scipdex

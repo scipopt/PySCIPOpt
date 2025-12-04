@@ -55,23 +55,19 @@ cdef class Conshdlr:
 
     def consenfolp(self, constraints, nusefulconss, solinfeasible):
         '''calls enforcing method of constraint handler for LP solution for all constraints added'''
-        print("python error in consenfolp: this method needs to be implemented")
-        return {}
+        raise NotImplementedError("consenfolp() is a fundamental callback and should be implemented in the derived class")
 
     def consenforelax(self, solution, constraints, nusefulconss, solinfeasible):
         '''calls enforcing method of constraint handler for a relaxation solution for all constraints added'''
-        print("python error in consenforelax: this method needs to be implemented")
-        return {}
+        raise NotImplementedError("consenforelax() is a fundamental callback and should be implemented in the derived class")
 
     def consenfops(self, constraints, nusefulconss, solinfeasible, objinfeasible):
         '''calls enforcing method of constraint handler for pseudo solution for all constraints added'''
-        print("python error in consenfops: this method needs to be implemented")
-        return {}
+        raise NotImplementedError("consenfops() is a fundamental callback and should be implemented in the derived class")
 
     def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason, completely):
         '''calls feasibility check method of constraint handler '''
-        print("python error in conscheck: this method needs to be implemented")
-        return {}
+        raise NotImplementedError("conscheck() is a fundamental callback and should be implemented in the derived class")
 
     def consprop(self, constraints, nusefulconss, nmarkedconss, proptiming):
         '''calls propagation method of constraint handler '''
@@ -89,8 +85,7 @@ cdef class Conshdlr:
 
     def conslock(self, constraint, locktype, nlockspos, nlocksneg):
         '''variable rounding lock method of constraint handler'''
-        print("python error in conslock: this method needs to be implemented")
-        return {}
+        raise NotImplementedError("conslock() is a fundamental callback and should be implemented in the derived class")
 
     def consactive(self, constraint):
         '''sets activation notification method of constraint handler '''

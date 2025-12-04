@@ -26,8 +26,7 @@ cdef class Heur:
 
     def heurexec(self, heurtiming, nodeinfeasible):
         '''should the heuristic the executed at the given depth, frequency, timing,...'''
-        print("python error in heurexec: this method needs to be implemented")
-        return {}
+        raise NotImplementedError("heurexec() is a fundamental callback and should be implemented in the derived class")
 
 
 
