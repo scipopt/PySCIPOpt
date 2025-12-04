@@ -88,10 +88,6 @@ cdef class Expr:
     def __abs__(self) -> AbsExpr:
         return UnaryExpr.from_expr(self, AbsExpr)
 
-    @staticmethod
-    def _is_SumExpr(expr: Expr) -> bool:
-        return type(expr) is Expr or isinstance(expr, PolynomialExpr)
-
     def __add__(self, other):
         other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
@@ -155,7 +151,6 @@ cdef class Expr:
         other = Expr.from_const_or_var(other)
         if not isinstance(other, ConstExpr):
             raise TypeError("exponent must be a number")
-
         if other[CONST] == 0:
             return ConstExpr(1.0)
         return PowExpr(self, other[CONST])
@@ -229,11 +224,11 @@ cdef class Expr:
         if not isinstance(other, dict):
             raise TypeError("other must be a dict")
 
-        res = self.children.copy()
+        children = self.children.copy()
         for child, coef in other.items():
-            res[child] = res.get(child, 0.0) + coef
+            children[child] = children.get(child, 0.0) + coef
 
-        return res
+        return children
 
     def _normalize(self) -> Expr:
         self.children = {k: v for k, v in self.children.items() if v != 0}
@@ -265,6 +260,10 @@ cdef class Expr:
 
     def _first_child(self) -> Union[Term, Expr]:
         return next(self.__iter__())
+
+    @staticmethod
+    def _is_SumExpr(Expr expr) -> bool:
+        return type(expr) is Expr or isinstance(expr, PolynomialExpr)
 
 
 class PolynomialExpr(Expr):
