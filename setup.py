@@ -59,7 +59,13 @@ else:
         libname = "scip"
     else:
         # assume that SCIP is installed on the system
-        libdir = os.path.abspath(os.path.join(scipoptdir, "lib"))
+        # check for lib64 first (newer SCIP tarballs), then lib
+        if os.path.exists(os.path.join(scipoptdir, "lib64")):
+            libdir = os.path.abspath(os.path.join(scipoptdir, "lib64"))
+        elif os.path.exists(os.path.join(scipoptdir, "lib")):
+            libdir = os.path.abspath(os.path.join(scipoptdir, "lib"))
+        else:
+            sys.exit("Could not find lib or lib64 directory in SCIPOPTDIR=%s" % scipoptdir)
         libname = "libscip" if platform.system() == "Windows" else "scip"
 
     print("Using include path %s." % includedirs)
