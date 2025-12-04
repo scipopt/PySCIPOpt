@@ -18,7 +18,7 @@ if not scipoptdir:
             libdir = os.path.join(conda_prefix, "Library/lib")
             libname = "libscip"
         else:
-            includedirs = [os.path.join(conda_prefix, "include" )]
+            includedirs = [os.path.join(conda_prefix, "include")]
             libdir = os.path.join(conda_prefix, "lib")
             libname = "scip"
         print(f"Detected conda environment at {conda_prefix}.")
