@@ -258,7 +258,7 @@ cdef class Expr:
                 node.append((ProdExpr, [start + len(node) - 2, start + len(node) - 1]))
         return node
 
-    def _first_child(self) -> Union[Term, Expr]:
+    def _fchild(self) -> Union[Term, Expr]:
         return next(self.__iter__())
 
     @staticmethod
@@ -352,6 +352,16 @@ class ConstExpr(PolynomialExpr):
     def __abs__(self) -> ConstExpr:
         return ConstExpr(abs(self[CONST]))
 
+    def __iadd__(self, other):
+        other = Expr.from_const_or_var(other)
+        if isinstance(other, PolynomialExpr):
+            if isinstance(other, ConstExpr):
+                self.children[CONST] += other[CONST]
+            else:
+                self = self.__add__(other)
+            return self
+        return super().__iadd__(other)
+
     def __pow__(self, other):
         other = Expr.from_const_or_var(other)
         if isinstance(other, ConstExpr):
@@ -367,6 +377,16 @@ class MonomialExpr(PolynomialExpr):
             raise ValueError("MonomialExpr must have exactly one child")
 
         super().__init__(children)
+
+    def __iadd__(self, other):
+        other = Expr.from_const_or_var(other)
+        if isinstance(other, PolynomialExpr):
+            if isinstance(other, MonomialExpr) and self._fchild() == other._fchild():
+                self.children[self._fchild()] += other[self._fchild()]
+            else:
+                self = self.__add__(other)
+            return self
+        return super().__iadd__(other)
 
     @staticmethod
     def from_var(var: Variable, coef: float = 1.0) -> MonomialExpr:
@@ -438,13 +458,13 @@ class PowExpr(FuncExpr):
         return (frozenset(self), self.expo).__hash__()
 
     def __repr__(self) -> str:
-        return f"PowExpr({self._first_child()}, {self.expo})"
+        return f"PowExpr({self._fchild()}, {self.expo})"
 
     def _normalize(self) -> Expr:
         if self.expo == 0:
             self = ConstExpr(1.0)
         elif self.expo == 1:
-            self = self._first_child()
+            self = self._fchild()
         return self
 
 
@@ -460,7 +480,7 @@ class UnaryExpr(FuncExpr):
         return frozenset(self).__hash__()
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}({self._first_child()})"
+        return f"{type(self).__name__}({self._fchild()})"
 
     @staticmethod
     def from_expr(expr: Union[Expr, MatrixExpr], cls: Type[UnaryExpr]) -> UnaryExpr:
