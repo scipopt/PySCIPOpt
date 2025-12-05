@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 ### Fixed
+- all fundamental callbacks now raise an error if not implemented
 ### Changed
 - Switched license from MIT to Apache-2.0
 ### Removed
