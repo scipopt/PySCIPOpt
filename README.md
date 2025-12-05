@@ -137,5 +137,5 @@ These are the core responsibilities:
 
 Even if you are not interested in becoming a maintainer, but would like to help out occasionally, that would be very welcome as well!
 
-Send us an email over at **scip@zib.de** if you're ready to take on the challenge :)
+Send us an email over at **joao.goncalves.dionisio@gmail.com** if you're ready to take on the challenge :)
 

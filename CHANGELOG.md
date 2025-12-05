@@ -5,7 +5,6 @@
 ### Fixed
 - all fundamental callbacks now raise an error if not implemented
 ### Changed
-- Switched license from MIT to Apache-2.0
 ### Removed
 
 ## 6.0.0 - 2025.xx.yy
