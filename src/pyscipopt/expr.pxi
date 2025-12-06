@@ -231,7 +231,6 @@ cdef class Expr:
         children = self.children.copy() if copy else self.children
         for child, coef in other.items():
             children[child] = children.get(child, 0.0) + coef
-
         return children
 
     def _normalize(self) -> Expr:
@@ -244,7 +243,6 @@ cdef class Expr:
     def _to_node(self, coef: float = 1, start: int = 0) -> list[tuple]:
         """Convert expression to list of node for SCIP expression construction"""
         node, index = [], []
-        last = lambda: start + len(node) - 1
         for i in self:
             if (child_node := i._to_node(self[i], start + len(node))):
                 node.extend(child_node)
@@ -417,7 +415,7 @@ class ProdExpr(FuncExpr):
         self.coef = coef
 
     def __hash__(self) -> int:
-        return (frozenset(self), self.coef).__hash__()
+        return (type(self), frozenset(self), self.coef).__hash__()
 
     def __add__(self, other):
         other = Expr.from_const_or_var(other)
@@ -454,7 +452,7 @@ class PowExpr(FuncExpr):
         self.expo = expo
 
     def __hash__(self) -> int:
-        return (frozenset(self), self.expo).__hash__()
+        return (type(self), frozenset(self), self.expo).__hash__()
 
     def __repr__(self) -> str:
         return f"PowExpr({self._fchild()}, {self.expo})"
@@ -478,7 +476,7 @@ class UnaryExpr(FuncExpr):
         super().__init__({expr: 1.0})
 
     def __hash__(self) -> int:
-        return frozenset(self).__hash__()
+        return (type(self), frozenset(self)).__hash__()
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self._fchild()})"
