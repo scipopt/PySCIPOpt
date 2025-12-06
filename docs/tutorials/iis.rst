@@ -33,21 +33,18 @@ Let us create a simple infeasible model and then generate an IIS for it.
 
 .. code-block:: python
 
-    from pyscipopt import Model
+x1 = model.addVar("x1", vtype="B")
+x2 = model.addVar("x2", vtype="B")
+x3 = model.addVar("x3", vtype="B")
 
-    m = Model()
-    x1 = m.addVar("x1", vtype="B")
-    x2 = m.addVar("x2", vtype="B")
-    x3 = m.addVar("x3", vtype="B")
+# These four constraints cannot be satisfied simultaneously
+model.addCons(x1 + x2 == 1, name="c1")
+model.addCons(x2 + x3 == 1, name="c2")
+model.addCons(x1 + x3 == 1, name="c3")
+model.addCons(x1 + x2 + x3 <= 0, name="c4")
 
-    # These four constraints cannot be satisfied simultaneously
-    m.addCons(x1 + x2 == 1, name="c1")
-    m.addCons(x2 + x3 == 1, name="c2")
-    m.addCons(x1 + x3 == 1, name="c3")
-    m.addCons(x1 + x2 + x3 <= 0, name="c4")
-
-  model.optimize()
-  iis = model.generateIIS()
+model.optimize()
+iis = model.generateIIS()
 
 When you run this code, SCIP will output a log showing the progress of finding the IIS:
 
@@ -82,13 +79,13 @@ When you run this code, SCIP will output a log showing the progress of finding t
     Num. Vars. in IIS     : 3
     Num. Bounds in IIS    : 6
 
+After SCIP finds that the model is infeasible, see that SCIP's IIS finders alternate between including constraints to make the problem feasible, and removing constraints to make the problem as small as possible.
+You see in the final statistics that the IIS is indeed irreducible, with 3 variables and 2 constraints.
+
 .. note:: 
    While an already optimized infeasible model is not required to use the IIS functionality, it is
    encouraged to call this functionality only after ``model.optimize()``. Otherwise, SCIP will naturally optimize
    the base problem first to ensure that it is actually infeasible.
-
-    After SCIP finds that the model is infeasible, see that SCIP's IIS finders alternate between including constraints to make the problem feasible, and removing constraints to make the problem as small as possible.
-    You see in the final statistics that the IIS is indeed irreducible, with 3 variables and 2 constraints.
 
 The IIS Object
 ==============
@@ -98,7 +95,7 @@ The ``IIS`` object returned by ``generateIIS()`` can be queried to access the fo
 - **time**: The CPU time spent finding the IIS
 - **irreducible**: Boolean indicating if the IIS is irreducible
 - **nodes**: Number of nodes explored during IIS generation
-- **model**: A ``Model`` object containing the subscip with the IIS constraints
+- **subscip**: A ``Model`` object containing the subscip with the IIS constraints
 
 You can interact with the subscip to examine which constraints and variables are part of the IIS:
 
@@ -125,47 +122,31 @@ for identifying infeasible subsystems.
 Basic Structure
 ---------------
 
-To create a custom IIS finder, inherit from the ``IISfinder`` class and implement the ``iisfinderexec`` method:
+To create a custom IIS finder, inherit from the ``IISfinder`` class and implement the ``iisfinderexec`` method.
+This IISfinder just directly removes two constraints in the example above to yield an IIS: 
 
 .. code-block:: python
 
-    from pyscipopt import Model, IISfinder, SCIP_RESULT
+    from pyscipopt import IISfinder, SCIP_RESULT
 
     class SimpleIISFinder(IISfinder):
         """
-        A simple IIS finder that removes constraints one by one
-        until the problem becomes feasible.
+        Minimal working example: keep a known infeasible subset (by name)
+        and mark it as the IIS.
         """
         
         def iisfinderexec(self):
             subscip = self.iis.getSubscip()
-            constraints = subscip.getConss()
-            
-            # Start with all constraints
-            active_constraints = set(constraints)
-            
-            for cons in constraints:
-                # Temporarily remove the constraint
-                active_constraints.discard(cons)
-                
-                # Check if remaining constraints are still infeasible
-                # (This would require setting up a sub-problem with only active_constraints)
-                # For simplicity, we use the full solve approach here
-                
-                subscip.freeTransform()
-                subscip.delCons(cons)
-                subscip.optimize()
-                
-                if subscip.getStatus() == SCIP_STATUS.INFEASIBLE:
-                    # Still infeasible without this constraint
-                    # Keep it removed
-                    pass
-                else:
-                    # Feasible without it, so constraint is needed in IIS
-                    active_constraints.add(cons)
-                    # In practice, you'd recreate the subscip with all active constraints
-            
-            iis.markIrreducible()
+
+            # keep only constraints {c2, c4} and delete others
+            keep = {"c2", "c4"}
+            for cons in list(subscip.getConss()):
+                if cons.name not in keep:
+                    subscip.delCons(cons)
+
+            # Tell SCIP that our sub-SCIP represents an (irreducible) IIS
+            self.iis.setSubscipInfeasible(True)
+            self.iis.setSubscipIrreducible(True)
             return {"result": SCIP_RESULT.SUCCESS}
 
 Including Your Custom IIS Finder
@@ -186,6 +167,7 @@ To use your custom IIS finder, include it in the model before calling ``generate
   model.addCons(x1 + x2 == 1, name="c1")
   model.addCons(x2 + x3 == 1, name="c2")
   model.addCons(x1 + x3 == 1, name="c3")
+  model.addCons(x1 + x2 + x3 <= 0, name="c4")
   
   # Create and include the custom IIS finder
   simple_iis = SimpleIISFinder()
