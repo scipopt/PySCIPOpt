@@ -1,7 +1,7 @@
 ##@file expr.pxi
 from collections.abc import Hashable
 from numbers import Number
-from typing import Optional, Type, Union
+from typing import Iterator, Optional, Type, Union
 
 import numpy as np
 
@@ -82,11 +82,11 @@ cdef class Expr:
             key = Term(key)
         return self.children.get(key, 0.0)
 
-    def __iter__(self) -> Union[Term, Expr]:
+    def __iter__(self) -> Iterator[Union[Variable, Term, Expr]]:
         return iter(self.children)
 
     def __abs__(self) -> AbsExpr:
-        return UnaryExpr.from_expr(self, AbsExpr)
+        return AbsExpr(self)
 
     def __add__(self, other):
         other = Expr.from_const_or_var(other)
@@ -163,13 +163,13 @@ cdef class Expr:
             raise ValueError("base must be positive")
         return exp(self * log(other))
 
-    def __neg__(self) -> Expr:
+    def __neg__(self):
         return self.__mul__(-1.0)
 
-    def __sub__(self, other) -> Expr:
+    def __sub__(self, other):
         return self.__add__(-other)
 
-    def __rsub__(self, other) -> Expr:
+    def __rsub__(self, other):
         return self.__neg__().__add__(other)
 
     def __le__(self, other):
@@ -410,7 +410,7 @@ class ProdExpr(FuncExpr):
 
     __slots__ = ("children", "coef")
 
-    def __init__(self, *children: Expr, coef: float = 1.0):
+    def __init__(self, *children: Union[Term, Expr], coef: float = 1.0):
         if len(set(children)) != len(children):
             raise ValueError("ProdExpr can't have duplicate children")
         super().__init__({i: 1.0 for i in children})
@@ -449,7 +449,7 @@ class PowExpr(FuncExpr):
 
     __slots__ = ("children", "expo")
 
-    def __init__(self, base: Union[Variable, Term, Expr], expo: float = 1.0):
+    def __init__(self, base: Union[Term, Expr], expo: float = 1.0):
         super().__init__({base: 1.0})
         self.expo = expo
 
@@ -464,6 +464,8 @@ class PowExpr(FuncExpr):
             self = ConstExpr(1.0)
         elif self.expo == 1:
             self = self._fchild()
+            if isinstance(self, Term):
+                self = MonomialExpr({self: 1.0})
         return self
 
 
@@ -482,7 +484,10 @@ class UnaryExpr(FuncExpr):
         return f"{type(self).__name__}({self._fchild()})"
 
     @staticmethod
-    def from_expr(expr: Union[Expr, MatrixExpr], cls: Type[UnaryExpr]) -> UnaryExpr:
+    def from_expr(
+        expr: Union[Expr, MatrixExpr],
+        cls: Type[UnaryExpr],
+    ) -> Union[UnaryExpr, MatrixExpr]:
         if isinstance(expr, MatrixExpr):
             res = np.empty(shape=expr.shape, dtype=object)
             res.flat = [cls(i) for i in expr.flat]
@@ -565,7 +570,7 @@ cdef class ExprCons:
             self._rhs -= c
         return self
 
-    def __le__(self, other: Number) -> ExprCons:
+    def __le__(self, other: float) -> ExprCons:
         if not isinstance(other, Number):
             raise TypeError("Ranged ExprCons is not well defined!")
         if not self._rhs is None:
@@ -575,7 +580,7 @@ cdef class ExprCons:
 
         return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
 
-    def __ge__(self, other: Number) -> ExprCons:
+    def __ge__(self, other: float) -> ExprCons:
         if not isinstance(other, Number):
             raise TypeError("Ranged ExprCons is not well defined!")
         if not self._lhs is None:
@@ -621,26 +626,26 @@ def quickprod(expressions) -> Expr:
     return res
 
 
-def exp(expr: Union[Expr, MatrixExpr]) -> ExpExpr:
+def exp(expr: Union[Expr, MatrixExpr]) -> Union[ExpExpr, MatrixExpr]:
     """returns expression with exp-function"""
     return UnaryExpr.from_expr(expr, ExpExpr)
 
 
-def log(expr: Union[Expr, MatrixExpr]) -> LogExpr:
+def log(expr: Union[Expr, MatrixExpr]) -> Union[LogExpr, MatrixExpr]:
     """returns expression with log-function"""
     return UnaryExpr.from_expr(expr, LogExpr)
 
 
-def sqrt(expr: Union[Expr, MatrixExpr]) -> SqrtExpr:
+def sqrt(expr: Union[Expr, MatrixExpr]) -> Union[SqrtExpr, MatrixExpr]:
     """returns expression with sqrt-function"""
     return UnaryExpr.from_expr(expr, SqrtExpr)
 
 
-def sin(expr: Union[Expr, MatrixExpr]) -> SinExpr:
+def sin(expr: Union[Expr, MatrixExpr]) -> Union[SinExpr, MatrixExpr]:
     """returns expression with sin-function"""
     return UnaryExpr.from_expr(expr, SinExpr)
 
 
-def cos(expr: Union[Expr, MatrixExpr]) -> CosExpr:
+def cos(expr: Union[Expr, MatrixExpr]) -> Union[CosExpr, MatrixExpr]:
     """returns expression with cos-function"""
     return UnaryExpr.from_expr(expr, CosExpr)
