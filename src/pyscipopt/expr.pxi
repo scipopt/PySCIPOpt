@@ -110,8 +110,14 @@ cdef class Expr:
         )
 
     def __iadd__(self, other):
-        self = self.__add__(other)
-        return self
+        other = Expr.from_const_or_var(other)
+        if self._is_SumExpr():
+            if other._is_SumExpr():
+                self.to_dict(other.children, copy=False)
+            else:
+                self.to_dict({other: 1.0}, copy=False)
+            return self
+        return self.__add__(other)
 
     def __radd__(self, other):
         return self.__add__(other)
@@ -171,6 +177,9 @@ cdef class Expr:
 
     def __sub__(self, other):
         return self.__add__(-other)
+
+    def __isub__(self, other):
+        return self.__iadd__(-other)
 
     def __rsub__(self, other):
         return self.__neg__().__add__(other)
