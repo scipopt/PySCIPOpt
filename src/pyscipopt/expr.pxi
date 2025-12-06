@@ -67,15 +67,11 @@ cdef class Expr:
     cdef public dict children
     __slots__ = ("children",)
 
-    def __init__(self, children: Optional[dict[Union[Variable, Term, Expr], float]] = None):
+    def __init__(self, children: Optional[dict[Union[Term, Expr], float]] = None):
         children = children or {}
-        if not all(isinstance(i, (Variable, Term, Expr)) for i in children):
+        if not all(isinstance(i, (Term, Expr)) for i in children):
             raise TypeError("All keys must be Variable, Term or Expr instances")
-
-        self.children = {
-            (MonomialExpr.from_var(k) if isinstance(k, Variable) else k): v
-            for k, v in children.items()
-        }
+        self.children = children
 
     def __hash__(self) -> int:
         return frozenset(self.children.items()).__hash__()
@@ -213,9 +209,9 @@ cdef class Expr:
         """Convert a number or variable to an expression."""
 
         if isinstance(x, Number):
-            return PolynomialExpr.to_subclass({CONST: x})
+            return ConstExpr(x)
         elif isinstance(x, Variable):
-            return PolynomialExpr.to_subclass({Term(x): 1.0})
+            return MonomialExpr.from_var(x)
         return x
 
     def to_dict(
@@ -487,15 +483,20 @@ class UnaryExpr(FuncExpr):
         return f"{type(self).__name__}({self._fchild()})"
 
     @staticmethod
-    def from_expr(
-        expr: Union[Expr, MatrixExpr],
+    def to_subclass(
+        x: Union[Number, Variable, Term, Expr, MatrixExpr],
         cls: Type[UnaryExpr],
     ) -> Union[UnaryExpr, MatrixExpr]:
-        if isinstance(expr, MatrixExpr):
-            res = np.empty(shape=expr.shape, dtype=object)
-            res.flat = [cls(i) for i in expr.flat]
+        if isinstance(x, Number):
+            x = ConstExpr(x)
+        elif isinstance(x, Variable):
+            x = Term(x)
+
+        if isinstance(x, MatrixExpr):
+            res = np.empty(shape=x.shape, dtype=object)
+            res.flat = [cls(Term(i) if isinstance(i, Variable) else i) for i in x.flat]
             return res.view(MatrixExpr)
-        return cls(expr)
+        return cls(x)
 
     def _to_node(self, start: int = 0, coef: float = 1) -> list[tuple]:
         """Convert expression to list of node for SCIP expression construction"""
@@ -629,26 +630,26 @@ def quickprod(expressions) -> Expr:
     return res
 
 
-def exp(expr: Union[Expr, MatrixExpr]) -> Union[ExpExpr, MatrixExpr]:
+def exp(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[ExpExpr, MatrixExpr]:
     """returns expression with exp-function"""
-    return UnaryExpr.from_expr(expr, ExpExpr)
+    return UnaryExpr.to_subclass(x, ExpExpr)
 
 
-def log(expr: Union[Expr, MatrixExpr]) -> Union[LogExpr, MatrixExpr]:
+def log(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[LogExpr, MatrixExpr]:
     """returns expression with log-function"""
-    return UnaryExpr.from_expr(expr, LogExpr)
+    return UnaryExpr.to_subclass(x, LogExpr)
 
 
-def sqrt(expr: Union[Expr, MatrixExpr]) -> Union[SqrtExpr, MatrixExpr]:
+def sqrt(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[SqrtExpr, MatrixExpr]:
     """returns expression with sqrt-function"""
-    return UnaryExpr.from_expr(expr, SqrtExpr)
+    return UnaryExpr.to_subclass(x, SqrtExpr)
 
 
-def sin(expr: Union[Expr, MatrixExpr]) -> Union[SinExpr, MatrixExpr]:
+def sin(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[SinExpr, MatrixExpr]:
     """returns expression with sin-function"""
-    return UnaryExpr.from_expr(expr, SinExpr)
+    return UnaryExpr.to_subclass(x, SinExpr)
 
 
-def cos(expr: Union[Expr, MatrixExpr]) -> Union[CosExpr, MatrixExpr]:
+def cos(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[CosExpr, MatrixExpr]:
     """returns expression with cos-function"""
-    return UnaryExpr.from_expr(expr, CosExpr)
+    return UnaryExpr.to_subclass(x, CosExpr)
