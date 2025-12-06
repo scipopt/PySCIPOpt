@@ -16,6 +16,9 @@ cdef class Term:
     __slots__ = ("vars", "HASH")
 
     def __init__(self, *vars: Variable):
+        if not all(isinstance(i, Variable) for i in vars):
+            raise TypeError("All arguments must be Variable instances")
+
         self.vars = tuple(sorted(vars, key=hash))
         self.HASH = hash(self.vars)
 
