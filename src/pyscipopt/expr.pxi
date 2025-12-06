@@ -85,7 +85,7 @@ cdef class Expr:
             key = Term(key)
         return self.children.get(key, 0.0)
 
-    def __iter__(self) -> Iterator[Union[Variable, Term, Expr]]:
+    def __iter__(self) -> Iterator[Union[Term, Expr]]:
         return iter(self.children)
 
     def __abs__(self) -> AbsExpr:
