@@ -43,7 +43,7 @@ cdef class Term:
     def degree(self) -> int:
         return len(self)
 
-    def _to_node(self, start: int = 0, coef: float = 1) -> list[tuple]:
+    def _to_node(self, coef: float = 1, start: int = 0) -> list[tuple]:
         """Convert term to list of node for SCIP expression construction"""
         if coef == 0:
             return []
@@ -236,25 +236,34 @@ cdef class Expr:
     def degree(self) -> float:
         return max((i.degree() for i in self)) if self.children else float("inf")
 
-    def _to_node(self, start: int = 0, coef: float = 1) -> list[tuple]:
+    def _to_node(self, coef: float = 1, start: int = 0) -> list[tuple]:
         """Convert expression to list of node for SCIP expression construction"""
         node, index = [], []
+        last = lambda: start + len(node) - 1
         for i in self:
-            if (child_node := i._to_node(start + len(node), self[i])):
+            if (child_node := i._to_node(self[i], start + len(node))):
                 node.extend(child_node)
                 index.append(start + len(node) - 1)
 
-        if type(self) is PowExpr:
-            node.append((ConstExpr, self.expo))
-            index.append(start + len(node) - 1)
-        elif type(self) is ProdExpr and self.coef != 1:
-            node.append((ConstExpr, self.coef))
-            index.append(start + len(node) - 1)
         if node:
-            node.append((type(self), index))
+            if issubclass(type(self), PolynomialExpr):
+                if len(node) > 1:
+                    node.append((Expr, index))
+            elif isinstance(self, UnaryExpr):
+                node.append((type(self), index[0]))
+            else:
+                if type(self) is PowExpr:
+                    node.append((ConstExpr, self.expo))
+                    index.append(start + len(node) - 1)
+                elif type(self) is ProdExpr and self.coef != 1:
+                    node.append((ConstExpr, self.coef))
+                    index.append(start + len(node) - 1)
+                node.append((type(self), index))
+
             if coef != 1:
                 node.append((ConstExpr, coef))
                 node.append((ProdExpr, [start + len(node) - 2, start + len(node) - 1]))
+
         return node
 
     def _fchild(self) -> Union[Term, Expr]:
@@ -327,19 +336,6 @@ class PolynomialExpr(Expr):
             return MonomialExpr(children)
         return cls(children)
 
-    def _to_node(self, start: int = 0, coef: float = 1) -> list[tuple]:
-        """Convert expression to list of node for SCIP expression construction"""
-        node = []
-        for i in self:
-            node.extend(i._to_node(start + len(node), self[i]))
-
-        if len(node) > 1:
-            node.append((Expr, list(range(start, start + len(node)))))
-        if node and coef != 1:
-            node.append((ConstExpr, coef))
-            node.append((ProdExpr, [start + len(node) - 2, start + len(node) - 1]))
-        return node
-
 
 class ConstExpr(PolynomialExpr):
     """Expression representing for `constant`."""
@@ -392,10 +388,7 @@ class MonomialExpr(PolynomialExpr):
 
 
 class FuncExpr(Expr):
-    def __init__(
-        self,
-        children: Optional[dict[Union[Variable, Term, Expr], float]] = None,
-    ):
+    def __init__(self, children: Optional[dict[Union[Term, Expr], float]] = None):
         if children and any((i is CONST) for i in children):
             raise ValueError("FuncExpr can't have Term without Variable as a child")
         super().__init__(children)
@@ -497,19 +490,6 @@ class UnaryExpr(FuncExpr):
             res.flat = [cls(Term(i) if isinstance(i, Variable) else i) for i in x.flat]
             return res.view(MatrixExpr)
         return cls(x)
-
-    def _to_node(self, start: int = 0, coef: float = 1) -> list[tuple]:
-        """Convert expression to list of node for SCIP expression construction"""
-        node = []
-        for i in self.children:
-            node.extend(i._to_node(start + len(node), self[i]))
-
-        if node:
-            node.append((type(self), start + len(node) - 1))
-            if coef != 1:
-                node.append((ConstExpr, coef))
-                node.append((ProdExpr, [start + len(node) - 2, start + len(node) - 1]))
-        return node
 
 
 class AbsExpr(UnaryExpr):
