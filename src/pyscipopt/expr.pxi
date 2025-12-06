@@ -92,6 +92,8 @@ cdef class Expr:
         if isinstance(other, Expr):
             if not self.children:
                 return other
+            if isinstance(other, ConstExpr) and other[CONST] == 0:
+                return self
             if self._is_SumExpr():
                 if other._is_SumExpr():
                     return Expr(self.to_dict(other.children))
@@ -99,8 +101,10 @@ cdef class Expr:
             elif other._is_SumExpr():
                 return Expr(other.to_dict({self: 1.0}))
             return Expr({self: 1.0, other: 1.0})
+
         elif isinstance(other, MatrixExpr):
             return other.__add__(self)
+
         raise TypeError(
             f"unsupported operand type(s) for +: 'Expr' and '{type(other)}'"
         )
@@ -285,6 +289,8 @@ class PolynomialExpr(Expr):
     def __add__(self, other):
         other = Expr.from_const_or_var(other)
         if isinstance(other, PolynomialExpr):
+            if isinstance(other, ConstExpr) and other[CONST] == 0:
+                return self
             return PolynomialExpr.to_subclass(self.to_dict(other.children))
         return super().__add__(other)
 
