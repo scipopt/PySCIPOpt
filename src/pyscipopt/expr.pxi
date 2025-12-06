@@ -221,13 +221,14 @@ cdef class Expr:
     def to_dict(
         self,
         other: Optional[dict[Union[Term, Expr], float]] = None,
+        copy: bool = True,
     ) -> dict[Union[Term, Expr], float]:
         """Merge two dictionaries by summing values of common keys"""
         other = other or {}
         if not isinstance(other, dict):
             raise TypeError("other must be a dict")
 
-        children = self.children.copy()
+        children = self.children.copy() if copy else self.children
         for child, coef in other.items():
             children[child] = children.get(child, 0.0) + coef
 
@@ -297,8 +298,7 @@ class PolynomialExpr(Expr):
     def __iadd__(self, other):
         other = Expr.from_const_or_var(other)
         if isinstance(other, PolynomialExpr):
-            for child, coef in other.children.items():
-                self.children[child] = self[child] + coef
+            self.to_dict(other.children, copy=False)
             return self
         return super().__iadd__(other)
 
@@ -397,6 +397,7 @@ class FuncExpr(Expr):
     def __init__(self, children: Optional[dict[Union[Term, Expr], float]] = None):
         if children and any((i is CONST) for i in children):
             raise ValueError("FuncExpr can't have Term without Variable as a child")
+
         super().__init__(children)
 
     def degree(self) -> float:
@@ -411,6 +412,7 @@ class ProdExpr(FuncExpr):
     def __init__(self, *children: Union[Term, Expr], coef: float = 1.0):
         if len(set(children)) != len(children):
             raise ValueError("ProdExpr can't have duplicate children")
+
         super().__init__({i: 1.0 for i in children})
         self.coef = coef
 
