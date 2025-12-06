@@ -93,11 +93,11 @@ cdef class Expr:
         if isinstance(other, Expr):
             if not self.children:
                 return other
-            if Expr._is_SumExpr(self):
-                if Expr._is_SumExpr(other):
+            if self._is_SumExpr():
+                if other._is_SumExpr():
                     return Expr(self.to_dict(other.children))
                 return Expr(self.to_dict({other: 1.0}))
-            elif Expr._is_SumExpr(other):
+            elif other._is_SumExpr():
                 return Expr(other.to_dict({self: 1.0}))
             return Expr({self: 1.0, other: 1.0})
         elif isinstance(other, MatrixExpr):
@@ -121,7 +121,7 @@ cdef class Expr:
             if isinstance(other, ConstExpr):
                 if other[CONST] == 0:
                     return ConstExpr(0.0)
-                if Expr._is_SumExpr(self):
+                if self._is_SumExpr():
                     return Expr({i: self[i] * other[CONST] for i in self if self[i] != 0})
                 return Expr({self: other[CONST]})
             if hash(self) == hash(other):
@@ -261,9 +261,8 @@ cdef class Expr:
     def _fchild(self) -> Union[Term, Expr]:
         return next(self.__iter__())
 
-    @staticmethod
-    def _is_SumExpr(Expr expr) -> bool:
-        return type(expr) is Expr or isinstance(expr, PolynomialExpr)
+    def _is_SumExpr(self) -> bool:
+        return type(self) is Expr or isinstance(self, PolynomialExpr)
 
 
 class PolynomialExpr(Expr):
