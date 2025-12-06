@@ -1628,7 +1628,7 @@ cdef class Variable:
     def __repr__(self):
         return self.name
 
-    def degree(self) -> int:
+    def degree(self) -> float:
         return MonomialExpr.from_var(self).degree()
 
     def vtype(self):
