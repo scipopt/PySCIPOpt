@@ -201,7 +201,7 @@ cdef class Expr:
                 return ExprCons(self, lhs=other[CONST])
             return (self - other).__ge__(0)
         elif isinstance(other, MatrixExpr):
-            return self.__le__(other)
+            return other.__le__(self)
         raise TypeError(f"Unsupported type {type(other)}")
 
     def __eq__(self, other):
@@ -211,7 +211,7 @@ cdef class Expr:
                 return ExprCons(self, lhs=other[CONST], rhs=other[CONST])
             return (self - other).__eq__(0)
         elif isinstance(other, MatrixExpr):
-            return other.__ge__(self)
+            return other.__eq__(self)
         raise TypeError(f"Unsupported type {type(other)}")
 
     def __repr__(self) -> str:
