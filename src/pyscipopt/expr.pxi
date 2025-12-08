@@ -187,9 +187,11 @@ cdef class Expr:
     def __le__(self, other):
         other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
-            if isinstance(other, ConstExpr):
+            if isinstance(self, ConstExpr):
+                return ExprCons(other, lhs=self[CONST])
+            elif isinstance(other, ConstExpr):
                 return ExprCons(self, rhs=other[CONST])
-            return (self - other).__le__(0)
+            return self.__add__(-other).__le__(ConstExpr(0))
         elif isinstance(other, MatrixExpr):
             return other.__ge__(self)
         raise TypeError(f"Unsupported type {type(other)}")
@@ -197,9 +199,11 @@ cdef class Expr:
     def __ge__(self, other):
         other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
-            if isinstance(other, ConstExpr):
+            if isinstance(self, ConstExpr):
+                return ExprCons(other, rhs=self[CONST])
+            elif isinstance(other, ConstExpr):
                 return ExprCons(self, lhs=other[CONST])
-            return (self - other).__ge__(0)
+            return self.__add__(-other).__ge__(ConstExpr(0.0))
         elif isinstance(other, MatrixExpr):
             return other.__le__(self)
         raise TypeError(f"Unsupported type {type(other)}")
@@ -207,9 +211,11 @@ cdef class Expr:
     def __eq__(self, other):
         other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
-            if isinstance(other, ConstExpr):
+            if isinstance(self, ConstExpr):
+                return ExprCons(other, lhs=self[CONST], rhs=self[CONST])
+            elif isinstance(other, ConstExpr):
                 return ExprCons(self, lhs=other[CONST], rhs=other[CONST])
-            return (self - other).__eq__(0)
+            return self.__add__(-other).__eq__(ConstExpr(0.0))
         elif isinstance(other, MatrixExpr):
             return other.__eq__(self)
         raise TypeError(f"Unsupported type {type(other)}")
