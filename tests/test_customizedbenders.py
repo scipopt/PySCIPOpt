@@ -6,12 +6,20 @@ to some facilities with fixed costs and capacities.
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt import Model, quicksum, multidict, SCIP_PARAMSETTING, Benders,\
-      Benderscut, SCIP_RESULT, SCIP_LPSOLSTAT
+
+from pyscipopt import (
+    SCIP_LPSOLSTAT,
+    SCIP_PARAMSETTING,
+    SCIP_RESULT,
+    Benders,
+    Benderscut,
+    Model,
+    multidict,
+    quicksum,
+)
 
 
 class testBenders(Benders):
-
     def __init__(self, masterVarDict, I, J, M, c, d, name):
         super(testBenders, self).__init__()
         self.mpVardict = masterVarDict
@@ -28,16 +36,21 @@ class testBenders(Benders):
             for i in self.I:
                 x[i, j] = subprob.addVar(vtype="C", name="x(%s,%s)" % (i, j))
         for i in self.I:
-            self.demand[i] = subprob.addCons(quicksum(x[i, j] for j in self.J) >= self.d[i], "Demand(%s)" % i)
+            self.demand[i] = subprob.addCons(
+                quicksum(x[i, j] for j in self.J) >= self.d[i], "Demand(%s)" % i
+            )
 
         for j in self.M:
-            self.capacity[j] = subprob.addCons(quicksum(x[i, j] for i in self.I) <= self.M[j] * y[j], "Capacity(%s)" % j)
+            self.capacity[j] = subprob.addCons(
+                quicksum(x[i, j] for i in self.I) <= self.M[j] * y[j],
+                "Capacity(%s)" % j,
+            )
 
         subprob.setObjective(
-            quicksum(self.c[i, j] * x[i, j] for i in self.I for j in self.J),
-            "minimize")
+            quicksum(self.c[i, j] * x[i, j] for i in self.I for j in self.J), "minimize"
+        )
         subprob.data = x, y
-        #self.model.addBendersSubproblem(self.name, subprob)
+        # self.model.addBendersSubproblem(self.name, subprob)
         self.model.addBendersSubproblem(self, subprob)
         self.subprob = subprob
 
@@ -54,7 +67,7 @@ class testBenders(Benders):
     def benderssolvesubconvex(self, solution, probnumber, onlyconvex):
         self.model.setupBendersSubproblem(probnumber, self, solution)
         self.subprob.solveProbingLP()
-        subprob = self.model.getBendersSubproblem(probnumber, self)  
+        subprob = self.model.getBendersSubproblem(probnumber, self)
         assert self.subprob.getObjVal() == subprob.getObjVal()
 
         result_dict = {}
@@ -63,15 +76,14 @@ class testBenders(Benders):
         result = SCIP_RESULT.DIDNOTRUN
         lpsolstat = self.subprob.getLPSolstat()
         if lpsolstat == SCIP_LPSOLSTAT.OPTIMAL:
-           objective = self.subprob.getObjVal()
-           result = SCIP_RESULT.FEASIBLE
+            objective = self.subprob.getObjVal()
+            result = SCIP_RESULT.FEASIBLE
         elif lpsolstat == SCIP_LPSOLSTAT.INFEASIBLE:
-           objective = self.subprob.infinity()
-           result = SCIP_RESULT.INFEASIBLE
+            objective = self.subprob.infinity()
+            result = SCIP_RESULT.INFEASIBLE
         elif lpsolstat == SCIP_LPSOLSTAT.UNBOUNDEDRAY:
-           objective = self.subprob.infinity()
-           result = SCIP_RESULT.UNBOUNDED
-
+            objective = self.subprob.infinity()
+            result = SCIP_RESULT.UNBOUNDED
 
         result_dict["objective"] = objective
         result_dict["result"] = result
@@ -80,58 +92,68 @@ class testBenders(Benders):
 
     def bendersfreesub(self, probnumber):
         if self.subprob.inProbing():
-           self.subprob.endProbing()
+            self.subprob.endProbing()
+
 
 class testBenderscut(Benderscut):
+    def __init__(self, I, J, M, d):
+        self.I, self.J, self.M, self.d = I, J, M, d
 
-   def __init__(self, I, J, M, d):
-      self.I, self.J, self.M, self.d = I, J, M, d
+    def benderscutexec(self, solution, probnumber, enfotype):
+        subprob = self.model.getBendersSubproblem(probnumber, benders=self.benders)
+        membersubprob = self.benders.subprob
 
-   def benderscutexec(self, solution, probnumber, enfotype):
-      subprob = self.model.getBendersSubproblem(probnumber, benders=self.benders)
-      membersubprob = self.benders.subprob
+        # checking whether the subproblem is already optimal, i.e. whether a cut
+        # needs to be generated
+        if self.model.checkBendersSubproblemOptimality(
+            solution, probnumber, benders=self.benders
+        ):
+            return {"result": SCIP_RESULT.FEASIBLE}
 
-      # checking whether the subproblem is already optimal, i.e. whether a cut
-      # needs to be generated
-      if self.model.checkBendersSubproblemOptimality(solution, probnumber,
-            benders=self.benders):
-         return {"result" : SCIP_RESULT.FEASIBLE}
+        # testing whether the dual multipliers can be found for the retrieved
+        # subproblem model. If the constraints don't exist, then the subproblem
+        # model is not correct.
+        # Also checking whether the dual multiplier is the same between the
+        # member subproblem and the retrieved subproblem`
+        lhs = 0
+        for i in self.I:
+            subprobcons = self.benders.demand[i]
+            try:
+                dualmult = subprob.getDualsolLinear(subprobcons)
+                lhs += dualmult * self.d[i]
+            except:
+                print(
+                    "Subproblem constraint <%d> does not exist in the "
+                    "subproblem." % subprobcons.name
+                )
+                assert False
 
-      # testing whether the dual multipliers can be found for the retrieved
-      # subproblem model. If the constraints don't exist, then the subproblem
-      # model is not correct.
-      # Also checking whether the dual multiplier is the same between the
-      # member subproblem and the retrieved subproblem`
-      lhs = 0
-      for i in self.I:
-         subprobcons = self.benders.demand[i]
-         try:
-            dualmult = subprob.getDualsolLinear(subprobcons)
-            lhs += dualmult*self.d[i]
-         except:
-            print("Subproblem constraint <%d> does not exist in the "\
-                  "subproblem."%subprobcons.name)
-            assert False
+            memberdualmult = membersubprob.getDualsolLinear(subprobcons)
+            if dualmult != memberdualmult:
+                print(
+                    "The dual multipliers between the two subproblems are not the same."
+                )
+                assert False
 
-         memberdualmult = membersubprob.getDualsolLinear(subprobcons)
-         if dualmult != memberdualmult:
-            print("The dual multipliers between the two subproblems are not "\
-                  "the same.")
-            assert False
+        coeffs = [
+            -subprob.getDualsolLinear(self.benders.capacity[j]) * self.M[j]
+            for j in self.J
+        ]
 
-      coeffs = [subprob.getDualsolLinear(self.benders.capacity[j])*\
-            self.M[j] for j in self.J]
+        self.model.addCons(
+            self.model.getBendersAuxiliaryVar(probnumber, self.benders)
+            - quicksum(
+                self.model.getBendersVar(self.benders.subprob.data[1][j], self.benders)
+                * coeffs[j]
+                for j in self.J
+            )
+            >= lhs
+        )
 
-      self.model.addCons(self.model.getBendersAuxiliaryVar(probnumber,
-         self.benders) -
-         quicksum(self.model.getBendersVar(self.benders.subprob.data[1][j],
-         self.benders)*coeffs[j] for j in self.J) >= lhs)
-
-      return {"result" : SCIP_RESULT.CONSADDED}
+        return {"result": SCIP_RESULT.CONSADDED}
 
 
-
-def flp(I, J, M, d,f, c=None, monolithic=False):
+def flp(I, J, M, d, f, c=None, monolithic=False):
     """flp -- model for the capacitated facility location problem
     Parameters:
         - I: set of customers
@@ -147,7 +169,7 @@ def flp(I, J, M, d,f, c=None, monolithic=False):
     # creating the problem
     y = {}
     for j in J:
-        y["y(%d)"%j] = master.addVar(vtype="B", name="y(%s)"%j)
+        y["y(%d)" % j] = master.addVar(vtype="B", name="y(%s)" % j)
 
     if monolithic:
         x = {}
@@ -158,41 +180,61 @@ def flp(I, J, M, d,f, c=None, monolithic=False):
                 x[i, j] = master.addVar(vtype="C", name="x(%s,%s)" % (i, j))
 
         for i in I:
-            demand[i] = master.addCons(quicksum(x[i, j] for j in J) >= d[i], "Demand(%s)" % i)
+            demand[i] = master.addCons(
+                quicksum(x[i, j] for j in J) >= d[i], "Demand(%s)" % i
+            )
 
         for j in J:
             print(j, M[j])
-            capacity[j] = master.addCons(quicksum(x[i, j] for i in I) <= M[j] * y["y(%d)"%j], "Capacity(%s)" % j)
+            capacity[j] = master.addCons(
+                quicksum(x[i, j] for i in I) <= M[j] * y["y(%d)" % j],
+                "Capacity(%s)" % j,
+            )
 
-    master.addCons(quicksum(y["y(%d)"%j]*M[j] for j in J)
-          - quicksum(d[i] for i in I) >= 0)
+    master.addCons(
+        quicksum(y["y(%d)" % j] * M[j] for j in J) - quicksum(d[i] for i in I) >= 0
+    )
 
     master.setObjective(
-        quicksum(f[j]*y["y(%d)"%j] for j in J) + (0 if not monolithic else
-        quicksum(c[i, j] * x[i, j] for i in I for j in J)),
-        "minimize")
+        quicksum(f[j] * y["y(%d)" % j] for j in J)
+        + (0 if not monolithic else quicksum(c[i, j] * x[i, j] for i in I for j in J)),
+        "minimize",
+    )
     master.data = y
 
     return master
 
 
 def make_data():
-    I,d = multidict({0:80, 1:270, 2:250, 3:160, 4:180})            # demand
-    J,M,f = multidict({0:[500,1000], 1:[500,1000], 2:[500,1000]}) # capacity, fixed costs
-    c = {(0,0):4,  (0,1):6,  (0,2):9,    # transportation costs
-         (1,0):5,  (1,1):4,  (1,2):7,
-         (2,0):6,  (2,1):3,  (2,2):4,
-         (3,0):8,  (3,1):5,  (3,2):3,
-         (4,0):10, (4,1):8,  (4,2):4,
-         }
-    return I,J,d,M,f,c
+    I, d = multidict({0: 80, 1: 270, 2: 250, 3: 160, 4: 180})  # demand
+    J, M, f = multidict(
+        {0: [500, 1000], 1: [500, 1000], 2: [500, 1000]}
+    )  # capacity, fixed costs
+    c = {
+        (0, 0): 4,
+        (0, 1): 6,
+        (0, 2): 9,  # transportation costs
+        (1, 0): 5,
+        (1, 1): 4,
+        (1, 2): 7,
+        (2, 0): 6,
+        (2, 1): 3,
+        (2, 2): 4,
+        (3, 0): 8,
+        (3, 1): 5,
+        (3, 2): 3,
+        (4, 0): 10,
+        (4, 1): 8,
+        (4, 2): 4,
+    }
+    return I, J, d, M, f, c
 
 
 def flpbenders_defcuts_test():
-    '''
+    """
     test the Benders' decomposition plugins with the facility location problem.
-    '''
-    I,J,d,M,f,c = make_data()
+    """
+    I, J, d, M, f, c = make_data()
     master = flp(I, J, M, d, f)
     # initializing the default Benders' decomposition with the subproblem
     master.setPresolve(SCIP_PARAMSETTING.OFF)
@@ -215,12 +257,12 @@ def flpbenders_defcuts_test():
     master.setupBendersSubproblem(0, testbd, master.getBestSol())
     testbd.subprob.solveProbingLP()
 
-    EPS = 1.e-6
+    EPS = 1.0e-6
     y = master.data
     facilities = [j for j in y if master.getVal(y[j]) > EPS]
 
     x, suby = testbd.subprob.data
-    edges = [(i, j) for (i, j) in x if testbd.subprob.getVal(x[i,j]) > EPS]
+    edges = [(i, j) for (i, j) in x if testbd.subprob.getVal(x[i, j]) > EPS]
 
     print("Optimal value:", master.getObjVal())
     print("Facilities at nodes:", facilities)
@@ -230,11 +272,12 @@ def flpbenders_defcuts_test():
 
     return master.getObjVal()
 
+
 def flpbenders_customcuts_test():
-    '''
+    """
     test the Benders' decomposition plugins with the facility location problem.
-    '''
-    I,J,d,M,f,c = make_data()
+    """
+    I, J, d, M, f, c = make_data()
     master = flp(I, J, M, d, f)
     # initializing the default Benders' decomposition with the subproblem
     master.setPresolve(SCIP_PARAMSETTING.OFF)
@@ -246,8 +289,9 @@ def flpbenders_customcuts_test():
     testbd = testBenders(master.data, I, J, M, c, d, bendersName)
     testbdc = testBenderscut(I, J, M, d)
     master.includeBenders(testbd, bendersName, "benders plugin")
-    master.includeBenderscut(testbd, testbdc, benderscutName,
-          "benderscut plugin", priority=1000000)
+    master.includeBenderscut(
+        testbd, testbdc, benderscutName, "benderscut plugin", priority=1000000
+    )
     master.activateBenders(testbd, 1)
     master.setBoolParam("constraints/benders/active", True)
     master.setBoolParam("constraints/benderslp/active", True)
@@ -260,12 +304,12 @@ def flpbenders_customcuts_test():
     master.setupBendersSubproblem(0, testbd, master.getBestSol())
     testbd.subprob.solveProbingLP()
 
-    EPS = 1.e-6
+    EPS = 1.0e-6
     y = master.data
     facilities = [j for j in y if master.getVal(y[j]) > EPS]
 
     x, suby = testbd.subprob.data
-    edges = [(i, j) for (i, j) in x if testbd.subprob.getVal(x[i,j]) > EPS]
+    edges = [(i, j) for (i, j) in x if testbd.subprob.getVal(x[i, j]) > EPS]
 
     print("Optimal value:", master.getObjVal())
     print("Facilities at nodes:", facilities)
@@ -275,11 +319,12 @@ def flpbenders_customcuts_test():
 
     return master.getObjVal()
 
+
 def flp_test():
-    '''
+    """
     test the Benders' decomposition plugins with the facility location problem.
-    '''
-    I,J,d,M,f,c = make_data()
+    """
+    I, J, d, M, f, c = make_data()
     master = flp(I, J, M, d, f, c=c, monolithic=True)
     # initializing the default Benders' decomposition with the subproblem
     master.setPresolve(SCIP_PARAMSETTING.OFF)
@@ -287,7 +332,7 @@ def flp_test():
     # optimizing the monolithic problem
     master.optimize()
 
-    EPS = 1.e-6
+    EPS = 1.0e-6
     y = master.data
     facilities = [j for j in y if master.getVal(y[j]) > EPS]
 
