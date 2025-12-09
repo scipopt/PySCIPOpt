@@ -12,27 +12,27 @@ cdef class Term:
     """A monomial term consisting of one or more variables."""
 
     cdef public tuple vars
-    cdef int HASH
-    __slots__ = ("vars", "HASH")
+    cdef int _hash
+    __slots__ = ("vars", "_hash")
 
     def __init__(self, *vars: Variable):
         if not all(isinstance(i, Variable) for i in vars):
             raise TypeError("All arguments must be Variable instances")
 
         self.vars = tuple(sorted(vars, key=hash))
-        self.HASH = hash(self.vars)
+        self._hash = hash(self.vars)
 
     def __getitem__(self, idx: int) -> Variable:
         return self.vars[idx]
 
     def __hash__(self) -> int:
-        return self.HASH
+        return self._hash
 
     def __len__(self) -> int:
         return len(self.vars)
 
     def __eq__(self, Term other) -> bool:
-        return self.HASH == other.HASH
+        return self._hash == other._hash
 
     def __mul__(self, Term other) -> Term:
         return Term(*self.vars, *other.vars)
