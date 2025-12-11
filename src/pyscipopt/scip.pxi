@@ -1592,6 +1592,9 @@ cdef class Variable:
     def __mul__(self, other):
         return MonomialExpr.from_var(self).__mul__(other)
 
+    def __imul__(self, other):
+        return MonomialExpr.from_var(self).__imul__(other)
+
     def __rmul__(self, other):
         return MonomialExpr.from_var(self).__rmul__(other)
 
@@ -1612,6 +1615,9 @@ cdef class Variable:
 
     def __sub__(self, other):
         return MonomialExpr.from_var(self).__sub__(other)
+
+    def __isub__(self, other):
+        return MonomialExpr.from_var(self).__isub__(other)
 
     def __rsub__(self, other):
         return MonomialExpr.from_var(self).__rsub__(other)
