@@ -79,6 +79,21 @@ def test_Expr_abs():
     assert abs_expr._fchild() is expr
 
 
+def test_Expr_fchild():
+    m = Model()
+    x = m.addVar("x")
+    t = Term(x)
+
+    expr1 = Expr({t: 1.0})
+    assert expr1._fchild() is t
+
+    expr2 = Expr({t: -1.0, expr1: 2.0})
+    assert expr2._fchild() is t
+
+    expr3 = Expr({expr1: 2.0, t: -1.0})
+    assert expr3._fchild() is expr1
+
+
 def test_expr_op_expr(model):
     m, x, y, z = model
     expr = x**1.5 + y
