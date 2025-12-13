@@ -136,6 +136,12 @@ def test_Expr_div(model):
     assert str(expr4) == "Expr({Term(): 1.0})"
 
 
+def test_Expr_pow_with_0(model):
+    m, x, y, z = model
+
+    assert str((x + 2 * y) ** 0) == "Expr({Term(): 1.0})"
+
+
 def test_expr_op_expr(model):
     m, x, y, z = model
     expr = x**1.5 + y
