@@ -105,15 +105,26 @@ def test_Expr_add_unsupported_type(model):
         expr + []
 
 
-def test_Expr_mul_unsupported_type(model):
+def test_Expr_mul(model):
     m, x, y, z = model
-    expr = x + 1
+    expr1 = x + 1
 
     with pytest.raises(TypeError):
-        expr * "invalid"
+        expr1 * "invalid"
 
     with pytest.raises(TypeError):
-        expr * []
+        expr1 * []
+
+    assert str(Expr() * 3) == "Expr({Term(): 0.0})"
+
+    expr2 = abs(expr1)
+    assert (
+        str(expr2 * expr2) == "PowExpr(AbsExpr(Expr({Term(x): 1.0, Term(): 1.0})), 2.0)"
+    )
+
+    assert str(expr1 * 0) == "Expr({Term(): 0.0})"
+    assert str(expr1 * Expr()) == "Expr({Term(): 0.0})"
+    assert str(Expr() * expr1) == "Expr({Term(): 0.0})"
 
 
 def test_Expr_div(model):
