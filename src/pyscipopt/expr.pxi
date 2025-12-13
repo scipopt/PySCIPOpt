@@ -125,7 +125,7 @@ cdef class Expr:
     def __mul__(self, other):
         other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
-            if not self.children:
+            if not self.children or not other.children:
                 return ConstExpr(0.0)
             if Expr._is_Const(other):
                 if other[CONST] == 0:
@@ -144,7 +144,12 @@ cdef class Expr:
 
     def __imul__(self, other):
         other = Expr.from_const_or_var(other)
-        if Expr._is_Sum(self) and Expr._is_Const(other) and other[CONST] != 0:
+        if (
+            not self.children
+            and Expr._is_Sum(self)
+            and Expr._is_Const(other)
+            and other[CONST] != 0
+        ):
             for i in self:
                 if self[i] != 0:
                     self.children[i] *= other[CONST]
@@ -439,7 +444,7 @@ class FuncExpr(Expr):
 class ProdExpr(FuncExpr):
     """Expression like `coefficient * expression`."""
 
-    __slots__ = ("children", "coef")
+    __slots__ = ("coef",)
 
     def __init__(self, *children: Union[Term, Expr], coef: float = 1.0):
         if len(set(children)) != len(children):
@@ -494,7 +499,7 @@ class ProdExpr(FuncExpr):
 class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
 
-    __slots__ = ("children", "expo")
+    __slots__ = ("expo",)
 
     def __init__(self, base: Union[Term, Expr], expo: float = 1.0):
         super().__init__({base: 1.0})
