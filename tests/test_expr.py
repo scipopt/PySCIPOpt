@@ -40,6 +40,33 @@ def test_Expr_slots():
         x.new_attr = 1
 
 
+def test_Expr_getitem():
+    m = Model()
+    x = m.addVar("x")
+    y = m.addVar("y")
+    t1 = Term(x)
+    t2 = Term(y)
+
+    expr1 = Expr({t1: 2})
+    assert expr1[t1] == 2
+    assert expr1[x] == 2
+    assert expr1[y] == 0
+    assert expr1[t2] == 0
+
+    expr2 = Expr({t1: 3, t2: 4})
+    assert expr2[t1] == 3
+    assert expr2[x] == 3
+    assert expr2[t2] == 4
+    assert expr2[y] == 4
+
+    with pytest.raises(TypeError):
+        expr2[1]
+
+    expr3 = Expr({expr1: 1, expr2: 5})
+    assert expr3[expr1] == 1
+    assert expr3[expr2] == 5
+
+
 def test_expr_op_expr(model):
     m, x, y, z = model
     expr = x**1.5 + y
@@ -166,4 +193,3 @@ def test_rpow_constant_base(model):
 
     with pytest.raises(ValueError):
         (-2) ** x
-
