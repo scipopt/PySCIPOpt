@@ -468,6 +468,16 @@ class ProdExpr(FuncExpr):
             return ProdExpr(*self, coef=self.coef * other[CONST])
         return super().__mul__(other)
 
+    def __imul__(self, other):
+        other = Expr.from_const_or_var(other)
+        if Expr._is_Const(other):
+            if other[CONST] == 0:
+                self = ConstExpr(0.0)
+            else:
+                self.coef *= other[CONST]
+            return self
+        return super().__imul__(other)
+
     def __repr__(self) -> str:
         return f"ProdExpr({{{tuple(self)}: {self.coef}}})"
 
