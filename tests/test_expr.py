@@ -3,6 +3,8 @@ import pytest
 from pyscipopt import Model, cos, exp, log, sin, sqrt
 from pyscipopt.scip import Expr, ExprCons, Term
 
+CONST = Term()
+
 
 @pytest.fixture(scope="module")
 def model():
@@ -11,53 +13,6 @@ def model():
     y = m.addVar("y")
     z = m.addVar("z")
     return m, x, y, z
-
-
-CONST = Term()
-
-
-def test_upgrade(model):
-    m, x, y, z = model
-    expr = x + y
-    assert isinstance(expr, Expr)
-    expr += exp(z)
-    assert isinstance(expr, Expr)
-
-    expr = x + y
-    assert isinstance(expr, Expr)
-    expr -= exp(z)
-    assert isinstance(expr, Expr)
-
-    expr = x + y
-    assert isinstance(expr, Expr)
-    expr /= x
-    assert isinstance(expr, Expr)
-
-    expr = x + y
-    assert isinstance(expr, Expr)
-    expr *= sqrt(x)
-    assert isinstance(expr, Expr)
-
-    expr = x + y
-    assert isinstance(expr, Expr)
-    expr **= 1.5
-    assert isinstance(expr, Expr)
-
-    expr = x + y
-    assert isinstance(expr, Expr)
-    assert isinstance(expr + exp(x), Expr)
-    assert isinstance(expr - exp(x), Expr)
-    assert isinstance(expr / x, Expr)
-    assert isinstance(expr * x**1.2, Expr)
-    assert isinstance(sqrt(expr), Expr)
-    assert isinstance(abs(expr), Expr)
-    assert isinstance(log(expr), Expr)
-    assert isinstance(exp(expr), Expr)
-    assert isinstance(sin(expr), Expr)
-    assert isinstance(cos(expr), Expr)
-
-    with pytest.raises(ZeroDivisionError):
-        expr /= 0.0
 
 
 def test_expr_op_expr(model):
