@@ -453,6 +453,13 @@ class ProdExpr(FuncExpr):
             return ProdExpr(*self, coef=self.coef + other.coef)
         return super().__add__(other)
 
+    def __iadd__(self, other):
+        other = Expr.from_const_or_var(other)
+        if isinstance(other, ProdExpr) and self._is_child_equal(other):
+            self.coef += other.coef
+            return self
+        return super().__iadd__(other)
+
     def __mul__(self, other):
         other = Expr.from_const_or_var(other)
         if Expr._is_Const(other):
