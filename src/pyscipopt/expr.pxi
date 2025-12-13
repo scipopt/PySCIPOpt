@@ -262,7 +262,7 @@ cdef class Expr:
         return self
 
     def degree(self) -> float:
-        return max((i.degree() for i in self), default=0)
+        return max((i.degree() for i in self)) if self.children else 0
 
     def _to_node(self, coef: float = 1, start: int = 0) -> list[tuple]:
         """Convert expression to list of node for SCIP expression construction"""
