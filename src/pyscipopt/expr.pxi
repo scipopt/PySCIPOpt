@@ -503,6 +503,25 @@ class PowExpr(FuncExpr):
     def __hash__(self) -> int:
         return (type(self), frozenset(self), self.expo).__hash__()
 
+    def __mul__(self, other):
+        other = Expr.from_const_or_var(other)
+        if isinstance(other, PowExpr) and self._is_child_equal(other):
+            return PowExpr(self._fchild(), self.expo + other.expo)
+        return super().__mul__(other)
+
+    def __imul__(self, other):
+        other = Expr.from_const_or_var(other)
+        if isinstance(other, PowExpr) and self._is_child_equal(other):
+            self.expo += other.expo
+            return self
+        return super().__imul__(other)
+
+    def __truediv__(self, other):
+        other = Expr.from_const_or_var(other)
+        if isinstance(other, PowExpr) and self._is_child_equal(other):
+            return PowExpr(self._fchild(), self.expo - other.expo)
+        return super().__truediv__(other)
+
     def __repr__(self) -> str:
         return f"PowExpr({self._fchild()}, {self.expo})"
 
@@ -559,7 +578,12 @@ class ExpExpr(UnaryExpr):
 
 class LogExpr(UnaryExpr):
     """Expression like `log(expression)`."""
-    ...
+
+    def __add__(self, other):
+        other = Expr.from_const_or_var(other)
+        if isinstance(other, LogExpr) and self._is_child_equal(other):
+            return LogExpr(self._fchild() * other._fchild())
+        return super().__add__(other)
 
 
 class SqrtExpr(UnaryExpr):
