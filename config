@@ -1,8 +1,0 @@
-python -m pip install --debug .
-python -m pip install .
-python setup.py build_ext --inplace
-
-$Env:SCIPOPTDIR = "C:\Program Files\SCIPOptSuite 10.0.0"
-$Env:KMP_DUPLICATE_LIB_OK="TRUE"
-pytest -v -r a -n auto --color=yes --cov-append --cov-report term-missing --cov=src/pyscipopt --cov-report html --durations=10 tests
-是不是应该返回0
