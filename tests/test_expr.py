@@ -15,6 +15,18 @@ def model():
     return m, x, y, z
 
 
+def test_init_error():
+    with pytest.raises(TypeError):
+        Expr({42: 1})
+
+    with pytest.raises(TypeError):
+        Expr({"42": 0})
+
+    x = Model().addVar("x")
+    with pytest.raises(TypeError):
+        Expr({x: 42})
+
+
 def test_expr_op_expr(model):
     m, x, y, z = model
     expr = x**1.5 + y

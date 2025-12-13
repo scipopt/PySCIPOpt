@@ -70,7 +70,7 @@ cdef class Expr:
     def __init__(self, children: Optional[dict[Union[Term, Expr], float]] = None):
         children = children or {}
         if not all(isinstance(i, (Term, Expr)) for i in children):
-            raise TypeError("All keys must be Variable, Term or Expr instances")
+            raise TypeError("All keys must be Term or Expr instances")
         self.children = children
 
     def __hash__(self) -> int:
