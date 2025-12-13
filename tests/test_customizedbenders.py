@@ -120,7 +120,7 @@ class testBenderscut(Benderscut):
             assert False
 
       coeffs = [subprob.getDualsolLinear(self.benders.capacity[j])*\
-            self.M[j] for j in self.J]
+            -self.M[j] for j in self.J]
 
       self.model.addCons(self.model.getBendersAuxiliaryVar(probnumber,
          self.benders) -

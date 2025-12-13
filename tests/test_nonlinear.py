@@ -58,7 +58,7 @@ def test_string_poly():
 
     assert abs(m.getPrimalbound() - 1.6924910128) < 1.0e-3
 
-# test string with original formulation (uses GenExpr)
+# test string with original formulation
 def test_string():
     PI = 3.141592653589793238462643
     NWIRES = 11
