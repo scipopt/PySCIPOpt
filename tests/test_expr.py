@@ -15,7 +15,7 @@ def model():
     return m, x, y, z
 
 
-def test_init_error():
+def test_Expr_init_error():
     with pytest.raises(TypeError):
         Expr({42: 1})
 
@@ -27,7 +27,7 @@ def test_init_error():
         Expr({x: 42})
 
 
-def test_slots():
+def test_Expr_slots():
     x = Model().addVar("x")
     t = Term(x)
     e = Expr({t: 1.0})
@@ -166,3 +166,4 @@ def test_rpow_constant_base(model):
 
     with pytest.raises(ValueError):
         (-2) ** x
+
