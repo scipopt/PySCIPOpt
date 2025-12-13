@@ -94,6 +94,17 @@ def test_Expr_fchild():
     assert expr3._fchild() is expr1
 
 
+def test_Expr_add_unsupported_type(model):
+    m, x, y, z = model
+    expr = x + 1
+
+    with pytest.raises(TypeError):
+        expr + "invalid"
+
+    with pytest.raises(TypeError):
+        expr + []
+
+
 def test_expr_op_expr(model):
     m, x, y, z = model
     expr = x**1.5 + y
