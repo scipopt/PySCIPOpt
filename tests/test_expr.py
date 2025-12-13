@@ -116,6 +116,26 @@ def test_Expr_mul_unsupported_type(model):
         expr * []
 
 
+def test_Expr_div(model):
+    m, x, y, z = model
+
+    expr1 = x + 1
+    with pytest.raises(ZeroDivisionError):
+        expr1 / 0
+
+    expr2 = expr1 / 2
+    assert str(expr2) == "Expr({Term(x): 0.5, Term(): 0.5})"
+
+    expr3 = 1 / x
+    assert (
+        str(expr3)
+        == "ProdExpr({(Expr({Term(): 1.0}), PowExpr(Expr({Term(x): 1.0}), -1.0)): 1.0})"
+    )
+
+    expr4 = expr3 / expr3
+    assert str(expr4) == "Expr({Term(): 1.0})"
+
+
 def test_expr_op_expr(model):
     m, x, y, z = model
     expr = x**1.5 + y
