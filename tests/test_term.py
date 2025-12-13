@@ -111,7 +111,7 @@ def test_getitem():
     x = Model().addVar("x")
     t = Term(x)
 
-    assert x == t[0]
+    assert x is t[0]
 
     with pytest.raises(TypeError):
         t[x]
