@@ -429,6 +429,12 @@ class FuncExpr(Expr):
     def degree(self) -> float:
         return float("inf")
 
+    def _hash_child(self) -> int:
+        return frozenset(self).__hash__()
+
+    def _is_child_equal(self, other: FuncExpr) -> bool:
+        return type(other) is type(self) and self._hash_child() == other._hash_child()
+
 
 class ProdExpr(FuncExpr):
     """Expression like `coefficient * expression`."""
@@ -447,9 +453,7 @@ class ProdExpr(FuncExpr):
 
     def __add__(self, other):
         other = Expr.from_const_or_var(other)
-        if isinstance(other, ProdExpr) and hash(frozenset(self)) == hash(
-            frozenset(other)
-        ):
+        if isinstance(other, ProdExpr) and self._is_child_equal(other):
             return ProdExpr(*self, coef=self.coef + other.coef)
         return super().__add__(other)
 
