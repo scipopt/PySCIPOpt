@@ -142,6 +142,15 @@ cdef class Expr:
             f"unsupported operand type(s) for *: 'Expr' and '{type(other)}'"
         )
 
+    def __imul__(self, other):
+        other = Expr.from_const_or_var(other)
+        if Expr._is_Sum(self) and Expr._is_Const(other) and other[CONST] != 0:
+            for i in self:
+                if self[i] != 0:
+                    self.children[i] *= other[CONST]
+            return self
+        return self.__mul__(other)
+
     def __rmul__(self, other):
         return self.__mul__(other)
 
