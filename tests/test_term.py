@@ -87,3 +87,21 @@ def test_to_node():
         (ConstExpr, 3),
         (ProdExpr, [0, 1, 2]),
     ]
+
+
+def test_eq():
+    m = Model()
+    x = m.addVar("x")
+    y = m.addVar("y")
+
+    t1 = Term(x)
+    t2 = Term(y)
+
+    assert t1 == Term(x)
+    assert t1 != t2
+
+    with pytest.raises(TypeError):
+        t1 == x
+
+    with pytest.raises(TypeError):
+        t1 == 1
