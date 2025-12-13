@@ -179,7 +179,7 @@ cdef class Expr:
             raise TypeError("base must be a number")
         if other[CONST] <= 0.0:
             raise ValueError("base must be positive")
-        return exp(self * log(other))
+        return exp(self.__mul__(log(other)))
 
     def __neg__(self):
         return self.__mul__(-1.0)

@@ -142,6 +142,20 @@ def test_Expr_pow_with_0(model):
     assert str((x + 2 * y) ** 0) == "Expr({Term(): 1.0})"
 
 
+def test_Expr_rpow(model):
+    m, x, y, z = model
+
+    assert str(2**x) == (
+        "ExpExpr(ProdExpr({(Expr({Term(x): 1.0}), LogExpr(Expr({Term(): 2.0}))): 1.0}))"
+    )
+
+    with pytest.raises(TypeError):
+        "invalid" ** x
+
+    with pytest.raises(ValueError):
+        (-1) ** x
+
+
 def test_expr_op_expr(model):
     m, x, y, z = model
     expr = x**1.5 + y
