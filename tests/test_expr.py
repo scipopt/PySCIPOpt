@@ -27,6 +27,19 @@ def test_init_error():
         Expr({x: 42})
 
 
+def test_slots():
+    x = Model().addVar("x")
+    t = Term(x)
+    e = Expr({t: 1.0})
+
+    # Verify we can access defined slots/attributes
+    assert e.children == {t: 1.0}
+
+    # Verify we cannot add new attributes (slots behavior)
+    with pytest.raises(AttributeError):
+        x.new_attr = 1
+
+
 def test_expr_op_expr(model):
     m, x, y, z = model
     expr = x**1.5 + y
