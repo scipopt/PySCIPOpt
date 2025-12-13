@@ -1,7 +1,7 @@
 import pytest
 
 from pyscipopt import Model, cos, exp, log, sin, sqrt
-from pyscipopt.scip import Expr, ExprCons, Term
+from pyscipopt.scip import AbsExpr, Expr, ExprCons, Term
 
 CONST = Term()
 
@@ -65,6 +65,18 @@ def test_Expr_getitem():
     expr3 = Expr({expr1: 1, expr2: 5})
     assert expr3[expr1] == 1
     assert expr3[expr2] == 5
+
+
+def test_Expr_abs():
+    m = Model()
+    x = m.addVar("x")
+    t = Term(x)
+    expr = Expr({t: -3.0})
+    abs_expr = abs(expr)
+
+    assert isinstance(abs_expr, AbsExpr)
+    assert str(abs_expr) == "AbsExpr(Expr({Term(x): -3.0}))"
+    assert abs_expr._fchild() is expr
 
 
 def test_expr_op_expr(model):
