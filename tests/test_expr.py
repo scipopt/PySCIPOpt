@@ -44,13 +44,7 @@ def test_expr_op_expr(model):
     m, x, y, z = model
     expr = x**1.5 + y
     assert isinstance(expr, Expr)
-    expr += x**2.2
-    assert isinstance(expr, Expr)
-    expr += sin(x)
-    assert isinstance(expr, Expr)
-    expr -= exp(x)
-    assert isinstance(expr, Expr)
-    expr /= log(x + 1)
+    expr += x**2
     assert isinstance(expr, Expr)
     expr += 1
     assert isinstance(expr, Expr)
@@ -78,6 +72,14 @@ def test_expr_op_expr(model):
     assert isinstance(x**1.2 - x, Expr)
     assert isinstance(x**1.2 * (x + y), Expr)
 
+    expr += x**2.2
+    assert isinstance(expr, Expr)
+    expr += sin(x)
+    assert isinstance(expr, Expr)
+    expr -= exp(x)
+    assert isinstance(expr, Expr)
+    expr /= log(x + 1)
+    assert isinstance(expr, Expr)
     expr *= (x + y) ** 1.2
     assert isinstance(expr, Expr)
     expr /= exp(2)
@@ -93,6 +95,7 @@ def test_expr_op_expr(model):
     assert isinstance(1 / x + expr, Expr)
     assert isinstance(1 / x**1.5 - expr, Expr)
     assert isinstance(y / x - exp(expr), Expr)
+
     # sqrt(2) is not a constant expression and
     # we can only power to constant expressions!
     with pytest.raises(TypeError):
