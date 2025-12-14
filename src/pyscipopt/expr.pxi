@@ -94,12 +94,14 @@ cdef class Expr:
         if isinstance(other, Expr):
             if not self:
                 return other
-            if Expr._is_Const(other) and other[CONST] == 0:
+            elif not other or (Expr._is_Const(other) and other[CONST] == 0):
                 return self
             if Expr._is_Sum(self):
-                if Expr._is_Sum(other):
-                    return Expr(self.to_dict(other.children))
-                return Expr(self.to_dict({other: 1.0}))
+                return Expr(
+                    self.to_dict(
+                        other.children if Expr._is_Sum(other) else {other: 1.0}
+                    )
+                )
             elif Expr._is_Sum(other):
                 return Expr(other.to_dict({self: 1.0}))
             elif hash(self) == hash(other):
@@ -134,6 +136,8 @@ cdef class Expr:
             if Expr._is_Const(other):
                 if other[CONST] == 0:
                     return ConstExpr(0.0)
+                elif other[CONST] == 1:
+                    return self
                 if Expr._is_Sum(self):
                     return Expr({i: self[i] * other[CONST] for i in self if self[i] != 0})
                 return Expr({self: other[CONST]})
@@ -148,12 +152,7 @@ cdef class Expr:
 
     def __imul__(self, other):
         other = Expr.from_const_or_var(other)
-        if (
-            self
-            and Expr._is_Sum(self)
-            and Expr._is_Const(other)
-            and other[CONST] != 0
-        ):
+        if self and Expr._is_Sum(self) and Expr._is_Const(other) and other[CONST] != 0:
             for i in self:
                 if self[i] != 0:
                     self.children[i] *= other[CONST]
@@ -327,9 +326,9 @@ class PolynomialExpr(Expr):
 
     def __add__(self, other):
         other = Expr.from_const_or_var(other)
-        if Expr._is_Const(other) and other[CONST] == 0:
-            return self
-        if isinstance(other, PolynomialExpr):
+        if isinstance(other, PolynomialExpr) and not (
+            Expr._is_Const(other) and other[CONST] == 0
+        ):
             return PolynomialExpr.to_subclass(self.to_dict(other.children))
         return super().__add__(other)
 
@@ -342,9 +341,9 @@ class PolynomialExpr(Expr):
 
     def __mul__(self, other):
         other = Expr.from_const_or_var(other)
-        if Expr._is_Const(other) and other[CONST] == 0:
-            return ConstExpr(0.0)
-        if isinstance(other, PolynomialExpr):
+        if isinstance(other, PolynomialExpr) and not (
+            Expr._is_Const(other) and (other[CONST] == 0 or other[CONST] == 1)
+        ):
             children = {}
             for i in self:
                 for j in other:
@@ -475,9 +474,7 @@ class ProdExpr(FuncExpr):
 
     def __mul__(self, other):
         other = Expr.from_const_or_var(other)
-        if Expr._is_Const(other):
-            if other[CONST] == 0:
-                return ConstExpr(0.0)
+        if Expr._is_Const(other) and (other[CONST] != 0 or other[CONST] != 1):
             return ProdExpr(*self, coef=self.coef * other[CONST])
         return super().__mul__(other)
 
