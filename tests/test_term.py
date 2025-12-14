@@ -8,7 +8,8 @@ def test_init_error():
     with pytest.raises(TypeError):
         Term(1)
 
-    x = Model().addVar("x")
+    m = Model()
+    x = m.addVar("x")
 
     with pytest.raises(TypeError):
         Term(x, 1)
@@ -31,7 +32,8 @@ def test_slots():
 
 
 def test_mul():
-    x = Model().addVar("x")
+    m = Model()
+    x = m.addVar("x")
     t = Term(x)
 
     with pytest.raises(TypeError):
@@ -43,7 +45,9 @@ def test_mul():
     with pytest.raises(TypeError):
         t * x
 
-    assert t * t == Term(x, x)
+    t_square = t * t
+    assert t_square == Term(x, x)
+    assert str(t_square) == "Term(x, x)"
 
 
 def test_degree():
@@ -108,7 +112,8 @@ def test_eq():
 
 
 def test_getitem():
-    x = Model().addVar("x")
+    m = Model()
+    x = m.addVar("x")
     t = Term(x)
 
     assert x is t[0]
