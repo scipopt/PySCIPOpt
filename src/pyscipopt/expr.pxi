@@ -102,6 +102,8 @@ cdef class Expr:
                 return Expr(self.to_dict({other: 1.0}))
             elif Expr._is_Sum(other):
                 return Expr(other.to_dict({self: 1.0}))
+            elif hash(self) == hash(other):
+                return Expr({self: 2.0})
             return Expr({self: 1.0, other: 1.0})
 
         elif isinstance(other, MatrixExpr):
@@ -136,7 +138,7 @@ cdef class Expr:
                     return Expr({i: self[i] * other[CONST] for i in self if self[i] != 0})
                 return Expr({self: other[CONST]})
             if hash(self) == hash(other):
-                return PowExpr(self, 2)
+                return PowExpr(self, 2.0)
             return ProdExpr(self, other)
         elif isinstance(other, MatrixExpr):
             return other.__mul__(self)
