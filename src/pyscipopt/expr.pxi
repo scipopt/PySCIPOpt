@@ -449,7 +449,7 @@ class ProdExpr(FuncExpr):
         if len(set(children)) != len(children):
             raise ValueError("ProdExpr can't have duplicate children")
 
-        super().__init__({i: 1.0 for i in children})
+        super().__init__(dict.fromkeys(children, 1.0))
         self.coef = coef
 
     def __hash__(self) -> int:
