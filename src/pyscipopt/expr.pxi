@@ -558,12 +558,9 @@ class UnaryExpr(FuncExpr):
         x: Union[Number, Variable, Term, Expr, MatrixExpr],
         cls: Type[UnaryExpr],
     ) -> Union[UnaryExpr, MatrixExpr]:
-        if isinstance(x, Number):
-            x = ConstExpr(x)
-        elif isinstance(x, Variable):
+        if isinstance(x, Variable):
             x = Term(x)
-
-        if isinstance(x, MatrixExpr):
+        elif isinstance(x, MatrixExpr):
             res = np.empty(shape=x.shape, dtype=object)
             res.flat = [cls(Term(i) if isinstance(i, Variable) else i) for i in x.flat]
             return res.view(MatrixExpr)
