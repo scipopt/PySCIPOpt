@@ -83,13 +83,16 @@ cdef class Expr:
     def __iter__(self) -> Iterator[Union[Term, Expr]]:
         return iter(self.children)
 
+    def __bool__(self):
+        return bool(self.children)
+
     def __abs__(self) -> AbsExpr:
         return AbsExpr(self)
 
     def __add__(self, other):
         other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
-            if not self.children:
+            if not self:
                 return other
             if Expr._is_Const(other) and other[CONST] == 0:
                 return self
@@ -124,7 +127,7 @@ cdef class Expr:
     def __mul__(self, other):
         other = Expr.from_const_or_var(other)
         if isinstance(other, Expr):
-            if not self.children or not other.children:
+            if not self or not other:
                 return ConstExpr(0.0)
             if Expr._is_Const(other):
                 if other[CONST] == 0:
@@ -144,7 +147,7 @@ cdef class Expr:
     def __imul__(self, other):
         other = Expr.from_const_or_var(other)
         if (
-            not self.children
+            self
             and Expr._is_Sum(self)
             and Expr._is_Const(other)
             and other[CONST] != 0
@@ -266,7 +269,7 @@ cdef class Expr:
         return self
 
     def degree(self) -> float:
-        return max((i.degree() for i in self)) if self.children else 0
+        return max((i.degree() for i in self)) if self else 0
 
     def _to_node(self, coef: float = 1, start: int = 0) -> list[tuple]:
         """Convert expression to list of node for SCIP expression construction"""
