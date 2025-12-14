@@ -4,13 +4,19 @@ from pyscipopt import Model
 from pyscipopt.scip import ConstExpr, ProdExpr, Term
 
 
-def test_init_error():
+@pytest.fixture(scope="module")
+def model():
+    m = Model()
+    x = m.addVar("x")
+    t = Term(x)
+    return m, x, t
+
+
+def test_init_error(model):
     with pytest.raises(TypeError):
         Term(1)
 
-    m = Model()
-    x = m.addVar("x")
-
+    m, x, t = model
     with pytest.raises(TypeError):
         Term(x, 1)
 
@@ -18,10 +24,8 @@ def test_init_error():
         Term("invalid")
 
 
-def test_slots():
-    m = Model()
-    x = m.addVar("x")
-    t = Term(x)
+def test_slots(model):
+    m, x, t = model
 
     # Verify we can access defined slots/attributes
     assert t.vars == (x,)
@@ -31,10 +35,8 @@ def test_slots():
         t.new_attr = 1
 
 
-def test_mul():
-    m = Model()
-    x = m.addVar("x")
-    t = Term(x)
+def test_mul(model):
+    m, x, t = model
 
     with pytest.raises(TypeError):
         "invalid" * t
@@ -111,10 +113,8 @@ def test_eq():
         t1 == 1
 
 
-def test_getitem():
-    m = Model()
-    x = m.addVar("x")
-    t = Term(x)
+def test_getitem(model):
+    m, x, t = model
 
     assert x is t[0]
 
