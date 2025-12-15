@@ -5708,8 +5708,8 @@ cdef class Model:
         """
         assert cons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % cons.expr.degree()
 
-        terms = cons.expr.children
-        cdef int nvars = len(terms.items())
+        children = cons.expr.children
+        cdef int nvars = len(children)
         cdef SCIP_VAR** vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
         cdef SCIP_Real* coeffs_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
         cdef SCIP_CONS* scip_cons
@@ -5717,7 +5717,7 @@ cdef class Model:
         cdef int i
         cdef _VarArray wrapper
 
-        for i, (term, coeff) in enumerate(terms.items()):
+        for i, (term, coeff) in enumerate(children.items()):
             wrapper = _VarArray(term[0])
             vars_array[i] = wrapper.ptr[0]
             coeffs_array[i] = <SCIP_Real>coeff
@@ -5836,21 +5836,21 @@ cdef class Model:
         cdef int* idxs
         cdef int i
         cdef int j
-        terms = cons.expr.children
+        children = cons.expr.children
 
         # collect variables
-        variables = {i: [var for var in term] for i, term in enumerate(terms)}
+        variables = {i: [var for var in term] for i, term in enumerate(children)}
 
         # create monomials for terms
-        monomials = <SCIP_EXPR**> malloc(len(terms) * sizeof(SCIP_EXPR*))
-        termcoefs = <SCIP_Real*> malloc(len(terms) * sizeof(SCIP_Real))
-        for i, (term, coef) in enumerate(terms.items()):
+        monomials = <SCIP_EXPR**> malloc(len(children) * sizeof(SCIP_EXPR*))
+        termcoefs = <SCIP_Real*> malloc(len(children) * sizeof(SCIP_Real))
+        for i, (term, coef) in enumerate(children.items()):
             wrapper = _VarArray(variables[i])
             PY_SCIP_CALL(SCIPcreateExprMonomial(self._scip, &monomials[i], wrapper.size, wrapper.ptr, NULL, NULL, NULL))
             termcoefs[i] = <SCIP_Real>coef
 
         # create polynomial from monomials
-        PY_SCIP_CALL(SCIPcreateExprSum(self._scip, &expr, <int>len(terms), monomials, termcoefs, 0.0, NULL, NULL))
+        PY_SCIP_CALL(SCIPcreateExprSum(self._scip, &expr, <int>len(children), monomials, termcoefs, 0.0, NULL, NULL))
         # create nonlinear constraint for expr
         PY_SCIP_CALL(SCIPcreateConsNonlinear(
             self._scip,
@@ -5872,7 +5872,7 @@ cdef class Model:
 
         PyCons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &expr))
-        for i in range(<int>len(terms)):
+        for i in range(<int>len(children)):
             PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &monomials[i]))
         free(monomials)
         free(termcoefs)
