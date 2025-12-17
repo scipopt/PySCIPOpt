@@ -22,8 +22,8 @@ cdef class Term:
         self.vars = tuple(sorted(vars, key=hash))
         self._hash = hash(self.vars)
 
-    def __getitem__(self, idx: int) -> Variable:
-        return self.vars[idx]
+    def __getitem__(self, key: int) -> Variable:
+        return self.vars[key]
 
     def __hash__(self) -> int:
         return self._hash
