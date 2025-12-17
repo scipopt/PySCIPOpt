@@ -8090,18 +8090,6 @@ cdef class Model:
         """
         Retrieve bilinear, quadratic, and linear terms of a quadratic constraint.
 
-        According to SCIP's quadratic expression interface, a quadratic
-        expression is represented as
-
-            $x^T Q x + b^T x + c^T y + d$,
-
-        where variables in $x$ appear in the quadratic part (matrix $Q$) and
-        variables in $y$ appear only linearly.  The coefficients for $c^T y$
-        (purely linear part) are returned as ``linterms``.  For variables that
-        appear in the quadratic part (the $x$ variables), their associated
-        linear coefficients $b$ are stored together with the quadratic term
-        and are returned as part of ``quadterms``.
-
         Parameters
         ----------
         cons : Constraint
@@ -8117,9 +8105,8 @@ cdef class Model:
             coefficient ``lincoef`` associated with the same variable when it
             also appears linearly in the quadratic part.
         linterms : list of tuple
-            Pairs ``(var, coef)`` for variables that appear only in the pure
-            linear part (the ``c^T y`` term above), i.e., variables that do
-            not participate in any quadratic or bilinear term.
+            Pairs ``(var, coef)`` for variables that appear only in the pure, i.e.,
+            variables that do not participate in any quadratic or bilinear term.
 
         """
         cdef SCIP_EXPR* expr

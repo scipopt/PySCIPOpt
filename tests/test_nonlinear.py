@@ -288,6 +288,56 @@ def test_quad_coeffs():
     assert linterms[0][0].name == z.name
     assert linterms[0][1] == 4
 
+
+def test_quad_coeffs_mixed_linear_and_quadratic():
+    """ensure getTermsQuadratic exposes all linear coefficients
+
+    ``linterms`` contains purely linear variables (those that do not appear
+    in the quadratic part).  For variables that also appear quadratically,
+    their linear coefficients are stored in the ``lincoef`` component of
+    ``quadterms``.
+    """
+    scip = Model()
+
+    var1 = scip.addVar(name="var1", vtype='C', lb=None)
+    var2 = scip.addVar(name="var2", vtype='C')
+    var3 = scip.addVar(name="var3", vtype='B')
+    var4 = scip.addVar(name="var4", vtype='B')
+
+    cons = scip.addCons(
+        8 * var4
+        + 4 * var3
+        - 5 * var2
+        + 6 * var3 ** 2
+        - 3 * var1 ** 2
+        + 2 * var2 * var1
+        + 7 * var1 * var3
+        == -2
+    )
+
+    bilinterms, quadterms, linterms = scip.getTermsQuadratic(cons)
+
+    # Linear part: getTermsQuadratic must report all linear coefficients,
+    # including those of variables that also appear quadratically or
+    # bilinearly.
+    lin_only = {v.name: c for (v, c) in linterms}
+    assert lin_only["var4"] == 8
+    assert lin_only["var3"] == 4
+    assert lin_only["var2"] == -5
+
+    # For completeness, checking if the coefficients from reconstructing the full linear
+    # coefficients from both linterms and quadterms match
+    full_lin = {}
+    for v, c in linterms:
+        full_lin[v.name] = full_lin.get(v.name, 0.0) + c
+    for v, _, lincoef in quadterms:
+        if lincoef != 0.0:
+            full_lin[v.name] = full_lin.get(v.name, 0.0) + lincoef
+
+    assert full_lin["var4"] == 8
+    assert full_lin["var3"] == 4
+    assert full_lin["var2"] == -5
+
 def test_addExprNonLinear():
     m = Model()
     x = m.addVar("x", lb=0, ub=1, obj=10)
