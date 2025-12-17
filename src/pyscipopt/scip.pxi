@@ -5730,6 +5730,13 @@ cdef class Model:
 
         PyCons = Constraint.create(scip_cons)
 
+        # Store the original polynomial expression on the constraint so that
+        # helpers such as getTermsQuadratic can reconstruct full linear terms
+        # even if SCIP's internal quadratic representation does not expose
+        # all linear coefficients explicitly.
+        if PyCons.data is None:
+            PyCons.data = quadcons.expr
+
         return PyCons
 
     def _createConsNonlinear(self, cons, **kwargs):
@@ -6064,6 +6071,11 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         pycons = Constraint.create(scip_cons)
+        # propagate any problem data (such as the original Expr for
+        # expression-based constraints) from the temporary constraint
+        # created in createConsFromExpr to the final Constraint object
+        # that is returned to the user
+        pycons.data = (<Constraint>pycons_initial).data
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pycons
@@ -8078,6 +8090,18 @@ cdef class Model:
         """
         Retrieve bilinear, quadratic, and linear terms of a quadratic constraint.
 
+        According to SCIP's quadratic expression interface, a quadratic
+        expression is represented as
+
+            $x^T Q x + b^T x + c^T y + d$,
+
+        where variables in $x$ appear in the quadratic part (matrix $Q$) and
+        variables in $y$ appear only linearly.  The coefficients for $c^T y$
+        (purely linear part) are returned as ``linterms``.  For variables that
+        appear in the quadratic part (the $x$ variables), their associated
+        linear coefficients $b$ are stored together with the quadratic term
+        and are returned as part of ``quadterms``.
+
         Parameters
         ----------
         cons : Constraint
@@ -8085,8 +8109,17 @@ cdef class Model:
         Returns
         -------
         bilinterms : list of tuple
+            Triples ``(var1, var2, coef)`` for terms of the form
+            ``coef * var1 * var2`` with ``var1 != var2``.
         quadterms : list of tuple
+            Triples ``(var, sqrcoef, lincoef)`` corresponding to diagonal
+            quadratic terms of the form ``sqrcoef * var**2`` and the linear
+            coefficient ``lincoef`` associated with the same variable when it
+            also appears linearly in the quadratic part.
         linterms : list of tuple
+            Pairs ``(var, coef)`` for variables that appear only in the pure
+            linear part (the ``c^T y`` term above), i.e., variables that do
+            not participate in any quadratic or bilinear term.
 
         """
         cdef SCIP_EXPR* expr
@@ -8117,15 +8150,36 @@ cdef class Model:
         assert self.checkQuadraticNonlinear(cons), "constraint is not quadratic"
 
         expr = SCIPgetExprNonlinear(cons.scip_cons)
-        SCIPexprGetQuadraticData(expr, NULL, &nlinvars, &linexprs, &lincoefs, &nquadterms, &nbilinterms, NULL, NULL)
+        SCIPexprGetQuadraticData(expr, NULL, &nlinvars, &linexprs, &lincoefs,
+                                 &nquadterms, &nbilinterms, NULL, NULL)
 
         linterms   = []
         bilinterms = []
         quadterms  = []
 
-        for termidx in range(nlinvars):
-            var = Variable.create(SCIPgetVarExprVar(linexprs[termidx]))
-            linterms.append((var, lincoefs[termidx]))
+        # First try to recover all linear coefficients from the original
+        # polynomial expression, if it has been stored on the Constraint.
+        if isinstance(cons.data, Expr):
+            lindict = {}
+            for term, coef in cons.data.terms.items():
+                if coef == 0.0:
+                    continue
+                if len(term) == 1:
+                    var = term[0]
+                    key = var.ptr()
+                    if key in lindict:
+                        _, oldcoef = lindict[key]
+                        lindict[key] = (var, oldcoef + coef)
+                    else:
+                        lindict[key] = (var, coef)
+            for _, (var, coef) in lindict.items():
+                linterms.append((var, coef))
+        else:
+            # use only the purely linear part as exposed by SCIP's quadratic representation
+            for termidx in range(nlinvars):
+                scipvar1 = SCIPgetVarExprVar(linexprs[termidx])
+                var = Variable.create(scipvar1)
+                linterms.append((var, lincoefs[termidx]))
 
         for termidx in range(nbilinterms):
             SCIPexprGetQuadraticBilinTerm(expr, termidx, &bilinterm1, &bilinterm2, &bilincoef, NULL, NULL)
@@ -8137,13 +8191,13 @@ cdef class Model:
                 bilinterms.append((var1,var2,bilincoef))
             else:
                 quadterms.append((var1,bilincoef,0.0))
-
         for termidx in range(nquadterms):
             SCIPexprGetQuadraticQuadTerm(expr, termidx, NULL, &lincoef, &sqrcoef, NULL, NULL, &sqrexpr)
             if sqrexpr == NULL:
                 continue
-            var = Variable.create(SCIPgetVarExprVar(sqrexpr))
-            quadterms.append((var,sqrcoef,lincoef))
+            scipvar1 = SCIPgetVarExprVar(sqrexpr)
+            var = Variable.create(scipvar1)
+            quadterms.append((var, sqrcoef, lincoef))
 
         return (bilinterms, quadterms, linterms)
 
@@ -8487,6 +8541,31 @@ cdef class Model:
             SCIPgetDualSolVal(self._scip, cons.scip_cons, &_dualsol, NULL)
 
         return _dualsol
+
+    def getVarFarkasCoef(self, Variable var):
+        """
+        Returns the Farkas coefficient of the variable in the current node's LP relaxation; the current node has to have an infeasible LP.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to get the farkas coefficient of
+
+        Returns
+        -------
+        float
+
+        """
+        assert SCIPgetStatus(self._scip) == SCIP_STATUS_INFEASIBLE, "Method can only be called with an infeasible model."
+
+        farkas_coef = None
+        try:
+            farkas_coef = SCIPgetVarFarkasCoef(self._scip, var.scip_var)
+            if self.getObjectiveSense() == "maximize":
+                farkas_coef = -farkas_coef
+        except:
+            raise Warning("no farkas coefficient available for variable " + var.name)
+        return farkas_coef
 
     def optimize(self):
         """Optimize the problem."""
