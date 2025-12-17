@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added getVarFarkasCoef() (untested)
 ### Fixed
 - getTermsQuadratic() now correctly returns all linear terms
 ### Changed
