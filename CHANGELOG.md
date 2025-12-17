@@ -4,6 +4,7 @@
 ### Added
 - Added getVarFarkasCoef() (untested)
 ### Fixed
+- all fundamental callbacks now raise an error if not implemented
 - getTermsQuadratic() now correctly returns all linear terms
 ### Changed
 ### Removed
