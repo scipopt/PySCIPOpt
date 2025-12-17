@@ -4,7 +4,7 @@
 """
 
 import numpy as np
-from typing import Union
+from typing import Optional, Union
 
 
 def _is_number(e):
@@ -44,16 +44,67 @@ def _matrixexpr_richcmp(self, other, op):
 
 
 class MatrixExpr(np.ndarray):
-    def sum(self, **kwargs):
+
+    def sum(
+        self,
+        axis: Optional[tuple[int]] = None,
+        keepdims: bool = False,
+        **kwargs,
+    ) -> Union[Expr, MatrixExpr]:
         """
         Based on `numpy.ndarray.sum`, but returns a scalar if `axis=None`.
         This is useful for matrix expressions to compare with a matrix or a scalar.
         """
 
-        if kwargs.get("axis") is None:
-            # Speed up `.sum()` #1070
-            return quicksum(self.flat)
-        return super().sum(**kwargs)
+        if axis is None:
+            axis = tuple(range(self.ndim))
+
+        elif isinstance(axis, int):
+            if axis < -self.ndim or axis >= self.ndim:
+                raise np.exceptions.AxisError(
+                    f"axis {axis} is out of bounds for array of dimension {self.ndim}"
+                )
+            axis = (axis,)
+
+        elif isinstance(axis, tuple) and all(isinstance(i, int) for i in axis):
+            for i in axis:
+                if i < -self.ndim or i >= self.ndim:
+                    raise np.exceptions.AxisError(
+                        f"axis {i} is out of bounds for array of dimension {self.ndim}"
+                    )
+
+        else:
+            raise TypeError("'axis' must be an int or a tuple of ints")
+
+        if len(axis := tuple(i + self.ndim if i < 0 else i for i in axis)) == self.ndim:
+            res = quicksum(self.flat)
+            if keepdims:
+                return (
+                    np.array([res], dtype=object)
+                    .reshape([1] * self.ndim)
+                    .view(MatrixExpr)
+                )
+            return res
+
+        keep_axes = tuple(i for i in range(self.ndim) if i not in axis)
+        shape = (
+            tuple(1 if i in axis else self.shape[i] for i in range(self.ndim))
+            if keepdims
+            else tuple(self.shape[i] for i in keep_axes)
+        )
+        return (
+            np.fromiter(
+                map(
+                    quicksum,
+                    self.transpose(keep_axes + axis).reshape(
+                        -1, np.prod([self.shape[i] for i in axis])
+                    ),
+                ),
+                dtype=object,
+            )
+            .reshape(shape)
+            .view(MatrixExpr)
+        )
 
     def __le__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 1)
