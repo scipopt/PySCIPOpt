@@ -8105,8 +8105,9 @@ cdef class Model:
             coefficient ``lincoef`` associated with the same variable when it
             also appears linearly in the quadratic part.
         linterms : list of tuple
-            Pairs ``(var, coef)`` for variables that appear only in the pure, i.e.,
-            variables that do not participate in any quadratic or bilinear term.
+            Pairs ``(var, coef)`` for all variables with a nonzero linear
+            coefficient in the constraint, including variables that also
+            appear in quadratic or bilinear terms.
 
         """
         cdef SCIP_EXPR* expr
@@ -8550,7 +8551,7 @@ cdef class Model:
             farkas_coef = SCIPgetVarFarkasCoef(self._scip, var.scip_var)
             if self.getObjectiveSense() == "maximize":
                 farkas_coef = -farkas_coef
-        except:
+        except Exception:
             raise Warning("no farkas coefficient available for variable " + var.name)
         return farkas_coef
 

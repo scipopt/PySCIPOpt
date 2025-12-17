@@ -290,13 +290,7 @@ def test_quad_coeffs():
 
 
 def test_quad_coeffs_mixed_linear_and_quadratic():
-    """ensure getTermsQuadratic exposes all linear coefficients
 
-    ``linterms`` contains purely linear variables (those that do not appear
-    in the quadratic part).  For variables that also appear quadratically,
-    their linear coefficients are stored in the ``lincoef`` component of
-    ``quadterms``.
-    """
     scip = Model()
 
     var1 = scip.addVar(name="var1", vtype='C', lb=None)
@@ -324,6 +318,8 @@ def test_quad_coeffs_mixed_linear_and_quadratic():
     assert lin_only["var4"] == 8
     assert lin_only["var3"] == 4
     assert lin_only["var2"] == -5
+    # var1 has no linear component and must not appear in linterms
+    assert "var1" not in lin_only or lin_only.get("var1", 0.0) == 0.0
 
     # For completeness, checking if the coefficients from reconstructing the full linear
     # coefficients from both linterms and quadterms match
