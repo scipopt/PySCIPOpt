@@ -22,6 +22,9 @@ cdef class Term:
         self.vars = tuple(sorted(vars, key=hash))
         self._hash = hash(self.vars)
 
+    def __iter__(self) -> Iterator[Variable]:
+        return iter(self.vars)
+
     def __getitem__(self, key: int) -> Variable:
         return self.vars[key]
 
@@ -50,7 +53,7 @@ cdef class Term:
         elif self.degree() == 0:
             return [(ConstExpr, coef)]
         else:
-            node = [(Term, i) for i in self.vars]
+            node = [(Term, i) for i in self]
             if coef != 1:
                 node.append((ConstExpr, coef))
             if len(node) > 1:
