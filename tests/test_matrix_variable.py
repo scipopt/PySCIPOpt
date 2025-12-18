@@ -221,7 +221,7 @@ def test_matrix_sum_axis():
 
     # compare the result of summing 3d array to a 2d array with a 2d array
     z = m.addMatrixVar((2, 3, 4), "z", "I", ub=4)
-    m.addMatrixCons(z.sum(axis=2) == x)
+    m.addMatrixCons(z.sum(2) == x)
     m.addMatrixCons(z.sum(axis=1) == y)
 
     # to fix the element values
