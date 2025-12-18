@@ -54,10 +54,36 @@ class MatrixExpr(np.ndarray):
         **kwargs,
     ) -> Union[Expr, MatrixExpr]:
         """
-        Based on `numpy.ndarray.sum`, but returns a scalar if `axis=None`.
-        This is useful for matrix expressions to compare with a matrix or a scalar.
-        """
+        Return the sum of the array elements over the given axis.
 
+        Parameters
+        ----------
+        axis : None or int or tuple of ints, optional
+            Axis or axes along which a sum is performed. The default, axis=None, will
+            sum all of the elements of the input array. If axis is negative it counts
+            from the last to the first axis. If axis is a tuple of ints, a sum is
+            performed on all of the axes specified in the tuple instead of a single axis
+            or all the axes as before.
+
+        keepdims : bool, optional
+            If this is set to True, the axes which are reduced are left in the result as
+            dimensions with size one. With this option, the result will broadcast
+            correctly against the input array.
+
+        **kwargs : ignored
+            Additional keyword arguments are ignored. They exist for compatibility
+            with `numpy.ndarray.sum`.
+
+        Returns
+        -------
+        Expr
+            If the sum is performed over all axes, return an Expr.
+
+        MatrixExpr
+            - If the sum is performed over a subset of axes return a MatrixExpr.
+            - If `keepdims` is True, the returned MatrixExpr will have the same number 
+              of dimensions as the original array, with the reduced axes having size one.
+        """
         axis = normalize_axis_tuple(
             range(self.ndim) if axis is None else axis, self.ndim
         )
