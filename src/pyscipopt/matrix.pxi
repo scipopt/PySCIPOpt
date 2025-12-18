@@ -3,7 +3,7 @@
 # TODO Add tests
 """
 
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 
 import numpy as np
 from numpy.lib.array_utils import normalize_axis_tuple
@@ -49,7 +49,7 @@ class MatrixExpr(np.ndarray):
 
     def sum(
         self,
-        axis: Optional[Union[int, tuple[int, ...]]] = None,
+        axis: Optional[Union[int, Tuple[int, ...]]] = None,
         keepdims: bool = False,
         **kwargs,
     ) -> Union[Expr, MatrixExpr]:
