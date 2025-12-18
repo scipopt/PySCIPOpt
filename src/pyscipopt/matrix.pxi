@@ -6,7 +6,12 @@
 from typing import Optional, Tuple, Union
 
 import numpy as np
-from numpy.lib.array_utils import normalize_axis_tuple
+try:
+    # NumPy 2.x location
+    from numpy.lib.array_utils import normalize_axis_tuple
+except ImportError:
+    # Fallback for NumPy 1.x
+    from numpy.core.numeric import normalize_axis_tuple
 
 
 def _is_number(e):
