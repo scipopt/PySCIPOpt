@@ -19,7 +19,7 @@ from pyscipopt import (
     sin,
     sqrt,
 )
-from pyscipopt.scip import GenExpr
+from pyscipopt.scip import CONST, GenExpr
 
 
 def test_catching_errors():
@@ -204,6 +204,7 @@ def test_matrix_sum_error():
 
 
 def test_matrix_sum_axis():
+    # compare the result of summing matrix variable after optimization
     m = Model()
 
     # Return a array when axis isn't None
@@ -234,12 +235,26 @@ def test_matrix_sum_axis():
     assert (m.getVal(y) == np.full((2, 4), 3)).all().all()
 
 
-def test_matrix_sum_keepdims():
-    m = Model()
-    x = m.addMatrixVar((1, 2, 3), "x", "I", ub=4)
+@pytest.mark.parametrize(
+    "axis, keepdims",
+    [
+        (0, False),
+        (0, True),
+        (1, False),
+        (1, True),
+        ((0, 2), False),
+        ((0, 2), True),
+    ],
+)
+def test_matrix_sum_result(axis, keepdims):
+    # directly compare the result of np.sum and MatrixExpr.sum
+    _getVal = np.vectorize(lambda e: e.terms[CONST])
+    a = np.arange(6).reshape((1, 2, 3))
 
-    assert x.sum(keepdims=True).shape == (1, 1, 1)
-    assert x.sum(axis=1, keepdims=True).shape == (1, 1, 3)
+    np_res = a.sum(axis, keepdims=keepdims)
+    scip_res = MatrixExpr.sum(a, axis, keepdims=keepdims)
+    assert (np_res == _getVal(scip_res)).all()
+    assert np_res.shape == _getVal(scip_res).shape
 
 
 @pytest.mark.parametrize("n", [50, 100])
