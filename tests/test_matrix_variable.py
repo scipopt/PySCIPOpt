@@ -234,6 +234,14 @@ def test_matrix_sum_axis():
     assert (m.getVal(y) == np.full((2, 4), 3)).all().all()
 
 
+def test_matrix_sum_keepdims():
+    m = Model()
+    x = m.addMatrixVar((1, 2, 3), "x", "I", ub=4)
+
+    assert x.sum(keepdims=True).shape == (1, 1, 1)
+    assert x.sum(axis=1, keepdims=True).shape == (1, 1, 3)
+
+
 @pytest.mark.parametrize("n", [50, 100])
 def test_sum_performance(n):
     model = Model()
