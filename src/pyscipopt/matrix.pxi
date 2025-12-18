@@ -54,7 +54,8 @@ class MatrixExpr(np.ndarray):
         **kwargs,
     ) -> Union[Expr, MatrixExpr]:
         """
-        Return the sum of the array elements over the given axis.
+        Return the sum of the array elements over the given axis. Speed optimized for
+        matrix expressions via `quicksum` instead of `numpy.ndarray.sum`.
 
         Parameters
         ----------
@@ -83,6 +84,12 @@ class MatrixExpr(np.ndarray):
             - If the sum is performed over a subset of axes return a MatrixExpr.
             - If `keepdims` is True, the returned MatrixExpr will have the same number 
               of dimensions as the original array, with the reduced axes having size one.
+
+        Notes
+        -----
+        `quicksum` uses `__iadd__` to accumulate the sum, which modifies an existing
+        object in place. `numpy.ndarray.sum` uses `__add__`, which creates a new object
+        for each addition.
         """
         axis = normalize_axis_tuple(
             range(self.ndim) if axis is None else axis, self.ndim
