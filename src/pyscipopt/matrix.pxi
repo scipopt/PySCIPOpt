@@ -3,8 +3,10 @@
 # TODO Add tests
 """
 
-import numpy as np
 from typing import Optional, Union
+
+import numpy as np
+from numpy.lib.array_utils import normalize_axis_tuple
 
 
 def _is_number(e):
@@ -47,7 +49,7 @@ class MatrixExpr(np.ndarray):
 
     def sum(
         self,
-        axis: Optional[tuple[int]] = None,
+        axis: Optional[Union[int, tuple[int, ...]]] = None,
         keepdims: bool = False,
         **kwargs,
     ) -> Union[Expr, MatrixExpr]:
@@ -56,35 +58,16 @@ class MatrixExpr(np.ndarray):
         This is useful for matrix expressions to compare with a matrix or a scalar.
         """
 
-        if axis is None:
-            axis = tuple(range(self.ndim))
-
-        elif isinstance(axis, int):
-            if axis < -self.ndim or axis >= self.ndim:
-                raise np.exceptions.AxisError(
-                    f"axis {axis} is out of bounds for array of dimension {self.ndim}"
-                )
-            axis = (axis,)
-
-        elif isinstance(axis, tuple) and all(isinstance(i, int) for i in axis):
-            for i in axis:
-                if i < -self.ndim or i >= self.ndim:
-                    raise np.exceptions.AxisError(
-                        f"axis {i} is out of bounds for array of dimension {self.ndim}"
-                    )
-
-        else:
-            raise TypeError("'axis' must be an int or a tuple of ints")
-
-        if len(axis := tuple(i + self.ndim if i < 0 else i for i in axis)) == self.ndim:
+        axis = normalize_axis_tuple(
+            range(self.ndim) if axis is None else axis, self.ndim
+        )
+        if len(axis) == self.ndim:
             res = quicksum(self.flat)
-            if keepdims:
-                return (
-                    np.array([res], dtype=object)
-                    .reshape([1] * self.ndim)
-                    .view(MatrixExpr)
-                )
-            return res
+            return (
+                np.array([res], dtype=object).reshape([1] * self.ndim).view(MatrixExpr)
+                if keepdims
+                else res
+            )
 
         keep_axes = tuple(i for i in range(self.ndim) if i not in axis)
         shape = (
