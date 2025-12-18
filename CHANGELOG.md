@@ -4,6 +4,7 @@
 ### Added
 ### Fixed
 - all fundamental callbacks now raise an error if not implemented
+- Fixed the type of MatrixExpr.sum(axis=...) result from MatrixVariable to MatrixExpr.
 ### Changed
 ### Removed
 

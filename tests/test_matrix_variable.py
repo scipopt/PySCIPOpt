@@ -521,6 +521,14 @@ def test_matrix_matmul_return_type():
     assert type(y @ z) is MatrixExpr
 
 
+def test_matrix_sum_return_type():
+    # test #1117, require returning type is MatrixExpr not MatrixVariable
+    m = Model()
+
+    x = m.addMatrixVar((3, 2))
+    assert type(x.sum(axis=1)) is MatrixExpr
+
+
 def test_broadcast():
     # test #1065
     m = Model()
