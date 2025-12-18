@@ -182,6 +182,27 @@ def test_expr_from_matrix_vars():
             assert len(term) == 3
 
 
+def test_matrix_sum_error():
+    m = Model()
+    x = m.addMatrixVar((2, 3), "x", "I", ub=4)
+
+    # test axis type
+    with pytest.raises(TypeError):
+        x.sum("0")
+
+    # test axis value (out of range)
+    with pytest.raises(ValueError):
+        x.sum(2)
+
+    # test axis value (out of range)
+    with pytest.raises(ValueError):
+        x.sum((-3,))
+
+    # test axis value (duplicate)
+    with pytest.raises(ValueError):
+        x.sum((0, 0))
+
+
 def test_matrix_sum_axis():
     m = Model()
 
