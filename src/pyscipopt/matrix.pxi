@@ -76,14 +76,12 @@ class MatrixExpr(np.ndarray):
             else tuple(self.shape[i] for i in keep_axes)
         )
         return (
-            np.fromiter(
-                map(
-                    quicksum,
-                    self.transpose(keep_axes + axis).reshape(
-                        -1, np.prod([self.shape[i] for i in axis])
-                    ),
+            np.apply_along_axis(
+                quicksum,
+                -1,
+                self.transpose(keep_axes + axis).reshape(
+                    -1, np.prod([self.shape[i] for i in axis])
                 ),
-                dtype=object,
             )
             .reshape(shape)
             .view(MatrixExpr)
