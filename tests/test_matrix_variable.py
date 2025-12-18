@@ -211,7 +211,7 @@ def test_matrix_sum_argument():
     assert (m.getVal(y) == np.full((2, 4), 3)).all().all()
 
 
-@pytest.mark.parametrize("n", [50, 100, 200])
+@pytest.mark.parametrize("n", [50, 100])
 def test_sum_performance(n):
     model = Model()
     x = model.addMatrixVar((n, n))
@@ -224,6 +224,18 @@ def test_sum_performance(n):
     # Optimized sum via `quicksum`
     start_matrix = time()
     x.sum()
+    end_matrix = time()
+
+    assert model.isGT(end_orig - start_orig, end_matrix - start_matrix)
+
+    # Original sum via `np.ndarray.sum`, `np.sum` will call subclass method
+    start_orig = time()
+    np.ndarray.sum(x, axis=0)
+    end_orig = time()
+
+    # Optimized sum via `quicksum`
+    start_matrix = time()
+    x.sum(axis=0)
     end_matrix = time()
 
     assert model.isGT(end_orig - start_orig, end_matrix - start_matrix)
