@@ -181,7 +181,8 @@ def test_expr_from_matrix_vars():
         for term, coeff in expr_list:
             assert len(term) == 3
 
-def test_matrix_sum_argument():
+
+def test_matrix_sum_axis():
     m = Model()
 
     # Return a array when axis isn't None
@@ -190,7 +191,8 @@ def test_matrix_sum_argument():
 
     # compare the result of summing 2d array to a scalar with a scalar
     x = m.addMatrixVar((2, 3), "x", "I", ub=4)
-    m.addMatrixCons(x.sum() == 24)
+    # `axis=tuple(range(x.ndim))` is `axis=None`
+    m.addMatrixCons(x.sum(axis=tuple(range(x.ndim))) == 24)
 
     # compare the result of summing 2d array to 1d array
     y = m.addMatrixVar((2, 4), "y", "I", ub=4)
@@ -204,7 +206,7 @@ def test_matrix_sum_argument():
     # to fix the element values
     m.addMatrixCons(z == np.ones((2, 3, 4)))
 
-    m.setObjective(x.sum() + y.sum() + z.sum(), "maximize")
+    m.setObjective(x.sum() + y.sum() + z.sum(tuple(range(z.ndim))), "maximize")
     m.optimize()
 
     assert (m.getVal(x) == np.full((2, 3), 4)).all().all()
