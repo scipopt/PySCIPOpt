@@ -96,7 +96,7 @@ class MatrixExpr(np.ndarray):
         object in place. `numpy.ndarray.sum` uses `__add__`, which creates a new object
         for each addition.
         """
-        axis = normalize_axis_tuple(
+        axis: Tuple[int, ...] = normalize_axis_tuple(
             range(self.ndim) if axis is None else axis, self.ndim
         )
         if len(axis) == self.ndim:
@@ -113,17 +113,9 @@ class MatrixExpr(np.ndarray):
             if keepdims
             else tuple(self.shape[i] for i in keep_axes)
         )
-        return (
-            np.apply_along_axis(
-                quicksum,
-                -1,
-                self.transpose(keep_axes + axis).reshape(
-                    -1, np.prod([self.shape[i] for i in axis])
-                ),
-            )
-            .reshape(shape)
-            .view(MatrixExpr)
-        )
+        return np.apply_along_axis(
+            quicksum, -1, self.transpose(keep_axes + axis).reshape(shape + (-1,))
+        ).view(MatrixExpr)
 
     def __le__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 1)
