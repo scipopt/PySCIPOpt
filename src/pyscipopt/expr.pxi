@@ -697,6 +697,8 @@ cdef class ExprCons:
     cdef public Expr expr
     cdef public object _lhs
     cdef public object _rhs
+    cdef readonly object _lhs
+    cdef readonly object _rhs
 
     def __init__(
         self,
@@ -727,8 +729,6 @@ cdef class ExprCons:
             raise TypeError("Ranged ExprCons is not well defined!")
         if not self._rhs is None:
             raise TypeError("ExprCons already has upper bound")
-        if self._lhs is None:
-            raise TypeError("ExprCons must have a lower bound")
 
         return ExprCons(self.expr, lhs=<float>self._lhs, rhs=float(other))
 
@@ -737,8 +737,6 @@ cdef class ExprCons:
             raise TypeError("Ranged ExprCons is not well defined!")
         if not self._lhs is None:
             raise TypeError("ExprCons already has lower bound")
-        if self._rhs is None:
-            raise TypeError("ExprCons must have an upper bound")
 
         return ExprCons(self.expr, lhs=float(other), rhs=<float>self._rhs)
 
