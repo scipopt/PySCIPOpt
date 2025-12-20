@@ -3923,7 +3923,7 @@ cdef class Model:
         """
         return SCIPgetObjlimit(self._scip)
 
-    def setObjective(self, expr, sense = 'minimize', clear = 'true'):
+    def setObjective(self, Expr expr, sense = 'minimize', clear = 'true'):
         """
         Establish the objective function as a linear expression.
 
@@ -3943,10 +3943,6 @@ cdef class Model:
         cdef int i
         cdef _VarArray wrapper
 
-        # turn the constant value into an Expr instance for further processing
-        expr = Expr.from_const_or_var(expr)
-        if not isinstance(expr, Expr):
-            raise TypeError(f"given coefficients are neither Expr but {type(expr)}")
         if expr.degree() > 1:
             raise ValueError("SCIP does not support nonlinear objective functions. Consider using set_nonlinear_objective in the pyscipopt.recipe.nonlinear")
 
@@ -11691,7 +11687,7 @@ cdef class Model:
             raise Warning("method cannot be called in stage %i." % self.getStage())
         PY_SCIP_CALL(SCIPfreeReoptSolve(self._scip))
 
-    def chgReoptObjective(self, coeffs, sense = 'minimize'):
+    def chgReoptObjective(self, Expr coeffs, sense = 'minimize'):
         """
         Establish the objective function as a linear expression.
 
@@ -11717,8 +11713,6 @@ cdef class Model:
             objsense = SCIP_OBJSENSE_MAXIMIZE
         else:
             raise Warning("unrecognized optimization sense: %s" % sense)
-
-        assert isinstance(coeffs, Expr), "given coefficients are not Expr but %s" % coeffs.__class__.__name__
 
         if coeffs.degree() > 1:
             raise ValueError("Nonlinear objective functions are not supported!")
