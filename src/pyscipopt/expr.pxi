@@ -76,7 +76,7 @@ cdef class Expr:
         self.children = children or {}
 
     def __hash__(self) -> int:
-        return frozenset(self.children.items()).__hash__()
+        return (type(self), frozenset(self._children.items())).__hash__()
 
     def __getitem__(self, key: Union[Variable, Term, Expr]) -> float:
         if not isinstance(key, (Term, Expr)):
@@ -326,6 +326,9 @@ class PolynomialExpr(Expr):
             raise TypeError("All keys must be Term instances")
 
         super().__init__(children)
+
+    def __hash__(self) -> int:
+        return (Expr, frozenset(self._children.items())).__hash__()
 
     def __add__(self, other):
         other = Expr.from_const_or_var(other)
