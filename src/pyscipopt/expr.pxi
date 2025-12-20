@@ -337,6 +337,10 @@ cdef class Expr:
             Expr._is_Sum(expr) and len(expr.children) == 1 and expr._fchild() is CONST
         )
 
+    @staticmethod
+    def _is_zero(expr):
+        return  Expr._is_const(expr) and expr[CONST] == 0
+
 
 class PolynomialExpr(Expr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
