@@ -316,6 +316,17 @@ cdef class Expr:
     def _fchild(self) -> Union[Term, Expr]:
         return next(self.__iter__())
 
+    def _is_equal(self, other) -> bool:
+        return (
+            isinstance(other, Expr)
+            and (
+                (Expr._is_sum(self) and Expr._is_sum(other))
+                or type(self) is type(other)
+            )
+            and len(self._children) == len(other._children)
+            and self._children == other._children
+        )
+
     @staticmethod
     def _is_Sum(expr) -> bool:
         return type(expr) is Expr or isinstance(expr, PolynomialExpr)
