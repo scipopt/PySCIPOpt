@@ -281,6 +281,9 @@ cdef class Expr:
     def degree(self) -> float:
         return max((i.degree() for i in self)) if self else 0
 
+    def copy(self) -> Expr:
+        return type(self)(self._children.copy())
+
     def _to_node(self, coef: float = 1, start: int = 0) -> list[tuple]:
         """Convert expression to list of node for SCIP expression construction"""
         node, index = [], []
@@ -414,6 +417,8 @@ class ConstExpr(PolynomialExpr):
             return ConstExpr(self[CONST] ** other[CONST])
         return super().__pow__(other)
 
+    def copy(self) -> ConstExpr:
+        return ConstExpr(self[CONST])
 
 class MonomialExpr(PolynomialExpr):
     """Expression like `x**3`."""
@@ -508,6 +513,9 @@ class ProdExpr(FuncExpr):
             self = ConstExpr(0.0)
         return self
 
+    def copy(self) -> ProdExpr:
+        return ProdExpr(*self._children.keys(), coef=self.coef)
+
 
 class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
@@ -552,6 +560,9 @@ class PowExpr(FuncExpr):
                 self = MonomialExpr({self: 1.0})
         return self
 
+    def copy(self) -> PowExpr:
+        return PowExpr(self._fchild(), self.expo)
+
 
 class UnaryExpr(FuncExpr):
     """Expression like `f(expression)`."""
@@ -566,6 +577,9 @@ class UnaryExpr(FuncExpr):
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self._fchild()})"
+
+    def copy(self) -> UnaryExpr:
+        return type(self)(self._fchild())
 
     @staticmethod
     def _to_subclass(
