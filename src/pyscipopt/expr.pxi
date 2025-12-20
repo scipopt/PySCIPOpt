@@ -1,5 +1,4 @@
 ##@file expr.pxi
-from collections.abc import Hashable
 from numbers import Number
 from typing import Iterator, Optional, Type, Union
 
@@ -99,27 +98,39 @@ cdef class _ExprKey:
 cdef class Expr:
     """Base class for mathematical expressions."""
 
-    cdef public dict children
-    __slots__ = ("children",)
+    cdef public dict _children
+    __slots__ = ("_children",)
 
-    def __init__(self, children: Optional[dict[Union[Term, Expr], float]] = None):
-        if children and not all(isinstance(i, (Term, Expr)) for i in children):
+    def __init__(
+        self,
+        children: Optional[dict[Union[Term, Expr, _ExprKey], float]] = None,
+    ):
+        if children and not all(isinstance(i, (Term, Expr, _ExprKey)) for i in children):
             raise TypeError("All keys must be Term or Expr instances")
-        self.children = children or {}
+
+        self._children = {_ExprKey.wrap(k): v for k, v in (children or {}).items()}
+
+    @property
+    def children(self):
+        return {_ExprKey.unwrap(k): v for k, v in self._children.items()}
 
     def __hash__(self) -> int:
         return (type(self), frozenset(self._children.items())).__hash__()
 
     def __getitem__(self, key: Union[Variable, Term, Expr]) -> float:
-        if not isinstance(key, (Term, Expr)):
+        if not isinstance(key, (Variable, Term, Expr, _ExprKey)):
+            raise TypeError("key must be Variable, Term, or Expr")
+
+        if isinstance(key, Variable):
             key = Term(key)
-        return self.children.get(key, 0.0)
+        return self._children.get(_ExprKey.wrap(key), 0.0)
 
     def __iter__(self) -> Iterator[Union[Term, Expr]]:
-        return iter(self.children)
+        for i in self._children:
+            yield _ExprKey.unwrap(i)
 
     def __bool__(self):
-        return bool(self.children)
+        return bool(self._children)
 
     def __abs__(self) -> AbsExpr:
         return AbsExpr(self)
@@ -127,25 +138,24 @@ cdef class Expr:
     def __add__(self, other):
         other = Expr._from_const_or_var(other)
         if isinstance(other, Expr):
-            if not self:
-                return other
-            elif not other or (Expr._is_const(other) and other[CONST] == 0):
-                return self
-            if Expr._is_sum(self):
+            if not self or Expr._is_zero(self):
+                return other.copy()
+            elif not other or Expr._is_zero(other):
+                return self.copy()
+            elif Expr._is_sum(self):
                 return Expr(
-                        other.children if Expr._is_sum(other) else {other: 1.0}
                         <dict>self._to_dict(
+                        other._children if Expr._is_sum(other) else {other: 1.0}
                     )
                 )
             elif Expr._is_sum(other):
-            elif hash(self) == hash(other):
-                return Expr({self: 2.0})
                 return Expr(<dict>other._to_dict({self: 1.0}))
+            elif self._is_equal(other):
+                return self.__mul__(2.0)
             return Expr({self: 1.0, other: 1.0})
 
         elif isinstance(other, MatrixExpr):
             return other.__add__(self)
-
         raise TypeError(
             f"unsupported operand type(s) for +: 'Expr' and '{type(other)}'"
         )
@@ -154,7 +164,7 @@ cdef class Expr:
         other = Expr._from_const_or_var(other)
         if Expr._is_sum(self):
             if Expr._is_sum(other):
-                self._to_dict(other.children, copy=False)
+                self._to_dict(other._children, copy=False)
             else:
                 self._to_dict({other: 1.0}, copy=False)
             return self
@@ -166,19 +176,21 @@ cdef class Expr:
     def __mul__(self, other):
         other = Expr._from_const_or_var(other)
         if isinstance(other, Expr):
-            if not self or not other:
+            left, right = (self, other) if Expr._is_const(self) else (other, self)
+            if not left or not right or Expr._is_zero(left) or Expr._is_zero(right):
                 return ConstExpr(0.0)
-            if Expr._is_const(other):
-                if other[CONST] == 0:
-                    return ConstExpr(0.0)
-                elif other[CONST] == 1:
-                    return self
-                if Expr._is_sum(self):
-                    return Expr({i: self[i] * other[CONST] for i in self if self[i] != 0})
-                return Expr({self: other[CONST]})
-            if hash(self) == hash(other):
+            elif Expr._is_const(left):
+                if left[CONST] == 1:
+                    return right.copy()
+                elif Expr._is_sum(right):
+                    return Expr({
+                        k: v * left[CONST] for k, v in right._children.items() if v != 0
+                    })
+                return Expr({right: left[CONST]})
+            elif self._is_equal(other):
                 return PowExpr(self, 2.0)
             return ProdExpr(self, other)
+
         elif isinstance(other, MatrixExpr):
             return other.__mul__(self)
         raise TypeError(
@@ -188,9 +200,9 @@ cdef class Expr:
     def __imul__(self, other):
         other = Expr._from_const_or_var(other)
         if self and Expr._is_sum(self) and Expr._is_const(other) and other[CONST] != 0:
-            for i in self:
-                if self[i] != 0:
-                    self.children[i] *= other[CONST]
+            for k, v in self._children.items():
+                if v != 0:
+                    self._children[k] *= other[CONST]
             return self
         return self.__mul__(other)
 
@@ -199,9 +211,9 @@ cdef class Expr:
 
     def __truediv__(self, other):
         other = Expr._from_const_or_var(other)
-        if Expr._is_const(other) and other[CONST] == 0:
+        if Expr._is_zero(other):
             raise ZeroDivisionError("division by zero")
-        if isinstance(other, Hashable) and hash(self) == hash(other):
+        if self._is_equal(other):
             return ConstExpr(1.0)
         return self.__mul__(other.__pow__(-1.0))
 
@@ -212,7 +224,7 @@ cdef class Expr:
         other = Expr._from_const_or_var(other)
         if not Expr._is_const(other):
             raise TypeError("exponent must be a number")
-        if other[CONST] == 0:
+        if Expr._is_zero(other):
             return ConstExpr(1.0)
         return PowExpr(self, other[CONST])
 
@@ -279,14 +291,14 @@ cdef class Expr:
         raise TypeError(f"Unsupported type {type(other)}")
 
     def __repr__(self) -> str:
-        return f"Expr({self.children})"
+        return f"Expr({self._children})"
 
     @staticmethod
     def _from_const_or_var(x):
         """Convert a number or variable to an expression."""
 
         if isinstance(x, Number):
-            return ConstExpr(x)
+            return ConstExpr(<float>x)
         elif isinstance(x, Variable):
             return MonomialExpr.from_var(x)
         return x
@@ -297,21 +309,21 @@ cdef class Expr:
             copy: bool = True,
         ) -> dict[Union[Term, _ExprKey], float]:
         """Merge two dictionaries by summing values of common keys"""
-        other = other or {}
         if not isinstance(other, dict):
             raise TypeError("other must be a dict")
 
-        children = self.children.copy() if copy else self.children
+        children = self._children.copy() if copy else self._children
         for child, coef in other.items():
-            children[child] = children.get(child, 0.0) + coef
+            key = _ExprKey.wrap(child)
+            children[key] = children.get(key, 0.0) + coef
         return children
 
     def _normalize(self) -> Expr:
-        self.children = {k: v for k, v in self.children.items() if v != 0}
+        self._children = {k: v for k, v in self._children.items() if v != 0}
         return self
 
     def degree(self) -> float:
-        return max((i.degree() for i in self)) if self else 0
+        return max((i.degree() for i in self._children)) if self else 0
 
     def copy(self) -> Expr:
         return type(self)(self._children.copy())
@@ -319,8 +331,8 @@ cdef class Expr:
     def _to_node(self, coef: float = 1, start: int = 0) -> list[tuple]:
         """Convert expression to list of node for SCIP expression construction"""
         node, index = [], []
-        for i in self:
-            if (child_node := i._to_node(self[i], start + len(node))):
+        for k, v in self._children.items():
+            if (child_node := k._to_node(v, start + len(node))):
                 node.extend(child_node)
                 index.append(start + len(node) - 1)
 
@@ -345,8 +357,8 @@ cdef class Expr:
 
         return node
 
-    def _fchild(self) -> Union[Term, Expr]:
-        return next(self.__iter__())
+    def _fchild(self) -> Union[Term, _ExprKey]:
+        return next(iter(self._children))
 
     def _is_equal(self, other) -> bool:
         return (
@@ -366,7 +378,9 @@ cdef class Expr:
     @staticmethod
     def _is_const(expr):
         return (
-            Expr._is_sum(expr) and len(expr.children) == 1 and expr._fchild() is CONST
+            Expr._is_sum(expr)
+            and len(expr._children) == 1
+            and expr._fchild() is CONST
         )
 
     @staticmethod
@@ -388,16 +402,14 @@ class PolynomialExpr(Expr):
 
     def __add__(self, other):
         other = Expr._from_const_or_var(other)
-        if isinstance(other, PolynomialExpr) and not (
-            Expr._is_const(other) and other[CONST] == 0
-        ):
-            return PolynomialExpr._to_subclass(self._to_dict(other.children))
+        if isinstance(other, PolynomialExpr) and not Expr._is_zero(other):
+            return PolynomialExpr._to_subclass(<dict>self._to_dict(other._children))
         return super().__add__(other)
 
     def __iadd__(self, other):
         other = Expr._from_const_or_var(other)
         if isinstance(other, PolynomialExpr):
-            self._to_dict(other.children, copy=False)
+            self._to_dict(other._children, copy=False)
             return self
         return super().__iadd__(other)
 
@@ -452,7 +464,7 @@ class ConstExpr(PolynomialExpr):
     def __iadd__(self, other):
         other = Expr._from_const_or_var(other)
         if Expr._is_const(other):
-            self.children[CONST] += other[CONST]
+            self._children[CONST] += other[CONST]
             return self
         if isinstance(other, PolynomialExpr):
             return self.__add__(other)
@@ -467,6 +479,7 @@ class ConstExpr(PolynomialExpr):
     def copy(self) -> ConstExpr:
         return ConstExpr(self[CONST])
 
+
 class MonomialExpr(PolynomialExpr):
     """Expression like `x**3`."""
 
@@ -479,8 +492,9 @@ class MonomialExpr(PolynomialExpr):
     def __iadd__(self, other):
         other = Expr._from_const_or_var(other)
         if isinstance(other, PolynomialExpr):
-            if isinstance(other, MonomialExpr) and self._fchild() == other._fchild():
-                self.children[self._fchild()] += other[self._fchild()]
+            child = self._fchild()
+            if isinstance(other, MonomialExpr) and child == other._fchild():
+                self._children[child] += other[child]
             else:
                 self = self.__add__(other)
             return self
@@ -492,7 +506,7 @@ class MonomialExpr(PolynomialExpr):
 
 
 class FuncExpr(Expr):
-    def __init__(self, children: Optional[dict[Union[Term, Expr], float]] = None):
+    def __init__(self, children: Optional[dict[Union[Term, Expr, _ExprKey], float]] = None):
         if children and any((i is CONST) for i in children):
             raise ValueError("FuncExpr can't have Term without Variable as a child")
 
@@ -501,11 +515,12 @@ class FuncExpr(Expr):
     def degree(self) -> float:
         return float("inf")
 
-    def _hash_child(self) -> int:
-        return frozenset(self).__hash__()
-
-    def _is_child_equal(self, other: FuncExpr) -> bool:
-        return type(other) is type(self) and self._hash_child() == other._hash_child()
+    def _is_child_equal(self, other) -> bool:
+        return (
+            type(other) is type(self)
+            and len(self._children) == len(other._children)
+            and self._children.keys() == other._children.keys()
+        )
 
 
 class ProdExpr(FuncExpr):
@@ -569,7 +584,7 @@ class PowExpr(FuncExpr):
 
     __slots__ = ("expo",)
 
-    def __init__(self, base: Union[Term, Expr], expo: float = 1.0):
+    def __init__(self, base: Union[Term, Expr, _ExprKey], expo: float = 1.0):
         super().__init__({base: 1.0})
         self.expo = expo
 
@@ -591,7 +606,11 @@ class PowExpr(FuncExpr):
 
     def __truediv__(self, other):
         other = Expr._from_const_or_var(other)
-        if isinstance(other, PowExpr) and self._is_child_equal(other):
+        if (
+            isinstance(other, PowExpr)
+            and not self._is_equal(other)
+            and self._is_child_equal(other)
+        ):
             return PowExpr(self._fchild(), self.expo - other.expo)
         return super().__truediv__(other)
 
@@ -602,7 +621,7 @@ class PowExpr(FuncExpr):
         if self.expo == 0:
             self = ConstExpr(1.0)
         elif self.expo == 1:
-            self = self._fchild()
+            self = _ExprKey.unwrap(self._fchild())
             if isinstance(self, Term):
                 self = MonomialExpr({self: 1.0})
         return self
@@ -614,7 +633,7 @@ class PowExpr(FuncExpr):
 class UnaryExpr(FuncExpr):
     """Expression like `f(expression)`."""
 
-    def __init__(self, expr: Union[Number, Variable, Term, Expr]):
+    def __init__(self, expr: Union[Number, Variable, Term, Expr, _ExprKey]):
         if isinstance(expr, Number):
             expr = ConstExpr(<float>expr)
         super().__init__({expr: 1.0})
@@ -654,12 +673,7 @@ class ExpExpr(UnaryExpr):
 
 class LogExpr(UnaryExpr):
     """Expression like `log(expression)`."""
-
-    def __add__(self, other):
-        other = Expr._from_const_or_var(other)
-        if isinstance(other, LogExpr) and self._is_child_equal(other):
-            return LogExpr(self._fchild() * other._fchild())
-        return super().__add__(other)
+    ...
 
 
 class SqrtExpr(UnaryExpr):
