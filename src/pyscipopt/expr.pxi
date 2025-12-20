@@ -562,7 +562,7 @@ class UnaryExpr(FuncExpr):
         return f"{type(self).__name__}({self._fchild()})"
 
     @staticmethod
-    def to_subclass(
+    def _to_subclass(
         x: Union[Number, Variable, Term, Expr, MatrixExpr],
         cls: Type[UnaryExpr],
     ) -> Union[UnaryExpr, MatrixExpr]:
@@ -700,24 +700,24 @@ def quickprod(expressions) -> Expr:
 
 def exp(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[ExpExpr, MatrixExpr]:
     """returns expression with exp-function"""
-    return UnaryExpr.to_subclass(x, ExpExpr)
+    return UnaryExpr._to_subclass(x, ExpExpr)
 
 
 def log(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[LogExpr, MatrixExpr]:
     """returns expression with log-function"""
-    return UnaryExpr.to_subclass(x, LogExpr)
+    return UnaryExpr._to_subclass(x, LogExpr)
 
 
 def sqrt(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[SqrtExpr, MatrixExpr]:
     """returns expression with sqrt-function"""
-    return UnaryExpr.to_subclass(x, SqrtExpr)
+    return UnaryExpr._to_subclass(x, SqrtExpr)
 
 
 def sin(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[SinExpr, MatrixExpr]:
     """returns expression with sin-function"""
-    return UnaryExpr.to_subclass(x, SinExpr)
+    return UnaryExpr._to_subclass(x, SinExpr)
 
 
 def cos(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[CosExpr, MatrixExpr]:
     """returns expression with cos-function"""
-    return UnaryExpr.to_subclass(x, CosExpr)
+    return UnaryExpr._to_subclass(x, CosExpr)
