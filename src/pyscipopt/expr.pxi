@@ -300,7 +300,7 @@ cdef class Expr:
         if isinstance(x, Number):
             return ConstExpr(<float>x)
         elif isinstance(x, Variable):
-            return MonomialExpr._from_var(x)
+            return PolynomialExpr._from_var(x)
         return x
 
     def _to_dict(
@@ -441,14 +441,16 @@ class PolynomialExpr(Expr):
             return res
         return super().__pow__(other)
 
+    @staticmethod
+    def _from_var(var: Variable, float coef = 1.0) -> PolynomialExpr:
+        return PolynomialExpr({Term(var): coef})
+
     @classmethod
     def _to_subclass(cls, children: dict[Term, float]) -> PolynomialExpr:
         if len(children) == 0:
             return ConstExpr(0.0)
-        elif len(children) == 1:
-            if CONST in children:
-                return ConstExpr(children[CONST])
-            return MonomialExpr(children)
+        elif len(children) == 1 and CONST in children:
+            return ConstExpr(children[CONST])
         return cls(children)
 
 
@@ -480,32 +482,7 @@ class ConstExpr(PolynomialExpr):
         return ConstExpr(self[CONST])
 
 
-class MonomialExpr(PolynomialExpr):
-    """Expression like `x**3`."""
-
-    def __init__(self, children: dict[Term, float]):
-        if len(children) != 1:
-            raise ValueError("MonomialExpr must have exactly one child")
-
-        super().__init__(children)
-
-    def __iadd__(self, other):
-        other = Expr._from_const_or_var(other)
-        if isinstance(other, PolynomialExpr):
-            child = self._fchild()
-            if isinstance(other, MonomialExpr) and child == other._fchild():
-                self._children[child] += other[child]
-            else:
-                self = self.__add__(other)
-            return self
-        return super().__iadd__(other)
-
-    @staticmethod
-    def _from_var(var: Variable, coef: float = 1.0) -> MonomialExpr:
-        return MonomialExpr({Term(var): coef})
-
-
-class FuncExpr(Expr):
+cdef class FuncExpr(Expr):
     def __init__(self, children: Optional[dict[Union[Term, Expr, _ExprKey], float]] = None):
         if children and any((i is CONST) for i in children):
             raise ValueError("FuncExpr can't have Term without Variable as a child")
@@ -623,7 +600,7 @@ class PowExpr(FuncExpr):
         elif self.expo == 1:
             self = _ExprKey.unwrap(self._fchild())
             if isinstance(self, Term):
-                self = MonomialExpr({self: 1.0})
+                self = PolynomialExpr({self: 1.0})
         return self
 
     def copy(self) -> PowExpr:

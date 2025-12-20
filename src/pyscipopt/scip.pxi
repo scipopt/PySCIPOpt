@@ -1572,70 +1572,70 @@ cdef class Variable:
         return hash(self.ptr())
 
     def __getitem__(self, key):
-        return MonomialExpr._from_var(self).__getitem__(key)
+        return PolynomialExpr._from_var(self).__getitem__(key)
 
     def __iter__(self):
-        return MonomialExpr._from_var(self).__iter__()
+        return PolynomialExpr._from_var(self).__iter__()
 
     def __abs__(self):
-        return MonomialExpr._from_var(self).__abs__()
+        return PolynomialExpr._from_var(self).__abs__()
 
     def __add__(self, other):
-        return MonomialExpr._from_var(self).__add__(other)
+        return PolynomialExpr._from_var(self).__add__(other)
 
     def __iadd__(self, other):
-        return MonomialExpr._from_var(self).__iadd__(other)
+        return PolynomialExpr._from_var(self).__iadd__(other)
 
     def __radd__(self, other):
-        return MonomialExpr._from_var(self).__radd__(other)
+        return PolynomialExpr._from_var(self).__radd__(other)
 
     def __mul__(self, other):
-        return MonomialExpr._from_var(self).__mul__(other)
+        return PolynomialExpr._from_var(self).__mul__(other)
 
     def __imul__(self, other):
-        return MonomialExpr._from_var(self).__imul__(other)
+        return PolynomialExpr._from_var(self).__imul__(other)
 
     def __rmul__(self, other):
-        return MonomialExpr._from_var(self).__rmul__(other)
+        return PolynomialExpr._from_var(self).__rmul__(other)
 
     def __truediv__(self, other):
-        return MonomialExpr._from_var(self).__truediv__(other)
+        return PolynomialExpr._from_var(self).__truediv__(other)
 
     def __rtruediv__(self, other):
-        return MonomialExpr._from_var(self).__rtruediv__(other)
+        return PolynomialExpr._from_var(self).__rtruediv__(other)
 
     def __pow__(self, other):
-        return MonomialExpr._from_var(self).__pow__(other)
+        return PolynomialExpr._from_var(self).__pow__(other)
 
     def __rpow__(self, other):
-        return MonomialExpr._from_var(self).__rpow__(other)
+        return PolynomialExpr._from_var(self).__rpow__(other)
 
     def __neg__(self):
-        return MonomialExpr._from_var(self).__neg__()
+        return PolynomialExpr._from_var(self).__neg__()
 
     def __sub__(self, other):
-        return MonomialExpr._from_var(self).__sub__(other)
+        return PolynomialExpr._from_var(self).__sub__(other)
 
     def __isub__(self, other):
-        return MonomialExpr._from_var(self).__isub__(other)
+        return PolynomialExpr._from_var(self).__isub__(other)
 
     def __rsub__(self, other):
-        return MonomialExpr._from_var(self).__rsub__(other)
+        return PolynomialExpr._from_var(self).__rsub__(other)
 
     def __le__(self, other):
-        return MonomialExpr._from_var(self).__le__(other)
+        return PolynomialExpr._from_var(self).__le__(other)
 
     def __ge__(self, other):
-        return MonomialExpr._from_var(self).__ge__(other)
+        return PolynomialExpr._from_var(self).__ge__(other)
 
     def __eq__(self, other):
-        return MonomialExpr._from_var(self).__eq__(other)
+        return PolynomialExpr._from_var(self).__eq__(other)
 
     def __repr__(self):
         return self.name
 
     def degree(self) -> float:
-        return MonomialExpr._from_var(self).degree()
+        return PolynomialExpr._from_var(self).degree()
 
     def vtype(self):
         """
