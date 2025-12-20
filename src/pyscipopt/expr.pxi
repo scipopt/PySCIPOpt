@@ -309,9 +309,6 @@ cdef class Expr:
             copy: bool = True,
         ) -> dict[Union[Term, _ExprKey], float]:
         """Merge two dictionaries by summing values of common keys"""
-        if not isinstance(other, dict):
-            raise TypeError("other must be a dict")
-
         children = self._children.copy() if copy else self._children
         for child, coef in other.items():
             key = _ExprKey.wrap(child)
