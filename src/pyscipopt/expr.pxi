@@ -705,9 +705,8 @@ cdef class ExprCons:
         rhs: Optional[float] = None,
     ):
         if lhs is None and rhs is None:
-            raise ValueError(
-                "Ranged ExprCons (with both lhs and rhs) doesn't supported"
-            )
+            raise ValueError("ExprCons (with both lhs and rhs) doesn't supported")
+
         self.expr = expr
         self._lhs = lhs
         self._rhs = rhs
@@ -742,6 +741,9 @@ cdef class ExprCons:
             raise TypeError("ExprCons must have an upper bound")
 
         return ExprCons(self.expr, lhs=float(other), rhs=<float>self._rhs)
+
+    def __eq__(self, _) -> ExprCons:
+        raise NotImplementedError("ExprCons can only support with '<=' or '>='.")
 
     def __repr__(self) -> str:
         return f"ExprCons({self.expr}, {self._lhs}, {self._rhs})"
