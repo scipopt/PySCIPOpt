@@ -552,7 +552,7 @@ class UnaryExpr(FuncExpr):
 
     def __init__(self, expr: Union[Number, Variable, Term, Expr]):
         if isinstance(expr, Number):
-            expr = ConstExpr(expr)
+            expr = ConstExpr(<float>expr)
         super().__init__({expr: 1.0})
 
     def __hash__(self) -> int:
