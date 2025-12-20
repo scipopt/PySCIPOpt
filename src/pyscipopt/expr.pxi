@@ -125,7 +125,7 @@ cdef class Expr:
         return AbsExpr(self)
 
     def __add__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if isinstance(other, Expr):
             if not self:
                 return other
@@ -151,7 +151,7 @@ cdef class Expr:
         )
 
     def __iadd__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if Expr._is_Sum(self):
             if Expr._is_Sum(other):
                 self.to_dict(other.children, copy=False)
@@ -164,7 +164,7 @@ cdef class Expr:
         return self.__add__(other)
 
     def __mul__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if isinstance(other, Expr):
             if not self or not other:
                 return ConstExpr(0.0)
@@ -186,7 +186,7 @@ cdef class Expr:
         )
 
     def __imul__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if self and Expr._is_Sum(self) and Expr._is_Const(other) and other[CONST] != 0:
             for i in self:
                 if self[i] != 0:
@@ -198,7 +198,7 @@ cdef class Expr:
         return self.__mul__(other)
 
     def __truediv__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if Expr._is_Const(other) and other[CONST] == 0:
             raise ZeroDivisionError("division by zero")
         if isinstance(other, Hashable) and hash(self) == hash(other):
@@ -206,10 +206,10 @@ cdef class Expr:
         return self.__mul__(other.__pow__(-1.0))
 
     def __rtruediv__(self, other):
-        return Expr.from_const_or_var(other).__truediv__(self)
+        return Expr._from_const_or_var(other).__truediv__(self)
 
     def __pow__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if not Expr._is_Const(other):
             raise TypeError("exponent must be a number")
         if other[CONST] == 0:
@@ -217,7 +217,7 @@ cdef class Expr:
         return PowExpr(self, other[CONST])
 
     def __rpow__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if not Expr._is_Const(other):
             raise TypeError("base must be a number")
         if other[CONST] <= 0.0:
@@ -243,7 +243,7 @@ cdef class Expr:
         return self.__neg__().__add__(other)
 
     def __le__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if isinstance(other, Expr):
             if Expr._is_Const(self):
                 return ExprCons(other, lhs=self[CONST])
@@ -255,7 +255,7 @@ cdef class Expr:
         raise TypeError(f"Unsupported type {type(other)}")
 
     def __ge__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if isinstance(other, Expr):
             if Expr._is_Const(self):
                 return ExprCons(other, rhs=self[CONST])
@@ -267,7 +267,7 @@ cdef class Expr:
         raise TypeError(f"Unsupported type {type(other)}")
 
     def __eq__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if isinstance(other, Expr):
             if Expr._is_Const(self):
                 return ExprCons(other, lhs=self[CONST], rhs=self[CONST])
@@ -282,7 +282,7 @@ cdef class Expr:
         return f"Expr({self.children})"
 
     @staticmethod
-    def from_const_or_var(x):
+    def _from_const_or_var(x):
         """Convert a number or variable to an expression."""
 
         if isinstance(x, Number):
@@ -387,7 +387,7 @@ class PolynomialExpr(Expr):
         return (Expr, frozenset(self._children.items())).__hash__()
 
     def __add__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if isinstance(other, PolynomialExpr) and not (
             Expr._is_Const(other) and other[CONST] == 0
         ):
@@ -395,14 +395,14 @@ class PolynomialExpr(Expr):
         return super().__add__(other)
 
     def __iadd__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if isinstance(other, PolynomialExpr):
             self.to_dict(other.children, copy=False)
             return self
         return super().__iadd__(other)
 
     def __mul__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if isinstance(other, PolynomialExpr) and not (
             Expr._is_Const(other) and (other[CONST] == 0 or other[CONST] == 1)
         ):
@@ -415,13 +415,13 @@ class PolynomialExpr(Expr):
         return super().__mul__(other)
 
     def __truediv__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if Expr._is_Const(other):
             return self.__mul__(1.0 / other[CONST])
         return super().__truediv__(other)
 
     def __pow__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if Expr._is_Const(other) and other[CONST].is_integer() and other[CONST] > 0:
             res = ConstExpr(1.0)
             for _ in range(int(other[CONST])):
@@ -450,7 +450,7 @@ class ConstExpr(PolynomialExpr):
         return ConstExpr(abs(self[CONST]))
 
     def __iadd__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if Expr._is_Const(other):
             self.children[CONST] += other[CONST]
             return self
@@ -459,7 +459,7 @@ class ConstExpr(PolynomialExpr):
         return super().__iadd__(other)
 
     def __pow__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if Expr._is_Const(other):
             return ConstExpr(self[CONST] ** other[CONST])
         return super().__pow__(other)
@@ -477,7 +477,7 @@ class MonomialExpr(PolynomialExpr):
         super().__init__(children)
 
     def __iadd__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if isinstance(other, PolynomialExpr):
             if isinstance(other, MonomialExpr) and self._fchild() == other._fchild():
                 self.children[self._fchild()] += other[self._fchild()]
@@ -524,26 +524,26 @@ class ProdExpr(FuncExpr):
         return (type(self), frozenset(self), self.coef).__hash__()
 
     def __add__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if isinstance(other, ProdExpr) and self._is_child_equal(other):
             return ProdExpr(*self, coef=self.coef + other.coef)
         return super().__add__(other)
 
     def __iadd__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if isinstance(other, ProdExpr) and self._is_child_equal(other):
             self.coef += other.coef
             return self
         return super().__iadd__(other)
 
     def __mul__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if Expr._is_Const(other) and (other[CONST] != 0 or other[CONST] != 1):
             return ProdExpr(*self, coef=self.coef * other[CONST])
         return super().__mul__(other)
 
     def __imul__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if Expr._is_Const(other):
             if other[CONST] == 0:
                 self = ConstExpr(0.0)
@@ -577,20 +577,20 @@ class PowExpr(FuncExpr):
         return (type(self), frozenset(self), self.expo).__hash__()
 
     def __mul__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if isinstance(other, PowExpr) and self._is_child_equal(other):
             return PowExpr(self._fchild(), self.expo + other.expo)
         return super().__mul__(other)
 
     def __imul__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if isinstance(other, PowExpr) and self._is_child_equal(other):
             self.expo += other.expo
             return self
         return super().__imul__(other)
 
     def __truediv__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if isinstance(other, PowExpr) and self._is_child_equal(other):
             return PowExpr(self._fchild(), self.expo - other.expo)
         return super().__truediv__(other)
@@ -656,7 +656,7 @@ class LogExpr(UnaryExpr):
     """Expression like `log(expression)`."""
 
     def __add__(self, other):
-        other = Expr.from_const_or_var(other)
+        other = Expr._from_const_or_var(other)
         if isinstance(other, LogExpr) and self._is_child_equal(other):
             return LogExpr(self._fchild() * other._fchild())
         return super().__add__(other)
