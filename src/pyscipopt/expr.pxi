@@ -144,7 +144,7 @@ cdef class Expr:
                 return self.copy()
             elif Expr._is_sum(self):
                 return Expr(
-                        <dict>self._to_dict(
+                    <dict>self._to_dict(
                         other._children if Expr._is_sum(other) else {other: 1.0}
                     )
                 )
