@@ -381,7 +381,7 @@ class PolynomialExpr(Expr):
         if children and not all(isinstance(t, Term) for t in children):
             raise TypeError("All keys must be Term instances")
 
-        super().__init__(children)
+        super().__init__(<dict>children)
 
     def __hash__(self) -> int:
         return (Expr, frozenset(self._children.items())).__hash__()
