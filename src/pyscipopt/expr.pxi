@@ -455,7 +455,7 @@ class PolynomialExpr(Expr):
 class ConstExpr(PolynomialExpr):
     """Expression representing for `constant`."""
 
-    def __init__(self, constant: float = 0.0):
+    def __init__(self, float constant = 0.0):
         super().__init__({CONST: constant})
 
     def __abs__(self) -> ConstExpr:
@@ -528,7 +528,7 @@ class ProdExpr(FuncExpr):
 
     __slots__ = ("coef",)
 
-    def __init__(self, *children: Union[Term, Expr], coef: float = 1.0):
+    def __init__(self, *children: Union[Term, Expr], float coef = 1.0):
         if len(set(children)) != len(children):
             raise ValueError("ProdExpr can't have duplicate children")
 
@@ -584,7 +584,7 @@ class PowExpr(FuncExpr):
 
     __slots__ = ("expo",)
 
-    def __init__(self, base: Union[Term, Expr, _ExprKey], expo: float = 1.0):
+    def __init__(self, base: Union[Term, Expr, _ExprKey], float expo = 1.0):
         super().__init__({base: 1.0})
         self.expo = expo
 
