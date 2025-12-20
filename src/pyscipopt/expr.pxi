@@ -391,7 +391,7 @@ class PolynomialExpr(Expr):
         if isinstance(other, PolynomialExpr) and not (
             Expr._is_Const(other) and other[CONST] == 0
         ):
-            return PolynomialExpr.to_subclass(self.to_dict(other.children))
+            return PolynomialExpr._to_subclass(self.to_dict(other.children))
         return super().__add__(other)
 
     def __iadd__(self, other):
@@ -411,7 +411,7 @@ class PolynomialExpr(Expr):
                 for j in other:
                     child = i * j
                     children[child] = children.get(child, 0.0) + self[i] * other[j]
-            return PolynomialExpr.to_subclass(children)
+            return PolynomialExpr._to_subclass(children)
         return super().__mul__(other)
 
     def __truediv__(self, other):
@@ -430,7 +430,7 @@ class PolynomialExpr(Expr):
         return super().__pow__(other)
 
     @classmethod
-    def to_subclass(cls, children: dict[Term, float]) -> PolynomialExpr:
+    def _to_subclass(cls, children: dict[Term, float]) -> PolynomialExpr:
         if len(children) == 0:
             return ConstExpr(0.0)
         elif len(children) == 1:
