@@ -724,17 +724,13 @@ cdef class ExprCons:
             self._rhs = <float>self._rhs - c
         return self
 
-    def __le__(self, other: float) -> ExprCons:
-        if not isinstance(other, Number):
-            raise TypeError("Ranged ExprCons is not well defined!")
+    def __le__(self, float other) -> ExprCons:
         if not self._rhs is None:
             raise TypeError("ExprCons already has upper bound")
 
         return ExprCons(self.expr, lhs=<float>self._lhs, rhs=float(other))
 
-    def __ge__(self, other: float) -> ExprCons:
-        if not isinstance(other, Number):
-            raise TypeError("Ranged ExprCons is not well defined!")
+    def __ge__(self, float other) -> ExprCons:
         if not self._lhs is None:
             raise TypeError("ExprCons already has lower bound")
 
