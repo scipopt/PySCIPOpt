@@ -300,7 +300,7 @@ cdef class Expr:
         if isinstance(x, Number):
             return ConstExpr(<float>x)
         elif isinstance(x, Variable):
-            return MonomialExpr.from_var(x)
+            return MonomialExpr._from_var(x)
         return x
 
     def _to_dict(
@@ -501,7 +501,7 @@ class MonomialExpr(PolynomialExpr):
         return super().__iadd__(other)
 
     @staticmethod
-    def from_var(var: Variable, coef: float = 1.0) -> MonomialExpr:
+    def _from_var(var: Variable, coef: float = 1.0) -> MonomialExpr:
         return MonomialExpr({Term(var): coef})
 
 
