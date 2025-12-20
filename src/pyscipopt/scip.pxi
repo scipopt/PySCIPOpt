@@ -1110,7 +1110,7 @@ cdef class Solution:
             wrapper = _VarArray(expr)
             self._checkStage("SCIPgetSolVal")
             return SCIPgetSolVal(self.scip, self.sol, wrapper.ptr[0])
-        return sum(self._evaluate(term)*coeff for term, coeff in expr.children.items() if coeff != 0)
+        return sum(self._evaluate(term)*coeff for term, coeff in expr._children.items() if coeff != 0)
 
     def _evaluate(self, term):
         self._checkStage("SCIPgetSolVal")
@@ -3957,7 +3957,7 @@ cdef class Model:
         if expr[CONST] != 0.0:
             self.addObjoffset(expr[CONST])
 
-        for term, coef in expr.children.items():
+        for term, coef in expr._children.items():
             # avoid CONST term of Expr
             if term != CONST:
                 assert len(term) == 1
@@ -5704,8 +5704,7 @@ cdef class Model:
         """
         assert cons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % cons.expr.degree()
 
-        children = cons.expr.children
-        cdef int nvars = len(children)
+        cdef int nvars = len(cons.expr._children)
         cdef SCIP_VAR** vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
         cdef SCIP_Real* coeffs_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
         cdef SCIP_CONS* scip_cons
@@ -5713,7 +5712,7 @@ cdef class Model:
         cdef int i
         cdef _VarArray wrapper
 
-        for i, (term, coeff) in enumerate(children.items()):
+        for i, (term, coeff) in enumerate(cons.expr._children.items()):
             wrapper = _VarArray(term[0])
             vars_array[i] = wrapper.ptr[0]
             coeffs_array[i] = <SCIP_Real>coeff
@@ -5788,20 +5787,20 @@ cdef class Model:
             kwargs['removable'],
         ))
 
-        for v, c in cons.expr.children.items():
-            if len(v) == 1: # linear
-                wrapper = _VarArray(v[0])
-                PY_SCIP_CALL(SCIPaddLinearVarNonlinear(self._scip, scip_cons, wrapper.ptr[0], c))
+        for term, coef in cons.expr._children.items():
+            if len(term) == 1: # linear
+                wrapper = _VarArray(term[0])
+                PY_SCIP_CALL(SCIPaddLinearVarNonlinear(self._scip, scip_cons, wrapper.ptr[0], coef))
             else: # nonlinear
-                assert len(v) == 2, 'term length must be 1 or 2 but it is %s' % len(v)
+                assert len(term) == 2, 'term length must be 1 or 2 but it is %s' % len(term)
 
                 varexprs = <SCIP_EXPR**> malloc(2 * sizeof(SCIP_EXPR*))
-                wrapper = _VarArray(v[0])
+                wrapper = _VarArray(term[0])
                 PY_SCIP_CALL(SCIPcreateExprVar(self._scip, &varexprs[0], wrapper.ptr[0], NULL, NULL))
-                wrapper = _VarArray(v[1])
+                wrapper = _VarArray(term[1])
                 PY_SCIP_CALL(SCIPcreateExprVar(self._scip, &varexprs[1], wrapper.ptr[0], NULL, NULL))
                 PY_SCIP_CALL(SCIPcreateExprProduct(self._scip, &prodexpr, 2, varexprs, 1.0, NULL, NULL))
-                PY_SCIP_CALL(SCIPaddExprNonlinear(self._scip, scip_cons, prodexpr, c))
+                PY_SCIP_CALL(SCIPaddExprNonlinear(self._scip, scip_cons, prodexpr, coef))
                 PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &prodexpr))
                 PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &varexprs[1]))
                 PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &varexprs[0]))
@@ -5832,7 +5831,7 @@ cdef class Model:
         cdef int* idxs
         cdef int i
         cdef int j
-        children = cons.expr.children
+        children = cons.expr._children
 
         # collect variables
         variables = {i: [var for var in term] for i, term in enumerate(children)}
@@ -7352,7 +7351,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPcreateConsIndicator(self._scip, &scip_cons, str_conversion(name), _binVar, 0, NULL, NULL, rhs,
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
 
-        for term, coeff in cons.expr.children.items():
+        for term, coeff in cons.expr._children.items():
             if negate:
                 coeff = -coeff
             wrapper = _VarArray(term[0])
@@ -11726,7 +11725,7 @@ cdef class Model:
         for i in range(nvars):
             _coeffs[i] = 0.0
 
-        for term, coef in coeffs.children.items():
+        for term, coef in coeffs._children.items():
             # avoid CONST term of Expr
             if term != CONST:
                 assert len(term) == 1
