@@ -64,6 +64,38 @@ cdef class Term:
 CONST = Term()
 
 
+cdef class _ExprKey:
+
+    cdef public Expr expr
+    __slots__ = ("expr",)
+
+    def __init__(self, Expr expr):
+        self.expr = expr
+
+    def __hash__(self) -> int:
+        return hash(self.expr)
+
+    def __eq__(self, other) -> bool:
+        return isinstance(other, _ExprKey) and self.expr._is_equal(other.expr)
+
+    def __repr__(self) -> str:
+        return repr(self.expr)
+
+    def degree(self) -> float:
+        return self.expr.degree()
+
+    def _to_node(self, coef: float = 1, start: int = 0) -> list[tuple]:
+        return self.expr._to_node(coef, start)
+
+    @staticmethod
+    def wrap(x):
+        return _ExprKey(x) if isinstance(x, Expr) else x
+
+    @staticmethod
+    def unwrap(x):
+        return x.expr if isinstance(x, _ExprKey) else x
+
+
 cdef class Expr:
     """Base class for mathematical expressions."""
 
@@ -101,14 +133,14 @@ cdef class Expr:
                 return self
             if Expr._is_Sum(self):
                 return Expr(
-                    self.to_dict(
                         other.children if Expr._is_Sum(other) else {other: 1.0}
+                        <dict>self._to_dict(
                     )
                 )
             elif Expr._is_Sum(other):
-                return Expr(other.to_dict({self: 1.0}))
             elif hash(self) == hash(other):
                 return Expr({self: 2.0})
+                return Expr(<dict>other._to_dict({self: 1.0}))
             return Expr({self: 1.0, other: 1.0})
 
         elif isinstance(other, MatrixExpr):
@@ -259,11 +291,11 @@ cdef class Expr:
             return MonomialExpr.from_var(x)
         return x
 
-    def to_dict(
-        self,
-        other: Optional[dict[Union[Term, Expr], float]] = None,
-        copy: bool = True,
-    ) -> dict[Union[Term, Expr], float]:
+    def _to_dict(
+            self,
+            other: dict[Union[Term, Expr, _ExprKey], float],
+            copy: bool = True,
+        ) -> dict[Union[Term, _ExprKey], float]:
         """Merge two dictionaries by summing values of common keys"""
         other = other or {}
         if not isinstance(other, dict):
