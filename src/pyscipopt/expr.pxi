@@ -52,7 +52,7 @@ cdef class Term:
         elif self.degree() == 0:
             return [(ConstExpr, coef)]
         else:
-            node = [(Term, i) for i in self]
+            node = [(Variable, i) for i in self]
             if coef != 1:
                 node.append((ConstExpr, coef))
             if len(node) > 1:

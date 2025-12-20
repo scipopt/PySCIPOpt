@@ -5899,7 +5899,7 @@ cdef class Model:
         nodes = cons.expr._to_node()
         scip_exprs = <SCIP_EXPR**> malloc(len(nodes) * sizeof(SCIP_EXPR*))
         for i, (e_type, value) in enumerate(nodes):
-            if e_type is Term:
+            if e_type is Variable:
                 wrapper = _VarArray(value)
                 PY_SCIP_CALL(SCIPcreateExprVar(self._scip, &scip_exprs[i], wrapper.ptr[0], NULL, NULL))
             elif e_type is ConstExpr:
