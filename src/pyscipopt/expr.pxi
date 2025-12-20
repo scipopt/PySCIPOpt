@@ -635,11 +635,11 @@ cdef class ExprCons:
     def _normalize(self) -> ExprCons:
         """Move constant children in expression to bounds"""
         c = self.expr[CONST]
-        self.expr = (self.expr - c)._normalize()
+        self.expr = (<Expr>(self.expr - c))._normalize()
         if self._lhs is not None:
-            self._lhs -= c
+            self._lhs = <float>self._lhs - c
         if self._rhs is not None:
-            self._rhs -= c
+            self._rhs = <float>self._rhs - c
         return self
 
     def __le__(self, other: float) -> ExprCons:
@@ -650,7 +650,7 @@ cdef class ExprCons:
         if self._lhs is None:
             raise TypeError("ExprCons must have a lower bound")
 
-        return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
+        return ExprCons(self.expr, lhs=<float>self._lhs, rhs=float(other))
 
     def __ge__(self, other: float) -> ExprCons:
         if not isinstance(other, Number):
@@ -660,7 +660,7 @@ cdef class ExprCons:
         if self._rhs is None:
             raise TypeError("ExprCons must have an upper bound")
 
-        return ExprCons(self.expr, lhs=float(other), rhs=self._rhs)
+        return ExprCons(self.expr, lhs=float(other), rhs=<float>self._rhs)
 
     def __repr__(self) -> str:
         return f"ExprCons({self.expr}, {self._lhs}, {self._rhs})"
