@@ -196,9 +196,15 @@ cdef class Expr:
         return self.__mul__(-1.0)
 
     def __sub__(self, other):
+        other = Expr._from_const_or_var(other)
+        if self._is_equal(other):
+            return ConstExpr(0.0)
         return self.__add__(-other)
 
     def __isub__(self, other):
+        other = Expr._from_const_or_var(other)
+        if self._is_equal(other):
+            return ConstExpr(0.0)
         return self.__iadd__(-other)
 
     def __rsub__(self, other):
