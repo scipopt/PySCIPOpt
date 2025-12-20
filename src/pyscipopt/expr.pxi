@@ -327,9 +327,12 @@ cdef class Expr:
 
     def _to_node(self, coef: float = 1, start: int = 0) -> list[tuple]:
         """Convert expression to list of node for SCIP expression construction"""
+        if coef == 0:
+            return []
+
         node, index = [], []
         for k, v in self._children.items():
-            if (child_node := k._to_node(v, start + len(node))):
+            if v != 0 and (child_node := k._to_node(v, start + len(node))):
                 node.extend(child_node)
                 index.append(start + len(node) - 1)
 
