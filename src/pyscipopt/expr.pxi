@@ -200,9 +200,9 @@ cdef class Expr:
     def __imul__(self, other):
         other = Expr._from_const_or_var(other)
         if self and Expr._is_sum(self) and Expr._is_const(other) and other[CONST] != 0:
-            for child, coef in self._children.items():
-                if coef != 0:
-                    self._children[child] *= other[CONST]
+            self._children = {
+                k: v * other[CONST] for k, v in self._children.items() if v != 0
+            }
             return self
         return self.__mul__(other)
 
