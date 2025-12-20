@@ -154,9 +154,9 @@ cdef class Expr:
         other = Expr._from_const_or_var(other)
         if Expr._is_sum(self):
             if Expr._is_sum(other):
-                self.to_dict(other.children, copy=False)
+                self._to_dict(other.children, copy=False)
             else:
-                self.to_dict({other: 1.0}, copy=False)
+                self._to_dict({other: 1.0}, copy=False)
             return self
         return self.__add__(other)
 
@@ -391,13 +391,13 @@ class PolynomialExpr(Expr):
         if isinstance(other, PolynomialExpr) and not (
             Expr._is_const(other) and other[CONST] == 0
         ):
-            return PolynomialExpr._to_subclass(self.to_dict(other.children))
+            return PolynomialExpr._to_subclass(self._to_dict(other.children))
         return super().__add__(other)
 
     def __iadd__(self, other):
         other = Expr._from_const_or_var(other)
         if isinstance(other, PolynomialExpr):
-            self.to_dict(other.children, copy=False)
+            self._to_dict(other.children, copy=False)
             return self
         return super().__iadd__(other)
 
