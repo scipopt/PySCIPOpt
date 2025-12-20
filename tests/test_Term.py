@@ -105,12 +105,8 @@ def test_eq():
 
     assert t1 == Term(x)
     assert t1 != t2
-
-    with pytest.raises(TypeError):
-        t1 == x
-
-    with pytest.raises(TypeError):
-        t1 == 1
+    assert t1 != x
+    assert t1 != 1
 
 
 def test_getitem(model):
