@@ -448,7 +448,10 @@ class PolynomialExpr(Expr):
         return PolynomialExpr({Term(var): coef})
 
     @classmethod
-    def _to_subclass(cls, children: dict[Term, float]) -> PolynomialExpr:
+    def _to_subclass(
+        cls: Type[PolynomialExpr],
+        children: dict[Term, float],
+    ) -> PolynomialExpr:
         if len(children) == 0:
             return ConstExpr(0.0)
         elif len(children) == 1 and CONST in children:
