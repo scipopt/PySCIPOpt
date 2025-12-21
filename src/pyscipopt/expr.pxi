@@ -4,6 +4,8 @@ from typing import Iterator, Optional, Type, Union
 
 import numpy as np
 
+from cpython.object cimport Py_LE, Py_EQ, Py_GE
+
 include "matrix.pxi"
 
 
@@ -257,41 +259,43 @@ cdef class Expr:
     def __rsub__(self, other):
         return self.__neg__().__add__(other)
 
-    def __le__(self, other):
+    def __richcmp__(
+            self,
+            other: Union[Number, Variable, Expr, MatrixExpr],
+            int op,
+        ) -> Union[ExprCons, MatrixExprCons]:
         other = Expr._from_const_or_var(other)
-        if isinstance(other, Expr):
-            if Expr._is_const(self):
-                return ExprCons(other, lhs=self[CONST])
-            elif Expr._is_const(other):
-                return ExprCons(self, rhs=other[CONST])
-            return self.__add__(-other).__le__(ConstExpr(0.0))
-        elif isinstance(other, MatrixExpr):
-            return other.__ge__(self)
-        raise TypeError(f"Unsupported type {type(other)}")
+        if not isinstance(other, (Expr, MatrixExpr)):
+            raise TypeError(f"Unsupported type {type(other)}")
 
-    def __ge__(self, other):
-        other = Expr._from_const_or_var(other)
-        if isinstance(other, Expr):
-            if Expr._is_const(self):
-                return ExprCons(other, rhs=self[CONST])
-            elif Expr._is_const(other):
-                return ExprCons(self, lhs=other[CONST])
-            return self.__add__(-other).__ge__(ConstExpr(0.0))
-        elif isinstance(other, MatrixExpr):
-            return other.__le__(self)
-        raise TypeError(f"Unsupported type {type(other)}")
+        if op == Py_LE:
+            if isinstance(other, Expr):
+                if Expr._is_const(self):
+                    return ExprCons(other, lhs=self[CONST])
+                elif Expr._is_const(other):
+                    return ExprCons(self, rhs=other[CONST])
+                return ExprCons(self.__add__(-other), lhs=0.0)
+            return other >= self
 
-    def __eq__(self, other):
-        other = Expr._from_const_or_var(other)
-        if isinstance(other, Expr):
-            if Expr._is_const(self):
-                return ExprCons(other, lhs=self[CONST], rhs=self[CONST])
-            elif Expr._is_const(other):
-                return ExprCons(self, lhs=other[CONST], rhs=other[CONST])
-            return self.__add__(-other).__eq__(ConstExpr(0.0))
-        elif isinstance(other, MatrixExpr):
-            return other.__eq__(self)
-        raise TypeError(f"Unsupported type {type(other)}")
+        elif op == Py_GE:
+            if isinstance(other, Expr):
+                if Expr._is_const(self):
+                    return ExprCons(other, rhs=self[CONST])
+                elif Expr._is_const(other):
+                    return ExprCons(self, lhs=other[CONST])
+                return ExprCons(self.__add__(-other), rhs=0.0)
+            return other <= self
+
+        elif op == Py_EQ:
+            if isinstance(other, Expr):
+                if Expr._is_const(self):
+                    return ExprCons(other, lhs=self[CONST], rhs=self[CONST])
+                elif Expr._is_const(other):
+                    return ExprCons(self, lhs=other[CONST], rhs=other[CONST])
+                return ExprCons(self.__add__(-other), lhs=0.0, rhs=0.0)
+            return other == self
+
+        raise NotImplementedError("Expr can only support with '<=', '>=', or '=='.")
 
     def __repr__(self) -> str:
         return f"Expr({self._children})"
@@ -399,7 +403,7 @@ cdef class Expr:
         return res
 
 
-class PolynomialExpr(Expr):
+cdef class PolynomialExpr(Expr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
 
     def __init__(self, children: Optional[dict[Term, float]] = None):
@@ -461,7 +465,7 @@ class PolynomialExpr(Expr):
         return cls(children)
 
 
-class ConstExpr(PolynomialExpr):
+cdef class ConstExpr(PolynomialExpr):
     """Expression representing for `constant`."""
 
     def __init__(self, float constant = 0.0):
@@ -498,10 +502,11 @@ cdef class FuncExpr(Expr):
         )
 
 
-class ProdExpr(FuncExpr):
+cdef class ProdExpr(FuncExpr):
     """Expression like `coefficient * expression`."""
 
     __slots__ = ("coef",)
+    cdef readonly float coef
 
     def __init__(self, *children: Union[Term, Expr], float coef = 1.0):
         if len(set(children)) != len(children):
@@ -554,10 +559,11 @@ class ProdExpr(FuncExpr):
         return ProdExpr(*self._children.keys(), coef=self.coef)
 
 
-class PowExpr(FuncExpr):
+cdef class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
 
     __slots__ = ("expo",)
+    cdef readonly float expo
 
     def __init__(self, base: Union[Term, Expr, _ExprKey], float expo = 1.0):
         super().__init__({base: 1.0})
@@ -605,7 +611,7 @@ class PowExpr(FuncExpr):
         return PowExpr(self._fchild(), self.expo)
 
 
-class UnaryExpr(FuncExpr):
+cdef class UnaryExpr(FuncExpr):
     """Expression like `f(expression)`."""
 
     def __init__(self, expr: Union[Number, Variable, Term, Expr, _ExprKey]):
@@ -636,32 +642,32 @@ class UnaryExpr(FuncExpr):
         return cls(x)
 
 
-class AbsExpr(UnaryExpr):
+cdef class AbsExpr(UnaryExpr):
     """Expression like `abs(expression)`."""
     ...
 
 
-class ExpExpr(UnaryExpr):
+cdef class ExpExpr(UnaryExpr):
     """Expression like `exp(expression)`."""
     ...
 
 
-class LogExpr(UnaryExpr):
+cdef class LogExpr(UnaryExpr):
     """Expression like `log(expression)`."""
     ...
 
 
-class SqrtExpr(UnaryExpr):
+cdef class SqrtExpr(UnaryExpr):
     """Expression like `sqrt(expression)`."""
     ...
 
 
-class SinExpr(UnaryExpr):
+cdef class SinExpr(UnaryExpr):
     """Expression like `sin(expression)`."""
     ...
 
 
-class CosExpr(UnaryExpr):
+cdef class CosExpr(UnaryExpr):
     """Expression like `cos(expression)`."""
     ...
 
@@ -697,19 +703,17 @@ cdef class ExprCons:
             self._rhs = <float>self._rhs - c
         return self
 
-    def __le__(self, float other) -> ExprCons:
-        if not self._rhs is None:
-            raise TypeError("ExprCons already has upper bound")
+    def __richcmp__(self, float other, int op) -> ExprCons:
+        if op == Py_LE:
+            if self._rhs is not None:
+                raise TypeError("ExprCons already has upper bound")
+            return ExprCons(self.expr, lhs=<float>self._lhs, rhs=other)
 
-        return ExprCons(self.expr, lhs=<float>self._lhs, rhs=float(other))
+        elif op == Py_GE:
+            if self._lhs is not None:
+                raise TypeError("ExprCons already has lower bound")
+            return ExprCons(self.expr, lhs=other, rhs=<float>self._rhs)
 
-    def __ge__(self, float other) -> ExprCons:
-        if not self._lhs is None:
-            raise TypeError("ExprCons already has lower bound")
-
-        return ExprCons(self.expr, lhs=float(other), rhs=<float>self._rhs)
-
-    def __eq__(self, _) -> ExprCons:
         raise NotImplementedError("ExprCons can only support with '<=' or '>='.")
 
     def __repr__(self) -> str:
