@@ -631,8 +631,8 @@ class UnaryExpr(FuncExpr):
 
     @staticmethod
     def _to_subclass(
-        x: Union[Number, Variable, Term, Expr, MatrixExpr],
         cls: Type[UnaryExpr],
+        x: Union[Number, Variable, Term, Expr, MatrixExpr],
     ) -> Union[UnaryExpr, MatrixExpr]:
         if isinstance(x, Variable):
             x = Term(x)
@@ -757,26 +757,26 @@ def quickprod(expressions) -> Expr:
     return res
 
 
-def exp(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[ExpExpr, MatrixExpr]:
+def exp(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[UnaryExpr, MatrixExpr]:
     """returns expression with exp-function"""
-    return UnaryExpr._to_subclass(x, ExpExpr)
+    return UnaryExpr._to_subclass(ExpExpr, x)
 
 
-def log(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[LogExpr, MatrixExpr]:
+def log(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[UnaryExpr, MatrixExpr]:
     """returns expression with log-function"""
-    return UnaryExpr._to_subclass(x, LogExpr)
+    return UnaryExpr._to_subclass(LogExpr, x)
 
 
-def sqrt(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[SqrtExpr, MatrixExpr]:
+def sqrt(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[UnaryExpr, MatrixExpr]:
     """returns expression with sqrt-function"""
-    return UnaryExpr._to_subclass(x, SqrtExpr)
+    return UnaryExpr._to_subclass(SqrtExpr, x)
 
 
-def sin(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[SinExpr, MatrixExpr]:
+def sin(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[UnaryExpr, MatrixExpr]:
     """returns expression with sin-function"""
-    return UnaryExpr._to_subclass(x, SinExpr)
+    return UnaryExpr._to_subclass(SinExpr, x)
 
 
-def cos(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[CosExpr, MatrixExpr]:
+def cos(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[UnaryExpr, MatrixExpr]:
     """returns expression with cos-function"""
-    return UnaryExpr._to_subclass(x, CosExpr)
+    return UnaryExpr._to_subclass(CosExpr, x)
