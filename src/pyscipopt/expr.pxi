@@ -669,9 +669,7 @@ class CosExpr(UnaryExpr):
 cdef class ExprCons:
     """Constraints with a polynomial expressions and lower/upper bounds."""
 
-    cdef public Expr expr
-    cdef public object _lhs
-    cdef public object _rhs
+    cdef readonly Expr expr
     cdef readonly object _lhs
     cdef readonly object _rhs
 
