@@ -138,9 +138,9 @@ cdef class Expr:
     def __add__(self, other):
         other = Expr._from_const_or_var(other)
         if isinstance(other, Expr):
-            if not self or Expr._is_zero(self):
+            if Expr._is_zero(self):
                 return other.copy()
-            elif not other or Expr._is_zero(other):
+            elif Expr._is_zero(other):
                 return self.copy()
             elif Expr._is_sum(self):
                 return Expr(
@@ -177,7 +177,7 @@ cdef class Expr:
         other = Expr._from_const_or_var(other)
         if isinstance(other, Expr):
             left, right = (self, other) if Expr._is_const(self) else (other, self)
-            if not left or not right or Expr._is_zero(left) or Expr._is_zero(right):
+            if Expr._is_zero(left) or Expr._is_zero(right):
                 return ConstExpr(0.0)
             elif Expr._is_const(left):
                 if left[CONST] == 1:
@@ -385,7 +385,9 @@ cdef class Expr:
 
     @staticmethod
     def _is_zero(expr):
-        return  Expr._is_const(expr) and expr[CONST] == 0
+        return isinstance(expr, Expr) and (
+            not expr or (Expr._is_const(expr) and expr[CONST] == 0)
+        )
 
 
 class PolynomialExpr(Expr):
