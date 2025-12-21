@@ -10,7 +10,7 @@ include "matrix.pxi"
 cdef class Term:
     """A monomial term consisting of one or more variables."""
 
-    cdef public tuple vars
+    cdef readonly tuple vars
     cdef readonly int _hash
     __slots__ = ("vars", "_hash")
 
@@ -65,7 +65,7 @@ CONST = Term()
 
 cdef class _ExprKey:
 
-    cdef public Expr expr
+    cdef readonly Expr expr
     __slots__ = ("expr",)
 
     def __init__(self, Expr expr):
