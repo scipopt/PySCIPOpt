@@ -261,7 +261,7 @@ cdef class Expr:
                 return ExprCons(other, lhs=self[CONST])
             elif Expr._is_const(other):
                 return ExprCons(self, rhs=other[CONST])
-            return self.__add__(-other).__le__(ConstExpr(0))
+            return self.__add__(-other).__le__(ConstExpr(0.0))
         elif isinstance(other, MatrixExpr):
             return other.__ge__(self)
         raise TypeError(f"Unsupported type {type(other)}")
