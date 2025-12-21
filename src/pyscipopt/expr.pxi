@@ -162,12 +162,15 @@ cdef class Expr:
 
     def __iadd__(self, other):
         other = Expr._from_const_or_var(other)
-        if Expr._is_sum(self):
-            if Expr._is_sum(other):
-                self._to_dict(other._children, copy=False)
-            else:
-                self._to_dict({other: 1.0}, copy=False)
+        if Expr._is_zero(other):
             return self
+        elif Expr._is_sum(self):
+            self._to_dict(
+                other._children if Expr._is_sum(other) else {other: 1.0}, copy=False
+            )
+            if isinstance(self, PolynomialExpr) and isinstance(other, PolynomialExpr):
+                return Expr._to_subclass(PolynomialExpr, self)
+            return Expr._to_subclass(Expr, self)
         return self.__add__(other)
 
     def __radd__(self, other):
@@ -389,6 +392,12 @@ cdef class Expr:
             not expr or (Expr._is_const(expr) and expr[CONST] == 0)
         )
 
+    @staticmethod
+    def _to_subclass(cls: Type[Expr], Expr expr) -> Expr:
+        res = ConstExpr.__new__(ConstExpr) if Expr._is_const(expr) else cls.__new__(cls)
+        res._children = expr._children
+        return res
+
 
 class PolynomialExpr(Expr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
@@ -407,13 +416,6 @@ class PolynomialExpr(Expr):
         if isinstance(other, PolynomialExpr) and not Expr._is_zero(other):
             return PolynomialExpr._to_subclass(<dict>self._to_dict(other._children))
         return super().__add__(other)
-
-    def __iadd__(self, other):
-        other = Expr._from_const_or_var(other)
-        if isinstance(other, PolynomialExpr):
-            self._to_dict(other._children, copy=False)
-            return self
-        return super().__iadd__(other)
 
     def __mul__(self, other):
         other = Expr._from_const_or_var(other)
@@ -467,15 +469,6 @@ class ConstExpr(PolynomialExpr):
 
     def __abs__(self) -> ConstExpr:
         return ConstExpr(abs(self[CONST]))
-
-    def __iadd__(self, other):
-        other = Expr._from_const_or_var(other)
-        if Expr._is_const(other):
-            self._children[CONST] += other[CONST]
-            return self
-        if isinstance(other, PolynomialExpr):
-            return self.__add__(other)
-        return super().__iadd__(other)
 
     def __pow__(self, other):
         other = Expr._from_const_or_var(other)
