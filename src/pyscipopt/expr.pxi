@@ -117,7 +117,7 @@ cdef class Expr:
         return {_ExprKey.unwrap(k): v for k, v in self._children.items()}
 
     def __hash__(self) -> int:
-        return (type(self), frozenset(self._children.items())).__hash__()
+        return frozenset(self._children.items()).__hash__()
 
     def __getitem__(self, key: Union[Variable, Term, Expr]) -> float:
         if not isinstance(key, (Variable, Term, Expr, _ExprKey)):
@@ -411,9 +411,6 @@ cdef class PolynomialExpr(Expr):
 
         super().__init__(<dict>children)
 
-    def __hash__(self) -> int:
-        return (Expr, frozenset(self._children.items())).__hash__()
-
     def __add__(self, other):
         other = Expr._from_const_or_var(other)
         if isinstance(other, PolynomialExpr) and not Expr._is_zero(other):
@@ -515,7 +512,7 @@ cdef class ProdExpr(FuncExpr):
         self.coef = coef
 
     def __hash__(self) -> int:
-        return (type(self), frozenset(self), self.coef).__hash__()
+        return (frozenset(self), self.coef).__hash__()
 
     def __add__(self, other):
         other = Expr._from_const_or_var(other)
@@ -569,7 +566,7 @@ cdef class PowExpr(FuncExpr):
         self.expo = expo
 
     def __hash__(self) -> int:
-        return (type(self), frozenset(self), self.expo).__hash__()
+        return (frozenset(self), self.expo).__hash__()
 
     def __mul__(self, other):
         other = Expr._from_const_or_var(other)
@@ -619,7 +616,7 @@ cdef class UnaryExpr(FuncExpr):
         super().__init__({expr: 1.0})
 
     def __hash__(self) -> int:
-        return (type(self), frozenset(self)).__hash__()
+        return frozenset(self).__hash__()
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self._fchild()})"
