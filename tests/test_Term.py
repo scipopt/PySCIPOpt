@@ -1,6 +1,6 @@
 import pytest
 
-from pyscipopt import Model
+from pyscipopt import Model, Variable
 from pyscipopt.scip import ConstExpr, ProdExpr, Term
 
 
@@ -80,16 +80,16 @@ def test_to_node():
     assert t0._to_node(0) == []
 
     t1 = Term(x)
-    assert t1._to_node() == [(Term, x)]
+    assert t1._to_node() == [(Variable, x)]
     assert t1._to_node(0) == []
-    assert t1._to_node(-1) == [(Term, x), (ConstExpr, -1), (ProdExpr, [0, 1])]
-    assert t1._to_node(-1, 2) == [(Term, x), (ConstExpr, -1), (ProdExpr, [2, 3])]
+    assert t1._to_node(-1) == [(Variable, x), (ConstExpr, -1), (ProdExpr, [0, 1])]
+    assert t1._to_node(-1, 2) == [(Variable, x), (ConstExpr, -1), (ProdExpr, [2, 3])]
 
     t2 = Term(x, y)
-    assert t2._to_node() == [(Term, x), (Term, y), (ProdExpr, [0, 1])]
+    assert t2._to_node() == [(Variable, x), (Variable, y), (ProdExpr, [0, 1])]
     assert t2._to_node(3) == [
-        (Term, x),
-        (Term, y),
+        (Variable, x),
+        (Variable, y),
         (ConstExpr, 3),
         (ProdExpr, [0, 1, 2]),
     ]
