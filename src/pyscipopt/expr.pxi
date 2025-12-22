@@ -481,6 +481,7 @@ cdef class ConstExpr(PolynomialExpr):
 
 
 cdef class FuncExpr(Expr):
+
     def __init__(self, children: Optional[dict[Union[Term, Expr, _ExprKey], float]] = None):
         if children and any((i is CONST) for i in children):
             raise ValueError("FuncExpr can't have Term without Variable as a child")
@@ -501,8 +502,8 @@ cdef class FuncExpr(Expr):
 cdef class ProdExpr(FuncExpr):
     """Expression like `coefficient * expression`."""
 
-    __slots__ = ("coef",)
     cdef readonly float coef
+    __slots__ = ("coef",)
 
     def __init__(self, *children: Union[Term, Expr], float coef = 1.0):
         if len(set(children)) != len(children):
@@ -558,8 +559,8 @@ cdef class ProdExpr(FuncExpr):
 cdef class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
 
-    __slots__ = ("expo",)
     cdef readonly float expo
+    __slots__ = ("expo",)
 
     def __init__(self, base: Union[Term, Expr, _ExprKey], float expo = 1.0):
         super().__init__({base: 1.0})
