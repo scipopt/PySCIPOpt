@@ -13,7 +13,7 @@ cdef class Term:
     """A monomial term consisting of one or more variables."""
 
     cdef readonly tuple vars
-    cdef readonly int _hash
+    cdef int _hash
     __slots__ = ("vars", "_hash")
 
     def __init__(self, *vars: Variable):
@@ -36,7 +36,7 @@ cdef class Term:
         return len(self.vars)
 
     def __eq__(self, other) -> bool:
-        return isinstance(other, Term) and self._hash == other._hash
+        return isinstance(other, Term) and hash(self) == hash(other)
 
     def __mul__(self, Term other) -> Term:
         return Term(*self.vars, *other.vars)
