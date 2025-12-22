@@ -100,7 +100,7 @@ cdef class _ExprKey:
 cdef class Expr:
     """Base class for mathematical expressions."""
 
-    cdef public dict _children
+    cdef readonly dict _children
     __slots__ = ("_children",)
 
     def __init__(
@@ -171,8 +171,8 @@ cdef class Expr:
                 other._children if Expr._is_sum(other) else {other: 1.0}, copy=False
             )
             if isinstance(self, PolynomialExpr) and isinstance(other, PolynomialExpr):
-                return Expr._to_subclass(PolynomialExpr, self)
-            return Expr._to_subclass(Expr, self)
+                return self._to_polynomial(PolynomialExpr)
+            return self._to_polynomial(Expr)
         return self.__add__(other)
 
     def __radd__(self, other):
@@ -396,10 +396,9 @@ cdef class Expr:
             not expr or (Expr._is_const(expr) and expr[CONST] == 0)
         )
 
-    @staticmethod
-    def _to_subclass(cls: Type[Expr], Expr expr) -> Expr:
-        res = ConstExpr.__new__(ConstExpr) if Expr._is_const(expr) else cls.__new__(cls)
-        res._children = expr._children
+    def _to_polynomial(self, cls: Type[Expr]) -> Expr:
+        res = ConstExpr.__new__(ConstExpr) if Expr._is_const(self) else cls.__new__(cls)
+        (<Expr>res)._children = self._children
         return res
 
 
