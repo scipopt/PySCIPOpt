@@ -274,7 +274,7 @@ cdef class Expr:
                     return ExprCons(other, lhs=self[CONST])
                 elif Expr._is_const(other):
                     return ExprCons(self, rhs=other[CONST])
-                return ExprCons(self.__add__(-other), lhs=0.0)
+                return ExprCons(<Expr>self.__add__(-other), lhs=0.0)
             return other >= self
 
         elif op == Py_GE:
@@ -283,7 +283,7 @@ cdef class Expr:
                     return ExprCons(other, rhs=self[CONST])
                 elif Expr._is_const(other):
                     return ExprCons(self, lhs=other[CONST])
-                return ExprCons(self.__add__(-other), rhs=0.0)
+                return ExprCons(<Expr>self.__add__(-other), rhs=0.0)
             return other <= self
 
         elif op == Py_EQ:
@@ -292,7 +292,7 @@ cdef class Expr:
                     return ExprCons(other, lhs=self[CONST], rhs=self[CONST])
                 elif Expr._is_const(other):
                     return ExprCons(self, lhs=other[CONST], rhs=other[CONST])
-                return ExprCons(self.__add__(-other), lhs=0.0, rhs=0.0)
+                return ExprCons(<Expr>self.__add__(-other), lhs=0.0, rhs=0.0)
             return other == self
 
         raise NotImplementedError("Expr can only support with '<=', '>=', or '=='.")
