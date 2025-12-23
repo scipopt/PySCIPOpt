@@ -729,21 +729,45 @@ you have to use parenthesis to break the Python syntax for chained comparisons:
         raise TypeError(msg)
 
 
-def quicksum(expressions) -> Expr:
-    """add linear expressions and constants much faster than Python's sum
-    by avoiding intermediate data structures and adding terms inplace
+cpdef Expr quicksum(expressions: Iterator[Expr]):
     """
-    res = ConstExpr(0.0)
+    Use inplace addition to sum a list of expressions quickly, avoiding intermediate
+    data structures created by Python's built-in sum function.
+
+    Parameters
+    ----------
+    expressions : Iterator[Expr]
+        An iterator of expressions to be summed.
+
+    Returns
+    -------
+    Expr
+        The sum of the input expressions.
+    """
+    cdef Expr res = ConstExpr(0.0)
+    cdef Expr i
     for i in expressions:
         res += i
     return res
 
 
-def quickprod(expressions) -> Expr:
-    """multiply linear expressions and constants by avoiding intermediate
-    data structures and multiplying terms inplace
+cpdef Expr quickprod(expressions: Iterator[Expr]):
     """
-    res = ConstExpr(1.0)
+    Use inplace multiplication to multiply a list of expressions quickly, avoiding
+    intermediate data structures created by Python's built-in prod function.
+
+    Parameters
+    ----------
+    expressions : Iterator[Expr]
+        An iterator of expressions to be multiplied.
+
+    Returns
+    -------
+    Expr
+        The product of the input expressions.
+    """
+    cdef Expr res = ConstExpr(1.0)
+    cdef Expr i
     for i in expressions:
         res *= i
     return res
