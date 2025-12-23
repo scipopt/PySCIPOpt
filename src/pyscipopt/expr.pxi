@@ -204,7 +204,9 @@ cdef class Expr:
             self._children = {
                 k: v * other[CONST] for k, v in self._children.items() if v != 0
             }
-            return self
+            if isinstance(self, PolynomialExpr) and isinstance(other, PolynomialExpr):
+                return self._to_polynomial(PolynomialExpr)
+            return self._to_polynomial(Expr)
         return self.__mul__(other)
 
     def __rmul__(self, other):
