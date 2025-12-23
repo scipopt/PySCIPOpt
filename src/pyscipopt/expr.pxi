@@ -1,9 +1,11 @@
 ##@file expr.pxi
+from functools import wraps
 from numbers import Number
 from typing import Iterator, Optional, Type, Union
 
 import numpy as np
 
+cimport cython
 from cpython.object cimport Py_LE, Py_EQ, Py_GE
 
 include "matrix.pxi"
@@ -614,6 +616,8 @@ cdef class UnaryExpr(FuncExpr):
     def __init__(self, expr: Union[Number, Variable, Term, Expr, _ExprKey]):
         if isinstance(expr, Number):
             expr = ConstExpr(<float>expr)
+        elif isinstance(expr, Variable):
+            expr = Term(expr)
         super().__init__({expr: 1.0})
 
     def __hash__(self) -> int:
@@ -624,19 +628,6 @@ cdef class UnaryExpr(FuncExpr):
 
     def copy(self) -> UnaryExpr:
         return type(self)(self._fchild())
-
-    @staticmethod
-    def _to_subclass(
-        cls: Type[UnaryExpr],
-        x: Union[Number, Variable, Term, Expr, MatrixExpr],
-    ) -> Union[UnaryExpr, MatrixExpr]:
-        if isinstance(x, Variable):
-            x = Term(x)
-        elif isinstance(x, MatrixExpr):
-            res = np.empty(shape=x.shape, dtype=object)
-            res.flat = [cls(Term(i) if isinstance(i, Variable) else i) for i in x.flat]
-            return res.view(MatrixExpr)
-        return cls(x)
 
 
 cdef class AbsExpr(UnaryExpr):
@@ -773,26 +764,120 @@ cpdef Expr quickprod(expressions: Iterator[Expr]):
     return res
 
 
-def exp(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[UnaryExpr, MatrixExpr]:
-    """returns expression with exp-function"""
-    return UnaryExpr._to_subclass(ExpExpr, x)
+def _to_array(array_type: Type[np.ndarray] = np.ndarray):
+    """
+    Decorator to convert the input to the subclass of `numpy.ndarray` if the output is
+    the instance of `numpy.ndarray`.
+
+    Parameters
+    ----------
+    array_type : Type[np.ndarray], optional
+        The subclass of `numpy.ndarray` to convert the output to.
+    """
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            res = func(*args, **kwargs)
+            if isinstance(res, np.ndarray):
+                return res.view(array_type)
+            return res
+
+        return wrapper
+
+    return decorator
 
 
-def log(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[UnaryExpr, MatrixExpr]:
-    """returns expression with log-function"""
-    return UnaryExpr._to_subclass(LogExpr, x)
+@cython.ufunc
+cdef UnaryExpr _to_unaryexpr(object x, type cls):
+    return <UnaryExpr>cls(x)
 
 
-def sqrt(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[UnaryExpr, MatrixExpr]:
-    """returns expression with sqrt-function"""
-    return UnaryExpr._to_subclass(SqrtExpr, x)
+@_to_array(MatrixExpr)
+def exp(
+    x: Union[Number, Variable, Term, Expr, MatrixExpr],
+) -> Union[ExpExpr, MatrixExpr]:
+    """
+    exp(x)
+
+    Parameters
+    ----------
+    x : Number, Variable, Term, Expr, MatrixExpr
+
+    Returns
+    -------
+    ExpExpr or MatrixExpr
+    """
+    return <ExpExpr>_to_unaryexpr(x, ExpExpr)
 
 
-def sin(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[UnaryExpr, MatrixExpr]:
-    """returns expression with sin-function"""
-    return UnaryExpr._to_subclass(SinExpr, x)
+@_to_array(MatrixExpr)
+def log(
+    x: Union[Number, Variable, Term, Expr, MatrixExpr],
+) -> Union[LogExpr, MatrixExpr]:
+    """
+    log(x)
+
+    Parameters
+    ----------
+    x : Number, Variable, Term, Expr, MatrixExpr
+
+    Returns
+    -------
+    LogExpr or MatrixExpr
+    """
+    return <LogExpr>_to_unaryexpr(x, LogExpr)
 
 
-def cos(x: Union[Number, Variable, Expr, MatrixExpr]) -> Union[UnaryExpr, MatrixExpr]:
-    """returns expression with cos-function"""
-    return UnaryExpr._to_subclass(CosExpr, x)
+@_to_array(MatrixExpr)
+def sqrt(
+    x: Union[Number, Variable, Term, Expr, MatrixExpr],
+) -> Union[SqrtExpr, MatrixExpr]:
+    """
+    sqrt(x)
+
+    Parameters
+    ----------
+    x : Number, Variable, Term, Expr, MatrixExpr
+
+    Returns
+    -------
+    SqrtExpr or MatrixExpr
+    """
+    return <SqrtExpr>_to_unaryexpr(x, SqrtExpr)
+
+
+@_to_array(MatrixExpr)
+def sin(
+    x: Union[Number, Variable, Term, Expr, MatrixExpr],
+) -> Union[SinExpr, MatrixExpr]:
+    """
+    sin(x)
+
+    Parameters
+    ----------
+    x : Number, Variable, Term, Expr, MatrixExpr
+
+    Returns
+    -------
+    SinExpr or MatrixExpr
+    """
+    return <SinExpr>_to_unaryexpr(x, SinExpr)
+
+
+@_to_array(MatrixExpr)
+def cos(
+    x: Union[Number, Variable, Term, Expr, MatrixExpr],
+) -> Union[CosExpr, MatrixExpr]:
+    """
+    cos(x)
+
+    Parameters
+    ----------
+    x : Number, Variable, Term, Expr, MatrixExpr
+
+    Returns
+    -------
+    CosExpr or MatrixExpr
+    """
+    return <CosExpr>_to_unaryexpr(x, CosExpr)
