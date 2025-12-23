@@ -420,15 +420,18 @@ cdef class PolynomialExpr(Expr):
         return super().__add__(other)
 
     def __mul__(self, other):
+        cdef dict children
+        cdef Term k1, k2, child
+        cdef float v1, v2
         other = Expr._from_const_or_var(other)
         if isinstance(other, PolynomialExpr) and not (
             Expr._is_const(other) and (other[CONST] == 0 or other[CONST] == 1)
         ):
             children = {}
-            for i in self:
-                for j in other:
-                    child = i * j
-                    children[child] = children.get(child, 0.0) + self[i] * other[j]
+            for k1, v1 in self._children.items():
+                for k2, v2 in other._children.items():
+                    child = k1 * k2
+                    children[child] = children.get(child, 0.0) + v1 * v2
             return PolynomialExpr._to_subclass(children)
         return super().__mul__(other)
 
