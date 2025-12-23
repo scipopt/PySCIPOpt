@@ -147,13 +147,9 @@ cdef class Expr:
             elif Expr._is_zero(other):
                 return self.copy()
             elif Expr._is_sum(self):
-                return Expr(
-                    <dict>self._to_dict(
-                        other._children if Expr._is_sum(other) else {other: 1.0}
-                    )
-                )
+                return Expr(self._to_dict(other))
             elif Expr._is_sum(other):
-                return Expr(<dict>other._to_dict({self: 1.0}))
+                return Expr(other._to_dict(other))
             elif self._is_equal(other):
                 return self.__mul__(2.0)
             return Expr({self: 1.0, other: 1.0})
@@ -169,9 +165,7 @@ cdef class Expr:
         if Expr._is_zero(other):
             return self
         elif Expr._is_sum(self):
-            self._to_dict(
-                other._children if Expr._is_sum(other) else {other: 1.0}, copy=False
-            )
+            self._to_dict(other, copy=False)
             if isinstance(self, PolynomialExpr) and isinstance(other, PolynomialExpr):
                 return self._to_polynomial(PolynomialExpr)
             return self._to_polynomial(Expr)
@@ -302,6 +296,16 @@ cdef class Expr:
     def __repr__(self) -> str:
         return f"Expr({self._children})"
 
+    def _normalize(self) -> Expr:
+        self._children = {k: v for k, v in self._children.items() if v != 0}
+        return self
+
+    def degree(self) -> float:
+        return max((i.degree() for i in self._children)) if self else 0
+
+    def copy(self) -> Expr:
+        return type(self)(self._children.copy())
+
     @staticmethod
     def _from_const_or_var(x):
         """Convert a number or variable to an expression."""
@@ -312,27 +316,16 @@ cdef class Expr:
             return PolynomialExpr._from_var(x)
         return x
 
-    def _to_dict(
-            self,
-            other: dict[Union[Term, Expr, _ExprKey], float],
-            copy: bool = True,
-        ) -> dict[Union[Term, _ExprKey], float]:
-        """Merge two dictionaries by summing values of common keys"""
-        children = self._children.copy() if copy else self._children
-        for child, coef in other.items():
+    cdef dict _to_dict(self, Expr other, bool copy = True):
+        cdef dict children = self._children.copy() if copy else self._children
+        cdef object child
+        cdef float coef
+        for child, coef in (
+            other._children if Expr._is_sum(other) else {other: 1.0}
+        ).items():
             key = _ExprKey.wrap(child)
             children[key] = children.get(key, 0.0) + coef
         return children
-
-    def _normalize(self) -> Expr:
-        self._children = {k: v for k, v in self._children.items() if v != 0}
-        return self
-
-    def degree(self) -> float:
-        return max((i.degree() for i in self._children)) if self else 0
-
-    def copy(self) -> Expr:
-        return type(self)(self._children.copy())
 
     def _to_node(self, coef: float = 1, start: int = 0) -> list[tuple]:
         """Convert expression to list of node for SCIP expression construction"""
@@ -416,7 +409,7 @@ cdef class PolynomialExpr(Expr):
     def __add__(self, other):
         other = Expr._from_const_or_var(other)
         if isinstance(other, PolynomialExpr) and not Expr._is_zero(other):
-            return PolynomialExpr._to_subclass(<dict>self._to_dict(other._children))
+            return PolynomialExpr._to_subclass(self._to_dict(other))
         return super().__add__(other)
 
     def __mul__(self, other):
