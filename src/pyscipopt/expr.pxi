@@ -417,11 +417,11 @@ cdef class PolynomialExpr(Expr):
         return super().__add__(other)
 
     def __mul__(self, other):
-        cdef dict children
+        cdef dict[Term, float] children
         cdef Term k1, k2, child
         cdef float v1, v2
         other = Expr._from_const_or_var(other)
-        if isinstance(other, PolynomialExpr) and not (
+        if self and isinstance(other, PolynomialExpr) and not (
             Expr._is_const(other) and (other[CONST] == 0 or other[CONST] == 1)
         ):
             children = {}
@@ -452,10 +452,7 @@ cdef class PolynomialExpr(Expr):
         return PolynomialExpr({Term(var): coef})
 
     @classmethod
-    def _to_subclass(
-        cls: Type[PolynomialExpr],
-        children: dict[Term, float],
-    ) -> PolynomialExpr:
+    def _to_subclass(cls, children: dict[Term, float]) -> PolynomialExpr:
         if len(children) == 0:
             return ConstExpr(0.0)
         elif len(children) == 1 and CONST in children:
