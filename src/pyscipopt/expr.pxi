@@ -1,9 +1,8 @@
 ##@file expr.pxi
-from functools import wraps
 from numbers import Number
 from typing import Iterator, Optional, Type, Union
 
-import numpy as np
+from pyscipopt._decorator import to_array
 
 cimport cython
 from cpython.object cimport Py_LE, Py_EQ, Py_GE
@@ -761,28 +760,6 @@ cpdef Expr quickprod(expressions: Iterator[Expr]):
     return res
 
 
-def _to_array(array_type: Type[np.ndarray] = np.ndarray):
-    """
-    Decorator to convert the input to the subclass of `numpy.ndarray` if the output is
-    the instance of `numpy.ndarray`.
-
-    Parameters
-    ----------
-    array_type : Type[np.ndarray], optional
-        The subclass of `numpy.ndarray` to convert the output to.
-    """
-
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            res = func(*args, **kwargs)
-            if isinstance(res, np.ndarray):
-                return res.view(array_type)
-            return res
-
-        return wrapper
-
-    return decorator
 
 
 @cython.ufunc
@@ -790,7 +767,7 @@ cdef UnaryExpr _to_unaryexpr(object x, type cls):
     return <UnaryExpr>cls(x)
 
 
-@_to_array(MatrixExpr)
+@to_array(MatrixExpr)
 def exp(
     x: Union[Number, Variable, Term, Expr, MatrixExpr],
 ) -> Union[ExpExpr, MatrixExpr]:
@@ -808,7 +785,7 @@ def exp(
     return <ExpExpr>_to_unaryexpr(x, ExpExpr)
 
 
-@_to_array(MatrixExpr)
+@to_array(MatrixExpr)
 def log(
     x: Union[Number, Variable, Term, Expr, MatrixExpr],
 ) -> Union[LogExpr, MatrixExpr]:
@@ -826,7 +803,7 @@ def log(
     return <LogExpr>_to_unaryexpr(x, LogExpr)
 
 
-@_to_array(MatrixExpr)
+@to_array(MatrixExpr)
 def sqrt(
     x: Union[Number, Variable, Term, Expr, MatrixExpr],
 ) -> Union[SqrtExpr, MatrixExpr]:
@@ -844,7 +821,7 @@ def sqrt(
     return <SqrtExpr>_to_unaryexpr(x, SqrtExpr)
 
 
-@_to_array(MatrixExpr)
+@to_array(MatrixExpr)
 def sin(
     x: Union[Number, Variable, Term, Expr, MatrixExpr],
 ) -> Union[SinExpr, MatrixExpr]:
@@ -862,7 +839,7 @@ def sin(
     return <SinExpr>_to_unaryexpr(x, SinExpr)
 
 
-@_to_array(MatrixExpr)
+@to_array(MatrixExpr)
 def cos(
     x: Union[Number, Variable, Term, Expr, MatrixExpr],
 ) -> Union[CosExpr, MatrixExpr]:
