@@ -45,22 +45,23 @@ cdef class Term:
     def __repr__(self) -> str:
         return f"Term({', '.join(map(str, self.vars))})"
 
-    def degree(self) -> int:
+    cpdef int degree(self):
         return len(self)
 
-    def _to_node(self, coef: float = 1, start: int = 0) -> list[tuple]:
+    cpdef list[tuple] _to_node(self, float coef = 1, int start = 0):
         """Convert term to list of node for SCIP expression construction"""
+        cdef list[tuple] node
         if coef == 0:
-            return []
+            node = []
         elif self.degree() == 0:
-            return [(ConstExpr, coef)]
+            node = [(ConstExpr, coef)]
         else:
             node = [(Variable, i) for i in self]
             if coef != 1:
                 node.append((ConstExpr, coef))
             if len(node) > 1:
                 node.append((ProdExpr, list(range(start, start + len(node)))))
-            return node
+        return node
 
 
 CONST = Term()
@@ -328,12 +329,17 @@ cdef class Expr:
             children[key] = children.get(key, 0.0) + coef
         return children
 
-    def _to_node(self, coef: float = 1, start: int = 0) -> list[tuple]:
+    cpdef list[tuple] _to_node(self, float coef = 1, int start = 0):
         """Convert expression to list of node for SCIP expression construction"""
-        if coef == 0:
-            return []
+        cdef list[tuple] node = []
+        cdef list[tuple] child_node
+        cdef list[int] index = []
+        cdef object k
+        cdef float v
 
-        node, index = [], []
+        if coef == 0:
+            return node
+
         for k, v in self._children.items():
             if v != 0 and (child_node := k._to_node(v, start + len(node))):
                 node.extend(child_node)
@@ -486,7 +492,7 @@ cdef class FuncExpr(Expr):
 
         super().__init__(children)
 
-    def degree(self) -> float:
+    cpdef float degree(self):
         return float("inf")
 
     def _is_child_equal(self, other) -> bool:
