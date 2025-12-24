@@ -393,8 +393,10 @@ cdef class Expr:
             not expr or (Expr._is_const(expr) and expr[CONST] == 0)
         )
 
-    def _to_polynomial(self, cls: Type[Expr]) -> Expr:
-        res = ConstExpr.__new__(ConstExpr) if Expr._is_const(self) else cls.__new__(cls)
+    cdef Expr _to_polynomial(self, cls: Type[Expr]):
+        cdef Expr res = (
+            ConstExpr.__new__(ConstExpr) if Expr._is_const(self) else cls.__new__(cls)
+        )
         (<Expr>res)._children = self._children
         return res
 
