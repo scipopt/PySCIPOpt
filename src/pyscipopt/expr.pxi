@@ -474,11 +474,11 @@ cdef class ConstExpr(PolynomialExpr):
     def __abs__(self) -> ConstExpr:
         return ConstExpr(abs(self[CONST]))
 
-    def __pow__(self, other):
-        other = Expr._from_const_or_var(other)
-        if Expr._is_const(other):
-            return ConstExpr(self[CONST] ** other[CONST])
-        return super().__pow__(other)
+    def __neg__(self) -> ConstExpr:
+        return ConstExpr(-self[CONST])
+
+    def __pow__(self, float other) -> ConstExpr:
+        return ConstExpr(self[CONST] ** other)
 
     def copy(self) -> ConstExpr:
         return ConstExpr(self[CONST])
