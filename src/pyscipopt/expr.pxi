@@ -769,7 +769,7 @@ cpdef Expr quickprod(expressions: Iterator[Expr]):
 
 
 @cython.ufunc
-cdef UnaryExpr _to_unaryexpr(object x, type cls):
+cdef UnaryExpr _vec_to_unary(object x, type cls):
     return <UnaryExpr>cls(x)
 
 
@@ -788,7 +788,7 @@ def exp(
     -------
     ExpExpr or MatrixExpr
     """
-    return <ExpExpr>_to_unaryexpr(x, ExpExpr)
+    return <ExpExpr>_vec_to_unary(x, ExpExpr)
 
 
 @to_array(MatrixExpr)
@@ -806,7 +806,7 @@ def log(
     -------
     LogExpr or MatrixExpr
     """
-    return <LogExpr>_to_unaryexpr(x, LogExpr)
+    return <LogExpr>_vec_to_unary(x, LogExpr)
 
 
 @to_array(MatrixExpr)
@@ -824,7 +824,7 @@ def sqrt(
     -------
     SqrtExpr or MatrixExpr
     """
-    return <SqrtExpr>_to_unaryexpr(x, SqrtExpr)
+    return <SqrtExpr>_vec_to_unary(x, SqrtExpr)
 
 
 @to_array(MatrixExpr)
@@ -842,7 +842,7 @@ def sin(
     -------
     SinExpr or MatrixExpr
     """
-    return <SinExpr>_to_unaryexpr(x, SinExpr)
+    return _vec_to_unary(x, SinExpr)
 
 
 @to_array(MatrixExpr)
@@ -860,4 +860,4 @@ def cos(
     -------
     CosExpr or MatrixExpr
     """
-    return <CosExpr>_to_unaryexpr(x, CosExpr)
+    return _vec_to_unary(x, CosExpr)
