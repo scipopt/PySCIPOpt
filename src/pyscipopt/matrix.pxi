@@ -4,7 +4,6 @@
 """
 
 from typing import Optional, Tuple, Union
-
 import numpy as np
 try:
     # NumPy 2.x location
@@ -59,8 +58,7 @@ class MatrixExpr(np.ndarray):
         **kwargs,
     ) -> Union[Expr, MatrixExpr]:
         """
-        Return the sum of the array elements over the given axis. Speed optimized for
-        matrix expressions via `quicksum` instead of `numpy.ndarray.sum`.
+        Return the sum of the array elements over the given axis.
 
         Parameters
         ----------
@@ -82,19 +80,10 @@ class MatrixExpr(np.ndarray):
 
         Returns
         -------
-        Expr
-            If the sum is performed over all axes, return an Expr.
+        Expr or MatrixExpr
+            If the sum is performed over all axes, return an Expr, otherwise return
+            a MatrixExpr.
 
-        MatrixExpr
-            - If the sum is performed over a subset of axes return a MatrixExpr.
-            - If `keepdims` is True, the returned MatrixExpr will have the same number 
-              of dimensions as the original array, with the reduced axes having size one.
-
-        Notes
-        -----
-        `quicksum` uses `__iadd__` to accumulate the sum, which modifies an existing
-        object in place. `numpy.ndarray.sum` uses `__add__`, which creates a new object
-        for each addition.
         """
         axis: Tuple[int, ...] = normalize_axis_tuple(
             range(self.ndim) if axis is None else axis, self.ndim
