@@ -5,6 +5,7 @@
 ### Fixed
 - all fundamental callbacks now raise an error if not implemented
 ### Changed
+- changed default value of enablepricing flag to True
 ### Removed
 
 ## 6.0.0 - 2025.xx.yy
