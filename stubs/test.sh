@@ -5,6 +5,6 @@
 # Prerequisite: install mypy in same environment as pyscipopt and put stubtest in PATH
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 stubtest \
-  --allowlist "$SCRIPT_DIR/.stubtest-allowlist" \
-  --allowlist "$SCRIPT_DIR/.stubtest-allowlist-todo" \
+  --allowlist "$SCRIPT_DIR/allowlist" \
+  --allowlist "$SCRIPT_DIR/todo" \
   pyscipopt

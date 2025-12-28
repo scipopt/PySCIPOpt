@@ -24,7 +24,7 @@ jobs:
       PYTHON_VERSION: "3.14"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
@@ -54,6 +54,8 @@ jobs:
       FILES: src/pyscipopt/scip.pyi
 
     steps:
+      - uses: actions/checkout@v6
+
       - name: Install Ruff
         uses: astral-sh/ruff-action@v3
 
