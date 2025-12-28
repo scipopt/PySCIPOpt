@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added automated script for generating type stubs
 ### Fixed
 - all fundamental callbacks now raise an error if not implemented
 ### Changed
