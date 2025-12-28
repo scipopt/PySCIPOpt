@@ -4858,6 +4858,47 @@ cdef class Model:
         float
         """
         return SCIPgetVarPseudocost(self._scip, var.scip_var, branchdir)
+    
+    def addClique(self, vars, values=None, isequation=False):
+        """
+        adds clique information to SCIP, stating that at most one of the given binary
+        variables can be set to 1; if a variable appears twice in the same clique, the
+        corresponding implications are performed.
+
+        Parameters
+        ----------
+
+        vars: List[Variable]
+            binary variables in the clique from which at most one can be set to 1
+        values: Optional[List[Boolean]]
+            values of the variables in the clique; None to use TRUE for all vars
+        isequation: Boolean
+            is the clique an equation or an inequality?
+
+        """
+        cdef int nvars = len(vars)
+        cdef SCIP_VAR** scip_vars
+        cdef SCIP_Bool* c_values
+        cdef SCIP_Bool infeasible
+        cdef int nbdchgs
+        cdef int i
+
+        scip_vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+
+        for i in range(nvars):
+            scip_vars[i] = (<Variable>vars[i]).scip_var
+
+        if values is not None:
+            c_values = <SCIP_Bool*> malloc(nvars * sizeof(SCIP_Bool))
+            for i in range(nvars):
+                c_values[i] = <SCIP_Bool> bool(values[i])
+        else:
+            c_values = NULL
+
+        PY_SCIP_CALL(SCIPaddClique(self._scip, scip_vars, c_values, nvars, <SCIP_Bool> isequation, &infeasible, &nbdchgs))
+        if c_values != NULL:
+            free(c_values)
+        free(scip_vars)
 
     def updateNodeLowerbound(self, Node node, lb):
         """

@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 - Added automated script for generating type stubs
+- Wrapped SCIPaddClique
 ### Fixed
 - all fundamental callbacks now raise an error if not implemented
 ### Changed
