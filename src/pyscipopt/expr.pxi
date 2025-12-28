@@ -759,7 +759,7 @@ cpdef Expr quicksum(expressions: Iterator[Expr]):
         The sum of the input expressions.
     """
     cdef Expr res = ConstExpr(0.0)
-    cdef Expr i
+    cdef object i
     for i in expressions:
         res += i
     return res
@@ -781,7 +781,7 @@ cpdef Expr quickprod(expressions: Iterator[Expr]):
         The product of the input expressions.
     """
     cdef Expr res = ConstExpr(1.0)
-    cdef Expr i
+    cdef object i
     for i in expressions:
         res *= i
     return res
