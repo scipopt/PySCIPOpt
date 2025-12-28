@@ -104,6 +104,7 @@ cdef class Expr:
 
     cdef readonly dict _children
     __slots__ = ("_children",)
+    __array_priority__ = 100
 
     def __init__(
         self,
@@ -117,6 +118,41 @@ cdef class Expr:
     @property
     def children(self):
         return {_ExprKey.unwrap(k): v for k, v in self.items()}
+
+    def __array_ufunc__(_, ufunc, method, *args, **kwargs):
+        if method != "__call__":
+            return NotImplemented
+        if ufunc.__name__.startswith("_vec_"):
+            return ufunc(
+                *(np.asarray(x) if isinstance(x, Expr) else x for x in args),
+                **kwargs,
+            )
+
+        DISPATCH_MAP = {
+            np.abs: _vec_abs,
+            np.add: _vec_add,
+            np.multiply: _vec_multiply,
+            np.divide: _vec_divide,
+            np.power: _vec_power,
+            np.negative: _vec_negative,
+            np.subtract: _vec_subtract,
+            np.less_equal: _vec_less_equal,
+            np.greater_equal: _vec_greater_equal,
+            np.equal: _vec_equal,
+            np.exp: exp,
+            np.log: log,
+            np.sqrt: sqrt,
+            np.sin: sin,
+            np.cos: cos,
+        }
+        if (handler:= DISPATCH_MAP.get(ufunc)) is not None:
+            res = handler(*args, **kwargs)
+            if isinstance(res, np.ndarray):
+                if ufunc in (np.less_equal, np.greater_equal, np.equal):
+                    return res.view(MatrixExprCons)
+                return res.view(MatrixExpr)
+            return res
+        return NotImplemented
 
     def __hash__(self) -> int:
         return frozenset(self.items()).__hash__()
@@ -139,161 +175,141 @@ cdef class Expr:
     def __abs__(self) -> AbsExpr:
         return AbsExpr(self)
 
-    def __add__(self, other):
-        other = Expr._from_const_or_var(other)
-        if isinstance(other, Expr):
-            if Expr._is_zero(self):
-                return other.copy()
-            elif Expr._is_zero(other):
-                return self.copy()
-            elif Expr._is_sum(self):
-                return Expr(self._to_dict(other))
-            elif Expr._is_sum(other):
-                return Expr(other._to_dict(other))
-            elif self._is_equal(other):
-                return self.__mul__(2.0)
-            return Expr({self: 1.0, other: 1.0})
+    def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        if not isinstance(other, (Number, Variable, Expr)):
+            return NotImplemented
 
-        elif isinstance(other, MatrixExpr):
-            return other.__add__(self)
-        raise TypeError(
-            f"unsupported operand type(s) for +: 'Expr' and '{type(other)}'"
-        )
-
-    def __iadd__(self, other):
-        other = Expr._from_const_or_var(other)
-        if Expr._is_zero(other):
-            return self
+        cdef Expr _other = Expr._from_other(other)
+        if Expr._is_zero(self):
+            return _other.copy()
+        elif Expr._is_zero(_other):
+            return self.copy()
         elif Expr._is_sum(self):
-            self._to_dict(other, copy=False)
-            if isinstance(self, PolynomialExpr) and isinstance(other, PolynomialExpr):
+            return Expr(self._to_dict(_other))
+        elif Expr._is_sum(_other):
+            return Expr(_other._to_dict(self))
+        elif self._is_equal(_other):
+            return self.__mul__(2.0)
+        return Expr({_ExprKey.wrap(self): 1.0, _ExprKey.wrap(_other): 1.0})
+
+    def __iadd__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+
+        if Expr._is_zero(_other):
+            return self
+        elif Expr._is_sum(self) and Expr._is_sum(_other):
+            self._to_dict(_other, copy=False)
+            if isinstance(self, PolynomialExpr) and isinstance(_other, PolynomialExpr):
                 return self._to_polynomial(PolynomialExpr)
             return self._to_polynomial(Expr)
-        return self.__add__(other)
+        return self.__add__(_other)
 
     def __radd__(self, other: Union[Number, Variable, Expr]) -> Expr:
         return self.__add__(other)
 
-    def __mul__(self, other):
-        other = Expr._from_const_or_var(other)
-        if isinstance(other, Expr):
-            left, right = (self, other) if Expr._is_const(self) else (other, self)
-            if Expr._is_zero(left) or Expr._is_zero(right):
-                return ConstExpr(0.0)
-            elif Expr._is_const(left):
-                if left[CONST] == 1:
-                    return right.copy()
-                elif Expr._is_sum(right):
-                    return Expr({
-                        k: v * left[CONST] for k, v in right._children.items() if v != 0
-                    })
-                return Expr({right: left[CONST]})
-            elif self._is_equal(other):
-                return PowExpr(self, 2.0)
-            return ProdExpr(self, other)
+    def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        if not isinstance(other, (Number, Variable, Expr)):
+            return NotImplemented
 
-        elif isinstance(other, MatrixExpr):
-            return other.__mul__(self)
-        raise TypeError(
-            f"unsupported operand type(s) for *: 'Expr' and '{type(other)}'"
-        )
+        cdef Expr _other = Expr._from_other(other)
+        if Expr._is_zero(self) or Expr._is_zero(_other):
+            return ConstExpr(0.0)
+        elif Expr._is_const(self):
+            if self[CONST] == 1:
+                return _other.copy()
+            elif Expr._is_sum(_other):
+                return Expr({k: v * self[CONST] for k, v in _other.items() if v != 0})
+            return Expr({_other: self[CONST]})
+        elif Expr._is_const(_other):
+            if _other[CONST] == 1:
+                return self.copy()
+            elif Expr._is_sum(self):
+                return Expr({k: v * _other[CONST] for k, v in self.items() if v != 0})
+            return Expr({self: _other[CONST]})
+        elif self._is_equal(_other):
+            return PowExpr(self, 2.0)
+        return ProdExpr(self, _other)
 
-    def __imul__(self, other):
-        other = Expr._from_const_or_var(other)
-        if self and Expr._is_sum(self) and Expr._is_const(other) and other[CONST] != 0:
-            self._children = {
-                k: v * other[CONST] for k, v in self._children.items() if v != 0
-            }
-            if isinstance(self, PolynomialExpr) and isinstance(other, PolynomialExpr):
-                return self._to_polynomial(PolynomialExpr)
-            return self._to_polynomial(Expr)
-        return self.__mul__(other)
+    def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if self and Expr._is_sum(self) and Expr._is_const(_other) and _other[CONST] != 0:
+            self._children = {k: v * _other[CONST] for k, v in self.items() if v != 0}
+            return self._to_polynomial(
+                PolynomialExpr if isinstance(self, PolynomialExpr) else Expr
+            )
+        return self.__mul__(_other)
 
     def __rmul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         return self.__mul__(other)
 
-        other = Expr._from_const_or_var(other)
-        if Expr._is_zero(other):
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if Expr._is_zero(_other):
             raise ZeroDivisionError("division by zero")
-        if self._is_equal(other):
+        if self._is_equal(_other):
             return ConstExpr(1.0)
-        return self.__mul__(other.__pow__(-1.0))
+        return self.__mul__(_other.__pow__(-1.0))
 
-        return Expr._from_const_or_var(other).__truediv__(self)
     def __rtruediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        return Expr._from_other(other).__truediv__(self)
 
-        other = Expr._from_const_or_var(other)
-        if not Expr._is_const(other):
     def __pow__(self, other: Union[Number, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if not Expr._is_const(_other):
             raise TypeError("exponent must be a number")
-        if Expr._is_zero(other):
-            return ConstExpr(1.0)
-        return PowExpr(self, other[CONST])
+        return ConstExpr(1.0) if Expr._is_zero(_other) else PowExpr(self, _other[CONST])
 
-        other = Expr._from_const_or_var(other)
-        if not Expr._is_const(other):
     def __rpow__(self, other: Union[Number, Expr]) -> ExpExpr:
+        if not isinstance(other, (Number, Expr)):
+            return NotImplemented
+
+        cdef Expr _other = Expr._from_other(other)
+        if not Expr._is_const(_other):
             raise TypeError("base must be a number")
         elif _other[CONST] <= 0.0:
             raise ValueError("base must be positive")
-        return exp(self.__mul__(log(other)))
+        return <ExpExpr>exp(self.__mul__(log(_other)))
 
     def __neg__(self) -> Expr:
         return self.__mul__(-1.0)
 
-    def __sub__(self, other):
-        other = Expr._from_const_or_var(other)
-        if self._is_equal(other):
+    def __sub__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if self._is_equal(_other):
             return ConstExpr(0.0)
-        return self.__add__(-other)
+        return self.__add__(_other.__neg__())
 
-    def __isub__(self, other):
-        other = Expr._from_const_or_var(other)
-        if self._is_equal(other):
+    def __isub__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if self._is_equal(_other):
             return ConstExpr(0.0)
-        return self.__iadd__(-other)
+        return self.__iadd__(_other.__neg__())
 
-    def __rsub__(self, other):
+    def __rsub__(self, other: Union[Number, Variable, Expr]) -> Expr:
         return self.__neg__().__add__(other)
 
-    def __richcmp__(
-            self,
-            other: Union[Number, Variable, Expr, MatrixExpr],
-            int op,
-        ) -> Union[ExprCons, MatrixExprCons]:
-        other = Expr._from_const_or_var(other)
-        if not isinstance(other, (Expr, MatrixExpr)):
-            raise TypeError(f"Unsupported type {type(other)}")
+    cdef ExprCons _cmp(self, other: Union[Number, Variable, Expr], int op):
+        if not isinstance(other, (Number, Variable, Expr)):
+            return NotImplemented
 
+        cdef Expr _other = Expr._from_other(other)
         if op == Py_LE:
-            if isinstance(other, Expr):
-                if Expr._is_const(self):
-                    return ExprCons(other, lhs=self[CONST])
-                elif Expr._is_const(other):
-                    return ExprCons(self, rhs=other[CONST])
-                return ExprCons(<Expr>self.__add__(-other), lhs=0.0)
-            return other >= self
-
+            if Expr._is_const(_other):
+                return ExprCons(self, rhs=_other[CONST])
+            return ExprCons(self.__add__(_other.__neg__()), rhs=0.0)
         elif op == Py_GE:
-            if isinstance(other, Expr):
-                if Expr._is_const(self):
-                    return ExprCons(other, rhs=self[CONST])
-                elif Expr._is_const(other):
-                    return ExprCons(self, lhs=other[CONST])
-                return ExprCons(<Expr>self.__add__(-other), rhs=0.0)
-            return other <= self
-
+            if Expr._is_const(_other):
+                return ExprCons(self, lhs=_other[CONST])
+            return ExprCons(self.__add__(_other.__neg__()), lhs=0.0)
         elif op == Py_EQ:
-            if isinstance(other, Expr):
-                if Expr._is_const(self):
-                    return ExprCons(other, lhs=self[CONST], rhs=self[CONST])
-                elif Expr._is_const(other):
-                    return ExprCons(self, lhs=other[CONST], rhs=other[CONST])
-                return ExprCons(<Expr>self.__add__(-other), lhs=0.0, rhs=0.0)
-            return other == self
+            if Expr._is_const(_other):
+                return ExprCons(self, lhs=_other[CONST], rhs=_other[CONST])
+            return ExprCons(self.__add__(_other.__neg__()), lhs=0.0, rhs=0.0)
 
         raise NotImplementedError("Expr can only support with '<=', '>=', or '=='.")
+
+    def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
+        return self._cmp(other, op)
 
     def __repr__(self) -> str:
         return f"Expr({self._children})"
@@ -326,12 +342,13 @@ cdef class Expr:
     @staticmethod
     cdef Expr _from_other(x: Union[Number, Variable, Expr]):
         """Convert a number or variable to an expression."""
-
         if isinstance(x, Number):
             return ConstExpr(<float>x)
         elif isinstance(x, Variable):
             return PolynomialExpr._from_var(x)
-        return x
+        elif isinstance(x, Expr):
+            return x
+        raise TypeError("Input must be a number, Variable, or Expr")
 
     def items(self):
         return self._children.items()
@@ -447,42 +464,42 @@ cdef class PolynomialExpr(Expr):
 
         super().__init__(<dict>children)
 
-    def __add__(self, other):
-        other = Expr._from_const_or_var(other)
-        if isinstance(other, PolynomialExpr) and not Expr._is_zero(other):
-            return PolynomialExpr._to_subclass(self._to_dict(other))
-        return super().__add__(other)
+    def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if isinstance(_other, PolynomialExpr) and not Expr._is_zero(_other):
+            return PolynomialExpr._to_subclass(self._to_dict(_other))
+        return super().__add__(_other)
 
-    def __mul__(self, other):
+    def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef dict[Term, float] children
         cdef Term k1, k2, child
         cdef float v1, v2
-        other = Expr._from_const_or_var(other)
-        if self and isinstance(other, PolynomialExpr) and not (
-            Expr._is_const(other) and (other[CONST] == 0 or other[CONST] == 1)
+        cdef Expr _other = Expr._from_other(other)
+        if self and isinstance(_other, PolynomialExpr) and not (
+            Expr._is_const(_other) and (_other[CONST] == 0 or _other[CONST] == 1)
         ):
             children = {}
-                for k2, v2 in other._children.items():
             for k1, v1 in self.items():
+                for k2, v2 in _other.items():
                     child = k1 * k2
                     children[child] = children.get(child, 0.0) + v1 * v2
             return PolynomialExpr._to_subclass(children)
-        return super().__mul__(other)
+        return super().__mul__(_other)
 
-        other = Expr._from_const_or_var(other)
-        if Expr._is_const(other):
-            return self.__mul__(1.0 / other[CONST])
-        return super().__truediv__(other)
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if Expr._is_const(_other):
+            return self.__mul__(1.0 / _other[CONST])
+        return super().__truediv__(_other)
 
-        other = Expr._from_const_or_var(other)
-        if Expr._is_const(other) and other[CONST].is_integer() and other[CONST] > 0:
     def __pow__(self, other: Union[Number, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if Expr._is_const(_other) and _other[CONST].is_integer() and _other[CONST] > 0:
             res = ConstExpr(1.0)
-            for _ in range(int(other[CONST])):
+            for _ in range(int(_other[CONST])):
                 res *= self
             return res
-        return super().__pow__(other)
+        return super().__pow__(_other)
 
     @staticmethod
     cdef PolynomialExpr _from_var(Variable var, float coef = 1.0):
@@ -509,8 +526,11 @@ cdef class ConstExpr(PolynomialExpr):
     def __neg__(self) -> ConstExpr:
         return ConstExpr(-self[CONST])
 
-        return ConstExpr(self[CONST] ** other)
     def __pow__(self, other: Union[Number, Expr]) -> ConstExpr:
+        cdef Expr _other = Expr._from_other(other)
+        if Expr._is_const(_other):
+            return ConstExpr(self[CONST] ** _other[CONST])
+        return <ConstExpr>super().__pow__(_other)
 
     def copy(self) -> ConstExpr:
         return ConstExpr(self[CONST])
@@ -551,34 +571,37 @@ cdef class ProdExpr(FuncExpr):
     def __hash__(self) -> int:
         return (frozenset(self), self.coef).__hash__()
 
-    def __add__(self, other):
-        other = Expr._from_const_or_var(other)
-        if isinstance(other, ProdExpr) and self._is_child_equal(other):
-            return ProdExpr(*self, coef=self.coef + other.coef)
-        return super().__add__(other)
+    def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if isinstance(_other, ProdExpr) and self._is_child_equal(_other):
+            return ProdExpr(*self, coef=self.coef + _other.coef)
+        return super().__add__(_other)
 
-    def __iadd__(self, other):
-        other = Expr._from_const_or_var(other)
-        if isinstance(other, ProdExpr) and self._is_child_equal(other):
-            self.coef += other.coef
+    def __iadd__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if isinstance(_other, ProdExpr) and self._is_child_equal(_other):
+            self.coef += _other.coef
             return self
-        return super().__iadd__(other)
+        return super().__iadd__(_other)
 
-    def __mul__(self, other):
-        other = Expr._from_const_or_var(other)
-        if Expr._is_const(other) and (other[CONST] != 0 or other[CONST] != 1):
-            return ProdExpr(*self, coef=self.coef * other[CONST])
-        return super().__mul__(other)
+    def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if Expr._is_const(_other) and _other[CONST] != 0 and _other[CONST] != 1:
+            return ProdExpr(*self, coef=self.coef * _other[CONST])
+        return super().__mul__(_other)
 
-    def __imul__(self, other):
-        other = Expr._from_const_or_var(other)
-        if Expr._is_const(other):
-            if other[CONST] == 0:
+    def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if Expr._is_const(_other):
+            if _other[CONST] == 0:
                 self = ConstExpr(0.0)
             else:
-                self.coef *= other[CONST]
+                self.coef *= _other[CONST]
             return self
-        return super().__imul__(other)
+        return super().__imul__(_other)
+
+    def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
+        return self._cmp(other, op)
 
     def __repr__(self) -> str:
         return f"ProdExpr({{{tuple(self)}: {self.coef}}})"
@@ -605,28 +628,31 @@ cdef class PowExpr(FuncExpr):
     def __hash__(self) -> int:
         return (frozenset(self), self.expo).__hash__()
 
-    def __mul__(self, other):
-        other = Expr._from_const_or_var(other)
-        if isinstance(other, PowExpr) and self._is_child_equal(other):
-            return PowExpr(self._fchild(), self.expo + other.expo)
-        return super().__mul__(other)
+    def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if isinstance(_other, PowExpr) and self._is_child_equal(_other):
+            return PowExpr(self._fchild(), self.expo + _other.expo)
+        return super().__mul__(_other)
 
-    def __imul__(self, other):
-        other = Expr._from_const_or_var(other)
-        if isinstance(other, PowExpr) and self._is_child_equal(other):
-            self.expo += other.expo
+    def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if isinstance(_other, PowExpr) and self._is_child_equal(_other):
+            self.expo += _other.expo
             return self
-        return super().__imul__(other)
+        return super().__imul__(_other)
 
-        other = Expr._from_const_or_var(other)
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
         if (
-            isinstance(other, PowExpr)
-            and not self._is_equal(other)
-            and self._is_child_equal(other)
+            isinstance(_other, PowExpr)
+            and not self._is_equal(_other)
+            and self._is_child_equal(_other)
         ):
-            return PowExpr(self._fchild(), self.expo - other.expo)
-        return super().__truediv__(other)
+            return PowExpr(self._fchild(), self.expo - _other.expo)
+        return super().__truediv__(_other)
+
+    def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
+        return self._cmp(other, op)
 
     def __repr__(self) -> str:
         return f"PowExpr({self._fchild()}, {self.expo})"
@@ -656,6 +682,9 @@ cdef class UnaryExpr(FuncExpr):
 
     def __hash__(self) -> int:
         return frozenset(self).__hash__()
+
+    def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
+        return self._cmp(other, op)
 
     def __repr__(self) -> str:
         if Expr._is_const(child := _ExprKey.unwrap(self._fchild())):
@@ -722,7 +751,7 @@ cdef class ExprCons:
     def _normalize(self) -> ExprCons:
         """Move constant children in expression to bounds"""
         c = self.expr[CONST]
-        self.expr = (<Expr>(self.expr - c))._normalize()
+        self.expr = (self.expr - c)._normalize()
         if self._lhs is not None:
             self._lhs = <float>self._lhs - c
         if self._rhs is not None:
@@ -734,7 +763,6 @@ cdef class ExprCons:
             if self._rhs is not None:
                 raise TypeError("ExprCons already has upper bound")
             return ExprCons(self.expr, lhs=<float>self._lhs, rhs=other)
-
         elif op == Py_GE:
             if self._lhs is not None:
                 raise TypeError("ExprCons already has lower bound")
@@ -802,6 +830,54 @@ cpdef Expr quickprod(expressions: Iterator[Expr]):
     return res
 
 
+@cython.ufunc
+cdef Expr _vec_abs(Expr x):
+    return abs(x)
+
+
+@cython.ufunc
+cdef Expr _vec_add(Expr x, y):
+    return x + y
+
+
+@cython.ufunc
+cdef Expr _vec_multiply(Expr x, y):
+    return x * y
+
+
+@cython.ufunc
+cdef Expr _vec_divide(Expr x, y):
+    return x / y
+
+
+@cython.ufunc
+cdef Expr _vec_power(Expr x, y):
+    return x ** y
+
+
+@cython.ufunc
+cdef Expr _vec_negative(Expr x):
+    return -x
+
+
+@cython.ufunc
+cdef Expr _vec_subtract(Expr x, y):
+    return x - y
+
+
+@cython.ufunc
+cdef ExprCons _vec_less_equal(Expr x, y):
+    return x <= y
+
+
+@cython.ufunc
+cdef ExprCons _vec_greater_equal(Expr x, y):
+    return x >= y
+
+
+@cython.ufunc
+cdef ExprCons _vec_equal(Expr x, y):
+    return x == y
 
 
 @cython.ufunc

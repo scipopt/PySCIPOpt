@@ -1538,6 +1538,13 @@ cdef class Node:
 
 cdef class Variable:
 
+    __array_priority__ = 100
+
+    def __array_ufunc__(self, ufunc, method, *args, **kwargs):
+        return PolynomialExpr._from_var(self).__array_ufunc__(
+            ufunc, method, *args, **kwargs
+        )
+
     @staticmethod
     cdef create(SCIP_VAR* scip_var):
         """
@@ -1622,11 +1629,9 @@ cdef class Variable:
     def __rsub__(self, other):
         return PolynomialExpr._from_var(self).__rsub__(other)
 
-    def __le__(self, other):
-        return PolynomialExpr._from_var(self).__le__(other)
+    def __richcmp__(self, other, int op):
+        return PolynomialExpr._from_var(self)._cmp(other, op)
 
-    def __ge__(self, other):
-        return PolynomialExpr._from_var(self).__ge__(other)
     def exp(self) -> ExpExpr:
         return PolynomialExpr._from_var(self).exp()
     
@@ -1637,7 +1642,6 @@ cdef class Variable:
         return PolynomialExpr._from_var(self).sqrt()
 
     def __eq__(self, other):
-        return PolynomialExpr._from_var(self).__eq__(other)
     def sin(self) -> SinExpr:
         return PolynomialExpr._from_var(self).sin()
 
