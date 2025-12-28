@@ -116,10 +116,10 @@ cdef class Expr:
 
     @property
     def children(self):
-        return {_ExprKey.unwrap(k): v for k, v in self._children.items()}
+        return {_ExprKey.unwrap(k): v for k, v in self.items()}
 
     def __hash__(self) -> int:
-        return frozenset(self._children.items()).__hash__()
+        return frozenset(self.items()).__hash__()
 
     def __getitem__(self, key: Union[Variable, Term, Expr, _ExprKey]) -> float:
         if not isinstance(key, (Variable, Term, Expr, _ExprKey)):
@@ -235,7 +235,7 @@ cdef class Expr:
         other = Expr._from_const_or_var(other)
         if not Expr._is_const(other):
             raise TypeError("base must be a number")
-        if other[CONST] <= 0.0:
+        elif _other[CONST] <= 0.0:
             raise ValueError("base must be positive")
         return exp(self.__mul__(log(other)))
 
@@ -299,7 +299,7 @@ cdef class Expr:
         return f"Expr({self._children})"
 
     def _normalize(self) -> Expr:
-        self._children = {k: v for k, v in self._children.items() if v != 0}
+        self._children = {k: v for k, v in self.items() if v != 0}
         return self
 
     def degree(self) -> float:
@@ -318,13 +318,14 @@ cdef class Expr:
             return PolynomialExpr._from_var(x)
         return x
 
+    def items(self):
+        return self._children.items()
+
     cdef dict _to_dict(self, Expr other, bool copy = True):
         cdef dict children = self._children.copy() if copy else self._children
         cdef object child
         cdef float coef
-        for child, coef in (
-            other._children if Expr._is_sum(other) else {other: 1.0}
-        ).items():
+        for child, coef in (other if Expr._is_sum(other) else {other: 1.0}).items():
             key = _ExprKey.wrap(child)
             children[key] = children.get(key, 0.0) + coef
         return children
@@ -340,7 +341,7 @@ cdef class Expr:
         if coef == 0:
             return node
 
-        for k, v in self._children.items():
+        for k, v in self.items():
             if v != 0 and (child_node := k._to_node(v, start + len(node))):
                 node.extend(child_node)
                 index.append(start + len(node) - 1)
@@ -442,8 +443,8 @@ cdef class PolynomialExpr(Expr):
             Expr._is_const(other) and (other[CONST] == 0 or other[CONST] == 1)
         ):
             children = {}
-            for k1, v1 in self._children.items():
                 for k2, v2 in other._children.items():
+            for k1, v1 in self.items():
                     child = k1 * k2
                     children[child] = children.get(child, 0.0) + v1 * v2
             return PolynomialExpr._to_subclass(children)
