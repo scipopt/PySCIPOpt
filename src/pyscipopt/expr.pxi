@@ -121,7 +121,7 @@ cdef class Expr:
     def __hash__(self) -> int:
         return frozenset(self._children.items()).__hash__()
 
-    def __getitem__(self, key: Union[Variable, Term, Expr]) -> float:
+    def __getitem__(self, key: Union[Variable, Term, Expr, _ExprKey]) -> float:
         if not isinstance(key, (Variable, Term, Expr, _ExprKey)):
             raise TypeError("key must be Variable, Term, or Expr")
 
