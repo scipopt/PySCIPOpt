@@ -369,14 +369,21 @@ cdef class Expr:
     def _fchild(self) -> Union[Term, _ExprKey]:
         return next(iter(self._children))
 
-    def _is_equal(self, other) -> bool:
+    cdef bool _is_equal(self, object other):
         return (
             isinstance(other, Expr)
+            and len(self._children) == len(other._children)
             and (
                 (Expr._is_sum(self) and Expr._is_sum(other))
-                or type(self) is type(other)
+                or (
+                    type(self) is type(other)
+                    and (
+                        (type(self) is ProdExpr and self.coef == (<ProdExpr>other).coef)
+                        or (type(self) is PowExpr and self.expo == (<PowExpr>other).expo)
+                        or isinstance(self, UnaryExpr)
+                    )
+                )
             )
-            and len(self._children) == len(other._children)
             and self._children == other._children
         )
 
