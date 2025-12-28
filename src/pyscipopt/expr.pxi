@@ -366,7 +366,7 @@ cdef class Expr:
 
         return node
 
-    def _fchild(self) -> Union[Term, _ExprKey]:
+    cdef _fchild(self):
         return next(iter(self._children))
 
     cdef bool _is_equal(self, object other):
@@ -388,11 +388,16 @@ cdef class Expr:
         )
 
     @staticmethod
-    def _is_sum(expr) -> bool:
+    cdef bool _is_sum(expr):
         return type(expr) is Expr or isinstance(expr, PolynomialExpr)
 
     @staticmethod
-    def _is_const(expr):
+    cdef bool _is_const(expr):
+        return isinstance(expr, ConstExpr) or (
+            Expr._is_sum(expr)
+            and len(expr._children) == 1
+            and (<Expr>expr)._fchild() is CONST
+        )
         return (
             Expr._is_sum(expr)
             and len(expr._children) == 1
@@ -400,7 +405,7 @@ cdef class Expr:
         )
 
     @staticmethod
-    def _is_zero(expr):
+    cdef bool _is_zero(expr):
         return isinstance(expr, Expr) and (
             not expr or (Expr._is_const(expr) and expr[CONST] == 0)
         )
