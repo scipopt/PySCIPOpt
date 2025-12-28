@@ -171,7 +171,7 @@ cdef class Expr:
             return self._to_polynomial(Expr)
         return self.__add__(other)
 
-    def __radd__(self, other):
+    def __radd__(self, other: Union[Number, Variable, Expr]) -> Expr:
         return self.__add__(other)
 
     def __mul__(self, other):
@@ -209,7 +209,7 @@ cdef class Expr:
             return self._to_polynomial(Expr)
         return self.__mul__(other)
 
-    def __rmul__(self, other):
+    def __rmul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         return self.__mul__(other)
 
     def __truediv__(self, other):
@@ -223,17 +223,17 @@ cdef class Expr:
     def __rtruediv__(self, other):
         return Expr._from_const_or_var(other).__truediv__(self)
 
-    def __pow__(self, other):
         other = Expr._from_const_or_var(other)
         if not Expr._is_const(other):
+    def __pow__(self, other: Union[Number, Expr]) -> Expr:
             raise TypeError("exponent must be a number")
         if Expr._is_zero(other):
             return ConstExpr(1.0)
         return PowExpr(self, other[CONST])
 
-    def __rpow__(self, other):
         other = Expr._from_const_or_var(other)
         if not Expr._is_const(other):
+    def __rpow__(self, other: Union[Number, Expr]) -> ExpExpr:
             raise TypeError("base must be a number")
         elif _other[CONST] <= 0.0:
             raise ValueError("base must be positive")
@@ -456,9 +456,9 @@ cdef class PolynomialExpr(Expr):
             return self.__mul__(1.0 / other[CONST])
         return super().__truediv__(other)
 
-    def __pow__(self, other):
         other = Expr._from_const_or_var(other)
         if Expr._is_const(other) and other[CONST].is_integer() and other[CONST] > 0:
+    def __pow__(self, other: Union[Number, Expr]) -> Expr:
             res = ConstExpr(1.0)
             for _ in range(int(other[CONST])):
                 res *= self
@@ -470,7 +470,7 @@ cdef class PolynomialExpr(Expr):
         return PolynomialExpr({Term(var): coef})
 
     @classmethod
-    def _to_subclass(cls, children: dict[Term, float]) -> PolynomialExpr:
+    def _to_subclass(cls, dict[Term, float] children) -> PolynomialExpr:
         if len(children) == 0:
             return ConstExpr(0.0)
         elif len(children) == 1 and CONST in children:
@@ -490,8 +490,8 @@ cdef class ConstExpr(PolynomialExpr):
     def __neg__(self) -> ConstExpr:
         return ConstExpr(-self[CONST])
 
-    def __pow__(self, float other) -> ConstExpr:
         return ConstExpr(self[CONST] ** other)
+    def __pow__(self, other: Union[Number, Expr]) -> ConstExpr:
 
     def copy(self) -> ConstExpr:
         return ConstExpr(self[CONST])
