@@ -189,7 +189,7 @@ cdef class Expr:
         elif Expr._is_sum(_other):
             return Expr(_other._to_dict(self))
         elif self._is_equal(_other):
-            return self.__mul__(2.0)
+            return self * 2.0
         return Expr({_ExprKey.wrap(self): 1.0, _ExprKey.wrap(_other): 1.0})
 
     def __iadd__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -202,10 +202,10 @@ cdef class Expr:
             if isinstance(self, PolynomialExpr) and isinstance(_other, PolynomialExpr):
                 return self._to_polynomial(PolynomialExpr)
             return self._to_polynomial(Expr)
-        return self.__add__(_other)
+        return self + _other
 
     def __radd__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        return self.__add__(other)
+        return self + other
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, (Number, Variable, Expr)):
@@ -237,10 +237,10 @@ cdef class Expr:
             return self._to_polynomial(
                 PolynomialExpr if isinstance(self, PolynomialExpr) else Expr
             )
-        return self.__mul__(_other)
+        return self * _other
 
     def __rmul__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        return self.__mul__(other)
+        return self * other
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
@@ -248,10 +248,10 @@ cdef class Expr:
             raise ZeroDivisionError("division by zero")
         if self._is_equal(_other):
             return ConstExpr(1.0)
-        return self.__mul__(_other.__pow__(-1.0))
+        return self * (_other ** -1.0)
 
     def __rtruediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        return Expr._from_other(other).__truediv__(self)
+        return Expr._from_other(other) / self
 
     def __pow__(self, other: Union[Number, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
@@ -268,25 +268,25 @@ cdef class Expr:
             raise TypeError("base must be a number")
         elif _other[CONST] <= 0.0:
             raise ValueError("base must be positive")
-        return <ExpExpr>exp(self.__mul__(log(_other)))
+        return ExpExpr(self * LogExpr(_other))
 
     def __neg__(self) -> Expr:
-        return self.__mul__(-1.0)
+        return self * -1.0
 
     def __sub__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
         if self._is_equal(_other):
             return ConstExpr(0.0)
-        return self.__add__(_other.__neg__())
+        return self + (-_other)
 
     def __isub__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
         if self._is_equal(_other):
             return ConstExpr(0.0)
-        return self.__iadd__(_other.__neg__())
+        return self + (-_other)
 
     def __rsub__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        return self.__neg__().__add__(other)
+        return (-self) + other
 
     cdef ExprCons _cmp(self, other: Union[Number, Variable, Expr], int op):
         if not isinstance(other, (Number, Variable, Expr)):
