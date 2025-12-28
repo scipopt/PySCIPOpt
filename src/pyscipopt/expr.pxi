@@ -33,9 +33,6 @@ cdef class Term:
     def __hash__(self) -> int:
         return self._hash
 
-    def __len__(self) -> int:
-        return len(self.vars)
-
     def __eq__(self, other) -> bool:
         return isinstance(other, Term) and hash(self) == hash(other)
 
@@ -46,7 +43,7 @@ cdef class Term:
         return f"Term({', '.join(map(str, self.vars))})"
 
     cpdef int degree(self):
-        return len(self)
+        return len(self.vars)
 
     cpdef list[tuple] _to_node(self, float coef = 1, int start = 0):
         """Convert term to list of node for SCIP expression construction"""
