@@ -1,3 +1,4 @@
+pyscipopt.Benders
 pyscipopt.Benders.__init__
 pyscipopt.Benders.benderscreatesub
 pyscipopt.Benders.bendersexit
