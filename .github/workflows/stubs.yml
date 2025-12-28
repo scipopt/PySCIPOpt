@@ -45,6 +45,9 @@ jobs:
           export CFLAGS="-O0 -ggdb -Wall -Wextra -Werror -Wno-error=deprecated-declarations" # Debug mode. More warnings. Warnings as errors, but allow deprecated declarations.
           python -m pip install . -v 2>&1 | tee build.log
 
+      - name: Run MyPy
+        run: python -m mypy --package pyscipopt
+
       - name: Run stubtest
         run: stubs/test.sh
 
