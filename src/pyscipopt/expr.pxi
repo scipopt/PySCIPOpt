@@ -133,7 +133,7 @@ cdef class Expr:
         for i in self._children:
             yield _ExprKey.unwrap(i)
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return bool(self._children)
 
     def __abs__(self) -> AbsExpr:
@@ -212,16 +212,16 @@ cdef class Expr:
     def __rmul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         return self.__mul__(other)
 
-    def __truediv__(self, other):
         other = Expr._from_const_or_var(other)
         if Expr._is_zero(other):
+    def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
             raise ZeroDivisionError("division by zero")
         if self._is_equal(other):
             return ConstExpr(1.0)
         return self.__mul__(other.__pow__(-1.0))
 
-    def __rtruediv__(self, other):
         return Expr._from_const_or_var(other).__truediv__(self)
+    def __rtruediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
 
         other = Expr._from_const_or_var(other)
         if not Expr._is_const(other):
@@ -239,7 +239,7 @@ cdef class Expr:
             raise ValueError("base must be positive")
         return exp(self.__mul__(log(other)))
 
-    def __neg__(self):
+    def __neg__(self) -> Expr:
         return self.__mul__(-1.0)
 
     def __sub__(self, other):
@@ -309,7 +309,7 @@ cdef class Expr:
         return type(self)(self._children.copy())
 
     @staticmethod
-    def _from_const_or_var(x):
+    cdef Expr _from_other(x: Union[Number, Variable, Expr]):
         """Convert a number or variable to an expression."""
 
         if isinstance(x, Number):
@@ -454,11 +454,11 @@ cdef class PolynomialExpr(Expr):
             return PolynomialExpr._to_subclass(children)
         return super().__mul__(other)
 
-    def __truediv__(self, other):
         other = Expr._from_const_or_var(other)
         if Expr._is_const(other):
             return self.__mul__(1.0 / other[CONST])
         return super().__truediv__(other)
+    def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
 
         other = Expr._from_const_or_var(other)
         if Expr._is_const(other) and other[CONST].is_integer() and other[CONST] > 0:
@@ -470,7 +470,7 @@ cdef class PolynomialExpr(Expr):
         return super().__pow__(other)
 
     @staticmethod
-    def _from_var(var: Variable, float coef = 1.0) -> PolynomialExpr:
+    cdef PolynomialExpr _from_var(Variable var, float coef = 1.0):
         return PolynomialExpr({Term(var): coef})
 
     @classmethod
@@ -603,8 +603,8 @@ cdef class PowExpr(FuncExpr):
             return self
         return super().__imul__(other)
 
-    def __truediv__(self, other):
         other = Expr._from_const_or_var(other)
+    def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if (
             isinstance(other, PowExpr)
             and not self._is_equal(other)
