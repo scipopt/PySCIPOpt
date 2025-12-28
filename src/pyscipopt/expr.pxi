@@ -308,6 +308,21 @@ cdef class Expr:
     def copy(self) -> Expr:
         return type(self)(self._children.copy())
 
+    def exp(self) -> ExpExpr:
+        return ExpExpr(self)
+    
+    def log(self) -> LogExpr:
+        return LogExpr(self)
+    
+    def sqrt(self) -> SqrtExpr:
+        return SqrtExpr(self)
+
+    def sin(self) -> SinExpr:
+        return SinExpr(self)
+
+    def cos(self) -> CosExpr:
+        return CosExpr(self)
+
     @staticmethod
     cdef Expr _from_other(x: Union[Number, Variable, Expr]):
         """Convert a number or variable to an expression."""
@@ -791,19 +806,19 @@ cpdef Expr quickprod(expressions: Iterator[Expr]):
 
 @cython.ufunc
 cdef UnaryExpr _vec_to_unary(object x, type cls):
-    return <UnaryExpr>cls(x)
+    return cls(x)
 
 
 @to_array(MatrixExpr)
 def exp(
-    x: Union[Number, Variable, Term, Expr, MatrixExpr],
+    x: Union[Number, Variable, Term, Expr, np.ndarray, MatrixExpr],
 ) -> Union[ExpExpr, MatrixExpr]:
     """
     exp(x)
 
     Parameters
     ----------
-    x : Number, Variable, Term, Expr, MatrixExpr
+    x : Number, Variable, Term, Expr, np.ndarray, MatrixExpr
 
     Returns
     -------
@@ -814,14 +829,14 @@ def exp(
 
 @to_array(MatrixExpr)
 def log(
-    x: Union[Number, Variable, Term, Expr, MatrixExpr],
+    x: Union[Number, Variable, Term, Expr, np.ndarray, MatrixExpr],
 ) -> Union[LogExpr, MatrixExpr]:
     """
     log(x)
 
     Parameters
     ----------
-    x : Number, Variable, Term, Expr, MatrixExpr
+    x : Number, Variable, Term, Expr, np.ndarray, MatrixExpr
 
     Returns
     -------
@@ -832,14 +847,14 @@ def log(
 
 @to_array(MatrixExpr)
 def sqrt(
-    x: Union[Number, Variable, Term, Expr, MatrixExpr],
+    x: Union[Number, Variable, Term, Expr, np.ndarray, MatrixExpr],
 ) -> Union[SqrtExpr, MatrixExpr]:
     """
     sqrt(x)
 
     Parameters
     ----------
-    x : Number, Variable, Term, Expr, MatrixExpr
+    x : Number, Variable, Term, Expr, np.ndarray, MatrixExpr
 
     Returns
     -------
@@ -850,35 +865,35 @@ def sqrt(
 
 @to_array(MatrixExpr)
 def sin(
-    x: Union[Number, Variable, Term, Expr, MatrixExpr],
+    x: Union[Number, Variable, Term, Expr, np.ndarray, MatrixExpr],
 ) -> Union[SinExpr, MatrixExpr]:
     """
     sin(x)
 
     Parameters
     ----------
-    x : Number, Variable, Term, Expr, MatrixExpr
+    x : Number, Variable, Term, Expr, np.ndarray, MatrixExpr
 
     Returns
     -------
     SinExpr or MatrixExpr
     """
-    return _vec_to_unary(x, SinExpr)
+    return <SinExpr>_vec_to_unary(x, SinExpr)
 
 
 @to_array(MatrixExpr)
 def cos(
-    x: Union[Number, Variable, Term, Expr, MatrixExpr],
+    x: Union[Number, Variable, Term, Expr, np.ndarray, MatrixExpr],
 ) -> Union[CosExpr, MatrixExpr]:
     """
     cos(x)
 
     Parameters
     ----------
-    x : Number, Variable, Term, Expr, MatrixExpr
+    x : Number, Variable, Term, Expr, np.ndarray, MatrixExpr
 
     Returns
     -------
     CosExpr or MatrixExpr
     """
-    return _vec_to_unary(x, CosExpr)
+    return <CosExpr>_vec_to_unary(x, CosExpr)

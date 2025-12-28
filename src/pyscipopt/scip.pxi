@@ -1627,9 +1627,22 @@ cdef class Variable:
 
     def __ge__(self, other):
         return PolynomialExpr._from_var(self).__ge__(other)
+    def exp(self) -> ExpExpr:
+        return PolynomialExpr._from_var(self).exp()
+    
+    def log(self) -> LogExpr:
+        return PolynomialExpr._from_var(self).log()
+    
+    def sqrt(self) -> SqrtExpr:
+        return PolynomialExpr._from_var(self).sqrt()
 
     def __eq__(self, other):
         return PolynomialExpr._from_var(self).__eq__(other)
+    def sin(self) -> SinExpr:
+        return PolynomialExpr._from_var(self).sin()
+
+    def cos(self) -> CosExpr:
+        return PolynomialExpr._from_var(self).cos()
 
     def __repr__(self):
         return self.name
