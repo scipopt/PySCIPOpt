@@ -58,6 +58,8 @@ jobs:
 
       - name: Install Ruff
         uses: astral-sh/ruff-action@v3
+        with:
+          args: "--version"
 
       - name: Lint type stubs
         run: ruff check ${{ env.FILES }} --extend-select PYI
