@@ -399,10 +399,14 @@ cdef class Expr:
             and len(expr._children) == 1
             and (<Expr>expr)._fchild() is CONST
         )
+
+    @staticmethod
+    cdef bool _is_term(expr):
         return (
             Expr._is_sum(expr)
             and len(expr._children) == 1
-            and expr._fchild() is CONST
+            and isinstance((<Expr>expr)._fchild(), Term)
+            and (<Expr>expr)[(<Expr>expr)._fchild()] == 1
         )
 
     @staticmethod
@@ -639,7 +643,11 @@ cdef class UnaryExpr(FuncExpr):
         return frozenset(self).__hash__()
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}({self._fchild()})"
+        if Expr._is_const(child := _ExprKey.unwrap(self._fchild())):
+            return f"{type(self).__name__}({child[CONST]})"
+        elif Expr._is_term(child):
+            return f"{type(self).__name__}({(<Expr>child)._fchild()})"
+        return f"{type(self).__name__}({child})"
 
     def copy(self) -> UnaryExpr:
         return type(self)(self._fchild())
