@@ -2,7 +2,7 @@
 from numbers import Number
 from typing import Iterator, Optional, Type, Union
 
-from pyscipopt._decorator import to_array
+import numpy as np
 
 from cpython.object cimport Py_LE, Py_EQ, Py_GE
 
@@ -799,91 +799,86 @@ cpdef Expr quickprod(expressions: Iterator[Expr]):
     return res
 
 
-@to_array(MatrixExpr)
 def exp(
-    x: Union[Number, Variable, Term, Expr, np.ndarray, MatrixExpr],
-) -> Union[ExpExpr, MatrixExpr]:
+    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+) -> Union[ExpExpr, np.ndarray, MatrixExpr]:
     """
     exp(x)
 
     Parameters
     ----------
-    x : Number, Variable, Term, Expr, np.ndarray, MatrixExpr
+    x : Number, Variable, Expr, np.ndarray, MatrixExpr
 
     Returns
     -------
-    ExpExpr or MatrixExpr
+    ExpExpr, np.ndarray, MatrixExpr
     """
     return np.exp(ConstExpr(<float>x)) if isinstance(x, Number) else np.exp(x)
 
 
-@to_array(MatrixExpr)
 def log(
-    x: Union[Number, Variable, Term, Expr, np.ndarray, MatrixExpr],
-) -> Union[LogExpr, MatrixExpr]:
+    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+) -> Union[LogExpr, np.ndarray, MatrixExpr]:
     """
     log(x)
 
     Parameters
     ----------
-    x : Number, Variable, Term, Expr, np.ndarray, MatrixExpr
+    x : Number, Variable, Expr, np.ndarray, MatrixExpr
 
     Returns
     -------
-    LogExpr or MatrixExpr
+    LogExpr, np.ndarray, MatrixExpr
     """
     return np.log(ConstExpr(<float>x)) if isinstance(x, Number) else np.log(x)
 
 
-@to_array(MatrixExpr)
 def sqrt(
-    x: Union[Number, Variable, Term, Expr, np.ndarray, MatrixExpr],
-) -> Union[SqrtExpr, MatrixExpr]:
+    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+) -> Union[SqrtExpr, np.ndarray, MatrixExpr]:
     """
     sqrt(x)
 
     Parameters
     ----------
-    x : Number, Variable, Term, Expr, np.ndarray, MatrixExpr
+    x : Number, Variable, Expr, np.ndarray, MatrixExpr
 
     Returns
     -------
-    SqrtExpr or MatrixExpr
+    SqrtExpr, np.ndarray, MatrixExpr
     """
     return np.sqrt(ConstExpr(<float>x)) if isinstance(x, Number) else np.sqrt(x)
 
 
-@to_array(MatrixExpr)
 def sin(
-    x: Union[Number, Variable, Term, Expr, np.ndarray, MatrixExpr],
-) -> Union[SinExpr, MatrixExpr]:
+    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+) -> Union[SinExpr, np.ndarray, MatrixExpr]:
     """
     sin(x)
 
     Parameters
     ----------
-    x : Number, Variable, Term, Expr, np.ndarray, MatrixExpr
+    x : Number, Variable, Expr, np.ndarray, MatrixExpr
 
     Returns
     -------
-    SinExpr or MatrixExpr
+    SinExpr, np.ndarray, MatrixExpr
     """
     return np.sin(ConstExpr(<float>x)) if isinstance(x, Number) else np.sin(x)
 
 
-@to_array(MatrixExpr)
 def cos(
-    x: Union[Number, Variable, Term, Expr, np.ndarray, MatrixExpr],
-) -> Union[CosExpr, MatrixExpr]:
+    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+) -> Union[CosExpr, np.ndarray, MatrixExpr]:
     """
     cos(x)
 
     Parameters
     ----------
-    x : Number, Variable, Term, Expr, np.ndarray, MatrixExpr
+    x : Number, Variable, Expr, np.ndarray, MatrixExpr
 
     Returns
     -------
-    CosExpr or MatrixExpr
+    CosExpr, np.ndarray, MatrixExpr
     """
     return np.cos(ConstExpr(<float>x)) if isinstance(x, Number) else np.cos(x)
