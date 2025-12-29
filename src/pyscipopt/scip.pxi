@@ -1541,9 +1541,12 @@ cdef class Variable:
     __array_priority__ = 100
 
     def __array_ufunc__(self, ufunc, method, *args, **kwargs):
-        return PolynomialExpr._from_var(self).__array_ufunc__(
-            ufunc, method, *args, **kwargs
-        )
+        if method != "__call__":
+            return NotImplemented
+
+        if (handler := EXPR_UFUNC_DISPATCH.get(ufunc)) is not None:
+            return handler(*args, **kwargs)
+        return NotImplemented
 
     @staticmethod
     cdef create(SCIP_VAR* scip_var):
@@ -1579,74 +1582,73 @@ cdef class Variable:
         return hash(self.ptr())
 
     def __getitem__(self, key):
-        return PolynomialExpr._from_var(self).__getitem__(key)
+        return PolynomialExpr._from_var(self)[key]
 
     def __iter__(self):
-        return PolynomialExpr._from_var(self).__iter__()
-
-    def __abs__(self):
-        return PolynomialExpr._from_var(self).__abs__()
+        return iter(PolynomialExpr._from_var(self))
 
     def __add__(self, other):
-        return PolynomialExpr._from_var(self).__add__(other)
+        return PolynomialExpr._from_var(self) + other
 
     def __iadd__(self, other):
         return PolynomialExpr._from_var(self).__iadd__(other)
 
     def __radd__(self, other):
-        return PolynomialExpr._from_var(self).__radd__(other)
-
-    def __mul__(self, other):
-        return PolynomialExpr._from_var(self).__mul__(other)
-
-    def __imul__(self, other):
-        return PolynomialExpr._from_var(self).__imul__(other)
-
-    def __rmul__(self, other):
-        return PolynomialExpr._from_var(self).__rmul__(other)
-
-    def __truediv__(self, other):
-        return PolynomialExpr._from_var(self).__truediv__(other)
-
-    def __rtruediv__(self, other):
-        return PolynomialExpr._from_var(self).__rtruediv__(other)
-
-    def __pow__(self, other):
-        return PolynomialExpr._from_var(self).__pow__(other)
-
-    def __rpow__(self, other):
-        return PolynomialExpr._from_var(self).__rpow__(other)
-
-    def __neg__(self):
-        return PolynomialExpr._from_var(self).__neg__()
+        return PolynomialExpr._from_var(self) + other
 
     def __sub__(self, other):
-        return PolynomialExpr._from_var(self).__sub__(other)
+        return PolynomialExpr._from_var(self) - other
 
     def __isub__(self, other):
         return PolynomialExpr._from_var(self).__isub__(other)
 
     def __rsub__(self, other):
-        return PolynomialExpr._from_var(self).__rsub__(other)
+        return -PolynomialExpr._from_var(self) + other
+
+    def __mul__(self, other):
+        return PolynomialExpr._from_var(self) * other
+
+    def __imul__(self, other):
+        return PolynomialExpr._from_var(self).__imul__(other)
+
+    def __rmul__(self, other):
+        return PolynomialExpr._from_var(self) * other
+
+    def __truediv__(self, other):
+        return PolynomialExpr._from_var(self) / other
+
+    def __rtruediv__(self, other):
+        return other / PolynomialExpr._from_var(self)
+
+    def __pow__(self, other):
+        return PolynomialExpr._from_var(self) ** other
+
+    def __rpow__(self, other):
+        return other ** PolynomialExpr._from_var(self)
+
+    def __neg__(self):
+        return -PolynomialExpr._from_var(self)
 
     def __richcmp__(self, other, int op):
         return PolynomialExpr._from_var(self)._cmp(other, op)
 
+    def __abs__(self):
+        return AbsExpr(self)
+
     def exp(self) -> ExpExpr:
-        return PolynomialExpr._from_var(self).exp()
+        return ExpExpr(self)
     
     def log(self) -> LogExpr:
-        return PolynomialExpr._from_var(self).log()
+        return LogExpr(self)
     
     def sqrt(self) -> SqrtExpr:
-        return PolynomialExpr._from_var(self).sqrt()
+        return SqrtExpr(self)
 
-    def __eq__(self, other):
     def sin(self) -> SinExpr:
-        return PolynomialExpr._from_var(self).sin()
+        return SinExpr(self)
 
     def cos(self) -> CosExpr:
-        return PolynomialExpr._from_var(self).cos()
+        return CosExpr(self)
 
     def __repr__(self):
         return self.name
