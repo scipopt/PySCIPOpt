@@ -123,30 +123,8 @@ cdef class Expr:
         if method != "__call__":
             return NotImplemented
 
-        DISPATCH_MAP = {
-            np.add: lambda x, y: x + y,
-            np.subtract: lambda x, y: x - y,
-            np.multiply: lambda x, y: x * y,
-            np.divide: lambda x, y: x / y,
-            np.power: lambda x, y: x ** y,
-            np.negative: lambda x: -x,
-            np.less_equal: lambda x, y: x <= y,
-            np.greater_equal: lambda x, y: x >= y,
-            np.equal: lambda x, y: x == y,
-            np.abs: AbsExpr,
-            np.exp: ExpExpr,
-            np.log: LogExpr,
-            np.sqrt: SqrtExpr,
-            np.sin: SinExpr,
-            np.cos: CosExpr,
-        }
-        if (handler:= DISPATCH_MAP.get(ufunc)) is not None:
-            res = handler(*args, **kwargs)
-            if isinstance(res, np.ndarray):
-                if ufunc in (np.less_equal, np.greater_equal, np.equal):
-                    return res.view(MatrixExprCons)
-                return res.view(MatrixExpr)
-            return res
+        if (handler := EXPR_UFUNC_DISPATCH.get(ufunc)) is not None:
+            return handler(*args, **kwargs)
         return NotImplemented
 
     def __hash__(self) -> int:
@@ -720,6 +698,25 @@ cdef class SinExpr(UnaryExpr):
 cdef class CosExpr(UnaryExpr):
     """Expression like `cos(expression)`."""
     ...
+
+
+EXPR_UFUNC_DISPATCH = {
+    np.add: lambda x, y: x + y,
+    np.subtract: lambda x, y: x - y,
+    np.multiply: lambda x, y: x * y,
+    np.divide: lambda x, y: x / y,
+    np.power: lambda x, y: x ** y,
+    np.negative: lambda x: -x,
+    np.less_equal: lambda x, y: x <= y,
+    np.greater_equal: lambda x, y: x >= y,
+    np.equal: lambda x, y: x == y,
+    np.abs: AbsExpr,
+    np.exp: ExpExpr,
+    np.log: LogExpr,
+    np.sqrt: SqrtExpr,
+    np.sin: SinExpr,
+    np.cos: CosExpr,
+}
 
 
 cdef class ExprCons:

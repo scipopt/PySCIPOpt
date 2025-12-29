@@ -1541,9 +1541,12 @@ cdef class Variable:
     __array_priority__ = 100
 
     def __array_ufunc__(self, ufunc, method, *args, **kwargs):
-        return PolynomialExpr._from_var(self).__array_ufunc__(
-            ufunc, method, *args, **kwargs
-        )
+        if method != "__call__":
+            return NotImplemented
+
+        if (handler := EXPR_UFUNC_DISPATCH.get(ufunc)) is not None:
+            return handler(*args, **kwargs)
+        return NotImplemented
 
     @staticmethod
     cdef create(SCIP_VAR* scip_var):
