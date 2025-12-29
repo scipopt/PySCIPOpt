@@ -119,31 +119,26 @@ cdef class Expr:
     def children(self):
         return {_ExprKey.unwrap(k): v for k, v in self.items()}
 
-    def __array_ufunc__(_, ufunc, method, *args, **kwargs):
+    def __array_ufunc__(self, ufunc, method, *args, **kwargs):
         if method != "__call__":
             return NotImplemented
-        if ufunc.__name__.startswith("_vec_"):
-            return ufunc(
-                *(np.asarray(x) if isinstance(x, Expr) else x for x in args),
-                **kwargs,
-            )
 
         DISPATCH_MAP = {
-            np.abs: _vec_abs,
-            np.add: _vec_add,
-            np.multiply: _vec_multiply,
-            np.divide: _vec_divide,
-            np.power: _vec_power,
-            np.negative: _vec_negative,
-            np.subtract: _vec_subtract,
-            np.less_equal: _vec_less_equal,
-            np.greater_equal: _vec_greater_equal,
-            np.equal: _vec_equal,
-            np.exp: exp,
-            np.log: log,
-            np.sqrt: sqrt,
-            np.sin: sin,
-            np.cos: cos,
+            np.add: lambda x, y: x + y,
+            np.subtract: lambda x, y: x - y,
+            np.multiply: lambda x, y: x * y,
+            np.divide: lambda x, y: x / y,
+            np.power: lambda x, y: x ** y,
+            np.negative: lambda x: -x,
+            np.less_equal: lambda x, y: x <= y,
+            np.greater_equal: lambda x, y: x >= y,
+            np.equal: lambda x, y: x == y,
+            np.abs: AbsExpr,
+            np.exp: ExpExpr,
+            np.log: LogExpr,
+            np.sqrt: SqrtExpr,
+            np.sin: SinExpr,
+            np.cos: CosExpr,
         }
         if (handler:= DISPATCH_MAP.get(ufunc)) is not None:
             res = handler(*args, **kwargs)
@@ -171,9 +166,6 @@ cdef class Expr:
 
     def __bool__(self) -> bool:
         return bool(self._children)
-
-    def __abs__(self) -> AbsExpr:
-        return AbsExpr(self)
 
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, (Number, Variable, Expr)):
@@ -206,6 +198,21 @@ cdef class Expr:
 
     def __radd__(self, other: Union[Number, Variable, Expr]) -> Expr:
         return self + other
+
+    def __sub__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if self._is_equal(_other):
+            return ConstExpr(0.0)
+        return self + (-_other)
+
+    def __isub__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if self._is_equal(_other):
+            return ConstExpr(0.0)
+        return self + (-_other)
+
+    def __rsub__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        return (-self) + other
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, (Number, Variable, Expr)):
@@ -273,21 +280,6 @@ cdef class Expr:
     def __neg__(self) -> Expr:
         return self * -1.0
 
-    def __sub__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        cdef Expr _other = Expr._from_other(other)
-        if self._is_equal(_other):
-            return ConstExpr(0.0)
-        return self + (-_other)
-
-    def __isub__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        cdef Expr _other = Expr._from_other(other)
-        if self._is_equal(_other):
-            return ConstExpr(0.0)
-        return self + (-_other)
-
-    def __rsub__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        return (-self) + other
-
     cdef ExprCons _cmp(self, other: Union[Number, Variable, Expr], int op):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
@@ -311,15 +303,8 @@ cdef class Expr:
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
         return self._cmp(other, op)
 
-    def __repr__(self) -> str:
-        return f"Expr({self._children})"
-
-    def _normalize(self) -> Expr:
-        self._children = {k: v for k, v in self.items() if v != 0}
-        return self
-
-    def degree(self) -> float:
-        return max((i.degree() for i in self._children)) if self else 0
+    def __abs__(self) -> AbsExpr:
+        return AbsExpr(self)
 
     def copy(self) -> Expr:
         return type(self)(self._children.copy())
@@ -339,6 +324,19 @@ cdef class Expr:
     def cos(self) -> CosExpr:
         return CosExpr(self)
 
+    def __repr__(self) -> str:
+        return f"Expr({self._children})"
+
+    def degree(self) -> float:
+        return max((i.degree() for i in self._children)) if self else 0
+
+    def items(self):
+        return self._children.items()
+
+    def _normalize(self) -> Expr:
+        self._children = {k: v for k, v in self.items() if v != 0}
+        return self
+
     @staticmethod
     cdef Expr _from_other(x: Union[Number, Variable, Expr]):
         """Convert a number or variable to an expression."""
@@ -349,9 +347,6 @@ cdef class Expr:
         elif isinstance(x, Expr):
             return x
         raise TypeError("Input must be a number, Variable, or Expr")
-
-    def items(self):
-        return self._children.items()
 
     cdef dict _to_dict(self, Expr other, bool copy = True):
         cdef dict children = self._children.copy() if copy else self._children
@@ -830,61 +825,6 @@ cpdef Expr quickprod(expressions: Iterator[Expr]):
     return res
 
 
-@cython.ufunc
-cdef Expr _vec_abs(Expr x):
-    return abs(x)
-
-
-@cython.ufunc
-cdef Expr _vec_add(Expr x, y):
-    return x + y
-
-
-@cython.ufunc
-cdef Expr _vec_multiply(Expr x, y):
-    return x * y
-
-
-@cython.ufunc
-cdef Expr _vec_divide(Expr x, y):
-    return x / y
-
-
-@cython.ufunc
-cdef Expr _vec_power(Expr x, y):
-    return x ** y
-
-
-@cython.ufunc
-cdef Expr _vec_negative(Expr x):
-    return -x
-
-
-@cython.ufunc
-cdef Expr _vec_subtract(Expr x, y):
-    return x - y
-
-
-@cython.ufunc
-cdef ExprCons _vec_less_equal(Expr x, y):
-    return x <= y
-
-
-@cython.ufunc
-cdef ExprCons _vec_greater_equal(Expr x, y):
-    return x >= y
-
-
-@cython.ufunc
-cdef ExprCons _vec_equal(Expr x, y):
-    return x == y
-
-
-@cython.ufunc
-cdef UnaryExpr _vec_to_unary(object x, type cls):
-    return cls(x)
-
-
 @to_array(MatrixExpr)
 def exp(
     x: Union[Number, Variable, Term, Expr, np.ndarray, MatrixExpr],
@@ -900,7 +840,7 @@ def exp(
     -------
     ExpExpr or MatrixExpr
     """
-    return <ExpExpr>_vec_to_unary(x, ExpExpr)
+    return np.exp(ConstExpr(<float>x)) if isinstance(x, Number) else np.exp(x)
 
 
 @to_array(MatrixExpr)
@@ -918,7 +858,7 @@ def log(
     -------
     LogExpr or MatrixExpr
     """
-    return <LogExpr>_vec_to_unary(x, LogExpr)
+    return np.log(ConstExpr(<float>x)) if isinstance(x, Number) else np.log(x)
 
 
 @to_array(MatrixExpr)
@@ -936,7 +876,7 @@ def sqrt(
     -------
     SqrtExpr or MatrixExpr
     """
-    return <SqrtExpr>_vec_to_unary(x, SqrtExpr)
+    return np.sqrt(ConstExpr(<float>x)) if isinstance(x, Number) else np.sqrt(x)
 
 
 @to_array(MatrixExpr)
@@ -954,7 +894,7 @@ def sin(
     -------
     SinExpr or MatrixExpr
     """
-    return <SinExpr>_vec_to_unary(x, SinExpr)
+    return np.sin(ConstExpr(<float>x)) if isinstance(x, Number) else np.sin(x)
 
 
 @to_array(MatrixExpr)
@@ -972,4 +912,4 @@ def cos(
     -------
     CosExpr or MatrixExpr
     """
-    return <CosExpr>_vec_to_unary(x, CosExpr)
+    return np.cos(ConstExpr(<float>x)) if isinstance(x, Number) else np.cos(x)

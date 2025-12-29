@@ -1584,9 +1584,6 @@ cdef class Variable:
     def __iter__(self):
         return PolynomialExpr._from_var(self).__iter__()
 
-    def __abs__(self):
-        return PolynomialExpr._from_var(self).__abs__()
-
     def __add__(self, other):
         return PolynomialExpr._from_var(self).__add__(other)
 
@@ -1595,6 +1592,15 @@ cdef class Variable:
 
     def __radd__(self, other):
         return PolynomialExpr._from_var(self).__radd__(other)
+
+    def __sub__(self, other):
+        return PolynomialExpr._from_var(self).__sub__(other)
+
+    def __isub__(self, other):
+        return PolynomialExpr._from_var(self).__isub__(other)
+
+    def __rsub__(self, other):
+        return PolynomialExpr._from_var(self).__rsub__(other)
 
     def __mul__(self, other):
         return PolynomialExpr._from_var(self).__mul__(other)
@@ -1620,33 +1626,26 @@ cdef class Variable:
     def __neg__(self):
         return PolynomialExpr._from_var(self).__neg__()
 
-    def __sub__(self, other):
-        return PolynomialExpr._from_var(self).__sub__(other)
-
-    def __isub__(self, other):
-        return PolynomialExpr._from_var(self).__isub__(other)
-
-    def __rsub__(self, other):
-        return PolynomialExpr._from_var(self).__rsub__(other)
-
     def __richcmp__(self, other, int op):
         return PolynomialExpr._from_var(self)._cmp(other, op)
 
+    def __abs__(self):
+        return AbsExpr(self)
+
     def exp(self) -> ExpExpr:
-        return PolynomialExpr._from_var(self).exp()
+        return ExpExpr(self)
     
     def log(self) -> LogExpr:
-        return PolynomialExpr._from_var(self).log()
+        return LogExpr(self)
     
     def sqrt(self) -> SqrtExpr:
-        return PolynomialExpr._from_var(self).sqrt()
+        return SqrtExpr(self)
 
-    def __eq__(self, other):
     def sin(self) -> SinExpr:
-        return PolynomialExpr._from_var(self).sin()
+        return SinExpr(self)
 
     def cos(self) -> CosExpr:
-        return PolynomialExpr._from_var(self).cos()
+        return CosExpr(self)
 
     def __repr__(self):
         return self.name
