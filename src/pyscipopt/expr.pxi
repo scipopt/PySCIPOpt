@@ -1,4 +1,5 @@
 ##@file expr.pxi
+import operator
 from numbers import Number
 from typing import Iterator, Optional, Type, Union
 
@@ -678,15 +679,15 @@ cdef class CosExpr(UnaryExpr):
 
 
 EXPR_UFUNC_DISPATCH = {
-    np.add: lambda x, y: x + y,
-    np.subtract: lambda x, y: x - y,
-    np.multiply: lambda x, y: x * y,
-    np.divide: lambda x, y: x / y,
-    np.power: lambda x, y: x ** y,
-    np.negative: lambda x: -x,
-    np.less_equal: lambda x, y: x <= y,
-    np.greater_equal: lambda x, y: x >= y,
-    np.equal: lambda x, y: x == y,
+    np.add: operator.add,
+    np.subtract: operator.sub,
+    np.multiply: operator.mul,
+    np.divide: operator.truediv,
+    np.power: operator.pow,
+    np.negative: operator.neg,
+    np.less_equal: operator.le,
+    np.greater_equal: operator.ge,
+    np.equal: operator.eq,
     np.abs: AbsExpr,
     np.exp: ExpExpr,
     np.log: LogExpr,
