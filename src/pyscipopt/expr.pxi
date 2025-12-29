@@ -4,7 +4,6 @@ from typing import Iterator, Optional, Type, Union
 
 from pyscipopt._decorator import to_array
 
-cimport cython
 from cpython.object cimport Py_LE, Py_EQ, Py_GE
 
 include "matrix.pxi"
