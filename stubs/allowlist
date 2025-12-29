@@ -1,3 +1,5 @@
 .*.__reduce_cython__
 .*.__setstate_cython__
 pyscipopt.scip.__test__
+pyscipopt.scip.Statistics.*
+pyscipopt._version.__conditional_annotations__
