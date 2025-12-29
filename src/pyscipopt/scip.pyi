@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import ClassVar
+from typing_extensions import disjoint_base
 
 import numpy
 from _typeshed import Incomplete
@@ -32,6 +33,7 @@ sqrt: Incomplete
 str_conversion: Incomplete
 value_to_array: Incomplete
 
+@disjoint_base
 class Benders:
     model: Incomplete
     name: Incomplete
@@ -51,6 +53,7 @@ class Benders:
     def benderssolvesub(self, solution: Incomplete, probnumber: Incomplete) -> Incomplete: ...
     def benderssolvesubconvex(self, solution: Incomplete, probnumber: Incomplete, onlyconvex: Incomplete) -> Incomplete: ...
 
+@disjoint_base
 class Benderscut:
     benders: Incomplete
     model: Incomplete
@@ -63,6 +66,7 @@ class Benderscut:
     def benderscutinit(self) -> Incomplete: ...
     def benderscutinitsol(self) -> Incomplete: ...
 
+@disjoint_base
 class BoundChange:
     def __init__(self) -> None: ...
     def getBoundchgtype(self) -> Incomplete: ...
@@ -71,6 +75,7 @@ class BoundChange:
     def getVar(self) -> Incomplete: ...
     def isRedundant(self) -> Incomplete: ...
 
+@disjoint_base
 class Branchrule:
     model: Incomplete
     def __init__(self) -> None: ...
@@ -83,6 +88,7 @@ class Branchrule:
     def branchinit(self) -> Incomplete: ...
     def branchinitsol(self) -> Incomplete: ...
 
+@disjoint_base
 class Column:
     data: Incomplete
     def __init__(self) -> None: ...
@@ -103,10 +109,12 @@ class Column:
     def __lt__(self, other: object) -> bool: ...
     def __ne__(self, other: object) -> bool: ...
 
+@disjoint_base
 class ColumnExact:
     data: Incomplete
     def __init__(self) -> None: ...
 
+@disjoint_base
 class Conshdlr:
     model: Incomplete
     name: Incomplete
@@ -145,10 +153,12 @@ class Conshdlr:
     def conssepasol(self, constraints: Incomplete, nusefulconss: Incomplete, solution: Incomplete) -> Incomplete: ...
     def constrans(self, sourceconstraint: Incomplete) -> Incomplete: ...
 
+@disjoint_base
 class Constant(GenExpr):
     number: Incomplete
     def __init__(self, *args, **kwargs) -> None: ...
 
+@disjoint_base
 class Constraint:
     data: Incomplete
     name: Incomplete
@@ -178,6 +188,7 @@ class Constraint:
     def __lt__(self, other: object) -> bool: ...
     def __ne__(self, other: object) -> bool: ...
 
+@disjoint_base
 class Cutsel:
     model: Incomplete
     def __init__(self) -> None: ...
@@ -188,10 +199,12 @@ class Cutsel:
     def cutselinitsol(self) -> Incomplete: ...
     def cutselselect(self, cuts: Incomplete, forcedcuts: Incomplete, root: Incomplete, maxnselectedcuts: Incomplete) -> Incomplete: ...
 
+@disjoint_base
 class DomainChanges:
     def __init__(self) -> None: ...
     def getBoundchgs(self) -> Incomplete: ...
 
+@disjoint_base
 class Event:
     data: Incomplete
     def __init__(self) -> None: ...
@@ -211,6 +224,7 @@ class Event:
     def __lt__(self, other: object) -> bool: ...
     def __ne__(self, other: object) -> bool: ...
 
+@disjoint_base
 class Eventhdlr:
     model: Incomplete
     name: Incomplete
@@ -224,6 +238,7 @@ class Eventhdlr:
     def eventinit(self) -> Incomplete: ...
     def eventinitsol(self) -> Incomplete: ...
 
+@disjoint_base
 class Expr:
     terms: Incomplete
     def __init__(self, *args, **kwargs) -> None: ...
@@ -252,6 +267,7 @@ class Expr:
     def __sub__(self, other): ...
     def __truediv__(self, other): ...
 
+@disjoint_base
 class ExprCons:
     _lhs: Incomplete
     _rhs: Incomplete
@@ -266,6 +282,7 @@ class ExprCons:
     def __lt__(self, other: object) -> bool: ...
     def __ne__(self, other: object) -> bool: ...
 
+@disjoint_base
 class GenExpr:
     _op: Incomplete
     children: Incomplete
@@ -291,6 +308,7 @@ class GenExpr:
     def __sub__(self, other): ...
     def __truediv__(self, other): ...
 
+@disjoint_base
 class Heur:
     model: Incomplete
     name: Incomplete
@@ -302,6 +320,7 @@ class Heur:
     def heurinit(self) -> Incomplete: ...
     def heurinitsol(self) -> Incomplete: ...
 
+@disjoint_base
 class IIS:
     def __init__(self) -> None: ...
     def getNNodes(self) -> Incomplete: ...
@@ -313,12 +332,14 @@ class IIS:
     def setSubscipInfeasible(self, infeasible: Incomplete) -> Incomplete: ...
     def setSubscipIrreducible(self, irreducible: Incomplete) -> Incomplete: ...
 
+@disjoint_base
 class IISfinder:
     iis: Incomplete
     def __init__(self) -> None: ...
     def iisfinderexec(self) -> Incomplete: ...
     def iisfinderfree(self) -> Incomplete: ...
 
+@disjoint_base
 class LP:
     name: Incomplete
     def __init__(self, *args, **kwargs) -> None: ...
@@ -415,6 +436,7 @@ class MatrixVariable(MatrixExpr):
     def varMayRound(self, direction: Incomplete = ...) -> Incomplete: ...
     def vtype(self) -> Incomplete: ...
 
+@disjoint_base
 class Model:
     _freescip: Incomplete
     data: Incomplete
@@ -841,6 +863,7 @@ class Model:
     def __lt__(self, other: object) -> bool: ...
     def __ne__(self, other: object) -> bool: ...
 
+@disjoint_base
 class NLRow:
     data: Incomplete
     name: Incomplete
@@ -858,6 +881,7 @@ class NLRow:
     def __lt__(self, other: object) -> bool: ...
     def __ne__(self, other: object) -> bool: ...
 
+@disjoint_base
 class Node:
     data: Incomplete
     def __init__(self) -> None: ...
@@ -883,6 +907,7 @@ class Node:
     def __lt__(self, other: object) -> bool: ...
     def __ne__(self, other: object) -> bool: ...
 
+@disjoint_base
 class Nodesel:
     model: Incomplete
     def __init__(self) -> None: ...
@@ -1168,10 +1193,12 @@ class PY_SCIP_STATUS:
     USERINTERRUPT: ClassVar[int] = ...
     def __init__(self) -> None: ...
 
+@disjoint_base
 class PowExpr(GenExpr):
     expo: Incomplete
     def __init__(self, *args, **kwargs) -> None: ...
 
+@disjoint_base
 class Presol:
     model: Incomplete
     def __init__(self) -> None: ...
@@ -1182,6 +1209,7 @@ class Presol:
     def presolinit(self) -> Incomplete: ...
     def presolinitpre(self) -> Incomplete: ...
 
+@disjoint_base
 class Pricer:
     model: Incomplete
     def __init__(self) -> None: ...
@@ -1193,10 +1221,12 @@ class Pricer:
     def pricerinitsol(self) -> Incomplete: ...
     def pricerredcost(self) -> Incomplete: ...
 
+@disjoint_base
 class ProdExpr(GenExpr):
     constant: Incomplete
     def __init__(self, *args, **kwargs) -> None: ...
 
+@disjoint_base
 class Prop:
     model: Incomplete
     def __init__(self) -> None: ...
@@ -1211,6 +1241,7 @@ class Prop:
     def proppresol(self, nrounds: Incomplete, presoltiming: Incomplete, result_dict: Incomplete) -> Incomplete: ...
     def propresprop(self, confvar: Incomplete, inferinfo: Incomplete, bdtype: Incomplete, relaxedbd: Incomplete) -> Incomplete: ...
 
+@disjoint_base
 class Reader:
     model: Incomplete
     name: Incomplete
@@ -1219,6 +1250,7 @@ class Reader:
     def readerread(self, filename: Incomplete) -> Incomplete: ...
     def readerwrite(self, file: Incomplete, name: Incomplete, transformed: Incomplete, objsense: Incomplete, objoffset: Incomplete, objscale: Incomplete, binvars: Incomplete, intvars: Incomplete, implvars: Incomplete, contvars: Incomplete, fixedvars: Incomplete, startnvars: Incomplete, conss: Incomplete, maxnconss: Incomplete, startnconss: Incomplete, genericnames: Incomplete) -> Incomplete: ...
 
+@disjoint_base
 class Relax:
     model: Incomplete
     name: Incomplete
@@ -1230,6 +1262,7 @@ class Relax:
     def relaxinit(self) -> Incomplete: ...
     def relaxinitsol(self) -> Incomplete: ...
 
+@disjoint_base
 class Row:
     data: Incomplete
     name: Incomplete
@@ -1262,10 +1295,12 @@ class Row:
     def __lt__(self, other: object) -> bool: ...
     def __ne__(self, other: object) -> bool: ...
 
+@disjoint_base
 class RowExact:
     data: Incomplete
     def __init__(self) -> None: ...
 
+@disjoint_base
 class Sepa:
     model: Incomplete
     name: Incomplete
@@ -1278,6 +1313,7 @@ class Sepa:
     def sepainit(self) -> Incomplete: ...
     def sepainitsol(self) -> Incomplete: ...
 
+@disjoint_base
 class Solution:
     data: Incomplete
     def __init__(self, *args, **kwargs) -> None: ...
@@ -1337,6 +1373,7 @@ class Statistics:
     @property
     def n_vars(self): ...
 
+@disjoint_base
 class SumExpr(GenExpr):
     coefs: Incomplete
     constant: Incomplete
@@ -1356,10 +1393,12 @@ class Term:
 class UnaryExpr(GenExpr):
     def __init__(self, *args, **kwargs) -> None: ...
 
+@disjoint_base
 class VarExpr(GenExpr):
     var: Incomplete
     def __init__(self, *args, **kwargs) -> None: ...
 
+@disjoint_base
 class Variable(Expr):
     data: Incomplete
     name: Incomplete
@@ -1397,5 +1436,6 @@ class Variable(Expr):
     def varMayRound(self, direction: Incomplete = ...) -> Incomplete: ...
     def vtype(self) -> Incomplete: ...
 
+@disjoint_base
 class _VarArray:
     def __init__(self, *args, **kwargs) -> None: ...
