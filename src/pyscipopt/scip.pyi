@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import ClassVar
-from typing_extensions import disjoint_base
 
 import numpy
 from _typeshed import Incomplete
+from typing_extensions import disjoint_base
 
 CONST: Term
 EventNames: dict
