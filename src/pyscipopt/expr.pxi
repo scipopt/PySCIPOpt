@@ -146,9 +146,6 @@ cdef class Expr:
         return bool(self._children)
 
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
-            return NotImplemented
-
         cdef Expr _other = Expr._from_other(other)
         if Expr._is_zero(self):
             return _other.copy()
@@ -164,7 +161,6 @@ cdef class Expr:
 
     def __iadd__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
-
         if Expr._is_zero(_other):
             return self
         elif Expr._is_sum(self) and Expr._is_sum(_other):
@@ -193,9 +189,6 @@ cdef class Expr:
         return (-self) + other
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
-            return NotImplemented
-
         cdef Expr _other = Expr._from_other(other)
         if Expr._is_zero(self) or Expr._is_zero(_other):
             return ConstExpr(0.0)
@@ -245,9 +238,6 @@ cdef class Expr:
         return ConstExpr(1.0) if Expr._is_zero(_other) else PowExpr(self, _other[CONST])
 
     def __rpow__(self, other: Union[Number, Expr]) -> ExpExpr:
-        if not isinstance(other, (Number, Expr)):
-            return NotImplemented
-
         cdef Expr _other = Expr._from_other(other)
         if not Expr._is_const(_other):
             raise TypeError("base must be a number")
@@ -259,9 +249,6 @@ cdef class Expr:
         return self * -1.0
 
     cdef ExprCons _cmp(self, other: Union[Number, Variable, Expr], int op):
-        if not isinstance(other, (Number, Variable, Expr)):
-            return NotImplemented
-
         cdef Expr _other = Expr._from_other(other)
         if op == Py_LE:
             if Expr._is_const(_other):
@@ -324,7 +311,7 @@ cdef class Expr:
             return PolynomialExpr._from_var(x)
         elif isinstance(x, Expr):
             return x
-        raise TypeError("Input must be a number, Variable, or Expr")
+        return NotImplemented
 
     cdef dict _to_dict(self, Expr other, bool copy = True):
         cdef dict children = self._children.copy() if copy else self._children
