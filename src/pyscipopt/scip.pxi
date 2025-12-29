@@ -1582,52 +1582,52 @@ cdef class Variable:
         return hash(self.ptr())
 
     def __getitem__(self, key):
-        return PolynomialExpr._from_var(self).__getitem__(key)
+        return PolynomialExpr._from_var(self)[key]
 
     def __iter__(self):
-        return PolynomialExpr._from_var(self).__iter__()
+        return iter(PolynomialExpr._from_var(self))
 
     def __add__(self, other):
-        return PolynomialExpr._from_var(self).__add__(other)
+        return PolynomialExpr._from_var(self) + other
 
     def __iadd__(self, other):
         return PolynomialExpr._from_var(self).__iadd__(other)
 
     def __radd__(self, other):
-        return PolynomialExpr._from_var(self).__radd__(other)
+        return PolynomialExpr._from_var(self) + other
 
     def __sub__(self, other):
-        return PolynomialExpr._from_var(self).__sub__(other)
+        return PolynomialExpr._from_var(self) - other
 
     def __isub__(self, other):
         return PolynomialExpr._from_var(self).__isub__(other)
 
     def __rsub__(self, other):
-        return PolynomialExpr._from_var(self).__rsub__(other)
+        return -PolynomialExpr._from_var(self) + other
 
     def __mul__(self, other):
-        return PolynomialExpr._from_var(self).__mul__(other)
+        return PolynomialExpr._from_var(self) * other
 
     def __imul__(self, other):
         return PolynomialExpr._from_var(self).__imul__(other)
 
     def __rmul__(self, other):
-        return PolynomialExpr._from_var(self).__rmul__(other)
+        return PolynomialExpr._from_var(self) * other
 
     def __truediv__(self, other):
-        return PolynomialExpr._from_var(self).__truediv__(other)
+        return PolynomialExpr._from_var(self) / other
 
     def __rtruediv__(self, other):
-        return PolynomialExpr._from_var(self).__rtruediv__(other)
+        return other / PolynomialExpr._from_var(self)
 
     def __pow__(self, other):
-        return PolynomialExpr._from_var(self).__pow__(other)
+        return PolynomialExpr._from_var(self) ** other
 
     def __rpow__(self, other):
-        return PolynomialExpr._from_var(self).__rpow__(other)
+        return other ** PolynomialExpr._from_var(self)
 
     def __neg__(self):
-        return PolynomialExpr._from_var(self).__neg__()
+        return -PolynomialExpr._from_var(self)
 
     def __richcmp__(self, other, int op):
         return PolynomialExpr._from_var(self)._cmp(other, op)
