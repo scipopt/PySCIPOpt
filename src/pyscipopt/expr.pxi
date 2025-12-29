@@ -80,12 +80,6 @@ cdef class _ExprKey:
     def __repr__(self) -> str:
         return repr(self.expr)
 
-    def degree(self) -> float:
-        return self.expr.degree()
-
-    def _to_node(self, coef: float = 1, start: int = 0) -> list[tuple]:
-        return self.expr._to_node(coef, start)
-
     @staticmethod
     def wrap(x):
         return _ExprKey(x) if isinstance(x, Expr) else x
@@ -289,7 +283,7 @@ cdef class Expr:
         return f"Expr({self._children})"
 
     def degree(self) -> float:
-        return max((i.degree() for i in self._children)) if self else 0
+        return max((i.degree() for i in self)) if self else 0
 
     def items(self):
         return self._children.items()
@@ -321,7 +315,7 @@ cdef class Expr:
     cpdef list[tuple] _to_node(self, float coef = 1, int start = 0):
         """Convert expression to list of node for SCIP expression construction"""
         cdef list[tuple] node = []
-        cdef list[tuple] child_node
+        cdef list[tuple] c_node
         cdef list[int] index = []
         cdef object k
         cdef float v
@@ -330,8 +324,8 @@ cdef class Expr:
             return node
 
         for k, v in self.items():
-            if v != 0 and (child_node := k._to_node(v, start + len(node))):
-                node.extend(child_node)
+            if v != 0 and (c_node := _ExprKey.unwrap(k)._to_node(v, start + len(node))):
+                node.extend(c_node)
                 index.append(start + len(node) - 1)
 
         if node:
