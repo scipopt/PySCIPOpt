@@ -40,7 +40,7 @@ cdef class Term:
         return Term(*self.vars, *other.vars)
 
     def __repr__(self) -> str:
-        return f"Term({', '.join(map(str, self.vars))})"
+        return f"Term({self[0]})" if self.degree() == 1 else f"Term{self.vars}"
 
     cpdef int degree(self):
         return len(self.vars)
