@@ -2,9 +2,12 @@
 
 ## Unreleased
 ### Added
+- Speed up MatrixExpr.sum(axis=...) via quicksum
 ### Fixed
 - all fundamental callbacks now raise an error if not implemented
+- Fixed the type of MatrixExpr.sum(axis=...) result from MatrixVariable to MatrixExpr.
 ### Changed
+- changed default value of enablepricing flag to True
 ### Removed
 
 ## 6.0.0 - 2025.xx.yy

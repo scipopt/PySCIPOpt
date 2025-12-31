@@ -3,10 +3,14 @@
 # TODO Add tests
 """
 
-from numbers import Number
-from typing import Union
-
+from typing import Optional, Tuple, Union
 import numpy as np
+try:
+    # NumPy 2.x location
+    from numpy.lib.array_utils import normalize_axis_tuple
+except ImportError:
+    # Fallback for NumPy 1.x
+    from numpy.core.numeric import normalize_axis_tuple
 
 
 def _matrixexpr_richcmp(self, other, op):
@@ -36,16 +40,61 @@ def _matrixexpr_richcmp(self, other, op):
 
 
 class MatrixExpr(np.ndarray):
-    def sum(self, **kwargs):
-        """
-        Based on `numpy.ndarray.sum`, but returns a scalar if `axis=None`.
-        This is useful for matrix expressions to compare with a matrix or a scalar.
-        """
 
-        if kwargs.get("axis") is None:
-            # Speed up `.sum()` #1070
-            return quicksum(self.flat)
-        return super().sum(**kwargs)
+    def sum(
+        self,
+        axis: Optional[Union[int, Tuple[int, ...]]] = None,
+        keepdims: bool = False,
+        **kwargs,
+    ) -> Union[Expr, MatrixExpr]:
+        """
+        Return the sum of the array elements over the given axis.
+
+        Parameters
+        ----------
+        axis : None or int or tuple of ints, optional
+            Axis or axes along which a sum is performed. The default, axis=None, will
+            sum all of the elements of the input array. If axis is negative it counts
+            from the last to the first axis. If axis is a tuple of ints, a sum is
+            performed on all of the axes specified in the tuple instead of a single axis
+            or all the axes as before.
+
+        keepdims : bool, optional
+            If this is set to True, the axes which are reduced are left in the result as
+            dimensions with size one. With this option, the result will broadcast
+            correctly against the input array.
+
+        **kwargs : ignored
+            Additional keyword arguments are ignored. They exist for compatibility
+            with `numpy.ndarray.sum`.
+
+        Returns
+        -------
+        Expr or MatrixExpr
+            If the sum is performed over all axes, return an Expr, otherwise return
+            a MatrixExpr.
+
+        """
+        axis: Tuple[int, ...] = normalize_axis_tuple(
+            range(self.ndim) if axis is None else axis, self.ndim
+        )
+        if len(axis) == self.ndim:
+            res = quicksum(self.flat)
+            return (
+                np.array([res], dtype=object).reshape([1] * self.ndim).view(MatrixExpr)
+                if keepdims
+                else res
+            )
+
+        keep_axes = tuple(i for i in range(self.ndim) if i not in axis)
+        shape = (
+            tuple(1 if i in axis else self.shape[i] for i in range(self.ndim))
+            if keepdims
+            else tuple(self.shape[i] for i in keep_axes)
+        )
+        return np.apply_along_axis(
+            quicksum, -1, self.transpose(keep_axes + axis).reshape(shape + (-1,))
+        ).view(MatrixExpr)
 
     def __le__(self, other: Union[Number, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 1)

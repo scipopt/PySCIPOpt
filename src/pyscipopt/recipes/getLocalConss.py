@@ -24,7 +24,7 @@ def getLocalConss(model: Model, node = None) -> List[List[Constraint]]:
     else:
         cur_node = node
 
-    added_conss = []
+    added_conss: List[Constraint] = []
     while cur_node is not None:
         added_conss = cur_node.getAddedConss() + added_conss
         cur_node = cur_node.getParent()

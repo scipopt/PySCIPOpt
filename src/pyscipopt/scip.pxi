@@ -2861,7 +2861,7 @@ cdef class IIS:
 ##
 cdef class Model:
 
-    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=False, createscip=True, threadsafe=False):
+    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=True, createscip=True, threadsafe=False):
         """
         Main class holding a pointer to SCIP for managing most interactions
 
@@ -2878,7 +2878,7 @@ cdef class Model:
         globalcopy : bool, optional
             whether to create a global or a local copy (default True)
         enablepricing : bool, optional
-            whether to enable pricing in copy (default False)
+            whether to enable pricing in copy (default True)
         createscip : bool, optional
             initialize the Model object and creates a SCIP instance (default True)
         threadsafe : bool, optional
