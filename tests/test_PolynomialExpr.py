@@ -37,11 +37,11 @@ def test_add(model):
     assert str(expr) == "Expr({Term(x): 0.0})"
 
     expr = PolynomialExpr() + 0
-    assert type(expr) is ConstExpr
+    assert isinstance(expr, ConstExpr)
     assert str(expr) == "Expr({Term(): 0.0})"
 
     expr = PolynomialExpr() + 1
-    assert type(expr) is ConstExpr
+    assert isinstance(expr, ConstExpr)
     assert str(expr) == "Expr({Term(): 1.0})"
 
 
@@ -50,22 +50,22 @@ def test_iadd(model):
 
     expr = ConstExpr(2.0)
     expr += 0
-    assert type(expr) is ConstExpr
+    assert isinstance(expr, ConstExpr)
     assert str(expr) == "Expr({Term(): 2.0})"
 
     expr = ConstExpr(2.0)
     expr += Expr({CONST: 0.0})
-    assert type(expr) is ConstExpr
+    assert isinstance(expr, ConstExpr)
     assert str(expr) == "Expr({Term(): 2.0})"
 
     expr = ConstExpr(2.0)
     expr += Expr()
-    assert type(expr) is ConstExpr
+    assert isinstance(expr, ConstExpr)
     assert str(expr) == "Expr({Term(): 2.0})"
 
     expr = ConstExpr(2.0)
     expr += -2
-    assert type(expr) is ConstExpr
+    assert isinstance(expr, ConstExpr)
     assert str(expr) == "Expr({Term(): 0.0})"
 
     expr = ConstExpr(2.0)
@@ -121,7 +121,7 @@ def test_mul(model):
     assert str(expr) == "Expr({Term(x, x): 2.0, Term(x, y): 2.0})"
 
     expr = ConstExpr(1.0) * PolynomialExpr()
-    assert type(expr) is ConstExpr
+    assert isinstance(expr, ConstExpr)
     assert str(expr) == "Expr({Term(): 0.0})"
 
 
@@ -133,7 +133,7 @@ def test_div(model):
     assert str(expr) == "Expr({Term(x): 1.0, Term(y): 2.0})"
 
     expr = PolynomialExpr({Term(x): 2.0}) / x
-    assert type(expr) is ProdExpr
+    assert isinstance(expr, ProdExpr)
     assert (
         str(expr)
         == "ProdExpr({(Expr({Term(x): 2.0}), PowExpr(Expr({Term(x): 1.0}), -1.0)): 1.0})"

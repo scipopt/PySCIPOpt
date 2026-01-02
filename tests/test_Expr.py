@@ -214,7 +214,7 @@ def test_imul(model):
 
     expr = Expr({Term(x): 1.0, CONST: 1.0})
     expr *= 0
-    assert type(expr) is ConstExpr
+    assert isinstance(expr, ConstExpr)
     assert str(expr) == "Expr({Term(): 0.0})"
 
     expr = Expr({Term(x): 1.0, CONST: 1.0})
@@ -322,12 +322,12 @@ def test_isub(model):
 
     expr = 2**x
     expr -= exp(x * log(2.0))
-    assert type(expr) is ConstExpr
+    assert isinstance(expr, ConstExpr)
     assert str(expr) == "Expr({Term(): 0.0})"
 
     expr = exp(x * log(2.0))
     expr -= 2**x
-    assert type(expr) is ConstExpr
+    assert isinstance(expr, ConstExpr)
     assert str(expr) == "Expr({Term(): 0.0})"
 
     expr = sin(x)
