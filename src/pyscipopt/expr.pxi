@@ -383,7 +383,7 @@ cdef class Expr(UnaryOperator):
         return isinstance(expr, ConstExpr) or (
             Expr._is_sum(expr)
             and len(expr._children) == 1
-            and (<Expr>expr)._fchild() is CONST
+            and (<Expr>expr)._fchild() == CONST
         )
 
     @staticmethod
@@ -493,7 +493,7 @@ cdef class ConstExpr(PolynomialExpr):
 cdef class FuncExpr(Expr):
 
     def __init__(self, children: Optional[dict[Union[Term, Expr, _ExprKey], float]] = None):
-        if children and any((i is CONST) for i in children):
+        if children and any((i == CONST) for i in children):
             raise ValueError("FuncExpr can't have Term without Variable as a child")
 
         super().__init__(children)
