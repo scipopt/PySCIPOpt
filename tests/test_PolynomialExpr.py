@@ -1,7 +1,7 @@
 import pytest
 
 from pyscipopt import Expr, Model, Variable, sin, sqrt
-from pyscipopt.scip import CONST, ConstExpr, PolynomialExpr, ProdExpr, Term
+from pyscipopt.scip import CONST, AbsExpr, ConstExpr, PolynomialExpr, ProdExpr, Term
 
 
 @pytest.fixture(scope="module")
@@ -165,3 +165,27 @@ def test_to_node(model):
         (ProdExpr, [3, 4]),
         (Expr, [2, 5]),
     ]
+
+
+def test_abs(model):
+    m, x, y = model
+
+    expr = abs(PolynomialExpr({Term(x): -2.0, Term(y): 4.0}))
+    assert type(expr) is AbsExpr
+    assert str(expr) == "AbsExpr(Expr({Term(x): -2.0, Term(y): 4.0}))"
+
+    expr = abs(ConstExpr(-3.0))
+    assert type(expr) is ConstExpr
+    assert str(expr) == "Expr({Term(): 3.0})"
+
+
+def test_neg(model):
+    m, x, y = model
+
+    expr = -PolynomialExpr({Term(x): -2.0, Term(y): 4.0})
+    assert type(expr) is PolynomialExpr
+    assert str(expr) == "Expr({Term(x): 2.0, Term(y): -4.0})"
+
+    expr = -ConstExpr(-3.0)
+    assert type(expr) is ConstExpr
+    assert str(expr) == "Expr({Term(): 3.0})"
