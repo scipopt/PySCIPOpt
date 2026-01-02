@@ -387,18 +387,18 @@ cdef class Expr(UnaryOperator):
         )
 
     @staticmethod
+    cdef bool _is_zero(expr):
+        return isinstance(expr, Expr) and (
+            not expr or (Expr._is_const(expr) and expr[CONST] == 0)
+        )
+
+    @staticmethod
     cdef bool _is_term(expr):
         return (
             Expr._is_sum(expr)
             and len(expr._children) == 1
             and isinstance((<Expr>expr)._fchild(), Term)
             and (<Expr>expr)[(<Expr>expr)._fchild()] == 1
-        )
-
-    @staticmethod
-    cdef bool _is_zero(expr):
-        return isinstance(expr, Expr) and (
-            not expr or (Expr._is_const(expr) and expr[CONST] == 0)
         )
 
     cdef Expr _to_polynomial(self, cls: Type[Expr]):
@@ -643,8 +643,8 @@ cdef class UnaryExpr(FuncExpr):
     def __repr__(self) -> str:
         if Expr._is_const(child := _ExprKey.unwrap(self._fchild())):
             return f"{type(self).__name__}({child[CONST]})"
-        elif Expr._is_term(child):
-            return f"{type(self).__name__}({(<Expr>child)._fchild()})"
+        elif Expr._is_term(child) and child[(term := (<Expr>child)._fchild())] == 1:
+            return f"{type(self).__name__}({term})"
         return f"{type(self).__name__}({child})"
 
     def copy(self) -> UnaryExpr:
