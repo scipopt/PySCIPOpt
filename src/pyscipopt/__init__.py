@@ -4,7 +4,7 @@ from ._version import __version__
 import os
 if hasattr(os, 'add_dll_directory'):
     if os.getenv('SCIPOPTDIR'):
-        os.add_dll_directory(os.path.join(os.getenv('SCIPOPTDIR').strip('"'), 'bin'))
+        os.add_dll_directory(os.path.join(os.environ['SCIPOPTDIR'].strip('"'), 'bin'))
 
 # export user-relevant objects:
 from pyscipopt.Multidict import multidict as multidict
