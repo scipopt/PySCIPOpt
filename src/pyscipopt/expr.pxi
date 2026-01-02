@@ -246,7 +246,7 @@ cdef class Expr(UnaryOperator):
             raise ZeroDivisionError("division by zero")
         if self._is_equal(_other):
             return ConstExpr(1.0)
-        return self * (_other ** -1.0)
+        return self * (_other ** ConstExpr(-1.0))
 
     def __rtruediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
         return Expr._from_other(other) / self
@@ -264,7 +264,7 @@ cdef class Expr(UnaryOperator):
         return ExpExpr(self * LogExpr(_other))
 
     def __neg__(self) -> Expr:
-        return self * -1.0
+        return self * ConstExpr(-1.0)
 
     cdef ExprCons _cmp(self, other: Union[Number, Variable, Expr], int op):
         cdef Expr _other = Expr._from_other(other)
