@@ -459,13 +459,13 @@ cdef class PolynomialExpr(Expr):
     cdef PolynomialExpr _from_var(Variable var):
         return PolynomialExpr({Term(var): 1.0})
 
-    @classmethod
-    def _to_subclass(cls, dict[Term, float] children) -> PolynomialExpr:
+    @staticmethod
+    cdef PolynomialExpr _to_subclass(dict[Term, float] children):
         if len(children) == 0:
             return ConstExpr(0.0)
         elif len(children) == 1 and CONST in children:
             return ConstExpr(children[CONST])
-        return cls(children)
+        return PolynomialExpr(children)
 
 
 cdef class ConstExpr(PolynomialExpr):
