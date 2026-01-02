@@ -531,11 +531,8 @@ cdef class ProdExpr(FuncExpr):
 
     def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
-        if Expr._is_const(_other):
-            if _other[CONST] == 0:
-                self = ConstExpr(0.0)
-            else:
-                self.coef *= _other[CONST]
+        if Expr._is_const(_other) and _other[CONST] != 0 and _other[CONST] != 1:
+            self.coef *= _other[CONST]
             return self
         return super().__imul__(_other)
 
