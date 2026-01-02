@@ -1536,17 +1536,9 @@ cdef class Node:
                 and self.scip_node == (<Node>other).scip_node)
 
 
-cdef class Variable:
+cdef class Variable(UnaryOperator):
 
     __array_priority__ = 100
-
-    def __array_ufunc__(self, ufunc, method, *args, **kwargs):
-        if method != "__call__":
-            return NotImplemented
-
-        if (handler := EXPR_UFUNC_DISPATCH.get(ufunc)) is not None:
-            return handler(*args, **kwargs)
-        return NotImplemented
 
     @staticmethod
     cdef create(SCIP_VAR* scip_var):
@@ -1577,6 +1569,9 @@ cdef class Variable:
 
     def ptr(self):
         return <size_t>(self.scip_var)
+
+    def __array_ufunc__(self, ufunc, method, *args, **kwargs):
+        return Expr.__array_ufunc__(self, ufunc, method, *args, **kwargs)
 
     def __hash__(self):
         return hash(self.ptr())
@@ -1631,24 +1626,6 @@ cdef class Variable:
 
     def __richcmp__(self, other, int op):
         return PolynomialExpr._from_var(self)._cmp(other, op)
-
-    def __abs__(self):
-        return AbsExpr(self)
-
-    def exp(self) -> ExpExpr:
-        return ExpExpr(self)
-    
-    def log(self) -> LogExpr:
-        return LogExpr(self)
-    
-    def sqrt(self) -> SqrtExpr:
-        return SqrtExpr(self)
-
-    def sin(self) -> SinExpr:
-        return SinExpr(self)
-
-    def cos(self) -> CosExpr:
-        return CosExpr(self)
 
     def __repr__(self):
         return self.name

@@ -90,7 +90,28 @@ cdef class _ExprKey:
         return x.expr if isinstance(x, _ExprKey) else x
 
 
-cdef class Expr:
+cdef class UnaryOperator:
+
+    def __abs__(self) -> AbsExpr:
+        return AbsExpr(self)
+
+    def exp(self) -> ExpExpr:
+        return ExpExpr(self)
+    
+    def log(self) -> LogExpr:
+        return LogExpr(self)
+    
+    def sqrt(self) -> SqrtExpr:
+        return SqrtExpr(self)
+
+    def sin(self) -> SinExpr:
+        return SinExpr(self)
+
+    def cos(self) -> CosExpr:
+        return CosExpr(self)
+
+
+cdef class Expr(UnaryOperator):
     """Base class for mathematical expressions."""
 
     cdef readonly dict _children
@@ -259,26 +280,8 @@ cdef class Expr:
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
         return self._cmp(other, op)
 
-    def __abs__(self) -> AbsExpr:
-        return AbsExpr(self)
-
     def copy(self) -> Expr:
         return type(self)(self._children.copy())
-
-    def exp(self) -> ExpExpr:
-        return ExpExpr(self)
-    
-    def log(self) -> LogExpr:
-        return LogExpr(self)
-    
-    def sqrt(self) -> SqrtExpr:
-        return SqrtExpr(self)
-
-    def sin(self) -> SinExpr:
-        return SinExpr(self)
-
-    def cos(self) -> CosExpr:
-        return CosExpr(self)
 
     def __repr__(self) -> str:
         return f"Expr({self._children})"
@@ -800,6 +803,10 @@ cpdef Expr quickprod(expressions: Iterator[Expr]):
     return res
 
 
+cdef inline _ensure_unary_compatible(x):
+    return ConstExpr(<float>x) if isinstance(x, Number) else x
+
+
 def exp(
     x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
 ) -> Union[ExpExpr, np.ndarray, MatrixExpr]:
@@ -814,7 +821,7 @@ def exp(
     -------
     ExpExpr, np.ndarray, MatrixExpr
     """
-    return np.exp(ConstExpr(<float>x)) if isinstance(x, Number) else np.exp(x)
+    return np.exp(_ensure_unary_compatible(x))
 
 
 def log(
@@ -831,7 +838,7 @@ def log(
     -------
     LogExpr, np.ndarray, MatrixExpr
     """
-    return np.log(ConstExpr(<float>x)) if isinstance(x, Number) else np.log(x)
+    return np.log(_ensure_unary_compatible(x))
 
 
 def sqrt(
@@ -848,7 +855,7 @@ def sqrt(
     -------
     SqrtExpr, np.ndarray, MatrixExpr
     """
-    return np.sqrt(ConstExpr(<float>x)) if isinstance(x, Number) else np.sqrt(x)
+    return np.sqrt(_ensure_unary_compatible(x))
 
 
 def sin(
@@ -865,7 +872,7 @@ def sin(
     -------
     SinExpr, np.ndarray, MatrixExpr
     """
-    return np.sin(ConstExpr(<float>x)) if isinstance(x, Number) else np.sin(x)
+    return np.sin(_ensure_unary_compatible(x))
 
 
 def cos(
@@ -882,4 +889,4 @@ def cos(
     -------
     CosExpr, np.ndarray, MatrixExpr
     """
-    return np.cos(ConstExpr(<float>x)) if isinstance(x, Number) else np.cos(x)
+    return np.cos(_ensure_unary_compatible(x))
