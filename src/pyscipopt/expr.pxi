@@ -135,7 +135,7 @@ cdef class Expr(UnaryOperator):
         if method != "__call__":
             return NotImplemented
 
-        if (handler := EXPR_UFUNC_DISPATCH.get(ufunc)) is not None:
+        if (handler := UFUNC_DISPATCH.get(ufunc)) is not None:
             return handler(*args, **kwargs)
         return NotImplemented
 
@@ -681,7 +681,7 @@ cdef class CosExpr(UnaryExpr):
     ...
 
 
-EXPR_UFUNC_DISPATCH = {
+cdef dict UFUNC_DISPATCH = {
     np.add: operator.add,
     np.subtract: operator.sub,
     np.multiply: operator.mul,
