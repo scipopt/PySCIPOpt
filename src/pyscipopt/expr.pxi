@@ -148,23 +148,23 @@ cdef class Expr(UnaryOperator):
             return NotImplemented
 
         if ufunc is np.add:
-            return operator.add(*args, **kwargs)
+            return args[0] + args[1]
         elif ufunc is np.subtract:
-            return operator.sub(*args, **kwargs)
+            return args[0] - args[1]
         elif ufunc is np.multiply:
-            return operator.mul(*args, **kwargs)
+            return args[0] * args[1]
         elif ufunc is np.true_divide:
-            return operator.truediv(*args, **kwargs)
+            return args[0] / args[1]
         elif ufunc is np.power:
-            return operator.pow(*args, **kwargs)
+            return args[0] ** args[1]
         elif ufunc is np.negative:
-            return operator.neg(*args, **kwargs)
+            return -args[0]
         elif ufunc is np.less_equal:
-            return operator.le(*args, **kwargs)
+            return args[0] <= args[1]
         elif ufunc is np.greater_equal:
-            return operator.ge(*args, **kwargs)
+            return args[0] >= args[1]
         elif ufunc is np.equal:
-            return operator.eq(*args, **kwargs)
+            return args[0] == args[1]
         elif ufunc is np.absolute:
             return AbsExpr(*args, **kwargs)
         elif ufunc is np.exp:
@@ -312,6 +312,7 @@ cdef class Expr(UnaryOperator):
             if Expr._is_const(_other):
                 return ExprCons(self, lhs=_other[CONST], rhs=_other[CONST])
             return ExprCons(self - _other, lhs=0.0, rhs=0.0)
+
         raise NotImplementedError("Expr can only support with '<=', '>=', or '=='.")
 
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
