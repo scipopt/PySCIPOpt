@@ -271,16 +271,15 @@ cdef class Expr(UnaryOperator):
         if op == Py_LE:
             if Expr._is_const(_other):
                 return ExprCons(self, rhs=_other[CONST])
-            return ExprCons(self.__add__(_other.__neg__()), rhs=0.0)
+            return ExprCons(self - _other, rhs=0.0)
         elif op == Py_GE:
             if Expr._is_const(_other):
                 return ExprCons(self, lhs=_other[CONST])
-            return ExprCons(self.__add__(_other.__neg__()), lhs=0.0)
+            return ExprCons(self - _other, lhs=0.0)
         elif op == Py_EQ:
             if Expr._is_const(_other):
                 return ExprCons(self, lhs=_other[CONST], rhs=_other[CONST])
-            return ExprCons(self.__add__(_other.__neg__()), lhs=0.0, rhs=0.0)
-
+            return ExprCons(self - _other, lhs=0.0, rhs=0.0)
         raise NotImplementedError("Expr can only support with '<=', '>=', or '=='.")
 
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
