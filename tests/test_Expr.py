@@ -119,6 +119,19 @@ def test_add(model):
         == "Expr({Term(x): 1.0, Term(): 1.0, ExpExpr(ProdExpr({(Expr({Term(x): 1.0}), LogExpr(2.0)): 1.0})): 1.0})"
     )
 
+    # numpy array addition
+    assert str(np.add(x, 2)) == "Expr({Term(x): 1.0, Term(): 2.0})"
+    assert str(np.array([x]) + 2) == "[Expr({Term(x): 1.0, Term(): 2.0})]"
+    assert str(1 + np.array([x])) == "[Expr({Term(x): 1.0, Term(): 1.0})]"
+    assert (
+        str(np.array([x, y]) + np.array([2]))
+        == "[Expr({Term(x): 1.0, Term(): 2.0}) Expr({Term(y): 1.0, Term(): 2.0})]"
+    )
+    assert (
+        str(np.array([[y]]) + np.array([[x]]))
+        == "[[Expr({Term(y): 1.0, Term(x): 1.0})]]"
+    )
+
 
 def test_iadd(model):
     m, x, y = model
@@ -191,6 +204,10 @@ def test_mul(model):
         == "Expr({ProdExpr({(Term(x), Term(y)): 1.0}): -1.0})"
     )
 
+    # numpy array multiplication
+    assert str(np.multiply(x, 3)) == "Expr({Term(x): 3.0})"
+    assert str(np.array([x]) * 3) == "[Expr({Term(x): 3.0})]"
+
 
 def test_imul(model):
     m, x, y = model
@@ -220,6 +237,10 @@ def test_div(model):
 
     assert str(expr2 / expr2) == "Expr({Term(): 1.0})"
 
+    # test numpy array division
+    assert str(np.divide(x, 2)) == "Expr({Term(x): 0.5})"
+    assert str(np.array([x]) / 2) == "[Expr({Term(x): 0.5})]"
+
 
 def test_pow(model):
     m, x, y = model
@@ -231,6 +252,10 @@ def test_pow(model):
 
     with pytest.raises(TypeError):
         x **= sqrt(2)
+
+    # test numpy array power
+    assert str(np.power(x, 3)) == "Expr({Term(x, x, x): 1.0})"
+    assert str(np.array([x]) ** 3) == "[Expr({Term(x, x, x): 1.0})]"
 
 
 def test_rpow(model):
@@ -277,6 +302,10 @@ def test_sub(model):
         str(1 - expr1)
         == "Expr({ExpExpr(ProdExpr({(Expr({Term(x): 1.0}), LogExpr(2.0)): 1.0})): -1.0, Term(): 1.0})"
     )
+
+    # test numpy array subtraction
+    assert str(np.subtract(x, 2)) == "Expr({Term(x): 1.0, Term(): -2.0})"
+    assert str(np.array([x]) - 2) == "[Expr({Term(x): 1.0, Term(): -2.0})]"
 
 
 def test_isub(model):
@@ -332,6 +361,9 @@ def test_le(model):
         == "ExprCons(Expr({PowExpr(Expr({Term(x): 1.0}), 1.5): -1.0, ExpExpr(Expr({Term(x): 1.0, Term(y): 2.0})): 1.0}), None, 1.0)"
     )
 
+    # test numpy array less equal
+    assert str(np.less_equal(x, 2)) == "ExprCons(Expr({Term(x): 1.0}), None, 2.0)"
+
     with pytest.raises(TypeError):
         expr1 <= "invalid"
 
@@ -366,6 +398,9 @@ def test_ge(model):
         == "ExprCons(Expr({Term(x): 1.0, Term(y): 2.0, PowExpr(Expr({Term(x): 1.0}), 1.5): -1.0}), 1.0, None)"
     )
 
+    # test numpy array greater equal
+    assert str(np.greater_equal(x, 2)) == "ExprCons(Expr({Term(x): 1.0}), 2.0, None)"
+
     with pytest.raises(TypeError):
         expr1 >= "invalid"
 
@@ -397,6 +432,9 @@ def test_eq(model):
         str(x == 1 + x**1.5)
         == "ExprCons(Expr({Term(x): 1.0, PowExpr(Expr({Term(x): 1.0}), 1.5): -1.0}), 1.0, 1.0)"
     )
+
+    # test numpy array equal
+    assert str(np.equal(x, 2)) == "ExprCons(Expr({Term(x): 1.0}), 2.0, 2.0)"
 
     with pytest.raises(TypeError):
         expr1 == "invalid"
@@ -494,6 +532,25 @@ def test_is_equal(model):
     )
     assert _ExprKey(Expr({CONST: 0.0})) == _ExprKey(PolynomialExpr({CONST: 0.0}))
     assert _ExprKey(Expr({CONST: 0.0})) == _ExprKey(ConstExpr(0.0))
+
+
+def test_neg(model):
+    m, x, y = model
+
+    expr1 = -Expr({Term(x): 1.0, CONST: -2.0})
+    assert type(expr1) is Expr
+    assert str(expr1) == "Expr({Term(x): -1.0, Term(): 2.0})"
+
+    expr2 = -(sin(x) + cos(y))
+    assert type(expr2) is Expr
+    assert str(expr2) == "Expr({SinExpr(Term(x)): -1.0, CosExpr(Term(y)): -1.0})"
+
+    # test numpy array negation
+    assert str(np.negative(x)) == "Expr({Term(x): -1.0})"
+    assert (
+        str(np.negative(np.array([x, y])))
+        == "[Expr({Term(x): -1.0}) Expr({Term(y): -1.0})]"
+    )
 
 
 def test_sin(model):
