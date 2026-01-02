@@ -496,12 +496,12 @@ cdef class ProdExpr(FuncExpr):
     cdef readonly float coef
     __slots__ = ("coef",)
 
-    def __init__(self, *children: Union[Term, Expr], float coef = 1.0):
+    def __init__(self, *children: Union[Term, Expr]):
         if len(set(children)) != len(children):
             raise ValueError("ProdExpr can't have duplicate children")
 
         super().__init__(dict.fromkeys(children, 1.0))
-        self.coef = coef
+        self.coef = 1.0
 
     def __hash__(self) -> int:
         return (frozenset(self), self.coef).__hash__()
@@ -544,11 +544,6 @@ cdef class ProdExpr(FuncExpr):
 
     def __repr__(self) -> str:
         return f"ProdExpr({{{tuple(self)}: {self.coef}}})"
-
-    def _normalize(self) -> Union[ConstExpr, ProdExpr]:
-        if self.coef == 0:
-            self = ConstExpr(0.0)
-        return self
 
 
 cdef class PowExpr(FuncExpr):
