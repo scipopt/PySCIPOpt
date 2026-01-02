@@ -508,7 +508,7 @@ cdef class ProdExpr(FuncExpr):
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
         if isinstance(_other, ProdExpr) and self._is_child_equal(_other):
-            return ProdExpr(*self, coef=self.coef + _other.coef)
+            return ProdExpr(*self._children, coef=self.coef + _other.coef)
         return super().__add__(_other)
 
     def __iadd__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -521,7 +521,7 @@ cdef class ProdExpr(FuncExpr):
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
         if Expr._is_const(_other) and _other[CONST] != 0 and _other[CONST] != 1:
-            return ProdExpr(*self, coef=self.coef * _other[CONST])
+            return ProdExpr(*self._children, coef=self.coef * _other[CONST])
         return super().__mul__(_other)
 
     def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -546,7 +546,7 @@ cdef class ProdExpr(FuncExpr):
         return self
 
     cdef ProdExpr copy(self):
-        return ProdExpr(*self._children.keys(), coef=self.coef)
+        return ProdExpr(*self._children, coef=self.coef)
 
 
 cdef class PowExpr(FuncExpr):
