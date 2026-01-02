@@ -69,3 +69,15 @@ def test_mul(model):
     expr *= expr
     assert isinstance(expr, PowExpr)
     assert str(expr) == "PowExpr(ProdExpr({(Term(x), Term(y)): 3.0}), 2.0)"
+
+
+def test_cmp(model):
+    m, x, y = model
+
+    expr1 = sin(x) * y
+    expr2 = y * sin(x)
+    assert str(expr1 == expr2) == "ExprCons(Expr({}), 0.0, 0.0)"
+    assert (
+        str(expr1 == 1)
+        == "ExprCons(ProdExpr({(SinExpr(Term(x)), Expr({Term(y): 1.0})): 1.0}), 1.0, 1.0)"
+    )
