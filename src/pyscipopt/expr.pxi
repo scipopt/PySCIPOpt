@@ -147,8 +147,36 @@ cdef class Expr(UnaryOperator):
         if method != "__call__":
             return NotImplemented
 
-        if (handler := UFUNC_DISPATCH.get(ufunc)) is not None:
-            return handler(*args, **kwargs)
+        if ufunc is np.add:
+            return operator.add(*args, **kwargs)
+        elif ufunc is np.subtract:
+            return operator.sub(*args, **kwargs)
+        elif ufunc is np.multiply:
+            return operator.mul(*args, **kwargs)
+        elif ufunc is np.true_divide:
+            return operator.truediv(*args, **kwargs)
+        elif ufunc is np.power:
+            return operator.pow(*args, **kwargs)
+        elif ufunc is np.negative:
+            return operator.neg(*args, **kwargs)
+        elif ufunc is np.less_equal:
+            return operator.le(*args, **kwargs)
+        elif ufunc is np.greater_equal:
+            return operator.ge(*args, **kwargs)
+        elif ufunc is np.equal:
+            return operator.eq(*args, **kwargs)
+        elif ufunc is np.absolute:
+            return AbsExpr(*args, **kwargs)
+        elif ufunc is np.exp:
+            return ExpExpr(*args, **kwargs)
+        elif ufunc is np.log:
+            return LogExpr(*args, **kwargs)
+        elif ufunc is np.sqrt:
+            return SqrtExpr(*args, **kwargs)
+        elif ufunc is np.sin:
+            return SinExpr(*args, **kwargs)
+        elif ufunc is np.cos:
+            return CosExpr(*args, **kwargs)
         return NotImplemented
 
     def __hash__(self) -> int:
@@ -647,25 +675,6 @@ cdef class SinExpr(UnaryExpr):
 cdef class CosExpr(UnaryExpr):
     """Expression like `cos(expression)`."""
     ...
-
-
-cdef dict UFUNC_DISPATCH = {
-    np.add: operator.add,
-    np.subtract: operator.sub,
-    np.multiply: operator.mul,
-    np.divide: operator.truediv,
-    np.power: operator.pow,
-    np.negative: operator.neg,
-    np.less_equal: operator.le,
-    np.greater_equal: operator.ge,
-    np.equal: operator.eq,
-    np.abs: AbsExpr,
-    np.exp: ExpExpr,
-    np.log: LogExpr,
-    np.sqrt: SqrtExpr,
-    np.sin: SinExpr,
-    np.cos: CosExpr,
-}
 
 
 cdef class ExprCons:
