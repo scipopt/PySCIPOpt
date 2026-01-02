@@ -1,7 +1,7 @@
 import pytest
 
-from pyscipopt import Expr, Model, sin, sqrt
-from pyscipopt.scip import CONST, ConstExpr, PolynomialExpr, Term
+from pyscipopt import Expr, Model, Variable, sin, sqrt
+from pyscipopt.scip import CONST, ConstExpr, PolynomialExpr, ProdExpr, Term
 
 
 @pytest.fixture(scope="module")
@@ -23,6 +23,26 @@ def test_init_error(model):
 
     with pytest.raises(TypeError):
         ConstExpr("invalid")
+
+
+def test_add(model):
+    m, x, y = model
+
+    expr = PolynomialExpr({Term(x): 2.0, Term(y): 4.0}) + 3
+    assert type(expr) is PolynomialExpr
+    assert str(expr) == "Expr({Term(x): 2.0, Term(y): 4.0, Term(): 3.0})"
+
+    expr = PolynomialExpr({Term(x): 2.0}) + (-2 * x)
+    assert type(expr) is PolynomialExpr
+    assert str(expr) == "Expr({Term(x): 0.0})"
+
+    expr = PolynomialExpr() + 0
+    assert type(expr) is ConstExpr
+    assert str(expr) == "Expr({Term(): 0.0})"
+
+    expr = PolynomialExpr() + 1
+    assert type(expr) is ConstExpr
+    assert str(expr) == "Expr({Term(): 1.0})"
 
 
 def test_iadd(model):
@@ -87,3 +107,61 @@ def test_iadd(model):
     expr += sqrt(x)
     assert type(expr) is Expr
     assert str(expr) == "Expr({Term(x): 1.0, Term(y): 1.0, SqrtExpr(Term(x)): 1.0})"
+
+
+def test_mul(model):
+    m, x, y = model
+
+    expr = PolynomialExpr({Term(x): 2.0, Term(y): 4.0}) * 3
+    assert type(expr) is PolynomialExpr
+    assert str(expr) == "Expr({Term(x): 6.0, Term(y): 12.0})"
+
+    expr = PolynomialExpr({Term(x): 2.0}) * PolynomialExpr({Term(x): 1.0, Term(y): 1.0})
+    assert type(expr) is PolynomialExpr
+    assert str(expr) == "Expr({Term(x, x): 2.0, Term(x, y): 2.0})"
+
+    expr = ConstExpr(1.0) * PolynomialExpr()
+    assert type(expr) is ConstExpr
+    assert str(expr) == "Expr({Term(): 0.0})"
+
+
+def test_div(model):
+    m, x, y = model
+
+    expr = PolynomialExpr({Term(x): 2.0, Term(y): 4.0}) / 2
+    assert type(expr) is PolynomialExpr
+    assert str(expr) == "Expr({Term(x): 1.0, Term(y): 2.0})"
+
+    expr = PolynomialExpr({Term(x): 2.0}) / x
+    assert type(expr) is ProdExpr
+    assert (
+        str(expr)
+        == "ProdExpr({(Expr({Term(x): 2.0}), PowExpr(Expr({Term(x): 1.0}), -1.0)): 1.0})"
+    )
+
+
+def test_to_node(model):
+    m, x, y = model
+
+    expr = PolynomialExpr()
+    assert expr._to_node() == []
+    assert expr._to_node(2) == []
+
+    expr = ConstExpr(0.0)
+    assert expr._to_node() == []
+    assert expr._to_node(3) == []
+
+    expr = ConstExpr(-1)
+    assert expr._to_node() == [(ConstExpr, -1.0)]
+    assert expr._to_node(2) == [(ConstExpr, -1.0), (ConstExpr, 2.0), (ProdExpr, [0, 1])]
+
+    expr = PolynomialExpr({Term(x): 2.0, Term(y): 4.0})
+    assert expr._to_node() == [
+        (Variable, x),
+        (ConstExpr, 2.0),
+        (ProdExpr, [0, 1]),
+        (Variable, y),
+        (ConstExpr, 4.0),
+        (ProdExpr, [3, 4]),
+        (Expr, [2, 5]),
+    ]
