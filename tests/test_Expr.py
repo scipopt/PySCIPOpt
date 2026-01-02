@@ -559,3 +559,13 @@ def test_abs(model):
     assert isinstance(abs(expr), AbsExpr)
     assert str(abs(expr)) == "AbsExpr(Expr({Term(x): -3.0}))"
     assert str(np.abs(Expr({Term(x): -3.0}))) == str(abs(expr))
+
+
+def test_cmp(model):
+    m, x, y = model
+
+    with pytest.raises(NotImplementedError):
+        Expr({Term(x): -3.0}) > y
+
+    with pytest.raises(NotImplementedError):
+        Expr({Term(x): -3.0}) < y
