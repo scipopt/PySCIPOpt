@@ -285,7 +285,7 @@ cdef class Expr(UnaryOperator):
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
         return self._cmp(other, op)
 
-    def copy(self) -> Expr:
+    cdef Expr copy(self):
         return type(self)(self._children.copy())
 
     def __repr__(self) -> str:
@@ -472,7 +472,7 @@ cdef class ConstExpr(PolynomialExpr):
             return ConstExpr(self[CONST] ** _other[CONST])
         return <ConstExpr>super().__pow__(_other)
 
-    def copy(self) -> ConstExpr:
+    cdef ConstExpr copy(self):
         return ConstExpr(self[CONST])
 
 
@@ -545,7 +545,7 @@ cdef class ProdExpr(FuncExpr):
             self = ConstExpr(0.0)
         return self
 
-    def copy(self) -> ProdExpr:
+    cdef ProdExpr copy(self):
         return ProdExpr(*self._children.keys(), coef=self.coef)
 
 
@@ -600,7 +600,7 @@ cdef class PowExpr(FuncExpr):
                 self = PolynomialExpr({self: 1.0})
         return self
 
-    def copy(self) -> PowExpr:
+    cdef PowExpr copy(self):
         return PowExpr(self._fchild(), self.expo)
 
 
@@ -627,7 +627,7 @@ cdef class UnaryExpr(FuncExpr):
             return f"{type(self).__name__}({term})"
         return f"{type(self).__name__}({child})"
 
-    def copy(self) -> UnaryExpr:
+    cdef UnaryExpr copy(self):
         return type(self)(self._fchild())
 
 
