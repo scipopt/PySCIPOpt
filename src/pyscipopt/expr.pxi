@@ -81,13 +81,13 @@ cdef class _ExprKey:
     def __repr__(self) -> str:
         return repr(self.expr)
 
-    @staticmethod
-    def wrap(x):
-        return _ExprKey(x) if isinstance(x, Expr) else x
 
-    @staticmethod
-    def unwrap(x):
-        return x.expr if isinstance(x, _ExprKey) else x
+cdef inline _wrap(x):
+    return _ExprKey(x) if isinstance(x, Expr) else x
+
+
+cdef inline _unwrap(x):
+    return x.expr if isinstance(x, _ExprKey) else x
 
 
 cdef class UnaryOperator:
@@ -125,11 +125,11 @@ cdef class Expr(UnaryOperator):
         if children and not all(isinstance(i, (Term, Expr, _ExprKey)) for i in children):
             raise TypeError("All keys must be Term or Expr instances")
 
-        self._children = {_ExprKey.wrap(k): v for k, v in (children or {}).items()}
+        self._children = {_wrap(k): v for k, v in (children or {}).items()}
 
     @property
     def children(self):
-        return {_ExprKey.unwrap(k): v for k, v in self.items()}
+        return {_unwrap(k): v for k, v in self.items()}
 
     def __array_ufunc__(self, ufunc, method, *args, **kwargs):
         if method != "__call__":
@@ -148,11 +148,11 @@ cdef class Expr(UnaryOperator):
 
         if isinstance(key, Variable):
             key = Term(key)
-        return self._children.get(_ExprKey.wrap(key), 0.0)
+        return self._children.get(_wrap(key), 0.0)
 
     def __iter__(self) -> Iterator[Union[Term, Expr]]:
         for i in self._children:
-            yield _ExprKey.unwrap(i)
+            yield _unwrap(i)
 
     def __bool__(self) -> bool:
         return bool(self._children)
@@ -169,7 +169,7 @@ cdef class Expr(UnaryOperator):
             return Expr(_other._to_dict(self))
         elif self._is_equal(_other):
             return self * 2.0
-        return Expr({_ExprKey.wrap(self): 1.0, _ExprKey.wrap(_other): 1.0})
+        return Expr({_wrap(self): 1.0, _wrap(_other): 1.0})
 
     def __iadd__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
@@ -312,7 +312,7 @@ cdef class Expr(UnaryOperator):
         cdef object child
         cdef float coef
         for child, coef in (other if Expr._is_sum(other) else {other: 1.0}).items():
-            key = _ExprKey.wrap(child)
+            key = _wrap(child)
             children[key] = children.get(key, 0.0) + coef
         return children
 
@@ -328,7 +328,7 @@ cdef class Expr(UnaryOperator):
             return node
 
         for k, v in self.items():
-            if v != 0 and (c_node := _ExprKey.unwrap(k)._to_node(v, start + len(node))):
+            if v != 0 and (c_node := _unwrap(k)._to_node(v, start + len(node))):
                 node.extend(c_node)
                 index.append(start + len(node) - 1)
 
@@ -615,7 +615,7 @@ cdef class PowExpr(FuncExpr):
         if self.expo == 0:
             self = ConstExpr(1.0)
         elif self.expo == 1:
-            self = _ExprKey.unwrap(self._fchild())
+            self = _unwrap(self._fchild())
             if isinstance(self, Term):
                 self = PolynomialExpr({self: 1.0})
         return self
@@ -641,7 +641,7 @@ cdef class UnaryExpr(FuncExpr):
         return self._cmp(other, op)
 
     def __repr__(self) -> str:
-        if Expr._is_const(child := _ExprKey.unwrap(self._fchild())):
+        if Expr._is_const(child := _unwrap(self._fchild())):
             return f"{type(self).__name__}({child[CONST]})"
         elif Expr._is_term(child) and child[(term := (<Expr>child)._fchild())] == 1:
             return f"{type(self).__name__}({term})"
