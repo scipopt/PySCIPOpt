@@ -335,6 +335,9 @@ def test_le(model):
     with pytest.raises(TypeError):
         expr1 <= "invalid"
 
+    with pytest.raises(TypeError):
+        1 <= expr1 <= 1
+
 
 def test_ge(model):
     m, x, y = model
