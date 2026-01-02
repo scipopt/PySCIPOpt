@@ -453,8 +453,8 @@ cdef class PolynomialExpr(Expr):
         return super().__pow__(_other)
 
     @staticmethod
-    cdef PolynomialExpr _from_var(Variable var, float coef = 1.0):
-        return PolynomialExpr({Term(var): coef})
+    cdef PolynomialExpr _from_var(Variable var):
+        return PolynomialExpr({Term(var): 1.0})
 
     @classmethod
     def _to_subclass(cls, dict[Term, float] children) -> PolynomialExpr:
