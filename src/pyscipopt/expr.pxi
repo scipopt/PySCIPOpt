@@ -259,9 +259,7 @@ cdef class Expr(UnaryOperator):
 
     def __rpow__(self, other: Union[Number, Expr]) -> ExpExpr:
         cdef Expr _other = Expr._from_other(other)
-        if not Expr._is_const(_other):
-            raise TypeError("base must be a number")
-        elif _other[CONST] <= 0.0:
+        if _other[CONST] <= 0.0:
             raise ValueError("base must be positive")
         return ExpExpr(self * LogExpr(_other))
 
