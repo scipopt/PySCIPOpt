@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 from pyscipopt import Expr, Model, cos, exp, log, sin, sqrt
@@ -5,10 +6,15 @@ from pyscipopt.scip import (
     CONST,
     AbsExpr,
     ConstExpr,
+    CosExpr,
     ExpExpr,
+    LogExpr,
     PolynomialExpr,
     ProdExpr,
+    SinExpr,
+    SqrtExpr,
     Term,
+    Variable,
     _ExprKey,
 )
 
@@ -18,8 +24,7 @@ def model():
     m = Model()
     x = m.addVar("x")
     y = m.addVar("y")
-    z = m.addVar("z")
-    return m, x, y, z
+    return m, x, y
 
 
 def test_init_error(model):
@@ -29,13 +34,13 @@ def test_init_error(model):
     with pytest.raises(TypeError):
         Expr({"42": 0})
 
-    m, x, y, z = model
     with pytest.raises(TypeError):
+        m, x, y = model
         Expr({x: 42})
 
 
 def test_slots(model):
-    m, x, y, z = model
+    m, x, y = model
     t = Term(x)
     e = Expr({t: 1.0})
 
@@ -48,7 +53,7 @@ def test_slots(model):
 
 
 def test_getitem(model):
-    m, x, y, z = model
+    m, x, y = model
     t1 = Term(x)
     t2 = Term(y)
 
@@ -72,34 +77,8 @@ def test_getitem(model):
     assert expr3[expr2] == 5
 
 
-def test_abs():
-    m = Model()
-    x = m.addVar("x")
-    t = Term(x)
-    expr = Expr({t: -3.0})
-    abs_expr = abs(expr)
-
-    assert isinstance(abs_expr, AbsExpr)
-    assert str(abs_expr) == "AbsExpr(Expr({Term(x): -3.0}))"
-
-
-def test_fchild():
-    m = Model()
-    x = m.addVar("x")
-    t = Term(x)
-
-    expr1 = Expr({t: 1.0})
-    assert expr1._fchild() == t
-
-    expr2 = Expr({t: -1.0, expr1: 2.0})
-    assert expr2._fchild() == t
-
-    expr3 = Expr({expr1: 2.0, t: -1.0})
-    assert expr3._fchild() == _ExprKey.wrap(expr1)
-
-
 def test_add(model):
-    m, x, y, z = model
+    m, x, y = model
     t = Term(x)
 
     expr1 = Expr({Term(x): 1.0}) + 1
@@ -118,101 +97,132 @@ def test_add(model):
     assert str(Expr({t: -1.0}) + expr1) == "Expr({Term(x): 0.0, Term(): 1.0})"
     assert (
         str(expr1 + cos(expr2))
-        == "Expr({Term(x): 1.0, Term(): 1.0, CosExpr(Expr({Term(x): 1.0})): 1.0})"
+        == "Expr({Term(x): 1.0, Term(): 1.0, CosExpr(Term(x)): 1.0})"
     )
     assert (
         str(sqrt(expr2) + expr1)
-        == "Expr({Term(x): 1.0, Term(): 1.0, SqrtExpr(Expr({Term(x): 1.0})): 1.0})"
+        == "Expr({Term(x): 1.0, Term(): 1.0, SqrtExpr(Term(x)): 1.0})"
+    )
+
+    expr3 = PolynomialExpr({t: 1.0, CONST: 1.0})
+    assert (
+        str(cos(expr2) + expr3)
+        == "Expr({Term(x): 1.0, Term(): 1.0, CosExpr(Term(x)): 1.0})"
     )
     assert (
         str(sqrt(expr2) + exp(expr1))
-        == "Expr({SqrtExpr(Expr({Term(x): 1.0})): 1.0, ExpExpr(Expr({Term(x): 1.0, Term(): 1.0})): 1.0})"
+        == "Expr({SqrtExpr(Term(x)): 1.0, ExpExpr(Expr({Term(x): 1.0, Term(): 1.0})): 1.0})"
+    )
+
+    assert (
+        str(expr3 + exp(x * log(2.0)))
+        == "Expr({Term(x): 1.0, Term(): 1.0, ExpExpr(ProdExpr({(Expr({Term(x): 1.0}), LogExpr(2.0)): 1.0})): 1.0})"
     )
 
 
 def test_iadd(model):
-    m, x, y, z = model
+    m, x, y = model
 
     expr = log(x) + Expr({Term(x): 1.0})
     expr += 1
+    assert type(expr) is Expr
     assert str(expr) == "Expr({Term(x): 1.0, LogExpr(Term(x)): 1.0, Term(): 1.0})"
 
     expr += Expr({Term(x): 1.0})
+    assert type(expr) is Expr
     assert str(expr) == "Expr({Term(x): 2.0, LogExpr(Term(x)): 1.0, Term(): 1.0})"
 
-    expr = x
+    expr = Expr({Term(x): 1.0})
+    expr += PolynomialExpr({Term(x): 1.0})
+    assert type(expr) is Expr
+    assert str(expr) == "Expr({Term(x): 2.0})"
+
+    expr = PolynomialExpr({Term(x): 1.0})
+    expr += PolynomialExpr({Term(x): 1.0})
+    assert type(expr) is PolynomialExpr
+    assert str(expr) == "Expr({Term(x): 2.0})"
+
+    expr = Expr({Term(x): 1.0})
     expr += sqrt(expr)
+    assert type(expr) is Expr
     assert str(expr) == "Expr({Term(x): 1.0, SqrtExpr(Term(x)): 1.0})"
 
     expr = sin(x)
     expr += cos(x)
+    assert type(expr) is Expr
     assert str(expr) == "Expr({SinExpr(Term(x)): 1.0, CosExpr(Term(x)): 1.0})"
 
     expr = exp(Expr({Term(x): 1.0}))
     expr += expr
-    assert str(expr) == "Expr({ExpExpr(Expr({Term(x): 1.0})): 2.0})"
+    assert type(expr) is Expr
+    assert str(expr) == "Expr({ExpExpr(Term(x)): 2.0})"
 
 
 def test_mul(model):
-    m, x, y, z = model
-    expr1 = Expr({Term(x): 1.0, CONST: 1.0})
+    m, x, y = model
+    expr = Expr({Term(x): 1.0, CONST: 1.0})
 
     with pytest.raises(TypeError):
-        expr1 * "invalid"
+        expr * "invalid"
 
     with pytest.raises(TypeError):
-        expr1 * []
+        expr * []
 
     assert str(Expr() * 3) == "Expr({Term(): 0.0})"
 
-    expr2 = abs(expr1)
+    expr2 = abs(expr)
     assert (
         str(expr2 * expr2) == "PowExpr(AbsExpr(Expr({Term(x): 1.0, Term(): 1.0})), 2.0)"
     )
 
     assert str(Expr() * Expr()) == "Expr({Term(): 0.0})"
-    assert str(expr1 * 0) == "Expr({Term(): 0.0})"
-    assert str(expr1 * Expr()) == "Expr({Term(): 0.0})"
-    assert str(Expr() * expr1) == "Expr({Term(): 0.0})"
+    assert str(expr * 0) == "Expr({Term(): 0.0})"
+    assert str(expr * Expr()) == "Expr({Term(): 0.0})"
+    assert str(Expr() * expr) == "Expr({Term(): 0.0})"
     assert str(Expr({Term(x): 1.0, CONST: 0.0}) * 2) == "Expr({Term(x): 2.0})"
     assert (
-        str(sin(expr1) * 2) == "Expr({SinExpr(Expr({Term(x): 1.0, Term(): 1.0})): 2.0})"
+        str(sin(expr) * 2) == "Expr({SinExpr(Expr({Term(x): 1.0, Term(): 1.0})): 2.0})"
     )
-    assert str(sin(expr1) * 1) == "SinExpr(Expr({Term(x): 1.0, Term(): 1.0}))"
-    assert str(Expr({CONST: 2.0}) * expr1) == "Expr({Term(x): 2.0, Term(): 2.0})"
+    assert str(sin(expr) * 1) == "SinExpr(Expr({Term(x): 1.0, Term(): 1.0}))"
+    assert str(Expr({CONST: 2.0}) * expr) == "Expr({Term(x): 2.0, Term(): 2.0})"
+
+    assert (
+        str(Expr({Term(): -1.0}) * ProdExpr(Term(x), Term(y)))
+        == "Expr({ProdExpr({(Term(x), Term(y)): 1.0}): -1.0})"
+    )
 
 
 def test_imul(model):
-    m, x, y, z = model
+    m, x, y = model
 
     expr = Expr({Term(x): 1.0, CONST: 1.0})
     expr *= 0
+    assert type(expr) is ConstExpr
     assert str(expr) == "Expr({Term(): 0.0})"
 
     expr = Expr({Term(x): 1.0, CONST: 1.0})
     expr *= 3
+    assert type(expr) is Expr
     assert str(expr) == "Expr({Term(x): 3.0, Term(): 3.0})"
 
 
 def test_div(model):
-    m, x, y, z = model
+    m, x, y = model
 
     expr1 = Expr({Term(x): 1.0, CONST: 1.0})
     with pytest.raises(ZeroDivisionError):
         expr1 / 0
 
-    expr2 = expr1 / 2
-    assert str(expr2) == "Expr({Term(x): 0.5, Term(): 0.5})"
+    assert str(expr1 / 2) == "Expr({Term(x): 0.5, Term(): 0.5})"
 
-    expr3 = 1 / x
-    assert str(expr3) == "PowExpr(Expr({Term(x): 1.0}), -1.0)"
+    expr2 = 1 / x
+    assert str(expr2) == "PowExpr(Expr({Term(x): 1.0}), -1.0)"
 
-    expr4 = expr3 / expr3
-    assert str(expr4) == "Expr({Term(): 1.0})"
+    assert str(expr2 / expr2) == "Expr({Term(): 1.0})"
 
 
 def test_pow(model):
-    m, x, y, z = model
+    m, x, y = model
 
     assert str((x + 2 * y) ** 0) == "Expr({Term(): 1.0})"
 
@@ -224,15 +234,16 @@ def test_pow(model):
 
 
 def test_rpow(model):
-    m, x, y, z = model
+    m, x, y = model
 
-    a = 2**x
-    assert str(a) == (
-        "ExpExpr(ProdExpr({(Expr({Term(x): 1.0}), LogExpr(Expr({Term(): 2.0}))): 1.0}))"
+    expr1 = 2**x
+    assert str(expr1) == (
+        "ExpExpr(ProdExpr({(Expr({Term(x): 1.0}), LogExpr(2.0)): 1.0}))"
     )
 
-    b = exp(x * log(2.0))
-    assert repr(a) == repr(b)  # Structural equality is not implemented; compare strings
+    expr2 = exp(x * log(2.0))
+    # Structural equality is not implemented; compare strings
+    assert repr(expr1) == repr(expr2)
 
     with pytest.raises(TypeError):
         "invalid" ** x
@@ -242,7 +253,7 @@ def test_rpow(model):
 
 
 def test_sub(model):
-    m, x, y, z = model
+    m, x, y = model
 
     expr1 = 2**x
     expr2 = exp(x * log(2.0))
@@ -251,50 +262,60 @@ def test_sub(model):
     assert str(expr2 - expr1) == "Expr({Term(): 0.0})"
     assert (
         str(expr1 - (expr2 + 1))
-        == "Expr({Term(): -1.0, ExpExpr(ProdExpr({(Expr({Term(x): 1.0}), LogExpr(Expr({Term(): 2.0}))): 1.0})): 0.0})"
+        == "Expr({Term(): -1.0, ExpExpr(ProdExpr({(Expr({Term(x): 1.0}), LogExpr(2.0)): 1.0})): 0.0})"
     )
     assert (
         str(-expr2 + expr1)
-        == "Expr({ExpExpr(ProdExpr({(Expr({Term(x): 1.0}), LogExpr(Expr({Term(): 2.0}))): 1.0})): 0.0})"
+        == "Expr({ExpExpr(ProdExpr({(Expr({Term(x): 1.0}), LogExpr(2.0)): 1.0})): 0.0})"
     )
     assert (
         str(-expr1 - expr2)
-        == "Expr({ExpExpr(ProdExpr({(Expr({Term(x): 1.0}), LogExpr(Expr({Term(): 2.0}))): 1.0})): -2.0})"
+        == "Expr({ExpExpr(ProdExpr({(Expr({Term(x): 1.0}), LogExpr(2.0)): 1.0})): -2.0})"
+    )
+
+    assert (
+        str(1 - expr1)
+        == "Expr({ExpExpr(ProdExpr({(Expr({Term(x): 1.0}), LogExpr(2.0)): 1.0})): -1.0, Term(): 1.0})"
     )
 
 
 def test_isub(model):
-    m, x, y, z = model
+    m, x, y = model
 
     expr = Expr({Term(x): 2.0, CONST: 3.0})
     expr -= 1
+    assert type(expr) is Expr
     assert str(expr) == "Expr({Term(x): 2.0, Term(): 2.0})"
 
     expr -= Expr({Term(x): 1.0})
+    assert type(expr) is Expr
     assert str(expr) == "Expr({Term(x): 1.0, Term(): 2.0})"
 
     expr = 2**x
     expr -= exp(x * log(2.0))
+    assert type(expr) is ConstExpr
     assert str(expr) == "Expr({Term(): 0.0})"
 
     expr = exp(x * log(2.0))
     expr -= 2**x
+    assert type(expr) is ConstExpr
     assert str(expr) == "Expr({Term(): 0.0})"
 
     expr = sin(x)
     expr -= cos(x)
+    assert type(expr) is Expr
     assert str(expr) == "Expr({CosExpr(Term(x)): -1.0, SinExpr(Term(x)): 1.0})"
 
 
 def test_le(model):
-    m, x, y, z = model
+    m, x, y = model
 
     expr1 = Expr({Term(x): 1.0})
     expr2 = Expr({CONST: 2.0})
     assert str(expr1 <= expr2) == "ExprCons(Expr({Term(x): 1.0}), None, 2.0)"
-    assert str(expr2 <= expr1) == "ExprCons(Expr({Term(x): 1.0}), 2.0, None)"
+    assert str(expr2 <= expr1) == "ExprCons(Expr({Term(x): -1.0}), None, -2.0)"
     assert str(expr1 <= expr1) == "ExprCons(Expr({}), None, 0.0)"
-    assert str(expr2 <= expr2) == "ExprCons(Expr({}), 0.0, None)"
+    assert str(expr2 <= expr2) == "ExprCons(Expr({}), None, 0.0)"
     assert (
         str(sin(x) <= expr1)
         == "ExprCons(Expr({Term(x): -1.0, SinExpr(Term(x)): 1.0}), None, 0.0)"
@@ -316,7 +337,7 @@ def test_le(model):
 
 
 def test_ge(model):
-    m, x, y, z = model
+    m, x, y = model
 
     expr1 = Expr({Term(x): 1.0, log(x): 2.0})
     expr2 = Expr({CONST: -1.0})
@@ -326,10 +347,10 @@ def test_ge(model):
     )
     assert (
         str(expr2 >= expr1)
-        == "ExprCons(Expr({Term(x): 1.0, LogExpr(Term(x)): 2.0}), None, -1.0)"
+        == "ExprCons(Expr({Term(x): -1.0, LogExpr(Term(x)): -2.0}), 1.0, None)"
     )
     assert str(expr1 >= expr1) == "ExprCons(Expr({}), 0.0, None)"
-    assert str(expr2 >= expr2) == "ExprCons(Expr({}), None, 0.0)"
+    assert str(expr2 >= expr2) == "ExprCons(Expr({}), 0.0, None)"
 
     expr3 = x + 2 * y
     expr4 = x**1.5
@@ -347,7 +368,7 @@ def test_ge(model):
 
 
 def test_eq(model):
-    m, x, y, z = model
+    m, x, y = model
 
     expr1 = Expr({Term(x): -1.0, exp(x): 3.0})
     expr2 = Expr({expr1: -1.0})
@@ -359,7 +380,7 @@ def test_eq(model):
     )
     assert (
         str(expr3 == expr2)
-        == "ExprCons(Expr({Expr({Term(x): -1.0, ExpExpr(Term(x)): 3.0}): -1.0}), 4.0, 4.0)"
+        == "ExprCons(Expr({Expr({Term(x): -1.0, ExpExpr(Term(x)): 3.0}): 1.0}), -4.0, -4.0)"
     )
     assert (
         str(2 * x**1.5 - 3 * sqrt(y) == 1)
@@ -378,40 +399,8 @@ def test_eq(model):
         expr1 == "invalid"
 
 
-def test_to_dict(model):
-    m, x, y, z = model
-
-    expr = Expr({Term(x): 1.0, Term(y): -2.0, CONST: 3.0})
-
-    children = expr._to_dict({})
-    assert children == expr._children
-    assert children is not expr._children
-    assert len(children) == 3
-    assert children[Term(x)] == 1.0
-    assert children[Term(y)] == -2.0
-    assert children[CONST] == 3.0
-
-    children = expr._to_dict({Term(x): -1.0, sqrt(x): 0.0})
-    assert children != expr._children
-    assert len(children) == 4
-    assert children[Term(x)] == 0.0
-    assert children[Term(y)] == -2.0
-    assert children[CONST] == 3.0
-    assert children[_ExprKey.wrap(sqrt(x))] == 0.0
-
-    children = expr._to_dict({Term(x): -1.0, Term(y): 2.0, CONST: -2.0}, copy=False)
-    assert children is expr._children
-    assert len(expr._children) == 3
-    assert expr._children[Term(x)] == 0.0
-    assert expr._children[Term(y)] == 0.0
-    assert expr._children[CONST] == 1.0
-
-    with pytest.raises(TypeError):
-        expr._to_dict("invialid")
-
-
 def test_normalize(model):
-    m, x, y, z = model
+    m, x, y = model
 
     expr = Expr({Term(x): 2.0, Term(y): -4.0, CONST: 6.0})
     norm_expr = expr._normalize()
@@ -425,7 +414,8 @@ def test_normalize(model):
 
 
 def test_degree(model):
-    m, x, y, z = model
+    m, x, y = model
+    z = m.addVar("z")
 
     assert Expr({Term(x): 3.0, Term(y): -1.0}).degree() == 1
     assert Expr({Term(x, x): 2.0, Term(y): 4.0}).degree() == 2
@@ -435,44 +425,52 @@ def test_degree(model):
 
 
 def test_to_node(model):
-    m, x, y, z = model
+    m, x, y = model
 
-    expr = Expr({Term(x): 2.0, Term(y): -4.0, CONST: 6.0, sqrt(x): 0.0, exp(x): 1.0})
+    expr = Expr(
+        {
+            Term(x): 2.0,
+            Term(y): -4.0,
+            CONST: 6.0,
+            _ExprKey(sqrt(x)): 0.0,
+            _ExprKey(exp(x)): 1.0,
+        }
+    )
 
     assert expr._to_node(0) == []
     assert expr._to_node() == [
-        (Term, x),
+        (Variable, x),
         (ConstExpr, 2.0),
         (ProdExpr, [0, 1]),
-        (Term, y),
+        (Variable, y),
         (ConstExpr, -4.0),
         (ProdExpr, [3, 4]),
         (ConstExpr, 6.0),
-        (Term, x),
+        (Variable, x),
         (ExpExpr, 7),
         (Expr, [2, 5, 6, 8]),
     ]
     assert expr._to_node(start=1) == [
-        (Term, x),
+        (Variable, x),
         (ConstExpr, 2.0),
         (ProdExpr, [1, 2]),
-        (Term, y),
+        (Variable, y),
         (ConstExpr, -4.0),
         (ProdExpr, [4, 5]),
         (ConstExpr, 6.0),
-        (Term, x),
+        (Variable, x),
         (ExpExpr, 8),
         (Expr, [3, 6, 7, 9]),
     ]
     assert expr._to_node(coef=3, start=1) == [
-        (Term, x),
+        (Variable, x),
         (ConstExpr, 2.0),
         (ProdExpr, [1, 2]),
-        (Term, y),
+        (Variable, y),
         (ConstExpr, -4.0),
         (ProdExpr, [4, 5]),
         (ConstExpr, 6.0),
-        (Term, x),
+        (Variable, x),
         (ExpExpr, 8),
         (Expr, [3, 6, 7, 9]),
         (ConstExpr, 3),
@@ -481,13 +479,83 @@ def test_to_node(model):
 
 
 def test_is_equal(model):
-    m, x, y, z = model
+    m, x, y = model
 
-    assert not Expr()._is_equal("invalid")
-    assert Expr()._is_equal(Expr())
-    assert Expr({CONST: 0.0, Term(x): 1.0})._is_equal(Expr({Term(x): 1.0, CONST: 0.0}))
-    assert Expr({CONST: 0.0, Term(x): 1.0})._is_equal(
+    assert _ExprKey(Expr()) != "invalid"
+    assert _ExprKey(Expr()) == _ExprKey(Expr())
+    assert _ExprKey(Expr({CONST: 0.0, Term(x): 1.0})) == _ExprKey(
+        Expr({Term(x): 1.0, CONST: 0.0})
+    )
+    assert _ExprKey(Expr({CONST: 0.0, Term(x): 1.0})) == _ExprKey(
         PolynomialExpr({Term(x): 1.0, CONST: 0.0})
     )
-    assert Expr({CONST: 0.0})._is_equal(PolynomialExpr({CONST: 0.0}))
-    assert Expr({CONST: 0.0})._is_equal(ConstExpr(0.0))
+    assert _ExprKey(Expr({CONST: 0.0})) == _ExprKey(PolynomialExpr({CONST: 0.0}))
+    assert _ExprKey(Expr({CONST: 0.0})) == _ExprKey(ConstExpr(0.0))
+
+
+def test_sin(model):
+    m, x, y = model
+
+    expr1 = sin(1)
+    assert isinstance(expr1, SinExpr)
+    assert str(expr1) == "SinExpr(1.0)"
+    assert str(ConstExpr(1.0).sin()) == str(expr1)
+    assert str(SinExpr(1.0)) == str(expr1)
+    assert str(sin(ConstExpr(1.0))) == str(expr1)
+
+    expr2 = Expr({Term(x): 1.0})
+    expr3 = Expr({Term(x, y): 1.0})
+    assert isinstance(sin(expr2), SinExpr)
+    assert isinstance(sin(expr3), SinExpr)
+
+    array = [expr2, expr3]
+    assert type(sin(array)) is np.ndarray
+    assert str(sin(array)) == "[SinExpr(Term(x)) SinExpr(Term(x, y))]"
+    assert str(np.sin(array)) == str(sin(array))
+    assert str(sin(np.array(array))) == str(sin(array))
+    assert str(np.sin(np.array(array))) == str(sin(array))
+
+
+def test_cos(model):
+    m, x, y = model
+
+    expr1 = Expr({Term(x): 1.0})
+    expr2 = Expr({Term(x, y): 1.0})
+    assert isinstance(cos(expr1), CosExpr)
+    assert str(cos([expr1, expr2])) == "[CosExpr(Term(x)) CosExpr(Term(x, y))]"
+
+
+def test_exp(model):
+    m, x, y = model
+
+    expr = Expr({ProdExpr(Term(x), Term(y)): 1.0})
+    assert isinstance(exp(expr), ExpExpr)
+    assert str(exp(expr)) == "ExpExpr(Expr({ProdExpr({(Term(x), Term(y)): 1.0}): 1.0}))"
+    assert str(expr.exp()) == str(exp(expr))
+
+
+def test_log(model):
+    m, x, y = model
+
+    expr = AbsExpr(Expr({Term(x): 1.0}) + Expr({Term(y): 1.0}))
+    assert isinstance(log(expr), LogExpr)
+    assert str(log(expr)) == "LogExpr(AbsExpr(Expr({Term(x): 1.0, Term(y): 1.0})))"
+    assert str(expr.log()) == str(log(expr))
+
+
+def test_sqrt(model):
+    m, x, y = model
+
+    expr = Expr({Term(x): 2.0})
+    assert isinstance(sqrt(expr), SqrtExpr)
+    assert str(sqrt(expr)) == "SqrtExpr(Expr({Term(x): 2.0}))"
+    assert str(expr.sqrt()) == str(sqrt(expr))
+
+
+def test_abs(model):
+    m, x, y = model
+
+    expr = Expr({Term(x): -3.0})
+    assert isinstance(abs(expr), AbsExpr)
+    assert str(abs(expr)) == "AbsExpr(Expr({Term(x): -3.0}))"
+    assert str(np.abs(Expr({Term(x): -3.0}))) == str(abs(expr))
