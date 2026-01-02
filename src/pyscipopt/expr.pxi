@@ -310,7 +310,7 @@ cdef class Expr(UnaryOperator):
         if isinstance(x, Number):
             return ConstExpr(<float>x)
         elif isinstance(x, Variable):
-            return PolynomialExpr._from_var(x)
+            return PolynomialExpr({Term(x): 1.0})
         elif isinstance(x, Expr):
             return x
         return NotImplemented
@@ -455,10 +455,6 @@ cdef class PolynomialExpr(Expr):
                 res *= self
             return res
         return super().__pow__(_other)
-
-    @staticmethod
-    cdef PolynomialExpr _from_var(Variable var):
-        return PolynomialExpr({Term(var): 1.0})
 
 
 cdef class ConstExpr(PolynomialExpr):
