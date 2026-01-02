@@ -572,3 +572,12 @@ def test_cmp(model):
 
     with pytest.raises(NotImplementedError):
         Expr({Term(x): -3.0}) < y
+
+
+def test_array_ufunc(model):
+    m, x, y = model
+
+    with pytest.raises(TypeError):
+        np.floor_divide(x, 2)
+
+    assert x.__array_ufunc__(None, "invalid") == NotImplemented
