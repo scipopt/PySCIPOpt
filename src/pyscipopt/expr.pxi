@@ -180,7 +180,7 @@ cdef class Expr(UnaryOperator):
         return NotImplemented
 
     def __hash__(self) -> int:
-        return frozenset(self.items()).__hash__()
+        return hash(frozenset(self.items()))
 
     def __getitem__(self, key: Union[Variable, Term, Expr, _ExprKey]) -> float:
         if not isinstance(key, (Variable, Term, Expr, _ExprKey)):
@@ -533,7 +533,7 @@ cdef class ProdExpr(FuncExpr):
         self.coef = 1.0
 
     def __hash__(self) -> int:
-        return (frozenset(self), self.coef).__hash__()
+        return hash((frozenset(self), self.coef))
 
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
@@ -583,7 +583,7 @@ cdef class PowExpr(FuncExpr):
         self.expo = expo
 
     def __hash__(self) -> int:
-        return (frozenset(self), self.expo).__hash__()
+        return hash((frozenset(self), self.expo))
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
@@ -635,7 +635,7 @@ cdef class UnaryExpr(FuncExpr):
         super().__init__({expr: 1.0})
 
     def __hash__(self) -> int:
-        return frozenset(self).__hash__()
+        return hash(frozenset(self))
 
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
         return self._cmp(other, op)
