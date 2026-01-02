@@ -171,11 +171,11 @@ def test_abs(model):
     m, x, y = model
 
     expr = abs(PolynomialExpr({Term(x): -2.0, Term(y): 4.0}))
-    assert type(expr) is AbsExpr
+    assert isinstance(expr, AbsExpr)
     assert str(expr) == "AbsExpr(Expr({Term(x): -2.0, Term(y): 4.0}))"
 
     expr = abs(ConstExpr(-3.0))
-    assert type(expr) is ConstExpr
+    assert isinstance(expr, ConstExpr)
     assert str(expr) == "Expr({Term(): 3.0})"
 
 
@@ -187,5 +187,5 @@ def test_neg(model):
     assert str(expr) == "Expr({Term(x): 2.0, Term(y): -4.0})"
 
     expr = -ConstExpr(-3.0)
-    assert type(expr) is ConstExpr
+    assert isinstance(expr, ConstExpr)
     assert str(expr) == "Expr({Term(): 3.0})"
