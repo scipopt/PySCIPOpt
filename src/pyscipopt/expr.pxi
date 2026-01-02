@@ -492,12 +492,6 @@ cdef class ConstExpr(PolynomialExpr):
 
 cdef class FuncExpr(Expr):
 
-    def __init__(self, children: Optional[dict[Union[Term, Expr, _ExprKey], float]] = None):
-        if children and any((i == CONST) for i in children):
-            raise ValueError("FuncExpr can't have Term without Variable as a child")
-
-        super().__init__(children)
-
     cpdef float degree(self):
         return float("inf")
 
