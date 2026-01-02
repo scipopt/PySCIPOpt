@@ -111,6 +111,14 @@ cdef class UnaryOperator:
         return CosExpr(self)
 
 
+cdef inline Expr _to_polynomial(expr, cls: Type[Expr]):
+    cdef Expr res = (
+        ConstExpr.__new__(ConstExpr) if Expr._is_const(expr) else cls.__new__(cls)
+    )
+    (<Expr>res)._children = expr._children
+    return res
+
+
 cdef class Expr(UnaryOperator):
     """Base class for mathematical expressions."""
 
@@ -178,8 +186,8 @@ cdef class Expr(UnaryOperator):
         elif Expr._is_sum(self) and Expr._is_sum(_other):
             self._to_dict(_other, copy=False)
             if isinstance(self, PolynomialExpr) and isinstance(_other, PolynomialExpr):
-                return self._to_polynomial(PolynomialExpr)
-            return self._to_polynomial(Expr)
+                return _to_polynomial(self, PolynomialExpr)
+            return _to_polynomial(self, Expr)
         return self + _other
 
     def __radd__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -224,8 +232,8 @@ cdef class Expr(UnaryOperator):
         cdef Expr _other = Expr._from_other(other)
         if self and Expr._is_sum(self) and Expr._is_const(_other) and _other[CONST] != 0:
             self._children = {k: v * _other[CONST] for k, v in self.items() if v != 0}
-            return self._to_polynomial(
-                PolynomialExpr if isinstance(self, PolynomialExpr) else Expr
+            return _to_polynomial(
+                self, PolynomialExpr if isinstance(self, PolynomialExpr) else Expr
             )
         return self * _other
 
@@ -401,13 +409,6 @@ cdef class Expr(UnaryOperator):
             and (<Expr>expr)[(<Expr>expr)._fchild()] == 1
         )
 
-    cdef Expr _to_polynomial(self, cls: Type[Expr]):
-        cdef Expr res = (
-            ConstExpr.__new__(ConstExpr) if Expr._is_const(self) else cls.__new__(cls)
-        )
-        (<Expr>res)._children = self._children
-        return res
-
 
 cdef class PolynomialExpr(Expr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
@@ -421,7 +422,7 @@ cdef class PolynomialExpr(Expr):
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
         if isinstance(_other, PolynomialExpr) and not Expr._is_zero(_other):
-            return PolynomialExpr._to_subclass(self._to_dict(_other))
+            return _to_polynomial(PolynomialExpr(self._to_dict(_other)), PolynomialExpr)
         return super().__add__(_other)
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -437,7 +438,7 @@ cdef class PolynomialExpr(Expr):
                 for k2, v2 in _other.items():
                     child = k1 * k2
                     children[child] = children.get(child, 0.0) + v1 * v2
-            return PolynomialExpr._to_subclass(children)
+            return _to_polynomial(PolynomialExpr(children), PolynomialExpr)
         return super().__mul__(_other)
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -458,12 +459,6 @@ cdef class PolynomialExpr(Expr):
     @staticmethod
     cdef PolynomialExpr _from_var(Variable var):
         return PolynomialExpr({Term(var): 1.0})
-
-    @staticmethod
-    cdef PolynomialExpr _to_subclass(dict[Term, float] children):
-        if len(children) == 1 and CONST in children:
-            return ConstExpr(children[CONST])
-        return PolynomialExpr(children)
 
 
 cdef class ConstExpr(PolynomialExpr):
