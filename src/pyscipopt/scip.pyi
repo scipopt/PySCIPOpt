@@ -1360,7 +1360,7 @@ class VarExpr(GenExpr):
     var: Incomplete
     def __init__(self, *args, **kwargs) -> None: ...
 
-class Variable(Expr):
+class Variable:
     data: Incomplete
     name: Incomplete
     def __init__(self, *args, **kwargs) -> None: ...
