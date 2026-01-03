@@ -189,3 +189,21 @@ def test_neg(model):
     expr = -ConstExpr(-3.0)
     assert isinstance(expr, ConstExpr)
     assert str(expr) == "Expr({Term(): 3.0})"
+
+
+def test_pow(model):
+    m, x, y = model
+
+    expr = PolynomialExpr({Term(x): -2.0, Term(y): 4.0})
+    res = expr**2
+    assert type(res) is PolynomialExpr
+    assert str(res) == "Expr({Term(x, x): 4.0, Term(x, y): -16.0, Term(y, y): 16.0})"
+
+    expr = ConstExpr(-1.0)
+    res = expr**2
+    assert isinstance(res, ConstExpr)
+    assert str(res) == "Expr({Term(): 1.0})"
+
+    expr = ConstExpr(-1.0)
+    with pytest.raises(TypeError):
+        expr**x
