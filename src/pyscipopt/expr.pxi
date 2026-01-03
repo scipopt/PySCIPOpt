@@ -23,6 +23,13 @@ cdef class Term:
         self.vars = tuple(sorted(vars, key=hash))
         self._hash = hash(self.vars)
 
+    @staticmethod
+    cdef Term create(tuple[Variable] vars):
+        cdef Term res = Term.__new__(Term)
+        res.vars = tuple(sorted(vars, key=hash))
+        res._hash = hash(res.vars)
+        return res
+
     def __iter__(self) -> Iterator[Variable]:
         return iter(self.vars)
 
@@ -36,10 +43,7 @@ cdef class Term:
         return isinstance(other, Term) and hash(self) == hash(other)
 
     def __mul__(self, Term other) -> Term:
-        cdef Term res = Term.__new__(Term)
-        res.vars = tuple(sorted((*self.vars, *other.vars), key=hash))
-        res._hash = hash(res.vars)
-        return res
+        return Term.create((*self.vars, *other.vars))
 
     def __repr__(self) -> str:
         return f"Term({self[0]})" if self.degree() == 1 else f"Term{self.vars}"
@@ -61,13 +65,6 @@ cdef class Term:
             if len(node) > 1:
                 node.append((ProdExpr, list(range(start, start + len(node)))))
         return node
-
-    @staticmethod
-    cdef Term _from_var(Variable var):
-        cdef Term res = Term.__new__(Term)
-        res.vars = (var,)
-        res._hash = hash(res.vars)
-        return res
 
 
 CONST = Term()
@@ -184,7 +181,7 @@ cdef class Expr(UnaryOperator):
             raise TypeError("key must be Variable, Term, or Expr")
 
         if isinstance(key, Variable):
-            key = Term._from_var(key)
+            key = Term.create((key,))
         return self._children.get(_wrap(key), 0.0)
 
     def __iter__(self) -> Iterator[Union[Term, Expr]]:
@@ -331,7 +328,7 @@ cdef class Expr(UnaryOperator):
     @staticmethod
     cdef PolynomialExpr _from_var(Variable x):
         cdef PolynomialExpr res = <PolynomialExpr>Expr._copy(None, PolynomialExpr)
-        res._children = {Term._from_var(x): 1.0}
+        res._children = {Term.create((x,)): 1.0}
         return res
 
     @staticmethod
@@ -674,7 +671,7 @@ cdef class UnaryExpr(FuncExpr):
         if isinstance(expr, Number):
             expr = ConstExpr(<float>expr)
         elif isinstance(expr, Variable):
-            expr = Term._from_var(expr)
+            expr = Term.create((expr,))
         super().__init__({expr: 1.0})
 
     def __hash__(self) -> int:
