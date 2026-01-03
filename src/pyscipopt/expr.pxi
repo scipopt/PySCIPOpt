@@ -564,14 +564,14 @@ cdef class ProdExpr(FuncExpr):
         if self._is_child_equal(_other):
             res = <ProdExpr>Expr._copy(self, ProdExpr, copy=True)
             res.coef += (<ProdExpr>_other).coef
-            return ConstExpr(0.0) if res.coef == 0 else res
+            return res._normalize()
         return super().__add__(_other)
 
     def __iadd__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
         if self._is_child_equal(_other):
             self.coef += (<ProdExpr>_other).coef
-            return ConstExpr(0.0) if self.coef == 0 else self
+            return self._normalize()
         return super().__iadd__(_other)
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -579,14 +579,14 @@ cdef class ProdExpr(FuncExpr):
         if Expr._is_const(_other):
             res = <ProdExpr>Expr._copy(self, ProdExpr, copy=True)
             res.coef *= _other[CONST]
-            return ConstExpr(0.0) if res.coef == 0 else res
+            return res._normalize()
         return super().__mul__(_other)
 
     def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
         if Expr._is_const(_other):
             self.coef *= _other[CONST]
-            return ConstExpr(0.0) if self.coef == 0 else self
+            return self._normalize()
         return super().__imul__(_other)
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -594,7 +594,7 @@ cdef class ProdExpr(FuncExpr):
         if Expr._is_const(_other):
             res = <ProdExpr>Expr._copy(self, ProdExpr, copy=True)
             res.coef /= _other[CONST]
-            return ConstExpr(0.0) if res.coef == 0 else res
+            return res._normalize()
         return super().__truediv__(_other)
 
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
@@ -632,14 +632,14 @@ cdef class PowExpr(FuncExpr):
         if self._is_child_equal(_other):
             res = <PowExpr>Expr._copy(self, PowExpr, copy=True)
             res.expo += (<PowExpr>_other).expo
-            return ConstExpr(1.0) if res.expo == 0 else res
+            return res._normalize()
         return super().__mul__(_other)
 
     def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
         if self._is_child_equal(_other):
             self.expo += (<PowExpr>_other).expo
-            return ConstExpr(1.0) if self.expo == 0 else self
+            return self._normalize()
         return super().__imul__(_other)
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -647,7 +647,7 @@ cdef class PowExpr(FuncExpr):
         if self._is_child_equal(_other):
             res = <PowExpr>Expr._copy(self, PowExpr, copy=True)
             res.expo -= (<PowExpr>_other).expo
-            return ConstExpr(1.0) if res.expo == 0 else res
+            return res._normalize()
         return super().__truediv__(_other)
 
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
@@ -657,7 +657,7 @@ cdef class PowExpr(FuncExpr):
         return f"PowExpr({self._fchild()}, {self.expo})"
 
     def _normalize(self) -> Expr:
-        if self.expo == 0:
+        if not self or self.expo == 0:
             return ConstExpr(1.0)
         elif self.expo == 1:
             return (
