@@ -65,7 +65,7 @@ jobs:
           args: "--version"
 
       - name: Lint type stubs
-        run: ruff check ${{ env.FILES }} --extend-select I,PYI
+        run: ruff check ${{ env.FILES }} --extend-select ANN,I,PYI,RUF100
 
       - name: Format type stubs
         run: ruff format ${{ env.FILES }}
