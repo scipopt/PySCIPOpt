@@ -1,5 +1,4 @@
 ##@file expr.pxi
-import operator
 from numbers import Number
 from typing import Iterator, Optional, Type, Union
 
