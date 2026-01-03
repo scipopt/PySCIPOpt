@@ -1,7 +1,7 @@
 import pytest
 
-from pyscipopt import Expr, Model, exp, log, sin, sqrt
-from pyscipopt.scip import PolynomialExpr, PowExpr, ProdExpr, Term
+from pyscipopt import Expr, Model, exp, sin, sqrt
+from pyscipopt.scip import ConstExpr, PolynomialExpr, PowExpr, ProdExpr, SinExpr, Term
 
 
 @pytest.fixture(scope="module")
@@ -71,6 +71,20 @@ def test_mul(model):
     assert str(expr) == "PowExpr(ProdExpr({(Term(x), Term(y)): 3.0}), 2.0)"
 
 
+def test_div(model):
+    m, x, y = model
+
+    expr = 2 * (sin(x) * y)
+    assert (
+        str(expr / 0.5) == "ProdExpr({(SinExpr(Term(x)), Expr({Term(y): 1.0})): 4.0})"
+    )
+    assert (
+        str(expr / x)
+        == "ProdExpr({(ProdExpr({(SinExpr(Term(x)), Expr({Term(y): 1.0})): 2.0}), PowExpr(Expr({Term(x): 1.0}), -1.0)): 1.0})"
+    )
+    assert str(expr / expr) == "Expr({Term(): 1.0})"
+
+
 def test_cmp(model):
     m, x, y = model
 
@@ -81,3 +95,26 @@ def test_cmp(model):
         str(expr1 == 1)
         == "ExprCons(ProdExpr({(SinExpr(Term(x)), Expr({Term(y): 1.0})): 1.0}), 1.0, 1.0)"
     )
+
+
+def test_normalize(model):
+    m, x, y = model
+
+    expr = ProdExpr()._normalize()
+    assert isinstance(expr, ConstExpr)
+    assert str(expr) == "Expr({Term(): 0.0})"
+
+    expr = sin(x) * y
+    assert isinstance(expr, ProdExpr)
+    assert str(expr - expr) == "Expr({Term(): 0.0})"
+
+    expr = ProdExpr(Term(x))._normalize()
+    assert type(expr) is PolynomialExpr
+    assert str(expr) == "Expr({Term(x): 1.0})"
+
+    expr = ProdExpr(sin(x))._normalize()
+    assert isinstance(expr, SinExpr)
+    assert str(expr) == "SinExpr(Term(x))"
+
+    expr = sin(x) * y
+    assert str(expr._normalize()) == str(expr)
