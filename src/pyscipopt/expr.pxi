@@ -590,11 +590,29 @@ cdef class ProdExpr(FuncExpr):
             return ConstExpr(0.0) if self.coef == 0 else self
         return super().__imul__(_other)
 
+    def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        cdef Expr _other = Expr._from_other(other)
+        if Expr._is_const(_other):
+            res = <ProdExpr>Expr._copy(self, ProdExpr, copy=True)
+            res.coef /= _other[CONST]
+            return ConstExpr(0.0) if res.coef == 0 else res
+        return super().__truediv__(_other)
+
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
         return self._cmp(other, op)
 
     def __repr__(self) -> str:
         return f"ProdExpr({{{tuple(self)}: {self.coef}}})"
+
+    def _normalize(self) -> Expr:
+        if not self or self.coef == 0:
+            return ConstExpr(0.0)
+        elif len(self._children) == 1:
+            return (
+                Expr._from_term(self._fchild())
+                if isinstance(self._fchild(), Term) else _unwrap(self._fchild())
+            )
+        return self
 
 
 cdef class PowExpr(FuncExpr):
@@ -641,11 +659,12 @@ cdef class PowExpr(FuncExpr):
 
     def _normalize(self) -> Expr:
         if self.expo == 0:
-            self = ConstExpr(1.0)
+            return ConstExpr(1.0)
         elif self.expo == 1:
-            self = _unwrap(self._fchild())
-            if isinstance(self, Term):
-                self = PolynomialExpr({self: 1.0})
+            return (
+                Expr._from_term(self._fchild())
+                if isinstance(self._fchild(), Term) else _unwrap(self._fchild())
+            )
         return self
 
 
