@@ -1577,61 +1577,61 @@ cdef class Variable(UnaryOperator):
         return hash(self.ptr())
 
     def __getitem__(self, key):
-        return PolynomialExpr({Term(self): 1.0})[key]
+        return Expr._from_var(self)[key]
 
     def __iter__(self):
-        return iter(PolynomialExpr({Term(self): 1.0}))
+        return iter(Expr._from_var(self))
 
     def __add__(self, other):
-        return PolynomialExpr({Term(self): 1.0}) + other
+        return Expr._from_var(self) + other
 
     def __iadd__(self, other):
-        return PolynomialExpr({Term(self): 1.0}).__iadd__(other)
+        return Expr._from_var(self).__iadd__(other)
 
     def __radd__(self, other):
-        return PolynomialExpr({Term(self): 1.0}) + other
+        return Expr._from_var(self) + other
 
     def __sub__(self, other):
-        return PolynomialExpr({Term(self): 1.0}) - other
+        return Expr._from_var(self) - other
 
     def __isub__(self, other):
-        return PolynomialExpr({Term(self): 1.0}).__isub__(other)
+        return Expr._from_var(self).__isub__(other)
 
     def __rsub__(self, other):
-        return -PolynomialExpr({Term(self): 1.0}) + other
+        return -Expr._from_var(self) + other
 
     def __mul__(self, other):
-        return PolynomialExpr({Term(self): 1.0}) * other
+        return Expr._from_var(self) * other
 
     def __imul__(self, other):
-        return PolynomialExpr({Term(self): 1.0}).__imul__(other)
+        return Expr._from_var(self).__imul__(other)
 
     def __rmul__(self, other):
-        return PolynomialExpr({Term(self): 1.0}) * other
+        return Expr._from_var(self) * other
 
     def __truediv__(self, other):
-        return PolynomialExpr({Term(self): 1.0}) / other
+        return Expr._from_var(self) / other
 
     def __rtruediv__(self, other):
-        return other / PolynomialExpr({Term(self): 1.0})
+        return other / Expr._from_var(self)
 
     def __pow__(self, other):
-        return PolynomialExpr({Term(self): 1.0}) ** other
+        return Expr._from_var(self) ** other
 
     def __rpow__(self, other):
-        return other ** PolynomialExpr({Term(self): 1.0})
+        return other ** Expr._from_var(self)
 
     def __neg__(self):
-        return -PolynomialExpr({Term(self): 1.0})
+        return -Expr._from_var(self)
 
     def __richcmp__(self, other, int op):
-        return PolynomialExpr({Term(self): 1.0})._cmp(other, op)
+        return Expr._from_var(self)._cmp(other, op)
 
     def __repr__(self):
         return self.name
 
     def degree(self) -> float:
-        return PolynomialExpr({Term(self): 1.0}).degree()
+        return Expr._from_var(self).degree()
 
     def vtype(self):
         """
