@@ -194,9 +194,9 @@ cdef class Expr(UnaryOperator):
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
         if Expr._is_zero(self):
-            return Expr._copy(_other, type(_other), copy=True)
+            return _other.copy()
         elif Expr._is_zero(_other):
-            return Expr._copy(self, type(self), copy=True)
+            return self.copy()
         elif Expr._is_sum(self):
             return Expr(self._to_dict(_other))
         elif Expr._is_sum(_other):
@@ -212,8 +212,8 @@ cdef class Expr(UnaryOperator):
         elif Expr._is_sum(self) and Expr._is_sum(_other):
             self._to_dict(_other, copy=False)
             if isinstance(self, PolynomialExpr) and isinstance(_other, PolynomialExpr):
-                return Expr._copy(self, PolynomialExpr)
-            return Expr._copy(self, Expr)
+                return self.copy(False, PolynomialExpr)
+            return self.copy(False)
         return self + _other
 
     def __radd__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -240,13 +240,13 @@ cdef class Expr(UnaryOperator):
             return ConstExpr(0.0)
         elif Expr._is_const(self):
             if self[CONST] == 1:
-                return Expr._copy(_other, type(_other), copy=True)
+                return _other.copy()
             elif Expr._is_sum(_other):
                 return Expr({k: v * self[CONST] for k, v in _other.items() if v != 0})
             return Expr({_other: self[CONST]})
         elif Expr._is_const(_other):
             if _other[CONST] == 1:
-                return Expr._copy(self, type(self), copy=True)
+                return self.copy()
             elif Expr._is_sum(self):
                 return Expr({k: v * _other[CONST] for k, v in self.items() if v != 0})
             return Expr({self: _other[CONST]})
@@ -258,8 +258,8 @@ cdef class Expr(UnaryOperator):
         cdef Expr _other = Expr._from_other(other)
         if self and Expr._is_sum(self) and Expr._is_const(_other) and _other[CONST] != 0:
             self._children = {k: v * _other[CONST] for k, v in self.items() if v != 0}
-            return Expr._copy(
-                self, PolynomialExpr if isinstance(self, PolynomialExpr) else Expr
+            return self.copy(
+                False, PolynomialExpr if isinstance(self, PolynomialExpr) else Expr
             )
         return self * _other
 
@@ -327,15 +327,11 @@ cdef class Expr(UnaryOperator):
 
     @staticmethod
     cdef PolynomialExpr _from_var(Variable x):
-        cdef PolynomialExpr res = <PolynomialExpr>Expr._copy(None, PolynomialExpr)
-        res._children = {Term.create((x,)): 1.0}
-        return res
+        return PolynomialExpr.create({Term.create((x,)): 1.0})
 
     @staticmethod
     cdef PolynomialExpr _from_term(Term x):
-        cdef PolynomialExpr res = <PolynomialExpr>Expr._copy(None, PolynomialExpr)
-        res._children = {x: 1.0}
-        return res
+        return PolynomialExpr.create({x: 1.0})
 
     @staticmethod
     cdef Expr _from_other(x: Union[Number, Variable, Expr]):
@@ -442,20 +438,14 @@ cdef class Expr(UnaryOperator):
             and (<Expr>expr)[(<Expr>expr)._fchild()] == 1
         )
 
-    @staticmethod
-    cdef Expr _copy(expr: Optional[Expr], cls: Type[Expr], bool copy = False):
-        cdef Expr res = (
-            ConstExpr.__new__(ConstExpr)
-            if expr is not None and Expr._is_const(expr) else cls.__new__(cls)
-        )
-        res._children = (
-            (expr._children.copy() if copy else expr._children)
-            if expr is not None else {}
-        )
-        if type(expr) is ProdExpr:
-            (<ProdExpr>res).coef = expr.coef if expr is not None else 1.0
-        elif type(expr) is PowExpr:
-            (<PowExpr>res).expo = expr.expo if expr is not None else 1.0
+    cdef Expr copy(self, bool copy = True, cls: Optional[Type[Expr]] = None):
+        cls = ConstExpr if Expr._is_const(self) else (cls or type(self))
+        cdef Expr res = cls.__new__(cls)
+        res._children = self._children.copy() if copy else self._children
+        if cls is ProdExpr:
+            (<ProdExpr>res).coef = (<ProdExpr>self).coef
+        elif cls is PowExpr:
+            (<PowExpr>res).expo = (<PowExpr>self).expo
         return res
 
 
@@ -468,12 +458,16 @@ cdef class PolynomialExpr(Expr):
 
         super().__init__(<dict>children)
 
+    @staticmethod
+    cdef PolynomialExpr create(dict[Term, float] children):
+        cdef PolynomialExpr res = PolynomialExpr.__new__(PolynomialExpr)
+        res._children = children
+        return res
+
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
         if isinstance(_other, PolynomialExpr) and not Expr._is_zero(_other):
-            res = Expr._copy(self, PolynomialExpr, copy=True)
-            res._to_dict(_other, copy=False)
-            return Expr._copy(res, PolynomialExpr)
+            return PolynomialExpr.create(self._to_dict(_other)).copy(False)
         return super().__add__(_other)
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -484,7 +478,7 @@ cdef class PolynomialExpr(Expr):
         if self and isinstance(_other, PolynomialExpr) and other and not (
             Expr._is_const(_other) and (_other[CONST] == 0 or _other[CONST] == 1)
         ):
-            res = <PolynomialExpr>Expr._copy(None, PolynomialExpr)
+            res = PolynomialExpr.create({})
             for k1, v1 in self.items():
                 for k2, v2 in _other.items():
                     child = k1 * k2
@@ -559,8 +553,8 @@ cdef class ProdExpr(FuncExpr):
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
         if self._is_child_equal(_other):
-            res = <ProdExpr>Expr._copy(self, ProdExpr, copy=True)
-            res.coef += (<ProdExpr>_other).coef
+            res = self.copy()
+            (<ProdExpr>res).coef += (<ProdExpr>_other).coef
             return res._normalize()
         return super().__add__(_other)
 
@@ -574,8 +568,8 @@ cdef class ProdExpr(FuncExpr):
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
         if Expr._is_const(_other):
-            res = <ProdExpr>Expr._copy(self, ProdExpr, copy=True)
-            res.coef *= _other[CONST]
+            res = self.copy()
+            (<ProdExpr>res).coef *= _other[CONST]
             return res._normalize()
         return super().__mul__(_other)
 
@@ -589,8 +583,8 @@ cdef class ProdExpr(FuncExpr):
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
         if Expr._is_const(_other):
-            res = <ProdExpr>Expr._copy(self, ProdExpr, copy=True)
-            res.coef /= _other[CONST]
+            res = self.copy()
+            (<ProdExpr>res).coef /= _other[CONST]
             return res._normalize()
         return super().__truediv__(_other)
 
@@ -627,8 +621,8 @@ cdef class PowExpr(FuncExpr):
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
         if self._is_child_equal(_other):
-            res = <PowExpr>Expr._copy(self, PowExpr, copy=True)
-            res.expo += (<PowExpr>_other).expo
+            res = self.copy()
+            (<PowExpr>res).expo += (<PowExpr>_other).expo
             return res._normalize()
         return super().__mul__(_other)
 
@@ -642,8 +636,8 @@ cdef class PowExpr(FuncExpr):
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
         if self._is_child_equal(_other):
-            res = <PowExpr>Expr._copy(self, PowExpr, copy=True)
-            res.expo -= (<PowExpr>_other).expo
+            res = self.copy()
+            (<PowExpr>res).expo -= (<PowExpr>_other).expo
             return res._normalize()
         return super().__truediv__(_other)
 
