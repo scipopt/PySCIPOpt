@@ -285,7 +285,9 @@ cdef class Expr(UnaryOperator):
         return ExpExpr(self * LogExpr(_other))
 
     def __neg__(self) -> Expr:
-        return self * ConstExpr(-1.0)
+        cdef Expr res = self.copy(False)
+        res._children = {k: -v for k, v in self._children.items()}
+        return res
 
     cdef ExprCons _cmp(self, other: Union[Number, Variable, Expr], int op):
         cdef Expr _other = Expr._from_other(other)
@@ -518,6 +520,9 @@ cdef class ConstExpr(PolynomialExpr):
 
 cdef class FuncExpr(Expr):
 
+    def __neg__(self):
+        return self * ConstExpr(-1.0)
+
     cpdef float degree(self):
         return float("inf")
 
@@ -581,6 +586,11 @@ cdef class ProdExpr(FuncExpr):
             (<ProdExpr>res).coef /= _other[CONST]
             return res._normalize()
         return super().__truediv__(_other)
+
+    def __neg__(self) -> ProdExpr:
+        cdef ProdExpr res = <ProdExpr>self.copy()
+        res.coef = -self.coef
+        return res
 
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
         return self._cmp(other, op)
