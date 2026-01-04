@@ -105,3 +105,11 @@ def test_cmp(model):
         == "ExprCons(Expr({PowExpr(Term(y), -2.0): -1.0, PowExpr(Term(x), 2.0): 1.0}), 0.0, 0.0)"
     )
     assert str(expr1 <= 1) == "ExprCons(PowExpr(Term(x), 2.0), None, 1.0)"
+
+
+def test_normalize(model):
+    m, x, y = model
+
+    assert str(PowExpr(Term(x), 2.0)._normalize()) == "PowExpr(Term(x), 2.0)"
+    assert str(PowExpr(Term(x), 1.0)._normalize()) == "Expr({Term(x): 1.0})"
+    assert str(PowExpr(Term(x), 0.0)._normalize()) == "Expr({Term(): 1.0})"
