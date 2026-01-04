@@ -14,7 +14,6 @@ cdef class Term:
 
     cdef readonly tuple vars
     cdef int _hash
-    __slots__ = ("vars", "_hash")
 
     def __init__(self, *vars: Variable):
         if not all(isinstance(i, Variable) for i in vars):
@@ -73,7 +72,6 @@ CONST = Term()
 cdef class _ExprKey:
 
     cdef readonly Expr expr
-    __slots__ = ("expr",)
 
     def __init__(self, Expr expr):
         self.expr = expr
@@ -121,7 +119,6 @@ cdef class Expr(UnaryOperator):
     """Base class for mathematical expressions."""
 
     cdef readonly dict _children
-    __slots__ = ("_children",)
     __array_priority__ = 100
 
     def __init__(
@@ -258,9 +255,7 @@ cdef class Expr(UnaryOperator):
         cdef Expr _other = Expr._from_other(other)
         if self and Expr._is_sum(self) and Expr._is_const(_other) and _other[CONST] != 0:
             self._children = {k: v * _other[CONST] for k, v in self.items() if v != 0}
-            return self.copy(
-                False, PolynomialExpr if isinstance(self, PolynomialExpr) else Expr
-            )
+            return self.copy(False)
         return self * _other
 
     def __rmul__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -538,7 +533,6 @@ cdef class ProdExpr(FuncExpr):
     """Expression like `coefficient * expression`."""
 
     cdef readonly float coef
-    __slots__ = ("coef",)
 
     def __init__(self, *children: Union[Term, Expr]):
         if len(set(children)) != len(children):
@@ -609,7 +603,6 @@ cdef class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
 
     cdef readonly float expo
-    __slots__ = ("expo",)
 
     def __init__(self, base: Union[Term, Expr, _ExprKey], float expo = 1.0):
         super().__init__({base: 1.0})
