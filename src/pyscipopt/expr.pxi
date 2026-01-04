@@ -47,7 +47,7 @@ cdef class Term:
     def __repr__(self) -> str:
         return f"Term({self[0]})" if self.degree() == 1 else f"Term{self.vars}"
 
-    cpdef int degree(self):
+    def degree(self) -> int:
         return len(self.vars)
 
     cpdef list[tuple] _to_node(self, float coef = 1, int start = 0):
@@ -523,7 +523,7 @@ cdef class FuncExpr(Expr):
     def __neg__(self):
         return self * ConstExpr(-1.0)
 
-    cpdef float degree(self):
+    def degree(self) -> float:
         return float("inf")
 
     cdef bool _is_child_equal(self, other):
