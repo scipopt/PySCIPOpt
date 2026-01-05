@@ -3,7 +3,7 @@
 ## Unreleased
 ### Added
 - Added automated script for generating type stubs
-- Wrapped SCIPaddClique
+- Include parameter names in type stubs
 - Speed up MatrixExpr.sum(axis=...) via quicksum
 ### Fixed
 - all fundamental callbacks now raise an error if not implemented
