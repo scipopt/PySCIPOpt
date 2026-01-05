@@ -871,9 +871,6 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPvarMayRoundUp(SCIP_VAR* var)
     SCIP_Bool SCIPvarMayRoundDown(SCIP_VAR* var)
 
-    # Clique methods
-    SCIP_RETCODE SCIPaddClique(SCIP* scip, SCIP_VAR** vars, SCIP_Bool* values, int nvars, SCIP_Bool isequation, SCIP_Bool* infeasible, int* nbdchgs)
-
     # LP Methods
     SCIP_RETCODE SCIPgetLPColsData(SCIP* scip, SCIP_COL*** cols, int* ncols)
     SCIP_RETCODE SCIPgetLPRowsData(SCIP* scip, SCIP_ROW*** rows, int* nrows)
