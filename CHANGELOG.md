@@ -2,6 +2,8 @@
 
 ## Unreleased
 ### Added
+- Added automated script for generating type stubs
+- Wrapped SCIPaddClique
 - Speed up MatrixExpr.sum(axis=...) via quicksum
 ### Fixed
 - all fundamental callbacks now raise an error if not implemented
