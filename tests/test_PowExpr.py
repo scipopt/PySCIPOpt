@@ -1,7 +1,7 @@
 import pytest
 
 from pyscipopt import Model
-from pyscipopt.scip import ConstExpr, PolynomialExpr, PowExpr, ProdExpr, Term
+from pyscipopt.scip import ConstExpr, PolynomialExpr, PowExpr, ProdExpr, Term, Variable
 
 
 @pytest.fixture(scope="module")
@@ -113,3 +113,27 @@ def test_normalize(model):
     assert str(PowExpr(Term(x), 2.0)._normalize()) == "PowExpr(Term(x), 2.0)"
     assert str(PowExpr(Term(x), 1.0)._normalize()) == "Expr({Term(x): 1.0})"
     assert str(PowExpr(Term(x), 0.0)._normalize()) == "Expr({Term(): 1.0})"
+
+
+def test_to_node(model):
+    m, x, y = model
+
+    expr = PowExpr(Term(x))
+    assert expr._to_node() == [(Variable, x), (ConstExpr, 1), (PowExpr, [0, 1])]
+    assert expr._to_node(0) == []
+    assert expr._to_node(10) == [
+        (Variable, x),
+        (ConstExpr, 1),
+        (PowExpr, [0, 1]),
+        (ConstExpr, 10),
+        (ProdExpr, [2, 3]),
+    ]
+
+    expr = PowExpr(ProdExpr(Term(x), Term(y)), -1)
+    assert expr._to_node() == [
+        (Variable, x),
+        (Variable, y),
+        (ProdExpr, [0, 1]),
+        (ConstExpr, -1.0),
+        (PowExpr, [2, 3]),
+    ]
