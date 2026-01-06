@@ -353,7 +353,7 @@ cdef class Expr(UnaryOperator):
     cpdef list[tuple] _to_node(self, float coef = 1, int start = 0):
         """Convert expression to list of node for SCIP expression construction"""
         cdef list[tuple] node = []
-        cdef list[tuple] c_node
+        cdef list[tuple] sub_node
         cdef list[int] index = []
         cdef object k
         cdef float v
@@ -362,22 +362,25 @@ cdef class Expr(UnaryOperator):
             return node
 
         for k, v in self.items():
-            if v != 0 and (c_node := _unwrap(k)._to_node(v, start + len(node))):
-                node.extend(c_node)
+            if v != 0 and (sub_node := _unwrap(k)._to_node(v, start + len(node))):
+                node.extend(sub_node)
                 index.append(start + len(node) - 1)
 
         if node:
-            if issubclass(type(self), PolynomialExpr):
+            if isinstance(self, PolynomialExpr):
                 if len(node) > 1:
                     node.append((Expr, index))
             elif isinstance(self, UnaryExpr):
                 node.append((type(self), index[0]))
-            else:
-                if type(self) is PowExpr:
-                    node.append((ConstExpr, self.expo))
-                    index.append(start + len(node) - 1)
-                elif type(self) is ProdExpr and self.coef != 1:
+            elif isinstance(self, ProdExpr):
+                if self.coef != 1:
                     node.append((ConstExpr, self.coef))
+                    index.append(start + len(node) - 1)
+                if len(node) > 1:
+                    node.append((ProdExpr, index))
+            else:
+                if isinstance(self, PowExpr):
+                    node.append((ConstExpr, self.expo))
                     index.append(start + len(node) - 1)
                 node.append((type(self), index))
 
