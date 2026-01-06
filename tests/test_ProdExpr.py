@@ -1,7 +1,15 @@
 import pytest
 
 from pyscipopt import Expr, Model, exp, sin, sqrt
-from pyscipopt.scip import ConstExpr, PolynomialExpr, PowExpr, ProdExpr, SinExpr, Term
+from pyscipopt.scip import (
+    ConstExpr,
+    PolynomialExpr,
+    PowExpr,
+    ProdExpr,
+    SinExpr,
+    Term,
+    Variable,
+)
 
 
 @pytest.fixture(scope="module")
@@ -118,3 +126,22 @@ def test_normalize(model):
 
     expr = sin(x) * y
     assert str(expr._normalize()) == str(expr)
+
+
+def test_to_node(model):
+    m, x, y = model
+
+    expr = ProdExpr()
+    assert expr._to_node() == []
+    assert expr._to_node(0) == []
+    assert expr._to_node(10) == []
+
+    expr = ProdExpr(Term(x), Term(y))
+    assert expr._to_node() == [(Variable, x), (Variable, y), (ProdExpr, [0, 1])]
+    assert expr._to_node(0) == []
+    assert (expr * 2)._to_node() == [
+        (Variable, x),
+        (Variable, y),
+        (ConstExpr, 2),
+        (ProdExpr, [0, 1, 2]),
+    ]
