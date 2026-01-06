@@ -387,9 +387,6 @@ cdef class Expr(UnaryOperator):
 
         return node
 
-    cdef _fchild(self):
-        return next(iter(self._children))
-
     cdef bool _is_equal(self, object other):
         return (
             isinstance(other, Expr)
@@ -417,7 +414,7 @@ cdef class Expr(UnaryOperator):
         return isinstance(expr, ConstExpr) or (
             Expr._is_sum(expr)
             and len(expr._children) == 1
-            and (<Expr>expr)._fchild() == CONST
+            and _fchild(<Expr>expr) == CONST
         )
 
     @staticmethod
@@ -431,8 +428,8 @@ cdef class Expr(UnaryOperator):
         return (
             Expr._is_sum(expr)
             and len(expr._children) == 1
-            and isinstance((<Expr>expr)._fchild(), Term)
-            and (<Expr>expr)[(<Expr>expr)._fchild()] == 1
+            and isinstance(_fchild(<Expr>expr), Term)
+            and (<Expr>expr)[_fchild(<Expr>expr)] == 1
         )
 
     cdef Expr copy(self, bool copy = True, cls: Optional[Type[Expr]] = None):
@@ -444,6 +441,10 @@ cdef class Expr(UnaryOperator):
         elif cls is PowExpr:
             (<PowExpr>res).expo = (<PowExpr>self).expo
         return res
+
+
+cdef inline _fchild(Expr expr):
+    return next(iter(expr._children))
 
 
 cdef class PolynomialExpr(Expr):
@@ -603,8 +604,8 @@ cdef class ProdExpr(FuncExpr):
             return ConstExpr(0.0)
         elif len(self._children) == 1:
             return (
-                Expr._from_term(self._fchild())
-                if isinstance(self._fchild(), Term) else _unwrap(self._fchild())
+                Expr._from_term(_fchild(self))
+                if isinstance(_fchild(self), Term) else _unwrap(_fchild(self))
             )
         return self
 
@@ -648,15 +649,15 @@ cdef class PowExpr(FuncExpr):
         return self._cmp(other, op)
 
     def __repr__(self) -> str:
-        return f"PowExpr({self._fchild()}, {self.expo})"
+        return f"PowExpr({_fchild(self)}, {self.expo})"
 
     def _normalize(self) -> Expr:
         if not self or self.expo == 0:
             return ConstExpr(1.0)
         elif self.expo == 1:
             return (
-                Expr._from_term(self._fchild())
-                if isinstance(self._fchild(), Term) else _unwrap(self._fchild())
+                Expr._from_term(_fchild(self))
+                if isinstance(_fchild(self), Term) else _unwrap(_fchild(self))
             )
         return self
 
@@ -678,9 +679,9 @@ cdef class UnaryExpr(FuncExpr):
         return self._cmp(other, op)
 
     def __repr__(self) -> str:
-        if Expr._is_const(child := _unwrap(self._fchild())):
+        if Expr._is_const(child := _unwrap(_fchild(self))):
             return f"{type(self).__name__}({child[CONST]})"
-        elif Expr._is_term(child) and child[(term := (<Expr>child)._fchild())] == 1:
+        elif Expr._is_term(child) and child[(term := _fchild(<Expr>child))] == 1:
             return f"{type(self).__name__}({term})"
         return f"{type(self).__name__}({child})"
 
