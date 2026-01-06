@@ -190,13 +190,13 @@ cdef class Expr(UnaryOperator):
 
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
-        if Expr._is_zero(self):
+        if _is_zero(self):
             return _other.copy()
-        elif Expr._is_zero(_other):
+        elif _is_zero(_other):
             return self.copy()
-        elif Expr._is_sum(self):
+        elif _is_sum(self):
             return Expr(self._to_dict(_other))
-        elif Expr._is_sum(_other):
+        elif _is_sum(_other):
             return Expr(_other._to_dict(self))
         elif self._is_equal(_other):
             return self * 2.0
@@ -204,9 +204,9 @@ cdef class Expr(UnaryOperator):
 
     def __iadd__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
-        if Expr._is_zero(_other):
+        if _is_zero(_other):
             return self
-        elif Expr._is_sum(self) and Expr._is_sum(_other):
+        elif _is_sum(self) and _is_sum(_other):
             self._to_dict(_other, copy=False)
             if isinstance(self, PolynomialExpr) and isinstance(_other, PolynomialExpr):
                 return self.copy(False, PolynomialExpr)
@@ -233,18 +233,18 @@ cdef class Expr(UnaryOperator):
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
-        if Expr._is_zero(self) or Expr._is_zero(_other):
+        if _is_zero(self) or _is_zero(_other):
             return ConstExpr(0.0)
         elif Expr._is_const(self):
             if self[CONST] == 1:
                 return _other.copy()
-            elif Expr._is_sum(_other):
+            elif _is_sum(_other):
                 return Expr({k: v * self[CONST] for k, v in _other.items() if v != 0})
             return Expr({_other: self[CONST]})
         elif Expr._is_const(_other):
             if _other[CONST] == 1:
                 return self.copy()
-            elif Expr._is_sum(self):
+            elif _is_sum(self):
                 return Expr({k: v * _other[CONST] for k, v in self.items() if v != 0})
             return Expr({self: _other[CONST]})
         elif self._is_equal(_other):
@@ -253,7 +253,7 @@ cdef class Expr(UnaryOperator):
 
     def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
-        if self and Expr._is_sum(self) and Expr._is_const(_other) and _other[CONST] != 0:
+        if self and _is_sum(self) and Expr._is_const(_other) and _other[CONST] != 0:
             self._children = {k: v * _other[CONST] for k, v in self.items() if v != 0}
             return self.copy(False)
         return self * _other
@@ -263,7 +263,7 @@ cdef class Expr(UnaryOperator):
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
-        if Expr._is_zero(_other):
+        if _is_zero(_other):
             raise ZeroDivisionError("division by zero")
         if self._is_equal(_other):
             return ConstExpr(1.0)
@@ -276,7 +276,7 @@ cdef class Expr(UnaryOperator):
         cdef Expr _other = Expr._from_other(other)
         if not Expr._is_const(_other):
             raise TypeError("exponent must be a number")
-        return ConstExpr(1.0) if Expr._is_zero(_other) else PowExpr(self, _other[CONST])
+        return ConstExpr(1.0) if _is_zero(_other) else PowExpr(self, _other[CONST])
 
     def __rpow__(self, other: Union[Number, Expr]) -> ExpExpr:
         cdef Expr _other = Expr._from_other(other)
@@ -345,7 +345,7 @@ cdef class Expr(UnaryOperator):
         cdef dict children = self._children.copy() if copy else self._children
         cdef object child
         cdef float coef
-        for child, coef in (other if Expr._is_sum(other) else {other: 1.0}).items():
+        for child, coef in (other if _is_sum(other) else {other: 1.0}).items():
             key = _wrap(child)
             children[key] = children.get(key, 0.0) + coef
         return children
@@ -392,7 +392,7 @@ cdef class Expr(UnaryOperator):
             isinstance(other, Expr)
             and len(self._children) == len(other._children)
             and (
-                (Expr._is_sum(self) and Expr._is_sum(other))
+                (_is_sum(self) and _is_sum(other))
                 or (
                     type(self) is type(other)
                     and (
@@ -406,27 +406,17 @@ cdef class Expr(UnaryOperator):
         )
 
     @staticmethod
-    cdef bool _is_sum(expr):
-        return type(expr) is Expr or isinstance(expr, PolynomialExpr)
-
-    @staticmethod
     cdef bool _is_const(expr):
         return isinstance(expr, ConstExpr) or (
-            Expr._is_sum(expr)
+            _is_sum(expr)
             and len(expr._children) == 1
             and _fchild(<Expr>expr) == CONST
         )
 
     @staticmethod
-    cdef bool _is_zero(expr):
-        return isinstance(expr, Expr) and (
-            not expr or (Expr._is_const(expr) and expr[CONST] == 0)
-        )
-
-    @staticmethod
     cdef bool _is_term(expr):
         return (
-            Expr._is_sum(expr)
+            _is_sum(expr)
             and len(expr._children) == 1
             and isinstance(_fchild(<Expr>expr), Term)
             and (<Expr>expr)[_fchild(<Expr>expr)] == 1
@@ -441,6 +431,14 @@ cdef class Expr(UnaryOperator):
         elif cls is PowExpr:
             (<PowExpr>res).expo = (<PowExpr>self).expo
         return res
+
+
+cdef inline bool _is_sum(expr):
+    return type(expr) is Expr or isinstance(expr, PolynomialExpr)
+
+
+cdef inline bool _is_zero(Expr expr):
+    return not expr or (Expr._is_const(expr) and expr[CONST] == 0)
 
 
 cdef inline _fchild(Expr expr):
@@ -464,7 +462,7 @@ cdef class PolynomialExpr(Expr):
 
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = Expr._from_other(other)
-        if isinstance(_other, PolynomialExpr) and not Expr._is_zero(_other):
+        if isinstance(_other, PolynomialExpr) and not _is_zero(_other):
             return PolynomialExpr.create(self._to_dict(_other)).copy(False)
         return super().__add__(_other)
 
