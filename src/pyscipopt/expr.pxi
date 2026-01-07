@@ -42,6 +42,8 @@
 # which should, in princple, modify the expr. However, since we do not implement __isub__, __sub__
 # gets called (I guess) and so a copy is returned.
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
+import math
+
 include "matrix.pxi"
 
 
@@ -87,34 +89,41 @@ def _expr_richcmp(self, other, op):
         raise NotImplementedError("Can only support constraints with '<=', '>=', or '=='.")
 
 
-class Term:
+cdef class Term:
     '''This is a monomial term'''
 
-    __slots__ = ('vartuple', 'ptrtuple', 'hashval')
+    cdef readonly vars
+    cdef _hash
 
-    def __init__(self, *vartuple):
-        self.vartuple = tuple(sorted(vartuple, key=lambda v: v.ptr()))
-        self.ptrtuple = tuple(v.ptr() for v in self.vartuple)
-        self.hashval = sum(self.ptrtuple)
+    def __init__(self, *vars):
+        self.vars = tuple(sorted(vars, key=hash))
+        self._hash = hash(self.vars)
 
     def __getitem__(self, idx):
-        return self.vartuple[idx]
+        return self.vars[idx]
 
     def __hash__(self):
-        return self.hashval
+        return self._hash
 
-    def __eq__(self, other):
-        return self.ptrtuple == other.ptrtuple
+    def __eq__(self, other: Term):
+        return isinstance(other, Term) and self._hash == other._hash
 
     def __len__(self):
-        return len(self.vartuple)
+        return len(self.vars)
 
     def __add__(self, other):
-        both = self.vartuple + other.vartuple
+        both = self.vars + other.vars
         return Term(*both)
 
     def __repr__(self):
-        return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
+        return 'Term(%s)' % ', '.join([str(v) for v in self.vars])
+
+    cpdef float _evaluate(self, Solution sol):
+        cdef float res = 1
+        cdef Variable i
+        for i in self.vars:
+            res *= SCIPgetSolVal(sol.scip, sol.sol, i.scip_var)
+        return res
 
 
 CONST = Term()
@@ -157,7 +166,9 @@ def buildGenExprObj(expr):
 ##@details Polynomial expressions of variables with operator overloading. \n
 #See also the @ref ExprDetails "description" in the expr.pxi. 
 cdef class Expr:
-    
+
+    cdef public terms
+
     def __init__(self, terms=None):
         '''terms is a dict of variables to coefficients.
 
@@ -318,6 +329,14 @@ cdef class Expr:
         else:
             return max(len(v) for v in self.terms)
 
+    cpdef float _evaluate(self, Solution sol):
+        cdef float res = 0
+        cdef float coef
+        cdef Term term
+        for term, coef in self.terms.items():
+            res += coef * term._evaluate(sol)
+        return res
+
 
 cdef class ExprCons:
     '''Constraints with a polynomial expressions and lower/upper bounds.'''
@@ -427,9 +446,9 @@ Operator = Op()
 #
 #See also the @ref ExprDetails "description" in the expr.pxi. 
 cdef class GenExpr:
+
     cdef public _op
     cdef public children
-
 
     def __init__(self): # do we need it
         ''' '''
@@ -625,34 +644,68 @@ cdef class SumExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
+    cpdef float _evaluate(self, Solution sol):
+        cdef float res = self.constant
+        cdef GenExpr child
+        cdef float coef
+        for child, coef in zip(self.children, self.coefs):
+            res += coef * child._evaluate(sol)
+        return res
+
+
 # Prod Expressions
 cdef class ProdExpr(GenExpr):
+
     cdef public constant
+
     def __init__(self):
         self.constant = 1.0
         self.children = []
         self._op = Operator.prod
+
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
+    cpdef float _evaluate(self, Solution sol):
+        cdef float res = self.constant
+        cdef GenExpr child
+        for child in self.children:
+            res *= child._evaluate(sol)
+        return res
+
+
 # Var Expressions
 cdef class VarExpr(GenExpr):
+
     cdef public var
+
     def __init__(self, var):
         self.children = [var]
         self._op = Operator.varidx
+
     def __repr__(self):
         return self.children[0].__repr__()
 
+    cpdef float _evaluate(self, Solution sol):
+        return self.children[0]._evaluate(sol)
+
+
 # Pow Expressions
 cdef class PowExpr(GenExpr):
+
     cdef public expo
+
     def __init__(self):
         self.expo = 1.0
         self.children = []
         self._op = Operator.power
+
     def __repr__(self):
         return self._op + "(" + self.children[0].__repr__() + "," + str(self.expo) + ")"
+
+    cpdef float _evaluate(self, Solution sol):
+        return self.children[0]._evaluate(sol) ** self.expo
+
 
 # Exp, Log, Sqrt, Sin, Cos Expressions
 cdef class UnaryExpr(GenExpr):
@@ -660,8 +713,13 @@ cdef class UnaryExpr(GenExpr):
         self.children = []
         self.children.append(expr)
         self._op = op
+
     def __repr__(self):
         return self._op + "(" + self.children[0].__repr__() + ")"
+
+    cpdef float _evaluate(self, Solution sol):
+        return getattr(math, self._op)(self.children[0]._evaluate(sol))
+
 
 # class for constant expressions
 cdef class Constant(GenExpr):
@@ -672,6 +730,10 @@ cdef class Constant(GenExpr):
 
     def __repr__(self):
         return str(self.number)
+
+    cpdef float _evaluate(self, Solution sol):
+        return self.number
+
 
 def exp(expr):
     """returns expression with exp-function"""
