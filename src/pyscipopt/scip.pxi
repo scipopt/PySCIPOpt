@@ -1102,10 +1102,8 @@ cdef class Solution:
         self._checkStage("SCIPgetSolVal")
         if isinstance(expr, (MatrixExpr, MatrixGenExpr)):
             res = np.zeros(expr.shape, dtype=np.float64)
-            for idx in np.ndindex(expr.shape):
-                res[idx] = expr[idx]._evaluate(self)
+            res.flat[:] = [i._evaluate(self) for i in expr.flat]
             return res
-
         return expr._evaluate(self)
 
     def __setitem__(self, Variable var, value):
