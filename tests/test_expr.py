@@ -1,7 +1,10 @@
+import math
+
 import pytest
 
 from pyscipopt import Model, sqrt, log, exp, sin, cos
-from pyscipopt.scip import Expr, GenExpr, ExprCons, Term, quicksum
+from pyscipopt.scip import Expr, GenExpr, ExprCons, Term
+
 
 @pytest.fixture(scope="module")
 def model():
@@ -188,3 +191,21 @@ def test_rpow_constant_base(model):
 
     with pytest.raises(ValueError):
         c = (-2)**x
+
+
+def test_evaluate():
+    m = Model()
+    x = m.addVar(lb=1, ub=1)
+    m.optimize()
+
+    # test "Expr({Term(x1): 1.0, Term(): 1.0})"
+    assert m.getVal(x + 1) == 2
+    # test "prod(1.0,sum(0.0,prod(1.0,x1)),**(sum(0.0,prod(1.0,x1)),-1))"
+    assert m.getVal(x / x) == 1
+    # test "**(prod(1.0,**(sum(0.0,prod(1.0,x1)),-1)),2)"
+    assert m.getVal((1 / x) ** 2) == 1
+    # test "sin(sum(0.0,prod(1.0,x1)))"
+    assert round(m.getVal(sin(x)), 6) == round(math.sin(1), 6)
+
+    with pytest.raises(TypeError):
+        m.getVal(1)
