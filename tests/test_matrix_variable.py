@@ -611,4 +611,5 @@ def test_evaluate():
     x = m.addMatrixVar((1, 1), lb=1, ub=1)
     m.optimize()
 
+    assert type(m.getVal(x)) is np.ndarray
     assert m.getVal(x).sum() == 1

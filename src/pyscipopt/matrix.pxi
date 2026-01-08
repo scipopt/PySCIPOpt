@@ -150,7 +150,8 @@ class MatrixExpr(np.ndarray):
         return super().__matmul__(other).view(MatrixExpr)
 
     def _evaluate(self, Solution sol) -> NDArray[np.float64]:
-        return np.vectorize(lambda e: e._evaluate(sol))(self)
+        res = np.vectorize(lambda e: e._evaluate(sol))(self)
+        return res.view(np.ndarray) if isinstance(res, np.ndarray) else res
 
 
 class MatrixGenExpr(MatrixExpr):
