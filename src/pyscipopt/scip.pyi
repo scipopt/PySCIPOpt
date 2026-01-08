@@ -2124,6 +2124,7 @@ class SumExpr(GenExpr):
     constant: Incomplete
     def __init__(self, *args: Incomplete, **kwargs: Incomplete) -> None: ...
 
+@disjoint_base
 class Term:
     hashval: Incomplete
     ptrtuple: Incomplete
@@ -2140,6 +2141,7 @@ class Term:
     def __lt__(self, other: object) -> bool: ...
     def __ne__(self, other: object) -> bool: ...
 
+@disjoint_base
 class UnaryExpr(GenExpr):
     def __init__(self, *args: Incomplete, **kwargs: Incomplete) -> None: ...
 
