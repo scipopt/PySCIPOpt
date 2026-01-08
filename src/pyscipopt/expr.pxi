@@ -99,11 +99,13 @@ cdef class Term:
     '''This is a monomial term'''
 
     cdef readonly tuple vartuple
+    cdef readonly tuple ptrtuple
     cdef int hashval
 
     def __init__(self, *vartuple: Variable):
         self.vartuple = tuple(sorted(vartuple, key=lambda v: v.ptr()))
-        self.hashval = hash((v.ptr() for v in self.vartuple))
+        self.ptrtuple = tuple(v.ptr() for v in self.vartuple)
+        self.hashval = hash(self.ptrtuple)
 
     def __getitem__(self, idx):
         return self.vartuple[idx]
@@ -112,7 +114,7 @@ cdef class Term:
         return self.hashval
 
     def __eq__(self, other: Term):
-        return isinstance(other, Term) and hash(self) == hash(other)
+        return self.ptrtuple == other.ptrtuple
 
     def __len__(self):
         return len(self.vartuple)
