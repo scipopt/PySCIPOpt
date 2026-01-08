@@ -44,6 +44,8 @@
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
 import math
 
+from libc.float cimport double
+
 include "matrix.pxi"
 
 
@@ -117,8 +119,8 @@ cdef class Term:
     def __repr__(self):
         return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
 
-    cpdef float _evaluate(self, Solution sol):
-        cdef float res = 1
+    cdef double _evaluate(self, Solution sol):
+        cdef double res = 1
         cdef Variable i
         for i in self.vartuple:
             res *= SCIPgetSolVal(sol.scip, sol.sol, i.scip_var)
@@ -328,9 +330,9 @@ cdef class Expr:
         else:
             return max(len(v) for v in self.terms)
 
-    cpdef float _evaluate(self, Solution sol):
-        cdef float res = 0
-        cdef float coef
+    cdef double _evaluate(self, Solution sol):
+        cdef double res = 0
+        cdef double coef
         cdef Term term
         for term, coef in self.terms.items():
             res += coef * term._evaluate(sol)
@@ -643,10 +645,10 @@ cdef class SumExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
-    cpdef float _evaluate(self, Solution sol):
-        cdef float res = self.constant
+    cdef double _evaluate(self, Solution sol):
+        cdef double res = self.constant
         cdef GenExpr child
-        cdef float coef
+        cdef double coef
         for child, coef in zip(self.children, self.coefs):
             res += coef * child._evaluate(sol)
         return res
@@ -665,8 +667,8 @@ cdef class ProdExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
-    cpdef float _evaluate(self, Solution sol):
-        cdef float res = self.constant
+    cdef double _evaluate(self, Solution sol):
+        cdef double res = self.constant
         cdef GenExpr child
         for child in self.children:
             res *= child._evaluate(sol)
@@ -685,7 +687,7 @@ cdef class VarExpr(GenExpr):
     def __repr__(self):
         return self.children[0].__repr__()
 
-    cpdef float _evaluate(self, Solution sol):
+    cdef double _evaluate(self, Solution sol):
         return self.children[0]._evaluate(sol)
 
 
@@ -702,7 +704,7 @@ cdef class PowExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + self.children[0].__repr__() + "," + str(self.expo) + ")"
 
-    cpdef float _evaluate(self, Solution sol):
+    cdef double _evaluate(self, Solution sol):
         return self.children[0]._evaluate(sol) ** self.expo
 
 
@@ -716,7 +718,7 @@ cdef class UnaryExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + self.children[0].__repr__() + ")"
 
-    cpdef float _evaluate(self, Solution sol):
+    cdef double _evaluate(self, Solution sol):
         return getattr(math, self._op)(self.children[0]._evaluate(sol))
 
 
@@ -730,7 +732,7 @@ cdef class Constant(GenExpr):
     def __repr__(self):
         return str(self.number)
 
-    cpdef float _evaluate(self, Solution sol):
+    cdef double _evaluate(self, Solution sol):
         return self.number
 
 
