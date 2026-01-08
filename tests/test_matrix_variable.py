@@ -604,3 +604,11 @@ def test_broadcast():
     m.optimize()
 
     assert (m.getVal(x) == np.zeros((2, 3))).all()
+
+
+def test_evaluate():
+    m = Model()
+    x = m.addMatrixVar((1, 1), lb=1, ub=1)
+    m.optimize()
+
+    assert m.getVal(x).sum() == 1
