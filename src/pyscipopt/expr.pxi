@@ -92,36 +92,35 @@ def _expr_richcmp(self, other, op):
 cdef class Term:
     '''This is a monomial term'''
 
-    cdef readonly vars
-    cdef _hash
+    cdef readonly vartuple
+    cdef hashval
 
     def __init__(self, *vars):
-        self.vars = tuple(sorted(vars, key=hash))
-        self._hash = hash(self.vars)
+        self.vartuple = tuple(sorted(vars, key=hash))
+        self.hashval = hash(self.vartuple)
 
     def __getitem__(self, idx):
-        return self.vars[idx]
+        return self.vartuple[idx]
 
     def __hash__(self):
-        return self._hash
+        return self.hashval
 
     def __eq__(self, other: Term):
-        return isinstance(other, Term) and self._hash == other._hash
+        return isinstance(other, Term) and hash(self) == hash(other)
 
     def __len__(self):
-        return len(self.vars)
+        return len(self.vartuple)
 
-    def __add__(self, other):
-        both = self.vars + other.vars
-        return Term(*both)
+    def __add__(self, Term other):
+        return Term(*self.vartuple, *other.vartuple)
 
     def __repr__(self):
-        return 'Term(%s)' % ', '.join([str(v) for v in self.vars])
+        return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
 
     cpdef float _evaluate(self, Solution sol):
         cdef float res = 1
         cdef Variable i
-        for i in self.vars:
+        for i in self.vartuple:
             res *= SCIPgetSolVal(sol.scip, sol.sol, i.scip_var)
         return res
 
