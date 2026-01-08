@@ -101,9 +101,9 @@ cdef class Term:
     cdef readonly tuple vartuple
     cdef int hashval
 
-    def __init__(self, *vars: Variable):
-        self.vartuple = tuple(sorted(vars, key=hash))
-        self.hashval = hash(self.vartuple)
+    def __init__(self, *vartuple: Variable):
+        self.vartuple = tuple(sorted(vartuple, key=lambda v: v.ptr()))
+        self.hashval = hash((v.ptr() for v in self.vartuple))
 
     def __getitem__(self, idx):
         return self.vartuple[idx]
@@ -117,8 +117,9 @@ cdef class Term:
     def __len__(self):
         return len(self.vartuple)
 
-    def __add__(self, Term other):
-        return Term(*self.vartuple, *other.vartuple)
+    def __add__(self, other):
+        both = self.vartuple + other.vartuple
+        return Term(*both)
 
     def __repr__(self):
         return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
