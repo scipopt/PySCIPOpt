@@ -1100,10 +1100,6 @@ cdef class Solution:
 
     def __getitem__(self, expr: Union[Expr, MatrixExpr]):
         self._checkStage("SCIPgetSolVal")
-        if isinstance(expr, (MatrixExpr, MatrixGenExpr)):
-            res = np.zeros(expr.shape, dtype=np.float64)
-            res.flat[:] = [i._evaluate(self) for i in expr.flat]
-            return res
         return expr._evaluate(self)
 
     def __setitem__(self, Variable var, value):

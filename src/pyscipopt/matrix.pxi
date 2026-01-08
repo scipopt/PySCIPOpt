@@ -5,6 +5,7 @@
 
 from typing import Optional, Tuple, Union
 import numpy as np
+from numpy.typing import NDArray
 try:
     # NumPy 2.x location
     from numpy.lib.array_utils import normalize_axis_tuple
@@ -148,8 +149,13 @@ class MatrixExpr(np.ndarray):
     def __matmul__(self, other):
         return super().__matmul__(other).view(MatrixExpr)
 
+    def _evaluate(self, Solution sol) -> NDArray[np.float64]:
+        return np.vectorize(lambda e: e._evaluate(sol))(self)
+
+
 class MatrixGenExpr(MatrixExpr):
     pass
+
 
 class MatrixExprCons(np.ndarray):
 
