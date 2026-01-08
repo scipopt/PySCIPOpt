@@ -94,10 +94,10 @@ def _expr_richcmp(self, other, op):
 cdef class Term:
     '''This is a monomial term'''
 
-    cdef readonly vartuple
-    cdef hashval
+    cdef readonly tuple vartuple
+    cdef int hashval
 
-    def __init__(self, *vars):
+    def __init__(self, *vars: Variable):
         self.vartuple = tuple(sorted(vars, key=hash))
         self.hashval = hash(self.vartuple)
 
