@@ -9,6 +9,7 @@
 - all fundamental callbacks now raise an error if not implemented
 - Fixed the type of MatrixExpr.sum(axis=...) result from MatrixVariable to MatrixExpr.
 - Updated IIS result in PyiisfinderExec()
+- Model.getVal now supported GenExpr type
 ### Changed
 - changed default value of enablepricing flag to True
 ### Removed
