@@ -43,10 +43,14 @@
 # gets called (I guess) and so a copy is returned.
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
 import math
+from typing import TYPE_CHECKING
 
-from libc.float cimport double
+from pyscipopt.scip cimport Variable, Solution
 
 include "matrix.pxi"
+
+if TYPE_CHECKING:
+    double = float
 
 
 def _is_number(e):
@@ -119,7 +123,7 @@ cdef class Term:
     def __repr__(self):
         return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
 
-    cdef double _evaluate(self, Solution sol):
+    cpdef double _evaluate(self, Solution sol):
         cdef double res = 1
         cdef Variable i
         for i in self.vartuple:
@@ -167,8 +171,6 @@ def buildGenExprObj(expr):
 ##@details Polynomial expressions of variables with operator overloading. \n
 #See also the @ref ExprDetails "description" in the expr.pxi. 
 cdef class Expr:
-
-    cdef public terms
 
     def __init__(self, terms=None):
         '''terms is a dict of variables to coefficients.
@@ -330,7 +332,7 @@ cdef class Expr:
         else:
             return max(len(v) for v in self.terms)
 
-    cdef double _evaluate(self, Solution sol):
+    cpdef double _evaluate(self, Solution sol):
         cdef double res = 0
         cdef double coef
         cdef Term term
@@ -645,7 +647,7 @@ cdef class SumExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
-    cdef double _evaluate(self, Solution sol):
+    cpdef double _evaluate(self, Solution sol):
         cdef double res = self.constant
         cdef GenExpr child
         cdef double coef
@@ -667,7 +669,7 @@ cdef class ProdExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
-    cdef double _evaluate(self, Solution sol):
+    cpdef double _evaluate(self, Solution sol):
         cdef double res = self.constant
         cdef GenExpr child
         for child in self.children:
@@ -687,7 +689,7 @@ cdef class VarExpr(GenExpr):
     def __repr__(self):
         return self.children[0].__repr__()
 
-    cdef double _evaluate(self, Solution sol):
+    cpdef double _evaluate(self, Solution sol):
         return self.children[0]._evaluate(sol)
 
 
@@ -704,7 +706,7 @@ cdef class PowExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + self.children[0].__repr__() + "," + str(self.expo) + ")"
 
-    cdef double _evaluate(self, Solution sol):
+    cpdef double _evaluate(self, Solution sol):
         return self.children[0]._evaluate(sol) ** self.expo
 
 
@@ -718,7 +720,7 @@ cdef class UnaryExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + self.children[0].__repr__() + ")"
 
-    cdef double _evaluate(self, Solution sol):
+    cpdef double _evaluate(self, Solution sol):
         return getattr(math, self._op)(self.children[0]._evaluate(sol))
 
 
@@ -732,7 +734,7 @@ cdef class Constant(GenExpr):
     def __repr__(self):
         return str(self.number)
 
-    cdef double _evaluate(self, Solution sol):
+    cpdef double _evaluate(self, Solution sol):
         return self.number
 
 

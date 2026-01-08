@@ -1519,10 +1519,6 @@ cdef class Node:
 cdef class Variable(Expr):
     """Is a linear expression and has SCIP_VAR*"""
 
-    cdef SCIP_VAR* scip_var
-    # can be used to store problem data
-    cdef public object data
-
     @staticmethod
     cdef create(SCIP_VAR* scipvar):
         """
