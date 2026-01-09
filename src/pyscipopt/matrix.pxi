@@ -155,8 +155,7 @@ class MatrixExpr(np.ndarray):
         return super().__matmul__(other).view(MatrixExpr)
 
     def _evaluate(self, Solution sol) -> NDArray[np.float64]:
-        res = _evaluate(self, sol)
-        return res.view(np.ndarray) if isinstance(res, np.ndarray) else res
+        return _evaluate(self, sol).view(np.ndarray)
 
 
 class MatrixGenExpr(MatrixExpr):
