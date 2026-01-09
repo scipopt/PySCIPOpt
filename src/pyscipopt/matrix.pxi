@@ -13,6 +13,8 @@ except ImportError:
     # Fallback for NumPy 1.x
     from numpy.core.numeric import normalize_axis_tuple
 
+from pyscipopt.scip cimport Expr, Solution
+
 
 def _is_number(e):
     try:
@@ -48,6 +50,11 @@ def _matrixexpr_richcmp(self, other, op):
         raise TypeError(f"Unsupported type {type(other)}")
 
     return res.view(MatrixExprCons)
+
+
+@np.vectorize
+def _evaluate(expr: Union[Expr, GenExpr], Solution sol):
+    return expr._evaluate(sol)
 
 
 class MatrixExpr(np.ndarray):
@@ -150,7 +157,7 @@ class MatrixExpr(np.ndarray):
         return super().__matmul__(other).view(MatrixExpr)
 
     def _evaluate(self, Solution sol) -> NDArray[np.float64]:
-        res = np.vectorize(lambda e: e._evaluate(sol))(self)
+        res = _evaluate(self, sol)
         return res.view(np.ndarray) if isinstance(res, np.ndarray) else res
 
 
