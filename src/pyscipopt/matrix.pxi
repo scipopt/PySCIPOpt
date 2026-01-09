@@ -52,9 +52,7 @@ def _matrixexpr_richcmp(self, other, op):
     return res.view(MatrixExprCons)
 
 
-@np.vectorize
-def _evaluate(expr: Union[Expr, GenExpr], Solution sol):
-    return expr._evaluate(sol)
+_evaluate = np.frompyfunc(lambda expr, sol: expr._evaluate(sol), 2, 1)
 
 
 class MatrixExpr(np.ndarray):
