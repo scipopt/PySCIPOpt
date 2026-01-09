@@ -5,6 +5,7 @@ from typing import Iterator, Optional, Type, Union
 import numpy as np
 
 from cpython.object cimport Py_LE, Py_EQ, Py_GE
+from pyscipopt.scip cimport Variable
 
 include "matrix.pxi"
 
