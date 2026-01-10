@@ -542,7 +542,7 @@ def test_is_equal(model):
     )
 
     assert _ExprKey(PowExpr(Term(x), -1.0)) != _ExprKey(PowExpr(Term(x), 1.0))
-    assert _ExprKey(PowExpr(Term(x))) == _ExprKey(PowExpr(Term(x), 1.0))
+    assert _ExprKey(PowExpr(Term(x), 1)) == _ExprKey(PowExpr(Term(x), 1.0))
 
     assert _ExprKey(CosExpr(Term(x))) != _ExprKey(SinExpr(Term(x)))
     assert _ExprKey(LogExpr(Term(x))) == _ExprKey(LogExpr(Term(x)))

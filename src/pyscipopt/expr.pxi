@@ -547,7 +547,7 @@ cdef class PowExpr(FuncExpr):
 
     cdef readonly float expo
 
-    def __init__(self, base: Union[Term, Expr, _ExprKey], float expo = 1.0):
+    def __init__(self, base: Union[Term, Expr, _ExprKey], float expo):
         super().__init__({base: 1.0})
         self.expo = expo
 
