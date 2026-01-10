@@ -66,9 +66,6 @@ cdef class Term:
         return node
 
 
-CONST = Term()
-
-
 cdef class _ExprKey:
 
     cdef readonly Expr expr
@@ -84,6 +81,9 @@ cdef class _ExprKey:
 
     def __repr__(self) -> str:
         return repr(self.expr)
+
+
+CONST = Term()
 
 
 cdef inline _wrap(x):
@@ -236,25 +236,25 @@ cdef class Expr(UnaryOperatorMixin):
         if _is_zero(self) or _is_zero(_other):
             return ConstExpr(0.0)
         elif Expr._is_const(self):
-            if self[CONST] == 1:
+            if _c(self) == 1:
                 return _other.copy()
             elif _is_sum(_other):
-                return Expr({k: v * self[CONST] for k, v in _other.items() if v != 0})
-            return Expr({_other: self[CONST]})
+                return Expr({k: v * _c(self) for k, v in _other.items() if v != 0})
+            return Expr({_other: _c(self)})
         elif Expr._is_const(_other):
-            if _other[CONST] == 1:
+            if _c(_other) == 1:
                 return self.copy()
             elif _is_sum(self):
-                return Expr({k: v * _other[CONST] for k, v in self.items() if v != 0})
-            return Expr({self: _other[CONST]})
+                return Expr({k: v * _c(_other) for k, v in self.items() if v != 0})
+            return Expr({self: _c(_other)})
         elif self._is_equal(_other):
             return PowExpr(self, 2.0)
         return ProdExpr(self, _other)
 
     def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
-        if self and _is_sum(self) and Expr._is_const(_other) and _other[CONST] != 0:
-            self._children = {k: v * _other[CONST] for k, v in self.items() if v != 0}
+        if self and _is_sum(self) and Expr._is_const(_other) and _c(_other) != 0:
+            self._children = {k: v * _c(_other) for k, v in self.items() if v != 0}
             return self.copy(False)
         return self * _other
 
@@ -276,11 +276,11 @@ cdef class Expr(UnaryOperatorMixin):
         cdef Expr _other = _to_expr(other)
         if not Expr._is_const(_other):
             raise TypeError("exponent must be a number")
-        return ConstExpr(1.0) if _is_zero(_other) else PowExpr(self, _other[CONST])
+        return ConstExpr(1.0) if _is_zero(_other) else PowExpr(self, _c(_other))
 
     def __rpow__(self, other: Union[Number, Expr]) -> ExpExpr:
         cdef Expr _other = _to_expr(other)
-        if _other[CONST] <= 0.0:
+        if _c(_other) <= 0.0:
             raise ValueError("base must be positive")
         return ExpExpr(self * LogExpr(_other))
 
@@ -293,15 +293,15 @@ cdef class Expr(UnaryOperatorMixin):
         cdef Expr _other = _to_expr(other)
         if op == Py_LE:
             if Expr._is_const(_other):
-                return ExprCons(self, rhs=_other[CONST])
+                return ExprCons(self, rhs=_c(_other))
             return ExprCons(self - _other, rhs=0.0)
         elif op == Py_GE:
             if Expr._is_const(_other):
-                return ExprCons(self, lhs=_other[CONST])
+                return ExprCons(self, lhs=_c(_other))
             return ExprCons(self - _other, lhs=0.0)
         elif op == Py_EQ:
             if Expr._is_const(_other):
-                return ExprCons(self, lhs=_other[CONST], rhs=_other[CONST])
+                return ExprCons(self, lhs=_c(_other), rhs=_c(_other))
             return ExprCons(self - _other, lhs=0.0, rhs=0.0)
 
         raise NotImplementedError("Expr can only support with '<=', '>=', or '=='.")
@@ -400,6 +400,10 @@ cdef class Expr(UnaryOperatorMixin):
         return res
 
 
+cdef inline float _c(Expr expr):
+    return expr._children.get(CONST, 0.0)
+
+
 cdef inline Expr _to_expr(x: Union[Number, Variable, Expr]):
     if isinstance(x, Number):
         return ConstExpr(<float>x)
@@ -415,7 +419,7 @@ cdef inline bool _is_sum(expr):
 
 
 cdef inline bool _is_zero(Expr expr):
-    return not expr or (Expr._is_const(expr) and expr[CONST] == 0)
+    return not expr or (Expr._is_const(expr) and _c(expr) == 0)
 
 
 cdef inline _fchild(Expr expr):
@@ -449,7 +453,7 @@ cdef class PolynomialExpr(Expr):
         cdef Term k1, k2, child
         cdef float v1, v2
         if self and isinstance(_other, PolynomialExpr) and other and not (
-            Expr._is_const(_other) and (_other[CONST] == 0 or _other[CONST] == 1)
+            Expr._is_const(_other) and (_c(_other) == 0 or _c(_other) == 1)
         ):
             res = PolynomialExpr.create({})
             for k1, v1 in self.items():
@@ -462,14 +466,14 @@ cdef class PolynomialExpr(Expr):
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
         if Expr._is_const(_other):
-            return self * (1.0 / _other[CONST])
+            return self * (1.0 / _c(_other))
         return super().__truediv__(_other)
 
     def __pow__(self, other: Union[Number, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
-        if Expr._is_const(_other) and _other[CONST].is_integer() and _other[CONST] > 0:
+        if Expr._is_const(_other) and _c(_other).is_integer() and _c(_other) > 0:
             res = ConstExpr(1.0)
-            for _ in range(int(_other[CONST])):
+            for _ in range(int(_c(_other))):
                 res *= self
             return res
         return super().__pow__(_other)
@@ -482,19 +486,19 @@ cdef class ConstExpr(PolynomialExpr):
         super().__init__({CONST: constant})
 
     def __abs__(self) -> ConstExpr:
-        return ConstExpr(abs(self[CONST]))
+        return ConstExpr(abs(_c(self)))
 
     def __neg__(self) -> ConstExpr:
-        return ConstExpr(-self[CONST])
+        return ConstExpr(-_c(self))
 
     def __pow__(self, other: Union[Number, Expr]) -> ConstExpr:
         cdef Expr _other = _to_expr(other)
         if Expr._is_const(_other):
-            return ConstExpr(self[CONST] ** _other[CONST])
+            return ConstExpr(_c(self) ** _c(_other))
         return <ConstExpr>super().__pow__(_other)
 
     cpdef list _to_node(self, float coef = 1, int start = 0):
-        cdef float res = self[CONST] * coef
+        cdef float res = _c(self) * coef
         return [(ConstExpr, res)] if res != 0 else []
 
 
@@ -550,14 +554,14 @@ cdef class ProdExpr(FuncExpr):
         cdef Expr _other = _to_expr(other)
         if Expr._is_const(_other):
             res = self.copy()
-            (<ProdExpr>res).coef *= _other[CONST]
+            (<ProdExpr>res).coef *= _c(_other)
             return res._normalize()
         return super().__mul__(_other)
 
     def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
         if Expr._is_const(_other):
-            self.coef *= _other[CONST]
+            self.coef *= _c(_other)
             return self._normalize()
         return super().__imul__(_other)
 
@@ -565,7 +569,7 @@ cdef class ProdExpr(FuncExpr):
         cdef Expr _other = _to_expr(other)
         if Expr._is_const(_other):
             res = self.copy()
-            (<ProdExpr>res).coef /= _other[CONST]
+            (<ProdExpr>res).coef /= _c(_other)
             return res._normalize()
         return super().__truediv__(_other)
 
@@ -694,7 +698,7 @@ cdef class UnaryExpr(FuncExpr):
 
     def __repr__(self) -> str:
         if Expr._is_const(child := _unwrap(_fchild(self))):
-            return f"{type(self).__name__}({child[CONST]})"
+            return f"{type(self).__name__}({_c(child)})"
         elif Expr._is_term(child) and child[(term := _fchild(<Expr>child))] == 1:
             return f"{type(self).__name__}({term})"
         return f"{type(self).__name__}({child})"
@@ -764,7 +768,7 @@ cdef class ExprCons:
 
     def _normalize(self) -> ExprCons:
         """Move constant children in expression to bounds"""
-        c = self.expr[CONST]
+        c = _c(self.expr)
         self.expr = (self.expr - c)._normalize()
         if self._lhs is not None:
             self._lhs = <float>self._lhs - c
