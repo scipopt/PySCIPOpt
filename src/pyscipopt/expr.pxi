@@ -23,13 +23,6 @@ cdef class Term:
         self.vars = tuple(sorted(vars, key=hash))
         self._hash = hash(self.vars)
 
-    @staticmethod
-    cdef Term create(tuple[Variable] vars):
-        cdef Term res = Term.__new__(Term)
-        res.vars = tuple(sorted(vars, key=hash))
-        res._hash = hash(res.vars)
-        return res
-
     def __iter__(self) -> Iterator[Variable]:
         return iter(self.vars)
 
@@ -43,7 +36,7 @@ cdef class Term:
         return isinstance(other, Term) and hash(self) == hash(other)
 
     def __mul__(self, Term other) -> Term:
-        return Term.create((*self.vars, *other.vars))
+        return _term((*self.vars, *other.vars))
 
     def __repr__(self) -> str:
         return f"Term({self[0]})" if self.degree() == 1 else f"Term{self.vars}"
@@ -167,7 +160,7 @@ cdef class Expr(UnaryOperatorMixin):
             raise TypeError("key must be Variable, Term, or Expr")
 
         if isinstance(key, Variable):
-            key = Term.create((key,))
+            key = _term((key,))
         return self._children.get(_wrap(key), 0.0)
 
     def __iter__(self) -> Iterator[Union[Term, Expr]]:
@@ -313,7 +306,7 @@ cdef class Expr(UnaryOperatorMixin):
 
     @staticmethod
     cdef PolynomialExpr _from_var(Variable x):
-        return _polynomial({Term.create((x,)): 1.0})
+        return _polynomial({_term((x,)): 1.0})
 
     cdef dict _to_dict(self, Expr other, bool copy = True):
         cdef dict children = self._children.copy() if copy else self._children
@@ -620,7 +613,7 @@ cdef class UnaryExpr(FuncExpr):
         if isinstance(expr, Number):
             expr = _const(<float>expr)
         elif isinstance(expr, Variable):
-            expr = Term.create((expr,))
+            expr = _term((expr,))
         super().__init__({expr: 1.0})
 
     def __hash__(self) -> int:
@@ -782,7 +775,14 @@ cpdef Expr quickprod(expressions: Iterator[Expr]):
     return res
 
 
-CONST = Term()
+cdef inline Term _term(tuple[Variable] vars):
+    cdef Term res = Term.__new__(Term)
+    res.vars = tuple(sorted(vars, key=hash))
+    res._hash = hash(res.vars)
+    return res
+
+
+CONST = _term(())
 
 
 cdef inline float _c(Expr expr):
@@ -850,7 +850,7 @@ cdef inline _fchild(Expr expr):
 
 cdef inline UnaryExpr _unary(x: Union[Variable, Expr], cls: Type[UnaryExpr]):
     cdef UnaryExpr res = <UnaryExpr>cls.__new__(cls)
-    res._children = {Term.create((x,)) if isinstance(x, Variable) else _ExprKey(x): 1.0}
+    res._children = {_term((x,)) if isinstance(x, Variable) else _ExprKey(x): 1.0}
     return res
 
 
