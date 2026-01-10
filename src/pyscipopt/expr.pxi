@@ -32,6 +32,9 @@ cdef class Term:
     def __hash__(self) -> int:
         return self._hash
 
+    def __len__(self) -> int:
+        return len(self.vars)
+
     def __eq__(self, other) -> bool:
         return isinstance(other, Term) and hash(self) == hash(other)
 
@@ -42,7 +45,7 @@ cdef class Term:
         return f"Term({self[0]})" if self.degree() == 1 else f"Term{self.vars}"
 
     def degree(self) -> int:
-        return len(self.vars)
+        return len(self)
 
     cpdef list _to_node(self, float coef = 1, int start = 0):
         cdef list node = []
