@@ -115,12 +115,13 @@ def test_normalize(model):
     m, x, y = model
 
     expr = sin(x) * y
+
     assert isinstance(expr, ProdExpr)
     assert str(expr - expr) == "Expr({Term(): 0.0})"
-
-    expr = sin(x) * y
     assert str(expr._normalize()) == str(expr)
 
+    res = expr * 0
+    assert isinstance(res, ConstExpr)
 
 def test_to_node(model):
     m, x, y = model

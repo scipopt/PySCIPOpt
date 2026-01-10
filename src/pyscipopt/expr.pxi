@@ -585,14 +585,7 @@ cdef class ProdExpr(FuncExpr):
         return f"ProdExpr({{{tuple(self)}: {self.coef}}})"
 
     def _normalize(self) -> Expr:
-        if not self or self.coef == 0:
-            return ConstExpr(0.0)
-        elif len(self._children) == 1:
-            return (
-                PolynomialExpr.create({_fchild(self): 1.0})
-                if isinstance(_fchild(self), Term) else _unwrap(_fchild(self))
-            )
-        return self
+        return ConstExpr(0.0) if not self or self.coef == 0 else self
 
     cpdef list _to_node(self, float coef = 1, int start = 0):
         cdef list node = []
