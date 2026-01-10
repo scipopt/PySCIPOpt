@@ -118,7 +118,7 @@ def test_normalize(model):
 def test_to_node(model):
     m, x, y = model
 
-    expr = PowExpr(Term(x))
+    expr = PowExpr(Term(x), 1)
     assert expr._to_node() == [(Variable, x), (ConstExpr, 1), (PowExpr, [0, 1])]
     assert expr._to_node(0) == []
     assert expr._to_node(10) == [

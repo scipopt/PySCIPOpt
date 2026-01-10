@@ -230,8 +230,8 @@ cdef class Expr(UnaryOperatorMixin):
                 return _expr({k: v * _c(_other) for k, v in self.items() if v != 0})
             return _expr({_wrap(self): _c(_other)})
         elif self._is_equal(_other):
-            return PowExpr(self, 2.0)
-        return ProdExpr(self, _other)
+            return _pow(_wrap(self), 2.0)
+        return _prod((_wrap(self), _wrap(_other)))
 
     def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
@@ -258,7 +258,7 @@ cdef class Expr(UnaryOperatorMixin):
         cdef Expr _other = _to_expr(other)
         if not _is_const(_other):
             raise TypeError("exponent must be a number")
-        return _const(1.0) if _is_zero(_other) else PowExpr(self, _c(_other))
+        return _const(1.0) if _is_zero(_other) else _pow(_wrap(self), _c(_other))
 
     def __rpow__(self, other: Union[Number, Expr]) -> ExpExpr:
         cdef Expr _other = _to_expr(other)
@@ -798,6 +798,20 @@ cdef inline ConstExpr _const(float c):
 cdef inline Expr _expr(dict children, cls: Type[Expr] = Expr):
     cdef Expr res = <Expr>cls.__new__(cls)
     res._children = children
+    return res
+
+
+cdef inline ProdExpr _prod(tuple children):
+    cdef ProdExpr res = ProdExpr.__new__(ProdExpr)
+    res._children = dict.fromkeys(children, 1.0)
+    res.coef = 1.0
+    return res
+
+
+cdef inline PowExpr _pow(base: Union[Term, _ExprKey], float expo):
+    cdef PowExpr res = PowExpr.__new__(PowExpr)
+    res._children = {base: 1.0} 
+    res.expo = expo
     return res
 
 
