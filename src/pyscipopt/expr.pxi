@@ -219,13 +219,13 @@ cdef class Expr(UnaryOperatorMixin):
     def __sub__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
         if self._is_equal(_other):
-            return ConstExpr(0.0)
+            return _const(0.0)
         return self + (-_other)
 
     def __isub__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
         if self._is_equal(_other):
-            return ConstExpr(0.0)
+            return _const(0.0)
         return self + (-_other)
 
     def __rsub__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -234,7 +234,7 @@ cdef class Expr(UnaryOperatorMixin):
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
         if _is_zero(self) or _is_zero(_other):
-            return ConstExpr(0.0)
+            return _const(0.0)
         elif Expr._is_const(self):
             if _c(self) == 1:
                 return _other.copy()
@@ -266,8 +266,8 @@ cdef class Expr(UnaryOperatorMixin):
         if _is_zero(_other):
             raise ZeroDivisionError("division by zero")
         if self._is_equal(_other):
-            return ConstExpr(1.0)
-        return self * (_other ** ConstExpr(-1.0))
+            return _const(1.0)
+        return self * (_other ** _const(-1.0))
 
     def __rtruediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
         return _to_expr(other) / self
@@ -276,7 +276,7 @@ cdef class Expr(UnaryOperatorMixin):
         cdef Expr _other = _to_expr(other)
         if not Expr._is_const(_other):
             raise TypeError("exponent must be a number")
-        return ConstExpr(1.0) if _is_zero(_other) else PowExpr(self, _c(_other))
+        return _const(1.0) if _is_zero(_other) else PowExpr(self, _c(_other))
 
     def __rpow__(self, other: Union[Number, Expr]) -> ExpExpr:
         cdef Expr _other = _to_expr(other)
@@ -406,7 +406,7 @@ cdef inline float _c(Expr expr):
 
 cdef inline Expr _to_expr(x: Union[Number, Variable, Expr]):
     if isinstance(x, Number):
-        return ConstExpr(<float>x)
+        return _const(<float>x)
     elif isinstance(x, Variable):
         return Expr._from_var(x)
     elif isinstance(x, Expr):
@@ -472,7 +472,7 @@ cdef class PolynomialExpr(Expr):
     def __pow__(self, other: Union[Number, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
         if Expr._is_const(_other) and _c(_other).is_integer() and _c(_other) > 0:
-            res = ConstExpr(1.0)
+            res = _const(1.0)
             for _ in range(int(_c(_other))):
                 res *= self
             return res
@@ -486,15 +486,15 @@ cdef class ConstExpr(PolynomialExpr):
         super().__init__({CONST: constant})
 
     def __abs__(self) -> ConstExpr:
-        return ConstExpr(abs(_c(self)))
+        return _const(abs(_c(self)))
 
     def __neg__(self) -> ConstExpr:
-        return ConstExpr(-_c(self))
+        return _const(-_c(self))
 
     def __pow__(self, other: Union[Number, Expr]) -> ConstExpr:
         cdef Expr _other = _to_expr(other)
         if Expr._is_const(_other):
-            return ConstExpr(_c(self) ** _c(_other))
+            return _const(_c(self) ** _c(_other))
         return <ConstExpr>super().__pow__(_other)
 
     cpdef list _to_node(self, float coef = 1, int start = 0):
@@ -502,10 +502,16 @@ cdef class ConstExpr(PolynomialExpr):
         return [(ConstExpr, res)] if res != 0 else []
 
 
+cdef inline ConstExpr _const(float c):
+    cdef ConstExpr res = ConstExpr.__new__(ConstExpr)
+    res._children = {CONST: c}
+    return res
+
+
 cdef class FuncExpr(Expr):
 
     def __neg__(self):
-        return self * ConstExpr(-1.0)
+        return self * _const(-1.0)
 
     def degree(self) -> float:
         return float("inf")
@@ -585,7 +591,7 @@ cdef class ProdExpr(FuncExpr):
         return f"ProdExpr({{{tuple(self)}: {self.coef}}})"
 
     def _normalize(self) -> Expr:
-        return ConstExpr(0.0) if not self or self.coef == 0 else self
+        return _const(0.0) if not self or self.coef == 0 else self
 
     cpdef list _to_node(self, float coef = 1, int start = 0):
         cdef list node = []
@@ -652,7 +658,7 @@ cdef class PowExpr(FuncExpr):
 
     def _normalize(self) -> Expr:
         if not self or self.expo == 0:
-            return ConstExpr(1.0)
+            return _const(1.0)
         elif self.expo == 1:
             return (
                 PolynomialExpr.create({_fchild(self): 1.0})
@@ -678,7 +684,7 @@ cdef class UnaryExpr(FuncExpr):
 
     def __init__(self, expr: Union[Number, Variable, Term, Expr, _ExprKey]):
         if isinstance(expr, Number):
-            expr = ConstExpr(<float>expr)
+            expr = _const(<float>expr)
         elif isinstance(expr, Variable):
             expr = Term.create((expr,))
         super().__init__({expr: 1.0})
@@ -812,7 +818,7 @@ cpdef Expr quicksum(expressions: Iterator[Expr]):
     Expr
         The sum of the input expressions.
     """
-    cdef Expr res = ConstExpr(0.0)
+    cdef Expr res = _const(0.0)
     cdef object i
     for i in expressions:
         res += i
@@ -834,7 +840,7 @@ cpdef Expr quickprod(expressions: Iterator[Expr]):
     Expr
         The product of the input expressions.
     """
-    cdef Expr res = ConstExpr(1.0)
+    cdef Expr res = _const(1.0)
     cdef object i
     for i in expressions:
         res *= i
@@ -842,7 +848,7 @@ cpdef Expr quickprod(expressions: Iterator[Expr]):
 
 
 cdef inline _ensure_unary_compatible(x):
-    return ConstExpr(<float>x) if isinstance(x, Number) else x
+    return _const(<float>x) if isinstance(x, Number) else x
 
 
 def exp(
