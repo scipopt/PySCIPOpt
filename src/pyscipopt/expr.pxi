@@ -177,12 +177,12 @@ cdef class Expr(UnaryOperatorMixin):
         elif _is_zero(_other):
             return self.copy()
         elif _is_sum(self):
-            return Expr(self._to_dict(_other))
+            return _expr(self._to_dict(_other))
         elif _is_sum(_other):
-            return Expr(_other._to_dict(self))
+            return _expr(_other._to_dict(self))
         elif self._is_equal(_other):
             return self * 2.0
-        return Expr({_wrap(self): 1.0, _wrap(_other): 1.0})
+        return _expr({_wrap(self): 1.0, _wrap(_other): 1.0})
 
     def __iadd__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
@@ -221,14 +221,14 @@ cdef class Expr(UnaryOperatorMixin):
             if _c(self) == 1:
                 return _other.copy()
             elif _is_sum(_other):
-                return Expr({k: v * _c(self) for k, v in _other.items() if v != 0})
-            return Expr({_other: _c(self)})
+                return _expr({k: v * _c(self) for k, v in _other.items() if v != 0})
+            return _expr({_wrap(_other): _c(self)})
         elif _is_const(_other):
             if _c(_other) == 1:
                 return self.copy()
             elif _is_sum(self):
-                return Expr({k: v * _c(_other) for k, v in self.items() if v != 0})
-            return Expr({self: _c(_other)})
+                return _expr({k: v * _c(_other) for k, v in self.items() if v != 0})
+            return _expr({_wrap(self): _c(_other)})
         elif self._is_equal(_other):
             return PowExpr(self, 2.0)
         return ProdExpr(self, _other)
@@ -792,6 +792,12 @@ cdef inline float _c(Expr expr):
 cdef inline ConstExpr _const(float c):
     cdef ConstExpr res = ConstExpr.__new__(ConstExpr)
     res._children = {CONST: c}
+    return res
+
+
+cdef inline Expr _expr(dict children):
+    cdef Expr res = Expr.__new__(Expr)
+    res._children = children
     return res
 
 
