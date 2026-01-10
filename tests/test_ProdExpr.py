@@ -1,15 +1,7 @@
 import pytest
 
 from pyscipopt import Expr, Model, exp, sin, sqrt
-from pyscipopt.scip import (
-    ConstExpr,
-    PolynomialExpr,
-    PowExpr,
-    ProdExpr,
-    SinExpr,
-    Term,
-    Variable,
-)
+from pyscipopt.scip import ConstExpr, PowExpr, ProdExpr, Term, Variable
 
 
 @pytest.fixture(scope="module")
@@ -22,6 +14,9 @@ def model():
 
 def test_init(model):
     m, x, y = model
+
+    with pytest.raises(ValueError):
+        ProdExpr(Term(x))
 
     with pytest.raises(ValueError):
         ProdExpr(Term(x), Term(x))
@@ -108,21 +103,9 @@ def test_cmp(model):
 def test_normalize(model):
     m, x, y = model
 
-    expr = ProdExpr()._normalize()
-    assert isinstance(expr, ConstExpr)
-    assert str(expr) == "Expr({Term(): 0.0})"
-
     expr = sin(x) * y
     assert isinstance(expr, ProdExpr)
     assert str(expr - expr) == "Expr({Term(): 0.0})"
-
-    expr = ProdExpr(Term(x))._normalize()
-    assert type(expr) is PolynomialExpr
-    assert str(expr) == "Expr({Term(x): 1.0})"
-
-    expr = ProdExpr(sin(x))._normalize()
-    assert isinstance(expr, SinExpr)
-    assert str(expr) == "SinExpr(Term(x))"
 
     expr = sin(x) * y
     assert str(expr._normalize()) == str(expr)
@@ -130,11 +113,6 @@ def test_normalize(model):
 
 def test_to_node(model):
     m, x, y = model
-
-    expr = ProdExpr()
-    assert expr._to_node() == []
-    assert expr._to_node(0) == []
-    assert expr._to_node(10) == []
 
     expr = ProdExpr(Term(x), Term(y))
     assert expr._to_node() == [(Variable, x), (Variable, y), (ProdExpr, [0, 1])]

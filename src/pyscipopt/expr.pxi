@@ -537,7 +537,9 @@ cdef class ProdExpr(FuncExpr):
 
     cdef readonly float coef
 
-    def __init__(self, *children: Union[Term, Expr]):
+    def __init__(self, *children: Union[Term, Expr, _ExprKey]):
+        if len(children) < 2:
+            raise ValueError("ProdExpr must have at least two children")
         if len(set(children)) != len(children):
             raise ValueError("ProdExpr can't have duplicate children")
 

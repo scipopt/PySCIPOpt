@@ -534,9 +534,6 @@ def test_is_equal(model):
     assert _ExprKey(Expr({CONST: 0.0})) == _ExprKey(PolynomialExpr({CONST: 0.0}))
     assert _ExprKey(Expr({CONST: 0.0})) == _ExprKey(ConstExpr(0.0))
 
-    assert _ExprKey(ProdExpr(Term(x))) != _ExprKey(SinExpr(Term(x)))
-    assert _ExprKey(ProdExpr(Term(x))) != _ExprKey(ProdExpr(Term(x), Term(y)))
-    assert _ExprKey(ProdExpr(Term(x))) != _ExprKey(ProdExpr(Term(x)) * -1)
     assert _ExprKey(ProdExpr(Term(x), Term(y))) != _ExprKey(
         PowExpr(ProdExpr(Term(x), Term(y)), 1.0)
     )
