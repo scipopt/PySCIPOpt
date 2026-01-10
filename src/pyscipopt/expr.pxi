@@ -313,7 +313,7 @@ cdef class Expr(UnaryOperatorMixin):
 
     @staticmethod
     cdef PolynomialExpr _from_var(Variable x):
-        return PolynomialExpr.create({Term.create((x,)): 1.0})
+        return _polynomial({Term.create((x,)): 1.0})
 
     cdef dict _to_dict(self, Expr other, bool copy = True):
         cdef dict children = self._children.copy() if copy else self._children
@@ -381,16 +381,10 @@ cdef class PolynomialExpr(Expr):
 
         super().__init__(<dict>children)
 
-    @staticmethod
-    cdef PolynomialExpr create(dict[Term, float] children):
-        cdef PolynomialExpr res = PolynomialExpr.__new__(PolynomialExpr)
-        res._children = children
-        return res
-
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
         if isinstance(_other, PolynomialExpr) and not _is_zero(_other):
-            return PolynomialExpr.create(self._to_dict(_other)).copy(False)
+            return _polynomial(self._to_dict(_other)).copy(False)
         return super().__add__(_other)
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -401,7 +395,7 @@ cdef class PolynomialExpr(Expr):
         if self and isinstance(_other, PolynomialExpr) and other and not (
             _is_const(_other) and (_c(_other) == 0 or _c(_other) == 1)
         ):
-            res = PolynomialExpr.create({})
+            res = _polynomial({})
             for k1, v1 in self.items():
                 for k2, v2 in _other.items():
                     child = k1 * k2
@@ -601,7 +595,7 @@ cdef class PowExpr(FuncExpr):
             return _const(1.0)
         elif self.expo == 1:
             return (
-                PolynomialExpr.create({_fchild(self): 1.0})
+                _polynomial({_fchild(self): 1.0})
                 if isinstance(_fchild(self), Term) else _unwrap(_fchild(self))
             )
         return self
@@ -798,6 +792,12 @@ cdef inline float _c(Expr expr):
 cdef inline ConstExpr _const(float c):
     cdef ConstExpr res = ConstExpr.__new__(ConstExpr)
     res._children = {CONST: c}
+    return res
+
+
+cdef inline PolynomialExpr _polynomial(dict[Term, float] children):
+    cdef PolynomialExpr res = PolynomialExpr.__new__(PolynomialExpr)
+    res._children = children
     return res
 
 
