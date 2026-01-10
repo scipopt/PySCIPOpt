@@ -809,7 +809,7 @@ cdef inline _unwrap(x):
     return x.expr if isinstance(x, _ExprKey) else x
 
 
-cdef inline Expr _to_expr(x: Union[Number, Variable, Expr]):
+cdef Expr _to_expr(x: Union[Number, Variable, Expr]):
     if isinstance(x, Number):
         return _const(<float>x)
     elif isinstance(x, Variable):
@@ -823,7 +823,7 @@ cdef inline bool _is_sum(expr):
     return type(expr) is Expr or isinstance(expr, PolynomialExpr)
 
 
-cdef inline bool _is_const(expr):
+cdef bool _is_const(expr):
     return isinstance(expr, ConstExpr) or (
         _is_sum(expr)
         and len(expr._children) == 1
@@ -835,7 +835,7 @@ cdef inline bool _is_zero(Expr expr):
     return not expr or (_is_const(expr) and _c(expr) == 0)
 
 
-cdef inline bool _is_term(expr):
+cdef bool _is_term(expr):
     return (
         _is_sum(expr)
         and len(expr._children) == 1
@@ -848,7 +848,7 @@ cdef inline _fchild(Expr expr):
     return next(iter(expr._children))
 
 
-cdef inline UnaryExpr _unary(x: Union[Variable, Expr], cls: Type[UnaryExpr]):
+cdef UnaryExpr _unary(x: Union[Variable, Expr], cls: Type[UnaryExpr]):
     cdef UnaryExpr res = <UnaryExpr>cls.__new__(cls)
     res._children = {_term((x,)) if isinstance(x, Variable) else _ExprKey(x): 1.0}
     return res
