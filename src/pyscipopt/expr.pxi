@@ -95,7 +95,7 @@ cdef inline _unwrap(x):
     return x.expr if isinstance(x, _ExprKey) else x
 
 
-cdef class UnaryOperator:
+cdef class UnaryOperatorMixin:
 
     def __abs__(self) -> AbsExpr:
         return AbsExpr(self)
@@ -116,7 +116,7 @@ cdef class UnaryOperator:
         return CosExpr(self)
 
 
-cdef class Expr(UnaryOperator):
+cdef class Expr(UnaryOperatorMixin):
     """Base class for mathematical expressions."""
 
     cdef readonly dict _children

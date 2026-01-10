@@ -1536,7 +1536,7 @@ cdef class Node:
                 and self.scip_node == (<Node>other).scip_node)
 
 
-cdef class Variable(UnaryOperator):
+cdef class Variable(UnaryOperatorMixin):
 
     __array_priority__ = 100
 
