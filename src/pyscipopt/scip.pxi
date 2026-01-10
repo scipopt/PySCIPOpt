@@ -1568,19 +1568,19 @@ cdef class Variable(UnaryOperatorMixin):
         return bytes(SCIPvarGetName(self.scip_var)).decode("utf-8")
 
     def ptr(self):
+        return hash(self)
+
+    def __hash__(self):
         return <size_t>(self.scip_var)
 
     def __array_ufunc__(self, ufunc, method, *args, **kwargs):
         return Expr.__array_ufunc__(self, ufunc, method, *args, **kwargs)
 
-    def __hash__(self):
-        return hash(self.ptr())
-
     def __getitem__(self, key):
         return Expr._from_var(self)[key]
 
     def __iter__(self):
-        return iter(Expr._from_var(self))
+        return Expr._from_var(self).__iter__()
 
     def __add__(self, other):
         return Expr._from_var(self) + other
