@@ -1636,6 +1636,9 @@ cdef class Variable(UnaryOperatorMixin):
     def items(self):
         return Expr._from_var(self).items()
 
+    def _normalize(self) -> PolynomialExpr:
+        return Expr._from_var(self)
+
     def vtype(self):
         """
         Retrieve the variables type (BINARY, INTEGER, CONTINUOUS, or IMPLINT)
