@@ -421,17 +421,17 @@ cdef class ConstExpr(PolynomialExpr):
     def __init__(self, float constant = 0.0):
         super().__init__({CONST: constant})
 
-    def __abs__(self) -> ConstExpr:
-        return _const(abs(_c(self)))
-
-    def __neg__(self) -> ConstExpr:
-        return _const(-_c(self))
-
     def __pow__(self, other: Union[Number, Expr]) -> ConstExpr:
         cdef Expr _other = _to_expr(other)
         if _is_const(_other):
             return _const(_c(self) ** _c(_other))
         return <ConstExpr>super().__pow__(_other)
+
+    def __neg__(self) -> ConstExpr:
+        return _const(-_c(self))
+
+    def __abs__(self) -> ConstExpr:
+        return _const(abs(_c(self)))
 
     cpdef list _to_node(self, float coef = 1, int start = 0):
         cdef float res = _c(self) * coef
