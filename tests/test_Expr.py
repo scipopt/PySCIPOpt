@@ -506,17 +506,17 @@ def test_to_node(model):
     ]
     assert expr._to_node(coef=3, start=1) == [
         (Variable, x),
-        (ConstExpr, 2.0),
+        (ConstExpr, 6.0),
         (ProdExpr, [1, 2]),
         (Variable, y),
-        (ConstExpr, -4.0),
+        (ConstExpr, -12.0),
         (ProdExpr, [4, 5]),
-        (ConstExpr, 6.0),
+        (ConstExpr, 18.0),
         (Variable, x),
         (ExpExpr, 8),
-        (Expr, [3, 6, 7, 9]),
-        (ConstExpr, 3),
-        (ProdExpr, [10, 11]),
+        (ConstExpr, 3.0),
+        (ProdExpr, [9, 10]),
+        (Expr, [3, 6, 7, 11]),
     ]
 
 

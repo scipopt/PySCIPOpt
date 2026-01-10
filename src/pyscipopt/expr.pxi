@@ -51,15 +51,14 @@ cdef class Term:
     def degree(self) -> int:
         return len(self.vars)
 
-    cpdef list[tuple] _to_node(self, float coef = 1, int start = 0):
-        """Convert term to list of node for SCIP expression construction"""
-        cdef list[tuple] node
+    cpdef list _to_node(self, float coef = 1, int start = 0):
+        cdef list node = []
         if coef == 0:
-            node = []
+            ...
         elif self.degree() == 0:
-            node = [(ConstExpr, coef)]
+            node.append((ConstExpr, coef))
         else:
-            node = [(Variable, i) for i in self]
+            node.extend([(Variable, i) for i in self])
             if coef != 1:
                 node.append((ConstExpr, coef))
             if len(node) > 1:
@@ -336,10 +335,9 @@ cdef class Expr(UnaryOperatorMixin):
             children[key] = children.get(key, 0.0) + coef
         return children
 
-    cpdef list[tuple] _to_node(self, float coef = 1, int start = 0):
-        """Convert expression to list of node for SCIP expression construction"""
-        cdef list[tuple] node = []
-        cdef list[tuple] sub_node
+    cpdef list _to_node(self, float coef = 1, int start = 0):
+        cdef list node = []
+        cdef list sub_node
         cdef list[int] index = []
         cdef object k
         cdef float v
@@ -348,32 +346,12 @@ cdef class Expr(UnaryOperatorMixin):
             return node
 
         for k, v in self.items():
-            if v != 0 and (sub_node := _unwrap(k)._to_node(v, start + len(node))):
+            if v != 0 and (sub_node := _unwrap(k)._to_node(v * coef, start + len(node))):
                 node.extend(sub_node)
                 index.append(start + len(node) - 1)
 
-        if node:
-            if isinstance(self, PolynomialExpr):
-                if len(node) > 1:
-                    node.append((Expr, index))
-            elif isinstance(self, UnaryExpr):
-                node.append((type(self), index[0]))
-            elif isinstance(self, ProdExpr):
-                if self.coef != 1:
-                    node.append((ConstExpr, self.coef))
-                    index.append(start + len(node) - 1)
-                if len(node) > 1:
-                    node.append((ProdExpr, index))
-            else:
-                if isinstance(self, PowExpr):
-                    node.append((ConstExpr, self.expo))
-                    index.append(start + len(node) - 1)
-                node.append((type(self), index))
-
-            if coef != 1:
-                node.append((ConstExpr, coef))
-                node.append((ProdExpr, [start + len(node) - 2, start + len(node) - 1]))
-
+        if len(node) > 1:
+            node.append((Expr, index))
         return node
 
     cdef bool _is_equal(self, object other):
@@ -515,6 +493,10 @@ cdef class ConstExpr(PolynomialExpr):
             return ConstExpr(self[CONST] ** _other[CONST])
         return <ConstExpr>super().__pow__(_other)
 
+    cpdef list _to_node(self, float coef = 1, int start = 0):
+        cdef float res = self[CONST] * coef
+        return [(ConstExpr, res)] if res != 0 else []
+
 
 cdef class FuncExpr(Expr):
 
@@ -608,6 +590,27 @@ cdef class ProdExpr(FuncExpr):
             )
         return self
 
+    cpdef list _to_node(self, float coef = 1, int start = 0):
+        cdef list node = []
+        cdef list sub_node
+        cdef list[int] index = []
+        cdef object i
+
+        if coef == 0:
+            return node
+
+        for i in self:
+            if (sub_node := i._to_node(1, start + len(node))):
+                node.extend(sub_node)
+                index.append(start + len(node) - 1)
+
+        if self.coef * coef != 1:
+            node.append((ConstExpr, self.coef * coef))
+            index.append(start + len(node) - 1)
+        if len(node) > 1:
+            node.append((ProdExpr, index))
+        return node
+
 
 cdef class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
@@ -660,6 +663,18 @@ cdef class PowExpr(FuncExpr):
             )
         return self
 
+    cpdef list _to_node(self, float coef = 1, int start = 0):
+        if coef == 0:
+            return []
+
+        cdef list node = _unwrap(_fchild(self))._to_node(1, start)
+        node.append((ConstExpr, self.expo))
+        node.append((PowExpr, [start + len(node) - 2, start + len(node) - 1]))
+        if coef != 1:
+            node.append((ConstExpr, coef))
+            node.append((ProdExpr, [start + len(node) - 2, start + len(node) - 1]))
+        return node
+
 
 cdef class UnaryExpr(FuncExpr):
     """Expression like `f(expression)`."""
@@ -683,6 +698,17 @@ cdef class UnaryExpr(FuncExpr):
         elif Expr._is_term(child) and child[(term := _fchild(<Expr>child))] == 1:
             return f"{type(self).__name__}({term})"
         return f"{type(self).__name__}({child})"
+
+    cpdef list _to_node(self, float coef = 1, int start = 0):
+        if coef == 0:
+            return []
+
+        cdef list node = _unwrap(_fchild(self))._to_node(1, start)
+        node.append((type(self), start + len(node) - 1))
+        if coef != 1:
+            node.append((ConstExpr, coef))
+            node.append((ProdExpr, [start + len(node) - 2, start + len(node) - 1]))
+        return node
 
 
 cdef class AbsExpr(UnaryExpr):

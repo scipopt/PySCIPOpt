@@ -153,7 +153,7 @@ def test_to_node(model):
 
     expr = ConstExpr(-1)
     assert expr._to_node() == [(ConstExpr, -1.0)]
-    assert expr._to_node(2) == [(ConstExpr, -1.0), (ConstExpr, 2.0), (ProdExpr, [0, 1])]
+    assert expr._to_node(2) == [(ConstExpr, -2.0)]
 
     expr = PolynomialExpr({Term(x): 2.0, Term(y): 4.0})
     assert expr._to_node() == [
