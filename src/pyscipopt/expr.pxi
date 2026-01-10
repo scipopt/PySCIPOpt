@@ -306,7 +306,7 @@ cdef class Expr(UnaryOperatorMixin):
 
     @staticmethod
     cdef PolynomialExpr _from_var(Variable x):
-        return _polynomial({_term((x,)): 1.0})
+        return <PolynomialExpr>_expr({_term((x,)): 1.0}, PolynomialExpr)
 
     cdef dict _to_dict(self, Expr other, bool copy = True):
         cdef dict children = self._children.copy() if copy else self._children
@@ -377,7 +377,7 @@ cdef class PolynomialExpr(Expr):
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
         if isinstance(_other, PolynomialExpr) and not _is_zero(_other):
-            return _polynomial(self._to_dict(_other)).copy(False)
+            return _expr(self._to_dict(_other)).copy(False, PolynomialExpr)
         return super().__add__(_other)
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -388,7 +388,7 @@ cdef class PolynomialExpr(Expr):
         if self and isinstance(_other, PolynomialExpr) and other and not (
             _is_const(_other) and (_c(_other) == 0 or _c(_other) == 1)
         ):
-            res = _polynomial({})
+            res = <PolynomialExpr>_expr({}, PolynomialExpr)
             for k1, v1 in self.items():
                 for k2, v2 in _other.items():
                     child = k1 * k2
@@ -588,7 +588,7 @@ cdef class PowExpr(FuncExpr):
             return _const(1.0)
         elif self.expo == 1:
             return (
-                _polynomial({_fchild(self): 1.0})
+                <PolynomialExpr>_expr({_fchild(self): 1.0}, PolynomialExpr)
                 if isinstance(_fchild(self), Term) else _unwrap(_fchild(self))
             )
         return self
@@ -795,14 +795,8 @@ cdef inline ConstExpr _const(float c):
     return res
 
 
-cdef inline Expr _expr(dict children):
-    cdef Expr res = Expr.__new__(Expr)
-    res._children = children
-    return res
-
-
-cdef inline PolynomialExpr _polynomial(dict[Term, float] children):
-    cdef PolynomialExpr res = PolynomialExpr.__new__(PolynomialExpr)
+cdef inline Expr _expr(dict children, cls: Type[Expr] = Expr):
+    cdef Expr res = <Expr>cls.__new__(cls)
     res._children = children
     return res
 
