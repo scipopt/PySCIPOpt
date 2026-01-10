@@ -1633,6 +1633,9 @@ cdef class Variable(UnaryOperatorMixin):
     def degree(self) -> float:
         return Expr._from_var(self).degree()
 
+    def items(self):
+        return Expr._from_var(self).items()
+
     def vtype(self):
         """
         Retrieve the variables type (BINARY, INTEGER, CONTINUOUS, or IMPLINT)
