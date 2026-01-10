@@ -86,22 +86,22 @@ cdef class _ExprKey:
 cdef class UnaryOperatorMixin:
 
     def __abs__(self) -> AbsExpr:
-        return AbsExpr(self)
+        return <AbsExpr>_unary(<Expr>self, AbsExpr)
 
     def exp(self) -> ExpExpr:
-        return ExpExpr(self)
+        return <ExpExpr>_unary(<Expr>self, ExpExpr)
     
     def log(self) -> LogExpr:
-        return LogExpr(self)
+        return <LogExpr>_unary(<Expr>self, LogExpr)
     
     def sqrt(self) -> SqrtExpr:
-        return SqrtExpr(self)
+        return <SqrtExpr>_unary(<Expr>self, SqrtExpr)
 
     def sin(self) -> SinExpr:
-        return SinExpr(self)
+        return <SinExpr>_unary(<Expr>self, SinExpr)
 
     def cos(self) -> CosExpr:
-        return CosExpr(self)
+        return <CosExpr>_unary(<Expr>self, CosExpr)
 
 
 cdef class Expr(UnaryOperatorMixin):
@@ -146,17 +146,17 @@ cdef class Expr(UnaryOperatorMixin):
         elif ufunc is np.equal:
             return args[0] == args[1]
         elif ufunc is np.absolute:
-            return AbsExpr(*args, **kwargs)
+            return <AbsExpr>_unary(args[0], AbsExpr)
         elif ufunc is np.exp:
-            return ExpExpr(*args, **kwargs)
+            return <ExpExpr>_unary(args[0], ExpExpr)
         elif ufunc is np.log:
-            return LogExpr(*args, **kwargs)
+            return <LogExpr>_unary(args[0], LogExpr)
         elif ufunc is np.sqrt:
-            return SqrtExpr(*args, **kwargs)
+            return <SqrtExpr>_unary(args[0], SqrtExpr)
         elif ufunc is np.sin:
-            return SinExpr(*args, **kwargs)
+            return <SinExpr>_unary(args[0], SinExpr)
         elif ufunc is np.cos:
-            return CosExpr(*args, **kwargs)
+            return <CosExpr>_unary(args[0], CosExpr)
         return NotImplemented
 
     def __hash__(self) -> int:
@@ -846,6 +846,12 @@ cdef inline bool _is_term(expr):
 
 cdef inline _fchild(Expr expr):
     return next(iter(expr._children))
+
+
+cdef inline UnaryExpr _unary(x: Union[Variable, Expr], cls: Type[UnaryExpr]):
+    cdef UnaryExpr res = <UnaryExpr>cls.__new__(cls)
+    res._children = {Term.create((x,)) if isinstance(x, Variable) else _ExprKey(x): 1.0}
+    return res
 
 
 cdef inline _ensure_unary_compatible(x):
