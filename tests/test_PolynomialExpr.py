@@ -69,6 +69,11 @@ def test_iadd(model):
     assert str(expr) == "Expr({Term(): 0.0})"
 
     expr = ConstExpr(2.0)
+    expr += PolynomialExpr({Term(x): -2})
+    assert type(expr) is PolynomialExpr
+    assert str(expr) == "Expr({Term(): 2.0, Term(x): -2.0})"
+
+    expr = ConstExpr(2.0)
     expr += sin(x)
     assert type(expr) is Expr
     assert str(expr) == "Expr({Term(): 2.0, SinExpr(Term(x)): 1.0})"

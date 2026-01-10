@@ -840,12 +840,8 @@ cdef inline bool _is_sum(expr):
     return type(expr) is Expr or isinstance(expr, PolynomialExpr)
 
 
-cdef bool _is_const(expr):
-    return isinstance(expr, ConstExpr) or (
-        _is_sum(expr)
-        and len(expr._children) == 1
-        and _fchild(<Expr>expr) == CONST
-    )
+cdef inline bool _is_const(expr):
+    return _is_sum(expr) and len(expr._children) == 1 and _fchild(<Expr>expr) == CONST
 
 
 cdef inline bool _is_zero(Expr expr):
