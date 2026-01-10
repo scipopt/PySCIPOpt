@@ -83,17 +83,6 @@ cdef class _ExprKey:
         return repr(self.expr)
 
 
-CONST = Term()
-
-
-cdef inline _wrap(x):
-    return _ExprKey(x) if isinstance(x, Expr) else x
-
-
-cdef inline _unwrap(x):
-    return x.expr if isinstance(x, _ExprKey) else x
-
-
 cdef class UnaryOperatorMixin:
 
     def __abs__(self) -> AbsExpr:
@@ -400,32 +389,6 @@ cdef class Expr(UnaryOperatorMixin):
         return res
 
 
-cdef inline float _c(Expr expr):
-    return expr._children.get(CONST, 0.0)
-
-
-cdef inline Expr _to_expr(x: Union[Number, Variable, Expr]):
-    if isinstance(x, Number):
-        return _const(<float>x)
-    elif isinstance(x, Variable):
-        return Expr._from_var(x)
-    elif isinstance(x, Expr):
-        return x
-    return NotImplemented
-
-
-cdef inline bool _is_sum(expr):
-    return type(expr) is Expr or isinstance(expr, PolynomialExpr)
-
-
-cdef inline bool _is_zero(Expr expr):
-    return not expr or (Expr._is_const(expr) and _c(expr) == 0)
-
-
-cdef inline _fchild(Expr expr):
-    return next(iter(expr._children))
-
-
 cdef class PolynomialExpr(Expr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
 
@@ -500,12 +463,6 @@ cdef class ConstExpr(PolynomialExpr):
     cpdef list _to_node(self, float coef = 1, int start = 0):
         cdef float res = _c(self) * coef
         return [(ConstExpr, res)] if res != 0 else []
-
-
-cdef inline ConstExpr _const(float c):
-    cdef ConstExpr res = ConstExpr.__new__(ConstExpr)
-    res._children = {CONST: c}
-    return res
 
 
 cdef class FuncExpr(Expr):
@@ -845,6 +802,49 @@ cpdef Expr quickprod(expressions: Iterator[Expr]):
     for i in expressions:
         res *= i
     return res
+
+
+CONST = Term()
+
+
+cdef inline float _c(Expr expr):
+    return expr._children.get(CONST, 0.0)
+
+
+cdef inline ConstExpr _const(float c):
+    cdef ConstExpr res = ConstExpr.__new__(ConstExpr)
+    res._children = {CONST: c}
+    return res
+
+
+cdef inline _wrap(x):
+    return _ExprKey(x) if isinstance(x, Expr) else x
+
+
+cdef inline _unwrap(x):
+    return x.expr if isinstance(x, _ExprKey) else x
+
+
+cdef inline Expr _to_expr(x: Union[Number, Variable, Expr]):
+    if isinstance(x, Number):
+        return _const(<float>x)
+    elif isinstance(x, Variable):
+        return Expr._from_var(x)
+    elif isinstance(x, Expr):
+        return x
+    return NotImplemented
+
+
+cdef inline bool _is_sum(expr):
+    return type(expr) is Expr or isinstance(expr, PolynomialExpr)
+
+
+cdef inline bool _is_zero(Expr expr):
+    return not expr or (Expr._is_const(expr) and _c(expr) == 0)
+
+
+cdef inline _fchild(Expr expr):
+    return next(iter(expr._children))
 
 
 cdef inline _ensure_unary_compatible(x):
