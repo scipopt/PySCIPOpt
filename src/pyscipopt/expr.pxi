@@ -224,13 +224,13 @@ cdef class Expr(UnaryOperatorMixin):
         cdef Expr _other = _to_expr(other)
         if _is_zero(self) or _is_zero(_other):
             return _const(0.0)
-        elif Expr._is_const(self):
+        elif _is_const(self):
             if _c(self) == 1:
                 return _other.copy()
             elif _is_sum(_other):
                 return Expr({k: v * _c(self) for k, v in _other.items() if v != 0})
             return Expr({_other: _c(self)})
-        elif Expr._is_const(_other):
+        elif _is_const(_other):
             if _c(_other) == 1:
                 return self.copy()
             elif _is_sum(self):
@@ -242,7 +242,7 @@ cdef class Expr(UnaryOperatorMixin):
 
     def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
-        if self and _is_sum(self) and Expr._is_const(_other) and _c(_other) != 0:
+        if self and _is_sum(self) and _is_const(_other) and _c(_other) != 0:
             self._children = {k: v * _c(_other) for k, v in self.items() if v != 0}
             return self.copy(False)
         return self * _other
@@ -263,7 +263,7 @@ cdef class Expr(UnaryOperatorMixin):
 
     def __pow__(self, other: Union[Number, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
-        if not Expr._is_const(_other):
+        if not _is_const(_other):
             raise TypeError("exponent must be a number")
         return _const(1.0) if _is_zero(_other) else PowExpr(self, _c(_other))
 
@@ -281,15 +281,15 @@ cdef class Expr(UnaryOperatorMixin):
     cdef ExprCons _cmp(self, other: Union[Number, Variable, Expr], int op):
         cdef Expr _other = _to_expr(other)
         if op == Py_LE:
-            if Expr._is_const(_other):
+            if _is_const(_other):
                 return ExprCons(self, rhs=_c(_other))
             return ExprCons(self - _other, rhs=0.0)
         elif op == Py_GE:
-            if Expr._is_const(_other):
+            if _is_const(_other):
                 return ExprCons(self, lhs=_c(_other))
             return ExprCons(self - _other, lhs=0.0)
         elif op == Py_EQ:
-            if Expr._is_const(_other):
+            if _is_const(_other):
                 return ExprCons(self, lhs=_c(_other), rhs=_c(_other))
             return ExprCons(self - _other, lhs=0.0, rhs=0.0)
 
@@ -361,25 +361,8 @@ cdef class Expr(UnaryOperatorMixin):
             and self._children == other._children
         )
 
-    @staticmethod
-    cdef bool _is_const(expr):
-        return isinstance(expr, ConstExpr) or (
-            _is_sum(expr)
-            and len(expr._children) == 1
-            and _fchild(<Expr>expr) == CONST
-        )
-
-    @staticmethod
-    cdef bool _is_term(expr):
-        return (
-            _is_sum(expr)
-            and len(expr._children) == 1
-            and isinstance(_fchild(<Expr>expr), Term)
-            and (<Expr>expr)[_fchild(<Expr>expr)] == 1
-        )
-
     cdef Expr copy(self, bool copy = True, cls: Optional[Type[Expr]] = None):
-        cls = ConstExpr if Expr._is_const(self) else (cls or type(self))
+        cls = ConstExpr if _is_const(self) else (cls or type(self))
         cdef Expr res = cls.__new__(cls)
         res._children = self._children.copy() if copy else self._children
         if cls is ProdExpr:
@@ -416,7 +399,7 @@ cdef class PolynomialExpr(Expr):
         cdef Term k1, k2, child
         cdef float v1, v2
         if self and isinstance(_other, PolynomialExpr) and other and not (
-            Expr._is_const(_other) and (_c(_other) == 0 or _c(_other) == 1)
+            _is_const(_other) and (_c(_other) == 0 or _c(_other) == 1)
         ):
             res = PolynomialExpr.create({})
             for k1, v1 in self.items():
@@ -428,13 +411,13 @@ cdef class PolynomialExpr(Expr):
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
-        if Expr._is_const(_other):
+        if _is_const(_other):
             return self * (1.0 / _c(_other))
         return super().__truediv__(_other)
 
     def __pow__(self, other: Union[Number, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
-        if Expr._is_const(_other) and _c(_other).is_integer() and _c(_other) > 0:
+        if _is_const(_other) and _c(_other).is_integer() and _c(_other) > 0:
             res = _const(1.0)
             for _ in range(int(_c(_other))):
                 res *= self
@@ -456,7 +439,7 @@ cdef class ConstExpr(PolynomialExpr):
 
     def __pow__(self, other: Union[Number, Expr]) -> ConstExpr:
         cdef Expr _other = _to_expr(other)
-        if Expr._is_const(_other):
+        if _is_const(_other):
             return _const(_c(self) ** _c(_other))
         return <ConstExpr>super().__pow__(_other)
 
@@ -515,7 +498,7 @@ cdef class ProdExpr(FuncExpr):
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
-        if Expr._is_const(_other):
+        if _is_const(_other):
             res = self.copy()
             (<ProdExpr>res).coef *= _c(_other)
             return res._normalize()
@@ -523,14 +506,14 @@ cdef class ProdExpr(FuncExpr):
 
     def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
-        if Expr._is_const(_other):
+        if _is_const(_other):
             self.coef *= _c(_other)
             return self._normalize()
         return super().__imul__(_other)
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
-        if Expr._is_const(_other):
+        if _is_const(_other):
             res = self.copy()
             (<ProdExpr>res).coef /= _c(_other)
             return res._normalize()
@@ -653,11 +636,12 @@ cdef class UnaryExpr(FuncExpr):
         return self._cmp(other, op)
 
     def __repr__(self) -> str:
-        if Expr._is_const(child := _unwrap(_fchild(self))):
-            return f"{type(self).__name__}({_c(child)})"
-        elif Expr._is_term(child) and child[(term := _fchild(<Expr>child))] == 1:
-            return f"{type(self).__name__}({term})"
-        return f"{type(self).__name__}({child})"
+        name = type(self).__name__
+        if _is_const(child := _unwrap(_fchild(self))):
+            return f"{name}({_c(child)})"
+        elif _is_term(child) and child[(term := _fchild(<Expr>child))] == 1:
+            return f"{name}({term})"
+        return f"{name}({child})"
 
     cpdef list _to_node(self, float coef = 1, int start = 0):
         if coef == 0:
@@ -839,8 +823,25 @@ cdef inline bool _is_sum(expr):
     return type(expr) is Expr or isinstance(expr, PolynomialExpr)
 
 
+cdef inline bool _is_const(expr):
+    return isinstance(expr, ConstExpr) or (
+        _is_sum(expr)
+        and len(expr._children) == 1
+        and _fchild(<Expr>expr) == CONST
+    )
+
+
 cdef inline bool _is_zero(Expr expr):
-    return not expr or (Expr._is_const(expr) and _c(expr) == 0)
+    return not expr or (_is_const(expr) and _c(expr) == 0)
+
+
+cdef inline bool _is_term(expr):
+    return (
+        _is_sum(expr)
+        and len(expr._children) == 1
+        and isinstance(_fchild(<Expr>expr), Term)
+        and (<Expr>expr)[_fchild(<Expr>expr)] == 1
+    )
 
 
 cdef inline _fchild(Expr expr):
