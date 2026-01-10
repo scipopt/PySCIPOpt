@@ -88,6 +88,17 @@ def test_div(model):
     assert str(expr / expr) == "Expr({Term(): 1.0})"
 
 
+def test_neg(model):
+    m, x, y = model
+
+    expr = sin(x) * y
+    res = -expr
+    assert isinstance(res, ProdExpr)
+    assert str(res) == "ProdExpr({(SinExpr(Term(x)), Expr({Term(y): 1.0})): -1.0})"
+    assert isinstance(expr, ProdExpr)
+    assert str(expr) == "ProdExpr({(SinExpr(Term(x)), Expr({Term(y): 1.0})): 1.0})"
+
+
 def test_cmp(model):
     m, x, y = model
 
