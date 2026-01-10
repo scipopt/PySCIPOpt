@@ -3953,7 +3953,7 @@ cdef class Model:
         if expr[CONST] != 0.0:
             self.addObjoffset(expr[CONST])
 
-        for term, coef in expr._children.items():
+        for term, coef in expr.items():
             # avoid CONST term of Expr
             if term != CONST:
                 assert len(term) == 1
@@ -5708,7 +5708,7 @@ cdef class Model:
         cdef int i
         cdef _VarArray wrapper
 
-        for i, (term, coeff) in enumerate(cons.expr._children.items()):
+        for i, (term, coeff) in enumerate(cons.expr.items()):
             wrapper = _VarArray(term[0])
             vars_array[i] = wrapper.ptr[0]
             coeffs_array[i] = <SCIP_Real>coeff
@@ -5783,7 +5783,7 @@ cdef class Model:
             kwargs['removable'],
         ))
 
-        for term, coef in cons.expr._children.items():
+        for term, coef in cons.expr.items():
             if len(term) == 1: # linear
                 wrapper = _VarArray(term[0])
                 PY_SCIP_CALL(SCIPaddLinearVarNonlinear(self._scip, scip_cons, wrapper.ptr[0], coef))
@@ -7347,7 +7347,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPcreateConsIndicator(self._scip, &scip_cons, str_conversion(name), _binVar, 0, NULL, NULL, rhs,
             initial, separate, enforce, check, propagate, local, dynamic, removable, stickingatnode))
 
-        for term, coeff in cons.expr._children.items():
+        for term, coeff in cons.expr.items():
             if negate:
                 coeff = -coeff
             wrapper = _VarArray(term[0])
@@ -11721,7 +11721,7 @@ cdef class Model:
         for i in range(nvars):
             _coeffs[i] = 0.0
 
-        for term, coef in coeffs._children.items():
+        for term, coef in coeffs.items():
             # avoid CONST term of Expr
             if term != CONST:
                 assert len(term) == 1
