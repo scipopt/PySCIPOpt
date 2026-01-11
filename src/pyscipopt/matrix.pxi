@@ -1,6 +1,5 @@
 import operator
-from numbers import Number
-from typing import Callable, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 import numpy as np
 try:
     # NumPy 2.x location
@@ -9,35 +8,29 @@ except ImportError:
     # Fallback for NumPy 1.x
     from numpy.core.numeric import normalize_axis_tuple
 
-from pyscipopt.scip cimport Expr, quicksum, Variable
-
-
-class MatrixExprCons(np.ndarray):
-    def __le__(self, other: Union[Number, np.ndarray]) -> MatrixExprCons:
-        return _cmp(self, other, operator.le)
-
-    def __ge__(self, other: Union[Number, np.ndarray]) -> MatrixExprCons:
-        return _cmp(self, other, operator.ge)
-
-    def __eq__(self, _):
-        raise NotImplementedError("Cannot compare MatrixExprCons with '=='.")
+from pyscipopt.scip cimport Expr, quicksum
 
 
 class MatrixBase(np.ndarray):
 
-    def __array_wrap__(self, array, context=None, return_scalar=False):
-        res = super().__array_wrap__(array, context, return_scalar)
-        if return_scalar and isinstance(res, np.ndarray) and res.ndim == 0:
-            return res.item()
-        elif isinstance(res, np.ndarray):
-            if context is not None and context[0] in {
-                np.less_equal,
-                np.greater_equal,
-                np.equal,
-            }:
-                return res.view(MatrixExprCons)
-            return res.view(MatrixExpr)
-        return res
+    __array_priority__ = 101
+
+    def __array_ufunc__(self, ufunc, method, *args, **kwargs):
+        if method != "__call__":
+            return NotImplemented
+
+        args = _ensure_array(args)
+        if ufunc is np.less_equal:
+            return _vec_le(*args).view(MatrixExprCons)
+        elif ufunc is np.greater_equal:
+            return _vec_ge(*args).view(MatrixExprCons)
+        elif ufunc is np.equal:
+            return _vec_eq(*args).view(MatrixExprCons)
+        elif ufunc in {np.less, np.greater, np.not_equal}:
+            raise NotImplementedError("can only support with '<=', '>=', or '=='")
+
+        res = ufunc(*args, **kwargs)
+        return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
 
     def sum(
         self,
@@ -94,42 +87,40 @@ class MatrixBase(np.ndarray):
             quicksum, -1, self.transpose(keep_axes + axis).reshape(shape + (-1,))
         ).view(MatrixExpr)
 
-    def __le__(
-        self,
-        other: Union[Number, Variable, Expr, np.ndarray, MatrixBase],
-    ) -> MatrixExprCons:
-        return _cmp(self, other, operator.le)
-
-    def __ge__(
-        self,
-        other: Union[Number, Variable, Expr, np.ndarray, MatrixBase],
-    ) -> MatrixExprCons:
-        return _cmp(self, other, operator.ge)
-
-    def __eq__(
-        self,
-        other: Union[Number, Variable, Expr, np.ndarray, MatrixBase],
-    ) -> MatrixExprCons:
-        return _cmp(self, other, operator.eq)
-
 
 class MatrixExpr(MatrixBase):
     ...
 
 
-def _cmp(
-    x: Union[MatrixBase, MatrixExprCons],
-    y: Union[Number, Variable, Expr, np.ndarray, MatrixBase],
-    op: Callable,
-) -> MatrixExprCons:
-    if isinstance(y, Number) or isinstance(y, (Variable, Expr)):
-        res = np.empty(x.shape, dtype=object)
-        res.flat[:] = [op(i, y) for i in x.flat]
-    elif isinstance(y, np.ndarray):
-        out = np.broadcast(x, y)
-        res = np.empty(out.shape, dtype=object)
-        res.flat[:] = [op(i, j) for i, j in out]
-    else:
-        raise TypeError(f"Unsupported type {type(y)}")
+class MatrixExprCons(np.ndarray):
 
-    return res.view(MatrixExprCons)
+    __array_priority__ = 101
+
+    def __array_ufunc__(self, ufunc, method, *args, **kwargs):
+        if method != "__call__":
+            return NotImplemented
+
+        args = _ensure_array(args)
+        if ufunc is np.less_equal:
+            return _vec_le(*args).view(MatrixExprCons)
+        elif ufunc is np.greater_equal:
+            return _vec_ge(*args).view(MatrixExprCons)
+        elif ufunc in {np.equal, np.less, np.greater, np.not_equal}:
+            raise NotImplementedError("can only support with '<=' or '=='")
+        return NotImplemented
+
+
+_vec_le = np.frompyfunc(operator.le, 2, 1)
+_vec_ge = np.frompyfunc(operator.ge, 2, 1)
+_vec_eq = np.frompyfunc(operator.eq, 2, 1)
+
+
+cdef inline list _ensure_array(tuple args):
+    cdef list res = []
+    cdef object i
+    for i in args:
+        if isinstance(i, np.ndarray):
+            res.append(i.view(np.ndarray))
+        else:
+            res.append(np.array(i, dtype=object))
+    return res

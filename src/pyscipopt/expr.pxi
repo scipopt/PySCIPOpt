@@ -7,8 +7,6 @@ import numpy as np
 from cpython.object cimport Py_LE, Py_EQ, Py_GE
 from pyscipopt.scip cimport Variable
 
-include "matrix.pxi"
-
 
 cdef class Term:
     """A monomial term consisting of one or more variables."""
@@ -121,6 +119,10 @@ cdef class Expr(UnaryOperatorMixin):
     def __array_ufunc__(self, ufunc, method, *args, **kwargs):
         if method != "__call__":
             return NotImplemented
+
+        for arg in args:
+            if not isinstance(arg, (Number, Variable, Expr)):
+                return NotImplemented
 
         if ufunc is np.add:
             return args[0] + args[1]
@@ -867,8 +869,8 @@ cdef inline _ensure_unary_compatible(x):
 
 
 def exp(
-    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
-) -> Union[ExpExpr, np.ndarray, MatrixExpr]:
+    x: Union[Number, Variable, Expr, np.ndarray, "MatrixExpr"],
+) -> Union[ExpExpr, np.ndarray, "MatrixExpr"]:
     """
     exp(x)
 
@@ -884,8 +886,8 @@ def exp(
 
 
 def log(
-    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
-) -> Union[LogExpr, np.ndarray, MatrixExpr]:
+    x: Union[Number, Variable, Expr, np.ndarray, "MatrixExpr"],
+) -> Union[LogExpr, np.ndarray, "MatrixExpr"]:
     """
     log(x)
 
@@ -901,8 +903,8 @@ def log(
 
 
 def sqrt(
-    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
-) -> Union[SqrtExpr, np.ndarray, MatrixExpr]:
+    x: Union[Number, Variable, Expr, np.ndarray, "MatrixExpr"],
+) -> Union[SqrtExpr, np.ndarray, "MatrixExpr"]:
     """
     sqrt(x)
 
@@ -918,8 +920,8 @@ def sqrt(
 
 
 def sin(
-    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
-) -> Union[SinExpr, np.ndarray, MatrixExpr]:
+    x: Union[Number, Variable, Expr, np.ndarray, "MatrixExpr"],
+) -> Union[SinExpr, np.ndarray, "MatrixExpr"]:
     """
     sin(x)
 
@@ -935,8 +937,8 @@ def sin(
 
 
 def cos(
-    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
-) -> Union[CosExpr, np.ndarray, MatrixExpr]:
+    x: Union[Number, Variable, Expr, np.ndarray, "MatrixExpr"],
+) -> Union[CosExpr, np.ndarray, "MatrixExpr"]:
     """
     cos(x)
 
