@@ -16,29 +16,12 @@ except ImportError:
 from pyscipopt.scip cimport Expr, quicksum, Variable
 
 
-def _matrixexpr_richcmp(self, other, op: Callable):
-    if isinstance(other, Number) or isinstance(other, (Variable, Expr)):
-        res = np.empty(self.shape, dtype=object)
-        res.flat[:] = [op(i, other) for i in self.flat]
-
-    elif isinstance(other, np.ndarray):
-        out = np.broadcast(self, other)
-        res = np.empty(out.shape, dtype=object)
-        res.flat[:] = [op(i, j) for i, j in out]
-
-    else:
-        raise TypeError(f"Unsupported type {type(other)}")
-
-    return res.view(MatrixExprCons)
-
-
 class MatrixExprCons(np.ndarray):
-
     def __le__(self, other: Union[Number, np.ndarray]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, operator.le)
+        return MatrixExpr._cmp(self, other, operator.le)
 
     def __ge__(self, other: Union[Number, np.ndarray]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, operator.ge)
+        return MatrixExpr._cmp(self, other, operator.ge)
 
     def __eq__(self, _):
         raise NotImplementedError("Cannot compare MatrixExprCons with '=='.")
@@ -101,14 +84,28 @@ class MatrixExpr(np.ndarray):
             quicksum, -1, self.transpose(keep_axes + axis).reshape(shape + (-1,))
         ).view(MatrixExpr)
 
+    @staticmethod
+    def _cmp(x, y, op: Callable):
+        if isinstance(y, Number) or isinstance(y, (Variable, Expr)):
+            res = np.empty(x.shape, dtype=object)
+            res.flat[:] = [op(i, y) for i in x.flat]
+        elif isinstance(y, np.ndarray):
+            out = np.broadcast(x, y)
+            res = np.empty(out.shape, dtype=object)
+            res.flat[:] = [op(i, j) for i, j in out]
+        else:
+            raise TypeError(f"Unsupported type {type(y)}")
+
+        return res.view(MatrixExprCons)
+
     def __le__(self, other: Union[Number, Expr, np.ndarray, MatrixExpr]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, operator.le)
+        return MatrixExpr._cmp(self, other, operator.le)
 
     def __ge__(self, other: Union[Number, Expr, np.ndarray, MatrixExpr]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, operator.ge)
+        return MatrixExpr._cmp(self, other, operator.ge)
 
     def __eq__(self, other: Union[Number, Expr, np.ndarray, MatrixExpr]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, operator.eq)
+        return MatrixExpr._cmp(self, other, operator.eq)
 
     def __add__(self, other):
         return super().__add__(other).view(MatrixExpr)
