@@ -16,7 +16,7 @@ cdef class Term:
 
     def __init__(self, *vars: Variable):
         if not all(isinstance(i, Variable) for i in vars):
-            raise TypeError("All arguments must be Variable instances")
+            raise TypeError("all arguments must be Variable instances")
 
         self.vars = tuple(sorted(vars, key=hash))
         self._hash = hash(self.vars)
@@ -108,7 +108,7 @@ cdef class Expr(UnaryOperatorMixin):
         children: Optional[dict[Union[Term, Expr, _ExprKey], float]] = None,
     ):
         if children and not all(isinstance(i, (Term, Expr, _ExprKey)) for i in children):
-            raise TypeError("All keys must be Term or Expr instances")
+            raise TypeError("all keys must be Term or Expr instances")
 
         self._children = {_wrap(k): v for k, v in (children or {}).items()}
 
@@ -290,7 +290,7 @@ cdef class Expr(UnaryOperatorMixin):
                 return ExprCons(self, lhs=_c(_other), rhs=_c(_other))
             return ExprCons(self - _other, lhs=0.0, rhs=0.0)
 
-        raise NotImplementedError("Expr can only support with '<=', '>=', or '=='.")
+        raise NotImplementedError("can only support with '<=', '>=', or '=='")
 
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
         return self._cmp(other, op)
@@ -374,7 +374,7 @@ cdef class PolynomialExpr(Expr):
 
     def __init__(self, children: Optional[dict[Term, float]] = None):
         if children and not all(isinstance(t, Term) for t in children):
-            raise TypeError("All keys must be Term instances")
+            raise TypeError("all keys must be Term instances")
 
         super().__init__(<dict>children)
 
