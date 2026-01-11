@@ -908,7 +908,7 @@ cdef inline _fchild(Expr expr):
 
 cdef _ensure_unary(x: Union[Number, Variable, Term, Expr, _ExprKey]):
     if isinstance(x, Number):
-        return _const(<float>x)
+        return _ExprKey(_const(<float>x))
     elif isinstance(x, Variable):
         return _term((x,))
     elif isinstance(x, Expr):
