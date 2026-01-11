@@ -27,7 +27,7 @@ class MatrixExprCons(np.ndarray):
         raise NotImplementedError("Cannot compare MatrixExprCons with '=='.")
 
 
-class MatrixExpr(np.ndarray):
+class MatrixBase(np.ndarray):
 
     def __array_wrap__(self, array, context=None, return_scalar=False):
         res = super().__array_wrap__(array, context, return_scalar)
@@ -112,11 +112,24 @@ class MatrixExpr(np.ndarray):
 
         return res.view(MatrixExprCons)
 
-    def __le__(self, other: Union[Number, Expr, np.ndarray, MatrixExpr]) -> MatrixExprCons:
+    def __le__(
+        self,
+        other: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+    ) -> MatrixExprCons:
         return MatrixExpr._cmp(self, other, operator.le)
 
-    def __ge__(self, other: Union[Number, Expr, np.ndarray, MatrixExpr]) -> MatrixExprCons:
+    def __ge__(
+        self,
+        other: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+    ) -> MatrixExprCons:
         return MatrixExpr._cmp(self, other, operator.ge)
 
-    def __eq__(self, other: Union[Number, Expr, np.ndarray, MatrixExpr]) -> MatrixExprCons:
+    def __eq__(
+        self,
+        other: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+    ) -> MatrixExprCons:
         return MatrixExpr._cmp(self, other, operator.eq)
+
+
+class MatrixExpr(MatrixBase):
+    ...

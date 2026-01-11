@@ -1096,8 +1096,8 @@ cdef class Solution:
         sol.scip = scip
         return sol
 
-    def __getitem__(self, expr: Union[Expr, MatrixExpr]):
-        if isinstance(expr, MatrixExpr):
+    def __getitem__(self, expr: Union[Variable, Expr, MatrixVariable, MatrixExpr]):
+        if isinstance(expr, MatrixBase):
             result = np.zeros(expr.shape, dtype=np.float64)
             for idx in np.ndindex(expr.shape):
                 result[idx] = self.__getitem__(expr[idx])
@@ -2042,7 +2042,7 @@ cdef class Variable(UnaryOperatorMixin):
         """
         return SCIPvarGetNBranchingsCurrentRun(self.scip_var, branchdir)
 
-class MatrixVariable(MatrixExpr):
+class MatrixVariable(MatrixBase):
 
     def vtype(self):
         """
@@ -10843,7 +10843,7 @@ cdef class Model:
             sol = Solution.create(self._scip, NULL)
         return sol[expr]
 
-    def getVal(self, expr: Union[Expr, MatrixExpr] ):
+    def getVal(self, expr: Union[Variable, Expr, MatrixVariable, MatrixExpr]):
         """
         Retrieve the value of the given variable or expression in the best known solution.
         Can only be called after solving is completed.
@@ -10867,7 +10867,7 @@ cdef class Model:
         if not stage_check or self._bestSol.sol == NULL and SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
             raise Warning("Method cannot be called in stage ", self.getStage())
 
-        if isinstance(expr, MatrixExpr):
+        if isinstance(expr, MatrixBase):
             result = np.empty(expr.shape, dtype=float)
             for idx in np.ndindex(result.shape):
                 result[idx] = self.getSolVal(self._bestSol, expr[idx])
