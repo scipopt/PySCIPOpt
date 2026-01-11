@@ -15,8 +15,9 @@ cdef class Term:
     cdef int _hash
 
     def __init__(self, *vars: Variable):
-        if not all(isinstance(i, Variable) for i in vars):
-            raise TypeError("all arguments must be Variable instances")
+        for i in vars:
+            if not isinstance(i, Variable):
+                raise TypeError(f"expected Variable, but got {type(i).__name__!s}")
 
         self.vars = tuple(sorted(vars, key=hash))
         self._hash = hash(self.vars)
@@ -107,8 +108,11 @@ cdef class Expr(UnaryOperatorMixin):
         self,
         children: Optional[dict[Union[Term, Expr, _ExprKey], float]] = None,
     ):
-        if children and not all(isinstance(i, (Term, Expr, _ExprKey)) for i in children):
-            raise TypeError("all keys must be Term or Expr instances")
+        for i in (children or {}):
+            if not isinstance(i, (Term, Expr, _ExprKey)):
+                raise TypeError(
+                    f"expected Term, Expr, or _ExprKey, but got {type(i).__name__!s}"
+                )
 
         self._children = {_wrap(k): v for k, v in (children or {}).items()}
 
@@ -161,7 +165,9 @@ cdef class Expr(UnaryOperatorMixin):
 
     def __getitem__(self, key: Union[Variable, Term, Expr, _ExprKey]) -> float:
         if not isinstance(key, (Variable, Term, Expr, _ExprKey)):
-            raise TypeError("key must be Variable, Term, or Expr")
+            raise TypeError(
+                f"excepted Variable, Term, or Expr, but got {type(key).__name__!s}"
+            )
 
         if isinstance(key, Variable):
             key = _term((key,))
@@ -261,13 +267,13 @@ cdef class Expr(UnaryOperatorMixin):
     def __pow__(self, other: Union[Number, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
         if not _is_const(_other):
-            raise TypeError("exponent must be a number")
+            raise TypeError("excepted a constant exponent")
         return _const(1.0) if _is_zero(_other) else _pow(_wrap(self), _c(_other))
 
     def __rpow__(self, other: Union[Number, Expr]) -> ExpExpr:
         cdef Expr _other = _to_expr(other)
         if _c(_other) <= 0.0:
-            raise ValueError("base must be positive")
+            raise ValueError("excepted a positive base")
         return ExpExpr(self * LogExpr(_other))
 
     def __neg__(self) -> Expr:
@@ -373,10 +379,11 @@ cdef class PolynomialExpr(Expr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
 
     def __init__(self, children: Optional[dict[Term, float]] = None):
-        if children and not all(isinstance(t, Term) for t in children):
-            raise TypeError("all keys must be Term instances")
+        for i in (children or {}):
+            if not isinstance(i, Term):
+                raise TypeError(f"expected Term, but got {type(i).__name__!s}")
 
-        super().__init__(<dict>children)
+        super().__init__(children)
 
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
@@ -593,7 +600,6 @@ cdef class PowExpr(FuncExpr):
         elif self.expo == 1:
             return (
                 <PolynomialExpr>_expr({_fchild(self): 1.0}, PolynomialExpr)
-                if isinstance(_fchild(self), Term) else _unwrap(_fchild(self))
             )
         return self
 
@@ -614,8 +620,6 @@ cdef class UnaryExpr(FuncExpr):
     """Expression like `f(expression)`."""
 
     def __init__(self, expr: Union[Number, Variable, Term, Expr, _ExprKey]):
-        if isinstance(expr, Number):
-            expr = _const(<float>expr)
         elif isinstance(expr, Variable):
             expr = _term((expr,))
         super().__init__({expr: 1.0})
@@ -713,7 +717,7 @@ cdef class ExprCons:
                 raise TypeError("ExprCons already has lower bound")
             return ExprCons(self.expr, lhs=other, rhs=<float>self._rhs)
 
-        raise NotImplementedError("ExprCons can only support with '<=' or '>='.")
+        raise NotImplementedError("can only support with '<=' or '>='")
 
     def __repr__(self) -> str:
         return f"ExprCons({self.expr}, {self._lhs}, {self._rhs})"
