@@ -29,6 +29,20 @@ class MatrixExprCons(np.ndarray):
 
 class MatrixExpr(np.ndarray):
 
+    def __array_wrap__(self, array, context=None, return_scalar=False):
+        res = super().__array_wrap__(array, context, return_scalar)
+        if return_scalar and isinstance(res, np.ndarray) and res.ndim == 0:
+            return res.item()
+        elif isinstance(res, np.ndarray):
+            if context is not None and context[0] in (
+                np.less_equal,
+                np.greater_equal,
+                np.equal,
+            ):
+                return res.view(MatrixExprCons)
+            return res.view(MatrixExpr)
+        return res
+
     def sum(
         self,
         axis: Optional[Union[int, Tuple[int, ...]]] = None,
@@ -106,36 +120,3 @@ class MatrixExpr(np.ndarray):
 
     def __eq__(self, other: Union[Number, Expr, np.ndarray, MatrixExpr]) -> MatrixExprCons:
         return MatrixExpr._cmp(self, other, operator.eq)
-
-    def __add__(self, other):
-        return super().__add__(other).view(MatrixExpr)
-    
-    def __iadd__(self, other):
-        return super().__iadd__(other).view(MatrixExpr)
-
-    def __mul__(self, other):
-        return super().__mul__(other).view(MatrixExpr)
-
-    def __truediv__(self, other):
-        return super().__truediv__(other).view(MatrixExpr)
-    
-    def __rtruediv__(self, other):
-        return super().__rtruediv__(other).view(MatrixExpr)
-        
-    def __pow__(self, other):
-        return super().__pow__(other).view(MatrixExpr)
-    
-    def __sub__(self, other):
-        return super().__sub__(other).view(MatrixExpr)
-    
-    def __radd__(self, other):
-        return super().__radd__(other).view(MatrixExpr)
-    
-    def __rmul__(self, other):
-        return super().__rmul__(other).view(MatrixExpr)
-    
-    def __rsub__(self, other):
-        return super().__rsub__(other).view(MatrixExpr)
-
-    def __matmul__(self, other):
-        return super().__matmul__(other).view(MatrixExpr)
