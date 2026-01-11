@@ -467,8 +467,8 @@ cdef class FuncExpr(Expr):
     def __neg__(self):
         return self * _const(-1.0)
 
-        return float("inf")
     def degree(self) -> double:
+        return INF
 
 
 cdef class ProdExpr(FuncExpr):
@@ -810,6 +810,7 @@ cdef inline Term _term(tuple[Variable] vars):
     return res
 
 
+cdef double INF = float("inf")
 CONST = _term(())
 
 
