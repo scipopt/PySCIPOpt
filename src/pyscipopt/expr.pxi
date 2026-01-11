@@ -320,11 +320,10 @@ cdef class Expr(UnaryOperatorMixin):
 
     cdef dict _to_dict(self, Expr other, bool copy = True):
         cdef dict children = self._children.copy() if copy else self._children
-        cdef object child
-        cdef float coef
-        for child, coef in (other if _is_sum(other) else {other: 1.0}).items():
-            key = _wrap(child)
-            children[key] = children.get(key, 0.0) + coef
+        cdef object k
+        cdef float v
+        for k, v in (other if _is_sum(other) else {_wrap(other): 1.0}).items():
+            children[k] = children.get(k, 0.0) + v
         return children
 
     cpdef list _to_node(self, float coef = 1, int start = 0):
@@ -600,6 +599,7 @@ cdef class PowExpr(FuncExpr):
         elif self.expo == 1:
             return (
                 <PolynomialExpr>_expr({_fchild(self): 1.0}, PolynomialExpr)
+                if isinstance(_fchild(self), Term) else <Expr>_unwrap(_fchild(self))
             )
         return self
 
@@ -631,8 +631,8 @@ cdef class UnaryExpr(FuncExpr):
     def __repr__(self) -> str:
         name = type(self).__name__
         if _is_const(child := _unwrap(_fchild(self))):
-            return f"{name}({_c(child)})"
-        elif _is_term(child) and child[(term := _fchild(<Expr>child))] == 1:
+            return f"{name}({_c(<Expr>child)})"
+        elif _is_term(child) and (<Expr>child)[(term := _fchild(<Expr>child))] == 1:
             return f"{name}({term})"
         return f"{name}({child})"
 
