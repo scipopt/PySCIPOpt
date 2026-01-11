@@ -2,8 +2,9 @@
 # TODO Cythonize things. Improve performance.
 # TODO Add tests
 """
+import operator
 from numbers import Number
-from typing import Optional, Tuple, Union
+from typing import Callable, Optional, Tuple, Union
 import numpy as np
 try:
     # NumPy 2.x location
@@ -15,25 +16,15 @@ except ImportError:
 from pyscipopt.scip cimport Expr, quicksum, Variable
 
 
-def _matrixexpr_richcmp(self, other, op):
-    def _richcmp(self, other, op):
-        if op == 1: # <=
-            return self.__le__(other)
-        elif op == 5: # >=
-            return self.__ge__(other)
-        elif op == 2: # ==
-            return self.__eq__(other)
-        else:
-            raise NotImplementedError("Can only support constraints with '<=', '>=', or '=='.")
-
+def _matrixexpr_richcmp(self, other, op: Callable):
     if isinstance(other, Number) or isinstance(other, (Variable, Expr)):
         res = np.empty(self.shape, dtype=object)
-        res.flat = [_richcmp(i, other, op) for i in self.flat]
+        res.flat[:] = [op(i, other) for i in self.flat]
 
     elif isinstance(other, np.ndarray):
         out = np.broadcast(self, other)
         res = np.empty(out.shape, dtype=object)
-        res.flat = [_richcmp(i, j, op) for i, j in out]
+        res.flat[:] = [op(i, j) for i, j in out]
 
     else:
         raise TypeError(f"Unsupported type {type(other)}")
@@ -44,10 +35,10 @@ def _matrixexpr_richcmp(self, other, op):
 class MatrixExprCons(np.ndarray):
 
     def __le__(self, other: Union[Number, np.ndarray]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, 1)
+        return _matrixexpr_richcmp(self, other, operator.le)
 
     def __ge__(self, other: Union[Number, np.ndarray]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, 5)
+        return _matrixexpr_richcmp(self, other, operator.ge)
 
     def __eq__(self, _):
         raise NotImplementedError("Cannot compare MatrixExprCons with '=='.")
@@ -110,14 +101,14 @@ class MatrixExpr(np.ndarray):
             quicksum, -1, self.transpose(keep_axes + axis).reshape(shape + (-1,))
         ).view(MatrixExpr)
 
-    def __le__(self, other: Union[Number, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, 1)
+    def __le__(self, other: Union[Number, Expr, np.ndarray, MatrixExpr]) -> MatrixExprCons:
+        return _matrixexpr_richcmp(self, other, operator.le)
 
-    def __ge__(self, other: Union[Number, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, 5)
+    def __ge__(self, other: Union[Number, Expr, np.ndarray, MatrixExpr]) -> MatrixExprCons:
+        return _matrixexpr_richcmp(self, other, operator.ge)
 
-    def __eq__(self, other: Union[Number, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, 2)
+    def __eq__(self, other: Union[Number, Expr, np.ndarray, MatrixExpr]) -> MatrixExprCons:
+        return _matrixexpr_richcmp(self, other, operator.eq)
 
     def __add__(self, other):
         return super().__add__(other).view(MatrixExpr)
