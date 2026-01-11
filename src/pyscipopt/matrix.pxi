@@ -2,7 +2,7 @@
 # TODO Cythonize things. Improve performance.
 # TODO Add tests
 """
-
+from numbers import Number
 from typing import Optional, Tuple, Union
 import numpy as np
 try:
@@ -37,6 +37,18 @@ def _matrixexpr_richcmp(self, other, op):
         raise TypeError(f"Unsupported type {type(other)}")
 
     return res.view(MatrixExprCons)
+
+
+class MatrixExprCons(np.ndarray):
+
+    def __le__(self, other: Union[Number, np.ndarray]) -> MatrixExprCons:
+        return _matrixexpr_richcmp(self, other, 1)
+
+    def __ge__(self, other: Union[Number, np.ndarray]) -> MatrixExprCons:
+        return _matrixexpr_richcmp(self, other, 5)
+
+    def __eq__(self, _):
+        raise NotImplementedError("Cannot compare MatrixExprCons with '=='.")
 
 
 class MatrixExpr(np.ndarray):
@@ -137,17 +149,3 @@ class MatrixExpr(np.ndarray):
 
     def __matmul__(self, other):
         return super().__matmul__(other).view(MatrixExpr)
-
-class MatrixGenExpr(MatrixExpr):
-    pass
-
-class MatrixExprCons(np.ndarray):
-
-    def __le__(self, other: Union[Number, np.ndarray]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, 1)
-
-    def __ge__(self, other: Union[Number, np.ndarray]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, 5)
-
-    def __eq__(self, other):
-        raise NotImplementedError("Cannot compare MatrixExprCons with '=='.")
