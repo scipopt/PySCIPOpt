@@ -466,13 +466,6 @@ cdef class FuncExpr(Expr):
     def degree(self) -> float:
         return float("inf")
 
-    cdef bool _is_child_equal(self, other):
-        return (
-            type(other) is type(self)
-            and len(self._children) == len(other._children)
-            and self._children.keys() == other._children.keys()
-        )
-
 
 cdef class ProdExpr(FuncExpr):
     """Expression like `coefficient * expression`."""
@@ -495,7 +488,7 @@ cdef class ProdExpr(FuncExpr):
         cdef Expr _other = _to_expr(other)
         if _other is None:
             return NotImplemented
-        if self._is_child_equal(_other):
+        if _is_child_equal(self, _other):
             res = self.copy()
             (<ProdExpr>res).coef += (<ProdExpr>_other).coef
             return res._normalize()
@@ -505,7 +498,7 @@ cdef class ProdExpr(FuncExpr):
         cdef Expr _other = _to_expr(other)
         if _other is None:
             return NotImplemented
-        if self._is_child_equal(_other):
+        if _is_child_equal(self, _other):
             self.coef += (<ProdExpr>_other).coef
             return self._normalize()
         return super().__iadd__(_other)
@@ -591,7 +584,7 @@ cdef class PowExpr(FuncExpr):
         cdef Expr _other = _to_expr(other)
         if _other is None:
             return NotImplemented
-        if self._is_child_equal(_other):
+        if _is_child_equal(self, _other):
             res = self.copy()
             (<PowExpr>res).expo += (<PowExpr>_other).expo
             return res._normalize()
@@ -601,7 +594,7 @@ cdef class PowExpr(FuncExpr):
         cdef Expr _other = _to_expr(other)
         if _other is None:
             return NotImplemented
-        if self._is_child_equal(_other):
+        if _is_child_equal(self, _other):
             self.expo += (<PowExpr>_other).expo
             return self._normalize()
         return super().__imul__(_other)
@@ -610,7 +603,7 @@ cdef class PowExpr(FuncExpr):
         cdef Expr _other = _to_expr(other)
         if _other is None:
             return NotImplemented
-        if self._is_child_equal(_other):
+        if _is_child_equal(self, _other):
             res = self.copy()
             (<PowExpr>res).expo -= (<PowExpr>_other).expo
             return res._normalize()
@@ -914,6 +907,20 @@ cdef bool _is_expr_equal(Expr x, object y):
             if (<PowExpr>x).expo != (<PowExpr>_y).expo:
                 return False
     return x._children == _y._children
+
+
+cdef bool _is_child_equal(Expr x, object y):
+    if x is y:
+        return True
+
+    cdef object t_x = type(x)
+    if type(y) is not t_x:
+        return False
+
+    cdef Expr _y = <Expr>y
+    if len(x._children) != len(_y._children):
+        return False
+    return x._children.keys() == _y._children.keys()
 
 
 cdef _ensure_unary(x: Union[Number, Variable, Term, Expr, _ExprKey]):
