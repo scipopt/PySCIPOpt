@@ -2200,7 +2200,7 @@ cdef class Expr(UnaryOperatorMixin):
 
     cdef dict _to_dict(self, Expr other, bool copy = *)
 
-    cpdef list _to_node(self, float coef = *, int start = *)
+    cpdef list _to_node(self, double coef = *, int start = *)
 
     cdef Expr copy(self, bool copy = *, object cls = *)
 

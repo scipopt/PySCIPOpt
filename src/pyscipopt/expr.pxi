@@ -1,11 +1,15 @@
 ##@file expr.pxi
 from numbers import Number
-from typing import Iterator, Optional, Type, Union
+from typing import TYPE_CHECKING, Iterator, Optional, Type, Union
 
 import numpy as np
 
 from cpython.object cimport Py_LE, Py_EQ, Py_GE
 from pyscipopt.scip cimport Variable
+
+
+if TYPE_CHECKING:
+    double = float
 
 
 cdef class Term:
@@ -46,7 +50,7 @@ cdef class Term:
     def degree(self) -> int:
         return len(self)
 
-    cpdef list _to_node(self, float coef = 1, int start = 0):
+    cpdef list _to_node(self, double coef = 1, int start = 0):
         cdef list node = []
         if coef == 0:
             ...
@@ -106,7 +110,7 @@ cdef class Expr(UnaryOperatorMixin):
 
     def __init__(
         self,
-        children: Optional[dict[Union[Term, Expr, _ExprKey], float]] = None,
+        children: Optional[dict[Union[Term, Expr, _ExprKey], double]] = None,
     ):
         for i in (children or {}):
             if not isinstance(i, (Term, Expr, _ExprKey)):
@@ -163,7 +167,7 @@ cdef class Expr(UnaryOperatorMixin):
     def __hash__(self) -> int:
         return hash(frozenset(self.items()))
 
-    def __getitem__(self, key: Union[Variable, Term, Expr, _ExprKey]) -> float:
+    def __getitem__(self, key: Union[Variable, Term, Expr, _ExprKey]) -> double:
         if not isinstance(key, (Variable, Term, Expr, _ExprKey)):
             raise TypeError(
                 f"excepted Variable, Term, or Expr, but got {type(key).__name__!s}"
@@ -325,7 +329,7 @@ cdef class Expr(UnaryOperatorMixin):
     def __repr__(self) -> str:
         return f"Expr({self._children})"
 
-    def degree(self) -> float:
+    def degree(self) -> double:
         return max((i.degree() for i in self)) if self else 0
 
     def items(self):
@@ -342,17 +346,17 @@ cdef class Expr(UnaryOperatorMixin):
     cdef dict _to_dict(self, Expr other, bool copy = True):
         cdef dict children = self._children.copy() if copy else self._children
         cdef object k
-        cdef float v
+        cdef double v
         for k, v in (other if _is_sum(other) else {_wrap(other): 1.0}).items():
             children[k] = children.get(k, 0.0) + v
         return children
 
-    cpdef list _to_node(self, float coef = 1, int start = 0):
+    cpdef list _to_node(self, double coef = 1, int start = 0):
         cdef list node = []
         cdef list sub_node
         cdef list[int] index = []
         cdef object k
-        cdef float v
+        cdef double v
 
         if coef == 0:
             return node
@@ -380,7 +384,7 @@ cdef class Expr(UnaryOperatorMixin):
 cdef class PolynomialExpr(Expr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
 
-    def __init__(self, children: Optional[dict[Term, float]] = None):
+    def __init__(self, children: Optional[dict[Term, double]] = None):
         for i in (children or {}):
             if not isinstance(i, Term):
                 raise TypeError(f"expected Term, but got {type(i).__name__!s}")
@@ -401,7 +405,7 @@ cdef class PolynomialExpr(Expr):
             return NotImplemented
         cdef PolynomialExpr res
         cdef Term k1, k2, child
-        cdef float v1, v2
+        cdef double v1, v2
         if self and isinstance(_other, PolynomialExpr) and other and not (
             _is_const(_other) and (_c(_other) == 0 or _c(_other) == 1)
         ):
@@ -436,7 +440,7 @@ cdef class PolynomialExpr(Expr):
 cdef class ConstExpr(PolynomialExpr):
     """Expression representing for `constant`."""
 
-    def __init__(self, float constant = 0.0):
+    def __init__(self, double constant = 0.0):
         super().__init__({CONST: constant})
 
     def __pow__(self, other: Union[Number, Expr]) -> ConstExpr:
@@ -453,8 +457,8 @@ cdef class ConstExpr(PolynomialExpr):
     def __abs__(self) -> ConstExpr:
         return _const(abs(_c(self)))
 
-    cpdef list _to_node(self, float coef = 1, int start = 0):
-        cdef float res = _c(self) * coef
+    cpdef list _to_node(self, double coef = 1, int start = 0):
+        cdef double res = _c(self) * coef
         return [(ConstExpr, res)] if res != 0 else []
 
 
@@ -463,14 +467,14 @@ cdef class FuncExpr(Expr):
     def __neg__(self):
         return self * _const(-1.0)
 
-    def degree(self) -> float:
         return float("inf")
+    def degree(self) -> double:
 
 
 cdef class ProdExpr(FuncExpr):
     """Expression like `coefficient * expression`."""
 
-    cdef readonly float coef
+    cdef readonly double coef
 
     def __init__(self, *children: Union[Term, Expr, _ExprKey]):
         if len(children) < 2:
@@ -546,7 +550,7 @@ cdef class ProdExpr(FuncExpr):
     def _normalize(self) -> Expr:
         return _const(0.0) if not self or self.coef == 0 else self
 
-    cpdef list _to_node(self, float coef = 1, int start = 0):
+    cpdef list _to_node(self, double coef = 1, int start = 0):
         cdef list node = []
         cdef list sub_node
         cdef list[int] index = []
@@ -571,9 +575,9 @@ cdef class ProdExpr(FuncExpr):
 cdef class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
 
-    cdef readonly float expo
+    cdef readonly double expo
 
-    def __init__(self, base: Union[Term, Expr, _ExprKey], float expo):
+    def __init__(self, base: Union[Term, Expr, _ExprKey], double expo):
         super().__init__({base: 1.0})
         self.expo = expo
 
@@ -625,7 +629,7 @@ cdef class PowExpr(FuncExpr):
             )
         return self
 
-    cpdef list _to_node(self, float coef = 1, int start = 0):
+    cpdef list _to_node(self, double coef = 1, int start = 0):
         if coef == 0:
             return []
 
@@ -658,7 +662,7 @@ cdef class UnaryExpr(FuncExpr):
             return f"{name}({term})"
         return f"{name}({child})"
 
-    cpdef list _to_node(self, float coef = 1, int start = 0):
+    cpdef list _to_node(self, double coef = 1, int start = 0):
         if coef == 0:
             return []
 
@@ -706,8 +710,8 @@ cdef class ExprCons:
     def __init__(
         self,
         Expr expr,
-        lhs: Optional[float] = None,
-        rhs: Optional[float] = None,
+        lhs: Optional[double] = None,
+        rhs: Optional[double] = None,
     ):
         if lhs is None and rhs is None:
             raise ValueError("ExprCons (with both lhs and rhs) doesn't supported")
@@ -722,20 +726,20 @@ cdef class ExprCons:
         c = _c(self.expr)
         self.expr = (self.expr - c)._normalize()
         if self._lhs is not None:
-            self._lhs = <float>self._lhs - c
+            self._lhs = <double>self._lhs - c
         if self._rhs is not None:
-            self._rhs = <float>self._rhs - c
+            self._rhs = <double>self._rhs - c
         return self
 
-    def __richcmp__(self, float other, int op) -> ExprCons:
+    def __richcmp__(self, double other, int op) -> ExprCons:
         if op == Py_LE:
             if self._rhs is not None:
                 raise TypeError("ExprCons already has upper bound")
-            return ExprCons(self.expr, lhs=<float>self._lhs, rhs=other)
+            return ExprCons(self.expr, lhs=<double>self._lhs, rhs=other)
         elif op == Py_GE:
             if self._lhs is not None:
                 raise TypeError("ExprCons already has lower bound")
-            return ExprCons(self.expr, lhs=other, rhs=<float>self._rhs)
+            return ExprCons(self.expr, lhs=other, rhs=<double>self._rhs)
 
         raise NotImplementedError("can only support with '<=' or '>='")
 
@@ -809,11 +813,11 @@ cdef inline Term _term(tuple[Variable] vars):
 CONST = _term(())
 
 
-cdef inline float _c(Expr expr):
+cdef inline double _c(Expr expr):
     return expr._children.get(CONST, 0.0)
 
 
-cdef inline ConstExpr _const(float c):
+cdef inline ConstExpr _const(double c):
     cdef ConstExpr res = ConstExpr.__new__(ConstExpr)
     res._children = {CONST: c}
     return res
@@ -832,7 +836,7 @@ cdef inline ProdExpr _prod(tuple children):
     return res
 
 
-cdef inline PowExpr _pow(base: Union[Term, _ExprKey], float expo):
+cdef inline PowExpr _pow(base: Union[Term, _ExprKey], double expo):
     cdef PowExpr res = PowExpr.__new__(PowExpr)
     res._children = {base: 1.0} 
     res.expo = expo
@@ -849,7 +853,7 @@ cdef inline _unwrap(x):
 
 cdef Expr _to_expr(x: Union[Number, Variable, Expr]):
     if isinstance(x, Number):
-        return _const(<float>x)
+        return _const(<double>x)
     elif isinstance(x, Variable):
         return Expr._from_var(x)
     elif isinstance(x, Expr):
@@ -925,7 +929,7 @@ cdef bool _is_child_equal(Expr x, object y):
 
 cdef _ensure_unary(x: Union[Number, Variable, Term, Expr, _ExprKey]):
     if isinstance(x, Number):
-        return _ExprKey(_const(<float>x))
+        return _ExprKey(_const(<double>x))
     elif isinstance(x, Variable):
         return _term((x,))
     elif isinstance(x, Expr):
@@ -944,7 +948,7 @@ cdef inline UnaryExpr _unary(x: Union[Term, _ExprKey], cls: Type[UnaryExpr]):
 
 
 cdef inline _ensure_const(x):
-    return _const(<float>x) if isinstance(x, Number) else x
+    return _const(<double>x) if isinstance(x, Number) else x
 
 
 def exp(
