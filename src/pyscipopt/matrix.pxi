@@ -12,6 +12,8 @@ except ImportError:
     # Fallback for NumPy 1.x
     from numpy.core.numeric import normalize_axis_tuple
 
+from pyscipopt.scip cimport Expr, quicksum, Variable
+
 
 def _matrixexpr_richcmp(self, other, op):
     def _richcmp(self, other, op):

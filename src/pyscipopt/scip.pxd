@@ -1,5 +1,8 @@
 ##@file scip.pxd
 #@brief holding prototype of the SCIP public functions to use them in PySCIPOpt
+from cpython cimport bool
+
+
 cdef extern from "scip/scip.h":
     # SCIP internal types
     ctypedef int SCIP_RETCODE
@@ -2183,10 +2186,33 @@ cdef class Node:
     @staticmethod
     cdef create(SCIP_NODE* scipnode)
 
-
 cdef class UnaryOperatorMixin:
     pass
 
+cdef class Expr(UnaryOperatorMixin):
+
+    cdef readonly dict _children 
+
+    cdef ExprCons _cmp(self, object other, int op)
+
+    @staticmethod
+    cdef PolynomialExpr _from_var(Variable x)
+
+    cdef dict _to_dict(self, Expr other, bool copy = *)
+
+    cpdef list _to_node(self, float coef = *, int start = *)
+
+    cdef bool _is_equal(self, object other)
+
+    cdef Expr copy(self, bool copy = *, object cls = *)
+
+cdef class PolynomialExpr(Expr):
+    pass
+
+cdef class ExprCons:
+    cdef readonly Expr expr
+    cdef readonly object _lhs
+    cdef readonly object _rhs
 
 cdef class Variable(UnaryOperatorMixin):
     cdef SCIP_VAR* scip_var
@@ -2233,3 +2259,7 @@ cdef class Model:
 
     @staticmethod
     cdef create(SCIP* scip)
+
+cpdef Expr quicksum(object expressions)
+
+cpdef Expr quickprod(object expressions)

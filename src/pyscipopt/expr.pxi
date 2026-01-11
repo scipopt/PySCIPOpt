@@ -103,7 +103,6 @@ cdef class UnaryOperatorMixin:
 cdef class Expr(UnaryOperatorMixin):
     """Base class for mathematical expressions."""
 
-    cdef readonly dict _children
     __array_priority__ = 100
 
     def __init__(
@@ -677,10 +676,6 @@ cdef class CosExpr(UnaryExpr):
 
 cdef class ExprCons:
     """Constraints with a polynomial expressions and lower/upper bounds."""
-
-    cdef readonly Expr expr
-    cdef readonly object _lhs
-    cdef readonly object _rhs
 
     def __init__(
         self,
