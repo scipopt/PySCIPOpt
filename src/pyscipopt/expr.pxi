@@ -72,7 +72,7 @@ cdef class _ExprKey:
         return hash(self.expr)
 
     def __eq__(self, other) -> bool:
-        return isinstance(other, _ExprKey) and self.expr._is_equal(other.expr)
+        return isinstance(other, _ExprKey) and _is_expr_equal(self.expr, other.expr)
 
     def __repr__(self) -> str:
         return repr(self.expr)
@@ -192,7 +192,7 @@ cdef class Expr(UnaryOperatorMixin):
             return _expr(self._to_dict(_other))
         elif _is_sum(_other):
             return _expr(_other._to_dict(self))
-        elif self._is_equal(_other):
+        elif _is_expr_equal(self, _other):
             return self * 2.0
         return _expr({_wrap(self): 1.0, _wrap(_other): 1.0})
 
@@ -216,7 +216,7 @@ cdef class Expr(UnaryOperatorMixin):
         cdef Expr _other = _to_expr(other)
         if _other is None:
             return NotImplemented
-        if self._is_equal(_other):
+        if _is_expr_equal(self, _other):
             return _const(0.0)
         return self + (-_other)
 
@@ -224,7 +224,7 @@ cdef class Expr(UnaryOperatorMixin):
         cdef Expr _other = _to_expr(other)
         if _other is None:
             return NotImplemented
-        if self._is_equal(_other):
+        if _is_expr_equal(self, _other):
             return _const(0.0)
         return self + (-_other)
 
@@ -249,7 +249,7 @@ cdef class Expr(UnaryOperatorMixin):
             elif _is_sum(self):
                 return _expr({k: v * _c(_other) for k, v in self.items() if v != 0})
             return _expr({_wrap(self): _c(_other)})
-        elif self._is_equal(_other):
+        elif _is_expr_equal(self, _other):
             return _pow(_wrap(self), 2.0)
         return _prod((_wrap(self), _wrap(_other)))
 
@@ -271,7 +271,7 @@ cdef class Expr(UnaryOperatorMixin):
             return NotImplemented
         if _is_zero(_other):
             raise ZeroDivisionError("division by zero")
-        if self._is_equal(_other):
+        if _is_expr_equal(self, _other):
             return _const(1.0)
         return self * (_other ** _const(-1.0))
 
@@ -365,24 +365,6 @@ cdef class Expr(UnaryOperatorMixin):
         if len(node) > 1:
             node.append((Expr, index))
         return node
-
-    cdef bool _is_equal(self, object other):
-        return (
-            isinstance(other, Expr)
-            and len(self._children) == len(other._children)
-            and (
-                (_is_sum(self) and _is_sum(other))
-                or (
-                    type(self) is type(other)
-                    and (
-                        (type(self) is ProdExpr and self.coef == (<ProdExpr>other).coef)
-                        or (type(self) is PowExpr and self.expo == (<PowExpr>other).expo)
-                        or isinstance(self, UnaryExpr)
-                    )
-                )
-            )
-            and self._children == other._children
-        )
 
     cdef Expr copy(self, bool copy = True, cls: Optional[Type[Expr]] = None):
         cls = ConstExpr if _is_const(self) else (cls or type(self))
@@ -904,6 +886,34 @@ cdef bool _is_term(expr):
 
 cdef inline _fchild(Expr expr):
     return next(iter(expr._children))
+
+
+cdef bool _is_expr_equal(Expr x, object y):
+    if x is y:
+        return True
+    if not isinstance(y, Expr):
+        return False
+
+    cdef Expr _y = <Expr>y
+    if len(x._children) != len(_y._children):
+        return False
+
+    cdef object t_x = type(x)
+    cdef object t_y = type(_y)
+    if _is_sum(x):
+        if not _is_sum(_y):
+            return False
+    else:
+        if t_x is not t_y:
+            return False
+
+        if t_x is ProdExpr:
+            if (<ProdExpr>x).coef != (<ProdExpr>_y).coef:
+                return False
+        elif t_x is PowExpr:
+            if (<PowExpr>x).expo != (<PowExpr>_y).expo:
+                return False
+    return x._children == _y._children
 
 
 cdef _ensure_unary(x: Union[Number, Variable, Term, Expr, _ExprKey]):

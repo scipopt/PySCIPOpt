@@ -2202,8 +2202,6 @@ cdef class Expr(UnaryOperatorMixin):
 
     cpdef list _to_node(self, float coef = *, int start = *)
 
-    cdef bool _is_equal(self, object other)
-
     cdef Expr copy(self, bool copy = *, object cls = *)
 
 cdef class PolynomialExpr(Expr):
