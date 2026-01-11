@@ -1,7 +1,3 @@
-"""
-# TODO Cythonize things. Improve performance.
-# TODO Add tests
-"""
 import operator
 from numbers import Number
 from typing import Callable, Optional, Tuple, Union
@@ -18,10 +14,10 @@ from pyscipopt.scip cimport Expr, quicksum, Variable
 
 class MatrixExprCons(np.ndarray):
     def __le__(self, other: Union[Number, np.ndarray]) -> MatrixExprCons:
-        return MatrixExpr._cmp(self, other, operator.le)
+        return _cmp(self, other, operator.le)
 
     def __ge__(self, other: Union[Number, np.ndarray]) -> MatrixExprCons:
-        return MatrixExpr._cmp(self, other, operator.ge)
+        return _cmp(self, other, operator.ge)
 
     def __eq__(self, _):
         raise NotImplementedError("Cannot compare MatrixExprCons with '=='.")
@@ -34,11 +30,11 @@ class MatrixBase(np.ndarray):
         if return_scalar and isinstance(res, np.ndarray) and res.ndim == 0:
             return res.item()
         elif isinstance(res, np.ndarray):
-            if context is not None and context[0] in (
+            if context is not None and context[0] in {
                 np.less_equal,
                 np.greater_equal,
                 np.equal,
-            ):
+            }:
                 return res.view(MatrixExprCons)
             return res.view(MatrixExpr)
         return res
@@ -98,38 +94,42 @@ class MatrixBase(np.ndarray):
             quicksum, -1, self.transpose(keep_axes + axis).reshape(shape + (-1,))
         ).view(MatrixExpr)
 
-    @staticmethod
-    def _cmp(x, y, op: Callable):
-        if isinstance(y, Number) or isinstance(y, (Variable, Expr)):
-            res = np.empty(x.shape, dtype=object)
-            res.flat[:] = [op(i, y) for i in x.flat]
-        elif isinstance(y, np.ndarray):
-            out = np.broadcast(x, y)
-            res = np.empty(out.shape, dtype=object)
-            res.flat[:] = [op(i, j) for i, j in out]
-        else:
-            raise TypeError(f"Unsupported type {type(y)}")
-
-        return res.view(MatrixExprCons)
-
     def __le__(
         self,
-        other: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+        other: Union[Number, Variable, Expr, np.ndarray, MatrixBase],
     ) -> MatrixExprCons:
-        return MatrixExpr._cmp(self, other, operator.le)
+        return _cmp(self, other, operator.le)
 
     def __ge__(
         self,
-        other: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+        other: Union[Number, Variable, Expr, np.ndarray, MatrixBase],
     ) -> MatrixExprCons:
-        return MatrixExpr._cmp(self, other, operator.ge)
+        return _cmp(self, other, operator.ge)
 
     def __eq__(
         self,
-        other: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+        other: Union[Number, Variable, Expr, np.ndarray, MatrixBase],
     ) -> MatrixExprCons:
-        return MatrixExpr._cmp(self, other, operator.eq)
+        return _cmp(self, other, operator.eq)
 
 
 class MatrixExpr(MatrixBase):
     ...
+
+
+def _cmp(
+    x: Union[MatrixBase, MatrixExprCons],
+    y: Union[Number, Variable, Expr, np.ndarray, MatrixBase],
+    op: Callable,
+) -> MatrixExprCons:
+    if isinstance(y, Number) or isinstance(y, (Variable, Expr)):
+        res = np.empty(x.shape, dtype=object)
+        res.flat[:] = [op(i, y) for i in x.flat]
+    elif isinstance(y, np.ndarray):
+        out = np.broadcast(x, y)
+        res = np.empty(out.shape, dtype=object)
+        res.flat[:] = [op(i, j) for i, j in out]
+    else:
+        raise TypeError(f"Unsupported type {type(y)}")
+
+    return res.view(MatrixExprCons)
