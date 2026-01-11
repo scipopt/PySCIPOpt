@@ -16,9 +16,6 @@ class MatrixBase(np.ndarray):
     __array_priority__ = 101
 
     def __array_ufunc__(self, ufunc, method, *args, **kwargs):
-        if method != "__call__":
-            return NotImplemented
-
         args = _ensure_array(args)
         if ufunc is np.less_equal:
             return _vec_le(*args).view(MatrixExprCons)
@@ -29,7 +26,7 @@ class MatrixBase(np.ndarray):
         elif ufunc in {np.less, np.greater, np.not_equal}:
             raise NotImplementedError("can only support with '<=', '>=', or '=='")
 
-        res = ufunc(*args, **kwargs)
+        res = super().__array_ufunc__(ufunc, method, *args, **kwargs)
         return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
 
     def sum(
