@@ -1625,7 +1625,7 @@ cdef class Variable(UnaryOperatorMixin):
         return -_var_to_expr(self)
 
     def __richcmp__(self, other, int op):
-        return _var_to_expr(self)._cmp(other, op)
+        return _expr_cmp(_var_to_expr(self), other, op)
 
     def __repr__(self):
         return self.name

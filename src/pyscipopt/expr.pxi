@@ -313,31 +313,8 @@ cdef class Expr(UnaryOperatorMixin):
         res._children = {k: -v for k, v in self._children.items()}
         return res
 
-    cdef object _cmp(self, other: Union[Number, Variable, Expr], int op):
-        if not isinstance(other, (Number, Variable, Expr)):
-            if isinstance(other, np.ndarray):
-                return NotImplemented
-            raise TypeError(
-                f"expected Number, Variable, or Expr, but got {type(other).__name__!s}"
-            )
-        cdef Expr _other = _to_expr(other)
-        if op == Py_LE:
-            if _is_const(_other):
-                return ExprCons(self, rhs=_c(_other))
-            return ExprCons(self - _other, rhs=0.0)
-        elif op == Py_GE:
-            if _is_const(_other):
-                return ExprCons(self, lhs=_c(_other))
-            return ExprCons(self - _other, lhs=0.0)
-        elif op == Py_EQ:
-            if _is_const(_other):
-                return ExprCons(self, lhs=_c(_other), rhs=_c(_other))
-            return ExprCons(self - _other, lhs=0.0, rhs=0.0)
-
-        raise NotImplementedError("can only support with '<=', '>=', or '=='")
-
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op):
-        return self._cmp(other, op)
+        return _expr_cmp(self, other, op)
 
     def __repr__(self) -> str:
         return f"Expr({self._children})"
@@ -585,7 +562,7 @@ cdef class ProdExpr(FuncExpr):
         return res
 
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op):
-        return self._cmp(other, op)
+        return _expr_cmp(self, other, op)
 
     def __repr__(self) -> str:
         return f"ProdExpr({{{tuple(self)}: {self.coef}}})"
@@ -657,7 +634,7 @@ cdef class PowExpr(FuncExpr):
         return super().__truediv__(_other)
 
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op):
-        return self._cmp(other, op)
+        return _expr_cmp(self, other, op)
 
     def __repr__(self) -> str:
         return f"PowExpr({_fchild(self)}, {self.expo})"
@@ -695,7 +672,7 @@ cdef class UnaryExpr(FuncExpr):
         return hash(frozenset(self))
 
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op):
-        return self._cmp(other, op)
+        return _expr_cmp(self, other, op)
 
     def __repr__(self) -> str:
         name = type(self).__name__
@@ -907,6 +884,31 @@ cdef Expr _to_expr(x: Union[Number, Variable, Expr]):
 
 cdef inline PolynomialExpr _var_to_expr(Variable x):
     return <PolynomialExpr>_expr({_term((x,)): 1.0}, PolynomialExpr)
+
+
+cdef object _expr_cmp(Expr self, other: Union[Number, Variable, Expr], int op):
+    if not isinstance(other, (Number, Variable, Expr)):
+        if isinstance(other, np.ndarray):
+            return NotImplemented
+        raise TypeError(
+            f"expected Number, Variable, or Expr, but got {type(other).__name__!s}"
+        )
+
+    cdef Expr _other = _to_expr(other)
+    if op == Py_LE:
+        if _is_const(_other):
+            return ExprCons(self, rhs=_c(_other))
+        return ExprCons(self - _other, rhs=0.0)
+    elif op == Py_GE:
+        if _is_const(_other):
+            return ExprCons(self, lhs=_c(_other))
+        return ExprCons(self - _other, lhs=0.0)
+    elif op == Py_EQ:
+        if _is_const(_other):
+            return ExprCons(self, lhs=_c(_other), rhs=_c(_other))
+        return ExprCons(self - _other, lhs=0.0, rhs=0.0)
+
+    raise NotImplementedError("can only support with '<=', '>=', or '=='")
 
 
 cdef inline bool _is_sum(expr):

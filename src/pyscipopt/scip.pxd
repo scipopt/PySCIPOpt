@@ -2193,8 +2193,6 @@ cdef class Expr(UnaryOperatorMixin):
 
     cdef readonly dict _children 
 
-    cdef object _cmp(self, object other, int op)
-
     cdef dict _to_dict(self, Expr other, bool copy = *)
 
     cpdef list _to_node(self, double coef = *, int start = *)
