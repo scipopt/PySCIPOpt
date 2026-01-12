@@ -844,6 +844,9 @@ cdef inline ConstExpr _const(double c):
     return res
 
 
+_vec_const = np.frompyfunc(_const, 1, 1)
+
+
 cdef inline Expr _expr(dict children, cls: Type[Expr] = Expr):
     cdef Expr res = <Expr>cls.__new__(cls)
     res._children = children
@@ -999,12 +1002,16 @@ cdef inline UnaryExpr _unary(x: Union[Term, _ExprKey], cls: Type[UnaryExpr]):
 
 
 cdef inline _ensure_const(x):
-    return _const(<double>x) if isinstance(x, Number) else x
+    if isinstance(x, Number):
+        _const(<double>x)
+    elif isinstance(x, np.ndarray) and np.issubdtype(x.dtype, np.number):
+        return _vec_const(x).view(MatrixExpr)
+    return  x
 
 
 def exp(
-    x: Union[Number, Variable, Expr, np.ndarray, "MatrixExpr"],
-) -> Union[ExpExpr, np.ndarray, "MatrixExpr"]:
+    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+) -> Union[ExpExpr, np.ndarray, MatrixExpr]:
     """
     exp(x)
 
@@ -1020,8 +1027,8 @@ def exp(
 
 
 def log(
-    x: Union[Number, Variable, Expr, np.ndarray, "MatrixExpr"],
-) -> Union[LogExpr, np.ndarray, "MatrixExpr"]:
+    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+) -> Union[LogExpr, np.ndarray, MatrixExpr]:
     """
     log(x)
 
@@ -1037,8 +1044,8 @@ def log(
 
 
 def sqrt(
-    x: Union[Number, Variable, Expr, np.ndarray, "MatrixExpr"],
-) -> Union[SqrtExpr, np.ndarray, "MatrixExpr"]:
+    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+) -> Union[SqrtExpr, np.ndarray, MatrixExpr]:
     """
     sqrt(x)
 
@@ -1054,8 +1061,8 @@ def sqrt(
 
 
 def sin(
-    x: Union[Number, Variable, Expr, np.ndarray, "MatrixExpr"],
-) -> Union[SinExpr, np.ndarray, "MatrixExpr"]:
+    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+) -> Union[SinExpr, np.ndarray, MatrixExpr]:
     """
     sin(x)
 
@@ -1071,8 +1078,8 @@ def sin(
 
 
 def cos(
-    x: Union[Number, Variable, Expr, np.ndarray, "MatrixExpr"],
-) -> Union[CosExpr, np.ndarray, "MatrixExpr"]:
+    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
+) -> Union[CosExpr, np.ndarray, MatrixExpr]:
     """
     cos(x)
 
