@@ -2191,7 +2191,9 @@ cdef class UnaryOperatorMixin:
 
 cdef class Expr(UnaryOperatorMixin):
 
-    cdef readonly dict _children 
+    cdef readonly dict _children
+    cdef readonly double coef
+    cdef readonly double expo
 
     cdef dict _to_dict(self, Expr other, bool copy = *)
 

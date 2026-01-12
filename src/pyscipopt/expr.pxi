@@ -108,6 +108,10 @@ cdef class Expr(UnaryOperatorMixin):
 
     __array_priority__ = 100
 
+    def __cinit__(self, *args, **kwargs):
+        self.coef = 1.0
+        self.expo = 1.0
+
     def __init__(
         self,
         children: Optional[dict[Union[Term, Expr, _ExprKey], double]] = None,
@@ -361,9 +365,9 @@ cdef class Expr(UnaryOperatorMixin):
         cdef Expr res = <Expr>cls.__new__(cls)
         res._children = self._children.copy() if copy else self._children
         if cls is ProdExpr:
-            (<ProdExpr>res).coef = (<ProdExpr>self).coef
+            res.coef = self.coef
         elif cls is PowExpr:
-            (<PowExpr>res).expo = (<PowExpr>self).expo
+            res.expo = self.expo
         return res
 
 
@@ -494,8 +498,6 @@ cdef class FuncExpr(Expr):
 cdef class ProdExpr(FuncExpr):
     """Expression like `coefficient * expression`."""
 
-    cdef readonly double coef
-
     def __init__(self, *children: Union[Term, Expr, _ExprKey]):
         if len(children) < 2:
             raise ValueError("ProdExpr must have at least two children")
@@ -503,7 +505,6 @@ cdef class ProdExpr(FuncExpr):
             raise ValueError("ProdExpr can't have duplicate children")
 
         super().__init__(dict.fromkeys(children, 1.0))
-        self.coef = 1.0
 
     def __hash__(self) -> int:
         return hash((frozenset(self), self.coef))
@@ -514,7 +515,7 @@ cdef class ProdExpr(FuncExpr):
         cdef Expr _other = _to_expr(other)
         if self and _is_child_equal(self, _other):
             res = self.copy()
-            (<ProdExpr>res).coef += (<ProdExpr>_other).coef
+            res.coef += _other.coef
             return res._normalize()
         return super().__add__(_other)
 
@@ -523,7 +524,7 @@ cdef class ProdExpr(FuncExpr):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and _is_child_equal(self, _other):
-            self.coef += (<ProdExpr>_other).coef
+            self.coef += _other.coef
             return self._normalize()
         return super().__iadd__(_other)
 
@@ -533,7 +534,7 @@ cdef class ProdExpr(FuncExpr):
         cdef Expr _other = _to_expr(other)
         if self and _is_const(_other):
             res = self.copy()
-            (<ProdExpr>res).coef *= _c(_other)
+            res.coef *= _c(_other)
             return res._normalize()
         return super().__mul__(_other)
 
@@ -552,7 +553,7 @@ cdef class ProdExpr(FuncExpr):
         cdef Expr _other = _to_expr(other)
         if self and _is_const(_other):
             res = self.copy()
-            (<ProdExpr>res).coef /= _c(_other)
+            res.coef /= _c(_other)
             return res._normalize()
         return super().__truediv__(_other)
 
@@ -595,8 +596,6 @@ cdef class ProdExpr(FuncExpr):
 cdef class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
 
-    cdef readonly double expo
-
     def __init__(self, base: Union[Term, Expr, _ExprKey], double expo):
         super().__init__({base: 1.0})
         self.expo = expo
@@ -610,7 +609,7 @@ cdef class PowExpr(FuncExpr):
         cdef Expr _other = _to_expr(other)
         if self and _is_child_equal(self, _other):
             res = self.copy()
-            (<PowExpr>res).expo += (<PowExpr>_other).expo
+            res.expo += _other.expo
             return res._normalize()
         return super().__mul__(_other)
 
@@ -619,7 +618,7 @@ cdef class PowExpr(FuncExpr):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and _is_child_equal(self, _other):
-            self.expo += (<PowExpr>_other).expo
+            self.expo += _other.expo
             return self._normalize()
         return super().__imul__(_other)
 
@@ -629,7 +628,7 @@ cdef class PowExpr(FuncExpr):
         cdef Expr _other = _to_expr(other)
         if self and _is_child_equal(self, _other):
             res = self.copy()
-            (<PowExpr>res).expo -= (<PowExpr>_other).expo
+            res.expo -= _other.expo
             return res._normalize()
         return super().__truediv__(_other)
 
@@ -856,7 +855,6 @@ cdef inline Expr _expr(dict children, cls: Type[Expr] = Expr):
 cdef inline ProdExpr _prod(tuple children):
     cdef ProdExpr res = ProdExpr.__new__(ProdExpr)
     res._children = dict.fromkeys(children, 1.0)
-    res.coef = 1.0
     return res
 
 
@@ -959,10 +957,10 @@ cdef bool _is_expr_equal(Expr x, object y):
             return False
 
         if t_x is ProdExpr:
-            if (<ProdExpr>x).coef != (<ProdExpr>_y).coef:
+            if x.coef != _y.coef:
                 return False
         elif t_x is PowExpr:
-            if (<PowExpr>x).expo != (<PowExpr>_y).expo:
+            if x.expo != _y.expo:
                 return False
     return x._children == _y._children
 
