@@ -204,7 +204,9 @@ cdef class Expr(UnaryOperatorMixin):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-        if _is_zero(_other):
+        if _is_zero(self):
+            return _other
+        elif _is_zero(_other):
             return self
         elif _is_sum(self) and _is_sum(_other):
             self._to_dict(_other, copy=False)
@@ -273,9 +275,11 @@ cdef class Expr(UnaryOperatorMixin):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-        if _is_zero(_other):
+        if _is_zero(self):
+            return _const(0.0)
+        elif _is_zero(_other):
             raise ZeroDivisionError("division by zero")
-        if _is_expr_equal(self, _other):
+        elif _is_expr_equal(self, _other):
             return _const(1.0)
         return self * (_other ** _const(-1.0))
 
@@ -290,15 +294,19 @@ cdef class Expr(UnaryOperatorMixin):
         cdef Expr _other = _to_expr(other)
         if not _is_const(_other):
             raise TypeError("excepted a constant exponent")
-        return _const(1.0) if _is_zero(_other) else _pow(_wrap(self), _c(_other))
+        if _is_zero(self):
+            return _const(0.0)
+        elif _is_zero(_other):
+            return _const(1.0)
+        return _pow(_wrap(self), _c(_other))
 
-    def __rpow__(self, other: Union[Number, Expr]) -> ExpExpr:
+    def __rpow__(self, other: Union[Number, Expr]) -> Union[ExpExpr, ConstExpr]:
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if _c(_other) <= 0.0:
             raise ValueError("excepted a positive base")
-        return ExpExpr(self * LogExpr(_other))
+        return _const(1.0) if _is_zero(self) else ExpExpr(self * LogExpr(_other))
 
     def __neg__(self) -> Expr:
         cdef Expr res = self.copy(False)
@@ -400,8 +408,8 @@ cdef class PolynomialExpr(Expr):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-        if isinstance(_other, PolynomialExpr) and not _is_zero(_other):
-            return _expr(self._to_dict(_other)).copy(False, PolynomialExpr)
+        if self and isinstance(_other, PolynomialExpr) and not _is_zero(_other):
+            return _expr(self._to_dict(_other), PolynomialExpr)
         return super().__add__(_other)
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -426,7 +434,7 @@ cdef class PolynomialExpr(Expr):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-        if _is_const(_other):
+        if self and _is_const(_other):
             return self * (1.0 / _c(_other))
         return super().__truediv__(_other)
 
@@ -434,7 +442,7 @@ cdef class PolynomialExpr(Expr):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-        if _is_const(_other) and _c(_other).is_integer() and _c(_other) > 0:
+        if self and _is_const(_other) and _c(_other).is_integer() and _c(_other) > 0:
             res = _const(1.0)
             for _ in range(int(_c(_other))):
                 res *= self
@@ -531,7 +539,7 @@ cdef class ProdExpr(FuncExpr):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-        if _is_child_equal(self, _other):
+        if self and _is_child_equal(self, _other):
             res = self.copy()
             (<ProdExpr>res).coef += (<ProdExpr>_other).coef
             return res._normalize()
@@ -541,7 +549,7 @@ cdef class ProdExpr(FuncExpr):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-        if _is_child_equal(self, _other):
+        if self and _is_child_equal(self, _other):
             self.coef += (<ProdExpr>_other).coef
             return self._normalize()
         return super().__iadd__(_other)
@@ -550,7 +558,7 @@ cdef class ProdExpr(FuncExpr):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-        if _is_const(_other):
+        if self and _is_const(_other):
             res = self.copy()
             (<ProdExpr>res).coef *= _c(_other)
             return res._normalize()
@@ -560,7 +568,7 @@ cdef class ProdExpr(FuncExpr):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-        if _is_const(_other):
+        if self and _is_const(_other):
             self.coef *= _c(_other)
             return self._normalize()
         return super().__imul__(_other)
@@ -569,7 +577,7 @@ cdef class ProdExpr(FuncExpr):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-        if _is_const(_other):
+        if self and _is_const(_other):
             res = self.copy()
             (<ProdExpr>res).coef /= _c(_other)
             return res._normalize()
@@ -627,7 +635,7 @@ cdef class PowExpr(FuncExpr):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-        if _is_child_equal(self, _other):
+        if self and _is_child_equal(self, _other):
             res = self.copy()
             (<PowExpr>res).expo += (<PowExpr>_other).expo
             return res._normalize()
@@ -637,7 +645,7 @@ cdef class PowExpr(FuncExpr):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-        if _is_child_equal(self, _other):
+        if self and _is_child_equal(self, _other):
             self.expo += (<PowExpr>_other).expo
             return self._normalize()
         return super().__imul__(_other)
@@ -646,7 +654,7 @@ cdef class PowExpr(FuncExpr):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-        if _is_child_equal(self, _other):
+        if self and _is_child_equal(self, _other):
             res = self.copy()
             (<PowExpr>res).expo -= (<PowExpr>_other).expo
             return res._normalize()
@@ -895,7 +903,7 @@ cdef Expr _to_expr(x: Union[Number, Variable, Expr]):
     if isinstance(x, Number):
         return _const(<double>x)
     elif isinstance(x, Variable):
-        return Expr._from_var(x)
+        return _var_to_expr(x)
     elif isinstance(x, Expr):
         return x
     raise TypeError(f"expected Number, Variable, or Expr, but got {type(x).__name__!s}")
