@@ -114,10 +114,10 @@ _vec_eq = np.frompyfunc(operator.eq, 2, 1)
 
 cdef inline list _ensure_array(tuple args):
     cdef list res = []
-    cdef object i
-    for i in args:
-        if isinstance(i, np.ndarray):
-            res.append(i.view(np.ndarray))
+    cdef object arg
+    for arg in args:
+        if isinstance(arg, np.ndarray):
+            res.append(arg.view(np.ndarray))
         else:
-            res.append(np.array(i, dtype=object))
+            res.append(np.array(arg, dtype=object))
     return res
