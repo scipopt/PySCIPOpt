@@ -305,7 +305,7 @@ cdef class Expr(UnaryOperatorMixin):
         res._children = {k: -v for k, v in self._children.items()}
         return res
 
-    cdef ExprCons _cmp(self, other: Union[Number, Variable, Expr], int op):
+    cdef object _cmp(self, other: Union[Number, Variable, Expr], int op):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
@@ -324,7 +324,7 @@ cdef class Expr(UnaryOperatorMixin):
 
         raise NotImplementedError("can only support with '<=', '>=', or '=='")
 
-    def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
+    def __richcmp__(self, other: Union[Number, Variable, Expr], int op):
         return self._cmp(other, op)
 
     def __repr__(self) -> str:
@@ -542,7 +542,7 @@ cdef class ProdExpr(FuncExpr):
         res.coef = -self.coef
         return res
 
-    def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
+    def __richcmp__(self, other: Union[Number, Variable, Expr], int op):
         return self._cmp(other, op)
 
     def __repr__(self) -> str:
@@ -614,7 +614,7 @@ cdef class PowExpr(FuncExpr):
             return res._normalize()
         return super().__truediv__(_other)
 
-    def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
+    def __richcmp__(self, other: Union[Number, Variable, Expr], int op):
         return self._cmp(other, op)
 
     def __repr__(self) -> str:
@@ -652,7 +652,7 @@ cdef class UnaryExpr(FuncExpr):
     def __hash__(self) -> int:
         return hash(frozenset(self))
 
-    def __richcmp__(self, other: Union[Number, Variable, Expr], int op) -> ExprCons:
+    def __richcmp__(self, other: Union[Number, Variable, Expr], int op):
         return self._cmp(other, op)
 
     def __repr__(self) -> str:
