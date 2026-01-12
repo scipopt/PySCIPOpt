@@ -376,7 +376,7 @@ cdef class Expr(UnaryOperatorMixin):
         return node
 
     cdef Expr copy(self, bool copy = True, cls: Optional[Type[Expr]] = None):
-        cls = ConstExpr if _is_const(self) else (cls or type(self))
+        cls = cls or type(self)
         cdef Expr res = <Expr>cls.__new__(cls)
         res._children = self._children.copy() if copy else self._children
         if cls is ProdExpr:
