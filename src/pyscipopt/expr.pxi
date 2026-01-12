@@ -307,7 +307,11 @@ cdef class Expr(UnaryOperatorMixin):
 
     cdef object _cmp(self, other: Union[Number, Variable, Expr], int op):
         if not isinstance(other, (Number, Variable, Expr)):
-            return NotImplemented
+            if isinstance(other, np.ndarray):
+                return NotImplemented
+            raise TypeError(
+                f"expected Number, Variable, or Expr, but got {type(other).__name__!s}"
+            )
         cdef Expr _other = _to_expr(other)
         if op == Py_LE:
             if _is_const(_other):
@@ -443,6 +447,40 @@ cdef class ConstExpr(PolynomialExpr):
 
     def __init__(self, double constant = 0.0):
         super().__init__({CONST: constant})
+
+    def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        if not isinstance(other, (Number, Variable, Expr)):
+            return NotImplemented
+        cdef Expr _other = _to_expr(other)
+        if _is_const(_other):
+            return _const(_c(self) + _c(_other))
+        return super().__add__(_other)
+
+    def __iadd__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        if not isinstance(other, (Number, Variable, Expr)):
+            return NotImplemented
+        cdef Expr _other = _to_expr(other)
+        if _is_const(_other):
+            self._children[CONST] += _c(_other)
+            return self
+        return super().__iadd__(_other)
+
+    def __sub__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        if not isinstance(other, (Number, Variable, Expr)):
+            return NotImplemented
+        cdef Expr _other = _to_expr(other)
+        if _is_const(_other):
+            return _const(_c(self) - _c(_other))
+        return super().__sub__(_other)
+
+    def __isub__(self, other: Union[Number, Variable, Expr]) -> Expr:
+        if not isinstance(other, (Number, Variable, Expr)):
+            return NotImplemented
+        cdef Expr _other = _to_expr(other)
+        if _is_const(_other):
+            self._children[CONST] -= _c(_other)
+            return self
+        return super().__isub__(_other)
 
     def __pow__(self, other: Union[Number, Expr]) -> ConstExpr:
         if not isinstance(other, (Number, Variable, Expr)):
