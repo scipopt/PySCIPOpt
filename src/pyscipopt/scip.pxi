@@ -1577,67 +1577,67 @@ cdef class Variable(UnaryOperatorMixin):
         return Expr.__array_ufunc__(self, ufunc, method, *args, **kwargs)
 
     def __getitem__(self, key):
-        return Expr._from_var(self)[key]
+        return _var_to_expr(self)[key]
 
     def __iter__(self):
-        return Expr._from_var(self).__iter__()
+        return _var_to_expr(self).__iter__()
 
     def __add__(self, other):
-        return Expr._from_var(self) + other
+        return _var_to_expr(self) + other
 
     def __iadd__(self, other):
-        return Expr._from_var(self).__iadd__(other)
+        return _var_to_expr(self).__iadd__(other)
 
     def __radd__(self, other):
-        return Expr._from_var(self) + other
+        return _var_to_expr(self) + other
 
     def __sub__(self, other):
-        return Expr._from_var(self) - other
+        return _var_to_expr(self) - other
 
     def __isub__(self, other):
-        return Expr._from_var(self).__isub__(other)
+        return _var_to_expr(self).__isub__(other)
 
     def __rsub__(self, other):
-        return -Expr._from_var(self) + other
+        return -_var_to_expr(self) + other
 
     def __mul__(self, other):
-        return Expr._from_var(self) * other
+        return _var_to_expr(self) * other
 
     def __imul__(self, other):
-        return Expr._from_var(self).__imul__(other)
+        return _var_to_expr(self).__imul__(other)
 
     def __rmul__(self, other):
-        return Expr._from_var(self) * other
+        return _var_to_expr(self) * other
 
     def __truediv__(self, other):
-        return Expr._from_var(self) / other
+        return _var_to_expr(self) / other
 
     def __rtruediv__(self, other):
-        return other / Expr._from_var(self)
+        return other / _var_to_expr(self)
 
     def __pow__(self, other):
-        return Expr._from_var(self) ** other
+        return _var_to_expr(self) ** other
 
     def __rpow__(self, other):
-        return other ** Expr._from_var(self)
+        return other ** _var_to_expr(self)
 
     def __neg__(self):
-        return -Expr._from_var(self)
+        return -_var_to_expr(self)
 
     def __richcmp__(self, other, int op):
-        return Expr._from_var(self)._cmp(other, op)
+        return _var_to_expr(self)._cmp(other, op)
 
     def __repr__(self):
         return self.name
 
     def degree(self) -> float:
-        return Expr._from_var(self).degree()
+        return _var_to_expr(self).degree()
 
     def items(self):
-        return Expr._from_var(self).items()
+        return _var_to_expr(self).items()
 
     def _normalize(self) -> PolynomialExpr:
-        return Expr._from_var(self)
+        return _var_to_expr(self)
 
     def vtype(self):
         """

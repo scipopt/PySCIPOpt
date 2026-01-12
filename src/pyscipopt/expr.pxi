@@ -352,10 +352,6 @@ cdef class Expr(UnaryOperatorMixin):
         self._children = {k: v for k, v in self.items() if v != 0}
         return self
 
-    @staticmethod
-    cdef PolynomialExpr _from_var(Variable x):
-        return <PolynomialExpr>_expr({_term((x,)): 1.0}, PolynomialExpr)
-
     cdef dict _to_dict(self, Expr other, bool copy = True):
         cdef dict children = self._children.copy() if copy else self._children
         cdef object k
@@ -907,6 +903,10 @@ cdef Expr _to_expr(x: Union[Number, Variable, Expr]):
     elif isinstance(x, Expr):
         return x
     raise TypeError(f"expected Number, Variable, or Expr, but got {type(x).__name__!s}")
+
+
+cdef inline PolynomialExpr _var_to_expr(Variable x):
+    return <PolynomialExpr>_expr({_term((x,)): 1.0}, PolynomialExpr)
 
 
 cdef inline bool _is_sum(expr):

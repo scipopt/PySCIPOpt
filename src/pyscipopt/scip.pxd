@@ -2193,8 +2193,6 @@ cdef class Expr(UnaryOperatorMixin):
 
     cdef readonly dict _children 
 
-    @staticmethod
-    cdef PolynomialExpr _from_var(Variable x)
     cdef object _cmp(self, object other, int op)
 
     cdef dict _to_dict(self, Expr other, bool copy = *)
@@ -2202,9 +2200,6 @@ cdef class Expr(UnaryOperatorMixin):
     cpdef list _to_node(self, double coef = *, int start = *)
 
     cdef Expr copy(self, bool copy = *, object cls = *)
-
-cdef class PolynomialExpr(Expr):
-    pass
 
 cdef class ExprCons:
     cdef readonly Expr expr
