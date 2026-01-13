@@ -41,13 +41,13 @@ class Conshdlr_sils(Conshdlr):
         return cutsadded
 
     def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason, completely):
-        if not self.addcut(checkonly=True, sol=solution):
+        if self.addcut(checkonly=True, sol=solution):
             return {"result": SCIP_RESULT.INFEASIBLE}
         else:
             return {"result": SCIP_RESULT.FEASIBLE}
 
     def consenfolp(self, constraints, nusefulconss, solinfeasible):
-        if self.addcut(checkonly=False):
+        if self.addcut(checkonly=False, sol=None):
             return {"result": SCIP_RESULT.CONSADDED}
         else:
             return {"result": SCIP_RESULT.FEASIBLE}
@@ -151,6 +151,7 @@ if __name__ == "__main__":
     model = sils(T, f, c, d, h)
     y, x, I = model.data
     model.optimize()
+    sils_obj = model.getObjVal()
     print("\nOptimal value [standard]:", model.getObjVal())
     print("%8s%8s%8s%8s%8s%8s%12s%12s" % ("t", "fix", "var", "h", "dem", "y", "x", "I"))
     for t in range(1, T + 1):
@@ -161,9 +162,12 @@ if __name__ == "__main__":
     model = sils_cut(T, f, c, d, h, conshdlr)
     model.setBoolParam("misc/allowstrongdualreds", 0)
     model.optimize()
+    sils_cut_obj = model.getObjVal()
     y, x, I = model.data
     print("\nOptimal value [cutting planes]:", model.getObjVal())
     print("%8s%8s%8s%8s%8s%8s%12s%12s" % ("t", "fix", "var", "h", "dem", "y", "x", "I"))
     for t in range(1, T + 1):
         print("%8d%8d%8d%8d%8d%8.1f%12.1f%12.1f" % (
         t, f[t], c[t], h[t], d[t], model.getVal(y[t]), model.getVal(x[t]), model.getVal(I[t])))
+
+    assert abs(sils_obj - sils_cut_obj) <= 1e-6
