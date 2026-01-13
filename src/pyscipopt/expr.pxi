@@ -38,11 +38,17 @@ cdef class Term:
     def __len__(self) -> int:
         return len(self.vars)
 
-    def __eq__(self, other) -> bool:
-        return isinstance(other, Term) and hash(self) == hash(other)
+    def __eq__(self, other: Term) -> bool:
+        if self is other:
+            return True
+        if not isinstance(other, Term):
+            return False
+
+        cdef Term _other = <Term>other
+        return False if self._hash != _other._hash else self.vars == _other.vars
 
     def __mul__(self, Term other) -> Term:
-        return _term((*self.vars, *other.vars))
+        return _term(self.vars + other.vars)
 
     def __repr__(self) -> str:
         return f"Term({self[0]})" if self.degree() == 1 else f"Term{self.vars}"
@@ -822,7 +828,7 @@ cpdef Expr quickprod(expressions: Iterator[Expr]):
     return res
 
 
-cdef inline Term _term(tuple[Variable] vars):
+cdef inline Term _term(tuple vars):
     cdef Term res = Term.__new__(Term)
     res.vars = tuple(sorted(vars, key=hash))
     res._hash = hash(res.vars)
