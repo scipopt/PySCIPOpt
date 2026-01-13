@@ -245,9 +245,7 @@ cdef class Expr(UnaryOperatorMixin):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-        if _is_expr_equal(self, _other):
-            return _const(0.0)
-        return self + (-_other)
+        return _const(0.0) if _is_expr_equal(self, _other) else self + (-_other)
 
     def __rsub__(self, other: Union[Number, Variable, Expr]) -> Expr:
         return (-self) + other
@@ -798,7 +796,7 @@ cdef class ExprCons:
     def __bool__(self):
         """Make sure that equality of expressions is not asserted with =="""
 
-        msg = """Can't evaluate constraints as booleans.
+        msg = """can't evaluate constraints as booleans.
 
 If you want to add a ranged constraint of the form:
     lhs <= expression <= rhs
@@ -1010,7 +1008,7 @@ cdef bool _is_child_equal(Expr x, object y):
     cdef Expr _y = <Expr>y
     if len(x._children) != len(_y._children):
         return False
-    return x._children.keys() == _y._children.keys()
+    return x.keys() == _y.keys()
 
 
 cdef _ensure_unary(x: Union[Number, Variable, Term, Expr, _ExprKey]):
