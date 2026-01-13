@@ -117,6 +117,7 @@ cdef class Expr(UnaryOperatorMixin):
     def __cinit__(self, *args, **kwargs):
         self.coef = 1.0
         self.expo = 1.0
+        self._hash = -1
 
     def __init__(
         self,
@@ -175,7 +176,10 @@ cdef class Expr(UnaryOperatorMixin):
         return NotImplemented
 
     def __hash__(self) -> int:
-        return hash(frozenset(self.items()))
+        if self._hash != -1:
+            return self._hash
+        self._hash = _ensure_hash(hash(frozenset(self.items())))
+        return self._hash
 
     def __getitem__(self, key: Union[Variable, Term, Expr, _ExprKey]) -> double:
         if not isinstance(key, (Variable, Term, Expr, _ExprKey)):
@@ -220,6 +224,7 @@ cdef class Expr(UnaryOperatorMixin):
             return self
         elif _is_sum(self) and _is_sum(_other):
             self._to_dict(_other, copy=False)
+            self._hash = -1
             if isinstance(self, PolynomialExpr) and isinstance(_other, PolynomialExpr):
                 return self.copy(False, PolynomialExpr)
             return self.copy(False)
@@ -275,6 +280,7 @@ cdef class Expr(UnaryOperatorMixin):
         cdef Expr _other = _to_expr(other)
         if self and _is_sum(self) and _is_const(_other) and _c(_other) != 0:
             self._children = {k: v * _c(_other) for k, v in self.items() if v != 0}
+            self._hash = -1
             return self.copy(False)
         return self * _other
 
@@ -332,11 +338,15 @@ cdef class Expr(UnaryOperatorMixin):
     def degree(self) -> double:
         return max((i.degree() for i in self)) if self else 0
 
+    def keys(self):
+        return self._children.keys()
+
     def items(self):
         return self._children.items()
 
     def _normalize(self) -> Expr:
         self._children = {k: v for k, v in self.items() if v != 0}
+        self._hash = -1
         return self
 
     cdef dict _to_dict(self, Expr other, bool copy = True):
@@ -453,6 +463,7 @@ cdef class ConstExpr(PolynomialExpr):
         cdef Expr _other = _to_expr(other)
         if _is_const(_other):
             self._children[CONST] += _c(_other)
+            self._hash = -1
             return self
         return super().__iadd__(_other)
 
@@ -470,6 +481,7 @@ cdef class ConstExpr(PolynomialExpr):
         cdef Expr _other = _to_expr(other)
         if _is_const(_other):
             self._children[CONST] -= _c(_other)
+            self._hash = -1
             return self
         return super().__isub__(_other)
 
@@ -513,7 +525,10 @@ cdef class ProdExpr(FuncExpr):
         super().__init__(dict.fromkeys(children, 1.0))
 
     def __hash__(self) -> int:
-        return hash((frozenset(self), self.coef))
+        if self._hash != -1:
+            return self._hash
+        self._hash = _ensure_hash(hash((frozenset(self.keys()), self.coef)))
+        return self._hash
 
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, (Number, Variable, Expr)):
@@ -531,6 +546,7 @@ cdef class ProdExpr(FuncExpr):
         cdef Expr _other = _to_expr(other)
         if self and _is_child_equal(self, _other):
             self.coef += _other.coef
+            self._hash = -1
             return self._normalize()
         return super().__iadd__(_other)
 
@@ -550,6 +566,7 @@ cdef class ProdExpr(FuncExpr):
         cdef Expr _other = _to_expr(other)
         if self and _is_const(_other):
             self.coef *= _c(_other)
+            self._hash = -1
             return self._normalize()
         return super().__imul__(_other)
 
@@ -607,7 +624,10 @@ cdef class PowExpr(FuncExpr):
         self.expo = expo
 
     def __hash__(self) -> int:
-        return hash((frozenset(self), self.expo))
+        if self._hash != -1:
+            return self._hash
+        self._hash = _ensure_hash(hash((frozenset(self.keys()), self.expo)))
+        return self._hash
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, (Number, Variable, Expr)):
@@ -625,6 +645,7 @@ cdef class PowExpr(FuncExpr):
         cdef Expr _other = _to_expr(other)
         if self and _is_child_equal(self, _other):
             self.expo += _other.expo
+            self._hash = -1
             return self._normalize()
         return super().__imul__(_other)
 
@@ -674,7 +695,10 @@ cdef class UnaryExpr(FuncExpr):
         super().__init__({_ensure_unary(expr): 1.0})
 
     def __hash__(self) -> int:
-        return hash(frozenset(self))
+        if self._hash != -1:
+            return self._hash
+        self._hash = _ensure_hash(hash(_fchild(self)))
+        return self._hash
 
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op):
         return _expr_cmp(self, other, op)
@@ -826,6 +850,10 @@ cpdef Expr quickprod(expressions: Iterator[Expr]):
     for i in expressions:
         res *= i
     return res
+
+
+cdef inline int _ensure_hash(int h) noexcept:
+    return -2 if h == -1 else h
 
 
 cdef inline Term _term(tuple vars):
