@@ -63,18 +63,32 @@ jobs:
         run: stubs/test.sh
         continue-on-error: true
 
+      - name: Check if generate_stubs.py is unchanged from master
+        id: check_script
+        run: |
+          git fetch origin master
+          if git diff --quiet origin/master -- scripts/generate_stubs.py; then
+            echo "unchanged=true" >> $GITHUB_OUTPUT
+          else
+            echo "unchanged=false" >> $GITHUB_OUTPUT
+            echo "::warning::scripts/generate_stubs.py was modified - skipping auto-regeneration for security"
+          fi
+
       - name: Regenerate stubs
+        if: steps.check_script.outputs.unchanged == 'true'
         run: python scripts/generate_stubs.py
 
       - name: Run MyPy (after regeneration)
+        if: steps.check_script.outputs.unchanged == 'true'
         run: python -m mypy --package pyscipopt
 
       - name: Run stubtest (after regeneration)
+        if: steps.check_script.outputs.unchanged == 'true'
         run: stubs/test.sh
 
       - name: Commit and push updated stubs
         id: commit
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        if: github.event_name == 'pull_request' && steps.check_script.outputs.unchanged == 'true' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
