@@ -9,6 +9,7 @@
 - all fundamental callbacks now raise an error if not implemented
 - Fixed the type of MatrixExpr.sum(axis=...) result from MatrixVariable to MatrixExpr.
 - Updated IIS result in PyiisfinderExec()
+- Fixed lotsizing_lazy example
 ### Changed
 - changed default value of enablepricing flag to True
 - changed addConsNode() and addConsLocal() to mirror addCons() and accept ExprCons instead of Constraint
