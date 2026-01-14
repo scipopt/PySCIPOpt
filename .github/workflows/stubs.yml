@@ -86,6 +86,10 @@ jobs:
         if: steps.stubtest_before.outcome == 'failure' && steps.check_script.outputs.allowed == 'true'
         run: |
           python scripts/generate_stubs.py
+          # Auto-fix lint issues and format
+          pip install ruff
+          ruff check src/pyscipopt/scip.pyi --extend-select ANN,I,PYI,RUF100 --fix
+          ruff format src/pyscipopt/scip.pyi
           # Copy regenerated stub to installed package location for stubtest
           cp src/pyscipopt/scip.pyi "$(python -c 'import pyscipopt; print(pyscipopt.__path__[0])')/scip.pyi"
 
