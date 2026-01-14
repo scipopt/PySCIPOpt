@@ -157,12 +157,15 @@ jobs:
           </details>"
 
   lint:
+    needs: stubtest
     runs-on: ubuntu-latest
     env:
       FILES: src/pyscipopt/scip.pyi
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Install Ruff
         uses: astral-sh/ruff-action@v3
@@ -172,5 +175,5 @@ jobs:
       - name: Lint type stubs
         run: ruff check ${{ env.FILES }} --extend-select ANN,I,PYI,RUF100
 
-      - name: Format type stubs
-        run: ruff format ${{ env.FILES }}
+      - name: Format check type stubs
+        run: ruff format --check ${{ env.FILES }}
