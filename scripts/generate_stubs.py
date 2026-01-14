@@ -25,7 +25,7 @@ class ClassInfo:
     name: str
     parent: Optional[str] = None
     attributes: list = field(default_factory=list)  # list of (name, type_hint)
-    methods: list = field(default_factory=list)  # list of method names
+    methods: dict = field(default_factory=dict)  # dict of method_name -> list of param names (excluding self)
     static_methods: set = field(default_factory=set)  # set of static method names
     class_vars: list = field(default_factory=list)  # list of (name, type_hint)
     has_hash: bool = False
@@ -406,6 +406,17 @@ class StubGenerator:
                     i += 1
                     continue
 
+                # Extract full signature (may span multiple lines)
+                sig_lines = [stripped]
+                j = i + 1
+                while j < len(lines) and ')' not in sig_lines[-1]:
+                    sig_lines.append(lines[j].strip())
+                    j += 1
+                full_sig = ' '.join(sig_lines)
+
+                # Parse parameters from signature
+                params = self._parse_params(full_sig)
+
                 if current_class:
                     cls_info = self.module_info.classes.get(current_class)
                     if cls_info:
@@ -417,9 +428,9 @@ class StubGenerator:
                             # Expand __richcmp__ to individual comparison methods
                             for cmp_method in self.RICHCMP_EXPANSION['__richcmp__']:
                                 if cmp_method not in cls_info.methods:
-                                    cls_info.methods.append(cmp_method)
+                                    cls_info.methods[cmp_method] = []
                         elif method_name not in cls_info.methods:
-                            cls_info.methods.append(method_name)
+                            cls_info.methods[method_name] = params
 
                             # Track static methods
                             if is_staticmethod:
@@ -448,6 +459,87 @@ class StubGenerator:
                             self.module_info.module_vars.append((var_name, 'Incomplete'))
 
             i += 1
+
+    def _generate_method_stub(self, method_name: str, params: list, is_static: bool = False, return_type: str = 'Incomplete') -> str:
+        """Generate a method stub with proper parameter types.
+
+        Args:
+            method_name: Name of the method
+            params: List of (param_name, has_default) tuples
+            is_static: Whether this is a static method
+            return_type: Return type annotation
+        """
+        if not params:
+            # No parameters (other than self)
+            if is_static:
+                return f'def {method_name}() -> {return_type}: ...'
+            else:
+                return f'def {method_name}(self) -> {return_type}: ...'
+
+        # Build parameter string
+        param_strs = []
+        if not is_static:
+            param_strs.append('self')
+
+        for param_name, has_default in params:
+            if has_default:
+                param_strs.append(f'{param_name}: Incomplete = ...')
+            else:
+                param_strs.append(f'{param_name}: Incomplete')
+
+        params_str = ', '.join(param_strs)
+        return f'def {method_name}({params_str}) -> {return_type}: ...'
+
+    def _parse_params(self, signature: str) -> list:
+        """Parse parameter names from a function signature.
+
+        Returns a list of (param_name, has_default) tuples, excluding 'self'.
+        """
+        # Extract the part between parentheses
+        match = re.search(r'\(([^)]*)\)', signature)
+        if not match:
+            return []
+
+        params_str = match.group(1)
+        if not params_str.strip():
+            return []
+
+        params = []
+        # Split by comma, but handle nested structures
+        depth = 0
+        current = []
+        for char in params_str:
+            if char in '([{':
+                depth += 1
+                current.append(char)
+            elif char in ')]}':
+                depth -= 1
+                current.append(char)
+            elif char == ',' and depth == 0:
+                params.append(''.join(current).strip())
+                current = []
+            else:
+                current.append(char)
+        if current:
+            params.append(''.join(current).strip())
+
+        result = []
+        for param in params:
+            if not param:
+                continue
+            # Skip self
+            if param == 'self':
+                continue
+            # Extract parameter name (before any type annotation or default)
+            # Handle: name, name=default, name: type, name: type = default
+            # Also handle Cython types like: int name, object name
+            param_match = re.match(r'^(?:\w+\s+)?(\w+)(?:\s*[:=].*)?$', param.strip())
+            if param_match:
+                param_name = param_match.group(1)
+                has_default = '=' in param
+                result.append((param_name, has_default))
+
+        return result
 
     def _detect_dataclass(self, content: str) -> dict:
         """Detect @dataclass decorated classes and their fields."""
@@ -565,7 +657,7 @@ class StubGenerator:
         special_methods = []
         comparison_methods = []
 
-        for method in cls_info.methods:
+        for method in cls_info.methods.keys():
             if method in self.COMPARISON_METHODS:
                 comparison_methods.append(method)
             elif method.startswith('__') and method.endswith('__'):
@@ -587,18 +679,23 @@ class StubGenerator:
 
         # Output __init__ first if present or needs to be added (not for numpy subclasses or specific classes)
         if '__init__' in special_methods:
-            lines.append(f'    {self.SPECIAL_METHODS["__init__"]}')
+            params = cls_info.methods.get('__init__', [])
+            stub = self._generate_method_stub('__init__', params, return_type='None')
+            lines.append(f'    {stub}')
             special_methods.remove('__init__')
         elif '__init__' not in cls_info.methods and not is_numpy_subclass and not cls_info.is_dataclass and cls_info.name not in skip_init_classes:
-            lines.append(f'    {self.SPECIAL_METHODS["__init__"]}')
+            lines.append(f'    def __init__(self) -> None: ...')
 
         # Sort and output regular methods
         for method in sorted(regular_methods):
+            params = cls_info.methods.get(method, [])
             if method in cls_info.static_methods:
                 lines.append('    @staticmethod')
-                lines.append(f'    def {method}(*args: Incomplete, **kwargs: Incomplete) -> Incomplete: ...')
+                stub = self._generate_method_stub(method, params, is_static=True)
+                lines.append(f'    {stub}')
             else:
-                lines.append(f'    def {method}(self, *args: Incomplete, **kwargs: Incomplete) -> Incomplete: ...')
+                stub = self._generate_method_stub(method, params)
+                lines.append(f'    {stub}')
 
         # Combine special methods and comparison methods, sort alphabetically
         all_special = []
@@ -608,7 +705,9 @@ class StubGenerator:
             elif method in self.TYPED_METHODS:
                 all_special.append((method, self.TYPED_METHODS[method]))
             else:
-                all_special.append((method, f'def {method}(self, *args: Incomplete, **kwargs: Incomplete) -> Incomplete: ...'))
+                params = cls_info.methods.get(method, [])
+                stub = self._generate_method_stub(method, params)
+                all_special.append((method, stub))
 
         for method in comparison_methods:
             stub = self.COMPARISON_METHODS[method]
