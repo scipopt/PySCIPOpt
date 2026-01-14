@@ -20,11 +20,28 @@ jobs:
   stubtest:
     if: (github.event_name != 'pull_request') || (github.event.pull_request.draft == false)
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
     env:
       PYTHON_VERSION: "3.14"
 
     steps:
       - uses: actions/checkout@v6
+
+      - name: Setup Python for stub generation
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+        id: py312
+
+      - name: Check if stubs need regeneration
+        id: check
+        run: python scripts/generate_stubs.py --check
+        continue-on-error: true
+
+      - name: Regenerate stubs
+        if: steps.check.outcome == 'failure'
+        run: python scripts/generate_stubs.py
 
       - name: Install dependencies (SCIPOptSuite)
         run: |
@@ -50,6 +67,15 @@ jobs:
 
       - name: Run stubtest
         run: stubs/test.sh
+
+      - name: Commit and push updated stubs
+        if: steps.check.outcome == 'failure' && github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/pyscipopt/scip.pyi
+          git commit -m "Auto-regenerate type stubs [skip ci]"
+          git push
 
   lint:
     runs-on: ubuntu-latest
