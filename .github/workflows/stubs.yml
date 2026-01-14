@@ -63,32 +63,40 @@ jobs:
         run: stubs/test.sh
         continue-on-error: true
 
-      - name: Check if generate_stubs.py is unchanged from master
+      - name: Check if safe to run generate_stubs.py
         id: check_script
         run: |
-          git fetch origin master
-          if git diff --quiet origin/master -- scripts/generate_stubs.py; then
-            echo "unchanged=true" >> $GITHUB_OUTPUT
+          # For same-repo PRs, always allow running the script
+          if [[ "${{ github.event.pull_request.head.repo.full_name }}" == "${{ github.repository }}" ]] || [[ "${{ github.event_name }}" != "pull_request" ]]; then
+            echo "allowed=true" >> $GITHUB_OUTPUT
+            echo "Same-repo PR or push - allowing regeneration"
           else
-            echo "unchanged=false" >> $GITHUB_OUTPUT
-            echo "::warning::scripts/generate_stubs.py was modified - skipping auto-regeneration for security"
+            # For fork PRs, only allow if script is unchanged from master
+            git fetch origin master
+            if git diff --quiet origin/master -- scripts/generate_stubs.py; then
+              echo "allowed=true" >> $GITHUB_OUTPUT
+              echo "Fork PR with unchanged script - allowing regeneration"
+            else
+              echo "allowed=false" >> $GITHUB_OUTPUT
+              echo "::warning::Fork PR with modified scripts/generate_stubs.py - skipping auto-regeneration for security"
+            fi
           fi
 
       - name: Regenerate stubs
-        if: steps.check_script.outputs.unchanged == 'true'
+        if: steps.check_script.outputs.allowed == 'true'
         run: python scripts/generate_stubs.py
 
       - name: Run MyPy (after regeneration)
-        if: steps.check_script.outputs.unchanged == 'true'
+        if: steps.check_script.outputs.allowed == 'true'
         run: python -m mypy --package pyscipopt
 
       - name: Run stubtest (after regeneration)
-        if: steps.check_script.outputs.unchanged == 'true'
+        if: steps.check_script.outputs.allowed == 'true'
         run: stubs/test.sh
 
       - name: Commit and push updated stubs
         id: commit
-        if: github.event_name == 'pull_request' && steps.check_script.outputs.unchanged == 'true' && github.event.pull_request.head.repo.full_name == github.repository
+        if: github.event_name == 'pull_request' && steps.check_script.outputs.allowed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
