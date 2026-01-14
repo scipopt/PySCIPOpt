@@ -32,6 +32,7 @@ class ClassInfo:
     has_eq: bool = False
     is_dataclass: bool = False
     dataclass_fields: list = field(default_factory=list)  # list of (name, type, default)
+    is_statistics_class: bool = False  # Special handling for Statistics class
 
 
 @dataclass
@@ -90,7 +91,6 @@ class StubGenerator:
         '__rmul__': 'def __rmul__(self, other: Incomplete) -> Incomplete: ...',
         '__truediv__': 'def __truediv__(self, other: Incomplete) -> Incomplete: ...',
         '__rtruediv__': 'def __rtruediv__(self, other: Incomplete) -> Incomplete: ...',
-        '__pow__': 'def __pow__(self, other: Incomplete, mod: Incomplete = ...) -> Incomplete: ...',
         '__rpow__': 'def __rpow__(self, other: Incomplete) -> Incomplete: ...',
         '__neg__': 'def __neg__(self) -> Incomplete: ...',
         '__abs__': 'def __abs__(self) -> Incomplete: ...',
@@ -108,11 +108,22 @@ class StubGenerator:
         'Eventhdlr', 'Expr', 'ExprCons', 'GenExpr', 'Heur', 'IIS', 'IISfinder',
         'LP', 'Model', 'NLRow', 'Node', 'Nodesel', 'PowExpr', 'Presol', 'Pricer',
         'ProdExpr', 'Prop', 'Reader', 'Relax', 'Row', 'RowExact', 'Sepa', 'Solution',
-        'SumExpr', 'VarExpr', 'Variable',
+        'SumExpr', 'VarExpr', 'Variable', '_VarArray',
     }
 
     # Methods that need type: ignore[override] for numpy subclasses
-    NUMPY_OVERRIDE_METHODS = {'__ge__', '__le__', '__gt__', '__lt__', 'sum'}
+    NUMPY_OVERRIDE_METHODS = {'__ge__', '__le__', '__gt__', '__lt__', 'sum', '__pow__'}
+
+    # Cython extension types (cdef class) that need *args, **kwargs for __init__
+    # These specific classes have __init__ with *args, **kwargs at runtime
+    CYTHON_EXTENSION_TYPES = {
+        'PowExpr', 'ProdExpr', 'SumExpr', 'UnaryExpr', 'VarExpr', 'Constant',
+    }
+
+    # Classes with custom __init__ signatures
+    CUSTOM_INIT = {
+        'Term': 'def __init__(self, *vartuple: Incomplete) -> None: ...',
+    }
 
     def __init__(self, src_dir: Path):
         self.src_dir = src_dir
@@ -443,7 +454,8 @@ class StubGenerator:
                             for cmp_method in self.RICHCMP_EXPANSION['__richcmp__']:
                                 if cmp_method not in cls_info.methods:
                                     cls_info.methods[cmp_method] = []
-                        elif method_name not in cls_info.methods:
+                        else:
+                            # Always overwrite - last definition wins (like Python)
                             cls_info.methods[method_name] = params
 
                             # Track static methods
@@ -489,6 +501,13 @@ class StubGenerator:
                 return f'def {method_name}() -> {return_type}: ...'
             else:
                 return f'def {method_name}(self) -> {return_type}: ...'
+
+        # Special case: __pow__ third parameter should have a default (Python protocol)
+        if method_name == '__pow__' and len(params) >= 2:
+            params = list(params)  # Make a copy
+            # Make the third parameter (modulo/mod) have a default
+            if len(params) >= 2 and not params[1][1]:  # If second param doesn't have default
+                params[1] = (params[1][0], True)  # Give it a default
 
         # Build parameter string
         param_strs = []
@@ -541,16 +560,43 @@ class StubGenerator:
         for param in params:
             if not param:
                 continue
+            param = param.strip()
             # Skip self
             if param == 'self':
                 continue
-            # Extract parameter name (before any type annotation or default)
-            # Handle: name, name=default, name: type, name: type = default
-            # Also handle Cython types like: int name, object name
-            param_match = re.match(r'^(?:\w+\s+)?(\w+)(?:\s*[:=].*)?$', param.strip())
-            if param_match:
-                param_name = param_match.group(1)
-                has_default = '=' in param
+            # Skip *args and **kwargs - they need special handling
+            if param.startswith('*'):
+                continue
+
+            # Handle Cython typed parameters: Type name [not None] [= default]
+            # Examples: Row row not None, Variable var not None, int x, object y = None
+            # The pattern is: [Type] name [not None] [= default]
+
+            # First, check for default value
+            has_default = '=' in param
+
+            # Remove "not None" modifier if present
+            param_clean = re.sub(r'\s+not\s+None\s*', ' ', param)
+
+            # Try to match: Type name [= default] or just name [= default]
+            # Cython type pattern: CapitalizedType name
+            cython_match = re.match(r'^([A-Z]\w*)\s+(\w+)(?:\s*=.*)?$', param_clean.strip())
+            if cython_match:
+                param_name = cython_match.group(2)
+                result.append((param_name, has_default))
+                continue
+
+            # Try simple Cython type: lowercase_type name (like int x, object y)
+            simple_cython_match = re.match(r'^([a-z]\w*)\s+(\w+)(?:\s*=.*)?$', param_clean.strip())
+            if simple_cython_match:
+                param_name = simple_cython_match.group(2)
+                result.append((param_name, has_default))
+                continue
+
+            # Python-style: name [: type] [= default]
+            python_match = re.match(r'^(\w+)(?:\s*:.*)?(?:\s*=.*)?$', param_clean.strip())
+            if python_match:
+                param_name = python_match.group(1)
                 result.append((param_name, has_default))
 
         return result
@@ -638,6 +684,10 @@ class StubGenerator:
         """Generate stub for a single class."""
         lines = []
 
+        # Special handling for Statistics class (has read-only @property methods)
+        if cls_info.is_statistics_class:
+            return self._generate_statistics_stub()
+
         # Handle dataclass
         if cls_info.is_dataclass:
             lines.append('@dataclass')
@@ -659,6 +709,12 @@ class StubGenerator:
                     lines.append(f'    {fname}: {ftype} = {fdefault}')
                 else:
                     lines.append(f'    {fname}: {ftype}')
+            # Also include additional attributes (like @property-based ones)
+            # Use ... as default to allow them after fields with defaults
+            if cls_info.attributes:
+                sorted_attrs = sorted(cls_info.attributes, key=lambda x: x[0])
+                for attr_name, type_hint in sorted_attrs:
+                    lines.append(f'    {attr_name}: {type_hint} = ...')
             return lines
 
         # Class variables (for enum-like classes)
@@ -697,13 +753,28 @@ class StubGenerator:
                     comparison_methods.append(cmp_method)
 
         # Output __init__ first if present or needs to be added (not for numpy subclasses or specific classes)
+        # Cython extension types need *args, **kwargs for __init__
+        is_cython_extension = cls_info.name in self.CYTHON_EXTENSION_TYPES
+        has_custom_init = cls_info.name in self.CUSTOM_INIT
         if '__init__' in special_methods:
-            params = cls_info.methods.get('__init__', [])
-            stub = self._generate_method_stub('__init__', params, return_type='None')
-            lines.append(f'    {stub}')
+            if has_custom_init:
+                lines.append(f'    {self.CUSTOM_INIT[cls_info.name]}')
+            elif is_cython_extension:
+                # Cython extension types have *args, **kwargs at runtime
+                lines.append(f'    {self.SPECIAL_METHODS["__init__"]}')
+            else:
+                params = cls_info.methods.get('__init__', [])
+                stub = self._generate_method_stub('__init__', params, return_type='None')
+                lines.append(f'    {stub}')
             special_methods.remove('__init__')
         elif '__init__' not in cls_info.methods and not is_numpy_subclass and not cls_info.is_dataclass and cls_info.name not in skip_init_classes:
-            lines.append(f'    def __init__(self) -> None: ...')
+            if has_custom_init:
+                lines.append(f'    {self.CUSTOM_INIT[cls_info.name]}')
+            elif is_cython_extension:
+                # Cython extension types have *args, **kwargs at runtime
+                lines.append(f'    {self.SPECIAL_METHODS["__init__"]}')
+            else:
+                lines.append(f'    def __init__(self) -> None: ...')
 
         # Sort and output regular methods
         for method in sorted(regular_methods):
@@ -723,13 +794,16 @@ class StubGenerator:
         all_special = []
         for method in special_methods:
             if method in self.SPECIAL_METHODS:
-                all_special.append((method, self.SPECIAL_METHODS[method]))
+                stub = self.SPECIAL_METHODS[method]
             elif method in self.TYPED_METHODS:
-                all_special.append((method, self.TYPED_METHODS[method]))
+                stub = self.TYPED_METHODS[method]
             else:
                 params = cls_info.methods.get(method, [])
                 stub = self._generate_method_stub(method, params)
-                all_special.append((method, stub))
+            # Add type: ignore[override] for numpy subclass override methods
+            if is_numpy_subclass and method in self.NUMPY_OVERRIDE_METHODS:
+                stub = stub.replace(': ...', ': ...  # type: ignore[override]')
+            all_special.append((method, stub))
 
         for method in comparison_methods:
             stub = self.COMPARISON_METHODS[method]
@@ -745,6 +819,70 @@ class StubGenerator:
         # If class is empty, add pass or ellipsis
         if len(lines) == 1:
             lines.append('    ...')
+
+        return lines
+
+    def _generate_statistics_stub(self) -> list:
+        """Generate stub for the Statistics class with proper @property decorators."""
+        lines = []
+        lines.append('class Statistics:')
+
+        # Writable attributes (from __init__ parameters)
+        writable_attrs = [
+            ('status', 'str'),
+            ('total_time', 'float'),
+            ('solving_time', 'float'),
+            ('presolving_time', 'float'),
+            ('reading_time', 'float'),
+            ('copying_time', 'float'),
+            ('problem_name', 'str'),
+            ('presolved_problem_name', 'str'),
+            ('n_runs', 'int | None'),
+            ('n_nodes', 'int | None'),
+            ('n_solutions_found', 'int'),
+            ('first_solution', 'float | None'),
+            ('primal_bound', 'float | None'),
+            ('dual_bound', 'float | None'),
+            ('gap', 'float | None'),
+            ('primal_dual_integral', 'float | None'),
+        ]
+
+        # Read-only properties (derived from other fields)
+        readonly_props = [
+            ('n_binary_vars', 'int'),
+            ('n_conss', 'int'),
+            ('n_continuous_vars', 'int'),
+            ('n_implicit_integer_vars', 'int'),
+            ('n_integer_vars', 'int'),
+            ('n_maximal_cons', 'int'),
+            ('n_presolved_binary_vars', 'int'),
+            ('n_presolved_conss', 'int'),
+            ('n_presolved_continuous_vars', 'int'),
+            ('n_presolved_implicit_integer_vars', 'int'),
+            ('n_presolved_integer_vars', 'int'),
+            ('n_presolved_maximal_cons', 'int'),
+            ('n_presolved_vars', 'int'),
+            ('n_vars', 'int'),
+        ]
+
+        # Output writable attributes
+        for attr_name, attr_type in writable_attrs:
+            lines.append(f'    {attr_name}: {attr_type}')
+
+        # Output __init__ method
+        init_params = []
+        for attr_name, attr_type in writable_attrs:
+            init_params.append(f'{attr_name}: {attr_type}')
+        init_sig = ', '.join(['self'] + init_params)
+        lines.append(f'    def __init__({init_sig}) -> None: ...')
+
+        # Output read-only properties with @property decorator
+        for prop_name, prop_type in readonly_props:
+            lines.append('    @property')
+            lines.append(f'    def {prop_name}(self) -> {prop_type}: ...')
+
+        # Statistics is a dataclass at runtime, so it has __replace__
+        lines.append('    def __replace__(self, **changes: Incomplete) -> Statistics: ...')
 
         return lines
 
@@ -790,28 +928,20 @@ class StubGenerator:
             if ('name', 'Incomplete') not in cls_info.attributes:
                 cls_info.attributes.append(('name', 'Incomplete'))
 
-        # Handle Statistics as dataclass
+        # Handle Statistics - has both dataclass fields and @property methods
+        # We need to use explicit @property decorators for read-only attributes
         if 'Statistics' in self.module_info.classes:
             cls_info = self.module_info.classes['Statistics']
-            cls_info.is_dataclass = True
-            cls_info.dataclass_fields = [
-                ('status', 'str', None),
-                ('total_time', 'float', None),
-                ('solving_time', 'float', None),
-                ('presolving_time', 'float', None),
-                ('reading_time', 'float', None),
-                ('copying_time', 'float', None),
-                ('problem_name', 'str', None),
-                ('presolved_problem_name', 'str', None),
-                ('n_runs', 'int | None', 'None'),
-                ('n_nodes', 'int | None', 'None'),
-                ('n_solutions_found', 'int', '-1'),
-                ('first_solution', 'float | None', 'None'),
-                ('primal_bound', 'float | None', 'None'),
-                ('dual_bound', 'float | None', 'None'),
-                ('gap', 'float | None', 'None'),
-                ('primal_dual_integral', 'float | None', 'None'),
-            ]
+            # Clear any parsed attributes - we handle Statistics fully manually
+            cls_info.attributes = []
+            cls_info.methods = {}  # Clear methods, we'll generate them manually
+            # Mark as special class that needs custom generation
+            cls_info.is_statistics_class = True
+
+        # Handle Term class - has *vartuple in __init__
+        if 'Term' in self.module_info.classes:
+            cls_info = self.module_info.classes['Term']
+            cls_info.methods['__init__'] = [('vartuple', False)]  # Will be handled specially
 
         # Add/update known module-level variables with correct types
         known_vars = {
