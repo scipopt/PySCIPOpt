@@ -83,23 +83,23 @@ jobs:
           fi
 
       - name: Regenerate stubs
-        if: steps.check_script.outputs.allowed == 'true'
+        if: steps.stubtest_before.outcome == 'failure' && steps.check_script.outputs.allowed == 'true'
         run: |
           python scripts/generate_stubs.py
           # Copy regenerated stub to installed package location for stubtest
           cp src/pyscipopt/scip.pyi "$(python -c 'import pyscipopt; print(pyscipopt.__path__[0])')/scip.pyi"
 
       - name: Run MyPy (after regeneration)
-        if: steps.check_script.outputs.allowed == 'true'
+        if: steps.stubtest_before.outcome == 'failure' && steps.check_script.outputs.allowed == 'true'
         run: python -m mypy --package pyscipopt
 
       - name: Run stubtest (after regeneration)
-        if: steps.check_script.outputs.allowed == 'true'
+        if: steps.stubtest_before.outcome == 'failure' && steps.check_script.outputs.allowed == 'true'
         run: stubs/test.sh
 
       - name: Commit and push updated stubs
         id: commit
-        if: github.event_name == 'pull_request' && steps.check_script.outputs.allowed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
+        if: steps.stubtest_before.outcome == 'failure' && github.event_name == 'pull_request' && steps.check_script.outputs.allowed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
