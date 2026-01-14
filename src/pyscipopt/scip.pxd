@@ -2017,8 +2017,7 @@ cdef extern from "scip/cons_indicator.h":
                                             SCIP_CONS* cons,
                                             SCIP_VAR* binvar)
 
-    SCIP_RETCODE SCIPgetActiveOneIndicator(SCIP_Cons* cons,
-                                           SCIP_VAR* binvar)
+    SCIP_Bool SCIPgetActiveOnIndicator(SCIP_CONS* cons)
 
     SCIP_VAR* SCIPgetBinaryVarIndicator(SCIP_CONS* cons)
 
@@ -2028,18 +2027,27 @@ cdef extern from "scip/cons_indicator.h":
                                           SCIP_CONS* cons,
                                           SCIP_VAR* slackvar)
 
+    SCIP_RETCODE SCIPsetSlackVarUb(SCIP* scip,
+                                   SCIP_CONS* cons,
+                                   SCIP_Real ub)
+
     SCIP_Bool SCIPisActiveOneIndicator(SCIP* scip,
                                        SCIP_CONS* cons,
                                        SCIP_VAR* binvar)
 
-    SCIP_Bool SCIPmakeIndicatorFeasible(SCIP* scip,
-                                       SCIP_CONS* cons,
-                                       SCIP_SOL* sol,
-                                       SCIP_Bool* changed)
+    SCIP_Bool SCIPisViolatedIndicator(SCIP* scip,
+                                      SCIP_CONS* cons,
+                                      SCIP_SOL* sol)
 
-    SCIP_Bool SCIPmakeIndicatorsFeasible(SCIP* scip,
-                                         SCIP_CONSHDLR* conshdlr,
-                                         SCIP_SOL* sol)
+    SCIP_RETCODE SCIPmakeIndicatorFeasible(SCIP* scip,
+                                           SCIP_CONS* cons,
+                                           SCIP_SOL* sol,
+                                           SCIP_Bool* changed)
+
+    SCIP_RETCODE SCIPmakeIndicatorsFeasible(SCIP* scip,
+                                           SCIP_CONSHDLR* conshdlr,
+                                           SCIP_SOL* sol,
+                                           SCIP_Bool* changed)
 
     SCIP_RETCODE SCIPaddLinearConsIndicator(SCIP* scip,
                                             SCIP_CONSHDLR* conshdlr,

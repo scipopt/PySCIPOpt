@@ -7543,9 +7543,7 @@ cdef class Model:
         bool
 
         """
-        cdef SCIP_Bool activeone
-        PY_SCIP_CALL(SCIPgetActiveOneIndicator(cons.scip_cons, &activeone))
-        return activeone
+        return SCIPgetActiveOnIndicator(cons.scip_cons)
 
     def getBinaryVarIndicator(self, Constraint cons):
         """
@@ -7564,7 +7562,7 @@ cdef class Model:
         cdef SCIP_VAR* _var = SCIPgetBinaryVarIndicator(cons.scip_cons)
         ptr = <size_t>(_var)
 
-        if pts not in self._modelvars:
+        if ptr not in self._modelvars:
             # create a new variable
             var = Variable.create(_var)
             assert var.ptr() == ptr
@@ -7615,17 +7613,14 @@ cdef class Model:
         cons : Constraint
             The indicator constraint
         sol : Solution
-            The solution to check, or None for the current solution
+            The solution to check
 
         Returns
         -------
         bool
 
         """
-        if sol is None:
-            return SCIPisViolatedIndicator(self._scip, cons.scip_cons, NULL)
-        else:
-            return SCIPisViolatedIndicator(self._scip, cons.scip_cons, sol.scip_sol)
+        return SCIPisViolatedIndicator(self._scip, cons.scip_cons, sol.sol)
         
     def makeIndicatorFeasible(self, Constraint cons, Solution sol):
         """
@@ -7642,40 +7637,43 @@ cdef class Model:
 
         """
         cdef SCIP_Bool changed
-        PY_SCIP_CALL(SCIPmakeIndicatorFeasible(self._scip, cons.scip_cons, sol.scip_sol, &changed))
+        PY_SCIP_CALL(SCIPmakeIndicatorFeasible(self._scip, cons.scip_cons, sol.sol, &changed))
         return changed
 
-    def makeIndicatorsFeasible(self, Conshdlr conshdlr, Solution sol):
+    def makeIndicatorsFeasible(self, Solution sol):
         """
         Based on values of other variables, computes slack and binary variable to turn all constraints feasible
 
         Parameters
         ----------
-        conshdlr : Conshdlr
-            The indicator constraint handler
         sol : Solution
             The solution.
 
+        Returns
+        -------
+        bool
+            Whether any changes were made.
+
         """
         cdef SCIP_Bool changed
-        PY_SCIP_CALL(SCIPmakeIndicatorsFeasible(self._scip, conshdlr.scip_conshdlr, sol.scip_sol, &changed))
+        cdef SCIP_CONSHDLR* conshdlr = SCIPfindConshdlr(self._scip, b"indicator")
+        PY_SCIP_CALL(SCIPmakeIndicatorsFeasible(self._scip, conshdlr, sol.sol, &changed))
         return changed
 
-    def addLinearConsIndicator(self, Conshdlr conshdlr, Constraint lincons):
+    def addLinearConsIndicator(self, Constraint lincons):
         """
         Adds additional linear constraint that is not connected with an indicator constraint, but can be used for separation
 
         Parameters
         ----------
-        conshdlr : Conshdlr
-            The indicator constraint handler
         lincons : Constraint
             The linear constraint
 
         """
-        PY_SCIP_CALL(SCIPaddLinearConsIndicator(self._scip, conshdlr.scip_conshdlr, lincons.scip_cons))
-    
-    def addRowIndicator(self, Conshdlr conshdlr, Row rowcons):
+        cdef SCIP_CONSHDLR* conshdlr = SCIPfindConshdlr(self._scip, b"indicator")
+        PY_SCIP_CALL(SCIPaddLinearConsIndicator(self._scip, conshdlr, lincons.scip_cons))
+
+    def addRowIndicator(self, Row rowcons):
         """
         Adds additional globally valid row constraint that is not connected with an indicator constraint, but can be used for separation
 
@@ -7683,13 +7681,12 @@ cdef class Model:
 
         Parameters
         ----------
-        conshdlr : Conshdlr
-            The indicator constraint handler
-        rowcons : Constraint
+        rowcons : Row
             The row to add
 
         """
-        PY_SCIP_CALL(SCIPaddRowIndicator(self._scip, conshdlr.scip_conshdlr, row.scip_row))
+        cdef SCIP_CONSHDLR* conshdlr = SCIPfindConshdlr(self._scip, b"indicator")
+        PY_SCIP_CALL(SCIPaddRowIndicator(self._scip, conshdlr, rowcons.scip_row))
 
     def addPyCons(self, Constraint cons):
         """

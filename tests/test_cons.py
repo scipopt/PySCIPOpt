@@ -237,6 +237,82 @@ def test_cons_indicator_fail():
     m.setSolVal(sol, binvar, 0)
     assert m.checkSol(sol)  # solution should be feasible
 
+def test_indicator_methods():
+    """Test new indicator constraint methods"""
+    m = Model()
+    x = m.addVar(lb=0, ub=10, obj=1)
+    binvar = m.addVar(vtype="B", lb=1)
+
+    # Create indicator constraint: binvar = 1 => x >= 5
+    c1 = m.addConsIndicator(x >= 5, binvar, activeone=True)
+
+    # Test getActiveOnIndicator
+    assert m.getActiveOnIndicator(c1) == True
+
+    # Test getBinaryVarIndicator
+    bvar = m.getBinaryVarIndicator(c1)
+    assert bvar is binvar
+
+    # Test getSlackVarIndicator
+    slack = m.getSlackVarIndicator(c1)
+    assert slack is not None
+
+    # Test getLinearConsIndicator
+    lincons = m.getLinearConsIndicator(c1)
+    assert lincons is not None
+
+    # Test isViolatedIndicator - just verify it can be called
+    sol = m.createSol(None)
+    m.setSolVal(sol, x, 6)
+    m.setSolVal(sol, binvar, 1)
+    m.isViolatedIndicator(c1, sol)
+
+    m.optimize()
+
+    assert m.isEQ(m.getVal(x), 5)  # x should be 5 (minimum satisfying constraint)
+
+
+def test_indicator_addVar():
+    """Test addVarIndicator method"""
+    m = Model()
+    x = m.addVar(lb=0, ub=10, obj=1)
+    y = m.addVar(lb=0, ub=10, obj=1)
+    binvar = m.addVar(vtype="B", lb=1)
+
+    # Create indicator constraint: binvar = 1 => x >= 5
+    c1 = m.addConsIndicator(x >= 5, binvar, activeone=True)
+
+    # Add another variable to the linear part of the constraint
+    m.addVarIndicator(c1, y, 1.0)
+
+    m.optimize()
+
+    # Now constraint is binvar = 1 => x + y >= 5
+    # Minimum should be x + y = 5, so objective = 5
+    assert m.isEQ(m.getVal(x) + m.getVal(y), 5)
+
+
+def test_indicator_setBinaryVar():
+    """Test setBinaryVarIndicator method"""
+    m = Model()
+    x = m.addVar(lb=0, ub=10, obj=1)
+    binvar1 = m.addVar(vtype="B", name="binvar1")
+    binvar2 = m.addVar(vtype="B", lb=1, name="binvar2")
+
+    # Create indicator constraint without a binary variable initially
+    c1 = m.addConsIndicator(x >= 5)
+
+    # Set the binary variable (this works when there's no binary var yet)
+    m.setBinaryVarIndicator(c1, binvar2)
+
+    # Verify the change
+    bvar = m.getBinaryVarIndicator(c1)
+    assert bvar is binvar2
+
+    m.optimize()
+    assert m.isEQ(m.getVal(x), 5)
+
+
 def test_addConsCardinality():
     m = Model()
     x = {}
