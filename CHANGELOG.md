@@ -11,6 +11,7 @@
 - Updated IIS result in PyiisfinderExec()
 ### Changed
 - changed default value of enablepricing flag to True
+- changed addConsNode() and addConsLocal() to mirror addCons() and accept ExprCons instead of Constraint
 ### Removed
 
 ## 6.0.0 - 2025.xx.yy
