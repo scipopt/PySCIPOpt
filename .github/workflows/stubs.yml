@@ -31,6 +31,8 @@ jobs:
         with:
           ref: ${{ github.head_ref || github.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Setup Python for stub generation
         uses: actions/setup-python@v4
@@ -72,20 +74,59 @@ jobs:
         run: stubs/test.sh
 
       - name: Commit and push updated stubs
+        id: commit
         if: steps.check.outcome == 'failure' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add src/pyscipopt/scip.pyi
-          git diff --cached --quiet || git commit -m "Auto-regenerate type stubs"
-          git push
+
+          # Capture the diff for the PR comment
+          DIFF=$(git diff --cached --stat)
+          echo "diff<<EOF" >> $GITHUB_OUTPUT
+          echo "$DIFF" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Capture detailed changes
+          DETAILED_DIFF=$(git diff --cached src/pyscipopt/scip.pyi | head -100)
+          echo "detailed_diff<<EOF" >> $GITHUB_OUTPUT
+          echo "$DETAILED_DIFF" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          if git diff --cached --quiet; then
+            echo "committed=false" >> $GITHUB_OUTPUT
+          else
+            git commit -m "Auto-regenerate type stubs"
+            git push
+            echo "committed=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Comment on PR
-        if: steps.check.outcome == 'failure' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        if: steps.commit.outputs.committed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh pr comment ${{ github.event.pull_request.number }} --body "Type stubs were out of date and have been automatically regenerated. A new commit has been pushed to this PR."
+          gh pr comment ${{ github.event.pull_request.number }} --body "## 🤖 Type stubs automatically regenerated
+
+          The type stubs were out of date and have been automatically regenerated. A new commit has been pushed to this PR.
+
+          <details>
+          <summary>Changes summary</summary>
+
+          \`\`\`
+          ${{ steps.commit.outputs.diff }}
+          \`\`\`
+
+          </details>
+
+          <details>
+          <summary>Detailed diff (first 100 lines)</summary>
+
+          \`\`\`diff
+          ${{ steps.commit.outputs.detailed_diff }}
+          \`\`\`
+
+          </details>"
 
   lint:
     runs-on: ubuntu-latest
