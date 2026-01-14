@@ -10,8 +10,6 @@ class MyBranchrule(Branchrule):
     def __init__(self, model):
         self.model = model
         self.addConsNode_called = False
-        self.addConsLocal_called = False
-        self.branch_var = None
 
     def branchexeclp(self, allowaddcons):
         if not allowaddcons:
@@ -31,7 +29,7 @@ class MyBranchrule(Branchrule):
         assert cons1 is not None, "addConsNode should return a Constraint"
 
         # Making it infeasible to ensure down branch is taken
-        cons2 = self.model.addConsNode(child2, var <= var.getUbGlobal()-1, name="branch_up")
+        cons2 = self.model.addConsNode(child2, var <= var.getLbGlobal()-1, name="branch_up")
         assert cons2 is not None, "addConsNode should return a Constraint"
 
         return {"result": SCIP_RESULT.BRANCHED}

@@ -6013,7 +6013,7 @@ cdef class Model:
         Parameters
         ----------
         cons : ExprCons
-            the constraint expression to add to the node (e.g., x + y <= 5) 
+            the constraint expression to add to the model (e.g., x + y <= 5) 
         name : str, optional
             the name of the constraint, generic name if empty (Default value = "")
         initial : bool, optional
