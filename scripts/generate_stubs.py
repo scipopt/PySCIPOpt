@@ -59,11 +59,11 @@ class StubGenerator:
         '__hash__': 'def __hash__(self) -> int: ...',
         '__len__': 'def __len__(self) -> int: ...',
         '__bool__': 'def __bool__(self) -> bool: ...',
-        '__init__': 'def __init__(self, *args, **kwargs) -> None: ...',
+        '__init__': 'def __init__(self, *args: Incomplete, **kwargs: Incomplete) -> None: ...',
         '__repr__': 'def __repr__(self) -> str: ...',
         '__str__': 'def __str__(self) -> str: ...',
-        '__delitem__': 'def __delitem__(self, other) -> None: ...',
-        '__setitem__': 'def __setitem__(self, index, object) -> None: ...',
+        '__delitem__': 'def __delitem__(self, key: Incomplete) -> None: ...',
+        '__setitem__': 'def __setitem__(self, key: Incomplete, value: Incomplete) -> None: ...',
     }
 
     # Methods that should NOT appear in stubs (internal Cython methods)
