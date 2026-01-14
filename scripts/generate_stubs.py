@@ -79,24 +79,25 @@ class StubGenerator:
 
     # Methods with specific type hints (no *args, **kwargs)
     TYPED_METHODS = {
-        '__getitem__': 'def __getitem__(self, index): ...',
-        '__iter__': 'def __iter__(self): ...',
-        '__next__': 'def __next__(self): ...',
-        '__add__': 'def __add__(self, other): ...',
-        '__radd__': 'def __radd__(self, other): ...',
-        '__sub__': 'def __sub__(self, other): ...',
-        '__rsub__': 'def __rsub__(self, other): ...',
-        '__mul__': 'def __mul__(self, other): ...',
-        '__rmul__': 'def __rmul__(self, other): ...',
-        '__truediv__': 'def __truediv__(self, other): ...',
-        '__rtruediv__': 'def __rtruediv__(self, other): ...',
-        '__pow__': 'def __pow__(self, other): ...',
-        '__rpow__': 'def __rpow__(self, other): ...',
-        '__neg__': 'def __neg__(self): ...',
-        '__abs__': 'def __abs__(self): ...',
-        '__iadd__': 'def __iadd__(self, other): ...',
-        '__isub__': 'def __isub__(self, other): ...',
-        '__imul__': 'def __imul__(self, other): ...',
+        '__getitem__': 'def __getitem__(self, index: Incomplete) -> Incomplete: ...',
+        '__iter__': 'def __iter__(self) -> Incomplete: ...',
+        '__next__': 'def __next__(self) -> Incomplete: ...',
+        '__add__': 'def __add__(self, other: Incomplete) -> Incomplete: ...',
+        '__radd__': 'def __radd__(self, other: Incomplete) -> Incomplete: ...',
+        '__sub__': 'def __sub__(self, other: Incomplete) -> Incomplete: ...',
+        '__rsub__': 'def __rsub__(self, other: Incomplete) -> Incomplete: ...',
+        '__mul__': 'def __mul__(self, other: Incomplete) -> Incomplete: ...',
+        '__rmul__': 'def __rmul__(self, other: Incomplete) -> Incomplete: ...',
+        '__truediv__': 'def __truediv__(self, other: Incomplete) -> Incomplete: ...',
+        '__rtruediv__': 'def __rtruediv__(self, other: Incomplete) -> Incomplete: ...',
+        '__pow__': 'def __pow__(self, other: Incomplete, mod: Incomplete = ...) -> Incomplete: ...',
+        '__rpow__': 'def __rpow__(self, other: Incomplete) -> Incomplete: ...',
+        '__neg__': 'def __neg__(self) -> Incomplete: ...',
+        '__abs__': 'def __abs__(self) -> Incomplete: ...',
+        '__iadd__': 'def __iadd__(self, other: Incomplete) -> Incomplete: ...  # noqa: PYI034',
+        '__isub__': 'def __isub__(self, other: Incomplete) -> Incomplete: ...  # noqa: PYI034',
+        '__imul__': 'def __imul__(self, other: Incomplete) -> Incomplete: ...  # noqa: PYI034',
+        '__matmul__': 'def __matmul__(self, other: Incomplete) -> Incomplete: ...',
     }
 
     def __init__(self, src_dir: Path):
@@ -595,9 +596,9 @@ class StubGenerator:
         for method in sorted(regular_methods):
             if method in cls_info.static_methods:
                 lines.append('    @staticmethod')
-                lines.append(f'    def {method}(*args, **kwargs): ...')
+                lines.append(f'    def {method}(*args: Incomplete, **kwargs: Incomplete) -> Incomplete: ...')
             else:
-                lines.append(f'    def {method}(self, *args, **kwargs): ...')
+                lines.append(f'    def {method}(self, *args: Incomplete, **kwargs: Incomplete) -> Incomplete: ...')
 
         # Combine special methods and comparison methods, sort alphabetically
         all_special = []
@@ -607,7 +608,7 @@ class StubGenerator:
             elif method in self.TYPED_METHODS:
                 all_special.append((method, self.TYPED_METHODS[method]))
             else:
-                all_special.append((method, f'def {method}(self, *args, **kwargs): ...'))
+                all_special.append((method, f'def {method}(self, *args: Incomplete, **kwargs: Incomplete) -> Incomplete: ...'))
 
         for method in comparison_methods:
             stub = self.COMPARISON_METHODS[method]
