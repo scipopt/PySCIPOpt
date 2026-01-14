@@ -34,20 +34,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Setup Python for stub generation
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.12"
-
-      - name: Check if stubs need regeneration
-        id: check
-        run: python scripts/generate_stubs.py --check
-        continue-on-error: true
-
-      - name: Regenerate stubs
-        if: steps.check.outcome == 'failure'
-        run: python scripts/generate_stubs.py
-
       - name: Install dependencies (SCIPOptSuite)
         run: |
           wget --quiet --no-check-certificate "https://github.com/scipopt/scip/releases/download/v${{ env.version }}/scipoptsuite_${{ env.version }}-1+jammy_amd64.deb"
@@ -67,15 +53,28 @@ jobs:
           export CFLAGS="-O0 -ggdb -Wall -Wextra -Werror -Wno-error=deprecated-declarations" # Debug mode. More warnings. Warnings as errors, but allow deprecated declarations.
           python -m pip install . -v 2>&1 | tee build.log
 
-      - name: Run MyPy
+      - name: Run MyPy (before regeneration)
+        id: mypy_before
+        run: python -m mypy --package pyscipopt
+        continue-on-error: true
+
+      - name: Run stubtest (before regeneration)
+        id: stubtest_before
+        run: stubs/test.sh
+        continue-on-error: true
+
+      - name: Regenerate stubs
+        run: python scripts/generate_stubs.py
+
+      - name: Run MyPy (after regeneration)
         run: python -m mypy --package pyscipopt
 
-      - name: Run stubtest
+      - name: Run stubtest (after regeneration)
         run: stubs/test.sh
 
       - name: Commit and push updated stubs
         id: commit
-        if: steps.check.outcome == 'failure' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
