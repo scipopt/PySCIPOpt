@@ -634,7 +634,10 @@ class StubGenerator:
         lines = []
 
         # Header imports
-        lines.append('from dataclasses import dataclass')
+        # Only import dataclass if any class uses it
+        has_dataclass = any(cls.is_dataclass for cls in self.module_info.classes.values())
+        if has_dataclass:
+            lines.append('from dataclasses import dataclass')
         lines.append('from typing import ClassVar')
         lines.append('')
         lines.append('import numpy')
