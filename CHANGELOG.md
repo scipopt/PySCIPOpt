@@ -10,6 +10,7 @@
 - Fixed the type of MatrixExpr.sum(axis=...) result from MatrixVariable to MatrixExpr.
 - Updated IIS result in PyiisfinderExec()
 - Model.getVal now supported GenExpr type
+- Fixed lotsizing_lazy example
 ### Changed
 - changed default value of enablepricing flag to True
 ### Removed
