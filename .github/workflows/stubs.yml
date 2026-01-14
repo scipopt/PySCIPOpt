@@ -22,11 +22,15 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+      pull-requests: write
     env:
       PYTHON_VERSION: "3.14"
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref || github.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
 
       - name: Setup Python for stub generation
         uses: actions/setup-python@v4
@@ -69,13 +73,20 @@ jobs:
         run: stubs/test.sh
 
       - name: Commit and push updated stubs
-        if: steps.check.outcome == 'failure' && github.event_name == 'push'
+        if: steps.check.outcome == 'failure' && github.event_name == 'pull_request'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add src/pyscipopt/scip.pyi
-          git commit -m "Auto-regenerate type stubs [skip ci]"
+          git commit -m "Auto-regenerate type stubs"
           git push
+
+      - name: Comment on PR
+        if: steps.check.outcome == 'failure' && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "Type stubs were out of date and have been automatically regenerated. A new commit has been pushed to this PR."
 
   lint:
     runs-on: ubuntu-latest
