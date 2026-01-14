@@ -610,7 +610,11 @@ class StubGenerator:
                 all_special.append((method, f'def {method}(self, *args, **kwargs): ...'))
 
         for method in comparison_methods:
-            all_special.append((method, self.COMPARISON_METHODS[method]))
+            stub = self.COMPARISON_METHODS[method]
+            # Add type: ignore[override] for numpy subclass comparison methods
+            if is_numpy_subclass and method in ('__ge__', '__le__', '__gt__', '__lt__'):
+                stub = stub.replace(': ...', ': ...  # type: ignore[override]')
+            all_special.append((method, stub))
 
         # Sort and output all special methods alphabetically
         for method, stub in sorted(all_special, key=lambda x: x[0]):
@@ -677,13 +681,14 @@ class StubGenerator:
                 ('copying_time', 'float', None),
                 ('problem_name', 'str', None),
                 ('presolved_problem_name', 'str', None),
-                ('n_runs', 'int', 'None'),
-                ('n_nodes', 'int', 'None'),
+                ('n_runs', 'int | None', 'None'),
+                ('n_nodes', 'int | None', 'None'),
                 ('n_solutions_found', 'int', '-1'),
-                ('first_solution', 'float', 'None'),
-                ('primal_bound', 'float', 'None'),
-                ('dual_bound', 'float', 'None'),
-                ('gap', 'float', 'None'),
+                ('first_solution', 'float | None', 'None'),
+                ('primal_bound', 'float | None', 'None'),
+                ('dual_bound', 'float | None', 'None'),
+                ('gap', 'float | None', 'None'),
+                ('primal_dual_integral', 'float | None', 'None'),
             ]
 
         # Add/update known module-level variables with correct types
