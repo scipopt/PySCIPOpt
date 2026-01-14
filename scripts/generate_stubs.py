@@ -100,6 +100,20 @@ class StubGenerator:
         '__matmul__': 'def __matmul__(self, other: Incomplete) -> Incomplete: ...',
     }
 
+    # Classes that should have @disjoint_base decorator
+    # These are user-facing classes that should not be structurally compatible
+    DISJOINT_BASE_CLASSES = {
+        'Benders', 'Benderscut', 'BoundChange', 'Branchrule', 'Column', 'ColumnExact',
+        'Conshdlr', 'Constant', 'Constraint', 'Cutsel', 'DomainChanges', 'Event',
+        'Eventhdlr', 'Expr', 'ExprCons', 'GenExpr', 'Heur', 'IIS', 'IISfinder',
+        'LP', 'Model', 'NLRow', 'Node', 'Nodesel', 'PowExpr', 'Presol', 'Pricer',
+        'ProdExpr', 'Prop', 'Reader', 'Relax', 'Row', 'RowExact', 'Sepa', 'Solution',
+        'SumExpr', 'VarExpr', 'Variable',
+    }
+
+    # Methods that need type: ignore[override] for numpy subclasses
+    NUMPY_OVERRIDE_METHODS = {'__ge__', '__le__', '__gt__', '__lt__', 'sum'}
+
     def __init__(self, src_dir: Path):
         self.src_dir = src_dir
         self.module_info = ModuleInfo()
@@ -579,6 +593,7 @@ class StubGenerator:
         lines.append('')
         lines.append('import numpy')
         lines.append('from _typeshed import Incomplete')
+        lines.append('from typing_extensions import disjoint_base')
         lines.append('')
 
         # Module-level variables and functions (sorted alphabetically)
@@ -626,6 +641,10 @@ class StubGenerator:
         # Handle dataclass
         if cls_info.is_dataclass:
             lines.append('@dataclass')
+
+        # Add @disjoint_base decorator for appropriate classes
+        if cls_info.name in self.DISJOINT_BASE_CLASSES:
+            lines.append('@disjoint_base')
 
         # Class declaration
         if cls_info.parent:
@@ -695,6 +714,9 @@ class StubGenerator:
                 lines.append(f'    {stub}')
             else:
                 stub = self._generate_method_stub(method, params)
+                # Add type: ignore[override] for numpy subclass override methods
+                if is_numpy_subclass and method in self.NUMPY_OVERRIDE_METHODS:
+                    stub = stub.replace(': ...', ': ...  # type: ignore[override]')
                 lines.append(f'    {stub}')
 
         # Combine special methods and comparison methods, sort alphabetically
@@ -711,8 +733,8 @@ class StubGenerator:
 
         for method in comparison_methods:
             stub = self.COMPARISON_METHODS[method]
-            # Add type: ignore[override] for numpy subclass comparison methods
-            if is_numpy_subclass and method in ('__ge__', '__le__', '__gt__', '__lt__'):
+            # Add type: ignore[override] for numpy subclass override methods
+            if is_numpy_subclass and method in self.NUMPY_OVERRIDE_METHODS:
                 stub = stub.replace(': ...', ': ...  # type: ignore[override]')
             all_special.append((method, stub))
 
