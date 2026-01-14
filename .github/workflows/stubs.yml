@@ -111,8 +111,8 @@ jobs:
           echo "$DIFF" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-          # Capture detailed changes
-          DETAILED_DIFF=$(git diff --cached src/pyscipopt/scip.pyi | head -100)
+          # Capture detailed changes (use || true to handle SIGPIPE from head)
+          DETAILED_DIFF=$(git diff --cached src/pyscipopt/scip.pyi | head -100 || true)
           echo "detailed_diff<<EOF" >> $GITHUB_OUTPUT
           echo "$DETAILED_DIFF" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
