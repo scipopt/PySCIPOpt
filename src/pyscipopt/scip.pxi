@@ -3981,6 +3981,17 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPsetObjIntegral(self._scip))
 
+    def isObjIntegral(self):
+        """
+        Returns whether the objective function is integral.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisObjIntegral(self._scip)
+
     def getLocalEstimate(self, original = False):
         """
         Gets estimate of best primal solution w.r.t. original or transformed problem contained in current subtree.

@@ -564,3 +564,14 @@ def test_getVarPseudocost():
 
     # Not exactly 12 because the new value is a weighted sum of all the updates
     assert m.isEQ(p, 12.0001)
+
+def test_objIntegral():
+    m = Model()
+    m.setObjIntegral()
+    assert m.isObjIntegral()
+
+    m = Model()
+    x = m.addVar(vtype='C', obj=1.5)
+    m.addCons(x >= 0)
+    m.optimize()
+    assert not m.isObjIntegral()
