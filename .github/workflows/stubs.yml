@@ -36,7 +36,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.12"
-        id: py312
 
       - name: Check if stubs need regeneration
         id: check
@@ -73,16 +72,16 @@ jobs:
         run: stubs/test.sh
 
       - name: Commit and push updated stubs
-        if: steps.check.outcome == 'failure' && github.event_name == 'pull_request'
+        if: steps.check.outcome == 'failure' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add src/pyscipopt/scip.pyi
-          git commit -m "Auto-regenerate type stubs"
+          git diff --cached --quiet || git commit -m "Auto-regenerate type stubs"
           git push
 
       - name: Comment on PR
-        if: steps.check.outcome == 'failure' && github.event_name == 'pull_request'
+        if: steps.check.outcome == 'failure' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
