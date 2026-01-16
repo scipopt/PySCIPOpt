@@ -56,7 +56,11 @@ class MatrixExpr(np.ndarray):
             if ufunc is np.add and isinstance(args[0], MatrixExpr):
                 return _core_sum(args[0], **kwargs)
 
-        return super().__array_ufunc__(ufunc, method, *args, **kwargs)
+        args = _ensure_array(args, convert_scalar=True)
+        if "out" in kwargs:
+            kwargs["out"] = _ensure_array(kwargs["out"])
+        res = super().__array_ufunc__(ufunc, method, *args, **kwargs)
+        return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
 
     def __le__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 1)
@@ -115,6 +119,18 @@ class MatrixExprCons(np.ndarray):
         raise NotImplementedError("Cannot compare MatrixExprCons with '=='.")
 
 
+cdef inline tuple _ensure_array(tuple args, bool convert_scalar = False):
+    if not convert_scalar:
+        return tuple(
+            x.view(np.ndarray) if isinstance(x, np.ndarray) else x 
+            for x in args
+        )
+    return tuple(
+        x.view(np.ndarray) if isinstance(x, np.ndarray) else np.array(x, dtype=object)
+        for x in args
+    )
+
+
 def _core_sum(
     a: MatrixExpr,
     axis: Optional[Union[int, Tuple[int, ...]]] = None,
@@ -171,3 +187,4 @@ def _core_sum(
     return np.apply_along_axis(
         quicksum, -1, a.transpose(keep_axes + axis).reshape(shape + (-1,))
     ).view(MatrixExpr)
+
