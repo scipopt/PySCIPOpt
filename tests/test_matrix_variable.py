@@ -293,6 +293,30 @@ def test_matrix_sum_axis_not_none_performance(n):
     assert model.isGT(end_orig - start_orig, end_matrix - start_matrix)
 
 
+@pytest.mark.parametrize("n", [50, 100])
+def test_matrix_mean_performance(n):
+    model = Model()
+    x = model.addMatrixVar((n, n))
+
+    start = time()
+    np.ndarray.mean(x, axis=0)
+    orig = time() - start
+
+    start = time()
+    x.mean(axis=0)
+    matrix = time() - start
+
+    assert model.isGT(orig, matrix)
+
+
+def test_matrix_mean():
+    model = Model()
+    x = model.addMatrixVar((2, 2))
+
+    assert isinstance(x.mean(), Expr)
+    assert isinstance(x.mean(1), MatrixExpr)
+
+
 def test_add_cons_matrixVar():
     m = Model()
     matrix_variable = m.addMatrixVar(shape=(3, 3), vtype="B", name="A", obj=1)
