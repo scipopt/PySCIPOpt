@@ -54,7 +54,7 @@ class MatrixExpr(np.ndarray):
     def __array_ufunc__(self, ufunc, method, *args, **kwargs):
         if method == "reduce":
             if ufunc is np.add and isinstance(args[0], MatrixExpr):
-                return args[0].sum(**kwargs)
+                return _core_sum(args[0], **kwargs)
 
         return super().__array_ufunc__(ufunc, method, *args, **kwargs)
 
@@ -92,26 +92,7 @@ class MatrixExpr(np.ndarray):
             a MatrixExpr.
 
         """
-        axis: Tuple[int, ...] = normalize_axis_tuple(
-            range(self.ndim) if axis is None else axis, self.ndim
-        )
-        if len(axis) == self.ndim:
-            res = quicksum(self.flat)
-            return (
-                np.array([res], dtype=object).reshape([1] * self.ndim).view(MatrixExpr)
-                if keepdims
-                else res
-            )
-
-        keep_axes = tuple(i for i in range(self.ndim) if i not in axis)
-        shape = (
-            tuple(1 if i in axis else self.shape[i] for i in range(self.ndim))
-            if keepdims
-            else tuple(self.shape[i] for i in keep_axes)
-        )
-        return np.apply_along_axis(
-            quicksum, -1, self.transpose(keep_axes + axis).reshape(shape + (-1,))
-        ).view(MatrixExpr)
+        return _core_sum(self, axis=axis, keepdims=keepdims, **kwargs)
 
     def __le__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
         return _matrixexpr_richcmp(self, other, 1)
@@ -168,3 +149,31 @@ class MatrixExprCons(np.ndarray):
 
     def __eq__(self, other):
         raise NotImplementedError("Cannot compare MatrixExprCons with '=='.")
+
+
+def _core_sum(
+    a: MatrixExpr,
+    axis: Optional[Union[int, Tuple[int, ...]]] = None,
+    keepdims: bool = False,
+    **kwargs,
+) -> Union[Expr, MatrixExpr]:
+    axis: Tuple[int, ...] = normalize_axis_tuple(
+        range(a.ndim) if axis is None else axis, a.ndim
+    )
+    if len(axis) == a.ndim:
+        res = quicksum(a.flat)
+        return (
+            np.array([res], dtype=object).reshape([1] * a.ndim).view(MatrixExpr)
+            if keepdims
+            else res
+        )
+
+    keep_axes = tuple(i for i in range(a.ndim) if i not in axis)
+    shape = (
+        tuple(1 if i in axis else a.shape[i] for i in range(a.ndim))
+        if keepdims
+        else tuple(a.shape[i] for i in keep_axes)
+    )
+    return np.apply_along_axis(
+        quicksum, -1, a.transpose(keep_axes + axis).reshape(shape + (-1,))
+    ).view(MatrixExpr)
