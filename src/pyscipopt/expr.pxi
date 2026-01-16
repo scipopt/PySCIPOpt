@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Iterator, Optional, Type, Union
 
 import numpy as np
 
-from cpython.dict cimport PyDict_Next
+from cpython.dict cimport PyDict_Next, PyDict_GetItem
 from cpython.object cimport Py_LE, Py_EQ, Py_GE, PyObject
 from pyscipopt.scip cimport Variable
 
@@ -918,10 +918,31 @@ cdef inline Expr _to_poly(Expr expr):
 
 cdef dict _to_dict(Expr expr, Expr other, bool copy = True):
     cdef dict children = expr.children.copy() if copy else expr.children
-    cdef object k
-    cdef double v
-    for k, v in (other if _is_sum(other) else {_wrap(other): 1.0}).items():
-        children[k] = children.get(k, 0.0) + v
+    cdef Py_ssize_t pos = <Py_ssize_t>0
+    cdef PyObject* k_ptr = NULL
+    cdef PyObject* v_ptr = NULL
+    cdef PyObject* old_v_ptr = NULL
+    cdef double other_v
+    cdef object k_obj
+
+    if _is_sum(other):
+        while PyDict_Next(other.children, &pos, &k_ptr, &v_ptr):
+            if (other_v := <double>(<object>v_ptr)) == 0: 
+                continue
+
+            k_obj = <object>k_ptr
+            old_v_ptr = PyDict_GetItem(children, k_obj)
+            if old_v_ptr != NULL:
+                children[k_obj] = <double>(<object>old_v_ptr) + other_v
+            else:
+                children[k_obj] = <object>v_ptr
+    else:
+        k_obj = _wrap(other)
+        old_v_ptr = PyDict_GetItem(children, k_obj)
+        if old_v_ptr != NULL:
+            children[k_obj] = <double>(<object>old_v_ptr) + 1.0
+        else:
+            children[k_obj] = 1.0
     return children
 
 
