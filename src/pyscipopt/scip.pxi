@@ -1536,9 +1536,13 @@ cdef class Node:
                 and self.scip_node == (<Node>other).scip_node)
 
 
-cdef class Variable(UnaryOperatorMixin):
+cdef class Variable(ExprLike):
 
-    __array_priority__ = 100
+    def __init__(self, *_):
+        raise NotImplementedError(
+            "Direct instantiation of 'Variable' is not supported. "
+            "Please use Model to create variables."
+        )
 
     @staticmethod
     cdef create(SCIP_VAR* scip_var):
@@ -1559,85 +1563,35 @@ cdef class Variable(UnaryOperatorMixin):
         if scip_var == NULL:
             raise Warning("cannot create Variable with SCIP_VAR* == NULL")
 
-        var = Variable()
+        cdef Variable var = Variable.__new__(Variable)
         var.scip_var = scip_var
+        var._expr_view = <PolynomialExpr>_expr({Term(var): 1.0}, PolynomialExpr)
         return var
+
+    def __hash__(self) -> Py_hash_t:
+        return <Py_hash_t>self.scip_var
+
+    def ptr(self) -> Py_hash_t:
+        return hash(self)
+
+    def __richcmp__(self, other, int op):
+        return _expr_cmp(self._expr_view, other, op)
+
+    def degree(self) -> int:
+        return 1
+
+    def _normalize(self) -> PolynomialExpr:
+        return self._expr_view
+
+    cdef PolynomialExpr _as_expr(self):
+        return self._expr_view
 
     @property
     def name(self):
         return bytes(SCIPvarGetName(self.scip_var)).decode("utf-8")
 
-    def ptr(self):
-        return hash(self)
-
-    def __hash__(self):
-        return <size_t>(self.scip_var)
-
-    def __array_ufunc__(self, ufunc, method, *args, **kwargs):
-        return Expr.__array_ufunc__(self, ufunc, method, *args, **kwargs)
-
-    def __getitem__(self, key):
-        return _var_to_expr(self)[key]
-
-    def __iter__(self):
-        return _var_to_expr(self).__iter__()
-
-    def __add__(self, other):
-        return _var_to_expr(self) + other
-
-    def __iadd__(self, other):
-        return _var_to_expr(self).__iadd__(other)
-
-    def __radd__(self, other):
-        return _var_to_expr(self) + other
-
-    def __sub__(self, other):
-        return _var_to_expr(self) - other
-
-    def __isub__(self, other):
-        return _var_to_expr(self).__isub__(other)
-
-    def __rsub__(self, other):
-        return -_var_to_expr(self) + other
-
-    def __mul__(self, other):
-        return _var_to_expr(self) * other
-
-    def __imul__(self, other):
-        return _var_to_expr(self).__imul__(other)
-
-    def __rmul__(self, other):
-        return _var_to_expr(self) * other
-
-    def __truediv__(self, other):
-        return _var_to_expr(self) / other
-
-    def __rtruediv__(self, other):
-        return other / _var_to_expr(self)
-
-    def __pow__(self, other):
-        return _var_to_expr(self) ** other
-
-    def __rpow__(self, other):
-        return other ** _var_to_expr(self)
-
-    def __neg__(self):
-        return -_var_to_expr(self)
-
-    def __richcmp__(self, other, int op):
-        return _expr_cmp(_var_to_expr(self), other, op)
-
     def __repr__(self):
         return self.name
-
-    def degree(self) -> float:
-        return _var_to_expr(self).degree()
-
-    def items(self):
-        return _var_to_expr(self).items()
-
-    def _normalize(self) -> PolynomialExpr:
-        return _var_to_expr(self)
 
     def vtype(self):
         """
@@ -3983,7 +3937,7 @@ cdef class Model:
 
         """
         variables = self.getVars()
-        objective = Expr()
+        objective = <PolynomialExpr>_expr({}, PolynomialExpr)
         for var in variables:
             coeff = var.getObj()
             if coeff != 0:

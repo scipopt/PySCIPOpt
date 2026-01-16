@@ -96,52 +96,9 @@ cdef class _ExprKey:
         return repr(self.expr)
 
 
-cdef class UnaryOperatorMixin:
-
-    def __abs__(self) -> AbsExpr:
-        return <AbsExpr>_unary(_ensure_unary(self), AbsExpr)
-
-    def exp(self) -> ExpExpr:
-        return <ExpExpr>_unary(_ensure_unary(self), ExpExpr)
-    
-    def log(self) -> LogExpr:
-        return <LogExpr>_unary(_ensure_unary(self), LogExpr)
-    
-    def sqrt(self) -> SqrtExpr:
-        return <SqrtExpr>_unary(_ensure_unary(self), SqrtExpr)
-
-    def sin(self) -> SinExpr:
-        return <SinExpr>_unary(_ensure_unary(self), SinExpr)
-
-    def cos(self) -> CosExpr:
-        return <CosExpr>_unary(_ensure_unary(self), CosExpr)
-
-
-cdef class Expr(UnaryOperatorMixin):
-    """Base class for mathematical expressions."""
+cdef class ExprLike:
 
     __array_priority__ = 100
-
-    def __cinit__(self, *args, **kwargs):
-        self.coef = 1.0
-        self.expo = 1.0
-        self._hash = -1
-
-    def __init__(
-        self,
-        children: Optional[dict[Union[Term, Expr, _ExprKey], double]] = None,
-    ):
-        for i in (children or {}):
-            if not isinstance(i, (Term, Expr, _ExprKey)):
-                raise TypeError(
-                    f"expected Term, Expr, or _ExprKey, but got {type(i).__name__!s}"
-                )
-
-        self._children = {_wrap(k): v for k, v in (children or {}).items()}
-
-    @property
-    def children(self):
-        return {_unwrap(k): v for k, v in self.items()}
 
     def __array_ufunc__(self, ufunc, method, *args, **kwargs):
         if method != "__call__":
@@ -185,6 +142,103 @@ cdef class Expr(UnaryOperatorMixin):
             return <CosExpr>_unary(_ensure_unary(args[0]), CosExpr)
         return NotImplemented
 
+    def __getitem__(self, key):
+        return self._as_expr()[key]
+
+    def __iter__(self) -> Iterator[Union[Term, Expr]]:
+        for i in self._as_expr()._children:
+            yield _unwrap(i)
+
+    def __bool__(self) -> bool:
+        return bool(self._as_expr()._children)
+
+    def __add__(self, other):
+        return self._as_expr() + other
+
+    def __radd__(self, other):
+        return self._as_expr() + other
+
+    def __sub__(self, other):
+        return self._as_expr() - other
+
+    def __rsub__(self, other):
+        return -self._as_expr() + other
+
+    def __mul__(self, other):
+        return self._as_expr() * other
+
+    def __rmul__(self, other):
+        return self._as_expr() * other
+
+    def __truediv__(self, other):
+        return self._as_expr() / other
+
+    def __rtruediv__(self, other):
+        return other / self._as_expr()
+
+    def __pow__(self, other):
+        return self._as_expr() ** other
+
+    def __rpow__(self, other):
+        return other ** self._as_expr()
+
+    def __neg__(self):
+        return -self._as_expr()
+
+    def __abs__(self) -> AbsExpr:
+        return <AbsExpr>_unary(_ensure_unary(self), AbsExpr)
+
+    def exp(self) -> ExpExpr:
+        return <ExpExpr>_unary(_ensure_unary(self), ExpExpr)
+
+    def log(self) -> LogExpr:
+        return <LogExpr>_unary(_ensure_unary(self), LogExpr)
+
+    def sqrt(self) -> SqrtExpr:
+        return <SqrtExpr>_unary(_ensure_unary(self), SqrtExpr)
+
+    def sin(self) -> SinExpr:
+        return <SinExpr>_unary(_ensure_unary(self), SinExpr)
+
+    def cos(self) -> CosExpr:
+        return <CosExpr>_unary(_ensure_unary(self), CosExpr)
+
+    def degree(self) -> float:
+        return self._as_expr().degree()
+
+    def keys(self):
+        return self._as_expr()._children.keys()
+
+    def items(self):
+        return self._as_expr()._children.items()
+
+    cpdef list _to_node(self, double coef = 1, int start = 0):
+        return self._as_expr()._to_node(coef, start)
+
+    cdef Expr _as_expr(self):
+        raise NotImplementedError(
+            f"Class {type(self).__name__!s} must implement '_as_expr' method."
+        )
+
+
+cdef class Expr(ExprLike):
+    """Base class for mathematical expressions."""
+
+    def __cinit__(self, *_):
+        self.coef = 1.0
+        self.expo = 1.0
+        self._hash = -1
+
+    def __init__(self, *_):
+        raise NotImplementedError(
+            "Direct instantiation of 'Expr' is not supported. "
+            "Please use Variable objects and arithmetic operators to build expressions."
+        )
+
+    @property
+    def children(self):
+        return {_unwrap(k): v for k, v in self.items()}
+
     def __hash__(self) -> int:
         if self._hash != -1:
             return self._hash
@@ -198,15 +252,8 @@ cdef class Expr(UnaryOperatorMixin):
             )
 
         if isinstance(key, Variable):
-            key = _term((key,))
+            key = _fchild((<Variable>key)._expr_view)
         return self._children.get(_wrap(key), 0.0)
-
-    def __iter__(self) -> Iterator[Union[Term, Expr]]:
-        for i in self._children:
-            yield _unwrap(i)
-
-    def __bool__(self) -> bool:
-        return bool(self._children)
 
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, (Number, Variable, Expr)):
@@ -240,9 +287,6 @@ cdef class Expr(UnaryOperatorMixin):
             return self.copy(False)
         return self + _other
 
-    def __radd__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        return self + other
-
     def __sub__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
@@ -255,9 +299,6 @@ cdef class Expr(UnaryOperatorMixin):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-
-    def __rsub__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        return (-self) + other
         return _const(0.0) if _is_expr_equal(self, _other) else self.__iadd__(-_other)
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -291,9 +332,6 @@ cdef class Expr(UnaryOperatorMixin):
             self._hash = -1
             return self.copy(False)
         return self * _other
-
-    def __rmul__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        return self * other
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, (Number, Variable, Expr)):
@@ -340,15 +378,12 @@ cdef class Expr(UnaryOperatorMixin):
     def degree(self) -> double:
         return max((i.degree() for i in self)) if self else 0
 
-    def keys(self):
-        return self._children.keys()
-
-    def items(self):
-        return self._children.items()
-
     def _normalize(self) -> Expr:
         self._children = {k: v for k, v in self.items() if v != 0}
         self._hash = -1
+        return self
+
+    cdef Expr _as_expr(self):
         return self
 
     cdef dict _to_dict(self, Expr other, bool copy = True):
@@ -391,13 +426,6 @@ cdef class Expr(UnaryOperatorMixin):
 
 cdef class PolynomialExpr(Expr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
-
-    def __init__(self, children: Optional[dict[Term, double]] = None):
-        for i in (children or {}):
-            if not isinstance(i, Term):
-                raise TypeError(f"expected Term, but got {type(i).__name__!s}")
-
-        super().__init__(children)
 
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, (Number, Variable, Expr)):
@@ -445,27 +473,6 @@ cdef class PolynomialExpr(Expr):
 
 cdef class ConstExpr(PolynomialExpr):
     """Expression representing for `constant`."""
-
-    def __init__(self, double constant = 0.0):
-        super().__init__({CONST: constant})
-
-    def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
-            return NotImplemented
-        cdef Expr _other = _to_expr(other)
-        if _is_const(_other):
-            return _const(_c(self) + _c(_other))
-        return super().__add__(_other)
-
-    def __iadd__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
-            return NotImplemented
-        cdef Expr _other = _to_expr(other)
-        if _is_const(_other):
-            self._children[CONST] += _c(_other)
-            self._hash = -1
-            return self
-        return super().__iadd__(_other)
 
     def __sub__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, (Number, Variable, Expr)):
@@ -528,14 +535,6 @@ cdef class FuncExpr(Expr):
 
 cdef class ProdExpr(FuncExpr):
     """Expression like `coefficient * expression`."""
-
-    def __init__(self, *children: Union[Term, Expr, _ExprKey]):
-        if len(children) < 2:
-            raise ValueError("ProdExpr must have at least two children")
-        if len(set(children)) != len(children):
-            raise ValueError("ProdExpr can't have duplicate children")
-
-        super().__init__(dict.fromkeys(children, 1.0))
 
     def __hash__(self) -> int:
         if self._hash != -1:
@@ -630,10 +629,6 @@ cdef class ProdExpr(FuncExpr):
 
 cdef class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
-
-    def __init__(self, base: Union[Term, Expr, _ExprKey], double expo):
-        super().__init__({base: 1.0})
-        self.expo = expo
 
     def __hash__(self) -> int:
         if self._hash != -1:
@@ -919,17 +914,13 @@ cdef inline _unwrap(x):
 
 
 cdef Expr _to_expr(x: Union[Number, Variable, Expr]):
-    if isinstance(x, Number):
-        return _const(<double>x)
-    elif isinstance(x, Variable):
-        return _var_to_expr(x)
+    if type(x) is Variable:
+        return (<Variable>x)._expr_view
     elif isinstance(x, Expr):
         return x
+    elif isinstance(x, Number):
+        return _const(<double>x)
     raise TypeError(f"expected Number, Variable, or Expr, but got {type(x).__name__!s}")
-
-
-cdef inline PolynomialExpr _var_to_expr(Variable x):
-    return <PolynomialExpr>_expr({_term((x,)): 1.0}, PolynomialExpr)
 
 
 cdef object _expr_cmp(Expr self, other: Union[Number, Variable, Expr], int op):

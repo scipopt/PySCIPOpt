@@ -2186,10 +2186,11 @@ cdef class Node:
     @staticmethod
     cdef create(SCIP_NODE* scipnode)
 
-cdef class UnaryOperatorMixin:
-    pass
+cdef class ExprLike:
+    cdef Expr _as_expr(self)
+    cpdef list _to_node(self, double coef = *, int start = *)
 
-cdef class Expr(UnaryOperatorMixin):
+cdef class Expr(ExprLike):
 
     cdef readonly dict _children
     cdef readonly double coef
@@ -2197,18 +2198,19 @@ cdef class Expr(UnaryOperatorMixin):
     cdef int _hash
 
     cdef dict _to_dict(self, Expr other, bool copy = *)
-
-    cpdef list _to_node(self, double coef = *, int start = *)
-
     cdef Expr copy(self, bool copy = *, object cls = *)
+
+cdef class PolynomialExpr(Expr):
+    pass
 
 cdef class ExprCons:
     cdef readonly Expr expr
     cdef readonly object _lhs
     cdef readonly object _rhs
 
-cdef class Variable(UnaryOperatorMixin):
+cdef class Variable(ExprLike):
     cdef SCIP_VAR* scip_var
+    cdef PolynomialExpr _expr_view
     # can be used to store problem data
     cdef public object data
 
