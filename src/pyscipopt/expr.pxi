@@ -916,22 +916,22 @@ cdef inline Expr _to_poly(Expr expr):
     return expr if type(expr) is PolynomialExpr else expr.copy(False, PolynomialExpr)
 
 
-cdef object _expr_cmp(Expr self, other: Union[Number, Variable, Expr], int op):
+cdef object _expr_cmp(Expr expr, other: Union[Number, Variable, Expr], int op):
     if isinstance(other, np.ndarray):
         return NotImplemented
     cdef Expr _other = _to_expr(other)
     if op == Py_LE:
         if type(_other) is ConstExpr:
-            return ExprCons(self, rhs=_c(_other))
-        return ExprCons(self - _other, rhs=0.0)
+            return ExprCons(expr, rhs=_c(_other))
+        return ExprCons(expr - _other, rhs=0.0)
     elif op == Py_GE:
         if type(_other) is ConstExpr:
-            return ExprCons(self, lhs=_c(_other))
-        return ExprCons(self - _other, lhs=0.0)
+            return ExprCons(expr, lhs=_c(_other))
+        return ExprCons(expr - _other, lhs=0.0)
     elif op == Py_EQ:
         if type(_other) is ConstExpr:
-            return ExprCons(self, lhs=_c(_other), rhs=_c(_other))
-        return ExprCons(self - _other, lhs=0.0, rhs=0.0)
+            return ExprCons(expr, lhs=_c(_other), rhs=_c(_other))
+        return ExprCons(expr - _other, lhs=0.0, rhs=0.0)
 
     raise NotImplementedError("can only support with '<=', '>=', or '=='")
 
