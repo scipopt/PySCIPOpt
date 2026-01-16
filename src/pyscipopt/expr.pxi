@@ -824,14 +824,14 @@ cpdef Expr quicksum(expressions: Iterator[Expr]):
     return res
 
 
-cpdef Expr quickprod(expressions: Iterator[Expr]):
+cpdef Expr quickprod(expressions: Iterator[Union[Variable, Expr]]):
     """
     Use inplace multiplication to multiply a list of expressions quickly, avoiding
     intermediate data structures created by Python's built-in prod function.
 
     Parameters
     ----------
-    expressions : Iterator[Expr]
+    expressions : Iterator[Union[Variable, Expr]]
         An iterator of expressions to be multiplied.
 
     Returns
