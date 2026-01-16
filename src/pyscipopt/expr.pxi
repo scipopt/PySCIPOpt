@@ -602,14 +602,13 @@ cdef class ProdExpr(FuncExpr):
         return _const(0.0) if not self or self.coef == 0 else self
 
     cpdef list _to_node(self, double coef = 1, int start = 0):
+        if coef == 0:
+            return []
+
         cdef list node = []
         cdef list sub_node
         cdef list[int] index = []
         cdef object i
-
-        if coef == 0:
-            return node
-
         for i in self:
             if (sub_node := i._to_node(1, start + len(node))):
                 node.extend(sub_node)
