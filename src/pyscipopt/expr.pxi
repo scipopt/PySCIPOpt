@@ -169,6 +169,8 @@ cdef class Expr(UnaryOperatorMixin):
         elif ufunc is np.equal:
             return args[0] == args[1]
         elif ufunc is np.absolute:
+            if type(args[0]) is AbsExpr:
+                return args[0].copy()
             return <AbsExpr>_unary(_ensure_unary(args[0]), AbsExpr)
         elif ufunc is np.exp:
             return <ExpExpr>_unary(_ensure_unary(args[0]), ExpExpr)
@@ -730,7 +732,9 @@ cdef class UnaryExpr(FuncExpr):
 
 cdef class AbsExpr(UnaryExpr):
     """Expression like `abs(expression)`."""
-    ...
+
+    def __abs__(self) -> AbsExpr:
+        return <AbsExpr>self.copy()
 
 
 cdef class ExpExpr(UnaryExpr):
