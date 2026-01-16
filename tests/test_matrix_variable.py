@@ -248,11 +248,11 @@ def test_matrix_sum_axis():
 )
 def test_matrix_sum_result(axis, keepdims):
     # directly compare the result of np.sum and MatrixExpr.sum
-    _getVal = np.vectorize(lambda e: e.terms[CONST])
+    _getVal = np.vectorize(lambda e: e[CONST])
     a = np.arange(6).reshape((1, 2, 3))
 
     np_res = a.sum(axis, keepdims=keepdims)
-    scip_res = MatrixExpr.sum(a, axis, keepdims=keepdims)
+    scip_res = a.view(MatrixExpr).sum(axis, keepdims=keepdims)
     assert (np_res == _getVal(scip_res)).all()
     assert np_res.shape == _getVal(scip_res).shape
 
@@ -262,9 +262,9 @@ def test_matrix_sum_axis_is_none_performance(n):
     model = Model()
     x = model.addMatrixVar((n, n))
 
-    # Original sum via `np.ndarray.sum`, `np.sum` will call subclass method
+    # Original sum via `np.ndarray.sum`
     start = time()
-    np.ndarray.sum(x)
+    x.view(np.ndarray).sum()
     orig = time() - start
 
     # Optimized sum via `quicksum`
@@ -280,9 +280,9 @@ def test_matrix_sum_axis_not_none_performance(n):
     model = Model()
     x = model.addMatrixVar((n, n))
 
-    # Original sum via `np.ndarray.sum`, `np.sum` will call subclass method
+    # Original sum via `np.ndarray.sum`
     start = time()
-    np.ndarray.sum(x, axis=0)
+    x.view(np.ndarray).sum(axis=0)
     orig = time() - start
 
     # Optimized sum via `quicksum`
@@ -298,10 +298,12 @@ def test_matrix_mean_performance(n):
     model = Model()
     x = model.addMatrixVar((n, n))
 
+    # Original sum via `np.ndarray.sum`
     start = time()
-    np.ndarray.mean(x, axis=0)
+    x.view(np.ndarray).mean(axis=0)
     orig = time() - start
 
+    # Optimized sum via `quicksum`
     start = time()
     x.mean(axis=0)
     matrix = time() - start
