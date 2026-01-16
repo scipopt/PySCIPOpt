@@ -4,7 +4,8 @@ from typing import TYPE_CHECKING, Iterator, Optional, Type, Union
 
 import numpy as np
 
-from cpython.object cimport Py_LE, Py_EQ, Py_GE
+from cpython.dict cimport PyDict_Next
+from cpython.object cimport Py_LE, Py_EQ, Py_GE, PyObject
 from pyscipopt.scip cimport Variable
 
 
@@ -314,13 +315,13 @@ cdef class Expr(ExprLike):
             if _c(self) == 1:
                 return _other.copy()
             elif _is_sum(_other):
-                return _expr({k: v * _c(self) for k, v in _other.items() if v != 0})
+                return _expr(_normalize(_other, _c(self)))
             return _expr({_wrap(_other): _c(self)})
         elif type(_other) is ConstExpr:
             if _c(_other) == 1:
                 return self.copy()
             elif _is_sum(self):
-                return _expr({k: v * _c(_other) for k, v in self.items() if v != 0})
+                return _expr(_normalize(self, _c(_other)))
             return _expr({_wrap(self): _c(_other)})
         elif _is_expr_equal(self, _other):
             return _pow(_wrap(self), 2.0)
@@ -331,7 +332,7 @@ cdef class Expr(ExprLike):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and _is_sum(self) and type(_other) is ConstExpr and _c(_other) != 0:
-            self.children = {k: v * _c(_other) for k, v in self.items() if v != 0}
+            self.children = _normalize(self, _c(_other))
             _reset_hash(self)
             return self
         return self * _other
@@ -372,7 +373,7 @@ cdef class Expr(ExprLike):
 
     def __neg__(self) -> Expr:
         cdef Expr res = self.copy(False)
-        res.children = {k: -v for k, v in self.children.items()}
+        res.children = _normalize(self, -1.0)
         return res
 
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op):
@@ -385,7 +386,7 @@ cdef class Expr(ExprLike):
         return max((i.degree() for i in self)) if self else 0
 
     def _normalize(self) -> Expr:
-        self.children = {k: v for k, v in self.items() if v != 0}
+        self.children = _normalize(self)
         _reset_hash(self)
         return self
 
@@ -1001,6 +1002,23 @@ cdef bool _is_child_equal(Expr x, object y):
     if len(x.children) != len(_y.children):
         return False
     return x.keys() == _y.keys()
+
+
+cdef dict _normalize(Expr expr, double coef = 1.0):
+    cdef dict res = {}
+    cdef Py_ssize_t pos = <Py_ssize_t>0
+    cdef PyObject* k_ptr = NULL
+    cdef PyObject* v_ptr = NULL
+    cdef double v_val
+    while PyDict_Next(expr.children, &pos, &k_ptr, &v_ptr):
+        if (v_val := <double>(<object>v_ptr)) == 0:
+            continue
+
+        if coef != 1.0:
+            res[<object>k_ptr] = v_val * coef
+        else:
+            res[<object>k_ptr] = v_val
+    return res
 
 
 cdef _ensure_unary(x):
