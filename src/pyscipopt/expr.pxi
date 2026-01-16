@@ -1,4 +1,5 @@
 ##@file expr.pxi
+import math
 from numbers import Number
 from typing import TYPE_CHECKING, Iterator, Optional, Type, Union
 
@@ -505,6 +506,21 @@ cdef class ConstExpr(PolynomialExpr):
 
     def __abs__(self) -> ConstExpr:
         return _const(abs(_c(self)))
+
+    def exp(self) -> ConstExpr:
+        return _const(math.exp(_c(self)))
+
+    def log(self) -> ConstExpr:
+        return _const(math.log(_c(self)))
+
+    def sqrt(self) -> ConstExpr:
+        return _const(math.sqrt(_c(self)))
+
+    def sin(self) -> ConstExpr:
+        return _const(math.sin(_c(self)))
+
+    def cos(self) -> ConstExpr:
+        return _const(math.cos(_c(self)))
 
     cpdef list _to_node(self, double coef = 1, int start = 0):
         cdef double res = _c(self) * coef
