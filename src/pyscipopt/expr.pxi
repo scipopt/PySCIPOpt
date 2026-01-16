@@ -703,9 +703,6 @@ cdef class PowExpr(FuncExpr):
 cdef class UnaryExpr(FuncExpr):
     """Expression like `f(expression)`."""
 
-    def __init__(self, expr: Union[Number, Variable, Term, Expr, _ExprKey]):
-        super().__init__({_ensure_unary(expr): 1.0})
-
     def __hash__(self) -> int:
         if self._hash != -1:
             return self._hash
@@ -1019,17 +1016,13 @@ cdef bool _is_child_equal(Expr x, object y):
     return x.keys() == _y.keys()
 
 
-cdef _ensure_unary(x: Union[Number, Variable, Term, Expr, _ExprKey]):
-    if isinstance(x, Number):
-        return _ExprKey(_const(<double>x))
-    elif isinstance(x, Variable):
-        return _term((x,))
+cdef _ensure_unary(x):
+    if isinstance(x, Variable):
+        return _fchild((<Variable>x)._expr_view)
     elif isinstance(x, Expr):
         return _ExprKey(x)
-    elif isinstance(x, (Term, _ExprKey)):
-        return x
     raise TypeError(
-        f"expected Number, Variable, _ExprKey, or Expr, but got {type(x).__name__!s}"
+        f"expected Variable or Expr, but got {type(x).__name__!s}"
     )
 
 
@@ -1041,15 +1034,15 @@ cdef inline UnaryExpr _unary(x: Union[Term, _ExprKey], cls: Type[UnaryExpr]):
 
 cdef inline _ensure_const(x):
     if isinstance(x, Number):
-        _const(<double>x)
-    elif isinstance(x, np.ndarray) and np.issubdtype(x.dtype, np.number):
+        return _const(<double>x)
+    elif isinstance(x, np.ndarray) and x.dtype.kind in "fiub":
         return _vec_const(x).view(MatrixExpr)
     return  x
 
 
 def exp(
     x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
-) -> Union[ExpExpr, np.ndarray, MatrixExpr]:
+) -> Union[ExpExpr, MatrixExpr]:
     """
     exp(x)
 
@@ -1059,14 +1052,14 @@ def exp(
 
     Returns
     -------
-    ExpExpr, np.ndarray, MatrixExpr
+    ExpExpr, MatrixExpr
     """
     return np.exp(_ensure_const(x))
 
 
 def log(
     x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
-) -> Union[LogExpr, np.ndarray, MatrixExpr]:
+) -> Union[LogExpr, MatrixExpr]:
     """
     log(x)
 
@@ -1076,14 +1069,14 @@ def log(
 
     Returns
     -------
-    LogExpr, np.ndarray, MatrixExpr
+    LogExpr, MatrixExpr
     """
     return np.log(_ensure_const(x))
 
 
 def sqrt(
     x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
-) -> Union[SqrtExpr, np.ndarray, MatrixExpr]:
+) -> Union[SqrtExpr, MatrixExpr]:
     """
     sqrt(x)
 
@@ -1093,14 +1086,14 @@ def sqrt(
 
     Returns
     -------
-    SqrtExpr, np.ndarray, MatrixExpr
+    SqrtExpr, MatrixExpr
     """
     return np.sqrt(_ensure_const(x))
 
 
 def sin(
     x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
-) -> Union[SinExpr, np.ndarray, MatrixExpr]:
+) -> Union[SinExpr, MatrixExpr]:
     """
     sin(x)
 
@@ -1110,14 +1103,14 @@ def sin(
 
     Returns
     -------
-    SinExpr, np.ndarray, MatrixExpr
+    SinExpr, MatrixExpr
     """
     return np.sin(_ensure_const(x))
 
 
 def cos(
     x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
-) -> Union[CosExpr, np.ndarray, MatrixExpr]:
+) -> Union[CosExpr, MatrixExpr]:
     """
     cos(x)
 
@@ -1127,6 +1120,6 @@ def cos(
 
     Returns
     -------
-    CosExpr, np.ndarray, MatrixExpr
+    CosExpr, MatrixExpr
     """
     return np.cos(_ensure_const(x))
