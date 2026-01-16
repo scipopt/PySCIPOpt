@@ -357,8 +357,11 @@ cdef class Expr(ExprLike):
             raise TypeError("excepted a constant exponent")
         if _is_zero(self):
             return _const(0.0)
-        elif _is_zero(_other):
-            return _const(1.0)
+        elif type(_other) is ConstExpr:
+            if _c(_other) == 0:
+                return _const(1.0)
+            elif _c(_other) == 1:
+                return self.copy()
         return _pow(_wrap(self), _c(_other))
 
     def __rpow__(self, other: Union[Number, Expr]) -> Union[ExpExpr, ConstExpr]:
@@ -430,14 +433,14 @@ cdef class PolynomialExpr(Expr):
         if not self or not other or type(_other) is not PolynomialExpr:
             return super().__mul__(_other)
 
-        cdef PolynomialExpr res = <PolynomialExpr>_expr({}, PolynomialExpr)
+        cdef dict res = {}
         cdef Term k1, k2, child
         cdef double v1, v2
         for k1, v1 in self.items():
             for k2, v2 in _other.items():
                 child = k1 * k2
-                res.children[child] = res.children.get(child, 0.0) + v1 * v2
-        return res
+                res[child] = res.get(child, 0.0) + v1 * v2
+        return <PolynomialExpr>_expr(res, PolynomialExpr)
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, EXPR_OP_TYPES):
@@ -449,14 +452,18 @@ cdef class PolynomialExpr(Expr):
 
     def __pow__(self, other: Union[Number, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
+        cdef PolynomialExpr res
+        cdef double f_epxo
+        cdef int expo
         if (
             self
             and type(_other) is ConstExpr
-            and _c(_other).is_integer()
-            and _c(_other) > 0
+            and (f_epxo := _c(_other)) > 0
+            and f_epxo == (expo := <int>f_epxo)
+            and expo != 1
         ):
             res = _const(1.0)
-            for _ in range(int(_c(_other))):
+            for _ in range(expo):
                 res *= self
             return res
         return super().__pow__(_other)
