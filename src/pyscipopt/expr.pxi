@@ -37,11 +37,22 @@ cdef class Term:
     def __eq__(self, other: Term) -> bool:
         if self is other:
             return True
-        if not isinstance(other, Term):
+        if type(other) is not Term:
             return False
 
         cdef Term _other = <Term>other
-        return False if self._hash != _other._hash else self.vars == _other.vars
+        if self._hash != _other._hash:
+            return False
+
+        cdef int n = len(self)
+        if n != len(_other) or self._hash != _other._hash:
+            return False
+
+        cdef int i
+        for i in range(n):
+            if self.vars[i] is not _other.vars[i]:
+                return False
+        return True
 
     def __mul__(self, Term other) -> Term:
         return Term(*(self.vars + other.vars))
