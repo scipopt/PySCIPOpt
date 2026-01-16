@@ -1,6 +1,5 @@
 ##@file expr.pxi
 import math
-from numbers import Number
 from typing import TYPE_CHECKING, Iterator, Optional, Type, Union
 
 import numpy as np
@@ -103,7 +102,7 @@ cdef class ExprLike:
             return NotImplemented
 
         for arg in args:
-            if not isinstance(arg, (Number, Variable, Expr)):
+            if not isinstance(arg, EXPR_OP_TYPES):
                 return NotImplemented
 
         if ufunc is np.add:
@@ -254,7 +253,7 @@ cdef class Expr(ExprLike):
         return self._children.get(_wrap(key), 0.0)
 
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if _is_zero(self):
@@ -270,7 +269,7 @@ cdef class Expr(ExprLike):
         return _expr({_wrap(self): 1.0, _wrap(_other): 1.0})
 
     def __iadd__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if _is_zero(self):
@@ -299,7 +298,7 @@ cdef class Expr(ExprLike):
         return self + _other
 
     def __sub__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if _is_expr_equal(self, _other):
@@ -307,13 +306,13 @@ cdef class Expr(ExprLike):
         return self + (-_other)
 
     def __isub__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         return _const(0.0) if _is_expr_equal(self, _other) else self.__iadd__(-_other)
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if _is_zero(self) or _is_zero(_other):
@@ -335,7 +334,7 @@ cdef class Expr(ExprLike):
         return _prod((_wrap(self), _wrap(_other)))
 
     def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and _is_sum(self) and type(_other) is ConstExpr and _c(_other) != 0:
@@ -345,7 +344,7 @@ cdef class Expr(ExprLike):
         return self * _other
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if _is_zero(self):
@@ -355,7 +354,7 @@ cdef class Expr(ExprLike):
         return self * (_other ** _const(-1.0))
 
     def __rtruediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         return _to_expr(other) / self
 
@@ -439,7 +438,7 @@ cdef class PolynomialExpr(Expr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
 
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and isinstance(_other, PolynomialExpr) and not _is_zero(_other):
@@ -447,7 +446,7 @@ cdef class PolynomialExpr(Expr):
         return super().__add__(_other)
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
 
         cdef Expr _other = _to_expr(other)
@@ -464,7 +463,7 @@ cdef class PolynomialExpr(Expr):
         return res
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and type(_other) is ConstExpr:
@@ -490,7 +489,7 @@ cdef class ConstExpr(PolynomialExpr):
     """Expression representing for `constant`."""
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Union[ConstExpr, Expr]:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if type(_other) is ConstExpr:
@@ -548,7 +547,7 @@ cdef class ProdExpr(FuncExpr):
         return self._hash
 
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and _is_child_equal(self, _other):
@@ -558,7 +557,7 @@ cdef class ProdExpr(FuncExpr):
         return super().__add__(_other)
 
     def __iadd__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and _is_child_equal(self, _other):
@@ -568,7 +567,7 @@ cdef class ProdExpr(FuncExpr):
         return super().__iadd__(_other)
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and type(_other) is ConstExpr:
@@ -578,7 +577,7 @@ cdef class ProdExpr(FuncExpr):
         return super().__mul__(_other)
 
     def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and type(_other) is ConstExpr:
@@ -588,7 +587,7 @@ cdef class ProdExpr(FuncExpr):
         return super().__imul__(_other)
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and type(_other) is ConstExpr:
@@ -642,7 +641,7 @@ cdef class PowExpr(FuncExpr):
         return self._hash
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and _is_child_equal(self, _other):
@@ -652,7 +651,7 @@ cdef class PowExpr(FuncExpr):
         return super().__mul__(_other)
 
     def __imul__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and _is_child_equal(self, _other):
@@ -662,7 +661,7 @@ cdef class PowExpr(FuncExpr):
         return super().__imul__(_other)
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
+        if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and _is_child_equal(self, _other):
@@ -861,16 +860,19 @@ cpdef Expr quickprod(expressions: Iterator[Union[Variable, Expr]]):
     return res
 
 
+Number = Union[int, float, np.number]
+cdef double INF = float("inf")
+cdef tuple NUMBER_TYPES = (int, float, np.number)
+cdef tuple EXPR_OP_TYPES = NUMBER_TYPES + (Variable, Expr)
+CONST = Term()
+
+
 cdef inline int _ensure_hash(int h) noexcept:
     return -2 if h == -1 else h
 
 
 cdef inline void _reset_hash(Expr expr) noexcept:
     if expr._hash != -1: expr._hash = -1
-
-
-cdef double INF = float("inf")
-CONST = Term()
 
 
 cdef inline double _c(Expr expr):
@@ -918,7 +920,7 @@ cdef Expr _to_expr(x: Union[Number, Variable, Expr]):
         return (<Variable>x)._expr_view
     elif isinstance(x, Expr):
         return x
-    elif isinstance(x, Number):
+    elif isinstance(x, NUMBER_TYPES):
         return _const(<double>x)
     raise TypeError(f"expected Number, Variable, or Expr, but got {type(x).__name__!s}")
 
@@ -1020,7 +1022,7 @@ cdef inline UnaryExpr _unary(x: Union[Term, _ExprKey], cls: Type[UnaryExpr]):
 
 
 cdef inline _ensure_const(x):
-    if isinstance(x, Number):
+    if isinstance(x, NUMBER_TYPES):
         return _const(<double>x)
     elif isinstance(x, np.ndarray) and x.dtype.kind in "fiub":
         return _vec_const(x).view(MatrixExpr)
