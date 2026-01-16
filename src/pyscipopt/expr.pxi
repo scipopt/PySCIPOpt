@@ -916,13 +916,8 @@ cdef inline PolynomialExpr _var_to_expr(Variable x):
 
 
 cdef object _expr_cmp(Expr self, other: Union[Number, Variable, Expr], int op):
-    if not isinstance(other, (Number, Variable, Expr)):
-        if isinstance(other, np.ndarray):
-            return NotImplemented
-        raise TypeError(
-            f"expected Number, Variable, or Expr, but got {type(other).__name__!s}"
-        )
-
+    if isinstance(other, np.ndarray):
+        return NotImplemented
     cdef Expr _other = _to_expr(other)
     if op == Py_LE:
         if _is_const(_other):
