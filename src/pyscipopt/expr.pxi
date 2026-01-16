@@ -435,12 +435,29 @@ cdef class PolynomialExpr(Expr):
             return super().__mul__(_other)
 
         cdef dict res = {}
-        cdef Term k1, k2, child
-        cdef double v1, v2
-        for k1, v1 in self.items():
-            for k2, v2 in _other.items():
-                child = k1 * k2
-                res[child] = res.get(child, 0.0) + v1 * v2
+        cdef Py_ssize_t pos1 = <Py_ssize_t>0, pos2 = <Py_ssize_t>0
+        cdef PyObject *k1_ptr = NULL
+        cdef PyObject *v1_ptr = NULL
+        cdef PyObject *k2_ptr = NULL
+        cdef PyObject *v2_ptr = NULL
+        cdef PyObject *old_v_ptr = NULL
+        cdef object child
+        cdef double v1_val, v2_val, prod_v
+        while PyDict_Next(self.children, &pos1, &k1_ptr, &v1_ptr):
+            if (v1_val := <double>(<object>v1_ptr)) == 0:
+                continue
+
+            pos2 = <Py_ssize_t>0
+            while PyDict_Next(_other.children, &pos2, &k2_ptr, &v2_ptr):
+                if (v2_val := <double>(<object>v2_ptr)) == 0:
+                    continue
+
+                child = (<Term>k1_ptr) * (<Term>k2_ptr)
+                prod_v = v1_val * v2_val
+                if (old_v_ptr := PyDict_GetItem(res, child)) != NULL:
+                    res[child] = <double>(<object>old_v_ptr) + prod_v
+                else:
+                    res[child] = prod_v
         return <PolynomialExpr>_expr(res, PolynomialExpr)
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
