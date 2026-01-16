@@ -1568,11 +1568,11 @@ cdef class Variable(ExprLike):
         var._expr_view = <PolynomialExpr>_expr({Term(var): 1.0}, PolynomialExpr)
         return var
 
-    def __hash__(self) -> size_t:
+    def __hash__(self):
         return <size_t>self.scip_var
 
-    def ptr(self) -> size_t:
-        return self.__hash__()
+    def ptr(self):
+        return hash(self)
 
     def __richcmp__(self, other, int op):
         return _expr_cmp(self._expr_view, other, op)
