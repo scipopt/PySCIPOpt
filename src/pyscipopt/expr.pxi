@@ -19,10 +19,6 @@ cdef class Term:
     cdef int _hash
 
     def __init__(self, *vars: Variable):
-        for i in vars:
-            if not isinstance(i, Variable):
-                raise TypeError(f"expected Variable, but got {type(i).__name__!s}")
-
         self.vars = tuple(sorted(vars, key=hash))
         self._hash = hash(self.vars)
 
@@ -48,7 +44,7 @@ cdef class Term:
         return False if self._hash != _other._hash else self.vars == _other.vars
 
     def __mul__(self, Term other) -> Term:
-        return _term(self.vars + other.vars)
+        return Term(*(self.vars + other.vars))
 
     def __repr__(self) -> str:
         return f"Term({self[0]})" if self.degree() == 1 else f"Term{self.vars}"
@@ -862,7 +858,7 @@ cdef inline Term _term(tuple vars):
 
 
 cdef double INF = float("inf")
-CONST = _term(())
+CONST = Term()
 
 
 cdef inline double _c(Expr expr):
