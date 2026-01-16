@@ -263,16 +263,16 @@ def test_matrix_sum_axis_is_none_performance(n):
     x = model.addMatrixVar((n, n))
 
     # Original sum via `np.ndarray.sum`, `np.sum` will call subclass method
-    start_orig = time()
+    start = time()
     np.ndarray.sum(x)
-    end_orig = time()
+    orig = time() - start
 
     # Optimized sum via `quicksum`
-    start_matrix = time()
+    start = time()
     x.sum()
-    end_matrix = time()
+    matrix = time() - start
 
-    assert model.isGT(end_orig - start_orig, end_matrix - start_matrix)
+    assert model.isGT(orig, matrix)
 
 
 @pytest.mark.parametrize("n", [50, 100])
@@ -281,16 +281,16 @@ def test_matrix_sum_axis_not_none_performance(n):
     x = model.addMatrixVar((n, n))
 
     # Original sum via `np.ndarray.sum`, `np.sum` will call subclass method
-    start_orig = time()
+    start = time()
     np.ndarray.sum(x, axis=0)
-    end_orig = time()
+    orig = time() - start
 
     # Optimized sum via `quicksum`
-    start_matrix = time()
+    start = time()
     x.sum(axis=0)
-    end_matrix = time()
+    matrix = time() - start
 
-    assert model.isGT(end_orig - start_orig, end_matrix - start_matrix)
+    assert model.isGT(orig, matrix)
 
 
 @pytest.mark.parametrize("n", [50, 100])
