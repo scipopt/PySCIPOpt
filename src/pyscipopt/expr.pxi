@@ -303,8 +303,6 @@ cdef class Expr(UnaryOperatorMixin):
             return _const(0.0)
         elif _is_zero(_other):
             raise ZeroDivisionError("division by zero")
-        elif _is_expr_equal(self, _other):
-            return _const(1.0)
         return self * (_other ** _const(-1.0))
 
     def __rtruediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
