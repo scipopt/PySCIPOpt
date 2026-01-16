@@ -13,7 +13,7 @@ from pyscipopt.scip cimport Expr, quicksum
 
 class MatrixExprLike(np.ndarray):
 
-    __array_priority__ = 101
+    __array_priority__ = 100
 
     def __array_ufunc__(self, ufunc, method, *args, **kwargs):
         args = _ensure_array(args)
