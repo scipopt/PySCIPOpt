@@ -428,7 +428,7 @@ cdef class Expr(ExprLike):
 
     cdef Expr copy(self, bool copy = True, cls: Optional[Type[Expr]] = None):
         cls = cls or type(self)
-        cdef Expr res = <Expr>cls.__new__(cls)
+        cdef Expr res = cls.__new__(cls)
         res._children = self._children.copy() if copy else self._children
         if cls is ProdExpr:
             res.coef = self.coef
@@ -451,20 +451,18 @@ cdef class PolynomialExpr(Expr):
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
+        if not self or not other or type(_other) is not PolynomialExpr:
+            return super().__mul__(_other)
+
         cdef Expr _other = _to_expr(other)
-        cdef PolynomialExpr res
+        cdef PolynomialExpr res = <PolynomialExpr>_expr({}, PolynomialExpr)
         cdef Term k1, k2, child
         cdef double v1, v2
-        if self and isinstance(_other, PolynomialExpr) and other and not (
-            _is_const(_other) and (_c(_other) == 0 or _c(_other) == 1)
-        ):
-            res = <PolynomialExpr>_expr({}, PolynomialExpr)
-            for k1, v1 in self.items():
-                for k2, v2 in _other.items():
-                    child = k1 * k2
-                    res._children[child] = res._children.get(child, 0.0) + v1 * v2
-            return res
-        return super().__mul__(_other)
+        for k1, v1 in self.items():
+            for k2, v2 in _other.items():
+                child = k1 * k2
+                res._children[child] = res._children.get(child, 0.0) + v1 * v2
+        return res
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, (Number, Variable, Expr)):
@@ -476,7 +474,12 @@ cdef class PolynomialExpr(Expr):
 
     def __pow__(self, other: Union[Number, Expr]) -> Expr:
         cdef Expr _other = _to_expr(other)
-        if self and _is_const(_other) and _c(_other).is_integer() and _c(_other) > 0:
+        if (
+            self
+            and type(_other) is ConstExpr
+            and _c(_other).is_integer()
+            and _c(_other) > 0
+        ):
             res = _const(1.0)
             for _ in range(int(_c(_other))):
                 res *= self
@@ -885,7 +888,7 @@ _vec_const = np.frompyfunc(_const, 1, 1)
 
 
 cdef inline Expr _expr(dict children, cls: Type[Expr] = Expr):
-    cdef Expr res = <Expr>cls.__new__(cls)
+    cdef Expr res = cls.__new__(cls)
     res._children = children
     return res
 
@@ -1012,7 +1015,7 @@ cdef _ensure_unary(x):
 
 
 cdef inline UnaryExpr _unary(x: Union[Term, _ExprKey], cls: Type[UnaryExpr]):
-    cdef UnaryExpr res = <UnaryExpr>cls.__new__(cls)
+    cdef UnaryExpr res = cls.__new__(cls)
     res._children = {x: 1.0}
     return res
 
