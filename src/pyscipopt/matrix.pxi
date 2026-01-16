@@ -121,6 +121,7 @@ class MatrixExprCons(np.ndarray):
 
 
 cdef inline tuple _ensure_array(tuple args, bool convert_scalar = False):
+    cdef object x
     if not convert_scalar:
         return tuple(
             x.view(np.ndarray) if isinstance(x, np.ndarray) else x 
