@@ -451,10 +451,11 @@ cdef class PolynomialExpr(Expr):
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
+
+        cdef Expr _other = _to_expr(other)
         if not self or not other or type(_other) is not PolynomialExpr:
             return super().__mul__(_other)
 
-        cdef Expr _other = _to_expr(other)
         cdef PolynomialExpr res = <PolynomialExpr>_expr({}, PolynomialExpr)
         cdef Term k1, k2, child
         cdef double v1, v2
