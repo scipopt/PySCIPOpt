@@ -258,11 +258,11 @@ cdef class Expr(ExprLike):
         elif _is_zero(_other):
             return self.copy()
         elif _is_sum(self):
-            if _is_single_poly(res := _expr(self._to_dict(_other))):
+            if _is_single_poly(res := _expr(_to_dict(self, _other))):
                 return _to_poly(res)
             return res
         elif _is_sum(_other):
-            if _is_single_poly(res := _expr(_other._to_dict(self))):
+            if _is_single_poly(res := _expr(_to_dict(_other, self))):
                 return _to_poly(res)
             return res
         elif _is_expr_equal(self, _other):
@@ -278,7 +278,7 @@ cdef class Expr(ExprLike):
         elif _is_zero(_other):
             return self
         elif _is_sum(self) and _is_sum(_other):
-            self._to_dict(_other, copy=False)
+            _to_dict(self, _other, copy=False)
             _reset_hash(self)
 
             if _is_single_poly(self):
@@ -388,14 +388,6 @@ cdef class Expr(ExprLike):
 
     cdef Expr _as_expr(self):
         return self
-
-    cdef dict _to_dict(self, Expr other, bool copy = True):
-        cdef dict children = self.children.copy() if copy else self.children
-        cdef object k
-        cdef double v
-        for k, v in (other if _is_sum(other) else {_wrap(other): 1.0}).items():
-            children[k] = children.get(k, 0.0) + v
-        return children
 
     cpdef list _to_node(self, double coef = 1, int start = 0):
         cdef list node = []
@@ -914,6 +906,15 @@ cdef inline Expr _to_poly(Expr expr):
     if _fchild(expr) is CONST:
         return expr if type(expr) is ConstExpr else expr.copy(False, ConstExpr)
     return expr if type(expr) is PolynomialExpr else expr.copy(False, PolynomialExpr)
+
+
+cdef dict _to_dict(Expr expr, Expr other, bool copy = True):
+    cdef dict children = expr.children.copy() if copy else expr.children
+    cdef object k
+    cdef double v
+    for k, v in (other if _is_sum(other) else {_wrap(other): 1.0}).items():
+        children[k] = children.get(k, 0.0) + v
+    return children
 
 
 cdef object _expr_cmp(Expr expr, other: Union[Number, Variable, Expr], int op):

@@ -2197,7 +2197,6 @@ cdef class Expr(ExprLike):
     cdef readonly double expo
     cdef int _hash
 
-    cdef dict _to_dict(self, Expr other, bool copy = *)
     cdef Expr copy(self, bool copy = *, object cls = *)
 
 cdef class PolynomialExpr(Expr):
