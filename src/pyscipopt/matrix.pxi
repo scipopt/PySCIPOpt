@@ -51,6 +51,13 @@ def _matrixexpr_richcmp(self, other, op):
 
 class MatrixExpr(np.ndarray):
 
+    def __array_ufunc__(self, ufunc, method, *args, **kwargs):
+        if method == "reduce":
+            if ufunc is np.add and isinstance(args[0], MatrixExpr):
+                return args[0].sum(**kwargs)
+
+        return super().__array_ufunc__(ufunc, method, *args, **kwargs)
+
     def sum(
         self,
         axis: Optional[Union[int, Tuple[int, ...]]] = None,
