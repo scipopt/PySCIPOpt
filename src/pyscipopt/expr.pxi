@@ -956,8 +956,8 @@ cdef bool _is_term(expr):
     return (
         _is_sum(expr)
         and len(expr._children) == 1
-        and isinstance(_fchild(<Expr>expr), Term)
-        and (<Expr>expr)[_fchild(<Expr>expr)] == 1
+        and type(_fchild(<Expr>expr)) is Term
+        and expr._children[_fchild(<Expr>expr)] == 1
     )
 
 
@@ -972,16 +972,15 @@ cdef bool _is_expr_equal(Expr x, object y):
         return False
 
     cdef Expr _y = <Expr>y
-    if len(x._children) != len(_y._children):
+    if len(x._children) != len(_y._children) or x._hash != _y._hash:
         return False
 
     cdef object t_x = type(x)
-    cdef object t_y = type(_y)
     if _is_sum(x):
         if not _is_sum(_y):
             return False
     else:
-        if t_x is not t_y:
+        if t_x is not type(_y):
             return False
 
         if t_x is ProdExpr:
@@ -996,9 +995,7 @@ cdef bool _is_expr_equal(Expr x, object y):
 cdef bool _is_child_equal(Expr x, object y):
     if x is y:
         return True
-
-    cdef object t_x = type(x)
-    if type(y) is not t_x:
+    if type(y) is not type(x):
         return False
 
     cdef Expr _y = <Expr>y
