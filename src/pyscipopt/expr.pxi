@@ -252,14 +252,19 @@ cdef class Expr(ExprLike):
         if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
+        cdef Expr res
         if _is_zero(self):
             return _other.copy()
         elif _is_zero(_other):
             return self.copy()
         elif _is_sum(self):
-            return _expr(self._to_dict(_other))
+            if _is_single_poly(res := _expr(self._to_dict(_other))):
+                return _to_poly(res)
+            return res
         elif _is_sum(_other):
-            return _expr(_other._to_dict(self))
+            if _is_single_poly(res := _expr(_other._to_dict(self))):
+                return _to_poly(res)
+            return res
         elif _is_expr_equal(self, _other):
             return self * _const(2.0)
         return _expr({_wrap(self): 1.0, _wrap(_other): 1.0})
@@ -276,16 +281,8 @@ cdef class Expr(ExprLike):
             self._to_dict(_other, copy=False)
             _reset_hash(self)
 
-            if len(self.children) == 1 and type(_fchild(self)) is Term:
-                if _fchild(self) is CONST:
-                    if type(self) is ConstExpr:
-                        return self
-                    return self.copy(False, ConstExpr)
-                else:
-                    if type(self) is PolynomialExpr:
-                        return self
-                    return self.copy(False, PolynomialExpr)
-
+            if _is_single_poly(self):
+                return _to_poly(self)
             if type(self) is type(_other):
                 return self
             elif isinstance(self, type(_other)):
@@ -432,14 +429,6 @@ cdef class Expr(ExprLike):
 
 cdef class PolynomialExpr(Expr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
-
-    def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
-        if not isinstance(other, EXPR_OP_TYPES):
-            return NotImplemented
-        cdef Expr _other = _to_expr(other)
-        if self and isinstance(_other, PolynomialExpr) and not _is_zero(_other):
-            return _expr(self._to_dict(_other), PolynomialExpr)
-        return super().__add__(_other)
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, EXPR_OP_TYPES):
@@ -708,9 +697,9 @@ cdef class UnaryExpr(FuncExpr):
         return _expr_cmp(self, other, op)
 
     def __repr__(self) -> str:
-        child = _unwrap(_fchild(self))
-        if _is_term(child) and child.children[(term := _fchild(<Expr>child))] == 1:
-            return f"{type(self).__name__}({term})"
+        cdef object child = _unwrap(_fchild(self))
+        if _is_single_poly(child) and child[_fchild(<Expr>child)] == 1:
+            return f"{type(self).__name__}({_fchild(<Expr>child)})"
         return f"{type(self).__name__}({child})"
 
     cpdef list _to_node(self, double coef = 1, int start = 0):
@@ -921,6 +910,12 @@ cdef Expr _to_expr(x: Union[Number, Variable, Expr]):
     raise TypeError(f"expected Number, Variable, or Expr, but got {type(x).__name__!s}")
 
 
+cdef inline Expr _to_poly(Expr expr):
+    if _fchild(expr) is CONST:
+        return expr if type(expr) is ConstExpr else expr.copy(False, ConstExpr)
+    return expr if type(expr) is PolynomialExpr else expr.copy(False, PolynomialExpr)
+
+
 cdef object _expr_cmp(Expr self, other: Union[Number, Variable, Expr], int op):
     if isinstance(other, np.ndarray):
         return NotImplemented
@@ -949,12 +944,11 @@ cdef inline bool _is_zero(Expr expr):
     return not expr or (type(expr) is ConstExpr and _c(expr) == 0)
 
 
-cdef bool _is_term(expr):
+cdef inline bool _is_single_poly(expr):
     return (
         _is_sum(expr)
         and len(expr.children) == 1
         and type(_fchild(<Expr>expr)) is Term
-        and expr.children[_fchild(<Expr>expr)] == 1
     )
 
 
