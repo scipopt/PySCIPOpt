@@ -2192,7 +2192,7 @@ cdef class ExprLike:
 
 cdef class Expr(ExprLike):
 
-    cdef readonly dict _children
+    cdef readonly dict children
     cdef readonly double coef
     cdef readonly double expo
     cdef int _hash

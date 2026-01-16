@@ -143,11 +143,11 @@ cdef class ExprLike:
         return self._as_expr()[key]
 
     def __iter__(self) -> Iterator[Union[Term, Expr]]:
-        for i in self._as_expr()._children:
+        for i in self._as_expr().children:
             yield _unwrap(i)
 
     def __bool__(self) -> bool:
-        return bool(self._as_expr()._children)
+        return bool(self._as_expr().children)
 
     def __add__(self, other):
         return self._as_expr() + other
@@ -204,10 +204,10 @@ cdef class ExprLike:
         return self._as_expr().degree()
 
     def keys(self):
-        return self._as_expr()._children.keys()
+        return self._as_expr().children.keys()
 
     def items(self):
-        return self._as_expr()._children.items()
+        return self._as_expr().children.items()
 
     cpdef list _to_node(self, double coef = 1, int start = 0):
         return self._as_expr()._to_node(coef, start)
@@ -232,10 +232,6 @@ cdef class Expr(ExprLike):
             "Please use Variable objects and arithmetic operators to build expressions."
         )
 
-    @property
-    def children(self):
-        return {_unwrap(k): v for k, v in self.items()}
-
     def __hash__(self) -> int:
         if self._hash != -1:
             return self._hash
@@ -250,7 +246,7 @@ cdef class Expr(ExprLike):
 
         if isinstance(key, Variable):
             key = _fchild((<Variable>key)._expr_view)
-        return self._children.get(_wrap(key), 0.0)
+        return self.children.get(_wrap(key), 0.0)
 
     def __add__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, EXPR_OP_TYPES):
@@ -280,7 +276,7 @@ cdef class Expr(ExprLike):
             self._to_dict(_other, copy=False)
             _reset_hash(self)
 
-            if len(self._children) == 1 and type(_fchild(self)) is Term:
+            if len(self.children) == 1 and type(_fchild(self)) is Term:
                 if _fchild(self) is CONST:
                     if type(self) is ConstExpr:
                         return self
@@ -338,7 +334,7 @@ cdef class Expr(ExprLike):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and _is_sum(self) and type(_other) is ConstExpr and _c(_other) != 0:
-            self._children = {k: v * _c(_other) for k, v in self.items() if v != 0}
+            self.children = {k: v * _c(_other) for k, v in self.items() if v != 0}
             _reset_hash(self)
             return self
         return self * _other
@@ -376,20 +372,20 @@ cdef class Expr(ExprLike):
 
     def __neg__(self) -> Expr:
         cdef Expr res = self.copy(False)
-        res._children = {k: -v for k, v in self._children.items()}
+        res.children = {k: -v for k, v in self.children.items()}
         return res
 
     def __richcmp__(self, other: Union[Number, Variable, Expr], int op):
         return _expr_cmp(self, other, op)
 
     def __repr__(self) -> str:
-        return f"Expr({self._children})"
+        return f"Expr({self.children})"
 
     def degree(self) -> double:
         return max((i.degree() for i in self)) if self else 0
 
     def _normalize(self) -> Expr:
-        self._children = {k: v for k, v in self.items() if v != 0}
+        self.children = {k: v for k, v in self.items() if v != 0}
         _reset_hash(self)
         return self
 
@@ -397,7 +393,7 @@ cdef class Expr(ExprLike):
         return self
 
     cdef dict _to_dict(self, Expr other, bool copy = True):
-        cdef dict children = self._children.copy() if copy else self._children
+        cdef dict children = self.children.copy() if copy else self.children
         cdef object k
         cdef double v
         for k, v in (other if _is_sum(other) else {_wrap(other): 1.0}).items():
@@ -426,7 +422,7 @@ cdef class Expr(ExprLike):
     cdef Expr copy(self, bool copy = True, cls: Optional[Type[Expr]] = None):
         cls = cls or type(self)
         cdef Expr res = cls.__new__(cls)
-        res._children = self._children.copy() if copy else self._children
+        res.children = self.children.copy() if copy else self.children
         if cls is ProdExpr:
             res.coef = self.coef
         elif cls is PowExpr:
@@ -459,7 +455,7 @@ cdef class PolynomialExpr(Expr):
         for k1, v1 in self.items():
             for k2, v2 in _other.items():
                 child = k1 * k2
-                res._children[child] = res._children.get(child, 0.0) + v1 * v2
+                res.children[child] = res.children.get(child, 0.0) + v1 * v2
         return res
 
     def __truediv__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -713,7 +709,7 @@ cdef class UnaryExpr(FuncExpr):
 
     def __repr__(self) -> str:
         child = _unwrap(_fchild(self))
-        if _is_term(child) and child._children[(term := _fchild(<Expr>child))] == 1:
+        if _is_term(child) and child.children[(term := _fchild(<Expr>child))] == 1:
             return f"{type(self).__name__}({term})"
         return f"{type(self).__name__}({child})"
 
@@ -876,12 +872,12 @@ cdef inline void _reset_hash(Expr expr) noexcept:
 
 
 cdef inline double _c(Expr expr):
-    return expr._children.get(CONST, 0.0)
+    return expr.children.get(CONST, 0.0)
 
 
 cdef inline ConstExpr _const(double c):
     cdef ConstExpr res = ConstExpr.__new__(ConstExpr)
-    res._children = {CONST: c}
+    res.children = {CONST: c}
     return res
 
 
@@ -890,19 +886,19 @@ _vec_const = np.frompyfunc(_const, 1, 1)
 
 cdef inline Expr _expr(dict children, cls: Type[Expr] = Expr):
     cdef Expr res = cls.__new__(cls)
-    res._children = children
+    res.children = children
     return res
 
 
 cdef inline ProdExpr _prod(tuple children):
     cdef ProdExpr res = ProdExpr.__new__(ProdExpr)
-    res._children = dict.fromkeys(children, 1.0)
+    res.children = dict.fromkeys(children, 1.0)
     return res
 
 
 cdef inline PowExpr _pow(base: Union[Term, _ExprKey], double expo):
     cdef PowExpr res = PowExpr.__new__(PowExpr)
-    res._children = {base: 1.0} 
+    res.children = {base: 1.0} 
     res.expo = expo
     return res
 
@@ -956,14 +952,14 @@ cdef inline bool _is_zero(Expr expr):
 cdef bool _is_term(expr):
     return (
         _is_sum(expr)
-        and len(expr._children) == 1
+        and len(expr.children) == 1
         and type(_fchild(<Expr>expr)) is Term
-        and expr._children[_fchild(<Expr>expr)] == 1
+        and expr.children[_fchild(<Expr>expr)] == 1
     )
 
 
 cdef inline _fchild(Expr expr):
-    return next(iter(expr._children))
+    return next(iter(expr.children))
 
 
 cdef bool _is_expr_equal(Expr x, object y):
@@ -973,7 +969,7 @@ cdef bool _is_expr_equal(Expr x, object y):
         return False
 
     cdef Expr _y = <Expr>y
-    if len(x._children) != len(_y._children) or x._hash != _y._hash:
+    if len(x.children) != len(_y.children) or x._hash != _y._hash:
         return False
 
     cdef object t_x = type(x)
@@ -990,7 +986,7 @@ cdef bool _is_expr_equal(Expr x, object y):
         elif t_x is PowExpr:
             if x.expo != _y.expo:
                 return False
-    return x._children == _y._children
+    return x.children == _y.children
 
 
 cdef bool _is_child_equal(Expr x, object y):
@@ -1000,7 +996,7 @@ cdef bool _is_child_equal(Expr x, object y):
         return False
 
     cdef Expr _y = <Expr>y
-    if len(x._children) != len(_y._children):
+    if len(x.children) != len(_y.children):
         return False
     return x.keys() == _y.keys()
 
@@ -1017,7 +1013,7 @@ cdef _ensure_unary(x):
 
 cdef inline UnaryExpr _unary(x: Union[Term, _ExprKey], cls: Type[UnaryExpr]):
     cdef UnaryExpr res = cls.__new__(cls)
-    res._children = {x: 1.0}
+    res.children = {x: 1.0}
     return res
 
 
