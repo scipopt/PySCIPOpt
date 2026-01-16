@@ -311,8 +311,6 @@ cdef class Expr(UnaryOperatorMixin):
         return _to_expr(other) / self
 
     def __pow__(self, other: Union[Number, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
-            return NotImplemented
         cdef Expr _other = _to_expr(other)
         if not _is_const(_other):
             raise TypeError("excepted a constant exponent")
@@ -323,8 +321,6 @@ cdef class Expr(UnaryOperatorMixin):
         return _pow(_wrap(self), _c(_other))
 
     def __rpow__(self, other: Union[Number, Expr]) -> Union[ExpExpr, ConstExpr]:
-        if not isinstance(other, (Number, Variable, Expr)):
-            return NotImplemented
         cdef Expr _other = _to_expr(other)
         if _c(_other) <= 0.0:
             raise ValueError("excepted a positive base")
@@ -438,8 +434,6 @@ cdef class PolynomialExpr(Expr):
         return super().__truediv__(_other)
 
     def __pow__(self, other: Union[Number, Expr]) -> Expr:
-        if not isinstance(other, (Number, Variable, Expr)):
-            return NotImplemented
         cdef Expr _other = _to_expr(other)
         if self and _is_const(_other) and _c(_other).is_integer() and _c(_other) > 0:
             res = _const(1.0)
@@ -492,8 +486,6 @@ cdef class ConstExpr(PolynomialExpr):
         return super().__isub__(_other)
 
     def __pow__(self, other: Union[Number, Expr]) -> ConstExpr:
-        if not isinstance(other, (Number, Variable, Expr)):
-            return NotImplemented
         cdef Expr _other = _to_expr(other)
         if _is_const(_other):
             return _const(_c(self) ** _c(_other))
