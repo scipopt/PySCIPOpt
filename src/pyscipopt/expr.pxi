@@ -221,7 +221,7 @@ cdef class Expr(UnaryOperatorMixin):
         elif _is_sum(_other):
             return _expr(_other._to_dict(self))
         elif _is_expr_equal(self, _other):
-            return self * 2.0
+            return self * _const(2.0)
         return _expr({_wrap(self): 1.0, _wrap(_other): 1.0})
 
     def __iadd__(self, other: Union[Number, Variable, Expr]) -> Expr:
@@ -255,10 +255,10 @@ cdef class Expr(UnaryOperatorMixin):
         if not isinstance(other, (Number, Variable, Expr)):
             return NotImplemented
         cdef Expr _other = _to_expr(other)
-        return _const(0.0) if _is_expr_equal(self, _other) else self + (-_other)
 
     def __rsub__(self, other: Union[Number, Variable, Expr]) -> Expr:
         return (-self) + other
+        return _const(0.0) if _is_expr_equal(self, _other) else self.__iadd__(-_other)
 
     def __mul__(self, other: Union[Number, Variable, Expr]) -> Expr:
         if not isinstance(other, (Number, Variable, Expr)):
