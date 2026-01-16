@@ -3879,18 +3879,18 @@ cdef class Model:
         """
         return SCIPgetObjlimit(self._scip)
 
-    def setObjective(self, Expr expr, sense = 'minimize', clear = 'true'):
+    def setObjective(self, ExprLike expr, sense = 'minimize', clear = True):
         """
         Establish the objective function as a linear expression.
 
         Parameters
         ----------
-        expr : Expr or float
-            the objective function SCIP Expr, or constant value
+        expr : Variable or Expr
+            the objective function SCIP Expr
         sense : str, optional
             the objective sense ("minimize" or "maximize") (Default value = 'minimize')
         clear : bool, optional
-            set all other variables objective coefficient to zero (Default value = 'true')
+            set all other variables objective coefficient to zero (Default value = True)
 
         """
         cdef SCIP_VAR** vars
@@ -3916,7 +3916,6 @@ cdef class Model:
         for term, coef in expr.items():
             # avoid CONST term of Expr
             if term != CONST:
-                assert len(term) == 1
                 wrapper = _VarArray(term[0])
                 PY_SCIP_CALL(SCIPchgVarObj(self._scip, wrapper.ptr[0], coef))
 
@@ -11642,13 +11641,13 @@ cdef class Model:
             raise Warning("method cannot be called in stage %i." % self.getStage())
         PY_SCIP_CALL(SCIPfreeReoptSolve(self._scip))
 
-    def chgReoptObjective(self, Expr coeffs, sense = 'minimize'):
+    def chgReoptObjective(self, ExprLike coeffs, sense = 'minimize'):
         """
         Establish the objective function as a linear expression.
 
         Parameters
         ----------
-        coeffs : list of float
+        coeffs : Variable or Expr
             the coefficients
         sense : str
             the objective sense (Default value = 'minimize')
