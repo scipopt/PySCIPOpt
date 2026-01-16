@@ -11,7 +11,7 @@ except ImportError:
 from pyscipopt.scip cimport Expr, quicksum
 
 
-class MatrixBase(np.ndarray):
+class MatrixExprLike(np.ndarray):
 
     __array_priority__ = 101
 
@@ -85,7 +85,7 @@ class MatrixBase(np.ndarray):
         ).view(MatrixExpr)
 
 
-class MatrixExpr(MatrixBase):
+class MatrixExpr(MatrixExprLike):
     ...
 
 

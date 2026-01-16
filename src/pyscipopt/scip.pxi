@@ -1097,7 +1097,7 @@ cdef class Solution:
         return sol
 
     def __getitem__(self, expr: Union[Variable, Expr, MatrixVariable, MatrixExpr]):
-        if isinstance(expr, MatrixBase):
+        if isinstance(expr, MatrixExprLike):
             result = np.zeros(expr.shape, dtype=np.float64)
             for idx in np.ndindex(expr.shape):
                 result[idx] = self.__getitem__(expr[idx])
@@ -1996,7 +1996,8 @@ cdef class Variable(ExprLike):
         """
         return SCIPvarGetNBranchingsCurrentRun(self.scip_var, branchdir)
 
-class MatrixVariable(MatrixBase):
+
+class MatrixVariable(MatrixExprLike):
 
     def vtype(self):
         """
@@ -10820,7 +10821,7 @@ cdef class Model:
         if not stage_check or self._bestSol.sol == NULL and SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
             raise Warning("Method cannot be called in stage ", self.getStage())
 
-        if isinstance(expr, MatrixBase):
+        if isinstance(expr, MatrixExprLike):
             result = np.empty(expr.shape, dtype=float)
             for idx in np.ndindex(result.shape):
                 result[idx] = self.getSolVal(self._bestSol, expr[idx])
