@@ -346,15 +346,11 @@ cdef class Expr(ExprLike):
         if _is_zero(self) or _is_zero(_other):
             return _const(0.0)
         elif type(self) is ConstExpr:
-            if _c(self) == 1:
-                return _other.copy()
-            elif _is_sum(_other):
+            if _is_sum(_other):
                 return _expr(_normalize(_other, _c(self)))
             return _expr({_wrap(_other): _c(self)})
         elif type(_other) is ConstExpr:
-            if _c(_other) == 1:
-                return self.copy()
-            elif _is_sum(self):
+            if _is_sum(self):
                 return _expr(_normalize(self, _c(_other)))
             return _expr({_wrap(self): _c(_other)})
         elif _is_expr_equal(self, _other):
@@ -1089,6 +1085,9 @@ cdef bool _is_child_equal(Expr x, object y):
 
 
 cdef dict _normalize(Expr expr, double coef = 1.0):
+    if coef == 1:
+        return expr.children.copy()
+
     cdef dict res = {}
     cdef Py_ssize_t pos = <Py_ssize_t>0
     cdef PyObject* k_ptr = NULL
