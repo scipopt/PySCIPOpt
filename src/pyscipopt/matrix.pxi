@@ -12,6 +12,10 @@ except ImportError:
     # Fallback for NumPy 1.x
     from numpy.core.numeric import normalize_axis_tuple
 
+cimport numpy as cnp
+
+cnp.import_array()
+
 
 def _is_number(e):
     try:
@@ -50,6 +54,18 @@ def _matrixexpr_richcmp(self, other, op):
 
 
 class MatrixExpr(np.ndarray):
+
+    def __array_ufunc__(self, ufunc, method, *args, **kwargs):
+        if method == "__call__":
+            if ufunc in {np.matmul, np.dot}:
+                a, b = _ensure_array(args[0]), _ensure_array(args[1])
+                if (is_num := _is_num_dt(a)) ^ _is_num_dt(b):
+                    return _core_dot(a, b) if is_num else _core_dot(b.T, a.T).T
+
+        args = tuple(_ensure_array(arg) for arg in args)
+        if "out" in kwargs:
+            kwargs["out"] = _ensure_array(kwargs["out"])
+        return super().__array_ufunc__(ufunc, method, *args, **kwargs)
 
     def sum(
         self,
@@ -146,7 +162,8 @@ class MatrixExpr(np.ndarray):
         return super().__rsub__(other).view(MatrixExpr)
 
     def __matmul__(self, other):
-        return super().__matmul__(other).view(MatrixExpr)
+        res = super().__matmul__(other)
+        return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
 
 class MatrixGenExpr(MatrixExpr):
     pass
@@ -161,3 +178,39 @@ class MatrixExprCons(np.ndarray):
 
     def __eq__(self, other):
         raise NotImplementedError("Cannot compare MatrixExprCons with '=='.")
+
+
+cdef inline bool _is_num_dt(cnp.ndarray a):
+    cdef char k = <char>ord(a.dtype.kind)
+    return k == b"f" or k == b"i" or k == b"u" or k == b"b"
+
+
+cdef inline _ensure_array(arg, bool convert_scalar = True):
+    if isinstance(arg, np.ndarray):
+        return arg.view(np.ndarray)
+    elif isinstance(arg, (list, tuple)):
+        return np.asarray(arg)
+    return np.array(arg, dtype=object) if convert_scalar else arg
+
+
+@np.vectorize(otypes=[object], signature="(m,n),(n,p)->(m,p)")
+def _core_dot(cnp.ndarray a, cnp.ndarray x) -> np.ndarray:
+    if not a.flags.c_contiguous or a.dtype != np.float64:
+        a = np.ascontiguousarray(a, dtype=np.float64)
+
+    cdef int m = a.shape[0]
+    cdef int k = x.shape[1] if x.ndim > 1 else 1
+    cdef cnp.ndarray[object, ndim=2] res = np.zeros((m, k), dtype=object)
+    cdef cnp.ndarray row, coef
+    cdef Py_ssize_t[:] nonzero
+    cdef int i, j
+    for i in range(m):
+        row = a[i, :]
+        if (nonzero := np.flatnonzero(row)).size == 0:
+            continue
+
+        coef = row[nonzero]
+        for j in range(k):
+            res[i, j] = quicksum(coef * x[nonzero, j])
+
+    return res.view(MatrixExpr)
