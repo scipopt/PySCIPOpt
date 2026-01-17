@@ -65,7 +65,8 @@ class MatrixExpr(np.ndarray):
         args = tuple(_ensure_array(arg) for arg in args)
         if "out" in kwargs:
             kwargs["out"] = _ensure_array(kwargs["out"])
-        return super().__array_ufunc__(ufunc, method, *args, **kwargs)
+        res = super().__array_ufunc__(ufunc, method, *args, **kwargs)
+        return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
 
     def sum(
         self,
