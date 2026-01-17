@@ -51,8 +51,11 @@ cdef class Term:
             return False
 
         cdef int i
+        cdef Variable var1, var2
         for i in range(n):
-            if self.vars[i] is not _other.vars[i]:
+            var1 = <Variable>PyTuple_GET_ITEM(self.vars, i)
+            var2 = <Variable>PyTuple_GET_ITEM(_other.vars, i)
+            if var1 is not var2:
                 return False
         return True
 
