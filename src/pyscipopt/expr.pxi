@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Iterator, Optional, Type, Union
 import numpy as np
 
 from cpython.dict cimport PyDict_Next, PyDict_GetItem
+from cpython.tuple cimport PyTuple_GET_ITEM
 from cpython.object cimport Py_LE, Py_EQ, Py_GE, PyObject
 from pyscipopt.scip cimport Variable
 
@@ -26,7 +27,7 @@ cdef class Term:
     def __iter__(self) -> Iterator[Variable]:
         return iter(self.vars)
 
-    def __getitem__(self, key: int) -> Variable:
+    def __getitem__(self, key):
         return self.vars[key]
 
     def __hash__(self) -> int:
@@ -56,7 +57,37 @@ cdef class Term:
         return True
 
     def __mul__(self, Term other) -> Term:
-        return Term(*(self.vars + other.vars))
+        cdef int n1 = len(self)
+        cdef int n2 = len(other)
+        if n1 == 0: return other
+        if n2 == 0: return self
+
+        cdef list vars = [None] * (n1 + n2)
+        cdef int i = 0, j = 0, k = 0
+        cdef Variable var1, var2
+        while i < n1 and j < n2:
+            var1 = <Variable>PyTuple_GET_ITEM(self.vars, i)
+            var2 = <Variable>PyTuple_GET_ITEM(other.vars, j)
+            if hash(var1) <= hash(var2):
+                vars[k] = var1
+                i += 1
+            else:
+                vars[k] = var2
+                j += 1
+            k += 1
+        while i < n1:
+            vars[k] = <Variable>PyTuple_GET_ITEM(self.vars, i)
+            i += 1
+            k += 1
+        while j < n2:
+            vars[k] = <Variable>PyTuple_GET_ITEM(other.vars, j)
+            j += 1
+            k += 1
+
+        cdef Term res = Term.__new__(Term)
+        res.vars = tuple(vars)
+        res._hash = hash(res.vars)
+        return res
 
     def __repr__(self) -> str:
         return f"Term({self[0]})" if self.degree() == 1 else f"Term{self.vars}"
@@ -907,6 +938,13 @@ cdef inline PowExpr _pow(base: Union[Term, _ExprKey], double expo):
     res.children = {base: 1.0} 
     res.expo = expo
     return res
+
+
+cdef inline void _extend(list vars, tuple src, int i, int j, int end):
+    while i < end:
+        vars[j] = <Variable>PyTuple_GET_ITEM(src, i)
+        i += 1
+        j += 1
 
 
 cdef inline _wrap(x):
