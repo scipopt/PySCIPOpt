@@ -5660,7 +5660,7 @@ cdef class Model:
         """
         assert cons.expr.degree() <= 1, "given constraint is not linear, degree == %d" % cons.expr.degree()
 
-        cdef int nvars = len(cons.expr._children)
+        cdef int nvars = len(cons.expr.children)
         cdef SCIP_VAR** vars_array = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
         cdef SCIP_Real* coeffs_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
         cdef SCIP_CONS* scip_cons
@@ -5787,7 +5787,7 @@ cdef class Model:
         cdef int* idxs
         cdef int i
         cdef int j
-        children = cons.expr._children
+        children = cons.expr.children
 
         # collect variables
         variables = {i: [var for var in term] for i, term in enumerate(children)}
