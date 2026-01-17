@@ -160,9 +160,6 @@ class MatrixExpr(np.ndarray):
     def __rsub__(self, other):
         return super().__rsub__(other).view(MatrixExpr)
 
-    def __matmul__(self, other):
-        res = super().__matmul__(other)
-        return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
 
 class MatrixGenExpr(MatrixExpr):
     pass
