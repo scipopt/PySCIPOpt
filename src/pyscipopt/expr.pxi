@@ -999,8 +999,13 @@ cdef inline bool _is_single_poly(expr):
     )
 
 
-cdef inline _fchild(Expr expr):
-    return next(iter(expr.children))
+cdef inline object _fchild(Expr expr):
+    cdef Py_ssize_t pos = <Py_ssize_t>0
+    cdef PyObject* k_ptr = NULL
+    cdef PyObject* v_ptr = NULL
+    if PyDict_Next(expr.children, &pos, &k_ptr, &v_ptr):
+        return <object>k_ptr
+    raise StopIteration("Expr is empty")
 
 
 cdef bool _is_expr_equal(Expr x, object y):
