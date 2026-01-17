@@ -63,8 +63,6 @@ class MatrixExpr(np.ndarray):
                     return _core_dot(a, b) if is_num else _core_dot(b.T, a.T).T
 
         args = tuple(_ensure_array(arg) for arg in args)
-        if "out" in kwargs:
-            kwargs["out"] = _ensure_array(kwargs["out"])
         res = super().__array_ufunc__(ufunc, method, *args, **kwargs)
         return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
 
