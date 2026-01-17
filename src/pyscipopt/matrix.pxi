@@ -1,8 +1,4 @@
-"""
-# TODO Cythonize things. Improve performance.
-# TODO Add tests
-"""
-
+import operator
 from typing import Optional, Tuple, Union
 import numpy as np
 try:
@@ -12,44 +8,26 @@ except ImportError:
     # Fallback for NumPy 1.x
     from numpy.core.numeric import normalize_axis_tuple
 
-
-def _is_number(e):
-    try:
-        f = float(e)
-        return True
-    except ValueError: # for malformed strings
-        return False
-    except TypeError: # for other types (Variable, Expr)
-        return False
+from pyscipopt.scip cimport Expr, quicksum
 
 
-def _matrixexpr_richcmp(self, other, op):
-    def _richcmp(self, other, op):
-        if op == 1: # <=
-            return self.__le__(other)
-        elif op == 5: # >=
-            return self.__ge__(other)
-        elif op == 2: # ==
-            return self.__eq__(other)
-        else:
-            raise NotImplementedError("Can only support constraints with '<=', '>=', or '=='.")
+class MatrixExprLike(np.ndarray):
 
-    if _is_number(other) or isinstance(other, Expr):
-        res = np.empty(self.shape, dtype=object)
-        res.flat = [_richcmp(i, other, op) for i in self.flat]
+    __array_priority__ = 100
 
-    elif isinstance(other, np.ndarray):
-        out = np.broadcast(self, other)
-        res = np.empty(out.shape, dtype=object)
-        res.flat = [_richcmp(i, j, op) for i, j in out]
+    def __array_ufunc__(self, ufunc, method, *args, **kwargs):
+        args = _ensure_array(args)
+        if ufunc is np.less_equal:
+            return _vec_le(*args).view(MatrixExprCons)
+        elif ufunc is np.greater_equal:
+            return _vec_ge(*args).view(MatrixExprCons)
+        elif ufunc is np.equal:
+            return _vec_eq(*args).view(MatrixExprCons)
+        elif ufunc in {np.less, np.greater, np.not_equal}:
+            raise NotImplementedError("can only support with '<=', '>=', or '=='")
 
-    else:
-        raise TypeError(f"Unsupported type {type(other)}")
-
-    return res.view(MatrixExprCons)
-
-
-class MatrixExpr(np.ndarray):
+        res = super().__array_ufunc__(ufunc, method, *args, **kwargs)
+        return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
 
     def sum(
         self,
@@ -106,58 +84,40 @@ class MatrixExpr(np.ndarray):
             quicksum, -1, self.transpose(keep_axes + axis).reshape(shape + (-1,))
         ).view(MatrixExpr)
 
-    def __le__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, 1)
 
-    def __ge__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, 5)
+class MatrixExpr(MatrixExprLike):
+    ...
 
-    def __eq__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, 2)
-
-    def __add__(self, other):
-        return super().__add__(other).view(MatrixExpr)
-    
-    def __iadd__(self, other):
-        return super().__iadd__(other).view(MatrixExpr)
-
-    def __mul__(self, other):
-        return super().__mul__(other).view(MatrixExpr)
-
-    def __truediv__(self, other):
-        return super().__truediv__(other).view(MatrixExpr)
-    
-    def __rtruediv__(self, other):
-        return super().__rtruediv__(other).view(MatrixExpr)
-        
-    def __pow__(self, other):
-        return super().__pow__(other).view(MatrixExpr)
-    
-    def __sub__(self, other):
-        return super().__sub__(other).view(MatrixExpr)
-    
-    def __radd__(self, other):
-        return super().__radd__(other).view(MatrixExpr)
-    
-    def __rmul__(self, other):
-        return super().__rmul__(other).view(MatrixExpr)
-    
-    def __rsub__(self, other):
-        return super().__rsub__(other).view(MatrixExpr)
-
-    def __matmul__(self, other):
-        return super().__matmul__(other).view(MatrixExpr)
-
-class MatrixGenExpr(MatrixExpr):
-    pass
 
 class MatrixExprCons(np.ndarray):
 
-    def __le__(self, other: Union[float, int, np.ndarray]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, 1)
+    __array_priority__ = 101
 
-    def __ge__(self, other: Union[float, int, np.ndarray]) -> MatrixExprCons:
-        return _matrixexpr_richcmp(self, other, 5)
+    def __array_ufunc__(self, ufunc, method, *args, **kwargs):
+        if method != "__call__":
+            return NotImplemented
 
-    def __eq__(self, other):
-        raise NotImplementedError("Cannot compare MatrixExprCons with '=='.")
+        args = _ensure_array(args)
+        if ufunc is np.less_equal:
+            return _vec_le(*args).view(MatrixExprCons)
+        elif ufunc is np.greater_equal:
+            return _vec_ge(*args).view(MatrixExprCons)
+        elif ufunc in {np.equal, np.less, np.greater, np.not_equal}:
+            raise NotImplementedError("can only support with '<=' or '=='")
+        return NotImplemented
+
+
+_vec_le = np.frompyfunc(operator.le, 2, 1)
+_vec_ge = np.frompyfunc(operator.ge, 2, 1)
+_vec_eq = np.frompyfunc(operator.eq, 2, 1)
+
+
+cdef inline list _ensure_array(tuple args):
+    cdef list res = []
+    cdef object arg
+    for arg in args:
+        if isinstance(arg, np.ndarray):
+            res.append(arg.view(np.ndarray))
+        else:
+            res.append(np.array(arg, dtype=object))
+    return res
