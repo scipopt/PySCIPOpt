@@ -78,7 +78,7 @@ For educational purposes, we keep our example as close as possible to SCIP's imp
 
 A complete working example can be found in the directory:
 
-- ``examples/finished/shiftbound.py``
+- ``examples/finished/presol_shiftbound.py``
 
 
 Implementing Shiftbound
@@ -96,7 +96,6 @@ We will put these parameters into the ``__init__`` method to help us initialise 
 
 .. code-block:: python
 
-   import math
    from pyscipopt import SCIP_RESULT, Presol
 
    class ShiftboundPresolver(Presol):
@@ -107,26 +106,6 @@ We will put these parameters into the ``__init__`` method to help us initialise 
 
        def presolexec(self, nrounds, presoltiming):
            scip = self.model
-
-           # Utility replacements for a few SCIP helpers which are not exposed to PySCIPOpt
-           # Emulate SCIP's absolute real value
-           def REALABS(x): return math.fabs(x)
-
-           # Emulate SCIP's "is integral" using the model's epsilon value
-           def SCIPisIntegral(val):
-               return val - math.floor(val + scip.epsilon()) <= scip.epsilon()
-
-           # Emulate adjusted bound rounding for integral variables
-           def SCIPadjustedVarBound(var, val):
-               if val < 0 and -val >= scip.infinity():
-                   return -scip.infinity()
-               if val > 0 and val >= scip.infinity():
-                   return scip.infinity()
-               if var.vtype() != "CONTINUOUS":
-                   return scip.feasCeil(val)
-               if REALABS(val) <= scip.epsilon():
-                   return 0.0
-               return val
 
            # Respect global presolve switches (here, if aggregation disabled)
            if scip.getParam("presolving/donotaggr"):
@@ -150,17 +129,17 @@ We will put these parameters into the ``__init__`` method to help us initialise 
 
                # For integral types: round to feasible integers to avoid noise
                if var.vtype() != "CONTINUOUS":
-                   assert SCIPisIntegral(lb)
-                   assert SCIPisIntegral(ub)
-                   lb = SCIPadjustedVarBound(var, lb)
-                   ub = SCIPadjustedVarBound(var, ub)
+                   assert scip.isIntegral(lb)
+                   assert scip.isIntegral(ub)
+                   lb = scip.adjustedVarLb(var, lb)
+                   ub = scip.adjustedVarUb(var, ub)
 
                # Is the variable already fixed?
                if scip.isEQ(lb, ub):
                    continue
 
                # If demanded by the parameters, restrict to integral-length intervals
-               if self.integer and not SCIPisIntegral(ub - lb):
+               if self.integer and not scip.isIntegral(ub - lb):
                    continue
 
                # Only shift "reasonable" finite bounds
@@ -170,8 +149,8 @@ We will put these parameters into the ``__init__`` method to help us initialise 
                    scip.isLT(ub, scip.infinity()),
                    scip.isGT(lb, -scip.infinity()),
                    scip.isLT(ub - lb, self.maxshift),
-                   scip.isLE(REALABS(lb), MAXABSBOUND),
-                   scip.isLE(REALABS(ub), MAXABSBOUND),
+                   scip.isLE(abs(lb), MAXABSBOUND),
+                   scip.isLE(abs(ub), MAXABSBOUND),
                ))
                if not shiftable:
                    continue
@@ -188,12 +167,12 @@ We will put these parameters into the ``__init__`` method to help us initialise 
                # Aggregate old variable with new variable:
                #   1.0 * var + 1.0 * newvar = ub        (flip), whichever yields smaller |offset|, or
                #   1.0 * var + (-1.0) * newvar = lb     (no flip)
-               if self.flipping and (REALABS(ub) < REALABS(lb)):
+               if self.flipping and (abs(ub) < abs(lb)):
                    infeasible, redundant, aggregated = scip.aggregateVars(var, newvar, 1.0,  1.0, ub)
                else:
                    infeasible, redundant, aggregated = scip.aggregateVars(var, newvar, 1.0, -1.0, lb)
 
-               # Has the problem become infeasible? 
+               # Has the problem become infeasible?
                if infeasible:
                    return {"result": SCIP_RESULT.CUTOFF}
 

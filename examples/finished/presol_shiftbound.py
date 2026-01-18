@@ -2,18 +2,11 @@
 Example showing a custom presolver using PySCIPOpt's Presol plugin.
 
 This example reproduces the logic of boundshift.c from the SCIP source
-as closely as possible. Some additional wrappers were required to expose
-SCIP functionality to Python (e.g., scip.aggregateVars()). Other logic
-(e.g., REALABS()) can be implemented in Python to mirror SCIP behaviour
-without extra wrappers. This illustrates that users can implement
-presolvers in Python by combining existing PySCIPOpt wrappers with
-Python code and SCIP documentation.
-
+as closely as possible using PySCIPOpt.
 A simple knapsack problem was chosen to let the presolver plugin
 operate on.
 """
 
-import math
 from pyscipopt import (
     Model,
     SCIP_PARAMSETTING,
@@ -51,29 +44,6 @@ class ShiftboundPresolver(Presol):
         MAXABSBOUND = 1000.0
 
         scip = self.model
-
-        def REALABS(x):
-            return math.fabs(x)
-
-        # scip.isIntegral() not implemented in wrapper. Work-around:
-        # compute integrality using epsilon from SCIP settings.
-        def SCIPisIntegral(val):
-            return val - math.floor(val + scip.epsilon()) <= scip.epsilon()
-
-        # SCIPadjustedVarLb() not implemented in wrapper. Work-around:
-        # return the adjusted (i.e., rounded, if var is integral type) bound.
-        # Does not change the bounds of the variable.
-        def SCIPadjustedVarBound(var, val):
-            if val < 0 and -val >= scip.infinity():
-                return -scip.infinity()
-            elif val > 0 and val >= scip.infinity():
-                return scip.infinity()
-            elif var.vtype() != "CONTINUOUS":
-                return scip.feasCeil(val)
-            elif REALABS(val) <= scip.epsilon():
-                return 0.0
-            else:
-                return val
 
         # check whether aggregation of variables is not allowed
         if scip.getParam("presolving/donotaggr"):
@@ -113,12 +83,12 @@ class ShiftboundPresolver(Presol):
             # check if variable is integer
             if var.vtype() != "CONTINUOUS":
                 # assert if bounds are integral
-                assert SCIPisIntegral(lb)
-                assert SCIPisIntegral(ub)
+                assert scip.isIntegral(lb)
+                assert scip.isIntegral(ub)
 
                 # round the bound values for integral variables
-                lb = SCIPadjustedVarBound(var, lb)
-                ub = SCIPadjustedVarBound(var, ub)
+                lb = scip.adjustedVarLb(var, lb)
+                ub = scip.adjustedVarUb(var, ub)
 
             # sanity check lb < ub
             assert scip.isLE(lb, ub)
@@ -126,7 +96,7 @@ class ShiftboundPresolver(Presol):
             if scip.isEQ(lb, ub):
                 continue
             # only operate on integer variables
-            if self.integer and not SCIPisIntegral(ub - lb):
+            if self.integer and not scip.isIntegral(ub - lb):
                 continue
 
             # bounds are shiftable if all following conditions hold
@@ -135,8 +105,8 @@ class ShiftboundPresolver(Presol):
                 scip.isLT(ub, scip.infinity()),
                 scip.isGT(lb, -scip.infinity()),
                 scip.isLT(ub - lb, self.maxshift),
-                scip.isLE(REALABS(lb), MAXABSBOUND),
-                scip.isLE(REALABS(ub), MAXABSBOUND),
+                scip.isLE(abs(lb), MAXABSBOUND),
+                scip.isLE(abs(ub), MAXABSBOUND),
             ]
             if all(cases):
                 # indicators for status of aggregation
@@ -159,7 +129,7 @@ class ShiftboundPresolver(Presol):
                 # check if self.flipping is True
                 if self.flipping:
                     # check if |ub| < |lb|
-                    if REALABS(ub) < REALABS(lb):
+                    if abs(ub) < abs(lb):
                         infeasible, redundant, aggregated = scip.aggregateVars(
                             var, newvar, 1.0, 1.0, ub
                         )
@@ -251,7 +221,7 @@ if __name__ == "__main__":
     capacity = 3
 
     model, var_list = knapsack(
-        instance_name, sizes, values, upper_bounds, lower_bounds, capacity
+        instance_name, sizes, values, upper_bounds, lower_bounds, capacity, None
     )
 
 
@@ -265,7 +235,6 @@ if __name__ == "__main__":
         "presolving/dualsparsify/maxrounds",
         "presolving/implics/maxrounds",
         "presolving/inttobinary/maxrounds",
-        "presolving/milp/maxrounds",
         "presolving/sparsify/maxrounds",
         "presolving/trivial/maxrounds",
         "propagating/dualfix/maxprerounds",
