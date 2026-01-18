@@ -25,8 +25,7 @@ cdef class Presol:
 
     def presolexec(self, nrounds, presoltiming):
         '''executes presolver'''
-        print("python error in presolexec: this method needs to be implemented")
-        return {}
+        raise NotImplementedError("presolexec() is a fundamental callback and should be implemented in the derived class")
 
 
 

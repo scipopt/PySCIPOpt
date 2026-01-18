@@ -35,8 +35,7 @@ cdef class Benders:
 
     def benderscreatesub(self, probnumber):
         '''creates the subproblems and registers it with the Benders decomposition struct '''
-        print("python error in benderscreatesub: this method needs to be implemented")
-        return {}
+        raise NotImplementedError("benderscreatesub() is a fundamental callback and should be implemented in the derived class")
 
     def benderspresubsolve(self, solution, enfotype, checkint):
         '''sets the pre subproblem solve callback of Benders decomposition '''
@@ -60,8 +59,7 @@ cdef class Benders:
 
     def bendersgetvar(self, variable, probnumber):
         '''Returns the corresponding master or subproblem variable for the given variable. This provides a call back for the variable mapping between the master and subproblems. '''
-        print("python error in bendersgetvar: this method needs to be implemented")
-        return {}
+        raise NotImplementedError("bendersgetvar() is a fundamental callback and should be implemented in the derived class")
 
 # local helper functions for the interface
 cdef Variable getPyVar(SCIP_VAR* var):

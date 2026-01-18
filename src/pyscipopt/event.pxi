@@ -34,8 +34,7 @@ cdef class Eventhdlr:
 
     def eventexec(self, event):
         '''calls execution method of event handler '''
-        print("python error in eventexec: this method needs to be implemented")
-        return {}
+        raise NotImplementedError("eventexec() is a fundamental callback and should be implemented in the derived class")
 
 
 # local helper functions for the interface

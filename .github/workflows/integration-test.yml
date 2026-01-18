@@ -54,8 +54,11 @@ jobs:
 
       - name: Download dependencies (SCIPOptSuite)
         shell: powershell
-        run: wget https://github.com/scipopt/scip/releases/download/$(echo "v${{env.version}}" | tr -d '.')/scipoptsuite-${{ env.version }}-win-x64.exe -outfile scipopt-installer.exe
-
+        run: |
+          $v = "${{ env.version }}"
+          $url = "https://github.com/scipopt/scip/releases/download/v$($v)/scipoptsuite-$($v)-win-x64.exe"
+          Write-Host "Downloading $url"
+          Invoke-WebRequest -Uri $url -OutFile scipopt-installer.exe
       - name: Install dependencies (SCIPOptSuite)
         shell: cmd
         run: scipopt-installer.exe /S /D=${{ env.SCIPOPTDIR }}
@@ -92,11 +95,16 @@ jobs:
       - name: Install dependencies (SCIPOptSuite)
         run: |
           brew install tbb boost bison
-          wget --quiet --no-check-certificate "https://github.com/scipopt/scip/releases/download/v${version}/scipoptsuite-${version}-macos13-arm64.tgz"
-          tar xzf "scipoptsuite-${version}-macos13-arm64.tgz"
-          chmod +x "scipoptsuite-${version}-macos13-arm64.sh"
-          "./scipoptsuite-${version}-macos13-arm64.sh" --skip-license --include-subdir
-          mv "scipoptsuite-${version}-macos13-arm64" "${{ github.workspace }}/scipoptsuite"
+          echo 'export PATH="/opt/homebrew/opt/bison/bin:$PATH"' >> $HOME/.bash_profile
+          echo 'export LDFLAGS="-L/opt/homebrew/opt/bison/lib"' >> $HOME/.bash_profile
+          source $HOME/.bash_profile
+          v="${version}"
+          url="https://github.com/scipopt/scip/releases/download/v${v}/scipoptsuite-${v}-macos13-arm64.tgz"
+          echo "Downloading ${url}"
+          curl -L -o scipoptsuite.tgz "${url}"
+          mkdir -p "${{ github.workspace }}/scipoptsuite"
+          tar -xzf scipoptsuite.tgz -C "${{ github.workspace }}/scipoptsuite" --strip-components=1
+          ls -la "${{ github.workspace }}/scipoptsuite"
 
       - name: Setup python ${{ matrix.python-version }}
         uses: actions/setup-python@v4

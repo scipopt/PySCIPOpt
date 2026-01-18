@@ -119,3 +119,23 @@ Please cite [this paper](https://opus4.kobv.de/opus4-zib/frontdoor/index/index/d
 }
 ```
 as well as the corresponding [SCIP Optimization Suite report](https://scip.zib.de/index.php#cite) when you use this tool for a publication or other scientific work.
+
+Seeking Maintainers
+----------------------------------
+
+PySCIPOpt is sustained by volunteer effort, and as the project grows we are inviting more contributors and maintainers to join the team.
+
+What needs to be done
+----------------------
+These are the core responsibilities:
+
+* Community support: Going over the open issues regularly. Occasionally visiting Stack Overflow and OR.SE, as users also ask questions there.
+* PR review: Reviewing user pull requests, making sure that the CHANGELOG is updated, and all added methods are tested.
+* API coverage: keep expanding PySCIPOpt's coverage of SCIP's C API.
+* Documentation: help keep the documentation up to date, and add new tutorials/examples.
+* Releases: there should be a PySCIPOpt release with every SCIP release, at a minimum.
+
+Even if you are not interested in becoming a maintainer, but would like to help out occasionally, that would be very welcome as well!
+
+Send us an email over at **joao.goncalves.dionisio@gmail.com** if you're ready to take on the challenge :)
+
