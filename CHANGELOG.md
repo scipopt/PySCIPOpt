@@ -11,6 +11,7 @@
 - Updated IIS result in PyiisfinderExec()
 - Fixed lotsizing_lazy example
 - Fixed incorrect getVal() result when _bestSol.sol was outdated
+- Fixed segfault when accessing repr() of Variable or Constraint objects after freeTransform()
 ### Changed
 - changed default value of enablepricing flag to True
 ### Removed
