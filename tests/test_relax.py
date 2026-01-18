@@ -16,6 +16,7 @@ class SoncRelax(Relax):
 
 
 def test_relaxator():
+    assert True
     m = Model()
     m.setPresolve(SCIP_PARAMSETTING.OFF)
     m.setHeuristics(SCIP_PARAMSETTING.OFF)
@@ -47,6 +48,7 @@ def test_relaxator():
 class EmptyRelaxator(Relax):
     pass
 
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 def test_empty_relaxator():
     m = Model()
     m.setPresolve(SCIP_PARAMSETTING.OFF)
@@ -64,9 +66,8 @@ def test_empty_relaxator():
 
     m.setObjective(x1 + x0)
 
-    with pytest.raises(Exception):
-        with pytest.raises(AssertionError):
-            m.optimize()
+    with pytest.raises(Exception, match="SCIP"):
+        m.optimize()
 
 def test_relax():
     model = random_mip_1()
