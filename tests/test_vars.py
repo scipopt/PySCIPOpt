@@ -121,6 +121,17 @@ def test_getNBranchingsCurrentRun():
 
     assert n_branchings == m.getNNodes() - 1
 
+def test_isActive():
+    m = Model()
+    x = m.addVar(vtype='C', lb=0.0, ub=1.0)
+    # newly added variables should be active
+    assert x.isActive()
+    m.freeProb()
+
+    # TODO lacks tests for cases when returned false due to 
+    # - fixed (probably during probing)
+    # - aggregated
+
 def test_markDoNotAggrVar_and_getStatus():
     model = Model()
     x = model.addVar("x", obj=2, lb=0, ub=10)
