@@ -76,9 +76,7 @@ def test_iisGreddyMakeIrreducible():
     m.includeIISfinder(my_iis, "", "", priority=10000)
 
     iis = m.generateIIS()
-    with pytest.raises(AssertionError):
-        assert not iis.isSubscipIrreducible() # this should not fail
-
+    assert not iis.isSubscipIrreducible()
     assert iis.isSubscipInfeasible()
 
     iis.greedyMakeIrreducible()

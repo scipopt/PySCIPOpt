@@ -2,8 +2,16 @@
 
 ## Unreleased
 ### Added
+- Added automated script for generating type stubs
+- Include parameter names in type stubs
+- Speed up MatrixExpr.sum(axis=...) via quicksum
 ### Fixed
+- all fundamental callbacks now raise an error if not implemented
+- Fixed the type of MatrixExpr.sum(axis=...) result from MatrixVariable to MatrixExpr.
+- Updated IIS result in PyiisfinderExec()
+- Fixed lotsizing_lazy example
 ### Changed
+- changed default value of enablepricing flag to True
 ### Removed
 
 ## 6.0.0 - 2025.xx.yy

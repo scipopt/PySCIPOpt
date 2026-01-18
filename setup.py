@@ -13,9 +13,14 @@ if not scipoptdir:
     conda_prefix = os.environ.get("CONDA_PREFIX", "").strip('"')
 
     if conda_prefix and os.path.exists(os.path.join(conda_prefix, "include")):
-        includedirs = os.path.join(conda_prefix, "include")
-        libdir = os.path.join(conda_prefix, "lib")
-        libname = "libscip" if platform.system() == "Windows" else "scip"
+        if platform.system() == "Windows":
+            includedirs = [os.path.join(conda_prefix, "Library/include")]
+            libdir = os.path.join(conda_prefix, "Library/lib")
+            libname = "libscip"
+        else:
+            includedirs = [os.path.join(conda_prefix, "include")]
+            libdir = os.path.join(conda_prefix, "lib")
+            libname = "scip"
         print(f"Detected conda environment at {conda_prefix}.")
         print(f"Using include path {includedirs}.")
         print(f"Using library directory {libdir}.\n")
@@ -59,7 +64,13 @@ else:
         libname = "scip"
     else:
         # assume that SCIP is installed on the system
-        libdir = os.path.abspath(os.path.join(scipoptdir, "lib"))
+        # check for lib64 first (newer SCIP tarballs), then lib
+        if os.path.exists(os.path.join(scipoptdir, "lib64")):
+            libdir = os.path.abspath(os.path.join(scipoptdir, "lib64"))
+        elif os.path.exists(os.path.join(scipoptdir, "lib")):
+            libdir = os.path.abspath(os.path.join(scipoptdir, "lib"))
+        else:
+            sys.exit("Could not find lib or lib64 directory in SCIPOPTDIR=%s" % scipoptdir)
         libname = "libscip" if platform.system() == "Windows" else "scip"
 
     print("Using include path %s." % includedirs)
