@@ -56,14 +56,14 @@ def _matrixexpr_richcmp(self, other, op):
 class MatrixExpr(np.ndarray):
 
     def __array_ufunc__(self, ufunc, method, *args, **kwargs):
+        res = NotImplemented
         if method == "__call__":
             if ufunc in {np.matmul, np.dot}:
-                a, b = _ensure_array(args[0]), _ensure_array(args[1])
-                if (is_num := _is_num_dt(a)) ^ _is_num_dt(b):
-                    return _core_dot(a, b) if is_num else _core_dot(b.T, a.T).T
+                res = _core_dot(_ensure_array(args[0]), _ensure_array(args[1]))
 
-        args = tuple(_ensure_array(arg) for arg in args)
-        res = super().__array_ufunc__(ufunc, method, *args, **kwargs)
+        if res is NotImplemented:
+            args = tuple(_ensure_array(arg) for arg in args)
+            res = super().__array_ufunc__(ufunc, method, *args, **kwargs)
         return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
 
     def sum(
@@ -189,24 +189,76 @@ cdef inline _ensure_array(arg, bool convert_scalar = True):
     return np.array(arg, dtype=object) if convert_scalar else arg
 
 
+def _core_dot(cnp.ndarray a, cnp.ndarray b) -> Union[Expr, np.ndarray]:
+    """
+    Perform matrix multiplication between a N-Demension constant array and a N-Demension
+    `np.ndarray` of type `object` and containing `Expr` objects.
+
+    Parameters
+    ----------
+    a : np.ndarray
+        A constant n-d `np.ndarray` of type `np.float64`.
+
+    b : np.ndarray
+        A n-d `np.ndarray` of type `object` and containing `Expr` objects.
+
+    Returns
+    -------
+    Expr or np.ndarray
+        If both `a` and `b` are 1-D arrays, return an `Expr`, otherwise return a
+        `np.ndarray` of type `object` and containing `Expr` objects.
+    """
+    cdef bool a_is_1d = a.ndim == 1
+    cdef bool b_is_1d = b.ndim == 1
+    cdef cnp.ndarray a_nd = a[..., np.newaxis, :] if a_is_1d else a
+    cdef cnp.ndarray b_nd = b[..., :, np.newaxis] if b_is_1d else b
+    cdef bool a_is_num = _is_num_dt(a_nd)
+
+    if a_is_num ^ _is_num_dt(b_nd):
+        res = _core_dot_2d(a_nd, b_nd) if a_is_num else _core_dot_2d(b_nd.T, a_nd.T).T
+        if a_is_1d and b_is_1d:
+            return res.item()
+        if a_is_1d:
+            return res.reshape(np.delete(res.shape, -2))
+        if b_is_1d:
+            return res.reshape(np.delete(res.shape, -1))
+        return res
+    return NotImplemented
+
+
 @np.vectorize(otypes=[object], signature="(m,n),(n,p)->(m,p)")
-def _core_dot(cnp.ndarray a, cnp.ndarray x) -> np.ndarray:
+def _core_dot_2d(cnp.ndarray a, cnp.ndarray x) -> np.ndarray:
+    """
+    Perform matrix multiplication between a 2-Demension constant array and a 2-Demension
+    `np.ndarray` of type `object` and containing `Expr` objects.
+
+    Parameters
+    ----------
+    a : np.ndarray
+        A 2-D `np.ndarray` of type `np.float64`.
+
+    x : np.ndarray
+        A 2-D `np.ndarray` of type `object` and containing `Expr` objects.
+
+    Returns
+    -------
+    np.ndarray
+        A 2-D `np.ndarray` of type `object` and containing `Expr` objects.
+    """
     if not a.flags.c_contiguous or a.dtype != np.float64:
         a = np.ascontiguousarray(a, dtype=np.float64)
 
-    cdef int m = a.shape[0]
-    cdef int k = x.shape[1] if x.ndim > 1 else 1
+    cdef const double[:, :] a_view = a
+    cdef int m = a.shape[0], k = x.shape[1]
     cdef cnp.ndarray[object, ndim=2] res = np.zeros((m, k), dtype=object)
-    cdef cnp.ndarray row, coef
     cdef Py_ssize_t[:] nonzero
-    cdef int i, j
+    cdef int i, j, idx
+
     for i in range(m):
-        row = a[i, :]
-        if (nonzero := np.flatnonzero(row)).size == 0:
+        if (nonzero := np.flatnonzero(a_view[i, :])).size == 0:
             continue
 
-        coef = row[nonzero]
         for j in range(k):
-            res[i, j] = quicksum(coef * x[nonzero, j])
+            res[i, j] = quicksum(a_view[i, idx] * x[idx, j] for idx in nonzero)
 
-    return res.view(MatrixExpr)
+    return res
