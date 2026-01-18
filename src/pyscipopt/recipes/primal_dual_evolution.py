@@ -26,10 +26,12 @@ def attach_primal_dual_evolution_eventhdlr(model: Model):
                 self.model.data["dual_log"].append([self.model.getSolvingTime(), self.model.getDualbound()])                    
 
     if not hasattr(model, "data") or model.data==None:
-        model.data = {
+        model.data = {}
+
+    model.data.update({
             'primal_log': [],
             'dual_log': []
-            }
+            })
 
     hdlr = GapEventhdlr()
     model.includeEventhdlr(hdlr, "gapEventHandler", "Event handler which collects primal and dual solution evolution")
