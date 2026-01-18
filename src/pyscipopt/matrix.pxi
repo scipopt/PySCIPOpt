@@ -176,11 +176,6 @@ class MatrixExprCons(np.ndarray):
         raise NotImplementedError("Cannot compare MatrixExprCons with '=='.")
 
 
-cdef inline bool _is_num_dt(cnp.ndarray a):
-    cdef char k = <char>ord(a.dtype.kind)
-    return k == b"f" or k == b"i" or k == b"u" or k == b"b"
-
-
 cdef inline _ensure_array(arg, bool convert_scalar = True):
     if isinstance(arg, np.ndarray):
         return arg.view(np.ndarray)
@@ -212,9 +207,9 @@ def _core_dot(cnp.ndarray a, cnp.ndarray b) -> Union[Expr, np.ndarray]:
     cdef bool b_is_1d = b.ndim == 1
     cdef cnp.ndarray a_nd = a[..., np.newaxis, :] if a_is_1d else a
     cdef cnp.ndarray b_nd = b[..., :, np.newaxis] if b_is_1d else b
-    cdef bool a_is_num = _is_num_dt(a_nd)
+    cdef bool a_is_num = a_nd.dtype.kind in "fiub"
 
-    if a_is_num ^ _is_num_dt(b_nd):
+    if a_is_num ^ (b_nd.dtype.kind in "fiub"):
         res = _core_dot_2d(a_nd, b_nd) if a_is_num else _core_dot_2d(b_nd.T, a_nd.T).T
         if a_is_1d and b_is_1d:
             return res.item()
