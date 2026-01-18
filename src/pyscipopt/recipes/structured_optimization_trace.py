@@ -9,7 +9,7 @@ def attach_structured_optimization_trace(model: Model):
         model: SCIP Model
     """
 
-    class TraceEventhdlr(Eventhdlr):
+    class _TraceEventhdlr(Eventhdlr):
         def eventinit(self):
             self.model.catchEvent(SCIP_EVENTTYPE.BESTSOLFOUND, self)
             self.model.catchEvent(SCIP_EVENTTYPE.DUALBOUNDIMPROVED, self)
@@ -29,7 +29,7 @@ def attach_structured_optimization_trace(model: Model):
         model.data = {}
     model.data["trace"] = []
 
-    hdlr = TraceEventhdlr()
+    hdlr = _TraceEventhdlr()
     model.includeEventhdlr(
         hdlr, "structured_trace", "Structured optimization trace handler"
     )
