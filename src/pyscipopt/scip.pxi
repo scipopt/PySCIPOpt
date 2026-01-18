@@ -10803,7 +10803,7 @@ cdef class Model:
 
         # Ensure _bestSol is up-to-date (cheap pointer comparison)
         current_best_sol = SCIPgetBestSol(self._scip)
-        if self._bestSol.sol != current_best_sol or self._bestSol is None:
+        if self._bestSol is None or self._bestSol.sol != current_best_sol:
             self._bestSol = Solution.create(self._scip, current_best_sol)
 
         if self._bestSol.sol == NULL and SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
