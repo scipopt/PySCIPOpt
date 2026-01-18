@@ -591,7 +591,7 @@ def test_matrix_matmul_return_type():
 
     # test 1D @ 1D → 0D
     x = m.addMatrixVar(3)
-    assert type(x @ x) is Expr
+    assert type(np.ones(3) @ x) is Expr
 
     # test 1D @ 1D → 2D
     assert type(x[:, None] @ x[None, :]) is MatrixExpr
@@ -600,6 +600,9 @@ def test_matrix_matmul_return_type():
     y = m.addMatrixVar((2, 3))
     z = m.addMatrixVar((3, 4))
     assert type(y @ z) is MatrixExpr
+
+    # test ND @ 2D → ND
+    assert type(np.ones((2, 4, 3)) @ z) is MatrixExpr
 
 
 def test_matrix_sum_return_type():
