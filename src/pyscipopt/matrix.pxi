@@ -52,14 +52,16 @@ def _matrixexpr_richcmp(self, other, op):
 class MatrixExpr(np.ndarray):
 
     def __array_ufunc__(self, ufunc, method, *args, **kwargs):
+        res = NotImplemented
         if method == "reduce":
             if ufunc is np.add and isinstance(args[0], MatrixExpr):
-                return _core_sum(args[0], **kwargs)
+                res = _core_sum(args[0], **kwargs)
 
-        args = _ensure_array(args, convert_scalar=True)
-        if "out" in kwargs:
-            kwargs["out"] = _ensure_array(kwargs["out"])
-        res = super().__array_ufunc__(ufunc, method, *args, **kwargs)
+        if res is NotImplemented:
+            if "out" in kwargs:
+                kwargs["out"] = _ensure_array(kwargs["out"])
+            args = _ensure_array(args, convert_scalar=True)
+            res = super().__array_ufunc__(ufunc, method, *args, **kwargs)
         return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
 
     def __le__(self, other: Union[float, int, "Expr", np.ndarray, "MatrixExpr"]) -> MatrixExprCons:
