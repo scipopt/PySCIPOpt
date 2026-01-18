@@ -10,6 +10,7 @@
 - Fixed the type of MatrixExpr.sum(axis=...) result from MatrixVariable to MatrixExpr.
 - Updated IIS result in PyiisfinderExec()
 - Fixed lotsizing_lazy example
+- Fixed incorrect getVal() result when _bestSol.sol was outdated
 ### Changed
 - changed default value of enablepricing flag to True
 ### Removed
