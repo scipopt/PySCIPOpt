@@ -2815,6 +2815,7 @@ cdef class Model:
         self._modelvars = {}
         self._generated_event_handlers_count = 0
         self._benders_subproblems = []  # Keep references to Benders subproblem Models
+        self._plugins = []  # Keep references to plugins to break cycles in __dealloc__
         self._iis = NULL
 
         if not createscip:
@@ -2892,6 +2893,12 @@ cdef class Model:
         cdef int nbenders
         cdef int nsubproblems
         cdef int i, j
+
+        # Break circular references with plugins before freeing SCIP
+        if self._plugins:
+            for plugin in self._plugins:
+                plugin.model = None
+            self._plugins = []
 
         # call C function directly, because we can no longer call this object's methods, according to
         # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
@@ -3035,6 +3042,25 @@ cdef class Model:
     def freeProb(self):
         """Frees problem and solution process data."""
         PY_SCIP_CALL(SCIPfreeProb(self._scip))
+
+    def free(self):
+        """Explicitly free SCIP instance and break circular references with plugins.
+
+        This method should be called when you want to ensure all SCIP callbacks
+        (like consfree, pricerfree, etc.) are executed before the Model is garbage collected.
+        After calling this method, the Model object should not be used anymore.
+        """
+        # Free SCIP first - this calls all the cleanup callbacks (consfree, etc.)
+        if self._scip is not NULL and self._freescip:
+            PY_SCIP_CALL(SCIPfree(&self._scip))
+            self._scip = NULL
+            self._freescip = False
+
+        # Now break circular references with plugins
+        if self._plugins:
+            for plugin in self._plugins:
+                plugin.model = None
+            self._plugins = []
 
     def freeTransform(self):
         """Frees all solution process data including presolving and
@@ -8944,8 +8970,9 @@ cdef class Model:
                                           PyEventDelete,
                                           PyEventExec,
                                           <SCIP_EVENTHDLRDATA*>eventhdlr))
-        eventhdlr.model = <Model>weakref.proxy(self)
+        eventhdlr.model = self
         eventhdlr.name = name
+        self._plugins.append(eventhdlr)
         Py_INCREF(eventhdlr)
 
     def includePricer(self, Pricer pricer, name, desc, priority=1, delay=True):
@@ -8976,7 +9003,8 @@ cdef class Model:
         cdef SCIP_PRICER* scip_pricer
         scip_pricer = SCIPfindPricer(self._scip, n)
         PY_SCIP_CALL(SCIPactivatePricer(self._scip, scip_pricer))
-        pricer.model = <Model>weakref.proxy(self)
+        pricer.model = self
+        self._plugins.append(pricer)
         Py_INCREF(pricer)
         pricer.scip_pricer = scip_pricer
 
@@ -9036,8 +9064,9 @@ cdef class Model:
                                               PyConsActive, PyConsDeactive, PyConsEnable, PyConsDisable, PyConsDelvars, PyConsPrint, PyConsCopy,
                                               PyConsParse, PyConsGetvars, PyConsGetnvars, PyConsGetdivebdchgs, PyConsGetPermSymGraph, PyConsGetSignedPermSymGraph,
                                               <SCIP_CONSHDLRDATA*>conshdlr))
-        conshdlr.model = <Model>weakref.proxy(self)
+        conshdlr.model = self
         conshdlr.name = name
+        self._plugins.append(conshdlr)
         Py_INCREF(conshdlr)
 
     def deactivatePricer(self, Pricer pricer):
@@ -9203,7 +9232,8 @@ cdef class Model:
         d = str_conversion(desc)
         PY_SCIP_CALL(SCIPincludePresol(self._scip, n, d, priority, maxrounds, timing, PyPresolCopy, PyPresolFree, PyPresolInit,
                                             PyPresolExit, PyPresolInitpre, PyPresolExitpre, PyPresolExec, <SCIP_PRESOLDATA*>presol))
-        presol.model = <Model>weakref.proxy(self)
+        presol.model = self
+        self._plugins.append(presol)
         Py_INCREF(presol)
 
     def includeSepa(self, Sepa sepa, name, desc, priority=0, freq=10, maxbounddist=1.0, usessubscip=False, delay=False):
@@ -9246,8 +9276,9 @@ cdef class Model:
         d = str_conversion(desc)
         PY_SCIP_CALL(SCIPincludeSepa(self._scip, n, d, priority, freq, maxbounddist, usessubscip, delay, PySepaCopy, PySepaFree,
                                           PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, PySepaExeclp, PySepaExecsol, <SCIP_SEPADATA*>sepa))
-        sepa.model = <Model>weakref.proxy(self)
+        sepa.model = self
         sepa.name = name
+        self._plugins.append(sepa)
         Py_INCREF(sepa)
 
     def includeReader(self, Reader reader, name, desc, ext):
@@ -9271,8 +9302,9 @@ cdef class Model:
         e = str_conversion(ext)
         PY_SCIP_CALL(SCIPincludeReader(self._scip, n, d, e, PyReaderCopy, PyReaderFree,
                                           PyReaderRead, PyReaderWrite, <SCIP_READERDATA*>reader))
-        reader.model = <Model>weakref.proxy(self)
+        reader.model = self
         reader.name = name
+        self._plugins.append(reader)
         Py_INCREF(reader)
 
     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
@@ -9313,7 +9345,8 @@ cdef class Model:
                                           PyPropInitpre, PyPropExitpre, PyPropInitsol, PyPropExitsol,
                                           PyPropPresol, PyPropExec, PyPropResProp,
                                           <SCIP_PROPDATA*> prop))
-        prop.model = <Model>weakref.proxy(self)
+        prop.model = self
+        self._plugins.append(prop)
         Py_INCREF(prop)
 
     def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,
@@ -9358,8 +9391,9 @@ cdef class Model:
                                           PyHeurCopy, PyHeurFree, PyHeurInit, PyHeurExit,
                                           PyHeurInitsol, PyHeurExitsol, PyHeurExec,
                                           <SCIP_HEURDATA*> heur))
-        heur.model = <Model>weakref.proxy(self)
+        heur.model = self
         heur.name = name
+        self._plugins.append(heur)
         Py_INCREF(heur)
     
     def includeIISfinder(self, IISfinder iisfinder, name, desc, priority=10000, freq=1):
@@ -9450,9 +9484,9 @@ cdef class Model:
         des = str_conversion(desc)
         PY_SCIP_CALL(SCIPincludeRelax(self._scip, nam, des, priority, freq, PyRelaxCopy, PyRelaxFree, PyRelaxInit, PyRelaxExit,
                                           PyRelaxInitsol, PyRelaxExitsol, PyRelaxExec, <SCIP_RELAXDATA*> relax))
-        relax.model = <Model>weakref.proxy(self)
+        relax.model = self
         relax.name = name
-
+        self._plugins.append(relax)
         Py_INCREF(relax)
 
     def includeCutsel(self, Cutsel cutsel, name, desc, priority):
@@ -9478,7 +9512,8 @@ cdef class Model:
                                        priority, PyCutselCopy, PyCutselFree, PyCutselInit, PyCutselExit,
                                        PyCutselInitsol, PyCutselExitsol, PyCutselSelect,
                                        <SCIP_CUTSELDATA*> cutsel))
-        cutsel.model = <Model>weakref.proxy(self)
+        cutsel.model = self
+        self._plugins.append(cutsel)
         Py_INCREF(cutsel)
 
     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
@@ -9510,7 +9545,8 @@ cdef class Model:
                                           PyBranchruleCopy, PyBranchruleFree, PyBranchruleInit, PyBranchruleExit,
                                           PyBranchruleInitsol, PyBranchruleExitsol, PyBranchruleExeclp, PyBranchruleExecext,
                                           PyBranchruleExecps, <SCIP_BRANCHRULEDATA*> branchrule))
-        branchrule.model = <Model>weakref.proxy(self)
+        branchrule.model = self
+        self._plugins.append(branchrule)
         Py_INCREF(branchrule)
 
     def includeNodesel(self, Nodesel nodesel, name, desc, stdpriority, memsavepriority):
@@ -9538,7 +9574,8 @@ cdef class Model:
                                           PyNodeselCopy, PyNodeselFree, PyNodeselInit, PyNodeselExit,
                                           PyNodeselInitsol, PyNodeselExitsol, PyNodeselSelect, PyNodeselComp,
                                           <SCIP_NODESELDATA*> nodesel))
-        nodesel.model = <Model>weakref.proxy(self)
+        nodesel.model = self
+        self._plugins.append(nodesel)
         Py_INCREF(nodesel)
 
     def includeBenders(self, Benders benders, name, desc, priority=1, cutlp=True, cutpseudo=True, cutrelax=True,
@@ -9578,9 +9615,10 @@ cdef class Model:
                                             <SCIP_BENDERSDATA*>benders))
         cdef SCIP_BENDERS* scip_benders
         scip_benders = SCIPfindBenders(self._scip, n)
-        benders.model = <Model>weakref.proxy(self)
+        benders.model = self
         benders.name = name
         benders._benders = scip_benders
+        self._plugins.append(benders)
         Py_INCREF(benders)
 
     def includeBenderscut(self, Benders benders, Benderscut benderscut, name, desc, priority=1, islpcut=True):
@@ -9617,9 +9655,10 @@ cdef class Model:
 
         cdef SCIP_BENDERSCUT* scip_benderscut
         scip_benderscut = SCIPfindBenderscut(_benders, n)
-        benderscut.model = <Model>weakref.proxy(self)
+        benderscut.model = self
         benderscut.benders = benders
         benderscut.name = name
+        self._plugins.append(benderscut)
         # TODO: It might be necessary in increment the reference to benders i.e Py_INCREF(benders)
         Py_INCREF(benderscut)
 

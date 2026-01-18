@@ -67,9 +67,15 @@ class MyEvent(Eventhdlr):
             self.model.catchEvent(self.event_type, self)        
 
     def eventexit(self):
-        # PR #828 fixes an error here, but the underlying cause might not be solved (self.model being deleted before dropEvent is called)
-        # self.model.dropEvent(self.event_type, self) # <- gives an UnraisableExceptionWarning: weakly-referenced object no longer exists
-        pass
+        if self.event_type in [SCIP_EVENTTYPE.VAREVENT, SCIP_EVENTTYPE.VARCHANGED]:
+            return
+        if self.event_type in var_events:
+            var = self.model.getTransformedVar(self.model.getVars()[0])
+            self.model.dropVarEvent(var, self.event_type, self)
+        elif self.event_type in row_events:
+            pass
+        else:
+            self.model.dropEvent(self.event_type, self)
 
     def eventexec(self, event):
         assert str(event) == event.getName()
@@ -164,22 +170,22 @@ def test_event_handler_callback():
     
     assert number_of_calls == 2
 
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 def test_raise_error_catch_var_event():
     m = Model()
     m.hideOutput()
     m.setPresolve(SCIP_PARAMSETTING.OFF)
-    
+
     class MyEventVar(Eventhdlr):
         def __init__(self, var):
             super().__init__()
             self.var = var
 
         def eventinit(self):
-            self.model.catchEvent(SCIP_EVENTTYPE.VAREVENT, self)        
+            self.model.catchEvent(SCIP_EVENTTYPE.VAREVENT, self)
 
         def eventexit(self):
             pass
-            # self.model..dropEvent(SCIP_EVENTTYPE.VAREVENT, self)
 
         def eventexec(self, event):
             pass
