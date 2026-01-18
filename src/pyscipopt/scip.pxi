@@ -3579,6 +3579,62 @@ cdef class Model:
         """
         return SCIPisFeasIntegral(self._scip, value)
 
+    def isIntegral(self, value):
+        """
+        Returns whether value is integral within epsilon tolerance.
+
+        Parameters
+        ----------
+        value : float
+            value to check
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisIntegral(self._scip, value)
+
+    def adjustedVarLb(self, Variable var, lb):
+        """
+        Returns the adjusted (i.e. rounded, if the given variable is of integral type) lower bound value;
+        does not change the bounds of the variable.
+
+        Parameters
+        ----------
+        var : Variable
+            variable for which the bound is adjusted
+        lb : float
+            lower bound value to adjust
+
+        Returns
+        -------
+        float
+            adjusted lower bound
+
+        """
+        return SCIPadjustedVarLb(self._scip, var.scip_var, lb)
+
+    def adjustedVarUb(self, Variable var, ub):
+        """
+        Returns the adjusted (i.e. rounded, if the given variable is of integral type) upper bound value;
+        does not change the bounds of the variable.
+
+        Parameters
+        ----------
+        var : Variable
+            variable for which the bound is adjusted
+        ub : float
+            upper bound value to adjust
+
+        Returns
+        -------
+        float
+            adjusted upper bound
+
+        """
+        return SCIPadjustedVarUb(self._scip, var.scip_var, ub)
+
     def isEQ(self, val1, val2):
         """
         Checks, if values are in range of epsilon.
@@ -4464,24 +4520,51 @@ cdef class Model:
         PY_SCIP_CALL(SCIPdelVar(self._scip, var.scip_var, &deleted))
         return deleted
 
-    def aggregateVars(self, Variable varx, Variable vary, scalarx=1.0, scalary=-1.0, rhs=0.0):
+    def aggregateVars(self, Variable varx, Variable vary, coefx=1.0, coefy=-1.0, rhs=0.0):
         """
-        Aggregate varx and vary: calls SCIPaggregateVars and returns
-        (infeasible, redundant, aggregated) as Python bools.
+        Aggregate two variables by adding an aggregation constraint.
+
+        The aggregation is defined by the linear equation:
+
+            coefx * varx + coefy * vary = rhs
+
+        After aggregation, varx becomes a redundant variable and vary remains active.
+        The aggregation effectively substitutes varx with: (rhs - coefy * vary) / coefx
+
+        This method can only be called during presolving.
 
         Parameters
         ----------
         varx : Variable
+            variable to be aggregated (will become redundant)
         vary : Variable
-        scalarx : float
-        scalary : float
-        rhs : float
+            variable to aggregate with (will remain active)
+        coefx : float, optional
+            coefficient for varx in the aggregation equation (default: 1.0)
+        coefy : float, optional
+            coefficient for vary in the aggregation equation (default: -1.0)
+        rhs : float, optional
+            right-hand side of the aggregation equation (default: 0.0)
 
         Returns
         -------
         infeasible : bool
+            whether the aggregation is infeasible (e.g., bounds are incompatible)
         redundant : bool
+            whether the aggregation makes varx redundant
         aggregated : bool
+            whether the aggregation was actually performed
+
+        Examples
+        --------
+        To express x = y (i.e., 1*x + (-1)*y = 0):
+
+            infeas, redun, aggr = model.aggregateVars(x, y, 1.0, -1.0, 0.0)
+
+        To express x = 5 - y (i.e., 1*x + 1*y = 5):
+
+            infeas, redun, aggr = model.aggregateVars(x, y, 1.0, 1.0, 5.0)
+
         """
         cdef SCIP_Bool infeasible
         cdef SCIP_Bool redundant
@@ -4489,8 +4572,8 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaggregateVars(self._scip,
                                     varx.scip_var,
                                     vary.scip_var,
-                                    scalarx,
-                                    scalary,
+                                    coefx,
+                                    coefy,
                                     rhs,
                                     &infeasible,
                                     &redundant,

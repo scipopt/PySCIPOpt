@@ -871,6 +871,8 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPvarMayRoundUp(SCIP_VAR* var)
     SCIP_Bool SCIPvarMayRoundDown(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsActive(SCIP_VAR* var)
+    SCIP_Real SCIPadjustedVarLb(SCIP* scip, SCIP_VAR* var, SCIP_Real lb)
+    SCIP_Real SCIPadjustedVarUb(SCIP* scip, SCIP_VAR* var, SCIP_Real ub)
     SCIP_RETCODE SCIPaggregateVars(SCIP* scip,
                                    SCIP_VAR* varx,
                                    SCIP_VAR* vary,

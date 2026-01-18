@@ -164,3 +164,63 @@ def test_markDoNotAggrVar_and_getStatus():
     assert model.getNVars(True) == 4
 
     assert x.getStatus() == "ORIGINAL"
+
+
+def test_isIntegral():
+    """Test that Model.isIntegral correctly identifies integral values."""
+    m = Model()
+
+    # Exact integer values should be integral
+    assert m.isIntegral(5.0)
+    assert m.isIntegral(0.0)
+    assert m.isIntegral(-3.0)
+
+    # Values very close to integers (within epsilon) should be integral
+    eps = m.epsilon()
+    assert m.isIntegral(5.0 + eps / 2)
+    assert m.isIntegral(5.0 - eps / 2)
+
+    # Non-integer values should not be integral
+    assert not m.isIntegral(5.5)
+    assert not m.isIntegral(0.1)
+    assert not m.isIntegral(-3.7)
+
+
+def test_adjustedVarLb():
+    """Test that Model.adjustedVarLb correctly rounds bounds for integer variables."""
+    m = Model()
+
+    # For integer variables, lower bounds should be rounded up (ceiling)
+    x_int = m.addVar(vtype='I', lb=-10.0, ub=10.0, name="x_int")
+    # 2.3 should be adjusted to 3.0 for lower bound of integer
+    assert m.adjustedVarLb(x_int, 2.3) == 3.0
+    # -2.3 should be adjusted to -2.0 for lower bound of integer
+    assert m.adjustedVarLb(x_int, -2.3) == -2.0
+    # Exact integer should stay the same
+    assert m.adjustedVarLb(x_int, 5.0) == 5.0
+
+    # For continuous variables, values within epsilon of zero should be set to 0
+    x_cont = m.addVar(vtype='C', lb=-10.0, ub=10.0, name="x_cont")
+    eps = m.epsilon()
+    assert m.adjustedVarLb(x_cont, eps / 2) == 0.0
+    # Non-zero values should stay the same
+    assert m.adjustedVarLb(x_cont, 5.5) == 5.5
+
+
+def test_adjustedVarUb():
+    """Test that Model.adjustedVarUb correctly rounds bounds for integer variables."""
+    m = Model()
+
+    # For integer variables, upper bounds should be rounded down (floor)
+    x_int = m.addVar(vtype='I', lb=-10.0, ub=10.0, name="x_int")
+    # 2.7 should be adjusted to 2.0 for upper bound of integer
+    assert m.adjustedVarUb(x_int, 2.7) == 2.0
+    # -2.7 should be adjusted to -3.0 for upper bound of integer
+    assert m.adjustedVarUb(x_int, -2.7) == -3.0
+    # Exact integer should stay the same
+    assert m.adjustedVarUb(x_int, 5.0) == 5.0
+
+    # For continuous variables, values should generally stay the same
+    x_cont = m.addVar(vtype='C', lb=-10.0, ub=10.0, name="x_cont")
+    assert m.adjustedVarUb(x_cont, 5.5) == 5.5
+    assert m.adjustedVarUb(x_cont, -3.2) == -3.2

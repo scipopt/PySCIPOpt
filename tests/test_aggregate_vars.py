@@ -15,8 +15,8 @@ class _AggPresol(Presol):
     Minimal presolver that aggregates two given variables and records the flags.
     """
 
-    def __init__(self, varx, vary, scalarx, scalary, rhs):
-        self._args = (varx, vary, scalarx, scalary, rhs)
+    def __init__(self, varx, vary, coefx, coefy, rhs):
+        self._args = (varx, vary, coefx, coefy, rhs)
         self.last = None  # (infeasible, redundant, aggregated)
 
     def presolexec(self, nrounds, presoltiming):
@@ -44,6 +44,8 @@ def test_aggregate_vars_success():
     """
     Aggregation succeeds for x - y = 0 on continuous variables with
     compatible bounds, when called from a presolver.
+
+    After aggregation x = y, the model has only one active variable (y).
     """
     model, x, y = _build_model_xy(
         vtype="C", lbx=0.0, ubx=10.0, lby=0.0, uby=10.0
@@ -65,8 +67,11 @@ def test_aggregate_vars_success():
 
     assert not infeasible
     assert aggregated
-    # model should stay consistent
+    assert redundant  # x should be marked as redundant
+
+    # model should stay consistent and solve optimally
     model.optimize()
+    assert model.getStatus() == "optimal"
 
 
 def test_aggregate_vars_infeasible_binary_sum_exceeds_domain():
