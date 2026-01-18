@@ -16,7 +16,6 @@ class SoncRelax(Relax):
 
 
 def test_relaxator():
-    assert True
     m = Model()
     m.setPresolve(SCIP_PARAMSETTING.OFF)
     m.setHeuristics(SCIP_PARAMSETTING.OFF)
