@@ -1560,6 +1560,11 @@ cdef class Variable(Expr):
             raise Warning("cannot create Variable with SCIP_VAR* == NULL")
         var = Variable()
         var.scip_var = scipvar
+        # Cache the name at creation time for safe repr (prevents segfault
+        # if variable is freed by SCIP but Python object still exists).
+        # This is important for debugger inspection after freeTransform().
+        # See issue #604.
+        var._cached_name = bytes(SCIPvarGetName(scipvar)).decode('utf-8')
         Expr.__init__(var, {Term(var) : 1.0})
         return var
 
@@ -1573,7 +1578,8 @@ cdef class Variable(Expr):
         return <size_t>(self.scip_var)
 
     def __repr__(self):
-        return self.name
+        # Use cached name to avoid segfault if SCIP has freed the variable
+        return self._cached_name
 
     def vtype(self):
         """
@@ -2209,6 +2215,10 @@ cdef class Constraint:
             raise Warning("cannot create Constraint with SCIP_CONS* == NULL")
         cons = Constraint()
         cons.scip_cons = scipcons
+        # Cache the name at creation time for safe repr (prevents segfault
+        # if constraint is freed by SCIP but Python object still exists).
+        # See issue #604.
+        cons._cached_name = bytes(SCIPconsGetName(scipcons)).decode('utf-8')
         return cons
 
     property name:
@@ -2217,7 +2227,8 @@ cdef class Constraint:
             return cname.decode('utf-8')
 
     def __repr__(self):
-        return self.name
+        # Use cached name to avoid segfault if SCIP has freed the constraint
+        return self._cached_name
 
     def isOriginal(self):
         """
@@ -6484,7 +6495,7 @@ cdef class Model:
 
         free(_vars)
         return vars
-    
+
     def getConsVals(self, Constraint constraint):
         """
         Returns the value array of an arbitrary SCIP constraint that can be represented as a single linear constraint.

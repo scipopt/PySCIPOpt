@@ -2188,6 +2188,7 @@ cdef class Node:
 
 cdef class Variable(Expr):
     cdef SCIP_VAR* scip_var
+    cdef str _cached_name  # cached name for safe repr after freeTransform
     # can be used to store problem data
     cdef public object data
 
@@ -2196,6 +2197,7 @@ cdef class Variable(Expr):
 
 cdef class Constraint:
     cdef SCIP_CONS* scip_cons
+    cdef str _cached_name  # cached name for safe repr after freeTransform
     # can be used to store problem data
     cdef public object data
 
