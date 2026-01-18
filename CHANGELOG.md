@@ -5,6 +5,8 @@
 - Added automated script for generating type stubs
 - Include parameter names in type stubs
 - Speed up MatrixExpr.sum(axis=...) via quicksum
+- Run automated type stub generating script to PR pipeline
+- Wrapped isObjIntegral() and test
 ### Fixed
 - all fundamental callbacks now raise an error if not implemented
 - Fixed the type of MatrixExpr.sum(axis=...) result from MatrixVariable to MatrixExpr.
