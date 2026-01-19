@@ -566,39 +566,8 @@ def test_getVarPseudocost():
     assert m.isEQ(p, 12.0001)
 
 
-def test_freeTransform_variable_repr():
-    """Test that Variable repr works safely after freeTransform.
-
-    This test verifies the fix for issue #604: accessing transformed variables
-    after freeTransform() would cause a segfault because the underlying SCIP
-    memory was freed but Python still held references to Variable objects.
-
-    With the fix, Variable objects cache the variable name at creation time,
-    so repr() is always safe.
-    """
-    m = Model()
-
-    x = m.addVar("x", vtype='B', obj=1.0)
-
-    m.setPresolve(SCIP_PARAMSETTING.OFF)
-    m.presolve()
-
-    transformed_x = m.getTransformedVar(x)
-
-    assert repr(transformed_x) == "t_x"
-
-    # Without the fix, the transformed_x Python object would now be a
-    # dangling pointer and repr() would segfault
-    m.freeTransform()
-    assert repr(transformed_x) == "t_x"
-    assert repr(x) == "x"
-
-
-def test_freeTransform_constraint_repr():
-    """Test that Constraint repr works safely after freeTransform.
-
-    Same as test_freeTransform_variable_repr but for constraints.
-    """
+def test_freeTransform_repr():
+    """See Issue #604 and PR #1161."""
     m = Model()
 
     x = m.addVar("x", vtype='B', obj=1.0)
@@ -607,11 +576,32 @@ def test_freeTransform_constraint_repr():
     m.setPresolve(SCIP_PARAMSETTING.OFF)
     m.presolve()
 
+    transformed_x = m.getTransformedVar(x)
     transformed_c = m.getTransformedCons(c)
 
+    assert repr(transformed_x) == "t_x"
     assert repr(transformed_c) == "mycons"
 
-    # Without the fix, this would segfault
+    # Without the fix in PR #1161, transformed objects would segfault
     m.freeTransform()
-    assert repr(transformed_c) == "mycons"
+    assert repr(transformed_x) == "<freed Variable>"
+    assert repr(transformed_c) == "<freed Constraint>"
+    assert repr(x) == "x"
     assert repr(c) == "mycons"
+
+
+def test_model_dealloc_repr():
+    """See Issue #604 and PR #1161."""
+    import gc
+
+    def create_model_and_get_objects():
+        m = Model()
+        x = m.addVar("x", vtype='B', obj=1.0)
+        c = m.addCons(x >= 0, name="mycons")
+        return x, c
+
+    x, c = create_model_and_get_objects()
+    gc.collect()
+
+    assert repr(x) == "<freed Variable>"
+    assert repr(c) == "<freed Constraint>"
