@@ -5,12 +5,15 @@
 
 from typing import Optional, Tuple, Union
 import numpy as np
+from numpy.typing import NDArray
 try:
     # NumPy 2.x location
     from numpy.lib.array_utils import normalize_axis_tuple
 except ImportError:
     # Fallback for NumPy 1.x
     from numpy.core.numeric import normalize_axis_tuple
+
+from pyscipopt.scip cimport Expr, Solution
 
 
 def _is_number(e):
@@ -47,6 +50,9 @@ def _matrixexpr_richcmp(self, other, op):
         raise TypeError(f"Unsupported type {type(other)}")
 
     return res.view(MatrixExprCons)
+
+
+_evaluate = np.frompyfunc(lambda expr, sol: expr._evaluate(sol), 2, 1)
 
 
 class MatrixExpr(np.ndarray):
@@ -148,8 +154,13 @@ class MatrixExpr(np.ndarray):
     def __matmul__(self, other):
         return super().__matmul__(other).view(MatrixExpr)
 
+    def _evaluate(self, Solution sol) -> NDArray[np.float64]:
+        return _evaluate(self, sol).view(np.ndarray)
+
+
 class MatrixGenExpr(MatrixExpr):
     pass
+
 
 class MatrixExprCons(np.ndarray):
 

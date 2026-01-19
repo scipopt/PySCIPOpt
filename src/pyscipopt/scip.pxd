@@ -2110,6 +2110,8 @@ cdef extern from "tpi/tpi.h":
 cdef class Expr:
     cdef public terms
 
+    cpdef double _evaluate(self, Solution sol)
+
 cdef class Event:
     cdef SCIP_EVENT* event
     # can be used to store problem data
