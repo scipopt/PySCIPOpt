@@ -129,13 +129,13 @@ cdef class Term:
         return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
 
     cpdef double _evaluate(self, Solution sol):
-        cdef double res = 1
-        cdef int i
-        cdef Variable var
+        cdef double res = 1.0
         cdef SCIP* scip_ptr = sol.scip
         cdef SCIP_SOL* sol_ptr = sol.sol
+        cdef int i = 0, n = len(self)
+        cdef Variable var
 
-        for i in range(len(self.vartuple)):
+        for i in range(n):
             var = <Variable>self.vartuple[i]
             res *= SCIPgetSolVal(scip_ptr, sol_ptr, var.scip_var)
             if res == 0:  # early stop
@@ -346,11 +346,11 @@ cdef class Expr:
 
     cpdef double _evaluate(self, Solution sol):
         cdef double res = 0
-        cdef Term term
-        cdef double coef
         cdef Py_ssize_t pos = <Py_ssize_t>0
         cdef PyObject* key_ptr
         cdef PyObject* val_ptr
+        cdef Term term
+        cdef double coef
 
         while PyDict_Next(self.terms, &pos, &key_ptr, &val_ptr):
             term = <Term>key_ptr
