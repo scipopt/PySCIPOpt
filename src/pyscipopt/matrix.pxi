@@ -3,7 +3,7 @@
 # TODO Add tests
 """
 
-from typing import Optional, Tuple, Union
+from typing import Literal, Optional, Tuple, Union
 import numpy as np
 try:
     # NumPy 2.x location
@@ -51,13 +51,44 @@ def _matrixexpr_richcmp(self, other, op):
 
 class MatrixExpr(np.ndarray):
 
-    def __array_ufunc__(self, ufunc, method, *args, **kwargs):
+    def __array_ufunc__(
+        self,
+        ufunc: np.ufunc,
+        method: Literal["__call__", "reduce", "reduceat", "accumulate", "outer", "at"],
+        *args,
+        **kwargs,
+    ):
+        """
+        Customizes the behavior of NumPy ufuncs for MatrixExpr.
+
+        Parameters
+        ----------
+        ufunc : numpy.ufunc
+            The ufunc object that was called.
+
+        method : {"__call__", "reduce", "reduceat", "accumulate", "outer", "at"}
+            A string indicating which UFunc method was called.
+
+        *args : tuple
+            The input arguments to the ufunc.
+
+        **kwargs : dict
+            Additional keyword arguments to the ufunc.
+
+        Returns
+        -------
+        Expr, GenExpr, MatrixExpr
+            The result of the ufunc operation is wrapped back into a MatrixExpr if
+            applicable.
+
+        """
         res = NotImplemented
         if method == "reduce":
             if ufunc is np.add and isinstance(args[0], MatrixExpr):
                 res = _core_sum(args[0], **kwargs)
 
         if res is NotImplemented:
+            # Unboxing MatrixExpr to stop __array_ufunc__ recursion
             if "out" in kwargs:
                 kwargs["out"] = _ensure_array(kwargs["out"])
             args = _ensure_array(args, convert_scalar=True)
