@@ -24,7 +24,7 @@ class MatrixExpr(np.ndarray):
             elif ufunc in {np.less, np.greater, np.not_equal}:
                 raise NotImplementedError("can only support with '<=', '>=', or '=='")
 
-        if res is not NotImplemented:
+        if res is NotImplemented:
             res = super().__array_ufunc__(ufunc, method, *args, **kwargs)
             if isinstance(res, np.ndarray):
                 return res.view(MatrixExpr)
