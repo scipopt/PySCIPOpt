@@ -2188,7 +2188,6 @@ cdef class Node:
 
 cdef class Variable(Expr):
     cdef SCIP_VAR* scip_var
-    cdef str _cached_name  # cached name for safe repr after freeTransform
     # can be used to store problem data
     cdef public object data
 
@@ -2197,7 +2196,6 @@ cdef class Variable(Expr):
 
 cdef class Constraint:
     cdef SCIP_CONS* scip_cons
-    cdef str _cached_name  # cached name for safe repr after freeTransform
     # can be used to store problem data
     cdef public object data
 
@@ -2224,6 +2222,8 @@ cdef class Model:
     cdef SCIP_Bool _freescip
     # map to store python variables
     cdef _modelvars
+    # map to store python constraints
+    cdef _modelconss
     # used to keep track of the number of event handlers generated
     cdef int _generated_event_handlers_count
     # store references to Benders subproblem Models for proper cleanup

@@ -1560,11 +1560,6 @@ cdef class Variable(Expr):
             raise Warning("cannot create Variable with SCIP_VAR* == NULL")
         var = Variable()
         var.scip_var = scipvar
-        # Cache the name at creation time for safe repr (prevents segfault
-        # if variable is freed by SCIP but Python object still exists).
-        # This is important for debugger inspection after freeTransform().
-        # See issue #604.
-        var._cached_name = bytes(SCIPvarGetName(scipvar)).decode('utf-8')
         Expr.__init__(var, {Term(var) : 1.0})
         return var
 
@@ -1578,8 +1573,9 @@ cdef class Variable(Expr):
         return <size_t>(self.scip_var)
 
     def __repr__(self):
-        # Use cached name to avoid segfault if SCIP has freed the variable
-        return self._cached_name
+        if self.scip_var == NULL:
+            return "<freed Variable>"
+        return self.name
 
     def vtype(self):
         """
@@ -2215,10 +2211,6 @@ cdef class Constraint:
             raise Warning("cannot create Constraint with SCIP_CONS* == NULL")
         cons = Constraint()
         cons.scip_cons = scipcons
-        # Cache the name at creation time for safe repr (prevents segfault
-        # if constraint is freed by SCIP but Python object still exists).
-        # See issue #604.
-        cons._cached_name = bytes(SCIPconsGetName(scipcons)).decode('utf-8')
         return cons
 
     property name:
@@ -2226,9 +2218,13 @@ cdef class Constraint:
             cname = bytes( SCIPconsGetName(self.scip_cons) )
             return cname.decode('utf-8')
 
+    def ptr(self):
+        return <size_t>(self.scip_cons)
+
     def __repr__(self):
-        # Use cached name to avoid segfault if SCIP has freed the constraint
-        return self._cached_name
+        if self.scip_cons == NULL:
+            return "<freed Constraint>"
+        return self.name
 
     def isOriginal(self):
         """
@@ -2824,6 +2820,7 @@ cdef class Model:
 
         self._freescip = True
         self._modelvars = {}
+        self._modelconss = {}
         self._generated_event_handlers_count = 0
         self._benders_subproblems = []  # Keep references to Benders subproblem Models
         self._iis = NULL
@@ -2919,6 +2916,16 @@ cdef class Model:
 
                 # Clear the references to allow Python GC to clean up the Model objects
                 self._benders_subproblems = []
+
+            # Invalidate all variable and constraint pointers before freeing SCIP. See issue #604.
+            if self._modelvars:
+                for var in self._modelvars.values():
+                    (<Variable>var).scip_var = NULL
+                self._modelvars = {}
+            if self._modelconss:
+                for cons in self._modelconss.values():
+                    (<Constraint>cons).scip_cons = NULL
+                self._modelconss = {}
 
             PY_SCIP_CALL( SCIPfree(&self._scip) )
 
@@ -3059,11 +3066,20 @@ cdef class Model:
                                  SCIP_STAGE_SOLVED]:
             raise Warning("method cannot be called in stage %i." % self.getStage())
 
-        self._modelvars = {
-            var: value
-            for var, value in self._modelvars.items()
-            if value.isOriginal()
-        }
+        # Invalidate transformed variables. See issue #604.
+        original_var_ptrs = {ptr for ptr, var in self._modelvars.items() if var.isOriginal()}
+        for ptr, var in self._modelvars.items():
+            if ptr not in original_var_ptrs:
+                (<Variable>var).scip_var = NULL
+        self._modelvars = {ptr: var for ptr, var in self._modelvars.items() if ptr in original_var_ptrs}
+
+        # Invalidate transformed constraints. See issue #604.
+        original_cons_ptrs = {ptr for ptr, cons in self._modelconss.items() if cons.isOriginal()}
+        for ptr, cons in self._modelconss.items():
+            if ptr not in original_cons_ptrs:
+                (<Constraint>cons).scip_cons = NULL
+        self._modelconss = {ptr: cons for ptr, cons in self._modelconss.items() if ptr in original_cons_ptrs}
+
         PY_SCIP_CALL(SCIPfreeTransform(self._scip))
 
     def version(self):
@@ -4384,7 +4400,12 @@ cdef class Model:
         cdef SCIP_VAR* _tvar
         PY_SCIP_CALL(SCIPgetTransformedVar(self._scip, var.scip_var, &_tvar))
 
-        return Variable.create(_tvar)
+        pyVar = Variable.create(_tvar)
+        # Track transformed variable so it can be invalidated in freeTransform()
+        ptr = pyVar.ptr()
+        if ptr not in self._modelvars:
+            self._modelvars[ptr] = pyVar
+        return pyVar
 
     def addVarLocks(self, Variable var, int nlocksdown, int nlocksup):
         """
@@ -4463,6 +4484,8 @@ cdef class Model:
         if var.ptr() in self._modelvars:
             del self._modelvars[var.ptr()]
         PY_SCIP_CALL(SCIPdelVar(self._scip, var.scip_var, &deleted))
+        # Invalidate pointer after deletion. See issue #604.
+        var.scip_var = NULL
         return deleted
 
     def tightenVarLb(self, Variable var, lb, force=False):
@@ -6076,6 +6099,9 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
         pycons = Constraint.create(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        # Track constraint for invalidation in freeTransform/dealloc. See issue #604.
+        self._modelconss[pycons.ptr()] = pycons
 
         return pycons
 
@@ -7956,7 +7982,12 @@ cdef class Model:
         """
         cdef SCIP_CONS* transcons
         PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
-        return Constraint.create(transcons)
+        pyCons = Constraint.create(transcons)
+        # Track transformed constraint for invalidation in freeTransform. See issue #604.
+        ptr = pyCons.ptr()
+        if ptr not in self._modelconss:
+            self._modelconss[ptr] = pyCons
+        return pyCons
 
     def isNLPConstructed(self):
         """
@@ -8245,6 +8276,11 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPdelCons(self._scip, cons.scip_cons))
+        # Remove from tracking and invalidate pointer. See issue #604.
+        ptr = cons.ptr()
+        if ptr in self._modelconss:
+            del self._modelconss[ptr]
+        cons.scip_cons = NULL
 
     def delConsLocal(self, Constraint cons):
         """
