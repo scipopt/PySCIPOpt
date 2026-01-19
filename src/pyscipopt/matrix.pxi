@@ -93,16 +93,13 @@ class MatrixGenExpr(MatrixExpr):
 class MatrixExprCons(np.ndarray):
 
     def __array_ufunc__(self, ufunc, method, *args, **kwargs):
-        args = tuple(_ensure_array(arg) for arg in args)
         if method == "__call__":
+            args = tuple(_ensure_array(arg) for arg in args)
             if ufunc is np.less_equal:
                 return _vec_le(*args).view(MatrixExprCons)
             elif ufunc is np.greater_equal:
                 return _vec_ge(*args).view(MatrixExprCons)
-            elif ufunc in {np.equal, np.less, np.greater, np.not_equal}:
-                raise NotImplementedError("can only support with '<=' or '=='")
-
-        return super().__array_ufunc__(ufunc, method, *args, **kwargs)
+        raise NotImplementedError("can only support with '<=' or '>='")
 
 
 _vec_le = np.frompyfunc(operator.le, 2, 1)
