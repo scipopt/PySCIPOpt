@@ -707,8 +707,8 @@ cdef class VarExpr(GenExpr):
     def __repr__(self):
         return self.children[0].__repr__()
 
-        return self.children[0]._evaluate(sol)
     cpdef double _evaluate(self, Solution sol) except *:
+        return (<GenExpr>self.children[0])._evaluate(sol)
 
 
 # Pow Expressions
@@ -724,8 +724,8 @@ cdef class PowExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + self.children[0].__repr__() + "," + str(self.expo) + ")"
 
-        return self.children[0]._evaluate(sol) ** self.expo
     cpdef double _evaluate(self, Solution sol) except *:
+        return (<GenExpr>self.children[0])._evaluate(sol) ** self.expo
 
 
 # Exp, Log, Sqrt, Sin, Cos Expressions
@@ -738,8 +738,8 @@ cdef class UnaryExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + self.children[0].__repr__() + ")"
 
-        return getattr(math, self._op)(self.children[0]._evaluate(sol))
     cpdef double _evaluate(self, Solution sol) except *:
+        return getattr(math, self._op)(<GenExpr>self.children[0])._evaluate(sol)
 
 
 # class for constant expressions
