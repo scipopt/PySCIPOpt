@@ -1,5 +1,9 @@
-from setuptools import find_packages, setup, Extension
-import os, platform, sys
+import os
+import platform
+import sys
+
+import numpy as np
+from setuptools import Extension, find_packages, setup
 
 # look for environment variable that specifies path to SCIP
 scipoptdir = os.environ.get("SCIPOPTDIR", "").strip('"')
@@ -112,7 +116,7 @@ extensions = [
     Extension(
         "pyscipopt.scip",
         [os.path.join(packagedir, "scip%s" % ext)],
-        include_dirs=includedirs,
+        include_dirs=includedirs + [np.get_include()],
         library_dirs=[libdir],
         libraries=[libname],
         extra_compile_args=extra_compile_args,
