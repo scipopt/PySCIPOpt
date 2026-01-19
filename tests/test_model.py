@@ -584,8 +584,8 @@ def test_freeTransform_repr():
 
     # Without the fix in PR #1161, transformed objects would segfault
     m.freeTransform()
-    assert repr(transformed_x) == "<freed Variable>"
-    assert repr(transformed_c) == "<freed Constraint>"
+    assert repr(transformed_x) == ""
+    assert repr(transformed_c) == ""
     assert repr(x) == "x"
     assert repr(c) == "mycons"
 
@@ -603,5 +603,5 @@ def test_model_dealloc_repr():
     x, c = create_model_and_get_objects()
     gc.collect()
 
-    assert repr(x) == "<freed Variable>"
-    assert repr(c) == "<freed Constraint>"
+    assert repr(x) == ""
+    assert repr(c) == ""

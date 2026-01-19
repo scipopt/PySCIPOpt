@@ -2959,6 +2959,18 @@ cdef class Model:
         model._benders_subproblems = []  # Initialize Benders subproblems list
         return model
 
+    cdef _createCons(self, SCIP_CONS* scip_cons):
+        """Create a Constraint wrapper and track it for proper cleanup."""
+        pyCons = Constraint.create(scip_cons)
+        self._modelconss[pyCons.ptr()] = pyCons
+        return pyCons
+
+    cdef _createVar(self, SCIP_VAR* scip_var):
+        """Create a Variable wrapper and track it for proper cleanup."""
+        pyVar = Variable.create(scip_var)
+        self._modelvars[pyVar.ptr()] = pyVar
+        return pyVar
+
     @property
     def _freescip(self):
         """
@@ -4265,11 +4277,7 @@ cdef class Model:
         else:
             PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
 
-        pyVar = Variable.create(scip_var)
-
-        # store variable in the model to avoid creating new python variable objects in getVars()
-        assert not pyVar.ptr() in self._modelvars
-        self._modelvars[pyVar.ptr()] = pyVar
+        pyVar = self._createVar(scip_var)
 
         #setting the variable data
         SCIPvarSetData(scip_var, <SCIP_VARDATA*>pyVar)
@@ -4399,13 +4407,7 @@ cdef class Model:
         """
         cdef SCIP_VAR* _tvar
         PY_SCIP_CALL(SCIPgetTransformedVar(self._scip, var.scip_var, &_tvar))
-
-        pyVar = Variable.create(_tvar)
-        # Track transformed variable so it can be invalidated in freeTransform()
-        ptr = pyVar.ptr()
-        if ptr not in self._modelvars:
-            self._modelvars[ptr] = pyVar
-        return pyVar
+        return self._createVar(_tvar)
 
     def addVarLocks(self, Variable var, int nlocksdown, int nlocksup):
         """
@@ -4770,10 +4772,7 @@ cdef class Model:
                 vars.append(self._modelvars[ptr])
             else:
                 # create a new variable
-                var = Variable.create(_vars[i])
-                assert var.ptr() == ptr
-                self._modelvars[ptr] = var
-                vars.append(var)
+                vars.append(self._createVar(_vars[i]))
 
         return vars
 
@@ -6097,11 +6096,8 @@ cdef class Model:
         scip_cons = (<Constraint>pycons_initial).scip_cons
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        pycons = Constraint.create(scip_cons)
+        pycons = self._createCons(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-
-        # Track constraint for invalidation in freeTransform/dealloc. See issue #604.
-        self._modelconss[pycons.ptr()] = pycons
 
         return pycons
 
@@ -6422,7 +6418,7 @@ cdef class Model:
             PY_SCIP_CALL(SCIPaddConsElemDisjunction(self._scip,disj_cons, (<Constraint>pycons).scip_cons))
             PY_SCIP_CALL(SCIPreleaseCons(self._scip, &(<Constraint>pycons).scip_cons))
         PY_SCIP_CALL(SCIPaddCons(self._scip, disj_cons))
-        PyCons = Constraint.create(disj_cons)
+        PyCons = self._createCons(disj_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &disj_cons))
 
         return PyCons
@@ -6514,10 +6510,7 @@ cdef class Model:
                 vars.append(self._modelvars[ptr])
             else:
                 # create a new variable
-                var = Variable.create(_vars[i])
-                assert var.ptr() == ptr
-                self._modelvars[ptr] = var
-                vars.append(var)
+                vars.append(self._createVar(_vars[i]))
 
         free(_vars)
         return vars
@@ -6603,10 +6596,7 @@ cdef class Model:
                 vars.append(self._modelvars[ptr])
             else:
                 # create a new variable
-                var = Variable.create(_vars[i])
-                assert var.ptr() == ptr
-                self._modelvars[ptr] = var
-                vars.append(var)
+                vars.append(self._createVar(_vars[i]))
 
         return vars
 
@@ -6631,15 +6621,9 @@ cdef class Model:
 
         ptr = <size_t>(_resultant)
         # check whether the corresponding variable exists already
-        if ptr not in self._modelvars:
-            # create a new variable
-            resultant = Variable.create(_resultant)
-            assert resultant.ptr() == ptr
-            self._modelvars[ptr] = resultant
-        else:
-            resultant = self._modelvars[ptr]
-            
-        return resultant
+        if ptr in self._modelvars:
+            return self._modelvars[ptr]
+        return self._createVar(_resultant)
 
     def isAndConsSorted(self, Constraint and_cons):
         """
@@ -6831,9 +6815,9 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
 
-        pyCons = Constraint.create(scip_cons)
+        pyCons = self._createCons(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-        
+
         return pyCons
 
     def addConsSOS1(self, vars, weights=None, name="",
@@ -6899,7 +6883,7 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
 
-        return Constraint.create(scip_cons)
+        return self._createCons(scip_cons)
 
     def addConsSOS2(self, vars, weights=None, name="",
                 initial=True, separate=True, enforce=True, check=True,
@@ -6964,7 +6948,7 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
 
-        return Constraint.create(scip_cons)
+        return self._createCons(scip_cons)
 
     def addConsAnd(self, vars, resvar, name="",
             initial=True, separate=True, enforce=True, check=True,
@@ -7025,7 +7009,7 @@ cdef class Model:
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        pyCons = Constraint.create(scip_cons)
+        pyCons = self._createCons(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pyCons
@@ -7089,7 +7073,7 @@ cdef class Model:
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        pyCons = Constraint.create(scip_cons)
+        pyCons = self._createCons(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pyCons
@@ -7152,7 +7136,7 @@ cdef class Model:
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        pyCons = Constraint.create(scip_cons)
+        pyCons = self._createCons(scip_cons)
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pyCons
@@ -7237,7 +7221,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddVarCardinality(self._scip, scip_cons, scip_var, indvar, <SCIP_Real>weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        pyCons = Constraint.create(scip_cons)
+        pyCons = self._createCons(scip_cons)
 
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
@@ -7330,7 +7314,7 @@ cdef class Model:
             PY_SCIP_CALL(SCIPaddVarIndicator(self._scip, scip_cons, wrapper.ptr[0], <SCIP_Real>coeff))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-        pyCons = Constraint.create(scip_cons)
+        pyCons = self._createCons(scip_cons)
 
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
@@ -7520,7 +7504,7 @@ cdef class Model:
         cdef SCIP_CONS* lincons = SCIPgetLinearConsIndicator(cons.scip_cons)
         if lincons == NULL:
             return None
-        return Constraint.create(lincons)
+        return self._createCons(lincons)
 
     def getSlackVarIndicator(self, Constraint cons):
         """
@@ -7538,7 +7522,7 @@ cdef class Model:
 
         """
         cdef SCIP_VAR* var = SCIPgetSlackVarIndicator(cons.scip_cons)
-        return Variable.create(var)
+        return self._createVar(var)
 
     def addPyCons(self, Constraint cons):
         """
@@ -7982,12 +7966,7 @@ cdef class Model:
         """
         cdef SCIP_CONS* transcons
         PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
-        pyCons = Constraint.create(transcons)
-        # Track transformed constraint for invalidation in freeTransform. See issue #604.
-        ptr = pyCons.ptr()
-        if ptr not in self._modelconss:
-            self._modelconss[ptr] = pyCons
-        return pyCons
+        return self._createCons(transcons)
 
     def isNLPConstructed(self):
         """
@@ -8166,15 +8145,15 @@ cdef class Model:
         quadterms  = []
 
         for termidx in range(nlinvars):
-            var = Variable.create(SCIPgetVarExprVar(linexprs[termidx]))
+            var = self._createVar(SCIPgetVarExprVar(linexprs[termidx]))
             linterms.append((var, lincoefs[termidx]))
 
         for termidx in range(nbilinterms):
             SCIPexprGetQuadraticBilinTerm(expr, termidx, &bilinterm1, &bilinterm2, &bilincoef, NULL, NULL)
             scipvar1 = SCIPgetVarExprVar(bilinterm1)
             scipvar2 = SCIPgetVarExprVar(bilinterm2)
-            var1 = Variable.create(scipvar1)
-            var2 = Variable.create(scipvar2)
+            var1 = self._createVar(scipvar1)
+            var2 = self._createVar(scipvar2)
             if scipvar1 != scipvar2:
                 bilinterms.append((var1,var2,bilincoef))
             else:
@@ -8184,7 +8163,7 @@ cdef class Model:
             SCIPexprGetQuadraticQuadTerm(expr, termidx, NULL, &lincoef, &sqrcoef, NULL, NULL, &sqrexpr)
             if sqrexpr == NULL:
                 continue
-            var = Variable.create(SCIPgetVarExprVar(sqrexpr))
+            var = self._createVar(SCIPgetVarExprVar(sqrexpr))
             quadterms.append((var,sqrcoef,lincoef))
 
         return (bilinterms, quadterms, linterms)
@@ -8244,7 +8223,7 @@ cdef class Model:
             conss = SCIPgetOrigConss(self._scip)
             nconss = SCIPgetNOrigConss(self._scip)
 
-        return [Constraint.create(conss[i]) for i in range(nconss)]
+        return [self._createCons(conss[i]) for i in range(nconss)]
 
     def getNConss(self, transformed=True):
         """
@@ -8880,11 +8859,8 @@ cdef class Model:
             PY_SCIP_CALL(SCIPgetBendersSubproblemVar(self._scip, _benders, var.scip_var, &_mappedvar, probnumber))
 
         if _mappedvar == NULL:
-            mappedvar = None
-        else:
-            mappedvar = Variable.create(_mappedvar)
-
-        return mappedvar
+            return None
+        return self._createVar(_mappedvar)
 
     def getBendersAuxiliaryVar(self, probnumber, Benders benders = None):
         """
@@ -8911,9 +8887,7 @@ cdef class Model:
             _benders = benders._benders
 
         _auxvar = SCIPbendersGetAuxiliaryVar(_benders, probnumber)
-        auxvar = Variable.create(_auxvar)
-
-        return auxvar
+        return self._createVar(_auxvar)
 
     def checkBendersSubproblemOptimality(self, Solution solution, probnumber, Benders benders = None):
         """
@@ -9706,7 +9680,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPgetLPBranchCands(self._scip, &lpcands, &lpcandssol, &lpcandsfrac,
                                           &nlpcands, &npriolpcands, &nfracimplvars))
 
-        return ([Variable.create(lpcands[i]) for i in range(nlpcands)], [lpcandssol[i] for i in range(nlpcands)],
+        return ([self._createVar(lpcands[i]) for i in range(nlpcands)], [lpcandssol[i] for i in range(nlpcands)],
                 [lpcandsfrac[i] for i in range(nlpcands)], nlpcands, npriolpcands, nfracimplvars)
 
     def getNLPBranchCands(self):
@@ -9743,7 +9717,7 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPgetPseudoBranchCands(self._scip, &pseudocands, &npseudocands, &npriopseudocands))
 
-        return ([Variable.create(pseudocands[i]) for i in range(npseudocands)], npseudocands, npriopseudocands)
+        return ([self._createVar(pseudocands[i]) for i in range(npseudocands)], npseudocands, npriopseudocands)
 
     def branchVar(self, Variable variable):
         """
