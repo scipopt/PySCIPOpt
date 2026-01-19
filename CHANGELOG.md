@@ -14,6 +14,7 @@
 - Fixed incorrect getVal() result when _bestSol.sol was outdated
 ### Changed
 - changed default value of enablepricing flag to True
+- Speed up MatrixExpr.add.reduce via quicksum
 ### Removed
 
 ## 6.0.0 - 2025.xx.yy
