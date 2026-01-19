@@ -46,6 +46,8 @@ import math
 from typing import TYPE_CHECKING
 
 from pyscipopt.scip cimport Variable, Solution
+from cpython.dict cimport PyDict_Next
+from cpython.ref cimport PyObject
 
 include "matrix.pxi"
 
@@ -337,9 +339,15 @@ cdef class Expr:
 
     cpdef double _evaluate(self, Solution sol):
         cdef double res = 0
-        cdef double coef
         cdef Term term
-        for term, coef in self.terms.items():
+        cdef double coef
+        cdef Py_ssize_t pos = <Py_ssize_t>0
+        cdef PyObject* key_ptr
+        cdef PyObject* val_ptr
+
+        while PyDict_Next(self.terms, &pos, &key_ptr, &val_ptr):
+            term = <Term>key_ptr
+            coef = <double>(<object>val_ptr)
             res += coef * term._evaluate(sol)
         return res
 
