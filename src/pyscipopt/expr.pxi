@@ -667,10 +667,11 @@ cdef class SumExpr(GenExpr):
 
     cpdef double _evaluate(self, Solution sol) except *:
         cdef double res = self.constant
-        cdef GenExpr child
-        cdef double coef
-        for child, coef in zip(self.children, self.coefs):
-            res += coef * child._evaluate(sol)
+        cdef int i = 0, n = len(self.children)
+        cdef list children = self.children
+        cdef list coefs = self.coefs
+        for i in range(n):
+            res += <double>coefs[i] * (<GenExpr>children[i])._evaluate(sol)
         return res
 
 
@@ -689,9 +690,12 @@ cdef class ProdExpr(GenExpr):
 
     cpdef double _evaluate(self, Solution sol) except *:
         cdef double res = self.constant
-        cdef GenExpr child
-        for child in self.children:
-            res *= child._evaluate(sol)
+        cdef list children = self.children
+        cdef int i = 0, n = len(children)
+        for i in range(n):
+            res *= (<GenExpr>children[i])._evaluate(sol)
+            if res == 0:  # early stop
+                return 0.0
         return res
 
 

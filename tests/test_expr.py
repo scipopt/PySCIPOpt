@@ -215,3 +215,6 @@ def test_evaluate():
 
     with pytest.raises(TypeError):
         m.getVal(1)
+
+    with pytest.raises(ZeroDivisionError):
+        m.getVal(1 / z)
