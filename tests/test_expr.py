@@ -195,16 +195,19 @@ def test_rpow_constant_base(model):
 
 def test_evaluate():
     m = Model()
-    x = m.addVar(lb=1, ub=1)
+    x = m.addVar(lb=1, ub=1, name="x")
+    y = m.addVar(lb=2, ub=2, name="y")
     m.optimize()
 
-    # test "Expr({Term(x1): 1.0, Term(): 1.0})"
-    assert m.getVal(x + 1) == 2
-    # test "prod(1.0,sum(0.0,prod(1.0,x1)),**(sum(0.0,prod(1.0,x1)),-1))"
+    # test "Expr({Term(x): 1.0, Term(y): 1.0, Term(): 1.0})"
+    assert m.getVal(x + y + 1) == 3
+    # test "prod(1.0,sum(0.0,prod(1.0,x)),**(sum(0.0,prod(1.0,x)),-1))"
     assert m.getVal(x / x) == 1
-    # test "**(prod(1.0,**(sum(0.0,prod(1.0,x1)),-1)),2)"
+    # test "prod(1.0,sum(0.0,prod(1.0,y)),**(sum(0.0,prod(1.0,x)),-1))"
+    assert m.getVal(y / x) == 2
+    # test "**(prod(1.0,**(sum(0.0,prod(1.0,x)),-1)),2)"
     assert m.getVal((1 / x) ** 2) == 1
-    # test "sin(sum(0.0,prod(1.0,x1)))"
+    # test "sin(sum(0.0,prod(1.0,x)))"
     assert round(m.getVal(sin(x)), 6) == round(math.sin(1), 6)
 
     with pytest.raises(TypeError):
