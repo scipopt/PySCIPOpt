@@ -3067,18 +3067,18 @@ cdef class Model:
             raise Warning("method cannot be called in stage %i." % self.getStage())
 
         # Invalidate transformed variables. See issue #604.
-        original_var_ptrs = {ptr for ptr, var in self._modelvars.items() if var.isOriginal()}
+        origvars = {ptr: var for ptr, var in self._modelvars.items() if var.isOriginal()}
         for ptr, var in self._modelvars.items():
-            if ptr not in original_var_ptrs:
+            if ptr not in origvars:
                 (<Variable>var).scip_var = NULL
-        self._modelvars = {ptr: var for ptr, var in self._modelvars.items() if ptr in original_var_ptrs}
+        self._modelvars = origvars
 
         # Invalidate transformed constraints. See issue #604.
-        original_cons_ptrs = {ptr for ptr, cons in self._modelconss.items() if cons.isOriginal()}
+        origconss = {ptr: cons for ptr, cons in self._modelconss.items() if cons.isOriginal()}
         for ptr, cons in self._modelconss.items():
-            if ptr not in original_cons_ptrs:
+            if ptr not in origconss:
                 (<Constraint>cons).scip_cons = NULL
-        self._modelconss = {ptr: cons for ptr, cons in self._modelconss.items() if ptr in original_cons_ptrs}
+        self._modelconss = origconss
 
         PY_SCIP_CALL(SCIPfreeTransform(self._scip))
 
