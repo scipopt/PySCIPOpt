@@ -135,8 +135,8 @@ cdef class Term:
         cdef SCIP* scip = sol.scip
         cdef SCIP_SOL* sol = sol.sol
 
-        for i in self.vartuple:
-            var = <Variable>self.vartuple[j]
+        for i in range(len(self.vartuple)):
+            var = <Variable>self.vartuple[i]
             res *= SCIPgetSolVal(scip, sol, var.scip_var)
             if res == 0:  # early stop
                 return 0.0
