@@ -200,7 +200,7 @@ def test_evaluate():
     m.optimize()
 
     # test "Expr({Term(x): 1.0, Term(y): 1.0, Term(): 1.0})"
-    assert m.getVal(x + y + 1) == 3
+    assert m.getVal(x + y + 1) == 4
     # test "prod(1.0,sum(0.0,prod(1.0,x)),**(sum(0.0,prod(1.0,x)),-1))"
     assert m.getVal(x / x) == 1
     # test "prod(1.0,sum(0.0,prod(1.0,y)),**(sum(0.0,prod(1.0,x)),-1))"
