@@ -197,8 +197,11 @@ def test_evaluate():
     m = Model()
     x = m.addVar(lb=1, ub=1, name="x")
     y = m.addVar(lb=2, ub=2, name="y")
+    z = m.addVar(lb=0, ub=0, name="z")
     m.optimize()
 
+    # test "Expr({Term(x, y, z): 1.0})"
+    assert m.getVal(z * x * y) == 0
     # test "Expr({Term(x): 1.0, Term(y): 1.0, Term(): 1.0})"
     assert m.getVal(x + y + 1) == 4
     # test "prod(1.0,sum(0.0,prod(1.0,x)),**(sum(0.0,prod(1.0,x)),-1))"

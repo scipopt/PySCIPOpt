@@ -130,9 +130,16 @@ cdef class Term:
 
     cpdef double _evaluate(self, Solution sol):
         cdef double res = 1
-        cdef Variable i
+        cdef int i
+        cdef Variable var
+        cdef SCIP* scip = sol.scip
+        cdef SCIP_SOL* sol = sol.sol
+
         for i in self.vartuple:
-            res *= SCIPgetSolVal(sol.scip, sol.sol, i.scip_var)
+            var = <Variable>self.vartuple[j]
+            res *= SCIPgetSolVal(scip, sol, var.scip_var)
+            if res == 0:  # early stop
+                return 0.0
         return res
 
 
