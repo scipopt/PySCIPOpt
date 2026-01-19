@@ -1565,6 +1565,8 @@ cdef class Variable(Expr):
 
     property name:
         def __get__(self):
+            if self.scip_var == NULL:
+                return ""
             cname = bytes( SCIPvarGetName(self.scip_var) )
             return cname.decode('utf-8')
 
@@ -1573,8 +1575,6 @@ cdef class Variable(Expr):
         return <size_t>(self.scip_var)
 
     def __repr__(self):
-        if self.scip_var == NULL:
-            return "<freed Variable>"
         return self.name
 
     def vtype(self):
@@ -2215,6 +2215,8 @@ cdef class Constraint:
 
     property name:
         def __get__(self):
+            if self.scip_cons == NULL:
+                return ""
             cname = bytes( SCIPconsGetName(self.scip_cons) )
             return cname.decode('utf-8')
 
@@ -2222,8 +2224,6 @@ cdef class Constraint:
         return <size_t>(self.scip_cons)
 
     def __repr__(self):
-        if self.scip_cons == NULL:
-            return "<freed Constraint>"
         return self.name
 
     def isOriginal(self):
