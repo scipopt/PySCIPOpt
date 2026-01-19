@@ -2231,8 +2231,8 @@ cdef class Model:
     # store iis, if found
     cdef SCIP_IIS* _iis
     # helper methods for later var and cons cleanup
-    cdef _createCons(self, SCIP_CONS* scip_cons)
-    cdef _createVar(self, SCIP_VAR* scip_var)
+    cdef _getOrCreateCons(self, SCIP_CONS* scip_cons)
+    cdef _getOrCreateVar(self, SCIP_VAR* scip_var)
 
     @staticmethod
     cdef create(SCIP* scip)
