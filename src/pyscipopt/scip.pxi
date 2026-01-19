@@ -2962,12 +2962,14 @@ cdef class Model:
     cdef _createCons(self, SCIP_CONS* scip_cons):
         """Create a Constraint wrapper and track it for proper cleanup."""
         pyCons = Constraint.create(scip_cons)
+        assert pyCons.ptr() not in self._modelconss
         self._modelconss[pyCons.ptr()] = pyCons
         return pyCons
 
     cdef _createVar(self, SCIP_VAR* scip_var):
         """Create a Variable wrapper and track it for proper cleanup."""
         pyVar = Variable.create(scip_var)
+        assert pyVar.ptr() not in self._modelvars
         self._modelvars[pyVar.ptr()] = pyVar
         return pyVar
 
