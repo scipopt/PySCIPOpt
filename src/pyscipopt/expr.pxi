@@ -743,7 +743,7 @@ cdef class UnaryExpr(GenExpr):
         return self._op + "(" + self.children[0].__repr__() + ")"
 
     cpdef double _evaluate(self, Solution sol) except *:
-        return getattr(math, self._op)(<GenExpr>self.children[0])._evaluate(sol)
+        return getattr(math, self._op)((<GenExpr>self.children[0])._evaluate(sol))
 
 
 # class for constant expressions
