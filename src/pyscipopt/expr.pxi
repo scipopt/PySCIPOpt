@@ -132,12 +132,12 @@ cdef class Term:
         cdef double res = 1
         cdef int i
         cdef Variable var
-        cdef SCIP* scip = sol.scip
-        cdef SCIP_SOL* sol = sol.sol
+        cdef SCIP* scip_ptr = sol.scip
+        cdef SCIP_SOL* sol_ptr = sol.sol
 
         for i in range(len(self.vartuple)):
             var = <Variable>self.vartuple[i]
-            res *= SCIPgetSolVal(scip, sol, var.scip_var)
+            res *= SCIPgetSolVal(scip_ptr, sol_ptr, var.scip_var)
             if res == 0:  # early stop
                 return 0.0
         return res
