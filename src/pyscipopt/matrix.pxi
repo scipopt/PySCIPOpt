@@ -83,7 +83,7 @@ class MatrixExpr(np.ndarray):
 
         """
         res = NotImplemented
-        if method == "reduce":
+        if method == "reduce":  # Handle reduction operations, e.g., np.sum(a)
             if ufunc is np.add and isinstance(args[0], MatrixExpr):
                 res = _core_sum(args[0], **kwargs)
 
