@@ -128,7 +128,7 @@ cdef class Term:
     def __repr__(self):
         return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
 
-    cpdef double _evaluate(self, Solution sol):
+    cpdef double _evaluate(self, Solution sol) except *:
         cdef double res = 1.0
         cdef SCIP* scip_ptr = sol.scip
         cdef SCIP_SOL* sol_ptr = sol.sol
@@ -344,7 +344,7 @@ cdef class Expr:
         else:
             return max(len(v) for v in self.terms)
 
-    cpdef double _evaluate(self, Solution sol):
+    cpdef double _evaluate(self, Solution sol) except *:
         cdef double res = 0
         cdef Py_ssize_t pos = <Py_ssize_t>0
         cdef PyObject* key_ptr
@@ -665,7 +665,7 @@ cdef class SumExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
-    cpdef double _evaluate(self, Solution sol):
+    cpdef double _evaluate(self, Solution sol) except *:
         cdef double res = self.constant
         cdef GenExpr child
         cdef double coef
@@ -687,7 +687,7 @@ cdef class ProdExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
-    cpdef double _evaluate(self, Solution sol):
+    cpdef double _evaluate(self, Solution sol) except *:
         cdef double res = self.constant
         cdef GenExpr child
         for child in self.children:
@@ -707,8 +707,8 @@ cdef class VarExpr(GenExpr):
     def __repr__(self):
         return self.children[0].__repr__()
 
-    cpdef double _evaluate(self, Solution sol):
         return self.children[0]._evaluate(sol)
+    cpdef double _evaluate(self, Solution sol) except *:
 
 
 # Pow Expressions
@@ -724,8 +724,8 @@ cdef class PowExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + self.children[0].__repr__() + "," + str(self.expo) + ")"
 
-    cpdef double _evaluate(self, Solution sol):
         return self.children[0]._evaluate(sol) ** self.expo
+    cpdef double _evaluate(self, Solution sol) except *:
 
 
 # Exp, Log, Sqrt, Sin, Cos Expressions
@@ -738,8 +738,8 @@ cdef class UnaryExpr(GenExpr):
     def __repr__(self):
         return self._op + "(" + self.children[0].__repr__() + ")"
 
-    cpdef double _evaluate(self, Solution sol):
         return getattr(math, self._op)(self.children[0]._evaluate(sol))
+    cpdef double _evaluate(self, Solution sol) except *:
 
 
 # class for constant expressions
@@ -752,7 +752,7 @@ cdef class Constant(GenExpr):
     def __repr__(self):
         return str(self.number)
 
-    cpdef double _evaluate(self, Solution sol):
+    cpdef double _evaluate(self, Solution sol) except *:
         return self.number
 
 
