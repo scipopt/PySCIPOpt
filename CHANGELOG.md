@@ -5,12 +5,14 @@
 - Added automated script for generating type stubs
 - Include parameter names in type stubs
 - Speed up MatrixExpr.sum(axis=...) via quicksum
+- Added structured_optimization_trace recipe for structured optimization progress tracking
 ### Fixed
 - all fundamental callbacks now raise an error if not implemented
 - Fixed the type of MatrixExpr.sum(axis=...) result from MatrixVariable to MatrixExpr.
 - Updated IIS result in PyiisfinderExec()
 - Model.getVal now supported GenExpr type
 - Fixed lotsizing_lazy example
+- Fixed incorrect getVal() result when _bestSol.sol was outdated
 ### Changed
 - changed default value of enablepricing flag to True
 ### Removed
