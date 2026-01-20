@@ -252,9 +252,9 @@ def test_matrix_sum_result(axis, keepdims):
     a = np.arange(6).reshape((1, 2, 3))
 
     np_res = a.sum(axis, keepdims=keepdims)
-    scip_res = a.view(MatrixExpr).sum(axis, keepdims=keepdims)
-    assert (np_res == _getVal(scip_res)).all()
-    assert np_res.shape == _getVal(scip_res).shape
+    scip_res = _getVal(a.view(MatrixExpr).sum(axis, keepdims=keepdims)).view(np.ndarray)
+    assert (np_res == scip_res).all()
+    assert np_res.shape == scip_res.shape
 
 
 @pytest.mark.parametrize("n", [50, 100])
