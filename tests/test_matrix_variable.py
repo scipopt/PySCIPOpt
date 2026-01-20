@@ -298,12 +298,12 @@ def test_matrix_mean_performance(n):
     model = Model()
     x = model.addMatrixVar((n, n))
 
-    # Original sum via `np.ndarray.sum`
+    # Original mean via `np.ndarray.mean`
     start = time()
     x.view(np.ndarray).mean(axis=0)
     orig = time() - start
 
-    # Optimized sum via `quicksum`
+    # Optimized mean via `quicksum`
     start = time()
     x.mean(axis=0)
     matrix = time() - start
