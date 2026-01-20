@@ -796,19 +796,15 @@ cdef class CosExpr(UnaryExpr):
 cdef class ExprCons:
     """Constraints with a polynomial expressions and lower/upper bounds."""
 
-    def __init__(
-        self,
-        Expr expr,
-        lhs: Optional[double] = None,
-        rhs: Optional[double] = None,
-    ):
-        if lhs is None and rhs is None:
-            raise ValueError("ExprCons (with both lhs and rhs) doesn't supported")
+    def __cinit__(self, *_):
+        self._lhs = None
+        self._rhs = None
 
-        self.expr = expr
-        self._lhs = lhs
-        self._rhs = rhs
-        self._normalize()
+    def __init__(self, *_):
+        raise NotImplementedError(
+            "Direct instantiation of 'ExprCons' is not supported. "
+            "Please use comparison operators to build expression constraints."
+        )
 
     def _normalize(self) -> ExprCons:
         """Move constant children in expression to bounds"""
@@ -824,12 +820,11 @@ cdef class ExprCons:
         if op == Py_LE:
             if self._rhs is not None:
                 raise TypeError("ExprCons already has upper bound")
-            return ExprCons(self.expr, lhs=<double>self._lhs, rhs=other)
+            return _expr_cons(self.expr, lhs=<double>self._lhs, rhs=other)
         elif op == Py_GE:
             if self._lhs is not None:
-                raise TypeError("ExprCons already has lower bound")
-            return ExprCons(self.expr, lhs=other, rhs=<double>self._rhs)
-
+                raise TypeError("exprcons already has lower bound")
+            return _expr_cons(self.expr, lhs=other, rhs=<double>self._rhs)
         raise NotImplementedError("can only support with '<=' or '>='")
 
     def __repr__(self) -> str:
@@ -949,6 +944,19 @@ cdef inline _unwrap(x):
     return x.expr if isinstance(x, _ExprKey) else x
 
 
+cdef inline ExprCons _expr_cons(
+    Expr expr,
+    lhs: Optional[double] = None,
+    rhs: Optional[double] = None,
+):
+    cdef ExprCons res = ExprCons.__new__(ExprCons)
+    res.expr = expr
+    res._lhs = lhs
+    res._rhs = rhs
+    res._normalize()
+    return res
+
+
 cdef Expr _to_expr(x: Union[Number, Variable, Expr]):
     if type(x) is Variable:
         return (<Variable>x)._expr_view
@@ -1001,16 +1009,16 @@ cdef object _expr_cmp(Expr expr, other: Union[Number, Variable, Expr], int op):
     cdef Expr _other = _to_expr(other)
     if op == Py_LE:
         if type(_other) is ConstExpr:
-            return ExprCons(expr, rhs=_c(_other))
-        return ExprCons(expr - _other, rhs=0.0)
+            return _expr_cons(expr, rhs=_c(_other))
+        return _expr_cons(expr - _other, rhs=0.0)
     elif op == Py_GE:
         if type(_other) is ConstExpr:
-            return ExprCons(expr, lhs=_c(_other))
-        return ExprCons(expr - _other, lhs=0.0)
+            return _expr_cons(expr, lhs=_c(_other))
+        return _expr_cons(expr - _other, lhs=0.0)
     elif op == Py_EQ:
         if type(_other) is ConstExpr:
-            return ExprCons(expr, lhs=_c(_other), rhs=_c(_other))
-        return ExprCons(expr - _other, lhs=0.0, rhs=0.0)
+            return _expr_cons(expr, lhs=_c(_other), rhs=_c(_other))
+        return _expr_cons(expr - _other, lhs=0.0, rhs=0.0)
 
     raise NotImplementedError("can only support with '<=', '>=', or '=='")
 
