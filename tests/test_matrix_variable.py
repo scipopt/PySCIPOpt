@@ -310,6 +310,16 @@ def test_matrix_dot_performance(n):
     assert model.isGT(orig, matrix)
 
 
+def test_matrix_dot_value():
+    model = Model()
+    x = model.addMatrixVar(3, lb=[1, 2, 3], ub=[1, 2, 3])
+    y = model.addMatrixVar((3, 2), lb=1, ub=1)
+    model.optimize()
+
+    assert model.getVal(np.ones(3) @ x) == 6
+    assert (model.getVal(np.ones((2, 2, 3)) @ y) == np.full((2, 2, 2), 3)).all()
+
+
 def test_add_cons_matrixVar():
     m = Model()
     matrix_variable = m.addMatrixVar(shape=(3, 3), vtype="B", name="A", obj=1)
