@@ -63,9 +63,7 @@ class MatrixExpr(np.ndarray):
 
         if res is NotImplemented:
             res = super().__array_ufunc__(ufunc, method, *args, **kwargs)
-            if isinstance(res, np.ndarray):
-                return res.view(MatrixExpr)
-        return res
+        return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
 
     def sum(
         self,
