@@ -158,20 +158,8 @@ cdef class ExprLike:
             return args[0] >= args[1]
         elif ufunc is np.equal:
             return args[0] == args[1]
-        elif ufunc is np.absolute:
-            if type(args[0]) is AbsExpr:
-                return args[0].copy()
-            return <AbsExpr>_unary(_ensure_unary(args[0]), AbsExpr)
-        elif ufunc is np.exp:
-            return <ExpExpr>_unary(_ensure_unary(args[0]), ExpExpr)
-        elif ufunc is np.log:
-            return <LogExpr>_unary(_ensure_unary(args[0]), LogExpr)
-        elif ufunc is np.sqrt:
-            return <SqrtExpr>_unary(_ensure_unary(args[0]), SqrtExpr)
-        elif ufunc is np.sin:
-            return <SinExpr>_unary(_ensure_unary(args[0]), SinExpr)
-        elif ufunc is np.cos:
-            return <CosExpr>_unary(_ensure_unary(args[0]), CosExpr)
+        elif ufunc in UNARY_MAP:
+            return getattr(args[0], UNARY_MAP[ufunc])()
         return NotImplemented
 
     def __getitem__(self, key):
@@ -904,6 +892,14 @@ cdef double INF = float("inf")
 cdef tuple NUMBER_TYPES = (int, float, np.number)
 cdef tuple EXPR_OP_TYPES = NUMBER_TYPES + (Variable, Expr)
 CONST = Term()
+UNARY_MAP = {
+    np.absolute: "__abs__",
+    np.exp: "exp",
+    np.log: "log",
+    np.sqrt: "sqrt",
+    np.sin: "sin",
+    np.cos: "cos"
+}
 exp = np.exp
 log = np.log
 sqrt = np.sqrt
