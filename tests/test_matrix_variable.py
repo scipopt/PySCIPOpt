@@ -293,6 +293,33 @@ def test_matrix_sum_axis_not_none_performance(n):
     assert model.isGT(end_orig - start_orig, end_matrix - start_matrix)
 
 
+@pytest.mark.parametrize("n", [50, 100])
+def test_matrix_dot_performance(n):
+    model = Model()
+    x = model.addMatrixVar((n, n))
+    a = np.random.rand(n, n)
+
+    start = time()
+    a @ x.view(np.ndarray)
+    orig = time() - start
+
+    start = time()
+    a @ x
+    matrix = time() - start
+
+    assert model.isGT(orig, matrix)
+
+
+def test_matrix_dot_value():
+    model = Model()
+    x = model.addMatrixVar(3, lb=[1, 2, 3], ub=[1, 2, 3])
+    y = model.addMatrixVar((3, 2), lb=1, ub=1)
+    model.optimize()
+
+    assert model.getVal(np.ones(3) @ x) == 6
+    assert (model.getVal(np.ones((2, 2, 3)) @ y) == np.full((2, 2, 2), 3)).all()
+
+
 def test_add_cons_matrixVar():
     m = Model()
     matrix_variable = m.addMatrixVar(shape=(3, 3), vtype="B", name="A", obj=1)
@@ -574,7 +601,7 @@ def test_matrix_matmul_return_type():
 
     # test 1D @ 1D → 0D
     x = m.addMatrixVar(3)
-    assert type(x @ x) is Expr
+    assert type(np.ones(3) @ x) is Expr
 
     # test 1D @ 1D → 2D
     assert type(x[:, None] @ x[None, :]) is MatrixExpr
@@ -583,6 +610,9 @@ def test_matrix_matmul_return_type():
     y = m.addMatrixVar((2, 3))
     z = m.addMatrixVar((3, 4))
     assert type(y @ z) is MatrixExpr
+
+    # test ND @ 2D → ND
+    assert type(np.ones((2, 4, 3)) @ z) is MatrixExpr
 
 
 def test_matrix_sum_return_type():
