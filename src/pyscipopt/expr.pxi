@@ -675,7 +675,7 @@ cdef class Constant(GenExpr):
 
 def exp(expr):
     """returns expression with exp-function"""
-    if isinstance(expr, np.ndarray):   
+    if isinstance(expr, MatrixExpr):   
         unary_exprs = np.empty(shape=expr.shape, dtype=object)
         for idx in np.ndindex(expr.shape):
             unary_exprs[idx] = UnaryExpr(Operator.exp, buildGenExprObj(expr[idx]))
@@ -685,7 +685,7 @@ def exp(expr):
 
 def log(expr):
     """returns expression with log-function"""
-    if isinstance(expr, np.ndarray):
+    if isinstance(expr, MatrixExpr):
         unary_exprs = np.empty(shape=expr.shape, dtype=object)
         for idx in np.ndindex(expr.shape):
             unary_exprs[idx] = UnaryExpr(Operator.log, buildGenExprObj(expr[idx]))
@@ -695,7 +695,7 @@ def log(expr):
 
 def sqrt(expr):
     """returns expression with sqrt-function"""
-    if isinstance(expr, np.ndarray):
+    if isinstance(expr, MatrixExpr):
         unary_exprs = np.empty(shape=expr.shape, dtype=object)
         for idx in np.ndindex(expr.shape):
             unary_exprs[idx] = UnaryExpr(Operator.sqrt, buildGenExprObj(expr[idx]))
@@ -705,7 +705,7 @@ def sqrt(expr):
 
 def sin(expr):
     """returns expression with sin-function"""
-    if isinstance(expr, np.ndarray):
+    if isinstance(expr, MatrixExpr):
         unary_exprs = np.empty(shape=expr.shape, dtype=object)
         for idx in np.ndindex(expr.shape):
             unary_exprs[idx] = UnaryExpr(Operator.sin, buildGenExprObj(expr[idx]))
@@ -715,7 +715,7 @@ def sin(expr):
 
 def cos(expr):
     """returns expression with cos-function"""
-    if isinstance(expr, np.ndarray):   
+    if isinstance(expr, MatrixExpr):   
         unary_exprs = np.empty(shape=expr.shape, dtype=object)
         for idx in np.ndindex(expr.shape):
             unary_exprs[idx] = UnaryExpr(Operator.cos, buildGenExprObj(expr[idx]))
