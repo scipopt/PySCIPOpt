@@ -386,20 +386,32 @@ cdef class Expr(ExprLike):
         cdef Expr _other = _to_expr(other)
         if not type(_other) is ConstExpr:
             raise TypeError("excepted a constant exponent")
-        if _is_zero(self):
-            return _const(0.0)
-        elif type(_other) is ConstExpr:
-            if _c(_other) == 0:
+
+        cdef double expo = _c(_other)
+        if type(_other) is ConstExpr:
+            if expo == 0:
                 return _const(1.0)
-            elif _c(_other) == 1:
+            elif expo == 1:
                 return self.copy()
+        elif _is_zero(self):
+            if expo > 0:
+                return _const(0.0)
+            raise ZeroDivisionError("0.0 cannot be raised to a negative power")
         return _pow(_wrap(self), _c(_other))
 
     def __rpow__(self, other: Union[Number, Expr]) -> Union[ExpExpr, ConstExpr]:
         cdef Expr _other = _to_expr(other)
-        if not (type(_other) is ConstExpr and _c(_other) >= 0):
+        if type(_other) is not ConstExpr:
+            raise ValueError("excepted a constant base")
+
+        cdef double base = _c(_other)
+        if base == 0:
+            return _other ** self
+        elif base == 1:
+            return _const(1.0)
+        elif base < 0:
             raise ValueError("excepted a positive base")
-        return _const(1.0) if _is_zero(self) else ExpExpr(self * LogExpr(_other))
+        return <ExpExpr>_unary(_wrap(self * _other.log()), ExpExpr)
 
     def __neg__(self) -> Expr:
         cdef Expr res = self.copy(False)
