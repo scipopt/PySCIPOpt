@@ -5669,7 +5669,7 @@ cdef class Model:
         PY_SCIP_CALL( SCIPseparateSol(self._scip, NULL if sol is None else sol.sol, pretendroot, allowlocal, onlydelayed, &delayed, &cutoff) )
         return delayed, cutoff
 
-    def _getOrCreateConsLinear(self, ExprCons lincons, **kwargs):
+    def _createConsLinear(self, ExprCons lincons, **kwargs):
         """
         The function for creating a linear constraint, but not adding it to the Model.
         Please do not use this function directly, but rather use createConsFromExpr
@@ -5716,7 +5716,7 @@ cdef class Model:
 
         return PyCons
 
-    def _getOrCreateConsQuadratic(self, ExprCons quadcons, **kwargs):
+    def _createConsQuadratic(self, ExprCons quadcons, **kwargs):
         """
         The function for creating a quadratic constraint, but not adding it to the Model.
         Please do not use this function directly, but rather use createConsFromExpr
@@ -5771,7 +5771,7 @@ cdef class Model:
 
         return PyCons
 
-    def _getOrCreateConsNonlinear(self, cons, **kwargs):
+    def _createConsNonlinear(self, cons, **kwargs):
         """
         The function for creating a non-linear constraint, but not adding it to the Model.
         Please do not use this function directly, but rather use createConsFromExpr
@@ -5840,7 +5840,7 @@ cdef class Model:
 
         return PyCons
 
-    def _getOrCreateConsGenNonlinear(self, cons, **kwargs):
+    def _createConsGenNonlinear(self, cons, **kwargs):
         """
         The function for creating a general non-linear constraint, but not adding it to the Model.
         Please do not use this function directly, but rather use createConsFromExpr
@@ -6033,13 +6033,13 @@ cdef class Model:
 
         deg = cons.expr.degree()
         if deg <= 1:
-            return self._getOrCreateConsLinear(cons, **kwargs)
+            return self._createConsLinear(cons, **kwargs)
         elif deg <= 2:
-            return self._getOrCreateConsQuadratic(cons, **kwargs)
+            return self._createConsQuadratic(cons, **kwargs)
         elif deg == float('inf'): # general nonlinear
-            return self._getOrCreateConsGenNonlinear(cons, **kwargs)
+            return self._createConsGenNonlinear(cons, **kwargs)
         else:
-            return self._getOrCreateConsNonlinear(cons, **kwargs)
+            return self._createConsNonlinear(cons, **kwargs)
 
     # Constraint functions
     def addCons(self, cons, name='', initial=True, separate=True,
