@@ -897,6 +897,11 @@ cdef double INF = float("inf")
 cdef tuple NUMBER_TYPES = (int, float, np.number)
 cdef tuple EXPR_OP_TYPES = NUMBER_TYPES + (Variable, Expr)
 CONST = Term()
+exp = np.exp
+log = np.log
+sqrt = np.sqrt
+sin = np.sin
+cos = np.cos
 
 
 cdef inline int _ensure_hash(int h) noexcept:
@@ -915,9 +920,6 @@ cdef inline ConstExpr _const(double c):
     cdef ConstExpr res = ConstExpr.__new__(ConstExpr)
     res.children = {CONST: c}
     return res
-
-
-_vec_const = np.frompyfunc(_const, 1, 1)
 
 
 cdef inline Expr _expr(dict children, cls: Type[Expr] = Expr):
@@ -1111,96 +1113,3 @@ cdef inline UnaryExpr _unary(x: Union[Term, _ExprKey], cls: Type[UnaryExpr]):
     cdef UnaryExpr res = cls.__new__(cls)
     res.children = {x: 1.0}
     return res
-
-
-cdef inline _ensure_const(x):
-    if isinstance(x, NUMBER_TYPES):
-        return _const(<double>x)
-    elif isinstance(x, np.ndarray) and x.dtype.kind in "fiub":
-        return _vec_const(x).view(MatrixExpr)
-    return  x
-
-
-def exp(
-    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
-) -> Union[ExpExpr, MatrixExpr]:
-    """
-    exp(x)
-
-    Parameters
-    ----------
-    x : Number, Variable, Expr, np.ndarray, MatrixExpr
-
-    Returns
-    -------
-    ExpExpr, MatrixExpr
-    """
-    return np.exp(_ensure_const(x))
-
-
-def log(
-    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
-) -> Union[LogExpr, MatrixExpr]:
-    """
-    log(x)
-
-    Parameters
-    ----------
-    x : Number, Variable, Expr, np.ndarray, MatrixExpr
-
-    Returns
-    -------
-    LogExpr, MatrixExpr
-    """
-    return np.log(_ensure_const(x))
-
-
-def sqrt(
-    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
-) -> Union[SqrtExpr, MatrixExpr]:
-    """
-    sqrt(x)
-
-    Parameters
-    ----------
-    x : Number, Variable, Expr, np.ndarray, MatrixExpr
-
-    Returns
-    -------
-    SqrtExpr, MatrixExpr
-    """
-    return np.sqrt(_ensure_const(x))
-
-
-def sin(
-    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
-) -> Union[SinExpr, MatrixExpr]:
-    """
-    sin(x)
-
-    Parameters
-    ----------
-    x : Number, Variable, Expr, np.ndarray, MatrixExpr
-
-    Returns
-    -------
-    SinExpr, MatrixExpr
-    """
-    return np.sin(_ensure_const(x))
-
-
-def cos(
-    x: Union[Number, Variable, Expr, np.ndarray, MatrixExpr],
-) -> Union[CosExpr, MatrixExpr]:
-    """
-    cos(x)
-
-    Parameters
-    ----------
-    x : Number, Variable, Expr, np.ndarray, MatrixExpr
-
-    Returns
-    -------
-    CosExpr, MatrixExpr
-    """
-    return np.cos(_ensure_const(x))
