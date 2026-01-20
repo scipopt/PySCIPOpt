@@ -294,7 +294,7 @@ def test_matrix_sum_axis_not_none_performance(n):
 
 
 @pytest.mark.parametrize("n", [50, 100])
-def test_matrix_dot(n):
+def test_matrix_dot_performance(n):
     model = Model()
     x = model.addMatrixVar((n, n))
     a = np.random.rand(n, n)
