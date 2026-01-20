@@ -98,7 +98,7 @@ class MatrixExpr(np.ndarray):
 
         if res is NotImplemented:
             if "out" in kwargs: # Unboxing MatrixExpr to stop __array_ufunc__ recursion
-                kwargs["out"] = _ensure_array(kwargs["out"])
+                kwargs["out"] = tuple(_ensure_array(arg) for arg in kwargs["out"])
             res = super().__array_ufunc__(ufunc, method, *args, **kwargs)
         return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
 
