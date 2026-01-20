@@ -42,6 +42,7 @@
 # which should, in princple, modify the expr. However, since we do not implement __isub__, __sub__
 # gets called (I guess) and so a copy is returned.
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
+import numpy as np
 
 
 def _is_number(e):
@@ -60,7 +61,7 @@ def _expr_richcmp(self, other, op):
             return (self - other) <= 0.0
         elif _is_number(other):
             return ExprCons(self, rhs=float(other))
-        elif isinstance(other, MatrixExpr):
+        elif isinstance(other, np.ndarray):
             return _expr_richcmp(other, self, 5)
         else:
             raise TypeError(f"Unsupported type {type(other)}")
@@ -69,7 +70,7 @@ def _expr_richcmp(self, other, op):
             return (self - other) >= 0.0
         elif _is_number(other):
             return ExprCons(self, lhs=float(other))
-        elif isinstance(other, MatrixExpr):
+        elif isinstance(other, np.ndarray):
             return _expr_richcmp(other, self, 1)
         else:
             raise TypeError(f"Unsupported type {type(other)}")
@@ -78,7 +79,7 @@ def _expr_richcmp(self, other, op):
             return (self - other) == 0.0
         elif _is_number(other):
             return ExprCons(self, lhs=float(other), rhs=float(other))
-        elif isinstance(other, MatrixExpr):
+        elif isinstance(other, np.ndarray):
             return _expr_richcmp(other, self, 2)
         else:
             raise TypeError(f"Unsupported type {type(other)}")
@@ -143,7 +144,7 @@ def buildGenExprObj(expr):
                 sumexpr += coef * prodexpr
         return sumexpr
 
-    elif isinstance(expr, MatrixExpr):   
+    elif isinstance(expr, np.ndarray):   
         GenExprs = np.empty(expr.shape, dtype=object)
         for idx in np.ndindex(expr.shape):
             GenExprs[idx] = buildGenExprObj(expr[idx])
@@ -199,7 +200,7 @@ cdef class Expr:
             terms[CONST] = terms.get(CONST, 0.0) + c
         elif isinstance(right, GenExpr):
             return buildGenExprObj(left) + right
-        elif isinstance(right, MatrixExpr):
+        elif isinstance(right, np.ndarray):
             return right + left
         else:
             raise TypeError(f"Unsupported type {type(right)}")
@@ -224,7 +225,7 @@ cdef class Expr:
         return self
 
     def __mul__(self, other):
-        if isinstance(other, MatrixExpr):
+        if isinstance(other, np.ndarray):
             return other * self
 
         if _is_number(other):
@@ -437,7 +438,7 @@ cdef class GenExpr:
         return UnaryExpr(Operator.fabs, self)
 
     def __add__(self, other):
-        if isinstance(other, MatrixExpr):
+        if isinstance(other, np.ndarray):
             return other + self
 
         left = buildGenExprObj(self)
@@ -495,7 +496,7 @@ cdef class GenExpr:
     #    return self
 
     def __mul__(self, other):
-        if isinstance(other, MatrixExpr):
+        if isinstance(other, np.ndarray):
             return other * self
 
         left = buildGenExprObj(self)
