@@ -939,13 +939,6 @@ cdef inline PowExpr _pow(base: Union[Term, _ExprKey], double expo):
     return res
 
 
-cdef inline void _extend(list vars, tuple src, int i, int j, int end):
-    while i < end:
-        vars[j] = <Variable>PyTuple_GET_ITEM(src, i)
-        i += 1
-        j += 1
-
-
 cdef inline _wrap(x):
     return _ExprKey(x) if isinstance(x, Expr) else x
 
