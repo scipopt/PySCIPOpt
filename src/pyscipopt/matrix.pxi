@@ -163,14 +163,14 @@ class MatrixExprCons(np.ndarray):
 
 
 cdef inline _ensure_array(arg, bool convert_scalar = True):
+_vec_evaluate = np.frompyfunc(lambda expr, sol: expr._evaluate(sol), 2, 1)
+
+
     if isinstance(arg, np.ndarray):
         return arg.view(np.ndarray)
     elif isinstance(arg, (list, tuple)):
         return np.asarray(arg)
     return np.array(arg, dtype=object) if convert_scalar else arg
-
-
-_vec_evaluate = np.frompyfunc(lambda expr, sol: expr._evaluate(sol), 2, 1)
 
 
 def _core_dot(cnp.ndarray a, cnp.ndarray b) -> Union[Expr, np.ndarray]:
