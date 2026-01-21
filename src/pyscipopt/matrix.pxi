@@ -86,7 +86,7 @@ class MatrixExprCons(np.ndarray):
                 return _vec_le(*args).view(MatrixExprCons)
             elif ufunc is np.greater_equal:
                 return _vec_ge(*args).view(MatrixExprCons)
-        raise NotImplementedError("can only support with '<=' or '>='")
+        raise NotImplementedError("can only support '<=' or '>='")
 
 
 _vec_le = np.frompyfunc(operator.le, 2, 1)
