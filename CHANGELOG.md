@@ -14,6 +14,7 @@
 - Model.getVal now supports GenExpr type
 - Fixed lotsizing_lazy example
 - Fixed incorrect getVal() result when _bestSol.sol was outdated
+- Fixed segmentation fault when using Variable or Constraint objects after freeTransform() or Model destruction
 ### Changed
 - changed default value of enablepricing flag to True
 - Speed up MatrixExpr.add.reduce via quicksum
