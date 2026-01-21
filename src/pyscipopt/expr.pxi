@@ -104,17 +104,17 @@ cdef class Term:
 
     cdef readonly tuple vartuple
     cdef readonly tuple ptrtuple
-    cdef int hashval
+    cdef Py_ssize_t hashval
 
     def __init__(self, *vartuple: Variable):
         self.vartuple = tuple(sorted(vartuple, key=lambda v: v.ptr()))
         self.ptrtuple = tuple(v.ptr() for v in self.vartuple)
-        self.hashval = hash(self.ptrtuple)
+        self.hashval = <Py_ssize_t>hash(self.ptrtuple)
 
     def __getitem__(self, idx):
         return self.vartuple[idx]
 
-    def __hash__(self):
+    def __hash__(self) -> Py_ssize_t:
         return self.hashval
 
     def __eq__(self, other: Term):
