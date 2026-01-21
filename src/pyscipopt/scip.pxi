@@ -10676,7 +10676,10 @@ cdef class Model:
         Solution or None
 
         """
-        self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
+        cdef SCIP_SOL* _sol = SCIPgetBestSol(self._scip)
+        if _sol == NULL:
+            return None
+        self._bestSol = Solution.create(self._scip, _sol)
         return self._bestSol
 
     def getSolObjVal(self, Solution sol, original=True):
@@ -10719,6 +10722,8 @@ cdef class Model:
         float
 
         """
+        if sol is None or sol.sol == NULL:
+            raise ValueError("Cannot get solution time: solution is None or NULL")
         return SCIPgetSolTime(self._scip, sol.sol)
 
     def getObjVal(self, original=True):
