@@ -8,8 +8,8 @@ except ImportError:
     # Fallback for NumPy 1.x
     from numpy.core.numeric import normalize_axis_tuple
 
-from pyscipopt.scip cimport Expr
 cimport numpy as cnp
+from pyscipopt.scip cimport Expr
 
 cnp.import_array()
 
@@ -58,11 +58,11 @@ class MatrixExpr(np.ndarray):
             if ufunc in {np.matmul, np.dot}:
                 res = _core_dot(args[0], args[1])
             elif ufunc is np.less_equal:
-                return _vec_le(*args).view(MatrixExprCons)
+                return _vec_le(args[0], args[1]).view(MatrixExprCons)
             elif ufunc is np.greater_equal:
-                return _vec_ge(*args).view(MatrixExprCons)
+                return _vec_ge(args[0], args[1]).view(MatrixExprCons)
             elif ufunc is np.equal:
-                return _vec_eq(*args).view(MatrixExprCons)
+                return _vec_eq(args[0], args[1]).view(MatrixExprCons)
             elif ufunc in {np.less, np.greater, np.not_equal}:
                 raise NotImplementedError("can only support '<=', '>=', or '=='")
 
@@ -83,9 +83,9 @@ class MatrixExprCons(np.ndarray):
         if method == "__call__":
             args = tuple(_ensure_array(arg) for arg in args)
             if ufunc is np.less_equal:
-                return _vec_le(*args).view(MatrixExprCons)
+                return _vec_le(args[0], args[1]).view(MatrixExprCons)
             elif ufunc is np.greater_equal:
-                return _vec_ge(*args).view(MatrixExprCons)
+                return _vec_ge(args[0], args[1]).view(MatrixExprCons)
         raise NotImplementedError("can only support '<=' or '>='")
 
 
