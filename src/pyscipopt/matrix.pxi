@@ -162,10 +162,10 @@ class MatrixExprCons(np.ndarray):
         raise NotImplementedError("Cannot compare MatrixExprCons with '=='.")
 
 
-cdef inline _ensure_array(arg, bool convert_scalar = True):
 _vec_evaluate = np.frompyfunc(lambda expr, sol: expr._evaluate(sol), 2, 1)
 
 
+cdef inline _ensure_array(arg, bint convert_scalar = True):
     if isinstance(arg, np.ndarray):
         return arg.view(np.ndarray)
     elif isinstance(arg, (list, tuple)):
@@ -192,11 +192,11 @@ def _core_dot(cnp.ndarray a, cnp.ndarray b) -> Union[Expr, np.ndarray]:
         If both `a` and `b` are 1-D arrays, return an `Expr`, otherwise return a
         `np.ndarray` of type `object` and containing `Expr` objects.
     """
-    cdef bool a_is_1d = a.ndim == 1
-    cdef bool b_is_1d = b.ndim == 1
+    cdef bint a_is_1d = a.ndim == 1
+    cdef bint b_is_1d = b.ndim == 1
     cdef cnp.ndarray a_nd = a[..., np.newaxis, :] if a_is_1d else a
     cdef cnp.ndarray b_nd = b[..., :, np.newaxis] if b_is_1d else b
-    cdef bool a_is_num = a_nd.dtype.kind in "fiub"
+    cdef bint a_is_num = a_nd.dtype.kind in "fiub"
 
     if a_is_num ^ (b_nd.dtype.kind in "fiub"):
         res = _core_dot_nd(a_nd, b_nd) if a_is_num else _core_dot_nd(b_nd.T, a_nd.T).T
