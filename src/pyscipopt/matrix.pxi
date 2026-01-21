@@ -54,9 +54,6 @@ def _matrixexpr_richcmp(self, other, op):
     return res.view(MatrixExprCons)
 
 
-_evaluate = np.frompyfunc(lambda expr, sol: expr._evaluate(sol), 2, 1)
-
-
 class MatrixExpr(np.ndarray):
 
     def __array_ufunc__(
@@ -148,7 +145,7 @@ class MatrixExpr(np.ndarray):
 
 
     def _evaluate(self, Solution sol) -> NDArray[np.float64]:
-        return _evaluate(self, sol).view(np.ndarray)
+        return _vec_evaluate(self, sol).view(np.ndarray)
 
 
 class MatrixGenExpr(MatrixExpr):
@@ -173,6 +170,9 @@ cdef inline _ensure_array(arg, bool convert_scalar = True):
     elif isinstance(arg, (list, tuple)):
         return np.asarray(arg)
     return np.array(arg, dtype=object) if convert_scalar else arg
+
+
+_vec_evaluate = np.frompyfunc(lambda expr, sol: expr._evaluate(sol), 2, 1)
 
 
 def _core_dot(cnp.ndarray a, cnp.ndarray b) -> Union[Expr, np.ndarray]:
