@@ -10,7 +10,7 @@
 - all fundamental callbacks now raise an error if not implemented
 - Fixed the type of MatrixExpr.sum(axis=...) result from MatrixVariable to MatrixExpr.
 - Updated IIS result in PyiisfinderExec()
-- Model.getVal now supported GenExpr type
+- Model.getVal now supports GenExpr type
 - Fixed lotsizing_lazy example
 - Fixed incorrect getVal() result when _bestSol.sol was outdated
 ### Changed
