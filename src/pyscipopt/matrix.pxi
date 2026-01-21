@@ -1,6 +1,7 @@
 import operator
 from typing import Literal, Optional, Tuple, Union
 import numpy as np
+from numpy.typing import NDArray
 try:
     # NumPy 2.x location
     from numpy.lib.array_utils import normalize_axis_tuple
@@ -9,7 +10,7 @@ except ImportError:
     from numpy.core.numeric import normalize_axis_tuple
 
 cimport numpy as cnp
-from pyscipopt.scip cimport Expr
+from pyscipopt.scip cimport Expr, Solution
 
 cnp.import_array()
 
@@ -73,6 +74,10 @@ class MatrixExpr(np.ndarray):
         return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
 
 
+    def _evaluate(self, Solution sol) -> NDArray[np.float64]:
+        return _vec_evaluate(self, sol).view(np.ndarray)
+
+
 class MatrixGenExpr(MatrixExpr):
     pass
 
@@ -100,6 +105,9 @@ cdef inline _ensure_array(arg, bool convert_scalar = True):
     elif isinstance(arg, (list, tuple)):
         return np.asarray(arg)
     return np.array(arg, dtype=object) if convert_scalar else arg
+
+
+_vec_evaluate = np.frompyfunc(lambda expr, sol: expr._evaluate(sol), 2, 1)
 
 
 def _core_dot(cnp.ndarray a, cnp.ndarray b) -> Union[Expr, np.ndarray]:
