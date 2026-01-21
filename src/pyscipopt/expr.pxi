@@ -51,7 +51,6 @@ from cpython.ref cimport PyObject
 
 import numpy as np
 
-include "matrix.pxi"
 
 if TYPE_CHECKING:
     double = float
