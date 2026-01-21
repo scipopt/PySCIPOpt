@@ -4469,8 +4469,7 @@ cdef class Model:
 
         """
         cdef SCIP_Bool deleted
-        if var.ptr() in self._modelvars:
-            del self._modelvars[var.ptr()]
+        del self._modelvars[var.ptr()]
         PY_SCIP_CALL(SCIPdelVar(self._scip, var.scip_var, &deleted))
         # Invalidate pointer after deletion. See issue #604.
         var.scip_var = NULL
