@@ -2107,7 +2107,10 @@ cdef extern from "scip/scip_var.h":
 cdef extern from "tpi/tpi.h":
     int SCIPtpiGetNumThreads()
 
-cdef class Expr:
+cdef class ExprLike
+    pass
+
+cdef class Expr(ExprLike):
     cdef public terms
 
 cdef class Event:
