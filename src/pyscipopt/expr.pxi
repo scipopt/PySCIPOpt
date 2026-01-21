@@ -42,6 +42,8 @@
 # which should, in princple, modify the expr. However, since we do not implement __isub__, __sub__
 # gets called (I guess) and so a copy is returned.
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
+from typing import Literal
+
 import numpy as np
 
 
@@ -119,6 +121,7 @@ class Term:
 
 CONST = Term()
 
+
 # helper function
 def buildGenExprObj(expr):
     """helper function to generate an object of type GenExpr"""
@@ -154,9 +157,44 @@ def buildGenExprObj(expr):
         assert isinstance(expr, GenExpr)
         return expr
 
+
+cdef class ExprLike:
+
+    def __array_ufunc__(
+        self,
+        ufunc: np.ufunc,
+        method: Literal["__call__", "reduce", "reduceat", "accumulate", "outer", "at"],
+        *args,
+        **kwargs,
+    ):
+        if method == "__call__":
+            if ufunc in UNARY_MAPPER:
+                return getattr(self, UNARY_MAPPER[ufunc])()
+
+        return NotImplemented
+
+    def __abs__(self):
+        return UnaryExpr(Operator.fabs, buildGenExprObj(self))
+
+    def exp(self):
+        return UnaryExpr(Operator.exp, buildGenExprObj(self))
+
+    def log(self):
+        return UnaryExpr(Operator.log, buildGenExprObj(self))
+
+    def sqrt(self):
+        return UnaryExpr(Operator.sqrt, buildGenExprObj(self))
+
+    def sin(self):
+        return UnaryExpr(Operator.sin, buildGenExprObj(self))
+
+    def cos(self):
+        return UnaryExpr(Operator.cos, buildGenExprObj(self))
+
+
 ##@details Polynomial expressions of variables with operator overloading. \n
 #See also the @ref ExprDetails "description" in the expr.pxi. 
-cdef class Expr:
+cdef class Expr(ExprLike):
     
     def __init__(self, terms=None):
         '''terms is a dict of variables to coefficients.
@@ -178,9 +216,6 @@ cdef class Expr:
     def __next__(self):
         try: return next(self.terms)
         except: raise StopIteration
-
-    def __abs__(self):
-        return abs(buildGenExprObj(self))
 
     def __add__(self, other):
         left = self
@@ -426,16 +461,13 @@ Operator = Op()
 #     so expr[x] will generate an error instead of returning the coefficient of x </pre>
 #
 #See also the @ref ExprDetails "description" in the expr.pxi. 
-cdef class GenExpr:
+cdef class GenExpr(ExprLike):
     cdef public _op
     cdef public children
 
 
     def __init__(self): # do we need it
         ''' '''
-
-    def __abs__(self):
-        return UnaryExpr(Operator.fabs, self)
 
     def __add__(self, other):
         if isinstance(other, np.ndarray):
@@ -673,55 +705,21 @@ cdef class Constant(GenExpr):
     def __repr__(self):
         return str(self.number)
 
-def exp(expr):
-    """returns expression with exp-function"""
-    if isinstance(expr, MatrixExpr):   
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.exp, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.exp, buildGenExprObj(expr))
 
-def log(expr):
-    """returns expression with log-function"""
-    if isinstance(expr, MatrixExpr):
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.log, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.log, buildGenExprObj(expr))
+exp = np.exp
+log = np.log
+sqrt = np.sqrt
+sin = np.sin
+cos = np.cos
+UNARY_MAPPER = {
+    np.absolute: "__abs__",
+    np.exp: "exp",
+    np.log: "log",
+    np.sqrt: "sqrt",
+    np.sin: "sin",
+    np.cos: "cos",
+}
 
-def sqrt(expr):
-    """returns expression with sqrt-function"""
-    if isinstance(expr, MatrixExpr):
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.sqrt, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.sqrt, buildGenExprObj(expr))
-
-def sin(expr):
-    """returns expression with sin-function"""
-    if isinstance(expr, MatrixExpr):
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.sin, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.sin, buildGenExprObj(expr))
-
-def cos(expr):
-    """returns expression with cos-function"""
-    if isinstance(expr, MatrixExpr):   
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.cos, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.cos, buildGenExprObj(expr))
 
 def expr_to_nodes(expr):
     '''transforms tree to an array of nodes. each node is an operator and the position of the 
