@@ -1549,7 +1549,6 @@ cdef class Variable(Expr):
             return cname.decode('utf-8')
 
     def ptr(self):
-        """ """
         return <size_t>(self.scip_var)
 
     def __repr__(self):
