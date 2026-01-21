@@ -8243,8 +8243,7 @@ cdef class Model:
         PY_SCIP_CALL(SCIPdelCons(self._scip, cons.scip_cons))
         # Remove from tracking and invalidate pointer. See issue #604.
         ptr = cons.ptr()
-        if ptr in self._modelconss:
-            del self._modelconss[ptr]
+        del self._modelconss[ptr]
         cons.scip_cons = NULL
 
     def delConsLocal(self, Constraint cons):
