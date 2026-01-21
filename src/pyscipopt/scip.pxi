@@ -4750,14 +4750,7 @@ cdef class Model:
             nvars = SCIPgetNOrigVars(self._scip)
 
         for i in range(nvars):
-            ptr = <size_t>(_vars[i])
-
-            # check whether the corresponding variable exists already
-            if ptr in self._modelvars:
-                vars.append(self._modelvars[ptr])
-            else:
-                # create a new variable
-                vars.append(self._getOrCreateVar(_vars[i]))
+            vars.append(self._getOrCreateVar(_vars[i]))
 
         return vars
 
@@ -6489,13 +6482,7 @@ cdef class Model:
 
         vars = []
         for i in range(nvars):
-            ptr = <size_t>(_vars[i])
-            # check whether the corresponding variable exists already
-            if ptr in self._modelvars:
-                vars.append(self._modelvars[ptr])
-            else:
-                # create a new variable
-                vars.append(self._getOrCreateVar(_vars[i]))
+            vars.append(self._getOrCreateVar(_vars[i]))
 
         free(_vars)
         return vars
@@ -6575,13 +6562,7 @@ cdef class Model:
 
         vars = []
         for i in range(nvars):
-            ptr = <size_t>(_vars[i])
-            # check whether the corresponding variable exists already
-            if ptr in self._modelvars:
-                vars.append(self._modelvars[ptr])
-            else:
-                # create a new variable
-                vars.append(self._getOrCreateVar(_vars[i]))
+            vars.append(self._getOrCreateVar(_vars[i]))
 
         return vars
 
@@ -6599,15 +6580,9 @@ cdef class Model:
         Variable
 
         """
-        
         cdef SCIP_VAR* _resultant
 
         _resultant = SCIPgetResultantAnd(self._scip, and_cons.scip_cons)
-
-        ptr = <size_t>(_resultant)
-        # check whether the corresponding variable exists already
-        if ptr in self._modelvars:
-            return self._modelvars[ptr]
         return self._getOrCreateVar(_resultant)
 
     def isAndConsSorted(self, Constraint and_cons):
