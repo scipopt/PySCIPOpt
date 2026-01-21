@@ -8,6 +8,7 @@ except ImportError:
     # Fallback for NumPy 1.x
     from numpy.core.numeric import normalize_axis_tuple
 
+from pyscipopt.scip cimport Expr
 cimport numpy as cnp
 
 cnp.import_array()
