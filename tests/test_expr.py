@@ -1,7 +1,9 @@
+import numpy as np
 import pytest
 
-from pyscipopt import Model, sqrt, log, exp, sin, cos
-from pyscipopt.scip import Expr, GenExpr, ExprCons, Term, quicksum
+from pyscipopt import Model, cos, exp, log, sin, sqrt
+from pyscipopt.scip import Expr, ExprCons, GenExpr, Term
+
 
 @pytest.fixture(scope="module")
 def model():
@@ -188,3 +190,26 @@ def test_rpow_constant_base(model):
 
     with pytest.raises(ValueError):
         c = (-2)**x
+
+
+def test_unary(model):
+    m, x, y, z = model
+
+    assert str(abs(x)) == "abs(sum(0.0,prod(1.0,x1)))"
+    assert str(np.absolute(x)) == "abs(sum(0.0,prod(1.0,x1)))"
+    assert (
+        str(sin([x, y, z]))
+        == "[abs(sum(0.0,prod(1.0,x1))), abs(sum(0.0,prod(1.0,x1))), abs(sum(0.0,prod(1.0,x1)))]"
+    )
+    assert (
+        str(np.sin([x, y, z]))
+        == "[sin(sum(0.0,prod(1.0,x1))) sin(sum(0.0,prod(1.0,x1))) sin(sum(0.0,prod(1.0,x1)))]"
+    )
+    assert (
+        str(sqrt([x, y, z]))
+        == "[sqrt(sum(0.0,prod(1.0,x1))) sqrt(sum(0.0,prod(1.0,x1))) sqrt(sum(0.0,prod(1.0,x1)))]"
+    )
+    assert (
+        str(np.sqrt([x, y, z]))
+        == "[sqrt(sum(0.0,prod(1.0,x1))) sqrt(sum(0.0,prod(1.0,x1))) sqrt(sum(0.0,prod(1.0,x1)))]"
+    )
