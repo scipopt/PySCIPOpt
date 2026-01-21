@@ -203,7 +203,7 @@ def _core_dot(cnp.ndarray a, cnp.ndarray b) -> Union[Expr, np.ndarray]:
     return NotImplemented
 
 
-cdef cnp.ndarray _core_dot_2d(cnp.ndarray a, cnp.ndarray x):
+def _core_dot_2d(cnp.ndarray a, cnp.ndarray x) -> np.ndarray:
     """
     Perform matrix multiplication between a 2-Demension constant array and a 2-Demension
     `np.ndarray` of type `object` and containing `Expr` objects.
