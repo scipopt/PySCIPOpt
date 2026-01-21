@@ -193,7 +193,7 @@ def test_rpow_constant_base(model):
         c = (-2)**x
 
 
-def test_evaluate():
+def test_getVal_with_GenExpr():
     m = Model()
     x = m.addVar(lb=1, ub=1, name="x")
     y = m.addVar(lb=2, ub=2, name="y")
