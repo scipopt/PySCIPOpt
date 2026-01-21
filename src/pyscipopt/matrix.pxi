@@ -41,7 +41,7 @@ class MatrixExpr(np.ndarray):
 
         Returns
         -------
-        Expr, GenExpr, MatrixExpr
+        Expr, MatrixExpr
             The result of the ufunc operation is wrapped back into a MatrixExpr if
             applicable.
 
@@ -49,6 +49,10 @@ class MatrixExpr(np.ndarray):
         res = NotImplemented
         # Unboxing MatrixExpr to stop __array_ufunc__ recursion
         args = tuple(_ensure_array(arg) for arg in args)
+        if method == "reduce":  # Handle reduction operations, e.g., np.sum(a)
+            if ufunc is np.add:
+                res = _core_sum(args[0], **kwargs)
+
         if method == "__call__":  # Standard ufunc call, e.g., np.add(a, b)
             if ufunc in {np.matmul, np.dot}:
                 res = _core_dot(args[0], args[1])
@@ -62,63 +66,10 @@ class MatrixExpr(np.ndarray):
                 raise NotImplementedError("can only support with '<=', '>=', or '=='")
 
         if res is NotImplemented:
+            if "out" in kwargs: # Unboxing MatrixExpr to stop __array_ufunc__ recursion
+                kwargs["out"] = tuple(_ensure_array(arg, False) for arg in kwargs["out"])
             res = super().__array_ufunc__(ufunc, method, *args, **kwargs)
         return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
-
-    def sum(
-        self,
-        axis: Optional[Union[int, Tuple[int, ...]]] = None,
-        keepdims: bool = False,
-        **kwargs,
-    ) -> Union[Expr, MatrixExpr]:
-        """
-        Return the sum of the array elements over the given axis.
-
-        Parameters
-        ----------
-        axis : None or int or tuple of ints, optional
-            Axis or axes along which a sum is performed. The default, axis=None, will
-            sum all of the elements of the input array. If axis is negative it counts
-            from the last to the first axis. If axis is a tuple of ints, a sum is
-            performed on all of the axes specified in the tuple instead of a single axis
-            or all the axes as before.
-
-        keepdims : bool, optional
-            If this is set to True, the axes which are reduced are left in the result as
-            dimensions with size one. With this option, the result will broadcast
-            correctly against the input array.
-
-        **kwargs : ignored
-            Additional keyword arguments are ignored. They exist for compatibility
-            with `numpy.ndarray.sum`.
-
-        Returns
-        -------
-        Expr or MatrixExpr
-            If the sum is performed over all axes, return an Expr, otherwise return
-            a MatrixExpr.
-
-        """
-        axis: Tuple[int, ...] = normalize_axis_tuple(
-            range(self.ndim) if axis is None else axis, self.ndim
-        )
-        if len(axis) == self.ndim:
-            res = quicksum(self.flat)
-            return (
-                np.array([res], dtype=object).reshape([1] * self.ndim).view(MatrixExpr)
-                if keepdims
-                else res
-            )
-
-        keep_axes = tuple(i for i in range(self.ndim) if i not in axis)
-        shape = (
-            tuple(1 if i in axis else self.shape[i] for i in range(self.ndim))
-            if keepdims
-            else tuple(self.shape[i] for i in keep_axes)
-        )
-        return np.apply_along_axis(
-            quicksum, -1, self.transpose(keep_axes + axis).reshape(shape + (-1,))
-        ).view(MatrixExpr)
 
 
 class MatrixGenExpr(MatrixExpr):
@@ -223,3 +174,62 @@ def _core_dot_2d(cnp.ndarray a, cnp.ndarray x) -> np.ndarray:
             res[i, j] = quicksum(a_view[i, idx] * x[idx, j] for idx in nonzero)
 
     return res
+
+
+def _core_sum(
+    cnp.ndarray a,
+    axis: Optional[Union[int, Tuple[int, ...]]] = None,
+    keepdims: bool = False,
+    **kwargs,
+) -> Union[Expr, np.ndarray]:
+    """
+    Return the sum of the array elements over the given axis.
+
+    Parameters
+    ----------
+    a : np.ndarray
+        A `np.ndarray` of type `object` and containing `Expr` objects.
+
+    axis : None or int or tuple of ints, optional
+        Axis or axes along which a sum is performed. The default, axis=None, will
+        sum all of the elements of the input array. If axis is negative it counts
+        from the last to the first axis. If axis is a tuple of ints, a sum is
+        performed on all of the axes specified in the tuple instead of a single axis
+        or all the axes as before.
+
+    keepdims : bool, optional
+        If this is set to True, the axes which are reduced are left in the result as
+        dimensions with size one. With this option, the result will broadcast
+        correctly against the input array.
+
+    **kwargs : ignored
+        Additional keyword arguments are ignored. They exist for compatibility
+        with `numpy.ndarray.sum`.
+
+    Returns
+    -------
+    Expr or np.ndarray
+        If the sum is performed over all axes, return an Expr, otherwise return
+        a np.ndarray.
+
+    """
+    axis: Tuple[int, ...] = normalize_axis_tuple(
+        range(a.ndim) if axis is None else axis, a.ndim
+    )
+    if len(axis) == a.ndim:
+        res = quicksum(a.flat)
+        return (
+            np.array([res], dtype=object).reshape([1] * a.ndim)
+            if keepdims
+            else res
+        )
+
+    keep_axes = tuple(i for i in range(a.ndim) if i not in axis)
+    shape = (
+        tuple(1 if i in axis else a.shape[i] for i in range(a.ndim))
+        if keepdims
+        else tuple(a.shape[i] for i in keep_axes)
+    )
+    return np.apply_along_axis(
+        quicksum, -1, a.transpose(keep_axes + axis).reshape(shape + (-1,))
+    )
