@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from typing import Union
 
 import numpy as np
+from numpy.typing import NDArray
 
 include "expr.pxi"
 include "lp.pxi"
@@ -1099,29 +1100,8 @@ cdef class Solution:
         return sol
 
     def __getitem__(self, expr: Union[Expr, MatrixExpr]):
-        if isinstance(expr, MatrixExpr):
-            result = np.zeros(expr.shape, dtype=np.float64)
-            for idx in np.ndindex(expr.shape):
-                result[idx] = self.__getitem__(expr[idx])
-            return result
-
-        # fast track for Variable
-        cdef SCIP_Real coeff
-        cdef _VarArray wrapper
-        if isinstance(expr, Variable):
-            wrapper = _VarArray(expr)
-            self._checkStage("SCIPgetSolVal")
-            return SCIPgetSolVal(self.scip, self.sol, wrapper.ptr[0])
-        return sum(self._evaluate(term)*coeff for term, coeff in expr.terms.items() if coeff != 0)
-
-    def _evaluate(self, term):
         self._checkStage("SCIPgetSolVal")
-        result = 1
-        cdef _VarArray wrapper
-        wrapper = _VarArray(term.vartuple)
-        for i in range(len(term.vartuple)):
-            result *= SCIPgetSolVal(self.scip, self.sol, wrapper.ptr[i])
-        return result
+        return expr._evaluate(self)
 
     def __setitem__(self, Variable var, value):
         PY_SCIP_CALL(SCIPsetSolVal(self.scip, self.sol, var.scip_var, value))
@@ -10747,7 +10727,11 @@ cdef class Model:
 
         return self.getSolObjVal(self._bestSol, original)
 
-    def getSolVal(self, Solution sol, Expr expr):
+    def getSolVal(
+        self,
+        Solution sol,
+        expr: Union[Expr, GenExpr],
+    ) -> Union[float, NDArray[np.float64]]:
         """
         Retrieve value of given variable or expression in the given solution or in
         the LP/pseudo solution if sol == None
@@ -10767,24 +10751,22 @@ cdef class Model:
         A variable is also an expression.
 
         """
+        if not isinstance(expr, (Expr, GenExpr)):
+            raise TypeError(
+                "Argument 'expr' has incorrect type (expected 'Expr' or 'GenExpr', "
+                f"got {type(expr)})"
+            )
         # no need to create a NULL solution wrapper in case we have a variable
-        cdef _VarArray wrapper
-        if sol == None and isinstance(expr, Variable):
-            wrapper = _VarArray(expr)
-            return SCIPgetSolVal(self._scip, NULL, wrapper.ptr[0])
-        if sol == None:
-            sol = Solution.create(self._scip, NULL)
-        return sol[expr]
+        return (sol or Solution.create(self._scip, NULL))[expr]
 
-    def getVal(self, expr: Union[Expr, MatrixExpr] ):
+    def getVal(self, expr: Union[Expr, GenExpr, MatrixExpr] ):
         """
         Retrieve the value of the given variable or expression in the best known solution.
         Can only be called after solving is completed.
 
         Parameters
         ----------
-        expr : Expr ot MatrixExpr
-            polynomial expression to query the value of
+        expr : Expr, GenExpr or MatrixExpr
 
         Returns
         -------
