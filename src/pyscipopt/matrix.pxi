@@ -64,7 +64,7 @@ class MatrixExpr(np.ndarray):
             elif ufunc is np.equal:
                 return _vec_eq(*args).view(MatrixExprCons)
             elif ufunc in {np.less, np.greater, np.not_equal}:
-                raise NotImplementedError("can only support with '<=', '>=', or '=='")
+                raise NotImplementedError("can only support '<=', '>=', or '=='")
 
         if res is NotImplemented:
             if "out" in kwargs: # Unboxing MatrixExpr to stop __array_ufunc__ recursion
