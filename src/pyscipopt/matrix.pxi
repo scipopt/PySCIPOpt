@@ -192,7 +192,7 @@ def _core_dot(cnp.ndarray a, cnp.ndarray b) -> Union[Expr, np.ndarray]:
     cdef bool a_is_num = a_nd.dtype.kind in "fiub"
 
     if a_is_num ^ (b_nd.dtype.kind in "fiub"):
-        res = _core_dot_2d(a_nd, b_nd) if a_is_num else _core_dot_2d(b_nd.T, a_nd.T).T
+        res = _core_dot_nd(a_nd, b_nd) if a_is_num else _core_dot_nd(b_nd.T, a_nd.T).T
         if a_is_1d and b_is_1d:
             return res.item()
         if a_is_1d:
@@ -203,8 +203,7 @@ def _core_dot(cnp.ndarray a, cnp.ndarray b) -> Union[Expr, np.ndarray]:
     return NotImplemented
 
 
-@np.vectorize(otypes=[object], signature="(m,n),(n,p)->(m,p)")
-def _core_dot_2d(cnp.ndarray a, cnp.ndarray x) -> np.ndarray:
+cdef cnp.ndarray _core_dot_2d(cnp.ndarray a, cnp.ndarray x):
     """
     Perform matrix multiplication between a 2-Demension constant array and a 2-Demension
     `np.ndarray` of type `object` and containing `Expr` objects.
@@ -241,6 +240,13 @@ def _core_dot_2d(cnp.ndarray a, cnp.ndarray x) -> np.ndarray:
     return res
 
 
+_core_dot_nd = np.vectorize(
+    _core_dot_2d,
+    otypes=[object],
+    signature="(m,n),(n,p)->(m,p)",
+)
+
+
 def _core_sum(
     cnp.ndarray a,
     axis: Optional[Union[int, Tuple[int, ...]]] = None,
@@ -252,7 +258,7 @@ def _core_sum(
 
     Parameters
     ----------
-    a : cnp.ndarray
+    a : np.ndarray
         A `np.ndarray` of type `object` and containing `Expr` objects.
 
     axis : None or int or tuple of ints, optional
