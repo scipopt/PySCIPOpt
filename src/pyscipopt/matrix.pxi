@@ -4,7 +4,6 @@
 """
 from typing import Literal, Optional, Tuple, Union
 import numpy as np
-from numpy.typing import NDArray
 try:
     # NumPy 2.x location
     from numpy.lib.array_utils import normalize_axis_tuple
@@ -143,8 +142,7 @@ class MatrixExpr(np.ndarray):
     def __rsub__(self, other):
         return super().__rsub__(other).view(MatrixExpr)
 
-
-    def _evaluate(self, Solution sol) -> NDArray[np.float64]:
+    def _evaluate(self, Solution sol) -> np.ndarray:
         return _vec_evaluate(self, sol).view(np.ndarray)
 
 

@@ -21,7 +21,6 @@ from dataclasses import dataclass
 from typing import Union
 
 import numpy as np
-from numpy.typing import NDArray
 
 include "expr.pxi"
 include "lp.pxi"
@@ -10731,7 +10730,7 @@ cdef class Model:
         self,
         Solution sol,
         expr: Union[Expr, GenExpr],
-    ) -> Union[float, NDArray[np.float64]]:
+    ) -> Union[float, np.ndarray]:
         """
         Retrieve value of given variable or expression in the given solution or in
         the LP/pseudo solution if sol == None
