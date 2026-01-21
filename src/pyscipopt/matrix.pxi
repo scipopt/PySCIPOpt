@@ -97,6 +97,7 @@ class MatrixExprCons(np.ndarray):
 _vec_le = np.frompyfunc(operator.le, 2, 1)
 _vec_ge = np.frompyfunc(operator.ge, 2, 1)
 _vec_eq = np.frompyfunc(operator.eq, 2, 1)
+_vec_evaluate = np.frompyfunc(lambda expr, sol: expr._evaluate(sol), 2, 1)
 
 
 cdef inline _ensure_array(arg, bool convert_scalar = True):
@@ -105,9 +106,6 @@ cdef inline _ensure_array(arg, bool convert_scalar = True):
     elif isinstance(arg, (list, tuple)):
         return np.asarray(arg)
     return np.array(arg, dtype=object) if convert_scalar else arg
-
-
-_vec_evaluate = np.frompyfunc(lambda expr, sol: expr._evaluate(sol), 2, 1)
 
 
 def _core_dot(cnp.ndarray a, cnp.ndarray b) -> Union[Expr, np.ndarray]:
