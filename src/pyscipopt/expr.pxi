@@ -714,7 +714,7 @@ cdef class VarExpr(GenExpr):
         return self.children[0].__repr__()
 
     cpdef double _evaluate(self, Solution sol) except *:
-        return (<GenExpr>self.children[0])._evaluate(sol)
+        return (<Expr>self.children[0])._evaluate(sol)
 
 
 # Pow Expressions
