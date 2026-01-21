@@ -169,7 +169,7 @@ cdef class ExprLike:
     ):
         if method == "__call__":
             if ufunc in UNARY_MAPPER:
-                return getattr(self, UNARY_MAPPER[ufunc])()
+                return getattr(args[0], UNARY_MAPPER[ufunc])()
 
         return NotImplemented
 
