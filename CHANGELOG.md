@@ -6,6 +6,7 @@
 - Include parameter names in type stubs
 - Speed up MatrixExpr.sum(axis=...) via quicksum
 - Added structured_optimization_trace recipe for structured optimization progress tracking
+- Expr and GenExpr support numpy unary func (`np.sin`, `np.cos`, `np.sqrt`, `np.exp`, `np.log`, `np.absolute`)
 ### Fixed
 - getBestSol() now returns None for infeasible problems instead of a Solution with NULL pointer
 - all fundamental callbacks now raise an error if not implemented
