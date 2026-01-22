@@ -137,9 +137,12 @@ cdef class Term:
 CONST = Term()
 
 # helper function
-def buildGenExprObj(expr):
+def buildGenExprObj(expr: Union[int, float, Expr, GenExpr]) -> GenExpr:
     """helper function to generate an object of type GenExpr"""
-    if _is_number(expr):
+    if not isinstance(expr, EXPR_OP_TYPES):
+        raise TypeError(f"Unsupported type {type(expr)}")
+
+    if isinstance(expr, NUMBER_TYPES):
         return Constant(expr)
 
     elif isinstance(expr, Expr):
@@ -161,15 +164,7 @@ def buildGenExprObj(expr):
                 sumexpr += coef * prodexpr
         return sumexpr
 
-    elif isinstance(expr, np.ndarray):   
-        GenExprs = np.empty(expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            GenExprs[idx] = buildGenExprObj(expr[idx])
-        return GenExprs.view(MatrixExpr)
-
-    else:
-        assert isinstance(expr, GenExpr)
-        return expr
+    return expr
 
 ##@details Polynomial expressions of variables with operator overloading. \n
 #See also the @ref ExprDetails "description" in the expr.pxi. 
@@ -200,6 +195,9 @@ cdef class Expr:
         return abs(buildGenExprObj(self))
 
     def __add__(self, other):
+        if not isinstance(other, EXPR_OP_TYPES):
+            return NotImplemented
+
         left = self
         right = other
 
@@ -217,14 +215,12 @@ cdef class Expr:
             terms[CONST] = terms.get(CONST, 0.0) + c
         elif isinstance(right, GenExpr):
             return buildGenExprObj(left) + right
-        elif isinstance(right, np.ndarray):
-            return right + left
-        else:
-            raise TypeError(f"Unsupported type {type(right)}")
-
         return Expr(terms)
 
     def __iadd__(self, other):
+        if not isinstance(other, EXPR_OP_TYPES):
+            return NotImplemented
+
         if isinstance(other, Expr):
             for v,c in other.terms.items():
                 self.terms[v] = self.terms.get(v, 0.0) + c
@@ -236,8 +232,6 @@ cdef class Expr:
             # can't do `self = buildGenExprObj(self) + other` since I get
             # TypeError: Cannot convert pyscipopt.scip.SumExpr to pyscipopt.scip.Expr
             return buildGenExprObj(self) + other
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
 
         return self
 
@@ -258,12 +252,12 @@ cdef class Expr:
                     v = v1 + v2
                     terms[v] = terms.get(v, 0.0) + c1 * c2
             return Expr(terms)
-        elif isinstance(other, GenExpr):
-            return buildGenExprObj(self) * other
-        else:
-            raise NotImplementedError
+        return buildGenExprObj(self) * other
 
     def __truediv__(self,other):
+        if not isinstance(other, EXPR_OP_TYPES):
+            return NotImplemented
+
         if _is_number(other):
             f = 1.0/float(other)
             return f * self
@@ -272,6 +266,9 @@ cdef class Expr:
 
     def __rtruediv__(self, other):
         ''' other / self '''
+        if not isinstance(other, EXPR_OP_TYPES):
+            return NotImplemented
+
         if _is_number(self):
             f = 1.0/float(self)
             return f * other
@@ -603,6 +600,9 @@ cdef class GenExpr:
 
     #TODO: ipow, idiv, etc
     def __truediv__(self,other):
+        if not isinstance(other, EXPR_OP_TYPES):
+            return NotImplemented
+
         divisor = buildGenExprObj(other)
         # we can't divide by 0
         if isinstance(divisor, GenExpr) and divisor.getOp() == Operator.const and divisor.number == 0.0:
@@ -611,8 +611,9 @@ cdef class GenExpr:
 
     def __rtruediv__(self, other):
         ''' other / self '''
-        otherexpr = buildGenExprObj(other)
-        return otherexpr.__truediv__(self)
+        if not isinstance(other, EXPR_OP_TYPES):
+            return NotImplemented
+        return buildGenExprObj(other) / self
 
     def __neg__(self):
         return -1.0 * self
