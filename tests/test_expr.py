@@ -200,7 +200,7 @@ def test_unary(model):
     assert str(np.absolute(x)) == "abs(sum(0.0,prod(1.0,x)))"
     assert (
         str(sin([x, y, z]))
-        == "[abs(sum(0.0,prod(1.0,x))) abs(sum(0.0,prod(1.0,y))) abs(sum(0.0,prod(1.0,z)))]"
+        == "[sin(sum(0.0,prod(1.0,x))) sin(sum(0.0,prod(1.0,y))) sin(sum(0.0,prod(1.0,z)))]"
     )
     assert (
         str(np.sin([x, y, z]))
