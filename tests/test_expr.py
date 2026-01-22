@@ -196,23 +196,23 @@ def test_rpow_constant_base(model):
 def test_unary(model):
     m, x, y, z = model
 
-    assert str(abs(x)) == "abs(sum(0.0,prod(1.0,x1)))"
-    assert str(np.absolute(x)) == "abs(sum(0.0,prod(1.0,x1)))"
+    assert str(abs(x)) == "abs(sum(0.0,prod(1.0,x)))"
+    assert str(np.absolute(x)) == "abs(sum(0.0,prod(1.0,x)))"
     assert (
         str(sin([x, y, z]))
-        == "[abs(sum(0.0,prod(1.0,x1))), abs(sum(0.0,prod(1.0,x1))), abs(sum(0.0,prod(1.0,x1)))]"
+        == "[abs(sum(0.0,prod(1.0,x))), abs(sum(0.0,prod(1.0,y))), abs(sum(0.0,prod(1.0,z)))]"
     )
     assert (
         str(np.sin([x, y, z]))
-        == "[sin(sum(0.0,prod(1.0,x1))) sin(sum(0.0,prod(1.0,x1))) sin(sum(0.0,prod(1.0,x1)))]"
+        == "[sin(sum(0.0,prod(1.0,x))) sin(sum(0.0,prod(1.0,y))) sin(sum(0.0,prod(1.0,z)))]"
     )
     assert (
         str(sqrt([x, y, z]))
-        == "[sqrt(sum(0.0,prod(1.0,x1))) sqrt(sum(0.0,prod(1.0,x1))) sqrt(sum(0.0,prod(1.0,x1)))]"
+        == "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y))) sqrt(sum(0.0,prod(1.0,z)))]"
     )
     assert (
         str(np.sqrt([x, y, z]))
-        == "[sqrt(sum(0.0,prod(1.0,x1))) sqrt(sum(0.0,prod(1.0,x1))) sqrt(sum(0.0,prod(1.0,x1)))]"
+        == "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y))) sqrt(sum(0.0,prod(1.0,z)))]"
     )
 
 
