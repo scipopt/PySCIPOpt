@@ -74,15 +74,15 @@ def _expr_richcmp(self: Union[Expr, GenExpr], other, int op):
         raise TypeError(f"Unsupported type {type(other)}")
 
     if op == Py_LE:
-        if isinstance(other, (int, float, np.number)):
+        if isinstance(other, NUMBER_TYPES):
             return ExprCons(self, rhs=float(other))
         return (self - other) <= 0.0
     elif op == Py_GE:
-        if isinstance(other, (int, float, np.number)):
+        if isinstance(other, NUMBER_TYPES):
             return ExprCons(self, lhs=float(other))
         return (self - other) >= 0.0
     elif op == Py_EQ:
-        if isinstance(other, (int, float, np.number)):
+        if isinstance(other, NUMBER_TYPES):
             return ExprCons(self, lhs=float(other), rhs=float(other))
         return (self - other) == 0.0
     raise NotImplementedError("can only support with '<=', '>=', or '=='")
@@ -841,3 +841,7 @@ def expr_to_array(expr, nodes):
     else: # var
         nodes.append( tuple( [op, expr.children] ) )
     return len(nodes) - 1
+
+
+cdef tuple NUMBER_TYPES = (int, float, np.number)
+cdef tuple EXPR_OP_TYPES = NUMBER_TYPES + (Variable, Expr, GenExpr)
