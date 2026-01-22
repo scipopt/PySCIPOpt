@@ -20,15 +20,15 @@ class _TraceRun:
 
         class _TraceEventhdlr(Eventhdlr):
             def eventinit(s):
-                s.model.catchEvent(SCIP_EVENTTYPE.BESTSOLFOUND, s)
-                s.model.catchEvent(SCIP_EVENTTYPE.DUALBOUNDIMPROVED, s)
+                self.model.catchEvent(SCIP_EVENTTYPE.BESTSOLFOUND, s)
+                self.model.catchEvent(SCIP_EVENTTYPE.DUALBOUNDIMPROVED, s)
 
             def eventexec(s, event):
                 et = event.getType()
                 if et == SCIP_EVENTTYPE.BESTSOLFOUND:
-                    self._write_event("bestsol_found", flush=True)
+                    self._write_event("bestsol_found", collect=True, flush=True)
                 elif et == SCIP_EVENTTYPE.DUALBOUNDIMPROVED:
-                    self._write_event("dualbound_improved", flush=False)
+                    self._write_event("dualbound_improved", collect=True, flush=False)
 
         self._handler = _TraceEventhdlr()
         self.model.includeEventhdlr(self._handler, "trace_run", "Trace run handler")
@@ -37,7 +37,15 @@ class _TraceRun:
 
     def __exit__(self, exc_type, exc, tb):
         try:
-            self._write_event("run_end", flush=True)
+            if exc_type is None:
+                self._write_event("run_end", collect=True, flush=True)
+            else:
+                self._write_event(
+                    "run_end",
+                    collect=False,
+                    extra={"status": "exception", "exception": exc_type.__name__},
+                    flush=True,
+                )
         finally:
             if self._fh:
                 try:
@@ -59,19 +67,29 @@ class _TraceRun:
 
         return False
 
-    def _write_event(self, event_type, flush=True):
+    def _write_event(self, event_type, collect=False, extra=None, flush=True):
         event = {
             "type": event_type,
-            "time": self.model.getSolvingTime(),
-            "primalbound": self.model.getPrimalbound(),
-            "dualbound": self.model.getDualbound(),
-            "gap": self.model.getGap(),
-            "nodes": self.model.getNNodes(),
-            "nsol": self.model.getNSols(),
         }
-        if event_type == "run_end":
-            status = self.model.getStatus()
-            event["status"] = getattr(status, "name", None) or repr(status)
+        if collect:
+            event.update(
+                {
+                    "time": self.model.getSolvingTime(),
+                    "primalbound": self.model.getPrimalbound(),
+                    "dualbound": self.model.getDualbound(),
+                    "gap": self.model.getGap(),
+                    "nodes": self.model.getNNodes(),
+                    "nsol": self.model.getNSols(),
+                }
+            )
+
+            if event_type == "run_end":
+                status = self.model.getStatus()
+                event["status"] = getattr(status, "name", None) or repr(status)
+
+        if extra:
+            event.update(extra)
+
         self.model.data["trace"].append(event)
         if self._fh is not None:
             self._fh.write(json.dumps(event) + "\n")
@@ -79,5 +97,9 @@ class _TraceRun:
                 self._fh.flush()
 
 
-def trace_run(model, path=None):
-    return _TraceRun(model, path)
+def optimize_with_trace(model, path=None, nogil=False):
+    with _TraceRun(model, path):
+        if nogil:
+            model.optimizeNogil()
+        else:
+            model.optimize()

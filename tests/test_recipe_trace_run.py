@@ -1,11 +1,10 @@
 import json
 from random import randint
 
-import pytest
 from helpers.utils import bin_packing_model
 
 from pyscipopt import SCIP_EVENTTYPE, Eventhdlr
-from pyscipopt.recipes.trace_run import trace_run
+from pyscipopt.recipes.trace_run import optimize_with_trace
 
 
 def test_trace_run_in_memory():
@@ -14,8 +13,7 @@ def test_trace_run_in_memory():
 
     model.data = {"test": True}
 
-    with trace_run(model, path=None):
-        model.optimize()
+    optimize_with_trace(model, path=None)
 
     assert "test" in model.data
     assert "trace" in model.data
@@ -42,8 +40,7 @@ def test_trace_run_file_output(tmp_path):
 
     path = tmp_path / "trace.jsonl"
 
-    with trace_run(model, path=str(path)):
-        model.optimize()
+    optimize_with_trace(model, path=str(path))
 
     assert path.exists()
 
@@ -54,30 +51,24 @@ def test_trace_run_file_output(tmp_path):
     assert "run_end" in types
 
 
-class _StopOnBest(Eventhdlr):
+class _InterruptOnBest(Eventhdlr):
     def eventinit(self):
         self.model.catchEvent(SCIP_EVENTTYPE.BESTSOLFOUND, self)
 
     def eventexec(self, event):
-        # SCIPが想定している安全な中断
         self.model.interruptSolve()
 
-    def eventexit(self):
-        self.model.dropEvent(SCIP_EVENTTYPE.BESTSOLFOUND, self)
 
-
-def test_trace_run_forced_exception_after_bestsol():
-    model = bin_packing_model(sizes=[randint(1, 40) for _ in range(120)], capacity=50)
-
+def test_optimize_with_trace_records_run_end_on_interrupt():
+    model = bin_packing_model(
+        sizes=[randint(1, 40) for _ in range(120)],
+        capacity=50,
+    )
     model.setParam("limits/time", 5)
 
-    stopper = _StopOnBest()
-    model.includeEventhdlr(stopper, "stopper", "Stop on bestsol")
+    model.includeEventhdlr(_InterruptOnBest(), "stopper", "Interrupt on bestsol")
 
-    with pytest.raises(RuntimeError):
-        with trace_run(model, path=None):
-            model.optimize()
-            raise RuntimeError("forced after interrupt")
+    optimize_with_trace(model, path=None, nogil=False)
 
     types = [r["type"] for r in model.data["trace"]]
     assert "bestsol_found" in types
