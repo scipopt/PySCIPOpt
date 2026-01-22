@@ -18,7 +18,6 @@
 - Speed up np.ndarray(..., dtype=np.float64) @ MatrixExpr
 - Minimum numpy version increased from 1.16.0 to 1.19.0
 ### Removed
-- Removed `__next__` from Expr
 
 ## 6.0.0 - 2025.xx.yy
 ### Added
