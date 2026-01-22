@@ -242,8 +242,8 @@ cdef class Expr:
         return self
 
     def __mul__(self, other):
-        if isinstance(other, np.ndarray):
-            return other * self
+        if not isinstance(other, EXPR_OP_TYPES):
+            return NotImplemented
 
         if _is_number(other):
             f = float(other)
@@ -469,8 +469,8 @@ cdef class GenExpr:
         return UnaryExpr(Operator.fabs, self)
 
     def __add__(self, other):
-        if isinstance(other, np.ndarray):
-            return other + self
+        if not isinstance(other, EXPR_OP_TYPES):
+            return NotImplemented
 
         left = buildGenExprObj(self)
         right = buildGenExprObj(other)
@@ -527,8 +527,8 @@ cdef class GenExpr:
     #    return self
 
     def __mul__(self, other):
-        if isinstance(other, np.ndarray):
-            return other * self
+        if not isinstance(other, EXPR_OP_TYPES):
+            return NotImplemented
 
         left = buildGenExprObj(self)
         right = buildGenExprObj(other)
