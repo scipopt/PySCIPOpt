@@ -91,6 +91,11 @@ class MatrixExprCons(np.ndarray):
                 return _vec_ge(args[0], args[1]).view(MatrixExprCons)
         raise NotImplementedError("can only support '<=' or '>='")
 
+    def __eq__(self, _):
+        # TODO: Once numpy version >= 2.x, remove `__eq__`, as it will be handled by
+        # `__array_ufunc__`.
+        raise NotImplementedError("can only support '<=' or '>='")
+
 
 _vec_le = np.frompyfunc(operator.le, 2, 1)
 _vec_ge = np.frompyfunc(operator.ge, 2, 1)
