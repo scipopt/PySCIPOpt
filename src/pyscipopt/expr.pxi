@@ -43,14 +43,15 @@
 # gets called (I guess) and so a copy is returned.
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
 import math
-from typing import TYPE_CHECKING
-
-from pyscipopt.scip cimport Variable, Solution
-from cpython.dict cimport PyDict_Next
-from cpython.ref cimport PyObject
+from typing import TYPE_CHECKING, Union
 
 import numpy as np
 
+from cpython.dict cimport PyDict_Next
+from cpython.object cimport Py_LE, Py_EQ, Py_GE
+from cpython.ref cimport PyObject
+
+from pyscipopt.scip cimport Variable, Solution
 
 if TYPE_CHECKING:
     double = float
@@ -66,36 +67,25 @@ def _is_number(e):
         return False
 
 
-def _expr_richcmp(self, other, op):
-    if op == 1: # <=
-        if isinstance(other, Expr) or isinstance(other, GenExpr):
-            return (self - other) <= 0.0
-        elif _is_number(other):
+def _expr_richcmp(self: Union[Expr, GenExpr], other, int op):
+    if isinstance(other, np.ndarray):
+        return NotImplemented
+    if isinstance(other, (int, float, Expr, GenExpr)):
+        raise TypeError(f"Unsupported type {type(other)}")
+
+    if op == Py_LE:
+        if isinstance(other, (int, float, np.number)):
             return ExprCons(self, rhs=float(other))
-        elif isinstance(other, np.ndarray):
-            return _expr_richcmp(other, self, 5)
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
-    elif op == 5: # >=
-        if isinstance(other, Expr) or isinstance(other, GenExpr):
-            return (self - other) >= 0.0
-        elif _is_number(other):
+        return (self - other) <= 0.0
+    elif op == Py_GE:
+        if isinstance(other, (int, float, np.number)):
             return ExprCons(self, lhs=float(other))
-        elif isinstance(other, np.ndarray):
-            return _expr_richcmp(other, self, 1)
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
-    elif op == 2: # ==
-        if isinstance(other, Expr) or isinstance(other, GenExpr):
-            return (self - other) == 0.0
-        elif _is_number(other):
+        return (self - other) >= 0.0
+    elif op == Py_EQ:
+        if isinstance(other, (int, float, np.number)):
             return ExprCons(self, lhs=float(other), rhs=float(other))
-        elif isinstance(other, np.ndarray):
-            return _expr_richcmp(other, self, 2)
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
-    else:
-        raise NotImplementedError("Can only support constraints with '<=', '>=', or '=='.")
+        return (self - other) == 0.0
+    raise NotImplementedError("can only support with '<=', '>=', or '=='")
 
 
 cdef class Term:
