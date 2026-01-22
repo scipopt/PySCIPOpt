@@ -5,7 +5,7 @@
 - Added automated script for generating type stubs
 - Include parameter names in type stubs
 - Speed up MatrixExpr.sum(axis=...) via quicksum
-- Run automated type stub generating script to PR pipeline
+- Added pre-commit hook for automatic stub regeneration (see .pre-commit-config.yaml)
 - Wrapped isObjIntegral() and test
 ### Fixed
 - all fundamental callbacks now raise an error if not implemented

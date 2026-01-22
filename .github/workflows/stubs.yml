@@ -1,6 +1,10 @@
 name: Check type stubs
 env:
   version: 10.0.0
+  # TODO: Set to 'true' once generate_stubs.py has proven reliable over several PRs.
+  # This will enable automatic stub regeneration and commit when stubtest fails.
+  # For now, use the pre-commit hook (.pre-commit-config.yaml) for local development.
+  AUTO_REGENERATE_STUBS: 'false'
 
 on:
   push:
@@ -64,6 +68,7 @@ jobs:
         continue-on-error: true
 
       - name: Check if safe to run generate_stubs.py
+        if: env.AUTO_REGENERATE_STUBS == 'true'
         id: check_script
         run: |
           # For same-repo PRs, always allow running the script
@@ -83,7 +88,7 @@ jobs:
           fi
 
       - name: Regenerate stubs
-        if: steps.stubtest_before.outcome == 'failure' && steps.check_script.outputs.allowed == 'true'
+        if: env.AUTO_REGENERATE_STUBS == 'true' && steps.stubtest_before.outcome == 'failure' && steps.check_script.outputs.allowed == 'true'
         run: |
           python scripts/generate_stubs.py
           # Auto-fix lint issues and format
@@ -94,16 +99,16 @@ jobs:
           cp src/pyscipopt/scip.pyi "$(python -c 'import pyscipopt; print(pyscipopt.__path__[0])')/scip.pyi"
 
       - name: Run MyPy (after regeneration)
-        if: steps.stubtest_before.outcome == 'failure' && steps.check_script.outputs.allowed == 'true'
+        if: env.AUTO_REGENERATE_STUBS == 'true' && steps.stubtest_before.outcome == 'failure' && steps.check_script.outputs.allowed == 'true'
         run: python -m mypy --package pyscipopt
 
       - name: Run stubtest (after regeneration)
-        if: steps.stubtest_before.outcome == 'failure' && steps.check_script.outputs.allowed == 'true'
+        if: env.AUTO_REGENERATE_STUBS == 'true' && steps.stubtest_before.outcome == 'failure' && steps.check_script.outputs.allowed == 'true'
         run: stubs/test.sh
 
       - name: Commit and push updated stubs
         id: commit
-        if: steps.stubtest_before.outcome == 'failure' && github.event_name == 'pull_request' && steps.check_script.outputs.allowed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
+        if: env.AUTO_REGENERATE_STUBS == 'true' && steps.stubtest_before.outcome == 'failure' && github.event_name == 'pull_request' && steps.check_script.outputs.allowed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -130,7 +135,7 @@ jobs:
           fi
 
       - name: Comment on PR
-        if: steps.commit.outputs.committed == 'true'
+        if: env.AUTO_REGENERATE_STUBS == 'true' && steps.commit.outputs.committed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -155,6 +160,22 @@ jobs:
           \`\`\`
 
           </details>"
+
+      - name: Fail if stubs are out of date (auto-regeneration disabled)
+        if: env.AUTO_REGENERATE_STUBS != 'true' && (steps.stubtest_before.outcome == 'failure' || steps.mypy_before.outcome == 'failure')
+        run: |
+          echo "::error::Type stubs are out of date. Please regenerate them locally:"
+          echo ""
+          echo "  python scripts/generate_stubs.py"
+          echo "  pip install ruff"
+          echo "  ruff check src/pyscipopt/scip.pyi --extend-select ANN,I,PYI,RUF100 --fix"
+          echo "  ruff format src/pyscipopt/scip.pyi"
+          echo ""
+          echo "Then commit the updated scip.pyi file."
+          echo ""
+          echo "Tip: You can set up a pre-commit hook to do this automatically."
+          echo "See .pre-commit-config.yaml in the repository root."
+          exit 1
 
   lint:
     needs: stubtest
