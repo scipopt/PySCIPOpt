@@ -737,6 +737,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPepsilon(SCIP* scip)
     SCIP_Real SCIPfeastol(SCIP* scip)
     SCIP_RETCODE SCIPsetObjIntegral(SCIP* scip)
+    SCIP_Bool SCIPisObjIntegral(SCIP* scip)
     SCIP_Real SCIPgetLocalOrigEstimate(SCIP* scip)
     SCIP_Real SCIPgetLocalTransEstimate(SCIP* scip)
 

@@ -5,6 +5,8 @@
 - Added automated script for generating type stubs
 - Include parameter names in type stubs
 - Speed up MatrixExpr.sum(axis=...) via quicksum
+- Added pre-commit hook for automatic stub regeneration (see .pre-commit-config.yaml)
+- Wrapped isObjIntegral() and test
 - Added structured_optimization_trace recipe for structured optimization progress tracking
 ### Fixed
 - getBestSol() now returns None for infeasible problems instead of a Solution with NULL pointer
@@ -19,7 +21,6 @@
 - changed default value of enablepricing flag to True
 - Speed up MatrixExpr.add.reduce via quicksum
 - Speed up np.ndarray(..., dtype=np.float64) @ MatrixExpr
-- Minimum numpy version increased from 1.16.0 to 1.19.0
 - MatrixExpr and MatrixExprCons use `__array_ufunc__` protocol to control all numpy.ufunc inputs and outputs
 ### Removed
 
