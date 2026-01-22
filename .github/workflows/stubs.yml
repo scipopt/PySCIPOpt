@@ -178,7 +178,8 @@ jobs:
           exit 1
 
   lint:
-    needs: stubtest
+    # TODO: Add "needs: stubtest" when AUTO_REGENERATE_STUBS is enabled,
+    # so lint runs after stubs are regenerated and committed.
     runs-on: ubuntu-latest
     env:
       FILES: src/pyscipopt/scip.pyi
