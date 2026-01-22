@@ -1,6 +1,7 @@
+import math
+
 import numpy as np
 import pytest
-
 from pyscipopt import Model, cos, exp, log, sin, sqrt
 from pyscipopt.scip import Expr, ExprCons, GenExpr, Term
 
@@ -213,3 +214,30 @@ def test_unary(model):
         str(np.sqrt([x, y, z]))
         == "[sqrt(sum(0.0,prod(1.0,x1))) sqrt(sum(0.0,prod(1.0,x1))) sqrt(sum(0.0,prod(1.0,x1)))]"
     )
+
+
+def test_getVal_with_GenExpr():
+    m = Model()
+    x = m.addVar(lb=1, ub=1, name="x")
+    y = m.addVar(lb=2, ub=2, name="y")
+    z = m.addVar(lb=0, ub=0, name="z")
+    m.optimize()
+
+    # test "Expr({Term(x, y, z): 1.0})"
+    assert m.getVal(z * x * y) == 0
+    # test "Expr({Term(x): 1.0, Term(y): 1.0, Term(): 1.0})"
+    assert m.getVal(x + y + 1) == 4
+    # test "prod(1.0,sum(0.0,prod(1.0,x)),**(sum(0.0,prod(1.0,x)),-1))"
+    assert m.getVal(x / x) == 1
+    # test "prod(1.0,sum(0.0,prod(1.0,y)),**(sum(0.0,prod(1.0,x)),-1))"
+    assert m.getVal(y / x) == 2
+    # test "**(prod(1.0,**(sum(0.0,prod(1.0,x)),-1)),2)"
+    assert m.getVal((1 / x) ** 2) == 1
+    # test "sin(sum(0.0,prod(1.0,x)))"
+    assert round(m.getVal(sin(x)), 6) == round(math.sin(1), 6)
+
+    with pytest.raises(TypeError):
+        m.getVal(1)
+
+    with pytest.raises(ZeroDivisionError):
+        m.getVal(1 / z)
