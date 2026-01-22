@@ -98,6 +98,7 @@ class StubGenerator:
         '__isub__': 'def __isub__(self, other: Incomplete) -> Incomplete: ...  # noqa: PYI034',
         '__imul__': 'def __imul__(self, other: Incomplete) -> Incomplete: ...  # noqa: PYI034',
         '__matmul__': 'def __matmul__(self, other: Incomplete) -> Incomplete: ...',
+        '__array_ufunc__': 'def __array_ufunc__(self, ufunc: Incomplete, method: Incomplete, *args: Incomplete, **kwargs: Incomplete) -> Incomplete: ...',
     }
 
     # Classes that should have @disjoint_base decorator
@@ -108,7 +109,7 @@ class StubGenerator:
         'Eventhdlr', 'Expr', 'ExprCons', 'GenExpr', 'Heur', 'IIS', 'IISfinder',
         'LP', 'Model', 'NLRow', 'Node', 'Nodesel', 'PowExpr', 'Presol', 'Pricer',
         'ProdExpr', 'Prop', 'Reader', 'Relax', 'Row', 'RowExact', 'Sepa', 'Solution',
-        'SumExpr', 'VarExpr', 'Variable', '_VarArray',
+        'SumExpr', 'Term', 'UnaryExpr', 'VarExpr', 'Variable', '_VarArray',
     }
 
     # Methods that need type: ignore[override] for numpy subclasses
@@ -189,10 +190,10 @@ class StubGenerator:
                     )
                 continue
 
-            # Check for public attribute
-            if current_class and 'cdef public' in line:
-                # Extract attribute name
-                match = re.search(r'cdef\s+public\s+(?:\w+\s+)?(\w+)\s*$', line.strip())
+            # Check for public or readonly attribute
+            if current_class and ('cdef public' in line or 'cdef readonly' in line):
+                # Extract attribute name (handles: cdef public type name, cdef readonly type name)
+                match = re.search(r'cdef\s+(?:public|readonly)\s+(?:\w+\s+)?(\w+)\s*$', line.strip())
                 if match:
                     attr_name = match.group(1)
                     if current_class in self.module_info.classes:
@@ -306,9 +307,9 @@ class StubGenerator:
                 i += 1
                 continue
 
-            # Check for public attribute in class body
-            if current_class and 'cdef public' in stripped:
-                match = re.search(r'cdef\s+public\s+(?:\w+\s+)?(\w+)\s*$', stripped)
+            # Check for public or readonly attribute in class body
+            if current_class and ('cdef public' in stripped or 'cdef readonly' in stripped):
+                match = re.search(r'cdef\s+(?:public|readonly)\s+(?:\w+\s+)?(\w+)\s*$', stripped)
                 if match:
                     attr_name = match.group(1)
                     cls_info = self.module_info.classes.get(current_class)
@@ -955,6 +956,7 @@ class StubGenerator:
             'Operator': 'Op',
             'PATCH': 'int',
             'StageNames': 'dict',
+            'TYPE_CHECKING': 'bool',  # Re-exported from typing
             '_SCIP_BOUNDTYPE_TO_STRING': 'dict',
             'str_conversion': 'Incomplete',
         }

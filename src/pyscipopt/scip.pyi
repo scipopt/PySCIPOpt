@@ -12,6 +12,7 @@ Operator: Op
 PATCH: int
 PY_SCIP_CALL: Incomplete
 StageNames: dict
+TYPE_CHECKING: bool
 _SCIP_BOUNDTYPE_TO_STRING: dict
 _core_dot: Incomplete
 _core_dot_2d: Incomplete
@@ -513,10 +514,22 @@ class MatrixConstraint(numpy.ndarray):
 
 class MatrixExpr(numpy.ndarray):
     def _evaluate(self, sol: Incomplete) -> Incomplete: ...
-    def __array_ufunc__(self, ufunc: Incomplete, method: Incomplete) -> Incomplete: ...
+    def __array_ufunc__(
+        self,
+        ufunc: Incomplete,
+        method: Incomplete,
+        *args: Incomplete,
+        **kwargs: Incomplete,
+    ) -> Incomplete: ...
 
 class MatrixExprCons(numpy.ndarray):
-    def __array_ufunc__(self, ufunc: Incomplete, method: Incomplete) -> Incomplete: ...
+    def __array_ufunc__(
+        self,
+        ufunc: Incomplete,
+        method: Incomplete,
+        *args: Incomplete,
+        **kwargs: Incomplete,
+    ) -> Incomplete: ...
     def __eq__(self, other: object) -> bool: ...
 
 class MatrixGenExpr(MatrixExpr): ...
@@ -2132,7 +2145,10 @@ class SumExpr(GenExpr):
     constant: Incomplete
     def __init__(self, *args: Incomplete, **kwargs: Incomplete) -> None: ...
 
+@disjoint_base
 class Term:
+    ptrtuple: Incomplete
+    vartuple: Incomplete
     def __init__(self, *vartuple: Incomplete) -> None: ...
     def __add__(self, other: Incomplete) -> Incomplete: ...
     def __eq__(self, other: object) -> bool: ...
@@ -2145,6 +2161,7 @@ class Term:
     def __lt__(self, other: object) -> bool: ...
     def __ne__(self, other: object) -> bool: ...
 
+@disjoint_base
 class UnaryExpr(GenExpr):
     def __init__(self, *args: Incomplete, **kwargs: Incomplete) -> None: ...
 
