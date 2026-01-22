@@ -261,8 +261,7 @@ cdef class Expr:
         if _is_number(other):
             f = 1.0/float(other)
             return f * self
-        selfexpr = buildGenExprObj(self)
-        return selfexpr.__truediv__(other)
+        return buildGenExprObj(self) / other
 
     def __rtruediv__(self, other):
         ''' other / self '''
@@ -272,8 +271,7 @@ cdef class Expr:
         if _is_number(self):
             f = 1.0/float(self)
             return f * other
-        otherexpr = buildGenExprObj(other)
-        return otherexpr.__truediv__(self)
+        return buildGenExprObj(other) / self
 
     def __pow__(self, other, modulo):
         if float(other).is_integer() and other >= 0:
