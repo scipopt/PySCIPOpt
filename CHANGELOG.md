@@ -5,6 +5,8 @@
 - Added automated script for generating type stubs
 - Include parameter names in type stubs
 - Speed up MatrixExpr.sum(axis=...) via quicksum
+- Added pre-commit hook for automatic stub regeneration (see .pre-commit-config.yaml)
+- Wrapped isObjIntegral() and test
 - Added structured_optimization_trace recipe for structured optimization progress tracking
 - Expr and GenExpr support numpy unary func (`np.sin`, `np.cos`, `np.sqrt`, `np.exp`, `np.log`, `np.absolute`)
 ### Fixed

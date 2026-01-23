@@ -49,7 +49,23 @@ jobs:
         run: python -m mypy --package pyscipopt
 
       - name: Run stubtest
+        id: stubtest
         run: stubs/test.sh
+
+      - name: Stub regeneration hint
+        if: failure() && steps.stubtest.outcome == 'failure'
+        run: |
+          echo "Type stubs are out of date. Please regenerate them locally:"
+          echo ""
+          echo "  python scripts/generate_stubs.py"
+          echo "  pip install ruff"
+          echo "  ruff check src/pyscipopt/scip.pyi --extend-select ANN,I,PYI,RUF100 --fix"
+          echo "  ruff format src/pyscipopt/scip.pyi"
+          echo ""
+          echo "Then commit the updated scip.pyi file."
+          echo ""
+          echo "Tip: You can set up a pre-commit hook to do this automatically."
+          echo "See .pre-commit-config.yaml in the repository root."
 
   lint:
     runs-on: ubuntu-latest
@@ -67,5 +83,104 @@ jobs:
       - name: Lint type stubs
         run: ruff check ${{ env.FILES }} --extend-select ANN,I,PYI,RUF100
 
-      - name: Format type stubs
-        run: ruff format ${{ env.FILES }}
+      - name: Format check type stubs
+        run: ruff format --check ${{ env.FILES }}
+
+# =============================================================================
+# AUTO-REGENERATION STEPS (disabled)
+# =============================================================================
+# TODO: To enable automatic stub regeneration in CI, uncomment the code below
+# and add the following to the stubtest job:
+#   - Add these permissions to stubtest job:
+#       permissions:
+#         contents: write
+#         pull-requests: write
+#   - Add these to the checkout step:
+#       with:
+#         ref: ${{ github.head_ref || github.ref }}
+#         repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+#         token: ${{ secrets.GITHUB_TOKEN }}
+#         fetch-depth: 0
+#   - Change "Run MyPy" and "Run stubtest" to have continue-on-error: true
+#     and rename to "Run MyPy (before regeneration)" / "Run stubtest (before regeneration)"
+#   - Add "needs: stubtest" to the lint job
+#   - Remove the "Stub regeneration hint" step
+#
+# Then uncomment these steps:
+#
+#      - name: Check if safe to run generate_stubs.py
+#        id: check_script
+#        run: |
+#          # For same-repo PRs, always allow running the script
+#          if [[ "${{ github.event.pull_request.head.repo.full_name }}" == "${{ github.repository }}" ]] || [[ "${{ github.event_name }}" != "pull_request" ]]; then
+#            echo "allowed=true" >> $GITHUB_OUTPUT
+#            echo "Same-repo PR or push - allowing regeneration"
+#          else
+#            # For fork PRs, only allow if script is unchanged from master
+#            git fetch origin master
+#            if git diff --quiet origin/master -- scripts/generate_stubs.py; then
+#              echo "allowed=true" >> $GITHUB_OUTPUT
+#              echo "Fork PR with unchanged script - allowing regeneration"
+#            else
+#              echo "allowed=false" >> $GITHUB_OUTPUT
+#              echo "::warning::Fork PR with modified scripts/generate_stubs.py - skipping auto-regeneration for security"
+#            fi
+#          fi
+#
+#      - name: Regenerate stubs
+#        if: steps.stubtest_before.outcome == 'failure' && steps.check_script.outputs.allowed == 'true'
+#        run: |
+#          python scripts/generate_stubs.py
+#          pip install ruff
+#          ruff check src/pyscipopt/scip.pyi --extend-select ANN,I,PYI,RUF100 --fix
+#          ruff format src/pyscipopt/scip.pyi
+#          cp src/pyscipopt/scip.pyi "$(python -c 'import pyscipopt; print(pyscipopt.__path__[0])')/scip.pyi"
+#
+#      - name: Run MyPy (after regeneration)
+#        if: steps.stubtest_before.outcome == 'failure' && steps.check_script.outputs.allowed == 'true'
+#        run: python -m mypy --package pyscipopt
+#
+#      - name: Run stubtest (after regeneration)
+#        if: steps.stubtest_before.outcome == 'failure' && steps.check_script.outputs.allowed == 'true'
+#        run: stubs/test.sh
+#
+#      - name: Commit and push updated stubs
+#        id: commit
+#        if: steps.stubtest_before.outcome == 'failure' && github.event_name == 'pull_request' && steps.check_script.outputs.allowed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
+#        run: |
+#          git config user.name "github-actions[bot]"
+#          git config user.email "github-actions[bot]@users.noreply.github.com"
+#          git add src/pyscipopt/scip.pyi
+#          DIFF=$(git diff --cached --stat)
+#          echo "diff<<EOF" >> $GITHUB_OUTPUT
+#          echo "$DIFF" >> $GITHUB_OUTPUT
+#          echo "EOF" >> $GITHUB_OUTPUT
+#          DETAILED_DIFF=$(git diff --cached src/pyscipopt/scip.pyi | head -100 || true)
+#          echo "detailed_diff<<EOF" >> $GITHUB_OUTPUT
+#          echo "$DETAILED_DIFF" >> $GITHUB_OUTPUT
+#          echo "EOF" >> $GITHUB_OUTPUT
+#          if git diff --cached --quiet; then
+#            echo "committed=false" >> $GITHUB_OUTPUT
+#          else
+#            git commit -m "Auto-regenerate type stubs"
+#            git push
+#            echo "committed=true" >> $GITHUB_OUTPUT
+#          fi
+#
+#      - name: Comment on PR
+#        if: steps.commit.outputs.committed == 'true'
+#        env:
+#          GH_TOKEN: ${{ github.token }}
+#        run: |
+#          gh pr comment ${{ github.event.pull_request.number }} --body "## 🤖 Type stubs automatically regenerated
+#
+#          The type stubs were out of date and have been automatically regenerated.
+#
+#          <details>
+#          <summary>Changes summary</summary>
+#
+#          \`\`\`
+#          ${{ steps.commit.outputs.diff }}
+#          \`\`\`
+#
+#          </details>"
