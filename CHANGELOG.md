@@ -6,6 +6,7 @@
 - Include parameter names in type stubs
 - Speed up MatrixExpr.sum(axis=...) via quicksum
 - Added structured_optimization_trace recipe for structured optimization progress tracking
+- Added realtime_trace_jsonl recipe for real-time optimization progress tracking with JSONL streaming output
 ### Fixed
 - all fundamental callbacks now raise an error if not implemented
 - Fixed the type of MatrixExpr.sum(axis=...) result from MatrixVariable to MatrixExpr.

@@ -61,7 +61,9 @@ class _TraceRun:
                     )
 
         self._handler = _TraceEventhdlr()
-        self.model.includeEventhdlr(self._handler, "trace_run", "Trace run handler")
+        self.model.includeEventhdlr(
+            self._handler, "realtime_trace_jsonl", "Realtime trace jsonl handler"
+        )
 
         return self
 

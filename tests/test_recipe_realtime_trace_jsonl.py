@@ -5,7 +5,7 @@ import pytest
 from helpers.utils import bin_packing_model
 
 from pyscipopt import SCIP_EVENTTYPE, Eventhdlr
-from pyscipopt.recipes.trace_run import optimizeNogilTrace, optimizeTrace
+from pyscipopt.recipes.realtime_trace_jsonl import optimizeNogilTrace, optimizeTrace
 
 
 @pytest.fixture(
@@ -15,7 +15,7 @@ def optimize(request):
     return request.param
 
 
-def test_trace_run_in_memory(optimize):
+def test_realtime_trace_in_memory(optimize):
     model = bin_packing_model(sizes=[randint(1, 40) for _ in range(120)], capacity=50)
     model.setParam("limits/time", 5)
 
@@ -46,7 +46,7 @@ def test_trace_run_in_memory(optimize):
     assert "run_end" in types
 
 
-def test_trace_run_file_output(optimize, tmp_path):
+def test_realtime_trace_file_output(optimize, tmp_path):
     model = bin_packing_model(sizes=[randint(1, 40) for _ in range(120)], capacity=50)
     model.setParam("limits/time", 5)
 
