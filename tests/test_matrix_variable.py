@@ -248,13 +248,13 @@ def test_matrix_sum_axis():
 )
 def test_matrix_sum_result(axis, keepdims):
     # directly compare the result of np.sum and MatrixExpr.sum
-    _getVal = np.vectorize(lambda e: e.terms[CONST])
+    _getVal = np.vectorize(lambda e: e[CONST])
     a = np.arange(6).reshape((1, 2, 3))
 
     np_res = a.sum(axis, keepdims=keepdims)
-    scip_res = MatrixExpr.sum(a, axis, keepdims=keepdims)
-    assert (np_res == _getVal(scip_res)).all()
-    assert np_res.shape == _getVal(scip_res).shape
+    scip_res = _getVal(a.view(MatrixExpr).sum(axis, keepdims=keepdims)).view(np.ndarray)
+    assert (np_res == scip_res).all()
+    assert np_res.shape == scip_res.shape
 
 
 @pytest.mark.parametrize("n", [50, 100])
@@ -262,17 +262,17 @@ def test_matrix_sum_axis_is_none_performance(n):
     model = Model()
     x = model.addMatrixVar((n, n))
 
-    # Original sum via `np.ndarray.sum`, `np.sum` will call subclass method
-    start_orig = time()
-    np.ndarray.sum(x)
-    end_orig = time()
+    # Original sum via `np.ndarray.sum`
+    start = time()
+    x.view(np.ndarray).sum()
+    orig = time() - start
 
     # Optimized sum via `quicksum`
-    start_matrix = time()
+    start = time()
     x.sum()
-    end_matrix = time()
+    matrix = time() - start
 
-    assert model.isGT(end_orig - start_orig, end_matrix - start_matrix)
+    assert model.isGT(orig, matrix)
 
 
 @pytest.mark.parametrize("n", [50, 100])
@@ -280,17 +280,70 @@ def test_matrix_sum_axis_not_none_performance(n):
     model = Model()
     x = model.addMatrixVar((n, n))
 
-    # Original sum via `np.ndarray.sum`, `np.sum` will call subclass method
-    start_orig = time()
-    np.ndarray.sum(x, axis=0)
-    end_orig = time()
+    # Original sum via `np.ndarray.sum`
+    start = time()
+    x.view(np.ndarray).sum(axis=0)
+    orig = time() - start
 
     # Optimized sum via `quicksum`
-    start_matrix = time()
+    start = time()
     x.sum(axis=0)
-    end_matrix = time()
+    matrix = time() - start
 
-    assert model.isGT(end_orig - start_orig, end_matrix - start_matrix)
+    assert model.isGT(orig, matrix)
+
+
+@pytest.mark.parametrize("n", [50, 100])
+def test_matrix_mean_performance(n):
+    model = Model()
+    x = model.addMatrixVar((n, n))
+
+    # Original mean via `np.ndarray.mean`
+    start = time()
+    x.view(np.ndarray).mean(axis=0)
+    orig = time() - start
+
+    # Optimized mean via `quicksum`
+    start = time()
+    x.mean(axis=0)
+    matrix = time() - start
+
+    assert model.isGT(orig, matrix)
+
+
+def test_matrix_mean():
+    model = Model()
+    x = model.addMatrixVar((2, 2))
+
+    assert isinstance(x.mean(), Expr)
+    assert isinstance(x.mean(1), MatrixExpr)
+
+
+@pytest.mark.parametrize("n", [50, 100])
+def test_matrix_dot_performance(n):
+    model = Model()
+    x = model.addMatrixVar((n, n))
+    a = np.random.rand(n, n)
+
+    start = time()
+    a @ x.view(np.ndarray)
+    orig = time() - start
+
+    start = time()
+    a @ x
+    matrix = time() - start
+
+    assert model.isGT(orig, matrix)
+
+
+def test_matrix_dot_value():
+    model = Model()
+    x = model.addMatrixVar(3, lb=[1, 2, 3], ub=[1, 2, 3])
+    y = model.addMatrixVar((3, 2), lb=1, ub=1)
+    model.optimize()
+
+    assert model.getVal(np.ones(3) @ x) == 6
+    assert (model.getVal(np.ones((2, 2, 3)) @ y) == np.full((2, 2, 2), 3)).all()
 
 
 def test_add_cons_matrixVar():
@@ -574,7 +627,7 @@ def test_matrix_matmul_return_type():
 
     # test 1D @ 1D → 0D
     x = m.addMatrixVar(3)
-    assert type(x @ x) is MatrixExpr
+    assert type(np.ones(3) @ x) is Expr
 
     # test 1D @ 1D → 2D
     assert type(x[:, None] @ x[None, :]) is MatrixExpr
@@ -583,6 +636,9 @@ def test_matrix_matmul_return_type():
     y = m.addMatrixVar((2, 3))
     z = m.addMatrixVar((3, 4))
     assert type(y @ z) is MatrixExpr
+
+    # test ND @ 2D → ND
+    assert type(np.ones((2, 4, 3)) @ z) is MatrixExpr
 
 
 def test_matrix_sum_return_type():
@@ -604,3 +660,12 @@ def test_broadcast():
     m.optimize()
 
     assert (m.getVal(x) == np.zeros((2, 3))).all()
+
+
+def test_evaluate():
+    m = Model()
+    x = m.addMatrixVar((1, 1), lb=1, ub=1)
+    m.optimize()
+
+    assert type(m.getVal(x)) is np.ndarray
+    assert m.getVal(x).sum() == 1
