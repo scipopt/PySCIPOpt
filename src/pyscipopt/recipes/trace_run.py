@@ -4,6 +4,28 @@ from pyscipopt import SCIP_EVENTTYPE, Eventhdlr
 
 
 class _TraceRun:
+    """
+    Record optimization progress in real time while the solver is running.
+
+    Args
+    ----
+    model: pyscipopt.Model
+    path: str | None
+        - None: in-memory only
+        - str : also write JSONL (one JSON object per line) for streaming/real-time consumption
+
+    Returns
+    -------
+    None
+        Updates `model.data["trace"]` as a side effect.
+
+    Usage
+    -----
+    optimizeTrace(model)                     # real-time in-memory trace
+    optimizeTrace(model, "trace.jsonl")      # real-time JSONL stream + in-memory
+    optimizeNogilTrace(model, "trace.jsonl") # nogil variant
+    """
+
     def __init__(self, model, path=None):
         self.model = model
         self.path = path
