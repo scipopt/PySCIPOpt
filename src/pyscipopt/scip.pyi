@@ -325,6 +325,13 @@ class Eventhdlr:
 
 @disjoint_base
 class ExprLike:
+    def __array_ufunc__(
+        self,
+        ufunc: Incomplete,
+        method: str,
+        *args: Incomplete,
+        **kwargs: Incomplete,
+    ) -> Incomplete: ...
     def __abs__(self) -> Incomplete: ...
     def exp(self) -> Incomplete: ...
     def log(self) -> Incomplete: ...
