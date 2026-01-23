@@ -195,29 +195,6 @@ def test_rpow_constant_base(model):
         c = (-2)**x
 
 
-def test_unary(model):
-    m, x, y, z = model
-
-    assert str(abs(x)) == "abs(sum(0.0,prod(1.0,x)))"
-    assert str(np.absolute(x)) == "abs(sum(0.0,prod(1.0,x)))"
-    assert (
-        str(sin([x, y, z]))
-        == "[sin(sum(0.0,prod(1.0,x))) sin(sum(0.0,prod(1.0,y))) sin(sum(0.0,prod(1.0,z)))]"
-    )
-    assert (
-        str(np.sin([x, y, z]))
-        == "[sin(sum(0.0,prod(1.0,x))) sin(sum(0.0,prod(1.0,y))) sin(sum(0.0,prod(1.0,z)))]"
-    )
-    assert (
-        str(sqrt([x, y, z]))
-        == "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y))) sqrt(sum(0.0,prod(1.0,z)))]"
-    )
-    assert (
-        str(np.sqrt([x, y, z]))
-        == "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y))) sqrt(sum(0.0,prod(1.0,z)))]"
-    )
-
-
 def test_getVal_with_GenExpr():
     m = Model()
     x = m.addVar(lb=1, ub=1, name="x")
@@ -243,3 +220,21 @@ def test_getVal_with_GenExpr():
 
     with pytest.raises(ZeroDivisionError):
         m.getVal(1 / z)
+
+
+def test_unary(model):
+    m, x, y, z = model
+
+    assert str(abs(x)) == "abs(sum(0.0,prod(1.0,x)))"
+    assert str(np.absolute(x)) == "abs(sum(0.0,prod(1.0,x)))"
+    assert str(sin([x, y])) == "[sin(sum(0.0,prod(1.0,x))) sin(sum(0.0,prod(1.0,y)))]"
+    assert (
+        str(np.sin([x, y])) == "[sin(sum(0.0,prod(1.0,x))) sin(sum(0.0,prod(1.0,y)))]"
+    )
+    assert (
+        str(sqrt([x, y])) == "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y)))]"
+    )
+    assert (
+        str(np.sqrt([x, y]))
+        == "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y)))]"
+    )
