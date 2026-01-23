@@ -28,14 +28,14 @@ class _TraceRun:
             def eventexec(s, event):
                 et = event.getType()
                 if et == SCIP_EVENTTYPE.BESTSOLFOUND:
-                    snap = self._snapshot_now()
-                    self._last_snapshot = snap
-                    self._log_snapshot_event("bestsol_found", extra=snap, flush=True)
+                    snapshot = self._snapshot_now()
+                    self._last_snapshot = snapshot
+                    self._write_event("bestsol_found", fields=snapshot, flush=True)
                 elif et == SCIP_EVENTTYPE.DUALBOUNDIMPROVED:
-                    snap = self._snapshot_now()
-                    self._last_snapshot = snap
-                    self._log_snapshot_event(
-                        "dualbound_improved", extra=snap, flush=False
+                    snapshot = self._snapshot_now()
+                    self._last_snapshot = snapshot
+                    self._write_event(
+                        "dualbound_improved", fields=snapshot, flush=False
                     )
 
         self._handler = _TraceEventhdlr()
@@ -44,12 +44,12 @@ class _TraceRun:
         return self
 
     def __exit__(self, exc_type, exc, tb):
-        extra = {}
+        fields = {}
         if self._last_snapshot:
-            extra.update(self._last_snapshot)
+            fields.update(self._last_snapshot)
 
         if exc_type is not None:
-            extra.update(
+            fields.update(
                 {
                     "status": "exception",
                     "exception": exc_type.__name__,
@@ -58,7 +58,7 @@ class _TraceRun:
             )
 
         try:
-            self._log_snapshot_event("run_end", extra=extra, flush=True)
+            self._write_event("run_end", fields=fields, flush=True)
         finally:
             if self._fh:
                 try:
@@ -89,10 +89,10 @@ class _TraceRun:
             "nsol": self.model.getNSols(),
         }
 
-    def _log_snapshot_event(self, event_type, extra=None, flush=True):
+    def _write_event(self, event_type, fields=None, flush=True):
         event = {"type": event_type}
-        if extra:
-            event.update(extra)
+        if fields:
+            event.update(fields)
 
         self.model.data["trace"].append(event)
         if self._fh is not None:
