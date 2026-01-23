@@ -21,7 +21,6 @@ from dataclasses import dataclass
 from typing import Union
 
 import numpy as np
-from numpy.typing import NDArray
 
 include "expr.pxi"
 include "lp.pxi"
@@ -4005,6 +4004,17 @@ cdef class Model:
         make sure that no variable is added during the solving process that destroys this property.
         """
         PY_SCIP_CALL(SCIPsetObjIntegral(self._scip))
+
+    def isObjIntegral(self):
+        """
+        Returns whether the objective function is integral.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisObjIntegral(self._scip)
 
     def getLocalEstimate(self, original = False):
         """
@@ -10735,7 +10745,7 @@ cdef class Model:
         self,
         Solution sol,
         expr: Union[Expr, GenExpr],
-    ) -> Union[float, NDArray[np.float64]]:
+    ) -> Union[float, np.ndarray]:
         """
         Retrieve value of given variable or expression in the given solution or in
         the LP/pseudo solution if sol == None

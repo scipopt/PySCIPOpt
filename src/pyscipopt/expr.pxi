@@ -202,10 +202,6 @@ cdef class Expr:
     def __iter__(self):
         return iter(self.terms)
 
-    def __next__(self):
-        try: return next(self.terms)
-        except: raise StopIteration
-
     def __abs__(self):
         return abs(buildGenExprObj(self))
 

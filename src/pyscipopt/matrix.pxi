@@ -1,7 +1,6 @@
 import operator
 from typing import Literal, Optional, Tuple, Union
 import numpy as np
-from numpy.typing import NDArray
 try:
     # NumPy 2.x location
     from numpy.lib.array_utils import normalize_axis_tuple
@@ -75,7 +74,6 @@ class MatrixExpr(np.ndarray):
             res = super().__array_ufunc__(ufunc, method, *args, **kwargs)
         return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
 
-
     def _evaluate(self, Solution sol) -> NDArray[np.float64]:
         return _vec_evaluate(self, sol).view(np.ndarray)
 
@@ -97,6 +95,11 @@ class MatrixExprCons(np.ndarray):
                 return _vec_ge(args[0], args[1]).view(MatrixExprCons)
         raise NotImplementedError("can only support '<=' or '>='")
 
+    def __eq__(self, _):
+        # TODO: Once numpy version >= 2.x, remove `__eq__`, as it will be handled by
+        # `__array_ufunc__`.
+        raise NotImplementedError("can only support '<=' or '>='")
+
 
 _vec_le = np.frompyfunc(operator.le, 2, 1)
 _vec_ge = np.frompyfunc(operator.ge, 2, 1)
@@ -104,7 +107,7 @@ _vec_eq = np.frompyfunc(operator.eq, 2, 1)
 _vec_evaluate = np.frompyfunc(lambda expr, sol: expr._evaluate(sol), 2, 1)
 
 
-cdef inline _ensure_array(arg, bool convert_scalar = True):
+cdef inline _ensure_array(arg, bint convert_scalar = True):
     if isinstance(arg, np.ndarray):
         return arg.view(np.ndarray)
     elif isinstance(arg, (list, tuple)):
@@ -131,14 +134,14 @@ def _core_dot(cnp.ndarray a, cnp.ndarray b) -> Union[Expr, np.ndarray]:
         If both `a` and `b` are 1-D arrays, return an `Expr`, otherwise return a
         `np.ndarray` of type `object` and containing `Expr` objects.
     """
-    cdef bool a_is_1d = a.ndim == 1
-    cdef bool b_is_1d = b.ndim == 1
+    cdef bint a_is_1d = a.ndim == 1
+    cdef bint b_is_1d = b.ndim == 1
     cdef cnp.ndarray a_nd = a[..., np.newaxis, :] if a_is_1d else a
     cdef cnp.ndarray b_nd = b[..., :, np.newaxis] if b_is_1d else b
-    cdef bool a_is_num = a_nd.dtype.kind in "fiub"
+    cdef bint a_is_num = a_nd.dtype.kind in "fiub"
 
     if a_is_num ^ (b_nd.dtype.kind in "fiub"):
-        res = _core_dot_2d(a_nd, b_nd) if a_is_num else _core_dot_2d(b_nd.T, a_nd.T).T
+        res = _core_dot_nd(a_nd, b_nd) if a_is_num else _core_dot_nd(b_nd.T, a_nd.T).T
         if a_is_1d and b_is_1d:
             return res.item()
         if a_is_1d:
@@ -149,7 +152,6 @@ def _core_dot(cnp.ndarray a, cnp.ndarray b) -> Union[Expr, np.ndarray]:
     return NotImplemented
 
 
-@np.vectorize(otypes=[object], signature="(m,n),(n,p)->(m,p)")
 def _core_dot_2d(cnp.ndarray a, cnp.ndarray x) -> np.ndarray:
     """
     Perform matrix multiplication between a 2-Demension constant array and a 2-Demension
@@ -185,6 +187,13 @@ def _core_dot_2d(cnp.ndarray a, cnp.ndarray x) -> np.ndarray:
             res[i, j] = quicksum(a_view[i, idx] * x[idx, j] for idx in nonzero)
 
     return res
+
+
+_core_dot_nd = np.vectorize(
+    _core_dot_2d,
+    otypes=[object],
+    signature="(m,n),(n,p)->(m,p)",
+)
 
 
 def _core_sum(
