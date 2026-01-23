@@ -330,7 +330,7 @@ class Eventhdlr:
 class ExprLike:
     def __array_ufunc__(
         self,
-        ufunc: Incomplete,
+        ufunc: np.ufunc,
         method: str,
         *args: Incomplete,
         **kwargs: Incomplete,
@@ -531,8 +531,8 @@ class MatrixExpr(np.ndarray):
     def _evaluate(self, sol: Incomplete) -> Incomplete: ...
     def __array_ufunc__(
         self,
-        ufunc: Incomplete,
-        method: Incomplete,
+        ufunc: np.ufunc,
+        method: str,
         *args: Incomplete,
         **kwargs: Incomplete,
     ) -> Incomplete: ...
@@ -540,8 +540,8 @@ class MatrixExpr(np.ndarray):
 class MatrixExprCons(np.ndarray):
     def __array_ufunc__(
         self,
-        ufunc: Incomplete,
-        method: Incomplete,
+        ufunc: np.ufunc,
+        method: str,
         *args: Incomplete,
         **kwargs: Incomplete,
     ) -> Incomplete: ...
