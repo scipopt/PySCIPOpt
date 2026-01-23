@@ -792,13 +792,13 @@ log = np.log
 sqrt = np.sqrt
 sin = np.sin
 cos = np.cos
-UNARY_MAPPER = {
+cdef dict UNARY_MAPPER = {
     np.absolute: "__abs__",
-    np.exp: "exp",
-    np.log: "log",
-    np.sqrt: "sqrt",
-    np.sin: "sin",
-    np.cos: "cos",
+    exp: "exp",
+    log: "log",
+    sqrt: "sqrt",
+    sin: "sin",
+    cos: "cos",
 }
 
 
