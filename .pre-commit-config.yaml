@@ -1,0 +1,16 @@
+# Pre-commit hooks for PySCIPOpt
+# Install with: pip install pre-commit && pre-commit install
+#
+# Note: The stub generation hook requires pyscipopt to be installed.
+# If you haven't built pyscipopt yet, run: pip install -e .
+
+repos:
+  - repo: local
+    hooks:
+      - id: regenerate-stubs
+        name: Regenerate type stubs
+        entry: bash -c 'python scripts/generate_stubs.py && pip install ruff -q && ruff check src/pyscipopt/scip.pyi --extend-select ANN,I,PYI,RUF100 --fix --quiet && ruff format src/pyscipopt/scip.pyi --quiet'
+        language: system
+        files: ^src/pyscipopt/.*\.(pxi|pxd|pyx)$
+        pass_filenames: false
+        stages: [pre-commit]
