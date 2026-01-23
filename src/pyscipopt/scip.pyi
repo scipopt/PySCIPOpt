@@ -1,10 +1,11 @@
-from typing import ClassVar
+from typing import ClassVar, Dict
 
-import numpy
+import numpy as np
 from _typeshed import Incomplete
 from typing_extensions import disjoint_base
 
 CONST: Term
+UNARY_MAPPER: Dict[np.ufunc, str]
 EventNames: dict
 MAJOR: int
 MINOR: int
@@ -510,7 +511,7 @@ class LP:
     def solve(self, dual: Incomplete = ...) -> Incomplete: ...
     def writeLP(self, filename: Incomplete) -> Incomplete: ...
 
-class MatrixConstraint(numpy.ndarray):
+class MatrixConstraint(np.ndarray):
     def getConshdlrName(self) -> Incomplete: ...
     def isActive(self) -> Incomplete: ...
     def isChecked(self) -> Incomplete: ...
@@ -526,7 +527,7 @@ class MatrixConstraint(numpy.ndarray):
     def isSeparated(self) -> Incomplete: ...
     def isStickingAtNode(self) -> Incomplete: ...
 
-class MatrixExpr(numpy.ndarray):
+class MatrixExpr(np.ndarray):
     def _evaluate(self, sol: Incomplete) -> Incomplete: ...
     def __array_ufunc__(
         self,
@@ -536,7 +537,7 @@ class MatrixExpr(numpy.ndarray):
         **kwargs: Incomplete,
     ) -> Incomplete: ...
 
-class MatrixExprCons(numpy.ndarray):
+class MatrixExprCons(np.ndarray):
     def __array_ufunc__(
         self,
         ufunc: Incomplete,
