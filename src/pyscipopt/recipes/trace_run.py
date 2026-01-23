@@ -10,6 +10,8 @@ class _TraceRun:
         self._fh = None
         self._handler = None
 
+        self._last_snapshot = {}
+
     def __enter__(self):
         if not hasattr(self.model, "data") or self.model.data is None:
             self.model.data = {}
@@ -26,9 +28,15 @@ class _TraceRun:
             def eventexec(s, event):
                 et = event.getType()
                 if et == SCIP_EVENTTYPE.BESTSOLFOUND:
-                    self._write_event("bestsol_found", collect=True, flush=True)
+                    snap = self._snapshot_now()
+                    self._last_snapshot = snap
+                    self._log_snapshot_event("bestsol_found", extra=snap, flush=True)
                 elif et == SCIP_EVENTTYPE.DUALBOUNDIMPROVED:
-                    self._write_event("dualbound_improved", collect=True, flush=False)
+                    snap = self._snapshot_now()
+                    self._last_snapshot = snap
+                    self._log_snapshot_event(
+                        "dualbound_improved", extra=snap, flush=False
+                    )
 
         self._handler = _TraceEventhdlr()
         self.model.includeEventhdlr(self._handler, "trace_run", "Trace run handler")
@@ -36,57 +44,53 @@ class _TraceRun:
         return self
 
     def __exit__(self, exc_type, exc, tb):
+        extra = {}
+        if self._last_snapshot:
+            extra.update(self._last_snapshot)
+
+        if exc_type is not None:
+            extra.update(
+                {
+                    "status": "exception",
+                    "exception": exc_type.__name__,
+                    "message": str(exc) if exc is not None else None,
+                }
+            )
+
         try:
-            if exc_type is None:
-                self._write_event("run_end", collect=True, flush=True)
-            else:
-                self._write_event(
-                    "run_end",
-                    collect=False,
-                    extra={"status": "exception", "exception": exc_type.__name__},
-                    flush=True,
-                )
+            self._log_snapshot_event("run_end", extra=extra, flush=True)
         finally:
             if self._fh:
                 try:
                     self._fh.close()
                 finally:
                     self._fh = None
+
             if self._handler is not None:
-                try:
-                    self.model.dropEvent(SCIP_EVENTTYPE.BESTSOLFOUND, self._handler)
-                except Exception:
-                    pass
-                try:
-                    self.model.dropEvent(
-                        SCIP_EVENTTYPE.DUALBOUNDIMPROVED, self._handler
-                    )
-                except Exception:
-                    pass
+                for et in (
+                    SCIP_EVENTTYPE.BESTSOLFOUND,
+                    SCIP_EVENTTYPE.DUALBOUNDIMPROVED,
+                ):
+                    try:
+                        self.model.dropEvent(et, self._handler)
+                    except Exception:
+                        pass
                 self._handler = None
 
         return False
 
-    def _write_event(self, event_type, collect=False, extra=None, flush=True):
-        event = {
-            "type": event_type,
+    def _snapshot_now(self) -> dict:
+        return {
+            "time": self.model.getSolvingTime(),
+            "primalbound": self.model.getPrimalbound(),
+            "dualbound": self.model.getDualbound(),
+            "gap": self.model.getGap(),
+            "nodes": self.model.getNNodes(),
+            "nsol": self.model.getNSols(),
         }
-        if collect:
-            event.update(
-                {
-                    "time": self.model.getSolvingTime(),
-                    "primalbound": self.model.getPrimalbound(),
-                    "dualbound": self.model.getDualbound(),
-                    "gap": self.model.getGap(),
-                    "nodes": self.model.getNNodes(),
-                    "nsol": self.model.getNSols(),
-                }
-            )
 
-            if event_type == "run_end":
-                status = self.model.getStatus()
-                event["status"] = getattr(status, "name", None) or repr(status)
-
+    def _log_snapshot_event(self, event_type, extra=None, flush=True):
+        event = {"type": event_type}
         if extra:
             event.update(extra)
 
@@ -97,9 +101,11 @@ class _TraceRun:
                 self._fh.flush()
 
 
-def optimize_with_trace(model, path=None, nogil=False):
+def optimizeTrace(model, path=None):
     with _TraceRun(model, path):
-        if nogil:
-            model.optimizeNogil()
-        else:
-            model.optimize()
+        model.optimize()
+
+
+def optimizeNogilTrace(model, path=None):
+    with _TraceRun(model, path):
+        model.optimizeNogil()

@@ -4,7 +4,7 @@ from random import randint
 from helpers.utils import bin_packing_model
 
 from pyscipopt import SCIP_EVENTTYPE, Eventhdlr
-from pyscipopt.recipes.trace_run import optimize_with_trace
+from pyscipopt.recipes.trace_run import optimizeTrace
 
 
 def test_trace_run_in_memory():
@@ -13,7 +13,7 @@ def test_trace_run_in_memory():
 
     model.data = {"test": True}
 
-    optimize_with_trace(model, path=None)
+    optimizeTrace(model, path=None)
 
     assert "test" in model.data
     assert "trace" in model.data
@@ -40,7 +40,7 @@ def test_trace_run_file_output(tmp_path):
 
     path = tmp_path / "trace.jsonl"
 
-    optimize_with_trace(model, path=str(path))
+    optimizeTrace(model, path=str(path))
 
     assert path.exists()
 
@@ -68,7 +68,7 @@ def test_optimize_with_trace_records_run_end_on_interrupt():
 
     model.includeEventhdlr(_InterruptOnBest(), "stopper", "Interrupt on bestsol")
 
-    optimize_with_trace(model, path=None, nogil=False)
+    optimizeTrace(model, path=None)
 
     types = [r["type"] for r in model.data["trace"]]
     assert "bestsol_found" in types
