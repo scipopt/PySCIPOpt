@@ -312,7 +312,7 @@ def test_matrix_mean():
 def test_matrix_dot_performance(n):
     model = Model()
     x = model.addMatrixVar((n, n))
-    a = np.random.rand(n, n)
+    a = np.vstack((np.zeros((n // 2, n)), np.ones((n // 2, n))))
 
     number = 5
     matrix = timeit(lambda: a @ x, number=number) / number
