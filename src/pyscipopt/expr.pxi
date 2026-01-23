@@ -787,6 +787,9 @@ cdef class Constant(GenExpr):
     def __repr__(self):
         return str(self.number)
 
+    cpdef double _evaluate(self, Solution sol) except *:
+        return self.number
+
 
 exp = np.exp
 log = np.log
