@@ -127,6 +127,25 @@ def test_getSolTime():
         assert m.getSolTime(s) >= 0
 
 
+def test_getBestSol_infeasible():
+    """Test that getBestSol returns None for infeasible problems instead of segfaulting."""
+    m = Model()
+    m.hideOutput()
+
+    x = m.addVar(ub=2)
+    m.addCons(x >= 4)  # infeasible: x <= 2 but x >= 4
+
+    m.optimize()
+
+    assert m.getStatus() == "infeasible"
+    sol = m.getBestSol()
+    assert sol is None
+
+    # getSolTime should raise ValueError for None solution
+    with pytest.raises(ValueError):
+        m.getSolTime(sol)
+
+
 def test_hasPrimalRay():
     m = Model()
     x = m.addVar()

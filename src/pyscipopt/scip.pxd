@@ -740,6 +740,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPepsilon(SCIP* scip)
     SCIP_Real SCIPfeastol(SCIP* scip)
     SCIP_RETCODE SCIPsetObjIntegral(SCIP* scip)
+    SCIP_Bool SCIPisObjIntegral(SCIP* scip)
     SCIP_Real SCIPgetLocalOrigEstimate(SCIP* scip)
     SCIP_Real SCIPgetLocalTransEstimate(SCIP* scip)
 
@@ -2189,6 +2190,7 @@ cdef class Node:
 cdef class ExprLike:
     cdef Expr _as_expr(self)
     cpdef list _to_node(self, double coef = *, int start = *)
+    cpdef double _evaluate(self, Solution sol)
 
 cdef class Expr(ExprLike):
 
@@ -2244,12 +2246,17 @@ cdef class Model:
     cdef SCIP_Bool _freescip
     # map to store python variables
     cdef _modelvars
+    # map to store python constraints
+    cdef _modelconss
     # used to keep track of the number of event handlers generated
     cdef int _generated_event_handlers_count
     # store references to Benders subproblem Models for proper cleanup
     cdef _benders_subproblems
     # store iis, if found
     cdef SCIP_IIS* _iis
+    # helper methods for later var and cons cleanup
+    cdef _getOrCreateCons(self, SCIP_CONS* scip_cons)
+    cdef _getOrCreateVar(self, SCIP_VAR* scip_var)
 
     @staticmethod
     cdef create(SCIP* scip)

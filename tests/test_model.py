@@ -564,3 +564,55 @@ def test_getVarPseudocost():
 
     # Not exactly 12 because the new value is a weighted sum of all the updates
     assert m.isEQ(p, 12.0001)
+
+def test_objIntegral():
+    m = Model()
+    m.setObjIntegral()
+    assert m.isObjIntegral()
+
+    m = Model()
+    x = m.addVar(vtype='C', obj=1.5)
+    m.addCons(x >= 0)
+    m.optimize()
+    assert not m.isObjIntegral()
+
+
+def test_freeTransform_repr():
+    """See Issue #604 and PR #1161."""
+    m = Model()
+
+    x = m.addVar("x", vtype='B', obj=1.0)
+    c = m.addCons(x >= 0, name="mycons")
+
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    m.presolve()
+
+    transformed_x = m.getTransformedVar(x)
+    transformed_c = m.getTransformedCons(c)
+
+    assert repr(transformed_x) == "t_x"
+    assert repr(transformed_c) == "mycons"
+
+    # Without the fix in PR #1161, transformed objects would segfault
+    m.freeTransform()
+    assert repr(transformed_x) == ""
+    assert repr(transformed_c) == ""
+    assert repr(x) == "x"
+    assert repr(c) == "mycons"
+
+
+def test_model_dealloc_repr():
+    """See Issue #604 and PR #1161."""
+    import gc
+
+    def create_model_and_get_objects():
+        m = Model()
+        x = m.addVar("x", vtype='B', obj=1.0)
+        c = m.addCons(x >= 0, name="mycons")
+        return x, c
+
+    x, c = create_model_and_get_objects()
+    gc.collect()
+
+    assert repr(x) == ""
+    assert repr(c) == ""

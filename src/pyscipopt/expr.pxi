@@ -7,7 +7,7 @@ import numpy as np
 from cpython.dict cimport PyDict_Next, PyDict_GetItem
 from cpython.tuple cimport PyTuple_GET_ITEM
 from cpython.object cimport Py_LE, Py_EQ, Py_GE, PyObject
-from pyscipopt.scip cimport Variable
+from pyscipopt.scip cimport Variable, Solution
 
 
 if TYPE_CHECKING:
@@ -111,6 +111,20 @@ cdef class Term:
             if len(node) > 1:
                 node.append((ProdExpr, list(range(start, start + len(node)))))
         return node
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        cdef double res = 1.0
+        cdef SCIP* scip_ptr = sol.scip
+        cdef SCIP_SOL* sol_ptr = sol.sol
+        cdef int i = 0, n = len(self)
+        cdef Variable var
+
+        for i in range(n):
+            var = <Variable>self.vars[i]
+            res *= SCIPgetSolVal(scip_ptr, sol_ptr, var.scip_var)
+            if res == 0:  # early stop
+                return 0.0
+        return res
 
 
 cdef class _ExprKey:
@@ -234,6 +248,9 @@ cdef class ExprLike:
 
     cpdef list _to_node(self, double coef = 1, int start = 0):
         return self._as_expr()._to_node(coef, start)
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        return self._as_expr()._evaluate(sol)
 
     cdef Expr _as_expr(self):
         raise NotImplementedError(
@@ -452,6 +469,20 @@ cdef class Expr(ExprLike):
             res.expo = self.expo
         return res
 
+    cpdef double _evaluate(self, Solution sol) except *:
+        cdef double res = 0
+        cdef Py_ssize_t pos = <Py_ssize_t>0
+        cdef PyObject* key_ptr
+        cdef PyObject* val_ptr
+        cdef object child
+        cdef double coef
+
+        while PyDict_Next(self, &pos, &key_ptr, &val_ptr):
+            child = _unwrap(<object>key_ptr)
+            coef = <double>(<object>val_ptr)
+            res += coef * child._evaluate(sol)
+        return res
+
 
 cdef class PolynomialExpr(Expr):
     """Expression like `2*x**3 + 4*x*y + constant`."""
@@ -559,6 +590,9 @@ cdef class ConstExpr(PolynomialExpr):
         cdef double res = _c(self) * coef
         return [(ConstExpr, res)] if res != 0 else []
 
+    cpdef double _evaluate(self, Solution sol) except *:
+        return _c(self)
+
 
 cdef class FuncExpr(Expr):
 
@@ -662,6 +696,20 @@ cdef class ProdExpr(FuncExpr):
             node.append((ProdExpr, index))
         return node
 
+    cpdef double _evaluate(self, Solution sol) except *:
+        cdef double res = self.coef
+        cdef Py_ssize_t pos = <Py_ssize_t>0
+        cdef PyObject* key_ptr
+        cdef PyObject* val_ptr
+        cdef Expr child
+
+        while PyDict_Next(self, &pos, &key_ptr, &val_ptr):
+            child = _unwrap(<object>key_ptr)
+            res *= child._evaluate(sol)
+            if res == 0:  # early stop
+                return 0.0
+        return res
+
 
 cdef class PowExpr(FuncExpr):
     """Expression like `pow(expression, exponent)`."""
@@ -730,6 +778,9 @@ cdef class PowExpr(FuncExpr):
             node.append((ProdExpr, [start + len(node) - 2, start + len(node) - 1]))
         return node
 
+    cpdef double _evaluate(self, Solution sol) except *:
+        return _fchild(self)._evaluate(sol) ** self.expo
+
 
 cdef class UnaryExpr(FuncExpr):
     """Expression like `f(expression)`."""
@@ -767,30 +818,43 @@ cdef class AbsExpr(UnaryExpr):
     def __abs__(self) -> AbsExpr:
         return <AbsExpr>self.copy()
 
+    cpdef double _evaluate(self, Solution sol) except *:
+        return abs(_fchild(self)._evaluate(sol))
+
 
 cdef class ExpExpr(UnaryExpr):
     """Expression like `exp(expression)`."""
-    ...
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        return math.exp(_fchild(self)._evaluate(sol))
 
 
 cdef class LogExpr(UnaryExpr):
     """Expression like `log(expression)`."""
-    ...
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        return math.log(_fchild(self)._evaluate(sol))
 
 
 cdef class SqrtExpr(UnaryExpr):
     """Expression like `sqrt(expression)`."""
-    ...
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        return math.sqrt(_fchild(self)._evaluate(sol))
 
 
 cdef class SinExpr(UnaryExpr):
     """Expression like `sin(expression)`."""
-    ...
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        return math.sin(_fchild(self)._evaluate(sol))
 
 
 cdef class CosExpr(UnaryExpr):
     """Expression like `cos(expression)`."""
-    ...
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        return math.cos(_fchild(self)._evaluate(sol))
 
 
 cdef class ExprCons:
