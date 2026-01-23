@@ -21,18 +21,18 @@ _core_sum: Incomplete
 _expr_richcmp: Incomplete
 _is_number: Incomplete
 buildGenExprObj: Incomplete
-cos: Incomplete
 exp: Incomplete
+log: Incomplete
+sin: Incomplete
+cos: Incomplete
+sqrt: Incomplete
 expr_to_array: Incomplete
 expr_to_nodes: Incomplete
 is_memory_freed: Incomplete
-log: Incomplete
 print_memory_in_use: Incomplete
 quickprod: Incomplete
 quicksum: Incomplete
 readStatistics: Incomplete
-sin: Incomplete
-sqrt: Incomplete
 str_conversion: Incomplete
 value_to_array: Incomplete
 
