@@ -5,7 +5,6 @@ from _typeshed import Incomplete
 from typing_extensions import disjoint_base
 
 CONST: Term
-UNARY_MAPPER: dict[np.ufunc, str]
 EventNames: dict
 MAJOR: int
 MINOR: int
