@@ -9,8 +9,8 @@ UNARY_MAPPER: Dict[np.ufunc, str]
 EventNames: dict
 MAJOR: int
 MINOR: int
-Operator: Op
 PATCH: int
+Operator: Op
 PY_SCIP_CALL: Incomplete
 StageNames: dict
 TYPE_CHECKING: bool
