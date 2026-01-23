@@ -682,10 +682,35 @@ class Model:
         stickingatnode: Incomplete = ...,
     ) -> Incomplete: ...
     def addConsLocal(
-        self, cons: Incomplete, validnode: Incomplete = ...
+        self,
+        cons: Incomplete,
+        validnode: Incomplete = ...,
+        name: Incomplete = ...,
+        initial: Incomplete = ...,
+        separate: Incomplete = ...,
+        enforce: Incomplete = ...,
+        check: Incomplete = ...,
+        propagate: Incomplete = ...,
+        local: Incomplete = ...,
+        dynamic: Incomplete = ...,
+        removable: Incomplete = ...,
+        stickingatnode: Incomplete = ...,
     ) -> Incomplete: ...
     def addConsNode(
-        self, node: Incomplete, cons: Incomplete, validnode: Incomplete = ...
+        self,
+        node: Incomplete,
+        cons: Incomplete,
+        validnode: Incomplete = ...,
+        name: Incomplete = ...,
+        initial: Incomplete = ...,
+        separate: Incomplete = ...,
+        enforce: Incomplete = ...,
+        check: Incomplete = ...,
+        propagate: Incomplete = ...,
+        local: Incomplete = ...,
+        dynamic: Incomplete = ...,
+        removable: Incomplete = ...,
+        stickingatnode: Incomplete = ...,
     ) -> Incomplete: ...
     def addConsOr(
         self,
