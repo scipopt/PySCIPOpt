@@ -326,7 +326,6 @@ class Eventhdlr:
     def eventinit(self) -> Incomplete: ...
     def eventinitsol(self) -> Incomplete: ...
 
-@disjoint_base
 class ExprLike:
     def __array_ufunc__(
         self,
