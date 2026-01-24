@@ -751,7 +751,7 @@ cdef class UnaryExpr(GenExpr):
         self.children.append(expr)
         self._op = op
 
-    def __abs__(self):
+    def __abs__(self) -> UnaryExpr:
         if self._op == "abs":
             return <UnaryExpr>self.copy()
         return UnaryExpr(Operator.fabs, self)
