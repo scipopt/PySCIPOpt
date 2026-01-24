@@ -22,8 +22,8 @@ class _TraceRun:
     Usage
     -----
     optimizeTrace(model)                     # real-time in-memory trace
-    optimizeTrace(model, "trace.jsonl")      # real-time JSONL stream + in-memory
-    optimizeNogilTrace(model, "trace.jsonl") # nogil variant
+    optimizeTrace(model, path="trace.jsonl")      # real-time JSONL stream + in-memory
+    optimizeNogilTrace(model, path="trace.jsonl") # nogil variant
     """
 
     def __init__(self, model, path=None):
