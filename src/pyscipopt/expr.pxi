@@ -649,7 +649,7 @@ cdef class GenExpr:
         return self._op
 
     cdef GenExpr copy(self, bool copy = True):
-        cdef object cls = <object>Py_TYPE(self)
+        cdef type cls = <type>Py_TYPE(self)
         cdef GenExpr res = cls.__new__(cls)
         res._op = self._op
         res.children = self.children.copy() if copy else self.children
