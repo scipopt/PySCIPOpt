@@ -198,22 +198,22 @@ cdef class ExprLike:
 
         return NotImplemented
 
-    def __abs__(self):
+    def __abs__(self) -> GenExpr:
         return UnaryExpr(Operator.fabs, buildGenExprObj(self))
 
-    def exp(self):
+    def exp(self) -> GenExpr:
         return UnaryExpr(Operator.exp, buildGenExprObj(self))
 
-    def log(self):
+    def log(self) -> GenExpr:
         return UnaryExpr(Operator.log, buildGenExprObj(self))
 
-    def sqrt(self):
+    def sqrt(self) -> GenExpr:
         return UnaryExpr(Operator.sqrt, buildGenExprObj(self))
 
-    def sin(self):
+    def sin(self) -> GenExpr:
         return UnaryExpr(Operator.sin, buildGenExprObj(self))
 
-    def cos(self):
+    def cos(self) -> GenExpr:
         return UnaryExpr(Operator.cos, buildGenExprObj(self))
 
 
