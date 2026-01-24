@@ -647,6 +647,20 @@ cdef class GenExpr:
         '''returns operator of GenExpr'''
         return self._op
 
+    cdef GenExpr copy(self, bool copy = True):
+        cls = type(self)
+        cdef GenExpr res = cls.__new__(cls)
+        res._op = self._op
+        res.children = self.children.copy() if copy else self.children
+        if cls is SumExpr:
+            res.constant = self.constant
+            res.coefs = self.coefs.copy() if copy else self.coefs
+        if cls is ProdExpr:
+            res.constant = self.constant
+        elif cls is PowExpr:
+            res.expo = self.expo
+        return res
+
 
 # Sum Expressions
 cdef class SumExpr(GenExpr):
@@ -735,6 +749,11 @@ cdef class UnaryExpr(GenExpr):
         self.children = []
         self.children.append(expr)
         self._op = op
+
+    def __abs__(self):
+        if self._op == "abs":
+            return <UnaryExpr>self.copy()
+        return UnaryExpr(Operator.fabs, self)
 
     def __repr__(self):
         return self._op + "(" + self.children[0].__repr__() + ")"
