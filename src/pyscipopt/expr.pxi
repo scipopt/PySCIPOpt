@@ -46,6 +46,7 @@ import math
 from typing import TYPE_CHECKING
 
 from cpython.dict cimport PyDict_Next, PyDict_GetItem
+from cpython.tuple cimport PyTuple_GET_ITEM
 from cpython.ref cimport PyObject
 from pyscipopt.scip cimport Variable, Solution
 
@@ -122,8 +123,39 @@ cdef class Term:
     def __len__(self):
         return len(self.vartuple)
 
-    def __mul__(self, other):
-        return Term(*(self.vartuple + other.vartuple))
+    def __mul__(self, Term other):
+        cdef int n1 = len(self)
+        cdef int n2 = len(other)
+        if n1 == 0: return other
+        if n2 == 0: return self
+
+        cdef list vartuple = [None] * (n1 + n2)
+        cdef int i = 0, j = 0, k = 0
+        cdef Variable var1, var2
+        while i < n1 and j < n2:
+            var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
+            var2 = <Variable>PyTuple_GET_ITEM(other.vartuple, j)
+            if var1.ptr() <= var2.ptr():
+                vartuple[k] = var1
+                i += 1
+            else:
+                vartuple[k] = var2
+                j += 1
+            k += 1
+        while i < n1:
+            vartuple[k] = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
+            i += 1
+            k += 1
+        while j < n2:
+            vartuple[k] = <Variable>PyTuple_GET_ITEM(other.vartuple, j)
+            j += 1
+            k += 1
+
+        cdef Term res = Term.__new__(Term)
+        res.vartuple = tuple(vartuple)
+        res.ptrtuple = tuple(v.ptr() for v in res.vartuple)
+        res.hashval = <Py_ssize_t>hash(res.ptrtuple)
+        return res
 
     def __repr__(self):
         return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
