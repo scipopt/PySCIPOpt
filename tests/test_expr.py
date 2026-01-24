@@ -218,3 +218,11 @@ def test_getVal_with_GenExpr():
 
     with pytest.raises(ZeroDivisionError):
         m.getVal(1 / z)
+
+
+def test_abs_abs_expr():
+    m = Model()
+    x = m.addVar(name="x")
+
+    # should print abs(x) not abs(abs(x))
+    assert str(abs(abs(x))) == str(abs(x))
