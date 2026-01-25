@@ -222,8 +222,7 @@ cdef class Expr:
             return NotImplemented
 
         if isinstance(other, NUMBER_TYPES):
-            f = float(other)
-            return Expr({v:f*c for v,c in self.terms.items()})
+            return Expr({v: other * c for v, c in self.terms.items()})
         elif isinstance(other, Expr):
             terms = {}
             for v1, c1 in self.terms.items():
@@ -238,8 +237,7 @@ cdef class Expr:
             return NotImplemented
 
         if isinstance(other, NUMBER_TYPES):
-            f = 1.0/float(other)
-            return f * self
+            return 1.0 / other * self
         return buildGenExprObj(self) / other
 
     def __rtruediv__(self, other):
@@ -264,13 +262,11 @@ cdef class Expr:
         Implements base**x as scip.exp(x * scip.log(base)).
         Note: base must be positive.
         """
-        if isinstance(other, NUMBER_TYPES):
-            base = float(other)
-            if base <= 0.0:
-                raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
-            return exp(self * log(base))
-        else:
+        if not isinstance(other, NUMBER_TYPES):
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
+        if other <= 0.0:
+            raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
+        return exp(self * log(other))
 
     def __neg__(self):
         return Expr({v:-c for v,c in self.terms.items()})
@@ -352,13 +348,13 @@ cdef class ExprCons:
 
     def __richcmp__(self, other, op):
         '''turn it into a constraint'''
+        if not isinstance(other, NUMBER_TYPES):
+            raise TypeError('Ranged ExprCons is not well defined!')
+
         if op == 1: # <=
             if not self._rhs is None:
                 raise TypeError('ExprCons already has upper bound')
             assert not self._lhs is None
-
-            if not isinstance(other, NUMBER_TYPES):
-                raise TypeError('Ranged ExprCons is not well defined!')
 
             return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
         elif op == 5: # >=
@@ -366,9 +362,6 @@ cdef class ExprCons:
                 raise TypeError('ExprCons already has lower bound')
             assert self._lhs is None
             assert not self._rhs is None
-
-            if not isinstance(other, NUMBER_TYPES):
-                raise TypeError('Ranged ExprCons is not well defined!')
 
             return ExprCons(self.expr, lhs=float(other), rhs=self._rhs)
         else:
@@ -563,13 +556,11 @@ cdef class GenExpr:
         Implements base**x as scip.exp(x * scip.log(base)). 
         Note: base must be positive.
         """
-        if isinstance(other, NUMBER_TYPES):
-            base = float(other)
-            if base <= 0.0:
-                raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
-            return exp(self * log(base))
-        else:
+        if not isinstance(other, NUMBER_TYPES):
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
+        if other <= 0.0:
+            raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
+        return exp(self * log(other))
 
     #TODO: ipow, idiv, etc
     def __truediv__(self,other):
