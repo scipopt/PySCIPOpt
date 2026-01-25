@@ -196,10 +196,6 @@ cdef class Expr:
 
         left = self
         right = other
-
-        if _is_number(self):
-            assert isinstance(other, Expr)
-            left,right = right,left
         terms = left.terms.copy()
 
         if isinstance(right, Expr):
@@ -238,9 +234,6 @@ cdef class Expr:
         if _is_number(other):
             f = float(other)
             return Expr({v:f*c for v,c in self.terms.items()})
-        elif _is_number(self):
-            f = float(self)
-            return Expr({v:f*c for v,c in other.terms.items()})
         elif isinstance(other, Expr):
             terms = {}
             for v1, c1 in self.terms.items():
@@ -263,10 +256,6 @@ cdef class Expr:
         ''' other / self '''
         if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
-
-        if _is_number(self):
-            f = 1.0/float(self)
-            return f * other
         return buildGenExprObj(other) / self
 
     def __pow__(self, other, modulo):
