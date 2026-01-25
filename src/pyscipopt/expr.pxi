@@ -57,16 +57,6 @@ if TYPE_CHECKING:
     double = float
 
 
-def _is_number(e):
-    try:
-        f = float(e)
-        return True
-    except ValueError: # for malformed strings
-        return False
-    except TypeError: # for other types (Variable, Expr)
-        return False
-
-
 def _expr_richcmp(self: Union[Expr, GenExpr], other, int op):
     if isinstance(other, np.ndarray):
         return NotImplemented
@@ -202,7 +192,7 @@ cdef class Expr:
             # merge the terms by component-wise addition
             for v,c in right.terms.items():
                 terms[v] = terms.get(v, 0.0) + c
-        elif _is_number(right):
+        elif isinstance(right, NUMBER_TYPES):
             c = float(right)
             terms[CONST] = terms.get(CONST, 0.0) + c
         elif isinstance(right, GenExpr):
@@ -216,7 +206,7 @@ cdef class Expr:
         if isinstance(other, Expr):
             for v,c in other.terms.items():
                 self.terms[v] = self.terms.get(v, 0.0) + c
-        elif _is_number(other):
+        elif isinstance(other, NUMBER_TYPES):
             c = float(other)
             self.terms[CONST] = self.terms.get(CONST, 0.0) + c
         elif isinstance(other, GenExpr):
@@ -231,7 +221,7 @@ cdef class Expr:
         if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
 
-        if _is_number(other):
+        if isinstance(other, NUMBER_TYPES):
             f = float(other)
             return Expr({v:f*c for v,c in self.terms.items()})
         elif isinstance(other, Expr):
@@ -247,7 +237,7 @@ cdef class Expr:
         if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
 
-        if _is_number(other):
+        if isinstance(other, NUMBER_TYPES):
             f = 1.0/float(other)
             return f * self
         return buildGenExprObj(self) / other
@@ -274,7 +264,7 @@ cdef class Expr:
         Implements base**x as scip.exp(x * scip.log(base)).
         Note: base must be positive.
         """
-        if _is_number(other):
+        if isinstance(other, NUMBER_TYPES):
             base = float(other)
             if base <= 0.0:
                 raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
@@ -367,7 +357,7 @@ cdef class ExprCons:
                 raise TypeError('ExprCons already has upper bound')
             assert not self._lhs is None
 
-            if not _is_number(other):
+            if not isinstance(other, NUMBER_TYPES):
                 raise TypeError('Ranged ExprCons is not well defined!')
 
             return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
@@ -377,7 +367,7 @@ cdef class ExprCons:
             assert self._lhs is None
             assert not self._rhs is None
 
-            if not _is_number(other):
+            if not isinstance(other, NUMBER_TYPES):
                 raise TypeError('Ranged ExprCons is not well defined!')
 
             return ExprCons(self.expr, lhs=float(other), rhs=self._rhs)
@@ -573,7 +563,7 @@ cdef class GenExpr:
         Implements base**x as scip.exp(x * scip.log(base)). 
         Note: base must be positive.
         """
-        if _is_number(other):
+        if isinstance(other, NUMBER_TYPES):
             base = float(other)
             if base <= 0.0:
                 raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
