@@ -309,7 +309,7 @@ cdef class Expr:
         else:
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
 
-    def __neg__(self):
+    def __neg__(self) -> Expr:
         cdef dict res = {}
         cdef Py_ssize_t pos = <Py_ssize_t>0
         cdef PyObject* key_ptr
@@ -703,7 +703,7 @@ cdef class ProdExpr(GenExpr):
         self.children = []
         self._op = Operator.prod
 
-    def __neg__(self):
+    def __neg__(self) -> ProdExpr:
         cdef ProdExpr res = <ProdExpr>self.copy()
         res.constant = -res.constant
         return res
