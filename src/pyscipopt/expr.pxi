@@ -45,9 +45,10 @@
 import math
 from typing import TYPE_CHECKING
 
-from pyscipopt.scip cimport Variable, Solution
+from cpython.object cimport Py_TYPE
 from cpython.dict cimport PyDict_Next, PyDict_SetItem
 from cpython.ref cimport PyObject
+from pyscipopt.scip cimport Variable, Solution
 
 import numpy as np
 
@@ -654,6 +655,19 @@ cdef class GenExpr:
         '''returns operator of GenExpr'''
         return self._op
 
+    cdef GenExpr copy(self, bool copy = True):
+        cdef object cls = Py_TYPE(self)
+        cdef GenExpr res = cls.__new__(cls)
+        res._op = self._op
+        res.children = self.children.copy() if copy else self.children
+        if cls is SumExpr:
+            (<SumExpr>res).constant = (<SumExpr>self).constant
+            (<SumExpr>res).coefs = (<SumExpr>self).coefs.copy() if copy else (<SumExpr>self).coefs
+        if cls is ProdExpr:
+            (<ProdExpr>res).constant = (<ProdExpr>self).constant
+        elif cls is PowExpr:
+            (<PowExpr>res).expo = (<PowExpr>self).expo
+        return res
 
 # Sum Expressions
 cdef class SumExpr(GenExpr):
@@ -688,6 +702,11 @@ cdef class ProdExpr(GenExpr):
         self.constant = 1.0
         self.children = []
         self._op = Operator.prod
+
+    def __neg__(self):
+        cdef ProdExpr res = <ProdExpr>self.copy()
+        res.constant = -res.constant
+        return res
 
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
