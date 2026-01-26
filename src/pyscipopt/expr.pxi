@@ -649,17 +649,17 @@ cdef class GenExpr:
         return self._op
 
     cdef GenExpr copy(self, bool copy = True):
-        cdef type cls = <type>Py_TYPE(self)
+        cdef object cls = Py_TYPE(self)
         cdef GenExpr res = cls.__new__(cls)
         res._op = self._op
         res.children = self.children.copy() if copy else self.children
         if cls is SumExpr:
-            res.constant = self.constant
-            res.coefs = self.coefs.copy() if copy else self.coefs
+            (<SumExpr>res).constant = (<SumExpr>self).constant
+            (<SumExpr>res).coefs = (<SumExpr>self).coefs.copy() if copy else (<SumExpr>self).coefs
         if cls is ProdExpr:
-            res.constant = self.constant
+            (<ProdExpr>res).constant = (<ProdExpr>self).constant
         elif cls is PowExpr:
-            res.expo = self.expo
+            (<PowExpr>res).expo = (<PowExpr>self).expo
         return res
 
 
