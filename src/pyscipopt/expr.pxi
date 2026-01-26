@@ -46,7 +46,7 @@ import math
 from typing import TYPE_CHECKING
 
 from pyscipopt.scip cimport Variable, Solution
-from cpython.dict cimport PyDict_Next
+from cpython.dict cimport PyDict_Next, PyDict_SetItem
 from cpython.ref cimport PyObject
 
 import numpy as np
@@ -309,7 +309,14 @@ cdef class Expr:
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
 
     def __neg__(self):
-        return Expr({v:-c for v,c in self.terms.items()})
+        cdef dict res = {}
+        cdef Py_ssize_t pos = <Py_ssize_t>0
+        cdef PyObject* key_ptr
+        cdef PyObject* val_ptr
+
+        while PyDict_Next(self.terms, &pos, &key_ptr, &val_ptr):
+            PyDict_SetItem(res, <Term>key_ptr, -<double>(<object>val_ptr))
+        return Expr(res)
 
     def __sub__(self, other):
         return self + (-other)
