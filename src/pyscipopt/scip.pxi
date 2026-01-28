@@ -11682,6 +11682,8 @@ cdef class Model:
             # avoid CONST term of Expr
             if term != CONST:
                 assert len(term) == 1
+                if not isinstance(term[0], Variable):
+                    raise TypeError(f"Expected Variable, got {type(term[0])}.")
                 _vars[i] = (<Variable>term[0]).scip_var
                 _coeffs[i] = coef
                 i += 1
