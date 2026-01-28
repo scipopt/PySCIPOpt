@@ -19,7 +19,7 @@ from pyscipopt import (
     sin,
     sqrt,
 )
-from pyscipopt.scip import CONST, GenExpr
+from pyscipopt.scip import CONST
 
 
 def test_catching_errors():
@@ -113,7 +113,7 @@ def test_expr_from_matrix_vars():
         expr = expr.item()
         assert (isinstance(expr, Expr))
         assert expr.degree() == 1
-        expr_list = list(expr.terms.items())
+        expr_list = list(expr.children.items())
         assert len(expr_list) == 1
         first_term, coeff = expr_list[0]
         assert coeff == 2
@@ -128,7 +128,7 @@ def test_expr_from_matrix_vars():
         expr = expr.item()
         assert (isinstance(expr, Expr))
         assert expr.degree() == 1
-        expr_list = list(expr.terms.items())
+        expr_list = list(expr.children.items())
         assert len(expr_list) == 2
 
     dot_expr = mvar * mvar2
@@ -137,7 +137,7 @@ def test_expr_from_matrix_vars():
         expr = expr.item()
         assert (isinstance(expr, Expr))
         assert expr.degree() == 2
-        expr_list = list(expr.terms.items())
+        expr_list = list(expr.children.items())
         assert len(expr_list) == 1
         for term, coeff in expr_list:
             assert coeff == 1
@@ -152,7 +152,7 @@ def test_expr_from_matrix_vars():
         expr = expr.item()
         assert (isinstance(expr, Expr))
         assert expr.degree() == 2
-        expr_list = list(expr.terms.items())
+        expr_list = list(expr.children.items())
         assert len(expr_list) == 2
         for term, coeff in expr_list:
             assert coeff == 1
@@ -165,7 +165,7 @@ def test_expr_from_matrix_vars():
         expr = expr.item()
         assert (isinstance(expr, Expr))
         assert expr.degree() == 3
-        expr_list = list(expr.terms.items())
+        expr_list = list(expr.children.items())
         assert len(expr_list) == 1
         for term, coeff in expr_list:
             assert coeff == 1
@@ -177,7 +177,7 @@ def test_expr_from_matrix_vars():
         expr = expr.item()
         assert (isinstance(expr, Expr))
         assert expr.degree() == 3
-        expr_list = list(expr.terms.items())
+        expr_list = list(expr.children.items())
         for term, coeff in expr_list:
             assert len(term) == 3
 
@@ -365,9 +365,9 @@ def test_add_cons_matrixVar():
             assert isinstance(expr_d, Expr)
             assert m.isEQ(c[i][j]._rhs, 1)
             assert m.isEQ(d[i][j]._rhs, 1)
-            for _, coeff in list(expr_c.terms.items()):
+            for _, coeff in list(expr_c.children.items()):
                 assert m.isEQ(coeff, 1)
-            for _, coeff in list(expr_d.terms.items()):
+            for _, coeff in list(expr_d.children.items()):
                 assert m.isEQ(coeff, 1)
     c = matrix_variable <= other_matrix_variable
     assert isinstance(c, MatrixExprCons)
@@ -618,7 +618,7 @@ def matvar():
 @pytest.mark.parametrize("op", [operator.add, operator.sub, operator.mul, operator.truediv])
 def test_binop(op, left, right):
     res = op(left, right)
-    assert isinstance(res, (Expr, GenExpr, MatrixExpr))
+    assert isinstance(res, (Expr, MatrixExpr))
 
 
 def test_matrix_matmul_return_type():

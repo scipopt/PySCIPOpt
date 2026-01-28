@@ -1,5 +1,8 @@
 ##@file scip.pxd
 #@brief holding prototype of the SCIP public functions to use them in PySCIPOpt
+from cpython cimport bool
+
+
 cdef extern from "scip/scip.h":
     # SCIP internal types
     ctypedef int SCIP_RETCODE
@@ -2121,11 +2124,6 @@ cdef extern from "scip/scip_var.h":
 cdef extern from "tpi/tpi.h":
     int SCIPtpiGetNumThreads()
 
-cdef class Expr:
-    cdef public terms
-
-    cpdef double _evaluate(self, Solution sol)
-
 cdef class Event:
     cdef SCIP_EVENT* event
     # can be used to store problem data
@@ -2202,8 +2200,31 @@ cdef class Node:
     @staticmethod
     cdef create(SCIP_NODE* scipnode)
 
-cdef class Variable(Expr):
+cdef class ExprLike:
+    cdef Expr _as_expr(self)
+    cpdef list _to_node(self, double coef = *, int start = *)
+    cpdef double _evaluate(self, Solution sol)
+
+cdef class Expr(ExprLike):
+
+    cdef readonly dict children
+    cdef readonly double coef
+    cdef readonly double expo
+    cdef int _hash
+
+    cdef Expr copy(self, bool copy = *, object cls = *)
+
+cdef class PolynomialExpr(Expr):
+    pass
+
+cdef class ExprCons:
+    cdef readonly Expr expr
+    cdef readonly object _lhs
+    cdef readonly object _rhs
+
+cdef class Variable(ExprLike):
     cdef SCIP_VAR* scip_var
+    cdef PolynomialExpr _expr_view
     # can be used to store problem data
     cdef public object data
 
@@ -2252,3 +2273,7 @@ cdef class Model:
 
     @staticmethod
     cdef create(SCIP* scip)
+
+cpdef Expr quicksum(object expressions)
+
+cpdef Expr quickprod(object expressions)

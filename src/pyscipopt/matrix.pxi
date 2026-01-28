@@ -1,6 +1,8 @@
 import operator
 from typing import Literal, Optional, Tuple, Union
+
 import numpy as np
+
 try:
     # NumPy 2.x location
     from numpy.lib.array_utils import normalize_axis_tuple
@@ -10,6 +12,7 @@ except ImportError:
 
 cimport numpy as cnp
 from pyscipopt.scip cimport Expr, Solution
+
 
 cnp.import_array()
 
@@ -74,12 +77,8 @@ class MatrixExpr(np.ndarray):
             res = super().__array_ufunc__(ufunc, method, *args, **kwargs)
         return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
 
-    def _evaluate(self, Solution sol) -> NDArray[np.float64]:
+    def _evaluate(self, Solution sol) -> np.ndarray:
         return _vec_evaluate(self, sol).view(np.ndarray)
-
-
-class MatrixGenExpr(MatrixExpr):
-    pass
 
 
 class MatrixExprCons(np.ndarray):
@@ -194,7 +193,6 @@ _core_dot_nd = np.vectorize(
     otypes=[object],
     signature="(m,n),(n,p)->(m,p)",
 )
-
 
 def _core_sum(
     cnp.ndarray a,

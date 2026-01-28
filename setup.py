@@ -126,7 +126,14 @@ extensions = [
 ]
 
 if use_cython:
-    extensions = cythonize(extensions, compiler_directives={"language_level": 3, "linetrace": compile_with_line_tracing})
+    extensions = cythonize(
+        extensions,
+        compiler_directives={
+            "binding": True,
+            "language_level": 3,
+            "linetrace": compile_with_line_tracing,
+        },
+    )
 
 with open("README.md") as f:
     long_description = f.read()
