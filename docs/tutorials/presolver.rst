@@ -119,8 +119,7 @@ We will put these parameters into the ``__init__`` method to help us initialise 
            result = SCIP_RESULT.DIDNOTFIND
 
            for var in reversed(vars):
-               if var.vtype() == "BINARY":
-                   continue
+               assert var.vtype() != "BINARY"  # already excluded by slicing
                if not var.isActive():
                    continue
 
@@ -165,10 +164,10 @@ We will put these parameters into the ``__init__`` method to help us initialise 
                )
 
                # Aggregate old variable with new variable:
-               #   1.0 * var + 1.0 * newvar = ub        (flip), whichever yields smaller |offset|, or
-               #   1.0 * var + (-1.0) * newvar = lb     (no flip)
+               #   var + newvar = ub   (flip case, when |ub| < |lb|)
+               #   var - newvar = lb   (no flip case)
                if self.flipping and (abs(ub) < abs(lb)):
-                   infeasible, redundant, aggregated = scip.aggregateVars(var, newvar, 1.0,  1.0, ub)
+                   infeasible, redundant, aggregated = scip.aggregateVars(var, newvar, 1.0, 1.0, ub)
                else:
                    infeasible, redundant, aggregated = scip.aggregateVars(var, newvar, 1.0, -1.0, lb)
 

@@ -72,6 +72,7 @@ def test_aggregate_vars_success():
     # model should stay consistent and solve optimally
     model.optimize()
     assert model.getStatus() == "optimal"
+    assert model.getObjVal() == 0.0  # no objective coefficients
 
 
 def test_aggregate_vars_infeasible_binary_sum_exceeds_domain():

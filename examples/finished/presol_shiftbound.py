@@ -63,6 +63,8 @@ class ShiftboundPresolver(Presol):
         # binary variables
         vars = scipvars[nbinvars:]
 
+        result = SCIP_RESULT.DIDNOTFIND
+
         # loop over the non-binary variables
         for var in reversed(vars):
             # sanity check that variable is indeed not binary
@@ -100,7 +102,7 @@ class ShiftboundPresolver(Presol):
                 continue
 
             # bounds are shiftable if all following conditions hold
-            cases = [
+            conditions = [
                 not scip.isEQ(lb, 0.0),
                 scip.isLT(ub, scip.infinity()),
                 scip.isGT(lb, -scip.infinity()),
@@ -108,7 +110,7 @@ class ShiftboundPresolver(Presol):
                 scip.isLE(abs(lb), MAXABSBOUND),
                 scip.isLE(abs(ub), MAXABSBOUND),
             ]
-            if all(cases):
+            if all(conditions):
                 # indicators for status of aggregation
                 infeasible = False
                 redundant = False
@@ -151,9 +153,6 @@ class ShiftboundPresolver(Presol):
                     assert aggregated
 
                     result = SCIP_RESULT.SUCCESS
-
-            else:
-                result = SCIP_RESULT.DIDNOTFIND
 
         return {"result": result}
 
