@@ -8,6 +8,7 @@
 - Added pre-commit hook for automatic stub regeneration (see .pre-commit-config.yaml)
 - Wrapped isObjIntegral() and test
 - Added structured_optimization_trace recipe for structured optimization progress tracking
+- Added methods: getPrimalDualIntegral()
 ### Fixed
 - getBestSol() now returns None for infeasible problems instead of a Solution with NULL pointer
 - all fundamental callbacks now raise an error if not implemented
@@ -22,6 +23,7 @@
 - Speed up MatrixExpr.add.reduce via quicksum
 - Speed up np.ndarray(..., dtype=np.float64) @ MatrixExpr
 - MatrixExpr and MatrixExprCons use `__array_ufunc__` protocol to control all numpy.ufunc inputs and outputs
+- Set `__array_priority__` for MatrixExpr and MatrixExprCons
 - changed addConsNode() and addConsLocal() to mirror addCons() and accept ExprCons instead of Constraint
 ### Removed
 
