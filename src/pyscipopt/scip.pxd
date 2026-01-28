@@ -737,6 +737,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPepsilon(SCIP* scip)
     SCIP_Real SCIPfeastol(SCIP* scip)
     SCIP_RETCODE SCIPsetObjIntegral(SCIP* scip)
+    SCIP_Bool SCIPisObjIntegral(SCIP* scip)
     SCIP_Real SCIPgetLocalOrigEstimate(SCIP* scip)
     SCIP_Real SCIPgetLocalTransEstimate(SCIP* scip)
 
@@ -1484,6 +1485,7 @@ cdef extern from "scip/scip.h":
     int SCIPgetPlungeDepth(SCIP* scip)
     SCIP_Longint SCIPgetNNodeLPIterations(SCIP* scip)
     SCIP_Longint SCIPgetNStrongbranchLPIterations(SCIP* scip)
+    SCIP_Real SCIPgetPrimalDualIntegral(SCIP* scip)
 
     # Parameter Functions
     SCIP_RETCODE SCIPsetBoolParam(SCIP* scip, char* name, SCIP_Bool value)
@@ -2122,6 +2124,8 @@ cdef extern from "tpi/tpi.h":
 cdef class Expr:
     cdef public terms
 
+    cpdef double _evaluate(self, Solution sol)
+
 cdef class Event:
     cdef SCIP_EVENT* event
     # can be used to store problem data
@@ -2234,12 +2238,17 @@ cdef class Model:
     cdef SCIP_Bool _freescip
     # map to store python variables
     cdef _modelvars
+    # map to store python constraints
+    cdef _modelconss
     # used to keep track of the number of event handlers generated
     cdef int _generated_event_handlers_count
     # store references to Benders subproblem Models for proper cleanup
     cdef _benders_subproblems
     # store iis, if found
     cdef SCIP_IIS* _iis
+    # helper methods for later var and cons cleanup
+    cdef _getOrCreateCons(self, SCIP_CONS* scip_cons)
+    cdef _getOrCreateVar(self, SCIP_VAR* scip_var)
 
     @staticmethod
     cdef create(SCIP* scip)
