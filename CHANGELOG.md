@@ -80,6 +80,10 @@
 - Added enableDebugSol() and disableDebugSol() for controlling the debug solution mechanism if DEBUGSOL=true
 - Added getVarPseudocostScore() and getVarPseudocost()
 - Added getNBranchings() and getNBranchingsCurrentRun()
+- Added isActive() which wraps SCIPvarIsActive() and test
+- Added aggregateVars() and tests
+- Added example shiftbound.py
+- Added a tutorial in ./docs on the presolver plugin
 ### Fixed
 - Raised an error when an expression is used when a variable is required
 - Fixed some compile warnings
