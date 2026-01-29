@@ -24,9 +24,11 @@
 - Speed up np.ndarray(..., dtype=np.float64) @ MatrixExpr
 - MatrixExpr and MatrixExprCons use `__array_ufunc__` protocol to control all numpy.ufunc inputs and outputs
 - Speed up `Expr.__neg__` and `ProdExpr.__neg__` and `Constant.__neg__` via C-level API
+- Set `__array_priority__` for MatrixExpr and MatrixExprCons
+- changed addConsNode() and addConsLocal() to mirror addCons() and accept ExprCons instead of Constraint
 ### Removed
 
-## 6.0.0 - 2025.xx.yy
+## 6.0.0 - 2025.11.28
 ### Added
 - Support for SCIP 10.0.0
 - Added support for IIS - Irreducible Inconsistent Subsystems
@@ -79,6 +81,10 @@
 - Added enableDebugSol() and disableDebugSol() for controlling the debug solution mechanism if DEBUGSOL=true
 - Added getVarPseudocostScore() and getVarPseudocost()
 - Added getNBranchings() and getNBranchingsCurrentRun()
+- Added isActive() which wraps SCIPvarIsActive() and test
+- Added aggregateVars() and tests
+- Added example shiftbound.py
+- Added a tutorial in ./docs on the presolver plugin
 ### Fixed
 - Raised an error when an expression is used when a variable is required
 - Fixed some compile warnings

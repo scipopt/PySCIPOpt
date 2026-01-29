@@ -1851,6 +1851,16 @@ cdef class Variable(Expr):
         """
         return SCIPvarIsDeletable(self.scip_var)
 
+    def isActive(self):
+        """
+        Returns whether variable is an active (neither fixed nor aggregated) variable.
+
+        Returns
+        -------
+        boolean
+        """
+        return SCIPvarIsActive(self.scip_var)
+
     def getNLocksDown(self):
         """
         Returns the number of locks for rounding down.
@@ -3603,6 +3613,62 @@ cdef class Model:
         """
         return SCIPisFeasIntegral(self._scip, value)
 
+    def isIntegral(self, value):
+        """
+        Returns whether value is integral within epsilon tolerance.
+
+        Parameters
+        ----------
+        value : float
+            value to check
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisIntegral(self._scip, value)
+
+    def adjustedVarLb(self, Variable var, lb):
+        """
+        Returns the adjusted (i.e. rounded, if the given variable is of integral type) lower bound value;
+        does not change the bounds of the variable.
+
+        Parameters
+        ----------
+        var : Variable
+            variable for which the bound is adjusted
+        lb : float
+            lower bound value to adjust
+
+        Returns
+        -------
+        float
+            adjusted lower bound
+
+        """
+        return SCIPadjustedVarLb(self._scip, var.scip_var, lb)
+
+    def adjustedVarUb(self, Variable var, ub):
+        """
+        Returns the adjusted (i.e. rounded, if the given variable is of integral type) upper bound value;
+        does not change the bounds of the variable.
+
+        Parameters
+        ----------
+        var : Variable
+            variable for which the bound is adjusted
+        ub : float
+            upper bound value to adjust
+
+        Returns
+        -------
+        float
+            adjusted upper bound
+
+        """
+        return SCIPadjustedVarUb(self._scip, var.scip_var, ub)
+
     def isEQ(self, val1, val2):
         """
         Checks, if values are in range of epsilon.
@@ -4494,6 +4560,66 @@ cdef class Model:
         # Invalidate pointer after deletion. See issue #604.
         var.scip_var = NULL
         return deleted
+
+    def aggregateVars(self, Variable varx, Variable vary, coefx=1.0, coefy=-1.0, rhs=0.0):
+        """
+        Aggregate two variables by adding an aggregation constraint.
+
+        The aggregation is defined by the linear equation:
+
+            coefx * varx + coefy * vary = rhs
+
+        After aggregation, varx becomes a redundant variable and vary remains active.
+        The aggregation effectively substitutes varx with: (rhs - coefy * vary) / coefx
+
+        This method can only be called during presolving.
+
+        Parameters
+        ----------
+        varx : Variable
+            variable to be aggregated (will become redundant)
+        vary : Variable
+            variable to aggregate with (will remain active)
+        coefx : float, optional
+            coefficient for varx in the aggregation equation (default: 1.0)
+        coefy : float, optional
+            coefficient for vary in the aggregation equation (default: -1.0)
+        rhs : float, optional
+            right-hand side of the aggregation equation (default: 0.0)
+
+        Returns
+        -------
+        infeasible : bool
+            whether the aggregation is infeasible (e.g., bounds are incompatible)
+        redundant : bool
+            whether the aggregation makes varx redundant
+        aggregated : bool
+            whether the aggregation was actually performed
+
+        Examples
+        --------
+        To express x = y (i.e., 1*x + (-1)*y = 0):
+
+            infeas, redun, aggr = model.aggregateVars(x, y, 1.0, -1.0, 0.0)
+
+        To express x = 5 - y (i.e., 1*x + 1*y = 5):
+
+            infeas, redun, aggr = model.aggregateVars(x, y, 1.0, 1.0, 5.0)
+
+        """
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool redundant
+        cdef SCIP_Bool aggregated
+        PY_SCIP_CALL(SCIPaggregateVars(self._scip,
+                                    varx.scip_var,
+                                    vary.scip_var,
+                                    coefx,
+                                    coefy,
+                                    rhs,
+                                    &infeasible,
+                                    &redundant,
+                                    &aggregated))
+        return infeasible, redundant, aggregated
 
     def tightenVarLb(self, Variable var, lb, force=False):
         """
@@ -6044,7 +6170,7 @@ cdef class Model:
         Parameters
         ----------
         cons : ExprCons
-            The expression constraint that is not yet an actual constraint
+            the constraint expression to add to the model (e.g., x + y <= 5) 
         name : str, optional
             the name of the constraint, generic name if empty (Default value = "")
         initial : bool, optional
@@ -6692,7 +6818,10 @@ cdef class Model:
         else:
             raise NotImplementedError("Adding coefficients to %s constraints is not implemented." % constype)
 
-    def addConsNode(self, Node node, Constraint cons, Node validnode=None):
+    def addConsNode(self, Node node, ExprCons cons, Node validnode=None, name='',
+                    initial=True, separate=True, enforce=True, check=True,
+                    propagate=True, local=True, dynamic=False, removable=True,
+                    stickingatnode=True):
         """
         Add a constraint to the given node.
 
@@ -6700,35 +6829,120 @@ cdef class Model:
         ----------
         node : Node
             node at which the constraint will be added
-        cons : Constraint
-            the constraint to add to the node
+        cons : ExprCons
+            the constraint expression to add to the node (e.g., x + y <= 5)
         validnode : Node or None, optional
             more global node where cons is also valid. (Default=None)
+        name : str, optional
+            name of the constraint (Default value = '')
+        initial : bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool, optional
+            is the constraint only valid locally? (Default value = True)
+        dynamic : bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = True)
+        stickingatnode : bool, optional
+            should the constraint always be kept at the node where it was added? (Default value = True)
+
+        Returns
+        -------
+        Constraint
+            The added Constraint object.
 
         """
-        if isinstance(validnode, Node):
-            PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.scip_node, cons.scip_cons, validnode.scip_node))
-        else:
-            PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.scip_node, cons.scip_cons, NULL))
-        Py_INCREF(cons)
+        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
 
-    def addConsLocal(self, Constraint cons, Node validnode=None):
+        cdef SCIP_CONS* scip_cons
+
+        kwargs = dict(name=name, initial=initial, separate=separate,
+                      enforce=enforce, check=check, propagate=propagate,
+                      local=local, modifiable=False, dynamic=dynamic,
+                      removable=removable, stickingatnode=stickingatnode)
+        pycons_initial = self.createConsFromExpr(cons, **kwargs)
+        scip_cons = (<Constraint>pycons_initial).scip_cons
+
+        if isinstance(validnode, Node):
+            PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.scip_node, scip_cons, validnode.scip_node))
+        else:
+            PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.scip_node, scip_cons, NULL))
+
+        pycons = Constraint.create(scip_cons)
+        pycons.data = (<Constraint>pycons_initial).data
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        return pycons
+
+    def addConsLocal(self, ExprCons cons, Node validnode=None, name='',
+                     initial=True, separate=True, enforce=True, check=True,
+                     propagate=True, local=True, dynamic=False, removable=True,
+                     stickingatnode=True):
         """
         Add a constraint to the current node.
 
         Parameters
         ----------
-        cons : Constraint
-            the constraint to add to the current node
+        cons : ExprCons
+            the constraint expression to add to the current node (e.g., x + y <= 5)
         validnode : Node or None, optional
             more global node where cons is also valid. (Default=None)
+        name : str, optional
+            name of the constraint (Default value = '')
+        initial : bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool, optional
+            is the constraint only valid locally? (Default value = True)
+        dynamic : bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = True)
+        stickingatnode : bool, optional
+            should the constraint always be kept at the node where it was added? (Default value = True)
+
+        Returns
+        -------
+        Constraint
+            The added Constraint object.
 
         """
+        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
+
+        cdef SCIP_CONS* scip_cons
+
+        kwargs = dict(name=name, initial=initial, separate=separate,
+                      enforce=enforce, check=check, propagate=propagate,
+                      local=local, modifiable=False, dynamic=dynamic,
+                      removable=removable, stickingatnode=stickingatnode)
+        pycons_initial = self.createConsFromExpr(cons, **kwargs)
+        scip_cons = (<Constraint>pycons_initial).scip_cons
+
         if isinstance(validnode, Node):
-            PY_SCIP_CALL(SCIPaddConsLocal(self._scip, cons.scip_cons, validnode.scip_node))
+            PY_SCIP_CALL(SCIPaddConsLocal(self._scip, scip_cons, validnode.scip_node))
         else:
-            PY_SCIP_CALL(SCIPaddConsLocal(self._scip, cons.scip_cons, NULL))
-        Py_INCREF(cons)
+            PY_SCIP_CALL(SCIPaddConsLocal(self._scip, scip_cons, NULL))
+
+        pycons = Constraint.create(scip_cons)
+        pycons.data = (<Constraint>pycons_initial).data
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        return pycons
     
     def addConsKnapsack(self, vars, weights, capacity, name="",
                 initial=True, separate=True, enforce=True, check=True,
