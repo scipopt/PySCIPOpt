@@ -871,6 +871,18 @@ cdef extern from "scip/scip.h":
     SCIP_Longint SCIPvarGetNBranchingsCurrentRun(SCIP_VAR* var, SCIP_BRANCHDIR dir)
     SCIP_Bool SCIPvarMayRoundUp(SCIP_VAR* var)
     SCIP_Bool SCIPvarMayRoundDown(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsActive(SCIP_VAR* var)
+    SCIP_Real SCIPadjustedVarLb(SCIP* scip, SCIP_VAR* var, SCIP_Real lb)
+    SCIP_Real SCIPadjustedVarUb(SCIP* scip, SCIP_VAR* var, SCIP_Real ub)
+    SCIP_RETCODE SCIPaggregateVars(SCIP* scip,
+                                   SCIP_VAR* varx,
+                                   SCIP_VAR* vary,
+                                   SCIP_Real scalarx,
+                                   SCIP_Real scalary,
+                                   SCIP_Real rhs,
+                                   SCIP_Bool* infeasible,
+                                   SCIP_Bool* redundant,
+                                   SCIP_Bool* aggregated)
 
     # LP Methods
     SCIP_RETCODE SCIPgetLPColsData(SCIP* scip, SCIP_COL*** cols, int* ncols)
@@ -1473,6 +1485,7 @@ cdef extern from "scip/scip.h":
     int SCIPgetPlungeDepth(SCIP* scip)
     SCIP_Longint SCIPgetNNodeLPIterations(SCIP* scip)
     SCIP_Longint SCIPgetNStrongbranchLPIterations(SCIP* scip)
+    SCIP_Real SCIPgetPrimalDualIntegral(SCIP* scip)
 
     # Parameter Functions
     SCIP_RETCODE SCIPsetBoolParam(SCIP* scip, char* name, SCIP_Bool value)
