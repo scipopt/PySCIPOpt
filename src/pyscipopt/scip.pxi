@@ -3385,6 +3385,16 @@ cdef class Model:
         """
         return SCIPgetNStrongbranchLPIterations(self._scip)
 
+    def getPrimalDualIntegral(self):
+        """
+        Recomputes and returns the primal dual gap stored in the stats
+
+        Returns
+        ------
+        float
+        """
+        return SCIPgetPrimalDualIntegral(self._scip)
+
     def cutoffNode(self, Node node):
         """
         marks node and whole subtree to be cut off from the branch and bound tree.
