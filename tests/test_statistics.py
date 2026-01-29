@@ -12,3 +12,10 @@ def test_statistics_json():
         assert data["origprob"]["problem_name"] == "model"
     
     os.remove("statistics.json")
+
+def test_getPrimalDualIntegral():
+    model = random_mip_1(small=True)
+    model.optimize()
+    primal_dual_integral = model.getPrimalDualIntegral()
+
+    assert isinstance(primal_dual_integral, float)
