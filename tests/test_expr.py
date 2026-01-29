@@ -3,7 +3,7 @@ import math
 import pytest
 
 from pyscipopt import Model, cos, exp, log, sin, sqrt
-from pyscipopt.scip import Expr, ExprCons, GenExpr, ProdExpr, SumExpr, Term
+from pyscipopt.scip import Constant, Expr, ExprCons, GenExpr, ProdExpr, SumExpr, Term
 
 
 @pytest.fixture(scope="module")
@@ -237,3 +237,5 @@ def test_neg():
     assert isinstance(neg_expr, SumExpr)
     assert str(neg_expr) == "sum(1.0,sqrt(sum(0.0,prod(1.0,x))),prod(1.0,x))"
     assert list(neg_expr.coefs) == [-1, -1]
+
+    assert str(-Constant(3.0)) == "-3.0"
