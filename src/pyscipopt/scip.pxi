@@ -11862,11 +11862,12 @@ cdef class Model:
             the objective sense (Default value = 'minimize')
 
         """
-        cdef SCIP_VAR** _vars
+        cdef SCIP_VAR** vars
         cdef int nvars
         cdef SCIP_Real* _coeffs
         cdef SCIP_OBJSENSE objsense
         cdef int i
+        cdef _VarArray wrapper
 
         if sense == "minimize":
             objsense = SCIP_OBJSENSE_MINIMIZE
@@ -11889,24 +11890,21 @@ cdef class Model:
             return
 
         _coeffs = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
-        _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
 
         i = 0
         for term, coef in coeffs.terms.items():
             # avoid CONST term of Expr
             if term != CONST:
-                assert len(term) == 1
-                if not isinstance(term[0], Variable):
-                    raise TypeError(f"Expected Variable, got {type(term[0])}.")
-                _vars[i] = (<Variable>term[0]).scip_var
+                wrapper = _VarArray(term[0])
+                vars[i] = wrapper.ptr[0]
                 _coeffs[i] = coef
                 i += 1
 
-        PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, _vars, _coeffs, nvars))
+        PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, vars, _coeffs, nvars))
 
-        free(_vars)
+        free(vars)
         free(_coeffs)
-
 
     def chgVarBranchPriority(self, Variable var, priority):
         """
