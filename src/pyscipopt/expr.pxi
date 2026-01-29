@@ -45,15 +45,20 @@
 import math
 from typing import TYPE_CHECKING
 
-from pyscipopt.scip cimport Variable, Solution
-from cpython.dict cimport PyDict_Next
+from cpython.array cimport array, clone
+from cpython.dict cimport PyDict_Next, PyDict_SetItem
+from cpython.object cimport Py_TYPE
 from cpython.ref cimport PyObject
+from pyscipopt.scip cimport Variable, Solution
 
 import numpy as np
 
 
 if TYPE_CHECKING:
     double = float
+
+
+cdef array DOUBLE_TEMPLATE = array("d")
 
 
 def _is_number(e):
@@ -308,8 +313,15 @@ cdef class Expr:
         else:
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
 
-    def __neg__(self):
-        return Expr({v:-c for v,c in self.terms.items()})
+    def __neg__(self) -> Expr:
+        cdef dict res = {}
+        cdef Py_ssize_t pos = <Py_ssize_t>0
+        cdef PyObject* key_ptr
+        cdef PyObject* val_ptr
+
+        while PyDict_Next(self.terms, &pos, &key_ptr, &val_ptr):
+            PyDict_SetItem(res, <Term>key_ptr, -<double>(<object>val_ptr))
+        return Expr(res)
 
     def __sub__(self, other):
         return self + (-other)
@@ -647,6 +659,21 @@ cdef class GenExpr:
         '''returns operator of GenExpr'''
         return self._op
 
+    cdef GenExpr copy(self, bool copy = True):
+        cdef object cls = <type>Py_TYPE(self)
+        cdef GenExpr res = cls.__new__(cls)
+        res._op = self._op
+        res.children = self.children.copy() if copy else self.children
+        if cls is SumExpr:
+            self = <SumExpr>self
+            res = <SumExpr>res
+            res.constant = self.constant
+            res.coefs = clone(self.coefs, len(self.coefs), False) if copy else self.coefs
+        if cls is ProdExpr:
+            (<ProdExpr>res).constant = (<ProdExpr>self).constant
+        elif cls is PowExpr:
+            (<PowExpr>res).expo = (<PowExpr>self).expo
+        return res
 
 # Sum Expressions
 cdef class SumExpr(GenExpr):
@@ -656,9 +683,26 @@ cdef class SumExpr(GenExpr):
 
     def __init__(self):
         self.constant = 0.0
-        self.coefs = []
+        self.coefs = array("d")
         self.children = []
         self._op = Operator.add
+
+    def __neg__(self) -> SumExpr:
+        cdef int i = 0, n = len(self.coefs)
+        cdef array coefs = clone(DOUBLE_TEMPLATE, n, False)
+        cdef double[:] dest_view = coefs
+        cdef double[:] src_view = self.coefs
+
+        for i in range(n):
+            dest_view[i] = -src_view[i]
+
+        cdef SumExpr res = SumExpr.__new__(SumExpr)
+        res.constant = -self.constant
+        res.coefs = coefs
+        res.children = self.children.copy()
+        res._op = Operator.add
+        return res
+
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
@@ -666,7 +710,7 @@ cdef class SumExpr(GenExpr):
         cdef double res = self.constant
         cdef int i = 0, n = len(self.children)
         cdef list children = self.children
-        cdef list coefs = self.coefs
+        cdef double[:] coefs = self.coefs
         for i in range(n):
             res += <double>coefs[i] * (<GenExpr>children[i])._evaluate(sol)
         return res
@@ -681,6 +725,11 @@ cdef class ProdExpr(GenExpr):
         self.constant = 1.0
         self.children = []
         self._op = Operator.prod
+
+    def __neg__(self) -> ProdExpr:
+        cdef ProdExpr res = <ProdExpr>self.copy()
+        res.constant = -res.constant
+        return res
 
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
