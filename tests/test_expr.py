@@ -223,8 +223,17 @@ def test_getVal_with_GenExpr():
 def test_neg():
     m = Model()
     x = m.addVar(name="x")
-    base = sqrt(x)
 
+    expr = (x + 1) ** 3
+    neg_expr = -expr
+    assert isinstance(expr, Expr)
+    assert isinstance(neg_expr, Expr)
+    assert (
+        str(neg_expr)
+        == "Expr({Term(x, x, x): -1.0, Term(x, x): -3.0, Term(x): -3.0, Term(): -1.0})"
+    )
+
+    base = sqrt(x)
     expr = base * -1
     neg_expr = -expr
     assert isinstance(expr, ProdExpr)
