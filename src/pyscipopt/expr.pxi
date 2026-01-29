@@ -708,7 +708,7 @@ cdef class SumExpr(GenExpr):
         cdef double res = self.constant
         cdef int i = 0, n = len(self.children)
         cdef list children = self.children
-        cdef list coefs = self.coefs
+        cdef double[:] coefs = self.coefs
         for i in range(n):
             res += <double>coefs[i] * (<GenExpr>children[i])._evaluate(sol)
         return res
