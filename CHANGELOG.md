@@ -23,6 +23,7 @@
 - Speed up MatrixExpr.add.reduce via quicksum
 - Speed up np.ndarray(..., dtype=np.float64) @ MatrixExpr
 - MatrixExpr and MatrixExprCons use `__array_ufunc__` protocol to control all numpy.ufunc inputs and outputs
+- Speed up `Expr.__neg__` and `ProdExpr.__neg__` and `Constant.__neg__` via C-level API
 ### Removed
 
 ## 6.0.0 - 2025.xx.yy
