@@ -696,9 +696,11 @@ cdef class SumExpr(GenExpr):
         for i in range(n):
             dest_view[i] = -src_view[i]
 
-        cdef SumExpr res = <SumExpr>self.copy()
-        res.constant = -res.constant
+        cdef SumExpr res = SumExpr.__new__(SumExpr)
+        res.constant = -self.constant
         res.coefs = coefs
+        res.children = self.children.copy()
+        res._op = Operator.add
         return res
 
     def __repr__(self):
