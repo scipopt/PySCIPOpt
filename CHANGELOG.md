@@ -26,6 +26,7 @@
 - Speed up `Expr.__neg__`, `SumExpr.__neg__`, `ProdExpr.__neg__` and `Constant.__neg__` via C-level API
 - Set `__array_priority__` for MatrixExpr and MatrixExprCons
 - changed addConsNode() and addConsLocal() to mirror addCons() and accept ExprCons instead of Constraint
+- Improved `chgReoptObjective()` performance
 ### Removed
 
 ## 6.0.0 - 2025.11.28

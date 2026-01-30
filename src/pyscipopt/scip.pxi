@@ -11852,12 +11852,12 @@ cdef class Model:
 
     def chgReoptObjective(self, coeffs, sense = 'minimize'):
         """
-        Establish the objective function as a linear expression.
+        Change the objective function for reoptimization.
 
         Parameters
         ----------
-        coeffs : list of float
-            the coefficients
+        coeffs : Expr
+            the coefficients as a linear expression
         sense : str
             the objective sense (Default value = 'minimize')
 
@@ -11866,7 +11866,6 @@ cdef class Model:
         cdef int nvars
         cdef SCIP_Real* _coeffs
         cdef SCIP_OBJSENSE objsense
-        cdef SCIP_Real coef
         cdef int i
         cdef _VarArray wrapper
 
@@ -11884,24 +11883,27 @@ cdef class Model:
         if coeffs[CONST] != 0.0:
             raise ValueError("Constant offsets in objective are not supported!")
 
-        vars = SCIPgetOrigVars(self._scip)
-        nvars = SCIPgetNOrigVars(self._scip)
+        nvars = len(coeffs.terms) - (CONST in coeffs.terms)
+
+        if nvars == 0:
+            PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, NULL, NULL, 0))
+            return
+
         _coeffs = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+        vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
 
-        for i in range(nvars):
-            _coeffs[i] = 0.0
-
+        i = 0
         for term, coef in coeffs.terms.items():
             # avoid CONST term of Expr
             if term != CONST:
-                assert len(term) == 1
-                for i in range(nvars):
-                    wrapper = _VarArray(term[0])
-                    if vars[i] == wrapper.ptr[0]:
-                        _coeffs[i] = coef
+                wrapper = _VarArray(term[0])
+                vars[i] = wrapper.ptr[0]
+                _coeffs[i] = coef
+                i += 1
 
-        PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, vars, &_coeffs[0], nvars))
+        PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, vars, _coeffs, nvars))
 
+        free(vars)
         free(_coeffs)
 
     def chgVarBranchPriority(self, Variable var, priority):
