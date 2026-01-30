@@ -23,6 +23,7 @@
 - Speed up MatrixExpr.add.reduce via quicksum
 - Speed up np.ndarray(..., dtype=np.float64) @ MatrixExpr
 - MatrixExpr and MatrixExprCons use `__array_ufunc__` protocol to control all numpy.ufunc inputs and outputs
+- Speed up `Expr.__neg__`, `SumExpr.__neg__`, `ProdExpr.__neg__` and `Constant.__neg__` via C-level API
 - Set `__array_priority__` for MatrixExpr and MatrixExprCons
 - changed addConsNode() and addConsLocal() to mirror addCons() and accept ExprCons instead of Constraint
 - Improved `chgReoptObjective()` performance

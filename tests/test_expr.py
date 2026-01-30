@@ -2,8 +2,8 @@ import math
 
 import pytest
 
-from pyscipopt import Model, sqrt, log, exp, sin, cos
-from pyscipopt.scip import Expr, GenExpr, ExprCons, Term
+from pyscipopt import Model, cos, exp, log, sin, sqrt
+from pyscipopt.scip import Constant, Expr, ExprCons, GenExpr, ProdExpr, SumExpr, Term
 
 
 @pytest.fixture(scope="module")
@@ -218,3 +218,33 @@ def test_getVal_with_GenExpr():
 
     with pytest.raises(ZeroDivisionError):
         m.getVal(1 / z)
+
+
+def test_neg():
+    m = Model()
+    x = m.addVar(name="x")
+
+    expr = (x + 1) ** 3
+    neg_expr = -expr
+    assert isinstance(expr, Expr)
+    assert isinstance(neg_expr, Expr)
+    assert (
+        str(neg_expr)
+        == "Expr({Term(x, x, x): -1.0, Term(x, x): -3.0, Term(x): -3.0, Term(): -1.0})"
+    )
+
+    base = sqrt(x)
+    expr = base * -1
+    neg_expr = -expr
+    assert isinstance(expr, ProdExpr)
+    assert isinstance(neg_expr, ProdExpr)
+    assert str(neg_expr) == "prod(1.0,sqrt(sum(0.0,prod(1.0,x))))"
+
+    expr = base + x - 1
+    neg_expr = -expr
+    assert isinstance(expr, SumExpr)
+    assert isinstance(neg_expr, SumExpr)
+    assert str(neg_expr) == "sum(1.0,sqrt(sum(0.0,prod(1.0,x))),prod(1.0,x))"
+    assert list(neg_expr.coefs) == [-1, -1]
+
+    assert str(-Constant(3.0)) == "-3.0"
