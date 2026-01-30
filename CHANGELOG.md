@@ -24,7 +24,7 @@
 - Speed up np.ndarray(..., dtype=np.float64) @ MatrixExpr
 - Speed up Expr * Expr via C-level API and Term * Term
 - Speed up Term * Term via a $O(n)$ sort algorithm instead of Python $O(n\log(n))$ sorted function. `Term.__mul__` requires that Term.vartuple is sorted.
-- Rename from `Term.__add__` to `Term.__mul__`, due to this method only works with Expr * Expr.
+- Rename from `Term.__add__` to `Term.__mul__`, due to this method only working with Expr * Expr.
 - MatrixExpr and MatrixExprCons use `__array_ufunc__` protocol to control all numpy.ufunc inputs and outputs
 - Set `__array_priority__` for MatrixExpr and MatrixExprCons
 - changed addConsNode() and addConsLocal() to mirror addCons() and accept ExprCons instead of Constraint
