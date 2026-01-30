@@ -124,6 +124,8 @@ cdef class Term:
         return len(self.vartuple)
 
     def __mul__(self, Term other):
+        # NOTE: `Term.vartuple` reqiuires to be sorted. Otherwise, this merge will not
+        # work correctly. We should ensure this in the constructor of Term.
         cdef int n1 = len(self)
         cdef int n2 = len(other)
         if n1 == 0: return other
