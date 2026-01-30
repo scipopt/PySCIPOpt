@@ -45,7 +45,6 @@
 import math
 from typing import TYPE_CHECKING
 
-from cpython.array cimport array, clone
 from cpython.dict cimport PyDict_Next, PyDict_SetItem
 from cpython.object cimport Py_TYPE
 from cpython.ref cimport PyObject
@@ -56,9 +55,6 @@ import numpy as np
 
 if TYPE_CHECKING:
     double = float
-
-
-cdef array DOUBLE_TEMPLATE = array("d")
 
 
 def _is_number(e):
@@ -668,7 +664,7 @@ cdef class GenExpr:
             self = <SumExpr>self
             res = <SumExpr>res
             res.constant = self.constant
-            res.coefs = clone(self.coefs, len(self.coefs), False) if copy else self.coefs
+            res.coefs = self.coefs.copy() if copy else self.coefs
         if cls is ProdExpr:
             (<ProdExpr>res).constant = (<ProdExpr>self).constant
         elif cls is PowExpr:
@@ -683,13 +679,13 @@ cdef class SumExpr(GenExpr):
 
     def __init__(self):
         self.constant = 0.0
-        self.coefs = array("d")
+        self.coefs = []
         self.children = []
         self._op = Operator.add
 
     def __neg__(self) -> SumExpr:
         cdef int i = 0, n = len(self.coefs)
-        cdef array coefs = clone(DOUBLE_TEMPLATE, n, False)
+        cdef list coefs = [0.0] * n
         cdef double[:] dest_view = coefs
         cdef double[:] src_view = self.coefs
 
