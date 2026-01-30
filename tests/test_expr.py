@@ -1,9 +1,9 @@
 import math
 
+import numpy as np
 import pytest
-
-from pyscipopt import Model, sqrt, log, exp, sin, cos
-from pyscipopt.scip import Expr, GenExpr, ExprCons, Term
+from pyscipopt import Model, cos, exp, log, sin, sqrt
+from pyscipopt.scip import Expr, ExprCons, GenExpr, Term
 
 
 @pytest.fixture(scope="module")
@@ -118,10 +118,12 @@ def test_genexpr_op_genexpr(model):
     assert isinstance(1/x + genexpr, GenExpr)
     assert isinstance(1/x**1.5 - genexpr, GenExpr)
     assert isinstance(y/x - exp(genexpr), GenExpr)
-    # sqrt(2) is not a constant expression and
-    # we can only power to constant expressions!
-    with pytest.raises(NotImplementedError):
-        genexpr **= sqrt(2)
+
+    genexpr **= sqrt(2)
+    assert isinstance(genexpr, GenExpr)
+
+    with pytest.raises(TypeError):
+        genexpr **= sqrt("2")
 
 def test_degree(model):
     m, x, y, z = model
@@ -218,3 +220,21 @@ def test_getVal_with_GenExpr():
 
     with pytest.raises(ZeroDivisionError):
         m.getVal(1 / z)
+
+
+def test_unary(model):
+    m, x, y, z = model
+
+    assert str(abs(x)) == "abs(sum(0.0,prod(1.0,x)))"
+    assert str(np.absolute(x)) == "abs(sum(0.0,prod(1.0,x)))"
+    assert str(sin([x, y])) == "[sin(sum(0.0,prod(1.0,x))) sin(sum(0.0,prod(1.0,y)))]"
+    assert (
+        str(np.sin([x, y])) == "[sin(sum(0.0,prod(1.0,x))) sin(sum(0.0,prod(1.0,y)))]"
+    )
+    assert (
+        str(sqrt([x, y])) == "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y)))]"
+    )
+    assert (
+        str(np.sqrt([x, y]))
+        == "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y)))]"
+    )

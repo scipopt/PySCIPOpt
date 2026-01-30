@@ -8,6 +8,7 @@
 - Added pre-commit hook for automatic stub regeneration (see .pre-commit-config.yaml)
 - Wrapped isObjIntegral() and test
 - Added structured_optimization_trace recipe for structured optimization progress tracking
+- Expr and GenExpr support numpy unary func (`np.sin`, `np.cos`, `np.sqrt`, `np.exp`, `np.log`, `np.absolute`)
 - Added methods: getPrimalDualIntegral()
 ### Fixed
 - getBestSol() now returns None for infeasible problems instead of a Solution with NULL pointer
