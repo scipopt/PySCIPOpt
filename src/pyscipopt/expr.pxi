@@ -60,7 +60,7 @@ if TYPE_CHECKING:
 def _expr_richcmp(self: Union[Expr, GenExpr], other, int op):
     if isinstance(other, np.ndarray):
         return NotImplemented
-    if not isinstance(other, EXPR_OP_TYPES):
+    if not isinstance(other, GENEXPR_OP_TYPES):
         raise TypeError(f"Unsupported type {type(other)}")
 
     if op == Py_LE:
