@@ -294,7 +294,7 @@ cdef class Expr:
             f = float(other)
             return Expr({v:f*c for v,c in self.terms.items()})
 
-          elif isinstance(other, Expr):
+        elif isinstance(other, Expr):
             while PyDict_Next(self.terms, &pos1, &k1_ptr, &v1_ptr):
                 if (v1_val := <double>(<object>v1_ptr)) == 0:
                     continue
