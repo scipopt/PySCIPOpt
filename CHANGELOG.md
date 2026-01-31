@@ -2,6 +2,13 @@
 
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+### Removed
+
+## 6.1.0 - 2026.01.31
+### Added
+- Support for SCIP 10.0.1
 - Added automated script for generating type stubs
 - Include parameter names in type stubs
 - Speed up MatrixExpr.sum(axis=...) via quicksum
