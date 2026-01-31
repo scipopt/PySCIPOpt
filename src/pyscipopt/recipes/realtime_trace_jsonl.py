@@ -60,6 +60,7 @@ class _TraceRun:
                 elif et == SCIP_EVENTTYPE.DUALBOUNDIMPROVED:
                     snapshot = self._snapshot_now()
                     self._last_snapshot = snapshot
+                    # Flush disabled: frequent event; OS buffering suffices
                     self._write_event(
                         "dualbound_improved", fields=snapshot, flush=False
                     )
@@ -99,7 +100,8 @@ class _TraceRun:
                     try:
                         self.model.dropEvent(et, self._handler)
                     except Exception:
-                        pass  # Best-effort cleanup; continue dropping remaining events
+                        # Best-effort cleanup; continue dropping remaining events
+                        pass
                 self._caught_events.clear()
                 self._handler = None
 
