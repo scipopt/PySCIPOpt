@@ -3983,7 +3983,6 @@ cdef class Model:
 
         # turn the constant value into an Expr instance for further processing
         if not isinstance(expr, Expr):
-            assert(_is_number(expr)), "given coefficients are neither Expr or number but %s" % expr.__class__.__name__
             expr = Expr() + expr
 
         if expr.degree() > 1:
@@ -12689,7 +12688,7 @@ def readStatistics(filename):
                 if stat_name == "Gap":
                     relevant_value = relevant_value[:-1] # removing %
 
-                if _is_number(relevant_value):
+                if isinstance(relevant_value, NUMBER_TYPES):
                     result[stat_name] = float(relevant_value)
                     if stat_name == "Solutions found" and result[stat_name] == 0:
                         break

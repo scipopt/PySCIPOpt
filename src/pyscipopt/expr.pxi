@@ -256,7 +256,7 @@ cdef class Expr:
         if not isinstance(other, NUMBER_TYPES):
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
         if other <= 0.0:
-            raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
+            raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % other)
         return exp(self * log(other))
 
     def __neg__(self):
@@ -550,7 +550,7 @@ cdef class GenExpr:
         if not isinstance(other, NUMBER_TYPES):
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
         if other <= 0.0:
-            raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
+            raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % other)
         return exp(self * log(other))
 
     #TODO: ipow, idiv, etc
