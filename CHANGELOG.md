@@ -26,6 +26,7 @@
 - Set `__array_priority__` for MatrixExpr and MatrixExprCons
 - changed addConsNode() and addConsLocal() to mirror addCons() and accept ExprCons instead of Constraint
 - Improved `chgReoptObjective()` performance
+- Return NotImplemented for Expr and GenExpr, if they can't other type in calculation
 ### Removed
 
 ## 6.0.0 - 2025.11.28
