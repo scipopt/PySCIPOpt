@@ -129,7 +129,7 @@ CONST = Term()
 # helper function
 def buildGenExprObj(expr: Union[int, float, Expr, GenExpr]) -> GenExpr:
     """helper function to generate an object of type GenExpr"""
-    if not isinstance(expr, EXPR_OP_TYPES):
+    if not isinstance(expr, GENEXPR_OP_TYPES):
         raise TypeError(f"Unsupported type {type(expr)}")
 
     if isinstance(expr, NUMBER_TYPES):
@@ -195,8 +195,6 @@ cdef class Expr:
         elif isinstance(right, NUMBER_TYPES):
             c = float(right)
             terms[CONST] = terms.get(CONST, 0.0) + c
-        elif isinstance(right, GenExpr):
-            return buildGenExprObj(left) + right
         return Expr(terms)
 
     def __iadd__(self, other):
@@ -209,12 +207,6 @@ cdef class Expr:
         elif isinstance(other, NUMBER_TYPES):
             c = float(other)
             self.terms[CONST] = self.terms.get(CONST, 0.0) + c
-        elif isinstance(other, GenExpr):
-            # is no longer in place, might affect performance?
-            # can't do `self = buildGenExprObj(self) + other` since I get
-            # TypeError: Cannot convert pyscipopt.scip.SumExpr to pyscipopt.scip.Expr
-            return buildGenExprObj(self) + other
-
         return self
 
     def __mul__(self, other):
@@ -223,16 +215,15 @@ cdef class Expr:
 
         if isinstance(other, NUMBER_TYPES):
             return Expr({v: other * c for v, c in self.terms.items()})
-        elif isinstance(other, Expr):
-            terms = {}
-            for v1, c1 in self.terms.items():
-                for v2, c2 in other.terms.items():
-                    v = v1 + v2
-                    terms[v] = terms.get(v, 0.0) + c1 * c2
-            return Expr(terms)
-        return buildGenExprObj(self) * other
 
-    def __truediv__(self,other):
+        terms = {}
+        for v1, c1 in self.terms.items():
+            for v2, c2 in other.terms.items():
+                v = v1 + v2
+                terms[v] = terms.get(v, 0.0) + c1 * c2
+        return Expr(terms)
+
+    def __truediv__(self, other):
         if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
 
@@ -432,7 +423,7 @@ cdef class GenExpr:
         return UnaryExpr(Operator.fabs, self)
 
     def __add__(self, other):
-        if not isinstance(other, EXPR_OP_TYPES):
+        if not isinstance(other, GENEXPR_OP_TYPES):
             return NotImplemented
 
         left = buildGenExprObj(self)
@@ -490,7 +481,7 @@ cdef class GenExpr:
     #    return self
 
     def __mul__(self, other):
-        if not isinstance(other, EXPR_OP_TYPES):
+        if not isinstance(other, GENEXPR_OP_TYPES):
             return NotImplemented
 
         left = buildGenExprObj(self)
@@ -564,7 +555,7 @@ cdef class GenExpr:
 
     #TODO: ipow, idiv, etc
     def __truediv__(self,other):
-        if not isinstance(other, EXPR_OP_TYPES):
+        if not isinstance(other, GENEXPR_OP_TYPES):
             return NotImplemented
 
         divisor = buildGenExprObj(other)
@@ -575,7 +566,7 @@ cdef class GenExpr:
 
     def __rtruediv__(self, other):
         ''' other / self '''
-        if not isinstance(other, EXPR_OP_TYPES):
+        if not isinstance(other, GENEXPR_OP_TYPES):
             return NotImplemented
         return buildGenExprObj(other) / self
 
@@ -809,4 +800,5 @@ def expr_to_array(expr, nodes):
 
 
 cdef tuple NUMBER_TYPES = (int, float, np.number)
-cdef tuple EXPR_OP_TYPES = NUMBER_TYPES + (Variable, Expr, GenExpr)
+cdef tuple EXPR_OP_TYPES = NUMBER_TYPES + (Expr,)
+cdef tuple GENEXPR_OP_TYPES = EXPR_OP_TYPES + (GenExpr,)
