@@ -31,23 +31,27 @@ class _TraceRun:
         self.path = path
         self._fh = None
         self._handler = None
-
+        self._caught_events = set()
         self._last_snapshot = {}
 
     def __enter__(self):
         if not hasattr(self.model, "data") or self.model.data is None:
             self.model.data = {}
-        self.model.data.setdefault("trace", [])
+        self.model.data["trace"] = []
 
         if self.path is not None:
             self._fh = open(self.path, "w")
 
         class _TraceEventhdlr(Eventhdlr):
-            def eventinit(s):
-                self.model.catchEvent(SCIP_EVENTTYPE.BESTSOLFOUND, s)
-                self.model.catchEvent(SCIP_EVENTTYPE.DUALBOUNDIMPROVED, s)
+            def eventinit(hdlr):
+                for et in (
+                    SCIP_EVENTTYPE.BESTSOLFOUND,
+                    SCIP_EVENTTYPE.DUALBOUNDIMPROVED,
+                ):
+                    self.model.catchEvent(et, hdlr)
+                    self._caught_events.add(et)
 
-            def eventexec(s, event):
+            def eventexec(hdlr, event):
                 et = event.getType()
                 if et == SCIP_EVENTTYPE.BESTSOLFOUND:
                     snapshot = self._snapshot_now()
@@ -91,14 +95,12 @@ class _TraceRun:
                     self._fh = None
 
             if self._handler is not None:
-                for et in (
-                    SCIP_EVENTTYPE.BESTSOLFOUND,
-                    SCIP_EVENTTYPE.DUALBOUNDIMPROVED,
-                ):
+                for et in self._caught_events:
                     try:
                         self.model.dropEvent(et, self._handler)
                     except Exception:
-                        pass
+                        pass  # Best-effort cleanup; continue dropping remaining events
+                self._caught_events.clear()
                 self._handler = None
 
         return False
