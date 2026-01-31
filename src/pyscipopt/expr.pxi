@@ -551,7 +551,7 @@ cdef class GenExpr:
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
         if other <= 0.0:
             raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % other)
-        return exp(self * log(other))
+        return exp(self * log(float(other)))
 
     #TODO: ipow, idiv, etc
     def __truediv__(self,other):
