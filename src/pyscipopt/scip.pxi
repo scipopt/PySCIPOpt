@@ -6170,7 +6170,7 @@ cdef class Model:
         Parameters
         ----------
         cons : ExprCons
-            The expression constraint that is not yet an actual constraint
+            the constraint expression to add to the model (e.g., x + y <= 5) 
         name : str, optional
             the name of the constraint, generic name if empty (Default value = "")
         initial : bool, optional
@@ -6818,7 +6818,10 @@ cdef class Model:
         else:
             raise NotImplementedError("Adding coefficients to %s constraints is not implemented." % constype)
 
-    def addConsNode(self, Node node, Constraint cons, Node validnode=None):
+    def addConsNode(self, Node node, ExprCons cons, Node validnode=None, name='',
+                    initial=True, separate=True, enforce=True, check=True,
+                    propagate=True, local=True, dynamic=False, removable=True,
+                    stickingatnode=True):
         """
         Add a constraint to the given node.
 
@@ -6826,35 +6829,120 @@ cdef class Model:
         ----------
         node : Node
             node at which the constraint will be added
-        cons : Constraint
-            the constraint to add to the node
+        cons : ExprCons
+            the constraint expression to add to the node (e.g., x + y <= 5)
         validnode : Node or None, optional
             more global node where cons is also valid. (Default=None)
+        name : str, optional
+            name of the constraint (Default value = '')
+        initial : bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool, optional
+            is the constraint only valid locally? (Default value = True)
+        dynamic : bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = True)
+        stickingatnode : bool, optional
+            should the constraint always be kept at the node where it was added? (Default value = True)
+
+        Returns
+        -------
+        Constraint
+            The added Constraint object.
 
         """
-        if isinstance(validnode, Node):
-            PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.scip_node, cons.scip_cons, validnode.scip_node))
-        else:
-            PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.scip_node, cons.scip_cons, NULL))
-        Py_INCREF(cons)
+        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
 
-    def addConsLocal(self, Constraint cons, Node validnode=None):
+        cdef SCIP_CONS* scip_cons
+
+        kwargs = dict(name=name, initial=initial, separate=separate,
+                      enforce=enforce, check=check, propagate=propagate,
+                      local=local, modifiable=False, dynamic=dynamic,
+                      removable=removable, stickingatnode=stickingatnode)
+        pycons_initial = self.createConsFromExpr(cons, **kwargs)
+        scip_cons = (<Constraint>pycons_initial).scip_cons
+
+        if isinstance(validnode, Node):
+            PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.scip_node, scip_cons, validnode.scip_node))
+        else:
+            PY_SCIP_CALL(SCIPaddConsNode(self._scip, node.scip_node, scip_cons, NULL))
+
+        pycons = Constraint.create(scip_cons)
+        pycons.data = (<Constraint>pycons_initial).data
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        return pycons
+
+    def addConsLocal(self, ExprCons cons, Node validnode=None, name='',
+                     initial=True, separate=True, enforce=True, check=True,
+                     propagate=True, local=True, dynamic=False, removable=True,
+                     stickingatnode=True):
         """
         Add a constraint to the current node.
 
         Parameters
         ----------
-        cons : Constraint
-            the constraint to add to the current node
+        cons : ExprCons
+            the constraint expression to add to the current node (e.g., x + y <= 5)
         validnode : Node or None, optional
             more global node where cons is also valid. (Default=None)
+        name : str, optional
+            name of the constraint (Default value = '')
+        initial : bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool, optional
+            is the constraint only valid locally? (Default value = True)
+        dynamic : bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = True)
+        stickingatnode : bool, optional
+            should the constraint always be kept at the node where it was added? (Default value = True)
+
+        Returns
+        -------
+        Constraint
+            The added Constraint object.
 
         """
+        assert isinstance(cons, ExprCons), "given constraint is not ExprCons but %s" % cons.__class__.__name__
+
+        cdef SCIP_CONS* scip_cons
+
+        kwargs = dict(name=name, initial=initial, separate=separate,
+                      enforce=enforce, check=check, propagate=propagate,
+                      local=local, modifiable=False, dynamic=dynamic,
+                      removable=removable, stickingatnode=stickingatnode)
+        pycons_initial = self.createConsFromExpr(cons, **kwargs)
+        scip_cons = (<Constraint>pycons_initial).scip_cons
+
         if isinstance(validnode, Node):
-            PY_SCIP_CALL(SCIPaddConsLocal(self._scip, cons.scip_cons, validnode.scip_node))
+            PY_SCIP_CALL(SCIPaddConsLocal(self._scip, scip_cons, validnode.scip_node))
         else:
-            PY_SCIP_CALL(SCIPaddConsLocal(self._scip, cons.scip_cons, NULL))
-        Py_INCREF(cons)
+            PY_SCIP_CALL(SCIPaddConsLocal(self._scip, scip_cons, NULL))
+
+        pycons = Constraint.create(scip_cons)
+        pycons.data = (<Constraint>pycons_initial).data
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        return pycons
     
     def addConsKnapsack(self, vars, weights, capacity, name="",
                 initial=True, separate=True, enforce=True, check=True,
@@ -11764,12 +11852,12 @@ cdef class Model:
 
     def chgReoptObjective(self, coeffs, sense = 'minimize'):
         """
-        Establish the objective function as a linear expression.
+        Change the objective function for reoptimization.
 
         Parameters
         ----------
-        coeffs : list of float
-            the coefficients
+        coeffs : Expr
+            the coefficients as a linear expression
         sense : str
             the objective sense (Default value = 'minimize')
 
@@ -11778,7 +11866,6 @@ cdef class Model:
         cdef int nvars
         cdef SCIP_Real* _coeffs
         cdef SCIP_OBJSENSE objsense
-        cdef SCIP_Real coef
         cdef int i
         cdef _VarArray wrapper
 
@@ -11796,24 +11883,27 @@ cdef class Model:
         if coeffs[CONST] != 0.0:
             raise ValueError("Constant offsets in objective are not supported!")
 
-        vars = SCIPgetOrigVars(self._scip)
-        nvars = SCIPgetNOrigVars(self._scip)
+        nvars = len(coeffs.terms) - (CONST in coeffs.terms)
+
+        if nvars == 0:
+            PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, NULL, NULL, 0))
+            return
+
         _coeffs = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+        vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
 
-        for i in range(nvars):
-            _coeffs[i] = 0.0
-
+        i = 0
         for term, coef in coeffs.terms.items():
             # avoid CONST term of Expr
             if term != CONST:
-                assert len(term) == 1
-                for i in range(nvars):
-                    wrapper = _VarArray(term[0])
-                    if vars[i] == wrapper.ptr[0]:
-                        _coeffs[i] = coef
+                wrapper = _VarArray(term[0])
+                vars[i] = wrapper.ptr[0]
+                _coeffs[i] = coef
+                i += 1
 
-        PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, vars, &_coeffs[0], nvars))
+        PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, vars, _coeffs, nvars))
 
+        free(vars)
         free(_coeffs)
 
     def chgVarBranchPriority(self, Variable var, priority):

@@ -23,9 +23,12 @@
 - Speed up MatrixExpr.add.reduce via quicksum
 - Speed up np.ndarray(..., dtype=np.float64) @ MatrixExpr
 - MatrixExpr and MatrixExprCons use `__array_ufunc__` protocol to control all numpy.ufunc inputs and outputs
+- Set `__array_priority__` for MatrixExpr and MatrixExprCons
+- changed addConsNode() and addConsLocal() to mirror addCons() and accept ExprCons instead of Constraint
+- Improved `chgReoptObjective()` performance
 ### Removed
 
-## 6.0.0 - 2025.xx.yy
+## 6.0.0 - 2025.11.28
 ### Added
 - Support for SCIP 10.0.0
 - Added support for IIS - Irreducible Inconsistent Subsystems
