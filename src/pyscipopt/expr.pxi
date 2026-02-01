@@ -214,7 +214,8 @@ cdef class Expr:
             return NotImplemented
 
         if isinstance(other, NUMBER_TYPES):
-            return Expr({v: other * c for v, c in self.terms.items()})
+            f = float(other)
+            return Expr({v: f * c for v, c in self.terms.items()})
 
         terms = {}
         for v1, c1 in self.terms.items():
