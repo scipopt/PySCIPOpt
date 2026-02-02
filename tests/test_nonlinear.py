@@ -311,18 +311,19 @@ def test_quad_coeffs_mixed_linear_and_quadratic():
 
     bilinterms, quadterms, linterms = scip.getTermsQuadratic(cons)
 
-    # Linear part: getTermsQuadratic must report all linear coefficients,
-    # including those of variables that also appear quadratically or
-    # bilinearly.
+    # linterms contains only purely linear variables (not in any quadratic/bilinear term)
     lin_only = {v.name: c for (v, c) in linterms}
     assert lin_only["var4"] == 8
-    assert lin_only["var3"] == 4
-    assert lin_only["var2"] == -5
-    # var1 has no linear component and must not appear in linterms
-    assert "var1" not in lin_only or lin_only.get("var1", 0.0) == 0.0
+    assert len(linterms) == 1  # only var4 is purely linear
 
-    # For completeness, checking if the coefficients from reconstructing the full linear
-    # coefficients from both linterms and quadterms match
+    # quadterms contains all variables that appear in quadratic/bilinear terms,
+    # with both their squared coefficient and linear coefficient
+    quad_dict = {v.name: (sqrcoef, lincoef) for v, sqrcoef, lincoef in quadterms}
+    assert quad_dict["var3"] == (6.0, 4.0)   # 6*var3^2 + 4*var3
+    assert quad_dict["var1"] == (-3.0, 0.0)  # -3*var1^2, no linear term
+    assert quad_dict["var2"] == (0.0, -5.0)  # -5*var2, no squared term
+
+    # Verify we can reconstruct all linear coefficients by combining linterms and quadterms
     full_lin = {}
     for v, c in linterms:
         full_lin[v.name] = full_lin.get(v.name, 0.0) + c
