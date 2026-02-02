@@ -270,7 +270,7 @@ cdef class Expr:
                     res[child] = <double>(<object>old_v_ptr) + prod_v
                 else:
                     res[child] = prod_v
-        return Expr(terms)
+        return Expr(res)
 
     def __truediv__(self, other):
         if not isinstance(other, EXPR_OP_TYPES):
