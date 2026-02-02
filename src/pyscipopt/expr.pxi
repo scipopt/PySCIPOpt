@@ -289,7 +289,7 @@ cdef class Expr:
         cdef PyObject *v2_ptr = NULL
         cdef PyObject *old_v_ptr = NULL
         cdef Term child
-        cdef double v1_val, v2_val, prod_v
+        cdef double prod_v
 
         if _is_number(other):
             f = float(other)
@@ -297,16 +297,10 @@ cdef class Expr:
 
         elif isinstance(other, Expr):
             while PyDict_Next(self.terms, &pos1, &k1_ptr, &v1_ptr):
-                if (v1_val := <double>(<object>v1_ptr)) == 0:
-                    continue
-
                 pos2 = <Py_ssize_t>0
                 while PyDict_Next(other.terms, &pos2, &k2_ptr, &v2_ptr):
-                    if (v2_val := <double>(<object>v2_ptr)) == 0:
-                        continue
-
                     child = (<Term>k1_ptr) * (<Term>k2_ptr)
-                    prod_v = v1_val * v2_val
+                    prod_v = (<double>(<object>v1_ptr)) * (<double>(<object>v2_ptr))
                     if (old_v_ptr := PyDict_GetItem(res, child)) != NULL:
                         res[child] = <double>(<object>old_v_ptr) + prod_v
                     else:

@@ -226,8 +226,8 @@ def test_mul():
 
     assert str(Expr({CONST: 1.0}) * x) == "Expr({Term(x): 1.0})"
     assert str(y * Expr({CONST: -1.0})) == "Expr({Term(y): -1.0})"
-    assert str((x - x) * y) == "Expr({Term(): 0.0})"
-    assert str(y * (x - x)) == "Expr({Term(): 0.0})"
+    assert str((x - x) * y) == "Expr({Term(x, y): 0.0})"
+    assert str(y * (x - x)) == "Expr({Term(x, y): 0.0})"
     assert (
         str((x + 1) * (y - 1))
         == "Expr({Term(x, y): 1.0, Term(x): -1.0, Term(y): 1.0, Term(): -1.0})"
