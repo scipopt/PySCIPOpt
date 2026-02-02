@@ -238,3 +238,11 @@ def test_unary(model):
         str(np.sqrt([x, y]))
         == "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y)))]"
     )
+
+
+def test_abs_abs_expr():
+    m = Model()
+    x = m.addVar(name="x")
+
+    # should print abs(x) not abs(abs(x))
+    assert str(abs(abs(x))) == str(abs(x))
