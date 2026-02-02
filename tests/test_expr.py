@@ -236,3 +236,11 @@ def test_mul():
         str((x + 1) * (x + 1) * y)
         == "Expr({Term(x, x, y): 1.0, Term(x, y): 2.0, Term(y): 1.0})"
     )
+
+
+def test_abs_abs_expr():
+    m = Model()
+    x = m.addVar(name="x")
+
+    # should print abs(x) not abs(abs(x))
+    assert str(abs(abs(x))) == str(abs(x))
