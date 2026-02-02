@@ -12688,13 +12688,13 @@ def readStatistics(filename):
                 if stat_name == "Gap":
                     relevant_value = relevant_value[:-1] # removing %
 
-                if isinstance(relevant_value, NUMBER_TYPES):
+                try:
                     result[stat_name] = float(relevant_value)
+                except:
+                    result[stat_name] = relevant_value
+                else:
                     if stat_name == "Solutions found" and result[stat_name] == 0:
                         break
-
-                else: # it's a string
-                    result[stat_name] = relevant_value
 
         # changing keys to pythonic variable names
         treated_keys = {"status": "status", "Total Time": "total_time", "solving":"solving_time", "presolving":"presolving_time", "reading":"reading_time",
