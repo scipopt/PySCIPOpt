@@ -3,7 +3,7 @@ import math
 import pytest
 
 from pyscipopt import Model, sqrt, log, exp, sin, cos
-from pyscipopt.scip import Expr, GenExpr, ExprCons, Term
+from pyscipopt.scip import Expr, GenExpr, ExprCons, CONST
 
 
 @pytest.fixture(scope="module")
@@ -14,7 +14,6 @@ def model():
     z = m.addVar("z")
     return m, x, y, z
 
-CONST = Term()
 
 def test_upgrade(model):
     m, x, y, z = model
@@ -218,6 +217,25 @@ def test_getVal_with_GenExpr():
 
     with pytest.raises(ZeroDivisionError):
         m.getVal(1 / z)
+
+
+def test_mul():
+    m = Model()
+    x = m.addVar(name="x")
+    y = m.addVar(name="y")
+
+    assert str(Expr({CONST: 1.0}) * x) == "Expr({Term(x): 1.0})"
+    assert str(y * Expr({CONST: -1.0})) == "Expr({Term(y): -1.0})"
+    assert str((x - x) * y) == "Expr({Term(x, y): 0.0})"
+    assert str(y * (x - x)) == "Expr({Term(x, y): 0.0})"
+    assert (
+        str((x + 1) * (y - 1))
+        == "Expr({Term(x, y): 1.0, Term(x): -1.0, Term(y): 1.0, Term(): -1.0})"
+    )
+    assert (
+        str((x + 1) * (x + 1) * y)
+        == "Expr({Term(x, x, y): 1.0, Term(x, y): 2.0, Term(y): 1.0})"
+    )
 
 
 def test_abs_abs_expr():
