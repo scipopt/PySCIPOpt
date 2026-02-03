@@ -3,9 +3,9 @@ import os
 
 import numpy as np
 import pytest
-from helpers.utils import random_mip_1
 
 from pyscipopt import SCIP_BRANCHDIR, SCIP_PARAMSETTING, SCIP_STAGE, Model, quicksum
+from helpers.utils import random_mip_1
 
 
 def test_model():
