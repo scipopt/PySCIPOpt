@@ -10808,14 +10808,11 @@ cdef class Model:
         A variable is also an expression.
 
         """
-        cdef SCIP_SOL* current_best_sol
-
-        stage_check = SCIPgetStage(self._scip) not in [SCIP_STAGE_INIT, SCIP_STAGE_FREE]
-        if not stage_check:
+        if SCIPgetStage(self._scip) in {SCIP_STAGE_INIT, SCIP_STAGE_FREE}:
             raise Warning("Method cannot be called in stage ", self.getStage())
 
         # Ensure _bestSol is up-to-date (cheap pointer comparison)
-        current_best_sol = SCIPgetBestSol(self._scip)
+        cdef SCIP_SOL* current_best_sol = SCIPgetBestSol(self._scip)
         if self._bestSol is None or self._bestSol.sol != current_best_sol:
             self._bestSol = Solution.create(self._scip, current_best_sol)
 
