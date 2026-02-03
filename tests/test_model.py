@@ -1,9 +1,12 @@
-import pytest
-import os
 import itertools
+import os
 
-from pyscipopt import Model, SCIP_STAGE, SCIP_PARAMSETTING, SCIP_BRANCHDIR, quicksum
+import numpy as np
+import pytest
 from helpers.utils import random_mip_1
+
+from pyscipopt import SCIP_BRANCHDIR, SCIP_PARAMSETTING, SCIP_STAGE, Model, quicksum
+
 
 def test_model():
     # create solver instance
@@ -632,8 +635,8 @@ def test_getSolVal():
     assert m.getSolVal(sol, x) == m.getVal(x)
     assert m.getVal(x) == 0
 
-    assert all(m.getSolVal(sol, y) == m.getVal(y))
-    assert all(m.getVal(y) == [0, 0])
+    assert np.array_equal(m.getSolVal(sol, y), m.getVal(y))
+    assert np.array_equal(m.getVal(y), np.array([0, 0]))
 
     with pytest.raises(TypeError):
         m.getVal("not_a_var")
