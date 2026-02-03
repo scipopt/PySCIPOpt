@@ -225,19 +225,35 @@ def test_getVal_with_GenExpr():
 def test_unary(model):
     m, x, y, z = model
 
-    assert str(abs(x)) == "abs(sum(0.0,prod(1.0,x)))"
-    assert str(np.absolute(x)) == "abs(sum(0.0,prod(1.0,x)))"
-    assert str(sin([x, y])) == "[sin(sum(0.0,prod(1.0,x))) sin(sum(0.0,prod(1.0,y)))]"
-    assert (
-        str(np.sin([x, y])) == "[sin(sum(0.0,prod(1.0,x))) sin(sum(0.0,prod(1.0,y)))]"
-    )
-    assert (
-        str(sqrt([x, y])) == "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y)))]"
-    )
-    assert (
-        str(np.sqrt([x, y]))
-        == "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y)))]"
-    )
+    res = "abs(sum(0.0,prod(1.0,x)))"
+    assert str(abs(x)) == res
+    assert str(np.absolute(x)) == res
+
+    res = "[sin(sum(0.0,prod(1.0,x))) sin(sum(0.0,prod(1.0,y)))]"
+    assert str(sin([x, y])) == res
+    assert str(np.sin([x, y])) == res
+
+    res = "[cos(sum(0.0,prod(1.0,x))) cos(sum(0.0,prod(1.0,y)))]"
+    assert str(cos([x, y])) == res
+    assert str(np.cos([x, y])) == res
+
+    res = "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y)))]"
+    assert str(sqrt([x, y])) == res
+    assert str(np.sqrt([x, y])) == res
+
+    res = "[exp(sum(0.0,prod(1.0,x))) exp(sum(0.0,prod(1.0,y)))]"
+    assert str(exp([x, y])) == res
+    assert str(np.exp([x, y])) == res
+
+    res = "[log(sum(0.0,prod(1.0,x))) log(sum(0.0,prod(1.0,y)))]"
+    assert str(log([x, y])) == res
+    assert str(np.log([x, y])) == res
+
+    assert sqrt(4) == np.sqrt(4)
+    assert exp(3) == np.exp(3)
+    assert log(5) == np.log(5)
+    assert sin(1) == np.sin(1)
+    assert cos(1) == np.cos(1)
 
 
 def test_mul():
