@@ -536,6 +536,7 @@ Operator = Op()
 #
 #See also the @ref ExprDetails "description" in the expr.pxi. 
 cdef class GenExpr(ExprLike):
+
     cdef public _op
     cdef public children
 
