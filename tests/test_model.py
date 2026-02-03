@@ -1,9 +1,12 @@
-import pytest
-import os
 import itertools
+import os
 
-from pyscipopt import Model, SCIP_STAGE, SCIP_PARAMSETTING, SCIP_BRANCHDIR, quicksum
+import numpy as np
+import pytest
+
+from pyscipopt import SCIP_BRANCHDIR, SCIP_PARAMSETTING, SCIP_STAGE, Model, quicksum
 from helpers.utils import random_mip_1
+
 
 def test_model():
     # create solver instance
@@ -616,3 +619,26 @@ def test_model_dealloc_repr():
 
     assert repr(x) == ""
     assert repr(c) == ""
+
+
+def test_getSolVal():
+    # fix #1136
+
+    m = Model()
+    x = m.addVar(vtype="B")
+    y = m.addMatrixVar(2, vtype="B")
+
+    m.setObjective(x + y.sum())
+    m.optimize()
+    sol = m.getBestSol()
+
+    assert m.getSolVal(sol, x) == m.getVal(x)
+    assert m.getVal(x) == 0
+
+    assert np.array_equal(m.getSolVal(sol, y), m.getVal(y))
+    assert np.array_equal(m.getVal(y), np.array([0, 0]))
+
+    with pytest.raises(TypeError):
+        m.getVal("not_a_var")
+    with pytest.raises(TypeError):
+        m.getSolVal(sol, "not_a_var")
