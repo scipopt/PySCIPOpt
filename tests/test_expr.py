@@ -250,10 +250,15 @@ def test_unary(model):
     assert str(np.log([x, y])) == res
 
     assert sqrt(4) == np.sqrt(4)
+    assert all(sqrt([4, 4]) == np.sqrt([4, 4]))
     assert exp(3) == np.exp(3)
+    assert all(exp([3, 3]) == np.exp([3, 3]))
     assert log(5) == np.log(5)
+    assert all(log([5, 5]) == np.log([5, 5]))
     assert sin(1) == np.sin(1)
+    assert all(sin([1, 1]) == np.sin([1, 1]))
     assert cos(1) == np.cos(1)
+    assert all(cos([1, 1]) == np.cos([1, 1]))
 
 
 def test_mul():
