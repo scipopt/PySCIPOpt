@@ -8394,7 +8394,7 @@ cdef class Model:
             else:
                 quaddict[key] = [var, sqrcoef, lincoef]
 
-        quadterms = [(entry[0], entry[1], entry[2]) for entry in quaddict.values()]
+        quadterms = [tuple(entry) for entry in quaddict.values()]
 
         return (bilinterms, quadterms, linterms)
 
