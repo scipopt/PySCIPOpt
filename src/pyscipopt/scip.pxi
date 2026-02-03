@@ -10789,7 +10789,7 @@ cdef class Model:
         # no need to create a NULL solution wrapper in case we have a variable
         return (sol or Solution.create(self._scip, NULL))[expr]
 
-    def getVal(self, expr: Union[Expr, GenExpr, MatrixExpr] ):
+    def getVal(self, expr: Union[Expr, GenExpr, MatrixExpr]) -> Union[float, np.ndarray]:
         """
         Retrieve the value of the given variable or expression in the best known solution.
         Can only be called after solving is completed.
