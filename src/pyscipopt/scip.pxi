@@ -8373,6 +8373,8 @@ cdef class Model:
             if scipvar1 != scipvar2:
                 bilinterms.append((var1, var2, bilincoef))
             else:
+                # DEBUG: Check if this case ever occurs
+                print(f"DEBUG: bilinear term with var1 == var2 detected! cons={cons.name}, var={var1.name}, coef={bilincoef}")
                 # Squared term reported as bilinear var*var
                 key = var1.ptr()
                 if key in quaddict:
@@ -8739,31 +8741,6 @@ cdef class Model:
             SCIPgetDualSolVal(self._scip, cons.scip_cons, &_dualsol, NULL)
 
         return _dualsol
-
-    def getVarFarkasCoef(self, Variable var):
-        """
-        Returns the Farkas coefficient of the variable in the current node's LP relaxation; the current node has to have an infeasible LP.
-
-        Parameters
-        ----------
-        var : Variable
-            variable to get the farkas coefficient of
-
-        Returns
-        -------
-        float
-
-        """
-        assert SCIPgetStatus(self._scip) == SCIP_STATUS_INFEASIBLE, "Method can only be called with an infeasible model."
-
-        farkas_coef = None
-        try:
-            farkas_coef = SCIPgetVarFarkasCoef(self._scip, var.scip_var)
-            if self.getObjectiveSense() == "maximize":
-                farkas_coef = -farkas_coef
-        except Exception:
-            raise Warning("no farkas coefficient available for variable " + var.name)
-        return farkas_coef
 
     def optimize(self):
         """Optimize the problem."""

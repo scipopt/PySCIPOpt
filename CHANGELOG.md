@@ -2,7 +2,6 @@
 
 ## Unreleased
 ### Added
-- Added getVarFarkasCoef() (untested)
 - Added automated script for generating type stubs
 - Include parameter names in type stubs
 - Added pre-commit hook for automatic stub regeneration (see .pre-commit-config.yaml)
