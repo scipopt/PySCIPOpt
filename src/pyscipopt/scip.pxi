@@ -8373,8 +8373,6 @@ cdef class Model:
             if scipvar1 != scipvar2:
                 bilinterms.append((var1, var2, bilincoef))
             else:
-                # DEBUG: Check if this case ever occurs
-                print(f"DEBUG: bilinear term with var1 == var2 detected! cons={cons.name}, var={var1.name}, coef={bilincoef}")
                 # Squared term reported as bilinear var*var
                 key = var1.ptr()
                 if key in quaddict:
