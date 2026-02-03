@@ -1098,7 +1098,16 @@ cdef class Solution:
         sol.scip = scip
         return sol
 
-    def __getitem__(self, expr: Union[Expr, MatrixExpr]):
+    def __getitem__(
+        self,
+        expr: Union[Expr, GenExpr, MatrixExpr],
+    ) -> Union[float, np.ndarray]:
+        if not isinstance(expr, (Expr, GenExpr, MatrixExpr)):
+            raise TypeError(
+                "Argument 'expr' has incorrect type, expected 'Expr', 'GenExpr', or "
+                f"'MatrixExpr', got {type(expr).__name__!r}"
+            )
+
         self._checkStage("SCIPgetSolVal")
         return expr._evaluate(self)
 
@@ -10968,36 +10977,33 @@ cdef class Model:
     def getSolVal(
         self,
         Solution sol,
-        expr: Union[Expr, GenExpr],
+        expr: Union[Expr, GenExpr, MatrixExpr],
     ) -> Union[float, np.ndarray]:
         """
-        Retrieve value of given variable or expression in the given solution or in
-        the LP/pseudo solution if sol == None
+        Retrieve value of given variable or expression in the given solution.
 
         Parameters
         ----------
         sol : Solution
-        expr : Expr
-            polynomial expression to query the value of
+            Solution to query the value from. If None, the current LP/pseudo solution is
+            used.
+
+        expr : Expr, GenExpr, MatrixExpr
+            Expression to query the value of.
 
         Returns
         -------
-        float
+        float or np.ndarray
 
         Notes
         -----
         A variable is also an expression.
 
         """
-        if not isinstance(expr, (Expr, GenExpr)):
-            raise TypeError(
-                "Argument 'expr' has incorrect type (expected 'Expr' or 'GenExpr', "
-                f"got {type(expr)})"
-            )
         # no need to create a NULL solution wrapper in case we have a variable
         return (sol or Solution.create(self._scip, NULL))[expr]
 
-    def getVal(self, expr: Union[Expr, GenExpr, MatrixExpr] ):
+    def getVal(self, expr: Union[Expr, GenExpr, MatrixExpr]) -> Union[float, np.ndarray]:
         """
         Retrieve the value of the given variable or expression in the best known solution.
         Can only be called after solving is completed.
@@ -11005,38 +11011,29 @@ cdef class Model:
         Parameters
         ----------
         expr : Expr, GenExpr or MatrixExpr
+            Expression to query the value of.
 
         Returns
         -------
-        float
+        float or np.ndarray
 
         Notes
         -----
         A variable is also an expression.
 
         """
-        cdef SCIP_SOL* current_best_sol
-
-        stage_check = SCIPgetStage(self._scip) not in [SCIP_STAGE_INIT, SCIP_STAGE_FREE]
-        if not stage_check:
+        if SCIPgetStage(self._scip) in {SCIP_STAGE_INIT, SCIP_STAGE_FREE}:
             raise Warning("Method cannot be called in stage ", self.getStage())
 
         # Ensure _bestSol is up-to-date (cheap pointer comparison)
-        current_best_sol = SCIPgetBestSol(self._scip)
+        cdef SCIP_SOL* current_best_sol = SCIPgetBestSol(self._scip)
         if self._bestSol is None or self._bestSol.sol != current_best_sol:
             self._bestSol = Solution.create(self._scip, current_best_sol)
 
         if self._bestSol.sol == NULL and SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
             raise Warning("No solution available")
 
-        if isinstance(expr, MatrixExpr):
-            result = np.empty(expr.shape, dtype=float)
-            for idx in np.ndindex(result.shape):
-                result[idx] = self.getSolVal(self._bestSol, expr[idx])
-        else:
-            result = self.getSolVal(self._bestSol, expr)
-
-        return result
+        return self._bestSol[expr]
 
     def hasPrimalRay(self):
         """
