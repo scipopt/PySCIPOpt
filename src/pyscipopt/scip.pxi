@@ -8368,7 +8368,7 @@ cdef class Model:
                 key = var1.ptr()
                 if key in quaddict:
                     quaddict[key][1] += bilincoef
-                else:
+                else: # TODO: SCIP handles expr like x**2 appropriately, but PySCIPOpt requires this. Need to investigate why.
                     quaddict[key] = [var1, bilincoef, 0.0]
 
         # Also collect linear coefficients from the quadratic terms
