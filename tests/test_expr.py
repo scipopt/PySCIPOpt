@@ -260,6 +260,10 @@ def test_unary(model):
     assert cos(1) == np.cos(1)
     assert all(cos([1, 1]) == np.cos([1, 1]))
 
+    # test invalid unary operations
+    with pytest.raises(TypeError):
+        np.arcsin(x)
+
 
 def test_mul():
     m = Model()
