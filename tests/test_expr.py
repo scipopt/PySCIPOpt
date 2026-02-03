@@ -2,8 +2,9 @@ import math
 
 import numpy as np
 import pytest
+
 from pyscipopt import Model, cos, exp, log, sin, sqrt
-from pyscipopt.scip import Expr, ExprCons, GenExpr, Term
+from pyscipopt.scip import CONST, Expr, ExprCons, GenExpr
 
 
 @pytest.fixture(scope="module")
@@ -14,7 +15,6 @@ def model():
     z = m.addVar("z")
     return m, x, y, z
 
-CONST = Term()
 
 def test_upgrade(model):
     m, x, y, z = model
@@ -237,6 +237,25 @@ def test_unary(model):
     assert (
         str(np.sqrt([x, y]))
         == "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y)))]"
+    )
+
+
+def test_mul():
+    m = Model()
+    x = m.addVar(name="x")
+    y = m.addVar(name="y")
+
+    assert str(Expr({CONST: 1.0}) * x) == "Expr({Term(x): 1.0})"
+    assert str(y * Expr({CONST: -1.0})) == "Expr({Term(y): -1.0})"
+    assert str((x - x) * y) == "Expr({Term(x, y): 0.0})"
+    assert str(y * (x - x)) == "Expr({Term(x, y): 0.0})"
+    assert (
+        str((x + 1) * (y - 1))
+        == "Expr({Term(x, y): 1.0, Term(x): -1.0, Term(y): 1.0, Term(): -1.0})"
+    )
+    assert (
+        str((x + 1) * (x + 1) * y)
+        == "Expr({Term(x, x, y): 1.0, Term(x, y): 2.0, Term(y): 1.0})"
     )
 
 
