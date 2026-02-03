@@ -18,6 +18,7 @@
 - Fixed lotsizing_lazy example
 - Fixed incorrect getVal() result when _bestSol.sol was outdated
 - Fixed segmentation fault when using Variable or Constraint objects after freeTransform() or Model destruction
+- getTermsQuadratic() now correctly returns all linear terms
 ### Changed
 - changed default value of enablepricing flag to True
 - Speed up MatrixExpr.sum(axis=...) via quicksum

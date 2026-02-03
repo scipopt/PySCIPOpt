@@ -8309,8 +8309,16 @@ cdef class Model:
         Returns
         -------
         bilinterms : list of tuple
+            Triples ``(var1, var2, coef)`` for terms of the form
+            ``coef * var1 * var2`` with ``var1 != var2``.
         quadterms : list of tuple
+            Triples ``(var, sqrcoef, lincoef)`` for variables that appear in
+            quadratic or bilinear terms. ``sqrcoef`` is the coefficient of
+            ``var**2``, and ``lincoef`` is the linear coefficient of ``var``
+            if it also appears linearly.
         linterms : list of tuple
+            Pairs ``(var, coef)`` for purely linear variables, i.e.,
+            variables that do not participate in any quadratic or bilinear term.
 
         """
         cdef SCIP_EXPR* expr
@@ -8329,6 +8337,7 @@ cdef class Model:
         cdef int nbilinterms
 
         # quadratic terms
+        cdef SCIP_EXPR* quadexpr
         cdef SCIP_EXPR* sqrexpr
         cdef SCIP_Real sqrcoef
         cdef int nquadterms
@@ -8341,15 +8350,19 @@ cdef class Model:
         assert self.checkQuadraticNonlinear(cons), "constraint is not quadratic"
 
         expr = SCIPgetExprNonlinear(cons.scip_cons)
-        SCIPexprGetQuadraticData(expr, NULL, &nlinvars, &linexprs, &lincoefs, &nquadterms, &nbilinterms, NULL, NULL)
+        SCIPexprGetQuadraticData(expr, NULL, &nlinvars, &linexprs, &lincoefs,
+                                 &nquadterms, &nbilinterms, NULL, NULL)
 
         linterms   = []
         bilinterms = []
-        quadterms  = []
 
+        # Purely linear terms (variables not in any quadratic/bilinear term)
         for termidx in range(nlinvars):
             var = self._getOrCreateVar(SCIPgetVarExprVar(linexprs[termidx]))
             linterms.append((var, lincoefs[termidx]))
+
+        # Collect quadratic terms in a dict so we can merge entries for the same variable.
+        quaddict = {}  # var.ptr() -> [var, sqrcoef, lincoef]
 
         for termidx in range(nbilinterms):
             SCIPexprGetQuadraticBilinTerm(expr, termidx, &bilinterm1, &bilinterm2, &bilincoef, NULL, NULL)
@@ -8358,16 +8371,28 @@ cdef class Model:
             var1 = self._getOrCreateVar(scipvar1)
             var2 = self._getOrCreateVar(scipvar2)
             if scipvar1 != scipvar2:
-                bilinterms.append((var1,var2,bilincoef))
+                bilinterms.append((var1, var2, bilincoef))
             else:
-                quadterms.append((var1,bilincoef,0.0))
+                # Squared term reported as bilinear var*var
+                key = var1.ptr()
+                if key in quaddict:
+                    quaddict[key][1] += bilincoef
+                else: # TODO: SCIP handles expr like x**2 appropriately, but PySCIPOpt requires this. Need to investigate why.
+                    quaddict[key] = [var1, bilincoef, 0.0]
 
+        # Also collect linear coefficients from the quadratic terms
         for termidx in range(nquadterms):
-            SCIPexprGetQuadraticQuadTerm(expr, termidx, NULL, &lincoef, &sqrcoef, NULL, NULL, &sqrexpr)
-            if sqrexpr == NULL:
-                continue
-            var = self._getOrCreateVar(SCIPgetVarExprVar(sqrexpr))
-            quadterms.append((var,sqrcoef,lincoef))
+            SCIPexprGetQuadraticQuadTerm(expr, termidx, &quadexpr, &lincoef, &sqrcoef, NULL, NULL, &sqrexpr)
+            scipvar1 = SCIPgetVarExprVar(quadexpr)
+            var = self._getOrCreateVar(scipvar1)
+            key = var.ptr()
+            if key in quaddict:
+                quaddict[key][1] += sqrcoef
+                quaddict[key][2] += lincoef
+            else:
+                quaddict[key] = [var, sqrcoef, lincoef]
+
+        quadterms = [tuple(entry) for entry in quaddict.values()]
 
         return (bilinterms, quadterms, linterms)
 
