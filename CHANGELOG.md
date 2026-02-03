@@ -4,7 +4,6 @@
 ### Added
 - Added automated script for generating type stubs
 - Include parameter names in type stubs
-- Speed up MatrixExpr.sum(axis=...) via quicksum
 - Added pre-commit hook for automatic stub regeneration (see .pre-commit-config.yaml)
 - Wrapped isObjIntegral() and test
 - Added structured_optimization_trace recipe for structured optimization progress tracking
@@ -21,12 +20,20 @@
 - Fixed segmentation fault when using Variable or Constraint objects after freeTransform() or Model destruction
 ### Changed
 - changed default value of enablepricing flag to True
+- Speed up MatrixExpr.sum(axis=...) via quicksum
 - Speed up MatrixExpr.add.reduce via quicksum
 - Speed up np.ndarray(..., dtype=np.float64) @ MatrixExpr
+- Speed up Expr * Expr via C-level API and Term * Term
+- Speed up Term * Term via a $O(n)$ sort algorithm instead of Python $O(n\log(n))$ sorted function. `Term.__mul__` requires that Term.vartuple is sorted.
+- Rename from `Term.__add__` to `Term.__mul__`, due to this method only working with Expr * Expr.
 - MatrixExpr and MatrixExprCons use `__array_ufunc__` protocol to control all numpy.ufunc inputs and outputs
+- Set `__array_priority__` for MatrixExpr and MatrixExprCons
+- changed addConsNode() and addConsLocal() to mirror addCons() and accept ExprCons instead of Constraint
+- Improved `chgReoptObjective()` performance
+- Return itself for abs to UnaryExpr(Operator.fabs)
 ### Removed
 
-## 6.0.0 - 2025.xx.yy
+## 6.0.0 - 2025.11.28
 ### Added
 - Support for SCIP 10.0.0
 - Added support for IIS - Irreducible Inconsistent Subsystems
@@ -79,6 +86,10 @@
 - Added enableDebugSol() and disableDebugSol() for controlling the debug solution mechanism if DEBUGSOL=true
 - Added getVarPseudocostScore() and getVarPseudocost()
 - Added getNBranchings() and getNBranchingsCurrentRun()
+- Added isActive() which wraps SCIPvarIsActive() and test
+- Added aggregateVars() and tests
+- Added example shiftbound.py
+- Added a tutorial in ./docs on the presolver plugin
 ### Fixed
 - Raised an error when an expression is used when a variable is required
 - Fixed some compile warnings
