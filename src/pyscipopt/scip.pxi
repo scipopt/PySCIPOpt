@@ -1558,9 +1558,11 @@ cdef class Variable(Expr):
             cname = bytes( SCIPvarGetName(self.scip_var) )
             return cname.decode('utf-8')
 
-    def ptr(self):
-        """ """
+    def __hash__(self) -> size_t:
         return <size_t>(self.scip_var)
+
+    def ptr(self) -> size_t:
+        return self.__hash__()
 
     def __repr__(self):
         return self.name

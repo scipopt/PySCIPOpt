@@ -104,13 +104,11 @@ cdef class Term:
     '''This is a monomial term'''
 
     cdef readonly tuple vartuple
-    cdef readonly tuple ptrtuple
     cdef Py_ssize_t hashval
 
     def __init__(self, *vartuple: Variable):
-        self.vartuple = tuple(sorted(vartuple, key=lambda v: v.ptr()))
-        self.ptrtuple = tuple(v.ptr() for v in self.vartuple)
-        self.hashval = <Py_ssize_t>hash(self.ptrtuple)
+        self.vartuple = tuple(sorted(vartuple, key=hash))
+        self.hashval = <Py_ssize_t>hash(self.vartuple)
 
     def __getitem__(self, idx):
         return self.vartuple[idx]
@@ -118,8 +116,25 @@ cdef class Term:
     def __hash__(self) -> Py_ssize_t:
         return self.hashval
 
-    def __eq__(self, other: Term):
-        return self.ptrtuple == other.ptrtuple
+    def __eq__(self, other: Term) -> bool:
+        if self is other:
+            return True
+        if type(other) is not Term:
+            return False
+
+        cdef int n = len(self)
+        cdef Term _other = <Term>other
+        if n != len(_other) or self.hashval != _other.hashval:
+            return False
+
+        cdef int i
+        cdef Variable var1, var2
+        for i in range(n):
+            var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
+            var2 = <Variable>PyTuple_GET_ITEM(_other.vartuple, i)
+            if var1 is not var2:
+                return False
+        return True
 
     def __len__(self):
         return len(self.vartuple)
@@ -138,7 +153,7 @@ cdef class Term:
         while i < n1 and j < n2:
             var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
             var2 = <Variable>PyTuple_GET_ITEM(other.vartuple, j)
-            if var1.ptr() <= var2.ptr():
+            if hash(var1) <= hash(var2):
                 vartuple[k] = var1
                 i += 1
             else:
@@ -156,8 +171,7 @@ cdef class Term:
 
         cdef Term res = Term.__new__(Term)
         res.vartuple = tuple(vartuple)
-        res.ptrtuple = tuple(v.ptr() for v in res.vartuple)
-        res.hashval = <Py_ssize_t>hash(res.ptrtuple)
+        res.hashval = <Py_ssize_t>hash(res.vartuple)
         return res
 
     def __repr__(self):
