@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from pyscipopt import Model, sqrt, log, exp, sin, cos
+from pyscipopt import Model, sqrt, log, exp, sin, cos, quickprod
 from pyscipopt.scip import Expr, GenExpr, ExprCons, CONST
 
 
@@ -244,3 +244,24 @@ def test_abs_abs_expr():
 
     # should print abs(x) not abs(abs(x))
     assert str(abs(abs(x))) == str(abs(x))
+
+
+def test_term_eq():
+    m = Model()
+
+    x = m.addMatrixVar(1000)
+    y = m.addVar()
+    z = m.addVar()
+
+    e1 = quickprod(x.flat)
+    e2 = quickprod(x.flat)
+    t1 = next(iter(e1))
+    t2 = next(iter(e2))
+    t3 = next(iter(e1 * y))
+    t4 = next(iter(e2 * z))
+
+    assert t1 == t1  # same term
+    assert t1 == t2  # same term
+    assert t3 != t4  # same length, but different term
+    assert t1 != t3  # different length
+    assert t1 != "not a term"  # different type
