@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=69.0.0", "cython >=0.21", "numpy"]
+requires = ["setuptools", "cython >=0.21", "numpy"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -11,7 +11,6 @@ authors = [
 dependencies = ['numpy >=1.16.0']
 requires-python = ">=3.8"
 readme = "README.md"
-license = "MIT"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Education",
@@ -20,7 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Mathematics",
 ]
-dynamic = ["version"]
+dynamic = ["version", "license"]
 
 [project.urls]
 Homepage = "https://github.com/SCIP-Interfaces/PySCIPOpt"
