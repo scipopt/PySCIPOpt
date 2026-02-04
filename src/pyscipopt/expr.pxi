@@ -116,10 +116,10 @@ cdef class Term:
     def __hash__(self) -> Py_ssize_t:
         return self.hashval
 
-    def __eq__(self, other: Term) -> bool:
-        if self is other:
+    def __eq__(self, other) -> bool:
+        if other is self:
             return True
-        if type(other) is not Term:
+        if <type>Py_TYPE(other) is not Term:
             return False
 
         cdef int n = len(self)
