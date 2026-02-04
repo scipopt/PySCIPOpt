@@ -34,7 +34,7 @@
 - Return itself for `abs` to `UnaryExpr(Operator.fabs)`
 - Speed up `Term.__eq__` via the C-level API
 ### Removed
-- Deprecated `Term.ptrtuple` for optimizing `Term` memory usage
+- Removed `Term.ptrtuple` to optimize `Term` memory usage
 
 ## 6.0.0 - 2025.11.28
 ### Added
