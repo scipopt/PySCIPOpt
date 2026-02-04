@@ -132,7 +132,7 @@ cdef class Term:
         for i in range(n):
             var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
             var2 = <Variable>PyTuple_GET_ITEM(_other.vartuple, i)
-            if var1 is not var2:
+            if hash(var1) != hash(var2):
                 return False
         return True
 
