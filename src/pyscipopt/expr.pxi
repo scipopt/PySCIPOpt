@@ -289,22 +289,24 @@ cdef class Expr:
         cdef PyObject *v2_ptr = NULL
         cdef PyObject *old_v_ptr = NULL
         cdef Term child
-        cdef double prod_v
+        cdef double coef
 
         if _is_number(other):
-            f = float(other)
-            return Expr({v:f*c for v,c in self.terms.items()})
-
+            coef = float(other)
+            while PyDict_Next(self.terms, &pos1, &k1_ptr, &v1_ptr):
+                res[<Term>k1_ptr] = <double>(<object>v1_ptr) * coef
+            return Expr(res)
+    
         elif isinstance(other, Expr):
             while PyDict_Next(self.terms, &pos1, &k1_ptr, &v1_ptr):
                 pos2 = <Py_ssize_t>0
                 while PyDict_Next(other.terms, &pos2, &k2_ptr, &v2_ptr):
                     child = (<Term>k1_ptr) * (<Term>k2_ptr)
-                    prod_v = (<double>(<object>v1_ptr)) * (<double>(<object>v2_ptr))
+                    coef = (<double>(<object>v1_ptr)) * (<double>(<object>v2_ptr))
                     if (old_v_ptr := PyDict_GetItem(res, child)) != NULL:
-                        res[child] = <double>(<object>old_v_ptr) + prod_v
+                        res[child] = <double>(<object>old_v_ptr) + coef
                     else:
-                        res[child] = prod_v
+                        res[child] = coef
             return Expr(res)
 
         elif isinstance(other, GenExpr):
