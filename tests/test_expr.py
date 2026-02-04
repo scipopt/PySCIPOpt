@@ -224,6 +224,10 @@ def test_mul():
     x = m.addVar(name="x")
     y = m.addVar(name="y")
 
+    # test Expr * number
+    assert str((x + y) * 2.0) == "Expr({Term(x): 2.0, Term(y): 2.0})"
+
+    # test Expr * Expr
     assert str(Expr({CONST: 1.0}) * x) == "Expr({Term(x): 1.0})"
     assert str(y * Expr({CONST: -1.0})) == "Expr({Term(y): -1.0})"
     assert str((x - x) * y) == "Expr({Term(x, y): 0.0})"
