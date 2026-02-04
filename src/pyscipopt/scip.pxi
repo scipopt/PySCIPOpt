@@ -1564,6 +1564,9 @@ cdef class Variable(Expr):
     def ptr(self) -> size_t:
         return self.__hash__()
 
+    def __richcmp__(self, other, int op):
+        return _expr_richcmp(self, other, op)
+
     def __repr__(self):
         return self.name
 
