@@ -32,6 +32,7 @@
 - changed `addConsNode()` and `addConsLocal()` to mirror `addCons()` and accept `ExprCons` instead of `Constraint`
 - Improved `chgReoptObjective()` performance
 - Return itself for `abs` to `UnaryExpr(Operator.fabs)`
+- Speed up `constant * Expr` via C-level API
 ### Removed
 
 ## 6.0.0 - 2025.11.28
