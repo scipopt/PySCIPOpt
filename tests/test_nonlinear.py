@@ -288,6 +288,53 @@ def test_quad_coeffs():
     assert linterms[0][0].name == z.name
     assert linterms[0][1] == 4
 
+
+def test_quad_coeffs_mixed_linear_and_quadratic():
+
+    scip = Model()
+
+    var1 = scip.addVar(name="var1", vtype='C', lb=None)
+    var2 = scip.addVar(name="var2", vtype='C')
+    var3 = scip.addVar(name="var3", vtype='B')
+    var4 = scip.addVar(name="var4", vtype='B')
+
+    cons = scip.addCons(
+        8 * var4
+        + 4 * var3
+        - 5 * var2
+        + 6 * var3 ** 2
+        - 3 * var1 ** 2
+        + 2 * var2 * var1
+        + 7 * var1 * var3
+        == -2
+    )
+
+    bilinterms, quadterms, linterms = scip.getTermsQuadratic(cons)
+
+    # linterms contains only purely linear variables (not in any quadratic/bilinear term)
+    lin_only = {v.name: c for (v, c) in linterms}
+    assert lin_only["var4"] == 8
+    assert len(linterms) == 1  # only var4 is purely linear
+
+    # quadterms contains all variables that appear in quadratic/bilinear terms,
+    # with both their squared coefficient and linear coefficient
+    quad_dict = {v.name: (sqrcoef, lincoef) for v, sqrcoef, lincoef in quadterms}
+    assert quad_dict["var3"] == (6.0, 4.0)   # 6*var3^2 + 4*var3
+    assert quad_dict["var1"] == (-3.0, 0.0)  # -3*var1^2, no linear term
+    assert quad_dict["var2"] == (0.0, -5.0)  # -5*var2, no squared term
+
+    # Verify we can reconstruct all linear coefficients by combining linterms and quadterms
+    full_lin = {}
+    for v, c in linterms:
+        full_lin[v.name] = full_lin.get(v.name, 0.0) + c
+    for v, _, lincoef in quadterms:
+        if lincoef != 0.0:
+            full_lin[v.name] = full_lin.get(v.name, 0.0) + lincoef
+
+    assert full_lin["var4"] == 8
+    assert full_lin["var3"] == 4
+    assert full_lin["var2"] == -5
+
 def test_addExprNonLinear():
     m = Model()
     x = m.addVar("x", lb=0, ub=1, obj=10)
