@@ -2,6 +2,14 @@
 
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+- Speed up `constant * Expr` via C-level API
+### Removed
+
+## 6.1.0 - 2026.01.31
+### Added
+- Support for SCIP 10.0.1
 - Added automated script for generating type stubs
 - Include parameter names in type stubs
 - Added pre-commit hook for automatic stub regeneration (see `.pre-commit-config.yaml`)
@@ -32,7 +40,6 @@
 - changed `addConsNode()` and `addConsLocal()` to mirror `addCons()` and accept `ExprCons` instead of `Constraint`
 - Improved `chgReoptObjective()` performance
 - Return itself for `abs` to `UnaryExpr(Operator.fabs)`
-- Speed up `constant * Expr` via C-level API
 ### Removed
 
 ## 6.0.0 - 2025.11.28
