@@ -2,8 +2,10 @@
 
 ## Unreleased
 ### Added
+- `Expr` and `GenExpr` support numpy unary func (`np.sin`, `np.cos`, `np.sqrt`, `np.exp`, `np.log`, `np.absolute`)
 ### Fixed
 ### Changed
+- The unary functions that apply a constant will return a constant not a `GenExpr`
 ### Removed
 
 ## 6.1.0 - 2026.01.31
@@ -16,7 +18,6 @@
 - Added `structured_optimization_trace` recipe for structured optimization progress tracking
 - Added methods: `getPrimalDualIntegral()`
 - `getSolVal()` supports `MatrixExpr` now
-- `Expr` and `GenExpr` support numpy unary func (`np.sin`, `np.cos`, `np.sqrt`, `np.exp`, `np.log`, `np.absolute`)
 ### Fixed
 - `getBestSol()` now returns `None` for infeasible problems instead of a `Solution` with `NULL` pointer
 - all fundamental callbacks now raise an error if not implemented
@@ -40,7 +41,6 @@
 - changed `addConsNode()` and `addConsLocal()` to mirror `addCons()` and accept `ExprCons` instead of `Constraint`
 - Improved `chgReoptObjective()` performance
 - Return itself for `abs` to `UnaryExpr(Operator.fabs)`
-- The unary functions that apply a constant will return a constant not a `GenExpr`
 ### Removed
 
 ## 6.0.0 - 2025.11.28
