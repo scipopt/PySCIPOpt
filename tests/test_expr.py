@@ -226,6 +226,7 @@ def test_mul():
 
     # test Expr * number
     assert str((x + y) * 2.0) == "Expr({Term(x): 2.0, Term(y): 2.0})"
+    assert str(2.0 * (x + y)) == "Expr({Term(x): 2.0, Term(y): 2.0})"
 
     # test Expr * Expr
     assert str(Expr({CONST: 1.0}) * x) == "Expr({Term(x): 1.0})"

@@ -296,7 +296,7 @@ cdef class Expr:
             while PyDict_Next(self.terms, &pos1, &k1_ptr, &v1_ptr):
                 res[<Term>k1_ptr] = <double>(<object>v1_ptr) * coef
             return Expr(res)
-    
+
         elif isinstance(other, Expr):
             while PyDict_Next(self.terms, &pos1, &k1_ptr, &v1_ptr):
                 pos2 = <Py_ssize_t>0
