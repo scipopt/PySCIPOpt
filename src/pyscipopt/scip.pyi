@@ -2190,7 +2190,6 @@ class SumExpr(GenExpr):
 
 @disjoint_base
 class Term:
-    ptrtuple: Incomplete
     vartuple: Incomplete
     def __init__(self, *vartuple: Incomplete) -> None: ...
     def __mul__(self, other: Term) -> Term: ...
