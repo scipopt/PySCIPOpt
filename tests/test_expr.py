@@ -1,9 +1,10 @@
 import math
 
+import numpy as np
 import pytest
 
-from pyscipopt import Model, sqrt, log, exp, sin, cos
-from pyscipopt.scip import Expr, GenExpr, ExprCons, CONST
+from pyscipopt import Model, cos, exp, log, sin, sqrt
+from pyscipopt.scip import CONST, Expr, ExprCons, GenExpr
 
 
 @pytest.fixture(scope="module")
@@ -117,10 +118,12 @@ def test_genexpr_op_genexpr(model):
     assert isinstance(1/x + genexpr, GenExpr)
     assert isinstance(1/x**1.5 - genexpr, GenExpr)
     assert isinstance(y/x - exp(genexpr), GenExpr)
-    # sqrt(2) is not a constant expression and
-    # we can only power to constant expressions!
-    with pytest.raises(NotImplementedError):
-        genexpr **= sqrt(2)
+
+    genexpr **= sqrt(2)
+    assert isinstance(genexpr, GenExpr)
+
+    with pytest.raises(TypeError):
+        genexpr **= sqrt("2")
 
 def test_degree(model):
     m, x, y, z = model
@@ -217,6 +220,49 @@ def test_getVal_with_GenExpr():
 
     with pytest.raises(ZeroDivisionError):
         m.getVal(1 / z)
+
+
+def test_unary(model):
+    m, x, y, z = model
+
+    res = "abs(sum(0.0,prod(1.0,x)))"
+    assert str(abs(x)) == res
+    assert str(np.absolute(x)) == res
+
+    res = "[sin(sum(0.0,prod(1.0,x))) sin(sum(0.0,prod(1.0,y)))]"
+    assert str(sin([x, y])) == res
+    assert str(np.sin([x, y])) == res
+
+    res = "[cos(sum(0.0,prod(1.0,x))) cos(sum(0.0,prod(1.0,y)))]"
+    assert str(cos([x, y])) == res
+    assert str(np.cos([x, y])) == res
+
+    res = "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y)))]"
+    assert str(sqrt([x, y])) == res
+    assert str(np.sqrt([x, y])) == res
+
+    res = "[exp(sum(0.0,prod(1.0,x))) exp(sum(0.0,prod(1.0,y)))]"
+    assert str(exp([x, y])) == res
+    assert str(np.exp([x, y])) == res
+
+    res = "[log(sum(0.0,prod(1.0,x))) log(sum(0.0,prod(1.0,y)))]"
+    assert str(log([x, y])) == res
+    assert str(np.log([x, y])) == res
+
+    assert sqrt(4) == np.sqrt(4)
+    assert all(sqrt([4, 4]) == np.sqrt([4, 4]))
+    assert exp(3) == np.exp(3)
+    assert all(exp([3, 3]) == np.exp([3, 3]))
+    assert log(5) == np.log(5)
+    assert all(log([5, 5]) == np.log([5, 5]))
+    assert sin(1) == np.sin(1)
+    assert all(sin([1, 1]) == np.sin([1, 1]))
+    assert cos(1) == np.cos(1)
+    assert all(cos([1, 1]) == np.cos([1, 1]))
+
+    # test invalid unary operations
+    with pytest.raises(TypeError):
+        np.arcsin(x)
 
 
 def test_mul():

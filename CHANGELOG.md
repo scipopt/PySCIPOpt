@@ -2,8 +2,10 @@
 
 ## Unreleased
 ### Added
+- `Expr` and `GenExpr` support numpy unary func (`np.sin`, `np.cos`, `np.sqrt`, `np.exp`, `np.log`, `np.absolute`)
 ### Fixed
 ### Changed
+- The unary functions that apply a constant will return a constant not a `GenExpr`
 ### Removed
 
 ## 6.1.0 - 2026.01.31
