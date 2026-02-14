@@ -642,3 +642,23 @@ def test_getSolVal():
         m.getVal("not_a_var")
     with pytest.raises(TypeError):
         m.getSolVal(sol, "not_a_var")
+
+
+def test_memory_methods():
+    m = Model()
+
+    # Memory values should be non-negative even on an empty model
+    assert m.getMemUsed() >= 0
+    assert m.getMemTotal() >= 0
+    assert m.getMemExternEstim() >= 0
+
+    # Total allocated should be at least as much as actively used
+    assert m.getMemTotal() >= m.getMemUsed()
+
+    # After adding variables and solving, memory usage should increase
+    x = m.addVar("x", vtype="C", obj=1.0)
+    m.addCons(x >= 0)
+    m.optimize()
+
+    assert m.getMemUsed() > 0
+    assert m.getMemTotal() > 0
