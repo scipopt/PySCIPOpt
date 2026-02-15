@@ -4,6 +4,7 @@
 ### Added
 ### Fixed
 ### Changed
+- Speed up `constant * Expr` via C-level API
 ### Removed
 
 ## 6.1.0 - 2026.01.31
