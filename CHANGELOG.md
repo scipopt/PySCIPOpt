@@ -4,7 +4,9 @@
 ### Added
 ### Fixed
 ### Changed
+- Speed up `Term.__eq__` via the C-level API
 ### Removed
+- Removed `Term.ptrtuple` to optimize `Term` memory usage
 
 ## 6.1.0 - 2026.01.31
 ### Added
