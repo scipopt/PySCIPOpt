@@ -4,6 +4,7 @@
 ### Added
 ### Fixed
 ### Changed
+- Return NotImplemented for `Expr` and `GenExpr` operators, if they can't handle input types in the calculation
 ### Removed
 
 ## 6.1.0 - 2026.01.31
