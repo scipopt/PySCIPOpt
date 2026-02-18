@@ -8,8 +8,8 @@ CONST: Term
 EventNames: dict
 MAJOR: int
 MINOR: int
-Operator: Op
 PATCH: int
+Operator: Op
 PY_SCIP_CALL: Incomplete
 StageNames: dict
 TYPE_CHECKING: bool
@@ -20,18 +20,18 @@ _core_sum: Incomplete
 _expr_richcmp: Incomplete
 _is_number: Incomplete
 buildGenExprObj: Incomplete
-cos: Incomplete
 exp: Incomplete
+log: Incomplete
+sin: Incomplete
+cos: Incomplete
+sqrt: Incomplete
 expr_to_array: Incomplete
 expr_to_nodes: Incomplete
 is_memory_freed: Incomplete
-log: Incomplete
 print_memory_in_use: Incomplete
 quickprod: Incomplete
 quicksum: Incomplete
 readStatistics: Incomplete
-sin: Incomplete
-sqrt: Incomplete
 str_conversion: Incomplete
 value_to_array: Incomplete
 
@@ -325,13 +325,27 @@ class Eventhdlr:
     def eventinit(self) -> Incomplete: ...
     def eventinitsol(self) -> Incomplete: ...
 
+class ExprLike:
+    def __array_ufunc__(
+        self,
+        ufunc: np.ufunc,
+        method: str,
+        *args: Incomplete,
+        **kwargs: Incomplete,
+    ) -> Incomplete: ...
+    def __abs__(self) -> GenExpr: ...
+    def exp(self) -> GenExpr: ...
+    def log(self) -> GenExpr: ...
+    def sqrt(self) -> GenExpr: ...
+    def sin(self) -> GenExpr: ...
+    def cos(self) -> GenExpr: ...
+
 @disjoint_base
-class Expr:
+class Expr(ExprLike):
     terms: Incomplete
     def __init__(self, terms: Incomplete = ...) -> None: ...
     def degree(self) -> Incomplete: ...
     def normalize(self) -> Incomplete: ...
-    def __abs__(self) -> Incomplete: ...
     def __add__(self, other: Incomplete) -> Incomplete: ...
     def __eq__(self, other: object) -> bool: ...
     def __ge__(self, other: object) -> bool: ...
@@ -371,7 +385,7 @@ class ExprCons:
     def __ne__(self, other: object) -> bool: ...
 
 @disjoint_base
-class GenExpr:
+class GenExpr(ExprLike):
     _op: Incomplete
     children: Incomplete
     def __init__(self) -> None: ...
@@ -516,8 +530,8 @@ class MatrixExpr(np.ndarray):
     def _evaluate(self, sol: Incomplete) -> Incomplete: ...
     def __array_ufunc__(
         self,
-        ufunc: Incomplete,
-        method: Incomplete,
+        ufunc: np.ufunc,
+        method: str,
         *args: Incomplete,
         **kwargs: Incomplete,
     ) -> Incomplete: ...
@@ -525,8 +539,8 @@ class MatrixExpr(np.ndarray):
 class MatrixExprCons(np.ndarray):
     def __array_ufunc__(
         self,
-        ufunc: Incomplete,
-        method: Incomplete,
+        ufunc: np.ufunc,
+        method: str,
         *args: Incomplete,
         **kwargs: Incomplete,
     ) -> Incomplete: ...
