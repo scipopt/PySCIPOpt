@@ -25,13 +25,14 @@ class ClassInfo:
     name: str
     parent: Optional[str] = None
     attributes: list = field(default_factory=list)  # list of (name, type_hint)
-    methods: list = field(default_factory=list)  # list of method names
+    methods: dict = field(default_factory=dict)  # dict of method_name -> list of param names (excluding self)
     static_methods: set = field(default_factory=set)  # set of static method names
     class_vars: list = field(default_factory=list)  # list of (name, type_hint)
     has_hash: bool = False
     has_eq: bool = False
     is_dataclass: bool = False
     dataclass_fields: list = field(default_factory=list)  # list of (name, type, default)
+    is_statistics_class: bool = False  # Special handling for Statistics class
 
 
 @dataclass
@@ -59,11 +60,11 @@ class StubGenerator:
         '__hash__': 'def __hash__(self) -> int: ...',
         '__len__': 'def __len__(self) -> int: ...',
         '__bool__': 'def __bool__(self) -> bool: ...',
-        '__init__': 'def __init__(self, *args, **kwargs) -> None: ...',
+        '__init__': 'def __init__(self, *args: Incomplete, **kwargs: Incomplete) -> None: ...',
         '__repr__': 'def __repr__(self) -> str: ...',
         '__str__': 'def __str__(self) -> str: ...',
-        '__delitem__': 'def __delitem__(self, other) -> None: ...',
-        '__setitem__': 'def __setitem__(self, index, object) -> None: ...',
+        '__delitem__': 'def __delitem__(self, key: Incomplete) -> None: ...',
+        '__setitem__': 'def __setitem__(self, key: Incomplete, value: Incomplete) -> None: ...',
     }
 
     # Methods that should NOT appear in stubs (internal Cython methods)
@@ -79,24 +80,50 @@ class StubGenerator:
 
     # Methods with specific type hints (no *args, **kwargs)
     TYPED_METHODS = {
-        '__getitem__': 'def __getitem__(self, index): ...',
-        '__iter__': 'def __iter__(self): ...',
-        '__next__': 'def __next__(self): ...',
-        '__add__': 'def __add__(self, other): ...',
-        '__radd__': 'def __radd__(self, other): ...',
-        '__sub__': 'def __sub__(self, other): ...',
-        '__rsub__': 'def __rsub__(self, other): ...',
-        '__mul__': 'def __mul__(self, other): ...',
-        '__rmul__': 'def __rmul__(self, other): ...',
-        '__truediv__': 'def __truediv__(self, other): ...',
-        '__rtruediv__': 'def __rtruediv__(self, other): ...',
-        '__pow__': 'def __pow__(self, other): ...',
-        '__rpow__': 'def __rpow__(self, other): ...',
-        '__neg__': 'def __neg__(self): ...',
-        '__abs__': 'def __abs__(self): ...',
-        '__iadd__': 'def __iadd__(self, other): ...',
-        '__isub__': 'def __isub__(self, other): ...',
-        '__imul__': 'def __imul__(self, other): ...',
+        '__getitem__': 'def __getitem__(self, index: Incomplete) -> Incomplete: ...',
+        '__iter__': 'def __iter__(self) -> Incomplete: ...',
+        '__next__': 'def __next__(self) -> Incomplete: ...',
+        '__add__': 'def __add__(self, other: Incomplete) -> Incomplete: ...',
+        '__radd__': 'def __radd__(self, other: Incomplete) -> Incomplete: ...',
+        '__sub__': 'def __sub__(self, other: Incomplete) -> Incomplete: ...',
+        '__rsub__': 'def __rsub__(self, other: Incomplete) -> Incomplete: ...',
+        '__mul__': 'def __mul__(self, other: Incomplete) -> Incomplete: ...',
+        '__rmul__': 'def __rmul__(self, other: Incomplete) -> Incomplete: ...',
+        '__truediv__': 'def __truediv__(self, other: Incomplete) -> Incomplete: ...',
+        '__rtruediv__': 'def __rtruediv__(self, other: Incomplete) -> Incomplete: ...',
+        '__rpow__': 'def __rpow__(self, other: Incomplete) -> Incomplete: ...',
+        '__neg__': 'def __neg__(self) -> Incomplete: ...',
+        '__abs__': 'def __abs__(self) -> Incomplete: ...',
+        '__iadd__': 'def __iadd__(self, other: Incomplete) -> Incomplete: ...  # noqa: PYI034',
+        '__isub__': 'def __isub__(self, other: Incomplete) -> Incomplete: ...  # noqa: PYI034',
+        '__imul__': 'def __imul__(self, other: Incomplete) -> Incomplete: ...  # noqa: PYI034',
+        '__matmul__': 'def __matmul__(self, other: Incomplete) -> Incomplete: ...',
+        '__array_ufunc__': 'def __array_ufunc__(self, ufunc: Incomplete, method: Incomplete, *args: Incomplete, **kwargs: Incomplete) -> Incomplete: ...',
+    }
+
+    # Classes that should have @disjoint_base decorator
+    # These are user-facing classes that should not be structurally compatible
+    DISJOINT_BASE_CLASSES = {
+        'Benders', 'Benderscut', 'BoundChange', 'Branchrule', 'Column', 'ColumnExact',
+        'Conshdlr', 'Constant', 'Constraint', 'Cutsel', 'DomainChanges', 'Event',
+        'Eventhdlr', 'Expr', 'ExprCons', 'GenExpr', 'Heur', 'IIS', 'IISfinder',
+        'LP', 'Model', 'NLRow', 'Node', 'Nodesel', 'PowExpr', 'Presol', 'Pricer',
+        'ProdExpr', 'Prop', 'Reader', 'Relax', 'Row', 'RowExact', 'Sepa', 'Solution',
+        'SumExpr', 'Term', 'UnaryExpr', 'VarExpr', 'Variable', '_VarArray',
+    }
+
+    # Methods that need type: ignore[override] for numpy subclasses
+    NUMPY_OVERRIDE_METHODS = {'__ge__', '__le__', '__gt__', '__lt__', 'sum', '__pow__'}
+
+    # Cython extension types (cdef class) that need *args, **kwargs for __init__
+    # These specific classes have __init__ with *args, **kwargs at runtime
+    CYTHON_EXTENSION_TYPES = {
+        'PowExpr', 'ProdExpr', 'SumExpr', 'UnaryExpr', 'VarExpr', 'Constant',
+    }
+
+    # Classes with custom __init__ signatures
+    CUSTOM_INIT = {
+        'Term': 'def __init__(self, *vartuple: Incomplete) -> None: ...',
     }
 
     def __init__(self, src_dir: Path):
@@ -163,10 +190,10 @@ class StubGenerator:
                     )
                 continue
 
-            # Check for public attribute
-            if current_class and 'cdef public' in line:
-                # Extract attribute name
-                match = re.search(r'cdef\s+public\s+(?:\w+\s+)?(\w+)\s*$', line.strip())
+            # Check for public or readonly attribute
+            if current_class and ('cdef public' in line or 'cdef readonly' in line):
+                # Extract attribute name (handles: cdef public type name, cdef readonly type name)
+                match = re.search(r'cdef\s+(?:public|readonly)\s+(?:\w+\s+)?(\w+)\s*$', line.strip())
                 if match:
                     attr_name = match.group(1)
                     if current_class in self.module_info.classes:
@@ -280,9 +307,9 @@ class StubGenerator:
                 i += 1
                 continue
 
-            # Check for public attribute in class body
-            if current_class and 'cdef public' in stripped:
-                match = re.search(r'cdef\s+public\s+(?:\w+\s+)?(\w+)\s*$', stripped)
+            # Check for public or readonly attribute in class body
+            if current_class and ('cdef public' in stripped or 'cdef readonly' in stripped):
+                match = re.search(r'cdef\s+(?:public|readonly)\s+(?:\w+\s+)?(\w+)\s*$', stripped)
                 if match:
                     attr_name = match.group(1)
                     cls_info = self.module_info.classes.get(current_class)
@@ -405,6 +432,17 @@ class StubGenerator:
                     i += 1
                     continue
 
+                # Extract full signature (may span multiple lines)
+                sig_lines = [stripped]
+                j = i + 1
+                while j < len(lines) and ')' not in sig_lines[-1]:
+                    sig_lines.append(lines[j].strip())
+                    j += 1
+                full_sig = ' '.join(sig_lines)
+
+                # Parse parameters from signature
+                params = self._parse_params(full_sig)
+
                 if current_class:
                     cls_info = self.module_info.classes.get(current_class)
                     if cls_info:
@@ -416,9 +454,10 @@ class StubGenerator:
                             # Expand __richcmp__ to individual comparison methods
                             for cmp_method in self.RICHCMP_EXPANSION['__richcmp__']:
                                 if cmp_method not in cls_info.methods:
-                                    cls_info.methods.append(cmp_method)
-                        elif method_name not in cls_info.methods:
-                            cls_info.methods.append(method_name)
+                                    cls_info.methods[cmp_method] = []
+                        else:
+                            # Always overwrite - last definition wins (like Python)
+                            cls_info.methods[method_name] = params
 
                             # Track static methods
                             if is_staticmethod:
@@ -447,6 +486,121 @@ class StubGenerator:
                             self.module_info.module_vars.append((var_name, 'Incomplete'))
 
             i += 1
+
+    def _generate_method_stub(self, method_name: str, params: list, is_static: bool = False, return_type: str = 'Incomplete') -> str:
+        """Generate a method stub with proper parameter types.
+
+        Args:
+            method_name: Name of the method
+            params: List of (param_name, has_default) tuples
+            is_static: Whether this is a static method
+            return_type: Return type annotation
+        """
+        if not params:
+            # No parameters (other than self)
+            if is_static:
+                return f'def {method_name}() -> {return_type}: ...'
+            else:
+                return f'def {method_name}(self) -> {return_type}: ...'
+
+        # Special case: __pow__ third parameter should have a default (Python protocol)
+        if method_name == '__pow__' and len(params) >= 2:
+            params = list(params)  # Make a copy
+            # Make the third parameter (modulo/mod) have a default
+            if len(params) >= 2 and not params[1][1]:  # If second param doesn't have default
+                params[1] = (params[1][0], True)  # Give it a default
+
+        # Build parameter string
+        param_strs = []
+        if not is_static:
+            param_strs.append('self')
+
+        for param_name, has_default in params:
+            if has_default:
+                param_strs.append(f'{param_name}: Incomplete = ...')
+            else:
+                param_strs.append(f'{param_name}: Incomplete')
+
+        params_str = ', '.join(param_strs)
+        return f'def {method_name}({params_str}) -> {return_type}: ...'
+
+    def _parse_params(self, signature: str) -> list:
+        """Parse parameter names from a function signature.
+
+        Returns a list of (param_name, has_default) tuples, excluding 'self'.
+        """
+        # Extract the part between parentheses
+        match = re.search(r'\(([^)]*)\)', signature)
+        if not match:
+            return []
+
+        params_str = match.group(1)
+        if not params_str.strip():
+            return []
+
+        params = []
+        # Split by comma, but handle nested structures
+        depth = 0
+        current = []
+        for char in params_str:
+            if char in '([{':
+                depth += 1
+                current.append(char)
+            elif char in ')]}':
+                depth -= 1
+                current.append(char)
+            elif char == ',' and depth == 0:
+                params.append(''.join(current).strip())
+                current = []
+            else:
+                current.append(char)
+        if current:
+            params.append(''.join(current).strip())
+
+        result = []
+        for param in params:
+            if not param:
+                continue
+            param = param.strip()
+            # Skip self
+            if param == 'self':
+                continue
+            # Skip *args and **kwargs - they need special handling
+            if param.startswith('*'):
+                continue
+
+            # Handle Cython typed parameters: Type name [not None] [= default]
+            # Examples: Row row not None, Variable var not None, int x, object y = None
+            # The pattern is: [Type] name [not None] [= default]
+
+            # First, check for default value
+            has_default = '=' in param
+
+            # Remove "not None" modifier if present
+            param_clean = re.sub(r'\s+not\s+None\s*', ' ', param)
+
+            # Try to match: Type name [= default] or just name [= default]
+            # Cython type pattern: CapitalizedType name
+            cython_match = re.match(r'^([A-Z]\w*)\s+(\w+)(?:\s*=.*)?$', param_clean.strip())
+            if cython_match:
+                param_name = cython_match.group(2)
+                result.append((param_name, has_default))
+                continue
+
+            # Try simple Cython type: lowercase_type name (like int x, object y)
+            simple_cython_match = re.match(r'^([a-z]\w*)\s+(\w+)(?:\s*=.*)?$', param_clean.strip())
+            if simple_cython_match:
+                param_name = simple_cython_match.group(2)
+                result.append((param_name, has_default))
+                continue
+
+            # Python-style: name [: type] [= default]
+            python_match = re.match(r'^(\w+)(?:\s*:.*)?(?:\s*=.*)?$', param_clean.strip())
+            if python_match:
+                param_name = python_match.group(1)
+                result.append((param_name, has_default))
+
+        return result
 
     def _detect_dataclass(self, content: str) -> dict:
         """Detect @dataclass decorated classes and their fields."""
@@ -481,11 +635,15 @@ class StubGenerator:
         lines = []
 
         # Header imports
-        lines.append('from dataclasses import dataclass')
+        # Only import dataclass if any class uses it
+        has_dataclass = any(cls.is_dataclass for cls in self.module_info.classes.values())
+        if has_dataclass:
+            lines.append('from dataclasses import dataclass')
         lines.append('from typing import ClassVar')
         lines.append('')
         lines.append('import numpy')
         lines.append('from _typeshed import Incomplete')
+        lines.append('from typing_extensions import disjoint_base')
         lines.append('')
 
         # Module-level variables and functions (sorted alphabetically)
@@ -530,9 +688,17 @@ class StubGenerator:
         """Generate stub for a single class."""
         lines = []
 
+        # Special handling for Statistics class (has read-only @property methods)
+        if cls_info.is_statistics_class:
+            return self._generate_statistics_stub()
+
         # Handle dataclass
         if cls_info.is_dataclass:
             lines.append('@dataclass')
+
+        # Add @disjoint_base decorator for appropriate classes
+        if cls_info.name in self.DISJOINT_BASE_CLASSES:
+            lines.append('@disjoint_base')
 
         # Class declaration
         if cls_info.parent:
@@ -547,6 +713,12 @@ class StubGenerator:
                     lines.append(f'    {fname}: {ftype} = {fdefault}')
                 else:
                     lines.append(f'    {fname}: {ftype}')
+            # Also include additional attributes (like @property-based ones)
+            # Use ... as default to allow them after fields with defaults
+            if cls_info.attributes:
+                sorted_attrs = sorted(cls_info.attributes, key=lambda x: x[0])
+                for attr_name, type_hint in sorted_attrs:
+                    lines.append(f'    {attr_name}: {type_hint} = ...')
             return lines
 
         # Class variables (for enum-like classes)
@@ -564,7 +736,7 @@ class StubGenerator:
         special_methods = []
         comparison_methods = []
 
-        for method in cls_info.methods:
+        for method in cls_info.methods.keys():
             if method in self.COMPARISON_METHODS:
                 comparison_methods.append(method)
             elif method.startswith('__') and method.endswith('__'):
@@ -585,32 +757,64 @@ class StubGenerator:
                     comparison_methods.append(cmp_method)
 
         # Output __init__ first if present or needs to be added (not for numpy subclasses or specific classes)
+        # Cython extension types need *args, **kwargs for __init__
+        is_cython_extension = cls_info.name in self.CYTHON_EXTENSION_TYPES
+        has_custom_init = cls_info.name in self.CUSTOM_INIT
         if '__init__' in special_methods:
-            lines.append(f'    {self.SPECIAL_METHODS["__init__"]}')
+            if has_custom_init:
+                lines.append(f'    {self.CUSTOM_INIT[cls_info.name]}')
+            elif is_cython_extension:
+                # Cython extension types have *args, **kwargs at runtime
+                lines.append(f'    {self.SPECIAL_METHODS["__init__"]}')
+            else:
+                params = cls_info.methods.get('__init__', [])
+                stub = self._generate_method_stub('__init__', params, return_type='None')
+                lines.append(f'    {stub}')
             special_methods.remove('__init__')
         elif '__init__' not in cls_info.methods and not is_numpy_subclass and not cls_info.is_dataclass and cls_info.name not in skip_init_classes:
-            lines.append(f'    {self.SPECIAL_METHODS["__init__"]}')
+            if has_custom_init:
+                lines.append(f'    {self.CUSTOM_INIT[cls_info.name]}')
+            elif is_cython_extension:
+                # Cython extension types have *args, **kwargs at runtime
+                lines.append(f'    {self.SPECIAL_METHODS["__init__"]}')
+            else:
+                lines.append(f'    def __init__(self) -> None: ...')
 
         # Sort and output regular methods
         for method in sorted(regular_methods):
+            params = cls_info.methods.get(method, [])
             if method in cls_info.static_methods:
                 lines.append('    @staticmethod')
-                lines.append(f'    def {method}(*args, **kwargs): ...')
+                stub = self._generate_method_stub(method, params, is_static=True)
+                lines.append(f'    {stub}')
             else:
-                lines.append(f'    def {method}(self, *args, **kwargs): ...')
+                stub = self._generate_method_stub(method, params)
+                # Add type: ignore[override] for numpy subclass override methods
+                if is_numpy_subclass and method in self.NUMPY_OVERRIDE_METHODS:
+                    stub = stub.replace(': ...', ': ...  # type: ignore[override]')
+                lines.append(f'    {stub}')
 
         # Combine special methods and comparison methods, sort alphabetically
         all_special = []
         for method in special_methods:
             if method in self.SPECIAL_METHODS:
-                all_special.append((method, self.SPECIAL_METHODS[method]))
+                stub = self.SPECIAL_METHODS[method]
             elif method in self.TYPED_METHODS:
-                all_special.append((method, self.TYPED_METHODS[method]))
+                stub = self.TYPED_METHODS[method]
             else:
-                all_special.append((method, f'def {method}(self, *args, **kwargs): ...'))
+                params = cls_info.methods.get(method, [])
+                stub = self._generate_method_stub(method, params)
+            # Add type: ignore[override] for numpy subclass override methods
+            if is_numpy_subclass and method in self.NUMPY_OVERRIDE_METHODS:
+                stub = stub.replace(': ...', ': ...  # type: ignore[override]')
+            all_special.append((method, stub))
 
         for method in comparison_methods:
-            all_special.append((method, self.COMPARISON_METHODS[method]))
+            stub = self.COMPARISON_METHODS[method]
+            # Add type: ignore[override] for numpy subclass override methods
+            if is_numpy_subclass and method in self.NUMPY_OVERRIDE_METHODS:
+                stub = stub.replace(': ...', ': ...  # type: ignore[override]')
+            all_special.append((method, stub))
 
         # Sort and output all special methods alphabetically
         for method, stub in sorted(all_special, key=lambda x: x[0]):
@@ -619,6 +823,70 @@ class StubGenerator:
         # If class is empty, add pass or ellipsis
         if len(lines) == 1:
             lines.append('    ...')
+
+        return lines
+
+    def _generate_statistics_stub(self) -> list:
+        """Generate stub for the Statistics class with proper @property decorators."""
+        lines = []
+        lines.append('class Statistics:')
+
+        # Writable attributes (from __init__ parameters)
+        writable_attrs = [
+            ('status', 'str'),
+            ('total_time', 'float'),
+            ('solving_time', 'float'),
+            ('presolving_time', 'float'),
+            ('reading_time', 'float'),
+            ('copying_time', 'float'),
+            ('problem_name', 'str'),
+            ('presolved_problem_name', 'str'),
+            ('n_runs', 'int | None'),
+            ('n_nodes', 'int | None'),
+            ('n_solutions_found', 'int'),
+            ('first_solution', 'float | None'),
+            ('primal_bound', 'float | None'),
+            ('dual_bound', 'float | None'),
+            ('gap', 'float | None'),
+            ('primal_dual_integral', 'float | None'),
+        ]
+
+        # Read-only properties (derived from other fields)
+        readonly_props = [
+            ('n_binary_vars', 'int'),
+            ('n_conss', 'int'),
+            ('n_continuous_vars', 'int'),
+            ('n_implicit_integer_vars', 'int'),
+            ('n_integer_vars', 'int'),
+            ('n_maximal_cons', 'int'),
+            ('n_presolved_binary_vars', 'int'),
+            ('n_presolved_conss', 'int'),
+            ('n_presolved_continuous_vars', 'int'),
+            ('n_presolved_implicit_integer_vars', 'int'),
+            ('n_presolved_integer_vars', 'int'),
+            ('n_presolved_maximal_cons', 'int'),
+            ('n_presolved_vars', 'int'),
+            ('n_vars', 'int'),
+        ]
+
+        # Output writable attributes
+        for attr_name, attr_type in writable_attrs:
+            lines.append(f'    {attr_name}: {attr_type}')
+
+        # Output __init__ method
+        init_params = []
+        for attr_name, attr_type in writable_attrs:
+            init_params.append(f'{attr_name}: {attr_type}')
+        init_sig = ', '.join(['self'] + init_params)
+        lines.append(f'    def __init__({init_sig}) -> None: ...')
+
+        # Output read-only properties with @property decorator
+        for prop_name, prop_type in readonly_props:
+            lines.append('    @property')
+            lines.append(f'    def {prop_name}(self) -> {prop_type}: ...')
+
+        # Statistics is a dataclass at runtime, so it has __replace__
+        lines.append('    def __replace__(self, **changes: Incomplete) -> Statistics: ...')
 
         return lines
 
@@ -664,27 +932,20 @@ class StubGenerator:
             if ('name', 'Incomplete') not in cls_info.attributes:
                 cls_info.attributes.append(('name', 'Incomplete'))
 
-        # Handle Statistics as dataclass
+        # Handle Statistics - has both dataclass fields and @property methods
+        # We need to use explicit @property decorators for read-only attributes
         if 'Statistics' in self.module_info.classes:
             cls_info = self.module_info.classes['Statistics']
-            cls_info.is_dataclass = True
-            cls_info.dataclass_fields = [
-                ('status', 'str', None),
-                ('total_time', 'float', None),
-                ('solving_time', 'float', None),
-                ('presolving_time', 'float', None),
-                ('reading_time', 'float', None),
-                ('copying_time', 'float', None),
-                ('problem_name', 'str', None),
-                ('presolved_problem_name', 'str', None),
-                ('n_runs', 'int', 'None'),
-                ('n_nodes', 'int', 'None'),
-                ('n_solutions_found', 'int', '-1'),
-                ('first_solution', 'float', 'None'),
-                ('primal_bound', 'float', 'None'),
-                ('dual_bound', 'float', 'None'),
-                ('gap', 'float', 'None'),
-            ]
+            # Clear any parsed attributes - we handle Statistics fully manually
+            cls_info.attributes = []
+            cls_info.methods = {}  # Clear methods, we'll generate them manually
+            # Mark as special class that needs custom generation
+            cls_info.is_statistics_class = True
+
+        # Handle Term class - has *vartuple in __init__
+        if 'Term' in self.module_info.classes:
+            cls_info = self.module_info.classes['Term']
+            cls_info.methods['__init__'] = [('vartuple', False)]  # Will be handled specially
 
         # Add/update known module-level variables with correct types
         known_vars = {
@@ -695,6 +956,7 @@ class StubGenerator:
             'Operator': 'Op',
             'PATCH': 'int',
             'StageNames': 'dict',
+            'TYPE_CHECKING': 'bool',  # Re-exported from typing
             '_SCIP_BOUNDTYPE_TO_STRING': 'dict',
             'str_conversion': 'Incomplete',
         }

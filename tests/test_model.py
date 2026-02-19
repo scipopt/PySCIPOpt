@@ -1,9 +1,12 @@
-import pytest
-import os
 import itertools
+import os
 
-from pyscipopt import Model, SCIP_STAGE, SCIP_PARAMSETTING, SCIP_BRANCHDIR, quicksum
+import numpy as np
+import pytest
+
+from pyscipopt import SCIP_BRANCHDIR, SCIP_PARAMSETTING, SCIP_STAGE, Model, quicksum
 from helpers.utils import random_mip_1
+
 
 def test_model():
     # create solver instance
@@ -564,3 +567,98 @@ def test_getVarPseudocost():
 
     # Not exactly 12 because the new value is a weighted sum of all the updates
     assert m.isEQ(p, 12.0001)
+
+def test_objIntegral():
+    m = Model()
+    m.setObjIntegral()
+    assert m.isObjIntegral()
+
+    m = Model()
+    x = m.addVar(vtype='C', obj=1.5)
+    m.addCons(x >= 0)
+    m.optimize()
+    assert not m.isObjIntegral()
+
+
+def test_freeTransform_repr():
+    """See Issue #604 and PR #1161."""
+    m = Model()
+
+    x = m.addVar("x", vtype='B', obj=1.0)
+    c = m.addCons(x >= 0, name="mycons")
+
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    m.presolve()
+
+    transformed_x = m.getTransformedVar(x)
+    transformed_c = m.getTransformedCons(c)
+
+    assert repr(transformed_x) == "t_x"
+    assert repr(transformed_c) == "mycons"
+
+    # Without the fix in PR #1161, transformed objects would segfault
+    m.freeTransform()
+    assert repr(transformed_x) == ""
+    assert repr(transformed_c) == ""
+    assert repr(x) == "x"
+    assert repr(c) == "mycons"
+
+
+def test_model_dealloc_repr():
+    """See Issue #604 and PR #1161."""
+    import gc
+
+    def create_model_and_get_objects():
+        m = Model()
+        x = m.addVar("x", vtype='B', obj=1.0)
+        c = m.addCons(x >= 0, name="mycons")
+        return x, c
+
+    x, c = create_model_and_get_objects()
+    gc.collect()
+
+    assert repr(x) == ""
+    assert repr(c) == ""
+
+
+def test_getSolVal():
+    # fix #1136
+
+    m = Model()
+    x = m.addVar(vtype="B")
+    y = m.addMatrixVar(2, vtype="B")
+
+    m.setObjective(x + y.sum())
+    m.optimize()
+    sol = m.getBestSol()
+
+    assert m.getSolVal(sol, x) == m.getVal(x)
+    assert m.getVal(x) == 0
+
+    assert np.array_equal(m.getSolVal(sol, y), m.getVal(y))
+    assert np.array_equal(m.getVal(y), np.array([0, 0]))
+
+    with pytest.raises(TypeError):
+        m.getVal("not_a_var")
+    with pytest.raises(TypeError):
+        m.getSolVal(sol, "not_a_var")
+
+
+def test_memory_methods():
+    m = Model()
+
+    # Memory values should be non-negative even on an empty model
+    assert m.getMemUsed() >= 0
+    assert m.getMemTotal() >= 0
+    assert m.getMemExternEstim() >= 0
+
+    # Total allocated should be at least as much as actively used
+    assert m.getMemTotal() >= m.getMemUsed()
+
+    # After adding variables and solving, memory usage should increase
+    x = m.addVar("x", vtype="C", obj=1.0)
+    m.addCons(x >= 0)
+    m.optimize()
+
+    assert m.getMemUsed() > 0
+    assert m.getMemTotal() > 0
