@@ -1,3 +1,6 @@
+import gc
+import weakref
+
 import pytest, random
 
 from pyscipopt import Model, Eventhdlr, SCIP_RESULT, SCIP_EVENTTYPE, SCIP_PARAMSETTING, quicksum
@@ -196,3 +199,48 @@ def test_raise_error_catch_var_event():
 
     with pytest.raises(Exception):
         m.optimize()
+
+def test_plugin_strong_ref_and_cleanup():
+    """Plugins hold a strong reference to Model, and Model is still collected after cleanup.
+
+    Verifies two things:
+    1. self.model is accessible in eventexit (not a dead weakref)
+    2. The Model is garbage collected after all references are dropped
+       (the _plugins cycle-breaking in __dealloc__ works)
+    """
+    eventexit_called = []
+
+    class StrongRefEvent(Eventhdlr):
+        def eventinit(self):
+            self.model.catchEvent(SCIP_EVENTTYPE.NODEFOCUSED, self)
+
+        def eventexit(self):
+            # This would raise ReferenceError with weakref.proxy
+            self.model.dropEvent(SCIP_EVENTTYPE.NODEFOCUSED, self)
+            eventexit_called.append(True)
+
+        def eventexec(self, event):
+            pass
+
+    m = Model()
+    m.hideOutput()
+    ev = StrongRefEvent()
+    m.includeEventhdlr(ev, "strong_ref", "test strong ref plugin")
+    m.addVar("x", obj=1, vtype="I")
+    m.optimize()
+
+    ref = weakref.ref(m)
+
+    # Model should survive del m because ev holds a strong ref via self.model
+    del m
+    gc.collect()
+    assert ref() is not None, "Model was collected while plugin still holds a strong reference"
+
+    # model.free() breaks the cycle and allows collection
+    ref().free()
+    del ev
+    gc.collect()
+    assert ref() is None, "Model was not garbage collected after free() and dropping all references"
+
+    # eventexit was called successfully (self.model was alive)
+    assert eventexit_called
