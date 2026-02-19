@@ -218,9 +218,6 @@ def test_catchEvent_does_not_leak_model():
     m.optimize()
 
     ref = weakref.ref(m)
-    del ev
-    del m
-    gc.collect()
 
     del m
     gc.collect()
