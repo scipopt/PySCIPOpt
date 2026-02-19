@@ -1,8 +1,4 @@
-import gc
-import sys
-import weakref
-
-import pytest, random
+import pytest, weakref, gc, random
 
 from pyscipopt import Model, Eventhdlr, SCIP_RESULT, SCIP_EVENTTYPE, SCIP_PARAMSETTING, quicksum
 
@@ -209,7 +205,7 @@ def test_catchEvent_does_not_leak_model():
             self.model.catchEvent(SCIP_EVENTTYPE.NODEFOCUSED, self)
 
         def eventexit(self):
-            pass  # intentionally no dropEvent, as is common in practice
+            pass  # intentionally no dropEvent, which is bad practice
 
         def eventexec(self, event):
             pass
@@ -226,4 +222,10 @@ def test_catchEvent_does_not_leak_model():
     del m
     gc.collect()
 
+    del m
+    gc.collect()
+    assert ref() is not None, "Model was accidentally garbage collected — event handler active"
+
+    del ev
+    gc.collect()
     assert ref() is None, "Model was not garbage collected — catchEvent likely leaked a reference"
