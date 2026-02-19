@@ -1,3 +1,7 @@
+import gc
+import sys
+import weakref
+
 import pytest, random
 
 from pyscipopt import Model, Eventhdlr, SCIP_RESULT, SCIP_EVENTTYPE, SCIP_PARAMSETTING, quicksum
@@ -190,3 +194,36 @@ def test_raise_error_catch_var_event():
 
     with pytest.raises(Exception):
         m.optimize()
+
+def test_catchEvent_does_not_leak_model():
+    """catchEvent should not artificially increment the Model's reference count.
+
+    Previously, catchEvent called Py_INCREF(self) on the Model, and dropEvent
+    called Py_DECREF(self). Since many event handlers skip dropEvent (e.g. when
+    self.model is already dead), this caused the Model to leak — its refcount
+    never returned to zero, preventing garbage collection.
+    """
+
+    class SimpleEvent(Eventhdlr):
+        def eventinit(self):
+            self.model.catchEvent(SCIP_EVENTTYPE.NODEFOCUSED, self)
+
+        def eventexit(self):
+            pass  # intentionally no dropEvent, as is common in practice
+
+        def eventexec(self, event):
+            pass
+
+    m = Model()
+    m.hideOutput()
+    ev = SimpleEvent()
+    m.includeEventhdlr(ev, "simple", "test event handler")
+    m.addVar("x", obj=1, vtype="I")
+    m.optimize()
+
+    ref = weakref.ref(m)
+    del ev
+    del m
+    gc.collect()
+
+    assert ref() is None, "Model was not garbage collected — catchEvent likely leaked a reference"
