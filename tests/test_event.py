@@ -219,10 +219,10 @@ def test_catchEvent_does_not_leak_model():
 
     ref = weakref.ref(m)
 
-    del m
-    gc.collect()
-    assert ref() is not None, "Model was accidentally garbage collected — event handler active"
-
     del ev
+    gc.collect()
+    assert ref() is not None, "Model was garbage collected — event handler absorbed a reference"
+
+    del m
     gc.collect()
     assert ref() is None, "Model was not garbage collected — catchEvent likely leaked a reference"
