@@ -11465,6 +11465,41 @@ cdef class Model:
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
+    def getMemUsed(self):
+        """
+        Gets the total number of bytes used in block and buffer memory.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetMemUsed(self._scip)
+
+    def getMemTotal(self):
+        """
+        Gets the total number of bytes in block and buffer memory
+        (i.e., total allocated, including unused).
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetMemTotal(self._scip)
+
+    def getMemExternEstim(self):
+        """
+        Gets the estimated number of bytes used by external software,
+        e.g., the LP solver.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetMemExternEstim(self._scip)
+
     def getNLPs(self):
         """
         Gets total number of LPs solved so far.
