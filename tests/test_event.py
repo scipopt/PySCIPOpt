@@ -195,9 +195,11 @@ def test_catchEvent_does_not_leak_model():
     """catchEvent should not artificially increment the Model's reference count.
 
     Previously, catchEvent called Py_INCREF(self) on the Model, and dropEvent
-    called Py_DECREF(self). Since many event handlers skip dropEvent (e.g. when
-    self.model is already dead), this caused the Model to leak — its refcount
-    never returned to zero, preventing garbage collection.
+    called Py_DECREF(self). In practice these calls are often unbalanced — event
+    handlers commonly catch events without a matching drop (e.g. calling
+    catchEvent in eventinit but omitting dropEvent in eventexit). Each unmatched
+    catchEvent permanently inflated the Model's refcount, preventing garbage
+    collection.
     """
 
     class SimpleEvent(Eventhdlr):
