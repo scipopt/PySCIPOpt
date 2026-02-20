@@ -4,7 +4,7 @@
 ### Added
 - Added `getMemUsed()`, `getMemTotal()`, and `getMemExternEstim()` methods
 ### Fixed
-- Removed incorrect `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused reference count imbalance
+- Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
 ### Changed
 ### Removed
 
