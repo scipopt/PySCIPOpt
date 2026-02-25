@@ -7,6 +7,7 @@
 - Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
 ### Changed
 ### Removed
+- Removed outdated warning about Make build system incompatibility
 
 ## 6.1.0 - 2026.01.31
 ### Added
