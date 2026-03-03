@@ -5,6 +5,7 @@
 - Added `getMemUsed()`, `getMemTotal()`, and `getMemExternEstim()` methods
 ### Fixed
 - Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
+- Replaced `weakref.proxy` with strong references for plugin `self.model`, fixing `ReferenceError` during cleanup callbacks (#1193)
 ### Changed
 ### Removed
 

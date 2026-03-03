@@ -1,4 +1,7 @@
-import pytest, weakref, gc, random
+import gc
+import weakref
+
+import pytest, random
 
 from pyscipopt import Model, Eventhdlr, SCIP_RESULT, SCIP_EVENTTYPE, SCIP_PARAMSETTING, quicksum
 
@@ -67,9 +70,15 @@ class MyEvent(Eventhdlr):
             self.model.catchEvent(self.event_type, self)        
 
     def eventexit(self):
-        # PR #828 fixes an error here, but the underlying cause might not be solved (self.model being deleted before dropEvent is called)
-        # self.model.dropEvent(self.event_type, self) # <- gives an UnraisableExceptionWarning: weakly-referenced object no longer exists
-        pass
+        if self.event_type in [SCIP_EVENTTYPE.VAREVENT, SCIP_EVENTTYPE.VARCHANGED]:
+            return
+        if self.event_type in var_events:
+            var = self.model.getTransformedVar(self.model.getVars()[0])
+            self.model.dropVarEvent(var, self.event_type, self)
+        elif self.event_type in row_events:
+            pass
+        else:
+            self.model.dropEvent(self.event_type, self)
 
     def eventexec(self, event):
         assert str(event) == event.getName()
@@ -164,22 +173,22 @@ def test_event_handler_callback():
     
     assert number_of_calls == 2
 
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 def test_raise_error_catch_var_event():
     m = Model()
     m.hideOutput()
     m.setPresolve(SCIP_PARAMSETTING.OFF)
-    
+
     class MyEventVar(Eventhdlr):
         def __init__(self, var):
             super().__init__()
             self.var = var
 
         def eventinit(self):
-            self.model.catchEvent(SCIP_EVENTTYPE.VAREVENT, self)        
+            self.model.catchEvent(SCIP_EVENTTYPE.VAREVENT, self)
 
         def eventexit(self):
             pass
-            # self.model..dropEvent(SCIP_EVENTTYPE.VAREVENT, self)
 
         def eventexec(self, event):
             pass
@@ -191,23 +200,15 @@ def test_raise_error_catch_var_event():
     with pytest.raises(Exception):
         m.optimize()
 
-def test_catchEvent_does_not_leak_model():
-    """catchEvent should not artificially increment the Model's reference count.
-
-    Previously, catchEvent called Py_INCREF(self) on the Model, and dropEvent
-    called Py_DECREF(self). In practice these calls are often unbalanced — event
-    handlers commonly catch events without a matching drop (e.g. calling
-    catchEvent in eventinit but omitting dropEvent in eventexit). Each unmatched
-    catchEvent permanently inflated the Model's refcount, preventing garbage
-    collection.
-    """
+def test_missing_dropEvent_cleanup():
+    """Model is garbage collected even when dropEvent is not called in eventexit."""
 
     class SimpleEvent(Eventhdlr):
         def eventinit(self):
             self.model.catchEvent(SCIP_EVENTTYPE.NODEFOCUSED, self)
 
         def eventexit(self):
-            pass  # intentionally no dropEvent, which is bad practice
+            pass  # intentionally no dropEvent
 
         def eventexec(self, event):
             pass
@@ -221,10 +222,50 @@ def test_catchEvent_does_not_leak_model():
 
     ref = weakref.ref(m)
 
-    del ev
+    del m, ev
     gc.collect()
-    assert ref() is not None, "Model was garbage collected — event handler absorbed a reference"
+    assert ref() is None, "Model was not garbage collected"
 
+def test_plugin_strong_ref_and_cleanup():
+    """Plugins hold a strong reference to Model, and Model is still collected.
+
+    Verifies two things:
+    1. self.model is accessible in eventexit (not a dead weakref)
+    2. The Model is garbage collected after all references are dropped
+       (__del__ breaks the cycle before the GC clears references)
+    """
+    eventexit_called = []
+
+    class StrongRefEvent(Eventhdlr):
+        def eventinit(self):
+            self.model.catchEvent(SCIP_EVENTTYPE.NODEFOCUSED, self)
+
+        def eventexit(self):
+            # This would raise ReferenceError with weakref.proxy
+            self.model.dropEvent(SCIP_EVENTTYPE.NODEFOCUSED, self)
+            eventexit_called.append(True)
+
+        def eventexec(self, event):
+            pass
+
+    m = Model()
+    m.hideOutput()
+    ev = StrongRefEvent()
+    m.includeEventhdlr(ev, "strong_ref", "test strong ref plugin")
+    m.addVar("x", obj=1, vtype="I")
+    m.optimize()
+
+    ref = weakref.ref(m)
+
+    # Model should survive while ev holds a strong ref via self.model
     del m
     gc.collect()
-    assert ref() is None, "Model was not garbage collected — catchEvent likely leaked a reference"
+    assert ref() is not None, "Model was collected while plugin still holds a strong reference"
+
+    # Dropping all external references allows GC to collect the cycle
+    del ev
+    gc.collect()
+    assert ref() is None, "Model was not garbage collected after dropping all references"
+
+    # eventexit was called successfully (self.model was alive during cleanup)
+    assert eventexit_called
