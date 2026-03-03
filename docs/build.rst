@@ -44,10 +44,6 @@ To download SCIP please either use the pre-built SCIP Optimization Suite availab
     * - 3.2
       - 1.0
 
-.. note:: If you install SCIP yourself and are not using the pre-built packages,
-  you need to install the SCIP Optimization Suite using CMake.
-  The Makefile system is not compatible with PySCIPOpt!
-
 Download Source Code
 ======================
 
