@@ -8,6 +8,7 @@
 - Replaced `weakref.proxy` with strong references for plugin `self.model`, fixing `ReferenceError` during cleanup callbacks (#1193)
 ### Changed
 ### Removed
+- Removed outdated warning about Make build system incompatibility
 
 ## 6.1.0 - 2026.01.31
 ### Added
