@@ -2906,8 +2906,8 @@ cdef class Model:
         # Safety net: if __del__ didn't run (e.g. interpreter shutdown),
         # free SCIP here. Plugin callbacks may not work at this point since
         # tp_clear may have already cleared _plugins.
-        if self._scip is not NULL and self._freescip and PY_SCIP_CALL:
-            PY_SCIP_CALL( SCIPfree(&self._scip) )
+        if self._scip is not NULL and self._freescip:
+            SCIPfree(&self._scip)
 
     cdef _free_scip_instance(self):
         """Free the SCIP instance. Does not touch Python object references."""
@@ -9665,6 +9665,7 @@ cdef class Model:
                                          PyiisfinderExec, <SCIP_IISFINDERDATA*> iisfinder))
 
         scip_iisfinder = SCIPfindIISfinder(self._scip, nam)
+        iisfinder.model = self
         iisfinder.name = name
         self._plugins.append(iisfinder)
         iisfinder.scip_iisfinder = scip_iisfinder

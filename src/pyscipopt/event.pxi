@@ -51,7 +51,6 @@ cdef SCIP_RETCODE PyEventCopy (SCIP* scip, SCIP_EVENTHDLR* eventhdlr) noexcept w
 cdef SCIP_RETCODE PyEventFree (SCIP* scip, SCIP_EVENTHDLR* eventhdlr) noexcept with gil:
     PyEventhdlr = getPyEventhdlr(eventhdlr)
     PyEventhdlr.eventfree()
-    Py_DECREF(PyEventhdlr)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyEventInit (SCIP* scip, SCIP_EVENTHDLR* eventhdlr) noexcept with gil:
