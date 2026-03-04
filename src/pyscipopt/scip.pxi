@@ -2927,7 +2927,7 @@ cdef class Model:
                     for j in range(nsubproblems):
                         PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, benders[i], j))
 
-            SCIPfree(&self._scip)
+            PY_SCIP_CALL(SCIPfree(&self._scip))
             self._scip = NULL
             self._freescip = False
 
@@ -3096,6 +3096,12 @@ cdef class Model:
             for plugin in self._plugins:
                 plugin.model = None
             self._plugins = []
+
+        # Clear Python-side caches
+        self._modelvars = {}
+        self._modelconss = {}
+        self._benders_subproblems = []
+        self._bestSol = None
 
     def freeTransform(self):
         """Frees all solution process data including presolving and
@@ -11295,6 +11301,7 @@ cdef class Model:
             raise Warning("event handler not found")
 
         PY_SCIP_CALL(SCIPcatchEvent(self._scip, eventtype, _eventhdlr, NULL, NULL))
+        eventhdlr._caught_events.append(eventtype)
 
     def dropEvent(self, eventtype, Eventhdlr eventhdlr):
         """
@@ -11314,6 +11321,8 @@ cdef class Model:
             raise Warning("event handler not found")
 
         PY_SCIP_CALL(SCIPdropEvent(self._scip, eventtype, _eventhdlr, NULL, -1))
+        if eventtype in eventhdlr._caught_events:
+            eventhdlr._caught_events.remove(eventtype)
 
     def catchVarEvent(self, Variable var, eventtype, Eventhdlr eventhdlr):
         """

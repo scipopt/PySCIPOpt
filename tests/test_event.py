@@ -200,6 +200,9 @@ def test_raise_error_catch_var_event():
     with pytest.raises(Exception):
         m.optimize()
 
+    del m, ev, v
+    gc.collect()
+
 def test_missing_dropEvent_cleanup():
     """Model is garbage collected even when dropEvent is not called in eventexit."""
 
