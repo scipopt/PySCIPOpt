@@ -159,7 +159,6 @@ cdef SCIP_RETCODE PyConshdlrCopy (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_Bool
 cdef SCIP_RETCODE PyConsFree (SCIP* scip, SCIP_CONSHDLR* conshdlr) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     PyConshdlr.consfree()
-    Py_DECREF(PyConshdlr)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsInit (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** conss, int nconss) noexcept with gil:
