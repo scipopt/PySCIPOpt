@@ -18,7 +18,6 @@ _core_dot: Incomplete
 _core_dot_2d: Incomplete
 _core_sum: Incomplete
 _expr_richcmp: Incomplete
-_is_number: Incomplete
 buildGenExprObj: Incomplete
 cos: Incomplete
 exp: Incomplete
