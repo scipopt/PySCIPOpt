@@ -3,6 +3,10 @@
 cdef class Eventhdlr:
     cdef public Model model
     cdef public str name
+    cdef public list _caught_events
+
+    def __cinit__(self):
+        self._caught_events = []
 
     def eventcopy(self):
         '''sets copy callback for all events of this event handler '''
@@ -51,7 +55,6 @@ cdef SCIP_RETCODE PyEventCopy (SCIP* scip, SCIP_EVENTHDLR* eventhdlr) noexcept w
 cdef SCIP_RETCODE PyEventFree (SCIP* scip, SCIP_EVENTHDLR* eventhdlr) noexcept with gil:
     PyEventhdlr = getPyEventhdlr(eventhdlr)
     PyEventhdlr.eventfree()
-    Py_DECREF(PyEventhdlr)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyEventInit (SCIP* scip, SCIP_EVENTHDLR* eventhdlr) noexcept with gil:
@@ -62,6 +65,10 @@ cdef SCIP_RETCODE PyEventInit (SCIP* scip, SCIP_EVENTHDLR* eventhdlr) noexcept w
 cdef SCIP_RETCODE PyEventExit (SCIP* scip, SCIP_EVENTHDLR* eventhdlr) noexcept with gil:
     PyEventhdlr = getPyEventhdlr(eventhdlr)
     PyEventhdlr.eventexit()
+    # Auto-drop any events not explicitly dropped by the user
+    for eventtype in PyEventhdlr._caught_events:
+        SCIPdropEvent(scip, eventtype, eventhdlr, NULL, -1)
+    PyEventhdlr._caught_events = []
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyEventInitsol (SCIP* scip, SCIP_EVENTHDLR* eventhdlr) noexcept with gil:

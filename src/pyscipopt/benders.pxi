@@ -76,7 +76,6 @@ cdef SCIP_RETCODE PyBendersFree (SCIP* scip, SCIP_BENDERS* benders) noexcept wit
     bendersdata = SCIPbendersGetData(benders)
     PyBenders = <Benders>bendersdata
     PyBenders.bendersfree()
-    Py_DECREF(PyBenders)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyBendersInit (SCIP* scip, SCIP_BENDERS* benders) noexcept with gil:
