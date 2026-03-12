@@ -32,13 +32,16 @@
 - Fixed segmentation fault when using `Variable` or `Constraint` objects after `freeTransform()` or `Model` destruction
 - `getTermsQuadratic()` now correctly returns all linear terms
 ### Changed
-- changed default value of enablepricing flag to True
-- Speed up MatrixExpr.add.reduce via quicksum
-- Speed up np.ndarray(..., dtype=np.float64) @ MatrixExpr
-- MatrixExpr and MatrixExprCons use `__array_ufunc__` protocol to control all numpy.ufunc inputs and outputs
-- Speed up `Expr.__neg__`, `SumExpr.__neg__`, `ProdExpr.__neg__` and `Constant.__neg__` via C-level API
-- Set `__array_priority__` for MatrixExpr and MatrixExprCons
-- changed addConsNode() and addConsLocal() to mirror addCons() and accept ExprCons instead of Constraint
+- changed default value of `enablepricing` flag to `True`
+- Speed up `MatrixExpr.sum(axis=...)` via `quicksum`
+- Speed up `MatrixExpr.add.reduce` via `quicksum`
+- Speed up `np.ndarray(..., dtype=np.float64) @ MatrixExpr`
+- Speed up `Expr * Expr` via C-level API and `Term * Term`
+- Speed up `Term * Term` via a $O(n)$ sort algorithm instead of Python $O(n\log(n))$ sorted function. `Term.__mul__` requires that `Term.vartuple` is sorted.
+- Rename from `Term.__add__` to `Term.__mul__`, due to this method only working with `Expr * Expr`.
+- `MatrixExpr` and `MatrixExprCons` use `__array_ufunc__` protocol to control all `numpy.ufunc` inputs and outputs
+- Set `__array_priority__` for `MatrixExpr` and `MatrixExprCons`
+- changed `addConsNode()` and `addConsLocal()` to mirror `addCons()` and accept `ExprCons` instead of `Constraint`
 - Improved `chgReoptObjective()` performance
 - Return itself for `abs` to `UnaryExpr(Operator.fabs)`
 ### Removed
