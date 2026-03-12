@@ -2,22 +2,35 @@
 
 ## Unreleased
 ### Added
+- Added `getMemUsed()`, `getMemTotal()`, and `getMemExternEstim()` methods
+### Fixed
+- Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
+- Used getIndex() instead of ptr() for sorting nonlinear expression terms to avoid nondeterministic behavior 
+### Changed
+- Speed up `SumExpr.__neg__`, `ProdExpr.__neg__` and `Constant.__neg__` via C-level API
+### Removed
+- Removed outdated warning about Make build system incompatibility
+
+## 6.1.0 - 2026.01.31
+### Added
+- Support for SCIP 10.0.1
 - Added automated script for generating type stubs
 - Include parameter names in type stubs
-- Speed up MatrixExpr.sum(axis=...) via quicksum
-- Added pre-commit hook for automatic stub regeneration (see .pre-commit-config.yaml)
-- Wrapped isObjIntegral() and test
-- Added structured_optimization_trace recipe for structured optimization progress tracking
-- Added methods: getPrimalDualIntegral()
+- Added pre-commit hook for automatic stub regeneration (see `.pre-commit-config.yaml`)
+- Wrapped `isObjIntegral()` and test
+- Added `structured_optimization_trace` recipe for structured optimization progress tracking
+- Added methods: `getPrimalDualIntegral()`
+- `getSolVal()` supports `MatrixExpr` now
 ### Fixed
-- getBestSol() now returns None for infeasible problems instead of a Solution with NULL pointer
+- `getBestSol()` now returns `None` for infeasible problems instead of a `Solution` with `NULL` pointer
 - all fundamental callbacks now raise an error if not implemented
-- Fixed the type of MatrixExpr.sum(axis=...) result from MatrixVariable to MatrixExpr.
-- Updated IIS result in PyiisfinderExec()
-- Model.getVal now supports GenExpr type
-- Fixed lotsizing_lazy example
-- Fixed incorrect getVal() result when _bestSol.sol was outdated
-- Fixed segmentation fault when using Variable or Constraint objects after freeTransform() or Model destruction
+- Fixed the type of `MatrixExpr.sum(axis=...)` result from `MatrixVariable` to `MatrixExpr`.
+- Updated IIS result in `PyiisfinderExec()`
+- `Model.getVal` now supports `GenExpr` type
+- Fixed `lotsizing_lazy` example
+- Fixed incorrect `getVal()` result when `_bestSol.sol` was outdated
+- Fixed segmentation fault when using `Variable` or `Constraint` objects after `freeTransform()` or `Model` destruction
+- `getTermsQuadratic()` now correctly returns all linear terms
 ### Changed
 - changed default value of enablepricing flag to True
 - Speed up MatrixExpr.add.reduce via quicksum
@@ -27,6 +40,7 @@
 - Set `__array_priority__` for MatrixExpr and MatrixExprCons
 - changed addConsNode() and addConsLocal() to mirror addCons() and accept ExprCons instead of Constraint
 - Improved `chgReoptObjective()` performance
+- Return itself for `abs` to `UnaryExpr(Operator.fabs)`
 ### Removed
 
 ## 6.0.0 - 2025.11.28
@@ -111,7 +125,7 @@
 - Stopped tests from running in draft PRs
 ### Removed
 
-## 5.4.1 - 2024.02.24
+## 5.4.1 - 2025.02.24
 ### Added
 - Added option to get Lhs, Rhs of nonlinear constraints
 - Added cutoffNode and test
