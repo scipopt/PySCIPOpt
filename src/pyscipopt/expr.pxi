@@ -45,7 +45,7 @@
 import math
 from typing import TYPE_CHECKING
 
-from cpython.dict cimport PyDict_Next
+from cpython.dict cimport PyDict_Next, PyDict_GetItem
 from cpython.object cimport Py_TYPE
 from cpython.ref cimport PyObject
 from cpython.tuple cimport PyTuple_GET_ITEM
