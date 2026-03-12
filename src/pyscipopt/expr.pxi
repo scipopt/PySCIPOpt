@@ -348,14 +348,7 @@ cdef class Expr:
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
 
     def __neg__(self) -> Expr:
-        cdef dict res = {}
-        cdef Py_ssize_t pos = <Py_ssize_t>0
-        cdef PyObject* key_ptr
-        cdef PyObject* val_ptr
-
-        while PyDict_Next(self.terms, &pos, &key_ptr, &val_ptr):
-            PyDict_SetItem(res, <Term>key_ptr, -<double>(<object>val_ptr))
-        return Expr(res)
+        return -1.0 * self
 
     def __sub__(self, other):
         return self + (-other)
@@ -842,7 +835,7 @@ cdef class Constant(GenExpr):
         self.number = number
         self._op = Operator.const
 
-    def __neg__(self):
+    def __neg__(self) -> Constant:
         return Constant(-self.number)
 
     def __repr__(self):
