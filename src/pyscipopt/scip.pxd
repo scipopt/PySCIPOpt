@@ -1822,6 +1822,11 @@ cdef extern from "blockmemshell/memory.h":
     void BMScheckEmptyMemory()
     long long BMSgetMemoryUsed()
 
+cdef extern from "scip/scip_mem.h":
+    SCIP_Longint SCIPgetMemUsed(SCIP* scip)
+    SCIP_Longint SCIPgetMemTotal(SCIP* scip)
+    SCIP_Longint SCIPgetMemExternEstim(SCIP* scip)
+
 cdef extern from "scip/scip_expr.h":
     SCIP_RETCODE SCIPcreateExpr(SCIP* scip,
                                 SCIP_EXPR** expr,

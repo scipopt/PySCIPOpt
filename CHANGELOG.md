@@ -2,10 +2,14 @@
 
 ## Unreleased
 ### Added
+- Added `getMemUsed()`, `getMemTotal()`, and `getMemExternEstim()` methods
 ### Fixed
+- Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
+- Used getIndex() instead of ptr() for sorting nonlinear expression terms to avoid nondeterministic behavior 
 ### Changed
 - Speed up `constant * Expr` via C-level API
 ### Removed
+- Removed outdated warning about Make build system incompatibility
 
 ## 6.1.0 - 2026.01.31
 ### Added

@@ -11268,7 +11268,6 @@ cdef class Model:
         else:
             raise Warning("event handler not found")
 
-        Py_INCREF(self)
         PY_SCIP_CALL(SCIPcatchEvent(self._scip, eventtype, _eventhdlr, NULL, NULL))
 
     def dropEvent(self, eventtype, Eventhdlr eventhdlr):
@@ -11288,7 +11287,6 @@ cdef class Model:
         else:
             raise Warning("event handler not found")
 
-        Py_DECREF(self)
         PY_SCIP_CALL(SCIPdropEvent(self._scip, eventtype, _eventhdlr, NULL, -1))
 
     def catchVarEvent(self, Variable var, eventtype, Eventhdlr eventhdlr):
@@ -11466,6 +11464,41 @@ cdef class Model:
             PY_SCIP_CALL(SCIPprintStatisticsJson(self._scip, cfile))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
+
+    def getMemUsed(self):
+        """
+        Gets the total number of bytes used in block and buffer memory.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetMemUsed(self._scip)
+
+    def getMemTotal(self):
+        """
+        Gets the total number of bytes in block and buffer memory
+        (i.e., total allocated, including unused).
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetMemTotal(self._scip)
+
+    def getMemExternEstim(self):
+        """
+        Gets the estimated number of bytes used by external software,
+        e.g., the LP solver.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetMemExternEstim(self._scip)
 
     def getNLPs(self):
         """
