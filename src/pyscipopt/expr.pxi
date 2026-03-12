@@ -347,8 +347,8 @@ cdef class Expr:
         else:
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
 
-    def __neg__(self):
-        return Expr({v:-c for v,c in self.terms.items()})
+    def __neg__(self) -> Expr:
+        return -1.0 * self
 
     def __sub__(self, other):
         return self + (-other)
@@ -712,6 +712,23 @@ cdef class SumExpr(GenExpr):
         self.coefs = []
         self.children = []
         self._op = Operator.add
+
+    def __neg__(self) -> SumExpr:
+        cdef int i = 0, n = len(self.coefs)
+        cdef list coefs = [0.0] * n
+        cdef double[:] dest_view = coefs
+        cdef double[:] src_view = self.coefs
+
+        for i in range(n):
+            dest_view[i] = -src_view[i]
+
+        cdef SumExpr res = SumExpr.__new__(SumExpr)
+        res.coefs = coefs
+        res.children = self.children.copy()
+        res.constant = -self.constant
+        res._op = Operator.add
+        return res
+
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
@@ -719,7 +736,7 @@ cdef class SumExpr(GenExpr):
         cdef double res = self.constant
         cdef int i = 0, n = len(self.children)
         cdef list children = self.children
-        cdef list coefs = self.coefs
+        cdef double[:] coefs = self.coefs
         for i in range(n):
             res += <double>coefs[i] * (<GenExpr>children[i])._evaluate(sol)
         return res
@@ -734,6 +751,13 @@ cdef class ProdExpr(GenExpr):
         self.constant = 1.0
         self.children = []
         self._op = Operator.prod
+
+    def __neg__(self) -> ProdExpr:
+        cdef ProdExpr res = ProdExpr.__new__(ProdExpr)
+        res.constant = -self.constant
+        res.children = self.children.copy()
+        res._op = Operator.prod
+        return res
 
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
@@ -804,10 +828,15 @@ cdef class UnaryExpr(GenExpr):
 
 # class for constant expressions
 cdef class Constant(GenExpr):
+
     cdef public number
+
     def __init__(self,number):
         self.number = number
         self._op = Operator.const
+
+    def __neg__(self) -> Constant:
+        return Constant(-self.number)
 
     def __repr__(self):
         return str(self.number)
