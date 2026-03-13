@@ -53,7 +53,6 @@ from cpython.ref cimport PyObject
 from cpython.tuple cimport PyTuple_GET_ITEM
 from pyscipopt.scip cimport Variable, Solution
 
-from pyscipopt.scip cimport Variable, Solution
 
 if TYPE_CHECKING:
     double = float
