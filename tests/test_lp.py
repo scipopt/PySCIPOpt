@@ -1,5 +1,6 @@
 from pyscipopt import LP
 from pyscipopt import SCIP_LPPARAM
+from pyscipopt import SCIP_BASESTAT
 
 def test_lp():
     # create LP instance, minimizing by default
@@ -97,6 +98,10 @@ def test_lp():
     cstat, rstat = myLP.getBase()
     assert len(cstat) == myLP.ncols()
     assert len(rstat) == myLP.nrows()
+    assert all(s in (SCIP_BASESTAT.LOWER, SCIP_BASESTAT.BASIC,
+                     SCIP_BASESTAT.UPPER, SCIP_BASESTAT.ZERO) for s in cstat)
+    assert all(s in (SCIP_BASESTAT.LOWER, SCIP_BASESTAT.BASIC,
+                     SCIP_BASESTAT.UPPER) for s in rstat)
 
     # set the same basis back and re-solve
     myLP.setBase(cstat, rstat)

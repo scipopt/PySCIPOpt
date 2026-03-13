@@ -534,11 +534,7 @@ cdef class LP:
     def getBase(self):
         """Returns the basis status of columns and rows.
 
-        Column status values: SCIP_BASESTAT_LOWER (0), SCIP_BASESTAT_BASIC (1),
-        SCIP_BASESTAT_UPPER (2), SCIP_BASESTAT_ZERO (3).
-
-        Row status values: SCIP_BASESTAT_LOWER (0), SCIP_BASESTAT_BASIC (1),
-        SCIP_BASESTAT_UPPER (2).
+        Status values are defined in SCIP_BASESTAT: LOWER, BASIC, UPPER, ZERO.
 
         Returns
         -------
@@ -565,11 +561,7 @@ cdef class LP:
     def setBase(self, cstat, rstat):
         """Sets the basis status of columns and rows.
 
-        Column status values: SCIP_BASESTAT_LOWER (0), SCIP_BASESTAT_BASIC (1),
-        SCIP_BASESTAT_UPPER (2), SCIP_BASESTAT_ZERO (3).
-
-        Row status values: SCIP_BASESTAT_LOWER (0), SCIP_BASESTAT_BASIC (1),
-        SCIP_BASESTAT_UPPER (2).
+        Status values are defined in SCIP_BASESTAT: LOWER, BASIC, UPPER, ZERO.
 
         Parameters
         ----------
