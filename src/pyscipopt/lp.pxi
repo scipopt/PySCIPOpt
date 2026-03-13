@@ -571,8 +571,12 @@ cdef class LP:
             Row basis statuses (length must equal nrows).
 
         """
-        cdef int ncols = len(cstat)
-        cdef int nrows = len(rstat)
+        cdef int ncols = self.ncols()
+        cdef int nrows = self.nrows()
+        if len(cstat) != ncols:
+            raise ValueError(f"cstat has length {len(cstat)}, expected {ncols}")
+        if len(rstat) != nrows:
+            raise ValueError(f"rstat has length {len(rstat)}, expected {nrows}")
         cdef int* c_cstat = <int*> malloc(ncols * sizeof(int))
         cdef int* c_rstat = <int*> malloc(nrows * sizeof(int))
         cdef int i
