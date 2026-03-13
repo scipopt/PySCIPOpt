@@ -89,7 +89,7 @@ class _TraceRun:
         try:
             self._write_event("run_end", fields=fields, flush=True)
         finally:
-            if self._fh:
+            if self._fh is not None:
                 try:
                     self._fh.close()
                 finally:
@@ -97,11 +97,7 @@ class _TraceRun:
 
             if self._handler is not None:
                 for et in self._caught_events:
-                    try:
-                        self.model.dropEvent(et, self._handler)
-                    except Exception:
-                        # Best-effort cleanup; continue dropping remaining events
-                        pass
+                    self.model.dropEvent(et, self._handler)
                 self._caught_events.clear()
                 self._handler = None
 
