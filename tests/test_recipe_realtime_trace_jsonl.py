@@ -1,5 +1,4 @@
 import json
-from random import randint
 
 import pytest
 from helpers.utils import bin_packing_model
@@ -16,7 +15,8 @@ def optimize(request):
 
 
 def test_realtime_trace_in_memory(optimize):
-    model = bin_packing_model(sizes=[randint(1, 40) for _ in range(120)], capacity=50)
+    sizes = list(range(1, 41)) * 3
+    model = bin_packing_model(sizes=sizes, capacity=50)
     model.setParam("limits/time", 5)
 
     model.data = {"test": True}
@@ -47,7 +47,8 @@ def test_realtime_trace_in_memory(optimize):
 
 
 def test_realtime_trace_file_output(optimize, tmp_path):
-    model = bin_packing_model(sizes=[randint(1, 40) for _ in range(120)], capacity=50)
+    sizes = list(range(1, 41)) * 3
+    model = bin_packing_model(sizes=sizes, capacity=50)
     model.setParam("limits/time", 5)
 
     path = tmp_path / "trace.jsonl"
@@ -72,10 +73,8 @@ class _InterruptOnBest(Eventhdlr):
 
 
 def test_optimize_with_trace_records_run_end_on_interrupt(optimize):
-    model = bin_packing_model(
-        sizes=[randint(1, 40) for _ in range(120)],
-        capacity=50,
-    )
+    sizes = list(range(1, 41)) * 3
+    model = bin_packing_model(sizes=sizes, capacity=50)
     model.setParam("limits/time", 5)
 
     model.includeEventhdlr(_InterruptOnBest(), "stopper", "Interrupt on bestsol")
