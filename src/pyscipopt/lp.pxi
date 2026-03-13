@@ -531,6 +531,70 @@ cdef class LP:
 
         return binds
 
+    def getBase(self):
+        """Returns the basis status of columns and rows.
+
+        Column status values: SCIP_BASESTAT_LOWER (0), SCIP_BASESTAT_BASIC (1),
+        SCIP_BASESTAT_UPPER (2), SCIP_BASESTAT_ZERO (3).
+
+        Row status values: SCIP_BASESTAT_LOWER (0), SCIP_BASESTAT_BASIC (1),
+        SCIP_BASESTAT_UPPER (2).
+
+        Returns
+        -------
+        tuple of (list of int, list of int)
+            Column basis statuses and row basis statuses.
+
+        """
+        cdef int ncols = self.ncols()
+        cdef int nrows = self.nrows()
+        cdef int* c_cstat = <int*> malloc(ncols * sizeof(int))
+        cdef int* c_rstat = <int*> malloc(nrows * sizeof(int))
+        cdef int i
+
+        PY_SCIP_CALL(SCIPlpiGetBase(self.lpi, c_cstat, c_rstat))
+
+        cstat = [c_cstat[i] for i in range(ncols)]
+        rstat = [c_rstat[i] for i in range(nrows)]
+
+        free(c_rstat)
+        free(c_cstat)
+
+        return cstat, rstat
+
+    def setBase(self, cstat, rstat):
+        """Sets the basis status of columns and rows.
+
+        Column status values: SCIP_BASESTAT_LOWER (0), SCIP_BASESTAT_BASIC (1),
+        SCIP_BASESTAT_UPPER (2), SCIP_BASESTAT_ZERO (3).
+
+        Row status values: SCIP_BASESTAT_LOWER (0), SCIP_BASESTAT_BASIC (1),
+        SCIP_BASESTAT_UPPER (2).
+
+        Parameters
+        ----------
+        cstat : list of int
+            Column basis statuses (length must equal ncols).
+        rstat : list of int
+            Row basis statuses (length must equal nrows).
+
+        """
+        cdef int ncols = len(cstat)
+        cdef int nrows = len(rstat)
+        cdef int* c_cstat = <int*> malloc(ncols * sizeof(int))
+        cdef int* c_rstat = <int*> malloc(nrows * sizeof(int))
+        cdef int i
+
+        for i in range(ncols):
+            c_cstat[i] = cstat[i]
+        for i in range(nrows):
+            c_rstat[i] = rstat[i]
+
+        PY_SCIP_CALL(SCIPlpiSetBase(self.lpi, c_cstat, c_rstat))
+
+        free(c_rstat)
+        free(c_cstat)
+
     # Parameter Methods
 
     def setIntParam(self, param, value):
