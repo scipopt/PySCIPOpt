@@ -871,7 +871,7 @@ cdef object _vec_to_const = np.frompyfunc(_to_const, 1, 1)
 cdef inline object _wrap_ufunc(object x, object ufunc):
     if isinstance(x, (np.ndarray, list, tuple)):
         res = ufunc(_vec_to_const(x))
-        return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
+        return res.view(MatrixGenExpr) if isinstance(res, np.ndarray) else res
     return ufunc(_to_const(x))
 
 

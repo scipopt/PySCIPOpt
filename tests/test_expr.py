@@ -3,8 +3,8 @@ import math
 import numpy as np
 import pytest
 
-from pyscipopt import MatrixExpr, Model, cos, exp, log, sin, sqrt
-from pyscipopt.scip import CONST, Expr, ExprCons, GenExpr
+from pyscipopt import Model, cos, exp, log, sin, sqrt
+from pyscipopt.scip import CONST, Expr, ExprCons, GenExpr, MatrixGenExpr
 
 
 @pytest.fixture(scope="module")
@@ -263,10 +263,10 @@ def test_unary(model):
     assert str(cos([[1]])) == "[[cos(1.0)]]"
 
     assert isinstance(sqrt(2), GenExpr)
-    assert isinstance(sqrt([2, 2]), MatrixExpr)
-    assert isinstance(sqrt([[2], [2]]), MatrixExpr)
-    assert isinstance(sqrt([2, x]), MatrixExpr)
-    assert isinstance(sqrt([[2], [x]]), MatrixExpr)
+    assert isinstance(sqrt([2, 2]), MatrixGenExpr)
+    assert isinstance(sqrt([[2], [2]]), MatrixGenExpr)
+    assert isinstance(sqrt([2, x]), MatrixGenExpr)
+    assert isinstance(sqrt([[2], [x]]), MatrixGenExpr)
 
     # test invalid unary operations
     with pytest.raises(TypeError):
