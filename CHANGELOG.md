@@ -3,10 +3,14 @@
 ## Unreleased
 ### Added
 - `Expr` and `GenExpr` support numpy unary func (`np.sin`, `np.cos`, `np.sqrt`, `np.exp`, `np.log`, `np.absolute`)
+- Added `getMemUsed()`, `getMemTotal()`, and `getMemExternEstim()` methods
 ### Fixed
+- Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
+- Used getIndex() instead of ptr() for sorting nonlinear expression terms to avoid nondeterministic behavior 
 ### Changed
 - The unary functions that apply a constant will return a constant not a `GenExpr`
 ### Removed
+- Removed outdated warning about Make build system incompatibility
 
 ## 6.1.0 - 2026.01.31
 ### Added

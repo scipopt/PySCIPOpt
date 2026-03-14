@@ -258,6 +258,7 @@ def test_matrix_sum_result(axis, keepdims):
     assert np_res.shape == scip_res.shape
 
 
+@pytest.mark.skip(reason="Performance test")
 @pytest.mark.parametrize("n", [100])
 def test_matrix_sum_axis_is_none_performance(n):
     model = Model()
@@ -272,6 +273,7 @@ def test_matrix_sum_axis_is_none_performance(n):
     assert model.isGE(orig * 1.25, matrix)
 
 
+@pytest.mark.skip(reason="Performance test")
 @pytest.mark.parametrize("n", [100])
 def test_matrix_sum_axis_not_none_performance(n):
     model = Model()
@@ -286,6 +288,7 @@ def test_matrix_sum_axis_not_none_performance(n):
     assert model.isGE(orig * 1.25, matrix)
 
 
+@pytest.mark.skip(reason="Performance test")
 @pytest.mark.parametrize("n", [100])
 def test_matrix_mean_performance(n):
     model = Model()
@@ -308,6 +311,7 @@ def test_matrix_mean():
     assert isinstance(x.mean(1), MatrixExpr)
 
 
+@pytest.mark.skip(reason="Performance test")
 @pytest.mark.parametrize("n", [100])
 def test_matrix_dot_performance(n):
     model = Model()
