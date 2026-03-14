@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- `Expr` and `GenExpr` support NumPy unary functions (`np.sin`, `np.cos`, `np.sqrt`, `np.exp`, `np.log`, `np.absolute`)
 - Added `getMemUsed()`, `getMemTotal()`, and `getMemExternEstim()` methods
 ### Fixed
 - Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
