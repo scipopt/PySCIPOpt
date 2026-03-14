@@ -119,11 +119,11 @@ def test_genexpr_op_genexpr(model):
     assert isinstance(1/x**1.5 - genexpr, GenExpr)
     assert isinstance(y/x - exp(genexpr), GenExpr)
 
-    genexpr **= sqrt(2)
-    assert isinstance(genexpr, GenExpr)
+    # sqrt(2) is not a constant expression and
+    # we can only power to constant expressions!
+    with pytest.raises(NotImplementedError):
+        genexpr **= sqrt(2)
 
-    with pytest.raises(TypeError):
-        genexpr **= sqrt("2")
 
 def test_degree(model):
     m, x, y, z = model
