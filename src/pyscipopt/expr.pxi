@@ -856,19 +856,19 @@ cdef class Constant(GenExpr):
         return self.number
 
 
-exp = lambda x: _dispatch_ufunc(x, np.exp)
-log = lambda x: _dispatch_ufunc(x, np.log)
-log = lambda x: _dispatch_ufunc(x, np.log)
-sqrt = lambda x: _dispatch_ufunc(x, np.sqrt)
-sin = lambda x: _dispatch_ufunc(x, np.sin)
-cos = lambda x: _dispatch_ufunc(x, np.cos)
+exp = lambda x: _wrap_ufunc(x, np.exp)
+log = lambda x: _wrap_ufunc(x, np.log)
+log = lambda x: _wrap_ufunc(x, np.log)
+sqrt = lambda x: _wrap_ufunc(x, np.sqrt)
+sin = lambda x: _wrap_ufunc(x, np.sin)
+cos = lambda x: _wrap_ufunc(x, np.cos)
 
 cdef inline object _to_const(object x):
     return Constant(<double>x) if _is_number(x) else x
 
 cdef object _vec_to_const = np.frompyfunc(_to_const, 1, 1)
 
-cdef inline object _dispatch_ufunc(object x, object ufunc):
+cdef inline object _wrap_ufunc(object x, object ufunc):
     if isinstance(x, (np.ndarray, list, tuple)):
         res = ufunc(_vec_to_const(x))
         return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
