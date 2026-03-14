@@ -8,7 +8,6 @@
 - Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
 - Used getIndex() instead of ptr() for sorting nonlinear expression terms to avoid nondeterministic behavior 
 ### Changed
-- The unary functions that apply a constant will return a constant not a `GenExpr`
 ### Removed
 - Removed outdated warning about Make build system incompatibility
 

@@ -48,6 +48,7 @@ from typing import TYPE_CHECKING, Literal
 import numpy as np
 
 from cpython.dict cimport PyDict_Next, PyDict_GetItem
+from cpython.number cimport PyNumber_Check
 from cpython.object cimport Py_TYPE
 from cpython.ref cimport PyObject
 from cpython.tuple cimport PyTuple_GET_ITEM
@@ -227,8 +228,18 @@ cdef class ExprLike:
         **kwargs,
     ):
         if method == "__call__":
-            if ufunc in UNARY_MAPPER:
-                return getattr(args[0], UNARY_MAPPER[ufunc])()
+            if ufunc is np.absolute:
+                return args[0].__abs__()
+            elif ufunc is np.exp:
+                return args[0].exp()
+            elif ufunc is np.log:
+                return args[0].log()
+            elif ufunc is np.sqrt:
+                return args[0].sqrt()
+            elif ufunc is np.sin:
+                return args[0].sin()
+            elif ufunc is np.cos:
+                return args[0].cos()
 
         return NotImplemented
 
@@ -846,19 +857,11 @@ cdef class Constant(GenExpr):
         return self.number
 
 
-exp = np.exp
-log = np.log
-sqrt = np.sqrt
-sin = np.sin
-cos = np.cos
-cdef dict UNARY_MAPPER = {
-    np.absolute: "__abs__",
-    exp: "exp",
-    log: "log",
-    sqrt: "sqrt",
-    sin: "sin",
-    cos: "cos",
-}
+exp = lambda x: Constant(x) if PyNumber_Check(x) else np.exp(x)
+log = lambda x: Constant(x) if PyNumber_Check(x) else np.log(x)
+sqrt = lambda x: Constant(x) if PyNumber_Check(x) else np.sqrt(x)
+sin = lambda x: Constant(x) if PyNumber_Check(x) else np.sin(x)
+cos = lambda x: Constant(x) if PyNumber_Check(x) else np.cos(x)
 
 
 def expr_to_nodes(expr):
