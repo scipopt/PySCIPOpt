@@ -858,7 +858,6 @@ cdef class Constant(GenExpr):
 
 exp = lambda x: _wrap_ufunc(x, np.exp)
 log = lambda x: _wrap_ufunc(x, np.log)
-log = lambda x: _wrap_ufunc(x, np.log)
 sqrt = lambda x: _wrap_ufunc(x, np.sqrt)
 sin = lambda x: _wrap_ufunc(x, np.sin)
 cos = lambda x: _wrap_ufunc(x, np.cos)
