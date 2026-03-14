@@ -52,6 +52,9 @@ from cpython.number cimport PyNumber_Check
 from cpython.object cimport Py_LE, Py_EQ, Py_GE, Py_TYPE
 from cpython.ref cimport PyObject
 from cpython.tuple cimport PyTuple_GET_ITEM
+
+from numpy cimport PyArray_Check
+
 from pyscipopt.scip cimport Variable, Solution
 
 
@@ -64,15 +67,15 @@ def _expr_richcmp(self: Union[Expr, GenExpr], other, int op):
         return NotImplemented
 
     if op == Py_LE:
-        if PyNumber_Check(other):
+        if _is_number(other):
             return ExprCons(self, rhs=float(other))
         return (self - other) <= 0.0
     elif op == Py_GE:
-        if PyNumber_Check(other):
+        if _is_number(other):
             return ExprCons(self, lhs=float(other))
         return (self - other) >= 0.0
     elif op == Py_EQ:
-        if PyNumber_Check(other):
+        if _is_number(other):
             return ExprCons(self, lhs=float(other), rhs=float(other))
         return (self - other) == 0.0
     raise NotImplementedError("can only support with '<=', '>=', or '=='")
@@ -164,7 +167,7 @@ def buildGenExprObj(expr: Union[int, float, Expr, GenExpr]) -> GenExpr:
     if not isinstance(expr, GENEXPR_OP_TYPES):
         raise TypeError(f"Unsupported type {type(expr)}")
 
-    if PyNumber_Check(expr):
+    if _is_number(expr):
         return Constant(expr)
 
     elif isinstance(expr, Expr):
@@ -224,7 +227,7 @@ cdef class Expr:
             # merge the terms by component-wise addition
             for v,c in right.terms.items():
                 terms[v] = terms.get(v, 0.0) + c
-        elif PyNumber_Check(right):
+        elif _is_number(right):
             c = float(right)
             terms[CONST] = terms.get(CONST, 0.0) + c
         return Expr(terms)
@@ -236,7 +239,7 @@ cdef class Expr:
         if isinstance(other, Expr):
             for v,c in other.terms.items():
                 self.terms[v] = self.terms.get(v, 0.0) + c
-        elif PyNumber_Check(other):
+        elif _is_number(other):
             c = float(other)
             self.terms[CONST] = self.terms.get(CONST, 0.0) + c
         return self
@@ -245,7 +248,7 @@ cdef class Expr:
         if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
 
-        if PyNumber_Check(other):
+        if _is_number(other):
             f = float(other)
             return Expr({v: f * c for v, c in self.terms.items()})
 
@@ -274,7 +277,7 @@ cdef class Expr:
         if not isinstance(other, EXPR_OP_TYPES):
             return NotImplemented
 
-        if PyNumber_Check(other):
+        if _is_number(other):
             return 1.0 / other * self
         return buildGenExprObj(self) / other
 
@@ -300,7 +303,7 @@ cdef class Expr:
         Implements base**x as scip.exp(x * scip.log(base)).
         Note: base must be positive.
         """
-        if not PyNumber_Check(other):
+        if not _is_number(other):
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
         if other <= 0.0:
             raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % other)
@@ -386,7 +389,7 @@ cdef class ExprCons:
 
     def __richcmp__(self, other, op):
         '''turn it into a constraint'''
-        if not PyNumber_Check(other):
+        if not _is_number(other):
             raise TypeError('Ranged ExprCons is not well defined!')
 
         if op == 1: # <=
@@ -594,7 +597,7 @@ cdef class GenExpr:
         Implements base**x as scip.exp(x * scip.log(base)). 
         Note: base must be positive.
         """
-        if not PyNumber_Check(other):
+        if not _is_number(other):
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
         if other <= 0.0:
             raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % other)
@@ -867,3 +870,6 @@ def expr_to_array(expr, nodes):
 
 cdef tuple EXPR_OP_TYPES = (int, float, np.number, Expr)
 cdef tuple GENEXPR_OP_TYPES = EXPR_OP_TYPES + (GenExpr,)
+
+cdef inline bint _is_number(object o):
+    return not PyArray_Check(o) and PyNumber_Check(o)
