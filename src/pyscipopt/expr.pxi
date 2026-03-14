@@ -866,11 +866,13 @@ cos = lambda x: _dispatch_ufunc(x, np.cos)
 cdef inline object _to_const(object x):
     return Constant(<double>x) if _is_number(x) else x
 
-cdef object _vec_const = np.frompyfunc(_to_const, 1, 1)
+cdef object _vec_to_const = np.frompyfunc(_to_const, 1, 1)
 
 cdef inline object _dispatch_ufunc(object x, object ufunc):
-    res = ufunc(_vec_const(x))
-    return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
+    if isinstance(x, (np.ndarray, list, tuple)):
+        res = ufunc(_vec_to_const(x))
+        return res.view(MatrixExpr) if isinstance(res, np.ndarray) else res
+    return ufunc(_to_const(x))
 
 
 def expr_to_nodes(expr):
