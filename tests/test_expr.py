@@ -3,7 +3,7 @@ import math
 import numpy as np
 import pytest
 
-from pyscipopt import Model, cos, exp, log, sin, sqrt
+from pyscipopt import MatrixExpr, Model, cos, exp, log, sin, sqrt
 from pyscipopt.scip import CONST, Expr, ExprCons, GenExpr
 
 
@@ -249,16 +249,24 @@ def test_unary(model):
     assert str(log([x, y])) == res
     assert str(np.log([x, y])) == res
 
-    assert sqrt(4) == np.sqrt(4)
-    assert all(sqrt([4, 4]) == np.sqrt([4, 4]))
-    assert exp(3) == np.exp(3)
-    assert all(exp([3, 3]) == np.exp([3, 3]))
-    assert log(5) == np.log(5)
-    assert all(log([5, 5]) == np.log([5, 5]))
-    assert sin(1) == np.sin(1)
-    assert all(sin([1, 1]) == np.sin([1, 1]))
-    assert cos(1) == np.cos(1)
-    assert all(cos([1, 1]) == np.cos([1, 1]))
+    assert str(log([1, x])) == "[log(1.0) log(sum(0.0,prod(1.0,x)))]"
+
+    assert str(sqrt(4)) == "sqrt(4.0)"
+    assert str(sqrt([4, 4])) == "[sqrt(4.0) sqrt(4.0)]"
+    assert str(exp(3)) == "exp(3.0)"
+    assert str(exp([3, 3])) == "[exp(3.0) exp(3.0)]"
+    assert str(log(5)) == "log(5.0)"
+    assert str(log([5, 5])) == "[log(5.0) log(5.0)]"
+    assert str(sin(1)) == "sin(1.0)"
+    assert str(sin([[1, 1]])) == "[[sin(1.0) sin(1.0)]]"
+    assert str(cos(1)) == "cos(1.0)"
+    assert str(cos([[1]])) == "[[cos(1.0)]]"
+
+    assert isinstance(sqrt(2), GenExpr)
+    assert isinstance(sqrt([2, 2]), MatrixExpr)
+    assert isinstance(sqrt([[2], [2]]), MatrixExpr)
+    assert isinstance(sqrt([2, x]), MatrixExpr)
+    assert isinstance(sqrt([[2], [x]]), MatrixExpr)
 
     # test invalid unary operations
     with pytest.raises(TypeError):
