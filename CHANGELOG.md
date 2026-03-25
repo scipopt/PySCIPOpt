@@ -8,6 +8,7 @@
 - Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
 - Used `getIndex()` instead of `ptr()` for sorting nonlinear expression terms to avoid nondeterministic behavior 
 ### Changed
+- Speed up `SumExpr.__neg__`, `ProdExpr.__neg__` and `Constant.__neg__` via C-level API
 ### Removed
 - Removed outdated warning about Make build system incompatibility
 
