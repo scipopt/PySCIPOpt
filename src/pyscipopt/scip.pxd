@@ -2251,7 +2251,7 @@ cdef class Model:
     cdef int _generated_event_handlers_count
     # store references to Benders subproblem Models for proper cleanup
     cdef _benders_subproblems
-    # store references to plugins to break circular references in __dealloc__
+    # store references to plugins for the Model <-> Plugin reference cycle
     cdef _plugins
     # store iis, if found
     cdef SCIP_IIS* _iis
