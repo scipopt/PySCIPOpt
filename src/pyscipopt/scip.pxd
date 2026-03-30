@@ -1532,6 +1532,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPlpiGetPrimalRay(SCIP_LPI* lpi, SCIP_Real* ray)
     SCIP_RETCODE SCIPlpiGetDualfarkas(SCIP_LPI* lpi, SCIP_Real* dualfarkas)
     SCIP_RETCODE SCIPlpiGetBasisInd(SCIP_LPI* lpi, int* bind)
+    SCIP_RETCODE SCIPlpiGetBase(SCIP_LPI* lpi, int* cstat, int* rstat)
+    SCIP_RETCODE SCIPlpiSetBase(SCIP_LPI* lpi, const int* cstat, const int* rstat)
     SCIP_RETCODE SCIPlpiGetRealSolQuality(SCIP_LPI* lpi, SCIP_LPSOLQUALITY qualityindicator, SCIP_Real* quality)
     SCIP_RETCODE SCIPlpiGetIntpar(SCIP_LPI* lpi, SCIP_LPPARAM type, int* ival)
     SCIP_RETCODE SCIPlpiGetRealpar(SCIP_LPI* lpi, SCIP_LPPARAM type, SCIP_Real* dval)

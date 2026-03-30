@@ -2,11 +2,14 @@
 
 ## Unreleased
 ### Added
+- Added `getBase()` and `setBase()` methods to `LP` class for getting/setting basis status
 - Added `getMemUsed()`, `getMemTotal()`, and `getMemExternEstim()` methods
 ### Fixed
 - Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
+- Used `getIndex()` instead of `ptr()` for sorting nonlinear expression terms to avoid nondeterministic behavior
 - Replaced `weakref.proxy` with strong references for plugin `self.model`, fixing `ReferenceError` during cleanup callbacks (#1193)
 ### Changed
+- Speed up `constant * Expr` via C-level API
 ### Removed
 - Removed outdated warning about Make build system incompatibility
 
