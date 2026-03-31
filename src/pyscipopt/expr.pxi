@@ -108,7 +108,7 @@ cdef class Term:
 
     def __init__(self, *vartuple: Variable):
         self.vartuple = tuple(sorted(vartuple, key=lambda v: v.getIndex()))
-        self.hashval = <Py_ssize_t>hash(self.vartuple)
+        self.hashval = <Py_ssize_t>hash(v.ptr() for v in self.vartuple)
 
     def __getitem__(self, idx):
         return self.vartuple[idx]
@@ -132,7 +132,7 @@ cdef class Term:
         for i in range(n):
             var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
             var2 = <Variable>PyTuple_GET_ITEM(_other.vartuple, i)
-            if hash(var1) != hash(var2):
+            if var1.ptr() != var2.ptr():
                 return False
         return True
 
@@ -153,7 +153,7 @@ cdef class Term:
         while i < n1 and j < n2:
             var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
             var2 = <Variable>PyTuple_GET_ITEM(other.vartuple, j)
-            if var1.ptr() <= var2.ptr():
+            if var1.getIndex() <= var2.getIndex():
                 vartuple[k] = var1
                 i += 1
             else:
@@ -171,7 +171,7 @@ cdef class Term:
 
         cdef Term res = Term.__new__(Term)
         res.vartuple = tuple(vartuple)
-        res.hashval = <Py_ssize_t>hash(res.vartuple)
+        res.hashval = <Py_ssize_t>hash(v.ptr() for v in res.vartuple)
         return res
 
     def __repr__(self):
