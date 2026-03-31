@@ -210,7 +210,7 @@ def buildGenExprObj(expr):
         GenExprs = np.empty(expr.shape, dtype=object)
         for idx in np.ndindex(expr.shape):
             GenExprs[idx] = buildGenExprObj(expr[idx])
-        return GenExprs.view(MatrixExpr)
+        return GenExprs.view(MatrixGenExpr)
 
     else:
         assert isinstance(expr, GenExpr)

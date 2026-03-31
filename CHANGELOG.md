@@ -8,6 +8,7 @@
 ### Fixed
 - Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
 - Used `getIndex()` instead of `ptr()` for sorting nonlinear expression terms to avoid nondeterministic behavior 
+- Return `MatrixGenExpr` in `buildGenExprObj` instead of `MatrixExpr`
 ### Changed
 - Speed up `constant * Expr` via C-level API
 ### Removed
