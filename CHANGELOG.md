@@ -8,10 +8,11 @@
 - Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
 - Used `getIndex()` instead of `ptr()` for sorting nonlinear expression terms to avoid nondeterministic behavior 
 ### Changed
+- Speed up `constant * Expr` via C-level API
 - Speed up `Term.__eq__` via the C-level API
 ### Removed
-- Removed `Term.ptrtuple` to optimize `Term` memory usage
 - Removed outdated warning about Make build system incompatibility
+- Removed `Term.ptrtuple` to optimize `Term` memory usage
 
 ## 6.1.0 - 2026.01.31
 ### Added
