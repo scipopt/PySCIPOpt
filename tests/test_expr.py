@@ -272,6 +272,10 @@ def test_unary(model):
     with pytest.raises(TypeError):
         np.arcsin(x)
 
+    with pytest.raises(TypeError):
+        # forbid modifying Variable/Expr/GenExpr in-place via out parameter
+        np.sin(x, out=np.array([0]))
+
 
 def test_mul():
     m = Model()
