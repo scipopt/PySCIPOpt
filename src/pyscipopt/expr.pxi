@@ -875,6 +875,22 @@ cdef inline object _to_const(object x):
 cdef object _vec_to_const = np.frompyfunc(_to_const, 1, 1)
 
 cdef inline object _wrap_ufunc(object x, object ufunc):
+    """
+    Apply a universal function (ufunc) to an expression or a collection of expressions.
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the ufunc directly to it. And if
+          it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the ufunc element-wise
+          using np.frompyfunc to convert each element to a Constant if it's a number,
+          and then apply the ufunc. The result is returned as a MatrixGenExpr if x was
+          an np.ndarray, otherwise as a list or tuple of GenExprs.
+
+    ufunc : np.ufunc
+        The universal function to be applied to x.
+    """
     if isinstance(x, (np.ndarray, list, tuple)):
         res = ufunc(_vec_to_const(x))
         return res.view(MatrixGenExpr) if isinstance(res, np.ndarray) else res
