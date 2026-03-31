@@ -2,10 +2,15 @@
 
 ## Unreleased
 ### Added
+- Added `getBase()` and `setBase()` methods to `LP` class for getting/setting basis status
+- Added `getMemUsed()`, `getMemTotal()`, and `getMemExternEstim()` methods
 ### Fixed
+- Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
+- Used `getIndex()` instead of `ptr()` for sorting nonlinear expression terms to avoid nondeterministic behavior 
 ### Changed
 - Return NotImplemented for `Expr` and `GenExpr` operators, if they can't handle input types in the calculation
 ### Removed
+- Removed outdated warning about Make build system incompatibility
 
 ## 6.1.0 - 2026.01.31
 ### Added

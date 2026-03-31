@@ -89,7 +89,7 @@ cdef class Term:
     cdef Py_ssize_t hashval
 
     def __init__(self, *vartuple: Variable):
-        self.vartuple = tuple(sorted(vartuple, key=lambda v: v.ptr()))
+        self.vartuple = tuple(sorted(vartuple, key=lambda v: v.getIndex()))
         self.ptrtuple = tuple(v.ptr() for v in self.vartuple)
         self.hashval = <Py_ssize_t>hash(self.ptrtuple)
 
@@ -119,7 +119,7 @@ cdef class Term:
         while i < n1 and j < n2:
             var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
             var2 = <Variable>PyTuple_GET_ITEM(other.vartuple, j)
-            if var1.ptr() <= var2.ptr():
+            if var1.getIndex() <= var2.getIndex():
                 vartuple[k] = var1
                 i += 1
             else:
