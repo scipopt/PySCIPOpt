@@ -390,10 +390,10 @@ cdef class Expr(ExprLike):
         Note: base must be positive.
         """
         if _is_number(other):
-            base = float(other)
+            base = <double>other
             if base <= 0.0:
                 raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
-            return exp(self * log(base))
+            return (self * Constant(base).log()).exp()
         else:
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
 
@@ -686,10 +686,10 @@ cdef class GenExpr(ExprLike):
         Note: base must be positive.
         """
         if _is_number(other):
-            base = float(other)
+            base = <double>other
             if base <= 0.0:
                 raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
-            return exp(self * log(base))
+            return (self * Constant(base).log()).exp()
         else:
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
 
