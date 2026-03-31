@@ -9,6 +9,7 @@
 - Used `getIndex()` instead of `ptr()` for sorting nonlinear expression terms to avoid nondeterministic behavior 
 ### Changed
 - Return NotImplemented for `Expr` and `GenExpr` operators, if they can't handle input types in the calculation
+- Speed up `constant * Expr` via C-level API
 ### Removed
 - Removed outdated warning about Make build system incompatibility
 
