@@ -63,7 +63,7 @@ if TYPE_CHECKING:
 
 
 def _expr_richcmp(self: Union[Expr, GenExpr], other, int op):
-    if not isinstance(other, GENEXPR_OP_TYPES):
+    if not _is_genexpr_compatible(other):
         return NotImplemented
 
     if op == Py_LE:
@@ -164,7 +164,7 @@ CONST = Term()
 # helper function
 def buildGenExprObj(expr: Union[int, float, Expr, GenExpr]) -> GenExpr:
     """helper function to generate an object of type GenExpr"""
-    if not isinstance(expr, GENEXPR_OP_TYPES):
+    if not _is_genexpr_compatible(expr):
         raise TypeError(f"Unsupported type {type(expr)}")
 
     if _is_number(expr):
@@ -216,7 +216,7 @@ cdef class Expr:
         return abs(buildGenExprObj(self))
 
     def __add__(self, other):
-        if not isinstance(other, EXPR_OP_TYPES):
+        if not _is_expr_compatible(other):
             return NotImplemented
 
         left = self
@@ -233,7 +233,7 @@ cdef class Expr:
         return Expr(terms)
 
     def __iadd__(self, other):
-        if not isinstance(other, EXPR_OP_TYPES):
+        if not _is_expr_compatible(other):
             return NotImplemented
 
         if isinstance(other, Expr):
@@ -245,7 +245,7 @@ cdef class Expr:
         return self
 
     def __mul__(self, other):
-        if not isinstance(other, EXPR_OP_TYPES):
+        if not _is_expr_compatible(other):
             return NotImplemented
 
         cdef dict res = {}
@@ -276,7 +276,7 @@ cdef class Expr:
         return Expr(res)
 
     def __truediv__(self, other):
-        if not isinstance(other, EXPR_OP_TYPES):
+        if not _is_expr_compatible(other):
             return NotImplemented
 
         if _is_number(other):
@@ -285,7 +285,7 @@ cdef class Expr:
 
     def __rtruediv__(self, other):
         ''' other / self '''
-        if not isinstance(other, EXPR_OP_TYPES):
+        if not _is_expr_compatible(other):
             return NotImplemented
         return buildGenExprObj(other) / self
 
@@ -475,7 +475,7 @@ cdef class GenExpr:
         return UnaryExpr(Operator.fabs, self)
 
     def __add__(self, other):
-        if not isinstance(other, GENEXPR_OP_TYPES):
+        if not _is_genexpr_compatible(other):
             return NotImplemented
 
         left = buildGenExprObj(self)
@@ -533,7 +533,7 @@ cdef class GenExpr:
     #    return self
 
     def __mul__(self, other):
-        if not isinstance(other, GENEXPR_OP_TYPES):
+        if not _is_genexpr_compatible(other):
             return NotImplemented
 
         left = buildGenExprObj(self)
@@ -607,7 +607,7 @@ cdef class GenExpr:
 
     #TODO: ipow, idiv, etc
     def __truediv__(self,other):
-        if not isinstance(other, GENEXPR_OP_TYPES):
+        if not _is_genexpr_compatible(other):
             return NotImplemented
 
         divisor = buildGenExprObj(other)
@@ -618,7 +618,7 @@ cdef class GenExpr:
 
     def __rtruediv__(self, other):
         ''' other / self '''
-        if not isinstance(other, GENEXPR_OP_TYPES):
+        if not _is_genexpr_compatible(other):
             return NotImplemented
         return buildGenExprObj(other) / self
 
@@ -870,8 +870,11 @@ def expr_to_array(expr, nodes):
     return len(nodes) - 1
 
 
-cdef tuple EXPR_OP_TYPES = (int, float, np.number, Expr)
-cdef tuple GENEXPR_OP_TYPES = EXPR_OP_TYPES + (GenExpr,)
-
 cdef inline bint _is_number(object o):
     return not PyArray_Check(o) and PyNumber_Check(o)
+
+cdef inline bint _is_expr_compatible(object o):
+    return _is_number(o) or isinstance(o, Expr)
+
+cdef inline bint _is_genexpr_compatible(object o):
+    return _is_expr_compatible(o) or isinstance(o, GenExpr)
