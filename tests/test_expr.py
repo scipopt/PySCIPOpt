@@ -249,3 +249,74 @@ def test_abs_abs_expr():
 
     # should print abs(x) not abs(abs(x))
     assert str(abs(abs(x))) == str(abs(x))
+
+
+def test_NotImplemented():
+    m = Model()
+    x = m.addVar(name="x")
+
+    with pytest.raises(TypeError):
+        "y" + x
+    with pytest.raises(TypeError):
+        x + "y"
+
+    with pytest.raises(TypeError):
+        y = "y"
+        y += x
+    with pytest.raises(TypeError):
+        x += "y"
+
+    with pytest.raises(TypeError):
+        "y" * x
+    with pytest.raises(TypeError):
+        x * "y"
+
+    with pytest.raises(TypeError):
+        "y" / x
+    with pytest.raises(TypeError):
+        x / "y"
+
+    with pytest.raises(TypeError):
+        "1" <= x
+    with pytest.raises(TypeError):
+        x >= "1"
+    with pytest.raises(TypeError):
+        x >= "1"
+    with pytest.raises(TypeError):
+        "1" == x
+    with pytest.raises(TypeError):
+        x == "1"
+
+    genexpr = 1 /x
+
+    with pytest.raises(TypeError):
+        "y" + genexpr
+    with pytest.raises(TypeError):
+        genexpr + "y"
+
+    with pytest.raises(TypeError):
+        y = "y"
+        y += genexpr
+    with pytest.raises(TypeError):
+        genexpr += "y"
+
+    with pytest.raises(TypeError):
+        "y" * genexpr
+    with pytest.raises(TypeError):
+        genexpr * "y"
+
+    with pytest.raises(TypeError):
+        "y" / genexpr
+    with pytest.raises(TypeError):
+        genexpr / "y"
+
+    with pytest.raises(TypeError):
+        "1" <= genexpr
+    with pytest.raises(TypeError):
+        genexpr >= "1"
+    with pytest.raises(TypeError):
+        genexpr >= "1"
+    with pytest.raises(TypeError):
+        "1" == genexpr
+    with pytest.raises(TypeError):
+        genexpr == "1"
