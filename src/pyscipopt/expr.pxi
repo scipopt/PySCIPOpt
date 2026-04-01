@@ -167,7 +167,7 @@ CONST = Term()
 def buildGenExprObj(expr: Union[int, float, Expr, GenExpr]) -> GenExpr:
     """helper function to generate an object of type GenExpr"""
     if not _is_genexpr_compatible(expr):
-        raise TypeError(f"Unsupported type {type(expr)}")
+        raise TypeError(f"unsupported type {type(expr).__name__!s}")
 
     if _is_number(expr):
         return Constant(expr)
