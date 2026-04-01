@@ -68,15 +68,15 @@ def _expr_richcmp(self: Union[Expr, GenExpr], other, int op):
 
     if op == Py_LE:
         if _is_number(other):
-            return ExprCons(self, rhs=float(other))
+            return ExprCons(self, rhs=<double>other)
         return (self - other) <= 0.0
     elif op == Py_GE:
         if _is_number(other):
-            return ExprCons(self, lhs=float(other))
+            return ExprCons(self, lhs=<double>other)
         return (self - other) >= 0.0
     elif op == Py_EQ:
         if _is_number(other):
-            return ExprCons(self, lhs=float(other), rhs=float(other))
+            return ExprCons(self, lhs=<double>other, rhs=<double>other)
         return (self - other) == 0.0
     raise NotImplementedError("can only support with '<=', '>=', or '=='")
 
