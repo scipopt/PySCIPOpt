@@ -17,7 +17,6 @@ _SCIP_BOUNDTYPE_TO_STRING: dict
 _core_dot: Incomplete
 _core_dot_2d: Incomplete
 _core_sum: Incomplete
-_expr_richcmp: Incomplete
 buildGenExprObj: Incomplete
 cos: Incomplete
 exp: Incomplete
