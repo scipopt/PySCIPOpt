@@ -1,9 +1,10 @@
 import math
 
+import numpy as np
 import pytest
 
-from pyscipopt import Model, sqrt, log, exp, sin, cos
-from pyscipopt.scip import Expr, GenExpr, ExprCons, CONST
+from pyscipopt import Model, cos, exp, log, sin, sqrt
+from pyscipopt.scip import CONST, Expr, ExprCons, GenExpr
 
 
 @pytest.fixture(scope="module")
@@ -287,7 +288,7 @@ def test_NotImplemented():
     with pytest.raises(TypeError):
         x == "1"
 
-    genexpr = 1 /x
+    genexpr = sqrt(x)
 
     with pytest.raises(TypeError):
         "y" + genexpr
@@ -320,3 +321,19 @@ def test_NotImplemented():
         "1" == genexpr
     with pytest.raises(TypeError):
         genexpr == "1"
+
+    # test Expr + GenExpr
+    assert str(x + genexpr) == "sum(0.0,sqrt(sum(0.0,prod(1.0,x))),prod(1.0,x))"
+    assert str(genexpr + x) == "sum(0.0,sqrt(sum(0.0,prod(1.0,x))),prod(1.0,x))"
+
+    # test Expr * GenExpr
+    assert (
+        str(x * genexpr) == "prod(1.0,sqrt(sum(0.0,prod(1.0,x))),sum(0.0,prod(1.0,x)))"
+    )
+
+    # test Expr += GenExpr
+    x += genexpr
+    assert str(x) == "sum(0.0,sqrt(sum(0.0,prod(1.0,x))),prod(1.0,x))"
+
+    # test Expr + array
+    assert str(x + np.array([1])) == "[sum(1.0,sqrt(sum(0.0,prod(1.0,x))),prod(1.0,x))]"
