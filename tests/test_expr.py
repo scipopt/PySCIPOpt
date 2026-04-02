@@ -331,9 +331,35 @@ def test_NotImplemented():
         str(x * genexpr) == "prod(1.0,sqrt(sum(0.0,prod(1.0,x))),sum(0.0,prod(1.0,x)))"
     )
 
+    # test Expr + array
+    a = np.array([1])
+    assert str(x + a) == "[Expr({Term(x): 1.0, Term(): 1.0})]"
+    # test GenExpr + array
+    assert str(genexpr + a) == "[sum(1.0,sqrt(sum(0.0,prod(1.0,x))))]"
+
+    a = m.addMatrixVar(1)
+    # test Expr >= array
+    assert str(x >= a) == "[ExprCons(Expr({Term(x2): 1.0, Term(x): -1.0}), None, 0.0)]"
+    # test GenExpr >= array
+    assert (
+        str(genexpr >= a)
+        == "[ExprCons(sum(0.0,prod(-1.0,sqrt(sum(0.0,prod(1.0,x)))),prod(1.0,x2)), None, 0.0)]"
+    )
+    # test Expr <= array
+    assert str(x <= a) == "[ExprCons(Expr({Term(x2): 1.0, Term(x): -1.0}), 0.0, None)]"
+    # test GenExpr <= array
+    assert (
+        str(genexpr <= a)
+        == "[ExprCons(sum(0.0,prod(-1.0,sqrt(sum(0.0,prod(1.0,x)))),prod(1.0,x2)), 0.0, None)]"
+    )
+    # test Expr == array
+    assert str(x == a) == "[ExprCons(Expr({Term(x2): 1.0, Term(x): -1.0}), 0.0, 0.0)]"
+    # test GenExpr == array
+    assert (
+        str(genexpr == a)
+        == "[ExprCons(sum(0.0,prod(-1.0,sqrt(sum(0.0,prod(1.0,x)))),prod(1.0,x2)), 0.0, 0.0)]"
+    )
+
     # test Expr += GenExpr
     x += genexpr
     assert str(x) == "sum(0.0,sqrt(sum(0.0,prod(1.0,x))),prod(1.0,x))"
-
-    # test Expr + array
-    assert str(x + np.array([1])) == "[sum(1.0,sqrt(sum(0.0,prod(1.0,x))),prod(1.0,x))]"
