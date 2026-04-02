@@ -328,7 +328,7 @@ cdef class Expr:
     def __rsub__(self, other):
         return -1.0 * self + other
 
-    def __richcmp__(self, other, op):
+    def __richcmp__(self, other, int op):
         '''turn it into a constraint'''
         return _expr_richcmp(self, other, op)
 
@@ -639,7 +639,7 @@ cdef class GenExpr:
     def __rsub__(self, other):
         return -1.0 * self + other
 
-    def __richcmp__(self, other, op):
+    def __richcmp__(self, other, int op):
         '''turn it into a constraint'''
         return _expr_richcmp(self, other, op)
 
