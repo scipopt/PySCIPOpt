@@ -143,7 +143,7 @@ cdef class Term:
 CONST = Term()
 
 # helper function
-def buildGenExprObj(expr: Union[int, float, Expr, GenExpr]) -> GenExpr:
+def buildGenExprObj(expr: Union[int, float, np.number, Expr, GenExpr]) -> GenExpr:
     """helper function to generate an object of type GenExpr"""
     if not _is_genexpr_compatible(expr):
         raise TypeError(f"unsupported type {type(expr).__name__!s}")
@@ -860,7 +860,11 @@ cdef inline bint _is_expr_compatible(object o):
 cdef inline bint _is_genexpr_compatible(object o):
     return _is_expr_compatible(o) or isinstance(o, GenExpr)
 
-cdef object _expr_richcmp(self, other, int op):
+cdef object _expr_richcmp(
+    self,
+    other: Union[int, float, np.number, Expr, GenExpr],
+    int op,
+):
     if isinstance(other, np.ndarray):
         return NotImplemented
     if not _is_genexpr_compatible(other):
