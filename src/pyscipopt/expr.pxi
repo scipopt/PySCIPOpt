@@ -108,7 +108,7 @@ cdef class Term:
 
     def __init__(self, *vartuple: Variable):
         self.vartuple = tuple(sorted(vartuple, key=lambda v: v.getIndex()))
-        self.hashval = <Py_ssize_t>hash(v.ptr() for v in self.vartuple)
+        self.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in self.vartuple))
 
     def __getitem__(self, idx):
         return self.vartuple[idx]
@@ -171,7 +171,7 @@ cdef class Term:
 
         cdef Term res = Term.__new__(Term)
         res.vartuple = tuple(vartuple)
-        res.hashval = <Py_ssize_t>hash(v.ptr() for v in res.vartuple)
+        res.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in res.vartuple))
         return res
 
     def __repr__(self):
