@@ -20,8 +20,8 @@ if ! gh auth status &>/dev/null; then
     exit 1
 fi
 
-if ! git diff --quiet || ! git diff --cached --quiet; then
-    echo "Error: working directory has uncommitted changes. Commit or stash them first."
+if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Error: working directory is not clean. Commit, stash, or remove changes first."
     exit 1
 fi
 
@@ -67,7 +67,7 @@ if [[ "${need_deploy:-N}" =~ ^[Yy] ]]; then
     echo "Enter component versions (press enter to keep current):"
 
     # Fetch current defaults from the deploy workflow
-    DEPLOY_WORKFLOW=$(gh api repos/${DEPLOY_REPO}/contents/.github/workflows/build_binaries.yml --jq '.content' | base64 -d)
+    DEPLOY_WORKFLOW=$(gh api repos/${DEPLOY_REPO}/contents/.github/workflows/build_binaries.yml --jq '.content' | base64 --decode)
     current_deploy_default() {
         echo "$DEPLOY_WORKFLOW" | sed -n "/${1}:/,/default:/{s/.*default: \"\(.*\)\"/\1/p;}" | head -1
     }
@@ -90,11 +90,22 @@ if [[ "${need_deploy:-N}" =~ ^[Yy] ]]; then
 
     read -rp "New deploy release tag [${SUGGESTED_DEPLOY}]: " NEW_DEPLOY_VERSION
     NEW_DEPLOY_VERSION="${NEW_DEPLOY_VERSION:-$SUGGESTED_DEPLOY}"
+
+    if [[ ! "$NEW_DEPLOY_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "Error: deploy tag must match vX.Y.Z"
+        exit 1
+    fi
+
+    if gh api "repos/${DEPLOY_REPO}/git/ref/tags/${NEW_DEPLOY_VERSION}" &>/dev/null; then
+        echo "Error: deploy tag ${NEW_DEPLOY_VERSION} already exists in ${DEPLOY_REPO}."
+        exit 1
+    fi
 fi
 
 # 2. PySCIPOpt version bump
 
 CURRENT_VERSION=$(sed -n "s/^__version__.*'\(.*\)'/\1/p" "$VERSION_FILE")
+validate_version "$CURRENT_VERSION"
 MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
 MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
 PATCH=$(echo "$CURRENT_VERSION" | cut -d. -f3)
@@ -117,7 +128,12 @@ case "$bump_type" in
 esac
 
 if git rev-parse "v${NEW_VERSION}" &>/dev/null; then
-    echo "Error: tag 'v${NEW_VERSION}' already exists."
+    echo "Error: tag 'v${NEW_VERSION}' already exists locally."
+    exit 1
+fi
+
+if git ls-remote --tags --exit-code origin "refs/tags/v${NEW_VERSION}" &>/dev/null; then
+    echo "Error: tag 'v${NEW_VERSION}' already exists on origin."
     exit 1
 fi
 
@@ -166,8 +182,17 @@ if [[ "$NEED_DEPLOY" == true ]]; then
         -f ipopt_version="$IPOPT_VERSION"
 
     # Wait for the run to appear
-    sleep 5
-    RUN_ID=$(gh run list --workflow=build_binaries.yml --repo "$DEPLOY_REPO" --limit 1 --json databaseId --jq '.[0].databaseId')
+    DISPATCH_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+    for i in {1..12}; do
+        sleep 5
+        RUN_ID=$(gh run list --workflow=build_binaries.yml --repo "$DEPLOY_REPO" --limit 1 --event workflow_dispatch --json databaseId,createdAt --jq "[.[] | select(.createdAt >= \"${DISPATCH_TIME}\")] | .[0].databaseId")
+        [[ -n "$RUN_ID" && "$RUN_ID" != "null" ]] && break
+    done
+
+    if [[ -z "$RUN_ID" || "$RUN_ID" == "null" ]]; then
+        echo "Error: could not find the triggered workflow run."
+        exit 1
+    fi
 
     echo "Waiting for build to complete (run ${RUN_ID})..."
     echo "  https://github.com/${DEPLOY_REPO}/actions/runs/${RUN_ID}"
