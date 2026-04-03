@@ -3,10 +3,8 @@ set -euo pipefail
 
 VERSION_FILE="src/pyscipopt/_version.py"
 SETUP_FILE="setup.py"
-PYPROJECT="pyproject.toml"
 CHANGELOG="CHANGELOG.md"
 REPO="scipopt/PySCIPOpt"
-DEPLOY_REPO="scipopt/scipoptsuite-deploy"
 
 # --- Pre-flight checks ---
 
@@ -42,67 +40,7 @@ validate_version() {
     fi
 }
 
-prompt_version() {
-    local label="$1" current="$2"
-    read -rp "${label} [${current}]: " value
-    value="${value:-$current}"
-    validate_version "$value"
-    echo "$value"
-}
-
-# --- Collect all inputs ---
-
-# 1. New SCIP binaries?
-
-CURRENT_DEPLOY_VERSION=$(grep -o 'scipoptsuite-deploy/releases/download/v[0-9.]*' "$PYPROJECT" | head -1 | sed 's|.*/||')
-
-echo "Current scipoptsuite-deploy version: ${CURRENT_DEPLOY_VERSION}"
-read -rp "Does this release need new SCIP binaries? [y/N] " need_deploy
-
-NEED_DEPLOY=false
-if [[ "${need_deploy:-N}" =~ ^[Yy] ]]; then
-    NEED_DEPLOY=true
-
-    echo ""
-    echo "Enter component versions (press enter to keep current):"
-
-    # Fetch current defaults from the deploy workflow
-    DEPLOY_WORKFLOW=$(gh api repos/${DEPLOY_REPO}/contents/.github/workflows/build_binaries.yml --jq '.content' | base64 --decode)
-    current_deploy_default() {
-        echo "$DEPLOY_WORKFLOW" | sed -n "/${1}:/,/default:/{s/.*default: \"\(.*\)\"/\1/p;}" | head -1
-    }
-
-    CUR_SCIP=$(current_deploy_default "scip_version")
-    CUR_SOPLEX=$(current_deploy_default "soplex_version")
-    CUR_GCG=$(current_deploy_default "gcg_version")
-    CUR_IPOPT=$(current_deploy_default "ipopt_version")
-
-    SCIP_VERSION=$(prompt_version "SCIP" "$CUR_SCIP")
-    SOPLEX_VERSION=$(prompt_version "SoPlex" "$CUR_SOPLEX")
-    GCG_VERSION=$(prompt_version "GCG" "$CUR_GCG")
-    IPOPT_VERSION=$(prompt_version "IPOPT" "$CUR_IPOPT")
-
-    # Bump deploy version (increment minor)
-    DEPLOY_MAJOR=$(echo "$CURRENT_DEPLOY_VERSION" | sed 's/^v//' | cut -d. -f1)
-    DEPLOY_MINOR=$(echo "$CURRENT_DEPLOY_VERSION" | sed 's/^v//' | cut -d. -f2)
-    DEPLOY_PATCH=$(echo "$CURRENT_DEPLOY_VERSION" | sed 's/^v//' | cut -d. -f3)
-    SUGGESTED_DEPLOY="v$((DEPLOY_MAJOR)).$((DEPLOY_MINOR + 1)).$((DEPLOY_PATCH))"
-
-    read -rp "New deploy release tag [${SUGGESTED_DEPLOY}]: " NEW_DEPLOY_VERSION
-    NEW_DEPLOY_VERSION="${NEW_DEPLOY_VERSION:-$SUGGESTED_DEPLOY}"
-
-    if [[ ! "$NEW_DEPLOY_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        echo "Error: deploy tag must match vX.Y.Z"
-        exit 1
-    fi
-
-    if gh api "repos/${DEPLOY_REPO}/git/ref/tags/${NEW_DEPLOY_VERSION}" &>/dev/null; then
-        echo "Error: deploy tag ${NEW_DEPLOY_VERSION} already exists in ${DEPLOY_REPO}."
-        exit 1
-    fi
-fi
-
-# 2. PySCIPOpt version bump
+# --- Read current version ---
 
 CURRENT_VERSION=$(sed -n "s/^__version__.*'\(.*\)'/\1/p" "$VERSION_FILE")
 validate_version "$CURRENT_VERSION"
@@ -110,8 +48,10 @@ MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
 MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
 PATCH=$(echo "$CURRENT_VERSION" | cut -d. -f3)
 
-echo ""
-echo "Current PySCIPOpt version: ${CURRENT_VERSION}"
+echo "Current version: ${CURRENT_VERSION}"
+
+# --- Prompt for bump type ---
+
 echo ""
 echo "Release type:"
 echo "  1) patch  -> $((MAJOR)).$((MINOR)).$((PATCH + 1))"
@@ -126,6 +66,8 @@ case "$bump_type" in
     3|major) NEW_VERSION="$((MAJOR + 1)).0.0" ;;
     *) echo "Error: invalid selection '${bump_type}'"; exit 1 ;;
 esac
+
+# --- Check tag doesn't already exist ---
 
 if git rev-parse "v${NEW_VERSION}" &>/dev/null; then
     echo "Error: tag 'v${NEW_VERSION}' already exists locally."
@@ -148,20 +90,10 @@ echo "-----------------------------"
 TODAY=$(date +%Y.%m.%d)
 echo ""
 echo "This script will:"
-if [[ "$NEED_DEPLOY" == true ]]; then
-    echo "  1. Build new SCIP binaries (SCIP=${SCIP_VERSION} SoPlex=${SOPLEX_VERSION} GCG=${GCG_VERSION} IPOPT=${IPOPT_VERSION})"
-    echo "  2. Create scipoptsuite-deploy release ${NEW_DEPLOY_VERSION}"
-    echo "  3. Update deploy version ${CURRENT_DEPLOY_VERSION} -> ${NEW_DEPLOY_VERSION} in pyproject.toml"
-    echo "  4. Update PySCIPOpt version ${CURRENT_VERSION} -> ${NEW_VERSION} in _version.py and setup.py"
-    echo "  5. Update CHANGELOG.md (${NEW_VERSION} - ${TODAY})"
-    echo "  6. Commit, tag v${NEW_VERSION}, and push to origin"
-    echo "  7. Trigger the build wheels workflow (test-pypi)"
-else
-    echo "  1. Update version ${CURRENT_VERSION} -> ${NEW_VERSION} in _version.py and setup.py"
-    echo "  2. Update CHANGELOG.md (${NEW_VERSION} - ${TODAY})"
-    echo "  3. Commit, tag v${NEW_VERSION}, and push to origin"
-    echo "  4. Trigger the build wheels workflow (test-pypi)"
-fi
+echo "  1. Update version ${CURRENT_VERSION} -> ${NEW_VERSION} in _version.py and setup.py"
+echo "  2. Update CHANGELOG.md (${NEW_VERSION} - ${TODAY})"
+echo "  3. Commit, tag v${NEW_VERSION}, and push to origin"
+echo "  4. Trigger the build wheels workflow (test-pypi)"
 echo ""
 read -rp "Proceed? [Y/n] " confirm
 [[ "${confirm:-Y}" =~ ^[Nn] ]] && exit 0
@@ -169,59 +101,6 @@ read -rp "Proceed? [Y/n] " confirm
 # ============================================================
 # From here on, everything runs without further prompts.
 # ============================================================
-
-# --- Build and release SCIP binaries (if needed) ---
-
-if [[ "$NEED_DEPLOY" == true ]]; then
-    echo ""
-    echo "Triggering SCIP binary build..."
-    gh workflow run build_binaries.yml --repo "$DEPLOY_REPO" \
-        -f scip_version="$SCIP_VERSION" \
-        -f soplex_version="$SOPLEX_VERSION" \
-        -f gcg_version="$GCG_VERSION" \
-        -f ipopt_version="$IPOPT_VERSION"
-
-    # Wait for the run to appear
-    DISPATCH_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-    for i in {1..12}; do
-        sleep 5
-        RUN_ID=$(gh run list --workflow=build_binaries.yml --repo "$DEPLOY_REPO" --limit 1 --event workflow_dispatch --json databaseId,createdAt --jq "[.[] | select(.createdAt >= \"${DISPATCH_TIME}\")] | .[0].databaseId")
-        [[ -n "$RUN_ID" && "$RUN_ID" != "null" ]] && break
-    done
-
-    if [[ -z "$RUN_ID" || "$RUN_ID" == "null" ]]; then
-        echo "Error: could not find the triggered workflow run."
-        exit 1
-    fi
-
-    echo "Waiting for build to complete (run ${RUN_ID})..."
-    echo "  https://github.com/${DEPLOY_REPO}/actions/runs/${RUN_ID}"
-    gh run watch "$RUN_ID" --repo "$DEPLOY_REPO" --exit-status
-
-    # Download artifacts and create release
-    TMPDIR=$(mktemp -d)
-    echo "Downloading artifacts..."
-    gh run download "$RUN_ID" --repo "$DEPLOY_REPO" --dir "$TMPDIR"
-
-    RELEASE_NAME="SCIP ${SCIP_VERSION} SOPLEX ${SOPLEX_VERSION} GCG ${GCG_VERSION} IPOPT ${IPOPT_VERSION}"
-    echo "Creating release ${NEW_DEPLOY_VERSION}..."
-    gh release create "$NEW_DEPLOY_VERSION" \
-        --repo "$DEPLOY_REPO" \
-        --title "$RELEASE_NAME" \
-        --notes "$RELEASE_NAME" \
-        "$TMPDIR"/linux/*.zip \
-        "$TMPDIR"/linux-arm/*.zip \
-        "$TMPDIR"/macos-arm/*.zip \
-        "$TMPDIR"/macos-intel/*.zip \
-        "$TMPDIR"/windows/*.zip
-
-    rm -rf "$TMPDIR"
-
-    # Update deploy version in pyproject.toml
-    sed -i.bak "s|scipoptsuite-deploy/releases/download/${CURRENT_DEPLOY_VERSION}|scipoptsuite-deploy/releases/download/${NEW_DEPLOY_VERSION}|g" "$PYPROJECT"
-    rm -f "${PYPROJECT}.bak"
-    echo "Updated pyproject.toml: ${CURRENT_DEPLOY_VERSION} -> ${NEW_DEPLOY_VERSION}"
-fi
 
 # --- Update version files ---
 
@@ -252,10 +131,7 @@ echo "Updated CHANGELOG.md"
 
 # --- Commit, tag, and push ---
 
-FILES_TO_COMMIT=("$VERSION_FILE" "$SETUP_FILE" "$CHANGELOG")
-[[ "$NEED_DEPLOY" == true ]] && FILES_TO_COMMIT+=("$PYPROJECT")
-
-git add "${FILES_TO_COMMIT[@]}"
+git add "$VERSION_FILE" "$SETUP_FILE" "$CHANGELOG"
 git commit -m "release v${NEW_VERSION}"
 git tag "v${NEW_VERSION}"
 git push origin master
