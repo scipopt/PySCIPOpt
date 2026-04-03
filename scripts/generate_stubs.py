@@ -48,12 +48,12 @@ class StubGenerator:
 
     # Special methods that need specific type hints
     COMPARISON_METHODS = {
-        '__eq__': 'def __eq__(self, other: object) -> bool: ...',
-        '__ne__': 'def __ne__(self, other: object) -> bool: ...',
-        '__lt__': 'def __lt__(self, other: object) -> bool: ...',
-        '__le__': 'def __le__(self, other: object) -> bool: ...',
-        '__gt__': 'def __gt__(self, other: object) -> bool: ...',
-        '__ge__': 'def __ge__(self, other: object) -> bool: ...',
+        '__eq__': 'def __eq__(self, other: object, /) -> bool: ...',
+        '__ne__': 'def __ne__(self, other: object, /) -> bool: ...',
+        '__lt__': 'def __lt__(self, other: object, /) -> bool: ...',
+        '__le__': 'def __le__(self, other: object, /) -> bool: ...',
+        '__gt__': 'def __gt__(self, other: object, /) -> bool: ...',
+        '__ge__': 'def __ge__(self, other: object, /) -> bool: ...',
     }
 
     SPECIAL_METHODS = {
@@ -63,8 +63,8 @@ class StubGenerator:
         '__init__': 'def __init__(self, *args: Incomplete, **kwargs: Incomplete) -> None: ...',
         '__repr__': 'def __repr__(self) -> str: ...',
         '__str__': 'def __str__(self) -> str: ...',
-        '__delitem__': 'def __delitem__(self, key: Incomplete) -> None: ...',
-        '__setitem__': 'def __setitem__(self, key: Incomplete, value: Incomplete) -> None: ...',
+        '__delitem__': 'def __delitem__(self, key: Incomplete, /) -> None: ...',
+        '__setitem__': 'def __setitem__(self, key: Incomplete, value: Incomplete, /) -> None: ...',
     }
 
     # Methods that should NOT appear in stubs (internal Cython methods)
@@ -80,24 +80,24 @@ class StubGenerator:
 
     # Methods with specific type hints (no *args, **kwargs)
     TYPED_METHODS = {
-        '__getitem__': 'def __getitem__(self, index: Incomplete) -> Incomplete: ...',
+        '__getitem__': 'def __getitem__(self, index: Incomplete, /) -> Incomplete: ...',
         '__iter__': 'def __iter__(self) -> Incomplete: ...',
         '__next__': 'def __next__(self) -> Incomplete: ...',
-        '__add__': 'def __add__(self, other: Incomplete) -> Incomplete: ...',
-        '__radd__': 'def __radd__(self, other: Incomplete) -> Incomplete: ...',
-        '__sub__': 'def __sub__(self, other: Incomplete) -> Incomplete: ...',
-        '__rsub__': 'def __rsub__(self, other: Incomplete) -> Incomplete: ...',
-        '__mul__': 'def __mul__(self, other: Incomplete) -> Incomplete: ...',
-        '__rmul__': 'def __rmul__(self, other: Incomplete) -> Incomplete: ...',
-        '__truediv__': 'def __truediv__(self, other: Incomplete) -> Incomplete: ...',
-        '__rtruediv__': 'def __rtruediv__(self, other: Incomplete) -> Incomplete: ...',
-        '__rpow__': 'def __rpow__(self, other: Incomplete) -> Incomplete: ...',
+        '__add__': 'def __add__(self, other: Incomplete, /) -> Incomplete: ...',
+        '__radd__': 'def __radd__(self, other: Incomplete, /) -> Incomplete: ...',
+        '__sub__': 'def __sub__(self, other: Incomplete, /) -> Incomplete: ...',
+        '__rsub__': 'def __rsub__(self, other: Incomplete, /) -> Incomplete: ...',
+        '__mul__': 'def __mul__(self, other: Incomplete, /) -> Incomplete: ...',
+        '__rmul__': 'def __rmul__(self, other: Incomplete, /) -> Incomplete: ...',
+        '__truediv__': 'def __truediv__(self, other: Incomplete, /) -> Incomplete: ...',
+        '__rtruediv__': 'def __rtruediv__(self, other: Incomplete, /) -> Incomplete: ...',
+        '__rpow__': 'def __rpow__(self, other: Incomplete, /) -> Incomplete: ...',
         '__neg__': 'def __neg__(self) -> Incomplete: ...',
         '__abs__': 'def __abs__(self) -> Incomplete: ...',
-        '__iadd__': 'def __iadd__(self, other: Incomplete) -> Incomplete: ...  # noqa: PYI034',
-        '__isub__': 'def __isub__(self, other: Incomplete) -> Incomplete: ...  # noqa: PYI034',
-        '__imul__': 'def __imul__(self, other: Incomplete) -> Incomplete: ...  # noqa: PYI034',
-        '__matmul__': 'def __matmul__(self, other: Incomplete) -> Incomplete: ...',
+        '__iadd__': 'def __iadd__(self, other: Incomplete, /) -> Incomplete: ...  # noqa: PYI034',
+        '__isub__': 'def __isub__(self, other: Incomplete, /) -> Incomplete: ...  # noqa: PYI034',
+        '__imul__': 'def __imul__(self, other: Incomplete, /) -> Incomplete: ...  # noqa: PYI034',
+        '__matmul__': 'def __matmul__(self, other: Incomplete, /) -> Incomplete: ...',
         '__array_ufunc__': 'def __array_ufunc__(self, ufunc: Incomplete, method: Incomplete, *args: Incomplete, **kwargs: Incomplete) -> Incomplete: ...',
     }
 
@@ -520,6 +520,11 @@ class StubGenerator:
                 param_strs.append(f'{param_name}: Incomplete = ...')
             else:
                 param_strs.append(f'{param_name}: Incomplete')
+
+        # Dunder methods (except __init__) have positional-only parameters
+        is_dunder = method_name.startswith('__') and method_name.endswith('__')
+        if is_dunder and method_name != '__init__' and not is_static:
+            param_strs.append('/')
 
         params_str = ', '.join(param_strs)
         return f'def {method_name}({params_str}) -> {return_type}: ...'
