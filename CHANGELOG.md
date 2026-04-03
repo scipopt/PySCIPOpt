@@ -6,7 +6,8 @@
 - Added `getMemUsed()`, `getMemTotal()`, and `getMemExternEstim()` methods
 ### Fixed
 - Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
-- Used `getIndex()` instead of `ptr()` for sorting nonlinear expression terms to avoid nondeterministic behavior 
+- Used `getIndex()` instead of `ptr()` for sorting nonlinear expression terms to avoid nondeterministic behavior
+- Fixed stubtest failures with mypy 1.20 by marking dunder method parameters as positional-only
 ### Changed
 - Return NotImplemented for `Expr` and `GenExpr` operators, if they can't handle input types in the calculation
 - Speed up `constant * Expr` via C-level API
