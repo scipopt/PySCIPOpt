@@ -3,10 +3,8 @@ import math
 import numpy as np
 import pytest
 
-from pyscipopt import Model, cos, exp, log, sin, sqrt
+from pyscipopt import Model, cos, exp, log, quickprod, sin, sqrt
 from pyscipopt.scip import CONST, Expr, ExprCons, GenExpr, MatrixGenExpr
-from pyscipopt import Model, sqrt, log, exp, sin, cos, quickprod
-from pyscipopt.scip import Expr, GenExpr, ExprCons, CONST
 
 
 @pytest.fixture(scope="module")
