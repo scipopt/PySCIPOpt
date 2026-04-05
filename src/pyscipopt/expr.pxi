@@ -877,11 +877,125 @@ cdef class Constant(GenExpr):
         return self.number
 
 
-exp = lambda x: _wrap_ufunc(x, np.exp)
-log = lambda x: _wrap_ufunc(x, np.log)
-sqrt = lambda x: _wrap_ufunc(x, np.sqrt)
-sin = lambda x: _wrap_ufunc(x, np.sin)
-cos = lambda x: _wrap_ufunc(x, np.cos)
+def exp(x):
+    """
+    returns expression with exp-function
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the exp function directly to it.
+          And if it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the exp function
+          element-wise using np.frompyfunc to convert each element to a Constant if it's
+          a number, and then apply the exp function.
+
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the exp
+          function to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the exp
+          function applied element-wise.
+    """
+    return _wrap_ufunc(x, np.exp)
+
+
+def log(x):
+    """
+    returns expression with log-function
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the log function directly to it.
+          And if it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the log function
+          element-wise using np.frompyfunc to convert each element to a Constant if it's
+          a number, and then apply the log function.
+
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the log
+          function to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the log
+          function applied element-wise.
+    """
+    return _wrap_ufunc(x, np.log)
+
+
+def sqrt(x):
+    """
+    returns expression with sqrt-function
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the sqrt function directly to it.
+          And if it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the sqrt function
+          element-wise using np.frompyfunc to convert each element to a Constant if it's
+          a number, and then apply the sqrt function.
+
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the sqrt
+          function to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the sqrt
+          function applied element-wise.
+    """
+    return _wrap_ufunc(x, np.sqrt)
+
+
+def sin(x):
+    """
+    returns expression with sin-function
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the sin function directly to it.
+          And if it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the sin function
+          element-wise using np.frompyfunc to convert each element to a Constant if it's
+          a number, and then apply the sin function.
+
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the sin
+          function to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the sin
+          function applied element-wise.
+    """
+    return _wrap_ufunc(x, np.sin)
+
+
+def cos(x):
+    """
+    returns expression with cos-function
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the cos function directly to it.
+          And if it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the cos function
+          element-wise using np.frompyfunc to convert each element to a Constant if it's
+          a number, and then apply the cos function.
+
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the cos
+          function to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the cos
+          function applied element-wise.
+    """
+    return _wrap_ufunc(x, np.cos)
+
 
 cdef inline object _to_const(object x):
     return Constant(<double>x) if _is_number(x) else x
