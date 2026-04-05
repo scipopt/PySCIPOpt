@@ -12753,7 +12753,7 @@ def readStatistics(filename):
 
                 try:
                     result[stat_name] = float(relevant_value)
-                except:
+                except (ValueError, TypeError):
                     result[stat_name] = relevant_value
                 else:
                     if stat_name == "Solutions found" and result[stat_name] == 0:
