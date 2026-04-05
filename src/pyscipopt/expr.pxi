@@ -48,12 +48,14 @@ from typing import TYPE_CHECKING, Union
 import numpy as np
 
 from cpython.dict cimport PyDict_Next, PyDict_GetItem
+from cpython.float cimport PyFloat_Check
+from cpython.long cimport PyLong_Check
 from cpython.number cimport PyNumber_Check
 from cpython.object cimport Py_LE, Py_EQ, Py_GE, Py_TYPE
 from cpython.ref cimport PyObject
 from cpython.tuple cimport PyTuple_GET_ITEM
 
-from numpy cimport PyArray_Check
+cimport numpy as cnp
 
 from pyscipopt.scip cimport Variable, Solution
 
@@ -866,8 +868,7 @@ def expr_to_array(expr, nodes):
 
 
 cdef bint _is_number(object o):
-    cdef type t = <type>Py_TYPE(o)
-    if t is int or t is float:
+    if PyLong_Check(o) or PyFloat_Check(o):
         return True
     if cnp.PyArray_Check(o) or isinstance(o, (Expr, GenExpr, list, tuple)):
         return False
