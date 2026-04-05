@@ -314,9 +314,11 @@ def test_NotImplemented():
     with pytest.raises(TypeError):
         "1" <= genexpr
     with pytest.raises(TypeError):
-        genexpr >= "1"
+        "1" >= genexpr
     with pytest.raises(TypeError):
         genexpr >= "1"
+    with pytest.raises(TypeError):
+        genexpr <= "1"
     with pytest.raises(TypeError):
         "1" == genexpr
     with pytest.raises(TypeError):
