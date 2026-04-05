@@ -851,8 +851,13 @@ def expr_to_array(expr, nodes):
     return len(nodes) - 1
 
 
-cdef inline bint _is_number(object o):
-    return not PyArray_Check(o) and PyNumber_Check(o)
+cdef bint _is_number(object o):
+    cdef type t = <type>Py_TYPE(o)
+    if t is int or t is float:
+        return True
+    if cnp.PyArray_Check(o) or isinstance(o, (Expr, GenExpr, list, tuple)):
+        return False
+    return PyNumber_Check(o)
 
 cdef inline bint _is_expr_compatible(object o):
     return _is_number(o) or isinstance(o, Expr)
