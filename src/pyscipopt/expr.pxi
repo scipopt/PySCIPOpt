@@ -261,7 +261,7 @@ cdef class Expr:
             return NotImplemented
 
         if _is_number(other):
-            return 1.0 / <double>other * self
+            return 1.0 / other * self
         return buildGenExprObj(self) / other
 
     def __rtruediv__(self, other):
