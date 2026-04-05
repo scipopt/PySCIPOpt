@@ -11,8 +11,10 @@
 ### Changed
 - Return NotImplemented for `Expr` and `GenExpr` operators, if they can't handle input types in the calculation
 - Speed up `constant * Expr` via C-level API
+- Speed up `Term.__eq__` via the C-level API
 ### Removed
 - Removed outdated warning about Make build system incompatibility
+- Removed `Term.ptrtuple` to optimize `Term` memory usage
 
 ## 6.1.0 - 2026.01.31
 ### Added

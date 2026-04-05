@@ -3,7 +3,7 @@ import math
 import numpy as np
 import pytest
 
-from pyscipopt import Model, cos, exp, log, sin, sqrt
+from pyscipopt import Model, cos, exp, log, quickprod, sin, sqrt
 from pyscipopt.scip import CONST, Expr, ExprCons, GenExpr
 
 
@@ -365,3 +365,24 @@ def test_NotImplemented():
     # test Expr += GenExpr
     x += genexpr
     assert str(x) == "sum(0.0,sqrt(sum(0.0,prod(1.0,x))),prod(1.0,x))"
+
+
+def test_term_eq():
+    m = Model()
+
+    x = m.addMatrixVar(1000)
+    y = m.addVar()
+    z = m.addVar()
+
+    e1 = quickprod(x.flat)
+    e2 = quickprod(x.flat)
+    t1 = next(iter(e1))
+    t2 = next(iter(e2))
+    t3 = next(iter(e1 * y))
+    t4 = next(iter(e2 * z))
+
+    assert t1 == t1  # same term
+    assert t1 == t2  # same term
+    assert t3 != t4  # same length, but different term
+    assert t1 != t3  # different length
+    assert t1 != "not a term"  # different type
