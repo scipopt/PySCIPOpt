@@ -867,18 +867,18 @@ def expr_to_array(expr, nodes):
     return len(nodes) - 1
 
 
-cdef bint _is_number(object o):
-    if PyLong_Check(o) or PyFloat_Check(o):
+cdef bint _is_number(object x):
+    if PyLong_Check(x) or PyFloat_Check(x):
         return True
-    if cnp.PyArray_Check(o) or isinstance(o, (Expr, GenExpr, list, tuple)):
+    if cnp.PyArray_Check(x) or isinstance(x, (Expr, GenExpr, list, tuple)):
         return False
-    return PyNumber_Check(o)
+    return PyNumber_Check(x)
 
-cdef inline bint _is_expr_compatible(object o):
-    return _is_number(o) or isinstance(o, Expr)
+cdef inline bint _is_expr_compatible(object x):
+    return _is_number(x) or isinstance(x, Expr)
 
-cdef inline bint _is_genexpr_compatible(object o):
-    return _is_expr_compatible(o) or isinstance(o, GenExpr)
+cdef inline bint _is_genexpr_compatible(object x):
+    return _is_expr_compatible(x) or isinstance(x, GenExpr)
 
 cdef object _expr_richcmp(
     self,
