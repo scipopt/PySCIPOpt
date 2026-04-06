@@ -222,7 +222,7 @@ def test_getVal_with_GenExpr():
         m.getVal(1 / z)
 
 
-def test_unary(model):
+def test_unary_ufunc(model):
     m, x, y, z = model
 
     res = "abs(sum(0.0,prod(1.0,x)))"
