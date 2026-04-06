@@ -276,6 +276,9 @@ def test_unary_ufunc(model):
         # forbid modifying Variable/Expr/GenExpr in-place via out parameter
         np.sin(x, out=np.array([0]))
 
+    # test np.negative
+    assert str(np.negative(x)) == "Expr({Term(x): -1.0})"
+
 
 def test_binary_ufunc(model):
     m, x, y, z = model
@@ -305,9 +308,6 @@ def test_binary_ufunc(model):
     assert str(np.divide(2, x)) == "prod(2.0,**(sum(0.0,prod(1.0,x)),-1))"
     assert str(np.divide(x, a)) == "[Expr({Term(x): 0.5})]"
     assert str(np.divide(a, x)) == "[prod(2.0,**(sum(0.0,prod(1.0,x)),-1))]"
-
-    # test np.negative
-    assert str(np.negative(x)) == "Expr({Term(x): -1.0})"
 
     # test np.power
     assert str(np.power(x, 2)) == "Expr({Term(x, x): 1.0})"
