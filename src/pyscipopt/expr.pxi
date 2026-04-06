@@ -240,7 +240,7 @@ cdef class ExprLike:
 ##@details Polynomial expressions of variables with operator overloading. \n
 #See also the @ref ExprDetails "description" in the expr.pxi. 
 cdef class Expr(ExprLike):
-    
+
     def __init__(self, terms=None):
         '''terms is a dict of variables to coefficients.
 
@@ -1020,7 +1020,7 @@ def expr_to_array(expr, nodes):
 cdef bint _is_number(object x):
     if PyLong_Check(x) or PyFloat_Check(x):
         return True
-    if cnp.PyArray_Check(x) or isinstance(x, (Expr, GenExpr, list, tuple)):
+    if cnp.PyArray_Check(x) or isinstance(x, (ExprLike, list, tuple)):
         return False
     return PyNumber_Check(x)
 
@@ -1031,7 +1031,7 @@ cdef inline bint _is_genexpr_compatible(object x):
     return _is_expr_compatible(x) or isinstance(x, GenExpr)
 
 cdef object _expr_richcmp(
-    self,
+    ExprLike self,
     other: Union[int, float, np.number, Expr, GenExpr],
     int op,
 ):
