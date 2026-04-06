@@ -2,7 +2,8 @@
 
 ## Unreleased
 ### Added
-- `Expr` and `GenExpr` support NumPy unary functions (`np.sin`, `np.cos`, `np.sqrt`, `np.exp`, `np.log`, `np.absolute`)
+- `Expr` and `GenExpr` support NumPy unary functions (`np.sin`, `np.cos`, `np.sqrt`, `np.exp`, `np.log`, `np.absolute`, `np.negative`)
+- `Expr` and `GenExpr` support NumPy binary functions (`np.add`, `np.subtract`, `np.multiply`, `np.divide`, `np.true_divide`, `np.power`)
 - Added `getBase()` and `setBase()` methods to `LP` class for getting/setting basis status
 - Added `getMemUsed()`, `getMemTotal()`, and `getMemExternEstim()` methods
 ### Fixed
