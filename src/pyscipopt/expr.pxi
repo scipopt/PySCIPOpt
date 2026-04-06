@@ -279,6 +279,24 @@ cdef class ExprLike:
     def cos(self) -> GenExpr:
         return UnaryExpr(Operator.cos, buildGenExprObj(self))
 
+    def __neg__(self):
+        return self * -1.0
+
+    def __radd__(self, other):
+        return self + other
+
+    def __sub__(self, other):
+        return self + (-other)
+
+    def __rsub__(self, other):
+        return (-self) + other
+
+    def __rmul__(self, other):
+        return self * other
+
+    def __richcmp__(self, other, int op):
+        return _expr_richcmp(self, other, op)
+
 
 ##@details Polynomial expressions of variables with operator overloading. \n
 #See also the @ref ExprDetails "description" in the expr.pxi. 
@@ -411,25 +429,6 @@ cdef class Expr(ExprLike):
         else:
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
 
-    def __neg__(self):
-        return Expr({v:-c for v,c in self.terms.items()})
-
-    def __sub__(self, other):
-        return self + (-other)
-
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    def __rsub__(self, other):
-        return -1.0 * self + other
-
-    def __richcmp__(self, other, op):
-        '''turn it into a constraint'''
-        return _expr_richcmp(self, other, op)
-
     def normalize(self):
         '''remove terms with coefficient of 0'''
         self.terms =  {t:c for (t,c) in self.terms.items() if c != 0.0}
@@ -487,7 +486,6 @@ cdef class ExprCons:
             self._lhs -= c
         if not self._rhs is None:
             self._rhs -= c
-
 
     def __richcmp__(self, other, op):
         '''turn it into a constraint'''
@@ -719,25 +717,6 @@ cdef class GenExpr(ExprLike):
         ''' other / self '''
         otherexpr = buildGenExprObj(other)
         return otherexpr.__truediv__(self)
-
-    def __neg__(self):
-        return -1.0 * self
-
-    def __sub__(self, other):
-        return self + (-other)
-
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    def __rsub__(self, other):
-        return -1.0 * self + other
-
-    def __richcmp__(self, other, op):
-        '''turn it into a constraint'''
-        return _expr_richcmp(self, other, op)
 
     def degree(self):
         '''Note: none of these expressions should be polynomial'''
