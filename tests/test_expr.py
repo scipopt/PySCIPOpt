@@ -277,6 +277,45 @@ def test_unary_ufunc(model):
         np.sin(x, out=np.array([0]))
 
 
+def test_binary_ufunc(model):
+    m, x, y, z = model
+
+    # test np.add
+    assert str(np.add(x, 1)) == "Expr({Term(x): 1.0, Term(): 1.0})"
+    assert str(np.add(1, x)) == "Expr({Term(x): 1.0, Term(): 1.0})"
+    a = np.array([1])
+    assert str(np.add(x, a)) == "[Expr({Term(x): 1.0, Term(): 1.0})]"
+    assert str(np.add(a, x)) == "[Expr({Term(x): 1.0, Term(): 1.0})]"
+
+    # test np.subtract
+    assert str(np.subtract(x, 1)) == "Expr({Term(x): 1.0, Term(): -1.0})"
+    assert str(np.subtract(1, x)) == "Expr({Term(x): -1.0, Term(): 1.0})"
+    assert str(np.subtract(x, a)) == "[Expr({Term(x): 1.0, Term(): -1.0})]"
+    assert str(np.subtract(a, x)) == "[Expr({Term(x): -1.0, Term(): 1.0})]"
+
+    # test np.multiply
+    a = np.array([2])
+    assert str(np.multiply(x, 2)) == "Expr({Term(x): 2.0})"
+    assert str(np.multiply(2, x)) == "Expr({Term(x): 2.0})"
+    assert str(np.multiply(x, a)) == "[Expr({Term(x): 2.0})]"
+    assert str(np.multiply(a, x)) == "[Expr({Term(x): 2.0})]"
+
+    # test np.divide
+    assert str(np.divide(x, 2)) == "Expr({Term(x): 0.5})"
+    assert str(np.divide(2, x)) == "prod(2.0,**(sum(0.0,prod(1.0,x)),-1))"
+    assert str(np.divide(x, a)) == "[Expr({Term(x): 0.5})]"
+    assert str(np.divide(a, x)) == "[prod(2.0,**(sum(0.0,prod(1.0,x)),-1))]"
+
+    # test np.negative
+    assert str(np.negative(x)) == "Expr({Term(x): -1.0})"
+
+    # test np.power
+    assert str(np.power(x, 2)) == "Expr({Term(x, x): 1.0})"
+    assert str(np.power(2, x)) == "exp(prod(1.0,sum(0.0,prod(1.0,x)),log(2.0)))"
+    assert str(np.power(x, a)) == "[Expr({Term(x, x): 1.0})]"
+    assert str(np.power(a, x)) == "[exp(prod(1.0,sum(0.0,prod(1.0,x)),log(2.0)))]"
+
+
 def test_mul():
     m = Model()
     x = m.addVar(name="x")
