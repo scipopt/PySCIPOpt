@@ -1054,10 +1054,11 @@ cdef inline object _wrap_ufunc(object x, object ufunc):
         return res.view(MatrixGenExpr) if isinstance(res, np.ndarray) else res
     return ufunc(_to_const(x))
 
-cdef inline object _to_matrix(arg):
+cdef inline object _to_matrix(object arg):
     if type(arg) is np.ndarray:
-        return arg.view(MatrixGenExpr)
-    return np.array(arg, dtype=object).view(MatrixGenExpr)
+        return arg.view(MatrixExpr)
+    matrix = MatrixExpr if isinstance(arg, Expr) else MatrixGenExpr
+    return np.array(arg, dtype=object).view(matrix)
 
 
 def expr_to_nodes(expr):
