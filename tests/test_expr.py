@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from pyscipopt import Model, cos, exp, log, quickprod, sin, sqrt
-from pyscipopt.scip import CONST, Expr, ExprCons, GenExpr
+from pyscipopt.scip import CONST, Expr, ExprCons, GenExpr, MatrixGenExpr
 
 
 @pytest.fixture(scope="module")
@@ -118,10 +118,12 @@ def test_genexpr_op_genexpr(model):
     assert isinstance(1/x + genexpr, GenExpr)
     assert isinstance(1/x**1.5 - genexpr, GenExpr)
     assert isinstance(y/x - exp(genexpr), GenExpr)
+
     # sqrt(2) is not a constant expression and
     # we can only power to constant expressions!
     with pytest.raises(NotImplementedError):
         genexpr **= sqrt(2)
+
 
 def test_degree(model):
     m, x, y, z = model
@@ -218,6 +220,61 @@ def test_getVal_with_GenExpr():
 
     with pytest.raises(ZeroDivisionError):
         m.getVal(1 / z)
+
+
+def test_unary(model):
+    m, x, y, z = model
+
+    res = "abs(sum(0.0,prod(1.0,x)))"
+    assert str(abs(x)) == res
+    assert str(np.absolute(x)) == res
+
+    res = "[sin(sum(0.0,prod(1.0,x))) sin(sum(0.0,prod(1.0,y)))]"
+    assert str(sin([x, y])) == res
+    assert str(np.sin([x, y])) == res
+
+    res = "[cos(sum(0.0,prod(1.0,x))) cos(sum(0.0,prod(1.0,y)))]"
+    assert str(cos([x, y])) == res
+    assert str(np.cos([x, y])) == res
+
+    res = "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y)))]"
+    assert str(sqrt([x, y])) == res
+    assert str(np.sqrt([x, y])) == res
+
+    res = "[exp(sum(0.0,prod(1.0,x))) exp(sum(0.0,prod(1.0,y)))]"
+    assert str(exp([x, y])) == res
+    assert str(np.exp([x, y])) == res
+
+    res = "[log(sum(0.0,prod(1.0,x))) log(sum(0.0,prod(1.0,y)))]"
+    assert str(log([x, y])) == res
+    assert str(np.log([x, y])) == res
+
+    assert str(log([1, x])) == "[log(1.0) log(sum(0.0,prod(1.0,x)))]"
+
+    assert str(sqrt(4)) == "sqrt(4.0)"
+    assert str(sqrt([4, 4])) == "[sqrt(4.0) sqrt(4.0)]"
+    assert str(exp(3)) == "exp(3.0)"
+    assert str(exp([3, 3])) == "[exp(3.0) exp(3.0)]"
+    assert str(log(5)) == "log(5.0)"
+    assert str(log([5, 5])) == "[log(5.0) log(5.0)]"
+    assert str(sin(1)) == "sin(1.0)"
+    assert str(sin([[1, 1]])) == "[[sin(1.0) sin(1.0)]]"
+    assert str(cos(1)) == "cos(1.0)"
+    assert str(cos([[1]])) == "[[cos(1.0)]]"
+
+    assert isinstance(sqrt(2), GenExpr)
+    assert isinstance(sqrt([2, 2]), MatrixGenExpr)
+    assert isinstance(sqrt([[2], [2]]), MatrixGenExpr)
+    assert isinstance(sqrt([2, x]), MatrixGenExpr)
+    assert isinstance(sqrt([[2], [x]]), MatrixGenExpr)
+
+    # test invalid unary operations
+    with pytest.raises(TypeError):
+        np.arcsin(x)
+
+    with pytest.raises(TypeError):
+        # forbid modifying Variable/Expr/GenExpr in-place via out parameter
+        np.sin(x, out=np.array([0]))
 
 
 def test_mul():
