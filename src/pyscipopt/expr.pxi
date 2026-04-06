@@ -261,6 +261,24 @@ cdef class ExprLike:
 
         return NotImplemented
 
+    def __radd__(self, other):
+        return self + other
+
+    def __sub__(self, other):
+        return self + (-other)
+
+    def __rsub__(self, other):
+        return (-self) + other
+
+    def __rmul__(self, other):
+        return self * other
+
+    def __richcmp__(self, other, int op):
+        return _expr_richcmp(self, other, op)
+
+    def __neg__(self):
+        return self * -1.0
+
     def __abs__(self) -> GenExpr:
         return UnaryExpr(Operator.fabs, buildGenExprObj(self))
 
@@ -278,24 +296,6 @@ cdef class ExprLike:
 
     def cos(self) -> GenExpr:
         return UnaryExpr(Operator.cos, buildGenExprObj(self))
-
-    def __neg__(self):
-        return self * -1.0
-
-    def __radd__(self, other):
-        return self + other
-
-    def __sub__(self, other):
-        return self + (-other)
-
-    def __rsub__(self, other):
-        return (-self) + other
-
-    def __rmul__(self, other):
-        return self * other
-
-    def __richcmp__(self, other, int op):
-        return _expr_richcmp(self, other, op)
 
 
 ##@details Polynomial expressions of variables with operator overloading. \n
