@@ -251,7 +251,7 @@ cdef class ExprLike:
                     return NotImplemented
                 # If the np.ndarray is of numeric type, all arguments are converted to
                 # MatrixExpr or MatrixGenExpr and then the ufunc is applied.
-                return ufunc(*[_to_matrix(a) for a in args], **kwargs)
+                return ufunc(*[_ensure_matrix(a) for a in args], **kwargs)
 
             if ufunc is np.add:
                 return args[0] + args[1]
@@ -1056,7 +1056,7 @@ cdef inline object _wrap_ufunc(object x, object ufunc):
         return res.view(MatrixGenExpr) if isinstance(res, np.ndarray) else res
     return ufunc(_to_const(x))
 
-cdef inline object _to_matrix(object arg):
+cdef inline object _ensure_matrix(object arg):
     if type(arg) is np.ndarray:
         return arg.view(MatrixExpr)
     matrix = MatrixExpr if isinstance(arg, Expr) else MatrixGenExpr
