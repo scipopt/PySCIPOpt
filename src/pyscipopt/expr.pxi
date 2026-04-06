@@ -273,6 +273,9 @@ cdef class ExprLike:
     def __rmul__(self, other):
         return self * other
 
+    def __rtruediv__(self, other):
+        return buildGenExprObj(other) / self
+
     def __richcmp__(self, other, int op):
         return _expr_richcmp(self, other, op)
 
@@ -400,10 +403,6 @@ cdef class Expr(ExprLike):
             return f * self
         selfexpr = buildGenExprObj(self)
         return selfexpr.__truediv__(other)
-
-    def __rtruediv__(self, other):
-        ''' other / self '''
-        return buildGenExprObj(other) / self
 
     def __pow__(self, other, modulo):
         if float(other).is_integer() and other >= 0:
@@ -712,11 +711,6 @@ cdef class GenExpr(ExprLike):
         if isinstance(divisor, GenExpr) and divisor.getOp() == Operator.const and divisor.number == 0.0:
             raise ZeroDivisionError("cannot divide by 0")
         return self * divisor**(-1)
-
-    def __rtruediv__(self, other):
-        ''' other / self '''
-        otherexpr = buildGenExprObj(other)
-        return otherexpr.__truediv__(self)
 
     def degree(self):
         '''Note: none of these expressions should be polynomial'''
