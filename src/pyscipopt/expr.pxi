@@ -249,6 +249,8 @@ cdef class ExprLike:
             if arrays := [a for a in args if type(a) is np.ndarray]:
                 if any(a.dtype.kind not in "fiub" for a in arrays):
                     return NotImplemented
+                # If the np.ndarray is of numeric type, all arguments are converted to
+                # MatrixExpr or MatrixGenExpr and then the ufunc is applied.
                 return ufunc(*[_to_matrix(a) for a in args], **kwargs)
 
             if ufunc is np.add:
