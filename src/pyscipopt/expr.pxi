@@ -1017,7 +1017,7 @@ def expr_to_array(expr, nodes):
     return len(nodes) - 1
 
 
-cdef bint _is_number(object x):
+cdef inline bint _is_number(object x):
     if PyLong_Check(x) or PyFloat_Check(x):
         return True
     if cnp.PyArray_Check(x) or isinstance(x, (ExprLike, list, tuple)):
