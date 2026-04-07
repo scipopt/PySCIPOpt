@@ -346,7 +346,6 @@ class ExprLike:
     def sin(self) -> GenExpr: ...
     def cos(self) -> GenExpr: ...
 
-
 @disjoint_base
 class Expr(ExprLike):
     terms: Incomplete
