@@ -302,42 +302,33 @@ cdef class Expr(ExprLike):
         return iter(self.terms)
 
     def __add__(self, other):
-        left = self
-        right = other
-        terms = left.terms.copy()
-
-        if isinstance(right, Expr):
-            # merge the terms by component-wise addition
-            for v,c in right.terms.items():
-                terms[v] = terms.get(v, 0.0) + c
-        elif _is_number(right):
-            c = float(right)
-            terms[CONST] = terms.get(CONST, 0.0) + c
-        elif isinstance(right, GenExpr):
-            return buildGenExprObj(left) + right
-        elif isinstance(right, np.ndarray):
-            return right + left
+        if _is_number(other):
+            terms = self.terms.copy()
+            terms[CONST] = terms.get(CONST, 0.0) + <double>other
+            return Expr(terms)
+        elif isinstance(other, Expr):
+            return Expr(_to_dict(self, other, copy=True))
+        elif isinstance(other, GenExpr):
+            return buildGenExprObj(self) + other
+        elif isinstance(other, np.ndarray):
+            return other + self
         else:
-            raise TypeError(f"Unsupported type {type(right)}")
-
-        return Expr(terms)
+            raise TypeError(f"unsupported type {type(other).__name__!r}")
 
     def __iadd__(self, other):
-        if isinstance(other, Expr):
-            for v,c in other.terms.items():
-                self.terms[v] = self.terms.get(v, 0.0) + c
-        elif _is_number(other):
-            c = float(other)
-            self.terms[CONST] = self.terms.get(CONST, 0.0) + c
+        if _is_number(other):
+            self.terms[CONST] = self.terms.get(CONST, 0.0) + <double>other
+            return self
+        elif isinstance(other, Expr):
+            _to_dict(self, other, copy=False)
+            return self
         elif isinstance(other, GenExpr):
             # is no longer in place, might affect performance?
             # can't do `self = buildGenExprObj(self) + other` since I get
             # TypeError: Cannot convert pyscipopt.scip.SumExpr to pyscipopt.scip.Expr
             return buildGenExprObj(self) + other
         else:
-            raise TypeError(f"Unsupported type {type(other)}")
-
-        return self
+            raise TypeError(f"unsupported type {type(other).__name__!r}")
 
     def __mul__(self, other):
         if isinstance(other, np.ndarray):
@@ -1030,6 +1021,28 @@ cdef inline object _wrap_ufunc(object x, object ufunc):
         res = ufunc(_vec_to_const(x))
         return res.view(MatrixGenExpr) if isinstance(res, np.ndarray) else res
     return ufunc(_to_const(x))
+
+cdef dict _to_dict(Expr expr, Expr other, bool copy = True):
+    cdef dict children = expr.terms.copy() if copy else expr.terms
+    cdef Py_ssize_t pos = <Py_ssize_t>0
+    cdef PyObject* k_ptr = NULL
+    cdef PyObject* v_ptr = NULL
+    cdef PyObject* old_v_ptr = NULL
+    cdef double other_v
+    cdef object k_obj
+
+    while PyDict_Next(other.terms, &pos, &k_ptr, &v_ptr):
+        if (other_v := <double>(<object>v_ptr)) == 0: 
+            continue
+
+        k_obj = <object>k_ptr
+        old_v_ptr = PyDict_GetItem(children, k_obj)
+        if old_v_ptr != NULL:
+            children[k_obj] = <double>(<object>old_v_ptr) + other_v
+        else:
+            children[k_obj] = <object>v_ptr
+
+    return children
 
 
 def expr_to_nodes(expr):
