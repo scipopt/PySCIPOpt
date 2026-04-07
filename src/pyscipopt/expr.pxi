@@ -261,19 +261,19 @@ cdef class ExprLike:
 
         return NotImplemented
 
-    def __radd__(self, other):
+    def __radd__(self, other, /):
         return self + other
 
-    def __sub__(self, other):
+    def __sub__(self, other, /):
         return self + (-other)
 
-    def __rsub__(self, other):
+    def __rsub__(self, other, /):
         return (-self) + other
 
-    def __rmul__(self, other):
+    def __rmul__(self, other, /):
         return self * other
 
-    def __rtruediv__(self, other):
+    def __rtruediv__(self, other, /):
         return buildGenExprObj(other) / self
 
     def __richcmp__(self, other, int op):
