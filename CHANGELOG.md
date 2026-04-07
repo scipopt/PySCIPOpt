@@ -13,6 +13,7 @@
 ### Changed
 - Speed up `constant * Expr` via C-level API
 - Speed up `Term.__eq__` via the C-level API
+- Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API
 ### Removed
 - Removed outdated warning about Make build system incompatibility
 - Removed `Term.ptrtuple` to optimize `Term` memory usage
