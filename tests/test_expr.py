@@ -328,3 +328,28 @@ def test_term_eq():
     assert t3 != t4  # same length, but different term
     assert t1 != t3  # different length
     assert t1 != "not a term"  # different type
+
+
+def test_Expr_add_Expr():
+    m = Model()
+    x = m.addVar(name="x")
+    y = m.addVar(name="y")
+
+    e1 = -x + 1
+    e2 = y - 1
+    e3 = e1 + e2
+    assert str(e1) == "Expr({Term(x): -1.0, Term(): 1.0})"
+    assert str(e2) == "Expr({Term(y): 1.0, Term(): -1.0})"
+    assert str(e3) == "Expr({Term(x): -1.0, Term(): 0.0, Term(y): 1.0})"
+
+
+def test_Expr_iadd_Expr():
+    m = Model()
+    x = m.addVar(name="x")
+    y = m.addVar(name="y")
+
+    e1 = -x + 1
+    e2 = y - 1
+    e1 += e2
+    assert str(e1) == "Expr({Term(x): -1.0, Term(): 0.0, Term(y): 1.0})"
+    assert str(e2) == "Expr({Term(y): 1.0, Term(): -1.0})"
