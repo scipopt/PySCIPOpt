@@ -1040,7 +1040,7 @@ cdef dict _to_dict(Expr expr, Expr other, bool copy = True):
         if old_v_ptr != NULL:
             children[k_obj] = <double>(<object>old_v_ptr) + other_v
         else:
-            children[k_obj] = <object>v_ptr
+            children[k_obj] = other_v
 
     return children
 
