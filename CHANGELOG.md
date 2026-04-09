@@ -2,16 +2,20 @@
 
 ## Unreleased
 ### Added
+- `Expr` and `GenExpr` support NumPy unary functions (`np.sin`, `np.cos`, `np.sqrt`, `np.exp`, `np.log`, `np.absolute`)
 - Added `getBase()` and `setBase()` methods to `LP` class for getting/setting basis status
 - Added `getMemUsed()`, `getMemTotal()`, and `getMemExternEstim()` methods
 ### Fixed
 - Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
 - Used `getIndex()` instead of `ptr()` for sorting nonlinear expression terms to avoid nondeterministic behavior
 - Fixed stubtest failures with mypy 1.20 by marking dunder method parameters as positional-only
+- Return `MatrixGenExpr` in `buildGenExprObj` instead of `MatrixExpr`
 ### Changed
 - Speed up `constant * Expr` via C-level API
+- Speed up `Term.__eq__` via the C-level API
 ### Removed
 - Removed outdated warning about Make build system incompatibility
+- Removed `Term.ptrtuple` to optimize `Term` memory usage
 
 ## 6.1.0 - 2026.01.31
 ### Added
