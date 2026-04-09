@@ -71,23 +71,36 @@ SOPLEX_VERSION=$(prompt_version "SoPlex" "$CUR_SOPLEX")
 GCG_VERSION=$(prompt_version "GCG" "$CUR_GCG")
 IPOPT_VERSION=$(prompt_version "IPOPT" "$CUR_IPOPT")
 
-# Bump deploy version (increment minor)
-DEPLOY_MAJOR=$(echo "$CURRENT_DEPLOY_VERSION" | sed 's/^v//' | cut -d. -f1)
-DEPLOY_MINOR=$(echo "$CURRENT_DEPLOY_VERSION" | sed 's/^v//' | cut -d. -f2)
-DEPLOY_PATCH=$(echo "$CURRENT_DEPLOY_VERSION" | sed 's/^v//' | cut -d. -f3)
-SUGGESTED_DEPLOY="v$((DEPLOY_MAJOR)).$((DEPLOY_MINOR + 1)).$((DEPLOY_PATCH))"
+# --- Check if a matching deploy release already exists ---
 
-read -rp "New deploy release tag [${SUGGESTED_DEPLOY}]: " NEW_DEPLOY_VERSION
-NEW_DEPLOY_VERSION="${NEW_DEPLOY_VERSION:-$SUGGESTED_DEPLOY}"
+RELEASE_NAME="SCIP ${SCIP_VERSION} SOPLEX ${SOPLEX_VERSION} GCG ${GCG_VERSION} IPOPT ${IPOPT_VERSION}"
+EXISTING_TAG=$(gh release list --repo "$DEPLOY_REPO" --limit 20 --json tagName,name \
+    --jq ".[] | select(.name == \"${RELEASE_NAME}\") | .tagName" | head -1)
 
-if [[ ! "$NEW_DEPLOY_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "Error: deploy tag must match vX.Y.Z"
-    exit 1
-fi
+SKIP_DEPLOY=false
+if [[ -n "$EXISTING_TAG" ]]; then
+    echo "Found existing release '${EXISTING_TAG}' matching these versions. Skipping build."
+    NEW_DEPLOY_VERSION="$EXISTING_TAG"
+    SKIP_DEPLOY=true
+else
+    # Bump deploy version (increment minor)
+    DEPLOY_MAJOR=$(echo "$CURRENT_DEPLOY_VERSION" | sed 's/^v//' | cut -d. -f1)
+    DEPLOY_MINOR=$(echo "$CURRENT_DEPLOY_VERSION" | sed 's/^v//' | cut -d. -f2)
+    DEPLOY_PATCH=$(echo "$CURRENT_DEPLOY_VERSION" | sed 's/^v//' | cut -d. -f3)
+    SUGGESTED_DEPLOY="v$((DEPLOY_MAJOR)).$((DEPLOY_MINOR + 1)).$((DEPLOY_PATCH))"
 
-if gh api "repos/${DEPLOY_REPO}/git/ref/tags/${NEW_DEPLOY_VERSION}" &>/dev/null; then
-    echo "Error: deploy tag ${NEW_DEPLOY_VERSION} already exists in ${DEPLOY_REPO}."
-    exit 1
+    read -rp "New deploy release tag [${SUGGESTED_DEPLOY}]: " NEW_DEPLOY_VERSION
+    NEW_DEPLOY_VERSION="${NEW_DEPLOY_VERSION:-$SUGGESTED_DEPLOY}"
+
+    if [[ ! "$NEW_DEPLOY_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "Error: deploy tag must match vX.Y.Z"
+        exit 1
+    fi
+
+    if gh release view "$NEW_DEPLOY_VERSION" --repo "$DEPLOY_REPO" &>/dev/null; then
+        echo "Error: deploy tag ${NEW_DEPLOY_VERSION} already exists in ${DEPLOY_REPO} (with different versions)."
+        exit 1
+    fi
 fi
 
 # --- Show summary and confirm ---
@@ -96,9 +109,15 @@ BRANCH="upgrade-scip-${SCIP_VERSION}"
 
 echo ""
 echo "This script will:"
-echo "  1. Build new SCIP binaries (SCIP=${SCIP_VERSION} SoPlex=${SOPLEX_VERSION} GCG=${GCG_VERSION} IPOPT=${IPOPT_VERSION})"
-echo "  2. Create scipoptsuite-deploy release ${NEW_DEPLOY_VERSION}"
-echo "  3. Create branch '${BRANCH}', update pyproject.toml, and open a PR"
+if [[ "$SKIP_DEPLOY" == false ]]; then
+    echo "  1. Build new SCIP binaries (SCIP=${SCIP_VERSION} SoPlex=${SOPLEX_VERSION} GCG=${GCG_VERSION} IPOPT=${IPOPT_VERSION})"
+    echo "  2. Create scipoptsuite-deploy release ${NEW_DEPLOY_VERSION}"
+    echo "  3. Create branch '${BRANCH}', update pyproject.toml, and open a PR"
+else
+    echo "  1. [skip] Build binaries — release ${NEW_DEPLOY_VERSION} already exists"
+    echo "  2. [skip] Create release — already exists"
+    echo "  3. Create branch '${BRANCH}', update pyproject.toml, and open a PR"
+fi
 echo ""
 read -rp "Proceed? [Y/n] " confirm
 [[ "${confirm:-Y}" =~ ^[Nn] ]] && exit 0
@@ -107,56 +126,61 @@ read -rp "Proceed? [Y/n] " confirm
 # From here on, everything runs without further prompts.
 # ============================================================
 
-ARTIFACT_DIR=""
-cleanup() { [[ -n "$ARTIFACT_DIR" ]] && rm -rf "$ARTIFACT_DIR"; }
-trap cleanup EXIT
+if [[ "$SKIP_DEPLOY" == false ]]; then
 
-# --- Build SCIP binaries ---
+    ARTIFACT_DIR=""
+    cleanup() { [[ -n "$ARTIFACT_DIR" ]] && rm -rf "$ARTIFACT_DIR"; }
+    trap cleanup EXIT
 
-echo ""
-echo "Triggering SCIP binary build..."
-DISPATCH_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-gh workflow run build_binaries.yml --repo "$DEPLOY_REPO" \
-    -f scip_version="$SCIP_VERSION" \
-    -f soplex_version="$SOPLEX_VERSION" \
-    -f gcg_version="$GCG_VERSION" \
-    -f ipopt_version="$IPOPT_VERSION"
+    # --- Build SCIP binaries ---
 
-# Wait for the run to appear
-for i in {1..12}; do
-    sleep 5
-    RUN_ID=$(gh run list --workflow=build_binaries.yml --repo "$DEPLOY_REPO" --limit 1 --event workflow_dispatch --json databaseId,createdAt --jq "[.[] | select(.createdAt >= \"${DISPATCH_TIME}\")] | .[0].databaseId")
-    [[ -n "$RUN_ID" && "$RUN_ID" != "null" ]] && break
-done
+    echo ""
+    echo "Triggering SCIP binary build..."
+    DISPATCH_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+    gh workflow run build_binaries.yml --repo "$DEPLOY_REPO" \
+        -f scip_version="$SCIP_VERSION" \
+        -f soplex_version="$SOPLEX_VERSION" \
+        -f gcg_version="$GCG_VERSION" \
+        -f ipopt_version="$IPOPT_VERSION"
 
-if [[ -z "$RUN_ID" || "$RUN_ID" == "null" ]]; then
-    echo "Error: could not find the triggered workflow run."
-    exit 1
+    # Wait for the run to appear
+    for i in {1..12}; do
+        sleep 5
+        RUN_ID=$(gh run list --workflow=build_binaries.yml --repo "$DEPLOY_REPO" --limit 1 --event workflow_dispatch --json databaseId,createdAt --jq "[.[] | select(.createdAt >= \"${DISPATCH_TIME}\")] | .[0].databaseId")
+        [[ -n "$RUN_ID" && "$RUN_ID" != "null" ]] && break
+    done
+
+    if [[ -z "$RUN_ID" || "$RUN_ID" == "null" ]]; then
+        echo "Error: could not find the triggered workflow run."
+        exit 1
+    fi
+
+    echo "Waiting for build to complete (run ${RUN_ID})..."
+    echo "  https://github.com/${DEPLOY_REPO}/actions/runs/${RUN_ID}"
+    gh run watch "$RUN_ID" --repo "$DEPLOY_REPO" --exit-status
+
+    # --- Create deploy release ---
+
+    ARTIFACT_DIR=$(mktemp -d)
+    echo "Downloading artifacts..."
+    gh run download "$RUN_ID" --repo "$DEPLOY_REPO" --dir "$ARTIFACT_DIR"
+
+    RELEASE_NAME="SCIP ${SCIP_VERSION} SOPLEX ${SOPLEX_VERSION} GCG ${GCG_VERSION} IPOPT ${IPOPT_VERSION}"
+    echo "Creating release ${NEW_DEPLOY_VERSION}..."
+    gh release create "$NEW_DEPLOY_VERSION" \
+        --repo "$DEPLOY_REPO" \
+        --title "$RELEASE_NAME" \
+        --notes "$RELEASE_NAME" \
+        "$ARTIFACT_DIR"/linux/*.zip \
+        "$ARTIFACT_DIR"/linux-arm/*.zip \
+        "$ARTIFACT_DIR"/macos-arm/*.zip \
+        "$ARTIFACT_DIR"/macos-intel/*.zip \
+        "$ARTIFACT_DIR"/windows/*.zip
+
+    rm -rf "$ARTIFACT_DIR"
+    ARTIFACT_DIR=""
+
 fi
-
-echo "Waiting for build to complete (run ${RUN_ID})..."
-echo "  https://github.com/${DEPLOY_REPO}/actions/runs/${RUN_ID}"
-gh run watch "$RUN_ID" --repo "$DEPLOY_REPO" --exit-status
-
-# --- Create deploy release ---
-
-ARTIFACT_DIR=$(mktemp -d)
-echo "Downloading artifacts..."
-gh run download "$RUN_ID" --repo "$DEPLOY_REPO" --dir "$ARTIFACT_DIR"
-
-RELEASE_NAME="SCIP ${SCIP_VERSION} SOPLEX ${SOPLEX_VERSION} GCG ${GCG_VERSION} IPOPT ${IPOPT_VERSION}"
-echo "Creating release ${NEW_DEPLOY_VERSION}..."
-gh release create "$NEW_DEPLOY_VERSION" \
-    --repo "$DEPLOY_REPO" \
-    --title "$RELEASE_NAME" \
-    --notes "$RELEASE_NAME" \
-    "$ARTIFACT_DIR"/linux/*.zip \
-    "$ARTIFACT_DIR"/linux-arm/*.zip \
-    "$ARTIFACT_DIR"/macos-arm/*.zip \
-    "$ARTIFACT_DIR"/macos-intel/*.zip \
-    "$ARTIFACT_DIR"/windows/*.zip
-
-rm -rf "$ARTIFACT_DIR"
 
 # --- Create PR with updated pyproject.toml ---
 
