@@ -205,9 +205,16 @@ git push -u origin "$BRANCH"
 
 gh pr create --repo "$REPO" \
     --title "Upgrade to SCIP ${SCIP_VERSION}" \
-    --body "Updates scipoptsuite-deploy ${CURRENT_DEPLOY_VERSION} -> ${NEW_DEPLOY_VERSION} (SCIP ${SCIP_VERSION}, SoPlex ${SOPLEX_VERSION}, GCG ${GCG_VERSION}, IPOPT ${IPOPT_VERSION}).
+    --body "$(cat <<EOF
+Updates scipoptsuite-deploy ${CURRENT_DEPLOY_VERSION} -> ${NEW_DEPLOY_VERSION} (SCIP ${SCIP_VERSION}, SoPlex ${SOPLEX_VERSION}, GCG ${GCG_VERSION}, IPOPT ${IPOPT_VERSION}).
 
-Fix any API incompatibilities, get CI green, then merge and run \`./release.sh\`."
+## Checklist
+- [ ] Fix any API incompatibilities
+- [ ] CI is green
+- [ ] Update [compatibility table](https://pyscipopt.readthedocs.io/en/latest/build.html#building-from-source) if needed
+- [ ] Merge and run \`./release.sh\`
+EOF
+)"
 
 echo ""
 echo "Done! PR created on branch '${BRANCH}'."
