@@ -107,10 +107,15 @@ read -rp "Proceed? [Y/n] " confirm
 # From here on, everything runs without further prompts.
 # ============================================================
 
+ARTIFACT_DIR=""
+cleanup() { [[ -n "$ARTIFACT_DIR" ]] && rm -rf "$ARTIFACT_DIR"; }
+trap cleanup EXIT
+
 # --- Build SCIP binaries ---
 
 echo ""
 echo "Triggering SCIP binary build..."
+DISPATCH_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 gh workflow run build_binaries.yml --repo "$DEPLOY_REPO" \
     -f scip_version="$SCIP_VERSION" \
     -f soplex_version="$SOPLEX_VERSION" \
@@ -118,7 +123,6 @@ gh workflow run build_binaries.yml --repo "$DEPLOY_REPO" \
     -f ipopt_version="$IPOPT_VERSION"
 
 # Wait for the run to appear
-DISPATCH_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 for i in {1..12}; do
     sleep 5
     RUN_ID=$(gh run list --workflow=build_binaries.yml --repo "$DEPLOY_REPO" --limit 1 --event workflow_dispatch --json databaseId,createdAt --jq "[.[] | select(.createdAt >= \"${DISPATCH_TIME}\")] | .[0].databaseId")
@@ -136,9 +140,9 @@ gh run watch "$RUN_ID" --repo "$DEPLOY_REPO" --exit-status
 
 # --- Create deploy release ---
 
-TMPDIR=$(mktemp -d)
+ARTIFACT_DIR=$(mktemp -d)
 echo "Downloading artifacts..."
-gh run download "$RUN_ID" --repo "$DEPLOY_REPO" --dir "$TMPDIR"
+gh run download "$RUN_ID" --repo "$DEPLOY_REPO" --dir "$ARTIFACT_DIR"
 
 RELEASE_NAME="SCIP ${SCIP_VERSION} SOPLEX ${SOPLEX_VERSION} GCG ${GCG_VERSION} IPOPT ${IPOPT_VERSION}"
 echo "Creating release ${NEW_DEPLOY_VERSION}..."
@@ -146,15 +150,25 @@ gh release create "$NEW_DEPLOY_VERSION" \
     --repo "$DEPLOY_REPO" \
     --title "$RELEASE_NAME" \
     --notes "$RELEASE_NAME" \
-    "$TMPDIR"/linux/*.zip \
-    "$TMPDIR"/linux-arm/*.zip \
-    "$TMPDIR"/macos-arm/*.zip \
-    "$TMPDIR"/macos-intel/*.zip \
-    "$TMPDIR"/windows/*.zip
+    "$ARTIFACT_DIR"/linux/*.zip \
+    "$ARTIFACT_DIR"/linux-arm/*.zip \
+    "$ARTIFACT_DIR"/macos-arm/*.zip \
+    "$ARTIFACT_DIR"/macos-intel/*.zip \
+    "$ARTIFACT_DIR"/windows/*.zip
 
-rm -rf "$TMPDIR"
+rm -rf "$ARTIFACT_DIR"
 
 # --- Create PR with updated pyproject.toml ---
+
+if git rev-parse --verify "$BRANCH" &>/dev/null; then
+    read -rp "Branch '$BRANCH' already exists. Delete it? [y/N] " del_branch
+    if [[ "${del_branch:-N}" =~ ^[Yy] ]]; then
+        git branch -D "$BRANCH"
+    else
+        echo "Aborting. Delete the branch manually and re-run."
+        exit 1
+    fi
+fi
 
 git checkout -b "$BRANCH"
 
@@ -173,4 +187,5 @@ Fix any API incompatibilities, get CI green, then merge and run \`./release.sh\`
 
 echo ""
 echo "Done! PR created on branch '${BRANCH}'."
+echo "Note: you are now on branch '${BRANCH}'. Switch back with: git checkout master"
 echo "Fix any API incompatibilities, get CI green, then merge and run ./release.sh"

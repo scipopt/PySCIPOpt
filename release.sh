@@ -100,14 +100,26 @@ read -rp "Proceed? [Y/n] " confirm
 
 # ============================================================
 # From here on, everything runs without further prompts.
+# If a step fails after commit but before push, recover with:
+#   git tag -d v${NEW_VERSION} && git reset --soft HEAD~1
 # ============================================================
 
 # --- Update version files ---
 
 sed -i.bak "s/__version__.*=.*'.*'/__version__: str = '${NEW_VERSION}'/" "$VERSION_FILE"
+if cmp -s "$VERSION_FILE" "${VERSION_FILE}.bak"; then
+    echo "Error: failed to update version in $VERSION_FILE (pattern not found)"
+    mv "${VERSION_FILE}.bak" "$VERSION_FILE"
+    exit 1
+fi
 rm -f "${VERSION_FILE}.bak"
 
 sed -i.bak "s/version=\"${CURRENT_VERSION}\"/version=\"${NEW_VERSION}\"/" "$SETUP_FILE"
+if cmp -s "$SETUP_FILE" "${SETUP_FILE}.bak"; then
+    echo "Error: failed to update version in $SETUP_FILE (pattern not found)"
+    mv "${SETUP_FILE}.bak" "$SETUP_FILE"
+    exit 1
+fi
 rm -f "${SETUP_FILE}.bak"
 
 echo "Updated version: ${CURRENT_VERSION} -> ${NEW_VERSION}"
@@ -115,6 +127,11 @@ echo "Updated version: ${CURRENT_VERSION} -> ${NEW_VERSION}"
 # --- Update changelog ---
 
 sed -i.bak "s/^## Unreleased$/## ${NEW_VERSION} - ${TODAY}/" "$CHANGELOG"
+if cmp -s "$CHANGELOG" "${CHANGELOG}.bak"; then
+    echo "Error: failed to update changelog ('## Unreleased' heading not found)"
+    mv "${CHANGELOG}.bak" "$CHANGELOG"
+    exit 1
+fi
 rm -f "${CHANGELOG}.bak"
 
 sed -i.bak "/^# CHANGELOG$/a\\
