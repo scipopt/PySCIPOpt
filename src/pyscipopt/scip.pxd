@@ -2254,11 +2254,18 @@ cdef class Model:
     cdef int _generated_event_handlers_count
     # store references to Benders subproblem Models for proper cleanup
     cdef _benders_subproblems
+    # Strong references to every included plugin. Each plugin in turn holds a
+    # strong reference to the Model via `self.model`, so both stay alive until
+    # SCIP teardown callbacks (consfree, eventexit, ...) have finished running.
+    # The resulting cycle is broken by `Model.__del__` or by `Model.free()`.
+    # See `Model.free` for the full lifecycle policy.
+    cdef _plugins
     # store iis, if found
     cdef SCIP_IIS* _iis
     # helper methods for later var and cons cleanup
     cdef _getOrCreateCons(self, SCIP_CONS* scip_cons)
     cdef _getOrCreateVar(self, SCIP_VAR* scip_var)
+    cdef _free_scip_instance(self)
 
     @staticmethod
     cdef create(SCIP* scip)
