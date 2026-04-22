@@ -3,7 +3,8 @@
 cdef class Eventhdlr:
     cdef public Model model
     cdef public str name
-    cdef public list _caught_events
+    # eventtypes caught via `Model.catchEvent`, auto-dropped on `eventexit`.
+    cdef list _caught_events
 
     def __cinit__(self):
         self._caught_events = []

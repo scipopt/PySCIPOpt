@@ -7,7 +7,7 @@
 ### Fixed
 - Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
 - Used `getIndex()` instead of `ptr()` for sorting nonlinear expression terms to avoid nondeterministic behavior
-- Replaced `weakref.proxy` with strong references for plugin `self.model`, fixing `ReferenceError` during cleanup callbacks (#1193)
+- Plugins now hold strong references to their `Model` instead of `weakref.proxy`, fixing `ReferenceError` during cleanup callbacks (#1193)
 ### Changed
 - Speed up `constant * Expr` via C-level API
 ### Removed

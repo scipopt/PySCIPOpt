@@ -2899,19 +2899,16 @@ cdef class Model:
         self.includeEventhdlr(event_handler, name, description)
 
     def __del__(self):
-        """Free SCIP before the cyclic GC clears Python references.
+        """Free SCIP when the last external reference to the Model is dropped.
 
-        __del__ (tp_finalize) runs before tp_clear, so _plugins and other
-        Python attributes are still intact. This lets SCIPfree call plugin
-        callbacks (consfree, eventexit, etc.) safely. The GC handles breaking
-        the circular references afterwards via tp_clear.
+        Runs before the garbage collector clears the Model's attributes, so
+        plugin callbacks can still reach a live ``self.model``. See
+        ``Model.free`` for the full lifecycle policy.
         """
         self._free_scip_instance()
 
     def __dealloc__(self):
-        # Safety net: if __del__ didn't run (e.g. interpreter shutdown),
-        # free SCIP here. Plugin callbacks may not work at this point since
-        # tp_clear may have already cleared _plugins.
+        """Fallback SCIP cleanup if ``__del__`` did not already free the instance."""
         if self._scip is not NULL and self._freescip:
             SCIPfree(&self._scip)
 
@@ -3089,11 +3086,28 @@ cdef class Model:
         PY_SCIP_CALL(SCIPfreeProb(self._scip))
 
     def free(self):
-        """Explicitly free SCIP instance and break circular references with plugins.
+        """Explicitly free the SCIP instance and release plugin references.
 
-        This method should be called when you want to ensure deterministic cleanup.
-        All SCIP callbacks (consfree, eventexit, etc.) are executed during this call.
-        After calling this method, the Model object should not be used anymore.
+        Every included plugin holds a strong reference to its Model via
+        ``self.model``, and the Model holds strong references to every plugin
+        via ``Model._plugins``. This cycle is intentional: it keeps both sides
+        alive during SCIP teardown so callbacks such as ``eventexit`` and
+        ``consfree`` can safely reach ``self.model``.
+
+        The cycle is broken in one of two ways:
+
+        * Implicitly, via ``Model.__del__`` when the last external reference to
+          the Model is dropped. ``__del__`` runs before the garbage collector
+          (GC) clears attributes, so callbacks still see a live ``self.model``.
+          Timing is at the GC's discretion.
+        * Explicitly, by calling this method. SCIP is freed immediately,
+          teardown callbacks fire before ``free`` returns, and the plugin list
+          is cleared. Use this when deterministic cleanup is required. After
+          ``free`` the Model must not be used further.
+
+        The solve itself is not affected by which path runs. ``free`` only
+        controls when memory and resources are released, and when teardown
+        callbacks execute.
         """
         self._free_scip_instance()
 

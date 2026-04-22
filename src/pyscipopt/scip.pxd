@@ -2251,7 +2251,11 @@ cdef class Model:
     cdef int _generated_event_handlers_count
     # store references to Benders subproblem Models for proper cleanup
     cdef _benders_subproblems
-    # store references to plugins for the Model <-> Plugin reference cycle
+    # Strong references to every included plugin. Each plugin in turn holds a
+    # strong reference to the Model via `self.model`, so both stay alive until
+    # SCIP teardown callbacks (consfree, eventexit, ...) have finished running.
+    # The resulting cycle is broken by `Model.__del__` or by `Model.free()`.
+    # See `Model.free` for the full lifecycle policy.
     cdef _plugins
     # store iis, if found
     cdef SCIP_IIS* _iis
