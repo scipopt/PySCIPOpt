@@ -15,21 +15,27 @@ On the PR:
 
 ## Releasing PySCIPOpt
 
-Releases run in two phases from `master`, driven by `./release.sh`. The tag and master push only happen in phase 2, so a failed RC leaves no semantic public trace — just a deletable `release-candidate-vX.Y.Z` branch.
+Releases run in two phases from `master`, driven by `./release.sh`. The tag and master push only happen in phase 2, so an aborted release leaves no semantic public trace — just a deletable `staging-vX.Y.Z` branch.
 
 Use `--dry-run` with any command to preview without side effects.
 
-### Phase 1 — start a release candidate
+### Phase 1 — start
 
 ```bash
 ./release.sh
 ```
 
-Prompts for the version bump (patch/minor/major), updates `_version.py`, `setup.py`, and `CHANGELOG.md`, commits **locally**, pushes the commit to `release-candidate-vX.Y.Z` on origin, and triggers the build-wheels workflow on that branch (uploads to test-pypi). **Master is not pushed, no tag is created.** The script exits as soon as the workflow is dispatched — you do not wait.
+Prompts for the version bump (patch/minor/major), updates `_version.py`, `setup.py`, and `CHANGELOG.md`, commits **locally**, pushes the commit to `staging-vX.Y.Z` on origin, and triggers the build-wheels workflow on that branch (uploads to test-pypi). **Master is not pushed, no tag is created.** The script exits as soon as the workflow is dispatched.
+
+To skip the bump prompt (e.g., when test-pypi has already burnt the default next version and you need to jump ahead):
+
+```bash
+./release.sh --version=X.Y.Z
+```
 
 ### Manual verification
 
-Once the RC workflow finishes (~15–30 min), install from test-pypi and smoke-test:
+Once the staging workflow finishes, install from test-pypi and smoke-test:
 
 ```bash
 pip install -i https://test.pypi.org/simple/ PySCIPOpt==X.Y.Z
@@ -43,7 +49,7 @@ If the smoke test **passes**:
 ./release.sh --finalize
 ```
 
-Checks the RC workflow succeeded, then tags `vX.Y.Z`, pushes master, and deletes the RC branch.
+Checks the staging workflow succeeded, then tags `vX.Y.Z`, pushes master, and deletes the staging branch.
 
 If the smoke test **fails** (or you change your mind):
 
@@ -51,7 +57,7 @@ If the smoke test **fails** (or you change your mind):
 ./release.sh --rollback
 ```
 
-Deletes the RC branch and resets the local release commit. test-pypi keeps the uploaded version string, so the next attempt must use a different bump.
+Deletes the staging branch and resets the local release commit. test-pypi has already burnt the uploaded version string, so the next attempt must use `--version=` to pick a different one.
 
 ### After finalize
 
