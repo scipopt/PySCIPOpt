@@ -179,6 +179,19 @@ def test_cons_indicator():
     assert m.isEQ(m.getVal(x), 1)
     assert c1.getConshdlrName() == "indicator"
 
+def test_cons_indicator_geq():
+    m = Model()
+    m.hideOutput()
+
+    x = m.addVar(lb=0, ub=10, name="x")
+    b = m.addVar(vtype="B", name="b", lb=1)
+
+    m.addConsIndicator(x >= 5, binvar=b)
+    m.setObjective(x)
+    m.optimize()
+
+    assert m.getVal(x) == 5
+
 def test_cons_indicator_with_matrix_binvar():
     # test matrix variable binvar #1043
     m = Model()
