@@ -29,6 +29,8 @@ if [[ "$CURRENT_BRANCH" != "master" ]]; then
     exit 1
 fi
 
+PUSH_REMOTE=$(git config --get "branch.${CURRENT_BRANCH}.remote" 2>/dev/null || echo origin)
+
 git pull --ff-only
 
 # --- Helper functions ---
@@ -47,6 +49,20 @@ validate_version "$CURRENT_VERSION"
 MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
 MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
 PATCH=$(echo "$CURRENT_VERSION" | cut -d. -f3)
+
+# Detect partial failure: if HEAD is already a release commit for this version,
+# a previous run bumped+committed but did not finish. Re-bumping would double the version.
+if [[ "$(git log -1 --format=%s)" == "release v${CURRENT_VERSION}" ]]; then
+    echo "Error: HEAD is already 'release v${CURRENT_VERSION}' — a prior run did not finish."
+    echo ""
+    echo "Recovery options:"
+    echo "  a) Nothing was pushed: git tag -d v${CURRENT_VERSION} 2>/dev/null; git reset --hard HEAD~1"
+    echo "  b) Master pushed, tag not: git push ${PUSH_REMOTE} v${CURRENT_VERSION} && \\"
+    echo "       gh workflow run build_wheels.yml --repo ${REPO} -f upload_to_pypi=true -f test_pypi=true"
+    echo "  c) Everything pushed, workflow not triggered:"
+    echo "       gh workflow run build_wheels.yml --repo ${REPO} -f upload_to_pypi=true -f test_pypi=true"
+    exit 1
+fi
 
 echo "Current version: ${CURRENT_VERSION}"
 
@@ -74,8 +90,8 @@ if git rev-parse "v${NEW_VERSION}" &>/dev/null; then
     exit 1
 fi
 
-if git ls-remote --tags --exit-code origin "refs/tags/v${NEW_VERSION}" &>/dev/null; then
-    echo "Error: tag 'v${NEW_VERSION}' already exists on origin."
+if git ls-remote --tags --exit-code "$PUSH_REMOTE" "refs/tags/v${NEW_VERSION}" &>/dev/null; then
+    echo "Error: tag 'v${NEW_VERSION}' already exists on ${PUSH_REMOTE}."
     exit 1
 fi
 
@@ -87,12 +103,20 @@ echo "-----------------------------"
 sed -n '/^## Unreleased$/,/^## [0-9]/{/^## [0-9]/!p;}' "$CHANGELOG" | head -30
 echo "-----------------------------"
 
+UNRELEASED_BULLETS=$(sed -n '/^## Unreleased$/,/^## [0-9]/{/^## [0-9]/!p;}' "$CHANGELOG" | grep -c '^- ' || true)
+if [[ "$UNRELEASED_BULLETS" == "0" ]]; then
+    echo ""
+    echo "Warning: the Unreleased section has no bullet entries."
+    read -rp "Release anyway? [y/N] " empty_confirm
+    [[ "${empty_confirm:-N}" =~ ^[Yy] ]] || exit 0
+fi
+
 TODAY=$(date +%Y.%m.%d)
 echo ""
 echo "This script will:"
 echo "  1. Update version ${CURRENT_VERSION} -> ${NEW_VERSION} in _version.py and setup.py"
 echo "  2. Update CHANGELOG.md (${NEW_VERSION} - ${TODAY})"
-echo "  3. Commit, tag v${NEW_VERSION}, and push to origin"
+echo "  3. Commit, tag v${NEW_VERSION}, and push to ${PUSH_REMOTE}"
 echo "  4. Trigger the build wheels workflow (test-pypi)"
 echo ""
 read -rp "Proceed? [Y/n] " confirm
@@ -100,8 +124,8 @@ read -rp "Proceed? [Y/n] " confirm
 
 # ============================================================
 # From here on, everything runs without further prompts.
-# If a step fails after commit but before push, recover with:
-#   git tag -d v${NEW_VERSION} && git reset --soft HEAD~1
+# If a step fails after commit, re-run this script: it detects the
+# partial release commit at HEAD and prints recovery instructions.
 # ============================================================
 
 # --- Update version files ---
@@ -151,8 +175,8 @@ echo "Updated CHANGELOG.md"
 git add "$VERSION_FILE" "$SETUP_FILE" "$CHANGELOG"
 git commit -m "release v${NEW_VERSION}"
 git tag "v${NEW_VERSION}"
-git push origin master
-git push origin "v${NEW_VERSION}"
+git push "$PUSH_REMOTE" "$CURRENT_BRANCH"
+git push "$PUSH_REMOTE" "v${NEW_VERSION}"
 
 # --- Trigger test-pypi build ---
 

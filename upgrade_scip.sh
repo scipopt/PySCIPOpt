@@ -28,6 +28,8 @@ if [[ "$CURRENT_BRANCH" != "master" ]]; then
     exit 1
 fi
 
+PUSH_REMOTE=$(git config --get "branch.${CURRENT_BRANCH}.remote" 2>/dev/null || echo origin)
+
 git pull --ff-only
 
 # --- Helper functions ---
@@ -35,6 +37,13 @@ git pull --ff-only
 validate_version() {
     if [[ ! "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         echo "Error: '$1' is not a valid version (expected X.Y.Z)"
+        exit 1
+    fi
+}
+
+validate_deploy_version() {
+    if [[ ! "$1" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "Error: '$1' is not a valid deploy version (expected vX.Y.Z)"
         exit 1
     fi
 }
@@ -50,6 +59,12 @@ prompt_version() {
 # --- Collect all inputs ---
 
 CURRENT_DEPLOY_VERSION=$(grep -o 'scipoptsuite-deploy/releases/download/v[0-9.]*' "$PYPROJECT" | head -1 | sed 's|.*/||')
+
+if [[ -z "$CURRENT_DEPLOY_VERSION" ]]; then
+    echo "Error: could not find a scipoptsuite-deploy/releases/download/vX.Y.Z URL in ${PYPROJECT}."
+    exit 1
+fi
+validate_deploy_version "$CURRENT_DEPLOY_VERSION"
 
 echo "Current scipoptsuite-deploy version: ${CURRENT_DEPLOY_VERSION}"
 echo ""
@@ -92,15 +107,17 @@ else
     read -rp "New deploy release tag [${SUGGESTED_DEPLOY}]: " NEW_DEPLOY_VERSION
     NEW_DEPLOY_VERSION="${NEW_DEPLOY_VERSION:-$SUGGESTED_DEPLOY}"
 
-    if [[ ! "$NEW_DEPLOY_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        echo "Error: deploy tag must match vX.Y.Z"
-        exit 1
-    fi
+    validate_deploy_version "$NEW_DEPLOY_VERSION"
 
     if gh release view "$NEW_DEPLOY_VERSION" --repo "$DEPLOY_REPO" &>/dev/null; then
         echo "Error: deploy tag ${NEW_DEPLOY_VERSION} already exists in ${DEPLOY_REPO} (with different versions)."
         exit 1
     fi
+fi
+
+if [[ "$CURRENT_DEPLOY_VERSION" == "$NEW_DEPLOY_VERSION" ]]; then
+    echo "Error: new deploy version (${NEW_DEPLOY_VERSION}) matches current; nothing to upgrade."
+    exit 1
 fi
 
 # --- Show summary and confirm ---
@@ -143,10 +160,15 @@ if [[ "$SKIP_DEPLOY" == false ]]; then
         -f gcg_version="$GCG_VERSION" \
         -f ipopt_version="$IPOPT_VERSION"
 
-    # Wait for the run to appear
+    # Wait for the run to appear. Filter by actor and earliest createdAt so a
+    # concurrent workflow_dispatch (by us or someone else) can't hijack RUN_ID.
+    MY_LOGIN=$(gh api user --jq .login)
     for i in {1..12}; do
         sleep 5
-        RUN_ID=$(gh run list --workflow=build_binaries.yml --repo "$DEPLOY_REPO" --limit 1 --event workflow_dispatch --json databaseId,createdAt --jq "[.[] | select(.createdAt >= \"${DISPATCH_TIME}\")] | .[0].databaseId")
+        RUN_ID=$(gh run list --workflow=build_binaries.yml --repo "$DEPLOY_REPO" \
+            --limit 20 --event workflow_dispatch \
+            --json databaseId,createdAt,actor \
+            --jq "[.[] | select(.createdAt >= \"${DISPATCH_TIME}\") | select(.actor.login == \"${MY_LOGIN}\")] | sort_by(.createdAt) | .[0].databaseId")
         [[ -n "$RUN_ID" && "$RUN_ID" != "null" ]] && break
     done
 
@@ -164,6 +186,16 @@ if [[ "$SKIP_DEPLOY" == false ]]; then
     ARTIFACT_DIR=$(mktemp -d)
     echo "Downloading artifacts..."
     gh run download "$RUN_ID" --repo "$DEPLOY_REPO" --dir "$ARTIFACT_DIR"
+
+    shopt -s nullglob
+    for subdir in linux linux-arm macos-arm macos-intel windows; do
+        zips=("$ARTIFACT_DIR/$subdir"/*.zip)
+        if [[ ${#zips[@]} -eq 0 ]]; then
+            echo "Error: no .zip files found in $ARTIFACT_DIR/$subdir/ — artifact layout may have changed."
+            exit 1
+        fi
+    done
+    shopt -u nullglob
 
     RELEASE_NAME="SCIP ${SCIP_VERSION} SOPLEX ${SOPLEX_VERSION} GCG ${GCG_VERSION} IPOPT ${IPOPT_VERSION}"
     echo "Creating release ${NEW_DEPLOY_VERSION}..."
@@ -185,7 +217,7 @@ fi
 # --- Create PR with updated pyproject.toml ---
 
 if git rev-parse --verify "$BRANCH" &>/dev/null; then
-    read -rp "Branch '$BRANCH' already exists. Delete it? [y/N] " del_branch
+    read -rp "Branch '$BRANCH' already exists locally. Delete it? [y/N] " del_branch
     if [[ "${del_branch:-N}" =~ ^[Yy] ]]; then
         git branch -D "$BRANCH"
     else
@@ -194,14 +226,27 @@ if git rev-parse --verify "$BRANCH" &>/dev/null; then
     fi
 fi
 
+if git ls-remote --heads --exit-code "$PUSH_REMOTE" "$BRANCH" &>/dev/null; then
+    echo "Error: branch '$BRANCH' already exists on ${PUSH_REMOTE}."
+    echo "Delete it remotely first: git push ${PUSH_REMOTE} --delete ${BRANCH}"
+    exit 1
+fi
+
 git checkout -b "$BRANCH"
 
 sed -i.bak "s|scipoptsuite-deploy/releases/download/${CURRENT_DEPLOY_VERSION}|scipoptsuite-deploy/releases/download/${NEW_DEPLOY_VERSION}|g" "$PYPROJECT"
+if cmp -s "$PYPROJECT" "${PYPROJECT}.bak"; then
+    echo "Error: failed to update ${CURRENT_DEPLOY_VERSION} -> ${NEW_DEPLOY_VERSION} in ${PYPROJECT} (pattern not found)."
+    mv "${PYPROJECT}.bak" "$PYPROJECT"
+    git checkout master
+    git branch -D "$BRANCH"
+    exit 1
+fi
 rm -f "${PYPROJECT}.bak"
 
 git add "$PYPROJECT"
 git commit -m "Update scipoptsuite-deploy to ${NEW_DEPLOY_VERSION} (SCIP ${SCIP_VERSION})"
-git push -u origin "$BRANCH"
+git push -u "$PUSH_REMOTE" "$BRANCH"
 
 gh pr create --repo "$REPO" \
     --title "Upgrade to SCIP ${SCIP_VERSION}" \
