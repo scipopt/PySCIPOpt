@@ -34,8 +34,12 @@ fi
 
 CURRENT_BRANCH=$(git branch --show-current)
 if [[ "$CURRENT_BRANCH" != "master" ]]; then
-    echo "Error: must be on 'master' branch (currently on '${CURRENT_BRANCH}')."
-    exit 1
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "DRY RUN: on '${CURRENT_BRANCH}' — a real run would require master."
+    else
+        echo "Error: must be on 'master' branch (currently on '${CURRENT_BRANCH}')."
+        exit 1
+    fi
 fi
 
 PUSH_REMOTE=$(git config --get "branch.${CURRENT_BRANCH}.remote" 2>/dev/null || echo origin)
