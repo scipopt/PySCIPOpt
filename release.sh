@@ -19,13 +19,13 @@ for arg in "$@"; do
             cat <<USAGE
 Usage: $0 [--dry-run] [--version=X.Y.Z] [--finalize | --rollback]
 
-  (default)        Start a new release: bump version, push the staging branch,
+  (default)        Start a new release: bump version, push the release-candidate branch,
                    trigger the test-pypi build.
   --version=X.Y.Z  Use this exact version instead of prompting for patch/minor/major.
                    Useful if test-pypi has already burnt the default next version.
-  --finalize       Promote: tag vX.Y.Z, push master, delete the staging branch.
-                   Requires the staging workflow to have succeeded.
-  --rollback       Abandon: delete the staging branch and reset the local commit.
+  --finalize       Promote: tag vX.Y.Z, push master, delete the release-candidate branch.
+                   Requires the release-candidate workflow to have succeeded.
+  --rollback       Abandon: delete the release-candidate branch and reset the local commit.
   --dry-run        Preview without side effects. Combinable with the flags above.
 USAGE
             exit 0
@@ -74,24 +74,24 @@ validate_version() {
     fi
 }
 
-# Promote a successful pending release: tag, push master, clean up staging branch.
+# Promote a successful pending release: tag, push master, clean up release-candidate branch.
 finalize_release() {
     local version="$1"
-    local staging_branch="staging-v${version}"
+    local candidate_branch="release-candidate-v${version}"
 
     echo "Pending release: v${version}"
-    echo "Checking workflow status on ${staging_branch}..."
+    echo "Checking workflow status on ${candidate_branch}..."
 
     local run_data run_count status conclusion url run_id
     run_data=$(gh run list --workflow=build_wheels.yml --repo "$REPO" \
-        --branch "$staging_branch" --limit 1 \
+        --branch "$candidate_branch" --limit 1 \
         --json databaseId,status,conclusion,url 2>/dev/null || echo "[]")
     run_count=$(echo "$run_data" | jq 'length')
 
     if [[ "$run_count" == "0" ]]; then
-        echo "Error: no workflow run found for branch '${staging_branch}'."
+        echo "Error: no workflow run found for branch '${candidate_branch}'."
         echo "Either wait a moment and try again, or clean up manually:"
-        echo "  git push ${PUSH_REMOTE} --delete ${staging_branch}"
+        echo "  git push ${PUSH_REMOTE} --delete ${candidate_branch}"
         echo "  git reset --hard HEAD~1"
         exit 1
     fi
@@ -113,12 +113,12 @@ finalize_release() {
         echo "URL: ${url}"
         echo ""
         if [[ "$DRY_RUN" == true ]]; then
-            echo "DRY RUN: would prompt to roll back (delete ${staging_branch} + reset local commit)."
+            echo "DRY RUN: would prompt to roll back (delete ${candidate_branch} + reset local commit)."
             exit 0
         fi
-        read -rp "Roll back (delete ${staging_branch} and reset local release commit)? [Y/n] " confirm
+        read -rp "Roll back (delete ${candidate_branch} and reset local release commit)? [Y/n] " confirm
         if [[ ! "${confirm:-Y}" =~ ^[Nn] ]]; then
-            git push "$PUSH_REMOTE" --delete "$staging_branch" || echo "(note: remote staging branch delete failed; clean up manually)"
+            git push "$PUSH_REMOTE" --delete "$candidate_branch" || echo "(note: remote release-candidate branch delete failed; clean up manually)"
             git reset --hard HEAD~1
             echo "Rolled back. Repo is at pre-release state."
         fi
@@ -131,7 +131,7 @@ finalize_release() {
         echo "  git tag v${version}"
         echo "  git push ${PUSH_REMOTE} ${CURRENT_BRANCH}"
         echo "  git push ${PUSH_REMOTE} v${version}"
-        echo "  git push ${PUSH_REMOTE} --delete ${staging_branch}"
+        echo "  git push ${PUSH_REMOTE} --delete ${candidate_branch}"
         exit 0
     fi
 
@@ -139,7 +139,7 @@ finalize_release() {
     git tag "v${version}"
     git push "$PUSH_REMOTE" "$CURRENT_BRANCH"
     git push "$PUSH_REMOTE" "v${version}"
-    git push "$PUSH_REMOTE" --delete "$staging_branch"
+    git push "$PUSH_REMOTE" --delete "$candidate_branch"
 
     echo ""
     echo "Done! v${version} is now tagged on ${PUSH_REMOTE}."
@@ -154,23 +154,23 @@ finalize_release() {
     echo "  4. Update readthedocs: Builds -> Build version (latest and stable)"
 }
 
-# Abandon a pending release: delete staging branch, reset local release commit.
+# Abandon a pending release: delete release-candidate branch, reset local release commit.
 rollback_release() {
     local version="$1"
-    local staging_branch="staging-v${version}"
+    local candidate_branch="release-candidate-v${version}"
 
     echo "Rolling back pending release v${version}..."
     if [[ "$DRY_RUN" == true ]]; then
         echo "DRY RUN: would have run:"
-        echo "  git push ${PUSH_REMOTE} --delete ${staging_branch}"
+        echo "  git push ${PUSH_REMOTE} --delete ${candidate_branch}"
         echo "  git reset --hard HEAD~1"
         exit 0
     fi
 
-    if git ls-remote --heads --exit-code "$PUSH_REMOTE" "$staging_branch" &>/dev/null; then
-        git push "$PUSH_REMOTE" --delete "$staging_branch"
+    if git ls-remote --heads --exit-code "$PUSH_REMOTE" "$candidate_branch" &>/dev/null; then
+        git push "$PUSH_REMOTE" --delete "$candidate_branch"
     else
-        echo "(note: ${staging_branch} already absent from ${PUSH_REMOTE})"
+        echo "(note: ${candidate_branch} already absent from ${PUSH_REMOTE})"
     fi
     git reset --hard HEAD~1
     echo "Rolled back. Repo is at pre-release state."
@@ -207,8 +207,8 @@ HEAD_MSG=$(git log -1 --format=%s)
 if [[ "$HEAD_MSG" =~ ^release\ v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
     echo "Error: HEAD is already 'release v${BASH_REMATCH[1]}' — a pending release exists."
     echo "Use:"
-    echo "  ./release.sh --finalize   # promote (requires the staging workflow to have succeeded)"
-    echo "  ./release.sh --rollback   # abandon (delete staging branch, reset local commit)"
+    echo "  ./release.sh --finalize   # promote (requires the release-candidate workflow to have succeeded)"
+    echo "  ./release.sh --rollback   # abandon (delete release-candidate branch, reset local commit)"
     exit 1
 fi
 
@@ -274,7 +274,7 @@ if [[ "$UNRELEASED_BULLETS" == "0" ]]; then
 fi
 
 TODAY=$(date +%Y.%m.%d)
-STAGING_BRANCH="staging-v${NEW_VERSION}"
+CANDIDATE_BRANCH="release-candidate-v${NEW_VERSION}"
 echo ""
 if [[ "$DRY_RUN" == true ]]; then
     echo "DRY RUN: This script would:"
@@ -283,13 +283,13 @@ else
 fi
 echo "  1. Update version ${CURRENT_VERSION} -> ${NEW_VERSION} in _version.py and setup.py"
 echo "  2. Update CHANGELOG.md (${NEW_VERSION} - ${TODAY})"
-echo "  3. Commit locally, push commit to branch '${STAGING_BRANCH}' on ${PUSH_REMOTE}"
+echo "  3. Commit locally, push commit to branch '${CANDIDATE_BRANCH}' on ${PUSH_REMOTE}"
 echo "     (master is NOT pushed; no tag is created yet)"
 echo "  4. Trigger the build wheels workflow on that branch (test-pypi)"
 echo ""
 echo "Once the workflow finishes, re-run this script:"
-echo "  - success -> tag v${NEW_VERSION}, push master, delete staging branch"
-echo "  - failure -> prompt to roll back (delete staging branch + reset local commit)"
+echo "  - success -> tag v${NEW_VERSION}, push master, delete release-candidate branch"
+echo "  - failure -> prompt to roll back (delete release-candidate branch + reset local commit)"
 echo ""
 if [[ "$DRY_RUN" == false ]]; then
     read -rp "Proceed? [Y/n] " confirm
@@ -359,27 +359,27 @@ if [[ "$DRY_RUN" == true ]]; then
     echo ""
     echo "DRY RUN: would have run:"
     echo "  git commit -m 'release v${NEW_VERSION}'"
-    echo "  git push ${PUSH_REMOTE} HEAD:refs/heads/${STAGING_BRANCH}"
-    echo "  gh workflow run build_wheels.yml --repo ${REPO} --ref ${STAGING_BRANCH} -f upload_to_pypi=true -f test_pypi=true"
+    echo "  git push ${PUSH_REMOTE} HEAD:refs/heads/${CANDIDATE_BRANCH}"
+    echo "  gh workflow run build_wheels.yml --repo ${REPO} --ref ${CANDIDATE_BRANCH} -f upload_to_pypi=true -f test_pypi=true"
     exit 0
 fi
 
-# --- Commit locally and push staging branch (no tag, no master push yet) ---
+# --- Commit locally and push release-candidate branch (no tag, no master push yet) ---
 
 git add "$VERSION_FILE" "$SETUP_FILE" "$CHANGELOG"
 git commit -m "release v${NEW_VERSION}"
-git push "$PUSH_REMOTE" "HEAD:refs/heads/${STAGING_BRANCH}"
+git push "$PUSH_REMOTE" "HEAD:refs/heads/${CANDIDATE_BRANCH}"
 
-# --- Trigger test-pypi build against the staging branch ---
+# --- Trigger test-pypi build against the release-candidate branch ---
 
-gh workflow run build_wheels.yml --repo "$REPO" --ref "$STAGING_BRANCH" -f upload_to_pypi=true -f test_pypi=true
+gh workflow run build_wheels.yml --repo "$REPO" --ref "$CANDIDATE_BRANCH" -f upload_to_pypi=true -f test_pypi=true
 
 echo ""
 echo "Release candidate v${NEW_VERSION} started (phase 1 of 2):"
 echo "  - Local:  release commit on ${CURRENT_BRANCH}, NOT pushed"
-echo "  - Remote: branch '${STAGING_BRANCH}' has the release commit"
-echo "  - Workflow: https://github.com/${REPO}/actions?query=branch%3A${STAGING_BRANCH}"
+echo "  - Remote: branch '${CANDIDATE_BRANCH}' has the release commit"
+echo "  - Workflow: https://github.com/${REPO}/actions?query=branch%3A${CANDIDATE_BRANCH}"
 echo ""
 echo "Re-run this script after the workflow finishes to finalize:"
-echo "  - success -> tag v${NEW_VERSION}, push ${CURRENT_BRANCH}, delete ${STAGING_BRANCH}"
+echo "  - success -> tag v${NEW_VERSION}, push ${CURRENT_BRANCH}, delete ${CANDIDATE_BRANCH}"
 echo "  - failure -> prompt to roll back"
