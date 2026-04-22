@@ -7447,7 +7447,7 @@ cdef class Model:
         Parameters
         ----------
         cons : ExprCons
-            a linear inequality of the form "<="
+            a linear inequality
         binvar : Variable, optional
             binary indicator variable, or None if it should be created (Default value = None)
         activeone : bool, optional
