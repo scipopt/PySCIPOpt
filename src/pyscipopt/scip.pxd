@@ -1550,6 +1550,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPfreeReoptSolve(SCIP* scip)
     SCIP_RETCODE SCIPchgReoptObjective(SCIP* scip, SCIP_OBJSENSE objsense, SCIP_VAR** vars, SCIP_Real* coefs, int nvars)
     SCIP_RETCODE SCIPenableReoptimization(SCIP* scip, SCIP_Bool enable)
+    SCIP_Bool SCIPisReoptEnabled(SCIP* scip)
 
     BMS_BLKMEM* SCIPblkmem(SCIP* scip)
 
