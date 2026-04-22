@@ -5,6 +5,15 @@ PYPROJECT="pyproject.toml"
 DEPLOY_REPO="scipopt/scipoptsuite-deploy"
 REPO="scipopt/PySCIPOpt"
 
+DRY_RUN=false
+for arg in "$@"; do
+    case "$arg" in
+        --dry-run) DRY_RUN=true ;;
+        -h|--help) echo "Usage: $0 [--dry-run]"; exit 0 ;;
+        *) echo "Error: unknown argument '$arg' (use --dry-run or --help)"; exit 1 ;;
+    esac
+done
+
 # --- Pre-flight checks ---
 
 if ! command -v gh &>/dev/null; then
@@ -125,7 +134,11 @@ fi
 BRANCH="upgrade-scip-${SCIP_VERSION}"
 
 echo ""
-echo "This script will:"
+if [[ "$DRY_RUN" == true ]]; then
+    echo "DRY RUN: This script would:"
+else
+    echo "This script will:"
+fi
 if [[ "$SKIP_DEPLOY" == false ]]; then
     echo "  1. Build new SCIP binaries (SCIP=${SCIP_VERSION} SoPlex=${SOPLEX_VERSION} GCG=${GCG_VERSION} IPOPT=${IPOPT_VERSION})"
     echo "  2. Create scipoptsuite-deploy release ${NEW_DEPLOY_VERSION}"
@@ -136,6 +149,24 @@ else
     echo "  3. Create branch '${BRANCH}', update pyproject.toml, and open a PR"
 fi
 echo ""
+
+if [[ "$DRY_RUN" == true ]]; then
+    echo "DRY RUN: would have run:"
+    if [[ "$SKIP_DEPLOY" == false ]]; then
+        echo "  gh workflow run build_binaries.yml --repo ${DEPLOY_REPO} \\"
+        echo "      -f scip_version=${SCIP_VERSION} -f soplex_version=${SOPLEX_VERSION} \\"
+        echo "      -f gcg_version=${GCG_VERSION} -f ipopt_version=${IPOPT_VERSION}"
+        echo "  (wait for run, download artifacts)"
+        echo "  gh release create ${NEW_DEPLOY_VERSION} --repo ${DEPLOY_REPO} ..."
+    fi
+    echo "  git checkout -b ${BRANCH}"
+    echo "  (sed) ${CURRENT_DEPLOY_VERSION} -> ${NEW_DEPLOY_VERSION} in ${PYPROJECT}"
+    echo "  git commit -m 'Update scipoptsuite-deploy to ${NEW_DEPLOY_VERSION} (SCIP ${SCIP_VERSION})'"
+    echo "  git push -u ${PUSH_REMOTE} ${BRANCH}"
+    echo "  gh pr create --repo ${REPO} --title 'Upgrade to SCIP ${SCIP_VERSION}'"
+    exit 0
+fi
+
 read -rp "Proceed? [Y/n] " confirm
 [[ "${confirm:-Y}" =~ ^[Nn] ]] && exit 0
 

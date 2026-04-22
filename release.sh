@@ -6,6 +6,15 @@ SETUP_FILE="setup.py"
 CHANGELOG="CHANGELOG.md"
 REPO="scipopt/PySCIPOpt"
 
+DRY_RUN=false
+for arg in "$@"; do
+    case "$arg" in
+        --dry-run) DRY_RUN=true ;;
+        -h|--help) echo "Usage: $0 [--dry-run]"; exit 0 ;;
+        *) echo "Error: unknown argument '$arg' (use --dry-run or --help)"; exit 1 ;;
+    esac
+done
+
 # --- Pre-flight checks ---
 
 if ! command -v gh &>/dev/null; then
@@ -58,9 +67,9 @@ if [[ "$(git log -1 --format=%s)" == "release v${CURRENT_VERSION}" ]]; then
     echo "Recovery options:"
     echo "  a) Nothing was pushed: git tag -d v${CURRENT_VERSION} 2>/dev/null; git reset --hard HEAD~1"
     echo "  b) Master pushed, tag not: git push ${PUSH_REMOTE} v${CURRENT_VERSION} && \\"
-    echo "       gh workflow run build_wheels.yml --repo ${REPO} -f upload_to_pypi=true -f test_pypi=true"
+    echo "       gh workflow run build_wheels.yml --repo ${REPO} --ref v${CURRENT_VERSION} -f upload_to_pypi=true -f test_pypi=true"
     echo "  c) Everything pushed, workflow not triggered:"
-    echo "       gh workflow run build_wheels.yml --repo ${REPO} -f upload_to_pypi=true -f test_pypi=true"
+    echo "       gh workflow run build_wheels.yml --repo ${REPO} --ref v${CURRENT_VERSION} -f upload_to_pypi=true -f test_pypi=true"
     exit 1
 fi
 
@@ -113,14 +122,20 @@ fi
 
 TODAY=$(date +%Y.%m.%d)
 echo ""
-echo "This script will:"
+if [[ "$DRY_RUN" == true ]]; then
+    echo "DRY RUN: This script would:"
+else
+    echo "This script will:"
+fi
 echo "  1. Update version ${CURRENT_VERSION} -> ${NEW_VERSION} in _version.py and setup.py"
 echo "  2. Update CHANGELOG.md (${NEW_VERSION} - ${TODAY})"
 echo "  3. Commit, tag v${NEW_VERSION}, and push to ${PUSH_REMOTE}"
 echo "  4. Trigger the build wheels workflow (test-pypi)"
 echo ""
-read -rp "Proceed? [Y/n] " confirm
-[[ "${confirm:-Y}" =~ ^[Nn] ]] && exit 0
+if [[ "$DRY_RUN" == false ]]; then
+    read -rp "Proceed? [Y/n] " confirm
+    [[ "${confirm:-Y}" =~ ^[Nn] ]] && exit 0
+fi
 
 # ============================================================
 # From here on, everything runs without further prompts.
@@ -166,9 +181,31 @@ sed -i.bak "/^# CHANGELOG$/a\\
 ### Changed\\
 ### Removed\\
 " "$CHANGELOG"
+if cmp -s "$CHANGELOG" "${CHANGELOG}.bak"; then
+    echo "Error: failed to insert fresh Unreleased section ('# CHANGELOG' heading not found)"
+    mv "${CHANGELOG}.bak" "$CHANGELOG"
+    exit 1
+fi
 rm -f "${CHANGELOG}.bak"
 
 echo "Updated CHANGELOG.md"
+
+if [[ "$DRY_RUN" == true ]]; then
+    echo ""
+    echo "DRY RUN: planned file changes:"
+    git --no-pager diff -- "$VERSION_FILE" "$SETUP_FILE" "$CHANGELOG"
+    echo ""
+    echo "DRY RUN: reverting local edits (no commit, tag, push, or workflow trigger)."
+    git checkout -- "$VERSION_FILE" "$SETUP_FILE" "$CHANGELOG"
+    echo ""
+    echo "DRY RUN: would have run:"
+    echo "  git commit -m 'release v${NEW_VERSION}'"
+    echo "  git tag v${NEW_VERSION}"
+    echo "  git push ${PUSH_REMOTE} ${CURRENT_BRANCH}"
+    echo "  git push ${PUSH_REMOTE} v${NEW_VERSION}"
+    echo "  gh workflow run build_wheels.yml --repo ${REPO} --ref v${NEW_VERSION} -f upload_to_pypi=true -f test_pypi=true"
+    exit 0
+fi
 
 # --- Commit, tag, and push ---
 
@@ -179,8 +216,10 @@ git push "$PUSH_REMOTE" "$CURRENT_BRANCH"
 git push "$PUSH_REMOTE" "v${NEW_VERSION}"
 
 # --- Trigger test-pypi build ---
+# --ref pins the build to the tag we just pushed so a race with a master push
+# can't cause the wheel to be built from a different commit than the tag.
 
-gh workflow run build_wheels.yml --repo "$REPO" -f upload_to_pypi=true -f test_pypi=true
+gh workflow run build_wheels.yml --repo "$REPO" --ref "v${NEW_VERSION}" -f upload_to_pypi=true -f test_pypi=true
 
 echo ""
 echo "Done! v${NEW_VERSION} committed, tagged, pushed, and test-pypi build triggered."
@@ -190,7 +229,7 @@ echo "Remaining manual steps:"
 echo "  1. Test the test-pypi package:"
 echo "       pip install -i https://test.pypi.org/simple/ PySCIPOpt==${NEW_VERSION}"
 echo "  2. Release to production pypi:"
-echo "       gh workflow run build_wheels.yml --repo ${REPO} -f upload_to_pypi=true -f test_pypi=false"
+echo "       gh workflow run build_wheels.yml --repo ${REPO} --ref v${NEW_VERSION} -f upload_to_pypi=true -f test_pypi=false"
 echo "  3. Create a GitHub release from tag v${NEW_VERSION}:"
 echo "       gh release create v${NEW_VERSION} --repo ${REPO} --title v${NEW_VERSION} --generate-notes"
 echo "  4. Update readthedocs: Builds -> Build version (latest and stable)"
