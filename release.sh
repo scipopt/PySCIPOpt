@@ -7,11 +7,24 @@ CHANGELOG="CHANGELOG.md"
 REPO="scipopt/PySCIPOpt"
 
 DRY_RUN=false
+ACTION=start
 for arg in "$@"; do
     case "$arg" in
         --dry-run) DRY_RUN=true ;;
-        -h|--help) echo "Usage: $0 [--dry-run]"; exit 0 ;;
-        *) echo "Error: unknown argument '$arg' (use --dry-run or --help)"; exit 1 ;;
+        --finalize) ACTION=finalize ;;
+        --rollback) ACTION=rollback ;;
+        -h|--help)
+            cat <<USAGE
+Usage: $0 [--dry-run] [--finalize | --rollback]
+
+  (default)    Start a release candidate: bump version, push release-candidate-vX.Y.Z, trigger test-pypi build.
+  --finalize   Promote a successful candidate: tag vX.Y.Z, push master, delete RC branch. Requires the RC workflow to have succeeded.
+  --rollback   Abandon a candidate: delete RC branch, reset local release commit.
+  --dry-run    Preview without side effects. Combinable with --finalize/--rollback.
+USAGE
+            exit 0
+            ;;
+        *) echo "Error: unknown argument '$arg' (see --help)"; exit 1 ;;
     esac
 done
 
@@ -135,26 +148,62 @@ finalize_release() {
     echo "  4. Update readthedocs: Builds -> Build version (latest and stable)"
 }
 
-# --- Detect pending release candidate ---
-# If HEAD is a local release commit and its RC branch exists on origin, we are in
-# the second phase (finalize). Otherwise we are starting a new release.
+# Abandon a release candidate: delete RC branch, reset local release commit.
+rollback_release() {
+    local version="$1"
+    local rc_branch="release-candidate-v${version}"
 
-HEAD_MSG=$(git log -1 --format=%s)
-if [[ "$HEAD_MSG" =~ ^release\ v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
-    PENDING_VERSION="${BASH_REMATCH[1]}"
-    RC_BRANCH_CHECK="release-candidate-v${PENDING_VERSION}"
-    if git ls-remote --heads --exit-code "$PUSH_REMOTE" "$RC_BRANCH_CHECK" &>/dev/null; then
-        finalize_release "$PENDING_VERSION"
+    echo "Rolling back release candidate v${version}..."
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "DRY RUN: would have run:"
+        echo "  git push ${PUSH_REMOTE} --delete ${rc_branch}"
+        echo "  git reset --hard HEAD~1"
         exit 0
+    fi
+
+    if git ls-remote --heads --exit-code "$PUSH_REMOTE" "$rc_branch" &>/dev/null; then
+        git push "$PUSH_REMOTE" --delete "$rc_branch"
     else
-        echo "Error: HEAD is 'release v${PENDING_VERSION}' but no RC branch '${RC_BRANCH_CHECK}' on ${PUSH_REMOTE}."
-        echo "A previous run may have been interrupted. Recover manually:"
-        echo "  a) Push the RC branch and re-run:"
-        echo "       git push ${PUSH_REMOTE} HEAD:refs/heads/${RC_BRANCH_CHECK}"
-        echo "  b) Or undo the local commit to start over:"
-        echo "       git reset --hard HEAD~1"
+        echo "(note: ${rc_branch} already absent from ${PUSH_REMOTE})"
+    fi
+    git reset --hard HEAD~1
+    echo "Rolled back. Repo is at pre-release state."
+}
+
+# Validate that HEAD is a local release commit; return the version via stdout.
+require_pending_release() {
+    local head_msg
+    head_msg=$(git log -1 --format=%s)
+    if [[ ! "$head_msg" =~ ^release\ v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+        echo "Error: expected HEAD to be a 'release vX.Y.Z' commit, got: '${head_msg}'" >&2
+        echo "Run without --finalize/--rollback to start a new release." >&2
         exit 1
     fi
+    echo "${BASH_REMATCH[1]}"
+}
+
+# --- Dispatch finalize / rollback / start ---
+
+if [[ "$ACTION" == "finalize" ]]; then
+    PENDING_VERSION=$(require_pending_release)
+    finalize_release "$PENDING_VERSION"
+    exit 0
+fi
+
+if [[ "$ACTION" == "rollback" ]]; then
+    PENDING_VERSION=$(require_pending_release)
+    rollback_release "$PENDING_VERSION"
+    exit 0
+fi
+
+# Start path: if HEAD is already a release commit, the user probably forgot a flag.
+HEAD_MSG=$(git log -1 --format=%s)
+if [[ "$HEAD_MSG" =~ ^release\ v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+    echo "Error: HEAD is already 'release v${BASH_REMATCH[1]}' — a release candidate is pending."
+    echo "Use:"
+    echo "  ./release.sh --finalize   # promote (requires the RC workflow to have succeeded)"
+    echo "  ./release.sh --rollback   # abandon (delete RC branch, reset local commit)"
+    exit 1
 fi
 
 # --- Read current version ---
