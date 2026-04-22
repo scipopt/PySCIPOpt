@@ -15,16 +15,46 @@ On the PR:
 
 ## Releasing PySCIPOpt
 
-Run `./release.sh` from the `master` branch (use `--dry-run` first to preview without side effects). The script will:
-1. Prompt for the version bump type (patch/minor/major)
-2. Update `_version.py`, `setup.py`, and `CHANGELOG.md`
-3. Commit, tag, push, and trigger a test-pypi build
+Releases run in two phases from `master`, driven by `./release.sh`. The tag and master push only happen in phase 2, so a failed RC leaves no semantic public trace — just a deletable `release-candidate-vX.Y.Z` branch.
 
-After the script completes:
-- [ ] Test the package from test-pypi:
-  ```bash
-  pip install -i https://test.pypi.org/simple/ PySCIPOpt==X.Y.Z
-  ```
+Use `--dry-run` with any command to preview without side effects.
+
+### Phase 1 — start a release candidate
+
+```bash
+./release.sh
+```
+
+Prompts for the version bump (patch/minor/major), updates `_version.py`, `setup.py`, and `CHANGELOG.md`, commits **locally**, pushes the commit to `release-candidate-vX.Y.Z` on origin, and triggers the build-wheels workflow on that branch (uploads to test-pypi). **Master is not pushed, no tag is created.** The script exits as soon as the workflow is dispatched — you do not wait.
+
+### Manual verification
+
+Once the RC workflow finishes (~15–30 min), install from test-pypi and smoke-test:
+
+```bash
+pip install -i https://test.pypi.org/simple/ PySCIPOpt==X.Y.Z
+```
+
+### Phase 2 — finalize or roll back
+
+If the smoke test **passes**:
+
+```bash
+./release.sh --finalize
+```
+
+Checks the RC workflow succeeded, then tags `vX.Y.Z`, pushes master, and deletes the RC branch.
+
+If the smoke test **fails** (or you change your mind):
+
+```bash
+./release.sh --rollback
+```
+
+Deletes the RC branch and resets the local release commit. test-pypi keeps the uploaded version string, so the next attempt must use a different bump.
+
+### After finalize
+
 - [ ] Release to production pypi:
   ```bash
   gh workflow run build_wheels.yml --repo scipopt/PySCIPOpt --ref vX.Y.Z -f upload_to_pypi=true -f test_pypi=false
