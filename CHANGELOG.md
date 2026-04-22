@@ -5,6 +5,7 @@
 - `Expr` and `GenExpr` support NumPy unary functions (`np.sin`, `np.cos`, `np.sqrt`, `np.exp`, `np.log`, `np.absolute`)
 - Added `getBase()` and `setBase()` methods to `LP` class for getting/setting basis status
 - Added `getMemUsed()`, `getMemTotal()`, and `getMemExternEstim()` methods
+- Added `isReoptEnabled()` and raising error if not enabled upon calling `reoptSolve()`
 ### Fixed
 - Removed `Py_INCREF`/`Py_DECREF` on `Model` in `catchEvent`/`dropEvent` that caused memory leak for imbalanced usage
 - Used `getIndex()` instead of `ptr()` for sorting nonlinear expression terms to avoid nondeterministic behavior
