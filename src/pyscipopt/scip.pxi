@@ -6630,6 +6630,118 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &(<Constraint>cons).scip_cons))
         return disj_cons
 
+    def addMatrixConsDisjunction(self, conss: Iterable,
+        name: Union[str, np.ndarray] = '', initial: Union[bool, np.ndarray] = True,
+        relaxcons=None, enforce: Union[bool, np.ndarray] = True,
+        check: Union[bool, np.ndarray] = True, local: Union[bool, np.ndarray] = False,
+        modifiable: Union[bool, np.ndarray] = False,
+        dynamic: Union[bool, np.ndarray] = False):
+        """
+        Add an elementwise disjunction of matrix constraints.
+
+        Given an iterable of ``MatrixExprCons`` with a common shape, creates one
+        disjunction per index: for each position ``idx``, the resulting
+        disjunction enforces that at least one of ``conss[k][idx]`` holds.
+        ``ExprCons`` entries are broadcast to every position. If every entry in
+        ``conss`` is a plain ``ExprCons``, the call is forwarded to
+        :meth:`addConsDisjunction` and returns a single ``Constraint``.
+
+        Parameters
+        ----------
+        conss : iterable of MatrixExprCons or ExprCons
+            Constraints to combine elementwise into disjunctions. All
+            ``MatrixExprCons`` entries must share the same shape.
+        name : str or np.ndarray, optional
+            Name of the disjunction constraints. (Default value = "")
+        initial : bool or np.ndarray, optional
+            Should the LP relaxation be in the initial LP? (Default value = True)
+        relaxcons : None, optional
+            NOT YET SUPPORTED. (Default value = None)
+        enforce : bool or np.ndarray, optional
+            Should the constraint be enforced during node processing? (Default value = True)
+        check : bool or np.ndarray, optional
+            Should the constraint be checked for feasibility? (Default value = True)
+        local : bool or np.ndarray, optional
+            Is the constraint only valid locally? (Default value = False)
+        modifiable : bool or np.ndarray, optional
+            Is the constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool or np.ndarray, optional
+            Is the constraint subject to aging? (Default value = False)
+
+        Returns
+        -------
+        MatrixConstraint or Constraint
+            A ``MatrixConstraint`` of the common shape when any entry of
+            ``conss`` is a ``MatrixExprCons``; otherwise a single
+            ``Constraint`` from the scalar fallback.
+        """
+        assert isinstance(conss, Iterable), "Given constraint list is not iterable"
+        conss = list(conss)
+
+        for cons in conss:
+            if not isinstance(cons, (ExprCons, MatrixExprCons)):
+                raise TypeError(
+                    "element of conss is not MatrixExprCons nor ExprCons but %s"
+                    % cons.__class__.__name__
+                )
+
+        if all(isinstance(cons, ExprCons) for cons in conss):
+            return self.addConsDisjunction(
+                conss, name=name, initial=initial, relaxcons=relaxcons,
+                enforce=enforce, check=check, local=local,
+                modifiable=modifiable, dynamic=dynamic,
+            )
+
+        shape = None
+        for cons in conss:
+            if isinstance(cons, MatrixExprCons):
+                if shape is None:
+                    shape = cons.shape
+                elif cons.shape != shape:
+                    raise ValueError(
+                        "All MatrixExprCons in conss must have the same shape, "
+                        "got %s and %s" % (shape, cons.shape)
+                    )
+
+        for arr in (name, initial, enforce, check, local, modifiable, dynamic):
+            if isinstance(arr, np.ndarray):
+                assert arr.shape == shape
+
+        if isinstance(name, str):
+            matrix_names = np.full(shape, name, dtype=object)
+            if name != "":
+                for idx in np.ndindex(shape):
+                    matrix_names[idx] = f"{name}_{'_'.join(map(str, idx))}"
+        else:
+            matrix_names = name
+
+        matrix_initial = initial if isinstance(initial, np.ndarray) else np.full(shape, initial, dtype=bool)
+        matrix_enforce = enforce if isinstance(enforce, np.ndarray) else np.full(shape, enforce, dtype=bool)
+        matrix_check = check if isinstance(check, np.ndarray) else np.full(shape, check, dtype=bool)
+        matrix_local = local if isinstance(local, np.ndarray) else np.full(shape, local, dtype=bool)
+        matrix_modifiable = modifiable if isinstance(modifiable, np.ndarray) else np.full(shape, modifiable, dtype=bool)
+        matrix_dynamic = dynamic if isinstance(dynamic, np.ndarray) else np.full(shape, dynamic, dtype=bool)
+
+        matrix_cons = np.empty(shape, dtype=object)
+        for idx in np.ndindex(shape):
+            elem_conss = [
+                cons[idx] if isinstance(cons, MatrixExprCons) else cons
+                for cons in conss
+            ]
+            matrix_cons[idx] = self.addConsDisjunction(
+                elem_conss,
+                name=matrix_names[idx],
+                initial=matrix_initial[idx],
+                relaxcons=relaxcons,
+                enforce=matrix_enforce[idx],
+                check=matrix_check[idx],
+                local=matrix_local[idx],
+                modifiable=matrix_modifiable[idx],
+                dynamic=matrix_dynamic[idx],
+            )
+
+        return matrix_cons.view(MatrixConstraint)
+
     def getConsNVars(self, Constraint constraint):
         """
         Gets number of variables in a constraint.
