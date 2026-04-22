@@ -10,6 +10,7 @@
 - Used `getIndex()` instead of `ptr()` for sorting nonlinear expression terms to avoid nondeterministic behavior
 - Fixed stubtest failures with mypy 1.20 by marking dunder method parameters as positional-only
 - Return `MatrixGenExpr` in `buildGenExprObj` instead of `MatrixExpr`
+- Plugins now hold strong references to their `Model` instead of `weakref.proxy`, fixing `ReferenceError` during cleanup callbacks (#1193)
 ### Changed
 - Speed up `constant * Expr` via C-level API
 - Speed up `Term.__eq__` via the C-level API
