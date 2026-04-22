@@ -1564,7 +1564,6 @@ cdef class Variable(Expr):
             return cname.decode('utf-8')
 
     def ptr(self):
-        """ """
         return <size_t>(self.scip_var)
 
     def __repr__(self):
@@ -7495,7 +7494,7 @@ cdef class Model:
         Parameters
         ----------
         cons : ExprCons
-            a linear inequality of the form "<="
+            a linear inequality
         binvar : Variable, optional
             binary indicator variable, or None if it should be created (Default value = None)
         activeone : bool, optional
@@ -7591,7 +7590,7 @@ cdef class Model:
         Parameters
         ----------
         cons : ExprCons or MatrixExprCons
-            a linear inequality of the form "<=".
+            a linear inequality
         binvar : Variable or MatrixVariable, optional
             binary indicator variable / matrix variable, or None if it should be created. (Default value = None)
         activeone : bool or np.ndarray, optional

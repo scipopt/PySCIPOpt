@@ -43,15 +43,15 @@
 # gets called (I guess) and so a copy is returned.
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
 import math
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
+
+import numpy as np
 
 from cpython.dict cimport PyDict_Next, PyDict_GetItem
 from cpython.object cimport Py_TYPE
 from cpython.ref cimport PyObject
 from cpython.tuple cimport PyTuple_GET_ITEM
 from pyscipopt.scip cimport Variable, Solution
-
-import numpy as np
 
 
 if TYPE_CHECKING:
@@ -104,13 +104,11 @@ cdef class Term:
     '''This is a monomial term'''
 
     cdef readonly tuple vartuple
-    cdef readonly tuple ptrtuple
     cdef Py_ssize_t hashval
 
     def __init__(self, *vartuple: Variable):
         self.vartuple = tuple(sorted(vartuple, key=lambda v: v.getIndex()))
-        self.ptrtuple = tuple(v.ptr() for v in self.vartuple)
-        self.hashval = <Py_ssize_t>hash(self.ptrtuple)
+        self.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in self.vartuple))
 
     def __getitem__(self, idx):
         return self.vartuple[idx]
@@ -118,8 +116,25 @@ cdef class Term:
     def __hash__(self) -> Py_ssize_t:
         return self.hashval
 
-    def __eq__(self, other: Term):
-        return self.ptrtuple == other.ptrtuple
+    def __eq__(self, other) -> bool:
+        if other is self:
+            return True
+        if <type>Py_TYPE(other) is not Term:
+            return False
+
+        cdef int n = len(self)
+        cdef Term _other = <Term>other
+        if n != len(_other) or self.hashval != _other.hashval:
+            return False
+
+        cdef int i
+        cdef Variable var1, var2
+        for i in range(n):
+            var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
+            var2 = <Variable>PyTuple_GET_ITEM(_other.vartuple, i)
+            if var1.ptr() != var2.ptr():
+                return False
+        return True
 
     def __len__(self):
         return len(self.vartuple)
@@ -156,8 +171,7 @@ cdef class Term:
 
         cdef Term res = Term.__new__(Term)
         res.vartuple = tuple(vartuple)
-        res.ptrtuple = tuple(v.ptr() for v in res.vartuple)
-        res.hashval = <Py_ssize_t>hash(res.ptrtuple)
+        res.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in res.vartuple))
         return res
 
     def __repr__(self):
@@ -179,6 +193,7 @@ cdef class Term:
 
 
 CONST = Term()
+
 
 # helper function
 def buildGenExprObj(expr):
@@ -209,16 +224,66 @@ def buildGenExprObj(expr):
         GenExprs = np.empty(expr.shape, dtype=object)
         for idx in np.ndindex(expr.shape):
             GenExprs[idx] = buildGenExprObj(expr[idx])
-        return GenExprs.view(MatrixExpr)
+        return GenExprs.view(MatrixGenExpr)
 
     else:
         assert isinstance(expr, GenExpr)
         return expr
 
+
+cdef class ExprLike:
+
+    def __array_ufunc__(
+        self,
+        ufunc: np.ufunc,
+        method: Literal["__call__", "reduce", "reduceat", "accumulate", "outer", "at"],
+        *args,
+        **kwargs,
+    ):
+        if kwargs.get("out", None) is not None:
+            raise TypeError(
+                f"{self.__class__.__name__} doesn't support the 'out' parameter in __array_ufunc__"
+            )
+
+        if method == "__call__":
+            if ufunc is np.absolute:
+                return args[0].__abs__()
+            elif ufunc is np.exp:
+                return args[0].exp()
+            elif ufunc is np.log:
+                return args[0].log()
+            elif ufunc is np.sqrt:
+                return args[0].sqrt()
+            elif ufunc is np.sin:
+                return args[0].sin()
+            elif ufunc is np.cos:
+                return args[0].cos()
+
+        return NotImplemented
+
+    def __abs__(self) -> GenExpr:
+        return UnaryExpr(Operator.fabs, buildGenExprObj(self))
+
+    def exp(self) -> GenExpr:
+        return UnaryExpr(Operator.exp, buildGenExprObj(self))
+
+    def log(self) -> GenExpr:
+        return UnaryExpr(Operator.log, buildGenExprObj(self))
+
+    def sqrt(self) -> GenExpr:
+        return UnaryExpr(Operator.sqrt, buildGenExprObj(self))
+
+    def sin(self) -> GenExpr:
+        return UnaryExpr(Operator.sin, buildGenExprObj(self))
+
+    def cos(self) -> GenExpr:
+        return UnaryExpr(Operator.cos, buildGenExprObj(self))
+
+
 ##@details Polynomial expressions of variables with operator overloading. \n
 #See also the @ref ExprDetails "description" in the expr.pxi. 
-cdef class Expr:
-
+cdef class Expr(ExprLike):
+    
     def __init__(self, terms=None):
         '''terms is a dict of variables to coefficients.
 
@@ -235,9 +300,6 @@ cdef class Expr:
 
     def __iter__(self):
         return iter(self.terms)
-
-    def __abs__(self):
-        return abs(buildGenExprObj(self))
 
     def __add__(self, other):
         left = self
@@ -342,10 +404,10 @@ cdef class Expr:
         Note: base must be positive.
         """
         if _is_number(other):
-            base = float(other)
+            base = <double>other
             if base <= 0.0:
                 raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
-            return exp(self * log(base))
+            return (self * Constant(base).log()).exp()
         else:
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
 
@@ -504,16 +566,13 @@ Operator = Op()
 #     so expr[x] will generate an error instead of returning the coefficient of x </pre>
 #
 #See also the @ref ExprDetails "description" in the expr.pxi. 
-cdef class GenExpr:
+cdef class GenExpr(ExprLike):
 
     cdef public _op
     cdef public children
 
     def __init__(self): # do we need it
         ''' '''
-
-    def __abs__(self):
-        return UnaryExpr(Operator.fabs, self)
 
     def __add__(self, other):
         if isinstance(other, np.ndarray):
@@ -641,10 +700,10 @@ cdef class GenExpr:
         Note: base must be positive.
         """
         if _is_number(other):
-            base = float(other)
+            base = <double>other
             if base <= 0.0:
                 raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
-            return exp(self * log(base))
+            return (self * Constant(base).log()).exp()
         else:
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
 
@@ -818,55 +877,160 @@ cdef class Constant(GenExpr):
         return self.number
 
 
-def exp(expr):
-    """returns expression with exp-function"""
-    if isinstance(expr, MatrixExpr):   
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.exp, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.exp, buildGenExprObj(expr))
+def exp(x):
+    """
+    returns expression with exp-function
 
-def log(expr):
-    """returns expression with log-function"""
-    if isinstance(expr, MatrixExpr):
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.log, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.log, buildGenExprObj(expr))
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the exp function directly to it.
+          And if it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the exp function
+          element-wise using np.frompyfunc to convert each element to a Constant if it's
+          a number, and then apply the exp function.
 
-def sqrt(expr):
-    """returns expression with sqrt-function"""
-    if isinstance(expr, MatrixExpr):
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.sqrt, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.sqrt, buildGenExprObj(expr))
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the exp
+          function to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the exp
+          function applied element-wise.
+    """
+    return _wrap_ufunc(x, np.exp)
 
-def sin(expr):
-    """returns expression with sin-function"""
-    if isinstance(expr, MatrixExpr):
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.sin, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.sin, buildGenExprObj(expr))
 
-def cos(expr):
-    """returns expression with cos-function"""
-    if isinstance(expr, MatrixExpr):   
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.cos, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.cos, buildGenExprObj(expr))
+def log(x):
+    """
+    returns expression with log-function
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the log function directly to it.
+          And if it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the log function
+          element-wise using np.frompyfunc to convert each element to a Constant if it's
+          a number, and then apply the log function.
+
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the log
+          function to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the log
+          function applied element-wise.
+    """
+    return _wrap_ufunc(x, np.log)
+
+
+def sqrt(x):
+    """
+    returns expression with sqrt-function
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the sqrt function directly to it.
+          And if it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the sqrt function
+          element-wise using np.frompyfunc to convert each element to a Constant if it's
+          a number, and then apply the sqrt function.
+
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the sqrt
+          function to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the sqrt
+          function applied element-wise.
+    """
+    return _wrap_ufunc(x, np.sqrt)
+
+
+def sin(x):
+    """
+    returns expression with sin-function
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the sin function directly to it.
+          And if it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the sin function
+          element-wise using np.frompyfunc to convert each element to a Constant if it's
+          a number, and then apply the sin function.
+
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the sin
+          function to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the sin
+          function applied element-wise.
+    """
+    return _wrap_ufunc(x, np.sin)
+
+
+def cos(x):
+    """
+    returns expression with cos-function
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the cos function directly to it.
+          And if it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the cos function
+          element-wise using np.frompyfunc to convert each element to a Constant if it's
+          a number, and then apply the cos function.
+
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the cos
+          function to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the cos
+          function applied element-wise.
+    """
+    return _wrap_ufunc(x, np.cos)
+
+
+cdef inline object _to_const(object x):
+    return Constant(<double>x) if _is_number(x) else x
+
+cdef object _vec_to_const = np.frompyfunc(_to_const, 1, 1)
+
+cdef inline object _wrap_ufunc(object x, object ufunc):
+    """
+    Apply a universal function (ufunc) to an expression or a collection of expressions.
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the ufunc directly to it. And if
+          it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the ufunc element-wise
+          using np.frompyfunc to convert each element to a Constant if it's a number,
+          and then apply the ufunc.
+
+    ufunc : np.ufunc
+        The universal function to be applied to x.
+
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the
+          ufunc to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the ufunc
+          applied element-wise.
+    """
+    if isinstance(x, (np.ndarray, list, tuple)):
+        res = ufunc(_vec_to_const(x))
+        return res.view(MatrixGenExpr) if isinstance(res, np.ndarray) else res
+    return ufunc(_to_const(x))
+
 
 def expr_to_nodes(expr):
     '''transforms tree to an array of nodes. each node is an operator and the position of the 
