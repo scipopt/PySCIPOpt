@@ -6648,7 +6648,7 @@ cdef class Model:
         modifiable: Union[bool, np.ndarray] = False,
         dynamic: Union[bool, np.ndarray] = False):
         """
-        Add an elementwise disjunction of matrix constraints.
+        Add an elementwise disjunction of matrix constraint expressions.
 
         Given an iterable of ``MatrixExprCons`` with a common shape, creates one
         disjunction per index: for each position ``idx``, the resulting
@@ -6657,10 +6657,14 @@ cdef class Model:
         ``conss`` is a plain ``ExprCons``, the call is forwarded to
         :meth:`addConsDisjunction` and returns a single ``Constraint``.
 
+        Note: this method accepts constraint *expressions* (e.g., ``A @ x <= b``),
+        not ``MatrixConstraint``/``Constraint`` objects returned by
+        :meth:`addMatrixCons`/:meth:`addCons`.
+
         Parameters
         ----------
         conss : iterable of MatrixExprCons or ExprCons
-            Constraints to combine elementwise into disjunctions. All
+            Constraint expressions to combine elementwise into disjunctions. All
             ``MatrixExprCons`` entries must share the same shape.
         name : str or np.ndarray, optional
             Name of the disjunction constraints. (Default value = "")
