@@ -3973,6 +3973,17 @@ cdef class Model:
         """
         PY_SCIP_CALL(SCIPenableReoptimization(self._scip, enable))
 
+    def isReoptEnabled(self):
+        """
+        Returns whether reoptimization is enabled.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisReoptEnabled(self._scip)
+
     def lpiGetIterations(self):
         """
         Get the iteration count of the last solved LP.
@@ -11949,6 +11960,10 @@ cdef class Model:
 
     def freeReoptSolve(self):
         """Frees all solution process data and prepares for reoptimization."""
+
+        if not SCIPisReoptEnabled(self._scip):
+            raise ValueError("freeReoptSolve requires reoptimization to be enabled. "
+                             "Call enableReoptimization() before solving.")
 
         if self.getStage() not in [SCIP_STAGE_INIT,
                                  SCIP_STAGE_PROBLEM,
