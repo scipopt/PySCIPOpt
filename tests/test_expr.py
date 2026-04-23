@@ -315,6 +315,18 @@ def test_binary_ufunc(model):
     assert str(np.power(x, a)) == "[Expr({Term(x, x): 1.0})]"
     assert str(np.power(a, x)) == "[exp(prod(1.0,sum(0.0,prod(1.0,x)),log(2.0)))]"
 
+    # test np.less_equal
+    assert str(np.less_equal(x, a)) == "[ExprCons(Expr({Term(x): 1.0}), None, 2.0)]"
+    assert str(np.less_equal(a, x)) == "[ExprCons(Expr({Term(x): 1.0}), 2.0, None)]"
+
+    # test np.equal
+    assert str(np.equal(x, a)) == "[ExprCons(Expr({Term(x): 1.0}), 2.0, 2.0)]"
+    assert str(np.equal(a, x)) == "[ExprCons(Expr({Term(x): 1.0}), 2.0, 2.0)]"
+
+    # test np.greater_equal
+    assert str(np.greater_equal(x, a)) == "[ExprCons(Expr({Term(x): 1.0}), 2.0, None)]"
+    assert str(np.greater_equal(a, x)) == "[ExprCons(Expr({Term(x): 1.0}), None, 2.0)]"
+
 
 def test_mul():
     m = Model()
