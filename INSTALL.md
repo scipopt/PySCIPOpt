@@ -1,7 +1,7 @@
 Requirements
 ============
 
-From version 5.0.0 SCIP is automatically shipped when using PyPI for the following systems:
+From version 5.0.0, SCIP is automatically shipped when using PyPI for the following systems:
 
 - CPython 3.8 / 3.9 / 3.10 / 3.11 / 3.12 for  Linux (manylinux2014)
 - CPython 3.8 / 3.9 / 3.10 / 3.11 / 3.12 for MacOS for x86_64 / ARM64
@@ -16,7 +16,7 @@ When installing from source or using PyPI with a python version and operating sy
 PySCIPOpt requires a working installation of the [SCIP Optimization
 Suite](https://www.scipopt.org/). Please, make sure that your SCIP installation works!
 
-**Note that the latest PySCIPOpt version is usually only compatible with the latest major release of the SCIP Optimization Suite. See the table on the README.md page for details.**
+**Note that the latest PySCIPOpt version is usually only compatible with the latest major release of the SCIP Optimization Suite. See the [online documentation](https://pyscipopt.readthedocs.io/en/latest/build.html#building-from-source) for details.**
 
 If installing SCIP from source or using PyPI with a python and operating system that is not mentioned above, and SCIP is not installed in the global path,
 you need to specify the install location using the environment variable
