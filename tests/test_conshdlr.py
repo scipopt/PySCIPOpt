@@ -68,11 +68,7 @@ class MyConshdlr(Conshdlr):
         calls.add("conslock")
         assert id(constraint) in ids
 
-        try:
-            var = self.model.data["x"]
-        except ReferenceError:
-            return
-
+        var = self.model.data["x"]
         n_locks_down = var.getNLocksDown()
         n_locks_up = var.getNLocksUp()
         n_locks_down_model = var.getNLocksDownType(SCIP_LOCKTYPE.MODEL)
@@ -249,8 +245,9 @@ def test_conshdlr():
     # solve problem
     model.optimize()
 
-    # so that consfree gets called
+    # so that consfree gets called (GC collects the Model ↔ plugin cycle)
     del model
+    import gc; gc.collect()
 
     # check callbacks got called
     assert "consenfolp" in calls

@@ -1,6 +1,5 @@
 ##@file scip.pxi
 #@brief holding functions in python that reference the SCIP public functions included in scip.pxd
-import weakref
 from os.path import abspath
 from os.path import splitext
 import os
@@ -2826,6 +2825,7 @@ cdef class Model:
         self._modelconss = {}
         self._generated_event_handlers_count = 0
         self._benders_subproblems = []  # Keep references to Benders subproblem Models
+        self._plugins = []  # Keep references to plugins to break cycles in __dealloc__
         self._iis = NULL
 
         if not createscip:
@@ -2897,15 +2897,27 @@ cdef class Model:
 
         self.includeEventhdlr(event_handler, name, description)
 
+    def __del__(self):
+        """Free SCIP when the last external reference to the Model is dropped.
+
+        Runs before the garbage collector clears the Model's attributes, so
+        plugin callbacks can still reach a live ``self.model``. See
+        ``Model.free`` for the full lifecycle policy.
+        """
+        self._free_scip_instance()
+
     def __dealloc__(self):
-        # Declare all C variables at the beginning for Cython compatibility
+        """Fallback SCIP cleanup if ``__del__`` did not already free the instance."""
+        if self._scip is not NULL and self._freescip:
+            SCIPfree(&self._scip)
+
+    cdef _free_scip_instance(self):
+        """Free the SCIP instance. Does not touch Python object references."""
         cdef SCIP_BENDERS** benders
         cdef int nbenders
         cdef int nsubproblems
         cdef int i, j
 
-        # call C function directly, because we can no longer call this object's methods, according to
-        # http://docs.cython.org/src/reference/extension_types.html#finalization-dealloc
         if self._scip is not NULL and self._freescip and PY_SCIP_CALL:
             # Free Benders subproblems before freeing the main SCIP instance
             if self._benders_subproblems:
@@ -2917,20 +2929,18 @@ cdef class Model:
                     for j in range(nsubproblems):
                         PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, benders[i], j))
 
-                # Clear the references to allow Python GC to clean up the Model objects
-                self._benders_subproblems = []
+            # Ignore SCIPfree retcode: cleanup must not turn into a new failure.
+            SCIPfree(&self._scip)
+            self._scip = NULL
+            self._freescip = False
 
-            # Invalidate all variable and constraint pointers before freeing SCIP. See issue #604.
+            # Invalidate all variable and constraint pointers after freeing SCIP. See issue #604.
             if self._modelvars:
                 for var in self._modelvars.values():
                     (<Variable>var).scip_var = NULL
-                self._modelvars = {}
             if self._modelconss:
                 for cons in self._modelconss.values():
                     (<Constraint>cons).scip_cons = NULL
-                self._modelconss = {}
-
-            PY_SCIP_CALL( SCIPfree(&self._scip) )
 
     def __hash__(self):
         return hash(<size_t>self._scip)
@@ -3074,6 +3084,44 @@ cdef class Model:
     def freeProb(self):
         """Frees problem and solution process data."""
         PY_SCIP_CALL(SCIPfreeProb(self._scip))
+
+    def free(self):
+        """Explicitly free the SCIP instance and release plugin references.
+
+        Every included plugin holds a strong reference to its Model via
+        ``self.model``, and the Model holds strong references to every plugin
+        via ``Model._plugins``. This cycle is intentional: it keeps both sides
+        alive during SCIP teardown so callbacks such as ``eventexit`` and
+        ``consfree`` can safely reach ``self.model``.
+
+        The cycle is broken in one of two ways:
+
+        * Implicitly, via ``Model.__del__`` when the last external reference to
+          the Model is dropped. ``__del__`` runs before the garbage collector
+          (GC) clears attributes, so callbacks still see a live ``self.model``.
+          Timing is at the GC's discretion.
+        * Explicitly, by calling this method. SCIP is freed immediately,
+          teardown callbacks fire before ``free`` returns, and the plugin list
+          is cleared. Use this when deterministic cleanup is required. After
+          ``free`` the Model must not be used further.
+
+        The solve itself is not affected by which path runs. ``free`` only
+        controls when memory and resources are released, and when teardown
+        callbacks execute.
+        """
+        self._free_scip_instance()
+
+        # Break circular references with plugins
+        if self._plugins:
+            for plugin in self._plugins:
+                plugin.model = None
+            self._plugins = []
+
+        # Clear Python-side caches
+        self._modelvars = {}
+        self._modelconss = {}
+        self._benders_subproblems = []
+        self._bestSol = None
 
     def freeTransform(self):
         """Frees all solution process data including presolving and
@@ -3924,6 +3972,17 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPenableReoptimization(self._scip, enable))
+
+    def isReoptEnabled(self):
+        """
+        Returns whether reoptimization is enabled.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisReoptEnabled(self._scip)
 
     def lpiGetIterations(self):
         """
@@ -7449,7 +7508,7 @@ cdef class Model:
         Parameters
         ----------
         cons : ExprCons
-            a linear inequality of the form "<="
+            a linear inequality
         binvar : Variable, optional
             binary indicator variable, or None if it should be created (Default value = None)
         activeone : bool, optional
@@ -7545,7 +7604,7 @@ cdef class Model:
         Parameters
         ----------
         cons : ExprCons or MatrixExprCons
-            a linear inequality of the form "<=".
+            a linear inequality
         binvar : Variable or MatrixVariable, optional
             binary indicator variable / matrix variable, or None if it should be created. (Default value = None)
         activeone : bool or np.ndarray, optional
@@ -9198,9 +9257,9 @@ cdef class Model:
                                           PyEventDelete,
                                           PyEventExec,
                                           <SCIP_EVENTHDLRDATA*>eventhdlr))
-        eventhdlr.model = <Model>weakref.proxy(self)
+        eventhdlr.model = self
         eventhdlr.name = name
-        Py_INCREF(eventhdlr)
+        self._plugins.append(eventhdlr)
 
     def includePricer(self, Pricer pricer, name, desc, priority=1, delay=True):
         """
@@ -9230,8 +9289,8 @@ cdef class Model:
         cdef SCIP_PRICER* scip_pricer
         scip_pricer = SCIPfindPricer(self._scip, n)
         PY_SCIP_CALL(SCIPactivatePricer(self._scip, scip_pricer))
-        pricer.model = <Model>weakref.proxy(self)
-        Py_INCREF(pricer)
+        pricer.model = self
+        self._plugins.append(pricer)
         pricer.scip_pricer = scip_pricer
 
     def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority=0,
@@ -9290,9 +9349,9 @@ cdef class Model:
                                               PyConsActive, PyConsDeactive, PyConsEnable, PyConsDisable, PyConsDelvars, PyConsPrint, PyConsCopy,
                                               PyConsParse, PyConsGetvars, PyConsGetnvars, PyConsGetdivebdchgs, PyConsGetPermSymGraph, PyConsGetSignedPermSymGraph,
                                               <SCIP_CONSHDLRDATA*>conshdlr))
-        conshdlr.model = <Model>weakref.proxy(self)
+        conshdlr.model = self
         conshdlr.name = name
-        Py_INCREF(conshdlr)
+        self._plugins.append(conshdlr)
 
     def deactivatePricer(self, Pricer pricer):
         """
@@ -9457,8 +9516,8 @@ cdef class Model:
         d = str_conversion(desc)
         PY_SCIP_CALL(SCIPincludePresol(self._scip, n, d, priority, maxrounds, timing, PyPresolCopy, PyPresolFree, PyPresolInit,
                                             PyPresolExit, PyPresolInitpre, PyPresolExitpre, PyPresolExec, <SCIP_PRESOLDATA*>presol))
-        presol.model = <Model>weakref.proxy(self)
-        Py_INCREF(presol)
+        presol.model = self
+        self._plugins.append(presol)
 
     def includeSepa(self, Sepa sepa, name, desc, priority=0, freq=10, maxbounddist=1.0, usessubscip=False, delay=False):
         """
@@ -9500,9 +9559,9 @@ cdef class Model:
         d = str_conversion(desc)
         PY_SCIP_CALL(SCIPincludeSepa(self._scip, n, d, priority, freq, maxbounddist, usessubscip, delay, PySepaCopy, PySepaFree,
                                           PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, PySepaExeclp, PySepaExecsol, <SCIP_SEPADATA*>sepa))
-        sepa.model = <Model>weakref.proxy(self)
+        sepa.model = self
         sepa.name = name
-        Py_INCREF(sepa)
+        self._plugins.append(sepa)
 
     def includeReader(self, Reader reader, name, desc, ext):
         """
@@ -9525,9 +9584,9 @@ cdef class Model:
         e = str_conversion(ext)
         PY_SCIP_CALL(SCIPincludeReader(self._scip, n, d, e, PyReaderCopy, PyReaderFree,
                                           PyReaderRead, PyReaderWrite, <SCIP_READERDATA*>reader))
-        reader.model = <Model>weakref.proxy(self)
+        reader.model = self
         reader.name = name
-        Py_INCREF(reader)
+        self._plugins.append(reader)
 
     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
                     proptiming, presoltiming=SCIP_PRESOLTIMING_FAST, priority=1, freq=1, delay=True):
@@ -9567,8 +9626,8 @@ cdef class Model:
                                           PyPropInitpre, PyPropExitpre, PyPropInitsol, PyPropExitsol,
                                           PyPropPresol, PyPropExec, PyPropResProp,
                                           <SCIP_PROPDATA*> prop))
-        prop.model = <Model>weakref.proxy(self)
-        Py_INCREF(prop)
+        prop.model = self
+        self._plugins.append(prop)
 
     def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,
                     maxdepth=-1, timingmask=SCIP_HEURTIMING_BEFORENODE, usessubscip=False):
@@ -9612,9 +9671,9 @@ cdef class Model:
                                           PyHeurCopy, PyHeurFree, PyHeurInit, PyHeurExit,
                                           PyHeurInitsol, PyHeurExitsol, PyHeurExec,
                                           <SCIP_HEURDATA*> heur))
-        heur.model = <Model>weakref.proxy(self)
+        heur.model = self
         heur.name = name
-        Py_INCREF(heur)
+        self._plugins.append(heur)
     
     def includeIISfinder(self, IISfinder iisfinder, name, desc, priority=10000, freq=1):
         """
@@ -9645,8 +9704,9 @@ cdef class Model:
                                          PyiisfinderExec, <SCIP_IISFINDERDATA*> iisfinder))
 
         scip_iisfinder = SCIPfindIISfinder(self._scip, nam)
+        iisfinder.model = self
         iisfinder.name = name
-        Py_INCREF(iisfinder)
+        self._plugins.append(iisfinder)
         iisfinder.scip_iisfinder = scip_iisfinder
 
     def generateIIS(self):
@@ -9704,10 +9764,9 @@ cdef class Model:
         des = str_conversion(desc)
         PY_SCIP_CALL(SCIPincludeRelax(self._scip, nam, des, priority, freq, PyRelaxCopy, PyRelaxFree, PyRelaxInit, PyRelaxExit,
                                           PyRelaxInitsol, PyRelaxExitsol, PyRelaxExec, <SCIP_RELAXDATA*> relax))
-        relax.model = <Model>weakref.proxy(self)
+        relax.model = self
         relax.name = name
-
-        Py_INCREF(relax)
+        self._plugins.append(relax)
 
     def includeCutsel(self, Cutsel cutsel, name, desc, priority):
         """
@@ -9732,8 +9791,8 @@ cdef class Model:
                                        priority, PyCutselCopy, PyCutselFree, PyCutselInit, PyCutselExit,
                                        PyCutselInitsol, PyCutselExitsol, PyCutselSelect,
                                        <SCIP_CUTSELDATA*> cutsel))
-        cutsel.model = <Model>weakref.proxy(self)
-        Py_INCREF(cutsel)
+        cutsel.model = self
+        self._plugins.append(cutsel)
 
     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
         """
@@ -9764,8 +9823,8 @@ cdef class Model:
                                           PyBranchruleCopy, PyBranchruleFree, PyBranchruleInit, PyBranchruleExit,
                                           PyBranchruleInitsol, PyBranchruleExitsol, PyBranchruleExeclp, PyBranchruleExecext,
                                           PyBranchruleExecps, <SCIP_BRANCHRULEDATA*> branchrule))
-        branchrule.model = <Model>weakref.proxy(self)
-        Py_INCREF(branchrule)
+        branchrule.model = self
+        self._plugins.append(branchrule)
 
     def includeNodesel(self, Nodesel nodesel, name, desc, stdpriority, memsavepriority):
         """
@@ -9792,8 +9851,8 @@ cdef class Model:
                                           PyNodeselCopy, PyNodeselFree, PyNodeselInit, PyNodeselExit,
                                           PyNodeselInitsol, PyNodeselExitsol, PyNodeselSelect, PyNodeselComp,
                                           <SCIP_NODESELDATA*> nodesel))
-        nodesel.model = <Model>weakref.proxy(self)
-        Py_INCREF(nodesel)
+        nodesel.model = self
+        self._plugins.append(nodesel)
 
     def includeBenders(self, Benders benders, name, desc, priority=1, cutlp=True, cutpseudo=True, cutrelax=True,
             shareaux=False):
@@ -9832,10 +9891,10 @@ cdef class Model:
                                             <SCIP_BENDERSDATA*>benders))
         cdef SCIP_BENDERS* scip_benders
         scip_benders = SCIPfindBenders(self._scip, n)
-        benders.model = <Model>weakref.proxy(self)
+        benders.model = self
         benders.name = name
         benders._benders = scip_benders
-        Py_INCREF(benders)
+        self._plugins.append(benders)
 
     def includeBenderscut(self, Benders benders, Benderscut benderscut, name, desc, priority=1, islpcut=True):
         """
@@ -9871,11 +9930,10 @@ cdef class Model:
 
         cdef SCIP_BENDERSCUT* scip_benderscut
         scip_benderscut = SCIPfindBenderscut(_benders, n)
-        benderscut.model = <Model>weakref.proxy(self)
+        benderscut.model = self
         benderscut.benders = benders
         benderscut.name = name
-        # TODO: It might be necessary in increment the reference to benders i.e Py_INCREF(benders)
-        Py_INCREF(benderscut)
+        self._plugins.append(benderscut)
 
     def getLPBranchCands(self):
         """
@@ -11276,6 +11334,7 @@ cdef class Model:
             raise Warning("event handler not found")
 
         PY_SCIP_CALL(SCIPcatchEvent(self._scip, eventtype, _eventhdlr, NULL, NULL))
+        eventhdlr._caught_events.append(eventtype)
 
     def dropEvent(self, eventtype, Eventhdlr eventhdlr):
         """
@@ -11295,6 +11354,8 @@ cdef class Model:
             raise Warning("event handler not found")
 
         PY_SCIP_CALL(SCIPdropEvent(self._scip, eventtype, _eventhdlr, NULL, -1))
+        if eventtype in eventhdlr._caught_events:
+            eventhdlr._caught_events.remove(eventtype)
 
     def catchVarEvent(self, Variable var, eventtype, Eventhdlr eventhdlr):
         """
@@ -11901,6 +11962,10 @@ cdef class Model:
 
     def freeReoptSolve(self):
         """Frees all solution process data and prepares for reoptimization."""
+
+        if not SCIPisReoptEnabled(self._scip):
+            raise ValueError("freeReoptSolve requires reoptimization to be enabled. "
+                             "Call enableReoptimization() before solving.")
 
         if self.getStage() not in [SCIP_STAGE_INIT,
                                  SCIP_STAGE_PROBLEM,

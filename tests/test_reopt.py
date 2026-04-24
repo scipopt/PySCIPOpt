@@ -73,6 +73,31 @@ class ReoptimizationTest(unittest.TestCase):
         self.assertAlmostEqual(m.getVal(vars[50]), 0.0)
         self.assertAlmostEqual(m.getVal(vars[99]), 0.0)
 
+    def test_freeReoptSolve_requires_reoptimization_enabled(self):
+        """freeReoptSolve must raise ValueError instead of crashing when
+        reoptimization was not enabled (see issue #624)."""
+        m = Model()
+        m.hideOutput()
+        self.assertFalse(m.isReoptEnabled())
+
+        x = m.addVar(name="x", vtype="I", ub=10)
+        m.addCons(x >= 3)
+        m.setObjective(x)
+        m.optimize()
+
+        with self.assertRaises(ValueError):
+            m.freeReoptSolve()
+
+        m2 = Model()
+        m2.enableReoptimization()
+        self.assertTrue(m2.isReoptEnabled())
+        m2.hideOutput()
+        y = m2.addVar(name="y", vtype="I", ub=10)
+        m2.addCons(y >= 3)
+        m2.setObjective(y)
+        m2.optimize()
+        m2.freeReoptSolve()
+
     def test_reopt_zero_objective(self):
         """Test reoptimization with zero objective (no variables, all coefficients zero)."""
         m = Model()
