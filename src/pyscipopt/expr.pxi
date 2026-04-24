@@ -246,7 +246,32 @@ cdef class ExprLike:
             )
 
         if method == "__call__":
-            if ufunc is np.absolute:
+            if arrays := [a for a in args if type(a) is np.ndarray]:
+                if any(a.dtype.kind not in "fiub" for a in arrays):
+                    return NotImplemented
+                # If the np.ndarray is of numeric type, all arguments are converted to
+                # MatrixExpr or MatrixGenExpr and then the ufunc is applied.
+                return ufunc(*[_ensure_matrix(a) for a in args], **kwargs)
+
+            if ufunc is np.add:
+                return args[0] + args[1]
+            elif ufunc is np.subtract:
+                return args[0] - args[1]
+            elif ufunc is np.multiply:
+                return args[0] * args[1]
+            elif ufunc in {np.divide, np.true_divide}:
+                return args[0] / args[1]
+            elif ufunc is np.power:
+                return args[0] ** args[1]
+            elif ufunc is np.negative:
+                return -args[0]
+            elif ufunc is np.less_equal:
+                return args[0] <= args[1]
+            elif ufunc is np.greater_equal:
+                return args[0] >= args[1]
+            elif ufunc is np.equal:
+                return args[0] == args[1]
+            elif ufunc is np.absolute:
                 return args[0].__abs__()
             elif ufunc is np.exp:
                 return args[0].exp()
@@ -1003,6 +1028,12 @@ cdef inline object _wrap_ufunc(object x, object ufunc):
         res = ufunc(_vec_to_const(x))
         return res.view(MatrixGenExpr) if isinstance(res, np.ndarray) else res
     return ufunc(_to_const(x))
+
+cdef inline object _ensure_matrix(object arg):
+    if type(arg) is np.ndarray:
+        return arg.view(MatrixExpr)
+    matrix = MatrixExpr if isinstance(arg, Expr) else MatrixGenExpr
+    return np.array(arg, dtype=object).view(matrix)
 
 
 def expr_to_nodes(expr):
