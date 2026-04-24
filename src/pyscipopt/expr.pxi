@@ -203,7 +203,7 @@ cdef class ExprLike:
             )
 
         if method == "__call__":
-            if arrays := [a for a in args if type(a) is np.ndarray]:
+            if arrays := [a for a in args if isinstance(a, np.ndarray)]:
                 if any(a.dtype.kind not in "fiub" for a in arrays):
                     return NotImplemented
                 # If the np.ndarray is of numeric type, all arguments are converted to
