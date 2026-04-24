@@ -311,9 +311,9 @@ def test_binary_ufunc(model):
 
     # test np.power
     assert str(np.power(x, 2)) == "Expr({Term(x, x): 1.0})"
-    assert str(np.power(2, x)) == "exp(prod(1.0,sum(0.0,prod(1.0,x)),log(2.0)))"
+    assert str(np.power(2, x)) == "exp(prod(1.0,log(2.0),sum(0.0,prod(1.0,x))))"
     assert str(np.power(x, a)) == "[Expr({Term(x, x): 1.0})]"
-    assert str(np.power(a, x)) == "[exp(prod(1.0,sum(0.0,prod(1.0,x)),log(2.0)))]"
+    assert str(np.power(a, x)) == "[exp(prod(1.0,log(2.0),sum(0.0,prod(1.0,x))))]"
 
     # test np.less_equal
     assert str(np.less_equal(x, a)) == "[ExprCons(Expr({Term(x): 1.0}), None, 2.0)]"
