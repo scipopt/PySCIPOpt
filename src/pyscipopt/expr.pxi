@@ -210,6 +210,10 @@ cdef class ExprLike:
                 # MatrixExpr or MatrixGenExpr and then the ufunc is applied.
                 return ufunc(*[_ensure_matrix(a) for a in args], **kwargs)
 
+            # Convert `np.generic` to native Python types to stop __array_ufunc__
+            # recursion from `np.generic + MatrixExpr`.
+            args = [a.item() if isinstance(a, np.generic) else a for a in args]
+
             if ufunc is np.add:
                 return args[0] + args[1]
             elif ufunc is np.subtract:
