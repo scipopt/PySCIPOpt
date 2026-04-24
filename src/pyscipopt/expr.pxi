@@ -286,6 +286,27 @@ cdef class ExprLike:
 
         return NotImplemented
 
+    def __radd__(self, other, /):
+        return self + other
+
+    def __sub__(self, other, /):
+        return self + (-other)
+
+    def __rsub__(self, other, /):
+        return (-self) + other
+
+    def __rmul__(self, other, /):
+        return self * other
+
+    def __rtruediv__(self, other, /):
+        return buildGenExprObj(other) / self
+
+    def __richcmp__(self, other, int op):
+        return _expr_richcmp(self, other, op)
+
+    def __neg__(self):
+        return self * -1.0
+
     def __abs__(self) -> GenExpr:
         return UnaryExpr(Operator.fabs, buildGenExprObj(self))
 
@@ -408,10 +429,6 @@ cdef class Expr(ExprLike):
         selfexpr = buildGenExprObj(self)
         return selfexpr.__truediv__(other)
 
-    def __rtruediv__(self, other):
-        ''' other / self '''
-        return buildGenExprObj(other) / self
-
     def __pow__(self, other, modulo):
         if float(other).is_integer() and other >= 0:
             exp = int(other)
@@ -435,25 +452,6 @@ cdef class Expr(ExprLike):
             return (self * Constant(base).log()).exp()
         else:
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
-
-    def __neg__(self):
-        return Expr({v:-c for v,c in self.terms.items()})
-
-    def __sub__(self, other):
-        return self + (-other)
-
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    def __rsub__(self, other):
-        return -1.0 * self + other
-
-    def __richcmp__(self, other, op):
-        '''turn it into a constraint'''
-        return _expr_richcmp(self, other, op)
 
     def normalize(self):
         '''remove terms with coefficient of 0'''
@@ -512,7 +510,6 @@ cdef class ExprCons:
             self._lhs -= c
         if not self._rhs is None:
             self._rhs -= c
-
 
     def __richcmp__(self, other, op):
         '''turn it into a constraint'''
@@ -739,30 +736,6 @@ cdef class GenExpr(ExprLike):
         if isinstance(divisor, GenExpr) and divisor.getOp() == Operator.const and divisor.number == 0.0:
             raise ZeroDivisionError("cannot divide by 0")
         return self * divisor**(-1)
-
-    def __rtruediv__(self, other):
-        ''' other / self '''
-        otherexpr = buildGenExprObj(other)
-        return otherexpr.__truediv__(self)
-
-    def __neg__(self):
-        return -1.0 * self
-
-    def __sub__(self, other):
-        return self + (-other)
-
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    def __rsub__(self, other):
-        return -1.0 * self + other
-
-    def __richcmp__(self, other, op):
-        '''turn it into a constraint'''
-        return _expr_richcmp(self, other, op)
 
     def degree(self):
         '''Note: none of these expressions should be polynomial'''
