@@ -20,7 +20,7 @@
 - Return `MatrixGenExpr` in `buildGenExprObj` instead of `MatrixExpr`
 - Plugins now hold strong references to their `Model` instead of `weakref.proxy`, fixing `ReferenceError` during cleanup callbacks (#1193)
 ### Changed
-- Return NotImplemented for `Expr` and `GenExpr` operators, if they can't handle input types in the calculation
+- Return NotImplemented for `Expr` and `GenExpr` operators if they can't handle input types in the calculation
 - Speed up `constant * Expr` via C-level API
 - Speed up `Term.__eq__` via the C-level API
 ### Removed
