@@ -4054,11 +4054,13 @@ cdef class Model:
         cdef int i
         cdef _VarArray wrapper
 
-        # turn the constant value into an Expr instance for further processing
-        if not isinstance(expr, Expr):
-            assert(_is_number(expr)), "given coefficients are neither Expr or number but %s" % expr.__class__.__name__
-            expr = Expr() + expr
+        if not isinstance(expr, Expr) and not _is_number(expr):
+            raise TypeError(
+                f"requires Expr or number but got type {type(expr).__name__!s}"
+            )
 
+        # turn the constant value into an Expr instance for further processing
+        expr = Expr() + expr
         if expr.degree() > 1:
             raise ValueError("SCIP does not support nonlinear objective functions. Consider using set_nonlinear_objective in the pyscipopt.recipe.nonlinear")
 
@@ -12814,13 +12816,13 @@ def readStatistics(filename):
                 if stat_name == "Gap":
                     relevant_value = relevant_value[:-1] # removing %
 
-                if _is_number(relevant_value):
+                try:
                     result[stat_name] = float(relevant_value)
+                except (ValueError, TypeError):
+                    result[stat_name] = relevant_value
+                else:
                     if stat_name == "Solutions found" and result[stat_name] == 0:
                         break
-
-                else: # it's a string
-                    result[stat_name] = relevant_value
 
         # changing keys to pythonic variable names
         treated_keys = {"status": "status", "Total Time": "total_time", "solving":"solving_time", "presolving":"presolving_time", "reading":"reading_time",
