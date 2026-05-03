@@ -55,6 +55,7 @@ from cpython.object cimport Py_LE, Py_EQ, Py_GE, Py_TYPE
 from cpython.ref cimport PyObject
 from cpython.tuple cimport PyTuple_GET_ITEM
 
+cimport numpy as cnp
 from pyscipopt.scip cimport Variable, Solution
 
 
@@ -291,29 +292,22 @@ cdef class Expr(ExprLike):
         if not _is_expr_compatible(other):
             return NotImplemented
 
-        left = self
-        right = other
-        terms = left.terms.copy()
+        if _is_number(other):
+            terms = self.terms.copy()
+            terms[CONST] = terms.get(CONST, 0.0) + <double>other
+            return Expr(terms)
 
-        if isinstance(right, Expr):
-            # merge the terms by component-wise addition
-            for v,c in right.terms.items():
-                terms[v] = terms.get(v, 0.0) + c
-        elif _is_number(right):
-            c = float(right)
-            terms[CONST] = terms.get(CONST, 0.0) + c
-        return Expr(terms)
+        return Expr(_to_dict(self, other, copy=True))
 
     def __iadd__(self, other):
         if not _is_expr_compatible(other):
             return NotImplemented
 
-        if isinstance(other, Expr):
-            for v,c in other.terms.items():
-                self.terms[v] = self.terms.get(v, 0.0) + c
-        elif _is_number(other):
-            c = float(other)
-            self.terms[CONST] = self.terms.get(CONST, 0.0) + c
+        if _is_number(other):
+            self.terms[CONST] = self.terms.get(CONST, 0.0) + <double>other
+        else:
+            _to_dict(self, other, copy=False)
+
         return self
 
     def __mul__(self, other):
@@ -1009,6 +1003,28 @@ cdef inline object _ensure_matrix(object arg):
         return arg.view(MatrixExpr)
     matrix = MatrixExpr if isinstance(arg, Expr) else MatrixGenExpr
     return np.array(arg, dtype=object).view(matrix)
+
+cdef dict _to_dict(Expr expr, Expr other, bool copy = True):
+    cdef dict children = expr.terms.copy() if copy else expr.terms
+    cdef Py_ssize_t pos = <Py_ssize_t>0
+    cdef PyObject* k_ptr = NULL
+    cdef PyObject* v_ptr = NULL
+    cdef PyObject* old_v_ptr = NULL
+    cdef double other_v
+    cdef object k_obj
+
+    while PyDict_Next(other.terms, &pos, &k_ptr, &v_ptr):
+        if (other_v := <double>(<object>v_ptr)) == 0: 
+            continue
+
+        k_obj = <object>k_ptr
+        old_v_ptr = PyDict_GetItem(children, k_obj)
+        if old_v_ptr != NULL:
+            children[k_obj] = <double>(<object>old_v_ptr) + other_v
+        else:
+            children[k_obj] = other_v
+
+    return children
 
 
 def expr_to_nodes(expr):
