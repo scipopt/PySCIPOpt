@@ -167,14 +167,15 @@ def test_cuttingstock():
     for i in range(10):
         s.addVar()
 
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 def test_incomplete_pricer():
     class IncompletePricer(Pricer):
         pass
 
     pricer = IncompletePricer()
     model = Model()
-    model.setPresolve(0)    
-    model.includePricer(pricer, "", "") 
+    model.setPresolve(0)
+    model.includePricer(pricer, "", "")
 
     with pytest.raises(Exception):
         model.optimize()
