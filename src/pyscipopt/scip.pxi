@@ -7151,6 +7151,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, scip_cons, wrapper.ptr[i], weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return self._getOrCreateCons(scip_cons)
 
@@ -7216,6 +7217,7 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, scip_cons, wrapper.ptr[i], weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return self._getOrCreateCons(scip_cons)
 
