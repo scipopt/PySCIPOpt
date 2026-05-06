@@ -7151,8 +7151,10 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, scip_cons, wrapper.ptr[i], weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pyCons = self._getOrCreateCons(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
-        return self._getOrCreateCons(scip_cons)
+        return pyCons
 
     def addConsSOS2(self, vars, weights=None, name="",
                 initial=True, separate=True, enforce=True, check=True,
@@ -7216,8 +7218,10 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, scip_cons, wrapper.ptr[i], weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pyCons = self._getOrCreateCons(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
-        return self._getOrCreateCons(scip_cons)
+        return pyCons
 
     def addConsAnd(self, vars, resvar, name="",
             initial=True, separate=True, enforce=True, check=True,
