@@ -651,6 +651,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPchgVarUbProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
     SCIP_RETCODE SCIPchgVarLbProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
     SCIP_RETCODE SCIPsolveProbingLP(SCIP* scip, int itlim, SCIP_Bool* lperror, SCIP_Bool* cutoff)
+    SCIP_RETCODE SCIPsolveProbingLPWithPricing(SCIP* scip, SCIP_Bool pretendroot, SCIP_Bool displayinfo, int maxpricerounds, SCIP_Bool* lperror, SCIP_Bool* cutoff)
     SCIP_RETCODE SCIPendProbing(SCIP* scip)
     SCIP_RETCODE SCIPfixVarProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real fixedval)
     SCIP_Bool SCIPisObjChangedProbing(SCIP* scip)
