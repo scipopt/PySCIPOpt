@@ -22,6 +22,7 @@
 - Return `MatrixGenExpr` in `buildGenExprObj` instead of `MatrixExpr`
 - Plugins now hold strong references to their `Model` instead of `weakref.proxy`, fixing `ReferenceError` during cleanup callbacks (#1193)
 - Made `test_tree` robust to SCIP solver improvements by asserting visited node depths instead of node count (#1206)
+- Lower macOS wheel `MACOSX_DEPLOYMENT_TARGET` to 11.0 and patch bundled SCIP/SoPlex/GCG and GCC runtime dylibs to match, fixing `delocate-wheel` failures on macos-15 runners and broadening installability for downstream consumers (e.g. pixi/uv-based environments)
 ### Changed
 - Return NotImplemented for `Expr` and `GenExpr` operators if they can't handle input types in the calculation
 - Speed up `constant * Expr` via C-level API
