@@ -21,6 +21,7 @@
 - Fixed stubtest failures with mypy 1.20 by marking dunder method parameters as positional-only
 - Return `MatrixGenExpr` in `buildGenExprObj` instead of `MatrixExpr`
 - Plugins now hold strong references to their `Model` instead of `weakref.proxy`, fixing `ReferenceError` during cleanup callbacks (#1193)
+- Made `test_tree` robust to SCIP solver improvements by asserting visited node depths instead of node count (#1206)
 ### Changed
 - Return NotImplemented for `Expr` and `GenExpr` operators if they can't handle input types in the calculation
 - Speed up `constant * Expr` via C-level API
