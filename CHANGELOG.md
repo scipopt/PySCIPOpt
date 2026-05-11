@@ -6,7 +6,7 @@
 ### Changed
 ### Removed
 
-## 6.2.0 - 2026.04.23
+## 6.2.0 - 2026.05.11
 ### Added
 - Added `solveProbingLPWithPricing()` and test
 - `Expr` and `GenExpr` support NumPy unary functions (`np.sin`, `np.cos`, `np.sqrt`, `np.exp`, `np.log`, `np.absolute`, `np.negative`)
@@ -20,9 +20,9 @@
 - Used `getIndex()` instead of `ptr()` for sorting nonlinear expression terms to avoid nondeterministic behavior
 - Fixed stubtest failures with mypy 1.20 by marking dunder method parameters as positional-only
 - Return `MatrixGenExpr` in `buildGenExprObj` instead of `MatrixExpr`
-- Plugins now hold strong references to their `Model` instead of `weakref.proxy`, fixing `ReferenceError` during cleanup callbacks (#1193)
-- Made `test_tree` robust to SCIP solver improvements by asserting visited node depths instead of node count (#1206)
-- Lower macOS wheel `MACOSX_DEPLOYMENT_TARGET` to 11.0 and patch bundled SCIP/SoPlex/GCG and GCC runtime dylibs to match, fixing `delocate-wheel` failures on macos-15 runners and broadening installability for downstream consumers (e.g. pixi/uv-based environments)
+- Plugins now hold strong references to their `Model` instead of `weakref.proxy`, fixing `ReferenceError` during cleanup callbacks
+- Made `test_tree` robust to SCIP solver improvements by asserting visited node depths instead of node count
+- Lower macOS wheel `MACOSX_DEPLOYMENT_TARGET` to 11.0 and patch bundled SCIP/SoPlex/GCG and GCC runtime dylibs to match
 ### Changed
 - Return NotImplemented for `Expr` and `GenExpr` operators if they can't handle input types in the calculation
 - Speed up `constant * Expr` via C-level API
