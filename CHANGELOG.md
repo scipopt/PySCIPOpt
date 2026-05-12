@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 ### Fixed
+- `Expr.__array_ufunc__` can't handle 0-dim array
 ### Changed
 ### Removed
 
