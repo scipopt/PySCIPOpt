@@ -6,7 +6,7 @@ from pyscipopt import Model, Eventhdlr, SCIP_RESULT, SCIP_EVENTTYPE, SCIP_PARAMS
 class NodeEventHandler(Eventhdlr):
 
     def __init__(self):
-        self.calls = []
+        self.depths_seen = set()
 
     def eventinit(self):
         self.model.catchEvent(SCIP_EVENTTYPE.NODEFOCUSED, self)
@@ -15,10 +15,10 @@ class NodeEventHandler(Eventhdlr):
         self.model.dropEvent(SCIP_EVENTTYPE.NODEFOCUSED, self)
 
     def eventexec(self, event):
-        self.calls.append('eventexec')
         assert event.getType() == SCIP_EVENTTYPE.NODEFOCUSED
         node = event.getNode()
-        
+        self.depths_seen.add(node.getDepth())
+
         if node.getDepth() == 0:
             assert node.getParent() is None
             assert node.getParentBranchings() is None
@@ -39,6 +39,8 @@ def test_tree():
     s.setMaximize()
     s.hideOutput()
     s.setPresolve(SCIP_PARAMSETTING.OFF)
+    s.setSeparating(SCIP_PARAMSETTING.OFF)
+    s.setHeuristics(SCIP_PARAMSETTING.OFF)
     node_eventhdlr = NodeEventHandler()
     s.includeEventhdlr(node_eventhdlr, "NodeEventHandler", "python event handler to catch NODEFOCUSED")
 
@@ -60,4 +62,5 @@ def test_tree():
 
     del s
 
-    assert len(node_eventhdlr.calls) > 3
+    assert 0 in node_eventhdlr.depths_seen
+    assert any(d > 0 for d in node_eventhdlr.depths_seen)
