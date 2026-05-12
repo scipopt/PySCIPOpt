@@ -6692,7 +6692,8 @@ cdef class Model:
             ``conss`` is a ``MatrixExprCons``; otherwise a single
             ``Constraint`` from the scalar fallback.
         """
-        assert isinstance(conss, Iterable), "Given constraint list is not iterable"
+        if not isinstance(conss, Iterable):
+            raise TypeError(f"given constraint list is not iterable, but got {type(conss).__name__}")
         conss = list(conss)
 
         for cons in conss:
