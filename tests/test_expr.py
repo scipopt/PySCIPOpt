@@ -351,6 +351,10 @@ def test_np_generic_vs_expr():
     # test <=, 0-ndim int array vs Variable
     assert str(np.array(5) <= x) == "ExprCons(Expr({Term(x): 1.0}), 5.0, None)"
 
+    # test <=, 0-ndim Variable array vs Variable
+    with pytest.raises(TypeError):
+        1 <= np.array(x)
+
 
 def test_mul():
     m = Model()
