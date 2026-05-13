@@ -211,7 +211,8 @@ cdef class ExprLike:
                 return ufunc(*[_ensure_matrix(a) for a in args], **kwargs)
 
             # Convert `np.generic` and 0-dim `np.ndarray` to native Python types to stop
-            # __array_ufunc__ recursion from `np.generic + MatrixExpr/Expr`.
+            # __array_ufunc__ recursion from `np.generic + MatrixExpr/Expr` or
+            # `0-dim np.ndarray + MatrixExpr/Expr`.
             args = [
                 a.item()
                 if (
