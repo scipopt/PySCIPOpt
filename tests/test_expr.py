@@ -334,21 +334,21 @@ def test_np_generic_vs_expr():
     x = m.addVar(name="x")
     value = np.float64(5.0)
 
-    # test <=
+    # test <=, np.generic vs Variable
     assert str(x <= -value) == "ExprCons(Expr({Term(x): 1.0}), None, -5.0)"
     assert str(x <= value) == "ExprCons(Expr({Term(x): 1.0}), None, 5.0)"
     assert str(-value <= x) == "ExprCons(Expr({Term(x): 1.0}), -5.0, None)"
     assert str(value <= x) == "ExprCons(Expr({Term(x): 1.0}), 5.0, None)"
     assert str(np.int64(5) <= x) == "ExprCons(Expr({Term(x): 1.0}), 5.0, None)"
 
-    # test >=
+    # test >=, np.generic vs Variable
     assert str(value >= x) == "ExprCons(Expr({Term(x): 1.0}), None, 5.0)"
     assert str(-value >= x) == "ExprCons(Expr({Term(x): 1.0}), None, -5.0)"
 
-    # test ==
+    # test ==, np.generic vs Variable
     assert str(value == x) == "ExprCons(Expr({Term(x): 1.0}), 5.0, 5.0)"
 
-    # test 0-ndim array
+    # test <=, 0-ndim int array vs Variable
     assert str(np.array(5) <= x) == "ExprCons(Expr({Term(x): 1.0}), 5.0, None)"
 
 
