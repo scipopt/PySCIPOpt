@@ -1,3 +1,4 @@
+from collections.abc import Iterable, Sequence
 from typing import ClassVar, Union, overload
 
 import numpy as np
@@ -572,338 +573,316 @@ class Model:
     data: Incomplete
     def __init__(
         self,
-        problemName: Incomplete = ...,
-        defaultPlugins: Incomplete = ...,
-        sourceModel: Incomplete = ...,
-        origcopy: Incomplete = ...,
-        globalcopy: Incomplete = ...,
-        enablepricing: Incomplete = ...,
-        createscip: Incomplete = ...,
-        threadsafe: Incomplete = ...,
+        problemName: str = "model",
+        defaultPlugins: bool = True,
+        sourceModel: Model | None = None,
+        origcopy: bool = False,
+        globalcopy: bool = True,
+        enablepricing: bool = True,
+        createscip: bool = True,
+        threadsafe: bool = False,
     ) -> None: ...
     def _createConsGenNonlinear(self, cons: Incomplete) -> Incomplete: ...
     def _createConsLinear(self, lincons: Incomplete) -> Incomplete: ...
     def _createConsNonlinear(self, cons: Incomplete) -> Incomplete: ...
     def _createConsQuadratic(self, quadcons: Incomplete) -> Incomplete: ...
     def _getStageNames(self) -> Incomplete: ...
-    def activateBenders(
-        self, benders: Incomplete, nsubproblems: Incomplete
-    ) -> Incomplete: ...
-    def addBendersSubproblem(
-        self, benders: Incomplete, subproblem: Incomplete
-    ) -> Incomplete: ...
+    def activateBenders(self, benders: Benders, nsubproblems: int) -> None: ...
+    def addBendersSubproblem(self, benders: Benders, subproblem: Model) -> None: ...
     def addCoefKnapsack(
-        self, cons: Incomplete, var: Incomplete, weight: Incomplete
-    ) -> Incomplete: ...
-    def addCoefLinear(
-        self, cons: Incomplete, var: Incomplete, value: Incomplete
-    ) -> Incomplete: ...
+        self, cons: Constraint, var: Variable, weight: float
+    ) -> None: ...
+    def addCoefLinear(self, cons: Constraint, var: Variable, value: float) -> None: ...
     def addCons(
         self,
         cons: Incomplete,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        separate: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        propagate: Incomplete = ...,
-        local: Incomplete = ...,
-        modifiable: Incomplete = ...,
-        dynamic: Incomplete = ...,
-        removable: Incomplete = ...,
-        stickingatnode: Incomplete = ...,
-    ) -> Incomplete: ...
+        name: str = "",
+        initial: bool = True,
+        separate: bool = True,
+        enforce: bool = True,
+        check: bool = True,
+        propagate: bool = True,
+        local: bool = False,
+        modifiable: bool = False,
+        dynamic: bool = False,
+        removable: bool = False,
+        stickingatnode: bool = False,
+    ) -> Constraint: ...
     def addConsAnd(
         self,
-        vars: Incomplete,
-        resvar: Incomplete,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        separate: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        propagate: Incomplete = ...,
-        local: Incomplete = ...,
-        modifiable: Incomplete = ...,
-        dynamic: Incomplete = ...,
-        removable: Incomplete = ...,
-        stickingatnode: Incomplete = ...,
-    ) -> Incomplete: ...
+        vars: Sequence[Variable],
+        resvar: Variable,
+        name: str = "",
+        initial: bool = True,
+        separate: bool = True,
+        enforce: bool = True,
+        check: bool = True,
+        propagate: bool = True,
+        local: bool = False,
+        modifiable: bool = False,
+        dynamic: bool = False,
+        removable: bool = False,
+        stickingatnode: bool = False,
+    ) -> Constraint: ...
     def addConsCardinality(
         self,
-        consvars: Incomplete,
-        cardval: Incomplete,
-        indvars: Incomplete = ...,
-        weights: Incomplete = ...,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        separate: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        propagate: Incomplete = ...,
-        local: Incomplete = ...,
-        dynamic: Incomplete = ...,
-        removable: Incomplete = ...,
-        stickingatnode: Incomplete = ...,
-    ) -> Incomplete: ...
-    def addConsCoeff(
-        self, cons: Incomplete, var: Incomplete, coeff: Incomplete
-    ) -> Incomplete: ...
+        consvars: Sequence[Variable],
+        cardval: int,
+        indvars: Sequence[Variable] | None = None,
+        weights: Sequence[float] | None = None,
+        name: str = "",
+        initial: bool = True,
+        separate: bool = True,
+        enforce: bool = True,
+        check: bool = True,
+        propagate: bool = True,
+        local: bool = False,
+        dynamic: bool = False,
+        removable: bool = False,
+        stickingatnode: bool = False,
+    ) -> Constraint: ...
+    def addConsCoeff(self, cons: Constraint, var: Variable, coeff: float) -> None: ...
     def addConsDisjunction(
         self,
-        conss: Incomplete,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        relaxcons: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        local: Incomplete = ...,
-        modifiable: Incomplete = ...,
-        dynamic: Incomplete = ...,
-    ) -> Incomplete: ...
+        conss: Iterable[Incomplete],
+        name: str = "",
+        initial: bool = True,
+        relaxcons: Constraint | None = None,
+        enforce: bool = True,
+        check: bool = True,
+        local: bool = False,
+        modifiable: bool = False,
+        dynamic: bool = False,
+    ) -> Constraint: ...
     def addConsElemDisjunction(
-        self, disj_cons: Incomplete, cons: Incomplete
-    ) -> Incomplete: ...
+        self, disj_cons: Constraint, cons: Constraint
+    ) -> Constraint: ...
     def addConsIndicator(
         self,
         cons: Incomplete,
-        binvar: Incomplete = ...,
-        activeone: Incomplete = ...,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        separate: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        propagate: Incomplete = ...,
-        local: Incomplete = ...,
-        dynamic: Incomplete = ...,
-        removable: Incomplete = ...,
-        stickingatnode: Incomplete = ...,
-    ) -> Incomplete: ...
+        binvar: Variable | None = None,
+        activeone: bool = True,
+        name: str = "",
+        initial: bool = True,
+        separate: bool = True,
+        enforce: bool = True,
+        check: bool = True,
+        propagate: bool = True,
+        local: bool = False,
+        dynamic: bool = False,
+        removable: bool = False,
+        stickingatnode: bool = False,
+    ) -> Constraint: ...
     def addConsKnapsack(
         self,
-        vars: Incomplete,
-        weights: Incomplete,
-        capacity: Incomplete,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        separate: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        modifiable: Incomplete = ...,
-        propagate: Incomplete = ...,
-        local: Incomplete = ...,
-        dynamic: Incomplete = ...,
-        removable: Incomplete = ...,
-        stickingatnode: Incomplete = ...,
-    ) -> Incomplete: ...
+        vars: Sequence[Variable],
+        weights: Sequence[int],
+        capacity: int,
+        name: str = "",
+        initial: bool = True,
+        separate: bool = True,
+        enforce: bool = True,
+        check: bool = True,
+        modifiable: bool = False,
+        propagate: bool = True,
+        local: bool = False,
+        dynamic: bool = False,
+        removable: bool = False,
+        stickingatnode: bool = False,
+    ) -> Constraint: ...
     def addConsLocal(
         self,
-        cons: Incomplete,
-        validnode: Incomplete = ...,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        separate: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        propagate: Incomplete = ...,
-        local: Incomplete = ...,
-        dynamic: Incomplete = ...,
-        removable: Incomplete = ...,
-        stickingatnode: Incomplete = ...,
-    ) -> Incomplete: ...
+        cons: Constraint,
+        validnode: Node | None = None,
+        name: str = "",
+        initial: bool = True,
+        separate: bool = True,
+        enforce: bool = True,
+        check: bool = True,
+        propagate: bool = True,
+        local: bool = True,
+        dynamic: bool = False,
+        removable: bool = True,
+        stickingatnode: bool = True,
+    ) -> None: ...
     def addConsNode(
         self,
-        node: Incomplete,
-        cons: Incomplete,
-        validnode: Incomplete = ...,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        separate: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        propagate: Incomplete = ...,
-        local: Incomplete = ...,
-        dynamic: Incomplete = ...,
-        removable: Incomplete = ...,
-        stickingatnode: Incomplete = ...,
-    ) -> Incomplete: ...
+        node: Node,
+        cons: Constraint,
+        validnode: Node | None = None,
+        name: str = "",
+        initial: bool = True,
+        separate: bool = True,
+        enforce: bool = True,
+        check: bool = True,
+        propagate: bool = True,
+        local: bool = True,
+        dynamic: bool = False,
+        removable: bool = True,
+        stickingatnode: bool = True,
+    ) -> None: ...
     def addConsOr(
         self,
-        vars: Incomplete,
-        resvar: Incomplete,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        separate: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        propagate: Incomplete = ...,
-        local: Incomplete = ...,
-        modifiable: Incomplete = ...,
-        dynamic: Incomplete = ...,
-        removable: Incomplete = ...,
-        stickingatnode: Incomplete = ...,
-    ) -> Incomplete: ...
+        vars: Sequence[Variable],
+        resvar: Variable,
+        name: str = "",
+        initial: bool = True,
+        separate: bool = True,
+        enforce: bool = True,
+        check: bool = True,
+        propagate: bool = True,
+        local: bool = False,
+        modifiable: bool = False,
+        dynamic: bool = False,
+        removable: bool = False,
+        stickingatnode: bool = False,
+    ) -> Constraint: ...
     def addConsSOS1(
         self,
-        vars: Incomplete,
-        weights: Incomplete = ...,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        separate: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        propagate: Incomplete = ...,
-        local: Incomplete = ...,
-        dynamic: Incomplete = ...,
-        removable: Incomplete = ...,
-        stickingatnode: Incomplete = ...,
-    ) -> Incomplete: ...
+        vars: Sequence[Variable],
+        weights: Sequence[float] | None = None,
+        name: str = "",
+        initial: bool = True,
+        separate: bool = True,
+        enforce: bool = True,
+        check: bool = True,
+        propagate: bool = True,
+        local: bool = False,
+        dynamic: bool = False,
+        removable: bool = False,
+        stickingatnode: bool = False,
+    ) -> Constraint: ...
     def addConsSOS2(
         self,
-        vars: Incomplete,
-        weights: Incomplete = ...,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        separate: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        propagate: Incomplete = ...,
-        local: Incomplete = ...,
-        dynamic: Incomplete = ...,
-        removable: Incomplete = ...,
-        stickingatnode: Incomplete = ...,
-    ) -> Incomplete: ...
+        vars: Sequence[Variable],
+        weights: Sequence[float] | None = None,
+        name: str = "",
+        initial: bool = True,
+        separate: bool = True,
+        enforce: bool = True,
+        check: bool = True,
+        propagate: bool = True,
+        local: bool = False,
+        dynamic: bool = False,
+        removable: bool = False,
+        stickingatnode: bool = False,
+    ) -> Constraint: ...
     def addConsXor(
         self,
-        vars: Incomplete,
-        rhsvar: Incomplete,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        separate: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        propagate: Incomplete = ...,
-        local: Incomplete = ...,
-        modifiable: Incomplete = ...,
-        dynamic: Incomplete = ...,
-        removable: Incomplete = ...,
-        stickingatnode: Incomplete = ...,
-    ) -> Incomplete: ...
+        vars: Sequence[Variable],
+        rhsvar: bool,
+        name: str = "",
+        initial: bool = True,
+        separate: bool = True,
+        enforce: bool = True,
+        check: bool = True,
+        propagate: bool = True,
+        local: bool = False,
+        modifiable: bool = False,
+        dynamic: bool = False,
+        removable: bool = False,
+        stickingatnode: bool = False,
+    ) -> Constraint: ...
     def addConss(
         self,
-        conss: Incomplete,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        separate: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        propagate: Incomplete = ...,
-        local: Incomplete = ...,
-        modifiable: Incomplete = ...,
-        dynamic: Incomplete = ...,
-        removable: Incomplete = ...,
-        stickingatnode: Incomplete = ...,
-    ) -> Incomplete: ...
-    def addCut(self, cut: Incomplete, forcecut: Incomplete = ...) -> Incomplete: ...
+        conss: Iterable[Incomplete],
+        name: str | Iterable[str] = "",
+        initial: bool | Iterable[bool] = True,
+        separate: bool | Iterable[bool] = True,
+        enforce: bool | Iterable[bool] = True,
+        check: bool | Iterable[bool] = True,
+        propagate: bool | Iterable[bool] = True,
+        local: bool | Iterable[bool] = False,
+        modifiable: bool | Iterable[bool] = False,
+        dynamic: bool | Iterable[bool] = False,
+        removable: bool | Iterable[bool] = False,
+        stickingatnode: bool | Iterable[bool] = False,
+    ) -> list[Constraint]: ...
+    def addCut(self, cut: Row, forcecut: bool = False) -> bool: ...
     def addExprNonlinear(
-        self, cons: Incomplete, expr: Incomplete, coef: Incomplete
-    ) -> Incomplete: ...
+        self, cons: Constraint, expr: Incomplete, coef: float
+    ) -> None: ...
     def addMatrixCons(
         self,
         cons: Incomplete,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        separate: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        propagate: Incomplete = ...,
-        local: Incomplete = ...,
-        modifiable: Incomplete = ...,
-        dynamic: Incomplete = ...,
-        removable: Incomplete = ...,
-        stickingatnode: Incomplete = ...,
-    ) -> Incomplete: ...
+        name: str | np.ndarray = "",
+        initial: bool | np.ndarray = True,
+        separate: bool | np.ndarray = True,
+        enforce: bool | np.ndarray = True,
+        check: bool | np.ndarray = True,
+        propagate: bool | np.ndarray = True,
+        local: bool | np.ndarray = False,
+        modifiable: bool | np.ndarray = False,
+        dynamic: bool | np.ndarray = False,
+        removable: bool | np.ndarray = False,
+        stickingatnode: bool | np.ndarray = False,
+    ) -> MatrixConstraint: ...
     def addMatrixConsIndicator(
         self,
         cons: Incomplete,
-        binvar: Incomplete = ...,
-        activeone: Incomplete = ...,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        separate: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        propagate: Incomplete = ...,
-        local: Incomplete = ...,
-        dynamic: Incomplete = ...,
-        removable: Incomplete = ...,
-        stickingatnode: Incomplete = ...,
-    ) -> Incomplete: ...
+        binvar: Variable | MatrixVariable | None = None,
+        activeone: bool | np.ndarray = True,
+        name: str | np.ndarray = "",
+        initial: bool | np.ndarray = True,
+        separate: bool | np.ndarray = True,
+        enforce: bool | np.ndarray = True,
+        check: bool | np.ndarray = True,
+        propagate: bool | np.ndarray = True,
+        local: bool | np.ndarray = False,
+        dynamic: bool | np.ndarray = False,
+        removable: bool | np.ndarray = False,
+        stickingatnode: bool | np.ndarray = False,
+    ) -> MatrixConstraint: ...
     def addMatrixVar(
         self,
-        shape: Incomplete,
-        name: Incomplete = ...,
-        vtype: Incomplete = ...,
-        lb: Incomplete = ...,
-        ub: Incomplete = ...,
-        obj: Incomplete = ...,
-        pricedVar: Incomplete = ...,
-        pricedVarScore: Incomplete = ...,
-    ) -> Incomplete: ...
-    def addObjoffset(
-        self, offset: Incomplete, solutions: Incomplete = ...
-    ) -> Incomplete: ...
-    def addPoolCut(self, row: Incomplete) -> Incomplete: ...
-    def addPyCons(self, cons: Incomplete) -> Incomplete: ...
-    def addRowDive(self, row: Incomplete) -> Incomplete: ...
-    def addRowExact(self, rowexact: Incomplete) -> Incomplete: ...
-    def addSol(self, solution: Incomplete, free: Incomplete = ...) -> Incomplete: ...
+        shape: int | tuple[int, ...],
+        name: str | np.ndarray = "",
+        vtype: str | np.ndarray = "C",
+        lb: float | np.ndarray | None = 0.0,
+        ub: float | np.ndarray | None = None,
+        obj: float | np.ndarray | None = 0.0,
+        pricedVar: bool | np.ndarray = False,
+        pricedVarScore: float | np.ndarray | None = 1.0,
+    ) -> MatrixVariable: ...
+    def addObjoffset(self, offset: float, solutions: bool = False) -> None: ...
+    def addPoolCut(self, row: Row) -> None: ...
+    def addPyCons(self, cons: Constraint) -> None: ...
+    def addRowDive(self, row: Row) -> None: ...
+    def addRowExact(self, rowexact: RowExact) -> None: ...
+    def addSol(self, solution: Solution, free: bool = True) -> bool: ...
     def addVar(
         self,
-        name: Incomplete = ...,
-        vtype: Incomplete = ...,
-        lb: Incomplete = ...,
-        ub: Incomplete = ...,
-        obj: Incomplete = ...,
-        pricedVar: Incomplete = ...,
-        pricedVarScore: Incomplete = ...,
-        deletable: Incomplete = ...,
-    ) -> Incomplete: ...
-    def addVarLocks(
-        self, var: Incomplete, nlocksdown: Incomplete, nlocksup: Incomplete
-    ) -> Incomplete: ...
+        name: str = "",
+        vtype: str = "C",
+        lb: float | None = 0.0,
+        ub: float | None = None,
+        obj: float | None = 0.0,
+        pricedVar: bool = False,
+        pricedVarScore: float = 1.0,
+        deletable: bool = False,
+    ) -> Variable: ...
+    def addVarLocks(self, var: Variable, nlocksdown: int, nlocksup: int) -> None: ...
     def addVarLocksType(
-        self,
-        var: Incomplete,
-        locktype: Incomplete,
-        nlocksdown: Incomplete,
-        nlocksup: Incomplete,
-    ) -> Incomplete: ...
-    def addVarSOS1(
-        self, cons: Incomplete, var: Incomplete, weight: Incomplete
-    ) -> Incomplete: ...
-    def addVarSOS2(
-        self, cons: Incomplete, var: Incomplete, weight: Incomplete
-    ) -> Incomplete: ...
-    def addVarToRow(
-        self, row: Incomplete, var: Incomplete, value: Incomplete
-    ) -> Incomplete: ...
+        self, var: Variable, locktype: int, nlocksdown: int, nlocksup: int
+    ) -> None: ...
+    def addVarSOS1(self, cons: Constraint, var: Variable, weight: float) -> None: ...
+    def addVarSOS2(self, cons: Constraint, var: Variable, weight: float) -> None: ...
+    def addVarToRow(self, row: Row, var: Variable, value: float) -> None: ...
     def adjustedVarLb(self, var: Variable, lb: float) -> float: ...
     def adjustedVarUb(self, var: Variable, ub: float) -> float: ...
     def aggregateVars(
         self,
         varx: Variable,
         vary: Variable,
-        coefx: float = ...,
-        coefy: float = ...,
-        rhs: float = ...,
+        coefx: float = 1.0,
+        coefy: float = -1.0,
+        rhs: float = 0.0,
     ) -> tuple[bool, bool, bool]: ...
-    def allColsInLP(self) -> Incomplete: ...
-    def allowNegSlackExact(self) -> Incomplete: ...
-    def appendVarSOS1(self, cons: Incomplete, var: Incomplete) -> Incomplete: ...
-    def appendVarSOS2(self, cons: Incomplete, var: Incomplete) -> Incomplete: ...
-    def applyCutsProbing(self) -> Incomplete: ...
+    def allColsInLP(self) -> bool: ...
+    def allowNegSlackExact(self) -> bool: ...
+    def appendVarSOS1(self, cons: Constraint, var: Variable) -> None: ...
+    def appendVarSOS2(self, cons: Constraint, var: Variable) -> None: ...
+    def applyCutsProbing(self) -> bool: ...
     def attachEventHandlerCallback(
         self,
         callback: Incomplete,
@@ -911,10 +890,12 @@ class Model:
         name: Incomplete = ...,
         description: Incomplete = ...,
     ) -> Incomplete: ...
-    def backtrackProbing(self, probingdepth: Incomplete) -> Incomplete: ...
+    def backtrackProbing(self, probingdepth: int) -> None: ...
     def branchLPExact(self) -> Incomplete: ...
-    def branchVar(self, variable: Incomplete) -> Incomplete: ...
-    def branchVarVal(self, variable: Incomplete, value: Incomplete) -> Incomplete: ...
+    def branchVar(self, variable: Variable) -> tuple[Node, Node | None, Node]: ...
+    def branchVarVal(
+        self, variable: Variable, value: float
+    ) -> tuple[Node, Node | None, Node]: ...
     def cacheRowExtensions(self, row: Incomplete) -> Incomplete: ...
     def calcChildEstimate(
         self, variable: Incomplete, targetvalue: Incomplete
