@@ -3,9 +3,12 @@
 ## Unreleased
 ### Added
 ### Fixed
-- `Expr.__array_ufunc__` can't handle 0-dim array
 ### Changed
 ### Removed
+
+## 6.2.1 - 2026.05.16
+### Fixed
+- Fixed `AttributeError` when comparing NumPy scalars (e.g. `np.float64`) or 0-dim NumPy arrays against `Expr`/`Variable` on NumPy 2.x (#1218)
 
 ## 6.2.0 - 2026.05.11
 ### Added
