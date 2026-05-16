@@ -328,6 +328,34 @@ def test_binary_ufunc(model):
     assert str(np.greater_equal(a, x)) == "[ExprCons(Expr({Term(x): 1.0}), None, 2.0)]"
 
 
+def test_np_generic_vs_expr():
+    # test #1218
+    m = Model()
+    x = m.addVar(name="x")
+    value = np.float64(5.0)
+
+    # test <=, np.generic vs Variable
+    assert str(x <= -value) == "ExprCons(Expr({Term(x): 1.0}), None, -5.0)"
+    assert str(x <= value) == "ExprCons(Expr({Term(x): 1.0}), None, 5.0)"
+    assert str(-value <= x) == "ExprCons(Expr({Term(x): 1.0}), -5.0, None)"
+    assert str(value <= x) == "ExprCons(Expr({Term(x): 1.0}), 5.0, None)"
+    assert str(np.int64(5) <= x) == "ExprCons(Expr({Term(x): 1.0}), 5.0, None)"
+
+    # test >=, np.generic vs Variable
+    assert str(value >= x) == "ExprCons(Expr({Term(x): 1.0}), None, 5.0)"
+    assert str(-value >= x) == "ExprCons(Expr({Term(x): 1.0}), None, -5.0)"
+
+    # test ==, np.generic vs Variable
+    assert str(value == x) == "ExprCons(Expr({Term(x): 1.0}), 5.0, 5.0)"
+
+    # test <=, 0-ndim int array vs Variable
+    assert str(np.array(5) <= x) == "ExprCons(Expr({Term(x): 1.0}), 5.0, None)"
+
+    # test <=, 0-ndim Variable array vs Variable
+    with pytest.raises(TypeError):
+        1 <= np.array(x)
+
+
 def test_mul():
     m = Model()
     x = m.addVar(name="x")

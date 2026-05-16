@@ -203,16 +203,25 @@ cdef class ExprLike:
             )
 
         if method == "__call__":
-            if arrays := [a for a in args if isinstance(a, np.ndarray)]:
+            if arrays := [a for a in args if isinstance(a, np.ndarray) and a.ndim >= 1]:
                 if any(a.dtype.kind not in "fiub" for a in arrays):
                     return NotImplemented
                 # If the np.ndarray is of numeric type, all arguments are converted to
                 # MatrixExpr or MatrixGenExpr and then the ufunc is applied.
                 return ufunc(*[_ensure_matrix(a) for a in args], **kwargs)
 
-            # Convert `np.generic` to native Python types to stop __array_ufunc__
-            # recursion from `np.generic + MatrixExpr`.
-            args = [a.item() if isinstance(a, np.generic) else a for a in args]
+            # Convert `np.generic` and 0-dim `np.ndarray` to native Python types to stop
+            # __array_ufunc__ recursion from `np.generic + MatrixExpr/Expr` or
+            # `0-dim np.ndarray + MatrixExpr/Expr`.
+            args = [
+                a.item()
+                if (
+                    isinstance(a, np.generic)
+                    or (isinstance(a, np.ndarray) and a.ndim == 0)
+                )
+                else a
+                for a in args
+            ]
 
             if ufunc is np.add:
                 return args[0] + args[1]
