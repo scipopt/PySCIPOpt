@@ -78,6 +78,7 @@ jobs:
       - name: Install Ruff
         uses: astral-sh/ruff-action@v3
         with:
+          version: "0.14.11"
           args: "--version"
 
       - name: Lint type stubs

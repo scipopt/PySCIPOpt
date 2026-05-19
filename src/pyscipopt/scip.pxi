@@ -7151,8 +7151,10 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddVarSOS1(self._scip, scip_cons, wrapper.ptr[i], weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pyCons = self._getOrCreateCons(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
-        return self._getOrCreateCons(scip_cons)
+        return pyCons
 
     def addConsSOS2(self, vars, weights=None, name="",
                 initial=True, separate=True, enforce=True, check=True,
@@ -7216,8 +7218,10 @@ cdef class Model:
                 PY_SCIP_CALL(SCIPaddVarSOS2(self._scip, scip_cons, wrapper.ptr[i], weights[i]))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pyCons = self._getOrCreateCons(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
-        return self._getOrCreateCons(scip_cons)
+        return pyCons
 
     def addConsAnd(self, vars, resvar, name="",
             initial=True, separate=True, enforce=True, check=True,
@@ -10407,6 +10411,35 @@ cdef class Model:
         cdef SCIP_Bool cutoff
 
         PY_SCIP_CALL( SCIPsolveProbingLP(self._scip, itlim, &lperror, &cutoff) )
+        return lperror, cutoff
+
+    def solveProbingLPWithPricing(self, pretendroot=False, displayinfo=False, maxpricerounds=-1):
+        """
+        Solves the LP at the current probing node (cannot be applied at preprocessing stage) and applies pricing
+        until the LP is solved to optimality; no separation is applied.
+
+        Parameters
+        ----------
+        pretendroot : bool
+            should the pricers be called as if we are at the root node? (Default value = False)
+        displayinfo : bool
+            should info lines be displayed after each pricing round? (Default value = False)
+        maxpricerounds : int
+            maximal number of pricing rounds (-1: no limit); a finite limit means that the LP might not be
+            solved to optimality! (Default value = -1)
+
+        Returns
+        -------
+        lperror : bool
+            whether an unresolved LP error occurred
+        cutoff : bool
+            whether the probing LP was infeasible or the objective limit was reached
+
+        """
+        cdef SCIP_Bool lperror
+        cdef SCIP_Bool cutoff
+
+        PY_SCIP_CALL( SCIPsolveProbingLPWithPricing(self._scip, pretendroot, displayinfo, maxpricerounds, &lperror, &cutoff) )
         return lperror, cutoff
 
     def applyCutsProbing(self):
