@@ -1023,9 +1023,7 @@ cdef dict _to_dict(Expr expr, Expr other, bool copy = True):
     cdef object k_obj
 
     while PyDict_Next(other.terms, &pos, &k_ptr, &v_ptr):
-        if (other_v := <double>(<object>v_ptr)) == 0: 
-            continue
-
+        other_v = <double>(<object>v_ptr)
         k_obj = <object>k_ptr
         old_v_ptr = PyDict_GetItem(children, k_obj)
         if old_v_ptr != NULL:
