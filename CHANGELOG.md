@@ -4,6 +4,7 @@
 ### Added
 ### Fixed
 ### Changed
+- Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API
 ### Removed
 
 ## 6.2.1 - 2026.05.16
