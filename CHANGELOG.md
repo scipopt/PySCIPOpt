@@ -4,6 +4,7 @@
 ### Added
 ### Fixed
 ### Changed
+- Move magic methods (`__radd__`, `__sub__`, `__rsub__`, `__rmul__`, `__richcmp__`, `__neg__`, and `__rtruediv__`) to `ExprLike` base class
 ### Removed
 
 ## 6.2.1 - 2026.05.16
@@ -31,7 +32,6 @@
 - Return NotImplemented for `Expr` and `GenExpr` operators if they can't handle input types in the calculation
 - Speed up `constant * Expr` via C-level API
 - Speed up `Term.__eq__` via the C-level API
-- Move magic methods (`__radd__`, `__sub__`, `__rsub__`, `__rmul__`, `__richcmp__`, `__neg__`, and `__rtruediv__`) to `ExprLike` base class
 ### Removed
 - Removed outdated warning about Make build system incompatibility
 - Removed `Term.ptrtuple` to optimize `Term` memory usage
