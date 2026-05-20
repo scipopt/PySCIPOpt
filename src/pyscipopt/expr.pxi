@@ -55,6 +55,7 @@ from cpython.object cimport Py_LE, Py_EQ, Py_GE, Py_TYPE
 from cpython.ref cimport PyObject
 from cpython.tuple cimport PyTuple_GET_ITEM
 
+cimport numpy as cnp
 from pyscipopt.scip cimport Variable, Solution
 
 
@@ -203,16 +204,25 @@ cdef class ExprLike:
             )
 
         if method == "__call__":
-            if arrays := [a for a in args if isinstance(a, np.ndarray)]:
+            if arrays := [a for a in args if isinstance(a, np.ndarray) and a.ndim >= 1]:
                 if any(a.dtype.kind not in "fiub" for a in arrays):
                     return NotImplemented
                 # If the np.ndarray is of numeric type, all arguments are converted to
                 # MatrixExpr or MatrixGenExpr and then the ufunc is applied.
                 return ufunc(*[_ensure_matrix(a) for a in args], **kwargs)
 
-            # Convert `np.generic` to native Python types to stop __array_ufunc__
-            # recursion from `np.generic + MatrixExpr`.
-            args = [a.item() if isinstance(a, np.generic) else a for a in args]
+            # Convert `np.generic` and 0-dim `np.ndarray` to native Python types to stop
+            # __array_ufunc__ recursion from `np.generic + MatrixExpr/Expr` or
+            # `0-dim np.ndarray + MatrixExpr/Expr`.
+            args = [
+                a.item()
+                if (
+                    isinstance(a, np.generic)
+                    or (isinstance(a, np.ndarray) and a.ndim == 0)
+                )
+                else a
+                for a in args
+            ]
 
             if ufunc is np.add:
                 return args[0] + args[1]
@@ -291,29 +301,22 @@ cdef class Expr(ExprLike):
         if not _is_expr_compatible(other):
             return NotImplemented
 
-        left = self
-        right = other
-        terms = left.terms.copy()
+        if _is_number(other):
+            terms = self.terms.copy()
+            terms[CONST] = terms.get(CONST, 0.0) + <double>other
+            return Expr(terms)
 
-        if isinstance(right, Expr):
-            # merge the terms by component-wise addition
-            for v,c in right.terms.items():
-                terms[v] = terms.get(v, 0.0) + c
-        elif _is_number(right):
-            c = float(right)
-            terms[CONST] = terms.get(CONST, 0.0) + c
-        return Expr(terms)
+        return Expr(_to_dict(self, other, copy=True))
 
     def __iadd__(self, other):
         if not _is_expr_compatible(other):
             return NotImplemented
 
-        if isinstance(other, Expr):
-            for v,c in other.terms.items():
-                self.terms[v] = self.terms.get(v, 0.0) + c
-        elif _is_number(other):
-            c = float(other)
-            self.terms[CONST] = self.terms.get(CONST, 0.0) + c
+        if _is_number(other):
+            self.terms[CONST] = self.terms.get(CONST, 0.0) + <double>other
+        else:
+            _to_dict(self, other, copy=False)
+
         return self
 
     def __mul__(self, other):
@@ -1009,6 +1012,26 @@ cdef inline object _ensure_matrix(object arg):
         return arg.view(MatrixExpr)
     matrix = MatrixExpr if isinstance(arg, Expr) else MatrixGenExpr
     return np.array(arg, dtype=object).view(matrix)
+
+cdef dict _to_dict(Expr expr, Expr other, bool copy = True):
+    cdef dict children = expr.terms.copy() if copy else expr.terms
+    cdef Py_ssize_t pos = <Py_ssize_t>0
+    cdef PyObject* k_ptr = NULL
+    cdef PyObject* v_ptr = NULL
+    cdef PyObject* old_v_ptr = NULL
+    cdef double other_v
+    cdef object k_obj
+
+    while PyDict_Next(other.terms, &pos, &k_ptr, &v_ptr):
+        other_v = <double>(<object>v_ptr)
+        k_obj = <object>k_ptr
+        old_v_ptr = PyDict_GetItem(children, k_obj)
+        if old_v_ptr != NULL:
+            children[k_obj] = <double>(<object>old_v_ptr) + other_v
+        else:
+            children[k_obj] = other_v
+
+    return children
 
 
 def expr_to_nodes(expr):
