@@ -8568,7 +8568,31 @@ cdef class Model:
 
         """
         PY_SCIP_CALL(SCIPdelConsLocal(self._scip, cons.scip_cons))
-    
+
+    def captureCons(self, Constraint cons):
+        """
+        Increase the usage counter of a constraint. Must be matched by a releaseCons.
+
+        Parameters
+        ----------
+        cons : Constraint
+            constraint to capture
+
+        """
+        PY_SCIP_CALL(SCIPcaptureCons(self._scip, cons.scip_cons))
+
+    def releaseCons(self, Constraint cons):
+        """
+        Decrease the usage counter of a constraint; frees it when the counter reaches zero.
+
+        Parameters
+        ----------
+        cons : Constraint
+            constraint to release
+
+        """
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &cons.scip_cons))
+
     def getValsLinear(self, Constraint cons):
         """
         Retrieve the coefficients of a linear constraint

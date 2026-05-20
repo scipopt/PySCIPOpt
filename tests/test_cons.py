@@ -368,3 +368,22 @@ def test_getValsLinear():
 @pytest.mark.skip(reason="TODO: test getRowLinear()")
 def test_getRowLinear():
     assert True
+
+
+def test_captureCons_releaseCons():
+    m = Model()
+    x = m.addVar("x")
+    c = m.addCons(x <= 1)
+
+    # Pair capture+release: problem still holds its own capture, so this is safe.
+    m.captureCons(c)
+    m.releaseCons(c)
+
+    # Model continues to function — problem's capture survived.
+    m.optimize()
+    assert m.getStatus() == "optimal"
+
+    with pytest.raises(TypeError):
+        m.captureCons("not a constraint")
+    with pytest.raises(TypeError):
+        m.releaseCons("not a constraint")
