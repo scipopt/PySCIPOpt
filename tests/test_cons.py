@@ -376,8 +376,11 @@ def test_captureCons_releaseCons():
     c = m.addCons(x <= 1)
 
     # Pair capture+release: problem still holds its own capture, so this is safe.
+    assert m.getConsNUses(c) == 1
     m.captureCons(c)
+    assert m.getConsNUses(c) == 2
     m.releaseCons(c)
+    assert m.getConsNUses(c) == 1
 
     # Model continues to function — problem's capture survived.
     m.optimize()
@@ -387,3 +390,5 @@ def test_captureCons_releaseCons():
         m.captureCons("not a constraint")
     with pytest.raises(TypeError):
         m.releaseCons("not a constraint")
+    with pytest.raises(TypeError):
+        m.getConsNUses("not a constraint")

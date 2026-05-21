@@ -2,7 +2,7 @@
 
 ## Unreleased
 ### Added
-- Added `Model.captureCons()` and `Model.releaseCons()`
+- Added `Model.captureCons()`, `Model.releaseCons()`, and `Model.getConsNUses()`
 ### Fixed
 ### Changed
 - Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API

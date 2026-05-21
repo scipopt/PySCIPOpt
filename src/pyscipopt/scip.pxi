@@ -8583,16 +8583,47 @@ cdef class Model:
 
     def releaseCons(self, Constraint cons):
         """
-        Decrease the usage counter of a constraint; frees it when the counter reaches zero.
+        Decrease the usage counter of a constraint.
+
+        Unlike the underlying ``SCIPreleaseCons``, this wrapper refuses to
+        release the last reference: it must be paired with a prior
+        captureCons call. This guarantees the constraint is never freed via
+        this method and the wrapper's pointer stays valid.
 
         Parameters
         ----------
         cons : Constraint
             constraint to release
 
+        Raises
+        ------
+        Exception
+            if releasing would free the constraint (no matching captureCons).
+
         """
         cdef SCIP_CONS* scip_cons = cons.scip_cons
+        if SCIPconsGetNUses(scip_cons) <= 1:
+            raise Exception(
+                "releaseCons would free the constraint; must be paired with "
+                "a prior captureCons call."
+            )
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+    def getConsNUses(self, Constraint cons):
+        """
+        Get the number of times the constraint is currently captured.
+
+        Parameters
+        ----------
+        cons : Constraint
+            constraint to query
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPconsGetNUses(cons.scip_cons)
 
     def getValsLinear(self, Constraint cons):
         """
