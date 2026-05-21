@@ -1,3 +1,5 @@
+import pytest
+
 from pyscipopt import Model, SCIP_PARAMSETTING, SCIP_BRANCHDIR, SCIP_IMPLINTTYPE
 from helpers.utils import random_mip_1
 
@@ -224,3 +226,25 @@ def test_adjustedVarUb():
     x_cont = m.addVar(vtype='C', lb=-10.0, ub=10.0, name="x_cont")
     assert m.adjustedVarUb(x_cont, 5.5) == 5.5
     assert m.adjustedVarUb(x_cont, -3.2) == -3.2
+
+
+def test_captureVar_releaseVar():
+    m = Model()
+    x = m.addVar("x")
+
+    # Pair capture+release: problem still holds its own capture, so this is safe.
+    assert m.getVarNUses(x) == 1
+    m.captureVar(x)
+    assert m.getVarNUses(x) == 2
+    m.releaseVar(x)
+    assert m.getVarNUses(x) == 1
+
+    m.optimize()
+    assert m.getStatus() == "optimal"
+
+    with pytest.raises(TypeError):
+        m.captureVar("not a variable")
+    with pytest.raises(TypeError):
+        m.releaseVar("not a variable")
+    with pytest.raises(TypeError):
+        m.getVarNUses("not a variable")

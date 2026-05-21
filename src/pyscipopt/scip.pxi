@@ -4636,6 +4636,62 @@ cdef class Model:
         var.scip_var = NULL
         return deleted
 
+    def captureVar(self, Variable var):
+        """
+        Increase the usage counter of a variable. Must be matched by a releaseVar.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to capture
+
+        """
+        PY_SCIP_CALL(SCIPcaptureVar(self._scip, var.scip_var))
+
+    def releaseVar(self, Variable var):
+        """
+        Decrease the usage counter of a variable.
+
+        Unlike the underlying ``SCIPreleaseVar``, this wrapper refuses to
+        release the last reference: it must be paired with a prior
+        captureVar call. This guarantees the variable is never freed via
+        this method and the wrapper's pointer stays valid.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to release
+
+        Raises
+        ------
+        Exception
+            if releasing would free the variable (no matching captureVar).
+
+        """
+        cdef SCIP_VAR* scip_var = var.scip_var
+        if SCIPvarGetNUses(scip_var) <= 1:
+            raise Exception(
+                "releaseVar would free the variable; must be paired with "
+                "a prior captureVar call."
+            )
+        PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
+
+    def getVarNUses(self, Variable var):
+        """
+        Get the number of times the variable is currently captured.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to query
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPvarGetNUses(var.scip_var)
+
     def aggregateVars(self, Variable varx, Variable vary, coefx=1.0, coefy=-1.0, rhs=0.0):
         """
         Aggregate two variables by adding an aggregation constraint.
