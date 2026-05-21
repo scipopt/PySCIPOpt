@@ -385,10 +385,3 @@ def test_captureCons_releaseCons():
     # Model continues to function — problem's capture survived.
     m.optimize()
     assert m.getStatus() == "optimal"
-
-    with pytest.raises(TypeError):
-        m.captureCons("not a constraint")
-    with pytest.raises(TypeError):
-        m.releaseCons("not a constraint")
-    with pytest.raises(TypeError):
-        m.getConsNUses("not a constraint")

@@ -4638,7 +4638,7 @@ cdef class Model:
 
     def captureVar(self, Variable var):
         """
-        Increase the usage counter of a variable. Must be matched by a releaseVar.
+        Increase the usage counter of a variable. Must be paired with a later releaseVar.
 
         Parameters
         ----------
@@ -4653,7 +4653,7 @@ cdef class Model:
         Decrease the usage counter of a variable.
 
         Unlike the underlying ``SCIPreleaseVar``, this wrapper refuses to
-        release the last reference: it must be paired with a prior
+        release the last reference. It must be paired with a prior
         captureVar call. This guarantees the variable is never freed via
         this method and the wrapper's pointer stays valid.
 
@@ -4688,6 +4688,7 @@ cdef class Model:
         Returns
         -------
         int
+            the current usage count.
 
         """
         return SCIPvarGetNUses(var.scip_var)
@@ -8627,7 +8628,7 @@ cdef class Model:
 
     def captureCons(self, Constraint cons):
         """
-        Increase the usage counter of a constraint. Must be matched by a releaseCons.
+        Increase the usage counter of a constraint. Must be paired with a later releaseCons.
 
         Parameters
         ----------
@@ -8642,7 +8643,7 @@ cdef class Model:
         Decrease the usage counter of a constraint.
 
         Unlike the underlying ``SCIPreleaseCons``, this wrapper refuses to
-        release the last reference: it must be paired with a prior
+        release the last reference. It must be paired with a prior
         captureCons call. This guarantees the constraint is never freed via
         this method and the wrapper's pointer stays valid.
 
@@ -8677,6 +8678,7 @@ cdef class Model:
         Returns
         -------
         int
+            the current usage count.
 
         """
         return SCIPconsGetNUses(cons.scip_cons)

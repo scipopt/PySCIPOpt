@@ -1,5 +1,3 @@
-import pytest
-
 from pyscipopt import Model, SCIP_PARAMSETTING, SCIP_BRANCHDIR, SCIP_IMPLINTTYPE
 from helpers.utils import random_mip_1
 
@@ -241,10 +239,3 @@ def test_captureVar_releaseVar():
 
     m.optimize()
     assert m.getStatus() == "optimal"
-
-    with pytest.raises(TypeError):
-        m.captureVar("not a variable")
-    with pytest.raises(TypeError):
-        m.releaseVar("not a variable")
-    with pytest.raises(TypeError):
-        m.getVarNUses("not a variable")

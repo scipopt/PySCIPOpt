@@ -2,7 +2,7 @@
 
 ## Unreleased
 ### Added
-- Added `Model.captureCons()`, `Model.releaseCons()`, `Model.getConsNUses()`, `Model.captureVar()`, `Model.releaseVar()`, and `Model.getVarNUses()`
+- Wrapped `SCIPcaptureVar()`, `SCIPreleaseVar()`, `SCIPvarGetNUses()`, `SCIPcaptureCons()`, `SCIPreleaseCons()`, and `SCIPconsGetNUses()`
 ### Fixed
 ### Changed
 - Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API
