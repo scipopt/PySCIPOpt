@@ -8591,7 +8591,8 @@ cdef class Model:
             constraint to release
 
         """
-        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &cons.scip_cons))
+        cdef SCIP_CONS* scip_cons = cons.scip_cons
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
     def getValsLinear(self, Constraint cons):
         """
