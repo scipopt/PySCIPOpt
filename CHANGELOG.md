@@ -18,6 +18,7 @@
 - `Expr` and `GenExpr` support NumPy binary functions (`np.add`, `np.subtract`, `np.multiply`, `np.divide`, `np.true_divide`, `np.power`, `np.less_equal`, `np.greater_equal`, `np.equal`)
 - Added `getBase()` and `setBase()` methods to `LP` class for getting/setting basis status
 - Added `getMemUsed()`, `getMemTotal()`, and `getMemExternEstim()` methods
+- Added `addMatrixConsDisjunction()` for elementwise disjunctions over matrix constraint expressions (`MatrixExprCons`/`ExprCons`) (#1084)
 - Added `isReoptEnabled()` and raising error if not enabled upon calling `reoptSolve()`
 - SOS1/SOS2 constraints are now realease after addition similar to the other constraint types
 ### Fixed

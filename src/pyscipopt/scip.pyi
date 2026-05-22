@@ -824,6 +824,18 @@ class Model:
         removable: Incomplete = ...,
         stickingatnode: Incomplete = ...,
     ) -> Incomplete: ...
+    def addMatrixConsDisjunction(
+        self,
+        conss: Incomplete,
+        name: Incomplete = ...,
+        initial: Incomplete = ...,
+        relaxcons: Incomplete = ...,
+        enforce: Incomplete = ...,
+        check: Incomplete = ...,
+        local: Incomplete = ...,
+        modifiable: Incomplete = ...,
+        dynamic: Incomplete = ...,
+    ) -> Incomplete: ...
     def addMatrixConsIndicator(
         self,
         cons: Incomplete,
