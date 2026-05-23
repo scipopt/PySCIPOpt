@@ -549,6 +549,45 @@ def test_matrix_cons_indicator():
     assert m.getVal(z) == 1
 
 
+def test_matrix_cons_disjunction():
+    m = Model()
+    x = m.addMatrixVar((2, 1), vtype="C", lb=-10, ub=2)
+    y = m.addMatrixVar((2, 1), vtype="C", lb=-10, ub=5)
+
+    # shape mismatch between MatrixExprCons entries
+    b = m.addMatrixVar((3, 1), vtype="C")
+    with pytest.raises(Exception):
+        m.addMatrixConsDisjunction([x <= 1, b <= 1])
+
+    # require MatrixExprCons or ExprCons in the list
+    with pytest.raises(TypeError):
+        m.addMatrixConsDisjunction([x])
+
+    # MatrixExprCons -> elementwise MatrixConstraint
+    o = m.addMatrixVar((2, 1), vtype="C")
+    m.addMatrixCons(o <= x + y)
+    cons = m.addMatrixConsDisjunction([x <= 1, x <= 0, y <= 0])
+    assert isinstance(cons, MatrixConstraint)
+    assert cons.shape == (2, 1)
+
+    m.setObjective(o.sum(), "maximize")
+    m.optimize()
+    for i in range(2):
+        # each row picks the (x<=1) option: x=1, y=5, o=6
+        assert m.isEQ(m.getVal(o[i, 0]), 6)
+
+    # ExprCons-only fallback returns a scalar Constraint
+    m2 = Model()
+    p = m2.addVar(vtype="C", lb=-10, ub=2)
+    q = m2.addVar(vtype="C", lb=-10, ub=5)
+    o2 = m2.addVar(vtype="C")
+    m2.addCons(o2 <= p + q)
+    m2.addMatrixConsDisjunction([p <= 1, p <= 0, q <= 0])
+    m2.setObjective(o2, "maximize")
+    m2.optimize()
+    assert m2.isEQ(m2.getVal(o2), 6)
+
+
 def test_matrix_compare_with_expr():
     m = Model()
     var = m.addVar(vtype="B", ub=0)
