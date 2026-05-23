@@ -38,7 +38,6 @@ cdef SCIP_RETCODE PyHeurFree (SCIP* scip, SCIP_HEUR* heur) noexcept with gil:
     heurdata = SCIPheurGetData(heur)
     PyHeur = <Heur>heurdata
     PyHeur.heurfree()
-    Py_DECREF(PyHeur)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyHeurInit (SCIP* scip, SCIP_HEUR* heur) noexcept with gil:

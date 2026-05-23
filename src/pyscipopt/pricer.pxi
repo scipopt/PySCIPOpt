@@ -42,7 +42,6 @@ cdef SCIP_RETCODE PyPricerFree (SCIP* scip, SCIP_PRICER* pricer) noexcept with g
     pricerdata = SCIPpricerGetData(pricer)
     PyPricer = <Pricer>pricerdata
     PyPricer.pricerfree()
-    Py_DECREF(PyPricer)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPricerInit (SCIP* scip, SCIP_PRICER* pricer) noexcept with gil:

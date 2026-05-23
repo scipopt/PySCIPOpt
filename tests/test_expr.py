@@ -1,9 +1,17 @@
-import math
-
+import numpy as np
 import pytest
 
-from pyscipopt import Model, cos, exp, log, sin, sqrt
-from pyscipopt.scip import CONST, Constant, Expr, ExprCons, GenExpr, ProdExpr, SumExpr
+from pyscipopt import Model, cos, exp, log, quickprod, sin, sqrt
+from pyscipopt.scip import (
+    CONST,
+    Constant,
+    Expr,
+    ExprCons,
+    GenExpr,
+    MatrixGenExpr,
+    ProdExpr,
+    SumExpr,
+)
 
 
 @pytest.fixture(scope="module")
@@ -117,10 +125,12 @@ def test_genexpr_op_genexpr(model):
     assert isinstance(1/x + genexpr, GenExpr)
     assert isinstance(1/x**1.5 - genexpr, GenExpr)
     assert isinstance(y/x - exp(genexpr), GenExpr)
+
     # sqrt(2) is not a constant expression and
     # we can only power to constant expressions!
     with pytest.raises(NotImplementedError):
         genexpr **= sqrt(2)
+
 
 def test_degree(model):
     m, x, y, z = model
@@ -249,11 +259,150 @@ def test_neg():
     assert str(-Constant(3.0)) == "-3.0"
 
 
+def test_unary_ufunc(model):
+    m, x, y, z = model
+
+    res = "abs(sum(0.0,prod(1.0,x)))"
+    assert str(abs(x)) == res
+    assert str(np.absolute(x)) == res
+
+    res = "[sin(sum(0.0,prod(1.0,x))) sin(sum(0.0,prod(1.0,y)))]"
+    assert str(sin([x, y])) == res
+    assert str(np.sin([x, y])) == res
+
+    res = "[cos(sum(0.0,prod(1.0,x))) cos(sum(0.0,prod(1.0,y)))]"
+    assert str(cos([x, y])) == res
+    assert str(np.cos([x, y])) == res
+
+    res = "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y)))]"
+    assert str(sqrt([x, y])) == res
+    assert str(np.sqrt([x, y])) == res
+
+    res = "[exp(sum(0.0,prod(1.0,x))) exp(sum(0.0,prod(1.0,y)))]"
+    assert str(exp([x, y])) == res
+    assert str(np.exp([x, y])) == res
+
+    res = "[log(sum(0.0,prod(1.0,x))) log(sum(0.0,prod(1.0,y)))]"
+    assert str(log([x, y])) == res
+    assert str(np.log([x, y])) == res
+
+    assert str(log([1, x])) == "[log(1.0) log(sum(0.0,prod(1.0,x)))]"
+
+    assert str(sqrt(4)) == "sqrt(4.0)"
+    assert str(sqrt([4, 4])) == "[sqrt(4.0) sqrt(4.0)]"
+    assert str(exp(3)) == "exp(3.0)"
+    assert str(exp([3, 3])) == "[exp(3.0) exp(3.0)]"
+    assert str(log(5)) == "log(5.0)"
+    assert str(log([5, 5])) == "[log(5.0) log(5.0)]"
+    assert str(sin(1)) == "sin(1.0)"
+    assert str(sin([[1, 1]])) == "[[sin(1.0) sin(1.0)]]"
+    assert str(cos(1)) == "cos(1.0)"
+    assert str(cos([[1]])) == "[[cos(1.0)]]"
+
+    assert isinstance(sqrt(2), GenExpr)
+    assert isinstance(sqrt([2, 2]), MatrixGenExpr)
+    assert isinstance(sqrt([[2], [2]]), MatrixGenExpr)
+    assert isinstance(sqrt([2, x]), MatrixGenExpr)
+    assert isinstance(sqrt([[2], [x]]), MatrixGenExpr)
+
+    # test invalid unary operations
+    with pytest.raises(TypeError):
+        np.arcsin(x)
+
+    with pytest.raises(TypeError):
+        # forbid modifying Variable/Expr/GenExpr in-place via out parameter
+        np.sin(x, out=np.array([0]))
+
+    # test np.negative
+    assert str(np.negative(x)) == "Expr({Term(x): -1.0})"
+
+
+def test_binary_ufunc(model):
+    m, x, y, z = model
+
+    # test np.add
+    assert str(np.add(x, 1)) == "Expr({Term(x): 1.0, Term(): 1.0})"
+    assert str(np.add(1, x)) == "Expr({Term(x): 1.0, Term(): 1.0})"
+    a = np.array([1])
+    assert str(np.add(x, a)) == "[Expr({Term(x): 1.0, Term(): 1.0})]"
+    assert str(np.add(a, x)) == "[Expr({Term(x): 1.0, Term(): 1.0})]"
+
+    # test np.subtract
+    assert str(np.subtract(x, 1)) == "Expr({Term(x): 1.0, Term(): -1.0})"
+    assert str(np.subtract(1, x)) == "Expr({Term(x): -1.0, Term(): 1.0})"
+    assert str(np.subtract(x, a)) == "[Expr({Term(x): 1.0, Term(): -1.0})]"
+    assert str(np.subtract(a, x)) == "[Expr({Term(x): -1.0, Term(): 1.0})]"
+
+    # test np.multiply
+    a = np.array([2])
+    assert str(np.multiply(x, 2)) == "Expr({Term(x): 2.0})"
+    assert str(np.multiply(2, x)) == "Expr({Term(x): 2.0})"
+    assert str(np.multiply(x, a)) == "[Expr({Term(x): 2.0})]"
+    assert str(np.multiply(a, x)) == "[Expr({Term(x): 2.0})]"
+
+    # test np.divide
+    assert str(np.divide(x, 2)) == "Expr({Term(x): 0.5})"
+    assert str(np.divide(2, x)) == "prod(2.0,**(sum(0.0,prod(1.0,x)),-1))"
+    assert str(np.divide(x, a)) == "[Expr({Term(x): 0.5})]"
+    assert str(np.divide(a, x)) == "[prod(2.0,**(sum(0.0,prod(1.0,x)),-1))]"
+
+    # test np.power
+    assert str(np.power(x, 2)) == "Expr({Term(x, x): 1.0})"
+    assert str(np.power(2, x)) == "exp(prod(1.0,log(2.0),sum(0.0,prod(1.0,x))))"
+    assert str(np.power(x, a)) == "[Expr({Term(x, x): 1.0})]"
+    assert str(np.power(a, x)) == "[exp(prod(1.0,log(2.0),sum(0.0,prod(1.0,x))))]"
+
+    # test np.less_equal
+    assert str(np.less_equal(x, a)) == "[ExprCons(Expr({Term(x): 1.0}), None, 2.0)]"
+    assert str(np.less_equal(a, x)) == "[ExprCons(Expr({Term(x): 1.0}), 2.0, None)]"
+
+    # test np.equal
+    assert str(np.equal(x, a)) == "[ExprCons(Expr({Term(x): 1.0}), 2.0, 2.0)]"
+    assert str(np.equal(a, x)) == "[ExprCons(Expr({Term(x): 1.0}), 2.0, 2.0)]"
+
+    # test np.greater_equal
+    assert str(np.greater_equal(x, a)) == "[ExprCons(Expr({Term(x): 1.0}), 2.0, None)]"
+    assert str(np.greater_equal(a, x)) == "[ExprCons(Expr({Term(x): 1.0}), None, 2.0)]"
+
+
+def test_np_generic_vs_expr():
+    # test #1218
+    m = Model()
+    x = m.addVar(name="x")
+    value = np.float64(5.0)
+
+    # test <=, np.generic vs Variable
+    assert str(x <= -value) == "ExprCons(Expr({Term(x): 1.0}), None, -5.0)"
+    assert str(x <= value) == "ExprCons(Expr({Term(x): 1.0}), None, 5.0)"
+    assert str(-value <= x) == "ExprCons(Expr({Term(x): 1.0}), -5.0, None)"
+    assert str(value <= x) == "ExprCons(Expr({Term(x): 1.0}), 5.0, None)"
+    assert str(np.int64(5) <= x) == "ExprCons(Expr({Term(x): 1.0}), 5.0, None)"
+
+    # test >=, np.generic vs Variable
+    assert str(value >= x) == "ExprCons(Expr({Term(x): 1.0}), None, 5.0)"
+    assert str(-value >= x) == "ExprCons(Expr({Term(x): 1.0}), None, -5.0)"
+
+    # test ==, np.generic vs Variable
+    assert str(value == x) == "ExprCons(Expr({Term(x): 1.0}), 5.0, 5.0)"
+
+    # test <=, 0-ndim int array vs Variable
+    assert str(np.array(5) <= x) == "ExprCons(Expr({Term(x): 1.0}), 5.0, None)"
+
+    # test <=, 0-ndim Variable array vs Variable
+    with pytest.raises(TypeError):
+        1 <= np.array(x)
+
+
 def test_mul():
     m = Model()
     x = m.addVar(name="x")
     y = m.addVar(name="y")
 
+    # test Expr * number
+    assert str((x + y) * 2.0) == "Expr({Term(x): 2.0, Term(y): 2.0})"
+    assert str(2.0 * (x + y)) == "Expr({Term(x): 2.0, Term(y): 2.0})"
+
+    # test Expr * Expr
     assert str(Expr({CONST: 1.0}) * x) == "Expr({Term(x): 1.0})"
     assert str(y * Expr({CONST: -1.0})) == "Expr({Term(y): -1.0})"
     assert str((x - x) * y) == "Expr({Term(x, y): 0.0})"
@@ -274,3 +423,164 @@ def test_abs_abs_expr():
 
     # should print abs(x) not abs(abs(x))
     assert str(abs(abs(x))) == str(abs(x))
+
+
+def test_NotImplemented():
+    m = Model()
+    x = m.addVar(name="x")
+
+    with pytest.raises(TypeError):
+        "y" + x
+    with pytest.raises(TypeError):
+        x + "y"
+
+    with pytest.raises(TypeError):
+        y = "y"
+        y += x
+    with pytest.raises(TypeError):
+        x += "y"
+
+    with pytest.raises(TypeError):
+        "y" * x
+    with pytest.raises(TypeError):
+        x * "y"
+
+    with pytest.raises(TypeError):
+        "y" / x
+    with pytest.raises(TypeError):
+        x / "y"
+
+    with pytest.raises(TypeError):
+        "1" <= x
+    with pytest.raises(TypeError):
+        x >= "1"
+    with pytest.raises(TypeError):
+        x >= "1"
+    with pytest.raises(TypeError):
+        "1" == x
+    with pytest.raises(TypeError):
+        x == "1"
+
+    genexpr = sqrt(x)
+
+    with pytest.raises(TypeError):
+        "y" + genexpr
+    with pytest.raises(TypeError):
+        genexpr + "y"
+
+    with pytest.raises(TypeError):
+        y = "y"
+        y += genexpr
+    with pytest.raises(TypeError):
+        genexpr += "y"
+
+    with pytest.raises(TypeError):
+        "y" * genexpr
+    with pytest.raises(TypeError):
+        genexpr * "y"
+
+    with pytest.raises(TypeError):
+        "y" / genexpr
+    with pytest.raises(TypeError):
+        genexpr / "y"
+
+    with pytest.raises(TypeError):
+        "1" <= genexpr
+    with pytest.raises(TypeError):
+        "1" >= genexpr
+    with pytest.raises(TypeError):
+        genexpr >= "1"
+    with pytest.raises(TypeError):
+        genexpr <= "1"
+    with pytest.raises(TypeError):
+        "1" == genexpr
+    with pytest.raises(TypeError):
+        genexpr == "1"
+
+    # test Expr + GenExpr
+    assert str(x + genexpr) == "sum(0.0,sqrt(sum(0.0,prod(1.0,x))),prod(1.0,x))"
+    assert str(genexpr + x) == "sum(0.0,sqrt(sum(0.0,prod(1.0,x))),prod(1.0,x))"
+
+    # test Expr * GenExpr
+    assert (
+        str(x * genexpr) == "prod(1.0,sqrt(sum(0.0,prod(1.0,x))),sum(0.0,prod(1.0,x)))"
+    )
+
+    # test Expr + array
+    a = np.array([1])
+    assert str(x + a) == "[Expr({Term(x): 1.0, Term(): 1.0})]"
+    # test GenExpr + array
+    assert str(genexpr + a) == "[sum(1.0,sqrt(sum(0.0,prod(1.0,x))))]"
+
+    a = m.addMatrixVar(1)
+    # test Expr >= array
+    assert str(x >= a) == "[ExprCons(Expr({Term(x2): 1.0, Term(x): -1.0}), None, 0.0)]"
+    # test GenExpr >= array
+    assert (
+        str(genexpr >= a)
+        == "[ExprCons(sum(0.0,prod(-1.0,sqrt(sum(0.0,prod(1.0,x)))),prod(1.0,x2)), None, 0.0)]"
+    )
+    # test Expr <= array
+    assert str(x <= a) == "[ExprCons(Expr({Term(x2): 1.0, Term(x): -1.0}), 0.0, None)]"
+    # test GenExpr <= array
+    assert (
+        str(genexpr <= a)
+        == "[ExprCons(sum(0.0,prod(-1.0,sqrt(sum(0.0,prod(1.0,x)))),prod(1.0,x2)), 0.0, None)]"
+    )
+    # test Expr == array
+    assert str(x == a) == "[ExprCons(Expr({Term(x2): 1.0, Term(x): -1.0}), 0.0, 0.0)]"
+    # test GenExpr == array
+    assert (
+        str(genexpr == a)
+        == "[ExprCons(sum(0.0,prod(-1.0,sqrt(sum(0.0,prod(1.0,x)))),prod(1.0,x2)), 0.0, 0.0)]"
+    )
+
+    # test Expr += GenExpr
+    x += genexpr
+    assert str(x) == "sum(0.0,sqrt(sum(0.0,prod(1.0,x))),prod(1.0,x))"
+
+
+def test_term_eq():
+    m = Model()
+
+    x = m.addMatrixVar(1000)
+    y = m.addVar()
+    z = m.addVar()
+
+    e1 = quickprod(x.flat)
+    e2 = quickprod(x.flat)
+    t1 = next(iter(e1))
+    t2 = next(iter(e2))
+    t3 = next(iter(e1 * y))
+    t4 = next(iter(e2 * z))
+
+    assert t1 == t1  # same term
+    assert t1 == t2  # same term
+    assert t3 != t4  # same length, but different term
+    assert t1 != t3  # different length
+    assert t1 != "not a term"  # different type
+
+
+def test_Expr_add_Expr():
+    m = Model()
+    x = m.addVar(name="x")
+    y = m.addVar(name="y")
+
+    e1 = -x + 1
+    e2 = y - 1
+    e3 = e1 + e2
+    assert str(e1) == "Expr({Term(x): -1.0, Term(): 1.0})"
+    assert str(e2) == "Expr({Term(y): 1.0, Term(): -1.0})"
+    assert str(e3) == "Expr({Term(x): -1.0, Term(): 0.0, Term(y): 1.0})"
+
+
+def test_Expr_iadd_Expr():
+    m = Model()
+    x = m.addVar(name="x")
+    y = m.addVar(name="y")
+
+    e1 = -x + 1
+    e2 = y - 1
+    e1 += e2
+    assert str(e1) == "Expr({Term(x): -1.0, Term(): 0.0, Term(y): 1.0})"
+    assert str(e2) == "Expr({Term(y): 1.0, Term(): -1.0})"

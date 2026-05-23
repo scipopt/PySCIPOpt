@@ -31,7 +31,6 @@ cdef SCIP_RETCODE PyBenderscutFree (SCIP* scip, SCIP_BENDERSCUT* benderscut) noe
     benderscutdata = SCIPbenderscutGetData(benderscut)
     PyBenderscut = <Benderscut>benderscutdata
     PyBenderscut.benderscutfree()
-    Py_DECREF(PyBenderscut)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyBenderscutInit (SCIP* scip, SCIP_BENDERSCUT* benderscut) noexcept with gil:

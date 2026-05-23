@@ -92,3 +92,52 @@ def test_branching():
 
     assert my_branchrule.was_called_val
     assert my_branchrule.was_called_int
+
+
+class ProbingPricingBranching(Branchrule):
+
+    def __init__(self, model):
+        self.model = model
+        self.was_called = False
+
+    def branchexeclp(self, allowaddcons):
+        if self.was_called:
+            return {"result": SCIP_RESULT.DIDNOTRUN}
+
+        self.model.startProbing()
+        self.model.constructLP()
+        lperror, cutoff = self.model.solveProbingLPWithPricing(
+            pretendroot=True, displayinfo=False, maxpricerounds=0
+        )
+        assert isinstance(lperror, bool)
+        assert isinstance(cutoff, bool)
+        assert not lperror
+
+        lperror2, cutoff2 = self.model.solveProbingLPWithPricing()
+        assert isinstance(lperror2, bool)
+        assert isinstance(cutoff2, bool)
+
+        self.model.endProbing()
+        self.was_called = True
+        return {"result": SCIP_RESULT.DIDNOTRUN}
+
+
+def test_solve_probing_lp_with_pricing():
+    m = Model()
+    m.setHeuristics(SCIP_PARAMSETTING.OFF)
+    m.setSeparating(SCIP_PARAMSETTING.OFF)
+    m.setIntParam("presolving/maxrounds", 0)
+    m.setLongintParam("limits/nodes", 1)
+
+    y1 = m.addVar(vtype="B")
+    y2 = m.addVar(vtype="B")
+    y3 = m.addVar(vtype="B")
+    m.addCons(2 * y1 + 3 * y2 + y3 <= 4)
+    m.setObjective(5 * y1 + 4 * y2 + 3 * y3, sense="maximize")
+
+    rule = ProbingPricingBranching(m)
+    m.includeBranchrule(rule, "probing-pricing-test", "exercise solveProbingLPWithPricing",
+                        priority=10000000, maxdepth=3, maxbounddist=1)
+    m.optimize()
+
+    assert rule.was_called

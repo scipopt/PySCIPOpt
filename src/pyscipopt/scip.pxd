@@ -651,6 +651,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPchgVarUbProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
     SCIP_RETCODE SCIPchgVarLbProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound)
     SCIP_RETCODE SCIPsolveProbingLP(SCIP* scip, int itlim, SCIP_Bool* lperror, SCIP_Bool* cutoff)
+    SCIP_RETCODE SCIPsolveProbingLPWithPricing(SCIP* scip, SCIP_Bool pretendroot, SCIP_Bool displayinfo, int maxpricerounds, SCIP_Bool* lperror, SCIP_Bool* cutoff)
     SCIP_RETCODE SCIPendProbing(SCIP* scip)
     SCIP_RETCODE SCIPfixVarProbing(SCIP* scip, SCIP_VAR* var, SCIP_Real fixedval)
     SCIP_Bool SCIPisObjChangedProbing(SCIP* scip)
@@ -1532,6 +1533,8 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPlpiGetPrimalRay(SCIP_LPI* lpi, SCIP_Real* ray)
     SCIP_RETCODE SCIPlpiGetDualfarkas(SCIP_LPI* lpi, SCIP_Real* dualfarkas)
     SCIP_RETCODE SCIPlpiGetBasisInd(SCIP_LPI* lpi, int* bind)
+    SCIP_RETCODE SCIPlpiGetBase(SCIP_LPI* lpi, int* cstat, int* rstat)
+    SCIP_RETCODE SCIPlpiSetBase(SCIP_LPI* lpi, const int* cstat, const int* rstat)
     SCIP_RETCODE SCIPlpiGetRealSolQuality(SCIP_LPI* lpi, SCIP_LPSOLQUALITY qualityindicator, SCIP_Real* quality)
     SCIP_RETCODE SCIPlpiGetIntpar(SCIP_LPI* lpi, SCIP_LPPARAM type, int* ival)
     SCIP_RETCODE SCIPlpiGetRealpar(SCIP_LPI* lpi, SCIP_LPPARAM type, SCIP_Real* dval)
@@ -1548,6 +1551,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPfreeReoptSolve(SCIP* scip)
     SCIP_RETCODE SCIPchgReoptObjective(SCIP* scip, SCIP_OBJSENSE objsense, SCIP_VAR** vars, SCIP_Real* coefs, int nvars)
     SCIP_RETCODE SCIPenableReoptimization(SCIP* scip, SCIP_Bool enable)
+    SCIP_Bool SCIPisReoptEnabled(SCIP* scip)
 
     BMS_BLKMEM* SCIPblkmem(SCIP* scip)
 
@@ -2126,7 +2130,10 @@ cdef extern from "scip/scip_var.h":
 cdef extern from "tpi/tpi.h":
     int SCIPtpiGetNumThreads()
 
-cdef class Expr:
+cdef class ExprLike:
+    pass
+
+cdef class Expr(ExprLike):
     cdef public terms
 
     cpdef double _evaluate(self, Solution sol)
@@ -2249,11 +2256,18 @@ cdef class Model:
     cdef int _generated_event_handlers_count
     # store references to Benders subproblem Models for proper cleanup
     cdef _benders_subproblems
+    # Strong references to every included plugin. Each plugin in turn holds a
+    # strong reference to the Model via `self.model`, so both stay alive until
+    # SCIP teardown callbacks (consfree, eventexit, ...) have finished running.
+    # The resulting cycle is broken by `Model.__del__` or by `Model.free()`.
+    # See `Model.free` for the full lifecycle policy.
+    cdef _plugins
     # store iis, if found
     cdef SCIP_IIS* _iis
     # helper methods for later var and cons cleanup
     cdef _getOrCreateCons(self, SCIP_CONS* scip_cons)
     cdef _getOrCreateVar(self, SCIP_VAR* scip_var)
+    cdef _free_scip_instance(self)
 
     @staticmethod
     cdef create(SCIP* scip)

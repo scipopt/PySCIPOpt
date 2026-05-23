@@ -49,9 +49,9 @@ AARCH=$(uname -m)
 echo "------"
 echo $AARCH
 if [[ $AARCH == "aarch64" ]]; then
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.11.0/libscip-linux-arm.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.12.0/libscip-linux-arm.zip -O scip.zip
 else
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.11.0/libscip-linux.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.12.0/libscip-linux.zip -O scip.zip
 fi
 unzip scip.zip
 mv scip_install scip
@@ -64,28 +64,36 @@ skip="pp* cp36* cp37*"
 before-all = '''
 #!/bin/bash
 brew install wget zlib gcc
+export MACOSX_DEPLOYMENT_TARGET=11.0
 if [[ $CIBW_ARCHS == *"arm"* ]]; then
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.11.0/libscip-macos-arm.zip -O scip.zip
-    export MACOSX_DEPLOYMENT_TARGET=14.0
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.12.0/libscip-macos-arm.zip -O scip.zip
 else
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.11.0/libscip-macos-intel.zip -O scip.zip
-    export MACOSX_DEPLOYMENT_TARGET=14.0
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.12.0/libscip-macos-intel.zip -O scip.zip
 fi
 unzip scip.zip
 mv scip_install src/scip
+# The bundled SCIP/SoPlex/GCG dylibs are stamped with LC_BUILD_VERSION 14.0 and
+# Homebrew gcc runtime libs on macos-15 runners with 15.0. delocate refuses to
+# bundle libs whose minos exceeds the wheel's deployment target. Rewrite the
+# load command to MACOSX_DEPLOYMENT_TARGET; these libs do not use OS-version-
+# gated APIs, so the rewrite is safe in practice.
+find src/scip/lib -type f -name "*.dylib" 2>/dev/null | while read lib; do
+    vtool -set-build-version macos "$MACOSX_DEPLOYMENT_TARGET" "$MACOSX_DEPLOYMENT_TARGET" -replace -output "$lib" "$lib" 2>/dev/null || true
+    codesign --force --sign - "$lib" 2>/dev/null || true
+done
+for prefix in /usr/local /opt/homebrew; do
+    find "$prefix/Cellar" -type f \( -name "libgfortran.*.dylib" -o -name "libquadmath.*.dylib" -o -name "libstdc++.*.dylib" -o -name "libgcc_s.*.dylib" \) 2>/dev/null | while read lib; do
+        vtool -set-build-version macos "$MACOSX_DEPLOYMENT_TARGET" "$MACOSX_DEPLOYMENT_TARGET" -replace -output "$lib" "$lib" 2>/dev/null || true
+        codesign --force --sign - "$lib" 2>/dev/null || true
+    done
+done
 '''
-environment = {SCIPOPTDIR="$(pwd)/src/scip", LD_LIBRARY_PATH="$(pwd)/src/scip/lib:LD_LIBRARY_PATH", DYLD_LIBRARY_PATH="$(pwd)/src/scip/lib:$DYLD_LIBRARY_PATH", PATH="$(pwd)/src/scip/bin:$PATH", PKG_CONFIG_PATH="$(pwd)/src/scip/lib/pkgconfig:$PKG_CONFIG_PATH", RELEASE="true"}
+environment = {SCIPOPTDIR="$(pwd)/src/scip", LD_LIBRARY_PATH="$(pwd)/src/scip/lib:LD_LIBRARY_PATH", DYLD_LIBRARY_PATH="$(pwd)/src/scip/lib:$DYLD_LIBRARY_PATH", PATH="$(pwd)/src/scip/bin:$PATH", PKG_CONFIG_PATH="$(pwd)/src/scip/lib/pkgconfig:$PKG_CONFIG_PATH", MACOSX_DEPLOYMENT_TARGET="11.0", RELEASE="true"}
 repair-wheel-command = '''
     bash -c '
-    if [[ $CIBW_ARCHS == *"arm"* ]]; then
-        export MACOSX_DEPLOYMENT_TARGET=14.0
-        delocate-listdeps {wheel}
-        delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}
-    else
-        export MACOSX_DEPLOYMENT_TARGET=14.0
-        delocate-listdeps {wheel}
-        delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}
-    fi
+    export MACOSX_DEPLOYMENT_TARGET=11.0
+    delocate-listdeps {wheel}
+    delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}
     '
 '''
 
@@ -94,7 +102,7 @@ repair-wheel-command = '''
 skip="pp* cp36* cp37*"
 before-all = [
     "choco install 7zip wget",
-    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.11.0/libscip-windows.zip -O scip.zip",
+    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.12.0/libscip-windows.zip -O scip.zip",
     "\"C:\\Program Files\\7-Zip\\7z.exe\" x \"scip.zip\" -o\"scip-test\"",
     "mv .\\scip-test\\scip_install .\\test",
     "mv .\\test .\\scip"

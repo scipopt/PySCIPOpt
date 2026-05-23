@@ -28,6 +28,7 @@ from pyscipopt.scip      import Sepa as Sepa
 from pyscipopt.scip      import LP as LP
 from pyscipopt.scip      import IISfinder as IISfinder 
 from pyscipopt.scip      import PY_SCIP_LPPARAM as SCIP_LPPARAM
+from pyscipopt.scip      import PY_SCIP_BASESTAT as SCIP_BASESTAT
 from pyscipopt.scip      import readStatistics as readStatistics
 from pyscipopt.scip      import Expr as Expr
 from pyscipopt.scip      import MatrixExpr as MatrixExpr

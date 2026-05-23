@@ -36,7 +36,6 @@ cdef SCIP_RETCODE PyRelaxFree (SCIP* scip, SCIP_RELAX* relax) noexcept with gil:
     relaxdata = SCIPrelaxGetData(relax)
     PyRelax = <Relax>relaxdata
     PyRelax.relaxfree()
-    Py_DECREF(PyRelax)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyRelaxInit (SCIP* scip, SCIP_RELAX* relax) noexcept with gil:

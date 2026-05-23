@@ -53,7 +53,6 @@ cdef SCIP_RETCODE PyPropFree (SCIP* scip, SCIP_PROP* prop) noexcept with gil:
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
     PyProp.propfree()
-    Py_DECREF(PyProp)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPropInit (SCIP* scip, SCIP_PROP* prop) noexcept with gil:
