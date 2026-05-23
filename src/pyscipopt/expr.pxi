@@ -269,7 +269,7 @@ cdef class ExprLike:
     def __rmul__(self, other, /):
         return self * other
 
-    def __rtruediv__(self, other, /):
+    def __rtruediv__(self, other, /) -> GenExpr:
         return buildGenExprObj(other) / self
 
     def __richcmp__(self, other, int op):
@@ -379,7 +379,7 @@ cdef class Expr(ExprLike):
             return 1.0 / other * self
         return buildGenExprObj(self) / other
 
-    def __rtruediv__(self, other, /):
+    def __rtruediv__(self, other, /) -> GenExpr:
         if not _is_expr_compatible(other):
             return NotImplemented
         return super().__rtruediv__(other)
@@ -690,7 +690,7 @@ cdef class GenExpr(ExprLike):
             raise ZeroDivisionError("cannot divide by 0")
         return self * divisor**(-1)
 
-    def __rtruediv__(self, other, /):
+    def __rtruediv__(self, other, /) -> GenExpr:
         if not _is_genexpr_compatible(other):
             return NotImplemented
         return super().__rtruediv__(other)
