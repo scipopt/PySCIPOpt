@@ -770,10 +770,8 @@ cdef class ProdExpr(GenExpr):
         self._op = Operator.prod
 
     def __neg__(self) -> ProdExpr:
-        cdef ProdExpr res = ProdExpr.__new__(ProdExpr)
-        res.constant = -self.constant
-        res.children = self.children.copy()
-        res._op = Operator.prod
+        cdef ProdExpr res = self.copy(copy=True)
+        res.constant = -res.constant
         return res
 
     def __repr__(self):
