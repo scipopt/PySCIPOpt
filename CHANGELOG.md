@@ -4,7 +4,9 @@
 ### Added
 ### Fixed
 ### Changed
+- Move magic methods (`__radd__`, `__sub__`, `__rsub__`, `__rmul__`, `__richcmp__`, `__neg__`, and `__rtruediv__`) to `ExprLike` base class
 - Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API
+- Speed up `SumExpr.__neg__`, `ProdExpr.__neg__` and `Constant.__neg__` via C-level API
 ### Removed
 
 ## 6.2.1 - 2026.05.16
