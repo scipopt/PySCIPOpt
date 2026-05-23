@@ -274,7 +274,7 @@ cdef class ExprLike:
     def __richcmp__(self, other, int op):
         return _expr_richcmp(self, other, op)
 
-    def __neg__(self):
+    def __neg__(self, /):
         return self * -1.0
 
     def __abs__(self) -> GenExpr:
