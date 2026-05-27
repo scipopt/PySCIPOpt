@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added `addConsCumulative()` for SCIP cumulative constraints (#1222)
 ### Fixed
 ### Changed
 - Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API

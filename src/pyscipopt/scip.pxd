@@ -1636,6 +1636,26 @@ cdef extern from "scip/cons_knapsack.h":
     int SCIPgetNVarsKnapsack(SCIP* scip, SCIP_CONS* cons)
     SCIP_Longint* SCIPgetWeightsKnapsack(SCIP* scip, SCIP_CONS* cons)
 
+cdef extern from "scip/cons_cumulative.h":
+    SCIP_RETCODE SCIPcreateConsCumulative(SCIP* scip,
+                                          SCIP_CONS** cons,
+                                          const char* name,
+                                          int nvars,
+                                          SCIP_VAR** vars,
+                                          int* durations,
+                                          int* demands,
+                                          int capacity,
+                                          SCIP_Bool initial,
+                                          SCIP_Bool separate,
+                                          SCIP_Bool enforce,
+                                          SCIP_Bool check,
+                                          SCIP_Bool propagate,
+                                          SCIP_Bool local,
+                                          SCIP_Bool modifiable,
+                                          SCIP_Bool dynamic,
+                                          SCIP_Bool removable,
+                                          SCIP_Bool stickingatnode)
+
 cdef extern from "scip/cons_nonlinear.h":
     SCIP_EXPR* SCIPgetExprNonlinear(SCIP_CONS* cons)
     SCIP_RETCODE SCIPcreateConsNonlinear(SCIP* scip,
