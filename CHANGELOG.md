@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added type annotations to most methods on the `Model` class
 ### Fixed
 ### Changed
 - Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API
