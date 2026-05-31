@@ -52,6 +52,22 @@ jobs:
         id: stubtest
         run: stubs/test.sh
 
+      - name: Check generated tests are up to date
+        run: |
+          python scripts/generate_expr_type_tests.py
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "Generated expression type tests are out of date, run: python scripts/generate_expr_type_tests.py to update"
+            exit 1
+          fi
+
+      - name: Check baseline test files are up to date
+        run: |
+          ./stubs/baseline.sh
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "Baseline test files are out of date, run: ./stubs/baseline.sh to update"
+            exit 1
+          fi
+
       - name: Stub regeneration hint
         if: failure() && steps.stubtest.outcome == 'failure'
         run: |
