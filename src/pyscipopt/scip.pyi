@@ -818,6 +818,18 @@ class Model:
         removable: bool | np.ndarray = False,
         stickingatnode: bool | np.ndarray = False,
     ) -> MatrixConstraint: ...
+    def addMatrixConsDisjunction(
+        self,
+        conss: Incomplete,
+        name: Incomplete = ...,
+        initial: Incomplete = ...,
+        relaxcons: Incomplete = ...,
+        enforce: Incomplete = ...,
+        check: Incomplete = ...,
+        local: Incomplete = ...,
+        modifiable: Incomplete = ...,
+        dynamic: Incomplete = ...,
+    ) -> Incomplete: ...
     def addMatrixConsIndicator(
         self,
         cons: Incomplete,
