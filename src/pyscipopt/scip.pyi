@@ -821,14 +821,14 @@ class Model:
     def addMatrixConsDisjunction(
         self,
         conss: Incomplete,
-        name: Incomplete = ...,
-        initial: Incomplete = ...,
-        relaxcons: Incomplete = ...,
-        enforce: Incomplete = ...,
-        check: Incomplete = ...,
-        local: Incomplete = ...,
-        modifiable: Incomplete = ...,
-        dynamic: Incomplete = ...,
+        name: str | np.ndarray = "",
+        initial: bool | np.ndarray = True,
+        relaxcons: None = None,
+        enforce: bool | np.ndarray = True,
+        check: bool | np.ndarray = True,
+        local: bool | np.ndarray = False,
+        modifiable: bool | np.ndarray = False,
+        dynamic: bool | np.ndarray = False,
     ) -> Incomplete: ...
     def addMatrixConsIndicator(
         self,
