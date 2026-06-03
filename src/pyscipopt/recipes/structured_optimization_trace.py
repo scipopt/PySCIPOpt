@@ -34,7 +34,7 @@ class _StructuredOptimizationTrace:
         self.write_run_end = write_run_end
         self._fh = None
         self._handler = None
-        self._last_snapshot = {}
+        self._last_snapshot: dict[str, object] = {}
 
     def __enter__(self):
         if not hasattr(self.model, "data") or self.model.data is None:
