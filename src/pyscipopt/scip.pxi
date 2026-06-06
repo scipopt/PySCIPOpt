@@ -10205,7 +10205,7 @@ cdef class Model:
 
         Returns
         -------
-        int
+        float
             node selection priority for moving the given variable's LP value to the given target value
 
         """
@@ -10238,7 +10238,7 @@ cdef class Model:
 
         Parameters
         ----------
-        nodeselprio : int
+        nodeselprio : float
             node selection priority of new node
         estimate : float
             estimate for (transformed) objective value of best feasible solution in subtree
