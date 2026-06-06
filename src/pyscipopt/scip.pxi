@@ -2385,6 +2385,19 @@ cdef class Constraint:
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
         return constype == 'knapsack'
 
+    def isCumulative(self):
+        """
+        Returns True if constraint is a cumulative constraint.
+        Cumulative is typically used in scheduling applications.
+
+        Returns
+        -------
+        bool
+
+        """
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(self.scip_cons))).decode('UTF-8')
+        return constype == 'cumulative'
+
     def isLinearType(self):
         """
         Returns True if constraint can be represented as a linear constraint.
@@ -7198,6 +7211,96 @@ cdef class Model:
             dynamic, removable, stickingatnode))
 
         free(weights_array)
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+
+        pyCons = self._getOrCreateCons(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        return pyCons
+
+    def addConsCumulative(self, vars, durations, demands, capacity, name="",
+                initial=True, separate=True, enforce=True, check=True,
+                modifiable=False, propagate=True, local=False, dynamic=False,
+                removable=False, stickingatnode=False):
+        """
+        Add a cumulative constraint.
+
+        A cumulative constraint models resource-constrained scheduling: given jobs
+        with start times, durations, and demands on a shared resource of fixed
+        capacity, it ensures that at every time point t the total demand of all
+        jobs active at t does not exceed the capacity. Job j is active at t if
+        start[j] <= t < start[j] + duration[j].
+
+        The start times are given as integer variables in `vars`. The `durations`,
+        `demands`, and `capacity` arguments must be fixed integers. End times are
+        implicit (start + duration); post separate constraints if explicit end
+        variables are needed.
+
+        If you simply want the jobs to not overlap, set all durations to '1'.
+
+        Parameters
+        ----------
+        vars : list of Variable
+            list of integer variables corresponding to job start times
+        durations : list of int
+            list of durations, one for each job
+        demands : list of int
+            list of demands, one for each job
+        capacity : int
+            available cumulative capacity at any time point
+        name : str, optional
+            name of the constraint (Default value = "")
+        initial : bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool, optional
+            is the constraint only valid locally? (Default value = False)
+        dynamic : bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool, optional
+            should the constraint always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        Constraint
+            The newly created cumulative constraint
+        """
+
+        cdef int nvars = len(vars)
+        cdef int i
+        cdef int* durations_array = <int*> malloc(nvars * sizeof(int))
+        cdef int* demands_array = <int*> malloc(nvars * sizeof(int))
+        cdef SCIP_CONS* scip_cons
+        cdef _VarArray wrapper
+
+        assert nvars == len(durations) == len(demands), "Number of variables, durations, and demands must be the same."
+
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+
+        wrapper = _VarArray(vars)
+        for i in range(nvars):
+            durations_array[i] = <int>durations[i]
+            demands_array[i] = <int>demands[i]
+
+        PY_SCIP_CALL(SCIPcreateConsCumulative(
+            self._scip, &scip_cons, str_conversion(name), nvars, wrapper.ptr, durations_array,
+            demands_array, capacity, initial, separate, enforce, check, propagate, local, modifiable,
+            dynamic, removable, stickingatnode))
+
+        free(durations_array)
+        free(demands_array)
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
 
