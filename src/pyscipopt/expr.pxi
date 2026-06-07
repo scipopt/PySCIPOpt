@@ -43,74 +43,35 @@
 # gets called (I guess) and so a copy is returned.
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
 import math
-from typing import TYPE_CHECKING
-
-from cpython.dict cimport PyDict_Next, PyDict_GetItem
-from cpython.object cimport Py_TYPE
-from cpython.ref cimport PyObject
-from cpython.tuple cimport PyTuple_GET_ITEM
-from pyscipopt.scip cimport Variable, Solution
+from typing import TYPE_CHECKING, Literal, Union
 
 import numpy as np
+
+from cpython.dict cimport PyDict_Next, PyDict_GetItem
+from cpython.float cimport PyFloat_Check
+from cpython.long cimport PyLong_Check
+from cpython.number cimport PyNumber_Check
+from cpython.object cimport Py_LE, Py_EQ, Py_GE, Py_TYPE
+from cpython.ref cimport PyObject
+from cpython.tuple cimport PyTuple_GET_ITEM
+
+cimport numpy as cnp
+from pyscipopt.scip cimport Variable, Solution
 
 
 if TYPE_CHECKING:
     double = float
 
 
-def _is_number(e):
-    try:
-        f = float(e)
-        return True
-    except ValueError: # for malformed strings
-        return False
-    except TypeError: # for other types (Variable, Expr)
-        return False
-
-
-def _expr_richcmp(self, other, op):
-    if op == 1: # <=
-        if isinstance(other, Expr) or isinstance(other, GenExpr):
-            return (self - other) <= 0.0
-        elif _is_number(other):
-            return ExprCons(self, rhs=float(other))
-        elif isinstance(other, np.ndarray):
-            return _expr_richcmp(other, self, 5)
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
-    elif op == 5: # >=
-        if isinstance(other, Expr) or isinstance(other, GenExpr):
-            return (self - other) >= 0.0
-        elif _is_number(other):
-            return ExprCons(self, lhs=float(other))
-        elif isinstance(other, np.ndarray):
-            return _expr_richcmp(other, self, 1)
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
-    elif op == 2: # ==
-        if isinstance(other, Expr) or isinstance(other, GenExpr):
-            return (self - other) == 0.0
-        elif _is_number(other):
-            return ExprCons(self, lhs=float(other), rhs=float(other))
-        elif isinstance(other, np.ndarray):
-            return _expr_richcmp(other, self, 2)
-        else:
-            raise TypeError(f"Unsupported type {type(other)}")
-    else:
-        raise NotImplementedError("Can only support constraints with '<=', '>=', or '=='.")
-
-
 cdef class Term:
     '''This is a monomial term'''
 
     cdef readonly tuple vartuple
-    cdef readonly tuple ptrtuple
     cdef Py_ssize_t hashval
 
     def __init__(self, *vartuple: Variable):
-        self.vartuple = tuple(sorted(vartuple, key=lambda v: v.ptr()))
-        self.ptrtuple = tuple(v.ptr() for v in self.vartuple)
-        self.hashval = <Py_ssize_t>hash(self.ptrtuple)
+        self.vartuple = tuple(sorted(vartuple, key=lambda v: v.getIndex()))
+        self.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in self.vartuple))
 
     def __getitem__(self, idx):
         return self.vartuple[idx]
@@ -118,8 +79,25 @@ cdef class Term:
     def __hash__(self) -> Py_ssize_t:
         return self.hashval
 
-    def __eq__(self, other: Term):
-        return self.ptrtuple == other.ptrtuple
+    def __eq__(self, other) -> bool:
+        if other is self:
+            return True
+        if <type>Py_TYPE(other) is not Term:
+            return False
+
+        cdef int n = len(self)
+        cdef Term _other = <Term>other
+        if n != len(_other) or self.hashval != _other.hashval:
+            return False
+
+        cdef int i
+        cdef Variable var1, var2
+        for i in range(n):
+            var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
+            var2 = <Variable>PyTuple_GET_ITEM(_other.vartuple, i)
+            if var1.ptr() != var2.ptr():
+                return False
+        return True
 
     def __len__(self):
         return len(self.vartuple)
@@ -138,7 +116,7 @@ cdef class Term:
         while i < n1 and j < n2:
             var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
             var2 = <Variable>PyTuple_GET_ITEM(other.vartuple, j)
-            if var1.ptr() <= var2.ptr():
+            if var1.getIndex() <= var2.getIndex():
                 vartuple[k] = var1
                 i += 1
             else:
@@ -156,8 +134,7 @@ cdef class Term:
 
         cdef Term res = Term.__new__(Term)
         res.vartuple = tuple(vartuple)
-        res.ptrtuple = tuple(v.ptr() for v in res.vartuple)
-        res.hashval = <Py_ssize_t>hash(res.ptrtuple)
+        res.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in res.vartuple))
         return res
 
     def __repr__(self):
@@ -180,9 +157,13 @@ cdef class Term:
 
 CONST = Term()
 
+
 # helper function
-def buildGenExprObj(expr):
+def buildGenExprObj(expr: Union[int, float, np.number, Expr, GenExpr]) -> GenExpr:
     """helper function to generate an object of type GenExpr"""
+    if not _is_genexpr_compatible(expr):
+        raise TypeError(f"unsupported type {type(expr).__name__!s}")
+
     if _is_number(expr):
         return Constant(expr)
 
@@ -205,19 +186,120 @@ def buildGenExprObj(expr):
                 sumexpr += coef * prodexpr
         return sumexpr
 
-    elif isinstance(expr, np.ndarray):   
-        GenExprs = np.empty(expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            GenExprs[idx] = buildGenExprObj(expr[idx])
-        return GenExprs.view(MatrixExpr)
+    return expr
 
-    else:
-        assert isinstance(expr, GenExpr)
-        return expr
+
+cdef class ExprLike:
+
+    def __array_ufunc__(
+        self,
+        ufunc: np.ufunc,
+        method: Literal["__call__", "reduce", "reduceat", "accumulate", "outer", "at"],
+        *args,
+        **kwargs,
+    ):
+        if kwargs.get("out", None) is not None:
+            raise TypeError(
+                f"{self.__class__.__name__} doesn't support the 'out' parameter in __array_ufunc__"
+            )
+
+        if method == "__call__":
+            if arrays := [a for a in args if isinstance(a, np.ndarray) and a.ndim >= 1]:
+                if any(a.dtype.kind not in "fiub" for a in arrays):
+                    return NotImplemented
+                # If the np.ndarray is of numeric type, all arguments are converted to
+                # MatrixExpr or MatrixGenExpr and then the ufunc is applied.
+                return ufunc(*[_ensure_matrix(a) for a in args], **kwargs)
+
+            # Convert `np.generic` and 0-dim `np.ndarray` to native Python types to stop
+            # __array_ufunc__ recursion from `np.generic + MatrixExpr/Expr` or
+            # `0-dim np.ndarray + MatrixExpr/Expr`.
+            args = [
+                a.item()
+                if (
+                    isinstance(a, np.generic)
+                    or (isinstance(a, np.ndarray) and a.ndim == 0)
+                )
+                else a
+                for a in args
+            ]
+
+            if ufunc is np.add:
+                return args[0] + args[1]
+            elif ufunc is np.subtract:
+                return args[0] - args[1]
+            elif ufunc is np.multiply:
+                return args[0] * args[1]
+            elif ufunc in {np.divide, np.true_divide}:
+                return args[0] / args[1]
+            elif ufunc is np.power:
+                return args[0] ** args[1]
+            elif ufunc is np.negative:
+                return -args[0]
+            elif ufunc is np.less_equal:
+                return args[0] <= args[1]
+            elif ufunc is np.greater_equal:
+                return args[0] >= args[1]
+            elif ufunc is np.equal:
+                return args[0] == args[1]
+            elif ufunc is np.absolute:
+                return args[0].__abs__()
+            elif ufunc is np.exp:
+                return args[0].exp()
+            elif ufunc is np.log:
+                return args[0].log()
+            elif ufunc is np.sqrt:
+                return args[0].sqrt()
+            elif ufunc is np.sin:
+                return args[0].sin()
+            elif ufunc is np.cos:
+                return args[0].cos()
+
+        return NotImplemented
+
+    def __radd__(self, other, /):
+        return self + other
+
+    def __sub__(self, other, /):
+        return self + (-other)
+
+    def __rsub__(self, other, /):
+        return (-self) + other
+
+    def __rmul__(self, other, /):
+        return self * other
+
+    def __rtruediv__(self, other, /) -> GenExpr:
+        return buildGenExprObj(other) / self
+
+    def __richcmp__(self, other, int op):
+        return _expr_richcmp(self, other, op)
+
+    def __neg__(self, /) -> Union[Expr, GenExpr]:
+        return self * -1.0
+
+    def __abs__(self) -> GenExpr:
+        return UnaryExpr(Operator.fabs, buildGenExprObj(self))
+
+    def exp(self) -> GenExpr:
+        return UnaryExpr(Operator.exp, buildGenExprObj(self))
+
+    def log(self) -> GenExpr:
+        return UnaryExpr(Operator.log, buildGenExprObj(self))
+
+    def sqrt(self) -> GenExpr:
+        return UnaryExpr(Operator.sqrt, buildGenExprObj(self))
+
+    def sin(self) -> GenExpr:
+        return UnaryExpr(Operator.sin, buildGenExprObj(self))
+
+    def cos(self) -> GenExpr:
+        return UnaryExpr(Operator.cos, buildGenExprObj(self))
+
 
 ##@details Polynomial expressions of variables with operator overloading. \n
 #See also the @ref ExprDetails "description" in the expr.pxi. 
-cdef class Expr:
+cdef class Expr(ExprLike):
 
     def __init__(self, terms=None):
         '''terms is a dict of variables to coefficients.
@@ -236,50 +318,31 @@ cdef class Expr:
     def __iter__(self):
         return iter(self.terms)
 
-    def __abs__(self):
-        return abs(buildGenExprObj(self))
-
     def __add__(self, other):
-        left = self
-        right = other
-        terms = left.terms.copy()
+        if not _is_expr_compatible(other):
+            return NotImplemented
 
-        if isinstance(right, Expr):
-            # merge the terms by component-wise addition
-            for v,c in right.terms.items():
-                terms[v] = terms.get(v, 0.0) + c
-        elif _is_number(right):
-            c = float(right)
-            terms[CONST] = terms.get(CONST, 0.0) + c
-        elif isinstance(right, GenExpr):
-            return buildGenExprObj(left) + right
-        elif isinstance(right, np.ndarray):
-            return right + left
-        else:
-            raise TypeError(f"Unsupported type {type(right)}")
+        if _is_number(other):
+            terms = self.terms.copy()
+            terms[CONST] = terms.get(CONST, 0.0) + <double>other
+            return Expr(terms)
 
-        return Expr(terms)
+        return Expr(_to_dict(self, other, copy=True))
 
     def __iadd__(self, other):
-        if isinstance(other, Expr):
-            for v,c in other.terms.items():
-                self.terms[v] = self.terms.get(v, 0.0) + c
-        elif _is_number(other):
-            c = float(other)
-            self.terms[CONST] = self.terms.get(CONST, 0.0) + c
-        elif isinstance(other, GenExpr):
-            # is no longer in place, might affect performance?
-            # can't do `self = buildGenExprObj(self) + other` since I get
-            # TypeError: Cannot convert pyscipopt.scip.SumExpr to pyscipopt.scip.Expr
-            return buildGenExprObj(self) + other
+        if not _is_expr_compatible(other):
+            return NotImplemented
+
+        if _is_number(other):
+            self.terms[CONST] = self.terms.get(CONST, 0.0) + <double>other
         else:
-            raise TypeError(f"Unsupported type {type(other)}")
+            _to_dict(self, other, copy=False)
 
         return self
 
     def __mul__(self, other):
-        if isinstance(other, np.ndarray):
-            return other * self
+        if not _is_expr_compatible(other):
+            return NotImplemented
 
         cdef dict res = {}
         cdef Py_ssize_t pos1 = <Py_ssize_t>0, pos2 = <Py_ssize_t>0
@@ -289,39 +352,37 @@ cdef class Expr:
         cdef PyObject *v2_ptr = NULL
         cdef PyObject *old_v_ptr = NULL
         cdef Term child
-        cdef double prod_v
+        cdef double coef
 
         if _is_number(other):
-            f = float(other)
-            return Expr({v:f*c for v,c in self.terms.items()})
+            coef = <double>other
+            while PyDict_Next(self.terms, &pos1, &k1_ptr, &v1_ptr):
+                res[<Term>k1_ptr] = <double>(<object>v1_ptr) * coef
 
         elif isinstance(other, Expr):
             while PyDict_Next(self.terms, &pos1, &k1_ptr, &v1_ptr):
                 pos2 = <Py_ssize_t>0
                 while PyDict_Next(other.terms, &pos2, &k2_ptr, &v2_ptr):
                     child = (<Term>k1_ptr) * (<Term>k2_ptr)
-                    prod_v = (<double>(<object>v1_ptr)) * (<double>(<object>v2_ptr))
+                    coef = (<double>(<object>v1_ptr)) * (<double>(<object>v2_ptr))
                     if (old_v_ptr := PyDict_GetItem(res, child)) != NULL:
-                        res[child] = <double>(<object>old_v_ptr) + prod_v
+                        res[child] = <double>(<object>old_v_ptr) + coef
                     else:
-                        res[child] = prod_v
-            return Expr(res)
+                        res[child] = coef
+        return Expr(res)
 
-        elif isinstance(other, GenExpr):
-            return buildGenExprObj(self) * other
-        else:
-            raise NotImplementedError
+    def __truediv__(self, other):
+        if not _is_expr_compatible(other):
+            return NotImplemented
 
-    def __truediv__(self,other):
         if _is_number(other):
-            f = 1.0/float(other)
-            return f * self
-        selfexpr = buildGenExprObj(self)
-        return selfexpr.__truediv__(other)
+            return 1.0 / other * self
+        return buildGenExprObj(self) / other
 
-    def __rtruediv__(self, other):
-        ''' other / self '''
-        return buildGenExprObj(other) / self
+    def __rtruediv__(self, other, /) -> GenExpr:
+        if not _is_expr_compatible(other):
+            return NotImplemented
+        return super().__rtruediv__(other)
 
     def __pow__(self, other, modulo):
         if float(other).is_integer() and other >= 0:
@@ -339,32 +400,12 @@ cdef class Expr:
         Implements base**x as scip.exp(x * scip.log(base)).
         Note: base must be positive.
         """
-        if _is_number(other):
-            base = float(other)
-            if base <= 0.0:
-                raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
-            return exp(self * log(base))
-        else:
+        if not _is_number(other):
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
 
-    def __neg__(self):
-        return Expr({v:-c for v,c in self.terms.items()})
-
-    def __sub__(self, other):
-        return self + (-other)
-
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    def __rsub__(self, other):
-        return -1.0 * self + other
-
-    def __richcmp__(self, other, op):
-        '''turn it into a constraint'''
-        return _expr_richcmp(self, other, op)
+        if (base := <double>other) <= 0.0:
+            raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
+        return (self * Constant(base).log()).exp()
 
     def normalize(self):
         '''remove terms with coefficient of 0'''
@@ -424,16 +465,15 @@ cdef class ExprCons:
         if not self._rhs is None:
             self._rhs -= c
 
-
     def __richcmp__(self, other, op):
         '''turn it into a constraint'''
+        if not _is_number(other):
+            raise TypeError('Ranged ExprCons is not well defined!')
+
         if op == 1: # <=
             if not self._rhs is None:
                 raise TypeError('ExprCons already has upper bound')
             assert not self._lhs is None
-
-            if not _is_number(other):
-                raise TypeError('Ranged ExprCons is not well defined!')
 
             return ExprCons(self.expr, lhs=self._lhs, rhs=float(other))
         elif op == 5: # >=
@@ -441,9 +481,6 @@ cdef class ExprCons:
                 raise TypeError('ExprCons already has lower bound')
             assert self._lhs is None
             assert not self._rhs is None
-
-            if not _is_number(other):
-                raise TypeError('Ranged ExprCons is not well defined!')
 
             return ExprCons(self.expr, lhs=float(other), rhs=self._rhs)
         else:
@@ -502,7 +539,7 @@ Operator = Op()
 #     so expr[x] will generate an error instead of returning the coefficient of x </pre>
 #
 #See also the @ref ExprDetails "description" in the expr.pxi. 
-cdef class GenExpr:
+cdef class GenExpr(ExprLike):
 
     cdef public _op
     cdef public children
@@ -510,12 +547,9 @@ cdef class GenExpr:
     def __init__(self): # do we need it
         ''' '''
 
-    def __abs__(self):
-        return UnaryExpr(Operator.fabs, self)
-
     def __add__(self, other):
-        if isinstance(other, np.ndarray):
-            return other + self
+        if not _is_genexpr_compatible(other):
+            return NotImplemented
 
         left = buildGenExprObj(self)
         right = buildGenExprObj(other)
@@ -572,8 +606,8 @@ cdef class GenExpr:
     #    return self
 
     def __mul__(self, other):
-        if isinstance(other, np.ndarray):
-            return other * self
+        if not _is_genexpr_compatible(other):
+            return NotImplemented
 
         left = buildGenExprObj(self)
         right = buildGenExprObj(other)
@@ -638,45 +672,28 @@ cdef class GenExpr:
         Implements base**x as scip.exp(x * scip.log(base)). 
         Note: base must be positive.
         """
-        if _is_number(other):
-            base = float(other)
-            if base <= 0.0:
-                raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
-            return exp(self * log(base))
-        else:
+        if not _is_number(other):
             raise TypeError(f"Unsupported base type {type(other)} for exponentiation.")
+
+        if (base := <double>other) <= 0.0:
+            raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
+        return (self * Constant(base).log()).exp()
 
     #TODO: ipow, idiv, etc
     def __truediv__(self,other):
+        if not _is_genexpr_compatible(other):
+            return NotImplemented
+
         divisor = buildGenExprObj(other)
         # we can't divide by 0
         if isinstance(divisor, GenExpr) and divisor.getOp() == Operator.const and divisor.number == 0.0:
             raise ZeroDivisionError("cannot divide by 0")
         return self * divisor**(-1)
 
-    def __rtruediv__(self, other):
-        ''' other / self '''
-        otherexpr = buildGenExprObj(other)
-        return otherexpr.__truediv__(self)
-
-    def __neg__(self):
-        return -1.0 * self
-
-    def __sub__(self, other):
-        return self + (-other)
-
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    def __rsub__(self, other):
-        return -1.0 * self + other
-
-    def __richcmp__(self, other, op):
-        '''turn it into a constraint'''
-        return _expr_richcmp(self, other, op)
+    def __rtruediv__(self, other, /) -> GenExpr:
+        if not _is_genexpr_compatible(other):
+            return NotImplemented
+        return super().__rtruediv__(other)
 
     def degree(self):
         '''Note: none of these expressions should be polynomial'''
@@ -816,55 +833,186 @@ cdef class Constant(GenExpr):
         return self.number
 
 
-def exp(expr):
-    """returns expression with exp-function"""
-    if isinstance(expr, MatrixExpr):   
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.exp, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.exp, buildGenExprObj(expr))
+def exp(x):
+    """
+    returns expression with exp-function
 
-def log(expr):
-    """returns expression with log-function"""
-    if isinstance(expr, MatrixExpr):
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.log, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.log, buildGenExprObj(expr))
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the exp function directly to it.
+          And if it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the exp function
+          element-wise using np.frompyfunc to convert each element to a Constant if it's
+          a number, and then apply the exp function.
 
-def sqrt(expr):
-    """returns expression with sqrt-function"""
-    if isinstance(expr, MatrixExpr):
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.sqrt, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.sqrt, buildGenExprObj(expr))
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the exp
+          function to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the exp
+          function applied element-wise.
+    """
+    return _wrap_ufunc(x, np.exp)
 
-def sin(expr):
-    """returns expression with sin-function"""
-    if isinstance(expr, MatrixExpr):
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.sin, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.sin, buildGenExprObj(expr))
 
-def cos(expr):
-    """returns expression with cos-function"""
-    if isinstance(expr, MatrixExpr):   
-        unary_exprs = np.empty(shape=expr.shape, dtype=object)
-        for idx in np.ndindex(expr.shape):
-            unary_exprs[idx] = UnaryExpr(Operator.cos, buildGenExprObj(expr[idx]))
-        return unary_exprs.view(MatrixGenExpr)
-    else:
-        return UnaryExpr(Operator.cos, buildGenExprObj(expr))
+def log(x):
+    """
+    returns expression with log-function
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the log function directly to it.
+          And if it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the log function
+          element-wise using np.frompyfunc to convert each element to a Constant if it's
+          a number, and then apply the log function.
+
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the log
+          function to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the log
+          function applied element-wise.
+    """
+    return _wrap_ufunc(x, np.log)
+
+
+def sqrt(x):
+    """
+    returns expression with sqrt-function
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the sqrt function directly to it.
+          And if it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the sqrt function
+          element-wise using np.frompyfunc to convert each element to a Constant if it's
+          a number, and then apply the sqrt function.
+
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the sqrt
+          function to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the sqrt
+          function applied element-wise.
+    """
+    return _wrap_ufunc(x, np.sqrt)
+
+
+def sin(x):
+    """
+    returns expression with sin-function
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the sin function directly to it.
+          And if it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the sin function
+          element-wise using np.frompyfunc to convert each element to a Constant if it's
+          a number, and then apply the sin function.
+
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the sin
+          function to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the sin
+          function applied element-wise.
+    """
+    return _wrap_ufunc(x, np.sin)
+
+
+def cos(x):
+    """
+    returns expression with cos-function
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the cos function directly to it.
+          And if it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the cos function
+          element-wise using np.frompyfunc to convert each element to a Constant if it's
+          a number, and then apply the cos function.
+
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the cos
+          function to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the cos
+          function applied element-wise.
+    """
+    return _wrap_ufunc(x, np.cos)
+
+
+cdef inline object _to_const(object x):
+    return Constant(<double>x) if _is_number(x) else x
+
+cdef object _vec_to_const = np.frompyfunc(_to_const, 1, 1)
+
+cdef inline object _wrap_ufunc(object x, object ufunc):
+    """
+    Apply a universal function (ufunc) to an expression or a collection of expressions.
+
+    Parameters
+    ----------
+    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+        - If x is a scalar expression or number, apply the ufunc directly to it. And if
+          it's a number, convert it to a Constant expression first.
+        - If x is a vector (np.ndarray, list, or tuple), apply the ufunc element-wise
+          using np.frompyfunc to convert each element to a Constant if it's a number,
+          and then apply the ufunc.
+
+    ufunc : np.ufunc
+        The universal function to be applied to x.
+
+    Returns
+    -------
+    GenExpr or MatrixGenExpr
+        - If x is a scalar expression or number, returns the result of applying the
+          ufunc to it.
+        - If x is a vector, returns an np.ndarray of the same shape with the ufunc
+          applied element-wise.
+    """
+    if isinstance(x, (np.ndarray, list, tuple)):
+        res = ufunc(_vec_to_const(x))
+        return res.view(MatrixGenExpr) if isinstance(res, np.ndarray) else res
+    return ufunc(_to_const(x))
+
+cdef inline object _ensure_matrix(object arg):
+    if type(arg) is np.ndarray:
+        return arg.view(MatrixExpr)
+    matrix = MatrixExpr if isinstance(arg, Expr) else MatrixGenExpr
+    return np.array(arg, dtype=object).view(matrix)
+
+cdef dict _to_dict(Expr expr, Expr other, bool copy = True):
+    cdef dict children = expr.terms.copy() if copy else expr.terms
+    cdef Py_ssize_t pos = <Py_ssize_t>0
+    cdef PyObject* k_ptr = NULL
+    cdef PyObject* v_ptr = NULL
+    cdef PyObject* old_v_ptr = NULL
+    cdef double other_v
+    cdef object k_obj
+
+    while PyDict_Next(other.terms, &pos, &k_ptr, &v_ptr):
+        other_v = <double>(<object>v_ptr)
+        k_obj = <object>k_ptr
+        old_v_ptr = PyDict_GetItem(children, k_obj)
+        if old_v_ptr != NULL:
+            children[k_obj] = <double>(<object>old_v_ptr) + other_v
+        else:
+            children[k_obj] = other_v
+
+    return children
+
 
 def expr_to_nodes(expr):
     '''transforms tree to an array of nodes. each node is an operator and the position of the 
@@ -905,3 +1053,41 @@ def expr_to_array(expr, nodes):
     else: # var
         nodes.append( tuple( [op, expr.children] ) )
     return len(nodes) - 1
+
+
+cdef inline bint _is_number(object x):
+    if PyLong_Check(x) or PyFloat_Check(x):
+        return True
+    if cnp.PyArray_Check(x) or isinstance(x, (ExprLike, list, tuple)):
+        return False
+    return PyNumber_Check(x)
+
+cdef inline bint _is_expr_compatible(object x):
+    return _is_number(x) or isinstance(x, Expr)
+
+cdef inline bint _is_genexpr_compatible(object x):
+    return _is_expr_compatible(x) or isinstance(x, GenExpr)
+
+cdef object _expr_richcmp(
+    ExprLike self,
+    other: Union[int, float, np.number, Expr, GenExpr],
+    int op,
+):
+    if isinstance(other, np.ndarray):
+        return NotImplemented
+    if not _is_genexpr_compatible(other):
+        raise TypeError(f"unsupported type {type(other).__name__!s}")
+
+    if op == Py_LE:
+        if _is_number(other):
+            return ExprCons(self, rhs=<double>other)
+        return ExprCons(self - other, rhs=0.0)
+    elif op == Py_GE:
+        if _is_number(other):
+            return ExprCons(self, lhs=<double>other)
+        return ExprCons(self - other, lhs=0.0)
+    elif op == Py_EQ:
+        if _is_number(other):
+            return ExprCons(self, lhs=<double>other, rhs=<double>other)
+        return ExprCons(self - other, lhs=0.0, rhs=0.0)
+    raise NotImplementedError("can only support with '<=', '>=', or '=='")

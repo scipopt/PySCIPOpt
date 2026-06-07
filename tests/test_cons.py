@@ -179,6 +179,19 @@ def test_cons_indicator():
     assert m.isEQ(m.getVal(x), 1)
     assert c1.getConshdlrName() == "indicator"
 
+def test_cons_indicator_geq():
+    m = Model()
+    m.hideOutput()
+
+    x = m.addVar(lb=0, ub=10, name="x")
+    b = m.addVar(vtype="B", name="b", lb=1)
+
+    m.addConsIndicator(x >= 5, binvar=b)
+    m.setObjective(x)
+    m.optimize()
+
+    assert m.getVal(x) == 5
+
 def test_cons_indicator_with_matrix_binvar():
     # test matrix variable binvar #1043
     m = Model()
@@ -337,6 +350,39 @@ def test_cons_knapsack():
     m.optimize()
     assert m.getDualsolKnapsack(knapsack_cons) == 0
     assert m.getDualfarkasKnapsack(knapsack_cons) == 0
+
+def test_cons_cumulative():
+    """Three jobs on a resource with capacity 3 must not overlap in demand.
+
+    Job 1: duration 3, demand 2
+    Job 2: duration 2, demand 3
+    Job 3: duration 2, demand 1
+
+    Jobs 2 and 3 cannot run together (demand 3+1 > 3). Minimizing the sum of
+    start times yields start1=0, start2=3, start3=0.
+    """
+    m = Model()
+    start1 = m.addVar("start1", vtype="I", lb=0, ub=10, obj=1)
+    start2 = m.addVar("start2", vtype="I", lb=0, ub=10, obj=1)
+    start3 = m.addVar("start3", vtype="I", lb=0, ub=10, obj=1)
+    durations = [3, 2, 2]
+    demands = [2, 3, 1]
+    capacity = 3
+
+    cumulative_cons = m.addConsCumulative([start1, start2, start3], durations, demands, capacity)
+    assert cumulative_cons.getConshdlrName() == "cumulative"
+    assert cumulative_cons.isCumulative()
+
+    assert m.getConsNVars(cumulative_cons) == 3
+    assert m.getConsVars(cumulative_cons) == [start1, start2, start3]
+
+    m.setObjective(start1 + start2 + start3, "minimize")
+    m.optimize()
+
+    assert m.isEQ(m.getVal(start1), 0)
+    assert m.isEQ(m.getVal(start2), 3)
+    assert m.isEQ(m.getVal(start3), 0)
+    assert m.isEQ(m.getObjVal(), 3)
 
 def test_getValsLinear():
     m = Model()

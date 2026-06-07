@@ -37,7 +37,6 @@ cdef SCIP_RETCODE PyPresolFree (SCIP* scip, SCIP_PRESOL* presol) noexcept with g
     presoldata = SCIPpresolGetData(presol)
     PyPresol = <Presol>presoldata
     PyPresol.presolfree()
-    Py_DECREF(PyPresol)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyPresolInit (SCIP* scip, SCIP_PRESOL* presol) noexcept with gil:

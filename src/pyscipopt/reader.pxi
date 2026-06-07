@@ -26,7 +26,6 @@ cdef SCIP_RETCODE PyReaderFree (SCIP* scip, SCIP_READER* reader) noexcept with g
     readerdata = SCIPreaderGetData(reader)
     PyReader = <Reader>readerdata
     PyReader.readerfree()
-    Py_DECREF(PyReader)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyReaderRead (SCIP* scip, SCIP_READER* reader, const char* filename, SCIP_RESULT* result) noexcept with gil:

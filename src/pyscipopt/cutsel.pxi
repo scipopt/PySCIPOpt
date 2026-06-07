@@ -37,7 +37,6 @@ cdef SCIP_RETCODE PyCutselFree (SCIP* scip, SCIP_CUTSEL* cutsel) noexcept with g
   cutseldata = SCIPcutselGetData(cutsel)
   PyCutsel = <Cutsel>cutseldata
   PyCutsel.cutselfree()
-  Py_DECREF(PyCutsel)
   return SCIP_OKAY
 
 cdef SCIP_RETCODE PyCutselInit (SCIP* scip, SCIP_CUTSEL* cutsel) noexcept with gil:

@@ -1,8 +1,9 @@
 ##@file iisfinder.pxi
 #@brief Base class of the IIS finder Plugin
 cdef class IISfinder:
+    cdef public Model model
     cdef public IIS iis
-    cdef SCIP_IIS* scip_iis 
+    cdef SCIP_IIS* scip_iis
     cdef SCIP_IISFINDER* scip_iisfinder
 
     def iisfinderfree(self):
@@ -22,7 +23,6 @@ cdef SCIP_RETCODE PyiisfinderFree (SCIP* scip, SCIP_IISFINDER* iisfinder) noexce
     iisfinderdata = SCIPiisfinderGetData(iisfinder)
     PyIIS = <IISfinder>iisfinderdata
     PyIIS.iisfinderfree()
-    Py_DECREF(PyIIS)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyiisfinderExec (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_RESULT* result) noexcept with gil:
