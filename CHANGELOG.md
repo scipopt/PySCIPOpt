@@ -46,7 +46,7 @@
 - Include parameter names in type stubs
 - Added pre-commit hook for automatic stub regeneration (see `.pre-commit-config.yaml`)
 - Wrapped `isObjIntegral()` and test
-- Added `structured_optimization_trace` recipe for structured optimization progress tracking
+- Added `structured_optimization_trace` recipe with attach-style in-memory tracing and context-managed JSONL tracing with final `run_end` records
 - Added methods: `getPrimalDualIntegral()`
 - `getSolVal()` supports `MatrixExpr` now
 ### Fixed
