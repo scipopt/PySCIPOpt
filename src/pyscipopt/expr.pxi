@@ -42,7 +42,6 @@
 # which should, in princple, modify the expr. However, since we do not implement __isub__, __sub__
 # gets called (I guess) and so a copy is returned.
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
-import math
 from typing import TYPE_CHECKING, Literal, Union
 
 import numpy as np
@@ -54,6 +53,12 @@ from cpython.number cimport PyNumber_Check
 from cpython.object cimport Py_LE, Py_EQ, Py_GE, Py_TYPE
 from cpython.ref cimport PyObject
 from cpython.tuple cimport PyTuple_GET_ITEM
+from libc.math cimport cos as c_cos
+from libc.math cimport exp as c_exp
+from libc.math cimport fabs as c_fabs
+from libc.math cimport log as c_log
+from libc.math cimport sqrt as c_sqrt
+from libc.math cimport sin as c_sin
 
 cimport numpy as cnp
 from pyscipopt.scip cimport Variable, Solution
@@ -279,22 +284,22 @@ cdef class ExprLike:
         return self * -1.0
 
     def __abs__(self) -> GenExpr:
-        return UnaryExpr(Operator.fabs, buildGenExprObj(self))
+        return AbsExpr(Operator.fabs, buildGenExprObj(self))
 
     def exp(self) -> GenExpr:
-        return UnaryExpr(Operator.exp, buildGenExprObj(self))
+        return ExpExpr(Operator.exp, buildGenExprObj(self))
 
     def log(self) -> GenExpr:
-        return UnaryExpr(Operator.log, buildGenExprObj(self))
+        return LogExpr(Operator.log, buildGenExprObj(self))
 
     def sqrt(self) -> GenExpr:
-        return UnaryExpr(Operator.sqrt, buildGenExprObj(self))
+        return SqrtExpr(Operator.sqrt, buildGenExprObj(self))
 
     def sin(self) -> GenExpr:
-        return UnaryExpr(Operator.sin, buildGenExprObj(self))
+        return SinExpr(Operator.sin, buildGenExprObj(self))
 
     def cos(self) -> GenExpr:
-        return UnaryExpr(Operator.cos, buildGenExprObj(self))
+        return CosExpr(Operator.cos, buildGenExprObj(self))
 
 
 ##@details Polynomial expressions of variables with operator overloading. \n
@@ -799,24 +804,62 @@ cdef class PowExpr(GenExpr):
         return (<GenExpr>self.children[0])._evaluate(sol) ** self.expo
 
 
-# Exp, Log, Sqrt, Sin, Cos Expressions
 cdef class UnaryExpr(GenExpr):
+
     def __init__(self, op, expr):
         self.children = []
         self.children.append(expr)
         self._op = op
 
-    def __abs__(self) -> UnaryExpr:
-        if self._op == "abs":
-            return <UnaryExpr>self.copy()
-        return UnaryExpr(Operator.fabs, self)
+    def __abs__(self) -> AbsExpr:
+        return AbsExpr(Operator.fabs, self)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self._op + "(" + self.children[0].__repr__() + ")"
 
+
+cdef class AbsExpr(UnaryExpr):
+
+    def __abs__(self) -> AbsExpr:
+        return <AbsExpr>self.copy()
+
     cpdef double _evaluate(self, Solution sol) except *:
-        cdef double res = (<GenExpr>self.children[0])._evaluate(sol)
-        return math.fabs(res) if self._op == "abs" else getattr(math, self._op)(res)
+        return c_fabs((<GenExpr>self.children[0])._evaluate(sol))
+
+
+
+cdef class ExpExpr(UnaryExpr):
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        return c_exp((<GenExpr>self.children[0])._evaluate(sol))
+
+
+
+cdef class LogExpr(UnaryExpr):
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        return c_log((<GenExpr>self.children[0])._evaluate(sol))
+
+
+
+cdef class SqrtExpr(UnaryExpr):
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        return c_sqrt((<GenExpr>self.children[0])._evaluate(sol))
+
+
+
+cdef class SinExpr(UnaryExpr):
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        return c_sin((<GenExpr>self.children[0])._evaluate(sol))
+
+
+
+cdef class CosExpr(UnaryExpr):
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        return c_cos((<GenExpr>self.children[0])._evaluate(sol))
 
 
 # class for constant expressions
