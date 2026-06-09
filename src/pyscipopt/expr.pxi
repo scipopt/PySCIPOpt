@@ -833,12 +833,10 @@ cdef class ExpExpr(UnaryExpr):
         return c_exp((<GenExpr>self.children[0])._evaluate(sol))
 
 
-
 cdef class LogExpr(UnaryExpr):
 
     cpdef double _evaluate(self, Solution sol) except *:
         return c_log((<GenExpr>self.children[0])._evaluate(sol))
-
 
 
 cdef class SqrtExpr(UnaryExpr):
@@ -847,12 +845,10 @@ cdef class SqrtExpr(UnaryExpr):
         return c_sqrt((<GenExpr>self.children[0])._evaluate(sol))
 
 
-
 cdef class SinExpr(UnaryExpr):
 
     cpdef double _evaluate(self, Solution sol) except *:
         return c_sin((<GenExpr>self.children[0])._evaluate(sol))
-
 
 
 cdef class CosExpr(UnaryExpr):
