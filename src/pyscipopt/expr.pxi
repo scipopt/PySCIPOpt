@@ -827,7 +827,6 @@ cdef class AbsExpr(UnaryExpr):
         return c_fabs((<GenExpr>self.children[0])._evaluate(sol))
 
 
-
 cdef class ExpExpr(UnaryExpr):
 
     cpdef double _evaluate(self, Solution sol) except *:
