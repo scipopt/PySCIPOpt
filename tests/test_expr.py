@@ -212,8 +212,16 @@ def test_getVal_with_GenExpr():
     assert m.getVal(y / x) == 2
     # test "**(prod(1.0,**(sum(0.0,prod(1.0,x)),-1)),2)"
     assert m.getVal((1 / x) ** 2) == 1
-    # test "sin(sum(0.0,prod(1.0,x)))"
+
+    # test C-level math functions
+    assert m.getVal(abs(x)) == 1
+    assert m.getVal(abs(-x)) == 1
+    assert m.getVal(abs(abs(-x))) == 1
+    assert round(m.getVal(exp(x)), 6) == round(math.exp(1), 6)
+    assert round(m.getVal(log(x)), 6) == round(math.log(1), 6)
+    assert round(m.getVal(sqrt(x)), 6) == round(math.sqrt(1), 6)
     assert round(m.getVal(sin(x)), 6) == round(math.sin(1), 6)
+    assert round(m.getVal(cos(x)), 6) == round(math.cos(1), 6)
 
     with pytest.raises(TypeError):
         m.getVal(1)
