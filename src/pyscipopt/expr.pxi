@@ -283,22 +283,22 @@ cdef class ExprLike:
     def __neg__(self, /) -> Union[Expr, GenExpr]:
         return self * -1.0
 
-    def __abs__(self) -> GenExpr:
+    def __abs__(self, /) -> AbsExpr:
         return AbsExpr(Operator.fabs, buildGenExprObj(self))
 
-    def exp(self) -> GenExpr:
+    def exp(self, /) -> ExpExpr:
         return ExpExpr(Operator.exp, buildGenExprObj(self))
 
-    def log(self) -> GenExpr:
+    def log(self, /) -> LogExpr:
         return LogExpr(Operator.log, buildGenExprObj(self))
 
-    def sqrt(self) -> GenExpr:
+    def sqrt(self, /) -> SqrtExpr:
         return SqrtExpr(Operator.sqrt, buildGenExprObj(self))
 
-    def sin(self) -> GenExpr:
+    def sin(self, /) -> SinExpr:
         return SinExpr(Operator.sin, buildGenExprObj(self))
 
-    def cos(self) -> GenExpr:
+    def cos(self, /) -> CosExpr:
         return CosExpr(Operator.cos, buildGenExprObj(self))
 
 
@@ -810,9 +810,6 @@ cdef class UnaryExpr(GenExpr):
         self.children = []
         self.children.append(expr)
         self._op = op
-
-    def __abs__(self) -> AbsExpr:
-        return AbsExpr(Operator.fabs, self)
 
     def __repr__(self) -> str:
         return self._op + "(" + self.children[0].__repr__() + ")"
