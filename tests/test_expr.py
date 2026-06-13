@@ -547,3 +547,43 @@ def test_Expr_iadd_Expr():
     e1 += e2
     assert str(e1) == "Expr({Term(x): -1.0, Term(): 0.0, Term(y): 1.0})"
     assert str(e2) == "Expr({Term(y): 1.0, Term(): -1.0})"
+
+
+def test_pos():
+    m = Model()
+    x = m.addVar(name="x")
+
+    # test Variable
+    res = +x
+    assert str(res) == "x"
+    assert res is x
+
+    # test Expr
+    e = x + 1
+    res = +(x + 1)
+    assert str(res) == "Expr({Term(x): 1.0, Term(): 1.0})"
+    assert e is not res
+
+    # test SumExpr
+    e = sqrt(x) + 1
+    res = +e
+    assert str(res) == str(e)
+    assert e is not res
+
+    # test UnaryExpr
+    e = cos(x)
+    res = +e
+    assert str(res) == str(e)
+    assert e is not res
+
+    # test ProdExpr
+    e = x * sin(x)
+    res = +e
+    assert str(res) == str(e)
+    assert e is not res
+
+    # test PowExpr
+    e = log(x)**2
+    res = +e
+    assert str(res) == str(e)
+    assert e is not res
