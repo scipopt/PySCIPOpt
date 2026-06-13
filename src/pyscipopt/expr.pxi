@@ -300,7 +300,9 @@ cdef class ExprLike:
         return UnaryExpr(Operator.cos, buildGenExprObj(self))
 
     cdef ExprLike copy(self, bint copy=True):
-        raise NotImplementedError("copy() must be implemented in subclasses")
+        raise NotImplementedError(
+            f"{self.__class__.__name__!s} need to implement copy() method"
+        )
 
 
 ##@details Polynomial expressions of variables with operator overloading. \n
