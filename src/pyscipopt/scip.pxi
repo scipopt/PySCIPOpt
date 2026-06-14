@@ -1563,6 +1563,9 @@ cdef class Variable(Expr):
             cname = bytes( SCIPvarGetName(self.scip_var) )
             return cname.decode('utf-8')
 
+    cdef Variable copy(self, bint copy=True):
+        return self
+
     def ptr(self):
         return <size_t>(self.scip_var)
 
