@@ -1556,15 +1556,15 @@ cdef class Variable(Expr):
         Expr.__init__(var, {Term(var) : 1.0})
         return var
 
-    cdef ExprLike copy(self, bint copy=True):
-        return self
-
     property name:
         def __get__(self):
             if self.scip_var == NULL:
                 return ""
             cname = bytes( SCIPvarGetName(self.scip_var) )
             return cname.decode('utf-8')
+
+    cdef Variable copy(self, bint copy=True):
+        return self
 
     def ptr(self):
         return <size_t>(self.scip_var)

@@ -443,9 +443,9 @@ cdef class Expr(ExprLike):
             res += coef * term._evaluate(sol)
         return res
 
-    cdef ExprLike copy(self, bint copy=True):
+    cdef Expr copy(self, bint copy=True):
         cdef object cls = <type>Py_TYPE(self)
-        cdef ExprLike res = cls.__new__(cls)
+        cdef Expr res = cls.__new__(cls)
         res.terms = self.terms.copy() if copy else self.terms
         return res
 
@@ -717,9 +717,9 @@ cdef class GenExpr(ExprLike):
         '''returns operator of GenExpr'''
         return self._op
 
-    cdef ExprLike copy(self, bint copy=True):
+    cdef GenExpr copy(self, bint copy=True):
         cdef object cls = <type>Py_TYPE(self)
-        cdef ExprLike res = cls.__new__(cls)
+        cdef GenExpr res = cls.__new__(cls)
         res._op = self._op
         res.children = self.children.copy() if copy else self.children
         return res
@@ -748,7 +748,7 @@ cdef class SumExpr(GenExpr):
             res += <double>coefs[i] * (<GenExpr>children[i])._evaluate(sol)
         return res
 
-    cdef ExprLike copy(self, bint copy=True):
+    cdef SumExpr copy(self, bint copy=True):
         cdef SumExpr res = SumExpr.__new__(SumExpr)
         res._op = self._op
         res.children = self.children.copy() if copy else self.children
@@ -780,7 +780,7 @@ cdef class ProdExpr(GenExpr):
                 return 0.0
         return res
 
-    cdef ExprLike copy(self, bint copy=True):
+    cdef ProdExpr copy(self, bint copy=True):
         cdef ProdExpr res = ProdExpr.__new__(ProdExpr)
         res._op = self._op
         res.children = self.children.copy() if copy else self.children
@@ -820,7 +820,7 @@ cdef class PowExpr(GenExpr):
     cpdef double _evaluate(self, Solution sol) except *:
         return (<GenExpr>self.children[0])._evaluate(sol) ** self.expo
 
-    cdef ExprLike copy(self, bint copy=True):
+    cdef PowExpr copy(self, bint copy=True):
         cdef PowExpr res = PowExpr.__new__(PowExpr)
         res._op = self._op
         res.children = self.children.copy() if copy else self.children
