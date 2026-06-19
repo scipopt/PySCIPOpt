@@ -1,118 +1,53 @@
-from pyscipopt import Model, Conshdlr, quicksum, SCIP_RESULT, SCIP_PRESOLTIMING, SCIP_PROPTIMING, SCIP_PARAMSETTING
-from itertools import combinations
+##@file lotsizing_lazy.py
+# @brief solve the single-item lot-sizing problem.
+"""
+Approaches:
+    - sils: solve the problem using the standard formulation
+    - sils_cut: solve the problem using cutting planes
 
-# -----------------------------
-# Model data
-# -----------------------------
-def running_example(example):
-    if example == 1:
-        demand = [400, 400, 800, 800, 1200, 1200, 1200, 1200]
-        N = len(demand)
-        T = list(range(1, N + 1))
-        setup_cost = [5000] * N
-        holding_cost = [5] * N
-        production_cost = [100] * N
-        M = [sum(demand[i:]) for i in range(len(demand))]
-        ini_inv = 200
-        return demand, N, T, setup_cost, holding_cost, production_cost, M, ini_inv
-        
-    elif example == 2:
-        demand = [5, 7, 3, 6, 4]
-        N = len(demand)
-        T = list(range(1, N + 1))
-        setup_cost = [3] * N
-        holding_cost = [1] * N
-        production_cost = [1, 1, 3, 3, 3]
-        M = [sum(demand[i:]) for i in range(len(demand))]
-        ini_inv = 2
-        return demand, N, T, setup_cost, holding_cost, production_cost, M, ini_inv
+Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
+"""
+from pyscipopt import Model, Conshdlr, quicksum, multidict, SCIP_RESULT, SCIP_PRESOLTIMING, SCIP_PROPTIMING
 
-    else:
-        raise ValueError("The correct example should be selected")
 
-# -----------------------------
-# Define conshdlr
-# -----------------------------
-class LS_Cuts(Conshdlr):
-    def __init__(self, T, demand, ini_inv):
-        self.T = T
-        self.demand = list(demand)
-        self.ini_inv = ini_inv
-        self.N = len(self.T)
+class Conshdlr_sils(Conshdlr):
 
-    def generate_subsets(self):
-        result = {}
-        for l in range(1, self.N + 1):
-            subsets = []
-            for r in range(1, l + 1):
-                for comb in combinations(range(1, l + 1), r):
-                    subsets.append(list(comb))
-            result[l] = subsets
-        return result
+    def addcut(self, checkonly, sol):
+        D, Ts = self.data
+        y, x, I = self.model.data
+        cutsadded = False
 
-    def compute_new_demand_total(self):
-        C = [0] * (self.N + 1)
-        for k in range(1, self.N + 1):
-            C[k] = C[k - 1] + self.demand[k - 1]
-        nd = {}
-        for l in range(1, self.N + 1):
-            for i in range(1, l + 1):
-                nd[(i, l)] = C[l] - C[i - 1]
-        if (1, 1) in nd:
-            nd[(1, 1)] = nd[(1, 1)] - self.ini_inv
-        return nd
+        for ell in Ts:
+            lhs = 0
+            S, L = [], []
+            for t in range(1, ell + 1):
+                yt = self.model.getSolVal(sol, y[t])
+                xt = self.model.getSolVal(sol, x[t])
+                if D[t, ell] * yt < xt:
+                    S.append(t)
+                    lhs += D[t, ell] * yt
+                else:
+                    L.append(t)
+                    lhs += xt
+            if lhs < D[1, ell]:
+                if checkonly:
+                    return True
+                else:
+                    # add cutting plane constraint
+                    self.model.addCons(quicksum([x[t] for t in L]) + \
+                                       quicksum(D[t, ell] * y[t] for t in S)
+                                       >= D[1, ell], removable=True)
+                cutsadded = True
+        return cutsadded
 
-    def createCons(self, name, x, inv, y):
-        cons = self.model.createCons(self, name)
-        subsets = self.generate_subsets()
-        new_demand_total = self.compute_new_demand_total()
-        cons.data = {
-            "x": x,
-            "inv": inv,
-            "y": y,
-            "subsets": subsets,
-            "new_demand_total": new_demand_total,
-            "T": list(self.T)
-        }
-        return cons
-
-    def conscheck(self, constraints, solution, check_integrality,
-                  check_lp_rows, print_reason, completely, **kwargs):
-        tol = 1e-6
-        model = self.model
-        self.addedcuts = False
-
-        for cons in constraints:
-            x = cons.data["x"]
-            inv = cons.data["inv"]
-            y = cons.data["y"]
-            subsets = cons.data["subsets"]
-            new_demand_total = cons.data["new_demand_total"]
-            T_local = cons.data["T"]
-
-            for l in T_local:
-                if l not in subsets:
-                    continue
-                for s_idx, S in enumerate(subsets[l]):
-                    lhs = sum(model.getSolVal(solution, x[i]) for i in S)
-                    rhs_terms = sum(new_demand_total[(i, l)] * model.getSolVal(solution, y[i]) for i in S)
-                    inv_l_val = model.getSolVal(solution, inv[l])
-                    rhs = rhs_terms + inv_l_val
-
-                    if lhs > rhs + tol:
-                        self.addedcuts = True
-                        expr_lhs = quicksum(x[i] for i in S)
-                        expr_rhs = quicksum(new_demand_total[(i, l)] * y[i] for i in S) + inv[l]
-                        cons_name = f"ls_cuts_l{l}_s{s_idx}"
-                        model.addCons(expr_lhs <= expr_rhs, name=cons_name)
-
-        if self.addedcuts:
+    def conscheck(self, constraints, solution, checkintegrality, checklprows, printreason, completely):
+        if self.addcut(checkonly=True, sol=solution):
             return {"result": SCIP_RESULT.INFEASIBLE}
         else:
             return {"result": SCIP_RESULT.FEASIBLE}
 
-    def consenfolp(self, constraints, n_useful_conss, sol_infeasible):    
-        if self.addedcuts == False:
+    def consenfolp(self, constraints, nusefulconss, solinfeasible):
+        if self.addcut(checkonly=False, sol=None):
             return {"result": SCIP_RESULT.CONSADDED}
         else:
             return {"result": SCIP_RESULT.FEASIBLE}
@@ -121,89 +56,118 @@ class LS_Cuts(Conshdlr):
         pass
 
 
-def opt_model(demand, N, T, setup_cost, holding_cost, production_cost, M, ini_inv):
-    model = Model("lot_sizing_lp_with_LS_cuts")
-    # -----------------------------
-    # Build model, and declare variables
-    # -----------------------------
-    
-    x = {i: model.addVar(name=f"x_{i}", lb=0.0) for i in T}
-    y = {i: model.addVar(name=f"y_{i}", vtype="B") for i in T}
-    inv = {i: model.addVar(name=f"inv_{i}", lb=0.0) for i in T}
-    
-    # -----------------------------
-    # Optimization model
-    # -----------------------------
-    model.setObjective(
-        quicksum(setup_cost[t - 1] * y[t] + production_cost[t - 1] *
-        x[t] + holding_cost[t - 1] * inv[t] for t in T), "minimize")
-    
-    for t in T:
-        model.addCons(x[t] <= M[t - 1] * y[t], name=f"Setup({t})")
-    
-        if t == 1:
-            model.addCons(ini_inv + x[1] == inv[1] + demand[0], name=f"FlowCons({1})")
-        else:
-            model.addCons(inv[t - 1] + x[t] == inv[t] + demand[t - 1], name=f"FlowCons({t})")
-    
-    model.data = x, inv, y
+def sils(T, f, c, d, h):
+    """sils -- LP lotsizing for the single item lot sizing problem
+    Parameters:
+        - T: number of periods
+        - P: set of products
+        - f[t]: set-up costs (on period t)
+        - c[t]: variable costs
+        - d[t]: demand values
+        - h[t]: holding costs
+    Returns a model, ready to be solved.
+    """
+    model = Model("single item lotsizing")
+    Ts = range(1, T + 1)
+    M = sum(d[t] for t in Ts)
+    y, x, I = {}, {}, {}
+    for t in Ts:
+        y[t] = model.addVar(vtype="I", ub=1, name="y(%s)" % t)
+        x[t] = model.addVar(vtype="C", ub=M, name="x(%s)" % t)
+        I[t] = model.addVar(vtype="C", name="I(%s)" % t)
+    I[0] = 0
+
+    for t in Ts:
+        model.addCons(x[t] <= M * y[t], "ConstrUB(%s)" % t)
+        model.addCons(I[t - 1] + x[t] == I[t] + d[t], "FlowCons(%s)" % t)
+
+    model.setObjective( \
+        quicksum(f[t] * y[t] + c[t] * x[t] + h[t] * I[t] for t in Ts), \
+        "minimize")
+
+    model.data = y, x, I
     return model
 
-# -----------------------------
-# Select the running example
-# -----------------------------
-example = 1
 
-demand, N, T, setup_cost, holding_cost, production_cost, M, ini_inv = running_example(example)
-model = opt_model(demand, N, T, setup_cost, holding_cost, production_cost, M, ini_inv)
-x, inv, y = model.data
+def sils_cut(T, f, c, d, h, conshdlr):
+    """solve_sils -- solve the lot sizing problem with cutting planes
+       - start with a relaxed model
+       - used lazy constraints to elimitate fractional setup variables with cutting planes
+    Parameters:
+        - T: number of periods
+        - P: set of products
+        - f[t]: set-up costs (on period t)
+        - c[t]: variable costs
+        - d[t]: demand values
+        - h[t]: holding costs
+    Returns the final model solved, with all necessary cuts added.
+    """
+    Ts = range(1, T + 1)
 
-# -----------------------------
-# Add conshdlr
-# -----------------------------
-def run_cut_hdlr(run):
-    if run == True:
-        cut_hdlr = LS_Cuts(T, demand, ini_inv)
-        model.includeConshdlr(
-            cut_hdlr, "ls_u_cuts", "(L,S)_lazy_cuts",
-            sepapriority = -1,
-            enfopriority = -1,
-            chckpriority = -1,
-            sepafreq = -1,
-            propfreq = -1,
-            eagerfreq = -1,
-            maxprerounds = 0,
-            delaysepa = False,
-            delayprop = False,
-            needscons = True,
-            presoltiming=SCIP_PRESOLTIMING.FAST,
-            proptiming=SCIP_PROPTIMING.BEFORELP
-        )
+    model = sils(T, f, c, d, h)
+    y, x, I = model.data
 
-        pycons = cut_hdlr.createCons("lazy_cons", x, inv, y)
-        model.addPyCons(pycons)
-    else:
-        pass
+    # relax integer variables
+    for t in Ts:
+        model.chgVarType(y[t], "C")
+    model.addVar(vtype="B", name="fake")  # for making the problem MIP
 
-# -----------------------------
-# Run conshdlr
-# -----------------------------
-run = True
-run_cut_hdlr(run)
+    # compute D[i,j] = sum_{t=i}^j d[t]
+    D = {}
+    for t in Ts:
+        s = 0
+        for j in range(t, T + 1):
+            s += d[j]
+            D[t, j] = s
 
-# -----------------------------
-# Solver parameters
-# -----------------------------
-model.redirectOutput()
-model.printVersion()
-model.setPresolve(SCIP_PARAMSETTING.OFF)
-model.setSeparating(SCIP_PARAMSETTING.OFF)
-model.setHeuristics(SCIP_PARAMSETTING.OFF)
-model.setBoolParam("misc/allowstrongdualreds", 0)
+    # include the lot sizing constraint handler
+    model.includeConshdlr(conshdlr, "SILS", "Constraint handler for single item lot sizing",
+                          sepapriority=0, enfopriority=-1, chckpriority=-1, sepafreq=-1, propfreq=-1,
+                          eagerfreq=-1, maxprerounds=0, delaysepa=False, delayprop=False, needscons=False,
+                          presoltiming=SCIP_PRESOLTIMING.FAST, proptiming=SCIP_PROPTIMING.BEFORELP)
+    conshdlr.data = D, Ts
 
-# -----------------------------
-# Solve The model
-# -----------------------------
-model.relax()
-model.optimize()
-model.printSol()
+    model.data = y, x, I
+    return model
+
+
+def mk_example():
+    """mk_example: book example for the single item lot sizing"""
+    T = 5
+    _, f, c, d, h = multidict({
+        1: [3, 1, 5, 1],
+        2: [3, 1, 7, 1],
+        3: [3, 3, 3, 1],
+        4: [3, 3, 6, 1],
+        5: [3, 3, 4, 1],
+    })
+
+    return T, f, c, d, h
+
+
+if __name__ == "__main__":
+    T, f, c, d, h = mk_example()
+
+    model = sils(T, f, c, d, h)
+    y, x, I = model.data
+    model.optimize()
+    sils_obj = model.getObjVal()
+    print("\nOptimal value [standard]:", model.getObjVal())
+    print("%8s%8s%8s%8s%8s%8s%12s%12s" % ("t", "fix", "var", "h", "dem", "y", "x", "I"))
+    for t in range(1, T + 1):
+        print("%8d%8d%8d%8d%8d%8.1f%12.1f%12.1f" % (
+        t, f[t], c[t], h[t], d[t], model.getVal(y[t]), model.getVal(x[t]), model.getVal(I[t])))
+
+    conshdlr = Conshdlr_sils()
+    model = sils_cut(T, f, c, d, h, conshdlr)
+    model.setBoolParam("misc/allowstrongdualreds", 0)
+    model.optimize()
+    sils_cut_obj = model.getObjVal()
+    y, x, I = model.data
+    print("\nOptimal value [cutting planes]:", model.getObjVal())
+    print("%8s%8s%8s%8s%8s%8s%12s%12s" % ("t", "fix", "var", "h", "dem", "y", "x", "I"))
+    for t in range(1, T + 1):
+        print("%8d%8d%8d%8d%8d%8.1f%12.1f%12.1f" % (
+        t, f[t], c[t], h[t], d[t], model.getVal(y[t]), model.getVal(x[t]), model.getVal(I[t])))
+
+    assert abs(sils_obj - sils_cut_obj) <= 1e-6
