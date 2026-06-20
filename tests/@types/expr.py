@@ -59,6 +59,7 @@ assert_type(array2d, numpy.ndarray)
 
 # Unary operators for var
 
+assert_type(+var, pyscipopt.scip.Variable)
 assert_type(-var, pyscipopt.scip.Expr)
 assert_type(abs(var), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.exp(var), pyscipopt.scip.UnaryExpr)
@@ -67,13 +68,13 @@ assert_type(pyscipopt.sqrt(var), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.sin(var), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.cos(var), pyscipopt.scip.UnaryExpr)
 
-_ = +var  # type: ignore  # TypeError: bad operand type for unary +: 'pyscipopt.scip.Variable'
 _ = ~var  # type: ignore  # TypeError: bad operand type for unary ~: 'pyscipopt.scip.Variable'
 _ = var.sum()  # type: ignore  # AttributeError: 'pyscipopt.scip.Variable' object has no attribute 'sum'
 _ = var.sum(axis=-1)  # type: ignore  # AttributeError: 'pyscipopt.scip.Variable' object has no attribute 'sum'
 
 # Unary operators for mvar1d
 
+assert_type(+mvar1d, pyscipopt.scip.MatrixExpr)
 assert_type(-mvar1d, pyscipopt.scip.MatrixExpr)
 assert_type(abs(mvar1d), pyscipopt.scip.MatrixExpr)
 assert_type(pyscipopt.exp(mvar1d), pyscipopt.scip.MatrixGenExpr)
@@ -84,11 +85,11 @@ assert_type(pyscipopt.cos(mvar1d), pyscipopt.scip.MatrixGenExpr)
 assert_type(mvar1d.sum(), pyscipopt.scip.Expr)
 assert_type(mvar1d.sum(axis=-1), pyscipopt.scip.Expr)
 
-_ = +mvar1d  # type: ignore  # TypeError: bad operand type for unary +: 'pyscipopt.scip.Variable'
 _ = ~mvar1d  # type: ignore  # TypeError: bad operand type for unary ~: 'pyscipopt.scip.Variable'
 
 # Unary operators for mvar2d
 
+assert_type(+mvar2d, pyscipopt.scip.MatrixExpr)
 assert_type(-mvar2d, pyscipopt.scip.MatrixExpr)
 assert_type(abs(mvar2d), pyscipopt.scip.MatrixExpr)
 assert_type(pyscipopt.exp(mvar2d), pyscipopt.scip.MatrixGenExpr)
@@ -99,7 +100,6 @@ assert_type(pyscipopt.cos(mvar2d), pyscipopt.scip.MatrixGenExpr)
 assert_type(mvar2d.sum(), pyscipopt.scip.Expr)
 assert_type(mvar2d.sum(axis=-1), pyscipopt.scip.MatrixExpr)
 
-_ = +mvar2d  # type: ignore  # TypeError: bad operand type for unary +: 'pyscipopt.scip.Variable'
 _ = ~mvar2d  # type: ignore  # TypeError: bad operand type for unary ~: 'pyscipopt.scip.Variable'
 
 # Unary operators for term
@@ -119,6 +119,7 @@ _ = term.sum(axis=-1)  # type: ignore  # AttributeError: 'pyscipopt.scip.Term' o
 
 # Unary operators for constant
 
+assert_type(+constant, pyscipopt.scip.Constant)
 assert_type(-constant, pyscipopt.scip.ProdExpr)
 assert_type(abs(constant), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.exp(constant), pyscipopt.scip.UnaryExpr)
@@ -127,13 +128,13 @@ assert_type(pyscipopt.sqrt(constant), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.sin(constant), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.cos(constant), pyscipopt.scip.UnaryExpr)
 
-_ = +constant  # type: ignore  # TypeError: bad operand type for unary +: 'pyscipopt.scip.Constant'
 _ = ~constant  # type: ignore  # TypeError: bad operand type for unary ~: 'pyscipopt.scip.Constant'
 _ = constant.sum()  # type: ignore  # AttributeError: 'pyscipopt.scip.Constant' object has no attribute 'sum'
 _ = constant.sum(axis=-1)  # type: ignore  # AttributeError: 'pyscipopt.scip.Constant' object has no attribute 'sum'
 
 # Unary operators for expr
 
+assert_type(+expr, pyscipopt.scip.Expr)
 assert_type(-expr, pyscipopt.scip.Expr)
 assert_type(abs(expr), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.exp(expr), pyscipopt.scip.UnaryExpr)
@@ -142,13 +143,13 @@ assert_type(pyscipopt.sqrt(expr), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.sin(expr), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.cos(expr), pyscipopt.scip.UnaryExpr)
 
-_ = +expr  # type: ignore  # TypeError: bad operand type for unary +: 'pyscipopt.scip.Expr'
 _ = ~expr  # type: ignore  # TypeError: bad operand type for unary ~: 'pyscipopt.scip.Expr'
 _ = expr.sum()  # type: ignore  # AttributeError: 'pyscipopt.scip.Expr' object has no attribute 'sum'
 _ = expr.sum(axis=-1)  # type: ignore  # AttributeError: 'pyscipopt.scip.Expr' object has no attribute 'sum'
 
 # Unary operators for matrix_expr
 
+assert_type(+matrix_expr, pyscipopt.scip.MatrixExpr)
 assert_type(-matrix_expr, pyscipopt.scip.MatrixExpr)
 assert_type(abs(matrix_expr), pyscipopt.scip.MatrixExpr)
 assert_type(pyscipopt.exp(matrix_expr), pyscipopt.scip.MatrixGenExpr)
@@ -159,11 +160,11 @@ assert_type(pyscipopt.cos(matrix_expr), pyscipopt.scip.MatrixGenExpr)
 assert_type(matrix_expr.sum(), pyscipopt.scip.Expr)
 assert_type(matrix_expr.sum(axis=-1), pyscipopt.scip.MatrixExpr)
 
-_ = +matrix_expr  # type: ignore  # TypeError: bad operand type for unary +: 'pyscipopt.scip.Expr'
 _ = ~matrix_expr  # type: ignore  # TypeError: bad operand type for unary ~: 'pyscipopt.scip.Expr'
 
 # Unary operators for sum_expr
 
+assert_type(+sum_expr, pyscipopt.scip.SumExpr)
 assert_type(-sum_expr, pyscipopt.scip.ProdExpr)
 assert_type(abs(sum_expr), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.exp(sum_expr), pyscipopt.scip.UnaryExpr)
@@ -172,13 +173,13 @@ assert_type(pyscipopt.sqrt(sum_expr), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.sin(sum_expr), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.cos(sum_expr), pyscipopt.scip.UnaryExpr)
 
-_ = +sum_expr  # type: ignore  # TypeError: bad operand type for unary +: 'pyscipopt.scip.SumExpr'
 _ = ~sum_expr  # type: ignore  # TypeError: bad operand type for unary ~: 'pyscipopt.scip.SumExpr'
 _ = sum_expr.sum()  # type: ignore  # AttributeError: 'pyscipopt.scip.SumExpr' object has no attribute 'sum'
 _ = sum_expr.sum(axis=-1)  # type: ignore  # AttributeError: 'pyscipopt.scip.SumExpr' object has no attribute 'sum'
 
 # Unary operators for prod_expr
 
+assert_type(+prod_expr, pyscipopt.scip.ProdExpr)
 assert_type(-prod_expr, pyscipopt.scip.ProdExpr)
 assert_type(abs(prod_expr), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.exp(prod_expr), pyscipopt.scip.UnaryExpr)
@@ -187,13 +188,13 @@ assert_type(pyscipopt.sqrt(prod_expr), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.sin(prod_expr), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.cos(prod_expr), pyscipopt.scip.UnaryExpr)
 
-_ = +prod_expr  # type: ignore  # TypeError: bad operand type for unary +: 'pyscipopt.scip.ProdExpr'
 _ = ~prod_expr  # type: ignore  # TypeError: bad operand type for unary ~: 'pyscipopt.scip.ProdExpr'
 _ = prod_expr.sum()  # type: ignore  # AttributeError: 'pyscipopt.scip.ProdExpr' object has no attribute 'sum'
 _ = prod_expr.sum(axis=-1)  # type: ignore  # AttributeError: 'pyscipopt.scip.ProdExpr' object has no attribute 'sum'
 
 # Unary operators for pow_expr
 
+assert_type(+pow_expr, pyscipopt.scip.PowExpr)
 assert_type(-pow_expr, pyscipopt.scip.ProdExpr)
 assert_type(abs(pow_expr), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.exp(pow_expr), pyscipopt.scip.UnaryExpr)
@@ -202,13 +203,13 @@ assert_type(pyscipopt.sqrt(pow_expr), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.sin(pow_expr), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.cos(pow_expr), pyscipopt.scip.UnaryExpr)
 
-_ = +pow_expr  # type: ignore  # TypeError: bad operand type for unary +: 'pyscipopt.scip.PowExpr'
 _ = ~pow_expr  # type: ignore  # TypeError: bad operand type for unary ~: 'pyscipopt.scip.PowExpr'
 _ = pow_expr.sum()  # type: ignore  # AttributeError: 'pyscipopt.scip.PowExpr' object has no attribute 'sum'
 _ = pow_expr.sum(axis=-1)  # type: ignore  # AttributeError: 'pyscipopt.scip.PowExpr' object has no attribute 'sum'
 
 # Unary operators for var_expr
 
+assert_type(+var_expr, pyscipopt.scip.VarExpr)
 assert_type(-var_expr, pyscipopt.scip.ProdExpr)
 assert_type(abs(var_expr), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.exp(var_expr), pyscipopt.scip.UnaryExpr)
@@ -217,7 +218,6 @@ assert_type(pyscipopt.sqrt(var_expr), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.sin(var_expr), pyscipopt.scip.UnaryExpr)
 assert_type(pyscipopt.cos(var_expr), pyscipopt.scip.UnaryExpr)
 
-_ = +var_expr  # type: ignore  # TypeError: bad operand type for unary +: 'pyscipopt.scip.VarExpr'
 _ = ~var_expr  # type: ignore  # TypeError: bad operand type for unary ~: 'pyscipopt.scip.VarExpr'
 _ = var_expr.sum()  # type: ignore  # AttributeError: 'pyscipopt.scip.VarExpr' object has no attribute 'sum'
 _ = var_expr.sum(axis=-1)  # type: ignore  # AttributeError: 'pyscipopt.scip.VarExpr' object has no attribute 'sum'
