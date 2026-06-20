@@ -587,3 +587,10 @@ def test_pos():
     res = +e
     assert str(res) == str(e)
     assert e is not res
+
+    # test Constant
+    c = sqrt(1).children[0]
+    assert type(c) is not int
+    e = +c
+    assert str(e) == str(c)
+    assert e is not c

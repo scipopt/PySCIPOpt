@@ -861,6 +861,13 @@ cdef class Constant(GenExpr):
     cpdef double _evaluate(self, Solution sol) except *:
         return self.number
 
+    cdef Constant copy(self, bint copy=True):
+        # The copy parameter doesn't work; this is for compatibility.
+        cdef Constant res = Constant.__new__(Constant)
+        res._op = self._op
+        res.number = self.number
+        return res
+
 
 def exp(x):
     """
