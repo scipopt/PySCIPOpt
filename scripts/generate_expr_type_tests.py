@@ -42,7 +42,7 @@ EXPRESSIONS = {
     # Variables
     "var": "model.addVar()",
     "mvar1d": "model.addMatrixVar(3)",
-    "mvar2d": "model.addMatrixVar((2, 3))",
+    "mvar2d": "model.addMatrixVar((3, 3))",
     "term": "pyscipopt.scip.Term(var)",
     # Expressions
     "constant": "pyscipopt.scip.Constant(-2.0)",
@@ -63,7 +63,7 @@ EXPRESSIONS = {
     "np_float": "numpy.float64(3.0)",
     "array0d": "numpy.array(1)",
     "array1d": "numpy.array([1, 2, 3])",
-    "array2d": "numpy.array([[1, 2], [3, 4]])",
+    "array2d": "numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])",
 }
 
 # Mappings from operator symbols to their corresponding operator functions.

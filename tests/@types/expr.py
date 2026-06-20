@@ -16,7 +16,7 @@ var = model.addVar()
 assert_type(var, pyscipopt.scip.Variable)
 mvar1d = model.addMatrixVar(3)
 assert_type(mvar1d, pyscipopt.scip.MatrixVariable)
-mvar2d = model.addMatrixVar((2, 3))
+mvar2d = model.addMatrixVar((3, 3))
 assert_type(mvar2d, pyscipopt.scip.MatrixVariable)
 term = pyscipopt.scip.Term(var)
 assert_type(term, pyscipopt.scip.Term)
@@ -50,7 +50,7 @@ array0d = numpy.array(1)
 assert_type(array0d, numpy.ndarray)
 array1d = numpy.array([1, 2, 3])
 assert_type(array1d, numpy.ndarray)
-array2d = numpy.array([[1, 2], [3, 4]])
+array2d = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 assert_type(array2d, numpy.ndarray)
 
 ###################
@@ -634,12 +634,12 @@ assert_type(mvar1d / mvar2d, pyscipopt.scip.MatrixExpr)
 assert_type(mvar1d <= mvar2d, pyscipopt.scip.MatrixExprCons)
 assert_type(mvar1d >= mvar2d, pyscipopt.scip.MatrixExprCons)
 assert_type(mvar1d == mvar2d, pyscipopt.scip.MatrixExprCons)
+assert_type(mvar1d @ mvar2d, pyscipopt.scip.MatrixExpr)
 
 _ = mvar1d**mvar2d  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.Variable'
 _ = mvar1d < mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = mvar1d > mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = mvar1d != mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = mvar1d @ mvar2d  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 3)
 _ = mvar1d % mvar2d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.Variable'
 
 # Binary operators for mvar1d and term
@@ -702,12 +702,12 @@ assert_type(mvar1d / matrix_expr, pyscipopt.scip.MatrixExpr)
 assert_type(mvar1d <= matrix_expr, pyscipopt.scip.MatrixExprCons)
 assert_type(mvar1d >= matrix_expr, pyscipopt.scip.MatrixExprCons)
 assert_type(mvar1d == matrix_expr, pyscipopt.scip.MatrixExprCons)
+assert_type(mvar1d @ matrix_expr, pyscipopt.scip.MatrixExpr)
 
 _ = mvar1d**matrix_expr  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.Expr'
 _ = mvar1d < matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = mvar1d > matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = mvar1d != matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = mvar1d @ matrix_expr  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 3)
 _ = mvar1d % matrix_expr  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.Expr'
 
 # Binary operators for mvar1d and sum_expr
@@ -914,19 +914,20 @@ _ = mvar1d % array1d  # type: ignore  # TypeError: unsupported operand type(s) f
 
 # Binary operators for mvar1d and array2d
 
-_ = mvar1d + array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
-_ = mvar1d - array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
-_ = mvar1d * array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
-_ = mvar1d / array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
-_ = mvar1d**array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
+assert_type(mvar1d + array2d, pyscipopt.scip.MatrixExpr)
+assert_type(mvar1d - array2d, pyscipopt.scip.MatrixExpr)
+assert_type(mvar1d * array2d, pyscipopt.scip.MatrixExpr)
+assert_type(mvar1d / array2d, pyscipopt.scip.MatrixExpr)
+assert_type(mvar1d**array2d, pyscipopt.scip.MatrixExpr)
+assert_type(mvar1d <= array2d, pyscipopt.scip.MatrixExprCons)
+assert_type(mvar1d >= array2d, pyscipopt.scip.MatrixExprCons)
+assert_type(mvar1d == array2d, pyscipopt.scip.MatrixExprCons)
+assert_type(mvar1d @ array2d, pyscipopt.scip.MatrixExpr)
+
 _ = mvar1d < array2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = mvar1d <= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
 _ = mvar1d > array2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = mvar1d >= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
-_ = mvar1d == array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
 _ = mvar1d != array2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = mvar1d @ array2d  # type: ignore  # ValueError: inconsistent size for core dimension 'n': 3 vs 2
-_ = mvar1d % array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
+_ = mvar1d % array2d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'int'
 
 # Binary operators for mvar2d and var
 
@@ -971,12 +972,12 @@ assert_type(mvar2d / mvar2d, pyscipopt.scip.MatrixExpr)
 assert_type(mvar2d <= mvar2d, pyscipopt.scip.MatrixExprCons)
 assert_type(mvar2d >= mvar2d, pyscipopt.scip.MatrixExprCons)
 assert_type(mvar2d == mvar2d, pyscipopt.scip.MatrixExprCons)
+assert_type(mvar2d @ mvar2d, pyscipopt.scip.MatrixExpr)
 
 _ = mvar2d**mvar2d  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.Variable'
 _ = mvar2d < mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = mvar2d > mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = mvar2d != mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = mvar2d @ mvar2d  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 3)
 _ = mvar2d % mvar2d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.Variable'
 
 # Binary operators for mvar2d and term
@@ -1039,12 +1040,12 @@ assert_type(mvar2d / matrix_expr, pyscipopt.scip.MatrixExpr)
 assert_type(mvar2d <= matrix_expr, pyscipopt.scip.MatrixExprCons)
 assert_type(mvar2d >= matrix_expr, pyscipopt.scip.MatrixExprCons)
 assert_type(mvar2d == matrix_expr, pyscipopt.scip.MatrixExprCons)
+assert_type(mvar2d @ matrix_expr, pyscipopt.scip.MatrixExpr)
 
 _ = mvar2d**matrix_expr  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.Expr'
 _ = mvar2d < matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = mvar2d > matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = mvar2d != matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = mvar2d @ matrix_expr  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 3)
 _ = mvar2d % matrix_expr  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.Expr'
 
 # Binary operators for mvar2d and sum_expr
@@ -1251,19 +1252,20 @@ _ = mvar2d % array1d  # type: ignore  # TypeError: unsupported operand type(s) f
 
 # Binary operators for mvar2d and array2d
 
-_ = mvar2d + array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
-_ = mvar2d - array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
-_ = mvar2d * array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
-_ = mvar2d / array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
-_ = mvar2d**array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
+assert_type(mvar2d + array2d, pyscipopt.scip.MatrixExpr)
+assert_type(mvar2d - array2d, pyscipopt.scip.MatrixExpr)
+assert_type(mvar2d * array2d, pyscipopt.scip.MatrixExpr)
+assert_type(mvar2d / array2d, pyscipopt.scip.MatrixExpr)
+assert_type(mvar2d**array2d, pyscipopt.scip.MatrixExpr)
+assert_type(mvar2d <= array2d, pyscipopt.scip.MatrixExprCons)
+assert_type(mvar2d >= array2d, pyscipopt.scip.MatrixExprCons)
+assert_type(mvar2d == array2d, pyscipopt.scip.MatrixExprCons)
+assert_type(mvar2d @ array2d, pyscipopt.scip.MatrixExpr)
+
 _ = mvar2d < array2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = mvar2d <= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
 _ = mvar2d > array2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = mvar2d >= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
-_ = mvar2d == array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
 _ = mvar2d != array2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = mvar2d @ array2d  # type: ignore  # ValueError: inconsistent size for core dimension 'n': 3 vs 2
-_ = mvar2d % array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
+_ = mvar2d % array2d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'int'
 
 # Binary operators for term and var
 
@@ -1313,7 +1315,7 @@ _ = term * mvar2d  # type: ignore  # TypeError: Argument 'other' has incorrect t
 _ = term**mvar2d  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.Variable'
 _ = term < mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = term > mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = term @ mvar2d  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 1)
+_ = term @ mvar2d  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 3 is different from 1)
 _ = term % mvar2d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.Variable'
 
 # Binary operators for term and term
@@ -1381,7 +1383,7 @@ _ = term * matrix_expr  # type: ignore  # TypeError: Argument 'other' has incorr
 _ = term**matrix_expr  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.Expr'
 _ = term < matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = term > matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = term @ matrix_expr  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 1)
+_ = term @ matrix_expr  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 3 is different from 1)
 _ = term % matrix_expr  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.Expr'
 
 # Binary operators for term and sum_expr
@@ -1602,7 +1604,7 @@ _ = term < array2d  # type: ignore  # NotImplementedError: can only support with
 _ = term <= array2d  # type: ignore  # TypeError: Can't evaluate constraints as booleans.If you want to add a ranged constraint of the form   lhs <= expression <= rhsyou have to use parenthesis to break the Python syntax for chained comparisons:   lhs <= (expression <= rhs)
 _ = term > array2d  # type: ignore  # NotImplementedError: can only support with '<=', '>=', or '=='
 _ = term >= array2d  # type: ignore  # TypeError: Can't evaluate constraints as booleans.If you want to add a ranged constraint of the form   lhs <= expression <= rhsyou have to use parenthesis to break the Python syntax for chained comparisons:   lhs <= (expression <= rhs)
-_ = term @ array2d  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 1)
+_ = term @ array2d  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 3 is different from 1)
 _ = term % array2d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'int'
 
 # Binary operators for constant and var
@@ -2322,12 +2324,12 @@ assert_type(matrix_expr / mvar2d, pyscipopt.scip.MatrixExpr)
 assert_type(matrix_expr <= mvar2d, pyscipopt.scip.MatrixExprCons)
 assert_type(matrix_expr >= mvar2d, pyscipopt.scip.MatrixExprCons)
 assert_type(matrix_expr == mvar2d, pyscipopt.scip.MatrixExprCons)
+assert_type(matrix_expr @ mvar2d, pyscipopt.scip.MatrixExpr)
 
 _ = matrix_expr**mvar2d  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.Variable'
 _ = matrix_expr < mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = matrix_expr > mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = matrix_expr != mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = matrix_expr @ mvar2d  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 3)
 _ = matrix_expr % mvar2d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Expr' and 'pyscipopt.scip.Variable'
 
 # Binary operators for matrix_expr and term
@@ -2390,12 +2392,12 @@ assert_type(matrix_expr / matrix_expr, pyscipopt.scip.MatrixExpr)
 assert_type(matrix_expr <= matrix_expr, pyscipopt.scip.MatrixExprCons)
 assert_type(matrix_expr >= matrix_expr, pyscipopt.scip.MatrixExprCons)
 assert_type(matrix_expr == matrix_expr, pyscipopt.scip.MatrixExprCons)
+assert_type(matrix_expr @ matrix_expr, pyscipopt.scip.MatrixExpr)
 
 _ = matrix_expr**matrix_expr  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.Expr'
 _ = matrix_expr < matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = matrix_expr > matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = matrix_expr != matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = matrix_expr @ matrix_expr  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 3)
 _ = matrix_expr % matrix_expr  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Expr' and 'pyscipopt.scip.Expr'
 
 # Binary operators for matrix_expr and sum_expr
@@ -2602,19 +2604,20 @@ _ = matrix_expr % array1d  # type: ignore  # TypeError: unsupported operand type
 
 # Binary operators for matrix_expr and array2d
 
-_ = matrix_expr + array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
-_ = matrix_expr - array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
-_ = matrix_expr * array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
-_ = matrix_expr / array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
-_ = matrix_expr**array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
+assert_type(matrix_expr + array2d, pyscipopt.scip.MatrixExpr)
+assert_type(matrix_expr - array2d, pyscipopt.scip.MatrixExpr)
+assert_type(matrix_expr * array2d, pyscipopt.scip.MatrixExpr)
+assert_type(matrix_expr / array2d, pyscipopt.scip.MatrixExpr)
+assert_type(matrix_expr**array2d, pyscipopt.scip.MatrixExpr)
+assert_type(matrix_expr <= array2d, pyscipopt.scip.MatrixExprCons)
+assert_type(matrix_expr >= array2d, pyscipopt.scip.MatrixExprCons)
+assert_type(matrix_expr == array2d, pyscipopt.scip.MatrixExprCons)
+assert_type(matrix_expr @ array2d, pyscipopt.scip.MatrixExpr)
+
 _ = matrix_expr < array2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = matrix_expr <= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
 _ = matrix_expr > array2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = matrix_expr >= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
-_ = matrix_expr == array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
 _ = matrix_expr != array2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = matrix_expr @ array2d  # type: ignore  # ValueError: inconsistent size for core dimension 'n': 3 vs 2
-_ = matrix_expr % array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
+_ = matrix_expr % array2d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Expr' and 'int'
 
 # Binary operators for sum_expr and var
 
@@ -4600,15 +4603,16 @@ _ = matrixexprcons % array1d  # type: ignore  # NotImplementedError: can only su
 
 # Binary operators for matrixexprcons and array2d
 
+assert_type(matrixexprcons >= array2d, pyscipopt.scip.MatrixExprCons)
+
 _ = matrixexprcons + array2d  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 _ = matrixexprcons - array2d  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 _ = matrixexprcons * array2d  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 _ = matrixexprcons / array2d  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 _ = matrixexprcons**array2d  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 _ = matrixexprcons < array2d  # type: ignore  # NotImplementedError: can only support '<=' or '>='
-_ = matrixexprcons <= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
+_ = matrixexprcons <= array2d  # type: ignore  # TypeError: ExprCons already has upper bound
 _ = matrixexprcons > array2d  # type: ignore  # NotImplementedError: can only support '<=' or '>='
-_ = matrixexprcons >= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
 _ = matrixexprcons == array2d  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 _ = matrixexprcons != array2d  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 _ = matrixexprcons @ array2d  # type: ignore  # NotImplementedError: can only support '<=' or '>='
@@ -5762,11 +5766,11 @@ assert_type(array1d**mvar2d, pyscipopt.scip.MatrixExpr)
 assert_type(array1d <= mvar2d, pyscipopt.scip.MatrixExprCons)
 assert_type(array1d >= mvar2d, pyscipopt.scip.MatrixExprCons)
 assert_type(array1d == mvar2d, pyscipopt.scip.MatrixExprCons)
+assert_type(array1d @ mvar2d, pyscipopt.scip.MatrixExpr)
 
 _ = array1d < mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = array1d > mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = array1d != mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = array1d @ mvar2d  # type: ignore  # ValueError: inconsistent size for core dimension 'n': 2 vs 3
 _ = array1d % mvar2d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'int' and 'pyscipopt.scip.Variable'
 
 # Binary operators for array1d and term
@@ -5830,11 +5834,11 @@ assert_type(array1d**matrix_expr, pyscipopt.scip.MatrixExpr)
 assert_type(array1d <= matrix_expr, pyscipopt.scip.MatrixExprCons)
 assert_type(array1d >= matrix_expr, pyscipopt.scip.MatrixExprCons)
 assert_type(array1d == matrix_expr, pyscipopt.scip.MatrixExprCons)
+assert_type(array1d @ matrix_expr, pyscipopt.scip.MatrixExpr)
 
 _ = array1d < matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = array1d > matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
 _ = array1d != matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = array1d @ matrix_expr  # type: ignore  # ValueError: inconsistent size for core dimension 'n': 2 vs 3
 _ = array1d % matrix_expr  # type: ignore  # TypeError: unsupported operand type(s) for %: 'int' and 'pyscipopt.scip.Expr'
 
 # Binary operators for array1d and sum_expr
@@ -5957,36 +5961,37 @@ _ = array2d % var  # type: ignore  # TypeError: unsupported operand type(s) for 
 
 # Binary operators for array2d and mvar1d
 
-_ = array2d + mvar1d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (3,)
-_ = array2d - mvar1d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (3,)
-_ = array2d * mvar1d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (3,)
-_ = array2d / mvar1d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (3,)
-_ = array2d**mvar1d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (3,)
+assert_type(array2d + mvar1d, pyscipopt.scip.MatrixExpr)
+assert_type(array2d - mvar1d, pyscipopt.scip.MatrixExpr)
+assert_type(array2d * mvar1d, pyscipopt.scip.MatrixExpr)
+assert_type(array2d / mvar1d, pyscipopt.scip.MatrixExpr)
+assert_type(array2d**mvar1d, pyscipopt.scip.MatrixExpr)
+assert_type(array2d <= mvar1d, pyscipopt.scip.MatrixExprCons)
+assert_type(array2d >= mvar1d, pyscipopt.scip.MatrixExprCons)
+assert_type(array2d == mvar1d, pyscipopt.scip.MatrixExprCons)
+assert_type(array2d @ mvar1d, pyscipopt.scip.MatrixExpr)
+
 _ = array2d < mvar1d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = array2d <= mvar1d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
 _ = array2d > mvar1d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = array2d >= mvar1d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
-_ = array2d == mvar1d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
 _ = array2d != mvar1d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = array2d @ mvar1d  # type: ignore  # ValueError: inconsistent size for core dimension 'n': 3 vs 2
-_ = array2d % mvar1d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (3,)
+_ = array2d % mvar1d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'int' and 'pyscipopt.scip.Variable'
 
 # Binary operators for array2d and mvar2d
 
+assert_type(array2d + mvar2d, pyscipopt.scip.MatrixExpr)
+assert_type(array2d - mvar2d, pyscipopt.scip.MatrixExpr)
+assert_type(array2d * mvar2d, pyscipopt.scip.MatrixExpr)
+assert_type(array2d / mvar2d, pyscipopt.scip.MatrixExpr)
+assert_type(array2d**mvar2d, pyscipopt.scip.MatrixExpr)
+assert_type(array2d <= mvar2d, pyscipopt.scip.MatrixExprCons)
+assert_type(array2d >= mvar2d, pyscipopt.scip.MatrixExprCons)
+assert_type(array2d == mvar2d, pyscipopt.scip.MatrixExprCons)
 assert_type(array2d @ mvar2d, pyscipopt.scip.MatrixExpr)
 
-_ = array2d + mvar2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (2,3)
-_ = array2d - mvar2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (2,3)
-_ = array2d * mvar2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (2,3)
-_ = array2d / mvar2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (2,3)
-_ = array2d**mvar2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (2,3)
 _ = array2d < mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = array2d <= mvar2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
 _ = array2d > mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = array2d >= mvar2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
-_ = array2d == mvar2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
 _ = array2d != mvar2d  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = array2d % mvar2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (2,3)
+_ = array2d % mvar2d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'int' and 'pyscipopt.scip.Variable'
 
 # Binary operators for array2d and term
 
@@ -6002,7 +6007,7 @@ _ = array2d > term  # type: ignore  # NotImplementedError: can only support with
 _ = array2d >= term  # type: ignore  # TypeError: Can't evaluate constraints as booleans.If you want to add a ranged constraint of the form   lhs <= expression <= rhsyou have to use parenthesis to break the Python syntax for chained comparisons:   lhs <= (expression <= rhs)
 _ = array2d == term  # type: ignore  # TypeError: Can't evaluate constraints as booleans.If you want to add a ranged constraint of the form   lhs <= expression <= rhsyou have to use parenthesis to break the Python syntax for chained comparisons:   lhs <= (expression <= rhs)
 _ = array2d != term  # type: ignore  # NotImplementedError: can only support with '<=', '>=', or '=='
-_ = array2d @ term  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 1 is different from 2)
+_ = array2d @ term  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 1 is different from 3)
 _ = array2d % term  # type: ignore  # TypeError: unsupported operand type(s) for %: 'int' and 'pyscipopt.scip.Variable'
 
 # Binary operators for array2d and constant
@@ -6041,20 +6046,20 @@ _ = array2d % expr  # type: ignore  # TypeError: unsupported operand type(s) for
 
 # Binary operators for array2d and matrix_expr
 
+assert_type(array2d + matrix_expr, pyscipopt.scip.MatrixExpr)
+assert_type(array2d - matrix_expr, pyscipopt.scip.MatrixExpr)
+assert_type(array2d * matrix_expr, pyscipopt.scip.MatrixExpr)
+assert_type(array2d / matrix_expr, pyscipopt.scip.MatrixExpr)
+assert_type(array2d**matrix_expr, pyscipopt.scip.MatrixExpr)
+assert_type(array2d <= matrix_expr, pyscipopt.scip.MatrixExprCons)
+assert_type(array2d >= matrix_expr, pyscipopt.scip.MatrixExprCons)
+assert_type(array2d == matrix_expr, pyscipopt.scip.MatrixExprCons)
 assert_type(array2d @ matrix_expr, pyscipopt.scip.MatrixExpr)
 
-_ = array2d + matrix_expr  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (2,3)
-_ = array2d - matrix_expr  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (2,3)
-_ = array2d * matrix_expr  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (2,3)
-_ = array2d / matrix_expr  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (2,3)
-_ = array2d**matrix_expr  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (2,3)
 _ = array2d < matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = array2d <= matrix_expr  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
 _ = array2d > matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = array2d >= matrix_expr  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
-_ = array2d == matrix_expr  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2)
 _ = array2d != matrix_expr  # type: ignore  # NotImplementedError: can only support '<=', '>=', or '=='
-_ = array2d % matrix_expr  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,2) (2,3)
+_ = array2d % matrix_expr  # type: ignore  # TypeError: unsupported operand type(s) for %: 'int' and 'pyscipopt.scip.Expr'
 
 # Binary operators for array2d and sum_expr
 
@@ -6142,15 +6147,16 @@ _ = array2d % exprcons  # type: ignore  # TypeError: unsupported operand type(s)
 
 # Binary operators for array2d and matrixexprcons
 
+assert_type(array2d <= matrixexprcons, pyscipopt.scip.MatrixExprCons)
+
 _ = array2d + matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 _ = array2d - matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 _ = array2d * matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 _ = array2d / matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 _ = array2d**matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 _ = array2d < matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
-_ = array2d <= matrixexprcons  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
 _ = array2d > matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
-_ = array2d >= matrixexprcons  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2)
+_ = array2d >= matrixexprcons  # type: ignore  # TypeError: ExprCons already has upper bound
 _ = array2d == matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 _ = array2d != matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 _ = array2d @ matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
@@ -6862,7 +6868,7 @@ def test_inplace_var_imatmul_np_float() -> None:
 
 def test_inplace_var_imod_np_float() -> None:
     var_imod_np_float = model.addVar()
-    var_imod_np_float %= np_float  # type: ignore  # TypeError: operand type(s) all returned NotImplemented from __array_ufunc__(<ufunc 'remainder'>, '__call__', x129, np.float64(3.0)): 'Variable', 'float64'
+    var_imod_np_float %= np_float  # type: ignore  # TypeError: operand type(s) all returned NotImplemented from __array_ufunc__(<ufunc 'remainder'>, '__call__', x132, np.float64(3.0)): 'Variable', 'float64'
 
 
 # Inplace operators for var and array0d
@@ -6900,12 +6906,12 @@ def test_inplace_var_ipow_array0d() -> None:
 
 def test_inplace_var_imatmul_array0d() -> None:
     var_imatmul_array0d = model.addVar()
-    var_imatmul_array0d @= array0d  # type: ignore  # TypeError: operand type(s) all returned NotImplemented from __array_ufunc__(<ufunc 'matmul'>, '__call__', x135, array(1)): 'Variable', 'ndarray'
+    var_imatmul_array0d @= array0d  # type: ignore  # TypeError: operand type(s) all returned NotImplemented from __array_ufunc__(<ufunc 'matmul'>, '__call__', x138, array(1)): 'Variable', 'ndarray'
 
 
 def test_inplace_var_imod_array0d() -> None:
     var_imod_array0d = model.addVar()
-    var_imod_array0d %= array0d  # type: ignore  # TypeError: operand type(s) all returned NotImplemented from __array_ufunc__(<ufunc 'remainder'>, '__call__', x136, array(1)): 'Variable', 'ndarray'
+    var_imod_array0d %= array0d  # type: ignore  # TypeError: operand type(s) all returned NotImplemented from __array_ufunc__(<ufunc 'remainder'>, '__call__', x139, array(1)): 'Variable', 'ndarray'
 
 
 # Inplace operators for var and array1d
@@ -7081,37 +7087,38 @@ def test_inplace_mvar1d_imod_mvar1d() -> None:
 
 def test_inplace_mvar1d_iadd_mvar2d() -> None:
     mvar1d_iadd_mvar2d = model.addMatrixVar(3)
-    mvar1d_iadd_mvar2d += mvar2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (2,3)
+    mvar1d_iadd_mvar2d += mvar2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 def test_inplace_mvar1d_isub_mvar2d() -> None:
     mvar1d_isub_mvar2d = model.addMatrixVar(3)
-    mvar1d_isub_mvar2d -= mvar2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (2,3)
+    mvar1d_isub_mvar2d -= mvar2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 def test_inplace_mvar1d_imul_mvar2d() -> None:
     mvar1d_imul_mvar2d = model.addMatrixVar(3)
-    mvar1d_imul_mvar2d *= mvar2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (2,3)
+    mvar1d_imul_mvar2d *= mvar2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 def test_inplace_mvar1d_itruediv_mvar2d() -> None:
     mvar1d_itruediv_mvar2d = model.addMatrixVar(3)
-    mvar1d_itruediv_mvar2d /= mvar2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (2,3)
+    mvar1d_itruediv_mvar2d /= mvar2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 def test_inplace_mvar1d_ipow_mvar2d() -> None:
     mvar1d_ipow_mvar2d = model.addMatrixVar(3)
-    mvar1d_ipow_mvar2d **= mvar2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (2,3)
+    mvar1d_ipow_mvar2d **= mvar2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 def test_inplace_mvar1d_imatmul_mvar2d() -> None:
     mvar1d_imatmul_mvar2d = model.addMatrixVar(3)
-    mvar1d_imatmul_mvar2d @= mvar2d  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 3)
+    mvar1d_imatmul_mvar2d @= mvar2d
+    assert_type(mvar1d_imatmul_mvar2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar1d_imod_mvar2d() -> None:
     mvar1d_imod_mvar2d = model.addMatrixVar(3)
-    mvar1d_imod_mvar2d %= mvar2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (2,3)
+    mvar1d_imod_mvar2d %= mvar2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 # Inplace operators for mvar1d and term
@@ -7245,37 +7252,38 @@ def test_inplace_mvar1d_imod_expr() -> None:
 
 def test_inplace_mvar1d_iadd_matrix_expr() -> None:
     mvar1d_iadd_matrix_expr = model.addMatrixVar(3)
-    mvar1d_iadd_matrix_expr += matrix_expr  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (2,3)
+    mvar1d_iadd_matrix_expr += matrix_expr  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 def test_inplace_mvar1d_isub_matrix_expr() -> None:
     mvar1d_isub_matrix_expr = model.addMatrixVar(3)
-    mvar1d_isub_matrix_expr -= matrix_expr  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (2,3)
+    mvar1d_isub_matrix_expr -= matrix_expr  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 def test_inplace_mvar1d_imul_matrix_expr() -> None:
     mvar1d_imul_matrix_expr = model.addMatrixVar(3)
-    mvar1d_imul_matrix_expr *= matrix_expr  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (2,3)
+    mvar1d_imul_matrix_expr *= matrix_expr  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 def test_inplace_mvar1d_itruediv_matrix_expr() -> None:
     mvar1d_itruediv_matrix_expr = model.addMatrixVar(3)
-    mvar1d_itruediv_matrix_expr /= matrix_expr  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (2,3)
+    mvar1d_itruediv_matrix_expr /= matrix_expr  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 def test_inplace_mvar1d_ipow_matrix_expr() -> None:
     mvar1d_ipow_matrix_expr = model.addMatrixVar(3)
-    mvar1d_ipow_matrix_expr **= matrix_expr  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (2,3)
+    mvar1d_ipow_matrix_expr **= matrix_expr  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 def test_inplace_mvar1d_imatmul_matrix_expr() -> None:
     mvar1d_imatmul_matrix_expr = model.addMatrixVar(3)
-    mvar1d_imatmul_matrix_expr @= matrix_expr  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 3)
+    mvar1d_imatmul_matrix_expr @= matrix_expr
+    assert_type(mvar1d_imatmul_matrix_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar1d_imod_matrix_expr() -> None:
     mvar1d_imod_matrix_expr = model.addMatrixVar(3)
-    mvar1d_imod_matrix_expr %= matrix_expr  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (2,3)
+    mvar1d_imod_matrix_expr %= matrix_expr  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 # Inplace operators for mvar1d and sum_expr
@@ -7690,7 +7698,7 @@ def test_inplace_mvar1d_imatmul_np_float() -> None:
 
 def test_inplace_mvar1d_imod_np_float() -> None:
     mvar1d_imod_np_float = model.addMatrixVar(3)
-    mvar1d_imod_np_float %= np_float  # type: ignore  # TypeError: operand type(s) all returned NotImplemented from __array_ufunc__(<ufunc 'remainder'>, '__call__', x505, np.float64(3.0)): 'Variable', 'float64'
+    mvar1d_imod_np_float %= np_float  # type: ignore  # TypeError: operand type(s) all returned NotImplemented from __array_ufunc__(<ufunc 'remainder'>, '__call__', x508, np.float64(3.0)): 'Variable', 'float64'
 
 
 # Inplace operators for mvar1d and array0d
@@ -7785,78 +7793,79 @@ def test_inplace_mvar1d_imod_array1d() -> None:
 
 def test_inplace_mvar1d_iadd_array2d() -> None:
     mvar1d_iadd_array2d = model.addMatrixVar(3)
-    mvar1d_iadd_array2d += array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2) (3,)
+    mvar1d_iadd_array2d += array2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 def test_inplace_mvar1d_isub_array2d() -> None:
     mvar1d_isub_array2d = model.addMatrixVar(3)
-    mvar1d_isub_array2d -= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2) (3,)
+    mvar1d_isub_array2d -= array2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 def test_inplace_mvar1d_imul_array2d() -> None:
     mvar1d_imul_array2d = model.addMatrixVar(3)
-    mvar1d_imul_array2d *= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2) (3,)
+    mvar1d_imul_array2d *= array2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 def test_inplace_mvar1d_itruediv_array2d() -> None:
     mvar1d_itruediv_array2d = model.addMatrixVar(3)
-    mvar1d_itruediv_array2d /= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2) (3,)
+    mvar1d_itruediv_array2d /= array2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 def test_inplace_mvar1d_ipow_array2d() -> None:
     mvar1d_ipow_array2d = model.addMatrixVar(3)
-    mvar1d_ipow_array2d **= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2) (3,)
+    mvar1d_ipow_array2d **= array2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 def test_inplace_mvar1d_imatmul_array2d() -> None:
     mvar1d_imatmul_array2d = model.addMatrixVar(3)
-    mvar1d_imatmul_array2d @= array2d  # type: ignore  # ValueError: inconsistent size for core dimension 'n': 3 vs 2
+    mvar1d_imatmul_array2d @= array2d
+    assert_type(mvar1d_imatmul_array2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar1d_imod_array2d() -> None:
     mvar1d_imod_array2d = model.addMatrixVar(3)
-    mvar1d_imod_array2d %= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (3,) (2,2) (3,)
+    mvar1d_imod_array2d %= array2d  # type: ignore  # ValueError: non-broadcastable output operand with shape (3,) doesn't match the broadcast shape (3,3)
 
 
 # Inplace operators for mvar2d and var
 
 
 def test_inplace_mvar2d_iadd_var() -> None:
-    mvar2d_iadd_var = model.addMatrixVar((2, 3))
+    mvar2d_iadd_var = model.addMatrixVar((3, 3))
     mvar2d_iadd_var += var
     assert_type(mvar2d_iadd_var, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_var() -> None:
-    mvar2d_isub_var = model.addMatrixVar((2, 3))
+    mvar2d_isub_var = model.addMatrixVar((3, 3))
     mvar2d_isub_var -= var
     assert_type(mvar2d_isub_var, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_var() -> None:
-    mvar2d_imul_var = model.addMatrixVar((2, 3))
+    mvar2d_imul_var = model.addMatrixVar((3, 3))
     mvar2d_imul_var *= var
     assert_type(mvar2d_imul_var, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_var() -> None:
-    mvar2d_itruediv_var = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_var = model.addMatrixVar((3, 3))
     mvar2d_itruediv_var /= var
     assert_type(mvar2d_itruediv_var, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_var() -> None:
-    mvar2d_ipow_var = model.addMatrixVar((2, 3))
+    mvar2d_ipow_var = model.addMatrixVar((3, 3))
     mvar2d_ipow_var **= var  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.Variable'
 
 
 def test_inplace_mvar2d_imatmul_var() -> None:
-    mvar2d_imatmul_var = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_var = model.addMatrixVar((3, 3))
     mvar2d_imatmul_var @= var  # type: ignore  # ValueError: matmul: Input operand 1 does not have enough dimensions (has 0, gufunc core with signature (n?,k),(k,m?)->(n?,m?) requires 1)
 
 
 def test_inplace_mvar2d_imod_var() -> None:
-    mvar2d_imod_var = model.addMatrixVar((2, 3))
+    mvar2d_imod_var = model.addMatrixVar((3, 3))
     mvar2d_imod_var %= var  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.Variable'
 
 
@@ -7864,41 +7873,41 @@ def test_inplace_mvar2d_imod_var() -> None:
 
 
 def test_inplace_mvar2d_iadd_mvar1d() -> None:
-    mvar2d_iadd_mvar1d = model.addMatrixVar((2, 3))
+    mvar2d_iadd_mvar1d = model.addMatrixVar((3, 3))
     mvar2d_iadd_mvar1d += mvar1d
     assert_type(mvar2d_iadd_mvar1d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_mvar1d() -> None:
-    mvar2d_isub_mvar1d = model.addMatrixVar((2, 3))
+    mvar2d_isub_mvar1d = model.addMatrixVar((3, 3))
     mvar2d_isub_mvar1d -= mvar1d
     assert_type(mvar2d_isub_mvar1d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_mvar1d() -> None:
-    mvar2d_imul_mvar1d = model.addMatrixVar((2, 3))
+    mvar2d_imul_mvar1d = model.addMatrixVar((3, 3))
     mvar2d_imul_mvar1d *= mvar1d
     assert_type(mvar2d_imul_mvar1d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_mvar1d() -> None:
-    mvar2d_itruediv_mvar1d = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_mvar1d = model.addMatrixVar((3, 3))
     mvar2d_itruediv_mvar1d /= mvar1d
     assert_type(mvar2d_itruediv_mvar1d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_mvar1d() -> None:
-    mvar2d_ipow_mvar1d = model.addMatrixVar((2, 3))
+    mvar2d_ipow_mvar1d = model.addMatrixVar((3, 3))
     mvar2d_ipow_mvar1d **= mvar1d  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.Variable'
 
 
 def test_inplace_mvar2d_imatmul_mvar1d() -> None:
-    mvar2d_imatmul_mvar1d = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_mvar1d = model.addMatrixVar((3, 3))
     mvar2d_imatmul_mvar1d @= mvar1d  # type: ignore  # ValueError: inplace matrix multiplication requires the first operand to have at least one and the second at least two dimensions.
 
 
 def test_inplace_mvar2d_imod_mvar1d() -> None:
-    mvar2d_imod_mvar1d = model.addMatrixVar((2, 3))
+    mvar2d_imod_mvar1d = model.addMatrixVar((3, 3))
     mvar2d_imod_mvar1d %= mvar1d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.Variable'
 
 
@@ -7906,41 +7915,42 @@ def test_inplace_mvar2d_imod_mvar1d() -> None:
 
 
 def test_inplace_mvar2d_iadd_mvar2d() -> None:
-    mvar2d_iadd_mvar2d = model.addMatrixVar((2, 3))
+    mvar2d_iadd_mvar2d = model.addMatrixVar((3, 3))
     mvar2d_iadd_mvar2d += mvar2d
     assert_type(mvar2d_iadd_mvar2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_mvar2d() -> None:
-    mvar2d_isub_mvar2d = model.addMatrixVar((2, 3))
+    mvar2d_isub_mvar2d = model.addMatrixVar((3, 3))
     mvar2d_isub_mvar2d -= mvar2d
     assert_type(mvar2d_isub_mvar2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_mvar2d() -> None:
-    mvar2d_imul_mvar2d = model.addMatrixVar((2, 3))
+    mvar2d_imul_mvar2d = model.addMatrixVar((3, 3))
     mvar2d_imul_mvar2d *= mvar2d
     assert_type(mvar2d_imul_mvar2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_mvar2d() -> None:
-    mvar2d_itruediv_mvar2d = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_mvar2d = model.addMatrixVar((3, 3))
     mvar2d_itruediv_mvar2d /= mvar2d
     assert_type(mvar2d_itruediv_mvar2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_mvar2d() -> None:
-    mvar2d_ipow_mvar2d = model.addMatrixVar((2, 3))
+    mvar2d_ipow_mvar2d = model.addMatrixVar((3, 3))
     mvar2d_ipow_mvar2d **= mvar2d  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.Variable'
 
 
 def test_inplace_mvar2d_imatmul_mvar2d() -> None:
-    mvar2d_imatmul_mvar2d = model.addMatrixVar((2, 3))
-    mvar2d_imatmul_mvar2d @= mvar2d  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 3)
+    mvar2d_imatmul_mvar2d = model.addMatrixVar((3, 3))
+    mvar2d_imatmul_mvar2d @= mvar2d
+    assert_type(mvar2d_imatmul_mvar2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imod_mvar2d() -> None:
-    mvar2d_imod_mvar2d = model.addMatrixVar((2, 3))
+    mvar2d_imod_mvar2d = model.addMatrixVar((3, 3))
     mvar2d_imod_mvar2d %= mvar2d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.Variable'
 
 
@@ -7948,41 +7958,41 @@ def test_inplace_mvar2d_imod_mvar2d() -> None:
 
 
 def test_inplace_mvar2d_iadd_term() -> None:
-    mvar2d_iadd_term = model.addMatrixVar((2, 3))
+    mvar2d_iadd_term = model.addMatrixVar((3, 3))
     mvar2d_iadd_term += term
     assert_type(mvar2d_iadd_term, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_term() -> None:
-    mvar2d_isub_term = model.addMatrixVar((2, 3))
+    mvar2d_isub_term = model.addMatrixVar((3, 3))
     mvar2d_isub_term -= term
     assert_type(mvar2d_isub_term, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_term() -> None:
-    mvar2d_imul_term = model.addMatrixVar((2, 3))
+    mvar2d_imul_term = model.addMatrixVar((3, 3))
     mvar2d_imul_term *= term
     assert_type(mvar2d_imul_term, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_term() -> None:
-    mvar2d_itruediv_term = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_term = model.addMatrixVar((3, 3))
     mvar2d_itruediv_term /= term
     assert_type(mvar2d_itruediv_term, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_term() -> None:
-    mvar2d_ipow_term = model.addMatrixVar((2, 3))
+    mvar2d_ipow_term = model.addMatrixVar((3, 3))
     mvar2d_ipow_term **= term  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.Variable'
 
 
 def test_inplace_mvar2d_imatmul_term() -> None:
-    mvar2d_imatmul_term = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_term = model.addMatrixVar((3, 3))
     mvar2d_imatmul_term @= term  # type: ignore  # ValueError: inplace matrix multiplication requires the first operand to have at least one and the second at least two dimensions.
 
 
 def test_inplace_mvar2d_imod_term() -> None:
-    mvar2d_imod_term = model.addMatrixVar((2, 3))
+    mvar2d_imod_term = model.addMatrixVar((3, 3))
     mvar2d_imod_term %= term  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.Variable'
 
 
@@ -7990,41 +8000,41 @@ def test_inplace_mvar2d_imod_term() -> None:
 
 
 def test_inplace_mvar2d_iadd_constant() -> None:
-    mvar2d_iadd_constant = model.addMatrixVar((2, 3))
+    mvar2d_iadd_constant = model.addMatrixVar((3, 3))
     mvar2d_iadd_constant += constant
     assert_type(mvar2d_iadd_constant, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_constant() -> None:
-    mvar2d_isub_constant = model.addMatrixVar((2, 3))
+    mvar2d_isub_constant = model.addMatrixVar((3, 3))
     mvar2d_isub_constant -= constant
     assert_type(mvar2d_isub_constant, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_constant() -> None:
-    mvar2d_imul_constant = model.addMatrixVar((2, 3))
+    mvar2d_imul_constant = model.addMatrixVar((3, 3))
     mvar2d_imul_constant *= constant
     assert_type(mvar2d_imul_constant, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_constant() -> None:
-    mvar2d_itruediv_constant = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_constant = model.addMatrixVar((3, 3))
     mvar2d_itruediv_constant /= constant
     assert_type(mvar2d_itruediv_constant, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_constant() -> None:
-    mvar2d_ipow_constant = model.addMatrixVar((2, 3))
+    mvar2d_ipow_constant = model.addMatrixVar((3, 3))
     mvar2d_ipow_constant **= constant  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.Constant'
 
 
 def test_inplace_mvar2d_imatmul_constant() -> None:
-    mvar2d_imatmul_constant = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_constant = model.addMatrixVar((3, 3))
     mvar2d_imatmul_constant @= constant  # type: ignore  # ValueError: matmul: Input operand 1 does not have enough dimensions (has 0, gufunc core with signature (n?,k),(k,m?)->(n?,m?) requires 1)
 
 
 def test_inplace_mvar2d_imod_constant() -> None:
-    mvar2d_imod_constant = model.addMatrixVar((2, 3))
+    mvar2d_imod_constant = model.addMatrixVar((3, 3))
     mvar2d_imod_constant %= constant  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.Constant'
 
 
@@ -8032,41 +8042,41 @@ def test_inplace_mvar2d_imod_constant() -> None:
 
 
 def test_inplace_mvar2d_iadd_expr() -> None:
-    mvar2d_iadd_expr = model.addMatrixVar((2, 3))
+    mvar2d_iadd_expr = model.addMatrixVar((3, 3))
     mvar2d_iadd_expr += expr
     assert_type(mvar2d_iadd_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_expr() -> None:
-    mvar2d_isub_expr = model.addMatrixVar((2, 3))
+    mvar2d_isub_expr = model.addMatrixVar((3, 3))
     mvar2d_isub_expr -= expr
     assert_type(mvar2d_isub_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_expr() -> None:
-    mvar2d_imul_expr = model.addMatrixVar((2, 3))
+    mvar2d_imul_expr = model.addMatrixVar((3, 3))
     mvar2d_imul_expr *= expr
     assert_type(mvar2d_imul_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_expr() -> None:
-    mvar2d_itruediv_expr = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_expr = model.addMatrixVar((3, 3))
     mvar2d_itruediv_expr /= expr
     assert_type(mvar2d_itruediv_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_expr() -> None:
-    mvar2d_ipow_expr = model.addMatrixVar((2, 3))
+    mvar2d_ipow_expr = model.addMatrixVar((3, 3))
     mvar2d_ipow_expr **= expr  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.Expr'
 
 
 def test_inplace_mvar2d_imatmul_expr() -> None:
-    mvar2d_imatmul_expr = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_expr = model.addMatrixVar((3, 3))
     mvar2d_imatmul_expr @= expr  # type: ignore  # ValueError: matmul: Input operand 1 does not have enough dimensions (has 0, gufunc core with signature (n?,k),(k,m?)->(n?,m?) requires 1)
 
 
 def test_inplace_mvar2d_imod_expr() -> None:
-    mvar2d_imod_expr = model.addMatrixVar((2, 3))
+    mvar2d_imod_expr = model.addMatrixVar((3, 3))
     mvar2d_imod_expr %= expr  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.Expr'
 
 
@@ -8074,41 +8084,42 @@ def test_inplace_mvar2d_imod_expr() -> None:
 
 
 def test_inplace_mvar2d_iadd_matrix_expr() -> None:
-    mvar2d_iadd_matrix_expr = model.addMatrixVar((2, 3))
+    mvar2d_iadd_matrix_expr = model.addMatrixVar((3, 3))
     mvar2d_iadd_matrix_expr += matrix_expr
     assert_type(mvar2d_iadd_matrix_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_matrix_expr() -> None:
-    mvar2d_isub_matrix_expr = model.addMatrixVar((2, 3))
+    mvar2d_isub_matrix_expr = model.addMatrixVar((3, 3))
     mvar2d_isub_matrix_expr -= matrix_expr
     assert_type(mvar2d_isub_matrix_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_matrix_expr() -> None:
-    mvar2d_imul_matrix_expr = model.addMatrixVar((2, 3))
+    mvar2d_imul_matrix_expr = model.addMatrixVar((3, 3))
     mvar2d_imul_matrix_expr *= matrix_expr
     assert_type(mvar2d_imul_matrix_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_matrix_expr() -> None:
-    mvar2d_itruediv_matrix_expr = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_matrix_expr = model.addMatrixVar((3, 3))
     mvar2d_itruediv_matrix_expr /= matrix_expr
     assert_type(mvar2d_itruediv_matrix_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_matrix_expr() -> None:
-    mvar2d_ipow_matrix_expr = model.addMatrixVar((2, 3))
+    mvar2d_ipow_matrix_expr = model.addMatrixVar((3, 3))
     mvar2d_ipow_matrix_expr **= matrix_expr  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.Expr'
 
 
 def test_inplace_mvar2d_imatmul_matrix_expr() -> None:
-    mvar2d_imatmul_matrix_expr = model.addMatrixVar((2, 3))
-    mvar2d_imatmul_matrix_expr @= matrix_expr  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 3)
+    mvar2d_imatmul_matrix_expr = model.addMatrixVar((3, 3))
+    mvar2d_imatmul_matrix_expr @= matrix_expr
+    assert_type(mvar2d_imatmul_matrix_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imod_matrix_expr() -> None:
-    mvar2d_imod_matrix_expr = model.addMatrixVar((2, 3))
+    mvar2d_imod_matrix_expr = model.addMatrixVar((3, 3))
     mvar2d_imod_matrix_expr %= matrix_expr  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.Expr'
 
 
@@ -8116,41 +8127,41 @@ def test_inplace_mvar2d_imod_matrix_expr() -> None:
 
 
 def test_inplace_mvar2d_iadd_sum_expr() -> None:
-    mvar2d_iadd_sum_expr = model.addMatrixVar((2, 3))
+    mvar2d_iadd_sum_expr = model.addMatrixVar((3, 3))
     mvar2d_iadd_sum_expr += sum_expr
     assert_type(mvar2d_iadd_sum_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_sum_expr() -> None:
-    mvar2d_isub_sum_expr = model.addMatrixVar((2, 3))
+    mvar2d_isub_sum_expr = model.addMatrixVar((3, 3))
     mvar2d_isub_sum_expr -= sum_expr
     assert_type(mvar2d_isub_sum_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_sum_expr() -> None:
-    mvar2d_imul_sum_expr = model.addMatrixVar((2, 3))
+    mvar2d_imul_sum_expr = model.addMatrixVar((3, 3))
     mvar2d_imul_sum_expr *= sum_expr
     assert_type(mvar2d_imul_sum_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_sum_expr() -> None:
-    mvar2d_itruediv_sum_expr = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_sum_expr = model.addMatrixVar((3, 3))
     mvar2d_itruediv_sum_expr /= sum_expr
     assert_type(mvar2d_itruediv_sum_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_sum_expr() -> None:
-    mvar2d_ipow_sum_expr = model.addMatrixVar((2, 3))
+    mvar2d_ipow_sum_expr = model.addMatrixVar((3, 3))
     mvar2d_ipow_sum_expr **= sum_expr  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.SumExpr'
 
 
 def test_inplace_mvar2d_imatmul_sum_expr() -> None:
-    mvar2d_imatmul_sum_expr = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_sum_expr = model.addMatrixVar((3, 3))
     mvar2d_imatmul_sum_expr @= sum_expr  # type: ignore  # ValueError: matmul: Input operand 1 does not have enough dimensions (has 0, gufunc core with signature (n?,k),(k,m?)->(n?,m?) requires 1)
 
 
 def test_inplace_mvar2d_imod_sum_expr() -> None:
-    mvar2d_imod_sum_expr = model.addMatrixVar((2, 3))
+    mvar2d_imod_sum_expr = model.addMatrixVar((3, 3))
     mvar2d_imod_sum_expr %= sum_expr  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.SumExpr'
 
 
@@ -8158,41 +8169,41 @@ def test_inplace_mvar2d_imod_sum_expr() -> None:
 
 
 def test_inplace_mvar2d_iadd_prod_expr() -> None:
-    mvar2d_iadd_prod_expr = model.addMatrixVar((2, 3))
+    mvar2d_iadd_prod_expr = model.addMatrixVar((3, 3))
     mvar2d_iadd_prod_expr += prod_expr
     assert_type(mvar2d_iadd_prod_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_prod_expr() -> None:
-    mvar2d_isub_prod_expr = model.addMatrixVar((2, 3))
+    mvar2d_isub_prod_expr = model.addMatrixVar((3, 3))
     mvar2d_isub_prod_expr -= prod_expr
     assert_type(mvar2d_isub_prod_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_prod_expr() -> None:
-    mvar2d_imul_prod_expr = model.addMatrixVar((2, 3))
+    mvar2d_imul_prod_expr = model.addMatrixVar((3, 3))
     mvar2d_imul_prod_expr *= prod_expr
     assert_type(mvar2d_imul_prod_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_prod_expr() -> None:
-    mvar2d_itruediv_prod_expr = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_prod_expr = model.addMatrixVar((3, 3))
     mvar2d_itruediv_prod_expr /= prod_expr
     assert_type(mvar2d_itruediv_prod_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_prod_expr() -> None:
-    mvar2d_ipow_prod_expr = model.addMatrixVar((2, 3))
+    mvar2d_ipow_prod_expr = model.addMatrixVar((3, 3))
     mvar2d_ipow_prod_expr **= prod_expr  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.ProdExpr'
 
 
 def test_inplace_mvar2d_imatmul_prod_expr() -> None:
-    mvar2d_imatmul_prod_expr = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_prod_expr = model.addMatrixVar((3, 3))
     mvar2d_imatmul_prod_expr @= prod_expr  # type: ignore  # ValueError: matmul: Input operand 1 does not have enough dimensions (has 0, gufunc core with signature (n?,k),(k,m?)->(n?,m?) requires 1)
 
 
 def test_inplace_mvar2d_imod_prod_expr() -> None:
-    mvar2d_imod_prod_expr = model.addMatrixVar((2, 3))
+    mvar2d_imod_prod_expr = model.addMatrixVar((3, 3))
     mvar2d_imod_prod_expr %= prod_expr  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.ProdExpr'
 
 
@@ -8200,41 +8211,41 @@ def test_inplace_mvar2d_imod_prod_expr() -> None:
 
 
 def test_inplace_mvar2d_iadd_pow_expr() -> None:
-    mvar2d_iadd_pow_expr = model.addMatrixVar((2, 3))
+    mvar2d_iadd_pow_expr = model.addMatrixVar((3, 3))
     mvar2d_iadd_pow_expr += pow_expr
     assert_type(mvar2d_iadd_pow_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_pow_expr() -> None:
-    mvar2d_isub_pow_expr = model.addMatrixVar((2, 3))
+    mvar2d_isub_pow_expr = model.addMatrixVar((3, 3))
     mvar2d_isub_pow_expr -= pow_expr
     assert_type(mvar2d_isub_pow_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_pow_expr() -> None:
-    mvar2d_imul_pow_expr = model.addMatrixVar((2, 3))
+    mvar2d_imul_pow_expr = model.addMatrixVar((3, 3))
     mvar2d_imul_pow_expr *= pow_expr
     assert_type(mvar2d_imul_pow_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_pow_expr() -> None:
-    mvar2d_itruediv_pow_expr = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_pow_expr = model.addMatrixVar((3, 3))
     mvar2d_itruediv_pow_expr /= pow_expr
     assert_type(mvar2d_itruediv_pow_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_pow_expr() -> None:
-    mvar2d_ipow_pow_expr = model.addMatrixVar((2, 3))
+    mvar2d_ipow_pow_expr = model.addMatrixVar((3, 3))
     mvar2d_ipow_pow_expr **= pow_expr  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.PowExpr'
 
 
 def test_inplace_mvar2d_imatmul_pow_expr() -> None:
-    mvar2d_imatmul_pow_expr = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_pow_expr = model.addMatrixVar((3, 3))
     mvar2d_imatmul_pow_expr @= pow_expr  # type: ignore  # ValueError: matmul: Input operand 1 does not have enough dimensions (has 0, gufunc core with signature (n?,k),(k,m?)->(n?,m?) requires 1)
 
 
 def test_inplace_mvar2d_imod_pow_expr() -> None:
-    mvar2d_imod_pow_expr = model.addMatrixVar((2, 3))
+    mvar2d_imod_pow_expr = model.addMatrixVar((3, 3))
     mvar2d_imod_pow_expr %= pow_expr  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.PowExpr'
 
 
@@ -8242,41 +8253,41 @@ def test_inplace_mvar2d_imod_pow_expr() -> None:
 
 
 def test_inplace_mvar2d_iadd_var_expr() -> None:
-    mvar2d_iadd_var_expr = model.addMatrixVar((2, 3))
+    mvar2d_iadd_var_expr = model.addMatrixVar((3, 3))
     mvar2d_iadd_var_expr += var_expr
     assert_type(mvar2d_iadd_var_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_var_expr() -> None:
-    mvar2d_isub_var_expr = model.addMatrixVar((2, 3))
+    mvar2d_isub_var_expr = model.addMatrixVar((3, 3))
     mvar2d_isub_var_expr -= var_expr
     assert_type(mvar2d_isub_var_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_var_expr() -> None:
-    mvar2d_imul_var_expr = model.addMatrixVar((2, 3))
+    mvar2d_imul_var_expr = model.addMatrixVar((3, 3))
     mvar2d_imul_var_expr *= var_expr
     assert_type(mvar2d_imul_var_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_var_expr() -> None:
-    mvar2d_itruediv_var_expr = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_var_expr = model.addMatrixVar((3, 3))
     mvar2d_itruediv_var_expr /= var_expr
     assert_type(mvar2d_itruediv_var_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_var_expr() -> None:
-    mvar2d_ipow_var_expr = model.addMatrixVar((2, 3))
+    mvar2d_ipow_var_expr = model.addMatrixVar((3, 3))
     mvar2d_ipow_var_expr **= var_expr  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.VarExpr'
 
 
 def test_inplace_mvar2d_imatmul_var_expr() -> None:
-    mvar2d_imatmul_var_expr = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_var_expr = model.addMatrixVar((3, 3))
     mvar2d_imatmul_var_expr @= var_expr  # type: ignore  # ValueError: matmul: Input operand 1 does not have enough dimensions (has 0, gufunc core with signature (n?,k),(k,m?)->(n?,m?) requires 1)
 
 
 def test_inplace_mvar2d_imod_var_expr() -> None:
-    mvar2d_imod_var_expr = model.addMatrixVar((2, 3))
+    mvar2d_imod_var_expr = model.addMatrixVar((3, 3))
     mvar2d_imod_var_expr %= var_expr  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.VarExpr'
 
 
@@ -8284,37 +8295,37 @@ def test_inplace_mvar2d_imod_var_expr() -> None:
 
 
 def test_inplace_mvar2d_iadd_exprcons() -> None:
-    mvar2d_iadd_exprcons = model.addMatrixVar((2, 3))
+    mvar2d_iadd_exprcons = model.addMatrixVar((3, 3))
     mvar2d_iadd_exprcons += exprcons  # type: ignore  # TypeError: unsupported operand type(s) for +: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.ExprCons'
 
 
 def test_inplace_mvar2d_isub_exprcons() -> None:
-    mvar2d_isub_exprcons = model.addMatrixVar((2, 3))
+    mvar2d_isub_exprcons = model.addMatrixVar((3, 3))
     mvar2d_isub_exprcons -= exprcons  # type: ignore  # TypeError: bad operand type for unary -: 'pyscipopt.scip.ExprCons'
 
 
 def test_inplace_mvar2d_imul_exprcons() -> None:
-    mvar2d_imul_exprcons = model.addMatrixVar((2, 3))
+    mvar2d_imul_exprcons = model.addMatrixVar((3, 3))
     mvar2d_imul_exprcons *= exprcons  # type: ignore  # TypeError: unsupported operand type(s) for *: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.ExprCons'
 
 
 def test_inplace_mvar2d_itruediv_exprcons() -> None:
-    mvar2d_itruediv_exprcons = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_exprcons = model.addMatrixVar((3, 3))
     mvar2d_itruediv_exprcons /= exprcons  # type: ignore  # TypeError: unsupported operand type(s) for /: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.ExprCons'
 
 
 def test_inplace_mvar2d_ipow_exprcons() -> None:
-    mvar2d_ipow_exprcons = model.addMatrixVar((2, 3))
+    mvar2d_ipow_exprcons = model.addMatrixVar((3, 3))
     mvar2d_ipow_exprcons **= exprcons  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.ExprCons'
 
 
 def test_inplace_mvar2d_imatmul_exprcons() -> None:
-    mvar2d_imatmul_exprcons = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_exprcons = model.addMatrixVar((3, 3))
     mvar2d_imatmul_exprcons @= exprcons  # type: ignore  # ValueError: matmul: Input operand 1 does not have enough dimensions (has 0, gufunc core with signature (n?,k),(k,m?)->(n?,m?) requires 1)
 
 
 def test_inplace_mvar2d_imod_exprcons() -> None:
-    mvar2d_imod_exprcons = model.addMatrixVar((2, 3))
+    mvar2d_imod_exprcons = model.addMatrixVar((3, 3))
     mvar2d_imod_exprcons %= exprcons  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.ExprCons'
 
 
@@ -8322,37 +8333,37 @@ def test_inplace_mvar2d_imod_exprcons() -> None:
 
 
 def test_inplace_mvar2d_iadd_matrixexprcons() -> None:
-    mvar2d_iadd_matrixexprcons = model.addMatrixVar((2, 3))
+    mvar2d_iadd_matrixexprcons = model.addMatrixVar((3, 3))
     mvar2d_iadd_matrixexprcons += matrixexprcons  # type: ignore  # TypeError: unsupported operand type(s) for +: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.ExprCons'
 
 
 def test_inplace_mvar2d_isub_matrixexprcons() -> None:
-    mvar2d_isub_matrixexprcons = model.addMatrixVar((2, 3))
+    mvar2d_isub_matrixexprcons = model.addMatrixVar((3, 3))
     mvar2d_isub_matrixexprcons -= matrixexprcons  # type: ignore  # TypeError: bad operand type for unary -: 'pyscipopt.scip.ExprCons'
 
 
 def test_inplace_mvar2d_imul_matrixexprcons() -> None:
-    mvar2d_imul_matrixexprcons = model.addMatrixVar((2, 3))
+    mvar2d_imul_matrixexprcons = model.addMatrixVar((3, 3))
     mvar2d_imul_matrixexprcons *= matrixexprcons  # type: ignore  # TypeError: unsupported operand type(s) for *: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.ExprCons'
 
 
 def test_inplace_mvar2d_itruediv_matrixexprcons() -> None:
-    mvar2d_itruediv_matrixexprcons = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_matrixexprcons = model.addMatrixVar((3, 3))
     mvar2d_itruediv_matrixexprcons /= matrixexprcons  # type: ignore  # TypeError: unsupported operand type(s) for /: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.ExprCons'
 
 
 def test_inplace_mvar2d_ipow_matrixexprcons() -> None:
-    mvar2d_ipow_matrixexprcons = model.addMatrixVar((2, 3))
+    mvar2d_ipow_matrixexprcons = model.addMatrixVar((3, 3))
     mvar2d_ipow_matrixexprcons **= matrixexprcons  # type: ignore  # TypeError: float() argument must be a string or a real number, not 'pyscipopt.scip.ExprCons'
 
 
 def test_inplace_mvar2d_imatmul_matrixexprcons() -> None:
-    mvar2d_imatmul_matrixexprcons = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_matrixexprcons = model.addMatrixVar((3, 3))
     mvar2d_imatmul_matrixexprcons @= matrixexprcons  # type: ignore  # ValueError: inplace matrix multiplication requires the first operand to have at least one and the second at least two dimensions.
 
 
 def test_inplace_mvar2d_imod_matrixexprcons() -> None:
-    mvar2d_imod_matrixexprcons = model.addMatrixVar((2, 3))
+    mvar2d_imod_matrixexprcons = model.addMatrixVar((3, 3))
     mvar2d_imod_matrixexprcons %= matrixexprcons  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'pyscipopt.scip.ExprCons'
 
 
@@ -8360,42 +8371,42 @@ def test_inplace_mvar2d_imod_matrixexprcons() -> None:
 
 
 def test_inplace_mvar2d_iadd_integer() -> None:
-    mvar2d_iadd_integer = model.addMatrixVar((2, 3))
+    mvar2d_iadd_integer = model.addMatrixVar((3, 3))
     mvar2d_iadd_integer += integer
     assert_type(mvar2d_iadd_integer, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_integer() -> None:
-    mvar2d_isub_integer = model.addMatrixVar((2, 3))
+    mvar2d_isub_integer = model.addMatrixVar((3, 3))
     mvar2d_isub_integer -= integer
     assert_type(mvar2d_isub_integer, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_integer() -> None:
-    mvar2d_imul_integer = model.addMatrixVar((2, 3))
+    mvar2d_imul_integer = model.addMatrixVar((3, 3))
     mvar2d_imul_integer *= integer
     assert_type(mvar2d_imul_integer, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_integer() -> None:
-    mvar2d_itruediv_integer = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_integer = model.addMatrixVar((3, 3))
     mvar2d_itruediv_integer /= integer
     assert_type(mvar2d_itruediv_integer, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_integer() -> None:
-    mvar2d_ipow_integer = model.addMatrixVar((2, 3))
+    mvar2d_ipow_integer = model.addMatrixVar((3, 3))
     mvar2d_ipow_integer **= integer
     assert_type(mvar2d_ipow_integer, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imatmul_integer() -> None:
-    mvar2d_imatmul_integer = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_integer = model.addMatrixVar((3, 3))
     mvar2d_imatmul_integer @= integer  # type: ignore  # ValueError: matmul: Input operand 1 does not have enough dimensions (has 0, gufunc core with signature (n?,k),(k,m?)->(n?,m?) requires 1)
 
 
 def test_inplace_mvar2d_imod_integer() -> None:
-    mvar2d_imod_integer = model.addMatrixVar((2, 3))
+    mvar2d_imod_integer = model.addMatrixVar((3, 3))
     mvar2d_imod_integer %= integer  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'int'
 
 
@@ -8403,42 +8414,42 @@ def test_inplace_mvar2d_imod_integer() -> None:
 
 
 def test_inplace_mvar2d_iadd_floating_point() -> None:
-    mvar2d_iadd_floating_point = model.addMatrixVar((2, 3))
+    mvar2d_iadd_floating_point = model.addMatrixVar((3, 3))
     mvar2d_iadd_floating_point += floating_point
     assert_type(mvar2d_iadd_floating_point, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_floating_point() -> None:
-    mvar2d_isub_floating_point = model.addMatrixVar((2, 3))
+    mvar2d_isub_floating_point = model.addMatrixVar((3, 3))
     mvar2d_isub_floating_point -= floating_point
     assert_type(mvar2d_isub_floating_point, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_floating_point() -> None:
-    mvar2d_imul_floating_point = model.addMatrixVar((2, 3))
+    mvar2d_imul_floating_point = model.addMatrixVar((3, 3))
     mvar2d_imul_floating_point *= floating_point
     assert_type(mvar2d_imul_floating_point, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_floating_point() -> None:
-    mvar2d_itruediv_floating_point = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_floating_point = model.addMatrixVar((3, 3))
     mvar2d_itruediv_floating_point /= floating_point
     assert_type(mvar2d_itruediv_floating_point, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_floating_point() -> None:
-    mvar2d_ipow_floating_point = model.addMatrixVar((2, 3))
+    mvar2d_ipow_floating_point = model.addMatrixVar((3, 3))
     mvar2d_ipow_floating_point **= floating_point
     assert_type(mvar2d_ipow_floating_point, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imatmul_floating_point() -> None:
-    mvar2d_imatmul_floating_point = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_floating_point = model.addMatrixVar((3, 3))
     mvar2d_imatmul_floating_point @= floating_point  # type: ignore  # ValueError: matmul: Input operand 1 does not have enough dimensions (has 0, gufunc core with signature (n?,k),(k,m?)->(n?,m?) requires 1)
 
 
 def test_inplace_mvar2d_imod_floating_point() -> None:
-    mvar2d_imod_floating_point = model.addMatrixVar((2, 3))
+    mvar2d_imod_floating_point = model.addMatrixVar((3, 3))
     mvar2d_imod_floating_point %= floating_point  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'float'
 
 
@@ -8446,41 +8457,41 @@ def test_inplace_mvar2d_imod_floating_point() -> None:
 
 
 def test_inplace_mvar2d_iadd_dec() -> None:
-    mvar2d_iadd_dec = model.addMatrixVar((2, 3))
+    mvar2d_iadd_dec = model.addMatrixVar((3, 3))
     mvar2d_iadd_dec += dec
     assert_type(mvar2d_iadd_dec, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_dec() -> None:
-    mvar2d_isub_dec = model.addMatrixVar((2, 3))
+    mvar2d_isub_dec = model.addMatrixVar((3, 3))
     mvar2d_isub_dec -= dec
     assert_type(mvar2d_isub_dec, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_dec() -> None:
-    mvar2d_imul_dec = model.addMatrixVar((2, 3))
+    mvar2d_imul_dec = model.addMatrixVar((3, 3))
     mvar2d_imul_dec *= dec
     assert_type(mvar2d_imul_dec, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_dec() -> None:
-    mvar2d_itruediv_dec = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_dec = model.addMatrixVar((3, 3))
     mvar2d_itruediv_dec /= dec  # type: ignore  # TypeError: unsupported operand type(s) for /: 'float' and 'decimal.Decimal'
 
 
 def test_inplace_mvar2d_ipow_dec() -> None:
-    mvar2d_ipow_dec = model.addMatrixVar((2, 3))
+    mvar2d_ipow_dec = model.addMatrixVar((3, 3))
     mvar2d_ipow_dec **= dec
     assert_type(mvar2d_ipow_dec, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imatmul_dec() -> None:
-    mvar2d_imatmul_dec = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_dec = model.addMatrixVar((3, 3))
     mvar2d_imatmul_dec @= dec  # type: ignore  # ValueError: matmul: Input operand 1 does not have enough dimensions (has 0, gufunc core with signature (n?,k),(k,m?)->(n?,m?) requires 1)
 
 
 def test_inplace_mvar2d_imod_dec() -> None:
-    mvar2d_imod_dec = model.addMatrixVar((2, 3))
+    mvar2d_imod_dec = model.addMatrixVar((3, 3))
     mvar2d_imod_dec %= dec  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'decimal.Decimal'
 
 
@@ -8488,85 +8499,85 @@ def test_inplace_mvar2d_imod_dec() -> None:
 
 
 def test_inplace_mvar2d_iadd_np_float() -> None:
-    mvar2d_iadd_np_float = model.addMatrixVar((2, 3))
+    mvar2d_iadd_np_float = model.addMatrixVar((3, 3))
     mvar2d_iadd_np_float += np_float
     assert_type(mvar2d_iadd_np_float, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_np_float() -> None:
-    mvar2d_isub_np_float = model.addMatrixVar((2, 3))
+    mvar2d_isub_np_float = model.addMatrixVar((3, 3))
     mvar2d_isub_np_float -= np_float
     assert_type(mvar2d_isub_np_float, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_np_float() -> None:
-    mvar2d_imul_np_float = model.addMatrixVar((2, 3))
+    mvar2d_imul_np_float = model.addMatrixVar((3, 3))
     mvar2d_imul_np_float *= np_float
     assert_type(mvar2d_imul_np_float, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_np_float() -> None:
-    mvar2d_itruediv_np_float = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_np_float = model.addMatrixVar((3, 3))
     mvar2d_itruediv_np_float /= np_float
     assert_type(mvar2d_itruediv_np_float, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_np_float() -> None:
-    mvar2d_ipow_np_float = model.addMatrixVar((2, 3))
+    mvar2d_ipow_np_float = model.addMatrixVar((3, 3))
     mvar2d_ipow_np_float **= np_float
     assert_type(mvar2d_ipow_np_float, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imatmul_np_float() -> None:
-    mvar2d_imatmul_np_float = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_np_float = model.addMatrixVar((3, 3))
     mvar2d_imatmul_np_float @= np_float  # type: ignore  # ValueError: matmul: Input operand 1 does not have enough dimensions (has 0, gufunc core with signature (n?,k),(k,m?)->(n?,m?) requires 1)
 
 
 def test_inplace_mvar2d_imod_np_float() -> None:
-    mvar2d_imod_np_float = model.addMatrixVar((2, 3))
-    mvar2d_imod_np_float %= np_float  # type: ignore  # TypeError: operand type(s) all returned NotImplemented from __array_ufunc__(<ufunc 'remainder'>, '__call__', x1279, np.float64(3.0)): 'Variable', 'float64'
+    mvar2d_imod_np_float = model.addMatrixVar((3, 3))
+    mvar2d_imod_np_float %= np_float  # type: ignore  # TypeError: operand type(s) all returned NotImplemented from __array_ufunc__(<ufunc 'remainder'>, '__call__', x1636, np.float64(3.0)): 'Variable', 'float64'
 
 
 # Inplace operators for mvar2d and array0d
 
 
 def test_inplace_mvar2d_iadd_array0d() -> None:
-    mvar2d_iadd_array0d = model.addMatrixVar((2, 3))
+    mvar2d_iadd_array0d = model.addMatrixVar((3, 3))
     mvar2d_iadd_array0d += array0d
     assert_type(mvar2d_iadd_array0d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_array0d() -> None:
-    mvar2d_isub_array0d = model.addMatrixVar((2, 3))
+    mvar2d_isub_array0d = model.addMatrixVar((3, 3))
     mvar2d_isub_array0d -= array0d
     assert_type(mvar2d_isub_array0d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_array0d() -> None:
-    mvar2d_imul_array0d = model.addMatrixVar((2, 3))
+    mvar2d_imul_array0d = model.addMatrixVar((3, 3))
     mvar2d_imul_array0d *= array0d
     assert_type(mvar2d_imul_array0d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_array0d() -> None:
-    mvar2d_itruediv_array0d = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_array0d = model.addMatrixVar((3, 3))
     mvar2d_itruediv_array0d /= array0d
     assert_type(mvar2d_itruediv_array0d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_array0d() -> None:
-    mvar2d_ipow_array0d = model.addMatrixVar((2, 3))
+    mvar2d_ipow_array0d = model.addMatrixVar((3, 3))
     mvar2d_ipow_array0d **= array0d
     assert_type(mvar2d_ipow_array0d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imatmul_array0d() -> None:
-    mvar2d_imatmul_array0d = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_array0d = model.addMatrixVar((3, 3))
     mvar2d_imatmul_array0d @= array0d  # type: ignore  # ValueError: 0-dimensional argument does not have enough dimensions for all core dimensions ('m', 'n')
 
 
 def test_inplace_mvar2d_imod_array0d() -> None:
-    mvar2d_imod_array0d = model.addMatrixVar((2, 3))
+    mvar2d_imod_array0d = model.addMatrixVar((3, 3))
     mvar2d_imod_array0d %= array0d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'int'
 
 
@@ -8574,43 +8585,43 @@ def test_inplace_mvar2d_imod_array0d() -> None:
 
 
 def test_inplace_mvar2d_iadd_array1d() -> None:
-    mvar2d_iadd_array1d = model.addMatrixVar((2, 3))
+    mvar2d_iadd_array1d = model.addMatrixVar((3, 3))
     mvar2d_iadd_array1d += array1d
     assert_type(mvar2d_iadd_array1d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_array1d() -> None:
-    mvar2d_isub_array1d = model.addMatrixVar((2, 3))
+    mvar2d_isub_array1d = model.addMatrixVar((3, 3))
     mvar2d_isub_array1d -= array1d
     assert_type(mvar2d_isub_array1d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_array1d() -> None:
-    mvar2d_imul_array1d = model.addMatrixVar((2, 3))
+    mvar2d_imul_array1d = model.addMatrixVar((3, 3))
     mvar2d_imul_array1d *= array1d
     assert_type(mvar2d_imul_array1d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_array1d() -> None:
-    mvar2d_itruediv_array1d = model.addMatrixVar((2, 3))
+    mvar2d_itruediv_array1d = model.addMatrixVar((3, 3))
     mvar2d_itruediv_array1d /= array1d
     assert_type(mvar2d_itruediv_array1d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_array1d() -> None:
-    mvar2d_ipow_array1d = model.addMatrixVar((2, 3))
+    mvar2d_ipow_array1d = model.addMatrixVar((3, 3))
     mvar2d_ipow_array1d **= array1d
     assert_type(mvar2d_ipow_array1d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imatmul_array1d() -> None:
-    mvar2d_imatmul_array1d = model.addMatrixVar((2, 3))
+    mvar2d_imatmul_array1d = model.addMatrixVar((3, 3))
     mvar2d_imatmul_array1d @= array1d
     assert_type(mvar2d_imatmul_array1d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imod_array1d() -> None:
-    mvar2d_imod_array1d = model.addMatrixVar((2, 3))
+    mvar2d_imod_array1d = model.addMatrixVar((3, 3))
     mvar2d_imod_array1d %= array1d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'int'
 
 
@@ -8618,38 +8629,44 @@ def test_inplace_mvar2d_imod_array1d() -> None:
 
 
 def test_inplace_mvar2d_iadd_array2d() -> None:
-    mvar2d_iadd_array2d = model.addMatrixVar((2, 3))
-    mvar2d_iadd_array2d += array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2) (2,3)
+    mvar2d_iadd_array2d = model.addMatrixVar((3, 3))
+    mvar2d_iadd_array2d += array2d
+    assert_type(mvar2d_iadd_array2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_isub_array2d() -> None:
-    mvar2d_isub_array2d = model.addMatrixVar((2, 3))
-    mvar2d_isub_array2d -= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2) (2,3)
+    mvar2d_isub_array2d = model.addMatrixVar((3, 3))
+    mvar2d_isub_array2d -= array2d
+    assert_type(mvar2d_isub_array2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imul_array2d() -> None:
-    mvar2d_imul_array2d = model.addMatrixVar((2, 3))
-    mvar2d_imul_array2d *= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2) (2,3)
+    mvar2d_imul_array2d = model.addMatrixVar((3, 3))
+    mvar2d_imul_array2d *= array2d
+    assert_type(mvar2d_imul_array2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_itruediv_array2d() -> None:
-    mvar2d_itruediv_array2d = model.addMatrixVar((2, 3))
-    mvar2d_itruediv_array2d /= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2) (2,3)
+    mvar2d_itruediv_array2d = model.addMatrixVar((3, 3))
+    mvar2d_itruediv_array2d /= array2d
+    assert_type(mvar2d_itruediv_array2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_ipow_array2d() -> None:
-    mvar2d_ipow_array2d = model.addMatrixVar((2, 3))
-    mvar2d_ipow_array2d **= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2) (2,3)
+    mvar2d_ipow_array2d = model.addMatrixVar((3, 3))
+    mvar2d_ipow_array2d **= array2d
+    assert_type(mvar2d_ipow_array2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imatmul_array2d() -> None:
-    mvar2d_imatmul_array2d = model.addMatrixVar((2, 3))
-    mvar2d_imatmul_array2d @= array2d  # type: ignore  # ValueError: inconsistent size for core dimension 'n': 3 vs 2
+    mvar2d_imatmul_array2d = model.addMatrixVar((3, 3))
+    mvar2d_imatmul_array2d @= array2d
+    assert_type(mvar2d_imatmul_array2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_mvar2d_imod_array2d() -> None:
-    mvar2d_imod_array2d = model.addMatrixVar((2, 3))
-    mvar2d_imod_array2d %= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2) (2,3)
+    mvar2d_imod_array2d = model.addMatrixVar((3, 3))
+    mvar2d_imod_array2d %= array2d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Variable' and 'int'
 
 
 # Inplace operators for term and var
@@ -8764,7 +8781,7 @@ def test_inplace_term_ipow_mvar2d() -> None:
 
 def test_inplace_term_imatmul_mvar2d() -> None:
     term_imatmul_mvar2d = pyscipopt.scip.Term(var)
-    term_imatmul_mvar2d @= mvar2d  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 1)
+    term_imatmul_mvar2d @= mvar2d  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 3 is different from 1)
 
 
 def test_inplace_term_imod_mvar2d() -> None:
@@ -8920,7 +8937,7 @@ def test_inplace_term_ipow_matrix_expr() -> None:
 
 def test_inplace_term_imatmul_matrix_expr() -> None:
     term_imatmul_matrix_expr = pyscipopt.scip.Term(var)
-    term_imatmul_matrix_expr @= matrix_expr  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 1)
+    term_imatmul_matrix_expr @= matrix_expr  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 3 is different from 1)
 
 
 def test_inplace_term_imod_matrix_expr() -> None:
@@ -9430,7 +9447,7 @@ def test_inplace_term_ipow_array2d() -> None:
 
 def test_inplace_term_imatmul_array2d() -> None:
     term_imatmul_array2d = pyscipopt.scip.Term(var)
-    term_imatmul_array2d @= array2d  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 1)
+    term_imatmul_array2d @= array2d  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 3 is different from 1)
 
 
 def test_inplace_term_imod_array2d() -> None:
@@ -11216,7 +11233,8 @@ def test_inplace_matrix_expr_ipow_mvar2d() -> None:
 
 def test_inplace_matrix_expr_imatmul_mvar2d() -> None:
     matrix_expr_imatmul_mvar2d = mvar2d * 2
-    matrix_expr_imatmul_mvar2d @= mvar2d  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 3)
+    matrix_expr_imatmul_mvar2d @= mvar2d
+    assert_type(matrix_expr_imatmul_mvar2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_matrix_expr_imod_mvar2d() -> None:
@@ -11384,7 +11402,8 @@ def test_inplace_matrix_expr_ipow_matrix_expr() -> None:
 
 def test_inplace_matrix_expr_imatmul_matrix_expr() -> None:
     matrix_expr_imatmul_matrix_expr = mvar2d * 2
-    matrix_expr_imatmul_matrix_expr @= matrix_expr  # type: ignore  # ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 3)
+    matrix_expr_imatmul_matrix_expr @= matrix_expr
+    assert_type(matrix_expr_imatmul_matrix_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_matrix_expr_imod_matrix_expr() -> None:
@@ -11899,37 +11918,43 @@ def test_inplace_matrix_expr_imod_array1d() -> None:
 
 def test_inplace_matrix_expr_iadd_array2d() -> None:
     matrix_expr_iadd_array2d = mvar2d * 2
-    matrix_expr_iadd_array2d += array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2) (2,3)
+    matrix_expr_iadd_array2d += array2d
+    assert_type(matrix_expr_iadd_array2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_matrix_expr_isub_array2d() -> None:
     matrix_expr_isub_array2d = mvar2d * 2
-    matrix_expr_isub_array2d -= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2) (2,3)
+    matrix_expr_isub_array2d -= array2d
+    assert_type(matrix_expr_isub_array2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_matrix_expr_imul_array2d() -> None:
     matrix_expr_imul_array2d = mvar2d * 2
-    matrix_expr_imul_array2d *= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2) (2,3)
+    matrix_expr_imul_array2d *= array2d
+    assert_type(matrix_expr_imul_array2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_matrix_expr_itruediv_array2d() -> None:
     matrix_expr_itruediv_array2d = mvar2d * 2
-    matrix_expr_itruediv_array2d /= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2) (2,3)
+    matrix_expr_itruediv_array2d /= array2d
+    assert_type(matrix_expr_itruediv_array2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_matrix_expr_ipow_array2d() -> None:
     matrix_expr_ipow_array2d = mvar2d * 2
-    matrix_expr_ipow_array2d **= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2) (2,3)
+    matrix_expr_ipow_array2d **= array2d
+    assert_type(matrix_expr_ipow_array2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_matrix_expr_imatmul_array2d() -> None:
     matrix_expr_imatmul_array2d = mvar2d * 2
-    matrix_expr_imatmul_array2d @= array2d  # type: ignore  # ValueError: inconsistent size for core dimension 'n': 3 vs 2
+    matrix_expr_imatmul_array2d @= array2d
+    assert_type(matrix_expr_imatmul_array2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_matrix_expr_imod_array2d() -> None:
     matrix_expr_imod_array2d = mvar2d * 2
-    matrix_expr_imod_array2d %= array2d  # type: ignore  # ValueError: operands could not be broadcast together with shapes (2,3) (2,2) (2,3)
+    matrix_expr_imod_array2d %= array2d  # type: ignore  # TypeError: unsupported operand type(s) for %: 'pyscipopt.scip.Expr' and 'int'
 
 
 # Inplace operators for sum_expr and var
@@ -19525,7 +19550,8 @@ def test_inplace_array1d_ipow_mvar2d() -> None:
 
 def test_inplace_array1d_imatmul_mvar2d() -> None:
     array1d_imatmul_mvar2d = numpy.array([1, 2, 3])
-    array1d_imatmul_mvar2d @= mvar2d  # type: ignore  # ValueError: inconsistent size for core dimension 'n': 2 vs 3
+    array1d_imatmul_mvar2d @= mvar2d
+    assert_type(array1d_imatmul_mvar2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_array1d_imod_mvar2d() -> None:
@@ -19677,7 +19703,8 @@ def test_inplace_array1d_ipow_matrix_expr() -> None:
 
 def test_inplace_array1d_imatmul_matrix_expr() -> None:
     array1d_imatmul_matrix_expr = numpy.array([1, 2, 3])
-    array1d_imatmul_matrix_expr @= matrix_expr  # type: ignore  # ValueError: inconsistent size for core dimension 'n': 2 vs 3
+    array1d_imatmul_matrix_expr @= matrix_expr
+    assert_type(array1d_imatmul_matrix_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_array1d_imod_matrix_expr() -> None:
@@ -19917,37 +19944,37 @@ def test_inplace_array1d_imod_matrixexprcons() -> None:
 
 
 def test_inplace_array2d_iadd_var() -> None:
-    array2d_iadd_var = numpy.array([[1, 2], [3, 4]])
+    array2d_iadd_var = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_iadd_var += var  # type: ignore  # TypeError: Variable doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_isub_var() -> None:
-    array2d_isub_var = numpy.array([[1, 2], [3, 4]])
+    array2d_isub_var = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_isub_var -= var  # type: ignore  # TypeError: Variable doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imul_var() -> None:
-    array2d_imul_var = numpy.array([[1, 2], [3, 4]])
+    array2d_imul_var = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imul_var *= var  # type: ignore  # TypeError: Variable doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_itruediv_var() -> None:
-    array2d_itruediv_var = numpy.array([[1, 2], [3, 4]])
+    array2d_itruediv_var = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_itruediv_var /= var  # type: ignore  # TypeError: Variable doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_ipow_var() -> None:
-    array2d_ipow_var = numpy.array([[1, 2], [3, 4]])
+    array2d_ipow_var = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_ipow_var **= var  # type: ignore  # TypeError: Variable doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imatmul_var() -> None:
-    array2d_imatmul_var = numpy.array([[1, 2], [3, 4]])
+    array2d_imatmul_var = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imatmul_var @= var  # type: ignore  # TypeError: Variable doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imod_var() -> None:
-    array2d_imod_var = numpy.array([[1, 2], [3, 4]])
+    array2d_imod_var = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imod_var %= var  # type: ignore  # TypeError: Variable doesn't support the 'out' parameter in __array_ufunc__
 
 
@@ -19955,37 +19982,38 @@ def test_inplace_array2d_imod_var() -> None:
 
 
 def test_inplace_array2d_iadd_mvar1d() -> None:
-    array2d_iadd_mvar1d = numpy.array([[1, 2], [3, 4]])
+    array2d_iadd_mvar1d = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_iadd_mvar1d += mvar1d  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'add' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_isub_mvar1d() -> None:
-    array2d_isub_mvar1d = numpy.array([[1, 2], [3, 4]])
+    array2d_isub_mvar1d = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_isub_mvar1d -= mvar1d  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'subtract' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_imul_mvar1d() -> None:
-    array2d_imul_mvar1d = numpy.array([[1, 2], [3, 4]])
+    array2d_imul_mvar1d = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imul_mvar1d *= mvar1d  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'multiply' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_itruediv_mvar1d() -> None:
-    array2d_itruediv_mvar1d = numpy.array([[1, 2], [3, 4]])
+    array2d_itruediv_mvar1d = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_itruediv_mvar1d /= mvar1d  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'divide' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_ipow_mvar1d() -> None:
-    array2d_ipow_mvar1d = numpy.array([[1, 2], [3, 4]])
+    array2d_ipow_mvar1d = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_ipow_mvar1d **= mvar1d  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'power' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_imatmul_mvar1d() -> None:
-    array2d_imatmul_mvar1d = numpy.array([[1, 2], [3, 4]])
-    array2d_imatmul_mvar1d @= mvar1d  # type: ignore  # ValueError: inconsistent size for core dimension 'n': 3 vs 2
+    array2d_imatmul_mvar1d = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    array2d_imatmul_mvar1d @= mvar1d
+    assert_type(array2d_imatmul_mvar1d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_array2d_imod_mvar1d() -> None:
-    array2d_imod_mvar1d = numpy.array([[1, 2], [3, 4]])
+    array2d_imod_mvar1d = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imod_mvar1d %= mvar1d  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'remainder' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
@@ -19993,38 +20021,38 @@ def test_inplace_array2d_imod_mvar1d() -> None:
 
 
 def test_inplace_array2d_iadd_mvar2d() -> None:
-    array2d_iadd_mvar2d = numpy.array([[1, 2], [3, 4]])
+    array2d_iadd_mvar2d = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_iadd_mvar2d += mvar2d  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'add' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_isub_mvar2d() -> None:
-    array2d_isub_mvar2d = numpy.array([[1, 2], [3, 4]])
+    array2d_isub_mvar2d = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_isub_mvar2d -= mvar2d  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'subtract' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_imul_mvar2d() -> None:
-    array2d_imul_mvar2d = numpy.array([[1, 2], [3, 4]])
+    array2d_imul_mvar2d = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imul_mvar2d *= mvar2d  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'multiply' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_itruediv_mvar2d() -> None:
-    array2d_itruediv_mvar2d = numpy.array([[1, 2], [3, 4]])
+    array2d_itruediv_mvar2d = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_itruediv_mvar2d /= mvar2d  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'divide' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_ipow_mvar2d() -> None:
-    array2d_ipow_mvar2d = numpy.array([[1, 2], [3, 4]])
+    array2d_ipow_mvar2d = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_ipow_mvar2d **= mvar2d  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'power' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_imatmul_mvar2d() -> None:
-    array2d_imatmul_mvar2d = numpy.array([[1, 2], [3, 4]])
+    array2d_imatmul_mvar2d = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imatmul_mvar2d @= mvar2d
     assert_type(array2d_imatmul_mvar2d, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_array2d_imod_mvar2d() -> None:
-    array2d_imod_mvar2d = numpy.array([[1, 2], [3, 4]])
+    array2d_imod_mvar2d = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imod_mvar2d %= mvar2d  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'remainder' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
@@ -20032,37 +20060,37 @@ def test_inplace_array2d_imod_mvar2d() -> None:
 
 
 def test_inplace_array2d_iadd_term() -> None:
-    array2d_iadd_term = numpy.array([[1, 2], [3, 4]])
+    array2d_iadd_term = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_iadd_term += term  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'add' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_isub_term() -> None:
-    array2d_isub_term = numpy.array([[1, 2], [3, 4]])
+    array2d_isub_term = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_isub_term -= term  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'subtract' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_imul_term() -> None:
-    array2d_imul_term = numpy.array([[1, 2], [3, 4]])
+    array2d_imul_term = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imul_term *= term  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'multiply' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_itruediv_term() -> None:
-    array2d_itruediv_term = numpy.array([[1, 2], [3, 4]])
+    array2d_itruediv_term = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_itruediv_term /= term  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'divide' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_ipow_term() -> None:
-    array2d_ipow_term = numpy.array([[1, 2], [3, 4]])
+    array2d_ipow_term = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_ipow_term **= term  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'power' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_imatmul_term() -> None:
-    array2d_imatmul_term = numpy.array([[1, 2], [3, 4]])
+    array2d_imatmul_term = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imatmul_term @= term  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'matmul' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_imod_term() -> None:
-    array2d_imod_term = numpy.array([[1, 2], [3, 4]])
+    array2d_imod_term = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imod_term %= term  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'remainder' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
@@ -20070,37 +20098,37 @@ def test_inplace_array2d_imod_term() -> None:
 
 
 def test_inplace_array2d_iadd_constant() -> None:
-    array2d_iadd_constant = numpy.array([[1, 2], [3, 4]])
+    array2d_iadd_constant = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_iadd_constant += constant  # type: ignore  # TypeError: Constant doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_isub_constant() -> None:
-    array2d_isub_constant = numpy.array([[1, 2], [3, 4]])
+    array2d_isub_constant = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_isub_constant -= constant  # type: ignore  # TypeError: Constant doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imul_constant() -> None:
-    array2d_imul_constant = numpy.array([[1, 2], [3, 4]])
+    array2d_imul_constant = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imul_constant *= constant  # type: ignore  # TypeError: Constant doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_itruediv_constant() -> None:
-    array2d_itruediv_constant = numpy.array([[1, 2], [3, 4]])
+    array2d_itruediv_constant = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_itruediv_constant /= constant  # type: ignore  # TypeError: Constant doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_ipow_constant() -> None:
-    array2d_ipow_constant = numpy.array([[1, 2], [3, 4]])
+    array2d_ipow_constant = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_ipow_constant **= constant  # type: ignore  # TypeError: Constant doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imatmul_constant() -> None:
-    array2d_imatmul_constant = numpy.array([[1, 2], [3, 4]])
+    array2d_imatmul_constant = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imatmul_constant @= constant  # type: ignore  # TypeError: Constant doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imod_constant() -> None:
-    array2d_imod_constant = numpy.array([[1, 2], [3, 4]])
+    array2d_imod_constant = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imod_constant %= constant  # type: ignore  # TypeError: Constant doesn't support the 'out' parameter in __array_ufunc__
 
 
@@ -20108,37 +20136,37 @@ def test_inplace_array2d_imod_constant() -> None:
 
 
 def test_inplace_array2d_iadd_expr() -> None:
-    array2d_iadd_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_iadd_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_iadd_expr += expr  # type: ignore  # TypeError: Expr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_isub_expr() -> None:
-    array2d_isub_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_isub_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_isub_expr -= expr  # type: ignore  # TypeError: Expr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imul_expr() -> None:
-    array2d_imul_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imul_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imul_expr *= expr  # type: ignore  # TypeError: Expr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_itruediv_expr() -> None:
-    array2d_itruediv_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_itruediv_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_itruediv_expr /= expr  # type: ignore  # TypeError: Expr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_ipow_expr() -> None:
-    array2d_ipow_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_ipow_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_ipow_expr **= expr  # type: ignore  # TypeError: Expr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imatmul_expr() -> None:
-    array2d_imatmul_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imatmul_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imatmul_expr @= expr  # type: ignore  # TypeError: Expr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imod_expr() -> None:
-    array2d_imod_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imod_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imod_expr %= expr  # type: ignore  # TypeError: Expr doesn't support the 'out' parameter in __array_ufunc__
 
 
@@ -20146,38 +20174,38 @@ def test_inplace_array2d_imod_expr() -> None:
 
 
 def test_inplace_array2d_iadd_matrix_expr() -> None:
-    array2d_iadd_matrix_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_iadd_matrix_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_iadd_matrix_expr += matrix_expr  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'add' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_isub_matrix_expr() -> None:
-    array2d_isub_matrix_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_isub_matrix_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_isub_matrix_expr -= matrix_expr  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'subtract' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_imul_matrix_expr() -> None:
-    array2d_imul_matrix_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imul_matrix_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imul_matrix_expr *= matrix_expr  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'multiply' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_itruediv_matrix_expr() -> None:
-    array2d_itruediv_matrix_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_itruediv_matrix_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_itruediv_matrix_expr /= matrix_expr  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'divide' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_ipow_matrix_expr() -> None:
-    array2d_ipow_matrix_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_ipow_matrix_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_ipow_matrix_expr **= matrix_expr  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'power' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_imatmul_matrix_expr() -> None:
-    array2d_imatmul_matrix_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imatmul_matrix_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imatmul_matrix_expr @= matrix_expr
     assert_type(array2d_imatmul_matrix_expr, pyscipopt.scip.MatrixExpr)
 
 
 def test_inplace_array2d_imod_matrix_expr() -> None:
-    array2d_imod_matrix_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imod_matrix_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imod_matrix_expr %= matrix_expr  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'remainder' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
@@ -20185,37 +20213,37 @@ def test_inplace_array2d_imod_matrix_expr() -> None:
 
 
 def test_inplace_array2d_iadd_sum_expr() -> None:
-    array2d_iadd_sum_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_iadd_sum_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_iadd_sum_expr += sum_expr  # type: ignore  # TypeError: SumExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_isub_sum_expr() -> None:
-    array2d_isub_sum_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_isub_sum_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_isub_sum_expr -= sum_expr  # type: ignore  # TypeError: SumExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imul_sum_expr() -> None:
-    array2d_imul_sum_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imul_sum_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imul_sum_expr *= sum_expr  # type: ignore  # TypeError: SumExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_itruediv_sum_expr() -> None:
-    array2d_itruediv_sum_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_itruediv_sum_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_itruediv_sum_expr /= sum_expr  # type: ignore  # TypeError: SumExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_ipow_sum_expr() -> None:
-    array2d_ipow_sum_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_ipow_sum_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_ipow_sum_expr **= sum_expr  # type: ignore  # TypeError: SumExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imatmul_sum_expr() -> None:
-    array2d_imatmul_sum_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imatmul_sum_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imatmul_sum_expr @= sum_expr  # type: ignore  # TypeError: SumExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imod_sum_expr() -> None:
-    array2d_imod_sum_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imod_sum_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imod_sum_expr %= sum_expr  # type: ignore  # TypeError: SumExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
@@ -20223,37 +20251,37 @@ def test_inplace_array2d_imod_sum_expr() -> None:
 
 
 def test_inplace_array2d_iadd_prod_expr() -> None:
-    array2d_iadd_prod_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_iadd_prod_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_iadd_prod_expr += prod_expr  # type: ignore  # TypeError: ProdExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_isub_prod_expr() -> None:
-    array2d_isub_prod_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_isub_prod_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_isub_prod_expr -= prod_expr  # type: ignore  # TypeError: ProdExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imul_prod_expr() -> None:
-    array2d_imul_prod_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imul_prod_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imul_prod_expr *= prod_expr  # type: ignore  # TypeError: ProdExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_itruediv_prod_expr() -> None:
-    array2d_itruediv_prod_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_itruediv_prod_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_itruediv_prod_expr /= prod_expr  # type: ignore  # TypeError: ProdExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_ipow_prod_expr() -> None:
-    array2d_ipow_prod_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_ipow_prod_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_ipow_prod_expr **= prod_expr  # type: ignore  # TypeError: ProdExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imatmul_prod_expr() -> None:
-    array2d_imatmul_prod_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imatmul_prod_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imatmul_prod_expr @= prod_expr  # type: ignore  # TypeError: ProdExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imod_prod_expr() -> None:
-    array2d_imod_prod_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imod_prod_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imod_prod_expr %= prod_expr  # type: ignore  # TypeError: ProdExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
@@ -20261,37 +20289,37 @@ def test_inplace_array2d_imod_prod_expr() -> None:
 
 
 def test_inplace_array2d_iadd_pow_expr() -> None:
-    array2d_iadd_pow_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_iadd_pow_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_iadd_pow_expr += pow_expr  # type: ignore  # TypeError: PowExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_isub_pow_expr() -> None:
-    array2d_isub_pow_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_isub_pow_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_isub_pow_expr -= pow_expr  # type: ignore  # TypeError: PowExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imul_pow_expr() -> None:
-    array2d_imul_pow_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imul_pow_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imul_pow_expr *= pow_expr  # type: ignore  # TypeError: PowExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_itruediv_pow_expr() -> None:
-    array2d_itruediv_pow_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_itruediv_pow_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_itruediv_pow_expr /= pow_expr  # type: ignore  # TypeError: PowExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_ipow_pow_expr() -> None:
-    array2d_ipow_pow_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_ipow_pow_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_ipow_pow_expr **= pow_expr  # type: ignore  # TypeError: PowExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imatmul_pow_expr() -> None:
-    array2d_imatmul_pow_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imatmul_pow_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imatmul_pow_expr @= pow_expr  # type: ignore  # TypeError: PowExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imod_pow_expr() -> None:
-    array2d_imod_pow_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imod_pow_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imod_pow_expr %= pow_expr  # type: ignore  # TypeError: PowExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
@@ -20299,37 +20327,37 @@ def test_inplace_array2d_imod_pow_expr() -> None:
 
 
 def test_inplace_array2d_iadd_var_expr() -> None:
-    array2d_iadd_var_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_iadd_var_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_iadd_var_expr += var_expr  # type: ignore  # TypeError: VarExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_isub_var_expr() -> None:
-    array2d_isub_var_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_isub_var_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_isub_var_expr -= var_expr  # type: ignore  # TypeError: VarExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imul_var_expr() -> None:
-    array2d_imul_var_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imul_var_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imul_var_expr *= var_expr  # type: ignore  # TypeError: VarExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_itruediv_var_expr() -> None:
-    array2d_itruediv_var_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_itruediv_var_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_itruediv_var_expr /= var_expr  # type: ignore  # TypeError: VarExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_ipow_var_expr() -> None:
-    array2d_ipow_var_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_ipow_var_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_ipow_var_expr **= var_expr  # type: ignore  # TypeError: VarExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imatmul_var_expr() -> None:
-    array2d_imatmul_var_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imatmul_var_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imatmul_var_expr @= var_expr  # type: ignore  # TypeError: VarExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
 def test_inplace_array2d_imod_var_expr() -> None:
-    array2d_imod_var_expr = numpy.array([[1, 2], [3, 4]])
+    array2d_imod_var_expr = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imod_var_expr %= var_expr  # type: ignore  # TypeError: VarExpr doesn't support the 'out' parameter in __array_ufunc__
 
 
@@ -20337,37 +20365,37 @@ def test_inplace_array2d_imod_var_expr() -> None:
 
 
 def test_inplace_array2d_iadd_exprcons() -> None:
-    array2d_iadd_exprcons = numpy.array([[1, 2], [3, 4]])
+    array2d_iadd_exprcons = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_iadd_exprcons += exprcons  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'add' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_isub_exprcons() -> None:
-    array2d_isub_exprcons = numpy.array([[1, 2], [3, 4]])
+    array2d_isub_exprcons = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_isub_exprcons -= exprcons  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'subtract' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_imul_exprcons() -> None:
-    array2d_imul_exprcons = numpy.array([[1, 2], [3, 4]])
+    array2d_imul_exprcons = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imul_exprcons *= exprcons  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'multiply' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_itruediv_exprcons() -> None:
-    array2d_itruediv_exprcons = numpy.array([[1, 2], [3, 4]])
+    array2d_itruediv_exprcons = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_itruediv_exprcons /= exprcons  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'divide' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_ipow_exprcons() -> None:
-    array2d_ipow_exprcons = numpy.array([[1, 2], [3, 4]])
+    array2d_ipow_exprcons = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_ipow_exprcons **= exprcons  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'power' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_imatmul_exprcons() -> None:
-    array2d_imatmul_exprcons = numpy.array([[1, 2], [3, 4]])
+    array2d_imatmul_exprcons = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imatmul_exprcons @= exprcons  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'matmul' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
 def test_inplace_array2d_imod_exprcons() -> None:
-    array2d_imod_exprcons = numpy.array([[1, 2], [3, 4]])
+    array2d_imod_exprcons = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imod_exprcons %= exprcons  # type: ignore  # UFuncTypeError: Cannot cast ufunc 'remainder' output from dtype('O') to dtype('int64') with casting rule 'same_kind'
 
 
@@ -20375,35 +20403,35 @@ def test_inplace_array2d_imod_exprcons() -> None:
 
 
 def test_inplace_array2d_iadd_matrixexprcons() -> None:
-    array2d_iadd_matrixexprcons = numpy.array([[1, 2], [3, 4]])
+    array2d_iadd_matrixexprcons = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_iadd_matrixexprcons += matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 
 
 def test_inplace_array2d_isub_matrixexprcons() -> None:
-    array2d_isub_matrixexprcons = numpy.array([[1, 2], [3, 4]])
+    array2d_isub_matrixexprcons = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_isub_matrixexprcons -= matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 
 
 def test_inplace_array2d_imul_matrixexprcons() -> None:
-    array2d_imul_matrixexprcons = numpy.array([[1, 2], [3, 4]])
+    array2d_imul_matrixexprcons = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imul_matrixexprcons *= matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 
 
 def test_inplace_array2d_itruediv_matrixexprcons() -> None:
-    array2d_itruediv_matrixexprcons = numpy.array([[1, 2], [3, 4]])
+    array2d_itruediv_matrixexprcons = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_itruediv_matrixexprcons /= matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 
 
 def test_inplace_array2d_ipow_matrixexprcons() -> None:
-    array2d_ipow_matrixexprcons = numpy.array([[1, 2], [3, 4]])
+    array2d_ipow_matrixexprcons = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_ipow_matrixexprcons **= matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 
 
 def test_inplace_array2d_imatmul_matrixexprcons() -> None:
-    array2d_imatmul_matrixexprcons = numpy.array([[1, 2], [3, 4]])
+    array2d_imatmul_matrixexprcons = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imatmul_matrixexprcons @= matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
 
 
 def test_inplace_array2d_imod_matrixexprcons() -> None:
-    array2d_imod_matrixexprcons = numpy.array([[1, 2], [3, 4]])
+    array2d_imod_matrixexprcons = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     array2d_imod_matrixexprcons %= matrixexprcons  # type: ignore  # NotImplementedError: can only support '<=' or '>='
