@@ -55,7 +55,8 @@ jobs:
       - name: Check generated tests are up to date
         run: |
           python scripts/generate_expr_type_tests.py
-          if [[ -n $(git status --porcelain) ]]; then
+          # we need to ignore the .deb file we download above
+          if [[ -n $(git status --porcelain --untracked-files=no) ]]; then
             echo "Generated expression type tests are out of date, run: python scripts/generate_expr_type_tests.py to update"
             exit 1
           fi
@@ -63,7 +64,8 @@ jobs:
       - name: Check baseline test files are up to date
         run: |
           ./stubs/baseline.sh
-          if [[ -n $(git status --porcelain) ]]; then
+          # we need to ignore the .deb file we download above
+          if [[ -n $(git status --porcelain --untracked-files=no) ]]; then
             echo "Baseline test files are out of date, run: ./stubs/baseline.sh to update"
             exit 1
           fi
