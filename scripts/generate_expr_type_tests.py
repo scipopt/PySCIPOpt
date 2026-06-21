@@ -51,6 +51,7 @@ EXPRESSIONS = {
     "sum_expr": "var + constant",
     "prod_expr": "var * constant",
     "pow_expr": "prod_expr**2",
+    "unary_expr": "abs(var)",
     "var_expr": "pyscipopt.scip.VarExpr(var)",
     # Constraints
     "exprcons": "var <= 3",
@@ -81,7 +82,6 @@ BINARY_OPERATORS = {
     " == ": operator.eq,
     " != ": operator.ne,
     " @ ": operator.matmul,
-    " % ": operator.mod,
 }
 
 INPLACE_BINARY_OPERATORS = {
@@ -91,14 +91,12 @@ INPLACE_BINARY_OPERATORS = {
     "/=": operator.itruediv,
     "**=": operator.ipow,
     "@=": operator.imatmul,
-    "%=": operator.imod,
 }
 
 # Operator function and string with a formatting placeholder for the operation.
 UNARY_OPERATORS = [
     ("+{}", operator.pos),
     ("-{}", operator.neg),
-    ("~{}", operator.invert),
     ("abs({})", abs),
     ("pyscipopt.exp({})", pyscipopt.exp),
     ("pyscipopt.log({})", pyscipopt.log),
