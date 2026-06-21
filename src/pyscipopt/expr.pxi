@@ -304,6 +304,11 @@ cdef class ExprLike:
     def cos(self, /) -> CosExpr:
         return CosExpr(Operator.cos, buildGenExprObj(self))
 
+    cpdef double _evaluate(self, Solution sol) except *:
+        raise NotImplementedError(
+            f"{self.__class__.__name__!s} need to implement _evaluate() method"
+        )
+
     cdef ExprLike copy(self, bint copy=True):
         raise NotImplementedError(
             f"{self.__class__.__name__!s} need to implement copy() method"
