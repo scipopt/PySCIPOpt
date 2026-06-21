@@ -119,11 +119,11 @@ def build_runtime_values(expressions: dict[str, str]) -> dict[str, object]:
 
     for statement in GLOBAL_STATEMENTS:
         logger.debug(f"Executing statement: {statement}")
-        exec(statement, locals=eval_scope, globals={})
+        exec(statement, {}, eval_scope)
 
     for name, expr in expressions.items():
         logger.debug(f"Evaluating expression for {name}: {expr}")
-        eval_scope[name] = eval(expr, locals=eval_scope, globals={})
+        eval_scope[name] = eval(expr, {}, eval_scope)
 
     return eval_scope
 
@@ -281,14 +281,10 @@ def generate_test_cases():
 
             function_scope_locals = runtime_values.copy()
             # 1. create the temporary target
-            exec(
-                f"{target_name} = {EXPRESSIONS[left]}",
-                globals={},
-                locals=function_scope_locals,
-            )
+            exec(f"{target_name} = {EXPRESSIONS[left]}", {}, function_scope_locals)
             try:
                 # 2. apply the inplace operator
-                exec(stmt, globals={}, locals=function_scope_locals)
+                exec(stmt, {}, function_scope_locals)
             except Exception as e:
                 lines.append(
                     generate_erroring_line(stmt, e, indent=INDENT, inplace=True)
