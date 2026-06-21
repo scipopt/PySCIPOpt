@@ -3,6 +3,8 @@
 ## Unreleased
 ### Added
 - Added `addConsCumulative()` for SCIP cumulative constraints (#1222)
+- `Expr` and `GenExpr` support `__pos__` magic method like `+Expr` or `+GenExpr`
+- Added type annotations to most methods on the `Model` class
 ### Fixed
 ### Changed
 - Move magic methods (`__radd__`, `__sub__`, `__rsub__`, `__rmul__`, `__richcmp__`, `__neg__`, and `__rtruediv__`) to `ExprLike` base class (#1204)
