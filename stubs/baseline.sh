@@ -4,6 +4,8 @@
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
+python "$REPO_ROOT"/scripts/generate_expr_type_tests.py
+
 for test_file in "$REPO_ROOT"/tests/@types/*.py; do
     echo "Updating mypy baseline for $test_file"
     output_file="${test_file%.*}.mypy.out"
