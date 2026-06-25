@@ -4,6 +4,7 @@
 ### Added
 - Added `addConsCumulative()` for SCIP cumulative constraints (#1222)
 ### Fixed
+- Made `test_markDoNotAggrVar_and_getStatus` robust to SCIP presolve changes by discovering the aggregated/multi-aggregated variables instead of hardcoding them
 ### Changed
 - Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API
 ### Removed
