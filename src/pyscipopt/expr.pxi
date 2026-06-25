@@ -257,6 +257,30 @@ cdef class ExprLike:
 
         return NotImplemented
 
+    def __radd__(self, other, /):
+        return self + other
+
+    def __sub__(self, other, /):
+        return self + (-other)
+
+    def __rsub__(self, other, /):
+        return (-self) + other
+
+    def __rmul__(self, other, /):
+        return self * other
+
+    def __rtruediv__(self, other, /) -> GenExpr:
+        return buildGenExprObj(other) / self
+
+    def __richcmp__(self, other, int op):
+        return _expr_richcmp(self, other, op)
+
+    def __neg__(self, /) -> Union[Expr, GenExpr]:
+        return self * -1.0
+
+    def __pos__(self, /) -> Union[Expr, GenExpr]:
+        return self.copy()
+
     def __abs__(self) -> GenExpr:
         return UnaryExpr(Operator.fabs, buildGenExprObj(self))
 
@@ -274,6 +298,11 @@ cdef class ExprLike:
 
     def cos(self) -> GenExpr:
         return UnaryExpr(Operator.cos, buildGenExprObj(self))
+
+    cdef ExprLike copy(self, bint copy=True):
+        raise NotImplementedError(
+            f"{self.__class__.__name__!s} need to implement copy() method"
+        )
 
 
 ##@details Polynomial expressions of variables with operator overloading. \n
@@ -358,11 +387,10 @@ cdef class Expr(ExprLike):
             return 1.0 / other * self
         return buildGenExprObj(self) / other
 
-    def __rtruediv__(self, other):
-        ''' other / self '''
+    def __rtruediv__(self, other, /) -> GenExpr:
         if not _is_expr_compatible(other):
             return NotImplemented
-        return buildGenExprObj(other) / self
+        return super().__rtruediv__(other)
 
     def __pow__(self, other, modulo):
         if float(other).is_integer() and other >= 0:
@@ -386,25 +414,6 @@ cdef class Expr(ExprLike):
         if (base := <double>other) <= 0.0:
             raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
         return (self * Constant(base).log()).exp()
-
-    def __neg__(self):
-        return Expr({v:-c for v,c in self.terms.items()})
-
-    def __sub__(self, other):
-        return self + (-other)
-
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    def __rsub__(self, other):
-        return -1.0 * self + other
-
-    def __richcmp__(self, other, int op):
-        '''turn it into a constraint'''
-        return _expr_richcmp(self, other, op)
 
     def normalize(self):
         '''remove terms with coefficient of 0'''
@@ -432,6 +441,12 @@ cdef class Expr(ExprLike):
             term = <Term>key_ptr
             coef = <double>(<object>val_ptr)
             res += coef * term._evaluate(sol)
+        return res
+
+    cdef Expr copy(self, bint copy=True):
+        cdef object cls = <type>Py_TYPE(self)
+        cdef Expr res = cls.__new__(cls)
+        res.terms = self.terms.copy() if copy else self.terms
         return res
 
 
@@ -463,7 +478,6 @@ cdef class ExprCons:
             self._lhs -= c
         if not self._rhs is None:
             self._rhs -= c
-
 
     def __richcmp__(self, other, op):
         '''turn it into a constraint'''
@@ -690,30 +704,10 @@ cdef class GenExpr(ExprLike):
             raise ZeroDivisionError("cannot divide by 0")
         return self * divisor**(-1)
 
-    def __rtruediv__(self, other):
-        ''' other / self '''
+    def __rtruediv__(self, other, /) -> GenExpr:
         if not _is_genexpr_compatible(other):
             return NotImplemented
-        return buildGenExprObj(other) / self
-
-    def __neg__(self):
-        return -1.0 * self
-
-    def __sub__(self, other):
-        return self + (-other)
-
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    def __rsub__(self, other):
-        return -1.0 * self + other
-
-    def __richcmp__(self, other, int op):
-        '''turn it into a constraint'''
-        return _expr_richcmp(self, other, op)
+        return super().__rtruediv__(other)
 
     def degree(self):
         '''Note: none of these expressions should be polynomial'''
@@ -723,18 +717,11 @@ cdef class GenExpr(ExprLike):
         '''returns operator of GenExpr'''
         return self._op
 
-    cdef GenExpr copy(self, bool copy = True):
+    cdef GenExpr copy(self, bint copy=True):
         cdef object cls = <type>Py_TYPE(self)
         cdef GenExpr res = cls.__new__(cls)
         res._op = self._op
         res.children = self.children.copy() if copy else self.children
-        if cls is SumExpr:
-            (<SumExpr>res).constant = (<SumExpr>self).constant
-            (<SumExpr>res).coefs = (<SumExpr>self).coefs.copy() if copy else (<SumExpr>self).coefs
-        if cls is ProdExpr:
-            (<ProdExpr>res).constant = (<ProdExpr>self).constant
-        elif cls is PowExpr:
-            (<PowExpr>res).expo = (<PowExpr>self).expo
         return res
 
 
@@ -761,6 +748,14 @@ cdef class SumExpr(GenExpr):
             res += <double>coefs[i] * (<GenExpr>children[i])._evaluate(sol)
         return res
 
+    cdef SumExpr copy(self, bint copy=True):
+        cdef SumExpr res = SumExpr.__new__(SumExpr)
+        res._op = self._op
+        res.children = self.children.copy() if copy else self.children
+        res.constant = self.constant
+        res.coefs = self.coefs.copy() if copy else self.coefs
+        return res
+
 
 # Prod Expressions
 cdef class ProdExpr(GenExpr):
@@ -783,6 +778,13 @@ cdef class ProdExpr(GenExpr):
             res *= (<GenExpr>children[i])._evaluate(sol)
             if res == 0:  # early stop
                 return 0.0
+        return res
+
+    cdef ProdExpr copy(self, bint copy=True):
+        cdef ProdExpr res = ProdExpr.__new__(ProdExpr)
+        res._op = self._op
+        res.children = self.children.copy() if copy else self.children
+        res.constant = self.constant
         return res
 
 
@@ -818,6 +820,13 @@ cdef class PowExpr(GenExpr):
     cpdef double _evaluate(self, Solution sol) except *:
         return (<GenExpr>self.children[0])._evaluate(sol) ** self.expo
 
+    cdef PowExpr copy(self, bint copy=True):
+        cdef PowExpr res = PowExpr.__new__(PowExpr)
+        res._op = self._op
+        res.children = self.children.copy() if copy else self.children
+        res.expo = self.expo
+        return res
+
 
 # Exp, Log, Sqrt, Sin, Cos Expressions
 cdef class UnaryExpr(GenExpr):
@@ -851,6 +860,13 @@ cdef class Constant(GenExpr):
 
     cpdef double _evaluate(self, Solution sol) except *:
         return self.number
+
+    cdef Constant copy(self, bint copy=True):
+        # The copy parameter doesn't work; this is for compatibility.
+        cdef Constant res = Constant.__new__(Constant)
+        res._op = self._op
+        res.number = self.number
+        return res
 
 
 def exp(x):
