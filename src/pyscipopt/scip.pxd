@@ -2152,12 +2152,11 @@ cdef extern from "tpi/tpi.h":
 
 cdef class ExprLike:
 
+    cpdef double _evaluate(self, Solution sol)
     cdef ExprLike copy(self, bint copy=*)
 
 cdef class Expr(ExprLike):
     cdef public terms
-
-    cpdef double _evaluate(self, Solution sol)
 
 cdef class Event:
     cdef SCIP_EVENT* event
