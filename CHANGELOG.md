@@ -10,6 +10,7 @@
 ### Changed
 - Move magic methods (`__radd__`, `__sub__`, `__rsub__`, `__rmul__`, `__richcmp__`, `__neg__`, and `__rtruediv__`) to `ExprLike` base class (#1204)
 - Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API
+- Extended `structured_optimization_trace` recipe to support context-managed JSONL tracing with final `run_end` records, alongside the existing attach-style in-memory tracing.
 ### Removed
 
 ## 6.2.1 - 2026.05.16
