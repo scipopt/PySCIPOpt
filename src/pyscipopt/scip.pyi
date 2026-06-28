@@ -20,20 +20,36 @@ _core_dot: Incomplete
 _core_dot_2d: Incomplete
 _core_sum: Incomplete
 buildGenExprObj: Incomplete
-cos: Incomplete
-exp: Incomplete
 expr_to_array: Incomplete
 expr_to_nodes: Incomplete
 is_memory_freed: Incomplete
-log: Incomplete
 print_memory_in_use: Incomplete
 quickprod: Incomplete
 quicksum: Incomplete
 readStatistics: Incomplete
-sin: Incomplete
-sqrt: Incomplete
 str_conversion: Incomplete
 value_to_array: Incomplete
+
+@overload
+def exp(x: Expr | GenExpr) -> UnaryExpr: ...
+@overload
+def exp(x: MatrixExpr) -> MatrixGenExpr: ...
+@overload
+def log(x: Expr | GenExpr) -> UnaryExpr: ...
+@overload
+def log(x: MatrixExpr) -> MatrixGenExpr: ...
+@overload
+def sqrt(x: Expr | GenExpr) -> UnaryExpr: ...
+@overload
+def sqrt(x: MatrixExpr) -> MatrixGenExpr: ...
+@overload
+def sin(z: Expr | GenExpr) -> UnaryExpr: ...
+@overload
+def sin(x: MatrixExpr) -> MatrixGenExpr: ...
+@overload
+def cos(x: Expr | GenExpr) -> UnaryExpr: ...
+@overload
+def cos(x: MatrixExpr) -> MatrixGenExpr: ...
 
 @disjoint_base
 class Benders:
