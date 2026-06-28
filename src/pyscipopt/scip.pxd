@@ -2151,7 +2151,8 @@ cdef extern from "tpi/tpi.h":
     int SCIPtpiGetNumThreads()
 
 cdef class ExprLike:
-    pass
+
+    cdef ExprLike copy(self, bint copy=*)
 
 cdef class Expr(ExprLike):
     cdef public terms
