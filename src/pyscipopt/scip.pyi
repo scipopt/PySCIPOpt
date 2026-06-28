@@ -604,7 +604,7 @@ class MatrixExpr(np.ndarray):
         self, other: float | ExprLike | np.ndarray | MatrixExpr, /
     ) -> MatrixExprCons: ...  # type: ignore[override]
     def __matmul__(self, other: np.ndarray | MatrixExpr, /) -> MatrixExpr: ...  # type: ignore[override]
-    def __pow__(self, other: float, /) -> MatrixExpr: ...
+    def __pow__(self, other: float | np.ndarray, /) -> MatrixExpr: ...  # type: ignore[override]
 
 class MatrixExprCons(np.ndarray):
     def __array_ufunc__(
