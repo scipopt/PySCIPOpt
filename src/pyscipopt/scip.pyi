@@ -603,6 +603,7 @@ class MatrixExpr(np.ndarray):
     def __ge__(
         self, other: float | ExprLike | np.ndarray | MatrixExpr, /
     ) -> MatrixExprCons: ...  # type: ignore[override]
+    def __matmul__(self, other: np.ndarray | MatrixExpr, /) -> MatrixExpr: ...  # type: ignore[override]
 
 class MatrixExprCons(np.ndarray):
     def __array_ufunc__(
