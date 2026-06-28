@@ -31,7 +31,6 @@ tests/@types/expr.py:153: error: Expression is of type "Any", not "MatrixGenExpr
 tests/@types/expr.py:153: error: No overload variant of "cos" matches argument type "ndarray[tuple[Any, ...], dtype[Any]]"  [call-overload]
 tests/@types/expr.py:154: error: Expression is of type "Any", not "Expr"  [assert-type]
 tests/@types/expr.py:155: error: Expression is of type "Any", not "MatrixExpr"  [assert-type]
-tests/@types/expr.py:203: error: Expression is of type "GenExpr", not "UnaryExpr"  [assert-type]
 tests/@types/expr.py:244: error: Unused "type: ignore" comment  [unused-ignore]
 tests/@types/expr.py:250: error: Unused "type: ignore" comment  [unused-ignore]
 tests/@types/expr.py:251: error: Unused "type: ignore" comment  [unused-ignore]

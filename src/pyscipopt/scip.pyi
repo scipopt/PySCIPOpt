@@ -2286,7 +2286,6 @@ class Term:
 
 class UnaryExpr(GenExpr):
     def __init__(self, *args: Incomplete, **kwargs: Incomplete) -> None: ...
-    def __abs__(self) -> GenExpr: ...
 
 @disjoint_base
 class VarExpr(GenExpr):
