@@ -1,3 +1,33 @@
+"""
+Structured optimization progress tracing helpers.
+
+This recipe records selected solving progress events as dictionaries in
+``model.data["trace"]``. Each progress record includes the solving time, primal
+bound, dual bound, gap, node count, and number of solutions at the time the
+event was observed.
+
+Use ``structured_optimization_trace(model, path=...)`` as a context manager
+when the trace should be scoped to one optimization run. It records events in
+memory, optionally writes the same records as JSONL, and appends a final
+``run_end`` record when the context exits. If the context exits with a Python
+exception, the ``run_end`` record includes exception metadata and the exception
+is re-raised.
+
+Example:
+    with structured_optimization_trace(model, path="trace.jsonl"):
+        model.optimize()
+
+Use ``attach_structured_optimization_trace(model)`` for simple in-memory
+tracing with an event handler attached directly to the model. This API does not
+manage a Python finalization scope, so it does not emit a final ``run_end``
+record.
+
+Example:
+    attach_structured_optimization_trace(model)
+    model.optimize()
+    trace = model.data["trace"]
+"""
+
 import json
 
 from pyscipopt import SCIP_EVENTTYPE, Eventhdlr, Model
@@ -134,50 +164,38 @@ class _StructuredOptimizationTrace:
 
 def structured_optimization_trace(model: Model, path=None):
     """
-    Create a context manager for structured optimization progress tracing.
+    Return a context manager for structured optimization progress tracing.
 
-    Records progress events in ``model.data["trace"]`` while the model is
-    optimized inside the context. If ``path`` is given, the same records are
-    written as JSONL and flushed after each write.
-
-    On exit, appends a final ``run_end`` record and closes JSONL output. If the
-    context exits with a Python exception, the ``run_end`` record includes
-    exception metadata and the exception is re-raised.
+    The context manager records progress events in ``model.data["trace"]``. If
+    ``path`` is given, it also writes each record as one JSON object per line and
+    flushes after every write. On exit, it appends a final ``run_end`` record and
+    closes the JSONL output, if any.
 
     Args:
         model: SCIP Model.
         path: Optional JSONL output path. If None, records are only stored in
             ``model.data["trace"]``.
 
-    Usage:
-        with structured_optimization_trace(model, path="trace.jsonl"):
-            model.optimize()
-
-        with structured_optimization_trace(model):
-            model.optimizeNogil()
+    Returns:
+        A context manager that traces optimization progress for ``model``.
     """
     return _StructuredOptimizationTrace(model, path=path, write_run_end=True)
 
 
 def attach_structured_optimization_trace(model: Model):
     """
-    Attaches an event handler that records structured optimization progress.
+    Attach an event handler that records structured optimization progress.
 
-    This is the attach-style API for simple in-memory tracing. It records
-    progress events in ``model.data["trace"]`` but does not manage a Python
-    finalization scope, so it does not emit a final ``run_end`` record.
-
-    Use ``structured_optimization_trace(model, path=...)`` as a context manager
-    when JSONL output, ``run_end`` records, flushing, closing, or exception
-    finalization are required.
+    This attach-style API records progress events in ``model.data["trace"]`` and
+    returns the same model. It is intended for simple in-memory tracing. Use
+    ``structured_optimization_trace(model, path=...)`` when JSONL output or a
+    final ``run_end`` record is required.
 
     Args:
-        model: SCIP Model
+        model: SCIP Model.
 
-    Usage:
-        attach_structured_optimization_trace(model)
-        model.optimize()
-        trace = model.data["trace"]
+    Returns:
+        The same model with the structured trace event handler attached.
     """
     trace = _StructuredOptimizationTrace(model, write_run_end=False)
     trace.__enter__()
