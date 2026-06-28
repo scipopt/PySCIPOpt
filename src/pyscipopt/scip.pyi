@@ -582,13 +582,27 @@ class MatrixExpr(np.ndarray):
     ) -> Incomplete: ...
     def __neg__(self, /) -> MatrixExpr: ...
     def __abs__(self, /) -> MatrixExpr: ...
-    def __add__(self, other: float, /) -> MatrixExpr: ...  # type: ignore[override]
-    def __sub__(self, other: float, /) -> MatrixExpr: ...  # type: ignore[override]
-    def __mul__(self, other: float, /) -> MatrixExpr: ...  # type: ignore[override]
-    def __truediv__(self, other: float, /) -> MatrixExpr: ...  # type: ignore[override]
-    def __eq__(self, other: float, /) -> MatrixExprCons: ...  # type: ignore[override]
-    def __le__(self, other: float, /) -> MatrixExprCons: ...  # type: ignore[override]
-    def __ge__(self, other: float, /) -> MatrixExprCons: ...  # type: ignore[override]
+    def __add__(
+        self, other: float | ExprLike | np.ndarray | MatrixExpr, /
+    ) -> MatrixExpr: ...  # type: ignore[override]
+    def __sub__(
+        self, other: float | ExprLike | np.ndarray | MatrixExpr, /
+    ) -> MatrixExpr: ...  # type: ignore[override]
+    def __mul__(
+        self, other: float | ExprLike | np.ndarray | MatrixExpr, /
+    ) -> MatrixExpr: ...  # type: ignore[override]
+    def __truediv__(
+        self, other: float | ExprLike | np.ndarray | MatrixExpr, /
+    ) -> MatrixExpr: ...  # type: ignore[override]
+    def __eq__(
+        self, other: float | ExprLike | np.ndarray | MatrixExpr, /
+    ) -> MatrixExprCons: ...  # type: ignore[override]
+    def __le__(
+        self, other: float | ExprLike | np.ndarray | MatrixExpr, /
+    ) -> MatrixExprCons: ...  # type: ignore[override]
+    def __ge__(
+        self, other: float | ExprLike | np.ndarray | MatrixExpr, /
+    ) -> MatrixExprCons: ...  # type: ignore[override]
 
 class MatrixExprCons(np.ndarray):
     def __array_ufunc__(
