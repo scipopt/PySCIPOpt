@@ -252,6 +252,9 @@ class Conshdlr:
 class Constant(GenExpr):
     number: Incomplete
     def __init__(self, *args: Incomplete, **kwargs: Incomplete) -> None: ...
+    def __pow__(
+        self, other: float | Constant, modulo: Incomplete = ..., /
+    ) -> Constant: ...  # type: ignore[override]
 
 @disjoint_base
 class Constraint:
