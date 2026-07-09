@@ -147,24 +147,29 @@ def test_structured_optimization_trace_records_run_end_on_exception():
 
 def test_structured_optimization_trace_reuses_handler_for_repeated_contexts(tmp_path):
     model = _model()
+    model.setParam("limits/time", 1)
     first_path = tmp_path / "first.jsonl"
     second_path = tmp_path / "second.jsonl"
 
     with structured_optimization_trace(model, path=str(first_path)):
-        pass
+        model.optimize()
 
     handler = model.data["_structured_optimization_trace_handler"]
 
+    model.freeTransform()
+
     with structured_optimization_trace(model, path=str(second_path)):
-        pass
+        model.optimize()
 
     assert model.data["_structured_optimization_trace_handler"] is handler
 
     first_records = [json.loads(line) for line in first_path.read_text().splitlines()]
     second_records = [json.loads(line) for line in second_path.read_text().splitlines()]
 
-    assert first_records == [{"type": "run_end", "status": "finished"}]
-    assert second_records == [{"type": "run_end", "status": "finished"}]
+    assert any(record["type"] != "run_end" for record in first_records)
+    assert any(record["type"] != "run_end" for record in second_records)
+    assert first_records[-1]["type"] == "run_end"
+    assert second_records[-1]["type"] == "run_end"
 
 
 def test_structured_optimization_trace_rejects_nested_contexts():
