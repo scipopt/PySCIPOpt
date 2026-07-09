@@ -39,16 +39,13 @@ class _TraceEventhdlr(Eventhdlr):
     def __init__(self):
         self.trace = None
         self.write_run_end_active = False
-        self._caught_events = set()
 
     def eventinit(self):
         for event_type in (
             SCIP_EVENTTYPE.BESTSOLFOUND,
             SCIP_EVENTTYPE.DUALBOUNDIMPROVED,
         ):
-            if event_type not in self._caught_events:
-                self.model.catchEvent(event_type, self)
-                self._caught_events.add(event_type)
+            self.model.catchEvent(event_type, self)
 
     def eventexec(self, event):
         if self.trace is not None:

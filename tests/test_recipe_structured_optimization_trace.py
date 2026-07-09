@@ -48,6 +48,38 @@ def test_attach_structured_optimization_trace_in_memory():
     _assert_progress_records(model.data["trace"])
 
 
+def test_attach_structured_optimization_trace_reuses_handler():
+    model = _model()
+
+    attach_structured_optimization_trace(model)
+    handler = model.data["_structured_optimization_trace_handler"]
+
+    attach_structured_optimization_trace(model)
+
+    assert model.data["_structured_optimization_trace_handler"] is handler
+
+
+def test_attach_structured_optimization_trace_after_free_transform():
+    model = _model()
+    model = attach_structured_optimization_trace(model)
+
+    model.optimize()
+    first_run_length = len(model.data["trace"])
+
+    model.freeTransform()
+    model.optimize()
+
+    second_run_records = model.data["trace"][first_run_length:]
+    assert second_run_records
+    assert all("type" in record for record in second_run_records)
+    assert all(
+        {"time", "primalbound", "dualbound", "gap", "nodes", "nsol"}
+        <= set(record.keys())
+        for record in second_run_records
+    )
+    assert "run_end" not in [r["type"] for r in second_run_records]
+
+
 @pytest.mark.parametrize("optimize", ["optimize", "optimizeNogil"])
 def test_structured_optimization_trace_context_in_memory(optimize):
     model = _model()
