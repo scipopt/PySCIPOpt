@@ -59,6 +59,22 @@ def test_attach_structured_optimization_trace_reuses_handler():
     assert model.data["_structured_optimization_trace_handler"] is handler
 
 
+def test_context_trace_rejects_when_attach_trace_active():
+    model = _model()
+    attach_structured_optimization_trace(model)
+
+    with pytest.raises(RuntimeError):
+        with structured_optimization_trace(model):
+            pass
+
+
+def test_attach_trace_rejects_when_context_trace_active():
+    model = _model()
+    with structured_optimization_trace(model):
+        with pytest.raises(RuntimeError):
+            attach_structured_optimization_trace(model)
+
+
 def test_attach_structured_optimization_trace_after_free_transform():
     model = _model()
     model = attach_structured_optimization_trace(model)

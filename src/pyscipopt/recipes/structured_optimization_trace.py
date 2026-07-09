@@ -52,6 +52,35 @@ class _TraceEventhdlr(Eventhdlr):
             self.trace._handle_event(event)
 
 
+def _attach_trace_handler(model: Model, trace):
+    if not hasattr(model, "data") or model.data is None:
+        model.data = {}
+
+    handler = model.data.get(_TRACE_HANDLER_KEY)
+    if handler is None:
+        handler = _TraceEventhdlr()
+        model.includeEventhdlr(
+            handler,
+            "structured_trace",
+            "Structured optimization trace handler",
+        )
+        model.data[_TRACE_HANDLER_KEY] = handler
+
+    if handler.trace is not None:
+        if not handler.trace.write_run_end and not trace.write_run_end:
+            model.data["trace"] = []
+            return handler
+
+        raise RuntimeError(
+            "structured optimization trace is already active for this model"
+        )
+
+    model.data["trace"] = []
+    handler.trace = trace
+
+    return handler
+
+
 class _StructuredOptimizationTrace:
     """Internal trace controller shared by both public APIs."""
 
@@ -64,30 +93,11 @@ class _StructuredOptimizationTrace:
         self._last_snapshot: dict[str, object] = {}
 
     def __enter__(self):
-        if not hasattr(self.model, "data") or self.model.data is None:
-            self.model.data = {}
-
-        self._handler = self.model.data.get(_TRACE_HANDLER_KEY)
-        if self._handler is None:
-            self._handler = _TraceEventhdlr()
-            self.model.includeEventhdlr(
-                self._handler,
-                "structured_trace",
-                "Structured optimization trace handler",
-            )
-            self.model.data[_TRACE_HANDLER_KEY] = self._handler
-
-        if self._handler.write_run_end_active:
-            raise RuntimeError(
-                "structured optimization trace is already active for this model"
-            )
-
-        self.model.data["trace"] = []
+        self._handler = _attach_trace_handler(self.model, self)
 
         if self.path is not None:
             self._fh = open(self.path, "w", encoding="utf-8")
 
-        self._handler.trace = self
         if self.write_run_end:
             self._handler.write_run_end_active = True
 
@@ -195,6 +205,6 @@ def attach_structured_optimization_trace(model: Model):
         The same model with the structured trace event handler attached.
     """
     trace = _StructuredOptimizationTrace(model, write_run_end=False)
-    trace.__enter__()
+    _attach_trace_handler(model, trace)
 
     return model
