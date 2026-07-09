@@ -152,7 +152,7 @@ class _StructuredOptimizationTrace:
 
     def _write_event(self, event_type, fields=None):
         event = {"type": event_type}
-        if fields:
+        if fields is not None:
             event.update(fields)
 
         self.model.data["trace"].append(event)
