@@ -109,8 +109,7 @@ def test_structured_optimization_trace_context_in_memory(optimize):
 
     types = [r["type"] for r in model.data["trace"]]
     assert "run_end" in types
-    assert model.data["trace"][-1]["type"] == "run_end"
-    assert model.data["trace"][-1]["status"] == "finished"
+    assert model.data["trace"][-1] == {"type": "run_end", "status": "finished"}
     _assert_progress_records(model.data["trace"])
 
 
@@ -125,8 +124,7 @@ def test_structured_optimization_trace_file_output(tmp_path):
 
     records = [json.loads(line) for line in path.read_text().splitlines()]
     assert records == model.data["trace"]
-    assert records[-1]["type"] == "run_end"
-    assert records[-1]["status"] == "finished"
+    assert records[-1] == {"type": "run_end", "status": "finished"}
     _assert_progress_records(records)
 
 

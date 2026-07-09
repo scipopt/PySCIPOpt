@@ -90,7 +90,6 @@ class _StructuredOptimizationTrace:
         self.write_run_end = write_run_end
         self._fh = None
         self._handler = None
-        self._last_snapshot: dict[str, object] = {}
 
     def __enter__(self):
         self._handler = _attach_trace_handler(self.model, self)
@@ -104,20 +103,14 @@ class _StructuredOptimizationTrace:
         return self
 
     def __exit__(self, exc_type, exc, tb):
-        fields = {}
-        if self._last_snapshot:
-            fields.update(self._last_snapshot)
-
         if exc_type is None:
-            fields["status"] = "finished"
+            fields = {"status": "finished"}
         else:
-            fields.update(
-                {
-                    "status": "exception",
-                    "exception": exc_type.__name__,
-                    "message": str(exc) if exc is not None else None,
-                }
-            )
+            fields = {
+                "status": "exception",
+                "exception": exc_type.__name__,
+                "message": str(exc) if exc is not None else None,
+            }
 
         try:
             if self.write_run_end:
@@ -155,7 +148,6 @@ class _StructuredOptimizationTrace:
 
     def _write_snapshot(self, event_type):
         snapshot = self._snapshot_now()
-        self._last_snapshot = snapshot
         self._write_event(event_type, snapshot)
 
     def _write_event(self, event_type, fields=None):
