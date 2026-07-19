@@ -3351,6 +3351,17 @@ cdef class Model:
         """
         return SCIPgetNLeaves(self._scip)
 
+    def getNNodesLeft(self):
+        """
+        Gets number of nodes left in the tree (children + siblings + leaves)
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNNodesLeft(self._scip)
+
     def getNChildren(self):
         """
         Gets number of children of focus node.
