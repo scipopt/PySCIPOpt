@@ -32,3 +32,10 @@ def test_getNRuns(optimized_model):
 
     assert isinstance(n_runs, int)
     assert n_runs >= 1
+
+
+def test_getNReoptRuns(optimized_model):
+    n_reopt_runs = optimized_model.getNReoptRuns()
+
+    assert isinstance(n_reopt_runs, int)
+    assert n_reopt_runs >= 0
