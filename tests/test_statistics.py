@@ -39,3 +39,11 @@ def test_getNReoptRuns(optimized_model):
 
     assert isinstance(n_reopt_runs, int)
     assert n_reopt_runs >= 0
+
+
+def test_addNNodes(optimized_model):
+    initial_n_nodes = optimized_model.getNTotalNodes()
+    optimized_model.addNNodes(5)
+    new_n_nodes = optimized_model.getNTotalNodes()
+
+    assert new_n_nodes == initial_n_nodes + 5

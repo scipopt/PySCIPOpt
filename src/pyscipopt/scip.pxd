@@ -1489,6 +1489,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetPrimalDualIntegral(SCIP* scip)
     int SCIPgetNRuns(SCIP* scip)
     int SCIPgetNReoptRuns(SCIP* scip)
+    void SCIPaddNNodes(SCIP* scip, SCIP_Longint nnodes)
 
     # Parameter Functions
     SCIP_RETCODE SCIPsetBoolParam(SCIP* scip, char* name, SCIP_Bool value)

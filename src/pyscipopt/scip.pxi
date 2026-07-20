@@ -3318,6 +3318,17 @@ cdef class Model:
         """
         return SCIPgetNReoptRuns(self._scip)
 
+    def addNNodes(self, nnodes):
+        """
+        Add given number to the number of processed nodes in current run and in all runs, including the focus node
+
+        Parameters
+        ----------
+        nnodes : int
+
+        """
+        SCIPaddNNodes(self._scip, nnodes)
+
     def getNNodes(self):
         """
         Gets number of processed nodes in current run, including the focus node.
