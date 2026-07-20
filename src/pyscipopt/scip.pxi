@@ -3296,6 +3296,17 @@ cdef class Model:
         """
         return SCIPgetNLPIterations(self._scip)
 
+    def getNRuns(self):
+        """
+        Gets number of branch and bound runs performed, including the current run
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNRuns(self._scip)
+
     def getNNodes(self):
         """
         Gets number of processed nodes in current run, including the focus node.

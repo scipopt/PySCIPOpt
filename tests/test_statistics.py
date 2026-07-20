@@ -1,21 +1,34 @@
 import os
 from helpers.utils import random_mip_1
 from json import load
+import pytest
 
-def test_statistics_json():
-    model = random_mip_1()
+
+@pytest.fixture
+def optimized_model():
+    model = random_mip_1(small=True)  # Using small=True for speed across tests
     model.optimize()
-    model.writeStatisticsJson("statistics.json")
+    return model
+
+
+def test_statistics_json(optimized_model):
+    optimized_model.writeStatisticsJson("statistics.json")
 
     with open("statistics.json", "r") as f:
         data = load(f)
         assert data["origprob"]["problem_name"] == "model"
-    
+
     os.remove("statistics.json")
 
-def test_getPrimalDualIntegral():
-    model = random_mip_1(small=True)
-    model.optimize()
-    primal_dual_integral = model.getPrimalDualIntegral()
+
+def test_getPrimalDualIntegral(optimized_model):
+    primal_dual_integral = optimized_model.getPrimalDualIntegral()
 
     assert isinstance(primal_dual_integral, float)
+
+
+def test_getNRuns(optimized_model):
+    n_runs = optimized_model.getNRuns()
+
+    assert isinstance(n_runs, int)
+    assert n_runs >= 1

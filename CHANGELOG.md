@@ -2,7 +2,7 @@
 
 ## Unreleased
 ### Added
-- Added `getNNodesLeft()` method 
+- Added methods: `getNNodesLeft()`, `getNRuns()` 
 - Added `addConsCumulative()` for SCIP cumulative constraints (#1222)
 - `Expr` and `GenExpr` support `__pos__` magic method like `+Expr` or `+GenExpr`
 - Added type annotations to most methods on the `Model` class
