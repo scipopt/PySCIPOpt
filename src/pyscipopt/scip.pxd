@@ -1471,6 +1471,9 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPlpExactDiving(SCIP_LPEXACT* lpexact);
 
     # Statistic Methods
+    int SCIPgetNRuns(SCIP* scip)
+    int SCIPgetNReoptRuns(SCIP* scip)
+    void SCIPaddNNodes(SCIP* scip, SCIP_Longint nnodes)
     SCIP_RETCODE SCIPprintStatistics(SCIP* scip, FILE* outfile)
     SCIP_RETCODE SCIPprintStatisticsJson(SCIP* scip, FILE* file)
     SCIP_Longint SCIPgetNNodes(SCIP* scip)
@@ -1487,9 +1490,6 @@ cdef extern from "scip/scip.h":
     SCIP_Longint SCIPgetNNodeLPIterations(SCIP* scip)
     SCIP_Longint SCIPgetNStrongbranchLPIterations(SCIP* scip)
     SCIP_Real SCIPgetPrimalDualIntegral(SCIP* scip)
-    int SCIPgetNRuns(SCIP* scip)
-    int SCIPgetNReoptRuns(SCIP* scip)
-    void SCIPaddNNodes(SCIP* scip, SCIP_Longint nnodes)
 
     # Parameter Functions
     SCIP_RETCODE SCIPsetBoolParam(SCIP* scip, char* name, SCIP_Bool value)
@@ -2137,7 +2137,7 @@ cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetNSiblings(SCIP* scip)
     SCIP_RETCODE SCIPgetLeaves(SCIP* scip, SCIP_NODE*** leaves, int* nleaves)
     SCIP_Longint SCIPgetNLeaves(SCIP* scip)
-    SCIP_Longint SCIPgetNNodesLeft(SCIP* scip)
+    int SCIPgetNNodesLeft(SCIP* scip)
     SCIP_NODE* SCIPgetBestSibling(SCIP* scip)
     SCIP_NODE* SCIPgetBestLeaf(SCIP* scip)
     SCIP_NODE* SCIPgetPrioChild(SCIP* scip)
