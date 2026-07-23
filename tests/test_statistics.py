@@ -47,3 +47,12 @@ def test_addNNodes(optimized_model):
     new_n_nodes = optimized_model.getNTotalNodes()
 
     assert new_n_nodes == initial_n_nodes + 5
+
+
+def test_getMaxTotalDepth(optimized_model):
+    max_total_depth = optimized_model.getMaxTotalDepth()
+    total_depth = optimized_model.getMaxDepth()
+
+    assert isinstance(max_total_depth, int)
+    assert max_total_depth >= 0
+    assert max_total_depth >= total_depth

@@ -3462,6 +3462,17 @@ cdef class Model:
         """
         return SCIPgetMaxDepth(self._scip)
 
+    def getMaxTotalDepth(self):
+        """
+        Gets maximal depth of all processed nodes over all branch and bound runs.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetMaxTotalDepth(self._scip)
+
     def getPlungeDepth(self):
         """
         Gets current plunging depth (successive selections of child/sibling nodes).
