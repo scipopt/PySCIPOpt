@@ -3417,6 +3417,18 @@ cdef class Model:
         """
         return SCIPgetNSiblings(self._scip)
 
+    def getFocusNode(self):
+        """
+        Gets focus node in the tree.
+        If we are in probing/diving mode this method returns the node in the tree where the probing/diving mode was started.
+
+        Returns
+        -------
+        Node
+
+        """
+        return Node.create(SCIPgetFocusNode(self._scip))
+
     def getCurrentNode(self):
         """
         Retrieve current node.
@@ -3472,6 +3484,17 @@ cdef class Model:
 
         """
         return SCIPgetMaxTotalDepth(self._scip)
+
+    def getNBacktracks(self):
+        """
+        Gets total number of backtracks, i.e. number of times, the new node was selected from the leaves queue.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNBacktracks(self._scip)
 
     def getPlungeDepth(self):
         """

@@ -56,3 +56,10 @@ def test_getMaxTotalDepth(optimized_model):
     assert isinstance(max_total_depth, int)
     assert max_total_depth >= 0
     assert max_total_depth >= total_depth
+
+
+def test_getNBacktracks(optimized_model):
+    n_backtracks = optimized_model.getNBacktracks()
+
+    assert isinstance(n_backtracks, int)
+    assert n_backtracks >= 0

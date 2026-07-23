@@ -749,6 +749,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPpresolve(SCIP* scip)
 
     # Node Methods
+    SCIP_NODE* SCIPgetFocusNode(SCIP* scip)
     SCIP_NODE* SCIPgetCurrentNode(SCIP* scip)
     SCIP_NODE* SCIPnodeGetParent(SCIP_NODE* node)
     SCIP_Longint SCIPnodeGetNumber(SCIP_NODE* node)
@@ -1487,6 +1488,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetCutoffbound(SCIP* scip)
     int SCIPgetMaxDepth(SCIP* scip)
     int SCIPgetMaxTotalDepth(SCIP* scip)
+    SCIP_Longint SCIPgetNBacktracks(SCIP* scip)
     int SCIPgetPlungeDepth(SCIP* scip)
     SCIP_Longint SCIPgetNNodeLPIterations(SCIP* scip)
     SCIP_Longint SCIPgetNStrongbranchLPIterations(SCIP* scip)
