@@ -7,7 +7,7 @@ import numpy as np
 
 @pytest.fixture
 def optimized_model():
-    model = random_mip_1(small=True)  # Using small=True for speed across tests
+    model = random_mip_1(small=True, node_lim=2400)  # Using small=True for speed across tests
     model.optimize()
     return model
 
@@ -20,6 +20,12 @@ def test_statistics_json(optimized_model):
         assert data["origprob"]["problem_name"] == "model"
 
     os.remove("statistics.json")
+
+
+def test_getNSolsFound(optimized_model):
+    sols = optimized_model.getNSolsFound()
+
+    assert sols >= 1
 
 
 def test_getPrimalDualIntegral(optimized_model):
