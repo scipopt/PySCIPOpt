@@ -95,10 +95,20 @@ def test_getDeterministicTime(optimized_model):
     assert det_time >= 0.0
 
 
+def test_getUpperbound(optimized_model):
+    upperbound = optimized_model.getUpperbound()
+    lowerbound = optimized_model.getLowerbound()
+
+    assert isinstance(upperbound, float)
+    assert upperbound >= lowerbound
+
+
 def test_getFirstPrimalBound(optimized_model):
     first_primal = optimized_model.getFirstPrimalBound()
-    
+    upperbound = optimized_model.getUpperbound()
+
     assert isinstance(first_primal, float)
+    assert first_primal >= upperbound
 
 
 def test_getLowerboundRoot(optimized_model):

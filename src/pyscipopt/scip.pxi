@@ -3573,6 +3573,16 @@ cdef class Model:
         """
         return SCIPgetCutoffbound(self._scip)
 
+    def getUpperbound(self):
+        """
+        Gets global upper (primal) bound in transformed problem (objective value of best solution or user objective limit).
+
+        Returns
+        -------
+        float
+        """
+        return SCIPgetUpperbound(self._scip)
+
     def getNNodeLPIterations(self):
         """
         Gets number of LP iterations used for solving node relaxations so far.
