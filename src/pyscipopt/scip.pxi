@@ -3296,6 +3296,17 @@ cdef class Model:
         """
         return SCIPgetDeterministicTime(self._scip)
 
+    def getFirstPrimalBound(self):
+        """
+        Gets the primal bound of the very first solution.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetFirstPrimalBound(self._scip)
+
     def getNLPIterations(self):
         """
         Returns the total number of LP iterations so far.

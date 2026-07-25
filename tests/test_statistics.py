@@ -75,7 +75,7 @@ def test_getAvgLowerbound(optimized_model):
         manual_avg_lowerbound = np.mean(
             [node.getLowerbound() for node in open_nodes] + [optimized_model.getFocusNode().getLowerbound()]
         )
-        
+
     assert isinstance(avg_lowerbound, float)
     assert manual_avg_lowerbound == pytest.approx(avg_lowerbound)
 
@@ -93,3 +93,9 @@ def test_getDeterministicTime(optimized_model):
 
     assert isinstance(det_time, float)
     assert det_time >= 0.0
+
+
+def test_getFirstPrimalBound(optimized_model):
+    first_primal = optimized_model.getFirstPrimalBound()
+    
+    assert isinstance(first_primal, float)
