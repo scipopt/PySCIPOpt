@@ -3518,6 +3518,17 @@ cdef class Model:
         """
         return SCIPgetAvgLowerbound(self._scip)
 
+    def getAvgDualbound(self):
+        """
+        Gets average dual bound of all unprocessed nodes for original problem.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetAvgDualbound(self._scip)
+
     def getLowerbound(self):
         """
         Gets global lower (dual) bound of the transformed problem.

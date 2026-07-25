@@ -73,8 +73,16 @@ def test_getAvgLowerbound(optimized_model):
     manual_avg_lowerbound = 0.0
     if len(open_nodes) > 0:
         manual_avg_lowerbound = np.mean(
-            [node.getLowerbound() for node in open_nodes] + [optimized_model.getFocusNode().getLowerbound()] 
+            [node.getLowerbound() for node in open_nodes] + [optimized_model.getFocusNode().getLowerbound()]
         )
-
+        
     assert isinstance(avg_lowerbound, float)
-    assert np.isclose(manual_avg_lowerbound, avg_lowerbound)
+    assert manual_avg_lowerbound == pytest.approx(avg_lowerbound)
+
+
+def test_getAvgDualbound(optimized_model):
+    avg_dualbound = optimized_model.getAvgDualbound()
+    avg_lowerbound = optimized_model.getAvgLowerbound()
+
+    assert isinstance(avg_dualbound, float)
+    assert avg_dualbound == pytest.approx(avg_lowerbound) or avg_dualbound == pytest.approx(-avg_lowerbound)
