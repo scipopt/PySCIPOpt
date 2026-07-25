@@ -11584,6 +11584,17 @@ cdef class Model:
         """
         return SCIPgetDualboundRoot(self._scip)
 
+    def getLowerboundRoot(self):
+        """
+        Gets lower (dual) bound in transformed problem of the root node.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetLowerboundRoot(self._scip)
+
     def writeName(self, Variable var):
         """
         Write the name of the variable to the std out.

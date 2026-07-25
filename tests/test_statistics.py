@@ -99,3 +99,11 @@ def test_getFirstPrimalBound(optimized_model):
     first_primal = optimized_model.getFirstPrimalBound()
     
     assert isinstance(first_primal, float)
+
+
+def test_getLowerboundRoot(optimized_model):
+    lowerbound_root = optimized_model.getLowerboundRoot()
+    lowerbound = optimized_model.getLowerbound()
+
+    assert isinstance(lowerbound_root, float)
+    assert lowerbound_root <= lowerbound

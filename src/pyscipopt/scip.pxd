@@ -1489,6 +1489,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetAvgLowerbound(SCIP* scip)
     SCIP_Real SCIPgetAvgDualbound(SCIP* scip)
     SCIP_Real SCIPgetLowerbound(SCIP* scip)
+    SCIP_Real SCIPgetLowerboundRoot(SCIP* scip)
     SCIP_Real SCIPgetCutoffbound(SCIP* scip)
     int SCIPgetMaxDepth(SCIP* scip)
     int SCIPgetMaxTotalDepth(SCIP* scip)

@@ -2,7 +2,7 @@
 
 ## Unreleased
 ### Added
-- Added methods: `getDeterministicTime()`, `getAvgDualbound()`, `getMaxTotalDepth()`, `getNBacktracks()`, `getFocusNode()`, `getAvgLowerbound()`, `getFirstPrimalBound()` with tests
+- Added methods: `getDeterministicTime()`, `getAvgDualbound()`, `getMaxTotalDepth()`, `getNBacktracks()`, `getFocusNode()`, `getAvgLowerbound()`, `getFirstPrimalBound()`, `getLowerboundRoot()` with tests
 - Added methods: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()` with tests
 - Added `addConsCumulative()` for SCIP cumulative constraints (#1222)
 - `Expr` and `GenExpr` support `__pos__` magic method like `+Expr` or `+GenExpr`
