@@ -2,8 +2,8 @@
 
 ## Unreleased
 ### Added
-- Added methods: `getDeterministicTime()`, `getAvgDualbound()`, `getMaxTotalDepth()`, `getNBacktracks()`, `getFocusNode()`, `getAvgLowerbound()`, `getFirstPrimalBound()`, `getLowerboundRoot()`, `getUpperbound()` with tests
-- Added methods: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()` with tests
+- Added methods: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()`, `getDeterministicTime()`, `getAvgDualbound()`, `getMaxTotalDepth()`, `getNBacktracks()`,\
+`getFocusNode()`, `getAvgLowerbound()`, `getFirstPrimalBound()`, `getLowerboundRoot()`, `getUpperbound()`, `getNObjlimLeaves()` with tests
 - Added `addConsCumulative()` for SCIP cumulative constraints (#1222)
 - `Expr` and `GenExpr` support `__pos__` magic method like `+Expr` or `+GenExpr`
 - Added type annotations to most methods on the `Model` class

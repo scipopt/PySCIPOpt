@@ -3395,6 +3395,17 @@ cdef class Model:
         """
         return SCIPgetNInfeasibleLeaves(self._scip)
 
+    def getNObjlimLeaves(self):
+        """
+        Gets number of processed leaf nodes that hit LP objective limit.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNObjlimLeaves(self._scip)
+
     def getNLeaves(self):
         """
         Gets number of leaves in the tree.

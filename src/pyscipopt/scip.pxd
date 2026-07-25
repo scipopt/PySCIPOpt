@@ -1483,6 +1483,7 @@ cdef extern from "scip/scip.h":
     SCIP_Longint SCIPgetNTotalNodes(SCIP* scip)
     SCIP_Longint SCIPgetNFeasibleLeaves(SCIP* scip)
     SCIP_Longint SCIPgetNInfeasibleLeaves(SCIP* scip)
+    SCIP_Longint SCIPgetNObjlimLeaves(SCIP* scip)
     SCIP_Longint SCIPgetNLPs(SCIP* scip)
     SCIP_Longint SCIPgetNLPIterations(SCIP* scip)
     int SCIPgetNSepaRounds(SCIP* scip)

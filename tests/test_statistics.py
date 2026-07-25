@@ -42,6 +42,12 @@ def test_getNReoptRuns(optimized_model):
     assert n_reopt_runs >= 0
 
 
+def test_getNObjlimLeaves(optimized_model):
+    n_objlim_leaves = optimized_model.getNObjlimLeaves()
+
+    assert isinstance(n_objlim_leaves, int)
+
+
 def test_addNNodes(optimized_model):
     initial_n_nodes = optimized_model.getNTotalNodes()
     optimized_model.addNNodes(5)
