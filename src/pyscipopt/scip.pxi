@@ -3285,6 +3285,17 @@ cdef class Model:
         """
         return SCIPgetPresolvingTime(self._scip)
 
+    def getDeterministicTime(self):
+        """
+        Computes a deterministic measure of time from statistics.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetDeterministicTime(self._scip)
+
     def getNLPIterations(self):
         """
         Returns the total number of LP iterations so far.

@@ -86,3 +86,10 @@ def test_getAvgDualbound(optimized_model):
 
     assert isinstance(avg_dualbound, float)
     assert avg_dualbound == pytest.approx(avg_lowerbound) or avg_dualbound == pytest.approx(-avg_lowerbound)
+
+
+def test_getDeterministicTime(optimized_model):
+    det_time = optimized_model.getDeterministicTime()
+
+    assert isinstance(det_time, float)
+    assert det_time >= 0.0
