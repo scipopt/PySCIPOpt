@@ -3507,6 +3507,17 @@ cdef class Model:
         """
         return SCIPgetPlungeDepth(self._scip)
 
+    def getAvgLowerbound(self):
+        """
+        Gets average lower (dual) bound of all unprocessed nodes in transformed problem.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetAvgLowerbound(self._scip)
+
     def getLowerbound(self):
         """
         Gets global lower (dual) bound of the transformed problem.

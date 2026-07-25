@@ -1484,6 +1484,7 @@ cdef extern from "scip/scip.h":
     SCIP_Longint SCIPgetNLPs(SCIP* scip)
     SCIP_Longint SCIPgetNLPIterations(SCIP* scip)
     int SCIPgetNSepaRounds(SCIP* scip)
+    SCIP_Real SCIPgetAvgLowerbound(SCIP* scip)
     SCIP_Real SCIPgetLowerbound(SCIP* scip)
     SCIP_Real SCIPgetCutoffbound(SCIP* scip)
     int SCIPgetMaxDepth(SCIP* scip)

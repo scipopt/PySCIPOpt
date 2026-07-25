@@ -2,6 +2,7 @@ import os
 from helpers.utils import random_mip_1
 from json import load
 import pytest
+import numpy as np
 
 
 @pytest.fixture
@@ -63,3 +64,17 @@ def test_getNBacktracks(optimized_model):
 
     assert isinstance(n_backtracks, int)
     assert n_backtracks >= 0
+
+
+def test_getAvgLowerbound(optimized_model):
+    avg_lowerbound = optimized_model.getAvgLowerbound()
+    leaves, children, siblings = optimized_model.getOpenNodes()
+    open_nodes = leaves + children + siblings
+    manual_avg_lowerbound = 0.0
+    if len(open_nodes) > 0:
+        manual_avg_lowerbound = np.mean(
+            [node.getLowerbound() for node in open_nodes] + [optimized_model.getFocusNode().getLowerbound()] 
+        )
+
+    assert isinstance(avg_lowerbound, float)
+    assert np.isclose(manual_avg_lowerbound, avg_lowerbound)
