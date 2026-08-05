@@ -132,3 +132,6 @@ model.lp
 # VSCode
 .vscode/
 .devcontainer/
+
+# generated test files
+tests/@types/expr.py

@@ -45,6 +45,14 @@ class focusEventHdlr(Eventhdlr):
         assert children == self.model.getChildren()
         assert siblings == self.model.getSiblings()
 
+        nodes_left = self.model.getNNodesLeft()
+        assert (
+            nodes_left
+            == self.model.getNLeaves()
+            + self.model.getNChildren()
+            + self.model.getNSiblings()
+        )   
+
         return {'result': SCIP_RESULT.SUCCESS}
  
 def test_tree_methods():

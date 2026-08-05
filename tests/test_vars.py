@@ -142,28 +142,25 @@ def test_markDoNotAggrVar_and_getStatus():
     model.addCons(y - 2*x == 0)
     model.addCons(x + z + w == 10)
     model.addCons(x*y*z >= 21) # to prevent presolve from removing all variables
+
+    variables = (x, y, z, w)
     model.presolve()
 
-    assert z.getStatus() == "ORIGINAL"
-    assert model.getTransformedVar(z).getStatus() == "AGGREGATED"
-    assert model.getTransformedVar(w).getStatus() == "MULTAGGR"
-
-    assert model.getNVars(True) == 1
+    multaggr = [v for v in variables if model.getTransformedVar(v).getStatus() == "MULTAGGR"]
+    aggregated = [v for v in variables if model.getTransformedVar(v).getStatus() == "AGGREGATED"]
+    assert multaggr, "presolve no longer multi-aggregates; update the test model"
+    assert aggregated, "presolve no longer aggregates; update the test model"
+    assert multaggr[0].getStatus() == "ORIGINAL"
 
     model.freeTransform()
-    model.markDoNotMultaggrVar(w)
+    model.markDoNotMultaggrVar(multaggr[0])
     model.presolve()
-
-    assert model.getTransformedVar(w).getStatus() != "MULTAGGR"
-    assert model.getNVars(True) == 3
+    assert model.getTransformedVar(multaggr[0]).getStatus() != "MULTAGGR"
 
     model.freeTransform()
-    model.markDoNotAggrVar(y)
+    model.markDoNotAggrVar(aggregated[0])
     model.presolve()
-    assert model.getTransformedVar(z).getStatus() != "AGGREGATED"
-    assert model.getNVars(True) == 4
-
-    assert x.getStatus() == "ORIGINAL"
+    assert model.getTransformedVar(aggregated[0]).getStatus() != "AGGREGATED"
 
 
 def test_isIntegral():

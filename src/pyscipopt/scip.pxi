@@ -1563,6 +1563,9 @@ cdef class Variable(Expr):
             cname = bytes( SCIPvarGetName(self.scip_var) )
             return cname.decode('utf-8')
 
+    cdef Variable copy(self, bint copy=True):
+        return self
+
     def ptr(self):
         return <size_t>(self.scip_var)
 
@@ -3293,6 +3296,39 @@ cdef class Model:
         """
         return SCIPgetNLPIterations(self._scip)
 
+    def getNRuns(self):
+        """
+        Gets number of branch and bound runs performed, including the current run
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNRuns(self._scip)
+
+    def getNReoptRuns(self):
+        """
+        Gets number of reoptimization runs performed, including the current run
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNReoptRuns(self._scip)
+
+    def addNNodes(self, nnodes):
+        """
+        Add given number to the number of processed nodes in current run and in all runs, including the focus node
+
+        Parameters
+        ----------
+        nnodes : int
+
+        """
+        SCIPaddNNodes(self._scip, nnodes)
+
     def getNNodes(self):
         """
         Gets number of processed nodes in current run, including the focus node.
@@ -3347,6 +3383,17 @@ cdef class Model:
 
         """
         return SCIPgetNLeaves(self._scip)
+
+    def getNNodesLeft(self):
+        """
+        Gets number of nodes left in the tree (children + siblings + leaves)
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNNodesLeft(self._scip)
 
     def getNChildren(self):
         """
@@ -10308,7 +10355,7 @@ cdef class Model:
 
         Returns
         -------
-        int
+        float
             node selection priority for moving the given variable's LP value to the given target value
 
         """
@@ -10341,7 +10388,7 @@ cdef class Model:
 
         Parameters
         ----------
-        nodeselprio : int
+        nodeselprio : float
             node selection priority of new node
         estimate : float
             estimate for (transformed) objective value of best feasible solution in subtree
