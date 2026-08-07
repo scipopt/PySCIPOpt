@@ -92,10 +92,10 @@ class _StructuredOptimizationTrace:
         self._handler = None
 
     def __enter__(self):
-        self._handler = _attach_trace_handler(self.model, self)
-
         if self.path is not None:
             self._fh = open(self.path, "w", encoding="utf-8")
+
+        self._handler = _attach_trace_handler(self.model, self)
 
         if self.write_run_end:
             self._handler.write_run_end_active = True
