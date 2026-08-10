@@ -3,6 +3,7 @@ import json
 import pytest
 from helpers.utils import bin_packing_model
 
+from pyscipopt import SCIP_PARAMSETTING
 from pyscipopt.recipes.structured_optimization_trace import (
     attach_structured_optimization_trace,
     structured_optimization_trace,
@@ -147,7 +148,7 @@ def test_structured_optimization_trace_records_run_end_on_exception():
 
 def test_structured_optimization_trace_reuses_handler_for_repeated_contexts(tmp_path):
     model = _model()
-    model.setParam("limits/time", 1)
+    model.setPresolve(SCIP_PARAMSETTING.OFF)
     first_path = tmp_path / "first.jsonl"
     second_path = tmp_path / "second.jsonl"
 
