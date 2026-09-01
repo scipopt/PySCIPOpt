@@ -3520,7 +3520,7 @@ cdef class Model:
 
     def getNBacktracks(self):
         """
-        Gets total number of backtracks, i.e. number of times, the new node was selected from the leaves queue.
+        Gets total number of backtracks, i.e., number of times the new node was selected from the leaves queue.
 
         Returns
         -------
