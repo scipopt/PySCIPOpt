@@ -233,10 +233,10 @@ def _core_sum(
         a np.ndarray.
 
     """
-    axis: Tuple[int, ...] = normalize_axis_tuple(
+    axis_tuple: Tuple[int, ...] = normalize_axis_tuple(
         range(a.ndim) if axis is None else axis, a.ndim
     )
-    if len(axis) == a.ndim:
+    if len(axis_tuple) == a.ndim:
         res = quicksum(a.flat)
         return (
             np.array([res], dtype=object).reshape([1] * a.ndim)
@@ -244,12 +244,12 @@ def _core_sum(
             else res
         )
 
-    keep_axes = tuple(i for i in range(a.ndim) if i not in axis)
+    keep_axes = tuple(i for i in range(a.ndim) if i not in axis_tuple)
     shape = (
-        tuple(1 if i in axis else a.shape[i] for i in range(a.ndim))
+        tuple(1 if i in axis_tuple else a.shape[i] for i in range(a.ndim))
         if keepdims
         else tuple(a.shape[i] for i in keep_axes)
     )
     return np.apply_along_axis(
-        quicksum, -1, a.transpose(keep_axes + axis).reshape(shape + (-1,))
+        quicksum, -1, a.transpose(keep_axes + axis_tuple).reshape(shape + (-1,))
     )
