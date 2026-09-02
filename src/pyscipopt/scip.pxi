@@ -3298,7 +3298,7 @@ cdef class Model:
 
     def getFirstPrimalBound(self):
         """
-        Gets the primal bound of the very first solution.
+        Gets the primal bound of the very first solution in the original space.
 
         Returns
         -------
