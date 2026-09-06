@@ -229,6 +229,33 @@ def test_getVal_with_GenExpr():
     with pytest.raises(ZeroDivisionError):
         m.getVal(1 / z)
 
+    # math domain errors match the math module
+    with pytest.raises(ValueError, match="math domain error"):
+        m.getVal(log(z))  # log(0)
+
+    with pytest.raises(ValueError, match="math domain error"):
+        m.getVal(log(-y))  # log(-2)
+
+    with pytest.raises(ValueError, match="math domain error"):
+        m.getVal(sqrt(-y))  # sqrt(-2)
+
+    # sqrt(0) is inside the domain, like math.sqrt(0)
+    assert m.getVal(sqrt(z)) == 0
+
+    # +inf is inside log's domain, like math.log(inf) -> inf
+    assert m.getVal(log(math.inf)) == math.inf
+
+    # sin and cos reject infinite arguments, like math.sin(inf)
+    with pytest.raises(ValueError, match="math domain error"):
+        m.getVal(sin(math.inf))
+
+    with pytest.raises(ValueError, match="math domain error"):
+        m.getVal(cos(-math.inf))
+
+    # nested unary expressions propagate the inner domain error
+    with pytest.raises(ValueError, match="math domain error"):
+        m.getVal(exp(log(-x)))
+
 
 def test_unary_ufunc(model):
     m, x, y, z = model
