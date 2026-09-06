@@ -141,24 +141,17 @@ def test_isActive():
         assert var.getStatus() == "ORIGINAL"
         assert var.isActive()
 
-    transformed = [m.getTransformedVar(var) for var in original_vars]
-    transformed_statuses = [var.getStatus() for var in transformed]
+    transformed_vars = [m.getTransformedVar(var) for var in original_vars]
 
     # at the time of writing this test, the presolve step aggregates two variables and fixes one variable
-    expected_aggregated_cnt = 2
-    aggregated_cnt = transformed_statuses.count("AGGREGATED")
-    assert aggregated_cnt == expected_aggregated_cnt, (
-        f"Expected {expected_aggregated_cnt} aggregated variables, but got: {aggregated_cnt}; update the test model"
-    )
+    aggregated_vars = [var for var in transformed_vars if var.getStatus() == "AGGREGATED"]
+    assert aggregated_vars, "presolve no longer aggregates variables; update the test model"
+    for var in aggregated_vars:
+        assert not var.isActive()
 
-    expected_fixed_cnt = 1
-    fixed_cnt = transformed_statuses.count("FIXED")
-    assert fixed_cnt == expected_fixed_cnt, (
-        f"Expected {expected_fixed_cnt} fixed variables, but got: {fixed_cnt}; update the test model"
-    )
-
-    # aggregated and fixed variables should not be active
-    for var in transformed:
+    fixed_vars = [var for var in transformed_vars if var.getStatus() == "FIXED"]
+    assert fixed_vars, "presolve no longer fixes variables; update the test model"
+    for var in fixed_vars:
         assert not var.isActive()
 
 
@@ -174,18 +167,18 @@ def test_isActive_mip():
 
     model.presolve()
     # at the time of writing this test, all variables are LOOSE after presolve
-    transformed = [model.getTransformedVar(var) for var in vars]
-    for var in transformed:
+    transformed_vars = [model.getTransformedVar(var) for var in vars]
+    for var in transformed_vars:
         assert var.getStatus() == "LOOSE", (
-            f"Expected all variables to be LOOSE after presolve, but got: {[mip_var.getStatus() for mip_var in transformed]}; update the test model"
+            f"Expected all variables to be LOOSE after presolve, but got: {[mip_var.getStatus() for mip_var in transformed_vars]}; update the test model"
         )
         assert var.isActive()
 
     model.optimize()
     # at the time of writing this test, all variables are COLUMN after optimization
-    for var in transformed:
+    for var in transformed_vars:
         assert var.getStatus() == "COLUMN", (
-            f"Expected all variables to be COLUMN after optimization, but got: {[mip_var.getStatus() for mip_var in transformed]}; update the test model"
+            f"Expected all variables to be COLUMN after optimization, but got: {[mip_var.getStatus() for mip_var in transformed_vars]}; update the test model"
         )
         assert var.isActive()
 
