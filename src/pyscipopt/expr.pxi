@@ -895,7 +895,10 @@ cdef class SinExpr(UnaryExpr):
 cdef class CosExpr(UnaryExpr):
 
     cpdef double _evaluate(self, Solution sol) except *:
-        return c_cos((<GenExpr>self.children[0])._evaluate(sol))
+        cdef double val = (<GenExpr>self.children[0])._evaluate(sol)
+        if c_fabs(val) == INFINITY:
+            raise ValueError("math domain error")
+        return c_cos(val)
 
 
 # class for constant expressions
