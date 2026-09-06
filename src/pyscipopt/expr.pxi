@@ -860,6 +860,9 @@ cdef class Constant(GenExpr):
         self.number = number
         self._op = Operator.const
 
+    def __neg__(self, /) -> Constant:
+        return Constant(-self.number)
+
     def __repr__(self):
         return str(self.number)
 
