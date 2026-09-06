@@ -2,14 +2,18 @@
 
 ## Unreleased
 ### Added
+- Added methods: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()` with tests
 - Added `addConsCumulative()` for SCIP cumulative constraints (#1222)
 - `Expr` and `GenExpr` support `__pos__` magic method like `+Expr` or `+GenExpr`
 - Added type annotations to most methods on the `Model` class
 ### Fixed
+- Fixed Cython 3.3 compatibility (#1248)
+- Made `test_markDoNotAggrVar_and_getStatus` robust to SCIP presolve changes by discovering the aggregated/multi-aggregated variables instead of hardcoding them
 ### Changed
 - Move magic methods (`__radd__`, `__sub__`, `__rsub__`, `__rmul__`, `__richcmp__`, `__neg__`, and `__rtruediv__`) to `ExprLike` base class (#1204)
-- Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API
-- Replace Python math with C-level math functions and refactor unary expressions.
+- Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API (#1205)
+- Replace Python math with C-level math functions and refactor unary expressions (#1224)
+- Extended `structured_optimization_trace` recipe to support context-managed JSONL tracing with final `run_end` records, alongside the existing attach-style in-memory tracing.
 ### Removed
 
 ## 6.2.1 - 2026.05.16
