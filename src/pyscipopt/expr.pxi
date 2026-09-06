@@ -867,7 +867,10 @@ cdef class ExpExpr(UnaryExpr):
 cdef class LogExpr(UnaryExpr):
 
     cpdef double _evaluate(self, Solution sol) except *:
-        return c_log((<GenExpr>self.children[0])._evaluate(sol))
+        cdef double val = (<GenExpr>self.children[0])._evaluate(sol)
+        if val <= 0.0:
+            raise ValueError("math domain error")
+        return c_log(val)
 
 
 cdef class SqrtExpr(UnaryExpr):
