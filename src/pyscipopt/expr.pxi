@@ -56,6 +56,7 @@ from cpython.tuple cimport PyTuple_GET_ITEM
 from libc.math cimport cos as c_cos
 from libc.math cimport exp as c_exp
 from libc.math cimport fabs as c_fabs
+from libc.math cimport INFINITY
 from libc.math cimport log as c_log
 from libc.math cimport sqrt as c_sqrt
 from libc.math cimport sin as c_sin
@@ -721,7 +722,7 @@ cdef class GenExpr(ExprLike):
 
     def degree(self):
         '''Note: none of these expressions should be polynomial'''
-        return float('inf') 
+        return INFINITY
 
     def getOp(self):
         '''returns operator of GenExpr'''
