@@ -8,6 +8,7 @@
 - Added type annotations to most methods on the `Model` class
 ### Fixed
 - Fixed Cython 3.3 compatibility (#1248)
+- Fixed `lotsizing_lazy` example: the constraint handler now locks its variables in `conslock`, so presolve can no longer aggregate them away and make the lazily added (l,S) cuts cut off the optimum (#1228)
 - Made `test_markDoNotAggrVar_and_getStatus` robust to SCIP presolve changes by discovering the aggregated/multi-aggregated variables instead of hardcoding them
 ### Changed
 - Move magic methods (`__radd__`, `__sub__`, `__rsub__`, `__rmul__`, `__richcmp__`, `__neg__`, and `__rtruediv__`) to `ExprLike` base class (#1204)
