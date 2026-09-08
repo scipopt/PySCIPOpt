@@ -3285,6 +3285,28 @@ cdef class Model:
         """
         return SCIPgetPresolvingTime(self._scip)
 
+    def getDeterministicTime(self):
+        """
+        Computes a deterministic measure of time from statistics.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetDeterministicTime(self._scip)
+
+    def getFirstPrimalBound(self):
+        """
+        Gets the primal bound of the very first solution in the original space.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetFirstPrimalBound(self._scip)
+
     def getNLPIterations(self):
         """
         Returns the total number of LP iterations so far.
@@ -3373,6 +3395,17 @@ cdef class Model:
         """
         return SCIPgetNInfeasibleLeaves(self._scip)
 
+    def getNObjlimLeaves(self):
+        """
+        Gets number of processed leaf nodes that hit LP objective limit.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNObjlimLeaves(self._scip)
+
     def getNLeaves(self):
         """
         Gets number of leaves in the tree.
@@ -3416,6 +3449,18 @@ cdef class Model:
 
         """
         return SCIPgetNSiblings(self._scip)
+
+    def getFocusNode(self):
+        """
+        Gets focus node in the tree.
+        If we are in probing/diving mode this method returns the node in the tree where the probing/diving mode was started.
+
+        Returns
+        -------
+        Node
+
+        """
+        return Node.create(SCIPgetFocusNode(self._scip))
 
     def getCurrentNode(self):
         """
@@ -3462,6 +3507,28 @@ cdef class Model:
         """
         return SCIPgetMaxDepth(self._scip)
 
+    def getMaxTotalDepth(self):
+        """
+        Gets maximal depth of all processed nodes over all branch and bound runs.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetMaxTotalDepth(self._scip)
+
+    def getNBacktracks(self):
+        """
+        Gets total number of backtracks, i.e., number of times the new node was selected from the leaves queue.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNBacktracks(self._scip)
+
     def getPlungeDepth(self):
         """
         Gets current plunging depth (successive selections of child/sibling nodes).
@@ -3472,6 +3539,28 @@ cdef class Model:
 
         """
         return SCIPgetPlungeDepth(self._scip)
+
+    def getAvgLowerbound(self):
+        """
+        Gets average lower (dual) bound of all unprocessed nodes in transformed problem.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetAvgLowerbound(self._scip)
+
+    def getAvgDualbound(self):
+        """
+        Gets average dual bound of all unprocessed nodes for original problem.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetAvgDualbound(self._scip)
 
     def getLowerbound(self):
         """
@@ -3494,6 +3583,16 @@ cdef class Model:
 
         """
         return SCIPgetCutoffbound(self._scip)
+
+    def getUpperbound(self):
+        """
+        Gets global upper (primal) bound in transformed problem (objective value of best solution or user objective limit).
+
+        Returns
+        -------
+        float
+        """
+        return SCIPgetUpperbound(self._scip)
 
     def getNNodeLPIterations(self):
         """
@@ -11505,6 +11604,17 @@ cdef class Model:
 
         """
         return SCIPgetDualboundRoot(self._scip)
+
+    def getLowerboundRoot(self):
+        """
+        Gets lower (dual) bound in transformed problem of the root node.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetLowerboundRoot(self._scip)
 
     def writeName(self, Variable var):
         """
