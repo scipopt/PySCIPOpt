@@ -404,7 +404,7 @@ def test_getRowLinear_for_linear_constraints():
     class RowAddedEvent(Eventhdlr):
         def __init__(self, cons):
             super().__init__()
-            self.cons = cons
+            self.cons_by_name = {con.name: con for con in cons}
             self.matched = {con: False for con in cons}
 
         def eventinit(self):
@@ -415,23 +415,18 @@ def test_getRowLinear_for_linear_constraints():
 
         def eventexec(self, event):
             row = event.getRow()
+            con = self.cons_by_name[row.name]
 
-            for con in self.cons:
-                try:
-                    trans_con = self.model.getTransformedCons(con)
-                    row_from_con = self.model.getRowLinear(trans_con)
-                except Warning:
-                    continue  # skip if the constraint has not yet been transformed into a row
+            trans_con = self.model.getTransformedCons(con)
+            row_from_con = self.model.getRowLinear(trans_con)
 
-                assert isinstance(row_from_con, Row)
-                if (
-                    row == row_from_con
-                    and row.getNNonz() == row_from_con.getNNonz()
-                    and row.getVals() == row_from_con.getVals()
-                    and row.getRhs() == row_from_con.getRhs()
-                    and row.getLhs() == row_from_con.getLhs()
-                ):
-                    self.matched[con] = True
+            assert isinstance(row_from_con, Row)
+            assert row == row_from_con
+            assert row.getNNonz() == row_from_con.getNNonz()
+            assert row.getVals() == row_from_con.getVals()
+            assert row.getRhs() == row_from_con.getRhs()
+            assert row.getLhs() == row_from_con.getLhs()
+            self.matched[con] = True
 
     m = Model()
     x = m.addVar("x", lb=0, ub=10)
