@@ -1,17 +1,10 @@
 """
-Example showing a custom primal heuristic using PySCIPOpt's Heur plugin.
+Parallel machine scheduling with release dates (Pm|r_j|C_max), solved with a
+big-M formulation that is warm-started by a custom heuristic.
 
-The heuristic warm-starts a scheduling MIP: before SCIP processes the root
-node, it builds a feasible schedule with a fast list-scheduling rule and
-hands it to SCIP as an incumbent solution.
-
-The problem is parallel machine scheduling with release dates and makespan
-objective, Pm|r_j|C_max: n jobs with processing times p_j and release dates
-r_j have to be assigned to m identical machines and sequenced so that the
-last job finishes as early as possible. The MIP is a disjunctive (big-M)
-formulation. The heuristic is the LPT (longest processing time first) list
-scheduling rule: whenever a machine becomes free, it starts the longest job
-that has already been released.
+The heuristic is a Heur plugin that runs once before the root node. It builds
+an LPT (longest processing time first) list schedule and hands it to SCIP as
+an incumbent.
 """
 
 from pyscipopt import Model, Heur, SCIP_RESULT, SCIP_HEURTIMING, quicksum
@@ -19,12 +12,8 @@ from pyscipopt import Model, Heur, SCIP_RESULT, SCIP_HEURTIMING, quicksum
 
 def lpt_schedule(p, r, m):
     """
-    LPT list scheduling for Pm|r_j|C_max.
-
-    Whenever a machine becomes free, start the longest released job on it.
-    If no job is released yet, wait for the next release.
-
-    Returns a dict job -> (machine, start time) and the makespan.
+    LPT list scheduling: whenever a machine becomes free, start the longest
+    released job on it. Returns {job: (machine, start)} and the makespan.
     """
     unscheduled = set(range(len(p)))
     free_at = [0] * m
@@ -48,12 +37,7 @@ def lpt_schedule(p, r, m):
 
 
 class LPTHeur(Heur):
-    """
-    Primal heuristic that offers the LPT schedule to SCIP as a solution.
-
-    It needs the problem data and the model's variables to translate the
-    schedule into variable values.
-    """
+    """Offers the LPT schedule to SCIP as a solution."""
 
     def __init__(self, p, r, m, start, assign, before, makespan):
         super().__init__()
@@ -67,21 +51,16 @@ class LPTHeur(Heur):
         self.done = False
 
     def heurexec(self, heurtiming, nodeinfeasible):
-        # The schedule does not depend on the search state, so one run is
-        # enough. SCIP processes the root node again after a restart, which
-        # would call the heuristic a second time otherwise.
+        # run once; SCIP processes the root again after a restart
         if self.done:
             return {"result": SCIP_RESULT.DIDNOTRUN}
         self.done = True
 
         schedule, cmax = lpt_schedule(self.p, self.r, self.m)
 
-        # The solution is built in the original space: after presolving, SCIP
-        # may have fixed or aggregated variables (here symmetry handling fixes
-        # the machine of some jobs), and setting a conflicting value on such a
-        # variable in a transformed solution is an error. Passing the heuristic
-        # to createOrigSol tells SCIP who found the solution, so it shows up
-        # under this heuristic's display character in the log.
+        # Build the solution in the original space. Presolving may have fixed
+        # some variables (symmetry handling does so here), and setting a
+        # conflicting value on a fixed variable of a transformed solution fails.
         sol = self.model.createOrigSol(self)
 
         sol[self.makespan] = cmax
@@ -90,15 +69,12 @@ class LPTHeur(Heur):
             for k in range(self.m):
                 sol[self.assign[j, k]] = 1 if k == machine else 0
 
-        # Jobs on the same machine never overlap, so the one starting first
-        # also finishes before the other starts.
         for i, (machine_i, st_i) in schedule.items():
             for j, (machine_j, st_j) in schedule.items():
                 if i != j:
                     same_machine = machine_i == machine_j
                     sol[self.before[i, j]] = 1 if same_machine and st_i < st_j else 0
 
-        # trySol checks feasibility and stores the solution if it is accepted.
         accepted = self.model.trySol(sol)
         print(f"LPT heuristic: makespan {cmax} {'accepted' if accepted else 'rejected'}")
 
@@ -109,23 +85,16 @@ class LPTHeur(Heur):
 
 def build_model(p, r, m):
     """
-    Disjunctive big-M model for Pm|r_j|C_max.
+    Disjunctive big-M model.
 
-    Variables:
-        start[j]     - start time of job j
-        assign[j, k] - 1 if job j runs on machine k
-        before[i, j] - 1 if job i finishes before job j starts
-        makespan     - completion time of the last job
-
-    Returns the model and its variables.
+    start[j]     - start time of job j
+    assign[j, k] - 1 if job j runs on machine k
+    before[i, j] - 1 if job i finishes before job j starts
+    makespan     - completion time of the last job
     """
-    n = len(p)
-    jobs = range(n)
+    jobs = range(len(p))
     machines = range(m)
-
-    # Running all jobs on one machine after the last release is always feasible,
-    # so no job needs to start after this horizon.
-    horizon = max(r) + sum(p)
+    horizon = max(r) + sum(p)  # no job needs to start later than this
 
     model = Model("Pm|r_j|C_max")
 
@@ -141,14 +110,13 @@ def build_model(p, r, m):
     for i in jobs:
         for j in jobs:
             if i != j:
-                # if i is sequenced before j, j cannot start until i is done
                 model.addCons(start[i] + p[i] <= start[j] + horizon * (1 - before[i, j]))
 
+    # jobs on the same machine have to be sequenced
     for i in jobs:
         for j in jobs:
             if i < j:
                 for k in machines:
-                    # two jobs on the same machine have to be sequenced
                     model.addCons(assign[i, k] + assign[j, k] - 1 <= before[i, j] + before[j, i])
 
     model.setObjective(makespan, "minimize")
@@ -164,8 +132,6 @@ def print_schedule(p, schedule, m):
 
 
 if __name__ == "__main__":
-    # On this instance the greedy LPT schedule is not optimal, so the log shows
-    # SCIP starting from the heuristic's incumbent and improving on it.
     p = [2, 2, 2, 9, 8, 7, 4, 5, 3, 6]
     r = [0, 0, 0, 1, 1, 1, 3, 5, 2, 4]
     m = 3
@@ -177,9 +143,8 @@ if __name__ == "__main__":
     model, start, assign, before, makespan = build_model(p, r, m)
 
     heur = LPTHeur(p, r, m, start, assign, before, makespan)
-    # freq=0: only call the heuristic at depth 0, i.e. at the root node.
     model.includeHeur(heur, "lpt", "LPT list scheduling warm start", "L",
-                      freq=0, timingmask=SCIP_HEURTIMING.BEFORENODE)
+                      freq=0, timingmask=SCIP_HEURTIMING.BEFORENODE)  # freq=0: root node only
 
     model.optimize()
 
