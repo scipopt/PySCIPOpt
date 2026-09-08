@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 - Added example `heur_lpt.py`: warm-starting a scheduling MIP with a `Heur` plugin that builds its solution in the original space
+- Added example `scheduling_logical.py`: the same scheduling problem modelled with and/or/indicator, disjunction and cardinality constraints
 - Added methods: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()` with tests
 - Added `addConsCumulative()` for SCIP cumulative constraints (#1222)
 - `Expr` and `GenExpr` support `__pos__` magic method like `+Expr` or `+GenExpr`
