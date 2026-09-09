@@ -2099,6 +2099,7 @@ class PY_SCIP_STATUS:
 class PowExpr(GenExpr):
     expo: Incomplete
     def __init__(self, *args: Incomplete, **kwargs: Incomplete) -> None: ...
+    def __neg__(self, /) -> ProdExpr: ...
 
 @disjoint_base
 class Presol:
@@ -2326,6 +2327,7 @@ class SumExpr(GenExpr):
     coefs: Incomplete
     constant: Incomplete
     def __init__(self, *args: Incomplete, **kwargs: Incomplete) -> None: ...
+    def __neg__(self, /) -> ProdExpr: ...
 
 @disjoint_base
 class Term:
@@ -2344,11 +2346,13 @@ class Term:
 
 class UnaryExpr(GenExpr):
     def __init__(self, *args: Incomplete, **kwargs: Incomplete) -> None: ...
+    def __neg__(self, /) -> ProdExpr: ...
 
 @disjoint_base
 class VarExpr(GenExpr):
     var: Incomplete
     def __init__(self, *args: Incomplete, **kwargs: Incomplete) -> None: ...
+    def __neg__(self, /) -> ProdExpr: ...
 
 @disjoint_base
 class Variable(Expr):
