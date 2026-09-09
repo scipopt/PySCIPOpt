@@ -12,7 +12,8 @@
 - Made `test_markDoNotAggrVar_and_getStatus` robust to SCIP presolve changes by discovering the aggregated/multi-aggregated variables instead of hardcoding them
 ### Changed
 - Move magic methods (`__radd__`, `__sub__`, `__rsub__`, `__rmul__`, `__richcmp__`, `__neg__`, and `__rtruediv__`) to `ExprLike` base class (#1204)
-- Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API
+- Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API (#1205)
+- Replace Python math with C-level math functions and refactor unary expressions (#1224)
 - Extended `structured_optimization_trace` recipe to support context-managed JSONL tracing with final `run_end` records, alongside the existing attach-style in-memory tracing.
 ### Removed
 
