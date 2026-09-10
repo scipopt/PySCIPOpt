@@ -107,6 +107,31 @@ def test_cons_and():
     m.sortAndCons(and_cons)
     assert m.isAndConsSorted(and_cons)
     
+def test_cons_logicor():
+    m = Model()
+    x1 = m.addVar(vtype="B")
+    x2 = m.addVar(vtype="B")
+    x3 = m.addVar(vtype="B")
+
+    logicor_cons = m.addConsLogicor([x1, x2])
+
+    assert m.getNVarsLogicor(logicor_cons) == 2
+    assert m.getVarsLogicor(logicor_cons) == [x1, x2]
+
+    m.addCoefLogicor(logicor_cons, x3)
+    assert m.getNVarsLogicor(logicor_cons) == 3
+    assert m.getVarsLogicor(logicor_cons) == [x1, x2, x3]
+
+    # the constraint forces one of the three to be set, so minimising their
+    # sum costs exactly one rather than zero
+    m.setObjective(x1 + x2 + x3, "minimize")
+    m.hideOutput()
+    m.optimize()
+
+    assert m.getStatus() == "optimal"
+    assert m.isEQ(m.getObjVal(), 1.0)
+
+
 def test_cons_logical_fail():
     m = Model()
     x1 = m.addVar(vtype="B")

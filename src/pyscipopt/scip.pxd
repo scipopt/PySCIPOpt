@@ -1840,6 +1840,28 @@ cdef extern from "scip/cons_xor.h":
                                          SCIP_Bool removable,
                                          SCIP_Bool stickingatnode)
 
+cdef extern from "scip/cons_logicor.h":
+    SCIP_RETCODE SCIPcreateConsLogicor(SCIP* scip,
+                                         SCIP_CONS** cons,
+                                         const char* name,
+                                         int nvars,
+                                         SCIP_VAR** vars,
+                                         SCIP_Bool initial,
+                                         SCIP_Bool separate,
+                                         SCIP_Bool enforce,
+                                         SCIP_Bool check,
+                                         SCIP_Bool propagate,
+                                         SCIP_Bool local,
+                                         SCIP_Bool modifiable,
+                                         SCIP_Bool dynamic,
+                                         SCIP_Bool removable,
+                                         SCIP_Bool stickingatnode)
+    SCIP_RETCODE SCIPaddCoefLogicor(SCIP* scip, SCIP_CONS* cons, SCIP_VAR* var)
+    int          SCIPgetNVarsLogicor(SCIP* scip, SCIP_CONS* cons)
+    SCIP_VAR**   SCIPgetVarsLogicor(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Real    SCIPgetDualsolLogicor(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Real    SCIPgetDualfarkasLogicor(SCIP* scip, SCIP_CONS* cons)
+
 cdef extern from "scip/scip_cons.h":
     SCIP_RETCODE SCIPprintCons(SCIP* scip,
                                SCIP_CONS* cons,
