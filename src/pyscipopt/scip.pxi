@@ -7013,6 +7013,103 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPsortAndCons(self._scip, and_cons.scip_cons))
 
+    def getNVarsLogicor(self, Constraint logicor_cons):
+        """
+        Gets number of variables in logicor constraint.
+
+        Parameters
+        ----------
+        logicor_cons : Constraint
+            logicor constraint to get the number of variables from.
+
+        Returns
+        -------
+        int
+
+        """
+
+        return SCIPgetNVarsLogicor(self._scip, logicor_cons.scip_cons)
+
+    def getVarsLogicor(self, Constraint logicor_cons):
+        """
+        Gets variables in logicor constraint.
+
+        Parameters
+        ----------
+        logicor_cons : Constraint
+            logicor constraint to get the variables from.
+
+        Returns
+        -------
+        list of Variable
+
+        """
+
+        cdef SCIP_VAR** _vars
+        cdef int nvars
+        cdef int i
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
+        assert constype == 'logicor', "The constraint handler %s does not have this functionality." % constype
+
+        nvars = SCIPgetNVarsLogicor(self._scip, logicor_cons.scip_cons)
+        _vars = SCIPgetVarsLogicor(self._scip, logicor_cons.scip_cons)
+
+        vars = []
+        for i in range(nvars):
+            vars.append(self._getOrCreateVar(_vars[i]))
+
+        return vars
+
+    def addCoefLogicor(self, Constraint logicor_cons, Variable var):
+        """
+        Adds a variable to a logicor constraint.
+
+        Parameters
+        ----------
+        logicor_cons : Constraint
+            logicor constraint to add the variable to.
+        var : Variable
+            BINARY variable to add.
+
+        """
+
+        PY_SCIP_CALL(SCIPaddCoefLogicor(self._scip, logicor_cons.scip_cons, var.scip_var))
+
+    def getDualsolLogicor(self, Constraint logicor_cons):
+        """
+        Gets the dual solution of a logicor constraint in the current LP.
+
+        Parameters
+        ----------
+        logicor_cons : Constraint
+            logicor constraint to get the dual solution from.
+
+        Returns
+        -------
+        float
+
+        """
+
+        return SCIPgetDualsolLogicor(self._scip, logicor_cons.scip_cons)
+
+    def getDualfarkasLogicor(self, Constraint logicor_cons):
+        """
+        Gets the dual Farkas value of a logicor constraint in the current infeasible LP.
+
+        Parameters
+        ----------
+        logicor_cons : Constraint
+            logicor constraint to get the dual Farkas value from.
+
+        Returns
+        -------
+        float
+
+        """
+
+        return SCIPgetDualfarkasLogicor(self._scip, logicor_cons.scip_cons)
+
     def printCons(self, Constraint constraint):
         """
         Print the constraint
@@ -7673,6 +7770,66 @@ cdef class Model:
             name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
         PY_SCIP_CALL(SCIPcreateConsXor(self._scip, &scip_cons, str_conversion(name), rhsvar, nvars, _vars,
+            initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pyCons = self._getOrCreateCons(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        return pyCons
+
+    def addConsLogicor(self, vars, name="",
+            initial=True, separate=True, enforce=True, check=True,
+            propagate=True, local=False, modifiable=False, dynamic=False,
+            removable=False, stickingatnode=False):
+        """
+        Add a logicor constraint: at least one of the given binary variables must be one.
+
+        Parameters
+        ----------
+        vars : list of Variable
+            list of BINARY variables, at least one of which must take value one
+        name : str, optional
+            name of the constraint (Default value = "")
+        initial : bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool, optional
+            is the constraint only valid locally? (Default value = False)
+        modifiable : bool, optional
+            is the constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool, optional
+            should the constraint always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        Constraint
+            The newly created logicor constraint
+
+        """
+        cdef int nvars = len(vars)
+        cdef SCIP_VAR** _vars
+        cdef _VarArray vars_wrapper = _VarArray(vars)
+        cdef SCIP_CONS* scip_cons
+
+        _vars = vars_wrapper.ptr
+
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+
+        PY_SCIP_CALL(SCIPcreateConsLogicor(self._scip, &scip_cons, str_conversion(name), nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
