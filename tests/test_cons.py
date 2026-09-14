@@ -132,6 +132,29 @@ def test_cons_logicor():
     assert m.isEQ(m.getObjVal(), 1.0)
 
 
+def test_cons_logicor_duals():
+    m = Model()
+    x1 = m.addVar(vtype="B")
+    x2 = m.addVar(vtype="B")
+
+    # passed as an original constraint, so the accessors have to look the
+    # transformed one up before asking SCIP for a dual value
+    logicor_cons = m.addConsLogicor([x1, x2])
+    linear_cons = m.addCons(x1 + x2 <= 2)
+
+    m.setObjective(x1 + x2, "minimize")
+    m.hideOutput()
+    m.optimize()
+
+    assert isinstance(m.getDualsolLogicor(logicor_cons), float)
+    assert isinstance(m.getDualfarkasLogicor(logicor_cons), float)
+
+    with pytest.raises(Warning):
+        m.getDualsolLogicor(linear_cons)
+    with pytest.raises(Warning):
+        m.getDualfarkasLogicor(linear_cons)
+
+
 def test_cons_logical_fail():
     m = Model()
     x1 = m.addVar(vtype="B")

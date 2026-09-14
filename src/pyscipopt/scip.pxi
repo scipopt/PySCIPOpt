@@ -7091,7 +7091,16 @@ cdef class Model:
 
         """
 
-        return SCIPgetDualsolLogicor(self._scip, logicor_cons.scip_cons)
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
+        if not constype == 'logicor':
+            raise Warning("dual solution values not available for constraints of type ", constype)
+
+        if logicor_cons.isOriginal():
+            transcons = <Constraint>self.getTransformedCons(logicor_cons)
+        else:
+            transcons = logicor_cons
+
+        return SCIPgetDualsolLogicor(self._scip, transcons.scip_cons)
 
     def getDualfarkasLogicor(self, Constraint logicor_cons):
         """
@@ -7108,7 +7117,16 @@ cdef class Model:
 
         """
 
-        return SCIPgetDualfarkasLogicor(self._scip, logicor_cons.scip_cons)
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
+        if not constype == 'logicor':
+            raise Warning("dual solution values not available for constraints of type ", constype)
+
+        if logicor_cons.isOriginal():
+            transcons = <Constraint>self.getTransformedCons(logicor_cons)
+        else:
+            transcons = logicor_cons
+
+        return SCIPgetDualfarkasLogicor(self._scip, transcons.scip_cons)
 
     def printCons(self, Constraint constraint):
         """
