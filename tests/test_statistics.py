@@ -1,4 +1,4 @@
-from pyscipopt.scip import Model
+from pyscipopt import Model
 import os
 from helpers.utils import random_mip_1
 from json import load
