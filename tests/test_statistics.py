@@ -142,10 +142,12 @@ def test_getAvgLowerbound(optimized_model):
     avg_lowerbound = optimized_model.getAvgLowerbound()
     leaves, children, siblings = optimized_model.getOpenNodes()
     open_nodes = leaves + children + siblings
-    manual_avg_lowerbound = np.mean(
-        [node.getLowerbound() for node in open_nodes]
-        + [optimized_model.getFocusNode().getLowerbound()]
-    )
+    focus_node = optimized_model.getFocusNode()
+    lowerbounds = [node.getLowerbound() for node in open_nodes]
+    if focus_node is not None:
+        lowerbounds.append(focus_node.getLowerbound())
+    # when a problem is solved to optimality getAvgLowerbound returns 0.0 but np.mean([]) returns nan, so we need to handle this case
+    manual_avg_lowerbound = np.mean(lowerbounds) if lowerbounds else 0.0  
 
     assert isinstance(avg_lowerbound, float)
     assert optimized_model.isEQ(manual_avg_lowerbound, avg_lowerbound)
