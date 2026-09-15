@@ -8,6 +8,7 @@
 - Added type annotations to most methods on the `Model` class
 - Added tests for `getRowLinear()` and extended existing testing for `isActive()`
 ### Fixed
+- Fixed `getDualsolKnapsack()` and `getDualfarkasKnapsack()` returning 0 for original constraints, and the handler check in `getVarsAnd()` that could never fail
 - Fixed Cython 3.3 compatibility (#1248)
 - Made `test_markDoNotAggrVar_and_getStatus` robust to SCIP presolve changes by discovering the aggregated/multi-aggregated variables instead of hardcoding them
 ### Changed
