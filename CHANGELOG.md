@@ -4,8 +4,10 @@
 ### Added
 - Added methods: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()` with tests
 - Added `addConsCumulative()` for SCIP cumulative constraints (#1222)
+- Added `addConsLogicor()`, `addCoefLogicor()`, `getNVarsLogicor()`, `getVarsLogicor()`, `getDualsolLogicor()` and `getDualfarkasLogicor()` for SCIP logicor constraints (#977)
 - `Expr` and `GenExpr` support `__pos__` magic method like `+Expr` or `+GenExpr`
 - Added type annotations to most methods on the `Model` class
+- Added tests for `getRowLinear()` and extended existing testing for `isActive()`
 ### Fixed
 - Fixed Cython 3.3 compatibility (#1248)
 - Made `test_markDoNotAggrVar_and_getStatus` robust to SCIP presolve changes by discovering the aggregated/multi-aggregated variables instead of hardcoding them
