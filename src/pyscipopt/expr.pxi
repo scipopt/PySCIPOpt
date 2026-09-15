@@ -767,6 +767,11 @@ cdef class ProdExpr(GenExpr):
         self.children = []
         self._op = Operator.prod
 
+    def __neg__(self, /) -> ProdExpr:
+        cdef ProdExpr res = self.copy(copy=True)
+        res.constant = -res.constant
+        return res
+
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
@@ -850,10 +855,15 @@ cdef class UnaryExpr(GenExpr):
 
 # class for constant expressions
 cdef class Constant(GenExpr):
+
     cdef public number
+
     def __init__(self,number):
         self.number = number
         self._op = Operator.const
+
+    def __neg__(self, /) -> Constant:
+        return Constant(-self.number)
 
     def __repr__(self):
         return str(self.number)
