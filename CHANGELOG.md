@@ -2,7 +2,8 @@
 
 ## Unreleased
 ### Added
-- Added methods: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()` with tests
+- Added the following methods with tests: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()`, `getDeterministicTime()`, `getAvgDualbound()`, `getMaxTotalDepth()`, `getNBacktracks()`,\
+`getFocusNode()`, `getAvgLowerbound()`, `getFirstPrimalBound()`, `getLowerboundRoot()`, `getUpperbound()`, `getNObjlimLeaves()`
 - Added `addConsCumulative()` for SCIP cumulative constraints (#1222)
 - Added `addConsLogicor()`, `addCoefLogicor()`, `getNVarsLogicor()`, `getVarsLogicor()`, `getDualsolLogicor()` and `getDualfarkasLogicor()` for SCIP logicor constraints (#977)
 - `Expr` and `GenExpr` support `__pos__` magic method like `+Expr` or `+GenExpr`
