@@ -56,10 +56,10 @@ from cpython.tuple cimport PyTuple_GET_ITEM
 from libc.math cimport cos as c_cos
 from libc.math cimport exp as c_exp
 from libc.math cimport fabs as c_fabs
-from libc.math cimport INFINITY
 from libc.math cimport log as c_log
 from libc.math cimport sqrt as c_sqrt
 from libc.math cimport sin as c_sin
+from libc.math cimport INFINITY
 
 cimport numpy as cnp
 from pyscipopt.scip cimport Variable, Solution
