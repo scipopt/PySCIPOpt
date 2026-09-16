@@ -400,6 +400,57 @@ def test_cons_knapsack():
     assert m.getDualsolKnapsack(knapsack_cons) == 0
     assert m.getDualfarkasKnapsack(knapsack_cons) == 0
 
+
+def _lp_only_model():
+    # presolve, heuristics, separation and propagation off, so the constraint
+    # stays in the LP and its dual values are still there after the solve
+    m = Model()
+    m.hideOutput()
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    m.setHeuristics(SCIP_PARAMSETTING.OFF)
+    m.setSeparating(SCIP_PARAMSETTING.OFF)
+    m.disablePropagation()
+    return m
+
+
+def test_cons_knapsack_dualsol_on_original_constraint():
+    m = _lp_only_model()
+    x = m.addVar(vtype="B")
+    y = m.addVar(vtype="B")
+    knapsack_cons = m.addConsKnapsack([x, y], [1, 1], 1)
+    m.setObjective(-x - y, "minimize")
+    m.optimize()
+
+    # the knapsack is binding and its dual is unique here, so asking through
+    # the original constraint has to give the same value as the transformed one
+    transformed = m.getTransformedCons(knapsack_cons)
+    assert m.isEQ(m.getDualsolKnapsack(knapsack_cons), -1.0)
+    assert m.isEQ(m.getDualsolKnapsack(knapsack_cons), m.getDualsolKnapsack(transformed))
+
+
+def test_cons_knapsack_dualfarkas_on_original_constraint():
+    m = _lp_only_model()
+    x = m.addVar(vtype="B")
+    y = m.addVar(vtype="B")
+    knapsack_cons = m.addConsKnapsack([x, y], [1, 1], 1)
+    m.addCons(x + y >= 2)
+    m.optimize()
+
+    assert m.getStatus() == "infeasible"
+    transformed = m.getTransformedCons(knapsack_cons)
+    assert not m.isZero(m.getDualfarkasKnapsack(knapsack_cons))
+    assert m.isEQ(m.getDualfarkasKnapsack(knapsack_cons), m.getDualfarkasKnapsack(transformed))
+
+
+def test_getVarsAnd_rejects_other_constraint_types():
+    m = Model()
+    x = m.addVar(vtype="B")
+    linear_cons = m.addCons(x <= 1)
+
+    with pytest.raises(AssertionError):
+        m.getVarsAnd(linear_cons)
+
+
 def test_cons_cumulative():
     """Three jobs on a resource with capacity 3 must not overlap in demand.
 
