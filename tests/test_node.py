@@ -66,3 +66,38 @@ def test_tree_methods():
     m.optimize()
 
     assert m.getNSols() == 0
+
+class ProbingNodeChecker(Eventhdlr):
+    def eventinit(self):
+        self.model.catchEvent(SCIP_EVENTTYPE.NODEFOCUSED, self)
+
+    def eventexec(self, event):
+        m = self.model
+        focus = m.getFocusNode()
+        current = m.getCurrentNode()
+
+        assert isinstance(focus, scip.Node)
+        assert isinstance(current, scip.Node)
+
+        # focus and current node should be the same before probing
+        assert focus.getNumber() == current.getNumber()
+
+        m.startProbing()
+        m.newProbingNode()
+        m.newProbingNode()
+
+        # after starting probing, the focus node should remain the same, but the current node should change
+        assert m.getProbingDepth() == 2
+        assert m.getFocusNode().getNumber() == focus.getNumber()
+        assert m.getCurrentNode().getNumber() != current.getNumber()
+
+        m.endProbing()
+
+        return {'result': SCIP_RESULT.SUCCESS}
+
+def test_getFocusNode_and_getCurrentNode():
+
+    m = random_mip_1(small=True)
+
+    m.includeEventhdlr(ProbingNodeChecker(), "Probing Node Checker", "test if getFocusNode and getCurrentNode work correctly")
+    m.optimize()

@@ -2,10 +2,13 @@
 
 ## Unreleased
 ### Added
-- Added methods: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()` with tests
+- Added the following methods with tests: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()`, `getDeterministicTime()`, `getAvgDualbound()`, `getMaxTotalDepth()`, `getNBacktracks()`,\
+`getFocusNode()`, `getAvgLowerbound()`, `getFirstPrimalBound()`, `getLowerboundRoot()`, `getUpperbound()`, `getNObjlimLeaves()`
 - Added `addConsCumulative()` for SCIP cumulative constraints (#1222)
+- Added `addConsLogicor()`, `addCoefLogicor()`, `getNVarsLogicor()`, `getVarsLogicor()`, `getDualsolLogicor()` and `getDualfarkasLogicor()` for SCIP logicor constraints (#977)
 - `Expr` and `GenExpr` support `__pos__` magic method like `+Expr` or `+GenExpr`
 - Added type annotations to most methods on the `Model` class
+- Added tests for `getRowLinear()` and extended existing testing for `isActive()`
 ### Fixed
 - Fixed Cython 3.3 compatibility (#1248)
 - Made `test_markDoNotAggrVar_and_getStatus` robust to SCIP presolve changes by discovering the aggregated/multi-aggregated variables instead of hardcoding them
@@ -13,6 +16,7 @@
 - Move magic methods (`__radd__`, `__sub__`, `__rsub__`, `__rmul__`, `__richcmp__`, `__neg__`, and `__rtruediv__`) to `ExprLike` base class (#1204)
 - Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API (#1205)
 - Replace Python math with C-level math functions and refactor unary expressions (#1224)
+- Speed up `ProdExpr.__neg__` and `Constant.__neg__` via C-level API (#1250)
 - Extended `structured_optimization_trace` recipe to support context-managed JSONL tracing with final `run_end` records, alongside the existing attach-style in-memory tracing.
 ### Removed
 
