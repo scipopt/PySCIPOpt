@@ -6224,29 +6224,29 @@ cdef class Model:
         # that are the children of this operator. This is sorted,
         # so we are going to do is:
         # loop over the nodes and create the expression of each
-        # Note1: when the operator is Operator.const, [indices] stores the value
+        # Note1: when the operator is const, [indices] stores the value
         # Note2: we need to compute the number of variable operators to find out
         # how many variables are there.
         nvars = 0
         for node in nodes:
-            if node[0] == Operator.varidx:
+            if node[0] is VarExpr:
                 nvars += 1
 
         scipexprs = <SCIP_EXPR**> malloc(len(nodes) * sizeof(SCIP_EXPR*))
         for i,node in enumerate(nodes):
-            opidx = node[0]
-            if opidx == Operator.varidx:
+            t = node[0]
+            if t is VarExpr:
                 assert len(node[1]) == 1
                 pyvar = node[1][0] # for vars we store the actual var!
                 wrapper = _VarArray(pyvar)
                 PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &scipexprs[i], wrapper.ptr[0], NULL, NULL) )
-                continue
-            if opidx == Operator.const:
+
+            elif t is Constant:
                 assert len(node[1]) == 1
                 value = node[1][0]
                 PY_SCIP_CALL( SCIPcreateExprValue(self._scip, &scipexprs[i], <SCIP_Real>value, NULL, NULL) )
-                continue
-            if opidx == Operator.add:
+
+            elif t is SumExpr:
                 nchildren = len(node[1])
                 childrenexpr = <SCIP_EXPR**> malloc(nchildren * sizeof(SCIP_EXPR*))
                 coefs = <SCIP_Real*> malloc(nchildren * sizeof(SCIP_Real))
@@ -6256,48 +6256,48 @@ cdef class Model:
                 PY_SCIP_CALL( SCIPcreateExprSum(self._scip, &scipexprs[i], nchildren, childrenexpr, coefs, 0, NULL, NULL))
                 free(coefs)
                 free(childrenexpr)
-                continue
-            if opidx == Operator.prod:
+
+            elif t is ProdExpr:
                 nchildren = len(node[1])
                 childrenexpr = <SCIP_EXPR**> malloc(nchildren * sizeof(SCIP_EXPR*))
                 for c, pos in enumerate(node[1]):
                     childrenexpr[c] = scipexprs[pos]
                 PY_SCIP_CALL( SCIPcreateExprProduct(self._scip, &scipexprs[i], nchildren, childrenexpr, 1, NULL, NULL) )
                 free(childrenexpr)
-                continue
-            if opidx == Operator.power:
+
+            elif t is PowExpr:
                 # the second child is the exponent which is a const
                 valuenode = nodes[node[1][1]]
-                assert valuenode[0] == Operator.const
+                assert valuenode[0] is Constant
                 exponent = valuenode[1][0]
                 PY_SCIP_CALL( SCIPcreateExprPow(self._scip, &scipexprs[i], scipexprs[node[1][0]], <SCIP_Real>exponent, NULL, NULL ))
-                continue
-            if opidx == Operator.exp:
+
+            elif t is ExpExpr:
                 assert len(node[1]) == 1
                 PY_SCIP_CALL( SCIPcreateExprExp(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL ))
-                continue
-            if opidx == Operator.log:
+
+            elif t is LogExpr:
                 assert len(node[1]) == 1
                 PY_SCIP_CALL( SCIPcreateExprLog(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL ))
-                continue
-            if opidx == Operator.sqrt:
+
+            elif t is SqrtExpr:
                 assert len(node[1]) == 1
                 PY_SCIP_CALL( SCIPcreateExprPow(self._scip, &scipexprs[i], scipexprs[node[1][0]], <SCIP_Real>0.5, NULL, NULL) )
-                continue
-            if opidx == Operator.sin:
+
+            elif t is SinExpr:
                 assert len(node[1]) == 1
                 PY_SCIP_CALL( SCIPcreateExprSin(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL) )
-                continue
-            if opidx == Operator.cos:
+
+            elif t is CosExpr:
                 assert len(node[1]) == 1
                 PY_SCIP_CALL( SCIPcreateExprCos(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL) )
-                continue
-            if opidx == Operator.fabs:
+
+            elif t is AbsExpr:
                 assert len(node[1]) == 1
                 PY_SCIP_CALL( SCIPcreateExprAbs(self._scip, &scipexprs[i], scipexprs[node[1][0]], NULL, NULL ))
-                continue
-            # default:
-            raise NotImplementedError
+
+            else:
+                raise NotImplementedError
 
         # create nonlinear constraint for the expression root
         PY_SCIP_CALL( SCIPcreateConsNonlinear(
