@@ -59,6 +59,7 @@ from libc.math cimport fabs as c_fabs
 from libc.math cimport log as c_log
 from libc.math cimport sqrt as c_sqrt
 from libc.math cimport sin as c_sin
+from libc.math cimport INFINITY
 
 cimport numpy as cnp
 from pyscipopt.scip cimport Variable, Solution
@@ -704,7 +705,7 @@ cdef class GenExpr(ExprLike):
 
     def degree(self):
         '''Note: none of these expressions should be polynomial'''
-        return float('inf') 
+        return INFINITY
 
     cdef GenExpr copy(self, bint copy=True):
         cdef object cls = <type>Py_TYPE(self)
@@ -752,6 +753,11 @@ cdef class ProdExpr(GenExpr):
     def __init__(self):
         self.constant = 1.0
         self.children = []
+
+    def __neg__(self, /) -> ProdExpr:
+        cdef ProdExpr res = self.copy(copy=True)
+        res.constant = -res.constant
+        return res
 
     def __repr__(self):
         return f"prod({self.constant},{','.join(map(str, self.children))})"
@@ -812,14 +818,16 @@ cdef class PowExpr(GenExpr):
 
 cdef class UnaryExpr(GenExpr):
 
-    def __init__(self, expr: Union[Expr, GenExpr]):
-        self.children = [expr]
+    def __init__(self, op, expr):
+        self.children = []
+        self.children.append(expr)
+        self._op = op
+
+    def __repr__(self) -> str:
+        return self._op + "(" + self.children[0].__repr__() + ")"
 
 
 cdef class AbsExpr(UnaryExpr):
-
-    def __repr__(self):
-        return f"abs({self.children[0]})"
 
     def __abs__(self) -> AbsExpr:
         return <AbsExpr>self.copy()
@@ -830,47 +838,44 @@ cdef class AbsExpr(UnaryExpr):
 
 cdef class ExpExpr(UnaryExpr):
 
-    def __repr__(self):
-        return f"exp({self.children[0]})"
-
     cpdef double _evaluate(self, Solution sol) except *:
         return c_exp((<GenExpr>self.children[0])._evaluate(sol))
 
 
 cdef class LogExpr(UnaryExpr):
 
-    def __repr__(self):
-        return f"log({self.children[0]})"
-
     cpdef double _evaluate(self, Solution sol) except *:
-        return c_log((<GenExpr>self.children[0])._evaluate(sol))
+        cdef double val = (<GenExpr>self.children[0])._evaluate(sol)
+        if val <= 0.0:
+            raise ValueError("math domain error")
+        return c_log(val)
 
 
 cdef class SqrtExpr(UnaryExpr):
 
-    def __repr__(self):
-        return f"sqrt({self.children[0]})"
-
     cpdef double _evaluate(self, Solution sol) except *:
-        return c_sqrt((<GenExpr>self.children[0])._evaluate(sol))
+        cdef double val = (<GenExpr>self.children[0])._evaluate(sol)
+        if val < 0.0:
+            raise ValueError("math domain error")
+        return c_sqrt(val)
 
 
 cdef class SinExpr(UnaryExpr):
 
-    def __repr__(self):
-        return f"sin({self.children[0]})"
-
     cpdef double _evaluate(self, Solution sol) except *:
-        return c_sin((<GenExpr>self.children[0])._evaluate(sol))
+        cdef double val = (<GenExpr>self.children[0])._evaluate(sol)
+        if c_fabs(val) == INFINITY:
+            raise ValueError("math domain error")
+        return c_sin(val)
 
 
 cdef class CosExpr(UnaryExpr):
 
-    def __repr__(self):
-        return f"cos({self.children[0]})"
-
     cpdef double _evaluate(self, Solution sol) except *:
-        return c_cos((<GenExpr>self.children[0])._evaluate(sol))
+        cdef double val = (<GenExpr>self.children[0])._evaluate(sol)
+        if c_fabs(val) == INFINITY:
+            raise ValueError("math domain error")
+        return c_cos(val)
 
 
 # class for constant expressions
@@ -880,6 +885,9 @@ cdef class Constant(GenExpr):
 
     def __init__(self, number: Union[int, float]):
         self.number = number
+
+    def __neg__(self, /) -> Constant:
+        return Constant(-self.number)
 
     def __repr__(self):
         return str(self.number)

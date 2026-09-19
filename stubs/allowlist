@@ -1,3 +1,9 @@
 .*.__reduce_cython__
 .*.__setstate_cython__
 pyscipopt.scip.__test__
+# These exist at runtime but aren't useful in the stubs, they are added to the child classes
+pyscipopt.scip.ExprLike.__radd__
+pyscipopt.scip.ExprLike.__rmul__
+pyscipopt.scip.ExprLike.__rsub__
+pyscipopt.scip.ExprLike.__rtruediv__
+pyscipopt.scip.ExprLike.__sub__

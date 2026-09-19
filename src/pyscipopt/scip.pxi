@@ -3285,6 +3285,28 @@ cdef class Model:
         """
         return SCIPgetPresolvingTime(self._scip)
 
+    def getDeterministicTime(self):
+        """
+        Computes a deterministic measure of time from statistics.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetDeterministicTime(self._scip)
+
+    def getFirstPrimalBound(self):
+        """
+        Gets the primal bound of the very first solution in the original space.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetFirstPrimalBound(self._scip)
+
     def getNLPIterations(self):
         """
         Returns the total number of LP iterations so far.
@@ -3295,6 +3317,39 @@ cdef class Model:
 
         """
         return SCIPgetNLPIterations(self._scip)
+
+    def getNRuns(self):
+        """
+        Gets number of branch and bound runs performed, including the current run
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNRuns(self._scip)
+
+    def getNReoptRuns(self):
+        """
+        Gets number of reoptimization runs performed, including the current run
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNReoptRuns(self._scip)
+
+    def addNNodes(self, nnodes):
+        """
+        Add given number to the number of processed nodes in current run and in all runs, including the focus node
+
+        Parameters
+        ----------
+        nnodes : int
+
+        """
+        SCIPaddNNodes(self._scip, nnodes)
 
     def getNNodes(self):
         """
@@ -3340,6 +3395,17 @@ cdef class Model:
         """
         return SCIPgetNInfeasibleLeaves(self._scip)
 
+    def getNObjlimLeaves(self):
+        """
+        Gets number of processed leaf nodes that hit LP objective limit.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNObjlimLeaves(self._scip)
+
     def getNLeaves(self):
         """
         Gets number of leaves in the tree.
@@ -3350,6 +3416,17 @@ cdef class Model:
 
         """
         return SCIPgetNLeaves(self._scip)
+
+    def getNNodesLeft(self):
+        """
+        Gets number of nodes left in the tree (children + siblings + leaves)
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNNodesLeft(self._scip)
 
     def getNChildren(self):
         """
@@ -3372,6 +3449,18 @@ cdef class Model:
 
         """
         return SCIPgetNSiblings(self._scip)
+
+    def getFocusNode(self):
+        """
+        Gets focus node in the tree.
+        If we are in probing/diving mode this method returns the node in the tree where the probing/diving mode was started.
+
+        Returns
+        -------
+        Node
+
+        """
+        return Node.create(SCIPgetFocusNode(self._scip))
 
     def getCurrentNode(self):
         """
@@ -3418,6 +3507,28 @@ cdef class Model:
         """
         return SCIPgetMaxDepth(self._scip)
 
+    def getMaxTotalDepth(self):
+        """
+        Gets maximal depth of all processed nodes over all branch and bound runs.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetMaxTotalDepth(self._scip)
+
+    def getNBacktracks(self):
+        """
+        Gets total number of backtracks, i.e., number of times the new node was selected from the leaves queue.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNBacktracks(self._scip)
+
     def getPlungeDepth(self):
         """
         Gets current plunging depth (successive selections of child/sibling nodes).
@@ -3428,6 +3539,28 @@ cdef class Model:
 
         """
         return SCIPgetPlungeDepth(self._scip)
+
+    def getAvgLowerbound(self):
+        """
+        Gets average lower (dual) bound of all unprocessed nodes in transformed problem.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetAvgLowerbound(self._scip)
+
+    def getAvgDualbound(self):
+        """
+        Gets average dual bound of all unprocessed nodes for original problem.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetAvgDualbound(self._scip)
 
     def getLowerbound(self):
         """
@@ -3450,6 +3583,16 @@ cdef class Model:
 
         """
         return SCIPgetCutoffbound(self._scip)
+
+    def getUpperbound(self):
+        """
+        Gets global upper (primal) bound in transformed problem (objective value of best solution or user objective limit).
+
+        Returns
+        -------
+        float
+        """
+        return SCIPgetUpperbound(self._scip)
 
     def getNNodeLPIterations(self):
         """
@@ -6969,6 +7112,121 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPsortAndCons(self._scip, and_cons.scip_cons))
 
+    def getNVarsLogicor(self, Constraint logicor_cons):
+        """
+        Gets number of variables in logicor constraint.
+
+        Parameters
+        ----------
+        logicor_cons : Constraint
+            logicor constraint to get the number of variables from.
+
+        Returns
+        -------
+        int
+
+        """
+
+        return SCIPgetNVarsLogicor(self._scip, logicor_cons.scip_cons)
+
+    def getVarsLogicor(self, Constraint logicor_cons):
+        """
+        Gets variables in logicor constraint.
+
+        Parameters
+        ----------
+        logicor_cons : Constraint
+            logicor constraint to get the variables from.
+
+        Returns
+        -------
+        list of Variable
+
+        """
+
+        cdef SCIP_VAR** _vars
+        cdef int nvars
+        cdef int i
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
+        assert constype == 'logicor', "The constraint handler %s does not have this functionality." % constype
+
+        nvars = SCIPgetNVarsLogicor(self._scip, logicor_cons.scip_cons)
+        _vars = SCIPgetVarsLogicor(self._scip, logicor_cons.scip_cons)
+
+        vars = []
+        for i in range(nvars):
+            vars.append(self._getOrCreateVar(_vars[i]))
+
+        return vars
+
+    def addCoefLogicor(self, Constraint logicor_cons, Variable var):
+        """
+        Adds a variable to a logicor constraint.
+
+        Parameters
+        ----------
+        logicor_cons : Constraint
+            logicor constraint to add the variable to.
+        var : Variable
+            BINARY variable to add.
+
+        """
+
+        PY_SCIP_CALL(SCIPaddCoefLogicor(self._scip, logicor_cons.scip_cons, var.scip_var))
+
+    def getDualsolLogicor(self, Constraint logicor_cons):
+        """
+        Gets the dual solution of a logicor constraint in the current LP.
+
+        Parameters
+        ----------
+        logicor_cons : Constraint
+            logicor constraint to get the dual solution from.
+
+        Returns
+        -------
+        float
+
+        """
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
+        if not constype == 'logicor':
+            raise Warning("dual solution values not available for constraints of type ", constype)
+
+        if logicor_cons.isOriginal():
+            transcons = <Constraint>self.getTransformedCons(logicor_cons)
+        else:
+            transcons = logicor_cons
+
+        return SCIPgetDualsolLogicor(self._scip, transcons.scip_cons)
+
+    def getDualfarkasLogicor(self, Constraint logicor_cons):
+        """
+        Gets the dual Farkas value of a logicor constraint in the current infeasible LP.
+
+        Parameters
+        ----------
+        logicor_cons : Constraint
+            logicor constraint to get the dual Farkas value from.
+
+        Returns
+        -------
+        float
+
+        """
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
+        if not constype == 'logicor':
+            raise Warning("dual solution values not available for constraints of type ", constype)
+
+        if logicor_cons.isOriginal():
+            transcons = <Constraint>self.getTransformedCons(logicor_cons)
+        else:
+            transcons = logicor_cons
+
+        return SCIPgetDualfarkasLogicor(self._scip, transcons.scip_cons)
+
     def printCons(self, Constraint constraint):
         """
         Print the constraint
@@ -7629,6 +7887,66 @@ cdef class Model:
             name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
         PY_SCIP_CALL(SCIPcreateConsXor(self._scip, &scip_cons, str_conversion(name), rhsvar, nvars, _vars,
+            initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pyCons = self._getOrCreateCons(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        return pyCons
+
+    def addConsLogicor(self, vars, name="",
+            initial=True, separate=True, enforce=True, check=True,
+            propagate=True, local=False, modifiable=False, dynamic=False,
+            removable=False, stickingatnode=False):
+        """
+        Add a logicor constraint: at least one of the given binary variables must be one.
+
+        Parameters
+        ----------
+        vars : list of Variable
+            list of BINARY variables, at least one of which must take value one
+        name : str, optional
+            name of the constraint (Default value = "")
+        initial : bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool, optional
+            is the constraint only valid locally? (Default value = False)
+        modifiable : bool, optional
+            is the constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool, optional
+            should the constraint always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        Constraint
+            The newly created logicor constraint
+
+        """
+        cdef int nvars = len(vars)
+        cdef SCIP_VAR** _vars
+        cdef _VarArray vars_wrapper = _VarArray(vars)
+        cdef SCIP_CONS* scip_cons
+
+        _vars = vars_wrapper.ptr
+
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+
+        PY_SCIP_CALL(SCIPcreateConsLogicor(self._scip, &scip_cons, str_conversion(name), nvars, _vars,
             initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
 
         PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
@@ -11461,6 +11779,17 @@ cdef class Model:
 
         """
         return SCIPgetDualboundRoot(self._scip)
+
+    def getLowerboundRoot(self):
+        """
+        Gets lower (dual) bound in transformed problem of the root node.
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetLowerboundRoot(self._scip)
 
     def writeName(self, Variable var):
         """
