@@ -143,7 +143,7 @@ cdef class Term:
         res.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in res.vartuple))
         return res
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'Term(%s)' % ', '.join([str(v) for v in self.vartuple])
 
     cpdef double _evaluate(self, Solution sol) except *:
@@ -430,7 +430,7 @@ cdef class Expr(ExprLike):
         '''remove terms with coefficient of 0'''
         self.terms =  {t:c for (t,c) in self.terms.items() if c != 0.0}
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'Expr(%s)' % repr(self.terms)
 
     def degree(self):
@@ -511,7 +511,7 @@ cdef class ExprCons:
         else:
             raise NotImplementedError("Ranged ExprCons can only support with '<=' or '>='.")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'ExprCons(%s, %s, %s)' % (self.expr, self._lhs, self._rhs)
 
     def __bool__(self):
@@ -730,7 +730,7 @@ cdef class SumExpr(GenExpr):
         self.coefs = []
         self.children = []
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"sum({self.constant},{','.join(map(str, self.children))})"
 
     cpdef double _evaluate(self, Solution sol) except *:
@@ -764,7 +764,7 @@ cdef class ProdExpr(GenExpr):
         res.constant = -res.constant
         return res
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"prod({self.constant},{','.join(map(str, self.children))})"
 
     cpdef double _evaluate(self, Solution sol) except *:
@@ -792,8 +792,8 @@ cdef class VarExpr(GenExpr):
     def __init__(self, var):
         self.children = [var]
 
-    def __repr__(self):
-        return self.children[0]
+    def __repr__(self) -> str:
+        return str(self.children[0])
 
     cpdef double _evaluate(self, Solution sol) except *:
         return (<Expr>self.children[0])._evaluate(sol)
@@ -808,7 +808,7 @@ cdef class PowExpr(GenExpr):
         self.expo = 1.0
         self.children = []
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"**({self.children[0]},{self.expo})"
 
     cpdef double _evaluate(self, Solution sol) except *:
@@ -906,7 +906,7 @@ cdef class Constant(GenExpr):
     def __neg__(self, /) -> Constant:
         return Constant(-self.number)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self.number)
 
     cpdef double _evaluate(self, Solution sol) except *:
