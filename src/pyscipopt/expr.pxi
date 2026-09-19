@@ -823,13 +823,8 @@ cdef class PowExpr(GenExpr):
 
 cdef class UnaryExpr(GenExpr):
 
-    def __init__(self, op, expr):
-        self.children = []
-        self.children.append(expr)
-        self._op = op
-
-    def __repr__(self) -> str:
-        return self._op + "(" + self.children[0].__repr__() + ")"
+    def __init__(self, expr: Union[Expr, GenExpr]):
+        self.children = [expr]
 
 
 cdef class AbsExpr(UnaryExpr):
@@ -837,17 +832,26 @@ cdef class AbsExpr(UnaryExpr):
     def __abs__(self) -> AbsExpr:
         return <AbsExpr>self.copy()
 
+    def __repr__(self) -> str:
+        return f"abs({self.children[0]})"
+
     cpdef double _evaluate(self, Solution sol) except *:
         return c_fabs((<GenExpr>self.children[0])._evaluate(sol))
 
 
 cdef class ExpExpr(UnaryExpr):
 
+    def __repr__(self) -> str:
+        return f"exp({self.children[0]})"
+
     cpdef double _evaluate(self, Solution sol) except *:
         return c_exp((<GenExpr>self.children[0])._evaluate(sol))
 
 
 cdef class LogExpr(UnaryExpr):
+
+    def __repr__(self) -> str:
+        return f"log({self.children[0]})"
 
     cpdef double _evaluate(self, Solution sol) except *:
         cdef double val = (<GenExpr>self.children[0])._evaluate(sol)
@@ -858,6 +862,9 @@ cdef class LogExpr(UnaryExpr):
 
 cdef class SqrtExpr(UnaryExpr):
 
+    def __repr__(self) -> str:
+        return f"sqrt({self.children[0]})"
+
     cpdef double _evaluate(self, Solution sol) except *:
         cdef double val = (<GenExpr>self.children[0])._evaluate(sol)
         if val < 0.0:
@@ -866,6 +873,9 @@ cdef class SqrtExpr(UnaryExpr):
 
 
 cdef class SinExpr(UnaryExpr):
+
+    def __repr__(self) -> str:
+        return f"sin({self.children[0]})"
 
     cpdef double _evaluate(self, Solution sol) except *:
         cdef double val = (<GenExpr>self.children[0])._evaluate(sol)
@@ -876,6 +886,9 @@ cdef class SinExpr(UnaryExpr):
 
 cdef class CosExpr(UnaryExpr):
 
+    def __repr__(self) -> str:
+        return f"cos({self.children[0]})"
+
     cpdef double _evaluate(self, Solution sol) except *:
         cdef double val = (<GenExpr>self.children[0])._evaluate(sol)
         if c_fabs(val) == INFINITY:
@@ -883,7 +896,6 @@ cdef class CosExpr(UnaryExpr):
         return c_cos(val)
 
 
-# class for constant expressions
 cdef class Constant(GenExpr):
 
     cdef public number
