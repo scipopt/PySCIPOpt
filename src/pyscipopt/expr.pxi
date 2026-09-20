@@ -569,22 +569,22 @@ cdef class GenExpr(ExprLike):
         ans = SumExpr()
 
         # add left term
-        if type(left) is SumExpr:
+        if <type>Py_TYPE(left) is SumExpr:
             ans.coefs.extend(left.coefs)
             ans.children.extend(left.children)
             ans.constant += left.constant
-        elif type(left) is Constant:
+        elif <type>Py_TYPE(left) is Constant:
             ans.constant += left.number
         else:
             ans.coefs.append(1.0)
             ans.children.append(left)
 
         # add right term
-        if type(right) is SumExpr:
+        if <type>Py_TYPE(right) is SumExpr:
             ans.coefs.extend(right.coefs)
             ans.children.extend(right.children)
             ans.constant += right.constant
-        elif type(right) is Constant:
+        elif <type>Py_TYPE(right) is Constant:
             ans.constant += right.number
         else:
             ans.coefs.append(1.0)
@@ -598,20 +598,20 @@ cdef class GenExpr(ExprLike):
     #    right = buildGenExprObj(other)
     #
     #    # transform self into sum
-    #    if type(self) is not SumExpr:
+    #    if <type>Py_TYPE(self) is not SumExpr:
     #        newsum = SumExpr()
-    #        if type(self) is Constant:
+    #        if <type>Py_TYPE(self) is Constant:
     #            newsum.constant += self.number
     #        else:
     #            newsum.coefs.append(1.0)
     #            newsum.children.append(self.copy()) # TODO: what is copy?
     #        self = newsum
     #    # add right term
-    #    if type(right) is SumExpr:
+    #    if <type>Py_TYPE(right) is SumExpr:
     #        self.coefs.extend(right.coefs)
     #        self.children.extend(right.children)
     #        self.constant += right.constant
-    #    elif type(right) is Constant:
+    #    elif <type>Py_TYPE(right) is Constant:
     #        self.constant += right.number
     #    else:
     #        self.coefs.append(1.0)
@@ -627,19 +627,19 @@ cdef class GenExpr(ExprLike):
         ans = ProdExpr()
 
         # multiply left factor
-        if type(left) is ProdExpr:
+        if <type>Py_TYPE(left) is ProdExpr:
             ans.children.extend(left.children)
             ans.constant *= left.constant
-        elif type(left) is Constant:
+        elif <type>Py_TYPE(left) is Constant:
             ans.constant *= left.number
         else:
             ans.children.append(left)
 
         # multiply right factor
-        if type(right) is ProdExpr:
+        if <type>Py_TYPE(right) is ProdExpr:
             ans.children.extend(right.children)
             ans.constant *= right.constant
-        elif type(right) is Constant:
+        elif <type>Py_TYPE(right) is Constant:
             ans.constant *= right.number
         else:
             ans.children.append(right)
@@ -651,18 +651,18 @@ cdef class GenExpr(ExprLike):
     #    assert isinstance(self, Expr)
     #    right = buildGenExprObj(other)
     #    # transform self into prod
-    #    if type(self) is not ProdExpr:
+    #    if <type>Py_TYPE(self) is not ProdExpr:
     #        newprod = ProdExpr()
-    #        if type(self) is Constant:
+    #        if <type>Py_TYPE(self) is Constant:
     #            newprod.constant *= self.number
     #        else:
     #            newprod.children.append(self.copy()) # TODO: what is copy?
     #        self = newprod
     #    # multiply right factor
-    #    if type(right) is ProdExpr:
+    #    if <type>Py_TYPE(right) is ProdExpr:
     #        self.children.extend(right.children)
     #        self.constant *= right.constant
-    #    elif type(right) is Constant:
+    #    elif <type>Py_TYPE(right) is Constant:
     #        self.constant *= right.number
     #    else:
     #        self.children.append(right)
@@ -670,9 +670,9 @@ cdef class GenExpr(ExprLike):
 
     def __pow__(self, other, modulo):
         expo = buildGenExprObj(other)
-        if type(expo) is not Constant:
+        if <type>Py_TYPE(expo) is not Constant:
             raise NotImplementedError("exponents must be numbers")
-        if type(self) is Constant:
+        if <type>Py_TYPE(self) is Constant:
             return Constant(self.number**expo.number)
         ans = PowExpr()
         ans.children.append(self)
@@ -699,7 +699,7 @@ cdef class GenExpr(ExprLike):
 
         divisor = buildGenExprObj(other)
         # we can't divide by 0
-        if type(divisor) is Constant and divisor.number == 0.0:
+        if <type>Py_TYPE(divisor) is Constant and divisor.number == 0.0:
             raise ZeroDivisionError("cannot divide by 0")
         return self * divisor**(-1)
 
@@ -1120,7 +1120,7 @@ def value_to_array(val, nodes):
 # haven't even consider substractions, but I guess we would interpret them as a - b = a + (-1) * b
 def expr_to_array(expr, nodes):
     """adds expression to array"""
-    t = type(expr)
+    t = <type>Py_TYPE(expr)
     if t is Constant:  # FIXME: constant expr should also have children!
         nodes.append((t, [expr.number]))
 
