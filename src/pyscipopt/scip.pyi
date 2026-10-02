@@ -692,7 +692,7 @@ class Model:
     def addCoefLogicor(self, logicor_cons: Constraint, var: Variable) -> None: ...
     def addCons(
         self,
-        cons: Incomplete,
+        cons: ExprCons,
         name: str = "",
         initial: bool = True,
         separate: bool = True,
@@ -759,7 +759,7 @@ class Model:
     ) -> Constraint: ...
     def addConsDisjunction(
         self,
-        conss: Iterable[Incomplete],
+        conss: Iterable[ExprCons],
         name: str = "",
         initial: bool = True,
         relaxcons: Constraint | None = None,
@@ -774,7 +774,7 @@ class Model:
     ) -> Constraint: ...
     def addConsIndicator(
         self,
-        cons: Incomplete,
+        cons: ExprCons,
         binvar: Variable | None = None,
         activeone: bool = True,
         name: str = "",
@@ -807,7 +807,7 @@ class Model:
     ) -> Constraint: ...
     def addConsLocal(
         self,
-        cons: Incomplete,
+        cons: ExprCons,
         validnode: Node | None = None,
         name: str = "",
         initial: bool = True,
@@ -838,7 +838,7 @@ class Model:
     def addConsNode(
         self,
         node: Node,
-        cons: Incomplete,
+        cons: ExprCons,
         validnode: Node | None = None,
         name: str = "",
         initial: bool = True,
@@ -915,7 +915,7 @@ class Model:
     ) -> Constraint: ...
     def addConss(
         self,
-        conss: Iterable[Incomplete],
+        conss: Iterable[ExprCons] | MatrixExprCons,
         name: str | Iterable[str] = "",
         initial: bool | Iterable[bool] = True,
         separate: bool | Iterable[bool] = True,
@@ -934,7 +934,7 @@ class Model:
     ) -> None: ...
     def addMatrixCons(
         self,
-        cons: Incomplete,
+        cons: ExprCons | MatrixExprCons,
         name: str | np.ndarray = "",
         initial: bool | np.ndarray = True,
         separate: bool | np.ndarray = True,
@@ -949,7 +949,7 @@ class Model:
     ) -> Constraint | MatrixConstraint: ...
     def addMatrixConsDisjunction(
         self,
-        conss: Incomplete,
+        conss: Iterable[ExprCons | MatrixExprCons],
         name: str | np.ndarray = "",
         initial: bool | np.ndarray = True,
         relaxcons: None = None,
@@ -958,10 +958,10 @@ class Model:
         local: bool | np.ndarray = False,
         modifiable: bool | np.ndarray = False,
         dynamic: bool | np.ndarray = False,
-    ) -> Incomplete: ...
+    ) -> Constraint | MatrixConstraint: ...
     def addMatrixConsIndicator(
         self,
-        cons: Incomplete,
+        cons: ExprCons | MatrixExprCons,
         binvar: Variable | MatrixVariable | None = None,
         activeone: bool | np.ndarray = True,
         name: str | np.ndarray = "",
@@ -1111,7 +1111,7 @@ class Model:
     ) -> Constraint: ...
     def createConsFromExpr(
         self,
-        cons: Incomplete,
+        cons: ExprCons,
         name: str = "",
         initial: bool = True,
         separate: bool = True,
@@ -2285,8 +2285,11 @@ class Solution:
     def getOrigin(self) -> Incomplete: ...
     def retransform(self) -> None: ...
     def translate(self, target: Model) -> Solution: ...
-    def __getitem__(self, index: Incomplete, /) -> Incomplete: ...
-    def __setitem__(self, key: Incomplete, value: Incomplete, /) -> None: ...
+    @overload
+    def __getitem__(self, index: Expr | GenExpr, /) -> float: ...
+    @overload
+    def __getitem__(self, index: MatrixExpr, /) -> np.ndarray: ...
+    def __setitem__(self, key: Variable, value: float, /) -> None: ...
 
 class Statistics:
     status: str
