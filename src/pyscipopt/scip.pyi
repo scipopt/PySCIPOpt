@@ -23,13 +23,13 @@ _core_sum: Incomplete
 buildGenExprObj: Incomplete
 expr_to_array: Incomplete
 expr_to_nodes: Incomplete
-is_memory_freed: Incomplete
-print_memory_in_use: Incomplete
 quickprod: Incomplete
 quicksum: Incomplete
 str_conversion: Incomplete
 value_to_array: Incomplete
 
+def is_memory_freed() -> bool: ...
+def print_memory_in_use() -> None: ...
 def readStatistics(filename: StrOrBytesPath) -> Statistics: ...
 @overload
 def exp(x: float | Expr | GenExpr) -> ExpExpr: ...
