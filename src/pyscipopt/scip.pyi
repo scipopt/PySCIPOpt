@@ -251,7 +251,7 @@ class Conshdlr:
 
 @disjoint_base
 class Constant(GenExpr):
-    number: Incomplete
+    number: SupportsFloat
     def __init__(self, number: SupportsFloat) -> None: ...
     def __neg__(self, /) -> Constant: ...
     def __pow__(  # type: ignore[override]
@@ -380,7 +380,7 @@ class ExprLike:
 @disjoint_base
 class Expr(ExprLike):
     terms: Incomplete
-    def __init__(self, terms: Incomplete = ...) -> None: ...
+    def __init__(self, terms: Incomplete = None) -> None: ...
     def degree(self) -> int: ...
     def normalize(self) -> None: ...
     def __neg__(self, /) -> Expr: ...
@@ -442,7 +442,7 @@ class ExprCons:
 
 @disjoint_base
 class GenExpr(ExprLike):
-    _op: Incomplete
+    _op: str | None
     children: Incomplete
     def __init__(self) -> None: ...
     def degree(self) -> float: ...
@@ -2136,7 +2136,7 @@ class PY_SCIP_STATUS:
 
 @disjoint_base
 class PowExpr(GenExpr):
-    expo: Incomplete
+    expo: SupportsFloat
     def __init__(self) -> None: ...
     def __neg__(self, /) -> ProdExpr: ...
 
@@ -2167,7 +2167,7 @@ class Pricer:
 
 @disjoint_base
 class ProdExpr(GenExpr):
-    constant: Incomplete
+    constant: SupportsFloat
     def __init__(self) -> None: ...
     def __neg__(self, /) -> ProdExpr: ...
 
@@ -2366,7 +2366,7 @@ class Statistics:
 
 @disjoint_base
 class SumExpr(GenExpr):
-    constant: Incomplete
+    constant: SupportsFloat
     def __init__(self) -> None: ...
     def __neg__(self, /) -> ProdExpr: ...
 
