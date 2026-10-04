@@ -582,24 +582,20 @@ cdef class GenExpr(ExprLike):
 
         # add left term
         if left.getOp() == Operator.add:
-            ans.coefs.extend(left.coefs)
             ans.children.extend(left.children)
             ans.constant += left.constant
         elif left.getOp() == Operator.const:
             ans.constant += left.number
         else:
-            ans.coefs.append(1.0)
             ans.children.append(left)
 
         # add right term
         if right.getOp() == Operator.add:
-            ans.coefs.extend(right.coefs)
             ans.children.extend(right.children)
             ans.constant += right.constant
         elif right.getOp() == Operator.const:
             ans.constant += right.number
         else:
-            ans.coefs.append(1.0)
             ans.children.append(right)
 
         return ans
@@ -615,18 +611,15 @@ cdef class GenExpr(ExprLike):
     #        if self.getOp() == Operator.const:
     #            newsum.constant += self.number
     #        else:
-    #            newsum.coefs.append(1.0)
     #            newsum.children.append(self.copy()) # TODO: what is copy?
     #        self = newsum
     #    # add right term
     #    if right.getOp() == Operator.add:
-    #        self.coefs.extend(right.coefs)
     #        self.children.extend(right.children)
     #        self.constant += right.constant
     #    elif right.getOp() == Operator.const:
     #        self.constant += right.number
     #    else:
-    #        self.coefs.append(1.0)
     #        self.children.append(right)
     #    return self
 
@@ -740,13 +733,12 @@ cdef class GenExpr(ExprLike):
 cdef class SumExpr(GenExpr):
 
     cdef public constant
-    cdef public coefs
 
     def __init__(self):
         self.constant = 0.0
-        self.coefs = []
         self.children = []
         self._op = Operator.add
+
     def __repr__(self):
         return self._op + "(" + str(self.constant) + "," + ",".join(map(lambda child : child.__repr__(), self.children)) + ")"
 
@@ -754,9 +746,8 @@ cdef class SumExpr(GenExpr):
         cdef double res = self.constant
         cdef int i = 0, n = len(self.children)
         cdef list children = self.children
-        cdef list coefs = self.coefs
         for i in range(n):
-            res += <double>coefs[i] * (<GenExpr>children[i])._evaluate(sol)
+            res += (<GenExpr>children[i])._evaluate(sol)
         return res
 
     cdef SumExpr copy(self, bint copy=True):
@@ -764,7 +755,6 @@ cdef class SumExpr(GenExpr):
         res._op = self._op
         res.children = self.children.copy() if copy else self.children
         res.constant = self.constant
-        res.coefs = self.coefs.copy() if copy else self.coefs
         return res
 
 

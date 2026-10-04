@@ -19,6 +19,7 @@
 - Speed up `ProdExpr.__neg__` and `Constant.__neg__` via C-level API (#1250)
 - Extended `structured_optimization_trace` recipe to support context-managed JSONL tracing with final `run_end` records, alongside the existing attach-style in-memory tracing.
 ### Removed
+- `SumExpr`.coefs has been removed; its values were always 1.0 (#1258)
 
 ## 6.2.1 - 2026.05.16
 ### Fixed
