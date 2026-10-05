@@ -1105,7 +1105,7 @@ def value_to_array(val, nodes):
 # there many hacky things here: value_to_array is trying to mimick
 # the multiple dispatch of julia. Also that we have to ask which expression is which
 # in order to get the constants correctly
-# also, for sums, we are not considering sficients, because basically all coefficients are 1
+# also, for sums, we are not considering coefficients, because basically all coefficients are 1
 # haven't even consider substractions, but I guess we would interpret them as a - b = a + (-1) * b
 def expr_to_array(expr, nodes):
     """adds expression to array"""
