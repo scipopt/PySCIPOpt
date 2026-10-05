@@ -2334,7 +2334,6 @@ class Statistics:
 
 @disjoint_base
 class SumExpr(GenExpr):
-    coefs: Incomplete
     constant: Incomplete
     def __init__(self, *args: Incomplete, **kwargs: Incomplete) -> None: ...
     def __neg__(self, /) -> ProdExpr: ...

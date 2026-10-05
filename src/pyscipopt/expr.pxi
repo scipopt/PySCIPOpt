@@ -570,24 +570,20 @@ cdef class GenExpr(ExprLike):
 
         # add left term
         if <type>Py_TYPE(left) is SumExpr:
-            ans.coefs.extend(left.coefs)
             ans.children.extend(left.children)
             ans.constant += left.constant
         elif <type>Py_TYPE(left) is Constant:
             ans.constant += left.number
         else:
-            ans.coefs.append(1.0)
             ans.children.append(left)
 
         # add right term
         if <type>Py_TYPE(right) is SumExpr:
-            ans.coefs.extend(right.coefs)
             ans.children.extend(right.children)
             ans.constant += right.constant
         elif <type>Py_TYPE(right) is Constant:
             ans.constant += right.number
         else:
-            ans.coefs.append(1.0)
             ans.children.append(right)
 
         return ans
@@ -603,18 +599,15 @@ cdef class GenExpr(ExprLike):
     #        if <type>Py_TYPE(self) is Constant:
     #            newsum.constant += self.number
     #        else:
-    #            newsum.coefs.append(1.0)
     #            newsum.children.append(self.copy()) # TODO: what is copy?
     #        self = newsum
     #    # add right term
     #    if <type>Py_TYPE(right) is SumExpr:
-    #        self.coefs.extend(right.coefs)
     #        self.children.extend(right.children)
     #        self.constant += right.constant
     #    elif <type>Py_TYPE(right) is Constant:
     #        self.constant += right.number
     #    else:
-    #        self.coefs.append(1.0)
     #        self.children.append(right)
     #    return self
 
@@ -723,11 +716,9 @@ cdef class GenExpr(ExprLike):
 cdef class SumExpr(GenExpr):
 
     cdef public constant
-    cdef public coefs
 
     def __init__(self):
         self.constant = 0.0
-        self.coefs = []
         self.children = []
 
     def __repr__(self) -> str:
@@ -737,16 +728,14 @@ cdef class SumExpr(GenExpr):
         cdef double res = self.constant
         cdef int i = 0, n = len(self.children)
         cdef list children = self.children
-        cdef list coefs = self.coefs
         for i in range(n):
-            res += <double>coefs[i] * (<GenExpr>children[i])._evaluate(sol)
+            res += (<GenExpr>children[i])._evaluate(sol)
         return res
 
     cdef SumExpr copy(self, bint copy=True):
         cdef SumExpr res = SumExpr.__new__(SumExpr)
         res.children = self.children.copy() if copy else self.children
         res.constant = self.constant
-        res.coefs = self.coefs.copy() if copy else self.coefs
         return res
 
 
@@ -1116,7 +1105,7 @@ def value_to_array(val, nodes):
 # there many hacky things here: value_to_array is trying to mimick
 # the multiple dispatch of julia. Also that we have to ask which expression is which
 # in order to get the constants correctly
-# also, for sums, we are not considering coefficients, because basically all coefficients are 1
+# also, for sums, we are not considering sficients, because basically all coefficients are 1
 # haven't even consider substractions, but I guess we would interpret them as a - b = a + (-1) * b
 def expr_to_array(expr, nodes):
     """adds expression to array"""
