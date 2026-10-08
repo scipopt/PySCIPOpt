@@ -417,6 +417,22 @@ cdef extern from "scip/scip.h":
     ctypedef struct SYM_GRAPH:
         pass
 
+    ctypedef enum SYM_SYMTYPE:
+        SYM_SYMTYPE_PERM
+        SYM_SYMTYPE_SIGNPERM
+
+    ctypedef struct SCIP_SYMHDLR:
+        pass
+
+    ctypedef struct SCIP_SYMHDLRDATA:
+        pass
+
+    ctypedef struct SCIP_SYMCOMP:
+        pass
+
+    ctypedef struct SCIP_SYMCOMPDATA:
+        pass
+
     ctypedef struct SCIP_READER:
         pass
 
@@ -587,6 +603,7 @@ cdef extern from "scip/scip.h":
                           const char*           suffix,
                           SCIP_Bool             globalcopy,
                           SCIP_Bool             enablepricing,
+                          SCIP_Bool             copysymhdlrs,
                           SCIP_Bool             threadsafe,
                           SCIP_Bool             passmessagehdlr,
                           SCIP_Bool*            valid)
@@ -596,6 +613,7 @@ cdef extern from "scip/scip.h":
                               SCIP_HASHMAP*         consmap,
                               const char*           suffix,
                               SCIP_Bool             enablepricing,
+                              SCIP_Bool             copysymhdlrs,
                               SCIP_Bool             threadsafe,
                               SCIP_Bool             passmessagehdlr,
                               SCIP_Bool*            valid)
@@ -776,7 +794,7 @@ cdef extern from "scip/scip.h":
     void SCIPnodeGetAddedConss(SCIP_NODE* node, SCIP_CONS** addedconss,
                                int* naddedconss, int addedconsssize)
     void SCIPnodeGetNDomchg(SCIP_NODE* node, int* nbranchings, int* nconsprop,
-                            int* nprop)
+                            int* nprop, int* nsymprop)
     SCIP_DOMCHG* SCIPnodeGetDomchg(SCIP_NODE* node)
 
     # Domain change methods
@@ -1201,6 +1219,61 @@ cdef extern from "scip/scip.h":
 
     SCIP_PROPDATA* SCIPpropGetData (SCIP_PROP* prop)
 
+    # Symmetry handler plugin
+    SCIP_RETCODE SCIPincludeSymhdlr(SCIP* scip,
+                                    const char* name,
+                                    const char* desc,
+                                    int priority,
+                                    int proppriority,
+                                    int sepapriority,
+                                    int presolpriority,
+                                    int propfreq,
+                                    int sepafreq,
+                                    SCIP_Bool delayprop,
+                                    SCIP_Bool delaysepa,
+                                    SCIP_Real maxbounddist,
+                                    int maxprerounds,
+                                    SCIP_PROPTIMING proptiming,
+                                    SCIP_PRESOLTIMING presoltiming,
+                                    SCIP_RETCODE (*symhdlrtryadd) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SYM_SYMTYPE symtype, int** perms, int nperms,
+                                                                   SCIP_VAR** permvars, int npermvars, SCIP_Real* permvardomcenter, SCIP_HASHMAP* permvarmap,
+                                                                   SYM_GRAPH* symgraph, int id, SCIP_SYMCOMPDATA** symcompdata, int* naddedconss,
+                                                                   SCIP_Bool allowbdchgs, int* nchgbds, SCIP_Bool* success),
+                                    SCIP_RETCODE (*symcopy) (SCIP* scip, SCIP_SYMHDLR* symhdlr),
+                                    SCIP_RETCODE (*symfree) (SCIP* scip, SCIP_SYMHDLR* symhdlr),
+                                    SCIP_RETCODE (*syminit) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP** symcomps, int nsymcomps),
+                                    SCIP_RETCODE (*symexit) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP** symcomps, int nsymcomps),
+                                    SCIP_RETCODE (*syminitsol) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP** symcomps, int nsymcomps),
+                                    SCIP_RETCODE (*symexitsol) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP** symcomps, int nsymcomps, SCIP_Bool restart),
+                                    SCIP_RETCODE (*symsepalp) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP** symcomps, int nsymcomps,
+                                                               SCIP_RESULT* result, SCIP_Bool allowlocal, int depth),
+                                    SCIP_RETCODE (*symsepasol) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SOL* sol, SCIP_SYMCOMP** symcomps, int nsymcomps,
+                                                                SCIP_RESULT* result, SCIP_Bool allowlocal, int depth),
+                                    SCIP_RETCODE (*symprop) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP** symcomps, int nsymcomps,
+                                                             SCIP_PROPTIMING proptiming, SCIP_RESULT* result),
+                                    SCIP_RETCODE (*symresprop) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP* symcomp, SCIP_VAR* infervar, int inferinfo,
+                                                                SCIP_BOUNDTYPE boundtype, SCIP_BDCHGIDX* bdchgidx, SCIP_Real relaxedbd, SCIP_RESULT* result),
+                                    SCIP_RETCODE (*sympresol) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP** symcomps, int nsymcomps, int nrounds,
+                                                               SCIP_PRESOLTIMING presoltiming, int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes,
+                                                               int nnewchgbds, int nnewholes, int nnewdelconss, int nnewaddconss, int nnewupgdconss,
+                                                               int nnewchgcoefs, int nnewchgsides, int* nfixedvars, int* naggrvars, int* nchgvartypes,
+                                                               int* nchgbds, int* naddholes, int* ndelconss, int* naddconss, int* nupgdconss,
+                                                               int* nchgcoefs, int* nchgsides, SCIP_RESULT* result),
+                                    SCIP_SYMHDLRDATA* symhdlrdata)
+
+    SCIP_SYMHDLRDATA* SCIPsymhdlrGetData(SCIP_SYMHDLR* symhdlr)
+    const char* SCIPsymhdlrGetName(SCIP_SYMHDLR* symhdlr)
+    SCIP_SYMHDLR* SCIPfindSymhdlr(SCIP* scip, const char* name)
+    SCIP_SYMHDLR** SCIPgetSymhdlrs(SCIP* scip)
+    int SCIPgetNSymhdlrs(SCIP* scip)
+    SCIP_SYMCOMPDATA* SCIPsymcompGetData(SCIP_SYMCOMP* symcomp)
+    SCIP_SYMHDLR* SCIPsymcompGetHdlr(SCIP_SYMCOMP* symcomp)
+    const char* SCIPsymcompGetName(SCIP_SYMCOMP* symcomp)
+    SCIP_RETCODE SCIPinferVarLbSym(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound, SCIP_SYMCOMP* infersymcomp, int inferinfo,
+                                   SCIP_Bool force, SCIP_Bool* infeasible, SCIP_Bool* tightened)
+    SCIP_RETCODE SCIPinferVarUbSym(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound, SCIP_SYMCOMP* infersymcomp, int inferinfo,
+                                   SCIP_Bool force, SCIP_Bool* infeasible, SCIP_Bool* tightened)
+
     # Heuristics plugin
     SCIP_RETCODE SCIPincludeHeur(SCIP* scip,
                                  const char* name,
@@ -1230,6 +1303,7 @@ cdef extern from "scip/scip.h":
                                       const char* name,
                                       const char* desc,
                                       int         priority,
+                                      SCIP_Bool   enable,
                                       SCIP_RETCODE (*iisfindercopy) (SCIP* scip, SCIP_IISFINDER* iisfinder),
                                       SCIP_RETCODE (*iisfinderfree) (SCIP* scip, SCIP_IISFINDER* iisfinder),
                                       SCIP_RETCODE (*iisfinderexec) (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_RESULT* result),
@@ -2291,6 +2365,12 @@ cdef class IIS:
 
     @staticmethod
     cdef create(SCIP_IIS* iis)
+
+cdef class SymComp:
+    cdef SCIP_SYMCOMP* scip_symcomp
+
+    @staticmethod
+    cdef create(SCIP_SYMCOMP* scip_symcomp)
 
 cdef class Model:
     cdef SCIP* _scip

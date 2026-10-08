@@ -1557,6 +1557,40 @@ class Model:
         usessubscip: bool = False,
         delay: bool = False,
     ) -> None: ...
+    def includeSymhdlr(
+        self,
+        symhdlr: Symhdlr,
+        name: str,
+        desc: str,
+        priority: int = 0,
+        proppriority: int = 0,
+        sepapriority: int = 0,
+        presolpriority: int = 0,
+        propfreq: int = -1,
+        sepafreq: int = -1,
+        delayprop: bool = False,
+        delaysepa: bool = False,
+        maxbounddist: float = 1.0,
+        maxprerounds: int = -1,
+        proptiming: Incomplete = ...,
+        presoltiming: Incomplete = ...,
+    ) -> None: ...
+    def inferVarLbSym(
+        self,
+        var: Variable,
+        lb: float,
+        symcomp: SymComp,
+        inferinfo: int,
+        force: bool = False,
+    ) -> tuple[bool, bool]: ...
+    def inferVarUbSym(
+        self,
+        var: Variable,
+        ub: float,
+        symcomp: SymComp,
+        inferinfo: int,
+        force: bool = False,
+    ) -> tuple[bool, bool]: ...
     def infinity(self) -> float: ...
     def initBendersDefault(self, subproblems: Model | dict[Any, Model]) -> None: ...
     def interruptSolve(self) -> None: ...
@@ -2285,6 +2319,71 @@ class Solution:
     def translate(self, target: Incomplete) -> Incomplete: ...
     def __getitem__(self, index: Incomplete, /) -> Incomplete: ...
     def __setitem__(self, key: Incomplete, value: Incomplete, /) -> None: ...
+
+@disjoint_base
+class SymComp:
+    def __init__(self) -> None: ...
+    @property
+    def data(self) -> Incomplete: ...
+    @property
+    def name(self) -> str: ...
+    def ptr(self) -> int: ...
+
+@disjoint_base
+class Symhdlr:
+    model: Incomplete
+    name: Incomplete
+    def __init__(self) -> None: ...
+    def symexit(self, symcomps: Incomplete) -> Incomplete: ...
+    def symexitsol(self, symcomps: Incomplete, restart: Incomplete) -> Incomplete: ...
+    def symfree(self) -> Incomplete: ...
+    def syminit(self, symcomps: Incomplete) -> Incomplete: ...
+    def syminitsol(self, symcomps: Incomplete) -> Incomplete: ...
+    def sympresol(
+        self,
+        symcomps: Incomplete,
+        nrounds: Incomplete,
+        presoltiming: Incomplete,
+        nnewfixedvars: Incomplete,
+        nnewaggrvars: Incomplete,
+        nnewchgvartypes: Incomplete,
+        nnewchgbds: Incomplete,
+        nnewholes: Incomplete,
+        nnewdelconss: Incomplete,
+        nnewaddconss: Incomplete,
+        nnewupgdconss: Incomplete,
+        nnewchgcoefs: Incomplete,
+        nnewchgsides: Incomplete,
+        result_dict: Incomplete,
+    ) -> Incomplete: ...
+    def symprop(self, symcomps: Incomplete, proptiming: Incomplete) -> Incomplete: ...
+    def symresprop(
+        self,
+        symcomp: Incomplete,
+        confvar: Incomplete,
+        inferinfo: Incomplete,
+        bdtype: Incomplete,
+        relaxedbd: Incomplete,
+    ) -> Incomplete: ...
+    def symsepalp(
+        self, symcomps: Incomplete, allowlocal: Incomplete, depth: Incomplete
+    ) -> Incomplete: ...
+    def symsepasol(
+        self,
+        solution: Incomplete,
+        symcomps: Incomplete,
+        allowlocal: Incomplete,
+        depth: Incomplete,
+    ) -> Incomplete: ...
+    def symtryadd(
+        self,
+        symtype: Incomplete,
+        perms: Incomplete,
+        permvars: Incomplete,
+        permvardomcenter: Incomplete,
+        id: Incomplete,
+        allowbdchgs: Incomplete,
+    ) -> Incomplete: ...
 
 class Statistics:
     status: str
