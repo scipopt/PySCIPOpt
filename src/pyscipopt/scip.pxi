@@ -2945,6 +2945,9 @@ cdef class Model:
                     for j in range(nsubproblems):
                         PY_SCIP_CALL(SCIPfreeBendersSubproblem(self._scip, benders[i], j))
 
+            if SCIPgetStage(self._scip) == SCIP_STAGE_SOLVING and SCIPinProbing(self._scip):
+                PY_SCIP_CALL(SCIPendProbing(self._scip))
+                
             # Ignore SCIPfree retcode: cleanup must not turn into a new failure.
             SCIPfree(&self._scip)
             self._scip = NULL
