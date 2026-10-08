@@ -228,7 +228,6 @@ def flpbenders_defcuts_test():
 
     master.printStatistics()
 
-    testbd.subprob.free()
     return master.getObjVal()
 
 def flpbenders_customcuts_test():
@@ -274,7 +273,6 @@ def flpbenders_customcuts_test():
 
     master.printStatistics()
 
-    testbd.subprob.free()
     return master.getObjVal()
 
 def flp_test():
