@@ -51,6 +51,7 @@ class EmptyRelaxator(Relax):
 def test_empty_relaxator():
     m = Model()
     m.setPresolve(SCIP_PARAMSETTING.OFF)
+    m.setHeuristics(SCIP_PARAMSETTING.OFF)
     m.hideOutput()
 
     m.includeRelax(EmptyRelaxator(), "", "")

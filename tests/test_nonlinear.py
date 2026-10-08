@@ -346,12 +346,11 @@ def test_addExprNonLinear():
     m.addExprNonlinear(c, y**2, 2)
     m.addExprNonlinear(c1, z**(1/3), 1)
 
-    m.setParam("numerics/epsilon", 10**(-5)) # bigger eps due to nonlinearities
     m.optimize()
 
     assert m.getNSols() > 0
-    assert m.isEQ(m.getVal(y), 2)
-    assert m.isEQ(m.getVal(z), 27)
+    assert m.isFeasEQ(m.getVal(y), 2)
+    assert m.isFeasEQ(m.getVal(z), 27)
 
 def test_nonlinear_lhs_rhs():
     from helpers.utils import random_nlp_1
