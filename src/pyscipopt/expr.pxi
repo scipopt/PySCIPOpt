@@ -288,22 +288,22 @@ cdef class ExprLike:
         return self.copy()
 
     def __abs__(self, /) -> AbsExpr:
-        return AbsExpr(buildGenExprObj(self))
+        return AbsExpr(Operator.fabs, buildGenExprObj(self))
 
     def exp(self, /) -> ExpExpr:
-        return ExpExpr(buildGenExprObj(self))
+        return ExpExpr(Operator.exp, buildGenExprObj(self))
 
     def log(self, /) -> LogExpr:
-        return LogExpr(buildGenExprObj(self))
+        return LogExpr(Operator.log, buildGenExprObj(self))
 
     def sqrt(self, /) -> SqrtExpr:
-        return SqrtExpr(buildGenExprObj(self))
+        return SqrtExpr(Operator.sqrt, buildGenExprObj(self))
 
     def sin(self, /) -> SinExpr:
-        return SinExpr(buildGenExprObj(self))
+        return SinExpr(Operator.sin, buildGenExprObj(self))
 
     def cos(self, /) -> CosExpr:
-        return CosExpr(buildGenExprObj(self))
+        return CosExpr(Operator.cos, buildGenExprObj(self))
 
     cpdef double _evaluate(self, Solution sol) except *:
         raise NotImplementedError(
@@ -545,6 +545,18 @@ def quickprod(termlist):
     return result
 
 
+class Op:
+    const = 'const'
+    varidx = 'var'
+    exp, log, sqrt, sin, cos = 'exp', 'log', 'sqrt', 'sin', 'cos'
+    plus, minus, mul, div, power = '+', '-', '*', '/', '**'
+    add = 'sum'
+    prod = 'prod'
+    fabs = 'abs'
+
+Operator = Op()
+
+
 ##@details <pre> General expressions of variables with operator overloading.
 #
 #@note
@@ -555,6 +567,7 @@ def quickprod(termlist):
 #See also the @ref ExprDetails "description" in the expr.pxi. 
 cdef class GenExpr(ExprLike):
 
+    cdef public _op
     cdef public children
 
     def __init__(self): # do we need it
@@ -712,9 +725,14 @@ cdef class GenExpr(ExprLike):
         '''Note: none of these expressions should be polynomial'''
         return INFINITY
 
+    def getOp(self):
+        '''returns operator of GenExpr'''
+        return self._op
+
     cdef GenExpr copy(self, bint copy=True):
         cdef object cls = <type>Py_TYPE(self)
         cdef GenExpr res = cls.__new__(cls)
+        res._op = self._op
         res.children = self.children.copy() if copy else self.children
         return res
 
@@ -729,6 +747,7 @@ cdef class SumExpr(GenExpr):
         self.constant = 0.0
         self.coefs = []
         self.children = []
+        self._op = Operator.add
 
     def __repr__(self) -> str:
         return f"sum({self.constant},{','.join(map(str, self.children))})"
@@ -744,6 +763,7 @@ cdef class SumExpr(GenExpr):
 
     cdef SumExpr copy(self, bint copy=True):
         cdef SumExpr res = SumExpr.__new__(SumExpr)
+        res._op = self._op
         res.children = self.children.copy() if copy else self.children
         res.constant = self.constant
         res.coefs = self.coefs.copy() if copy else self.coefs
@@ -758,6 +778,7 @@ cdef class ProdExpr(GenExpr):
     def __init__(self):
         self.constant = 1.0
         self.children = []
+        self._op = Operator.prod
 
     def __neg__(self, /) -> ProdExpr:
         cdef ProdExpr res = self.copy(copy=True)
@@ -779,6 +800,7 @@ cdef class ProdExpr(GenExpr):
 
     cdef ProdExpr copy(self, bint copy=True):
         cdef ProdExpr res = ProdExpr.__new__(ProdExpr)
+        res._op = self._op
         res.children = self.children.copy() if copy else self.children
         res.constant = self.constant
         return res
@@ -791,6 +813,7 @@ cdef class VarExpr(GenExpr):
 
     def __init__(self, var):
         self.children = [var]
+        self._op = Operator.varidx
 
     def __repr__(self) -> str:
         return str(self.children[0])
@@ -807,6 +830,7 @@ cdef class PowExpr(GenExpr):
     def __init__(self):
         self.expo = 1.0
         self.children = []
+        self._op = Operator.power
 
     def __repr__(self) -> str:
         return f"**({self.children[0]},{self.expo})"
@@ -816,6 +840,7 @@ cdef class PowExpr(GenExpr):
 
     cdef PowExpr copy(self, bint copy=True):
         cdef PowExpr res = PowExpr.__new__(PowExpr)
+        res._op = self._op
         res.children = self.children.copy() if copy else self.children
         res.expo = self.expo
         return res
@@ -823,7 +848,8 @@ cdef class PowExpr(GenExpr):
 
 cdef class UnaryExpr(GenExpr):
 
-    def __init__(self, expr: Union[Expr, GenExpr]):
+    def __init__(self, op, expr: Union[Expr, GenExpr]):
+        self._op = op
         self.children = [expr]
 
 
@@ -902,6 +928,7 @@ cdef class Constant(GenExpr):
 
     def __init__(self, number: Union[int, float]):
         self.number = number
+        self._op = Operator.const
 
     def __neg__(self, /) -> Constant:
         return Constant(-self.number)
@@ -915,6 +942,7 @@ cdef class Constant(GenExpr):
     cdef Constant copy(self, bint copy=True):
         # The copy parameter doesn't work; this is for compatibility.
         cdef Constant res = Constant.__new__(Constant)
+        res._op = self._op
         res.number = self.number
         return res
 
