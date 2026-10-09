@@ -42,6 +42,7 @@
 # which should, in princple, modify the expr. However, since we do not implement __isub__, __sub__
 # gets called (I guess) and so a copy is returned.
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
+import warnings
 from typing import TYPE_CHECKING, Literal, Union
 
 import numpy as np
@@ -546,6 +547,10 @@ def quickprod(termlist):
 
 
 class Op:
+    """Deprecated internal operator enum; will be removed in the next release.
+
+    Use `type(expr)` to dispatch on the expression type instead of this enum.
+    """
     const = 'const'
     varidx = 'var'
     exp, log, sqrt, sin, cos = 'exp', 'log', 'sqrt', 'sin', 'cos'
@@ -719,7 +724,18 @@ cdef class GenExpr(ExprLike):
         return INFINITY
 
     def getOp(self):
-        '''returns operator of GenExpr'''
+        """returns operator of GenExpr
+
+        .. deprecated:: 6.2.2
+            This method is deprecated and will be removed in a future version, use
+            `type(expr)` instead.
+        """
+        warnings.warn(
+            "`GenExpr.getOp` is deprecated and will be removed in a future version, use "
+            "`type(expr)` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self._op
 
     cdef GenExpr copy(self, bint copy=True):
