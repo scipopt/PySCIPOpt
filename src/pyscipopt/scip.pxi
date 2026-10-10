@@ -10,6 +10,7 @@ import locale
 cimport cython
 from cpython cimport Py_INCREF, Py_DECREF
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPointer
+from libc.math cimport INFINITY
 from libc.stdlib cimport malloc, free
 from libc.stdio cimport stdout, stderr, fdopen, fputs, fflush, fclose
 from posix.stdio cimport fileno
@@ -6391,7 +6392,7 @@ cdef class Model:
             return self._createConsLinear(cons, **kwargs)
         elif deg <= 2:
             return self._createConsQuadratic(cons, **kwargs)
-        elif deg == float('inf'): # general nonlinear
+        elif deg == INFINITY: # general nonlinear
             return self._createConsGenNonlinear(cons, **kwargs)
         else:
             return self._createConsNonlinear(cons, **kwargs)
