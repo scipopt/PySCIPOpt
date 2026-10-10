@@ -368,9 +368,10 @@ def PY_SCIP_CALL(SCIP_RETCODE rc):
 
 def _asRational(value):
     """Convert value to a Fraction, keeping +/- infinity as a float."""
-    if value == float("inf") or value == -float("inf"):
+    try:
+        return Fraction(value)
+    except OverflowError:
         return float(value)
-    return Fraction(value)
 
 cdef SCIP_RATIONAL* _createRational(value) except NULL:
     """Create a SCIP_RATIONAL holding value; the caller must free it with SCIPrationalFree."""
@@ -13220,6 +13221,7 @@ cdef class Model:
         cdef SCIP_RATIONAL* ubexact = NULL
         cdef SCIP_RATIONAL* objexact = NULL
         cdef SCIP_VARTYPE vartype
+        cdef SCIP_RETCODE rc
 
         self._checkExactMode()
         if name == '':
@@ -13246,27 +13248,24 @@ cdef class Model:
         if lb > ub:
             raise ValueError("lower bound %s exceeds upper bound %s" % (lb, ub))
 
+        lbexact = _createRational(lb)
+        ubexact = _createRational(ub)
+        objexact = _createRational(obj)
+
         PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname,
                                         max(float(lb), -SCIPinfinity(self._scip)),
                                         min(float(ub), SCIPinfinity(self._scip)),
                                         float(obj), vartype))
-        try:
-            lbexact = _createRational(lb)
-            ubexact = _createRational(ub)
-            objexact = _createRational(obj)
-            PY_SCIP_CALL(SCIPaddVarExactData(self._scip, scip_var, lbexact, ubexact, objexact))
-            PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
-            pyVar = self._getOrCreateVar(scip_var)
-            SCIPvarSetData(scip_var, <SCIP_VARDATA*>pyVar)
-        finally:
-            if lbexact != NULL:
-                SCIPrationalFree(&lbexact)
-            if ubexact != NULL:
-                SCIPrationalFree(&ubexact)
-            if objexact != NULL:
-                SCIPrationalFree(&objexact)
-            PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
+        rc = SCIPaddVarExactData(self._scip, scip_var, lbexact, ubexact, objexact)
+        SCIPrationalFree(&lbexact)
+        SCIPrationalFree(&ubexact)
+        SCIPrationalFree(&objexact)
+        PY_SCIP_CALL(rc)
+        PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
 
+        pyVar = self._getOrCreateVar(scip_var)
+        SCIPvarSetData(scip_var, <SCIP_VARDATA*>pyVar)
+        PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
         return pyVar
 
     def chgVarObjExact(self, Variable var, newobj):
@@ -13282,13 +13281,13 @@ cdef class Model:
 
         """
         cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
         self._checkExactMode()
         _checkExactVar(var)
         rational = _createRational(newobj)
-        try:
-            PY_SCIP_CALL(SCIPchgVarObjExact(self._scip, var.scip_var, rational))
-        finally:
-            SCIPrationalFree(&rational)
+        rc = SCIPchgVarObjExact(self._scip, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
 
     def chgVarLbExact(self, Variable var, lb):
         """
@@ -13303,13 +13302,13 @@ cdef class Model:
 
         """
         cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
         self._checkExactMode()
         _checkExactVar(var)
         rational = _createRational(-float("inf") if lb is None else lb)
-        try:
-            PY_SCIP_CALL(SCIPchgVarLbExact(self._scip, var.scip_var, rational))
-        finally:
-            SCIPrationalFree(&rational)
+        rc = SCIPchgVarLbExact(self._scip, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
 
     def chgVarUbExact(self, Variable var, ub):
         """
@@ -13324,13 +13323,13 @@ cdef class Model:
 
         """
         cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
         self._checkExactMode()
         _checkExactVar(var)
         rational = _createRational(float("inf") if ub is None else ub)
-        try:
-            PY_SCIP_CALL(SCIPchgVarUbExact(self._scip, var.scip_var, rational))
-        finally:
-            SCIPrationalFree(&rational)
+        rc = SCIPchgVarUbExact(self._scip, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
 
     def addConsExactLinear(self, vars, vals, lhs, rhs, name="",
                            initial=True, separate=True, enforce=True, check=True,
@@ -13385,6 +13384,7 @@ cdef class Model:
         cdef SCIP_RATIONAL* lhsexact = NULL
         cdef SCIP_RATIONAL* rhsexact = NULL
         cdef SCIP_CONS* scip_cons = NULL
+        cdef SCIP_RETCODE rc
         cdef int i
 
         self._checkExactMode()
@@ -13394,36 +13394,30 @@ cdef class Model:
         if name == '':
             name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
+        vals = [_asRational(val) for val in vals]
+        lhs = _asRational(-float("inf") if lhs is None else lhs)
+        rhs = _asRational(float("inf") if rhs is None else rhs)
+
         valsexact = <SCIP_RATIONAL**> malloc(max(nvars, 1) * sizeof(SCIP_RATIONAL*))
         for i in range(nvars):
-            valsexact[i] = NULL
+            valsexact[i] = _createRational(vals[i])
+        lhsexact = _createRational(lhs)
+        rhsexact = _createRational(rhs)
 
-        try:
-            for i in range(nvars):
-                valsexact[i] = _createRational(vals[i])
-            lhsexact = _createRational(-float("inf") if lhs is None else lhs)
-            rhsexact = _createRational(float("inf") if rhs is None else rhs)
+        rc = SCIPcreateConsExactLinear(
+            self._scip, &scip_cons, str_conversion(name), nvars, wrapper.ptr, valsexact,
+            lhsexact, rhsexact, initial, separate, enforce, check, propagate, local, modifiable,
+            dynamic, removable, stickingatnode)
+        for i in range(nvars):
+            SCIPrationalFree(&valsexact[i])
+        free(valsexact)
+        SCIPrationalFree(&lhsexact)
+        SCIPrationalFree(&rhsexact)
+        PY_SCIP_CALL(rc)
 
-            PY_SCIP_CALL(SCIPcreateConsExactLinear(
-                self._scip, &scip_cons, str_conversion(name), nvars, wrapper.ptr, valsexact,
-                lhsexact, rhsexact, initial, separate, enforce, check, propagate, local, modifiable,
-                dynamic, removable, stickingatnode))
-        finally:
-            for i in range(nvars):
-                if valsexact[i] != NULL:
-                    SCIPrationalFree(&valsexact[i])
-            free(valsexact)
-            if lhsexact != NULL:
-                SCIPrationalFree(&lhsexact)
-            if rhsexact != NULL:
-                SCIPrationalFree(&rhsexact)
-
-        try:
-            PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
-            pyCons = self._getOrCreateCons(scip_cons)
-        finally:
-            PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
-
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pyCons = self._getOrCreateCons(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
         return pyCons
 
     def _checkExactLinear(self, Constraint cons):
@@ -13446,12 +13440,12 @@ cdef class Model:
 
         """
         cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
         self._checkExactLinear(cons)
         rational = _createRational(val)
-        try:
-            PY_SCIP_CALL(SCIPaddCoefExactLinear(self._scip, cons.scip_cons, var.scip_var, rational))
-        finally:
-            SCIPrationalFree(&rational)
+        rc = SCIPaddCoefExactLinear(self._scip, cons.scip_cons, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
 
     def chgCoefExactLinear(self, Constraint cons, Variable var, val):
         """
@@ -13468,12 +13462,12 @@ cdef class Model:
 
         """
         cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
         self._checkExactLinear(cons)
         rational = _createRational(val)
-        try:
-            PY_SCIP_CALL(SCIPchgCoefExactLinear(self._scip, cons.scip_cons, var.scip_var, rational))
-        finally:
-            SCIPrationalFree(&rational)
+        rc = SCIPchgCoefExactLinear(self._scip, cons.scip_cons, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
 
     def chgLhsExactLinear(self, Constraint cons, lhs):
         """
@@ -13488,12 +13482,12 @@ cdef class Model:
 
         """
         cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
         self._checkExactLinear(cons)
         rational = _createRational(-float("inf") if lhs is None else lhs)
-        try:
-            PY_SCIP_CALL(SCIPchgLhsExactLinear(self._scip, cons.scip_cons, rational))
-        finally:
-            SCIPrationalFree(&rational)
+        rc = SCIPchgLhsExactLinear(self._scip, cons.scip_cons, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
 
     def chgRhsExactLinear(self, Constraint cons, rhs):
         """
@@ -13508,12 +13502,12 @@ cdef class Model:
 
         """
         cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
         self._checkExactLinear(cons)
         rational = _createRational(float("inf") if rhs is None else rhs)
-        try:
-            PY_SCIP_CALL(SCIPchgRhsExactLinear(self._scip, cons.scip_cons, rational))
-        finally:
-            SCIPrationalFree(&rational)
+        rc = SCIPchgRhsExactLinear(self._scip, cons.scip_cons, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
 
     def getLhsExactLinear(self, Constraint cons):
         """
@@ -13597,6 +13591,7 @@ cdef class Model:
 
         """
         cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
         cdef SCIP_SOL* scip_sol = NULL
 
         self._checkExactLinear(cons)
@@ -13605,11 +13600,11 @@ cdef class Model:
             scip_sol = sol.sol
 
         rational = _createRational(0)
-        try:
-            PY_SCIP_CALL(SCIPgetActivityExactLinear(self._scip, cons.scip_cons, scip_sol, rational))
-            return _fromRational(rational)
-        finally:
-            SCIPrationalFree(&rational)
+        rc = SCIPgetActivityExactLinear(self._scip, cons.scip_cons, scip_sol, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+        return result
 
     def getSolValExact(self, Solution sol, Variable var):
         """
@@ -13637,11 +13632,10 @@ cdef class Model:
         _checkExactVar(var)
 
         rational = _createRational(0)
-        try:
-            SCIPgetSolValExact(self._scip, sol.sol, var.scip_var, rational)
-            return _fromRational(rational)
-        finally:
-            SCIPrationalFree(&rational)
+        SCIPgetSolValExact(self._scip, sol.sol, var.scip_var, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
 
     def getSolOrigObjExact(self, Solution sol):
         """
@@ -13666,11 +13660,10 @@ cdef class Model:
         _checkExactSol(sol)
 
         rational = _createRational(0)
-        try:
-            SCIPgetSolOrigObjExact(self._scip, sol.sol, rational)
-            return _fromRational(rational)
-        finally:
-            SCIPrationalFree(&rational)
+        SCIPgetSolOrigObjExact(self._scip, sol.sol, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
 
     def getPrimalboundExact(self):
         """
@@ -13686,11 +13679,10 @@ cdef class Model:
 
         self._checkStageExactBound("getPrimalboundExact")
         rational = _createRational(0)
-        try:
-            SCIPgetPrimalboundExact(self._scip, rational)
-            return _fromRational(rational)
-        finally:
-            SCIPrationalFree(&rational)
+        SCIPgetPrimalboundExact(self._scip, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
 
     def getDualboundExact(self):
         """
@@ -13706,11 +13698,10 @@ cdef class Model:
 
         self._checkStageExactBound("getDualboundExact")
         rational = _createRational(0)
-        try:
-            SCIPgetDualboundExact(self._scip, rational)
-            return _fromRational(rational)
-        finally:
-            SCIPrationalFree(&rational)
+        SCIPgetDualboundExact(self._scip, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
 
     def addOrigObjoffsetExact(self, offset):
         """
@@ -13723,15 +13714,15 @@ cdef class Model:
 
         """
         cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
 
         self._checkExactMode()
         if SCIPgetStage(self._scip) != SCIP_STAGE_PROBLEM:
             raise Warning("addOrigObjoffsetExact can only be called in stage PROBLEM.")
         rational = _createRational(offset)
-        try:
-            PY_SCIP_CALL(SCIPaddOrigObjoffsetExact(self._scip, rational))
-        finally:
-            SCIPrationalFree(&rational)
+        rc = SCIPaddOrigObjoffsetExact(self._scip, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
 
     def getOrigObjoffsetExact(self):
         """
