@@ -17,6 +17,7 @@ from posix.stdio cimport fileno
 from collections.abc import Iterable
 from itertools import repeat
 from dataclasses import dataclass
+from fractions import Fraction
 from typing import Union
 
 import numpy as np
@@ -64,8 +65,14 @@ cdef extern from "scip/config.h":
     #else
     #define PYSCIPOPT_WITH_DEBUG_SOLUTION 0
     #endif
+    #ifdef SCIP_WITH_EXACTSOLVE
+    #define PYSCIPOPT_WITH_EXACTSOLVE 1
+    #else
+    #define PYSCIPOPT_WITH_EXACTSOLVE 0
+    #endif
     """
     bint PYSCIPOPT_WITH_DEBUG_SOLUTION
+    bint PYSCIPOPT_WITH_EXACTSOLVE
 
 # Mapping the SCIP_RESULT enum to a python class
 # This is required to return SCIP_RESULT in the python code
@@ -358,6 +365,54 @@ def PY_SCIP_CALL(SCIP_RETCODE rc):
         raise Exception('SCIP: maximal branching depth level exceeded!')
     else:
         raise Exception('SCIP: unknown return code!')
+
+def _asRational(value):
+    """Convert value to a Fraction, keeping +/- infinity as a float."""
+    try:
+        return Fraction(value)
+    except OverflowError:
+        return float(value)
+
+cdef SCIP_RATIONAL* _createRational(value) except NULL:
+    """Create a SCIP_RATIONAL holding value; the caller must free it with SCIPrationalFree."""
+    cdef SCIP_RATIONAL* rational = NULL
+
+    value = _asRational(value)
+    if isinstance(value, float):
+        desc = b"inf" if value > 0 else b"-inf"
+    else:
+        desc = str(value).encode()
+
+    PY_SCIP_CALL(SCIPrationalCreate(&rational))
+    SCIPrationalSetString(rational, desc)
+    return rational
+
+cdef object _fromRational(SCIP_RATIONAL* rational):
+    """Convert a SCIP_RATIONAL to a Fraction, or to a float for +/- infinity."""
+    cdef int length = SCIPrationalStrLen(rational)
+    cdef char* buf = <char*> malloc(length + 1)
+
+    try:
+        SCIPrationalToString(rational, buf, length + 1)
+        desc = buf[:length].decode("ascii")
+    finally:
+        free(buf)
+
+    if desc == "+infinity":
+        return float("inf")
+    if desc == "-infinity":
+        return -float("inf")
+    return Fraction(desc)
+
+cdef _checkExactVar(Variable var, original=False):
+    if not SCIPvarIsExact(var.scip_var):
+        raise ValueError("variable <%s> has no exact data" % var.name)
+    if original and not SCIPvarIsOriginal(var.scip_var):
+        raise ValueError("variable <%s> is not an original variable" % var.name)
+
+cdef _checkExactSol(Solution sol):
+    if sol.sol != NULL and not SCIPsolIsExact(sol.sol):
+        raise ValueError("solution has no exact values")
 
 cdef class Event:
     """Base class holding a pointer to corresponding SCIP_EVENT."""
@@ -1149,6 +1204,16 @@ cdef class Solution:
         """
         return SCIPsolGetOrigin(self.sol)
 
+    def isExact(self):
+        """
+        Returns whether the solution has exact (rational) values.
+
+        Returns
+        -------
+        bool
+        """
+        return self.sol != NULL and SCIPsolIsExact(self.sol)
+
     def retransform(self):
         """ retransforms solution to original problem space """
         PY_SCIP_CALL(SCIPretransformSol(self.scip, self.sol))
@@ -1802,6 +1867,107 @@ cdef class Variable(Expr):
 
         """
         return SCIPvarGetObj(self.scip_var)
+
+    def isExact(self):
+        """
+        Returns whether the variable has exact (rational) data.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPvarIsExact(self.scip_var)
+
+    def getObjExact(self):
+        """
+        Retrieve the exact objective coefficient of the variable.
+
+        Returns
+        -------
+        Fraction
+
+        """
+        _checkExactVar(self)
+        return _fromRational(SCIPvarGetObjExact(self.scip_var))
+
+    def getLbOriginalExact(self):
+        """
+        Retrieve the exact original lower bound of the variable.
+
+        Returns
+        -------
+        Fraction or float
+            a Fraction, or -inf if the variable is unbounded
+
+        """
+        _checkExactVar(self, original=True)
+        return _fromRational(SCIPvarGetLbOriginalExact(self.scip_var))
+
+    def getUbOriginalExact(self):
+        """
+        Retrieve the exact original upper bound of the variable.
+
+        Returns
+        -------
+        Fraction or float
+            a Fraction, or inf if the variable is unbounded
+
+        """
+        _checkExactVar(self, original=True)
+        return _fromRational(SCIPvarGetUbOriginalExact(self.scip_var))
+
+    def getLbGlobalExact(self):
+        """
+        Retrieve the exact global lower bound of the variable.
+
+        Returns
+        -------
+        Fraction or float
+            a Fraction, or -inf if the variable is unbounded
+
+        """
+        _checkExactVar(self)
+        return _fromRational(SCIPvarGetLbGlobalExact(self.scip_var))
+
+    def getUbGlobalExact(self):
+        """
+        Retrieve the exact global upper bound of the variable.
+
+        Returns
+        -------
+        Fraction or float
+            a Fraction, or inf if the variable is unbounded
+
+        """
+        _checkExactVar(self)
+        return _fromRational(SCIPvarGetUbGlobalExact(self.scip_var))
+
+    def getLbLocalExact(self):
+        """
+        Retrieve the exact local lower bound of the variable.
+
+        Returns
+        -------
+        Fraction or float
+            a Fraction, or -inf if the variable is unbounded
+
+        """
+        _checkExactVar(self)
+        return _fromRational(SCIPvarGetLbLocalExact(self.scip_var))
+
+    def getUbLocalExact(self):
+        """
+        Retrieve the exact local upper bound of the variable.
+
+        Returns
+        -------
+        Fraction or float
+            a Fraction, or inf if the variable is unbounded
+
+        """
+        _checkExactVar(self)
+        return _fromRational(SCIPvarGetUbLocalExact(self.scip_var))
 
     def getLPSol(self):
         """
@@ -2806,7 +2972,7 @@ cdef class IIS:
 ##
 cdef class Model:
 
-    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=True, createscip=True, threadsafe=False):
+    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=True, createscip=True, threadsafe=False, exact=False):
         """
         Main class holding a pointer to SCIP for managing most interactions
 
@@ -2828,6 +2994,9 @@ cdef class Model:
             initialize the Model object and creates a SCIP instance (default True)
         threadsafe : bool, optional
             False if data can be safely shared between the source and target problem (default False)
+        exact : bool, optional
+            enable exact solving mode, which needs SCIP built with exact support;
+            only available when creating a new problem (default False)
 
         """
         if self.getMajorVersion() < MAJOR:
@@ -2845,6 +3014,11 @@ cdef class Model:
         self._plugins = []  # Keep references to plugins to break cycles in __dealloc__
         self._iis = NULL
 
+        if exact and not PYSCIPOPT_WITH_EXACTSOLVE:
+            raise ValueError("SCIP was built without exact solving support, exact=True needs a SCIP build with exact solving enabled")
+        if exact and (not createscip or sourceModel is not None):
+            raise ValueError("exact=True is only supported when creating a new problem")
+
         if not createscip:
             # if no SCIP instance should be created, then an empty Model object is created.
             self._scip = NULL
@@ -2855,6 +3029,8 @@ cdef class Model:
             self._bestSol = None
             if defaultPlugins:
                 self.includeDefaultPlugins()
+            if exact:
+                PY_SCIP_CALL(SCIPenableExactSolving(self._scip, True))
             self.createProbBasic(problemName)
         else:
             PY_SCIP_CALL(SCIPcreate(&self._scip))
@@ -12944,6 +13120,7 @@ cdef class Model:
     def enableExactSolving(self, SCIP_Bool enable):
         """
         Enables or disables exact solving mode in SCIP.
+        Can only be called before a problem is created, so use Model(exact=True) instead.
 
         Parameters
         ----------
@@ -12997,6 +13174,569 @@ cdef class Model:
             The exact row to add.
         """
         PY_SCIP_CALL(SCIPaddRowExact(self._scip, rowexact.scip_row_exact))
+
+    def _checkExactMode(self):
+        if not PYSCIPOPT_WITH_EXACTSOLVE:
+            raise ValueError("SCIP was built without exact solving support, exact methods need a SCIP build with exact solving enabled")
+        if not SCIPisExact(self._scip):
+            raise ValueError("exact solving mode is not enabled, create the model with Model(exact=True)")
+
+    def _checkStageExactBound(self, method):
+        self._checkExactMode()
+        if not SCIP_STAGE_TRANSFORMED <= SCIPgetStage(self._scip) <= SCIP_STAGE_EXITSOLVE:
+            raise Warning("%s cannot be called in stage %i." % (method, SCIPgetStage(self._scip)))
+
+    def addVarExact(self, name='', vtype='C', lb=0, ub=None, obj=0):
+        """
+        Create a new variable with exact (rational) bounds and objective coefficient.
+        Requires exact solving mode, see Model(exact=True).
+
+        Parameters
+        ----------
+        name : str, optional
+            name of the variable, generic if empty (Default value = '')
+        vtype : str, optional
+            type of the variable: 'C' continuous, 'I' integer, 'B' binary, and 'M' implicit integer
+            (Default value = 'C')
+        lb : Fraction, int, str or None, optional
+            lower bound of the variable, use None for -infinity (Default value = 0)
+        ub : Fraction, int, str or None, optional
+            upper bound of the variable, use None for +infinity, or 1 for binary variables
+            (Default value = None)
+        obj : Fraction, int or str, optional
+            objective coefficient of the variable (Default value = 0)
+
+        Returns
+        -------
+        Variable
+
+        Notes
+        -----
+        Values are converted with fractions.Fraction, so "1/3" and Fraction(1, 3) are exact.
+        Floats are taken at their exact binary value, e.g. 0.1 is not 1/10.
+
+        """
+        cdef SCIP_VAR* scip_var = NULL
+        cdef SCIP_RATIONAL* lbexact = NULL
+        cdef SCIP_RATIONAL* ubexact = NULL
+        cdef SCIP_RATIONAL* objexact = NULL
+        cdef SCIP_VARTYPE vartype
+        cdef SCIP_RETCODE rc
+
+        self._checkExactMode()
+        if name == '':
+            name = 'x'+str(SCIPgetNVars(self._scip)+1)
+        cname = str_conversion(name)
+
+        vtype = vtype.upper()
+        if vtype in ['C', 'CONTINUOUS']:
+            vartype = SCIP_VARTYPE_CONTINUOUS
+        elif vtype in ['B', 'BINARY']:
+            vartype = SCIP_VARTYPE_BINARY
+            if ub is None:
+                ub = 1
+        elif vtype in ['I', 'INTEGER']:
+            vartype = SCIP_VARTYPE_INTEGER
+        elif vtype in ['M', 'IMPLINT']:
+            vartype = SCIP_DEPRECATED_VARTYPE_IMPLINT
+        else:
+            raise Warning("unrecognized variable type")
+
+        lb = _asRational(-float("inf") if lb is None else lb)
+        ub = _asRational(float("inf") if ub is None else ub)
+        obj = _asRational(obj)
+        if lb > ub:
+            raise ValueError("lower bound %s exceeds upper bound %s" % (lb, ub))
+
+        lbexact = _createRational(lb)
+        ubexact = _createRational(ub)
+        objexact = _createRational(obj)
+
+        PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname,
+                                        max(float(lb), -SCIPinfinity(self._scip)),
+                                        min(float(ub), SCIPinfinity(self._scip)),
+                                        float(obj), vartype))
+        rc = SCIPaddVarExactData(self._scip, scip_var, lbexact, ubexact, objexact)
+        SCIPrationalFree(&lbexact)
+        SCIPrationalFree(&ubexact)
+        SCIPrationalFree(&objexact)
+        PY_SCIP_CALL(rc)
+        PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
+
+        pyVar = self._getOrCreateVar(scip_var)
+        SCIPvarSetData(scip_var, <SCIP_VARDATA*>pyVar)
+        PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
+        return pyVar
+
+    def chgVarObjExact(self, Variable var, newobj):
+        """
+        Change the exact objective coefficient of a variable.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to change the objective coefficient of
+        newobj : Fraction, int or str
+            new objective coefficient
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+        self._checkExactMode()
+        _checkExactVar(var)
+        rational = _createRational(newobj)
+        rc = SCIPchgVarObjExact(self._scip, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+    def chgVarLbExact(self, Variable var, lb):
+        """
+        Change the exact lower bound of a variable.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to change the bound of
+        lb : Fraction, int, str or None
+            new lower bound, use None for -infinity
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+        self._checkExactMode()
+        _checkExactVar(var)
+        rational = _createRational(-float("inf") if lb is None else lb)
+        rc = SCIPchgVarLbExact(self._scip, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+    def chgVarUbExact(self, Variable var, ub):
+        """
+        Change the exact upper bound of a variable.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to change the bound of
+        ub : Fraction, int, str or None
+            new upper bound, use None for +infinity
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+        self._checkExactMode()
+        _checkExactVar(var)
+        rational = _createRational(float("inf") if ub is None else ub)
+        rc = SCIPchgVarUbExact(self._scip, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+    def addConsExactLinear(self, vars, vals, lhs, rhs, name="",
+                           initial=True, separate=True, enforce=True, check=True,
+                           propagate=True, local=False, modifiable=False, dynamic=False,
+                           removable=False, stickingatnode=False):
+        """
+        Add an exact linear constraint lhs <= sum(vals[i] * vars[i]) <= rhs.
+        Requires exact solving mode, see Model(exact=True).
+
+        Parameters
+        ----------
+        vars : list of Variable
+            variables of the constraint
+        vals : list of Fraction, int or str
+            coefficients of the variables
+        lhs : Fraction, int, str or None
+            left-hand side, use None for -infinity
+        rhs : Fraction, int, str or None
+            right-hand side, use None for +infinity
+        name : str, optional
+            name of the constraint, generic if empty (Default value = "")
+        initial : bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool, optional
+            is the constraint only valid locally? (Default value = False)
+        modifiable : bool, optional
+            is the constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool, optional
+            should the constraint always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        Constraint
+
+        """
+        cdef _VarArray wrapper = _VarArray(vars)
+        cdef int nvars = wrapper.size
+        cdef SCIP_RATIONAL** valsexact = NULL
+        cdef SCIP_RATIONAL* lhsexact = NULL
+        cdef SCIP_RATIONAL* rhsexact = NULL
+        cdef SCIP_CONS* scip_cons = NULL
+        cdef SCIP_RETCODE rc
+        cdef int i
+
+        self._checkExactMode()
+        if len(vals) != nvars:
+            raise ValueError("number of variables (%i) and coefficients (%i) must be the same" % (nvars, len(vals)))
+
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+
+        vals = [_asRational(val) for val in vals]
+        lhs = _asRational(-float("inf") if lhs is None else lhs)
+        rhs = _asRational(float("inf") if rhs is None else rhs)
+
+        valsexact = <SCIP_RATIONAL**> malloc(max(nvars, 1) * sizeof(SCIP_RATIONAL*))
+        for i in range(nvars):
+            valsexact[i] = _createRational(vals[i])
+        lhsexact = _createRational(lhs)
+        rhsexact = _createRational(rhs)
+
+        rc = SCIPcreateConsExactLinear(
+            self._scip, &scip_cons, str_conversion(name), nvars, wrapper.ptr, valsexact,
+            lhsexact, rhsexact, initial, separate, enforce, check, propagate, local, modifiable,
+            dynamic, removable, stickingatnode)
+        for i in range(nvars):
+            SCIPrationalFree(&valsexact[i])
+        free(valsexact)
+        SCIPrationalFree(&lhsexact)
+        SCIPrationalFree(&rhsexact)
+        PY_SCIP_CALL(rc)
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pyCons = self._getOrCreateCons(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+        return pyCons
+
+    def _checkExactLinear(self, Constraint cons):
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        if constype != 'exactlinear':
+            raise ValueError("expected a constraint of type exactlinear, got %s" % constype)
+
+    def addCoefExactLinear(self, Constraint cons, Variable var, val):
+        """
+        Add a variable with an exact coefficient to an exact linear constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            exact linear constraint
+        var : Variable
+            variable to add
+        val : Fraction, int or str
+            coefficient of the variable
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+        self._checkExactLinear(cons)
+        rational = _createRational(val)
+        rc = SCIPaddCoefExactLinear(self._scip, cons.scip_cons, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+    def chgCoefExactLinear(self, Constraint cons, Variable var, val):
+        """
+        Change the exact coefficient of a variable in an exact linear constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            exact linear constraint
+        var : Variable
+            variable whose coefficient is changed
+        val : Fraction, int or str
+            new coefficient of the variable
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+        self._checkExactLinear(cons)
+        rational = _createRational(val)
+        rc = SCIPchgCoefExactLinear(self._scip, cons.scip_cons, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+    def chgLhsExactLinear(self, Constraint cons, lhs):
+        """
+        Change the exact left-hand side of an exact linear constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            exact linear constraint
+        lhs : Fraction, int, str or None
+            new left-hand side, use None for -infinity
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+        self._checkExactLinear(cons)
+        rational = _createRational(-float("inf") if lhs is None else lhs)
+        rc = SCIPchgLhsExactLinear(self._scip, cons.scip_cons, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+    def chgRhsExactLinear(self, Constraint cons, rhs):
+        """
+        Change the exact right-hand side of an exact linear constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            exact linear constraint
+        rhs : Fraction, int, str or None
+            new right-hand side, use None for +infinity
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+        self._checkExactLinear(cons)
+        rational = _createRational(float("inf") if rhs is None else rhs)
+        rc = SCIPchgRhsExactLinear(self._scip, cons.scip_cons, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+    def getLhsExactLinear(self, Constraint cons):
+        """
+        Retrieve the exact left-hand side of an exact linear constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            exact linear constraint
+
+        Returns
+        -------
+        Fraction or float
+            a Fraction, or -inf if the constraint has no left-hand side
+
+        """
+        self._checkExactLinear(cons)
+        return _fromRational(SCIPgetLhsExactLinear(self._scip, cons.scip_cons))
+
+    def getRhsExactLinear(self, Constraint cons):
+        """
+        Retrieve the exact right-hand side of an exact linear constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            exact linear constraint
+
+        Returns
+        -------
+        Fraction or float
+            a Fraction, or inf if the constraint has no right-hand side
+
+        """
+        self._checkExactLinear(cons)
+        return _fromRational(SCIPgetRhsExactLinear(self._scip, cons.scip_cons))
+
+    def getValsExactLinear(self, Constraint cons):
+        """
+        Retrieve the exact coefficients of an exact linear constraint.
+
+        Parameters
+        ----------
+        cons : Constraint
+            exact linear constraint
+
+        Returns
+        -------
+        dict of str to Fraction
+
+        """
+        cdef SCIP_VAR** vars
+        cdef SCIP_RATIONAL** vals
+        cdef int i
+
+        self._checkExactLinear(cons)
+        vars = SCIPgetVarsExactLinear(self._scip, cons.scip_cons)
+        vals = SCIPgetValsExactLinear(self._scip, cons.scip_cons)
+
+        valsdict = {}
+        for i in range(SCIPgetNVarsExactLinear(self._scip, cons.scip_cons)):
+            valsdict[bytes(SCIPvarGetName(vars[i])).decode('utf-8')] = _fromRational(vals[i])
+
+        return valsdict
+
+    def getActivityExactLinear(self, Constraint cons, Solution sol = None):
+        """
+        Retrieve the exact activity of an exact linear constraint in a given solution.
+
+        Parameters
+        ----------
+        cons : Constraint
+            exact linear constraint
+        sol : Solution or None, optional
+            solution to compute the activity in, or None for the current LP/pseudo solution
+            (Default value = None)
+
+        Returns
+        -------
+        Fraction
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+        cdef SCIP_SOL* scip_sol = NULL
+
+        self._checkExactLinear(cons)
+        if sol is not None:
+            _checkExactSol(sol)
+            scip_sol = sol.sol
+
+        rational = _createRational(0)
+        rc = SCIPgetActivityExactLinear(self._scip, cons.scip_cons, scip_sol, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+        return result
+
+    def getSolValExact(self, Solution sol, Variable var):
+        """
+        Retrieve the exact value of a variable in a given solution.
+
+        Parameters
+        ----------
+        sol : Solution or None
+            exact solution to query, or None for the current LP/pseudo solution
+        var : Variable
+            variable to query the value of
+
+        Returns
+        -------
+        Fraction
+
+        """
+        cdef SCIP_RATIONAL* rational
+
+        self._checkExactMode()
+        if sol is None:
+            sol = Solution.create(self._scip, NULL)
+        sol._checkStage("SCIPgetSolVal")
+        _checkExactSol(sol)
+        _checkExactVar(var)
+
+        rational = _createRational(0)
+        SCIPgetSolValExact(self._scip, sol.sol, var.scip_var, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
+
+    def getSolOrigObjExact(self, Solution sol):
+        """
+        Retrieve the exact objective value of a solution in the original problem space.
+
+        Parameters
+        ----------
+        sol : Solution or None
+            exact solution to query, or None for the current LP/pseudo solution
+
+        Returns
+        -------
+        Fraction
+
+        """
+        cdef SCIP_RATIONAL* rational
+
+        self._checkExactMode()
+        if sol is None:
+            sol = Solution.create(self._scip, NULL)
+        sol._checkStage("getSolObjVal")
+        _checkExactSol(sol)
+
+        rational = _createRational(0)
+        SCIPgetSolOrigObjExact(self._scip, sol.sol, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
+
+    def getPrimalboundExact(self):
+        """
+        Retrieve the exact primal bound.
+
+        Returns
+        -------
+        Fraction or float
+            a Fraction, or +/- inf if no solution is known
+
+        """
+        cdef SCIP_RATIONAL* rational
+
+        self._checkStageExactBound("getPrimalboundExact")
+        rational = _createRational(0)
+        SCIPgetPrimalboundExact(self._scip, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
+
+    def getDualboundExact(self):
+        """
+        Retrieve the exact dual bound.
+
+        Returns
+        -------
+        Fraction or float
+            a Fraction, or +/- inf if no bound is known
+
+        """
+        cdef SCIP_RATIONAL* rational
+
+        self._checkStageExactBound("getDualboundExact")
+        rational = _createRational(0)
+        SCIPgetDualboundExact(self._scip, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
+
+    def addOrigObjoffsetExact(self, offset):
+        """
+        Add an exact constant to the objective function of the original problem.
+
+        Parameters
+        ----------
+        offset : Fraction, int or str
+            offset to add
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+
+        self._checkExactMode()
+        if SCIPgetStage(self._scip) != SCIP_STAGE_PROBLEM:
+            raise Warning("addOrigObjoffsetExact can only be called in stage PROBLEM.")
+        rational = _createRational(offset)
+        rc = SCIPaddOrigObjoffsetExact(self._scip, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+    def getOrigObjoffsetExact(self):
+        """
+        Retrieve the exact objective offset of the original problem.
+
+        Returns
+        -------
+        Fraction
+
+        """
+        self._checkExactMode()
+        if not SCIP_STAGE_PROBLEM <= SCIPgetStage(self._scip) <= SCIP_STAGE_SOLVED:
+            raise Warning("getOrigObjoffsetExact cannot be called in stage %i." % SCIPgetStage(self._scip))
+        return _fromRational(SCIPgetOrigObjoffsetExact(self._scip))
 
     def getBipartiteGraphRepresentation(self, prev_col_features=None, prev_edge_features=None, prev_row_features=None,
                                         static_only=False, suppress_warnings=False):
