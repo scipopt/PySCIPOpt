@@ -1,18 +1,20 @@
 name: Integration test
 
 env:
-  version: 10.0.0
+  version: 10.0.2
 
 on:
-  push:
+  pull_request:
     branches:
       - 'master'
+  merge_group:
   workflow_dispatch:
 
 
 jobs:
 
   Integration-test:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: true
@@ -43,6 +45,7 @@ jobs:
         run: pytest -nauto
 
   Windows-test:
+    if: github.event_name != 'pull_request'
     env:
       SCIPOPTDIR: C:\scipoptdir
     runs-on: windows-latest
@@ -85,6 +88,7 @@ jobs:
         run: pytest -nauto
 
   MacOS-test:
+    if: github.event_name != 'pull_request'
     runs-on: macos-latest
     strategy:
       matrix:
@@ -127,6 +131,18 @@ jobs:
 #          export SCIPOPTDIR=${{ github.workspace }}/scipoptsuite/
 #          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${{ github.workspace }}/scipoptsuite/lib
 #          pytest
+
+  integration-gate:
+    if: always()
+    needs: [Integration-test, Windows-test, MacOS-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check integration test results
+        run: |
+          echo "Results: ${{ join(needs.*.result, ', ') }}"
+          if ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}; then
+            exit 1
+          fi
 
   ### if you need valgrind on mac, you can install it via
   # brew tap LouisBrunner/valgrind

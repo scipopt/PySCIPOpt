@@ -13,12 +13,14 @@
 - Fixed `getDualsolKnapsack()` and `getDualfarkasKnapsack()` returning 0 for original constraints, and the handler check in `getVarsAnd()` that could never fail
 - Fixed Cython 3.3 compatibility (#1248)
 - Made `test_markDoNotAggrVar_and_getStatus` robust to SCIP presolve changes by discovering the aggregated/multi-aggregated variables instead of hardcoding them
+- Ensure probing has ended when freeing scip instance in benders
 ### Changed
 - Move magic methods (`__radd__`, `__sub__`, `__rsub__`, `__rmul__`, `__richcmp__`, `__neg__`, and `__rtruediv__`) to `ExprLike` base class (#1204)
 - Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API (#1205)
 - Replace Python math with C-level math functions and refactor unary expressions (#1224)
 - Speed up `ProdExpr.__neg__` and `Constant.__neg__` via C-level API (#1250)
 - Extended `structured_optimization_trace` recipe to support context-managed JSONL tracing with final `run_end` records, alongside the existing attach-style in-memory tracing.
+- Integration tests now run in the merge queue before merging instead of after pushing to `master` (#1249)
 ### Removed
 - `SumExpr`.coefs has been removed; its values were always 1.0 (#1258)
 
