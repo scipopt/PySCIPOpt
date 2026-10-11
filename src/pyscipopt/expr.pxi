@@ -726,7 +726,7 @@ cdef class GenExpr(ExprLike):
     def getOp(self):
         """returns operator of GenExpr
 
-        .. deprecated:: 6.2.2
+        .. deprecated:: 6.3.0
             This method is deprecated and will be removed in a future version, use
             `type(expr)` instead.
         """
