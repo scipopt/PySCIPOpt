@@ -22,6 +22,8 @@
 - Integration tests now run in the merge queue before merging instead of after pushing to `master` (#1249)
 ### Removed
 - `SumExpr`.coefs has been removed; its values were always 1.0 (#1258)
+- Deprecated `getOp` method in `GenExpr` (#1259)
+- Deprecated inner enumerate class `Operator` (#1259)
 
 ## 6.2.1 - 2026.05.16
 ### Fixed
