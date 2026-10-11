@@ -549,7 +549,7 @@ def quickprod(termlist):
 class Op:
     """Deprecated internal operator enum; will be removed in the next release.
 
-    Use `type(expr)` to dispatch on the expression type instead of this enum.
+    Use type(expr) to check the expression type instead of this enum.
     """
     const = 'const'
     varidx = 'var'
