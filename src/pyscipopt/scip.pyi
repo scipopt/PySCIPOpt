@@ -20,15 +20,12 @@ _core_dot: Incomplete
 _core_dot_2d: Incomplete
 _core_sum: Incomplete
 buildGenExprObj: Incomplete
-expr_to_array: Incomplete
-expr_to_nodes: Incomplete
 is_memory_freed: Incomplete
 print_memory_in_use: Incomplete
 quickprod: Incomplete
 quicksum: Incomplete
 readStatistics: Incomplete
 str_conversion: Incomplete
-value_to_array: Incomplete
 
 @overload
 def exp(x: float | Expr | GenExpr) -> ExpExpr: ...
