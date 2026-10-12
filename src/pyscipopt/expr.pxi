@@ -764,14 +764,6 @@ cdef class SumExpr(GenExpr):
     def __repr__(self) -> str:
         return f"sum({self.constant},{','.join(map(str, self.children))})"
 
-    cpdef double _evaluate(self, Solution sol) except *:
-        cdef double res = self.constant
-        cdef int i = 0, n = len(self.children)
-        cdef list children = self.children
-        for i in range(n):
-            res += (<GenExpr>children[i])._evaluate(sol)
-        return res
-
     cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
         cdef Py_ssize_t i, n_created = 0
         cdef int n = len(self.children) + (1 if self.constant != 0 else 0)
@@ -801,6 +793,14 @@ cdef class SumExpr(GenExpr):
             free(children_expr)
         return expr
 
+    cpdef double _evaluate(self, Solution sol) except *:
+        cdef double res = self.constant
+        cdef int i = 0, n = len(self.children)
+        cdef list children = self.children
+        for i in range(n):
+            res += (<GenExpr>children[i])._evaluate(sol)
+        return res
+
     cdef SumExpr copy(self, bint copy=True):
         cdef SumExpr res = SumExpr.__new__(SumExpr)
         res._op = self._op
@@ -827,16 +827,6 @@ cdef class ProdExpr(GenExpr):
     def __repr__(self) -> str:
         return f"prod({self.constant},{','.join(map(str, self.children))})"
 
-    cpdef double _evaluate(self, Solution sol) except *:
-        cdef double res = self.constant
-        cdef list children = self.children
-        cdef int i = 0, n = len(children)
-        for i in range(n):
-            res *= (<GenExpr>children[i])._evaluate(sol)
-            if res == 0:  # early stop
-                return 0.0
-        return res
-
     cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
         cdef Py_ssize_t i, n_created = 0
         cdef int n = len(self.children) + (1 if self.constant != 1 else 0)
@@ -861,6 +851,16 @@ cdef class ProdExpr(GenExpr):
                 i += 1
             free(children_expr)
         return expr
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        cdef double res = self.constant
+        cdef list children = self.children
+        cdef int i = 0, n = len(children)
+        for i in range(n):
+            res *= (<GenExpr>children[i])._evaluate(sol)
+            if res == 0:  # early stop
+                return 0.0
+        return res
 
     cdef ProdExpr copy(self, bint copy=True):
         cdef ProdExpr res = ProdExpr.__new__(ProdExpr)
@@ -905,9 +905,6 @@ cdef class PowExpr(GenExpr):
     def __repr__(self) -> str:
         return f"**({self.children[0]},{self.expo})"
 
-    cpdef double _evaluate(self, Solution sol) except *:
-        return (<GenExpr>self.children[0])._evaluate(sol) ** self.expo
-
     cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR* child = (<GenExpr>self.children[0]).to_scip_expr(scip)
@@ -916,6 +913,9 @@ cdef class PowExpr(GenExpr):
         finally:
             PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
         return expr
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        return (<GenExpr>self.children[0])._evaluate(sol) ** self.expo
 
     cdef PowExpr copy(self, bint copy=True):
         cdef PowExpr res = PowExpr.__new__(PowExpr)
@@ -1069,13 +1069,13 @@ cdef class Constant(GenExpr):
     def __repr__(self) -> str:
         return str(self.number)
 
-    cpdef double _evaluate(self, Solution sol) except *:
-        return self.number
-
     cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
         cdef SCIP_EXPR* expr
         PY_SCIP_CALL(SCIPcreateExprValue(scip, &expr, <SCIP_Real>self.number, NULL, NULL))
         return expr
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        return self.number
 
     cdef Constant copy(self, bint copy=True):
         # The copy parameter doesn't work; this is for compatibility.
