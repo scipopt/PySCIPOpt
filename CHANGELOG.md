@@ -4,6 +4,7 @@
 ### Added
 ### Fixed
 ### Changed
+- Refactor general expression conversion into per-class `to_scip_expr` recursion
 ### Removed
 
 ## 6.3.0 - 2026.10.11
