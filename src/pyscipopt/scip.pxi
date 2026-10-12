@@ -6211,19 +6211,19 @@ cdef class Model:
         Constraint
 
         """
-        cdef SCIP_EXPR* scipexpr
+        cdef SCIP_EXPR* scip_expr
         cdef SCIP_CONS* scip_cons
         cdef GenExpr expr = cons.expr
 
         # recursively create the SCIP expression tree from python's expression tree
-        scipexpr = expr.to_scip_expr(self._scip)
+        scip_expr = expr.to_scip_expr(self._scip)
 
         # create nonlinear constraint for the expression root
-        PY_SCIP_CALL( SCIPcreateConsNonlinear(
+        PY_SCIP_CALL(SCIPcreateConsNonlinear(
             self._scip,
             &scip_cons,
             str_conversion(kwargs['name']),
-            scipexpr,
+            scip_expr,
             kwargs['lhs'],
             kwargs['rhs'],
             kwargs['initial'],
@@ -6234,10 +6234,10 @@ cdef class Model:
             kwargs['local'],
             kwargs['modifiable'],
             kwargs['dynamic'],
-            kwargs['removable']) )
+            kwargs['removable']))
         PyCons = Constraint.create(scip_cons)
 
-        PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &scipexpr) )
+        PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &scip_expr))
 
         return PyCons
 
