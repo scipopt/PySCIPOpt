@@ -2,6 +2,12 @@
 
 ## Unreleased
 ### Added
+### Fixed
+### Changed
+### Removed
+
+## 6.3.0 - 2026.10.11
+### Added
 - Added the following methods with tests: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()`, `getDeterministicTime()`, `getAvgDualbound()`, `getMaxTotalDepth()`, `getNBacktracks()`,\
 `getFocusNode()`, `getAvgLowerbound()`, `getFirstPrimalBound()`, `getLowerboundRoot()`, `getUpperbound()`, `getNObjlimLeaves()`
 - Added `addConsCumulative()` for SCIP cumulative constraints (#1222)
