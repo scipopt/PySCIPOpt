@@ -773,7 +773,7 @@ cdef class SumExpr(GenExpr):
         return res
 
     cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
-        cdef Py_ssize_t i, created = 0
+        cdef Py_ssize_t i, n_created = 0
         cdef int n = len(self.children) + (1 if self.constant != 0 else 0)
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR** children_expr = <SCIP_EXPR**> malloc(n * sizeof(SCIP_EXPR*))
@@ -783,17 +783,17 @@ cdef class SumExpr(GenExpr):
             for i in range(len(self.children)):
                 children_expr[i] = (<GenExpr>self.children[i]).to_scip_expr(scip)
                 coefs[i] = 1
-                created = i + 1
+                n_created = i + 1
 
             if self.constant != 0:
                 PY_SCIP_CALL(SCIPcreateExprValue(scip, &children_expr[i], <SCIP_Real>self.constant, NULL, NULL))
                 coefs[i] = 1
-                created = i + 1
+                n_created = i + 1
 
             PY_SCIP_CALL(SCIPcreateExprSum(scip, &expr, n, children_expr, coefs, 0, NULL, NULL))
         finally:
             i = 0
-            while i < created:
+            while i < n_created:
                 PY_SCIP_CALL(SCIPreleaseExpr(scip, &children_expr[i]))
                 i += 1
             free(coefs)
@@ -837,7 +837,7 @@ cdef class ProdExpr(GenExpr):
         return res
 
     cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
-        cdef Py_ssize_t i, created = 0
+        cdef Py_ssize_t i, n_created = 0
         cdef int n = len(self.children) + (1 if self.constant != 1 else 0)
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR** children_expr = <SCIP_EXPR**> malloc(n * sizeof(SCIP_EXPR*))
@@ -845,16 +845,16 @@ cdef class ProdExpr(GenExpr):
         try:
             for i in range(len(self.children)):
                 children_expr[i] = (<GenExpr>self.children[i]).to_scip_expr(scip)
-                created = i + 1
+                n_created = i + 1
 
             if self.constant != 1:
                 PY_SCIP_CALL(SCIPcreateExprValue(scip, &children_expr[i], <SCIP_Real>self.constant, NULL, NULL))
-                created = i + 1
+                n_created = i + 1
 
             PY_SCIP_CALL(SCIPcreateExprProduct(scip, &expr, n, children_expr, 1, NULL, NULL))
         finally:
             i = 0
-            while i < created:
+            while i < n_created:
                 PY_SCIP_CALL(SCIPreleaseExpr(scip, &children_expr[i]))
                 i += 1
             free(children_expr)

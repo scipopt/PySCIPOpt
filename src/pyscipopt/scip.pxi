@@ -6223,19 +6223,19 @@ cdef class Model:
             PY_SCIP_CALL(SCIPcreateConsNonlinear(
                 self._scip,
                 &scip_cons,
-                str_conversion(kwargs['name']),
+                str_conversion(kwargs["name"]),
                 scip_expr,
-                kwargs['lhs'],
-                kwargs['rhs'],
-                kwargs['initial'],
-                kwargs['separate'],
-                kwargs['enforce'],
-                kwargs['check'],
-                kwargs['propagate'],
-                kwargs['local'],
-                kwargs['modifiable'],
-                kwargs['dynamic'],
-                kwargs['removable']))
+                kwargs["lhs"],
+                kwargs["rhs"],
+                kwargs["initial"],
+                kwargs["separate"],
+                kwargs["enforce"],
+                kwargs["check"],
+                kwargs["propagate"],
+                kwargs["local"],
+                kwargs["modifiable"],
+                kwargs["dynamic"],
+                kwargs["removable"]))
         finally:
             PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &scip_expr))
         return Constraint.create(scip_cons)
