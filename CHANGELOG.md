@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 ### Fixed
+- Ensure `SCIP_EXPR` references are released on exception paths in `to_scip_expr` and `_createConsGenNonlinear`
 ### Changed
 - Refactor general expression conversion into per-class `to_scip_expr` recursion
 ### Removed

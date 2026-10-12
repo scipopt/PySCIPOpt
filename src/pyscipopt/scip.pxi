@@ -6218,28 +6218,27 @@ cdef class Model:
         # recursively create the SCIP expression tree from python's expression tree
         scip_expr = expr.to_scip_expr(self._scip)
 
-        # create nonlinear constraint for the expression root
-        PY_SCIP_CALL(SCIPcreateConsNonlinear(
-            self._scip,
-            &scip_cons,
-            str_conversion(kwargs['name']),
-            scip_expr,
-            kwargs['lhs'],
-            kwargs['rhs'],
-            kwargs['initial'],
-            kwargs['separate'],
-            kwargs['enforce'],
-            kwargs['check'],
-            kwargs['propagate'],
-            kwargs['local'],
-            kwargs['modifiable'],
-            kwargs['dynamic'],
-            kwargs['removable']))
-        PyCons = Constraint.create(scip_cons)
-
-        PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &scip_expr))
-
-        return PyCons
+        try:
+            # create nonlinear constraint for the expression root
+            PY_SCIP_CALL(SCIPcreateConsNonlinear(
+                self._scip,
+                &scip_cons,
+                str_conversion(kwargs['name']),
+                scip_expr,
+                kwargs['lhs'],
+                kwargs['rhs'],
+                kwargs['initial'],
+                kwargs['separate'],
+                kwargs['enforce'],
+                kwargs['check'],
+                kwargs['propagate'],
+                kwargs['local'],
+                kwargs['modifiable'],
+                kwargs['dynamic'],
+                kwargs['removable']))
+        finally:
+            PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &scip_expr))
+        return Constraint.create(scip_cons)
 
     def createConsFromExpr(self, cons, name='', initial=True, separate=True,
                 enforce=True, check=True, propagate=True, local=False,

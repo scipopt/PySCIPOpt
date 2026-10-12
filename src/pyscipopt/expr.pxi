@@ -773,26 +773,31 @@ cdef class SumExpr(GenExpr):
         return res
 
     cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
-        cdef int i = 0, n = len(self.children) + (1 if self.constant != 0 else 0)
+        cdef Py_ssize_t i, created = 0
+        cdef int n = len(self.children) + (1 if self.constant != 0 else 0)
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR** children_expr = <SCIP_EXPR**> malloc(n * sizeof(SCIP_EXPR*))
         cdef SCIP_Real* coefs = <SCIP_Real*> malloc(n * sizeof(SCIP_Real))
 
-        for i in range(len(self.children)):
-            children_expr[i] = (<GenExpr>self.children[i]).to_scip_expr(scip)
-            coefs[i] = 1
+        try:
+            for i in range(len(self.children)):
+                children_expr[i] = (<GenExpr>self.children[i]).to_scip_expr(scip)
+                coefs[i] = 1
+                created = i + 1
 
-        if self.constant != 0:
-            PY_SCIP_CALL(SCIPcreateExprValue(scip, &children_expr[i], <SCIP_Real>self.constant, NULL, NULL))
-            coefs[i] = 1
+            if self.constant != 0:
+                PY_SCIP_CALL(SCIPcreateExprValue(scip, &children_expr[i], <SCIP_Real>self.constant, NULL, NULL))
+                coefs[i] = 1
+                created = i + 1
 
-        PY_SCIP_CALL(SCIPcreateExprSum(scip, &expr, n, children_expr, coefs, 0, NULL, NULL))
-
-        for i in range(n):
-            PY_SCIP_CALL(SCIPreleaseExpr(scip, &children_expr[i]))
-
-        free(coefs)
-        free(children_expr)
+            PY_SCIP_CALL(SCIPcreateExprSum(scip, &expr, n, children_expr, coefs, 0, NULL, NULL))
+        finally:
+            i = 0
+            while i < created:
+                PY_SCIP_CALL(SCIPreleaseExpr(scip, &children_expr[i]))
+                i += 1
+            free(coefs)
+            free(children_expr)
         return expr
 
     cdef SumExpr copy(self, bint copy=True):
@@ -832,22 +837,27 @@ cdef class ProdExpr(GenExpr):
         return res
 
     cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
-        cdef int i = 0, n = len(self.children) + (1 if self.constant != 1 else 0)
+        cdef Py_ssize_t i, created = 0
+        cdef int n = len(self.children) + (1 if self.constant != 1 else 0)
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR** children_expr = <SCIP_EXPR**> malloc(n * sizeof(SCIP_EXPR*))
 
-        for i in range(len(self.children)):
-            children_expr[i] = (<GenExpr>self.children[i]).to_scip_expr(scip)
+        try:
+            for i in range(len(self.children)):
+                children_expr[i] = (<GenExpr>self.children[i]).to_scip_expr(scip)
+                created = i + 1
 
-        if self.constant != 1:
-            PY_SCIP_CALL(SCIPcreateExprValue(scip, &children_expr[i], <SCIP_Real>self.constant, NULL, NULL))
+            if self.constant != 1:
+                PY_SCIP_CALL(SCIPcreateExprValue(scip, &children_expr[i], <SCIP_Real>self.constant, NULL, NULL))
+                created = i + 1
 
-        PY_SCIP_CALL(SCIPcreateExprProduct(scip, &expr, n, children_expr, 1, NULL, NULL))
-
-        for i in range(n):
-            PY_SCIP_CALL(SCIPreleaseExpr(scip, &children_expr[i]))
-
-        free(children_expr)
+            PY_SCIP_CALL(SCIPcreateExprProduct(scip, &expr, n, children_expr, 1, NULL, NULL))
+        finally:
+            i = 0
+            while i < created:
+                PY_SCIP_CALL(SCIPreleaseExpr(scip, &children_expr[i]))
+                i += 1
+            free(children_expr)
         return expr
 
     cdef ProdExpr copy(self, bint copy=True):
@@ -899,8 +909,10 @@ cdef class PowExpr(GenExpr):
     cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR* child = (<GenExpr>self.children[0]).to_scip_expr(scip)
-        PY_SCIP_CALL(SCIPcreateExprPow(scip, &expr, child, <SCIP_Real>self.expo, NULL, NULL))
-        PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
+        try:
+            PY_SCIP_CALL(SCIPcreateExprPow(scip, &expr, child, <SCIP_Real>self.expo, NULL, NULL))
+        finally:
+            PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
         return expr
 
     cdef PowExpr copy(self, bint copy=True):
@@ -923,8 +935,10 @@ cdef class AbsExpr(UnaryExpr):
     cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR* child = (<GenExpr>self.children[0]).to_scip_expr(scip)
-        PY_SCIP_CALL(SCIPcreateExprAbs(scip, &expr, child, NULL, NULL))
-        PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
+        try:
+            PY_SCIP_CALL(SCIPcreateExprAbs(scip, &expr, child, NULL, NULL))
+        finally:
+            PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
         return expr
 
     def __abs__(self) -> AbsExpr:
@@ -942,8 +956,10 @@ cdef class ExpExpr(UnaryExpr):
     cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR* child = (<GenExpr>self.children[0]).to_scip_expr(scip)
-        PY_SCIP_CALL(SCIPcreateExprExp(scip, &expr, child, NULL, NULL))
-        PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
+        try:
+            PY_SCIP_CALL(SCIPcreateExprExp(scip, &expr, child, NULL, NULL))
+        finally:
+            PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
         return expr
 
     def __repr__(self) -> str:
@@ -958,8 +974,10 @@ cdef class LogExpr(UnaryExpr):
     cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR* child = (<GenExpr>self.children[0]).to_scip_expr(scip)
-        PY_SCIP_CALL(SCIPcreateExprLog(scip, &expr, child, NULL, NULL))
-        PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
+        try:
+            PY_SCIP_CALL(SCIPcreateExprLog(scip, &expr, child, NULL, NULL))
+        finally:
+            PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
         return expr
 
     def __repr__(self) -> str:
@@ -977,8 +995,10 @@ cdef class SqrtExpr(UnaryExpr):
     cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR* child = (<GenExpr>self.children[0]).to_scip_expr(scip)
-        PY_SCIP_CALL(SCIPcreateExprPow(scip, &expr, child, <SCIP_Real>0.5, NULL, NULL))
-        PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
+        try:
+            PY_SCIP_CALL(SCIPcreateExprPow(scip, &expr, child, <SCIP_Real>0.5, NULL, NULL))
+        finally:
+            PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
         return expr
 
     def __repr__(self) -> str:
@@ -996,8 +1016,10 @@ cdef class SinExpr(UnaryExpr):
     cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR* child = (<GenExpr>self.children[0]).to_scip_expr(scip)
-        PY_SCIP_CALL(SCIPcreateExprSin(scip, &expr, child, NULL, NULL))
-        PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
+        try:
+            PY_SCIP_CALL(SCIPcreateExprSin(scip, &expr, child, NULL, NULL))
+        finally:
+            PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
         return expr
 
     def __repr__(self) -> str:
@@ -1015,8 +1037,10 @@ cdef class CosExpr(UnaryExpr):
     cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
         cdef SCIP_EXPR* expr
         cdef SCIP_EXPR* child = (<GenExpr>self.children[0]).to_scip_expr(scip)
-        PY_SCIP_CALL(SCIPcreateExprCos(scip, &expr, child, NULL, NULL))
-        PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
+        try:
+            PY_SCIP_CALL(SCIPcreateExprCos(scip, &expr, child, NULL, NULL))
+        finally:
+            PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
         return expr
 
     def __repr__(self) -> str:
