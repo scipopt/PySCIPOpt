@@ -4,6 +4,7 @@
 ### Added
 ### Fixed
 ### Changed
+- `pow(x, y, modulo)` now raises `TypeError` instead of silently ignoring the modulo argument
 ### Removed
 
 ## 6.3.0 - 2026.10.11
