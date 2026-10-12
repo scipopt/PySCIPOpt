@@ -404,7 +404,7 @@ cdef class Expr(ExprLike):
             return NotImplemented
         return super().__rtruediv__(other)
 
-    def __pow__(self, other, modulo):
+    def __pow__(self, other):
         if float(other).is_integer() and other >= 0:
             exp = int(other)
         else: # need to transform to GenExpr
@@ -679,7 +679,7 @@ cdef class GenExpr(ExprLike):
     #        self.children.append(right)
     #    return self
 
-    def __pow__(self, other, modulo):
+    def __pow__(self, other):
         expo = buildGenExprObj(other)
         if <type>Py_TYPE(expo) is not Constant:
             raise NotImplementedError("exponents must be numbers")
