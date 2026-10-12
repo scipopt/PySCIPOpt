@@ -786,6 +786,7 @@ cdef class SumExpr(GenExpr):
                 n_created = i + 1
 
             if self.constant != 0:
+                i = len(self.children)
                 PY_SCIP_CALL(SCIPcreateExprValue(scip, &children_expr[i], <SCIP_Real>self.constant, NULL, NULL))
                 coefs[i] = 1
                 n_created = i + 1
@@ -848,6 +849,7 @@ cdef class ProdExpr(GenExpr):
                 n_created = i + 1
 
             if self.constant != 1:
+                i = len(self.children)
                 PY_SCIP_CALL(SCIPcreateExprValue(scip, &children_expr[i], <SCIP_Real>self.constant, NULL, NULL))
                 n_created = i + 1
 
