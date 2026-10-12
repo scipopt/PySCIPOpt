@@ -253,9 +253,7 @@ class Constant(GenExpr):
     number: Incomplete
     def __init__(self, *args: Incomplete, **kwargs: Incomplete) -> None: ...
     def __neg__(self, /) -> Constant: ...
-    def __pow__(  # type: ignore[override]
-        self, other: float | Constant, /
-    ) -> Constant: ...
+    def __pow__(self, other: float | Constant, /) -> Constant: ...  # type: ignore[override]
 
 @disjoint_base
 class Constraint:
