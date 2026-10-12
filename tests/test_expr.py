@@ -203,6 +203,23 @@ def test_rpow_constant_base(model):
         c = (-2)**x
 
 
+def test_pow_three_arg_raises(model):
+    m, x, y, z = model
+
+    # Expr path (integer exponent; falls through to GenExpr only for non-int)
+    with pytest.raises(TypeError):
+        pow(x, 2, 5)
+
+    # GenExpr path
+    with pytest.raises(TypeError):
+        pow(x**1.5, 2, 5)
+
+    # Two-argument pow still works on both paths
+    assert repr(x**2) == repr(pow(x, 2))
+    assert isinstance(x**1.5, GenExpr)
+    assert isinstance(pow(x, 1.5), GenExpr)
+
+
 def test_getVal_with_GenExpr():
     m = Model()
     x = m.addVar(lb=1, ub=1, name="x")
