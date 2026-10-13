@@ -126,7 +126,7 @@ def test_exact_solution():
         m.getPrimalboundExact()
     with pytest.raises(ValueError):
         m.addOrigObjoffsetExact(float("inf"))
-    with pytest.raises(Warning):
+    with pytest.raises(Exception):
         m.trySol(m.createSol())
 
     m.optimize()
@@ -141,5 +141,5 @@ def test_exact_solution():
     assert m.getActivityExactLinear(c, sol) == Fraction(2, 3)
     assert m.getObjVal() == pytest.approx(-5 / 3)
 
-    with pytest.raises(Warning):
+    with pytest.raises(Exception):
         m.addOrigObjoffsetExact(1)

@@ -405,11 +405,9 @@ cdef object _fromRational(SCIP_RATIONAL* rational):
 
     if buf == NULL:
         raise MemoryError()
-    try:
-        SCIPrationalToString(rational, buf, length + 1)
-        desc = buf[:length].decode("ascii")
-    finally:
-        free(buf)
+    SCIPrationalToString(rational, buf, length + 1)
+    desc = buf[:length].decode("ascii")
+    free(buf)
 
     if desc == "+infinity":
         return float("inf")
@@ -11714,8 +11712,6 @@ cdef class Model:
 
         """
         cdef SCIP_Bool stored
-        if PYSCIPOPT_WITH_EXACTSOLVE and SCIPisExact(self._scip) and SCIPgetStage(self._scip) == SCIP_STAGE_PROBLEM:
-            raise Warning("trySol cannot be called on an exact problem before it is transformed, use addSol instead")
         if free:
             PY_SCIP_CALL(SCIPtrySolFree(self._scip, &solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
         else:
@@ -13200,9 +13196,9 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddRowExact(self._scip, rowexact.scip_row_exact))
 
     def _checkExactMode(self):
-        if not PYSCIPOPT_WITH_EXACTSOLVE:
-            raise ValueError("SCIP was built without exact solving support, exact methods need a SCIP build with exact solving enabled")
         if not SCIPisExact(self._scip):
+            if not PYSCIPOPT_WITH_EXACTSOLVE:
+                raise ValueError("SCIP was built without exact solving support, exact methods need a SCIP build with exact solving enabled")
             raise ValueError("exact solving mode is not enabled, create the model with Model(exact=True)")
 
     def _checkStageExactBound(self, method):
@@ -13220,7 +13216,7 @@ cdef class Model:
         name : str, optional
             name of the variable, generic if empty (Default value = '')
         vtype : str, optional
-            type of the variable: 'C' continuous, 'I' integer, 'B' binary, and 'M' implicit integer
+            type of the variable: 'C' continuous, 'I' integer, or 'B' binary
             (Default value = 'C')
         lb : Fraction, int, str or None, optional
             lower bound of the variable, use None for -infinity (Default value = 0)
@@ -13261,8 +13257,6 @@ cdef class Model:
                 ub = 1
         elif vtype in ['I', 'INTEGER']:
             vartype = SCIP_VARTYPE_INTEGER
-        elif vtype in ['M', 'IMPLINT']:
-            vartype = SCIP_DEPRECATED_VARTYPE_IMPLINT
         else:
             raise Warning("unrecognized variable type")
 
@@ -13746,8 +13740,6 @@ cdef class Model:
         cdef SCIP_RETCODE rc
 
         self._checkExactMode()
-        if SCIPgetStage(self._scip) != SCIP_STAGE_PROBLEM:
-            raise Warning("addOrigObjoffsetExact can only be called in stage PROBLEM.")
         rational = _createRational(_asFiniteRational(offset))
         rc = SCIPaddOrigObjoffsetExact(self._scip, rational)
         SCIPrationalFree(&rational)
