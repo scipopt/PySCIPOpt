@@ -662,3 +662,40 @@ def test_memory_methods():
 
     assert m.getMemUsed() > 0
     assert m.getMemTotal() > 0
+
+
+def test_getCountedSols():
+    m = Model()
+    m.hideOutput()
+    m.setParam("constraints/countsols/collect", True)
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    x = m.addVar("x", vtype="I", lb=-2, ub=3)
+    y = m.addVar("y", vtype="I", lb=0, ub=4)
+    z = m.addVar("z", vtype="I", lb=0, ub=10)
+    w = m.addVar("w", vtype="B")
+    m.addVar("c", lb=0, ub=1)
+    m.addCons(z == 2*x + 3)
+    m.addCons(x + y <= 4)
+    m.addCons(w + y >= 1)
+
+    assert m.getCountedSols() == []
+
+    m.count()
+    sols = m.getCountedSols()
+    expected = {(a, b, c, d) for a, b, c, d in itertools.product(range(-2, 4), range(5), range(11), range(2))
+                if c == 2*a + 3 and a + b <= 4 and d + b >= 1}
+    assert len(sols) == m.getNCountedSols() == len(expected)
+    assert all(set(sol) == {"t_x", "t_y", "t_z", "t_w"} for sol in sols)
+    assert {tuple(sol["t_" + k] for k in "xyzw") for sol in sols} == expected
+
+    m.freeTransform()
+    assert m.getCountedSols() == []
+
+    m.setParam("constraints/countsols/collect", False)
+    with pytest.raises(Warning):
+        m.getCountedSols()
+
+    m.setParam("constraints/countsols/collect", True)
+    m.setPresolve(SCIP_PARAMSETTING.DEFAULT)
+    with pytest.raises(Warning):
+        m.getCountedSols()

@@ -522,6 +522,9 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_DIVESET:
         pass
 
+    ctypedef struct SCIP_SPARSESOL:
+        pass
+
     ctypedef struct SCIP_HASHMAP:
         pass
 
@@ -2102,6 +2105,9 @@ cdef extern from "scip/cons_countsols.h":
     SCIP_RETCODE SCIPcount(SCIP* scip)
     SCIP_RETCODE SCIPsetParamsCountsols(SCIP* scip)
     SCIP_Longint SCIPgetNCountedSols(SCIP* scip, SCIP_Bool* valid)
+    void SCIPgetCountedSparseSols(SCIP* scip, SCIP_VAR*** vars, int* nvars, SCIP_SPARSESOL*** sols, int* nsols)
+    void SCIPsparseSolGetFirstSol(SCIP_SPARSESOL* sparsesol, SCIP_Longint* sol, int nvars)
+    SCIP_Bool SCIPsparseSolGetNextSol(SCIP_SPARSESOL* sparsesol, SCIP_Longint* sol, int nvars)
 
 cdef extern from "scip/paramset.h":
 

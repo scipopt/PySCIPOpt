@@ -12545,6 +12545,55 @@ cdef class Model:
             print('total number of solutions found is not valid!')
         return nsols
 
+    def getCountedSols(self):
+        """
+        Get the feasible solutions collected by `count()`.
+
+        Requires `constraints/countsols/collect` to be True and presolving to be off
+        before calling `count()`. Only integral variables are counted, so continuous
+        variables are not part of the solutions. The solutions are freed together with
+        the transformed problem.
+
+        Returns
+        -------
+        list of dict
+            Each solution maps the names of the transformed variables to their values.
+
+        """
+        cdef SCIP_VAR** vars
+        cdef SCIP_SPARSESOL** sparsesols
+        cdef SCIP_Longint* sol
+        cdef SCIP_Bool valid
+        cdef int nvars
+        cdef int nsparsesols
+        cdef int i
+        cdef int s
+
+        if not self.getParam("constraints/countsols/collect"):
+            raise Warning("set constraints/countsols/collect to True before calling count()")
+        if self.getParam("presolving/maxrounds") != 0:
+            raise Warning("turn presolving off before calling count()")
+
+        SCIPgetNCountedSols(self._scip, &valid)
+        if not valid:
+            raise Warning("number of counted solutions does not fit into a long integer, cannot collect them")
+
+        SCIPgetCountedSparseSols(self._scip, &vars, &nvars, &sparsesols, &nsparsesols)
+        names = [bytes(SCIPvarGetName(vars[i])).decode("utf-8") for i in range(nvars)]
+
+        sol = <SCIP_Longint*> malloc(nvars * sizeof(SCIP_Longint))
+        sols = []
+        for s in range(nsparsesols):
+            SCIPsparseSolGetFirstSol(sparsesols[s], sol, nvars)
+            while True:
+                sols.append({names[i]: sol[i] for i in range(nvars)})
+                if not SCIPsparseSolGetNextSol(sparsesols[s], sol, nvars):
+                    break
+
+        free(sol)
+
+        return sols
+
     def setParamsCountsols(self):
         """Sets SCIP parameters such that a valid counting process is possible."""
         PY_SCIP_CALL(SCIPsetParamsCountsols(self._scip))
