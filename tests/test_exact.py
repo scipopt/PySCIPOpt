@@ -60,6 +60,12 @@ def test_addVarExact():
         m.addVarExact("bad", vtype="Q")
     with pytest.raises(ValueError):
         m.addVarExact("bad", lb="abc")
+    with pytest.raises(ValueError):
+        m.addVarExact("bad", obj=float("inf"))
+    with pytest.raises(ValueError):
+        m.chgVarUb(x, 1)
+    with pytest.raises(ValueError):
+        m.setObjective(x)
 
     with pytest.raises(Exception):
         Model().addVarExact("x")
@@ -95,6 +101,8 @@ def test_addConsExactLinear():
 
     with pytest.raises(ValueError):
         m.addConsExactLinear([x, y], [1], 0, 1)
+    with pytest.raises(ValueError):
+        m.chgCoefExactLinear(c, x, float("inf"))
     with pytest.raises(Exception):
         m.addCons(x + y <= 1)
 
@@ -116,6 +124,10 @@ def test_exact_solution():
 
     with pytest.raises(Warning):
         m.getPrimalboundExact()
+    with pytest.raises(ValueError):
+        m.addOrigObjoffsetExact(float("inf"))
+    with pytest.raises(Warning):
+        m.trySol(m.createSol())
 
     m.optimize()
     assert m.getStatus() == "optimal"

@@ -373,6 +373,17 @@ def _asRational(value):
     except OverflowError:
         return float(value)
 
+def _asFiniteRational(value):
+    value = _asRational(value)
+    if isinstance(value, float):
+        raise ValueError("value must be finite, got %s" % value)
+    return value
+
+cdef inline int _checkFloatChange(SCIP* scip, method, alternative) except -1:
+    if PYSCIPOPT_WITH_EXACTSOLVE and SCIPisExact(scip) and SCIPgetStage(scip) == SCIP_STAGE_PROBLEM:
+        raise ValueError("%s does not change the exact data of an exact problem, use %s instead" % (method, alternative))
+    return 0
+
 cdef SCIP_RATIONAL* _createRational(value) except NULL:
     """Create a SCIP_RATIONAL holding value; the caller must free it with SCIPrationalFree."""
     cdef SCIP_RATIONAL* rational = NULL
@@ -392,6 +403,8 @@ cdef object _fromRational(SCIP_RATIONAL* rational):
     cdef int length = SCIPrationalStrLen(rational)
     cdef char* buf = <char*> malloc(length + 1)
 
+    if buf == NULL:
+        raise MemoryError()
     try:
         SCIPrationalToString(rational, buf, length + 1)
         desc = buf[:length].decode("ascii")
@@ -4400,6 +4413,8 @@ cdef class Model:
         if expr.degree() > 1:
             raise ValueError("SCIP does not support nonlinear objective functions. Consider using set_nonlinear_objective in the pyscipopt.recipe.nonlinear")
 
+        _checkFloatChange(self._scip, "setObjective", "chgVarObjExact")
+
         if clear:
             # clear existing objective function
             self.addObjoffset(-self.getObjoffset())
@@ -4947,6 +4962,7 @@ cdef class Model:
         """
         cdef SCIP_Bool infeasible
         cdef SCIP_Bool fixed
+        _checkFloatChange(self._scip, "fixVar", "chgVarLbExact and chgVarUbExact")
         PY_SCIP_CALL(SCIPfixVar(self._scip, var.scip_var, val, &infeasible, &fixed))
         return infeasible, fixed
 
@@ -5055,6 +5071,7 @@ cdef class Model:
         """
         cdef SCIP_Bool infeasible
         cdef SCIP_Bool tightened
+        _checkFloatChange(self._scip, "tightenVarLb", "chgVarLbExact")
         PY_SCIP_CALL(SCIPtightenVarLb(self._scip, var.scip_var, lb, force, &infeasible, &tightened))
         return infeasible, tightened
 
@@ -5081,6 +5098,7 @@ cdef class Model:
         """
         cdef SCIP_Bool infeasible
         cdef SCIP_Bool tightened
+        _checkFloatChange(self._scip, "tightenVarUb", "chgVarUbExact")
         PY_SCIP_CALL(SCIPtightenVarUb(self._scip, var.scip_var, ub, force, &infeasible, &tightened))
         return infeasible, tightened
 
@@ -5149,6 +5167,7 @@ cdef class Model:
         """
         if lb is None:
            lb = -SCIPinfinity(self._scip)
+        _checkFloatChange(self._scip, "chgVarLb", "chgVarLbExact")
         PY_SCIP_CALL(SCIPchgVarLb(self._scip, var.scip_var, lb))
 
     def chgVarUb(self, Variable var, ub):
@@ -5164,6 +5183,7 @@ cdef class Model:
         """
         if ub is None:
            ub = SCIPinfinity(self._scip)
+        _checkFloatChange(self._scip, "chgVarUb", "chgVarUbExact")
         PY_SCIP_CALL(SCIPchgVarUb(self._scip, var.scip_var, ub))
 
     def chgVarLbGlobal(self, Variable var, lb):
@@ -5179,6 +5199,7 @@ cdef class Model:
         """
         if lb is None:
            lb = -SCIPinfinity(self._scip)
+        _checkFloatChange(self._scip, "chgVarLbGlobal", "chgVarLbExact")
         PY_SCIP_CALL(SCIPchgVarLbGlobal(self._scip, var.scip_var, lb))
 
     def chgVarUbGlobal(self, Variable var, ub):
@@ -5194,6 +5215,7 @@ cdef class Model:
         """
         if ub is None:
            ub = SCIPinfinity(self._scip)
+        _checkFloatChange(self._scip, "chgVarUbGlobal", "chgVarUbExact")
         PY_SCIP_CALL(SCIPchgVarUbGlobal(self._scip, var.scip_var, ub))
 
     def chgVarLbNode(self, Node node, Variable var, lb):
@@ -11692,6 +11714,8 @@ cdef class Model:
 
         """
         cdef SCIP_Bool stored
+        if PYSCIPOPT_WITH_EXACTSOLVE and SCIPisExact(self._scip) and SCIPgetStage(self._scip) == SCIP_STAGE_PROBLEM:
+            raise Warning("trySol cannot be called on an exact problem before it is transformed, use addSol instead")
         if free:
             PY_SCIP_CALL(SCIPtrySolFree(self._scip, &solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
         else:
@@ -13244,22 +13268,23 @@ cdef class Model:
 
         lb = _asRational(-float("inf") if lb is None else lb)
         ub = _asRational(float("inf") if ub is None else ub)
-        obj = _asRational(obj)
+        obj = _asFiniteRational(obj)
         if lb > ub:
             raise ValueError("lower bound %s exceeds upper bound %s" % (lb, ub))
-
-        lbexact = _createRational(lb)
-        ubexact = _createRational(ub)
-        objexact = _createRational(obj)
 
         PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname,
                                         max(float(lb), -SCIPinfinity(self._scip)),
                                         min(float(ub), SCIPinfinity(self._scip)),
                                         float(obj), vartype))
+        lbexact = _createRational(lb)
+        ubexact = _createRational(ub)
+        objexact = _createRational(obj)
         rc = SCIPaddVarExactData(self._scip, scip_var, lbexact, ubexact, objexact)
         SCIPrationalFree(&lbexact)
         SCIPrationalFree(&ubexact)
         SCIPrationalFree(&objexact)
+        if rc != SCIP_OKAY:
+            SCIPreleaseVar(self._scip, &scip_var)
         PY_SCIP_CALL(rc)
         PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
 
@@ -13284,7 +13309,7 @@ cdef class Model:
         cdef SCIP_RETCODE rc
         self._checkExactMode()
         _checkExactVar(var)
-        rational = _createRational(newobj)
+        rational = _createRational(_asFiniteRational(newobj))
         rc = SCIPchgVarObjExact(self._scip, var.scip_var, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -13394,11 +13419,13 @@ cdef class Model:
         if name == '':
             name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
-        vals = [_asRational(val) for val in vals]
+        vals = [_asFiniteRational(val) for val in vals]
         lhs = _asRational(-float("inf") if lhs is None else lhs)
         rhs = _asRational(float("inf") if rhs is None else rhs)
 
         valsexact = <SCIP_RATIONAL**> malloc(max(nvars, 1) * sizeof(SCIP_RATIONAL*))
+        if valsexact == NULL:
+            raise MemoryError()
         for i in range(nvars):
             valsexact[i] = _createRational(vals[i])
         lhsexact = _createRational(lhs)
@@ -13442,7 +13469,7 @@ cdef class Model:
         cdef SCIP_RATIONAL* rational
         cdef SCIP_RETCODE rc
         self._checkExactLinear(cons)
-        rational = _createRational(val)
+        rational = _createRational(_asFiniteRational(val))
         rc = SCIPaddCoefExactLinear(self._scip, cons.scip_cons, var.scip_var, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -13464,7 +13491,7 @@ cdef class Model:
         cdef SCIP_RATIONAL* rational
         cdef SCIP_RETCODE rc
         self._checkExactLinear(cons)
-        rational = _createRational(val)
+        rational = _createRational(_asFiniteRational(val))
         rc = SCIPchgCoefExactLinear(self._scip, cons.scip_cons, var.scip_var, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -13595,6 +13622,8 @@ cdef class Model:
         cdef SCIP_SOL* scip_sol = NULL
 
         self._checkExactLinear(cons)
+        if not self.getStage() >= SCIP_STAGE_SOLVING:
+            raise Warning("method cannot be called before problem is solved")
         if sol is not None:
             _checkExactSol(sol)
             scip_sol = sol.sol
@@ -13719,7 +13748,7 @@ cdef class Model:
         self._checkExactMode()
         if SCIPgetStage(self._scip) != SCIP_STAGE_PROBLEM:
             raise Warning("addOrigObjoffsetExact can only be called in stage PROBLEM.")
-        rational = _createRational(offset)
+        rational = _createRational(_asFiniteRational(offset))
         rc = SCIPaddOrigObjoffsetExact(self._scip, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
