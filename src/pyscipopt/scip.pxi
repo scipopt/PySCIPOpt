@@ -11626,6 +11626,11 @@ cdef class Model:
 
         """
 
+        # Ensure _bestSol is up-to-date (cheap pointer comparison)
+        cdef SCIP_SOL* current_best_sol = SCIPgetBestSol(self._scip)
+        if self._bestSol is None or self._bestSol.sol != current_best_sol:
+            self._bestSol = Solution.create(self._scip, current_best_sol)
+
         if SCIPgetNSols(self._scip) == 0:
             if self.getStage() != SCIP_STAGE_SOLVING:
                 raise Warning("Without a solution, method can only be called in stage SOLVING.")
