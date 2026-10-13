@@ -12551,9 +12551,8 @@ cdef class Model:
 
         Solutions are only collected if the parameter `constraints/countsols/collect`
         is set to True before calling `count()`. Only integral variables are counted,
-        so continuous variables are not part of the returned solutions. All solutions
-        are expanded, so their number can be huge. The solutions are freed together
-        with the transformed problem.
+        so continuous variables are not part of the returned solutions. The solutions
+        are freed together with the transformed problem.
 
         Returns
         -------
@@ -12576,17 +12575,15 @@ cdef class Model:
         cdef int i
         cdef int s
 
-        if SCIPgetStage(self._scip) < SCIP_STAGE_TRANSFORMED or SCIPgetStage(self._scip) == SCIP_STAGE_FREETRANS:
-            raise Warning("method cannot be called before count() or after the transformed problem is freed")
+        if not self.getParam("constraints/countsols/collect"):
+            raise Warning("set constraints/countsols/collect to True before calling count()")
 
-        nsols = SCIPgetNCountedSols(self._scip, &valid)
+        SCIPgetNCountedSols(self._scip, &valid)
         if not valid:
             raise Warning("number of counted solutions does not fit into a long integer, cannot collect them")
 
         SCIPgetCountedSparseSols(self._scip, &activevars, &nactivevars, &sparsesols, &nsparsesols)
         if nsparsesols == 0:
-            if nsols > 0:
-                raise Warning("no solutions were collected, set constraints/countsols/collect to True before calling count()")
             return []
 
         activeidx = {<size_t>activevars[i]: i for i in range(nactivevars)}

@@ -677,8 +677,7 @@ def test_getCountedSols():
     m.addCons(x + y <= 4)
     m.addCons(w + y >= 1)
 
-    with pytest.raises(Warning):
-        m.getCountedSols()
+    assert m.getCountedSols() == []
 
     m.count()
     sols = m.getCountedSols()
@@ -689,8 +688,7 @@ def test_getCountedSols():
     assert {tuple(round(sol[k]) for k in "xyzw") for sol in sols} == expected
 
     m.freeTransform()
-    with pytest.raises(Warning):
-        m.getCountedSols()
+    assert m.getCountedSols() == []
 
     m.setParam("constraints/countsols/collect", False)
     m.count()
