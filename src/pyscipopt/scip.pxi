@@ -12549,11 +12549,10 @@ cdef class Model:
         """
         Get the feasible solutions collected by `count()`.
 
-        Solutions are only collected if the parameter `constraints/countsols/collect`
-        is set to True before calling `count()`. They are given over the transformed
-        integral variables, so continuous variables and variables removed by presolving
-        are not part of them; turn presolving off to get every integral variable.
-        The solutions are freed together with the transformed problem.
+        Requires `constraints/countsols/collect` to be True and presolving to be off
+        before calling `count()`. Only integral variables are counted, so continuous
+        variables are not part of the solutions. The solutions are freed together with
+        the transformed problem.
 
         Returns
         -------
@@ -12572,6 +12571,8 @@ cdef class Model:
 
         if not self.getParam("constraints/countsols/collect"):
             raise Warning("set constraints/countsols/collect to True before calling count()")
+        if self.getParam("presolving/maxrounds") != 0:
+            raise Warning("turn presolving off before calling count()")
 
         SCIPgetNCountedSols(self._scip, &valid)
         if not valid:

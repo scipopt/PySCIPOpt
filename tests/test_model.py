@@ -692,6 +692,10 @@ def test_getCountedSols():
     assert m.getCountedSols() == []
 
     m.setParam("constraints/countsols/collect", False)
-    m.count()
+    with pytest.raises(Warning):
+        m.getCountedSols()
+
+    m.setParam("constraints/countsols/collect", True)
+    m.setPresolve(SCIP_PARAMSETTING.DEFAULT)
     with pytest.raises(Warning):
         m.getCountedSols()
