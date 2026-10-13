@@ -827,7 +827,6 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPreleaseVar(SCIP* scip, SCIP_VAR** var)
     SCIP_RETCODE SCIPtransformVar(SCIP* scip, SCIP_VAR* var, SCIP_VAR** transvar)
     SCIP_RETCODE SCIPgetTransformedVar(SCIP* scip, SCIP_VAR* var, SCIP_VAR** transvar)
-    SCIP_RETCODE SCIPgetProbvarLinearSum(SCIP* scip, SCIP_VAR** vars, SCIP_Real* scalars, int* nvars, int varssize, SCIP_Real* constant, int* requiredsize)
     SCIP_RETCODE SCIPaddVarLocks(SCIP* scip, SCIP_VAR* var, int nlocksdown, int nlocksup)
     SCIP_RETCODE SCIPaddVarLocksType(SCIP* scip, SCIP_VAR* var, SCIP_LOCKTYPE locktype, int nlocksdown, int nlocksup)
     int SCIPvarGetNLocksDown(SCIP_VAR* var)

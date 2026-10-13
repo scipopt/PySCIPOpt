@@ -668,6 +668,7 @@ def test_getCountedSols():
     m = Model()
     m.hideOutput()
     m.setParam("constraints/countsols/collect", True)
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
     x = m.addVar("x", vtype="I", lb=-2, ub=3)
     y = m.addVar("y", vtype="I", lb=0, ub=4)
     z = m.addVar("z", vtype="I", lb=0, ub=10)
@@ -684,8 +685,8 @@ def test_getCountedSols():
     expected = {(a, b, c, d) for a, b, c, d in itertools.product(range(-2, 4), range(5), range(11), range(2))
                 if c == 2*a + 3 and a + b <= 4 and d + b >= 1}
     assert len(sols) == m.getNCountedSols() == len(expected)
-    assert all(set(sol) == {"x", "y", "z", "w"} for sol in sols)
-    assert {tuple(round(sol[k]) for k in "xyzw") for sol in sols} == expected
+    assert all(set(sol) == {"t_x", "t_y", "t_z", "t_w"} for sol in sols)
+    assert {tuple(sol["t_" + k] for k in "xyzw") for sol in sols} == expected
 
     m.freeTransform()
     assert m.getCountedSols() == []
