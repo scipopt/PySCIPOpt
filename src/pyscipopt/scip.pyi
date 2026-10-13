@@ -127,7 +127,7 @@ class Branchrule:
 
 @disjoint_base
 class Column:
-    data: Incomplete
+    data: Any
     def __init__(self) -> None: ...
     def getAge(self) -> int: ...
     def getBasisStatus(self) -> Literal["lower", "basic", "upper", "zero"]: ...
@@ -148,7 +148,7 @@ class Column:
 
 @disjoint_base
 class ColumnExact:
-    data: Incomplete
+    data: Any
     def __init__(self) -> None: ...
 
 @disjoint_base
@@ -260,7 +260,7 @@ class Constant(GenExpr):
 
 @disjoint_base
 class Constraint:
-    data: Incomplete
+    data: Any
     name: str
     def __init__(self) -> None: ...
     def getConshdlrName(self) -> str: ...
@@ -314,7 +314,7 @@ class DomainChanges:
 
 @disjoint_base
 class Event:
-    data: Incomplete
+    data: Any
     name: Incomplete
     def __init__(self) -> None: ...
     def _getEventNames(self) -> None: ...
@@ -661,14 +661,16 @@ class MatrixVariable(MatrixExpr):
     def getUbLocal(self) -> NDArray[np.float64]: ...
     def getUbOriginal(self) -> NDArray[np.float64]: ...
     def isInLP(self) -> NDArray[np.bool_]: ...
-    def varMayRound(self, direction: Incomplete = ...) -> Incomplete: ...
+    def varMayRound(
+        self, direction: Literal["up", "down"] = "down"
+    ) -> NDArray[np.bool_]: ...
     def vtype(self) -> NDArray[np.object_]: ...
     def __pos__(self, /) -> MatrixExpr: ...  # type: ignore[override]
 
 @disjoint_base
 class Model:
-    _freescip: Incomplete
-    data: Incomplete
+    _freescip: bool
+    data: Any
     def __init__(
         self,
         problemName: str = "model",
@@ -1802,7 +1804,7 @@ class Model:
 
 @disjoint_base
 class NLRow:
-    data: Incomplete
+    data: Any
     name: str
     def __init__(self) -> None: ...
     def getConstant(self) -> float: ...
@@ -1820,7 +1822,7 @@ class NLRow:
 
 @disjoint_base
 class Node:
-    data: Incomplete
+    data: Any
     def __init__(self) -> None: ...
     def getAddedConss(self) -> list[Constraint]: ...
     def getDepth(self) -> int: ...
@@ -2241,7 +2243,7 @@ class Relax:
 
 @disjoint_base
 class Row:
-    data: Incomplete
+    data: Any
     name: str
     def __init__(self) -> None: ...
     def getAge(self) -> int: ...
@@ -2274,7 +2276,7 @@ class Row:
 
 @disjoint_base
 class RowExact:
-    data: Incomplete
+    data: Any
     def __init__(self) -> None: ...
 
 @disjoint_base
@@ -2292,7 +2294,7 @@ class Sepa:
 
 @disjoint_base
 class Solution:
-    data: Incomplete
+    data: Any
     def __init__(self, raise_error: bool = True) -> None: ...
     def _checkStage(self, method: str) -> None: ...
     def getOrigin(self) -> Incomplete: ...
@@ -2410,7 +2412,7 @@ class VarExpr(GenExpr):
 
 @disjoint_base
 class Variable(Expr):
-    data: Incomplete
+    data: Any
     name: str
     def __init__(self) -> None: ...
     def getAvgSol(self) -> float: ...
