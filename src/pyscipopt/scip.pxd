@@ -1529,6 +1529,25 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPallowNegSlack(SCIP* scip);
     SCIP_RETCODE SCIPbranchLPExact(SCIP* scip, SCIP_RESULT* result);
     SCIP_RETCODE SCIPaddRowExact(SCIP* scip, SCIP_ROWEXACT* rowexact);
+    SCIP_RETCODE SCIPaddVarExactData(SCIP* scip, SCIP_VAR* var, SCIP_RATIONAL* lb, SCIP_RATIONAL* ub, SCIP_RATIONAL* obj)
+    SCIP_RETCODE SCIPchgVarObjExact(SCIP* scip, SCIP_VAR* var, SCIP_RATIONAL* newobj)
+    SCIP_RETCODE SCIPchgVarLbExact(SCIP* scip, SCIP_VAR* var, SCIP_RATIONAL* newbound)
+    SCIP_RETCODE SCIPchgVarUbExact(SCIP* scip, SCIP_VAR* var, SCIP_RATIONAL* newbound)
+    SCIP_Bool SCIPvarIsExact(SCIP_VAR* var)
+    SCIP_RATIONAL* SCIPvarGetObjExact(SCIP_VAR* var)
+    SCIP_RATIONAL* SCIPvarGetLbOriginalExact(SCIP_VAR* var)
+    SCIP_RATIONAL* SCIPvarGetUbOriginalExact(SCIP_VAR* var)
+    SCIP_RATIONAL* SCIPvarGetLbGlobalExact(SCIP_VAR* var)
+    SCIP_RATIONAL* SCIPvarGetUbGlobalExact(SCIP_VAR* var)
+    SCIP_RATIONAL* SCIPvarGetLbLocalExact(SCIP_VAR* var)
+    SCIP_RATIONAL* SCIPvarGetUbLocalExact(SCIP_VAR* var)
+    void SCIPgetSolValExact(SCIP* scip, SCIP_SOL* sol, SCIP_VAR* var, SCIP_RATIONAL* res)
+    void SCIPgetSolOrigObjExact(SCIP* scip, SCIP_SOL* sol, SCIP_RATIONAL* res)
+    SCIP_Bool SCIPsolIsExact(SCIP_SOL* sol)
+    void SCIPgetPrimalboundExact(SCIP* scip, SCIP_RATIONAL* result)
+    void SCIPgetDualboundExact(SCIP* scip, SCIP_RATIONAL* result)
+    SCIP_RETCODE SCIPaddOrigObjoffsetExact(SCIP* scip, SCIP_RATIONAL* addval)
+    SCIP_RATIONAL* SCIPgetOrigObjoffsetExact(SCIP* scip)
 
     # Exact LP SCIP methods
     SCIP_VAR* SCIPcolExactGetVar(SCIP_COLEXACT* col);
@@ -1650,6 +1669,43 @@ cdef extern from "scip/scipdefplugins.h":
 
 cdef extern from "scip/bendersdefcuts.h":
     SCIP_RETCODE SCIPincludeBendersDefaultCuts(SCIP* scip, SCIP_BENDERS* benders)
+
+cdef extern from "scip/rational.h":
+    SCIP_RETCODE SCIPrationalCreate(SCIP_RATIONAL** rational)
+    void SCIPrationalFree(SCIP_RATIONAL** rational)
+    void SCIPrationalSetString(SCIP_RATIONAL* res, const char* desc)
+    int SCIPrationalToString(SCIP_RATIONAL* rational, char* str, int strlen)
+    int SCIPrationalStrLen(SCIP_RATIONAL* rational)
+
+cdef extern from "scip/cons_exactlinear.h":
+    SCIP_RETCODE SCIPcreateConsExactLinear(SCIP* scip,
+                                           SCIP_CONS** cons,
+                                           const char* name,
+                                           int nvars,
+                                           SCIP_VAR** vars,
+                                           SCIP_RATIONAL** vals,
+                                           SCIP_RATIONAL* lhs,
+                                           SCIP_RATIONAL* rhs,
+                                           SCIP_Bool initial,
+                                           SCIP_Bool separate,
+                                           SCIP_Bool enforce,
+                                           SCIP_Bool check,
+                                           SCIP_Bool propagate,
+                                           SCIP_Bool local,
+                                           SCIP_Bool modifiable,
+                                           SCIP_Bool dynamic,
+                                           SCIP_Bool removable,
+                                           SCIP_Bool stickingatnode)
+    SCIP_RETCODE SCIPaddCoefExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR* var, SCIP_RATIONAL* val)
+    SCIP_RETCODE SCIPchgCoefExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR* var, SCIP_RATIONAL* val)
+    SCIP_RETCODE SCIPchgLhsExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_RATIONAL* lhs)
+    SCIP_RETCODE SCIPchgRhsExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_RATIONAL* rhs)
+    SCIP_RATIONAL* SCIPgetLhsExactLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RATIONAL* SCIPgetRhsExactLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RATIONAL** SCIPgetValsExactLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_VAR** SCIPgetVarsExactLinear(SCIP* scip, SCIP_CONS* cons)
+    int SCIPgetNVarsExactLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RETCODE SCIPgetActivityExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_SOL* sol, SCIP_RATIONAL* ret)
 
 cdef extern from "scip/cons_linear.h":
     SCIP_RETCODE SCIPcreateConsLinear(SCIP* scip,
