@@ -522,6 +522,9 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_DIVESET:
         pass
 
+    ctypedef struct SCIP_SPARSESOL:
+        pass
+
     ctypedef struct SCIP_HASHMAP:
         pass
 
@@ -824,6 +827,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPreleaseVar(SCIP* scip, SCIP_VAR** var)
     SCIP_RETCODE SCIPtransformVar(SCIP* scip, SCIP_VAR* var, SCIP_VAR** transvar)
     SCIP_RETCODE SCIPgetTransformedVar(SCIP* scip, SCIP_VAR* var, SCIP_VAR** transvar)
+    SCIP_RETCODE SCIPgetProbvarLinearSum(SCIP* scip, SCIP_VAR** vars, SCIP_Real* scalars, int* nvars, int varssize, SCIP_Real* constant, int* requiredsize)
     SCIP_RETCODE SCIPaddVarLocks(SCIP* scip, SCIP_VAR* var, int nlocksdown, int nlocksup)
     SCIP_RETCODE SCIPaddVarLocksType(SCIP* scip, SCIP_VAR* var, SCIP_LOCKTYPE locktype, int nlocksdown, int nlocksup)
     int SCIPvarGetNLocksDown(SCIP_VAR* var)
@@ -2102,6 +2106,9 @@ cdef extern from "scip/cons_countsols.h":
     SCIP_RETCODE SCIPcount(SCIP* scip)
     SCIP_RETCODE SCIPsetParamsCountsols(SCIP* scip)
     SCIP_Longint SCIPgetNCountedSols(SCIP* scip, SCIP_Bool* valid)
+    void SCIPgetCountedSparseSols(SCIP* scip, SCIP_VAR*** vars, int* nvars, SCIP_SPARSESOL*** sols, int* nsols)
+    void SCIPsparseSolGetFirstSol(SCIP_SPARSESOL* sparsesol, SCIP_Longint* sol, int nvars)
+    SCIP_Bool SCIPsparseSolGetNextSol(SCIP_SPARSESOL* sparsesol, SCIP_Longint* sol, int nvars)
 
 cdef extern from "scip/paramset.h":
 

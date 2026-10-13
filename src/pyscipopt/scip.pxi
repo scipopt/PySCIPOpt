@@ -12545,6 +12545,85 @@ cdef class Model:
             print('total number of solutions found is not valid!')
         return nsols
 
+    def getCountedSols(self):
+        """
+        Get the feasible solutions collected by `count()`.
+
+        Solutions are only collected if the parameter `constraints/countsols/collect`
+        is set to True before calling `count()`. Only integral variables are counted,
+        so continuous variables are not part of the returned solutions. All solutions
+        are expanded, so their number can be huge. The solutions are freed together
+        with the transformed problem.
+
+        Returns
+        -------
+        list of dict
+            Each solution maps the names of the integral original variables to their values.
+
+        """
+        cdef SCIP_VAR** activevars
+        cdef SCIP_SPARSESOL** sparsesols
+        cdef SCIP_VAR** vars
+        cdef SCIP_Real* scalars
+        cdef SCIP_Longint* sol
+        cdef SCIP_VAR* transvar
+        cdef SCIP_Real constant
+        cdef SCIP_Bool valid
+        cdef int nactivevars
+        cdef int nsparsesols
+        cdef int nvars
+        cdef int requiredsize
+        cdef int i
+        cdef int s
+
+        if SCIPgetStage(self._scip) < SCIP_STAGE_TRANSFORMED or SCIPgetStage(self._scip) == SCIP_STAGE_FREETRANS:
+            raise Warning("method cannot be called before count() or after the transformed problem is freed")
+
+        nsols = SCIPgetNCountedSols(self._scip, &valid)
+        if not valid:
+            raise Warning("number of counted solutions does not fit into a long integer, cannot collect them")
+
+        SCIPgetCountedSparseSols(self._scip, &activevars, &nactivevars, &sparsesols, &nsparsesols)
+        if nsparsesols == 0:
+            if nsols > 0:
+                raise Warning("no solutions were collected, set constraints/countsols/collect to True before calling count()")
+            return []
+
+        activeidx = {<size_t>activevars[i]: i for i in range(nactivevars)}
+
+        vars = <SCIP_VAR**> malloc((nactivevars + 1) * sizeof(SCIP_VAR*))
+        scalars = <SCIP_Real*> malloc((nactivevars + 1) * sizeof(SCIP_Real))
+        sol = <SCIP_Longint*> malloc((nactivevars + 1) * sizeof(SCIP_Longint))
+
+        try:
+            origvars = []
+            for i in range(SCIPgetNOrigVars(self._scip)):
+                if not SCIPvarIsIntegral(SCIPgetOrigVars(self._scip)[i]):
+                    continue
+                PY_SCIP_CALL(SCIPgetTransformedVar(self._scip, SCIPgetOrigVars(self._scip)[i], &transvar))
+                vars[0] = transvar
+                scalars[0] = 1.0
+                nvars = 1
+                constant = 0.0
+                PY_SCIP_CALL(SCIPgetProbvarLinearSum(self._scip, vars, scalars, &nvars, nactivevars + 1, &constant, &requiredsize))
+                terms = [(activeidx[<size_t>vars[j]], scalars[j]) for j in range(nvars)]
+                origvars.append((bytes(SCIPvarGetName(SCIPgetOrigVars(self._scip)[i])).decode("utf-8"), constant, terms))
+
+            sols = []
+            for s in range(nsparsesols):
+                SCIPsparseSolGetFirstSol(sparsesols[s], sol, nactivevars)
+                while True:
+                    sols.append({name: c + sum(scalar * sol[idx] for idx, scalar in terms)
+                                 for name, c, terms in origvars})
+                    if not SCIPsparseSolGetNextSol(sparsesols[s], sol, nactivevars):
+                        break
+        finally:
+            free(vars)
+            free(scalars)
+            free(sol)
+
+        return sols
+
     def setParamsCountsols(self):
         """Sets SCIP parameters such that a valid counting process is possible."""
         PY_SCIP_CALL(SCIPsetParamsCountsols(self._scip))

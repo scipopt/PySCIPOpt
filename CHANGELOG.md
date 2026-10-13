@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added `getCountedSols()` to retrieve the solutions collected by `count()` (#906)
 ### Fixed
 ### Changed
 ### Removed
