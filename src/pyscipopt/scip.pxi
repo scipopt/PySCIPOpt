@@ -12593,34 +12593,34 @@ cdef class Model:
 
         vars = <SCIP_VAR**> malloc((nactivevars + 1) * sizeof(SCIP_VAR*))
         scalars = <SCIP_Real*> malloc((nactivevars + 1) * sizeof(SCIP_Real))
-        sol = <SCIP_Longint*> malloc((nactivevars + 1) * sizeof(SCIP_Longint))
 
-        try:
-            origvars = []
-            for i in range(SCIPgetNOrigVars(self._scip)):
-                if not SCIPvarIsIntegral(SCIPgetOrigVars(self._scip)[i]):
-                    continue
-                PY_SCIP_CALL(SCIPgetTransformedVar(self._scip, SCIPgetOrigVars(self._scip)[i], &transvar))
-                vars[0] = transvar
-                scalars[0] = 1.0
-                nvars = 1
-                constant = 0.0
-                PY_SCIP_CALL(SCIPgetProbvarLinearSum(self._scip, vars, scalars, &nvars, nactivevars + 1, &constant, &requiredsize))
-                terms = [(activeidx[<size_t>vars[j]], scalars[j]) for j in range(nvars)]
-                origvars.append((bytes(SCIPvarGetName(SCIPgetOrigVars(self._scip)[i])).decode("utf-8"), constant, terms))
+        origvars = []
+        for i in range(SCIPgetNOrigVars(self._scip)):
+            if not SCIPvarIsIntegral(SCIPgetOrigVars(self._scip)[i]):
+                continue
+            PY_SCIP_CALL(SCIPgetTransformedVar(self._scip, SCIPgetOrigVars(self._scip)[i], &transvar))
+            vars[0] = transvar
+            scalars[0] = 1.0
+            nvars = 1
+            constant = 0.0
+            PY_SCIP_CALL(SCIPgetProbvarLinearSum(self._scip, vars, scalars, &nvars, nactivevars + 1, &constant, &requiredsize))
+            terms = [(activeidx[<size_t>vars[j]], scalars[j]) for j in range(nvars)]
+            origvars.append((bytes(SCIPvarGetName(SCIPgetOrigVars(self._scip)[i])).decode("utf-8"), constant, terms))
 
-            sols = []
-            for s in range(nsparsesols):
-                SCIPsparseSolGetFirstSol(sparsesols[s], sol, nactivevars)
-                while True:
-                    sols.append({name: c + sum(scalar * sol[idx] for idx, scalar in terms)
-                                 for name, c, terms in origvars})
-                    if not SCIPsparseSolGetNextSol(sparsesols[s], sol, nactivevars):
-                        break
-        finally:
-            free(vars)
-            free(scalars)
-            free(sol)
+        free(vars)
+        free(scalars)
+
+        sol = <SCIP_Longint*> malloc(nactivevars * sizeof(SCIP_Longint))
+        sols = []
+        for s in range(nsparsesols):
+            SCIPsparseSolGetFirstSol(sparsesols[s], sol, nactivevars)
+            while True:
+                sols.append({name: c + sum(scalar * sol[idx] for idx, scalar in terms)
+                             for name, c, terms in origvars})
+                if not SCIPsparseSolGetNextSol(sparsesols[s], sol, nactivevars):
+                    break
+
+        free(sol)
 
         return sols
 
