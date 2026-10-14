@@ -75,8 +75,8 @@ model.setObjective(x + y)
 model.addCons(2*x - y*y >= 0)
 model.optimize()
 sol = model.getBestSol()
-print("x: {}".format(sol[x]))
-print("y: {}".format(sol[y]))
+print(f"x: {sol[x]}")
+print(f"y: {sol[y]}")
 ```
 
 Writing new plugins

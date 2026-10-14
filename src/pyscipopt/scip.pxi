@@ -1255,9 +1255,7 @@ cdef class BoundChange:
         return SCIPboundchgIsRedundant(self.scip_boundchg)
 
     def __repr__(self):
-        return "{} {} {}".format(self.getVar(),
-                                 _SCIP_BOUNDTYPE_TO_STRING[self.getBoundtype()],
-                                 self.getNewBound())
+        return f"{self.getVar()} {_SCIP_BOUNDTYPE_TO_STRING[self.getBoundtype()]} {self.getNewBound()}"
 
 cdef class DomainChanges:
     """Set of domain changes."""
