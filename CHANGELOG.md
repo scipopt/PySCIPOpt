@@ -5,7 +5,7 @@
 - Added more type annotations and deprecation markers to the stubs.
 - Added tests for `getObjVal()` and `getVal()`
 ### Fixed
-- Fixed incorrect `getObjVal()` result when _bestSol.sol was outdated or missing
+- Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
 ### Changed
 - Replaced `format()` with f-strings in examples
 ### Removed
