@@ -1255,9 +1255,7 @@ cdef class BoundChange:
         return SCIPboundchgIsRedundant(self.scip_boundchg)
 
     def __repr__(self):
-        return "{} {} {}".format(self.getVar(),
-                                 _SCIP_BOUNDTYPE_TO_STRING[self.getBoundtype()],
-                                 self.getNewBound())
+        return f"{self.getVar()} {_SCIP_BOUNDTYPE_TO_STRING[self.getBoundtype()]} {self.getNewBound()}"
 
 cdef class DomainChanges:
     """Set of domain changes."""
@@ -11625,6 +11623,11 @@ cdef class Model:
         float
 
         """
+
+        # Ensure _bestSol is up-to-date (cheap pointer comparison)
+        cdef SCIP_SOL* current_best_sol = SCIPgetBestSol(self._scip)
+        if self._bestSol is None or self._bestSol.sol != current_best_sol:
+            self._bestSol = Solution.create(self._scip, current_best_sol)
 
         if SCIPgetNSols(self._scip) == 0:
             if self.getStage() != SCIP_STAGE_SOLVING:
