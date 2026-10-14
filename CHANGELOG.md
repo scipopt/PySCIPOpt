@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added more type annotations and deprecation markers to the stubs.
 ### Fixed
 ### Changed
 ### Removed

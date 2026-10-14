@@ -28,6 +28,10 @@ Homepage = "https://github.com/SCIP-Interfaces/PySCIPOpt"
 norecursedirs = ["check"]
 testpaths = ["tests"]
 
+[tool.mypy]
+warn_unused_ignores = true
+enable_error_code = ["deprecated"]
+
 [tool.setuptools]
 include-package-data = false
 
