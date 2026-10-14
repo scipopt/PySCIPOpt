@@ -2,8 +2,9 @@
 
 ## Unreleased
 ### Added
+- Added tests for `getObjVal()` and `getVal()`
 ### Fixed
-- Fixed incorrect `getObjVal()` result when _bestSol.sol was outdated
+- Fixed incorrect `getObjVal()` result when _bestSol.sol was outdated or missing
 ### Changed
 - Replaced `format()` with f-strings in examples
 ### Removed
