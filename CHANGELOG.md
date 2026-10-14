@@ -2,8 +2,17 @@
 
 ## Unreleased
 ### Added
-- Added the following methods with tests: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()`, `getDeterministicTime()`, `getAvgDualbound()`, `getMaxTotalDepth()`, `getNBacktracks()`,\
-`getFocusNode()`, `getAvgLowerbound()`, `getFirstPrimalBound()`, `getLowerboundRoot()`, `getUpperbound()`, `getNObjlimLeaves()`
+- Added more type annotations and deprecation markers to the stubs.
+- Added tests for `getObjVal()` and `getVal()`
+### Fixed
+- Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
+### Changed
+- Replaced `format()` with f-strings in examples
+### Removed
+
+## 6.3.0 - 2026.10.11
+### Added
+- Added the following methods with tests: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()`, `getDeterministicTime()`, `getAvgDualbound()`, `getMaxTotalDepth()`, `getNBacktracks()`, `getFocusNode()`, `getAvgLowerbound()`, `getFirstPrimalBound()`, `getLowerboundRoot()`, `getUpperbound()`, `getNObjlimLeaves()`
 - Added `addConsCumulative()` for SCIP cumulative constraints (#1222)
 - Added `addConsLogicor()`, `addCoefLogicor()`, `getNVarsLogicor()`, `getVarsLogicor()`, `getDualsolLogicor()` and `getDualfarkasLogicor()` for SCIP logicor constraints (#977)
 - `Expr` and `GenExpr` support `__pos__` magic method like `+Expr` or `+GenExpr`
@@ -23,6 +32,8 @@
 - Integration tests now run in the merge queue before merging instead of after pushing to `master` (#1249)
 ### Removed
 - `SumExpr`.coefs has been removed; its values were always 1.0 (#1258)
+- Deprecated `getOp` method in `GenExpr` (#1259)
+- Deprecated inner enumerate class `Operator` (#1259)
 
 ## 6.2.1 - 2026.05.16
 ### Fixed
