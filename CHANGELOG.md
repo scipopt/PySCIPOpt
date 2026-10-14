@@ -6,6 +6,7 @@
 - Added tests for `getObjVal()` and `getVal()`
 ### Fixed
 - Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
+- Fixed `getDualsolKnapsack()` and `getDualfarkasKnapsack()` returning 0 for original constraints, and the handler check in `getVarsAnd()` that could never fail
 ### Changed
 - Replaced `format()` with f-strings in examples
 ### Removed
