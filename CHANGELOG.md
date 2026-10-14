@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added more type annotations and deprecation markers to the stubs.
 - Added tests for `getObjVal()` and `getVal()`
 ### Fixed
 - Fixed incorrect `getObjVal()` result when _bestSol.sol was outdated or missing
