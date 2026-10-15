@@ -46,6 +46,8 @@ manylinux-aarch64-image = "manylinux_2_28"
 
 [tool.cibuildwheel.linux]
 skip="pp* cp36* cp37* *musllinux*"
+# SCIP_ARTIFACT_SUFFIX ("-debug", "-exact") picks a variant build of SCIP, see scripts/rename_package.py
+environment-pass = ["SCIP_ARTIFACT_SUFFIX"]
 before-all = '''
 #!/bin/bash
 (apt-get update && apt-get install --yes wget) || yum install -y wget zlib libgfortran || brew install wget
@@ -53,9 +55,9 @@ AARCH=$(uname -m)
 echo "------"
 echo $AARCH
 if [[ $AARCH == "aarch64" ]]; then
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.12.0/libscip-linux-arm.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.12.0/libscip-linux-arm${SCIP_ARTIFACT_SUFFIX}.zip -O scip.zip
 else
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.12.0/libscip-linux.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.12.0/libscip-linux${SCIP_ARTIFACT_SUFFIX}.zip -O scip.zip
 fi
 unzip scip.zip
 mv scip_install scip
@@ -74,9 +76,9 @@ before-all = '''
 brew install wget zlib gcc
 export MACOSX_DEPLOYMENT_TARGET=11.0
 if [[ $CIBW_ARCHS == *"arm"* ]]; then
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.12.0/libscip-macos-arm.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.12.0/libscip-macos-arm${SCIP_ARTIFACT_SUFFIX}.zip -O scip.zip
 else
-    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.12.0/libscip-macos-intel.zip -O scip.zip
+    wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.12.0/libscip-macos-intel${SCIP_ARTIFACT_SUFFIX}.zip -O scip.zip
 fi
 unzip scip.zip
 mv scip_install src/scip
@@ -109,7 +111,7 @@ repair-wheel-command = [
 skip="pp* cp36* cp37*"
 before-all = [
     "choco install 7zip wget",
-    "wget https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.12.0/libscip-windows.zip -O scip.zip",
+    "python {project}/scripts/fetch_scip.py https://github.com/scipopt/scipoptsuite-deploy/releases/download/v0.12.0/libscip-windows.zip",
     "\"C:\\Program Files\\7-Zip\\7z.exe\" x \"scip.zip\" -o\"scip-test\"",
     "mv .\\scip-test\\scip_install .\\test",
     "mv .\\test .\\scip"
