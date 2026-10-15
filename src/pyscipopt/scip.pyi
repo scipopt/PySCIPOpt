@@ -21,11 +21,8 @@ _core_dot: Incomplete
 _core_dot_2d: Incomplete
 _core_sum: Incomplete
 buildGenExprObj: Incomplete
-expr_to_array: Incomplete
-expr_to_nodes: Incomplete
 quickprod: Incomplete
 quicksum: Incomplete
-value_to_array: Incomplete
 
 def is_memory_freed() -> bool: ...
 def print_memory_in_use() -> None: ...

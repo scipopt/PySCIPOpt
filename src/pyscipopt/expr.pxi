@@ -738,6 +738,11 @@ cdef class GenExpr(ExprLike):
         )
         return self._op
 
+    cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
+        raise NotImplementedError(
+            f"{self.__class__.__name__!s} need to implement to_scip_expr() method"
+        )
+
     cdef GenExpr copy(self, bint copy=True):
         cdef object cls = <type>Py_TYPE(self)
         cdef GenExpr res = cls.__new__(cls)
@@ -758,6 +763,35 @@ cdef class SumExpr(GenExpr):
 
     def __repr__(self) -> str:
         return f"sum({self.constant},{','.join(map(str, self.children))})"
+
+    cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
+        cdef Py_ssize_t i, n_created = 0
+        cdef int n = len(self.children) + (1 if self.constant != 0 else 0)
+        cdef SCIP_EXPR* expr
+        cdef SCIP_EXPR** children_expr = <SCIP_EXPR**> malloc(n * sizeof(SCIP_EXPR*))
+        cdef SCIP_Real* coefs = <SCIP_Real*> malloc(n * sizeof(SCIP_Real))
+
+        try:
+            for i in range(len(self.children)):
+                children_expr[i] = (<GenExpr>self.children[i]).to_scip_expr(scip)
+                coefs[i] = 1
+                n_created = i + 1
+
+            if self.constant != 0:
+                i = len(self.children)
+                PY_SCIP_CALL(SCIPcreateExprValue(scip, &children_expr[i], <SCIP_Real>self.constant, NULL, NULL))
+                coefs[i] = 1
+                n_created = i + 1
+
+            PY_SCIP_CALL(SCIPcreateExprSum(scip, &expr, n, children_expr, coefs, 0, NULL, NULL))
+        finally:
+            i = 0
+            while i < n_created:
+                PY_SCIP_CALL(SCIPreleaseExpr(scip, &children_expr[i]))
+                i += 1
+            free(coefs)
+            free(children_expr)
+        return expr
 
     cpdef double _evaluate(self, Solution sol) except *:
         cdef double res = self.constant
@@ -793,6 +827,31 @@ cdef class ProdExpr(GenExpr):
     def __repr__(self) -> str:
         return f"prod({self.constant},{','.join(map(str, self.children))})"
 
+    cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
+        cdef Py_ssize_t i, n_created = 0
+        cdef int n = len(self.children) + (1 if self.constant != 1 else 0)
+        cdef SCIP_EXPR* expr
+        cdef SCIP_EXPR** children_expr = <SCIP_EXPR**> malloc(n * sizeof(SCIP_EXPR*))
+
+        try:
+            for i in range(len(self.children)):
+                children_expr[i] = (<GenExpr>self.children[i]).to_scip_expr(scip)
+                n_created = i + 1
+
+            if self.constant != 1:
+                i = len(self.children)
+                PY_SCIP_CALL(SCIPcreateExprValue(scip, &children_expr[i], <SCIP_Real>self.constant, NULL, NULL))
+                n_created = i + 1
+
+            PY_SCIP_CALL(SCIPcreateExprProduct(scip, &expr, n, children_expr, 1, NULL, NULL))
+        finally:
+            i = 0
+            while i < n_created:
+                PY_SCIP_CALL(SCIPreleaseExpr(scip, &children_expr[i]))
+                i += 1
+            free(children_expr)
+        return expr
+
     cpdef double _evaluate(self, Solution sol) except *:
         cdef double res = self.constant
         cdef list children = self.children
@@ -823,6 +882,12 @@ cdef class VarExpr(GenExpr):
     def __repr__(self) -> str:
         return str(self.children[0])
 
+    cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
+        cdef SCIP_EXPR* expr
+        cdef Variable var = <Variable>self.children[0]
+        PY_SCIP_CALL(SCIPcreateExprVar(scip, &expr, var.scip_var, NULL, NULL))
+        return expr
+
     cpdef double _evaluate(self, Solution sol) except *:
         return (<Expr>self.children[0])._evaluate(sol)
 
@@ -839,6 +904,15 @@ cdef class PowExpr(GenExpr):
 
     def __repr__(self) -> str:
         return f"**({self.children[0]},{self.expo})"
+
+    cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
+        cdef SCIP_EXPR* expr
+        cdef SCIP_EXPR* child = (<GenExpr>self.children[0]).to_scip_expr(scip)
+        try:
+            PY_SCIP_CALL(SCIPcreateExprPow(scip, &expr, child, <SCIP_Real>self.expo, NULL, NULL))
+        finally:
+            PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
+        return expr
 
     cpdef double _evaluate(self, Solution sol) except *:
         return (<GenExpr>self.children[0])._evaluate(sol) ** self.expo
@@ -866,6 +940,15 @@ cdef class AbsExpr(UnaryExpr):
     def __repr__(self) -> str:
         return f"abs({self.children[0]})"
 
+    cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
+        cdef SCIP_EXPR* expr
+        cdef SCIP_EXPR* child = (<GenExpr>self.children[0]).to_scip_expr(scip)
+        try:
+            PY_SCIP_CALL(SCIPcreateExprAbs(scip, &expr, child, NULL, NULL))
+        finally:
+            PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
+        return expr
+
     cpdef double _evaluate(self, Solution sol) except *:
         return c_fabs((<GenExpr>self.children[0])._evaluate(sol))
 
@@ -875,6 +958,15 @@ cdef class ExpExpr(UnaryExpr):
     def __repr__(self) -> str:
         return f"exp({self.children[0]})"
 
+    cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
+        cdef SCIP_EXPR* expr
+        cdef SCIP_EXPR* child = (<GenExpr>self.children[0]).to_scip_expr(scip)
+        try:
+            PY_SCIP_CALL(SCIPcreateExprExp(scip, &expr, child, NULL, NULL))
+        finally:
+            PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
+        return expr
+
     cpdef double _evaluate(self, Solution sol) except *:
         return c_exp((<GenExpr>self.children[0])._evaluate(sol))
 
@@ -883,6 +975,15 @@ cdef class LogExpr(UnaryExpr):
 
     def __repr__(self) -> str:
         return f"log({self.children[0]})"
+
+    cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
+        cdef SCIP_EXPR* expr
+        cdef SCIP_EXPR* child = (<GenExpr>self.children[0]).to_scip_expr(scip)
+        try:
+            PY_SCIP_CALL(SCIPcreateExprLog(scip, &expr, child, NULL, NULL))
+        finally:
+            PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
+        return expr
 
     cpdef double _evaluate(self, Solution sol) except *:
         cdef double val = (<GenExpr>self.children[0])._evaluate(sol)
@@ -896,6 +997,15 @@ cdef class SqrtExpr(UnaryExpr):
     def __repr__(self) -> str:
         return f"sqrt({self.children[0]})"
 
+    cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
+        cdef SCIP_EXPR* expr
+        cdef SCIP_EXPR* child = (<GenExpr>self.children[0]).to_scip_expr(scip)
+        try:
+            PY_SCIP_CALL(SCIPcreateExprPow(scip, &expr, child, <SCIP_Real>0.5, NULL, NULL))
+        finally:
+            PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
+        return expr
+
     cpdef double _evaluate(self, Solution sol) except *:
         cdef double val = (<GenExpr>self.children[0])._evaluate(sol)
         if val < 0.0:
@@ -908,6 +1018,15 @@ cdef class SinExpr(UnaryExpr):
     def __repr__(self) -> str:
         return f"sin({self.children[0]})"
 
+    cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
+        cdef SCIP_EXPR* expr
+        cdef SCIP_EXPR* child = (<GenExpr>self.children[0]).to_scip_expr(scip)
+        try:
+            PY_SCIP_CALL(SCIPcreateExprSin(scip, &expr, child, NULL, NULL))
+        finally:
+            PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
+        return expr
+
     cpdef double _evaluate(self, Solution sol) except *:
         cdef double val = (<GenExpr>self.children[0])._evaluate(sol)
         if c_fabs(val) == INFINITY:
@@ -919,6 +1038,15 @@ cdef class CosExpr(UnaryExpr):
 
     def __repr__(self) -> str:
         return f"cos({self.children[0]})"
+
+    cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
+        cdef SCIP_EXPR* expr
+        cdef SCIP_EXPR* child = (<GenExpr>self.children[0]).to_scip_expr(scip)
+        try:
+            PY_SCIP_CALL(SCIPcreateExprCos(scip, &expr, child, NULL, NULL))
+        finally:
+            PY_SCIP_CALL(SCIPreleaseExpr(scip, &child))
+        return expr
 
     cpdef double _evaluate(self, Solution sol) except *:
         cdef double val = (<GenExpr>self.children[0])._evaluate(sol)
@@ -940,6 +1068,11 @@ cdef class Constant(GenExpr):
 
     def __repr__(self) -> str:
         return str(self.number)
+
+    cdef SCIP_EXPR* to_scip_expr(self, SCIP* scip) except *:
+        cdef SCIP_EXPR* expr
+        PY_SCIP_CALL(SCIPcreateExprValue(scip, &expr, <SCIP_Real>self.number, NULL, NULL))
+        return expr
 
     cpdef double _evaluate(self, Solution sol) except *:
         return self.number
@@ -1131,49 +1264,6 @@ cdef dict _to_dict(Expr expr, Expr other, bool copy = True):
             children[k_obj] = other_v
 
     return children
-
-
-def expr_to_nodes(expr):
-    '''transforms tree to an array of nodes. each node is an operator and the position of the 
-    children of that operator (i.e. the other nodes) in the array'''
-    assert isinstance(expr, GenExpr)
-    nodes = []
-    expr_to_array(expr, nodes)
-    return nodes
-
-def value_to_array(val, nodes):
-    """adds a given value to an array"""
-    nodes.append((Constant, [val]))
-    return len(nodes) - 1
-
-# there many hacky things here: value_to_array is trying to mimick
-# the multiple dispatch of julia. Also that we have to ask which expression is which
-# in order to get the constants correctly
-# also, for sums, we are not considering coefficients, because basically all coefficients are 1
-# haven't even consider substractions, but I guess we would interpret them as a - b = a + (-1) * b
-def expr_to_array(expr, nodes):
-    """adds expression to array"""
-    t = <type>Py_TYPE(expr)
-    if t is Constant:  # FIXME: constant expr should also have children!
-        nodes.append((t, [expr.number]))
-
-    elif t is not VarExpr:
-        indices = []
-        for child in expr.children:
-            # position of child in the final array of nodes, 'nodes'
-            indices.append(expr_to_array(child, nodes))
-        if t is PowExpr:
-            indices.append(value_to_array(expr.expo, nodes))
-        elif (t is SumExpr and expr.constant != 0) or (
-            t is ProdExpr and expr.constant != 1
-        ):
-            indices.append(value_to_array(expr.constant, nodes))
-
-        nodes.append((t, indices))
-
-    else:  # var
-        nodes.append((t, expr.children))
-    return len(nodes) - 1
 
 
 cdef inline bint _is_number(object x):
