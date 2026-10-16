@@ -4,10 +4,12 @@
 ### Added
 - Added more type annotations and deprecation markers to the stubs.
 - Added tests for `getObjVal()` and `getVal()`
+- Added `addConsLinear()` to add linear constraints from variables and coefficients without building an expression
 ### Fixed
 - Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
 ### Changed
 - Replaced `format()` with f-strings in examples
+- Methods taking a list of variables (e.g. `addConsKnapsack()`) no longer convert it to a NumPy array to check its dimension
 ### Removed
 
 ## 6.3.0 - 2026.10.11
