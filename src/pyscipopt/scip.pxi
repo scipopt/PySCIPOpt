@@ -1565,6 +1565,9 @@ cdef class Variable(Expr):
     cdef Variable copy(self, bint copy=True):
         return self
 
+    def __iadd__(self, other):
+        return self + other
+
     def ptr(self):
         return <size_t>(self.scip_var)
 

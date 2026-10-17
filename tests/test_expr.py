@@ -591,6 +591,15 @@ def test_Expr_iadd_Expr():
     assert str(e1) == "Expr({Term(x): -1.0, Term(): 0.0, Term(y): 1.0})"
     assert str(e2) == "Expr({Term(y): 1.0, Term(): -1.0})"
 
+    s = x
+    s += y
+    s += 2
+    s *= 3
+    assert str(s) == "Expr({Term(x): 3.0, Term(y): 3.0, Term(): 6.0})"
+    assert str(x.terms) == "{Term(x): 1.0}"
+    c = m.addCons(x <= 4)
+    assert m.getValsLinear(c) == {"x": 1.0}
+
 
 def test_pos():
     m = Model()

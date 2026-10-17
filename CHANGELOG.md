@@ -6,6 +6,7 @@
 - Added tests for `getObjVal()` and `getVal()`
 ### Fixed
 - Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
+- Fixed `+=` on a `Variable` modifying the variable itself (e.g. `s = x; s += y` turned `x` into `x + y`)
 ### Changed
 - Replaced `format()` with f-strings in examples
 ### Removed
