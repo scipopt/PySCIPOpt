@@ -1,0 +1,3 @@
+wheel
+numpy
+docstring-adder @ git+https://github.com/astral-sh/docstring-adder@8377e23ca0c1533bef3e744209709d6d783782b6
