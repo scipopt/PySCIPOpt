@@ -20,6 +20,7 @@
 - Added tests for `getRowLinear()` and extended existing testing for `isActive()`
 ### Fixed
 - Fixed Cython 3.3 compatibility (#1248)
+- Fixed `lotsizing_lazy` example: the constraint handler now locks its variables in `conslock`, so presolve can no longer aggregate them away and make the lazily added (l,S) cuts cut off the optimum (#1228)
 - Made `test_markDoNotAggrVar_and_getStatus` robust to SCIP presolve changes by discovering the aggregated/multi-aggregated variables instead of hardcoding them
 - Ensure probing has ended when freeing scip instance in benders
 ### Changed
