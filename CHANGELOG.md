@@ -10,6 +10,7 @@
 - Fixed `getDualsolKnapsack()` and `getDualfarkasKnapsack()` returning 0 for original constraints, and the handler check in `getVarsAnd()` that could never fail
 ### Changed
 - Replaced `format()` with f-strings in examples
+- Made expression fields read-only to prevent accidental runtime modification
 ### Removed
 
 ## 6.3.0 - 2026.10.11
