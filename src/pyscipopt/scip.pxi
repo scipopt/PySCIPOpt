@@ -6089,37 +6089,43 @@ cdef class Model:
         assert quadcons.expr.degree() <= 2, "given constraint is not quadratic, degree == %d" % quadcons.expr.degree()
 
         cdef SCIP_CONS* scip_cons
-        cdef SCIP_EXPR* prodexpr
-        cdef _VarArray wrapper
-        PY_SCIP_CALL(SCIPcreateConsQuadraticNonlinear(
-            self._scip, &scip_cons, str_conversion(kwargs['name']),
-            0, NULL, NULL,        # linear
-            0, NULL, NULL, NULL,  # quadratc
+        cdef SCIP_EXPR* expr
+        cdef int nterms = len(terms)
+        cdef int nlin = 0
+        cdef int nquad = 0
+        cdef SCIP_VAR** linvars = <SCIP_VAR**> malloc(nterms * sizeof(SCIP_VAR*))
+        cdef SCIP_Real* lincoefs = <SCIP_Real*> malloc(nterms * sizeof(SCIP_Real))
+        cdef SCIP_VAR** quadvars1 = <SCIP_VAR**> malloc(nterms * sizeof(SCIP_VAR*))
+        cdef SCIP_VAR** quadvars2 = <SCIP_VAR**> malloc(nterms * sizeof(SCIP_VAR*))
+        cdef SCIP_Real* quadcoefs = <SCIP_Real*> malloc(nterms * sizeof(SCIP_Real))
+
+        for v, c in terms.items():
+            if len(v) == 1:
+                linvars[nlin] = (<Variable>v[0]).scip_var
+                lincoefs[nlin] = <SCIP_Real>c
+                nlin += 1
+            else:
+                quadvars1[nquad] = (<Variable>v[0]).scip_var
+                quadvars2[nquad] = (<Variable>v[1]).scip_var
+                quadcoefs[nquad] = <SCIP_Real>c
+                nquad += 1
+
+        PY_SCIP_CALL(SCIPcreateExprQuadratic(
+            self._scip, &expr, nlin, linvars, lincoefs,
+            nquad, quadvars1, quadvars2, quadcoefs, NULL, NULL))
+        PY_SCIP_CALL(SCIPcreateConsNonlinear(
+            self._scip, &scip_cons, str_conversion(kwargs['name']), expr,
             kwargs['lhs'], kwargs['rhs'],
             kwargs['initial'], kwargs['separate'], kwargs['enforce'],
             kwargs['check'], kwargs['propagate'], kwargs['local'],
             kwargs['modifiable'], kwargs['dynamic'], kwargs['removable']))
+        PY_SCIP_CALL(SCIPreleaseExpr(self._scip, &expr))
 
-        for v, c in terms.items():
-            if len(v) == 1: # linear
-                wrapper = _VarArray(v[0])
-                PY_SCIP_CALL(SCIPaddLinearVarNonlinear(self._scip, scip_cons, wrapper.ptr[0], c))
-            else: # nonlinear
-                assert len(v) == 2, 'term length must be 1 or 2 but it is %s' % len(v)
-
-                varexprs = <SCIP_EXPR**> malloc(2 * sizeof(SCIP_EXPR*))
-                wrapper = _VarArray(v[0])
-                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[0], wrapper.ptr[0], NULL, NULL) )
-                wrapper = _VarArray(v[1])
-                PY_SCIP_CALL( SCIPcreateExprVar(self._scip, &varexprs[1], wrapper.ptr[0], NULL, NULL) )
-                PY_SCIP_CALL( SCIPcreateExprProduct(self._scip, &prodexpr, 2, varexprs, 1.0, NULL, NULL) )
-
-                PY_SCIP_CALL( SCIPaddExprNonlinear(self._scip, scip_cons, prodexpr, c) )
-
-                PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &prodexpr) )
-                PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &varexprs[1]) )
-                PY_SCIP_CALL( SCIPreleaseExpr(self._scip, &varexprs[0]) )
-                free(varexprs)
+        free(linvars)
+        free(lincoefs)
+        free(quadvars1)
+        free(quadvars2)
+        free(quadcoefs)
 
         PyCons = Constraint.create(scip_cons)
 
@@ -6141,27 +6147,26 @@ cdef class Model:
 
         """
         cdef SCIP_EXPR* expr
-        cdef SCIP_EXPR** varexprs
         cdef SCIP_EXPR** monomials
         cdef SCIP_CONS* scip_cons
-        cdef _VarArray wrapper
-        cdef int* idxs
+        cdef SCIP_VAR** termvars
         cdef int i
         cdef int j
 
         terms = cons.expr.terms
 
-        # collect variables
-        variables = {i: [var for var in term] for i, term in enumerate(terms)}
-
         # create monomials for terms
         monomials = <SCIP_EXPR**> malloc(len(terms) * sizeof(SCIP_EXPR*))
         termcoefs = <SCIP_Real*> malloc(len(terms) * sizeof(SCIP_Real))
+        termvars = <SCIP_VAR**> malloc(max(cons.expr.degree(), 1) * sizeof(SCIP_VAR*))
         for i, (term, coef) in enumerate(terms.items()):
-            wrapper = _VarArray(variables[i])
+            vartuple = (<Term>term).vartuple
+            for j in range(len(vartuple)):
+                termvars[j] = (<Variable>vartuple[j]).scip_var
 
-            PY_SCIP_CALL( SCIPcreateExprMonomial(self._scip, &monomials[i], wrapper.size, wrapper.ptr, NULL, NULL, NULL) )
+            PY_SCIP_CALL( SCIPcreateExprMonomial(self._scip, &monomials[i], len(vartuple), termvars, NULL, NULL, NULL) )
             termcoefs[i] = <SCIP_Real>coef
+        free(termvars)
 
         # create polynomial from monomials
         PY_SCIP_CALL( SCIPcreateExprSum(self._scip, &expr, <int>len(terms), monomials, termcoefs, 0.0, NULL, NULL))

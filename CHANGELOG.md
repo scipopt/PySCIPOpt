@@ -8,6 +8,8 @@
 - Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
 ### Changed
 - Replaced `format()` with f-strings in examples
+- Sped up building and adding nonlinear constraints, and `quicksum()` over nonlinear expressions
+- Variables in nonlinear expressions are no longer wrapped in `sum`/`prod` nodes
 ### Removed
 
 ## 6.3.0 - 2026.10.11

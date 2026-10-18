@@ -214,11 +214,11 @@ def test_getVal_with_GenExpr():
     assert m.getVal(z * x * y) == 0
     # test "Expr({Term(x): 1.0, Term(y): 1.0, Term(): 1.0})"
     assert m.getVal(x + y + 1) == 4
-    # test "prod(1.0,sum(0.0,prod(1.0,x)),**(sum(0.0,prod(1.0,x)),-1))"
+    # test "prod(1.0,x,**(x,-1))"
     assert m.getVal(x / x) == 1
-    # test "prod(1.0,sum(0.0,prod(1.0,y)),**(sum(0.0,prod(1.0,x)),-1))"
+    # test "prod(1.0,y,**(x,-1))"
     assert m.getVal(y / x) == 2
-    # test "**(prod(1.0,**(sum(0.0,prod(1.0,x)),-1)),2)"
+    # test "**(prod(1.0,**(x,-1)),2)"
     assert m.getVal((1 / x) ** 2) == 1
 
     # test C-level math functions
@@ -268,31 +268,31 @@ def test_getVal_with_GenExpr():
 def test_unary_ufunc(model):
     m, x, y, z = model
 
-    res = "abs(sum(0.0,prod(1.0,x)))"
+    res = "abs(x)"
     assert str(abs(x)) == res
     assert str(np.absolute(x)) == res
 
-    res = "[sin(sum(0.0,prod(1.0,x))) sin(sum(0.0,prod(1.0,y)))]"
+    res = "[sin(x) sin(y)]"
     assert str(sin([x, y])) == res
     assert str(np.sin([x, y])) == res
 
-    res = "[cos(sum(0.0,prod(1.0,x))) cos(sum(0.0,prod(1.0,y)))]"
+    res = "[cos(x) cos(y)]"
     assert str(cos([x, y])) == res
     assert str(np.cos([x, y])) == res
 
-    res = "[sqrt(sum(0.0,prod(1.0,x))) sqrt(sum(0.0,prod(1.0,y)))]"
+    res = "[sqrt(x) sqrt(y)]"
     assert str(sqrt([x, y])) == res
     assert str(np.sqrt([x, y])) == res
 
-    res = "[exp(sum(0.0,prod(1.0,x))) exp(sum(0.0,prod(1.0,y)))]"
+    res = "[exp(x) exp(y)]"
     assert str(exp([x, y])) == res
     assert str(np.exp([x, y])) == res
 
-    res = "[log(sum(0.0,prod(1.0,x))) log(sum(0.0,prod(1.0,y)))]"
+    res = "[log(x) log(y)]"
     assert str(log([x, y])) == res
     assert str(np.log([x, y])) == res
 
-    assert str(log([1, x])) == "[log(1.0) log(sum(0.0,prod(1.0,x)))]"
+    assert str(log([1, x])) == "[log(1.0) log(x)]"
 
     assert str(sqrt(4)) == "sqrt(4.0)"
     assert str(sqrt([4, 4])) == "[sqrt(4.0) sqrt(4.0)]"
@@ -348,15 +348,15 @@ def test_binary_ufunc(model):
 
     # test np.divide
     assert str(np.divide(x, 2)) == "Expr({Term(x): 0.5})"
-    assert str(np.divide(2, x)) == "prod(2.0,**(sum(0.0,prod(1.0,x)),-1))"
+    assert str(np.divide(2, x)) == "prod(2.0,**(x,-1))"
     assert str(np.divide(x, a)) == "[Expr({Term(x): 0.5})]"
-    assert str(np.divide(a, x)) == "[prod(2.0,**(sum(0.0,prod(1.0,x)),-1))]"
+    assert str(np.divide(a, x)) == "[prod(2.0,**(x,-1))]"
 
     # test np.power
     assert str(np.power(x, 2)) == "Expr({Term(x, x): 1.0})"
-    assert str(np.power(2, x)) == "exp(prod(1.0,log(2.0),sum(0.0,prod(1.0,x))))"
+    assert str(np.power(2, x)) == "exp(prod(1.0,log(2.0),x))"
     assert str(np.power(x, a)) == "[Expr({Term(x, x): 1.0})]"
-    assert str(np.power(a, x)) == "[exp(prod(1.0,log(2.0),sum(0.0,prod(1.0,x))))]"
+    assert str(np.power(a, x)) == "[exp(prod(1.0,log(2.0),x))]"
 
     # test np.less_equal
     assert str(np.less_equal(x, a)) == "[ExprCons(Expr({Term(x): 1.0}), None, 2.0)]"
@@ -504,19 +504,19 @@ def test_NotImplemented():
         genexpr == "1"
 
     # test Expr + GenExpr
-    assert str(x + genexpr) == "sum(0.0,sqrt(sum(0.0,prod(1.0,x))),prod(1.0,x))"
-    assert str(genexpr + x) == "sum(0.0,sqrt(sum(0.0,prod(1.0,x))),prod(1.0,x))"
+    assert str(x + genexpr) == "sum(0.0,sqrt(x),x)"
+    assert str(genexpr + x) == "sum(0.0,sqrt(x),x)"
 
     # test Expr * GenExpr
     assert (
-        str(x * genexpr) == "prod(1.0,sqrt(sum(0.0,prod(1.0,x))),sum(0.0,prod(1.0,x)))"
+        str(x * genexpr) == "prod(1.0,sqrt(x),x)"
     )
 
     # test Expr + array
     a = np.array([1])
     assert str(x + a) == "[Expr({Term(x): 1.0, Term(): 1.0})]"
     # test GenExpr + array
-    assert str(genexpr + a) == "[sum(1.0,sqrt(sum(0.0,prod(1.0,x))))]"
+    assert str(genexpr + a) == "[sum(1.0,sqrt(x))]"
 
     a = m.addMatrixVar(1)
     # test Expr >= array
@@ -524,26 +524,26 @@ def test_NotImplemented():
     # test GenExpr >= array
     assert (
         str(genexpr >= a)
-        == "[ExprCons(sum(0.0,prod(-1.0,sqrt(sum(0.0,prod(1.0,x)))),prod(1.0,x2)), None, 0.0)]"
+        == "[ExprCons(sum(0.0,prod(-1.0,sqrt(x)),x2), None, 0.0)]"
     )
     # test Expr <= array
     assert str(x <= a) == "[ExprCons(Expr({Term(x2): 1.0, Term(x): -1.0}), 0.0, None)]"
     # test GenExpr <= array
     assert (
         str(genexpr <= a)
-        == "[ExprCons(sum(0.0,prod(-1.0,sqrt(sum(0.0,prod(1.0,x)))),prod(1.0,x2)), 0.0, None)]"
+        == "[ExprCons(sum(0.0,prod(-1.0,sqrt(x)),x2), 0.0, None)]"
     )
     # test Expr == array
     assert str(x == a) == "[ExprCons(Expr({Term(x2): 1.0, Term(x): -1.0}), 0.0, 0.0)]"
     # test GenExpr == array
     assert (
         str(genexpr == a)
-        == "[ExprCons(sum(0.0,prod(-1.0,sqrt(sum(0.0,prod(1.0,x)))),prod(1.0,x2)), 0.0, 0.0)]"
+        == "[ExprCons(sum(0.0,prod(-1.0,sqrt(x)),x2), 0.0, 0.0)]"
     )
 
     # test Expr += GenExpr
     x += genexpr
-    assert str(x) == "sum(0.0,sqrt(sum(0.0,prod(1.0,x))),prod(1.0,x))"
+    assert str(x) == "sum(0.0,sqrt(x),x)"
 
 
 def test_term_eq():
@@ -656,6 +656,6 @@ def test_neg():
     neg_expr = -expr
     assert isinstance(expr, ProdExpr)
     assert isinstance(neg_expr, ProdExpr)
-    assert str(neg_expr) == "prod(1.0,sqrt(sum(0.0,prod(1.0,x))))"
+    assert str(neg_expr) == "prod(1.0,sqrt(x))"
 
     assert str(-Constant(3.0)) == "-3.0"

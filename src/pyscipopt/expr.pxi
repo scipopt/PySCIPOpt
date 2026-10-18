@@ -174,6 +174,9 @@ def buildGenExprObj(expr: Union[int, float, np.number, Expr, GenExpr]) -> GenExp
     if _is_number(expr):
         return Constant(expr)
 
+    elif <type>Py_TYPE(expr) is Variable:
+        return VarExpr(expr)
+
     elif isinstance(expr, Expr):
         # loop over terms and create a sumexpr with the sum of each term
         # each term is either a variable (which gets transformed into varexpr)
@@ -533,7 +536,17 @@ def quicksum(termlist):
     '''
     result = Expr()
     for term in termlist:
-        result += term
+        if <type>Py_TYPE(result) is SumExpr and _is_genexpr_compatible(term):
+            right = buildGenExprObj(term)
+            if <type>Py_TYPE(right) is SumExpr:
+                (<SumExpr>result).children.extend((<SumExpr>right).children)
+                (<SumExpr>result).constant += (<SumExpr>right).constant
+            elif <type>Py_TYPE(right) is Constant:
+                (<SumExpr>result).constant += (<Constant>right).number
+            else:
+                (<SumExpr>result).children.append(right)
+        else:
+            result += term
     return result
 
 def quickprod(termlist):
@@ -973,6 +986,8 @@ def exp(x):
         - If x is a vector, returns an np.ndarray of the same shape with the exp
           function applied element-wise.
     """
+    if isinstance(x, ExprLike):
+        return x.exp()
     return _wrap_ufunc(x, np.exp)
 
 
@@ -997,6 +1012,8 @@ def log(x):
         - If x is a vector, returns an np.ndarray of the same shape with the log
           function applied element-wise.
     """
+    if isinstance(x, ExprLike):
+        return x.log()
     return _wrap_ufunc(x, np.log)
 
 
@@ -1021,6 +1038,8 @@ def sqrt(x):
         - If x is a vector, returns an np.ndarray of the same shape with the sqrt
           function applied element-wise.
     """
+    if isinstance(x, ExprLike):
+        return x.sqrt()
     return _wrap_ufunc(x, np.sqrt)
 
 
@@ -1045,6 +1064,8 @@ def sin(x):
         - If x is a vector, returns an np.ndarray of the same shape with the sin
           function applied element-wise.
     """
+    if isinstance(x, ExprLike):
+        return x.sin()
     return _wrap_ufunc(x, np.sin)
 
 
@@ -1069,6 +1090,8 @@ def cos(x):
         - If x is a vector, returns an np.ndarray of the same shape with the cos
           function applied element-wise.
     """
+    if isinstance(x, ExprLike):
+        return x.cos()
     return _wrap_ufunc(x, np.cos)
 
 

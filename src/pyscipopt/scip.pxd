@@ -1902,6 +1902,17 @@ cdef extern from "scip/scip_expr.h":
                                         SCIP_Real* exponents,
                                         SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
                                         void* ownercreatedata)
+    SCIP_RETCODE SCIPcreateExprQuadratic(SCIP* scip,
+                                         SCIP_EXPR** expr,
+                                         int nlinvars,
+                                         SCIP_VAR** linvars,
+                                         SCIP_Real* lincoefs,
+                                         int nquadterms,
+                                         SCIP_VAR** quadvars1,
+                                         SCIP_VAR** quadvars2,
+                                         SCIP_Real* quadcoefs,
+                                         SCIP_DECL_EXPR_OWNERCREATE((*ownercreate)),
+                                         void* ownercreatedata)
     SCIP_RETCODE SCIPreleaseExpr(SCIP* scip, SCIP_EXPR** expr)
 
 cdef extern from "scip/pub_expr.h":
