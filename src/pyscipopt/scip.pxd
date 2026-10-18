@@ -2192,7 +2192,7 @@ cdef class ExprLike:
     cdef ExprLike copy(self, bint copy=*)
 
 cdef class Expr(ExprLike):
-    cdef public terms
+    cdef readonly terms
 
 cdef class Event:
     cdef SCIP_EVENT* event

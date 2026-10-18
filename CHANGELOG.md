@@ -8,6 +8,7 @@
 - Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
 ### Changed
 - Replaced `format()` with f-strings in examples
+- Made expression fields read-only to prevent accidental runtime modification
 ### Removed
 
 ## 6.3.0 - 2026.10.11
