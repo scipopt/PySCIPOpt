@@ -455,7 +455,7 @@ def test_addConsLinear():
     assert m.getObjVal() == -4.25
     assert m.getActivity(c1, m.getBestSol()) == 5
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         m.addConsLinear([x, y], [1])
     with pytest.raises(TypeError):
         m.addConsLinear([x, 1], [1, 1])
