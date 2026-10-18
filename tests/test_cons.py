@@ -505,6 +505,33 @@ def test_cons_cumulative():
     assert m.isEQ(m.getVal(start3), 0)
     assert m.isEQ(m.getObjVal(), 3)
 
+def test_addConsLinear():
+    m = Model()
+    x = m.addVar("x", lb=0, ub=2, obj=-1)
+    y = m.addVar("y", lb=0, ub=4, obj=-1)
+    z = m.addVar("z", lb=0, ub=5, obj=2)
+
+    c1 = m.addConsLinear([x, y], [2, 1], rhs=5, name="c1")
+    c2 = m.addConsLinear((x, z), (1.0, 4.0), lhs=1, rhs=5)
+    c3 = m.addConsLinear([y], [1], lhs=1)
+    assert c1.getConshdlrName() == "linear"
+    assert c1.name == "c1"
+    assert m.getValsLinear(c1) == {'x': 2, 'y': 1}
+    assert m.getValsLinear(c2) == {'x': 1, 'z': 4}
+    assert (m.getLhs(c1), m.getRhs(c1)) == (-m.infinity(), 5)
+    assert (m.getLhs(c2), m.getRhs(c2)) == (1, 5)
+    assert (m.getLhs(c3), m.getRhs(c3)) == (1, m.infinity())
+    assert m.getConss() == [c1, c2, c3]
+
+    m.optimize()
+    assert m.getObjVal() == -4.25
+    assert m.getActivity(c1, m.getBestSol()) == 5
+
+    with pytest.raises(ValueError):
+        m.addConsLinear([x, y], [1])
+    with pytest.raises(TypeError):
+        m.addConsLinear([x, 1], [1, 1])
+
 def test_getValsLinear():
     m = Model()
     x = m.addVar("x", lb=0, ub=2, obj=-1)

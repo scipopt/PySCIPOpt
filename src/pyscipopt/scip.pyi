@@ -803,6 +803,24 @@ class Model:
         removable: bool = False,
         stickingatnode: bool = False,
     ) -> Constraint: ...
+    def addConsLinear(
+        self,
+        vars: Sequence[Variable],
+        vals: Sequence[float],
+        lhs: float | None = None,
+        rhs: float | None = None,
+        name: str = "",
+        initial: bool = True,
+        separate: bool = True,
+        enforce: bool = True,
+        check: bool = True,
+        propagate: bool = True,
+        local: bool = False,
+        modifiable: bool = False,
+        dynamic: bool = False,
+        removable: bool = False,
+        stickingatnode: bool = False,
+    ) -> Constraint: ...
     def addConsKnapsack(
         self,
         vars: Sequence[Variable],

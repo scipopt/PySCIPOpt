@@ -2669,10 +2669,7 @@ cdef class _VarArray:
 
         if isinstance(vars, Variable):
             vars = [vars]
-        elif isinstance(vars, (list, tuple, MatrixVariable)):
-            if (ndim := np.ndim(vars)) != 1:
-                raise ValueError(f"Expected a 1D array, but got a {ndim}D array.")
-        else:
+        elif not isinstance(vars, (list, tuple, MatrixVariable)):
             raise TypeError(f"Expected Variable or list of Variable, got {type(vars)}.")
 
         self.size = len(vars)
@@ -2680,6 +2677,8 @@ cdef class _VarArray:
             self.ptr = <SCIP_VAR**> malloc(self.size * sizeof(SCIP_VAR*))
             for i, var in enumerate(vars):
                 if not isinstance(var, Variable):
+                    if (ndim := np.ndim(vars)) != 1:
+                        raise ValueError(f"Expected a 1D array, but got a {ndim}D array.")
                     raise TypeError(f"Expected Variable, got {type(var)}.")
                 self.ptr[i] = (<Variable>var).scip_var
 
@@ -7419,7 +7418,90 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pycons
-    
+
+    def addConsLinear(self, vars, vals, lhs=None, rhs=None, name="",
+                initial=True, separate=True, enforce=True, check=True,
+                propagate=True, local=False, modifiable=False, dynamic=False,
+                removable=False, stickingatnode=False):
+        """
+        Add a linear constraint lhs <= sum(vals[i] * vars[i]) <= rhs directly from
+        variables and coefficients, without building an expression. Faster than addCons
+        for building large models.
+
+        Parameters
+        ----------
+        vars : list of Variable
+            variables in the constraint
+        vals : list of float
+            coefficients of the variables
+        lhs : float or None, optional
+            left-hand side, -infinity if None (Default value = None)
+        rhs : float or None, optional
+            right-hand side, infinity if None (Default value = None)
+        name : str, optional
+            name of the constraint, generic name if empty (Default value = "")
+        initial : bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool, optional
+            is the constraint only valid locally? (Default value = False)
+        modifiable : bool, optional
+            is the constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool, optional
+            should the constraint always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        Constraint
+            The newly created linear constraint
+
+        """
+        cdef int nvars = len(vars)
+        cdef int i
+        cdef SCIP_Real* vals_array
+        cdef SCIP_CONS* scip_cons
+        cdef _VarArray wrapper
+
+        if nvars != len(vals):
+            raise ValueError("Number of variables and values must be the same.")
+
+        if lhs is None:
+            lhs = -SCIPinfinity(self._scip)
+        if rhs is None:
+            rhs = SCIPinfinity(self._scip)
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+
+        wrapper = _VarArray(vars)
+        vals_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+        for i in range(nvars):
+            vals_array[i] = <SCIP_Real>vals[i]
+
+        PY_SCIP_CALL(SCIPcreateConsLinear(
+            self._scip, &scip_cons, str_conversion(name), nvars, wrapper.ptr, vals_array,
+            lhs, rhs, initial, separate, enforce, check, propagate, local, modifiable,
+            dynamic, removable, stickingatnode))
+
+        free(vals_array)
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pyCons = self._getOrCreateCons(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        return pyCons
+
     def addConsKnapsack(self, vars, weights, capacity, name="",
                 initial=True, separate=True, enforce=True, check=True,
                 modifiable=False, propagate=True, local=False, dynamic=False,
