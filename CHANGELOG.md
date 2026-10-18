@@ -9,6 +9,7 @@
 - Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
 ### Changed
 - Replaced `format()` with f-strings in examples
+- Made expression fields read-only to prevent accidental runtime modification
 - Methods taking a list of variables (e.g. `addConsKnapsack()`) no longer convert it to a NumPy array to check its dimension
 ### Removed
 
