@@ -7466,7 +7466,8 @@ cdef class Model:
         cdef SCIP_CONS* scip_cons
         cdef _VarArray wrapper
 
-        assert nvars == len(vals), "Number of variables and values must be the same."
+        if nvars != len(vals):
+            raise ValueError("Number of variables and values must be the same.")
 
         if lhs is None:
             lhs = -SCIPinfinity(self._scip)
