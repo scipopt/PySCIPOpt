@@ -7054,7 +7054,7 @@ cdef class Model:
         cdef int i
 
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(and_cons.scip_cons))).decode('UTF-8')
-        assert(constype == 'and', "The constraint handler %s does not have this functionality." % constype)
+        assert constype == 'and', "The constraint handler %s does not have this functionality." % constype
 
         nvars = SCIPgetNVarsAnd(self._scip, and_cons.scip_cons)
         _vars = SCIPgetVarsAnd(self._scip, and_cons.scip_cons)
@@ -7189,19 +7189,23 @@ cdef class Model:
         Returns
         -------
         float
+            Zero if presolve removed the transformed constraint.
 
         """
+        cdef SCIP_CONS* transcons
 
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
         if not constype == 'logicor':
             raise Warning("dual solution values not available for constraints of type ", constype)
 
         if logicor_cons.isOriginal():
-            transcons = <Constraint>self.getTransformedCons(logicor_cons)
+            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, logicor_cons.scip_cons, &transcons))
+            if transcons == NULL:
+                return 0.0
         else:
-            transcons = logicor_cons
+            transcons = logicor_cons.scip_cons
 
-        return SCIPgetDualsolLogicor(self._scip, transcons.scip_cons)
+        return SCIPgetDualsolLogicor(self._scip, transcons)
 
     def getDualfarkasLogicor(self, Constraint logicor_cons):
         """
@@ -7215,19 +7219,23 @@ cdef class Model:
         Returns
         -------
         float
+            Zero if presolve removed the transformed constraint.
 
         """
+        cdef SCIP_CONS* transcons
 
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
         if not constype == 'logicor':
             raise Warning("dual solution values not available for constraints of type ", constype)
 
         if logicor_cons.isOriginal():
-            transcons = <Constraint>self.getTransformedCons(logicor_cons)
+            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, logicor_cons.scip_cons, &transcons))
+            if transcons == NULL:
+                return 0.0
         else:
-            transcons = logicor_cons
+            transcons = logicor_cons.scip_cons
 
-        return SCIPgetDualfarkasLogicor(self._scip, transcons.scip_cons)
+        return SCIPgetDualfarkasLogicor(self._scip, transcons)
 
     def printCons(self, Constraint constraint):
         """
@@ -9211,16 +9219,21 @@ cdef class Model:
         Returns
         -------
         float
+            Zero if presolve removed the transformed constraint.
 
         """
+        cdef SCIP_CONS* transcons
+
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
         if not constype == 'linear':
             raise Warning("dual solution values not available for constraints of type ", constype)
         if cons.isOriginal():
-            transcons = <Constraint>self.getTransformedCons(cons)
+            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
+            if transcons == NULL:
+                return 0.0
         else:
-            transcons = cons
-        return SCIPgetDualsolLinear(self._scip, transcons.scip_cons)
+            transcons = cons.scip_cons
+        return SCIPgetDualsolLinear(self._scip, transcons)
 
     def getDualsolKnapsack(self, Constraint cons):
         """
@@ -9236,14 +9249,19 @@ cdef class Model:
         float
 
         """
+        cdef SCIP_CONS* transcons
+
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
         if not constype == 'knapsack':
             raise Warning("dual solution values not available for constraints of type ", constype)
         if cons.isOriginal():
-            transcons = cons
+            # presolve may have removed it, and then there's no dual to read
+            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
+            if transcons == NULL:
+                return 0.0
         else:
-            transcons = <Constraint>self.getTransformedCons(cons)
-        return SCIPgetDualsolKnapsack(self._scip, transcons.scip_cons)
+            transcons = cons.scip_cons
+        return SCIPgetDualsolKnapsack(self._scip, transcons)
 
     def getDualMultiplier(self, Constraint cons):
         """
@@ -9273,12 +9291,17 @@ cdef class Model:
         Returns
         -------
         float
+            Zero if presolve removed the transformed constraint.
 
         """
+        cdef SCIP_CONS* transcons
+
         # TODO this should ideally be handled on the SCIP side
         if cons.isOriginal():
-            transcons = <Constraint>self.getTransformedCons(cons)
-            return SCIPgetDualfarkasLinear(self._scip, transcons.scip_cons)
+            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
+            if transcons == NULL:
+                return 0.0
+            return SCIPgetDualfarkasLinear(self._scip, transcons)
         else:
             return SCIPgetDualfarkasLinear(self._scip, cons.scip_cons)
     
@@ -9296,12 +9319,17 @@ cdef class Model:
         float
 
         """
+        cdef SCIP_CONS* transcons
+
         # TODO this should ideally be handled on the SCIP side
         if cons.isOriginal():
-            return SCIPgetDualfarkasKnapsack(self._scip, cons.scip_cons)
+            # presolve may have removed it, and then there's no Farkas value to read
+            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
+            if transcons == NULL:
+                return 0.0
+            return SCIPgetDualfarkasKnapsack(self._scip, transcons)
         else:
-            transcons = <Constraint>self.getTransformedCons(cons)
-            return SCIPgetDualfarkasKnapsack(self._scip, transcons.scip_cons)
+            return SCIPgetDualfarkasKnapsack(self._scip, cons.scip_cons)
 
     def getVarRedcost(self, Variable var):
         """
