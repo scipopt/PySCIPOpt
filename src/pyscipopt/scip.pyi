@@ -251,7 +251,8 @@ class Conshdlr:
 
 @disjoint_base
 class Constant(GenExpr):
-    number: SupportsFloat
+    @property
+    def number(self) -> SupportsFloat: ...
     def __init__(self, number: SupportsFloat) -> None: ...
     def __neg__(self, /) -> Constant: ...
     def __pow__(  # type: ignore[override]
@@ -379,7 +380,8 @@ class ExprLike:
 
 @disjoint_base
 class Expr(ExprLike):
-    terms: Incomplete
+    @property
+    def terms(self) -> dict[Term, float]: ...
     def __init__(self, terms: Incomplete = None) -> None: ...
     def degree(self) -> int: ...
     def normalize(self) -> None: ...
@@ -443,7 +445,8 @@ class ExprCons:
 @disjoint_base
 class GenExpr(ExprLike):
     _op: str | None
-    children: Incomplete
+    @property
+    def children(self) -> list[GenExpr]: ...
     def __init__(self) -> None: ...
     def degree(self) -> float: ...
     @deprecated("Deprecated since 6.3.0; use type(expr) instead.")
@@ -796,6 +799,24 @@ class Model:
         check: bool = True,
         propagate: bool = True,
         local: bool = False,
+        dynamic: bool = False,
+        removable: bool = False,
+        stickingatnode: bool = False,
+    ) -> Constraint: ...
+    def addConsLinear(
+        self,
+        vars: Sequence[Variable],
+        vals: Sequence[float],
+        lhs: float | None = None,
+        rhs: float | None = None,
+        name: str = "",
+        initial: bool = True,
+        separate: bool = True,
+        enforce: bool = True,
+        check: bool = True,
+        propagate: bool = True,
+        local: bool = False,
+        modifiable: bool = False,
         dynamic: bool = False,
         removable: bool = False,
         stickingatnode: bool = False,
@@ -2144,7 +2165,8 @@ class PY_SCIP_STATUS:
 
 @disjoint_base
 class PowExpr(GenExpr):
-    expo: SupportsFloat
+    @property
+    def expo(self) -> SupportsFloat: ...
     def __init__(self) -> None: ...
     def __neg__(self, /) -> ProdExpr: ...
 
@@ -2175,7 +2197,8 @@ class Pricer:
 
 @disjoint_base
 class ProdExpr(GenExpr):
-    constant: SupportsFloat
+    @property
+    def constant(self) -> SupportsFloat: ...
     def __init__(self) -> None: ...
     def __neg__(self, /) -> ProdExpr: ...
 
@@ -2374,7 +2397,8 @@ class Statistics:
 
 @disjoint_base
 class SumExpr(GenExpr):
-    constant: SupportsFloat
+    @property
+    def constant(self) -> SupportsFloat: ...
     def __init__(self) -> None: ...
     def __neg__(self, /) -> ProdExpr: ...
 

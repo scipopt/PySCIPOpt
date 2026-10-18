@@ -2669,10 +2669,7 @@ cdef class _VarArray:
 
         if isinstance(vars, Variable):
             vars = [vars]
-        elif isinstance(vars, (list, tuple, MatrixVariable)):
-            if (ndim := np.ndim(vars)) != 1:
-                raise ValueError(f"Expected a 1D array, but got a {ndim}D array.")
-        else:
+        elif not isinstance(vars, (list, tuple, MatrixVariable)):
             raise TypeError(f"Expected Variable or list of Variable, got {type(vars)}.")
 
         self.size = len(vars)
@@ -2680,6 +2677,8 @@ cdef class _VarArray:
             self.ptr = <SCIP_VAR**> malloc(self.size * sizeof(SCIP_VAR*))
             for i, var in enumerate(vars):
                 if not isinstance(var, Variable):
+                    if (ndim := np.ndim(vars)) != 1:
+                        raise ValueError(f"Expected a 1D array, but got a {ndim}D array.")
                     raise TypeError(f"Expected Variable, got {type(var)}.")
                 self.ptr[i] = (<Variable>var).scip_var
 
@@ -7054,7 +7053,7 @@ cdef class Model:
         cdef int i
 
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(and_cons.scip_cons))).decode('UTF-8')
-        assert(constype == 'and', "The constraint handler %s does not have this functionality." % constype)
+        assert constype == 'and', "The constraint handler %s does not have this functionality." % constype
 
         nvars = SCIPgetNVarsAnd(self._scip, and_cons.scip_cons)
         _vars = SCIPgetVarsAnd(self._scip, and_cons.scip_cons)
@@ -7189,19 +7188,23 @@ cdef class Model:
         Returns
         -------
         float
+            Zero if presolve removed the transformed constraint.
 
         """
+        cdef SCIP_CONS* transcons
 
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
         if not constype == 'logicor':
             raise Warning("dual solution values not available for constraints of type ", constype)
 
         if logicor_cons.isOriginal():
-            transcons = <Constraint>self.getTransformedCons(logicor_cons)
+            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, logicor_cons.scip_cons, &transcons))
+            if transcons == NULL:
+                return 0.0
         else:
-            transcons = logicor_cons
+            transcons = logicor_cons.scip_cons
 
-        return SCIPgetDualsolLogicor(self._scip, transcons.scip_cons)
+        return SCIPgetDualsolLogicor(self._scip, transcons)
 
     def getDualfarkasLogicor(self, Constraint logicor_cons):
         """
@@ -7215,19 +7218,23 @@ cdef class Model:
         Returns
         -------
         float
+            Zero if presolve removed the transformed constraint.
 
         """
+        cdef SCIP_CONS* transcons
 
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
         if not constype == 'logicor':
             raise Warning("dual solution values not available for constraints of type ", constype)
 
         if logicor_cons.isOriginal():
-            transcons = <Constraint>self.getTransformedCons(logicor_cons)
+            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, logicor_cons.scip_cons, &transcons))
+            if transcons == NULL:
+                return 0.0
         else:
-            transcons = logicor_cons
+            transcons = logicor_cons.scip_cons
 
-        return SCIPgetDualfarkasLogicor(self._scip, transcons.scip_cons)
+        return SCIPgetDualfarkasLogicor(self._scip, transcons)
 
     def printCons(self, Constraint constraint):
         """
@@ -7411,7 +7418,90 @@ cdef class Model:
         PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
 
         return pycons
-    
+
+    def addConsLinear(self, vars, vals, lhs=None, rhs=None, name="",
+                initial=True, separate=True, enforce=True, check=True,
+                propagate=True, local=False, modifiable=False, dynamic=False,
+                removable=False, stickingatnode=False):
+        """
+        Add a linear constraint lhs <= sum(vals[i] * vars[i]) <= rhs directly from
+        variables and coefficients, without building an expression. Faster than addCons
+        for building large models.
+
+        Parameters
+        ----------
+        vars : list of Variable
+            variables in the constraint
+        vals : list of float
+            coefficients of the variables
+        lhs : float or None, optional
+            left-hand side, -infinity if None (Default value = None)
+        rhs : float or None, optional
+            right-hand side, infinity if None (Default value = None)
+        name : str, optional
+            name of the constraint, generic name if empty (Default value = "")
+        initial : bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool, optional
+            is the constraint only valid locally? (Default value = False)
+        modifiable : bool, optional
+            is the constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool, optional
+            should the constraint always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        Constraint
+            The newly created linear constraint
+
+        """
+        cdef int nvars = len(vars)
+        cdef int i
+        cdef SCIP_Real* vals_array
+        cdef SCIP_CONS* scip_cons
+        cdef _VarArray wrapper
+
+        if nvars != len(vals):
+            raise ValueError("Number of variables and values must be the same.")
+
+        if lhs is None:
+            lhs = -SCIPinfinity(self._scip)
+        if rhs is None:
+            rhs = SCIPinfinity(self._scip)
+        if name == '':
+            name = 'c'+str(SCIPgetNConss(self._scip)+1)
+
+        wrapper = _VarArray(vars)
+        vals_array = <SCIP_Real*> malloc(nvars * sizeof(SCIP_Real))
+        for i in range(nvars):
+            vals_array[i] = <SCIP_Real>vals[i]
+
+        PY_SCIP_CALL(SCIPcreateConsLinear(
+            self._scip, &scip_cons, str_conversion(name), nvars, wrapper.ptr, vals_array,
+            lhs, rhs, initial, separate, enforce, check, propagate, local, modifiable,
+            dynamic, removable, stickingatnode))
+
+        free(vals_array)
+
+        PY_SCIP_CALL(SCIPaddCons(self._scip, scip_cons))
+        pyCons = self._getOrCreateCons(scip_cons)
+        PY_SCIP_CALL(SCIPreleaseCons(self._scip, &scip_cons))
+
+        return pyCons
+
     def addConsKnapsack(self, vars, weights, capacity, name="",
                 initial=True, separate=True, enforce=True, check=True,
                 modifiable=False, propagate=True, local=False, dynamic=False,
@@ -9211,16 +9301,21 @@ cdef class Model:
         Returns
         -------
         float
+            Zero if presolve removed the transformed constraint.
 
         """
+        cdef SCIP_CONS* transcons
+
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
         if not constype == 'linear':
             raise Warning("dual solution values not available for constraints of type ", constype)
         if cons.isOriginal():
-            transcons = <Constraint>self.getTransformedCons(cons)
+            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
+            if transcons == NULL:
+                return 0.0
         else:
-            transcons = cons
-        return SCIPgetDualsolLinear(self._scip, transcons.scip_cons)
+            transcons = cons.scip_cons
+        return SCIPgetDualsolLinear(self._scip, transcons)
 
     def getDualsolKnapsack(self, Constraint cons):
         """
@@ -9236,14 +9331,19 @@ cdef class Model:
         float
 
         """
+        cdef SCIP_CONS* transcons
+
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
         if not constype == 'knapsack':
             raise Warning("dual solution values not available for constraints of type ", constype)
         if cons.isOriginal():
-            transcons = cons
+            # presolve may have removed it, and then there's no dual to read
+            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
+            if transcons == NULL:
+                return 0.0
         else:
-            transcons = <Constraint>self.getTransformedCons(cons)
-        return SCIPgetDualsolKnapsack(self._scip, transcons.scip_cons)
+            transcons = cons.scip_cons
+        return SCIPgetDualsolKnapsack(self._scip, transcons)
 
     def getDualMultiplier(self, Constraint cons):
         """
@@ -9273,12 +9373,17 @@ cdef class Model:
         Returns
         -------
         float
+            Zero if presolve removed the transformed constraint.
 
         """
+        cdef SCIP_CONS* transcons
+
         # TODO this should ideally be handled on the SCIP side
         if cons.isOriginal():
-            transcons = <Constraint>self.getTransformedCons(cons)
-            return SCIPgetDualfarkasLinear(self._scip, transcons.scip_cons)
+            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
+            if transcons == NULL:
+                return 0.0
+            return SCIPgetDualfarkasLinear(self._scip, transcons)
         else:
             return SCIPgetDualfarkasLinear(self._scip, cons.scip_cons)
     
@@ -9296,12 +9401,17 @@ cdef class Model:
         float
 
         """
+        cdef SCIP_CONS* transcons
+
         # TODO this should ideally be handled on the SCIP side
         if cons.isOriginal():
-            return SCIPgetDualfarkasKnapsack(self._scip, cons.scip_cons)
+            # presolve may have removed it, and then there's no Farkas value to read
+            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
+            if transcons == NULL:
+                return 0.0
+            return SCIPgetDualfarkasKnapsack(self._scip, transcons)
         else:
-            transcons = <Constraint>self.getTransformedCons(cons)
-            return SCIPgetDualfarkasKnapsack(self._scip, transcons.scip_cons)
+            return SCIPgetDualfarkasKnapsack(self._scip, cons.scip_cons)
 
     def getVarRedcost(self, Variable var):
         """

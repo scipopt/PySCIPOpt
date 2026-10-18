@@ -5,10 +5,15 @@
 - Added docstrings to the bundled stubs in release wheels for Python 3.10 and later.
 - Added more type annotations and deprecation markers to the stubs.
 - Added tests for `getObjVal()` and `getVal()`
+- Added `addConsLinear()` to add linear constraints from variables and coefficients without building an expression
 ### Fixed
+- Dual and Farkas getters for linear, knapsack, and logicor constraints now return zero when presolving has removed them.
 - Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
+- Fixed `getDualsolKnapsack()` and `getDualfarkasKnapsack()` returning 0 for original constraints, and the handler check in `getVarsAnd()` that could never fail
 ### Changed
 - Replaced `format()` with f-strings in examples
+- Made expression fields read-only to prevent accidental runtime modification
+- Methods taking a list of variables (e.g. `addConsKnapsack()`) no longer convert it to a NumPy array to check its dimension
 ### Removed
 
 ## 6.3.0 - 2026.10.11
