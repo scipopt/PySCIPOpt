@@ -401,6 +401,27 @@ def test_cons_knapsack():
     assert m.getDualfarkasKnapsack(knapsack_cons) == 0
 
 
+@pytest.mark.parametrize("handler", ["Linear", "Knapsack", "Logicor"])
+@pytest.mark.parametrize("accessor", ["getDualsol", "getDualfarkas"])
+def test_dual_accessors_for_removed_constraints(handler, accessor):
+    m = Model()
+    m.hideOutput()
+    x = m.addVar(vtype="B", obj=-1)
+    y = m.addVar(vtype="B", obj=2)
+    if handler == "Linear":
+        cons = m.addCons(x + y <= 2)
+    elif handler == "Knapsack":
+        cons = m.addConsKnapsack([x, y], [4, 2], 5)
+    else:
+        cons = m.addConsLogicor([x, y])
+    m.optimize()
+
+    # Presolve removes the constraint after solving this two-variable model.
+    with pytest.raises(Warning, match="NULL"):
+        m.getTransformedCons(cons)
+    assert getattr(m, accessor + handler)(cons) == 0.0
+
+
 def _lp_only_model():
     # presolve, heuristics, separation and propagation off, so the constraint
     # stays in the LP and its dual values are still there after the solve
