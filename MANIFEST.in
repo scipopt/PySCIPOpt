@@ -1,3 +1,0 @@
-# Include these helpers in source archives for cibuildwheel.
-include requirements/wheel-stub-docstrings.txt
-include scripts/add_wheel_stub_docstrings.py

@@ -10,6 +10,7 @@ Skip Python <3.10 because docstring-adder requires Python >=3.10.
 import argparse
 import ast
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -94,22 +95,30 @@ def main():
             (wheel_root / "pyscipopt/scip.pyi").read_text(encoding="utf-8")
         )
         model_class = next(
-            node
-            for node in stub_ast.body
-            if isinstance(node, ast.ClassDef) and node.name == "Model"
+            (
+                node
+                for node in stub_ast.body
+                if isinstance(node, ast.ClassDef) and node.name == "Model"
+            ),
+            None,
         )
         add_var_method = next(
-            node
-            for node in model_class.body
-            if isinstance(node, ast.FunctionDef) and node.name == "addVar"
+            (
+                node
+                for node in getattr(model_class, "body", [])
+                if isinstance(node, ast.FunctionDef) and node.name == "addVar"
+            ),
+            None,
         )
-        if not ast.get_docstring(add_var_method):
+        if add_var_method is None or not ast.get_docstring(add_var_method):
             raise RuntimeError(
                 f"Stub docstring extraction failed for {wheel_path.name}: "
                 "Model.addVar has no docstring; see extractor output above"
             )
 
         # Repacking updates RECORD, the wheel's list of files and their hashes.
+        pack_dir = unpack_dir / "packed"
+        pack_dir.mkdir()
         subprocess.run(
             [
                 sys.executable,
@@ -118,10 +127,13 @@ def main():
                 "pack",
                 str(wheel_root),
                 "-d",
-                str(wheel_dir),
+                str(pack_dir),
             ],
             check=True,
         )
+        (packed_wheel,) = pack_dir.glob("*.whl")
+        wheel_path.unlink()
+        shutil.move(packed_wheel, wheel_dir / packed_wheel.name)
 
 
 if __name__ == "__main__":
