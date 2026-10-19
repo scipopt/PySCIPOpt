@@ -6,7 +6,6 @@
 - Added tests for `getObjVal()` and `getVal()`
 ### Fixed
 - Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
-- Ensure `SCIP_EXPR` references are released on exception paths in `to_scip_expr` and `_createConsGenNonlinear`
 ### Changed
 - Replaced `format()` with f-strings in examples
 - Refactor general expression conversion into per-class `to_scip_expr` recursion
