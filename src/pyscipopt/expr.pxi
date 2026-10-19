@@ -573,7 +573,7 @@ Operator = Op()
 cdef class GenExpr(ExprLike):
 
     cdef public _op
-    cdef public children
+    cdef readonly children
 
     def __init__(self): # do we need it
         ''' '''
@@ -754,7 +754,7 @@ cdef class GenExpr(ExprLike):
 # Sum Expressions
 cdef class SumExpr(GenExpr):
 
-    cdef public constant
+    cdef readonly constant
 
     def __init__(self):
         self.constant = 0.0
@@ -808,7 +808,7 @@ cdef class SumExpr(GenExpr):
 # Prod Expressions
 cdef class ProdExpr(GenExpr):
 
-    cdef public constant
+    cdef readonly constant
 
     def __init__(self):
         self.constant = 1.0
@@ -887,7 +887,7 @@ cdef class VarExpr(GenExpr):
 # Pow Expressions
 cdef class PowExpr(GenExpr):
 
-    cdef public expo
+    cdef readonly expo
 
     def __init__(self):
         self.expo = 1.0
@@ -1035,7 +1035,7 @@ cdef class CosExpr(UnaryExpr):
 
 cdef class Constant(GenExpr):
 
-    cdef public number
+    cdef readonly number
 
     def __init__(self, number: Union[int, float]):
         self.number = number
