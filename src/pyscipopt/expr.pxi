@@ -814,8 +814,6 @@ cdef class ProdExpr(GenExpr):
 # Var Expressions
 cdef class VarExpr(GenExpr):
 
-    cdef public var
-
     def __init__(self, var):
         self.children = [var]
         self._op = Operator.varidx
