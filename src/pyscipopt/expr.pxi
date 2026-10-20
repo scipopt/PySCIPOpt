@@ -58,6 +58,7 @@ from libc.math cimport cos as c_cos
 from libc.math cimport exp as c_exp
 from libc.math cimport fabs as c_fabs
 from libc.math cimport log as c_log
+from libc.math cimport pow as c_pow
 from libc.math cimport sqrt as c_sqrt
 from libc.math cimport sin as c_sin
 from libc.math cimport INFINITY
@@ -839,7 +840,11 @@ cdef class PowExpr(GenExpr):
         return f"**({self.children[0]},{self.expo})"
 
     cpdef double _evaluate(self, Solution sol) except *:
-        return (<GenExpr>self.children[0])._evaluate(sol) ** self.expo
+        cdef double base = (<GenExpr>self.children[0])._evaluate(sol)
+        cdef double expo = <double>self.expo
+        if base == 0.0 and expo < 0:
+            raise ZeroDivisionError("0.0 cannot be raised to a negative power")
+        return c_pow(base, expo)
 
     cdef PowExpr copy(self, bint copy=True):
         cdef PowExpr res = PowExpr.__new__(PowExpr)
