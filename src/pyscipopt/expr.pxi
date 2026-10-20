@@ -840,11 +840,11 @@ cdef class PowExpr(GenExpr):
         return f"**({self.children[0]},{self.expo})"
 
     cpdef double _evaluate(self, Solution sol) except *:
-        cdef double val = (<GenExpr>self.children[0])._evaluate(sol)
+        cdef double base = (<GenExpr>self.children[0])._evaluate(sol)
         cdef double expo = <double>self.expo
-        if val == 0.0 and expo < 0:
+        if base == 0.0 and expo < 0:
             raise ZeroDivisionError("0.0 cannot be raised to a negative power")
-        return c_pow(val, expo)
+        return c_pow(base, expo)
 
     cdef PowExpr copy(self, bint copy=True):
         cdef PowExpr res = PowExpr.__new__(PowExpr)
