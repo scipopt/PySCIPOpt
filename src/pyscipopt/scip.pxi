@@ -690,10 +690,9 @@ cdef class Row:
         row.scip_row = sciprow
         return row
 
-    property name:
-        def __get__(self):
-            cname = bytes( SCIProwGetName(self.scip_row) )
-            return cname.decode('utf-8')
+    @property
+    def name(self):
+        return bytes(SCIProwGetName(self.scip_row)).decode("utf-8")
 
     def getLhs(self):
         """
@@ -999,10 +998,9 @@ cdef class NLRow:
         nlrow.scip_nlrow = scipnlrow
         return nlrow
 
-    property name:
-        def __get__(self):
-            cname = bytes( SCIPnlrowGetName(self.scip_nlrow) )
-            return cname.decode('utf-8')
+    @property
+    def name(self):
+        return bytes(SCIPnlrowGetName(self.scip_nlrow)).decode("utf-8")
 
     def getConstant(self):
         """
@@ -1555,12 +1553,11 @@ cdef class Variable(Expr):
         Expr.__init__(var, {Term(var) : 1.0})
         return var
 
-    property name:
-        def __get__(self):
-            if self.scip_var == NULL:
-                return ""
-            cname = bytes( SCIPvarGetName(self.scip_var) )
-            return cname.decode('utf-8')
+    @property
+    def name(self):
+        if self.scip_var == NULL:
+            return ""
+        return bytes(SCIPvarGetName(self.scip_var)).decode("utf-8")
 
     cdef Variable copy(self, bint copy=True):
         return self
@@ -2217,12 +2214,11 @@ cdef class Constraint:
         cons.scip_cons = scipcons
         return cons
 
-    property name:
-        def __get__(self):
-            if self.scip_cons == NULL:
-                return ""
-            cname = bytes( SCIPconsGetName(self.scip_cons) )
-            return cname.decode('utf-8')
+    @property
+    def name(self):
+        if self.scip_cons == NULL:
+            return ""
+        return bytes(SCIPconsGetName(self.scip_cons)).decode("utf-8")
 
     def ptr(self):
         return <size_t>(self.scip_cons)
