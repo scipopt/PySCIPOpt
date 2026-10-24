@@ -72,6 +72,31 @@ def test_exact_model():
     assert not hasattr(x, "getLbOriginalExact")
 
 
+RAISING = ["tightenVarLbGlobal", "tightenVarUbGlobal", "chgVarObjDive", "chgVarLbProbing",
+           "chgVarUbProbing", "chgVarObjProbing", "fixVarProbing"]
+
+
+def test_bound_changes():
+    m = ExactModel()
+    x = m.addVar("x", lb=0, ub=10)
+    m.chgVarLbGlobal(x, "1/3")
+    m.chgVarUbGlobal(x, Fraction(7, 2))
+    assert x.getLbGlobal() == Fraction(1, 3)
+    assert x.getUbGlobal() == Fraction(7, 2)
+    assert m.tightenVarLb(x, Fraction(1, 2)) == (False, True)
+    assert x.getLbLocal() == Fraction(1, 2)
+    assert m.fixVar(x, Fraction(3, 2)) == (False, True)
+    assert x.getLbLocal() == x.getUbLocal() == Fraction(3, 2)
+    for name in RAISING:
+        with pytest.raises(ValueError):
+            getattr(m, name)(x, 1)
+    with pytest.raises(ValueError):
+        m.chgVarLbNode(None, x, 1)
+    with pytest.raises(ValueError):
+        m.chgVarUbNode(None, x, 1)
+    assert not hasattr(m, "chgVarLbExact")
+
+
 def test_addConsExactLinear():
     m = ExactModel()
     x = m.addVar("x")

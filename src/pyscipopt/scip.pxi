@@ -366,11 +366,6 @@ def PY_SCIP_CALL(SCIP_RETCODE rc):
     else:
         raise Exception('SCIP: unknown return code!')
 
-cdef inline int _checkFloatChange(SCIP* scip, method, alternative) except -1:
-    if PYSCIPOPT_WITH_EXACTSOLVE and SCIPisExact(scip) and SCIPgetStage(scip) == SCIP_STAGE_PROBLEM:
-        raise ValueError("%s does not change the exact data of an exact problem, use %s instead" % (method, alternative))
-    return 0
-
 cdef class Event:
     """Base class holding a pointer to corresponding SCIP_EVENT."""
 
@@ -4201,7 +4196,6 @@ cdef class Model:
         if expr.degree() > 1:
             raise ValueError("SCIP does not support nonlinear objective functions. Consider using set_nonlinear_objective in the pyscipopt.recipe.nonlinear")
 
-        _checkFloatChange(self._scip, "setObjective", "chgVarObjExact")
 
         if clear:
             # clear existing objective function
@@ -4750,7 +4744,6 @@ cdef class Model:
         """
         cdef SCIP_Bool infeasible
         cdef SCIP_Bool fixed
-        _checkFloatChange(self._scip, "fixVar", "chgVarLbExact and chgVarUbExact")
         PY_SCIP_CALL(SCIPfixVar(self._scip, var.scip_var, val, &infeasible, &fixed))
         return infeasible, fixed
 
@@ -4859,7 +4852,6 @@ cdef class Model:
         """
         cdef SCIP_Bool infeasible
         cdef SCIP_Bool tightened
-        _checkFloatChange(self._scip, "tightenVarLb", "chgVarLbExact")
         PY_SCIP_CALL(SCIPtightenVarLb(self._scip, var.scip_var, lb, force, &infeasible, &tightened))
         return infeasible, tightened
 
@@ -4886,7 +4878,6 @@ cdef class Model:
         """
         cdef SCIP_Bool infeasible
         cdef SCIP_Bool tightened
-        _checkFloatChange(self._scip, "tightenVarUb", "chgVarUbExact")
         PY_SCIP_CALL(SCIPtightenVarUb(self._scip, var.scip_var, ub, force, &infeasible, &tightened))
         return infeasible, tightened
 
@@ -4955,7 +4946,6 @@ cdef class Model:
         """
         if lb is None:
            lb = -SCIPinfinity(self._scip)
-        _checkFloatChange(self._scip, "chgVarLb", "chgVarLbExact")
         PY_SCIP_CALL(SCIPchgVarLb(self._scip, var.scip_var, lb))
 
     def chgVarUb(self, Variable var, ub):
@@ -4971,7 +4961,6 @@ cdef class Model:
         """
         if ub is None:
            ub = SCIPinfinity(self._scip)
-        _checkFloatChange(self._scip, "chgVarUb", "chgVarUbExact")
         PY_SCIP_CALL(SCIPchgVarUb(self._scip, var.scip_var, ub))
 
     def chgVarLbGlobal(self, Variable var, lb):
@@ -4987,7 +4976,6 @@ cdef class Model:
         """
         if lb is None:
            lb = -SCIPinfinity(self._scip)
-        _checkFloatChange(self._scip, "chgVarLbGlobal", "chgVarLbExact")
         PY_SCIP_CALL(SCIPchgVarLbGlobal(self._scip, var.scip_var, lb))
 
     def chgVarUbGlobal(self, Variable var, ub):
@@ -5003,7 +4991,6 @@ cdef class Model:
         """
         if ub is None:
            ub = SCIPinfinity(self._scip)
-        _checkFloatChange(self._scip, "chgVarUbGlobal", "chgVarUbExact")
         PY_SCIP_CALL(SCIPchgVarUbGlobal(self._scip, var.scip_var, ub))
 
     def chgVarLbNode(self, Node node, Variable var, lb):

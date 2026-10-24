@@ -386,3 +386,232 @@ cdef class ExactModel(Model):
         rc = SCIPchgVarUbExact(self._scip, var.scip_var, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
+
+    def chgVarLbGlobal(self, Variable var, lb):
+        """
+        Changes the lower bound of the variable exactly.
+
+        Parameters
+        ----------
+        var : Variable
+        lb : Rational
+            new bound (None for -infinity)
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+
+        rational = _createRational(-float("inf") if lb is None else lb)
+        rc = SCIPchgVarLbGlobalExact(self._scip, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+    def chgVarUbGlobal(self, Variable var, ub):
+        """
+        Changes the upper bound of the variable exactly.
+
+        Parameters
+        ----------
+        var : Variable
+        ub : Rational
+            new bound (None for +infinity)
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+
+        rational = _createRational(float("inf") if ub is None else ub)
+        rc = SCIPchgVarUbGlobalExact(self._scip, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+    def fixVar(self, Variable var, val):
+        """
+        Fixes the variable to a rational value in the current node.
+
+        Parameters
+        ----------
+        var : Variable
+        val : Rational
+
+        Returns
+        -------
+        infeasible : bool
+        fixed : bool
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool fixed
+
+        rational = _createRational(_asFiniteRational(val))
+        rc = SCIPfixVarExact(self._scip, var.scip_var, rational, &infeasible, &fixed)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+        return infeasible, fixed
+
+    def tightenVarLb(self, Variable var, lb, force=False):
+        """
+        Tightens the lower bound of the variable exactly in the current node.
+
+        Parameters
+        ----------
+        var : Variable
+        lb : Rational
+        force : bool, optional
+            ignored; the exact SCIP function has no force parameter
+
+        Returns
+        -------
+        infeasible : bool
+        tightened : bool
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool tightened
+
+        rational = _createRational(_asFiniteRational(lb))
+        rc = SCIPtightenVarLbExact(self._scip, var.scip_var, rational, &infeasible, &tightened)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+        return infeasible, tightened
+
+    def tightenVarUb(self, Variable var, ub, force=False):
+        """
+        Tightens the upper bound of the variable exactly in the current node.
+
+        Parameters
+        ----------
+        var : Variable
+        ub : Rational
+        force : bool, optional
+            ignored; the exact SCIP function has no force parameter
+
+        Returns
+        -------
+        infeasible : bool
+        tightened : bool
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool tightened
+
+        rational = _createRational(_asFiniteRational(ub))
+        rc = SCIPtightenVarUbExact(self._scip, var.scip_var, rational, &infeasible, &tightened)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+        return infeasible, tightened
+
+    def aggregateVars(self, Variable varx, Variable vary, coefx=1, coefy=-1, rhs=0):
+        """
+        Aggregates two variables exactly: coefx * varx + coefy * vary == rhs.
+
+        Returns
+        -------
+        infeasible : bool
+        redundant : bool
+        aggregated : bool
+
+        """
+        cdef SCIP_RATIONAL* scalarx
+        cdef SCIP_RATIONAL* scalary
+        cdef SCIP_RATIONAL* rhsexact
+        cdef SCIP_RETCODE rc
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool redundant
+        cdef SCIP_Bool aggregated
+
+        scalarx = _createRational(_asFiniteRational(coefx))
+        scalary = _createRational(_asFiniteRational(coefy))
+        rhsexact = _createRational(_asFiniteRational(rhs))
+        rc = SCIPaggregateVarsExact(self._scip, varx.scip_var, vary.scip_var, scalarx, scalary, rhsexact, &infeasible, &redundant, &aggregated)
+        SCIPrationalFree(&scalarx)
+        SCIPrationalFree(&scalary)
+        SCIPrationalFree(&rhsexact)
+        PY_SCIP_CALL(rc)
+        return infeasible, redundant, aggregated
+
+    def startDive(self):
+        """Initiates exact LP diving."""
+        PY_SCIP_CALL(SCIPstartExactDive(self._scip))
+
+    def endDive(self):
+        """Quits exact LP diving."""
+        PY_SCIP_CALL(SCIPendExactDive(self._scip))
+
+    def solveDiveLP(self, itlim=-1):
+        """
+        Solves the exact diving LP.
+
+        Returns
+        -------
+        lperror : bool
+        cutoff : bool
+
+        """
+        cdef SCIP_Bool lperror
+        cdef SCIP_Bool cutoff
+
+        PY_SCIP_CALL(SCIPsolveExactDiveLP(self._scip, itlim, &lperror, &cutoff))
+        return lperror, cutoff
+
+    def chgVarLbDive(self, Variable var, newbound):
+        """Changes the lower bound of the variable in the exact dive."""
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+
+        rational = _createRational(-float("inf") if newbound is None else newbound)
+        rc = SCIPchgVarLbExactDive(self._scip, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+    def chgVarUbDive(self, Variable var, newbound):
+        """Changes the upper bound of the variable in the exact dive."""
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+
+        rational = _createRational(float("inf") if newbound is None else newbound)
+        rc = SCIPchgVarUbExactDive(self._scip, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+    def tightenVarLbGlobal(self, var, lb, force=False):
+        """Not available in exact solving mode."""
+        raise ValueError("tightenVarLbGlobal is not available in exact solving mode")
+
+    def tightenVarUbGlobal(self, var, ub, force=False):
+        """Not available in exact solving mode."""
+        raise ValueError("tightenVarUbGlobal is not available in exact solving mode")
+
+    def chgVarLbNode(self, node, var, lb):
+        """Not available in exact solving mode."""
+        raise ValueError("chgVarLbNode is not available in exact solving mode")
+
+    def chgVarUbNode(self, node, var, ub):
+        """Not available in exact solving mode."""
+        raise ValueError("chgVarUbNode is not available in exact solving mode")
+
+    def chgVarObjDive(self, var, newobj):
+        """Not available in exact solving mode."""
+        raise ValueError("chgVarObjDive is not available in exact solving mode")
+
+    def chgVarLbProbing(self, var, lb):
+        """Not available in exact solving mode."""
+        raise ValueError("chgVarLbProbing is not available in exact solving mode")
+
+    def chgVarUbProbing(self, var, ub):
+        """Not available in exact solving mode."""
+        raise ValueError("chgVarUbProbing is not available in exact solving mode")
+
+    def chgVarObjProbing(self, var, newobj):
+        """Not available in exact solving mode."""
+        raise ValueError("chgVarObjProbing is not available in exact solving mode")
+
+    def fixVarProbing(self, var, fixedval):
+        """Not available in exact solving mode."""
+        raise ValueError("fixVarProbing is not available in exact solving mode")
