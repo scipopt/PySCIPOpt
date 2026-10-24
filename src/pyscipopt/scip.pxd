@@ -2459,7 +2459,11 @@ cdef class Model:
     # helper methods for later var and cons cleanup
     cdef _getOrCreateCons(self, SCIP_CONS* scip_cons)
     cdef _getOrCreateVar(self, SCIP_VAR* scip_var)
+    cdef _configureScip(self)
     cdef _free_scip_instance(self)
 
     @staticmethod
     cdef create(SCIP* scip)
+
+cdef class ExactModel(Model):
+    pass

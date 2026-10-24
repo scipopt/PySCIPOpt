@@ -2,13 +2,13 @@ from fractions import Fraction
 
 import pytest
 
-from pyscipopt import Model
+from pyscipopt import Model, ExactModel, Variable
 
 
 def _exact_supported():
     try:
-        Model(exact=True)
-    except Exception:
+        ExactModel()
+    except ValueError:
         return False
     return True
 
@@ -16,73 +16,59 @@ def _exact_supported():
 pytestmark = pytest.mark.skipif(not _exact_supported(), reason="SCIP was built without exact solving support")
 
 
-def test_model_exact():
-    m = Model(exact=True)
-    assert m.isExact()
-    assert not Model().isExact()
+def test_exact_model():
+    m = ExactModel()
+    assert isinstance(m, Model)
+    assert not hasattr(Model(), "chgVarObj")
+    assert not hasattr(m, "addVarExact")
+    with pytest.raises(TypeError):
+        Model(exact=True)
+    with pytest.raises(TypeError):
+        ExactModel(sourceModel=m)
+    assert isinstance(Model.from_ptr(m.to_ptr(False), False), ExactModel)
 
-    with pytest.raises(ValueError):
-        Model(exact=True, createscip=False)
-    with pytest.raises(ValueError):
-        Model(sourceModel=m, exact=True)
-
-
-def test_addVarExact():
-    m = Model(exact=True)
-
-    x = m.addVarExact("x", lb="1/3", ub=Fraction(10, 3), obj=-1)
-    assert x.isExact()
+    x = m.addVar("x", lb="1/3", ub=Fraction(10, 3), obj=-1)
     assert x.getLbOriginalExact() == Fraction(1, 3)
     assert x.getUbOriginalExact() == Fraction(10, 3)
-    assert x.getLbGlobalExact() == Fraction(1, 3)
-    assert x.getUbLocalExact() == Fraction(10, 3)
     assert x.getObjExact() == -1
-    assert x.getLbOriginal() <= 1 / 3 <= x.getLbOriginal() + 1e-15
-
-    y = m.addVarExact("y", lb=None, ub=None)
+    y = m.addVar("y", lb=None, ub=float("inf"))
     assert y.getLbOriginalExact() == -float("inf")
     assert y.getUbOriginalExact() == float("inf")
-
-    b = m.addVarExact("b", vtype="B")
+    b = m.addVar("b", vtype="B")
     assert b.getUbOriginalExact() == 1
     assert b.vtype() == "BINARY"
 
-    m.chgVarObjExact(x, Fraction(-1, 7))
-    m.chgVarLbExact(x, None)
-    m.chgVarUbExact(x, "5/2")
+    m.chgVarObj(x, Fraction(-1, 7))
+    m.chgVarLb(x, None)
+    m.chgVarUb(x, "5/2")
     assert x.getObjExact() == Fraction(-1, 7)
     assert x.getLbOriginalExact() == -float("inf")
     assert x.getUbOriginalExact() == Fraction(5, 2)
 
     with pytest.raises(ValueError):
-        m.addVarExact("bad", lb=2, ub=1)
+        m.addVar("bad", lb=2, ub=1)
     with pytest.raises(Warning):
-        m.addVarExact("bad", vtype="Q")
+        m.addVar("bad", vtype="Q")
     with pytest.raises(ValueError):
-        m.addVarExact("bad", lb="abc")
+        m.addVar("bad", lb="abc")
     with pytest.raises(ValueError):
-        m.addVarExact("bad", obj=float("inf"))
+        m.addVar("bad", obj=float("inf"))
     with pytest.raises(ValueError):
-        m.chgVarUb(x, 1)
-    with pytest.raises(ValueError):
+        m.addVar("bad", pricedVar=True)
+    with pytest.raises(TypeError):
         m.setObjective(x)
-
-    with pytest.raises(Exception):
-        Model().addVarExact("x")
-    with pytest.raises(Exception):
-        m.addVar("z")
+    with pytest.raises(TypeError):
+        m.setObjective(Fraction(1, 3) * x)
 
     n = Model()
-    z = n.addVar("z")
-    assert not z.isExact()
-    with pytest.raises(ValueError):
-        z.getObjExact()
+    z = n.addVar("z", lb=0.5)
+    assert isinstance(z.getLbOriginal(), float)
 
 
 def test_addConsExactLinear():
-    m = Model(exact=True)
-    x = m.addVarExact("x")
-    y = m.addVarExact("y")
+    m = ExactModel()
+    x = m.addVar("x")
+    y = m.addVar("y")
 
     c = m.addConsExactLinear([x, y], [Fraction(1, 3), "1/10"], None, Fraction(2, 3), name="c")
     assert c.name == "c"
@@ -93,7 +79,7 @@ def test_addConsExactLinear():
     m.chgCoefExactLinear(c, y, Fraction(1, 7))
     m.chgLhsExactLinear(c, 0)
     m.chgRhsExactLinear(c, None)
-    z = m.addVarExact("z")
+    z = m.addVar("z")
     m.addCoefExactLinear(c, z, 3)
     assert m.getValsExactLinear(c) == {"x": Fraction(1, 3), "y": Fraction(1, 7), "z": 3}
     assert m.getLhsExactLinear(c) == 0
@@ -114,10 +100,10 @@ def test_addConsExactLinear():
 
 
 def test_exact_solution():
-    m = Model(exact=True)
+    m = ExactModel()
     m.hideOutput()
-    x = m.addVarExact("x", ub="10/3", obj=-1)
-    y = m.addVarExact("y", vtype="I", ub=5, obj=Fraction(-1, 7))
+    x = m.addVar("x", ub="10/3", obj=-1)
+    y = m.addVar("y", vtype="I", ub=5, obj=Fraction(-1, 7))
     c = m.addConsExactLinear([x, y], [Fraction(1, 3), Fraction(1, 10)], None, Fraction(2, 3))
     m.addOrigObjoffsetExact(Fraction(1, 2))
     assert m.getOrigObjoffsetExact() == Fraction(1, 2)

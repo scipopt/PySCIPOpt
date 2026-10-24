@@ -2879,7 +2879,7 @@ cdef class IIS:
 ##
 cdef class Model:
 
-    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=True, createscip=True, threadsafe=False, exact=False):
+    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=True, createscip=True, threadsafe=False):
         """
         Main class holding a pointer to SCIP for managing most interactions
 
@@ -2901,9 +2901,6 @@ cdef class Model:
             initialize the Model object and creates a SCIP instance (default True)
         threadsafe : bool, optional
             False if data can be safely shared between the source and target problem (default False)
-        exact : bool, optional
-            enable exact solving mode, which needs SCIP built with exact support;
-            only available when creating a new problem (default False)
 
         """
         if self.getMajorVersion() < MAJOR:
@@ -2921,10 +2918,6 @@ cdef class Model:
         self._plugins = []  # Keep references to plugins to break cycles in __dealloc__
         self._iis = NULL
 
-        if exact and not PYSCIPOPT_WITH_EXACTSOLVE:
-            raise ValueError("SCIP was built without exact solving support, exact=True needs a SCIP build with exact solving enabled")
-        if exact and (not createscip or sourceModel is not None):
-            raise ValueError("exact=True is only supported when creating a new problem")
 
         if not createscip:
             # if no SCIP instance should be created, then an empty Model object is created.
@@ -2936,8 +2929,7 @@ cdef class Model:
             self._bestSol = None
             if defaultPlugins:
                 self.includeDefaultPlugins()
-            if exact:
-                PY_SCIP_CALL(SCIPenableExactSolving(self._scip, True))
+            self._configureScip()
             self.createProbBasic(problemName)
         else:
             PY_SCIP_CALL(SCIPcreate(&self._scip))
@@ -3011,6 +3003,9 @@ cdef class Model:
         if self._scip is not NULL and self._freescip:
             SCIPfree(&self._scip)
 
+    cdef _configureScip(self):
+        pass
+
     cdef _free_scip_instance(self):
         """Free the SCIP instance. Does not touch Python object references."""
         cdef SCIP_BENDERS** benders
@@ -3066,7 +3061,7 @@ cdef class Model:
         """
         if scip == NULL:
             raise Warning("cannot create Model with SCIP* == NULL")
-        model = Model(createscip=False)
+        model = ExactModel(createscip=False) if SCIPisExact(scip) else Model(createscip=False)
         model._scip = scip
         model._bestSol = Solution.create(scip, SCIPgetBestSol(scip))
         model._benders_subproblems = []  # Initialize Benders subproblems list
@@ -13033,30 +13028,6 @@ cdef class Model:
 
 
     # Exact SCIP methods
-    def enableExactSolving(self, SCIP_Bool enable):
-        """
-        Enables or disables exact solving mode in SCIP.
-        Can only be called before a problem is created, so use Model(exact=True) instead.
-
-        Parameters
-        ----------
-        enable : SCIP_Bool
-            Whether to enable exact solving mode (True) or disable it (False).
-        """
-
-        PY_SCIP_CALL(SCIPenableExactSolving(self._scip, enable))
-
-    def isExact(self):
-        """
-        Returns whether exact solving mode is enabled in SCIP.
-
-        Returns
-        -------
-        bool
-        """
-
-        return SCIPisExact(self._scip)
-
     def allowNegSlackExact(self):
         """
         Returns whether negative slack is allowed in exact solving mode.
@@ -13101,150 +13072,6 @@ cdef class Model:
         self._checkExactMode()
         if not SCIP_STAGE_TRANSFORMED <= SCIPgetStage(self._scip) <= SCIP_STAGE_EXITSOLVE:
             raise Warning("%s cannot be called in stage %i." % (method, SCIPgetStage(self._scip)))
-
-    def addVarExact(self, name='', vtype='C', lb=0, ub=None, obj=0):
-        """
-        Create a new variable with exact (rational) bounds and objective coefficient.
-        Requires exact solving mode, see Model(exact=True).
-
-        Parameters
-        ----------
-        name : str, optional
-            name of the variable, generic if empty (Default value = '')
-        vtype : str, optional
-            type of the variable: 'C' continuous, 'I' integer, or 'B' binary
-            (Default value = 'C')
-        lb : Fraction, int, str or None, optional
-            lower bound of the variable, use None for -infinity (Default value = 0)
-        ub : Fraction, int, str or None, optional
-            upper bound of the variable, use None for +infinity, or 1 for binary variables
-            (Default value = None)
-        obj : Fraction, int or str, optional
-            objective coefficient of the variable (Default value = 0)
-
-        Returns
-        -------
-        Variable
-
-        Notes
-        -----
-        Values are converted with fractions.Fraction, so "1/3" and Fraction(1, 3) are exact.
-        Floats are taken at their exact binary value, e.g. 0.1 is not 1/10.
-
-        """
-        cdef SCIP_VAR* scip_var = NULL
-        cdef SCIP_RATIONAL* lbexact = NULL
-        cdef SCIP_RATIONAL* ubexact = NULL
-        cdef SCIP_RATIONAL* objexact = NULL
-        cdef SCIP_VARTYPE vartype
-        cdef SCIP_RETCODE rc
-
-        self._checkExactMode()
-        if name == '':
-            name = 'x'+str(SCIPgetNVars(self._scip)+1)
-        cname = str_conversion(name)
-
-        vtype = vtype.upper()
-        if vtype in ['C', 'CONTINUOUS']:
-            vartype = SCIP_VARTYPE_CONTINUOUS
-        elif vtype in ['B', 'BINARY']:
-            vartype = SCIP_VARTYPE_BINARY
-            if ub is None:
-                ub = 1
-        elif vtype in ['I', 'INTEGER']:
-            vartype = SCIP_VARTYPE_INTEGER
-        else:
-            raise Warning("unrecognized variable type")
-
-        lb = _asRational(-float("inf") if lb is None else lb)
-        ub = _asRational(float("inf") if ub is None else ub)
-        obj = _asFiniteRational(obj)
-        if lb > ub:
-            raise ValueError("lower bound %s exceeds upper bound %s" % (lb, ub))
-
-        PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname,
-                                        max(float(lb), -SCIPinfinity(self._scip)),
-                                        min(float(ub), SCIPinfinity(self._scip)),
-                                        float(obj), vartype))
-        lbexact = _createRational(lb)
-        ubexact = _createRational(ub)
-        objexact = _createRational(obj)
-        rc = SCIPaddVarExactData(self._scip, scip_var, lbexact, ubexact, objexact)
-        SCIPrationalFree(&lbexact)
-        SCIPrationalFree(&ubexact)
-        SCIPrationalFree(&objexact)
-        if rc != SCIP_OKAY:
-            SCIPreleaseVar(self._scip, &scip_var)
-        PY_SCIP_CALL(rc)
-        PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
-
-        pyVar = self._getOrCreateVar(scip_var)
-        SCIPvarSetData(scip_var, <SCIP_VARDATA*>pyVar)
-        PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
-        return pyVar
-
-    def chgVarObjExact(self, Variable var, newobj):
-        """
-        Change the exact objective coefficient of a variable.
-
-        Parameters
-        ----------
-        var : Variable
-            variable to change the objective coefficient of
-        newobj : Fraction, int or str
-            new objective coefficient
-
-        """
-        cdef SCIP_RATIONAL* rational
-        cdef SCIP_RETCODE rc
-        self._checkExactMode()
-        _checkExactVar(var)
-        rational = _createRational(_asFiniteRational(newobj))
-        rc = SCIPchgVarObjExact(self._scip, var.scip_var, rational)
-        SCIPrationalFree(&rational)
-        PY_SCIP_CALL(rc)
-
-    def chgVarLbExact(self, Variable var, lb):
-        """
-        Change the exact lower bound of a variable.
-
-        Parameters
-        ----------
-        var : Variable
-            variable to change the bound of
-        lb : Fraction, int, str or None
-            new lower bound, use None for -infinity
-
-        """
-        cdef SCIP_RATIONAL* rational
-        cdef SCIP_RETCODE rc
-        self._checkExactMode()
-        _checkExactVar(var)
-        rational = _createRational(-float("inf") if lb is None else lb)
-        rc = SCIPchgVarLbExact(self._scip, var.scip_var, rational)
-        SCIPrationalFree(&rational)
-        PY_SCIP_CALL(rc)
-
-    def chgVarUbExact(self, Variable var, ub):
-        """
-        Change the exact upper bound of a variable.
-
-        Parameters
-        ----------
-        var : Variable
-            variable to change the bound of
-        ub : Fraction, int, str or None
-            new upper bound, use None for +infinity
-
-        """
-        cdef SCIP_RATIONAL* rational
-        cdef SCIP_RETCODE rc
-        self._checkExactMode()
-        _checkExactVar(var)
-        rational = _createRational(float("inf") if ub is None else ub)
-        rc = SCIPchgVarUbExact(self._scip, var.scip_var, rational)
-        SCIPrationalFree(&rational)
-        PY_SCIP_CALL(rc)
 
     def addConsExactLinear(self, vars, vals, lhs, rhs, name="",
                            initial=True, separate=True, enforce=True, check=True,

@@ -102,3 +102,178 @@ cdef class RowExact:
         row_exact.scip_row_exact = sciprowexact
         return row_exact
 
+
+cdef class ExactModel(Model):
+    """
+    Model that solves exactly over the rationals.
+
+    Variables, constraints and solutions carry exact data. Methods accept rational
+    inputs as int, Fraction, str (e.g. "1/3") or float and return Fractions, or
+    +/- float("inf") for infinite values.
+    """
+
+    def __init__(self, problemName='model', defaultPlugins=True, createscip=True, threadsafe=False):
+        """
+        Parameters
+        ----------
+        problemName : str, optional
+            name of the problem (default 'model')
+        defaultPlugins : bool, optional
+            use default plugins (default True)
+        createscip : bool, optional
+            initialize the Model object and creates a SCIP instance
+        threadsafe : bool, optional
+            False if data can be safely shared between the source and target problem
+
+        """
+        if not PYSCIPOPT_WITH_EXACTSOLVE:
+            raise ValueError("SCIP was built without exact solving support, ExactModel needs a SCIP build with exact solving enabled")
+        super().__init__(problemName, defaultPlugins, createscip=createscip, threadsafe=threadsafe)
+
+    cdef _configureScip(self):
+        PY_SCIP_CALL(SCIPenableExactSolving(self._scip, True))
+
+    def setObjective(self, expr, sense='minimize', clear='true'):
+        """
+        Not available in exact solving mode: expressions hold floating-point coefficients.
+        Set objective coefficients with addVar(obj=...) or chgVarObj() instead.
+        """
+        raise TypeError("ExactModel.setObjective is not available because expressions hold floating-point coefficients; set objective coefficients with addVar(obj=...) or chgVarObj()")
+
+    def addVar(self, name='', vtype='C', lb=0, ub=None, obj=0, pricedVar=False, pricedVarScore=1.0, deletable=False):
+        """
+        Create a new variable with exact (rational) bounds and objective coefficient.
+
+        Parameters
+        ----------
+        name : str, optional
+            name of the variable, generic if empty (Default value = '')
+        vtype : str, optional
+            type of the variable: 'C' continuous, 'I' integer, or 'B' binary
+            (Default value = 'C')
+        lb : Fraction, int, str or None, optional
+            lower bound of the variable, use None for -infinity (Default value = 0)
+        ub : Fraction, int, str or None, optional
+            upper bound of the variable, use None for +infinity, or 1 for binary variables
+            (Default value = None)
+        obj : Fraction, int or str, optional
+            objective coefficient of the variable (Default value = 0)
+
+        Returns
+        -------
+        Variable
+
+        Notes
+        -----
+        Values are converted with fractions.Fraction, so "1/3" and Fraction(1, 3) are exact.
+        Floats are taken at their exact binary value, e.g. 0.1 is not 1/10.
+
+        """
+        cdef SCIP_VAR* scip_var = NULL
+        cdef SCIP_RATIONAL* lbexact = NULL
+        cdef SCIP_RATIONAL* ubexact = NULL
+        cdef SCIP_RATIONAL* objexact = NULL
+        cdef SCIP_VARTYPE vartype
+        cdef SCIP_RETCODE rc
+
+        if pricedVar or deletable:
+            raise ValueError("priced and deletable variables are not supported in exact solving mode")
+        if name == '':
+            name = 'x'+str(SCIPgetNVars(self._scip)+1)
+        cname = str_conversion(name)
+
+        vtype = vtype.upper()
+        if vtype in ['C', 'CONTINUOUS']:
+            vartype = SCIP_VARTYPE_CONTINUOUS
+        elif vtype in ['B', 'BINARY']:
+            vartype = SCIP_VARTYPE_BINARY
+            if ub is None:
+                ub = 1
+        elif vtype in ['I', 'INTEGER']:
+            vartype = SCIP_VARTYPE_INTEGER
+        else:
+            raise Warning("unrecognized variable type")
+
+        lb = _asRational(-float("inf") if lb is None else lb)
+        ub = _asRational(float("inf") if ub is None else ub)
+        obj = _asFiniteRational(obj)
+        if lb > ub:
+            raise ValueError("lower bound %s exceeds upper bound %s" % (lb, ub))
+
+        PY_SCIP_CALL(SCIPcreateVarBasic(self._scip, &scip_var, cname,
+                                        max(float(lb), -SCIPinfinity(self._scip)),
+                                        min(float(ub), SCIPinfinity(self._scip)),
+                                        float(obj), vartype))
+        lbexact = _createRational(lb)
+        ubexact = _createRational(ub)
+        objexact = _createRational(obj)
+        rc = SCIPaddVarExactData(self._scip, scip_var, lbexact, ubexact, objexact)
+        SCIPrationalFree(&lbexact)
+        SCIPrationalFree(&ubexact)
+        SCIPrationalFree(&objexact)
+        if rc != SCIP_OKAY:
+            SCIPreleaseVar(self._scip, &scip_var)
+        PY_SCIP_CALL(rc)
+        PY_SCIP_CALL(SCIPaddVar(self._scip, scip_var))
+
+        pyVar = self._getOrCreateVar(scip_var)
+        SCIPvarSetData(scip_var, <SCIP_VARDATA*>pyVar)
+        PY_SCIP_CALL(SCIPreleaseVar(self._scip, &scip_var))
+        return pyVar
+
+    def chgVarObj(self, Variable var, newobj):
+        """
+        Change the exact objective coefficient of a variable.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to change the objective coefficient of
+        newobj : Fraction, int or str
+            new objective coefficient
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+        rational = _createRational(_asFiniteRational(newobj))
+        rc = SCIPchgVarObjExact(self._scip, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+    def chgVarLb(self, Variable var, lb):
+        """
+        Change the exact lower bound of a variable.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to change the bound of
+        lb : Fraction, int, str or None
+            new lower bound, use None for -infinity
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+        rational = _createRational(-float("inf") if lb is None else lb)
+        rc = SCIPchgVarLbExact(self._scip, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+    def chgVarUb(self, Variable var, ub):
+        """
+        Change the exact upper bound of a variable.
+
+        Parameters
+        ----------
+        var : Variable
+            variable to change the bound of
+        ub : Fraction, int, str or None
+            new upper bound, use None for +infinity
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+        rational = _createRational(float("inf") if ub is None else ub)
+        rc = SCIPchgVarUbExact(self._scip, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
