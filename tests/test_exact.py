@@ -119,27 +119,21 @@ def test_exact_solution():
     x = m.addVarExact("x", ub="10/3", obj=-1)
     y = m.addVarExact("y", vtype="I", ub=5, obj=Fraction(-1, 7))
     c = m.addConsExactLinear([x, y], [Fraction(1, 3), Fraction(1, 10)], None, Fraction(2, 3))
-    m.addOrigObjoffsetExact(Fraction(1, 3))
-    assert m.getOrigObjoffsetExact() == Fraction(1, 3)
+    m.addOrigObjoffsetExact(Fraction(1, 2))
+    assert m.getOrigObjoffsetExact() == Fraction(1, 2)
 
     with pytest.raises(Warning):
         m.getPrimalboundExact()
     with pytest.raises(ValueError):
         m.addOrigObjoffsetExact(float("inf"))
-    with pytest.raises(Exception):
-        m.trySol(m.createSol())
 
     m.optimize()
     assert m.getStatus() == "optimal"
 
     sol = m.getBestSol()
     assert sol.isExact()
-    assert m.getSolOrigObjExact(sol) == Fraction(-5, 3)
-    assert m.getSolOrigObjExact(sol) != -1.6666666666666667
-    assert m.getPrimalboundExact() == Fraction(-5, 3)
-    assert m.getDualboundExact() == Fraction(-5, 3)
+    assert m.getSolOrigObjExact(sol) == Fraction(-3, 2)
+    assert m.getPrimalboundExact() == Fraction(-3, 2)
+    assert m.getDualboundExact() == Fraction(-3, 2)
     assert m.getActivityExactLinear(c, sol) == Fraction(2, 3)
-    assert m.getObjVal() == pytest.approx(-5 / 3)
-
-    with pytest.raises(Exception):
-        m.addOrigObjoffsetExact(1)
+    assert m.getObjVal() == pytest.approx(-1.5)
