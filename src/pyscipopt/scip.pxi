@@ -1524,7 +1524,7 @@ cdef class Variable(Expr):
         """
         if scipvar == NULL:
             raise Warning("cannot create Variable with SCIP_VAR* == NULL")
-        var = Variable()
+        var = ExactVariable() if SCIPvarIsExact(scipvar) else Variable()
         var.scip_var = scipvar
         Expr.__init__(var, {Term(var) : 1.0})
         return var
@@ -1774,107 +1774,6 @@ cdef class Variable(Expr):
 
         """
         return SCIPvarGetObj(self.scip_var)
-
-    def isExact(self):
-        """
-        Returns whether the variable has exact (rational) data.
-
-        Returns
-        -------
-        bool
-
-        """
-        return SCIPvarIsExact(self.scip_var)
-
-    def getObjExact(self):
-        """
-        Retrieve the exact objective coefficient of the variable.
-
-        Returns
-        -------
-        Fraction
-
-        """
-        _checkExactVar(self)
-        return _fromRational(SCIPvarGetObjExact(self.scip_var))
-
-    def getLbOriginalExact(self):
-        """
-        Retrieve the exact original lower bound of the variable.
-
-        Returns
-        -------
-        Fraction or float
-            a Fraction, or -inf if the variable is unbounded
-
-        """
-        _checkExactVar(self, original=True)
-        return _fromRational(SCIPvarGetLbOriginalExact(self.scip_var))
-
-    def getUbOriginalExact(self):
-        """
-        Retrieve the exact original upper bound of the variable.
-
-        Returns
-        -------
-        Fraction or float
-            a Fraction, or inf if the variable is unbounded
-
-        """
-        _checkExactVar(self, original=True)
-        return _fromRational(SCIPvarGetUbOriginalExact(self.scip_var))
-
-    def getLbGlobalExact(self):
-        """
-        Retrieve the exact global lower bound of the variable.
-
-        Returns
-        -------
-        Fraction or float
-            a Fraction, or -inf if the variable is unbounded
-
-        """
-        _checkExactVar(self)
-        return _fromRational(SCIPvarGetLbGlobalExact(self.scip_var))
-
-    def getUbGlobalExact(self):
-        """
-        Retrieve the exact global upper bound of the variable.
-
-        Returns
-        -------
-        Fraction or float
-            a Fraction, or inf if the variable is unbounded
-
-        """
-        _checkExactVar(self)
-        return _fromRational(SCIPvarGetUbGlobalExact(self.scip_var))
-
-    def getLbLocalExact(self):
-        """
-        Retrieve the exact local lower bound of the variable.
-
-        Returns
-        -------
-        Fraction or float
-            a Fraction, or -inf if the variable is unbounded
-
-        """
-        _checkExactVar(self)
-        return _fromRational(SCIPvarGetLbLocalExact(self.scip_var))
-
-    def getUbLocalExact(self):
-        """
-        Retrieve the exact local upper bound of the variable.
-
-        Returns
-        -------
-        Fraction or float
-            a Fraction, or inf if the variable is unbounded
-
-        """
-        _checkExactVar(self)
-        return _fromRational(SCIPvarGetUbLocalExact(self.scip_var))
 
     def getLPSol(self):
         """
@@ -13375,7 +13274,6 @@ cdef class Model:
             sol = Solution.create(self._scip, NULL)
         sol._checkStage("SCIPgetSolVal")
         _checkExactSol(sol)
-        _checkExactVar(var)
 
         rational = _createRational(0)
         SCIPgetSolValExact(self._scip, sol.sol, var.scip_var, rational)

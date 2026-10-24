@@ -2,7 +2,7 @@ from fractions import Fraction
 
 import pytest
 
-from pyscipopt import Model, ExactModel, Variable
+from pyscipopt import Model, ExactModel, ExactVariable, Variable
 
 
 def _exact_supported():
@@ -28,22 +28,26 @@ def test_exact_model():
     assert isinstance(Model.from_ptr(m.to_ptr(False), False), ExactModel)
 
     x = m.addVar("x", lb="1/3", ub=Fraction(10, 3), obj=-1)
-    assert x.getLbOriginalExact() == Fraction(1, 3)
-    assert x.getUbOriginalExact() == Fraction(10, 3)
-    assert x.getObjExact() == -1
+    assert isinstance(x, ExactVariable)
+    assert all(isinstance(v, ExactVariable) for v in m.getVars())
+    assert x.getLbOriginal() == Fraction(1, 3)
+    assert x.getLbGlobal() == Fraction(1, 3)
+    assert x.getUbLocal() == Fraction(10, 3)
+    assert x.getUbOriginal() == Fraction(10, 3)
+    assert x.getObj() == -1
     y = m.addVar("y", lb=None, ub=float("inf"))
-    assert y.getLbOriginalExact() == -float("inf")
-    assert y.getUbOriginalExact() == float("inf")
+    assert y.getLbOriginal() == -float("inf")
+    assert y.getUbOriginal() == float("inf")
     b = m.addVar("b", vtype="B")
-    assert b.getUbOriginalExact() == 1
+    assert b.getUbOriginal() == 1
     assert b.vtype() == "BINARY"
 
     m.chgVarObj(x, Fraction(-1, 7))
     m.chgVarLb(x, None)
     m.chgVarUb(x, "5/2")
-    assert x.getObjExact() == Fraction(-1, 7)
-    assert x.getLbOriginalExact() == -float("inf")
-    assert x.getUbOriginalExact() == Fraction(5, 2)
+    assert x.getObj() == Fraction(-1, 7)
+    assert x.getLbOriginal() == -float("inf")
+    assert x.getUbOriginal() == Fraction(5, 2)
 
     with pytest.raises(ValueError):
         m.addVar("bad", lb=2, ub=1)
@@ -63,6 +67,9 @@ def test_exact_model():
     n = Model()
     z = n.addVar("z", lb=0.5)
     assert isinstance(z.getLbOriginal(), float)
+    assert type(z) is Variable
+    assert not hasattr(z, "getLbOriginalExact")
+    assert not hasattr(x, "getLbOriginalExact")
 
 
 def test_addConsExactLinear():

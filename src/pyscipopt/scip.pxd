@@ -1541,6 +1541,8 @@ cdef extern from "scip/scip.h":
     SCIP_RATIONAL* SCIPvarGetUbGlobalExact(SCIP_VAR* var)
     SCIP_RATIONAL* SCIPvarGetLbLocalExact(SCIP_VAR* var)
     SCIP_RATIONAL* SCIPvarGetUbLocalExact(SCIP_VAR* var)
+    void SCIPvarGetLPSolExact(SCIP_VAR* var, SCIP_RATIONAL* res)
+    SCIP_COLEXACT* SCIPvarGetColExact(SCIP_VAR* var)
     void SCIPgetSolValExact(SCIP* scip, SCIP_SOL* sol, SCIP_VAR* var, SCIP_RATIONAL* res)
     void SCIPgetSolOrigObjExact(SCIP* scip, SCIP_SOL* sol, SCIP_RATIONAL* res)
     SCIP_Bool SCIPsolIsExact(SCIP_SOL* sol)
@@ -2407,6 +2409,9 @@ cdef class Variable(Expr):
 
     @staticmethod
     cdef create(SCIP_VAR* scipvar)
+
+cdef class ExactVariable(Variable):
+    pass
 
 cdef class Constraint:
     cdef SCIP_CONS* scip_cons
