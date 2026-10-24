@@ -5,6 +5,7 @@ import numpy as np
 import pytest
 
 from pyscipopt import SCIP_BRANCHDIR, SCIP_PARAMSETTING, SCIP_STAGE, Model, quicksum
+from pyscipopt.scip import Solution
 from helpers.utils import random_mip_1
 
 
@@ -673,7 +674,7 @@ def test_getCountedSols():
     y = m.addVar("y", vtype="I", lb=0, ub=4)
     z = m.addVar("z", vtype="I", lb=0, ub=10)
     w = m.addVar("w", vtype="B")
-    m.addVar("c", lb=0, ub=1)
+    m.setObjective(x + 2*y)
     m.addCons(z == 2*x + 3)
     m.addCons(x + y <= 4)
     m.addCons(w + y >= 1)
@@ -685,11 +686,15 @@ def test_getCountedSols():
     expected = {(a, b, c, d) for a, b, c, d in itertools.product(range(-2, 4), range(5), range(11), range(2))
                 if c == 2*a + 3 and a + b <= 4 and d + b >= 1}
     assert len(sols) == m.getNCountedSols() == len(expected)
-    assert all(set(sol) == {"t_x", "t_y", "t_z", "t_w"} for sol in sols)
-    assert {tuple(sol["t_" + k] for k in "xyzw") for sol in sols} == expected
+    assert all(isinstance(sol, Solution) for sol in sols)
+    assert {tuple(sol[v] for v in (x, y, z, w)) for sol in sols} == expected
+    assert all(m.getSolObjVal(sol) == sol[x] + 2*sol[y] for sol in sols)
+    assert m.getCountedSols() == sols
 
     m.freeTransform()
     assert m.getCountedSols() == []
+    with pytest.raises(Warning):
+        sols[0][x]
 
     m.setParam("constraints/countsols/collect", False)
     with pytest.raises(Warning):
@@ -697,5 +702,10 @@ def test_getCountedSols():
 
     m.setParam("constraints/countsols/collect", True)
     m.setPresolve(SCIP_PARAMSETTING.DEFAULT)
+    with pytest.raises(Warning):
+        m.getCountedSols()
+
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    m.addVar("c", lb=0, ub=1)
     with pytest.raises(Warning):
         m.getCountedSols()

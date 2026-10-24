@@ -851,6 +851,7 @@ cdef extern from "scip/scip.h":
     SCIP_IMPLINTTYPE SCIPvarGetImplType(SCIP_VAR* var)
     SCIP_VARSTATUS SCIPvarGetStatus(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
+    SCIP_RETCODE SCIPvarGetOrigvarSum(SCIP_VAR** var, SCIP_Real* scalar, SCIP_Real* constant)
     SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsActive(SCIP_VAR* var)
     SCIP_COL* SCIPvarGetCol(SCIP_VAR* var)
@@ -2314,6 +2315,7 @@ cdef class Model:
     cdef _modelvars
     # map to store python constraints
     cdef _modelconss
+    cdef _countedsols
     # used to keep track of the number of event handlers generated
     cdef int _generated_event_handlers_count
     # store references to Benders subproblem Models for proper cleanup
@@ -2330,6 +2332,7 @@ cdef class Model:
     cdef _getOrCreateCons(self, SCIP_CONS* scip_cons)
     cdef _getOrCreateVar(self, SCIP_VAR* scip_var)
     cdef _free_scip_instance(self)
+    cdef _freeCountedSols(self)
 
     @staticmethod
     cdef create(SCIP* scip)

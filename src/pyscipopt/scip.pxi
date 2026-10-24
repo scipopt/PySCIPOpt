@@ -2840,6 +2840,7 @@ cdef class Model:
         self._freescip = True
         self._modelvars = {}
         self._modelconss = {}
+        self._countedsols = []
         self._generated_event_handlers_count = 0
         self._benders_subproblems = []  # Keep references to Benders subproblem Models
         self._plugins = []  # Keep references to plugins to break cycles in __dealloc__
@@ -2949,6 +2950,8 @@ cdef class Model:
             if SCIPgetStage(self._scip) == SCIP_STAGE_SOLVING and SCIPinProbing(self._scip):
                 PY_SCIP_CALL(SCIPendProbing(self._scip))
                 
+            self._freeCountedSols()
+
             # Ignore SCIPfree retcode: cleanup must not turn into a new failure.
             SCIPfree(&self._scip)
             self._scip = NULL
@@ -3103,6 +3106,7 @@ cdef class Model:
 
     def freeProb(self):
         """Frees problem and solution process data."""
+        self._freeCountedSols()
         PY_SCIP_CALL(SCIPfreeProb(self._scip))
 
     def free(self):
@@ -3140,6 +3144,7 @@ cdef class Model:
         # Clear Python-side caches
         self._modelvars = {}
         self._modelconss = {}
+        self._countedsols = []
         self._benders_subproblems = []
         self._bestSol = None
 
@@ -3169,6 +3174,7 @@ cdef class Model:
                 (<Constraint>cons).scip_cons = NULL
         self._modelconss = origconss
 
+        self._freeCountedSols()
         PY_SCIP_CALL(SCIPfreeTransform(self._scip))
 
     def version(self):
@@ -12550,19 +12556,22 @@ cdef class Model:
         Get the feasible solutions collected by `count()`.
 
         Requires `constraints/countsols/collect` to be True and presolving to be off
-        before calling `count()`. Only integral variables are counted, so continuous
-        variables are not part of the solutions. The solutions are freed together with
-        the transformed problem.
+        before calling `count()`, and a problem without continuous variables. The
+        solutions are freed together with the transformed problem.
 
         Returns
         -------
-        list of dict
-            Each solution maps the names of the transformed variables to their values.
+        list of Solution
 
         """
         cdef SCIP_VAR** vars
+        cdef SCIP_VAR** origvars
+        cdef SCIP_VAR* origvar
         cdef SCIP_SPARSESOL** sparsesols
-        cdef SCIP_Longint* sol
+        cdef SCIP_Longint* vals
+        cdef SCIP_SOL* sol
+        cdef SCIP_Real scalar
+        cdef SCIP_Real constant
         cdef SCIP_Bool valid
         cdef int nvars
         cdef int nsparsesols
@@ -12573,26 +12582,47 @@ cdef class Model:
             raise Warning("set constraints/countsols/collect to True before calling count()")
         if self.getParam("presolving/maxrounds") != 0:
             raise Warning("turn presolving off before calling count()")
+        if SCIPgetNContVars(self._scip) > 0:
+            raise Warning("counted solutions are only available for problems without continuous variables")
 
-        SCIPgetNCountedSols(self._scip, &valid)
+        nsols = SCIPgetNCountedSols(self._scip, &valid)
         if not valid:
             raise Warning("number of counted solutions does not fit into a long integer, cannot collect them")
+        if len(self._countedsols) == nsols:
+            return list(self._countedsols)
+        self._freeCountedSols()
 
         SCIPgetCountedSparseSols(self._scip, &vars, &nvars, &sparsesols, &nsparsesols)
-        names = [bytes(SCIPvarGetName(vars[i])).decode("utf-8") for i in range(nvars)]
+        origvars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        for i in range(nvars):
+            origvar = vars[i]
+            scalar = 1.0
+            constant = 0.0
+            PY_SCIP_CALL(SCIPvarGetOrigvarSum(&origvar, &scalar, &constant))
+            origvars[i] = origvar
 
-        sol = <SCIP_Longint*> malloc(nvars * sizeof(SCIP_Longint))
-        sols = []
+        vals = <SCIP_Longint*> malloc(nvars * sizeof(SCIP_Longint))
         for s in range(nsparsesols):
-            SCIPsparseSolGetFirstSol(sparsesols[s], sol, nvars)
+            SCIPsparseSolGetFirstSol(sparsesols[s], vals, nvars)
             while True:
-                sols.append({names[i]: sol[i] for i in range(nvars)})
-                if not SCIPsparseSolGetNextSol(sparsesols[s], sol, nvars):
+                PY_SCIP_CALL(SCIPcreateOrigSol(self._scip, &sol, NULL))
+                for i in range(nvars):
+                    PY_SCIP_CALL(SCIPsetSolVal(self._scip, sol, origvars[i], vals[i]))
+                self._countedsols.append(Solution.create(self._scip, sol))
+                if not SCIPsparseSolGetNextSol(sparsesols[s], vals, nvars):
                     break
 
-        free(sol)
+        free(vals)
+        free(origvars)
 
-        return sols
+        return list(self._countedsols)
+
+    cdef _freeCountedSols(self):
+        cdef Solution sol
+        for sol in self._countedsols:
+            if sol.sol != NULL:
+                PY_SCIP_CALL(SCIPfreeSol(self._scip, &sol.sol))
+        self._countedsols = []
 
     def setParamsCountsols(self):
         """Sets SCIP parameters such that a valid counting process is possible."""
