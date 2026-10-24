@@ -2315,7 +2315,6 @@ cdef class Model:
     cdef _modelvars
     # map to store python constraints
     cdef _modelconss
-    cdef _countedsols
     # used to keep track of the number of event handlers generated
     cdef int _generated_event_handlers_count
     # store references to Benders subproblem Models for proper cleanup
@@ -2332,7 +2331,6 @@ cdef class Model:
     cdef _getOrCreateCons(self, SCIP_CONS* scip_cons)
     cdef _getOrCreateVar(self, SCIP_VAR* scip_var)
     cdef _free_scip_instance(self)
-    cdef _freeCountedSols(self)
 
     @staticmethod
     cdef create(SCIP* scip)
