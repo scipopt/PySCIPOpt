@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added `getCountedSols()` to retrieve the solutions collected by `count()` (#906)
 - Added docstrings to the bundled stubs in release wheels for Python 3.10 and later.
 - Added more type annotations and deprecation markers to the stubs.
 - Added tests for `getObjVal()` and `getVal()`
