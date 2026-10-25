@@ -17,6 +17,7 @@ from posix.stdio cimport fileno
 from collections.abc import Iterable
 from itertools import repeat
 from dataclasses import dataclass
+from fractions import Fraction
 from typing import Union
 
 import numpy as np
@@ -64,8 +65,14 @@ cdef extern from "scip/config.h":
     #else
     #define PYSCIPOPT_WITH_DEBUG_SOLUTION 0
     #endif
+    #ifdef SCIP_WITH_EXACTSOLVE
+    #define PYSCIPOPT_WITH_EXACTSOLVE 1
+    #else
+    #define PYSCIPOPT_WITH_EXACTSOLVE 0
+    #endif
     """
     bint PYSCIPOPT_WITH_DEBUG_SOLUTION
+    bint PYSCIPOPT_WITH_EXACTSOLVE
 
 # Mapping the SCIP_RESULT enum to a python class
 # This is required to return SCIP_RESULT in the python code
@@ -640,31 +647,6 @@ cdef class Column:
         return (self.__class__ == other.__class__
                 and self.scip_col == (<Column>other).scip_col)
 
-cdef class ColumnExact:
-    """Base class holding a pointer to corresponding SCIP_COLEXACT."""
-
-    @staticmethod
-    cdef create(SCIP_COLEXACT* scipcolexact):
-        """
-        Main method for creating a ColumnExact class. Is used instead of __init__.
-
-        Parameters
-        ----------
-        scipcolexact : SCIP_COLEXACT*
-            A pointer to the SCIP_COLEXACT
-
-        Returns
-        -------
-        col : ColumnExact
-            The Python representative of the SCIP_COLEXACT
-
-        """
-        if scipcolexact == NULL:
-            raise Warning("cannot create ColumnExact with SCIP_COLEXACT* == NULL")
-        col = ColumnExact()
-        col.scip_col_exact = scipcolexact
-        return col
-
 cdef class Row:
     """Base class holding a pointer to corresponding SCIP_ROW."""
 
@@ -949,31 +931,6 @@ cdef class Row:
         return (self.__class__ == other.__class__
                 and self.scip_row == (<Row>other).scip_row)
 
-cdef class RowExact:
-    """Base class holding a pointer to corresponding SCIP_ROW."""
-
-    @staticmethod
-    cdef create(SCIP_ROWEXACT* sciprowexact):
-        """
-        Main method for creating a RowExact class. Is used instead of __init__.
-
-        Parameters
-        ----------
-        sciprow : SCIP_ROWEXACT*
-            A pointer to the SCIP_ROWEXACT
-
-        Returns
-        -------
-        row : Row
-            The Python representative of the SCIP_ROWEXACT
-
-        """
-        if sciprowexact == NULL:
-            raise Warning("cannot create Row with SCIP_ROWEXACT* == NULL")
-        row_exact = RowExact()
-        row_exact.scip_row_exact = sciprowexact
-        return row_exact
-
 cdef class NLRow:
     """Base class holding a pointer to corresponding SCIP_NLROW."""
 
@@ -1149,9 +1106,22 @@ cdef class Solution:
         """
         return SCIPsolGetOrigin(self.sol)
 
+    def isExact(self):
+        """
+        Returns whether the solution has exact (rational) values.
+
+        Returns
+        -------
+        bool
+        """
+        return self.sol != NULL and SCIPsolIsExact(self.sol)
+
     def retransform(self):
         """ retransforms solution to original problem space """
-        PY_SCIP_CALL(SCIPretransformSol(self.scip, self.sol))
+        if SCIPsolIsExact(self.sol):
+            PY_SCIP_CALL(SCIPretransformSolExact(self.scip, self.sol))
+        else:
+            PY_SCIP_CALL(SCIPretransformSol(self.scip, self.sol))
 
     def translate(self, Model target):
         """
@@ -1373,9 +1343,14 @@ cdef class Node:
 
         Returns
         -------
-        float
+        float or Fraction
+            a Fraction (or -inf) when the node belongs to an exact model
 
         """
+        cdef SCIP_RATIONAL* exact = SCIPnodeGetLowerboundExact(self.scip_node)
+
+        if exact != NULL:
+            return _fromRational(exact)
         return SCIPnodeGetLowerbound(self.scip_node)
 
     def getEstimate(self):
@@ -1552,7 +1527,7 @@ cdef class Variable(Expr):
         """
         if scipvar == NULL:
             raise Warning("cannot create Variable with SCIP_VAR* == NULL")
-        var = Variable()
+        var = ExactVariable() if SCIPvarIsExact(scipvar) else Variable()
         var.scip_var = scipvar
         Expr.__init__(var, {Term(var) : 1.0})
         return var
@@ -2845,6 +2820,7 @@ cdef class Model:
         self._plugins = []  # Keep references to plugins to break cycles in __dealloc__
         self._iis = NULL
 
+
         if not createscip:
             # if no SCIP instance should be created, then an empty Model object is created.
             self._scip = NULL
@@ -2855,6 +2831,7 @@ cdef class Model:
             self._bestSol = None
             if defaultPlugins:
                 self.includeDefaultPlugins()
+            self._configureScip()
             self.createProbBasic(problemName)
         else:
             PY_SCIP_CALL(SCIPcreate(&self._scip))
@@ -2928,6 +2905,9 @@ cdef class Model:
         if self._scip is not NULL and self._freescip:
             SCIPfree(&self._scip)
 
+    cdef _configureScip(self):
+        pass
+
     cdef _free_scip_instance(self):
         """Free the SCIP instance. Does not touch Python object references."""
         cdef SCIP_BENDERS** benders
@@ -2983,7 +2963,7 @@ cdef class Model:
         """
         if scip == NULL:
             raise Warning("cannot create Model with SCIP* == NULL")
-        model = Model(createscip=False)
+        model = ExactModel(createscip=False) if SCIPisExact(scip) else Model(createscip=False)
         model._scip = scip
         model._bestSol = Solution.create(scip, SCIPgetBestSol(scip))
         model._benders_subproblems = []  # Initialize Benders subproblems list
@@ -4223,6 +4203,7 @@ cdef class Model:
         expr = Expr() + expr
         if expr.degree() > 1:
             raise ValueError("SCIP does not support nonlinear objective functions. Consider using set_nonlinear_objective in the pyscipopt.recipe.nonlinear")
+
 
         if clear:
             # clear existing objective function
@@ -12940,64 +12921,6 @@ cdef class Model:
         return SCIPgetTreesizeEstimation(self._scip)
 
 
-    # Exact SCIP methods
-    def enableExactSolving(self, SCIP_Bool enable):
-        """
-        Enables or disables exact solving mode in SCIP.
-
-        Parameters
-        ----------
-        enable : SCIP_Bool
-            Whether to enable exact solving mode (True) or disable it (False).
-        """
-
-        PY_SCIP_CALL(SCIPenableExactSolving(self._scip, enable))
-
-    def isExact(self):
-        """
-        Returns whether exact solving mode is enabled in SCIP.
-
-        Returns
-        -------
-        bool
-        """
-
-        return SCIPisExact(self._scip)
-
-    def allowNegSlackExact(self):
-        """
-        Returns whether negative slack is allowed in exact solving mode.
-
-        Returns
-        -------
-        bool
-        """
-
-        return SCIPallowNegSlack(self._scip)
-    
-    def branchLPExact(self):
-        """
-        Performs exact LP branching.
-
-        Returns
-        -------
-        SCIP_RESULT
-        """
-        cdef SCIP_RESULT result
-        PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
-        return result
-
-    def addRowExact(self, RowExact rowexact):
-        """
-        Adds an exact row to the LP.
-
-        Parameters
-        ----------
-        rowexact : RowExact
-            The exact row to add.
-        """
-        PY_SCIP_CALL(SCIPaddRowExact(self._scip, rowexact.scip_row_exact))
-
     def getBipartiteGraphRepresentation(self, prev_col_features=None, prev_edge_features=None, prev_row_features=None,
                                         static_only=False, suppress_warnings=False):
         """
@@ -13545,3 +13468,5 @@ def is_memory_freed():
 
 def print_memory_in_use():
     BMScheckEmptyMemory()
+
+include "exact.pxi"
