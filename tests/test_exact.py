@@ -202,3 +202,12 @@ def test_solutions():
     with pytest.raises(Exception):
         m.addObjoffset(1)
     assert not hasattr(m, "getSolValExact")
+
+
+def test_no_exact_names():
+    for cls in (Model, Variable, ExactModel, ExactVariable):
+        leaked = [n for n in dir(cls) if "Exact" in n and not n.startswith("_")]
+        assert leaked == [], leaked
+    m = ExactModel()
+    assert m.allowNegSlack() in (True, False)
+    assert not hasattr(Model(), "allowNegSlack")

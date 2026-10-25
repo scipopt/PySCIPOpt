@@ -1410,3 +1410,37 @@ cdef class ExactModel(Model):
         """
         self._checkBoundStage("getCutoffbound")
         return _fromRational(SCIPgetCutoffboundExact(self._scip))
+
+    def allowNegSlack(self):
+        """
+        Returns whether negative slack is allowed in exact solving mode.
+
+        Returns
+        -------
+        bool
+        """
+
+        return SCIPallowNegSlack(self._scip)
+    
+    def branchLP(self):
+        """
+        Performs exact LP branching.
+
+        Returns
+        -------
+        SCIP_RESULT
+        """
+        cdef SCIP_RESULT result
+        PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
+        return result
+
+    def addRow(self, RowExact rowexact):
+        """
+        Adds an exact row to the LP.
+
+        Parameters
+        ----------
+        rowexact : RowExact
+            The exact row to add.
+        """
+        PY_SCIP_CALL(SCIPaddRowExact(self._scip, rowexact.scip_row_exact))
