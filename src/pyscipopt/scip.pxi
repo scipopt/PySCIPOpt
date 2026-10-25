@@ -1118,7 +1118,10 @@ cdef class Solution:
 
     def retransform(self):
         """ retransforms solution to original problem space """
-        PY_SCIP_CALL(SCIPretransformSol(self.scip, self.sol))
+        if SCIPsolIsExact(self.sol):
+            PY_SCIP_CALL(SCIPretransformSolExact(self.scip, self.sol))
+        else:
+            PY_SCIP_CALL(SCIPretransformSol(self.scip, self.sol))
 
     def translate(self, Model target):
         """
@@ -12947,113 +12950,6 @@ cdef class Model:
             The exact row to add.
         """
         PY_SCIP_CALL(SCIPaddRowExact(self._scip, rowexact.scip_row_exact))
-
-    def _checkExactMode(self):
-        if not SCIPisExact(self._scip):
-            if not PYSCIPOPT_WITH_EXACTSOLVE:
-                raise ValueError("SCIP was built without exact solving support, exact methods need a SCIP build with exact solving enabled")
-            raise ValueError("exact solving mode is not enabled, create the model with Model(exact=True)")
-
-    def _checkStageExactBound(self, method):
-        self._checkExactMode()
-        if not SCIP_STAGE_TRANSFORMED <= SCIPgetStage(self._scip) <= SCIP_STAGE_EXITSOLVE:
-            raise Warning("%s cannot be called in stage %i." % (method, SCIPgetStage(self._scip)))
-
-    def getSolValExact(self, Solution sol, Variable var):
-        """
-        Retrieve the exact value of a variable in a given solution.
-
-        Parameters
-        ----------
-        sol : Solution or None
-            exact solution to query, or None for the current LP/pseudo solution
-        var : Variable
-            variable to query the value of
-
-        Returns
-        -------
-        Fraction
-
-        """
-        cdef SCIP_RATIONAL* rational
-
-        self._checkExactMode()
-        if sol is None:
-            sol = Solution.create(self._scip, NULL)
-        sol._checkStage("SCIPgetSolVal")
-        _checkExactSol(sol)
-
-        rational = _createRational(0)
-        SCIPgetSolValExact(self._scip, sol.sol, var.scip_var, rational)
-        result = _fromRational(rational)
-        SCIPrationalFree(&rational)
-        return result
-
-    def getSolOrigObjExact(self, Solution sol):
-        """
-        Retrieve the exact objective value of a solution in the original problem space.
-
-        Parameters
-        ----------
-        sol : Solution or None
-            exact solution to query, or None for the current LP/pseudo solution
-
-        Returns
-        -------
-        Fraction
-
-        """
-        cdef SCIP_RATIONAL* rational
-
-        self._checkExactMode()
-        if sol is None:
-            sol = Solution.create(self._scip, NULL)
-        sol._checkStage("getSolObjVal")
-        _checkExactSol(sol)
-
-        rational = _createRational(0)
-        SCIPgetSolOrigObjExact(self._scip, sol.sol, rational)
-        result = _fromRational(rational)
-        SCIPrationalFree(&rational)
-        return result
-
-    def getPrimalboundExact(self):
-        """
-        Retrieve the exact primal bound.
-
-        Returns
-        -------
-        Fraction or float
-            a Fraction, or +/- inf if no solution is known
-
-        """
-        cdef SCIP_RATIONAL* rational
-
-        self._checkStageExactBound("getPrimalboundExact")
-        rational = _createRational(0)
-        SCIPgetPrimalboundExact(self._scip, rational)
-        result = _fromRational(rational)
-        SCIPrationalFree(&rational)
-        return result
-
-    def getDualboundExact(self):
-        """
-        Retrieve the exact dual bound.
-
-        Returns
-        -------
-        Fraction or float
-            a Fraction, or +/- inf if no bound is known
-
-        """
-        cdef SCIP_RATIONAL* rational
-
-        self._checkStageExactBound("getDualboundExact")
-        rational = _createRational(0)
-        SCIPgetDualboundExact(self._scip, rational)
-        result = _fromRational(rational)
-        SCIPrationalFree(&rational)
-        return result
 
     def getBipartiteGraphRepresentation(self, prev_col_features=None, prev_edge_features=None, prev_row_features=None,
                                         static_only=False, suppress_warnings=False):

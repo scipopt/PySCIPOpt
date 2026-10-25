@@ -2,7 +2,7 @@ from fractions import Fraction
 
 import pytest
 
-from pyscipopt import Model, ExactModel, ExactVariable, Variable
+from pyscipopt import SCIP_PARAMSETTING, Model, ExactModel, ExactVariable, Variable
 
 
 def _exact_supported():
@@ -147,27 +147,58 @@ def test_linear_constraints():
     assert not hasattr(m, "addConsExactLinear")
 
 
-def test_exact_solution():
+def _knapsack():
     m = ExactModel()
     m.hideOutput()
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
     x = m.addVar("x", ub="10/3", obj=-1)
     y = m.addVar("y", vtype="I", ub=5, obj=Fraction(-1, 7))
     c = m.addConsLinear([x, y], [Fraction(1, 3), Fraction(1, 10)], None, Fraction(2, 3))
     m.addObjoffset(Fraction(1, 2))
-    assert m.getObjoffset() == Fraction(1, 2)
+    return m, x, y, c
 
+
+def test_solutions():
+    m, x, y, c = _knapsack()
     with pytest.raises(Warning):
-        m.getPrimalboundExact()
+        m.getPrimalbound()
     with pytest.raises(ValueError):
-        m.addObjoffset(float("inf"))
+        m.createOrigSol()
+    with pytest.raises(ValueError):
+        m.createPartialSol()
+
+    sol = m.createSol()
+    m.setSolVal(sol, x, Fraction(1, 2))
+    m.setSolVal(sol, y, 1)
+    assert sol.isExact()
+    assert m.getSolVal(sol, x) == Fraction(1, 2)
+    with pytest.raises(TypeError):
+        m.getSolVal(sol, x + y)
+    assert m.addSol(sol) is True
+
+    m.presolve()
+    sol2 = m.createSol()
+    m.setSolVal(sol2, x, 2)
+    m.setSolVal(sol2, y, 0)
+    assert m.trySol(sol2) is True
 
     m.optimize()
     assert m.getStatus() == "optimal"
-
-    sol = m.getBestSol()
-    assert sol.isExact()
-    assert m.getSolOrigObjExact(sol) == Fraction(-3, 2)
-    assert m.getPrimalboundExact() == Fraction(-3, 2)
-    assert m.getDualboundExact() == Fraction(-3, 2)
-    assert m.getActivity(c, sol) == Fraction(2, 3)
-    assert m.getObjVal() == pytest.approx(-1.5)
+    best = m.getBestSol()
+    assert best.isExact()
+    assert m.getObjVal() == Fraction(-3, 2)
+    assert m.getSolObjVal(best) == Fraction(-3, 2)
+    assert m.getPrimalbound() == m.getDualbound() == Fraction(-3, 2)
+    assert isinstance(m.getUpperbound(), Fraction)
+    assert isinstance(m.getLowerbound(), Fraction)
+    assert isinstance(m.getCutoffbound(), (Fraction, float))
+    assert m.getVal(x) == 2
+    assert m.getVal(y) == 0
+    assert m.getActivity(c, best) == Fraction(2, 3)
+    assert m.getSlack(c, best) == 0
+    m.printSol(best)
+    m.printBestSol()
+    best.retransform()
+    with pytest.raises(Exception):
+        m.addObjoffset(1)
+    assert not hasattr(m, "getSolValExact")

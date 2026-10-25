@@ -1086,3 +1086,327 @@ cdef class ExactModel(Model):
             return super().getConsVals(constraint)
         vals = SCIPgetValsExactLinear(self._scip, constraint.scip_cons)
         return [_fromRational(vals[i]) for i in range(SCIPgetNVarsExactLinear(self._scip, constraint.scip_cons))]
+
+    def _checkBoundStage(self, method):
+        if not SCIP_STAGE_TRANSFORMED <= SCIPgetStage(self._scip) <= SCIP_STAGE_EXITSOLVE:
+            raise Warning("%s cannot be called in stage %i." % (method, SCIPgetStage(self._scip)))
+
+    def createSol(self, Heur heur = None, initlp=False):
+        """
+        Create a new exact primal solution in the transformed space.
+
+        Parameters
+        ----------
+        heur : Heur or None, optional
+            heuristic that found the solution (Default value = None)
+        initlp : bool, optional
+            Should the created solution be initialised to the current LP solution instead of all zeros
+
+        Returns
+        -------
+        Solution
+
+        """
+        cdef SCIP_HEUR* _heur
+        cdef SCIP_SOL* _sol
+
+        if isinstance(heur, Heur):
+            n = str_conversion(heur.name)
+            _heur = SCIPfindHeur(self._scip, n)
+        else:
+            _heur = NULL
+        if not initlp:
+            PY_SCIP_CALL(SCIPcreateSolExact(self._scip, &_sol, _heur))
+        else:
+            PY_SCIP_CALL(SCIPcreateLPSolExact(self._scip, &_sol, _heur))
+        return Solution.create(self._scip, _sol)
+
+    def createOrigSol(self, Heur heur = None):
+        """Not available in exact solving mode."""
+        raise ValueError("createOrigSol is not available in exact solving mode")
+
+    def createPartialSol(self, Heur heur = None):
+        """Not available in exact solving mode."""
+        raise ValueError("createPartialSol is not available in exact solving mode")
+
+    def setSolVal(self, Solution solution, Variable var, val):
+        """
+        Set a variable in a solution to a rational value.
+
+        Parameters
+        ----------
+        solution : Solution
+        var : Variable
+        val : Rational
+
+        """
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+
+        assert solution.sol != NULL, "Cannot set value to a freed solution."
+        rational = _createRational(_asFiniteRational(val))
+        rc = SCIPsetSolValExact(self._scip, solution.sol, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+    def getSolVal(self, Solution sol, expr):
+        """
+        Retrieve the exact value of a variable in the given solution.
+
+        Parameters
+        ----------
+        sol : Solution or None
+            solution, None for the current LP/pseudo solution
+        expr : Variable or MatrixVariable
+
+        Returns
+        -------
+        Fraction or np.ndarray
+
+        """
+        cdef SCIP_RATIONAL* rational
+
+        if sol is None:
+            sol = Solution.create(self._scip, NULL)
+        sol._checkStage("SCIPgetSolVal")
+        _checkExactSol(sol)
+        if isinstance(expr, MatrixVariable):
+            values = np.empty(expr.shape, dtype=object)
+            for idx in np.ndindex(expr.shape):
+                values[idx] = self.getSolVal(sol, expr[idx])
+            return values
+        if not isinstance(expr, Variable):
+            raise TypeError("exact solution values are only available for variables; evaluate expressions from the variable values")
+        rational = _createRational(0)
+        SCIPgetSolValExact(self._scip, sol.sol, (<Variable>expr).scip_var, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
+
+    def getVal(self, expr):
+        """
+        Retrieve the exact value of a variable in the best known solution.
+
+        Parameters
+        ----------
+        expr : Variable or MatrixVariable
+
+        Returns
+        -------
+        Fraction or np.ndarray
+
+        """
+        cdef SCIP_SOL* current_best_sol
+
+        if SCIPgetStage(self._scip) in {SCIP_STAGE_INIT, SCIP_STAGE_FREE}:
+            raise Warning("Method cannot be called in stage ", self.getStage())
+        current_best_sol = SCIPgetBestSol(self._scip)
+        if self._bestSol is None or self._bestSol.sol != current_best_sol:
+            self._bestSol = Solution.create(self._scip, current_best_sol)
+        if self._bestSol.sol == NULL and SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
+            raise Warning("No solution available")
+        return self.getSolVal(self._bestSol, expr)
+
+    def getSolObjVal(self, Solution sol, original=True):
+        """
+        Retrieve the exact objective value of the solution.
+
+        Parameters
+        ----------
+        sol : Solution or None
+        original : bool, optional
+            objective value in original space; only True is supported, SCIP exports no exact
+            transformed objective value (Default value = True)
+
+        Returns
+        -------
+        Fraction
+
+        """
+        cdef SCIP_RATIONAL* rational
+
+        if not original:
+            raise ValueError("the transformed objective value is not available in exact solving mode")
+        if sol is None:
+            sol = Solution.create(self._scip, NULL)
+        sol._checkStage("getSolObjVal")
+        _checkExactSol(sol)
+        rational = _createRational(0)
+        SCIPgetSolOrigObjExact(self._scip, sol.sol, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
+
+    def trySol(self, Solution solution, printreason=True, completely=False, checkbounds=True, checkintegrality=True, checklprows=True, free=True):
+        """
+        Check given exact primal solution for feasibility and try to add it to the storage.
+
+        Returns
+        -------
+        stored : bool
+
+        """
+        cdef SCIP_Bool stored
+
+        if SCIPgetStage(self._scip) < SCIP_STAGE_TRANSFORMED:
+            raise Warning("trySol cannot be called before the problem is transformed")
+        if free:
+            PY_SCIP_CALL(SCIPtrySolFree(self._scip, &solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
+        else:
+            PY_SCIP_CALL(SCIPtrySol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
+        return stored
+
+    def printSol(self, Solution solution=None, write_zeros=False):
+        """
+        Print the given exact primal solution.
+
+        Parameters
+        ----------
+        solution : Solution or None, optional
+            solution to print, None for the current LP/pseudo solution
+        write_zeros : bool, optional
+            include variables that are set to zero
+
+        """
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+        if solution is None:
+            PY_SCIP_CALL(SCIPprintSolExact(self._scip, NULL, NULL, write_zeros))
+        else:
+            PY_SCIP_CALL(SCIPprintSolExact(self._scip, solution.sol, NULL, write_zeros))
+        locale.setlocale(locale.LC_NUMERIC, user_locale)
+
+    def printBestSol(self, write_zeros=False):
+        """Print the best exact primal solution."""
+        cdef SCIP_SOL* best = SCIPgetBestSol(self._scip)
+
+        if best == NULL:
+            return super().printBestSol(write_zeros)
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+        PY_SCIP_CALL(SCIPprintSolExact(self._scip, best, NULL, write_zeros))
+        locale.setlocale(locale.LC_NUMERIC, user_locale)
+
+    def writeSol(self, Solution solution, filename="origprob.sol", write_zeros=False):
+        """Write the given exact primal solution to a file."""
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+        with open(filename, "w") as f:
+            cfile = fdopen(f.fileno(), "w")
+            PY_SCIP_CALL(SCIPprintSolExact(self._scip, solution.sol, cfile, write_zeros))
+        locale.setlocale(locale.LC_NUMERIC, user_locale)
+
+    def writeBestSol(self, filename="origprob.sol", write_zeros=False):
+        """Write the best exact primal solution to a file."""
+        cdef SCIP_SOL* best = SCIPgetBestSol(self._scip)
+
+        if best == NULL:
+            return super().writeBestSol(filename, write_zeros)
+        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
+        locale.setlocale(locale.LC_NUMERIC, "C")
+        with open(filename, "w") as f:
+            cfile = fdopen(f.fileno(), "w")
+            PY_SCIP_CALL(SCIPprintSolExact(self._scip, best, cfile, write_zeros))
+        locale.setlocale(locale.LC_NUMERIC, user_locale)
+
+    def getPrimalbound(self):
+        """
+        Retrieve the exact best primal bound (objective value of the best solution).
+
+        Returns
+        -------
+        Fraction or float
+
+        """
+        cdef SCIP_RATIONAL* rational
+
+        self._checkBoundStage("getPrimalbound")
+        rational = _createRational(0)
+        SCIPgetPrimalboundExact(self._scip, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
+
+    def getDualbound(self):
+        """
+        Retrieve the exact best dual bound.
+
+        Returns
+        -------
+        Fraction or float
+
+        """
+        cdef SCIP_RATIONAL* rational
+
+        self._checkBoundStage("getDualbound")
+        rational = _createRational(0)
+        SCIPgetDualboundExact(self._scip, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
+
+    def getUpperbound(self):
+        """
+        Retrieve the exact global upper (primal) bound in transformed space.
+
+        Returns
+        -------
+        Fraction or float
+
+        """
+        cdef SCIP_RATIONAL* rational
+
+        self._checkBoundStage("getUpperbound")
+        rational = _createRational(0)
+        SCIPgetUpperboundExact(self._scip, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
+
+    def getLowerbound(self):
+        """
+        Retrieve the exact global lower (dual) bound in transformed space.
+
+        Returns
+        -------
+        Fraction or float
+
+        """
+        cdef SCIP_RATIONAL* rational
+
+        self._checkBoundStage("getLowerbound")
+        rational = _createRational(0)
+        SCIPgetLowerboundExact(self._scip, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
+
+    def getLPObjVal(self):
+        """
+        Retrieve the objective value of the current exact LP.
+
+        Returns
+        -------
+        Fraction or float
+
+        """
+        cdef SCIP_RATIONAL* rational
+
+        self._checkBoundStage("getLPObjVal")
+        rational = _createRational(0)
+        SCIPgetLPExactObjval(self._scip, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
+
+    def getCutoffbound(self):
+        """
+        Retrieve the exact global cutoff bound.
+
+        Returns
+        -------
+        Fraction or float
+
+        """
+        self._checkBoundStage("getCutoffbound")
+        return _fromRational(SCIPgetCutoffboundExact(self._scip))
