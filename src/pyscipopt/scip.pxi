@@ -690,10 +690,9 @@ cdef class Row:
         row.scip_row = sciprow
         return row
 
-    property name:
-        def __get__(self):
-            cname = bytes( SCIProwGetName(self.scip_row) )
-            return cname.decode('utf-8')
+    @property
+    def name(self):
+        return bytes(SCIProwGetName(self.scip_row)).decode("utf-8")
 
     def getLhs(self):
         """
@@ -999,10 +998,9 @@ cdef class NLRow:
         nlrow.scip_nlrow = scipnlrow
         return nlrow
 
-    property name:
-        def __get__(self):
-            cname = bytes( SCIPnlrowGetName(self.scip_nlrow) )
-            return cname.decode('utf-8')
+    @property
+    def name(self):
+        return bytes(SCIPnlrowGetName(self.scip_nlrow)).decode("utf-8")
 
     def getConstant(self):
         """
@@ -1555,12 +1553,11 @@ cdef class Variable(Expr):
         Expr.__init__(var, {Term(var) : 1.0})
         return var
 
-    property name:
-        def __get__(self):
-            if self.scip_var == NULL:
-                return ""
-            cname = bytes( SCIPvarGetName(self.scip_var) )
-            return cname.decode('utf-8')
+    @property
+    def name(self):
+        if self.scip_var == NULL:
+            return ""
+        return bytes(SCIPvarGetName(self.scip_var)).decode("utf-8")
 
     cdef Variable copy(self, bint copy=True):
         return self
@@ -2217,12 +2214,11 @@ cdef class Constraint:
         cons.scip_cons = scipcons
         return cons
 
-    property name:
-        def __get__(self):
-            if self.scip_cons == NULL:
-                return ""
-            cname = bytes( SCIPconsGetName(self.scip_cons) )
-            return cname.decode('utf-8')
+    @property
+    def name(self):
+        if self.scip_cons == NULL:
+            return ""
+        return bytes(SCIPconsGetName(self.scip_cons)).decode("utf-8")
 
     def ptr(self):
         return <size_t>(self.scip_cons)
@@ -12568,6 +12564,56 @@ cdef class Model:
         if not valid:
             print('total number of solutions found is not valid!')
         return nsols
+
+    def getCountedSols(self):
+        """
+        Get the feasible solutions collected by `count()`.
+
+        Requires `constraints/countsols/collect` to be True and presolving to be off
+        before calling `count()`, and a problem without continuous variables.
+
+        Returns
+        -------
+        list of dict
+            Each solution maps the variable names to their values.
+
+        """
+        cdef SCIP_VAR** vars
+        cdef SCIP_SPARSESOL** sparsesols
+        cdef SCIP_Longint* vals
+        cdef SCIP_Bool valid
+        cdef int nvars
+        cdef int nsparsesols
+        cdef int i
+        cdef int s
+
+        if not self.getParam("constraints/countsols/collect"):
+            raise Warning("set constraints/countsols/collect to True before calling count()")
+        if self.getParam("presolving/maxrounds") != 0:
+            raise Warning("turn presolving off before calling count()")
+        if SCIPgetNContVars(self._scip) > 0:
+            raise Warning("counted solutions are only available for problems without continuous variables")
+
+        SCIPgetNCountedSols(self._scip, &valid)
+        if not valid:
+            raise Warning("number of counted solutions does not fit into a long integer, cannot collect them")
+
+        SCIPgetCountedSparseSols(self._scip, &vars, &nvars, &sparsesols, &nsparsesols)
+        # vars are transformed, strip the "t_" prefix to get the original names
+        names = [bytes(SCIPvarGetName(vars[i])).decode("utf-8")[2:] for i in range(nvars)]
+
+        vals = <SCIP_Longint*> malloc(nvars * sizeof(SCIP_Longint))
+        sols = []
+        for s in range(nsparsesols):
+            SCIPsparseSolGetFirstSol(sparsesols[s], vals, nvars)
+            while True:
+                sols.append({names[i]: vals[i] for i in range(nvars)})
+                if not SCIPsparseSolGetNextSol(sparsesols[s], vals, nvars):
+                    break
+
+        free(vals)
+
+        return sols
 
     def setParamsCountsols(self):
         """Sets SCIP parameters such that a valid counting process is possible."""
