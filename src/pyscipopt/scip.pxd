@@ -851,7 +851,6 @@ cdef extern from "scip/scip.h":
     SCIP_IMPLINTTYPE SCIPvarGetImplType(SCIP_VAR* var)
     SCIP_VARSTATUS SCIPvarGetStatus(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
-    SCIP_RETCODE SCIPvarGetOrigvarSum(SCIP_VAR** var, SCIP_Real* scalar, SCIP_Real* constant)
     SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsActive(SCIP_VAR* var)
     SCIP_COL* SCIPvarGetCol(SCIP_VAR* var)

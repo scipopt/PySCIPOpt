@@ -12668,11 +12668,8 @@ cdef class Model:
 
         """
         cdef SCIP_VAR** vars
-        cdef SCIP_VAR* origvar
         cdef SCIP_SPARSESOL** sparsesols
         cdef SCIP_Longint* vals
-        cdef SCIP_Real scalar
-        cdef SCIP_Real constant
         cdef SCIP_Bool valid
         cdef int nvars
         cdef int nsparsesols
@@ -12691,13 +12688,8 @@ cdef class Model:
             raise Warning("number of counted solutions does not fit into a long integer, cannot collect them")
 
         SCIPgetCountedSparseSols(self._scip, &vars, &nvars, &sparsesols, &nsparsesols)
-        names = []
-        for i in range(nvars):
-            origvar = vars[i]
-            scalar = 1.0
-            constant = 0.0
-            PY_SCIP_CALL(SCIPvarGetOrigvarSum(&origvar, &scalar, &constant))
-            names.append(bytes(SCIPvarGetName(origvar)).decode("utf-8"))
+        # vars are transformed, strip the "t_" prefix to get the original names
+        names = [bytes(SCIPvarGetName(vars[i])).decode("utf-8")[2:] for i in range(nvars)]
 
         vals = <SCIP_Longint*> malloc(nvars * sizeof(SCIP_Longint))
         sols = []
