@@ -3,14 +3,23 @@
 ## Unreleased
 ### Added
 - Added `getCountedSols()` to retrieve the solutions collected by `count()` (#906)
+- Added docstrings to the bundled stubs in release wheels for Python 3.10 and later.
+- Added more type annotations and deprecation markers to the stubs.
+- Added tests for `getObjVal()` and `getVal()`
+- Added `addConsLinear()` to add linear constraints from variables and coefficients without building an expression
 ### Fixed
+- Dual and Farkas getters for linear, knapsack, and logicor constraints now return zero when presolving has removed them.
+- Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
+- Fixed `getDualsolKnapsack()` and `getDualfarkasKnapsack()` returning 0 for original constraints, and the handler check in `getVarsAnd()` that could never fail
 ### Changed
+- Replaced `format()` with f-strings in examples
+- Made expression fields read-only to prevent accidental runtime modification
+- Methods taking a list of variables (e.g. `addConsKnapsack()`) no longer convert it to a NumPy array to check its dimension
 ### Removed
 
 ## 6.3.0 - 2026.10.11
 ### Added
-- Added the following methods with tests: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()`, `getDeterministicTime()`, `getAvgDualbound()`, `getMaxTotalDepth()`, `getNBacktracks()`,\
-`getFocusNode()`, `getAvgLowerbound()`, `getFirstPrimalBound()`, `getLowerboundRoot()`, `getUpperbound()`, `getNObjlimLeaves()`
+- Added the following methods with tests: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()`, `getDeterministicTime()`, `getAvgDualbound()`, `getMaxTotalDepth()`, `getNBacktracks()`, `getFocusNode()`, `getAvgLowerbound()`, `getFirstPrimalBound()`, `getLowerboundRoot()`, `getUpperbound()`, `getNObjlimLeaves()`
 - Added `addConsCumulative()` for SCIP cumulative constraints (#1222)
 - Added `addConsLogicor()`, `addCoefLogicor()`, `getNVarsLogicor()`, `getVarsLogicor()`, `getDualsolLogicor()` and `getDualfarkasLogicor()` for SCIP logicor constraints (#977)
 - `Expr` and `GenExpr` support `__pos__` magic method like `+Expr` or `+GenExpr`

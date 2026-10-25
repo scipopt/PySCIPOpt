@@ -28,6 +28,10 @@ Homepage = "https://github.com/SCIP-Interfaces/PySCIPOpt"
 norecursedirs = ["check"]
 testpaths = ["tests"]
 
+[tool.mypy]
+warn_unused_ignores = true
+enable_error_code = ["deprecated"]
+
 [tool.setuptools]
 include-package-data = false
 
@@ -57,6 +61,10 @@ unzip scip.zip
 mv scip_install scip
 '''
 environment = { SCIPOPTDIR="$(pwd)/scip", LD_LIBRARY_PATH="$(pwd)/scip/lib:$LD_LIBRARY_PATH", DYLD_LIBRARY_PATH="$(pwd)/scip/lib:$DYLD_LIBRARY_PATH", PATH="$(pwd)/scip/bin:$PATH", PKG_CONFIG_PATH="$(pwd)/scip/lib/pkgconfig:$PKG_CONFIG_PATH", RELEASE="true"}
+repair-wheel-command = [
+    "auditwheel repair -w {dest_dir} {wheel}",
+    'python "{project}/scripts/add_wheel_stub_docstrings.py" "{dest_dir}"',
+]
 
 
 [tool.cibuildwheel.macos]
@@ -89,13 +97,12 @@ for prefix in /usr/local /opt/homebrew; do
 done
 '''
 environment = {SCIPOPTDIR="$(pwd)/src/scip", LD_LIBRARY_PATH="$(pwd)/src/scip/lib:LD_LIBRARY_PATH", DYLD_LIBRARY_PATH="$(pwd)/src/scip/lib:$DYLD_LIBRARY_PATH", PATH="$(pwd)/src/scip/bin:$PATH", PKG_CONFIG_PATH="$(pwd)/src/scip/lib/pkgconfig:$PKG_CONFIG_PATH", MACOSX_DEPLOYMENT_TARGET="11.0", RELEASE="true"}
-repair-wheel-command = '''
-    bash -c '
-    export MACOSX_DEPLOYMENT_TARGET=11.0
-    delocate-listdeps {wheel}
-    delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}
-    '
-'''
+repair-wheel-command = [
+    "export MACOSX_DEPLOYMENT_TARGET=11.0",
+    "delocate-listdeps {wheel}",
+    "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}",
+    'python "{project}/scripts/add_wheel_stub_docstrings.py" "{dest_dir}"',
+]
 
 
 [tool.cibuildwheel.windows]
@@ -109,4 +116,7 @@ before-all = [
 ]
 before-build = "pip install delvewheel"
 environment = { SCIPOPTDIR='D:\\a\\PySCIPOpt\\PySCIPOpt\\scip', RELEASE="true" }
-repair-wheel-command = "delvewheel repair --add-path c:/bin;c:/lib;c:/bin/src;c:/lib/src;D:/a/PySCIPOpt/PySCIPOpt/scip/;D:/a/PySCIPOpt/PySCIPOpt/scip/lib/;D:/a/PySCIPOpt/PySCIPOpt/scip/bin/ -w {dest_dir} {wheel}"
+repair-wheel-command = [
+    "delvewheel repair --add-path c:/bin;c:/lib;c:/bin/src;c:/lib/src;D:/a/PySCIPOpt/PySCIPOpt/scip/;D:/a/PySCIPOpt/PySCIPOpt/scip/lib/;D:/a/PySCIPOpt/PySCIPOpt/scip/bin/ -w {dest_dir} {wheel}",
+    'python "{project}/scripts/add_wheel_stub_docstrings.py" "{dest_dir}"',
+]

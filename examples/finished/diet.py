@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     for b["Cal"] in [None, 3500, 3000, 2500]:
 
-        print("\nDiet for a maximum of {0} calories".format(b["Cal"] if b["Cal"] != None else "unlimited"))
+        print(f"\nDiet for a maximum of {b['Cal'] if b['Cal'] != None else 'unlimited'} calories")
         model = diet(F, N, a, b, c, d)
         model.hideOutput()  # silent mode
         model.optimize()
@@ -97,10 +97,9 @@ if __name__ == "__main__":
         x, y, z, v = model.data
         for j in x:
             if model.getVal(x[j]) > 0:
-                print("{0:30s}: {1:3.1f} dishes --> {2:4.2f} added to objective".format(j, model.getVal(x[j]),
-                                                                                        model.getVal(y[j])))
+                print(f"{j:30s}: {model.getVal(x[j]):3.1f} dishes --> {model.getVal(y[j]):4.2f} added to objective")
         print("amount spent:", model.getObjVal())
 
         print("amount of nutrients:")
         for i in z:
-            print("{0:30s}: {1:4.2f}".format(i, model.getVal(z[i])))
+            print(f"{i:30s}: {model.getVal(z[i]):4.2f}")

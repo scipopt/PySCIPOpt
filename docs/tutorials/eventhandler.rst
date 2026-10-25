@@ -37,7 +37,7 @@ The following is an example the prints the value of the objective function whene
   from pyscipopt import Model, SCIP_EVENTTYPE
 
   def print_obj_value(model, event):
-      print("New best solution found with objective value: {}".format(model.getObjVal()))
+      print(f"New best solution found with objective value: {model.getObjVal()}")
 
   m = Model()
   m.attachEventHandlerCallback(print_obj_value, [SCIP_EVENTTYPE.BESTSOLFOUND])
@@ -72,7 +72,7 @@ and then include it in the model using the :code:`Model.includeEventHandler` met
 
         def eventexec(self, event):
             self.count += 1
-            print("!!!![@BestSolCounter] New best solution found. Total best solutions found: {}".format(self.count))
+            print(f"!!!![@BestSolCounter] New best solution found. Total best solutions found: {self.count}")
 
 
     m = Model()

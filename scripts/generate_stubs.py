@@ -109,7 +109,7 @@ class StubGenerator:
         'Eventhdlr', 'Expr', 'ExprCons', 'GenExpr', 'Heur', 'IIS', 'IISfinder',
         'LP', 'Model', 'NLRow', 'Node', 'Nodesel', 'PowExpr', 'Presol', 'Pricer',
         'ProdExpr', 'Prop', 'Reader', 'Relax', 'Row', 'RowExact', 'Sepa', 'Solution',
-        'SumExpr', 'Term', 'UnaryExpr', 'VarExpr', 'Variable', '_VarArray',
+        'SumExpr', 'Term', 'UnaryExpr', 'Variable', '_VarArray',
     }
 
     # Methods that need type: ignore[override] for numpy subclasses

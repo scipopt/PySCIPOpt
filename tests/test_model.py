@@ -486,6 +486,82 @@ def test_getObjVal():
     assert m.getObjVal() == 16 
     assert m.getVal(x) == 0
 
+def test_getObjVal_missing_bestSol():
+    m = Model()
+    m.hideOutput()
+
+    x = m.addVar("x", obj=2.0)
+    m.addCons(x >= 1.0)
+
+    # Add a solution 
+    sol = m.createSol()
+    m.setSolVal(sol, x, 10.0)
+    m.addSol(sol)
+
+    # Without the fix from #1272, m._bestSol remained NULL,
+    # causing an assertion failure: assert self._bestSol.sol != NULL
+    assert m.getObjVal() == 20.0
+
+def test_getObjVal_outdated_bestSol():
+    m = Model()
+    m.hideOutput()
+
+    x = m.addVar("x", obj=2.0)
+    m.addCons(x >= 1.0)
+
+    # Add initial solution and populate _bestSol
+    sol1 = m.createSol()
+    m.setSolVal(sol1, x, 10.0)
+    m.addSol(sol1)
+    m.getBestSol()  # populates m._bestSol with sol1
+
+    # Add a better solution
+    sol2 = m.createSol()
+    m.setSolVal(sol2, x, 3.0)
+    m.addSol(sol2)
+
+    # Without the fix from #1272, _bestSol remained stuck
+    # on sol1 and incorrectly returned 20.0 instead of 6.0
+    assert m.getObjVal() == 6.0
+
+def test_getVal_missing_bestSol():
+    m = Model()
+    m.hideOutput()
+
+    x = m.addVar("x", obj=2.0)
+    m.addCons(x >= 1.0)
+
+    # Add a solution 
+    sol = m.createSol()
+    m.setSolVal(sol, x, 10.0)
+    m.addSol(sol)
+
+    # Without the fix from #993, m._bestSol was None here
+    # causing "No solution available" warning
+    assert m.getVal(x) == 10.0
+
+def test_getVal_outdated_bestSol():
+    m = Model()
+    m.hideOutput()
+
+    x = m.addVar("x", obj=2.0)
+    m.addCons(x >= 1.0)
+
+    # Add initial solution and populate _bestSol
+    sol1 = m.createSol()
+    m.setSolVal(sol1, x, 10.0)
+    m.addSol(sol1)
+    m.getBestSol()  # populates m._bestSol with sol1
+
+    # Add a better solution
+    sol2 = m.createSol()
+    m.setSolVal(sol2, x, 3.0)
+    m.addSol(sol2)
+
+    # Without the fix from #993, _bestSol remained stuck
+    # on sol1 and incorrectly returned 10.0 instead of 3.0
+    assert m.getVal(x) == 3.0
+
 # tests writeProblem() after redirectOutput()
 def test_redirection():
 
