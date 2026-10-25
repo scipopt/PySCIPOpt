@@ -12659,8 +12659,7 @@ cdef class Model:
         Get the feasible solutions collected by `count()`.
 
         Requires `constraints/countsols/collect` to be True and presolving to be off
-        before calling `count()`, and a problem without continuous variables. The
-        objective value of a solution is `sum(var.getObj() * sol[var.name] for var in model.getVars())`.
+        before calling `count()`, and a problem without continuous variables.
 
         Returns
         -------

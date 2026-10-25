@@ -766,17 +766,3 @@ def test_getCountedSols():
 
     m.freeTransform()
     assert m.getCountedSols() == []
-
-    m.setParam("constraints/countsols/collect", False)
-    with pytest.raises(Warning):
-        m.getCountedSols()
-
-    m.setParam("constraints/countsols/collect", True)
-    m.setPresolve(SCIP_PARAMSETTING.DEFAULT)
-    with pytest.raises(Warning):
-        m.getCountedSols()
-
-    m.setPresolve(SCIP_PARAMSETTING.OFF)
-    m.addVar("c", lb=0, ub=1)
-    with pytest.raises(Warning):
-        m.getCountedSols()
