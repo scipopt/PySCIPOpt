@@ -1718,6 +1718,10 @@ cdef extern from "scip/cons_exactlinear.h":
     SCIP_RATIONAL** SCIPgetValsExactLinear(SCIP* scip, SCIP_CONS* cons)
     SCIP_VAR** SCIPgetVarsExactLinear(SCIP* scip, SCIP_CONS* cons)
     int SCIPgetNVarsExactLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RETCODE SCIPdelCoefExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR* var)
+    SCIP_ROW* SCIPgetRowExactLinear(SCIP* scip, SCIP_CONS* cons)
+    void SCIPgetFpDualsolExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_RATIONAL* ret)
+    void SCIPgetFpDualfarkasExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_RATIONAL* ret)
     SCIP_RETCODE SCIPgetActivityExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_SOL* sol, SCIP_RATIONAL* ret)
 
 cdef extern from "scip/cons_linear.h":

@@ -97,38 +97,54 @@ def test_bound_changes():
     assert not hasattr(m, "chgVarLbExact")
 
 
-def test_addConsExactLinear():
+def test_linear_constraints():
     m = ExactModel()
     x = m.addVar("x")
     y = m.addVar("y")
-
-    c = m.addConsExactLinear([x, y], [Fraction(1, 3), "1/10"], None, Fraction(2, 3), name="c")
+    c = m.addConsLinear([x, y], [Fraction(1, 3), "1/10"], None, Fraction(2, 3), name="c")
     assert c.name == "c"
-    assert m.getLhsExactLinear(c) == -float("inf")
-    assert m.getRhsExactLinear(c) == Fraction(2, 3)
-    assert m.getValsExactLinear(c) == {"x": Fraction(1, 3), "y": Fraction(1, 10)}
+    assert m.getLhs(c) == -float("inf")
+    assert m.getRhs(c) == Fraction(2, 3)
+    assert m.getValsLinear(c) == {"x": Fraction(1, 3), "y": Fraction(1, 10)}
+    assert m.getConsVals(c) == [Fraction(1, 3), Fraction(1, 10)]
+    assert [v.name for v in m.getConsVars(c)] == ["x", "y"]
+    assert all(isinstance(v, ExactVariable) for v in m.getConsVars(c))
 
-    m.chgCoefExactLinear(c, y, Fraction(1, 7))
-    m.chgLhsExactLinear(c, 0)
-    m.chgRhsExactLinear(c, None)
+    m.chgCoefLinear(c, y, Fraction(1, 7))
+    m.chgLhs(c, 0)
+    m.chgRhs(c, None)
     z = m.addVar("z")
-    m.addCoefExactLinear(c, z, 3)
-    assert m.getValsExactLinear(c) == {"x": Fraction(1, 3), "y": Fraction(1, 7), "z": 3}
-    assert m.getLhsExactLinear(c) == 0
-    assert m.getRhsExactLinear(c) == float("inf")
+    m.addCoefLinear(c, z, 3)
+    assert m.getValsLinear(c) == {"x": Fraction(1, 3), "y": Fraction(1, 7), "z": 3}
+    m.delCoefLinear(c, z)
+    assert "z" not in m.getValsLinear(c)
+    assert m.getLhs(c) == 0
+    assert m.getRhs(c) == float("inf")
 
     with pytest.raises(ValueError):
-        m.addConsExactLinear([x, y], [1], 0, 1)
+        m.addConsLinear([x, y], [1], 0, 1)
     with pytest.raises(ValueError):
-        m.chgCoefExactLinear(c, x, float("inf"))
-    with pytest.raises(Exception):
+        m.chgCoefLinear(c, x, float("inf"))
+    with pytest.raises(TypeError):
         m.addCons(x + y <= 1)
+    with pytest.raises(TypeError):
+        m.addCons(Fraction(1, 3) * x <= 1)
+
+    m.addObjoffset(Fraction(1, 3))
+    assert m.getObjoffset() == Fraction(1, 3)
+    with pytest.raises(ValueError):
+        m.addObjoffset(1, solutions=True)
+    with pytest.raises(ValueError):
+        m.addObjoffset(float("inf"))
+    with pytest.raises(ValueError):
+        m.getObjoffset(original=False)
 
     n = Model()
     w = n.addVar("w")
     lin = n.addCons(w <= 1)
-    with pytest.raises(ValueError):
-        n.getValsExactLinear(lin)
+    assert isinstance(n.getLhs(lin), float)
+    assert not hasattr(n, "addConsLinear")
+    assert not hasattr(m, "addConsExactLinear")
 
 
 def test_exact_solution():
@@ -136,14 +152,14 @@ def test_exact_solution():
     m.hideOutput()
     x = m.addVar("x", ub="10/3", obj=-1)
     y = m.addVar("y", vtype="I", ub=5, obj=Fraction(-1, 7))
-    c = m.addConsExactLinear([x, y], [Fraction(1, 3), Fraction(1, 10)], None, Fraction(2, 3))
-    m.addOrigObjoffsetExact(Fraction(1, 2))
-    assert m.getOrigObjoffsetExact() == Fraction(1, 2)
+    c = m.addConsLinear([x, y], [Fraction(1, 3), Fraction(1, 10)], None, Fraction(2, 3))
+    m.addObjoffset(Fraction(1, 2))
+    assert m.getObjoffset() == Fraction(1, 2)
 
     with pytest.raises(Warning):
         m.getPrimalboundExact()
     with pytest.raises(ValueError):
-        m.addOrigObjoffsetExact(float("inf"))
+        m.addObjoffset(float("inf"))
 
     m.optimize()
     assert m.getStatus() == "optimal"
@@ -153,5 +169,5 @@ def test_exact_solution():
     assert m.getSolOrigObjExact(sol) == Fraction(-3, 2)
     assert m.getPrimalboundExact() == Fraction(-3, 2)
     assert m.getDualboundExact() == Fraction(-3, 2)
-    assert m.getActivityExactLinear(c, sol) == Fraction(2, 3)
+    assert m.getActivity(c, sol) == Fraction(2, 3)
     assert m.getObjVal() == pytest.approx(-1.5)
