@@ -1343,9 +1343,14 @@ cdef class Node:
 
         Returns
         -------
-        float
+        float or Fraction
+            a Fraction (or -inf) when the node belongs to an exact model
 
         """
+        cdef SCIP_RATIONAL* exact = SCIPnodeGetLowerboundExact(self.scip_node)
+
+        if exact != NULL:
+            return _fromRational(exact)
         return SCIPnodeGetLowerbound(self.scip_node)
 
     def getEstimate(self):

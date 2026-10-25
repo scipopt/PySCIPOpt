@@ -46,6 +46,16 @@ cdef _checkExactSol(Solution sol):
     if sol.sol != NULL and not SCIPsolIsExact(sol.sol):
         raise ValueError("solution has no exact values")
 
+_VARSTATUS_NAMES = {
+    SCIP_VARSTATUS_ORIGINAL: "ORIGINAL",
+    SCIP_VARSTATUS_LOOSE: "LOOSE",
+    SCIP_VARSTATUS_COLUMN: "COLUMN",
+    SCIP_VARSTATUS_FIXED: "FIXED",
+    SCIP_VARSTATUS_AGGREGATED: "AGGREGATED",
+    SCIP_VARSTATUS_MULTAGGR: "MULTAGGR",
+    SCIP_VARSTATUS_NEGATED: "NEGATED",
+}
+
 cdef class ColumnExact:
     """Base class holding a pointer to corresponding SCIP_COLEXACT."""
 
@@ -70,6 +80,17 @@ cdef class ColumnExact:
         col = ColumnExact()
         col.scip_col_exact = scipcolexact
         return col
+
+    def getVar(self):
+        """
+        Retrieve the variable this column represents.
+
+        Returns
+        -------
+        ExactVariable
+
+        """
+        return Variable.create(SCIPcolExactGetVar(self.scip_col_exact))
 
 cdef class RowExact:
     """Base class holding a pointer to corresponding SCIP_ROW."""
@@ -96,6 +117,91 @@ cdef class RowExact:
         row_exact.scip_row_exact = sciprowexact
         return row_exact
 
+
+    def getLhs(self):
+        """
+        Retrieve the exact left-hand side of the row.
+
+        Returns
+        -------
+        Fraction or float
+            a Fraction, or -inf if the row has no left-hand side
+
+        """
+        return _fromRational(SCIProwExactGetLhs(self.scip_row_exact))
+
+    def getRhs(self):
+        """
+        Retrieve the exact right-hand side of the row.
+
+        Returns
+        -------
+        Fraction or float
+            a Fraction, or inf if the row has no right-hand side
+
+        """
+        return _fromRational(SCIProwExactGetRhs(self.scip_row_exact))
+
+    def getConstant(self):
+        """
+        Retrieve the exact constant shift of the row.
+
+        Returns
+        -------
+        Fraction
+
+        """
+        return _fromRational(SCIProwExactGetConstant(self.scip_row_exact))
+
+    def getNNonz(self):
+        """
+        Retrieve the number of nonzero entries in the row.
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIProwExactGetNNonz(self.scip_row_exact)
+
+    def getCols(self):
+        """
+        Retrieve the columns of the row.
+
+        Returns
+        -------
+        list of ColumnExact
+
+        """
+        cdef SCIP_COLEXACT** cols = SCIProwExactGetCols(self.scip_row_exact)
+        cdef int i
+
+        return [ColumnExact.create(cols[i]) for i in range(SCIProwExactGetNNonz(self.scip_row_exact))]
+
+    def getVals(self):
+        """
+        Retrieve the exact coefficients of the row.
+
+        Returns
+        -------
+        list of Fraction
+
+        """
+        cdef SCIP_RATIONAL** vals = SCIProwExactGetVals(self.scip_row_exact)
+        cdef int i
+
+        return [_fromRational(vals[i]) for i in range(SCIProwExactGetNNonz(self.scip_row_exact))]
+
+    def isInLP(self):
+        """
+        Retrieve whether the row is a member of the current exact LP.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIProwExactIsInLP(self.scip_row_exact)
 
 cdef class ExactVariable(Variable):
     """Variable of an ExactModel: bounds, objective and LP value are rationals."""
@@ -211,6 +317,17 @@ cdef class ExactVariable(Variable):
         """
         return ColumnExact.create(SCIPvarGetColExact(self.scip_var))
 
+
+    def getStatus(self):
+        """
+        Retrieve the status of the exact variable data (ORIGINAL, LOOSE, COLUMN, FIXED, AGGREGATED, MULTAGGR, NEGATED).
+
+        Returns
+        -------
+        str
+
+        """
+        return _VARSTATUS_NAMES.get(SCIPvarGetStatusExact(self.scip_var))
 
 cdef class ExactModel(Model):
     """
@@ -734,6 +851,33 @@ cdef class ExactModel(Model):
         """Not available in exact solving mode: there is no huge-value threshold."""
         raise ValueError("isHugeValue is not available in exact solving mode")
 
+    def getLPSolstat(self):
+        """
+        Retrieve the solution status of the current exact LP.
+
+        Returns
+        -------
+        SCIP_LPSOLSTAT
+
+        """
+        if SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
+            raise Warning("getLPSolstat cannot be called in stage %i." % SCIPgetStage(self._scip))
+        return SCIPgetLPExactSolstat(self._scip)
+
+    def printRow(self, row):
+        """
+        Print a row to stdout; a RowExact is printed with its exact coefficients and sides.
+
+        Parameters
+        ----------
+        row : Row or RowExact
+
+        """
+        if isinstance(row, RowExact):
+            PY_SCIP_CALL(SCIPprintRowExact(self._scip, (<RowExact>row).scip_row_exact, NULL))
+        else:
+            super().printRow(row)
+
     def addConsLinear(self, vars, vals, lhs, rhs, name="",
                            initial=True, separate=True, enforce=True, check=True,
                            propagate=True, local=False, modifiable=False, dynamic=False,
@@ -1113,7 +1257,7 @@ cdef class ExactModel(Model):
 
         """
         self._checkExactLinear(cons)
-        return Row.create(SCIPgetRowExactLinear(self._scip, cons.scip_cons))
+        return RowExact.create(SCIPgetRowExactExactLinear(self._scip, cons.scip_cons))
 
     def getDualsolLinear(self, Constraint cons):
         """

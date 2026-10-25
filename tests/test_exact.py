@@ -2,7 +2,8 @@ from fractions import Fraction
 
 import pytest
 
-from pyscipopt import SCIP_PARAMSETTING, Model, ExactModel, ExactVariable, Variable
+from pyscipopt import (SCIP_EVENTTYPE, SCIP_LPSOLSTAT, SCIP_PARAMSETTING, Eventhdlr, Model,
+                       ExactModel, ExactVariable, Variable)
 
 
 def _exact_supported():
@@ -239,3 +240,39 @@ def test_numerics():
     assert m.feasRound(Fraction(1, 2)) == 1 and m.feasRound(Fraction(-1, 2)) == 0
     with pytest.raises(ValueError):
         m.isHugeValue(1)
+
+
+class _LPProbe(Eventhdlr):
+    def __init__(self):
+        self.seen = {}
+
+    def eventinit(self):
+        self.model.catchEvent(SCIP_EVENTTYPE.FIRSTLPSOLVED, self)
+
+    def eventexit(self):
+        self.model.dropEvent(SCIP_EVENTTYPE.FIRSTLPSOLVED, self)
+
+    def eventexec(self, event):
+        m = self.model
+        row = m.getRowLinear(m.getConss()[0])
+        self.seen["row"] = (type(row).__name__, row.getLhs(), row.getRhs(), row.getConstant(), row.getNNonz(),
+                            {c.getVar().name: v for c, v in zip(row.getCols(), row.getVals())}, row.isInLP())
+        self.seen["status"] = [c.getVar().getStatus() for c in row.getCols()]
+        self.seen["solstat"] = m.getLPSolstat()
+        self.seen["lowerbound"] = m.getCurrentNode().getLowerbound()
+        m.printRow(row)
+
+
+def test_lp_rows():
+    m, x, y, c = _knapsack()
+    probe = _LPProbe()
+    m.includeEventhdlr(probe, "probe", "")
+    m.optimize()
+    name, lhs, rhs, const, nnonz, coefs, inlp = probe.seen["row"]
+    assert name == "RowExact"
+    assert lhs == -float("inf") and rhs == Fraction(2, 3) and const == 0 and nnonz == 2
+    assert coefs == {"t_x": Fraction(1, 3), "t_y": Fraction(1, 10)} and inlp
+    assert probe.seen["status"] == ["COLUMN", "COLUMN"]
+    assert probe.seen["solstat"] in (SCIP_LPSOLSTAT.NOTSOLVED, SCIP_LPSOLSTAT.OPTIMAL)
+    lb = probe.seen["lowerbound"]
+    assert lb == -float("inf") or isinstance(lb, Fraction)
