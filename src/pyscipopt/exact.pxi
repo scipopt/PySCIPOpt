@@ -616,6 +616,10 @@ cdef class ExactModel(Model):
         """Not available in exact solving mode."""
         raise ValueError("fixVarProbing is not available in exact solving mode")
 
+    def setObjlimit(self, objlimit):
+        """Not available in exact solving mode: SCIP has no exact objective limit."""
+        raise ValueError("setObjlimit is not available in exact solving mode")
+
     def addConsLinear(self, vars, vals, lhs, rhs, name="",
                            initial=True, separate=True, enforce=True, check=True,
                            propagate=True, local=False, modifiable=False, dynamic=False,

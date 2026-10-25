@@ -94,6 +94,8 @@ def test_bound_changes():
         m.chgVarLbNode(None, x, 1)
     with pytest.raises(ValueError):
         m.chgVarUbNode(None, x, 1)
+    with pytest.raises(ValueError):
+        m.setObjlimit(Fraction(1, 3))
     assert not hasattr(m, "chgVarLbExact")
 
 
