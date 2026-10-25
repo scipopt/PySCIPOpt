@@ -1,9 +1,8 @@
 def _asRational(value):
     """Convert value to a Fraction, keeping +/- infinity as a float."""
-    try:
-        return Fraction(value)
-    except OverflowError:
-        return float(value)
+    if isinstance(value, float) and abs(value) == float("inf"):
+        return value
+    return Fraction(value)
 
 def _asFiniteRational(value):
     value = _asRational(value)
