@@ -7,7 +7,7 @@ import numpy as np
 from _typeshed import Incomplete
 from typing_extensions import CapsuleType, Self, disjoint_base
 
-_Rational = Union[Fraction, int, str, float]
+_Rational = Union[Fraction, int, float]
 
 CONST: Term
 EventNames: dict

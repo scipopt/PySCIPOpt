@@ -28,7 +28,7 @@ def test_exact_model():
         ExactModel(sourceModel=m)
     assert isinstance(Model.from_ptr(m.to_ptr(False), False), ExactModel)
 
-    x = m.addVar("x", lb="1/3", ub=Fraction(10, 3), obj=-1)
+    x = m.addVar("x", lb=Fraction(1, 3), ub=Fraction(10, 3), obj=-1)
     assert isinstance(x, ExactVariable)
     assert all(isinstance(v, ExactVariable) for v in m.getVars())
     assert x.getLbOriginal() == Fraction(1, 3)
@@ -45,7 +45,7 @@ def test_exact_model():
 
     m.chgVarObj(x, Fraction(-1, 7))
     m.chgVarLb(x, None)
-    m.chgVarUb(x, "5/2")
+    m.chgVarUb(x, Fraction(5, 2))
     assert x.getObj() == Fraction(-1, 7)
     assert x.getLbOriginal() == -float("inf")
     assert x.getUbOriginal() == Fraction(5, 2)
@@ -54,9 +54,7 @@ def test_exact_model():
         m.addVar("bad", lb=2, ub=1)
     with pytest.raises(Warning):
         m.addVar("bad", vtype="Q")
-    with pytest.raises(ValueError):
-        m.addVar("bad", lb="abc")
-    with pytest.raises(ValueError):
+    with pytest.raises(OverflowError):
         m.addVar("bad", obj=float("inf"))
     with pytest.raises(ValueError):
         m.addVar("bad", pricedVar=True)
@@ -80,7 +78,7 @@ RAISING = ["tightenVarLbGlobal", "tightenVarUbGlobal", "chgVarObjDive", "chgVarL
 def test_bound_changes():
     m = ExactModel()
     x = m.addVar("x", lb=0, ub=10)
-    m.chgVarLbGlobal(x, "1/3")
+    m.chgVarLbGlobal(x, Fraction(1, 3))
     m.chgVarUbGlobal(x, Fraction(7, 2))
     assert x.getLbGlobal() == Fraction(1, 3)
     assert x.getUbGlobal() == Fraction(7, 2)
@@ -104,7 +102,7 @@ def test_linear_constraints():
     m = ExactModel()
     x = m.addVar("x")
     y = m.addVar("y")
-    c = m.addConsLinear([x, y], [Fraction(1, 3), "1/10"], None, Fraction(2, 3), name="c")
+    c = m.addConsLinear([x, y], [Fraction(1, 3), Fraction(1, 10)], None, Fraction(2, 3), name="c")
     assert c.name == "c"
     assert m.getLhs(c) == -float("inf")
     assert m.getRhs(c) == Fraction(2, 3)
@@ -126,7 +124,7 @@ def test_linear_constraints():
 
     with pytest.raises(ValueError):
         m.addConsLinear([x, y], [1], 0, 1)
-    with pytest.raises(ValueError):
+    with pytest.raises(OverflowError):
         m.chgCoefLinear(c, x, float("inf"))
     with pytest.raises(TypeError):
         m.addCons(x + y <= 1)
@@ -137,7 +135,7 @@ def test_linear_constraints():
     assert m.getObjoffset() == Fraction(1, 3)
     with pytest.raises(ValueError):
         m.addObjoffset(1, solutions=True)
-    with pytest.raises(ValueError):
+    with pytest.raises(OverflowError):
         m.addObjoffset(float("inf"))
     with pytest.raises(ValueError):
         m.getObjoffset(original=False)
@@ -154,7 +152,7 @@ def _knapsack():
     m = ExactModel()
     m.hideOutput()
     m.setPresolve(SCIP_PARAMSETTING.OFF)
-    x = m.addVar("x", ub="10/3", obj=-1)
+    x = m.addVar("x", ub=Fraction(10, 3), obj=-1)
     y = m.addVar("y", vtype="I", ub=5, obj=Fraction(-1, 7))
     c = m.addConsLinear([x, y], [Fraction(1, 3), Fraction(1, 10)], None, Fraction(2, 3))
     m.addObjoffset(Fraction(1, 2))
@@ -223,7 +221,7 @@ def test_numerics():
     inf = m.infinity()
     assert inf == float("inf")
     assert m.epsilon() == 0 and m.feastol() == 0
-    assert m.isEQ(third, "1/3") and m.isFeasEQ(third, Fraction(2, 6))
+    assert m.isEQ(third, Fraction(2, 6)) and m.isFeasEQ(third, Fraction(2, 6))
     assert not m.isEQ(third, third + tiny) and not m.isFeasEQ(third, third + tiny)
     assert m.isLT(third, third + tiny) and m.isFeasLT(third, third + tiny)
     assert m.isLE(third, third) and m.isFeasLE(third, third)

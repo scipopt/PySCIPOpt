@@ -1,27 +1,20 @@
-def _asRational(value):
-    """Convert value to a Fraction, keeping +/- infinity as a float."""
-    if isinstance(value, float) and abs(value) == float("inf"):
-        return value
-    return Fraction(value)
-
-def _asFiniteRational(value):
-    value = _asRational(value)
-    if isinstance(value, float):
-        raise ValueError("value must be finite, got %s" % value)
-    return value
-
 cdef SCIP_RATIONAL* _createRational(value) except NULL:
-    """Create a SCIP_RATIONAL holding value; the caller must free it with SCIPrationalFree."""
+    """Create a SCIP_RATIONAL holding the finite rational value; the caller must free it with SCIPrationalFree."""
     cdef SCIP_RATIONAL* rational = NULL
 
-    value = _asRational(value)
-    if isinstance(value, float):
-        desc = b"inf" if value > 0 else b"-inf"
-    else:
-        desc = str(value).encode()
-
+    desc = str(Fraction(value)).encode()
     PY_SCIP_CALL(SCIPrationalCreate(&rational))
     SCIPrationalSetString(rational, desc)
+    return rational
+
+cdef SCIP_RATIONAL* _createBound(value) except NULL:
+    """Create a SCIP_RATIONAL for a bound or side, where +/- float("inf") is allowed; the caller must free it."""
+    cdef SCIP_RATIONAL* rational = NULL
+
+    if not (isinstance(value, float) and abs(value) == float("inf")):
+        return _createRational(value)
+    PY_SCIP_CALL(SCIPrationalCreate(&rational))
+    SCIPrationalSetString(rational, b"inf" if value > 0 else b"-inf")
     return rational
 
 cdef object _fromRational(SCIP_RATIONAL* rational):
@@ -332,9 +325,8 @@ cdef class ExactModel(Model):
     """
     Model that solves exactly over the rationals.
 
-    Variables, constraints and solutions carry exact data. Methods accept rational
-    inputs as int, Fraction, str (e.g. "1/3") or float and return Fractions, or
-    +/- float("inf") for infinite values.
+    Variables, constraints and solutions carry exact data. Methods take Fractions
+    (or ints) and return Fractions; infinite bounds and sides are +/- float("inf").
     """
 
     def __init__(self, problemName='model', defaultPlugins=True, createscip=True, threadsafe=False):
@@ -376,12 +368,12 @@ cdef class ExactModel(Model):
         vtype : str, optional
             type of the variable: 'C' continuous, 'I' integer, or 'B' binary
             (Default value = 'C')
-        lb : Fraction, int, str or None, optional
+        lb : Fraction, int or None, optional
             lower bound of the variable, use None for -infinity (Default value = 0)
-        ub : Fraction, int, str or None, optional
+        ub : Fraction, int or None, optional
             upper bound of the variable, use None for +infinity, or 1 for binary variables
             (Default value = None)
-        obj : Fraction, int or str, optional
+        obj : Fraction or int, optional
             objective coefficient of the variable (Default value = 0)
 
         Returns
@@ -390,7 +382,6 @@ cdef class ExactModel(Model):
 
         Notes
         -----
-        Values are converted with fractions.Fraction, so "1/3" and Fraction(1, 3) are exact.
         Floats are taken at their exact binary value, e.g. 0.1 is not 1/10.
 
         """
@@ -419,9 +410,9 @@ cdef class ExactModel(Model):
         else:
             raise Warning("unrecognized variable type")
 
-        lb = _asRational(-float("inf") if lb is None else lb)
-        ub = _asRational(float("inf") if ub is None else ub)
-        obj = _asFiniteRational(obj)
+        lb = -float("inf") if lb is None else lb
+        ub = float("inf") if ub is None else ub
+        obj = Fraction(obj)
         if lb > ub:
             raise ValueError("lower bound %s exceeds upper bound %s" % (lb, ub))
 
@@ -429,8 +420,8 @@ cdef class ExactModel(Model):
                                         max(float(lb), -SCIPinfinity(self._scip)),
                                         min(float(ub), SCIPinfinity(self._scip)),
                                         float(obj), vartype))
-        lbexact = _createRational(lb)
-        ubexact = _createRational(ub)
+        lbexact = _createBound(lb)
+        ubexact = _createBound(ub)
         objexact = _createRational(obj)
         rc = SCIPaddVarExactData(self._scip, scip_var, lbexact, ubexact, objexact)
         SCIPrationalFree(&lbexact)
@@ -454,13 +445,13 @@ cdef class ExactModel(Model):
         ----------
         var : Variable
             variable to change the objective coefficient of
-        newobj : Fraction, int or str
+        newobj : Fraction or int
             new objective coefficient
 
         """
         cdef SCIP_RATIONAL* rational
         cdef SCIP_RETCODE rc
-        rational = _createRational(_asFiniteRational(newobj))
+        rational = _createRational(newobj)
         rc = SCIPchgVarObjExact(self._scip, var.scip_var, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -473,13 +464,13 @@ cdef class ExactModel(Model):
         ----------
         var : Variable
             variable to change the bound of
-        lb : Fraction, int, str or None
+        lb : Fraction, int or None
             new lower bound, use None for -infinity
 
         """
         cdef SCIP_RATIONAL* rational
         cdef SCIP_RETCODE rc
-        rational = _createRational(-float("inf") if lb is None else lb)
+        rational = _createBound(-float("inf") if lb is None else lb)
         rc = SCIPchgVarLbExact(self._scip, var.scip_var, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -492,13 +483,13 @@ cdef class ExactModel(Model):
         ----------
         var : Variable
             variable to change the bound of
-        ub : Fraction, int, str or None
+        ub : Fraction, int or None
             new upper bound, use None for +infinity
 
         """
         cdef SCIP_RATIONAL* rational
         cdef SCIP_RETCODE rc
-        rational = _createRational(float("inf") if ub is None else ub)
+        rational = _createBound(float("inf") if ub is None else ub)
         rc = SCIPchgVarUbExact(self._scip, var.scip_var, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -517,7 +508,7 @@ cdef class ExactModel(Model):
         cdef SCIP_RATIONAL* rational
         cdef SCIP_RETCODE rc
 
-        rational = _createRational(-float("inf") if lb is None else lb)
+        rational = _createBound(-float("inf") if lb is None else lb)
         rc = SCIPchgVarLbGlobalExact(self._scip, var.scip_var, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -536,7 +527,7 @@ cdef class ExactModel(Model):
         cdef SCIP_RATIONAL* rational
         cdef SCIP_RETCODE rc
 
-        rational = _createRational(float("inf") if ub is None else ub)
+        rational = _createBound(float("inf") if ub is None else ub)
         rc = SCIPchgVarUbGlobalExact(self._scip, var.scip_var, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -561,7 +552,7 @@ cdef class ExactModel(Model):
         cdef SCIP_Bool infeasible
         cdef SCIP_Bool fixed
 
-        rational = _createRational(_asFiniteRational(val))
+        rational = _createRational(val)
         rc = SCIPfixVarExact(self._scip, var.scip_var, rational, &infeasible, &fixed)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -589,7 +580,7 @@ cdef class ExactModel(Model):
         cdef SCIP_Bool infeasible
         cdef SCIP_Bool tightened
 
-        rational = _createRational(_asFiniteRational(lb))
+        rational = _createRational(lb)
         rc = SCIPtightenVarLbExact(self._scip, var.scip_var, rational, &infeasible, &tightened)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -617,7 +608,7 @@ cdef class ExactModel(Model):
         cdef SCIP_Bool infeasible
         cdef SCIP_Bool tightened
 
-        rational = _createRational(_asFiniteRational(ub))
+        rational = _createRational(ub)
         rc = SCIPtightenVarUbExact(self._scip, var.scip_var, rational, &infeasible, &tightened)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -642,9 +633,9 @@ cdef class ExactModel(Model):
         cdef SCIP_Bool redundant
         cdef SCIP_Bool aggregated
 
-        scalarx = _createRational(_asFiniteRational(coefx))
-        scalary = _createRational(_asFiniteRational(coefy))
-        rhsexact = _createRational(_asFiniteRational(rhs))
+        scalarx = _createRational(coefx)
+        scalary = _createRational(coefy)
+        rhsexact = _createRational(rhs)
         rc = SCIPaggregateVarsExact(self._scip, varx.scip_var, vary.scip_var, scalarx, scalary, rhsexact, &infeasible, &redundant, &aggregated)
         SCIPrationalFree(&scalarx)
         SCIPrationalFree(&scalary)
@@ -681,7 +672,7 @@ cdef class ExactModel(Model):
         cdef SCIP_RATIONAL* rational
         cdef SCIP_RETCODE rc
 
-        rational = _createRational(-float("inf") if newbound is None else newbound)
+        rational = _createBound(-float("inf") if newbound is None else newbound)
         rc = SCIPchgVarLbExactDive(self._scip, var.scip_var, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -691,7 +682,7 @@ cdef class ExactModel(Model):
         cdef SCIP_RATIONAL* rational
         cdef SCIP_RETCODE rc
 
-        rational = _createRational(float("inf") if newbound is None else newbound)
+        rational = _createBound(float("inf") if newbound is None else newbound)
         rc = SCIPchgVarUbExactDive(self._scip, var.scip_var, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -750,7 +741,7 @@ cdef class ExactModel(Model):
 
     def frac(self, value):
         """Return the exact fractional part of value."""
-        value = _asFiniteRational(value)
+        value = Fraction(value)
         return value - value // 1
 
     def feasFrac(self, value):
@@ -759,19 +750,19 @@ cdef class ExactModel(Model):
 
     def feasFloor(self, value):
         """Round value down to the nearest integer, exactly."""
-        return _asFiniteRational(value) // 1
+        return Fraction(value) // 1
 
     def feasCeil(self, value):
         """Round value up to the nearest integer, exactly."""
-        return -(-_asFiniteRational(value) // 1)
+        return -(-Fraction(value) // 1)
 
     def feasRound(self, value):
         """Round value to the nearest integer, exactly; halves round up."""
-        return (_asFiniteRational(value) + Fraction(1, 2)) // 1
+        return (Fraction(value) + Fraction(1, 2)) // 1
 
     def isZero(self, value):
         """Return whether value is exactly zero."""
-        return _asRational(value) == 0
+        return value == 0
 
     def isFeasZero(self, value):
         """Return whether value is exactly zero."""
@@ -779,11 +770,11 @@ cdef class ExactModel(Model):
 
     def isInfinity(self, value):
         """Return whether value is positive infinity."""
-        return _asRational(value) == float("inf")
+        return value == float("inf")
 
     def isPositive(self, val):
         """Return whether val is exactly positive."""
-        return _asRational(val) > 0
+        return val > 0
 
     def isFeasPositive(self, value):
         """Return whether value is exactly positive."""
@@ -791,7 +782,7 @@ cdef class ExactModel(Model):
 
     def isNegative(self, val):
         """Return whether val is exactly negative."""
-        return _asRational(val) < 0
+        return val < 0
 
     def isFeasNegative(self, value):
         """Return whether value is exactly negative."""
@@ -799,8 +790,7 @@ cdef class ExactModel(Model):
 
     def isIntegral(self, value):
         """Return whether value is exactly integral."""
-        value = _asRational(value)
-        return isinstance(value, Fraction) and value.denominator == 1
+        return Fraction(value).denominator == 1
 
     def isFeasIntegral(self, value):
         """Return whether value is exactly integral."""
@@ -808,7 +798,7 @@ cdef class ExactModel(Model):
 
     def isEQ(self, val1, val2):
         """Return whether val1 and val2 are exactly equal."""
-        return _asRational(val1) == _asRational(val2)
+        return val1 == val2
 
     def isFeasEQ(self, val1, val2):
         """Return whether val1 and val2 are exactly equal."""
@@ -816,7 +806,7 @@ cdef class ExactModel(Model):
 
     def isLT(self, val1, val2):
         """Return whether val1 is exactly less than val2."""
-        return _asRational(val1) < _asRational(val2)
+        return val1 < val2
 
     def isFeasLT(self, val1, val2):
         """Return whether val1 is exactly less than val2."""
@@ -824,7 +814,7 @@ cdef class ExactModel(Model):
 
     def isLE(self, val1, val2):
         """Return whether val1 is exactly less than or equal to val2."""
-        return _asRational(val1) <= _asRational(val2)
+        return val1 <= val2
 
     def isFeasLE(self, val1, val2):
         """Return whether val1 is exactly less than or equal to val2."""
@@ -832,7 +822,7 @@ cdef class ExactModel(Model):
 
     def isGT(self, val1, val2):
         """Return whether val1 is exactly greater than val2."""
-        return _asRational(val1) > _asRational(val2)
+        return val1 > val2
 
     def isFeasGT(self, val1, val2):
         """Return whether val1 is exactly greater than val2."""
@@ -840,7 +830,7 @@ cdef class ExactModel(Model):
 
     def isGE(self, val1, val2):
         """Return whether val1 is exactly greater than or equal to val2."""
-        return _asRational(val1) >= _asRational(val2)
+        return val1 >= val2
 
     def isFeasGE(self, val1, val2):
         """Return whether val1 is exactly greater than or equal to val2."""
@@ -888,11 +878,11 @@ cdef class ExactModel(Model):
         ----------
         vars : list of Variable
             variables of the constraint
-        vals : list of Fraction, int or str
+        vals : list of Fraction or int
             coefficients of the variables
-        lhs : Fraction, int, str or None
+        lhs : Fraction, int or None
             left-hand side, use None for -infinity
-        rhs : Fraction, int, str or None
+        rhs : Fraction, int or None
             right-hand side, use None for +infinity
         name : str, optional
             name of the constraint, generic if empty (Default value = "")
@@ -938,17 +928,17 @@ cdef class ExactModel(Model):
         if name == '':
             name = 'c'+str(SCIPgetNConss(self._scip)+1)
 
-        vals = [_asFiniteRational(val) for val in vals]
-        lhs = _asRational(-float("inf") if lhs is None else lhs)
-        rhs = _asRational(float("inf") if rhs is None else rhs)
+        vals = [Fraction(val) for val in vals]
+        lhs = -float("inf") if lhs is None else lhs
+        rhs = float("inf") if rhs is None else rhs
 
         valsexact = <SCIP_RATIONAL**> malloc(max(nvars, 1) * sizeof(SCIP_RATIONAL*))
         if valsexact == NULL:
             raise MemoryError()
         for i in range(nvars):
             valsexact[i] = _createRational(vals[i])
-        lhsexact = _createRational(lhs)
-        rhsexact = _createRational(rhs)
+        lhsexact = _createBound(lhs)
+        rhsexact = _createBound(rhs)
 
         rc = SCIPcreateConsExactLinear(
             self._scip, &scip_cons, str_conversion(name), nvars, wrapper.ptr, valsexact,
@@ -981,14 +971,14 @@ cdef class ExactModel(Model):
             exact linear constraint
         var : Variable
             variable to add
-        value : Fraction, int or str
+        value : Fraction or int
             coefficient of the variable
 
         """
         cdef SCIP_RATIONAL* rational
         cdef SCIP_RETCODE rc
         self._checkExactLinear(cons)
-        rational = _createRational(_asFiniteRational(value))
+        rational = _createRational(value)
         rc = SCIPaddCoefExactLinear(self._scip, cons.scip_cons, var.scip_var, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -1003,14 +993,14 @@ cdef class ExactModel(Model):
             exact linear constraint
         var : Variable
             variable whose coefficient is changed
-        value : Fraction, int or str
+        value : Fraction or int
             new coefficient of the variable
 
         """
         cdef SCIP_RATIONAL* rational
         cdef SCIP_RETCODE rc
         self._checkExactLinear(cons)
-        rational = _createRational(_asFiniteRational(value))
+        rational = _createRational(value)
         rc = SCIPchgCoefExactLinear(self._scip, cons.scip_cons, var.scip_var, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -1023,14 +1013,14 @@ cdef class ExactModel(Model):
         ----------
         cons : Constraint
             exact linear constraint
-        lhs : Fraction, int, str or None
+        lhs : Fraction, int or None
             new left-hand side, use None for -infinity
 
         """
         cdef SCIP_RATIONAL* rational
         cdef SCIP_RETCODE rc
         self._checkExactLinear(cons)
-        rational = _createRational(-float("inf") if lhs is None else lhs)
+        rational = _createBound(-float("inf") if lhs is None else lhs)
         rc = SCIPchgLhsExactLinear(self._scip, cons.scip_cons, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -1043,14 +1033,14 @@ cdef class ExactModel(Model):
         ----------
         cons : Constraint
             exact linear constraint
-        rhs : Fraction, int, str or None
+        rhs : Fraction, int or None
             new right-hand side, use None for +infinity
 
         """
         cdef SCIP_RATIONAL* rational
         cdef SCIP_RETCODE rc
         self._checkExactLinear(cons)
-        rational = _createRational(float("inf") if rhs is None else rhs)
+        rational = _createBound(float("inf") if rhs is None else rhs)
         rc = SCIPchgRhsExactLinear(self._scip, cons.scip_cons, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -1160,7 +1150,7 @@ cdef class ExactModel(Model):
 
         Parameters
         ----------
-        offset : Fraction, int or str
+        offset : Fraction or int
             offset to add
 
         """
@@ -1171,7 +1161,7 @@ cdef class ExactModel(Model):
             raise ValueError("addObjoffset(solutions=True) is not available in exact solving mode")
         if SCIPgetStage(self._scip) != SCIP_STAGE_PROBLEM:
             raise Warning("addObjoffset can only be called in stage PROBLEM in exact solving mode")
-        rational = _createRational(_asFiniteRational(offset))
+        rational = _createRational(offset)
         rc = SCIPaddOrigObjoffsetExact(self._scip, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
@@ -1405,7 +1395,7 @@ cdef class ExactModel(Model):
         cdef SCIP_RETCODE rc
 
         assert solution.sol != NULL, "Cannot set value to a freed solution."
-        rational = _createRational(_asFiniteRational(val))
+        rational = _createRational(val)
         rc = SCIPsetSolValExact(self._scip, solution.sol, var.scip_var, rational)
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
