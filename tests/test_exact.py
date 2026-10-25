@@ -213,3 +213,29 @@ def test_no_exact_names():
     m = ExactModel()
     assert m.allowNegSlack() in (True, False)
     assert not hasattr(Model(), "allowNegSlack")
+
+
+def test_numerics():
+    m = ExactModel()
+    third = Fraction(1, 3)
+    tiny = Fraction(1, 10**30)
+    inf = m.infinity()
+    assert inf == float("inf")
+    assert m.epsilon() == 0 and m.feastol() == 0
+    assert m.isEQ(third, "1/3") and m.isFeasEQ(third, Fraction(2, 6))
+    assert not m.isEQ(third, third + tiny) and not m.isFeasEQ(third, third + tiny)
+    assert m.isLT(third, third + tiny) and m.isFeasLT(third, third + tiny)
+    assert m.isLE(third, third) and m.isFeasLE(third, third)
+    assert not m.isGT(third, third) and m.isFeasGT(third + tiny, third)
+    assert m.isGE(third, third) and not m.isFeasGE(third, third + tiny)
+    assert m.isLT(third, inf) and m.isGT(third, -inf) and m.isEQ(inf, inf)
+    assert m.isZero(0) and not m.isZero(tiny) and not m.isFeasZero(tiny)
+    assert m.isPositive(tiny) and m.isFeasPositive(tiny)
+    assert m.isNegative(-tiny) and m.isFeasNegative(-tiny)
+    assert m.isIntegral(Fraction(4, 2)) and not m.isIntegral(1 + tiny) and not m.isFeasIntegral(1 + tiny)
+    assert m.isInfinity(inf) and not m.isInfinity(-inf) and not m.isInfinity(10**30)
+    assert m.frac(Fraction(7, 3)) == third and m.feasFrac(Fraction(-7, 3)) == Fraction(2, 3)
+    assert m.feasFloor(Fraction(7, 3)) == 2 and m.feasCeil(Fraction(7, 3)) == 3
+    assert m.feasRound(Fraction(1, 2)) == 1 and m.feasRound(Fraction(-1, 2)) == 0
+    with pytest.raises(ValueError):
+        m.isHugeValue(1)

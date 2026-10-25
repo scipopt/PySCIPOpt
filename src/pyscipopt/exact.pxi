@@ -620,6 +620,120 @@ cdef class ExactModel(Model):
         """Not available in exact solving mode: SCIP has no exact objective limit."""
         raise ValueError("setObjlimit is not available in exact solving mode")
 
+    def infinity(self):
+        """Retrieve the value representing infinity in exact solving mode: inf."""
+        return float("inf")
+
+    def epsilon(self):
+        """Retrieve the comparison tolerance in exact solving mode: 0."""
+        return Fraction(0)
+
+    def feastol(self):
+        """Retrieve the feasibility tolerance in exact solving mode: 0."""
+        return Fraction(0)
+
+    def frac(self, value):
+        """Return the exact fractional part of value."""
+        value = _asFiniteRational(value)
+        return value - value // 1
+
+    def feasFrac(self, value):
+        """Return the exact fractional part of value."""
+        return self.frac(value)
+
+    def feasFloor(self, value):
+        """Round value down to the nearest integer, exactly."""
+        return _asFiniteRational(value) // 1
+
+    def feasCeil(self, value):
+        """Round value up to the nearest integer, exactly."""
+        return -(-_asFiniteRational(value) // 1)
+
+    def feasRound(self, value):
+        """Round value to the nearest integer, exactly; halves round up."""
+        return (_asFiniteRational(value) + Fraction(1, 2)) // 1
+
+    def isZero(self, value):
+        """Return whether value is exactly zero."""
+        return _asRational(value) == 0
+
+    def isFeasZero(self, value):
+        """Return whether value is exactly zero."""
+        return self.isZero(value)
+
+    def isInfinity(self, value):
+        """Return whether value is positive infinity."""
+        return _asRational(value) == float("inf")
+
+    def isPositive(self, val):
+        """Return whether val is exactly positive."""
+        return _asRational(val) > 0
+
+    def isFeasPositive(self, value):
+        """Return whether value is exactly positive."""
+        return self.isPositive(value)
+
+    def isNegative(self, val):
+        """Return whether val is exactly negative."""
+        return _asRational(val) < 0
+
+    def isFeasNegative(self, value):
+        """Return whether value is exactly negative."""
+        return self.isNegative(value)
+
+    def isIntegral(self, value):
+        """Return whether value is exactly integral."""
+        value = _asRational(value)
+        return isinstance(value, Fraction) and value.denominator == 1
+
+    def isFeasIntegral(self, value):
+        """Return whether value is exactly integral."""
+        return self.isIntegral(value)
+
+    def isEQ(self, val1, val2):
+        """Return whether val1 and val2 are exactly equal."""
+        return _asRational(val1) == _asRational(val2)
+
+    def isFeasEQ(self, val1, val2):
+        """Return whether val1 and val2 are exactly equal."""
+        return self.isEQ(val1, val2)
+
+    def isLT(self, val1, val2):
+        """Return whether val1 is exactly less than val2."""
+        return _asRational(val1) < _asRational(val2)
+
+    def isFeasLT(self, val1, val2):
+        """Return whether val1 is exactly less than val2."""
+        return self.isLT(val1, val2)
+
+    def isLE(self, val1, val2):
+        """Return whether val1 is exactly less than or equal to val2."""
+        return _asRational(val1) <= _asRational(val2)
+
+    def isFeasLE(self, val1, val2):
+        """Return whether val1 is exactly less than or equal to val2."""
+        return self.isLE(val1, val2)
+
+    def isGT(self, val1, val2):
+        """Return whether val1 is exactly greater than val2."""
+        return _asRational(val1) > _asRational(val2)
+
+    def isFeasGT(self, val1, val2):
+        """Return whether val1 is exactly greater than val2."""
+        return self.isGT(val1, val2)
+
+    def isGE(self, val1, val2):
+        """Return whether val1 is exactly greater than or equal to val2."""
+        return _asRational(val1) >= _asRational(val2)
+
+    def isFeasGE(self, val1, val2):
+        """Return whether val1 is exactly greater than or equal to val2."""
+        return self.isGE(val1, val2)
+
+    def isHugeValue(self, val):
+        """Not available in exact solving mode: there is no huge-value threshold."""
+        raise ValueError("isHugeValue is not available in exact solving mode")
+
     def addConsLinear(self, vars, vals, lhs, rhs, name="",
                            initial=True, separate=True, enforce=True, check=True,
                            propagate=True, local=False, modifiable=False, dynamic=False,
