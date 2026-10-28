@@ -9,6 +9,7 @@
 - Dual and Farkas getters for linear, knapsack, and logicor constraints now return zero when presolving has removed them.
 - Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
 - Fixed `getDualsolKnapsack()` and `getDualfarkasKnapsack()` returning 0 for original constraints, and the handler check in `getVarsAnd()` that could never fail
+- `PowExpr._evaluate` now raises `ValueError("math domain error")` for a negative base with a non-integer exponent instead of returning `NaN`, matching SCIP's power expression domain
 ### Changed
 - Replaced `format()` with f-strings in examples
 - Made expression fields read-only to prevent accidental runtime modification

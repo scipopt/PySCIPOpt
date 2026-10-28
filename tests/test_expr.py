@@ -236,6 +236,9 @@ def test_getVal_with_GenExpr():
 
     with pytest.raises(ZeroDivisionError):
         m.getVal(1 / z)
+    # a zero factor evaluated before the zero divisor must not hide the error
+    with pytest.raises(ZeroDivisionError):
+        m.getVal(y / z)
 
     # math domain errors match the math module
     with pytest.raises(ValueError, match="math domain error"):
@@ -256,30 +259,31 @@ def test_getVal_with_GenExpr():
     # sin and cos reject infinite arguments, like math.sin(inf)
     with pytest.raises(ValueError, match="math domain error"):
         m.getVal(sin(math.inf))
-
-
-def test_getVal_pow_negative_exponent():
-    m = Model()
-    x = m.addVar(lb=1, ub=1, name="x")
-    y = m.addVar(lb=2, ub=2, name="y")
-    z = m.addVar(lb=0, ub=0, name="z")
-    m.optimize()
-
-    # C-level pow with a negative exponent (matches Python: 2.0**-2.0 == 0.25)
-    assert 2.0 ** -2.0 == 0.25
-    assert m.getVal(x ** -2.0) == 1
-
-    # zero to a negative power raises, like Python's 0.0**-1.0;
-    # z / x would short-circuit to 0 in ProdExpr before evaluating x**-1, so divide by z
-    with pytest.raises(ZeroDivisionError):
-        m.getVal(y / z)
-
     with pytest.raises(ValueError, match="math domain error"):
         m.getVal(cos(-math.inf))
 
     # nested unary expressions propagate the inner domain error
     with pytest.raises(ValueError, match="math domain error"):
         m.getVal(exp(log(-x)))
+
+
+def test_getVal_pow():
+    m = Model()
+    y = m.addVar(lb=2, ub=2, name="y")
+    z = m.addVar(lb=0, ub=0, name="z")
+    n = m.addVar(lb=-2, ub=-2, name="n")
+    m.optimize()
+
+    # C-level pow with a negative exponent (matches Python: 2.0**-2.0 == 0.25)
+    assert m.getVal(y ** -2.0) == 0.25
+
+    # non-integer exponents are undefined for negative bases, like math.pow
+    with pytest.raises(ValueError, match="math domain error"):
+        m.getVal(n ** 0.5)
+
+    # zero to a negative power raises, like Python's 0.0**-1.0
+    with pytest.raises(ZeroDivisionError):
+        m.getVal(z ** -1.0)
 
 
 def test_unary_ufunc(model):
