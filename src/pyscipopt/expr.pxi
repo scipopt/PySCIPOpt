@@ -573,7 +573,7 @@ Operator = Op()
 cdef class GenExpr(ExprLike):
 
     cdef public _op
-    cdef readonly children
+    cdef readonly list children
 
     def __init__(self): # do we need it
         ''' '''
@@ -754,7 +754,7 @@ cdef class GenExpr(ExprLike):
 # Sum Expressions
 cdef class SumExpr(GenExpr):
 
-    cdef readonly constant
+    cdef readonly double constant
 
     def __init__(self):
         self.constant = 0.0
@@ -808,7 +808,7 @@ cdef class SumExpr(GenExpr):
 # Prod Expressions
 cdef class ProdExpr(GenExpr):
 
-    cdef readonly constant
+    cdef readonly double constant
 
     def __init__(self):
         self.constant = 1.0
@@ -885,7 +885,7 @@ cdef class VarExpr(GenExpr):
 # Pow Expressions
 cdef class PowExpr(GenExpr):
 
-    cdef readonly expo
+    cdef readonly double expo
 
     def __init__(self):
         self.expo = 1.0
@@ -903,7 +903,9 @@ cdef class PowExpr(GenExpr):
         return expr
 
     cpdef double _evaluate(self, Solution sol) except *:
-        return (<GenExpr>self.children[0])._evaluate(sol) ** self.expo
+        # ``expo`` is stored as a C double; casting it back to a Python float keeps
+        # Python's ``**`` semantics (e.g. raising ZeroDivisionError for 0 ** -1).
+        return (<GenExpr>self.children[0])._evaluate(sol) ** (<object>self.expo)
 
     cdef PowExpr copy(self, bint copy=True):
         cdef PowExpr res = PowExpr.__new__(PowExpr)
@@ -1033,7 +1035,7 @@ cdef class CosExpr(UnaryExpr):
 
 cdef class Constant(GenExpr):
 
-    cdef readonly number
+    cdef readonly double number
 
     def __init__(self, number: Union[int, float]):
         self.number = number

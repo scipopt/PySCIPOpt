@@ -15,6 +15,7 @@
 - Replaced `format()` with f-strings in examples
 - Refactor general expression conversion into per-class `to_scip_expr` recursion
 - Made expression fields read-only to prevent accidental runtime modification
+- Expression fields now use concrete Cython types (`double`/`list`), so values are converted on construction
 - Methods taking a list of variables (e.g. `addConsKnapsack()`) no longer convert it to a NumPy array to check its dimension
 ### Removed
 
