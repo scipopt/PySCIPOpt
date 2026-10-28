@@ -89,7 +89,7 @@ jobs:
 
   MacOS-test:
     if: github.event_name != 'pull_request'
-    runs-on: macos-latest
+    runs-on: macos-15
     strategy:
       matrix:
         python-version: ["3.9", "3.15"]
