@@ -2,6 +2,8 @@
 
 ## Unreleased
 ### Added
+- Added `getCountedSols()` to retrieve the solutions collected by `count()` (#906)
+- Added docstrings to the bundled stubs in release wheels for Python 3.10 and later.
 - Added more type annotations and deprecation markers to the stubs.
 - Added tests for `getObjVal()` and `getVal()`
 - Added `addConsLinear()` to add linear constraints from variables and coefficients without building an expression
@@ -12,6 +14,7 @@
 - `PowExpr._evaluate` now raises `ValueError("math domain error")` for a negative base with a non-integer exponent instead of returning `NaN`, matching SCIP's power expression domain
 ### Changed
 - Replaced `format()` with f-strings in examples
+- Refactor general expression conversion into per-class `to_scip_expr` recursion
 - Made expression fields read-only to prevent accidental runtime modification
 - Methods taking a list of variables (e.g. `addConsKnapsack()`) no longer convert it to a NumPy array to check its dimension
 - Speed up `PowExpr._evaluate` via the C-level API
