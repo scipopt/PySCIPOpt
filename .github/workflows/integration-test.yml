@@ -139,12 +139,19 @@ jobs:
     steps:
       - name: Check integration test results
         run: |
-          echo "Results: ${{ join(needs.*.result, ', ') }}"
-          for r in ${{ join(needs.*.result, ' ') }}; do
-            if [ "$r" != "success" ] && [ "$r" != "skipped" ]; then
-              exit 1
+          failed=0
+          for entry in "Integration-test=${{ needs.Integration-test.result }}" \
+                       "Windows-test=${{ needs.Windows-test.result }}" \
+                       "MacOS-test=${{ needs.MacOS-test.result }}"; do
+            job=${entry%%=*}
+            result=${entry#*=}
+            echo "$job: $result"
+            if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
+              echo "::error::$job finished with result '$result'"
+              failed=1
             fi
           done
+          exit $failed
 
   ### if you need valgrind on mac, you can install it via
   # brew tap LouisBrunner/valgrind
