@@ -282,6 +282,9 @@ def test_getVal_pow():
     with pytest.raises(ZeroDivisionError):
         m.getVal(z ** -1.0)
 
+    with pytest.raises(OverflowError, match="math range error"):
+        m.getVal(exp(y) ** 10000.0)
+
 
 def test_unary_ufunc(model):
     m, x, y, z = model

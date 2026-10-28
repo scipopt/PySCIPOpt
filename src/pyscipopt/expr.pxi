@@ -911,7 +911,11 @@ cdef class PowExpr(GenExpr):
             raise ZeroDivisionError("0.0 cannot be raised to a negative power")
         elif base < 0.0 and expo != c_floor(expo):
             raise ValueError("math domain error")
-        return c_pow(base, expo)
+
+        cdef double res = c_pow(base, expo)
+        if c_fabs(res) == INFINITY and c_fabs(base) != INFINITY and c_fabs(expo) != INFINITY:
+            raise OverflowError("math range error")
+        return res
 
     cdef PowExpr copy(self, bint copy=True):
         cdef PowExpr res = PowExpr.__new__(PowExpr)
