@@ -19,6 +19,7 @@
 - Speed up `PowExpr._evaluate` via the C-level API
 - `PowExpr._evaluate` now raises `ValueError("math domain error")` for a negative base with a non-integer exponent and `OverflowError` when the result overflows.
 ### Removed
+- Removed support for Python 3.8
 
 ## 6.3.0 - 2026.10.11
 ### Added
