@@ -57,7 +57,9 @@ from cpython.tuple cimport PyTuple_GET_ITEM
 from libc.math cimport cos as c_cos
 from libc.math cimport exp as c_exp
 from libc.math cimport fabs as c_fabs
+from libc.math cimport floor as c_floor
 from libc.math cimport log as c_log
+from libc.math cimport pow as c_pow
 from libc.math cimport sqrt as c_sqrt
 from libc.math cimport sin as c_sin
 from libc.math cimport INFINITY
@@ -903,9 +905,16 @@ cdef class PowExpr(GenExpr):
         return expr
 
     cpdef double _evaluate(self, Solution sol) except *:
-        # ``expo`` is stored as a C double; casting it back to a Python float keeps
-        # Python's ``**`` semantics (e.g. raising ZeroDivisionError for 0 ** -1).
-        return (<GenExpr>self.children[0])._evaluate(sol) ** (<object>self.expo)
+        cdef double base = (<GenExpr>self.children[0])._evaluate(sol)
+        if base == 0.0 and self.expo < 0:
+            raise ZeroDivisionError("0.0 cannot be raised to a negative power")
+        elif base < 0.0 and self.expo != c_floor(self.expo):
+            raise ValueError("math domain error")
+
+        cdef double res = c_pow(base, self.expo)
+        if c_fabs(res) == INFINITY and c_fabs(base) != INFINITY and c_fabs(self.expo) != INFINITY:
+            raise OverflowError("math range error")
+        return res
 
     cdef PowExpr copy(self, bint copy=True):
         cdef PowExpr res = PowExpr.__new__(PowExpr)
