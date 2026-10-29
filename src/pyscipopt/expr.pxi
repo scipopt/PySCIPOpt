@@ -43,7 +43,7 @@
 # gets called (I guess) and so a copy is returned.
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
 import warnings
-from typing import TYPE_CHECKING, Literal, Union
+from typing import TYPE_CHECKING, Literal, Optional, Union
 
 import numpy as np
 
@@ -466,11 +466,17 @@ cdef class Expr(ExprLike):
 
 cdef class ExprCons:
     '''Constraints with a polynomial expressions and lower/upper bounds.'''
-    cdef public expr
-    cdef public _lhs
-    cdef public _rhs
 
-    def __init__(self, expr, lhs=None, rhs=None):
+    cdef readonly ExprLike expr
+    cdef readonly object _lhs
+    cdef readonly object _rhs
+
+    def __init__(
+        self,
+        ExprLike expr not None,
+        lhs: Optional[float]=None,
+        rhs: Optional[float]=None,
+    ):
         self.expr = expr
         self._lhs = lhs
         self._rhs = rhs
