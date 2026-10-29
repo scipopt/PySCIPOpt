@@ -1562,7 +1562,7 @@ cdef class Variable(Expr):
     cdef Variable copy(self, bint copy=True):
         return self
 
-    def ptr(self):
+    cpdef size_t ptr(self) noexcept:
         return <size_t>(self.scip_var)
 
     def __repr__(self):
@@ -1697,7 +1697,7 @@ cdef class Variable(Expr):
         """
         return SCIPvarIsInLP(self.scip_var)
 
-    def getIndex(self):
+    cpdef int getIndex(self) noexcept:
         """
         Retrieve the unique index of the variable.
 
