@@ -83,14 +83,14 @@ cdef class Term:
         cdef Variable var
 
         if n == 0:
-            # The constant term; the empty args tuple is already canonical
+            # The constant term; the empty args tuple is already canonical.
             self.vartuple = vartuple
             self.hashval = <Py_ssize_t>hash(vartuple)
 
         elif n == 1:
             # A single variable is trivially sorted, so avoid sorted and the generator.
-            # `vartuple` is the exact tuple built from *args, so PyTuple_GET_ITEM needs no
-            # bounds check; the `<object>` cast keeps the Variable type check.
+            # `vartuple` is the exact tuple built from *args, so PyTuple_GET_ITEM needs
+            # no bounds check; the `<object>` cast keeps the Variable type check.
             var = <object>PyTuple_GET_ITEM(vartuple, 0)
             self.vartuple = vartuple
             self.hashval = <Py_ssize_t>hash((var.ptr(),))
@@ -111,12 +111,12 @@ cdef class Term:
         if <type>Py_TYPE(other) is not Term:
             return False
 
-        cdef int n = len(self)
+        cdef Py_ssize_t n = len(self.vartuple)
         cdef Term _other = <Term>other
-        if n != len(_other) or self.hashval != _other.hashval:
+        if n != len(_other.vartuple) or self.hashval != _other.hashval:
             return False
 
-        cdef int i
+        cdef Py_ssize_t i
         cdef Variable var1, var2
         for i in range(n):
             var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
@@ -131,13 +131,13 @@ cdef class Term:
     def __mul__(self, Term other):
         # NOTE: This merge algorithm requires a sorted `Term.vartuple`.
         # This should be ensured in the constructor of Term.
-        cdef int n1 = len(self)
-        cdef int n2 = len(other)
+        cdef Py_ssize_t n1 = len(self.vartuple)
+        cdef Py_ssize_t n2 = len(other.vartuple)
         if n1 == 0: return other
         if n2 == 0: return self
 
         cdef list vartuple = [None] * (n1 + n2)
-        cdef int i = 0, j = 0, k = 0
+        cdef Py_ssize_t i = 0, j = 0, k = 0
         cdef Variable var1, var2
         while i < n1 and j < n2:
             var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
@@ -170,11 +170,11 @@ cdef class Term:
         cdef double res = 1.0
         cdef SCIP* scip_ptr = sol.scip
         cdef SCIP_SOL* sol_ptr = sol.sol
-        cdef int i = 0, n = len(self)
+        cdef Py_ssize_t i, n = len(self.vartuple)
         cdef Variable var
 
         for i in range(n):
-            var = <Variable>self.vartuple[i]
+            var = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
             res *= SCIPgetSolVal(scip_ptr, sol_ptr, var.scip_var)
             if res == 0:  # early stop
                 return 0.0
