@@ -136,7 +136,12 @@ cdef class Term:
         if n1 == 0: return other
         if n2 == 0: return self
 
-        cdef list vartuple = [None] * (n1 + n2)
+        cdef Py_ssize_t m = n1 + n2
+        cdef list vartuple = [None] * m
+        # The variable pointers are collected during the merge, so the hash can be
+        # built without a generator that calls the Python-level `Variable.ptr()`
+        # once per variable.
+        cdef list ptrs = [None] * m
         cdef Py_ssize_t i = 0, j = 0, k = 0
         cdef Variable var1, var2
         while i < n1 and j < n2:
@@ -144,23 +149,29 @@ cdef class Term:
             var2 = <Variable>PyTuple_GET_ITEM(other.vartuple, j)
             if var1.getIndex() <= var2.getIndex():
                 vartuple[k] = var1
+                ptrs[k] = var1.ptr()
                 i += 1
             else:
                 vartuple[k] = var2
+                ptrs[k] = var2.ptr()
                 j += 1
             k += 1
         while i < n1:
-            vartuple[k] = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
+            var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
+            vartuple[k] = var1
+            ptrs[k] = var1.ptr()
             i += 1
             k += 1
         while j < n2:
-            vartuple[k] = <Variable>PyTuple_GET_ITEM(other.vartuple, j)
+            var2 = <Variable>PyTuple_GET_ITEM(other.vartuple, j)
+            vartuple[k] = var2
+            ptrs[k] = var2.ptr()
             j += 1
             k += 1
 
         cdef Term res = Term.__new__(Term)
         res.vartuple = tuple(vartuple)
-        res.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in res.vartuple))
+        res.hashval = <Py_ssize_t>hash(tuple(ptrs))
         return res
 
     def __repr__(self) -> str:
