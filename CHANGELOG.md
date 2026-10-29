@@ -17,7 +17,7 @@
 - Made expression fields read-only to prevent accidental runtime modification
 - Methods taking a list of variables (e.g. `addConsKnapsack()`) no longer convert it to a NumPy array to check its dimension
 - Speed up `PowExpr._evaluate` via the C-level API
-- Speed up `Term` construction for single-variable terms
+- Speed up `Term.__init__`, `Term.__eq__`, and `Term.__mul__` via the C-level API
 - `PowExpr._evaluate` now raises `ValueError("math domain error")` for a negative base with a non-integer exponent and `OverflowError` when the result overflows.
 ### Removed
 
