@@ -79,8 +79,21 @@ cdef class Term:
     cdef Py_ssize_t hashval
 
     def __init__(self, *vartuple: Variable):
-        self.vartuple = tuple(sorted(vartuple, key=lambda v: v.getIndex()))
-        self.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in self.vartuple))
+        cdef Py_ssize_t n = len(vartuple)
+        cdef Variable var
+        if n == 0:
+            # The constant term; the empty args tuple is already canonical.
+            self.vartuple = vartuple
+            self.hashval = <Py_ssize_t>hash(vartuple)
+        elif n == 1:
+            # A single variable is trivially sorted, so avoid `sorted` and the
+            # generator, and build the one-element pointer tuple for the hash.
+            var = <Variable>vartuple[0]
+            self.vartuple = vartuple
+            self.hashval = <Py_ssize_t>hash((<size_t>var.scip_var,))
+        else:
+            self.vartuple = tuple(sorted(vartuple, key=lambda v: v.getIndex()))
+            self.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in self.vartuple))
 
     def __getitem__(self, idx):
         return self.vartuple[idx]
