@@ -53,7 +53,7 @@ from cpython.long cimport PyLong_Check
 from cpython.number cimport PyNumber_Check
 from cpython.object cimport Py_LE, Py_EQ, Py_GE, Py_TYPE
 from cpython.ref cimport PyObject
-from cpython.tuple cimport PyTuple_GET_ITEM
+from cpython.tuple cimport PyTuple_GET_ITEM, PyTuple_GET_SIZE
 from libc.math cimport cos as c_cos
 from libc.math cimport exp as c_exp
 from libc.math cimport fabs as c_fabs
@@ -79,7 +79,7 @@ cdef class Term:
     cdef Py_ssize_t hashval
 
     def __init__(self, *vartuple: Variable):
-        cdef Py_ssize_t n = len(vartuple)
+        cdef Py_ssize_t n = PyTuple_GET_SIZE(vartuple)
         cdef Variable var
 
         if n == 0:
@@ -111,9 +111,9 @@ cdef class Term:
         if <type>Py_TYPE(other) is not Term:
             return False
 
-        cdef Py_ssize_t n = len(self.vartuple)
+        cdef Py_ssize_t n = PyTuple_GET_SIZE(self.vartuple)
         cdef Term _other = <Term>other
-        if n != len(_other.vartuple) or self.hashval != _other.hashval:
+        if n != PyTuple_GET_SIZE(_other.vartuple) or self.hashval != _other.hashval:
             return False
 
         cdef Py_ssize_t i
@@ -126,13 +126,13 @@ cdef class Term:
         return True
 
     def __len__(self):
-        return len(self.vartuple)
+        return PyTuple_GET_SIZE(self.vartuple)
 
     def __mul__(self, Term other):
         # NOTE: This merge algorithm requires a sorted `Term.vartuple`.
         # This should be ensured in the constructor of Term.
-        cdef Py_ssize_t n1 = len(self.vartuple)
-        cdef Py_ssize_t n2 = len(other.vartuple)
+        cdef Py_ssize_t n1 = PyTuple_GET_SIZE(self.vartuple)
+        cdef Py_ssize_t n2 = PyTuple_GET_SIZE(other.vartuple)
         if n1 == 0: return other
         if n2 == 0: return self
 
@@ -181,7 +181,7 @@ cdef class Term:
         cdef double res = 1.0
         cdef SCIP* scip_ptr = sol.scip
         cdef SCIP_SOL* sol_ptr = sol.sol
-        cdef Py_ssize_t i, n = len(self.vartuple)
+        cdef Py_ssize_t i, n = PyTuple_GET_SIZE(self.vartuple)
         cdef Variable var
 
         for i in range(n):
