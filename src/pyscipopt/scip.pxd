@@ -2332,7 +2332,7 @@ cdef class Model:
     cdef _free_scip_instance(self)
     
     cdef _ensureFreshBestSol(self)
-    cdef SCIP_CONS* _getTransformedLogicorCons(self, Constraint logicor_cons)
+    cdef SCIP_CONS* _getTransformedCons(self, Constraint cons, str expected_cons_type)
     cdef SCIP_EVENTHDLR* _getEventhdlr(self, object eventhdlr)
     cdef SCIP_BENDERS* _getBenders(self, object benders)
     cdef SCIP_HEUR* _getHeur(self, object heur)

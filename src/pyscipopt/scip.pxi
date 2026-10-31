@@ -7083,19 +7083,19 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPaddCoefLogicor(self._scip, logicor_cons.scip_cons, var.scip_var))
 
-    cdef SCIP_CONS* _getTransformedLogicorCons(self, Constraint logicor_cons):
-        """Retrieve the transformed logicor constraint from the original constraint."""
+    cdef SCIP_CONS* _getTransformedCons(self, Constraint cons, str expected_cons_type):
+        """Validate constraint type and retrieve its transformed representation."""
         cdef SCIP_CONS* transcons
 
-        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
-        if not constype == 'logicor':
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        if not constype == expected_cons_type:
             raise Warning(f"dual solution values not available for constraints of type {constype}")
 
-        if logicor_cons.isOriginal():
-            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, logicor_cons.scip_cons, &transcons))
+        if cons.isOriginal():
+            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
             return transcons
 
-        return logicor_cons.scip_cons
+        return cons.scip_cons
 
     def getDualsolLogicor(self, Constraint logicor_cons):
         """
@@ -7112,7 +7112,7 @@ cdef class Model:
             Zero if presolve removed the transformed constraint.
 
         """
-        cdef SCIP_CONS* transcons = self._getTransformedLogicorCons(logicor_cons)
+        cdef SCIP_CONS* transcons = self._getTransformedCons(logicor_cons, "logicor")
         if transcons == NULL:
             return 0.0
 
@@ -7133,7 +7133,7 @@ cdef class Model:
             Zero if presolve removed the transformed constraint.
 
         """
-        cdef SCIP_CONS* transcons = self._getTransformedLogicorCons(logicor_cons)
+        cdef SCIP_CONS* transcons = self._getTransformedCons(logicor_cons, "logicor")
         if transcons == NULL:
             return 0.0
 
@@ -9207,17 +9207,10 @@ cdef class Model:
             Zero if presolve removed the transformed constraint.
 
         """
-        cdef SCIP_CONS* transcons
+        cdef SCIP_CONS* transcons = self._getTransformedCons(cons, "linear")
+        if transcons == NULL:
+            return 0.0
 
-        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
-        if not constype == 'linear':
-            raise Warning("dual solution values not available for constraints of type ", constype)
-        if cons.isOriginal():
-            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
-            if transcons == NULL:
-                return 0.0
-        else:
-            transcons = cons.scip_cons
         return SCIPgetDualsolLinear(self._scip, transcons)
 
     def getDualsolKnapsack(self, Constraint cons):
@@ -9234,18 +9227,10 @@ cdef class Model:
         float
 
         """
-        cdef SCIP_CONS* transcons
+        cdef SCIP_CONS* transcons = self._getTransformedCons(cons, "knapsack")
+        if transcons == NULL:
+            return 0.0
 
-        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
-        if not constype == 'knapsack':
-            raise Warning("dual solution values not available for constraints of type ", constype)
-        if cons.isOriginal():
-            # presolve may have removed it, and then there's no dual to read
-            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
-            if transcons == NULL:
-                return 0.0
-        else:
-            transcons = cons.scip_cons
         return SCIPgetDualsolKnapsack(self._scip, transcons)
 
     def getDualMultiplier(self, Constraint cons):
@@ -9279,16 +9264,11 @@ cdef class Model:
             Zero if presolve removed the transformed constraint.
 
         """
-        cdef SCIP_CONS* transcons
+        cdef SCIP_CONS* transcons = self._getTransformedCons(cons, "linear")
+        if transcons == NULL:
+            return 0.0
 
-        # TODO this should ideally be handled on the SCIP side
-        if cons.isOriginal():
-            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
-            if transcons == NULL:
-                return 0.0
-            return SCIPgetDualfarkasLinear(self._scip, transcons)
-        else:
-            return SCIPgetDualfarkasLinear(self._scip, cons.scip_cons)
+        return SCIPgetDualfarkasLinear(self._scip, transcons)
     
     def getDualfarkasKnapsack(self, Constraint cons):
         """
@@ -9304,17 +9284,11 @@ cdef class Model:
         float
 
         """
-        cdef SCIP_CONS* transcons
-
-        # TODO this should ideally be handled on the SCIP side
-        if cons.isOriginal():
-            # presolve may have removed it, and then there's no Farkas value to read
-            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
-            if transcons == NULL:
-                return 0.0
-            return SCIPgetDualfarkasKnapsack(self._scip, transcons)
-        else:
-            return SCIPgetDualfarkasKnapsack(self._scip, cons.scip_cons)
+        cdef SCIP_CONS* transcons = self._getTransformedCons(cons, "knapsack")
+        if transcons == NULL:
+            return 0.0
+            
+        return SCIPgetDualfarkasKnapsack(self._scip, transcons)
 
     def getVarRedcost(self, Variable var):
         """
