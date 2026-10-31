@@ -2330,6 +2330,12 @@ cdef class Model:
     cdef _getOrCreateCons(self, SCIP_CONS* scip_cons)
     cdef _getOrCreateVar(self, SCIP_VAR* scip_var)
     cdef _free_scip_instance(self)
+    
+    cdef _ensureFreshBestSol(self)
+    cdef SCIP_CONS* _getTransformedLogicorCons(self, Constraint logicor_cons)
+    cdef SCIP_EVENTHDLR* _getEventhdlr(self, object eventhdlr)
+    cdef SCIP_BENDERS* _getBenders(self, object benders)
+    cdef SCIP_HEUR* _getHeur(self, object heur)
 
     @staticmethod
     cdef create(SCIP* scip)

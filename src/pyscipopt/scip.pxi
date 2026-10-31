@@ -7083,6 +7083,20 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPaddCoefLogicor(self._scip, logicor_cons.scip_cons, var.scip_var))
 
+    cdef SCIP_CONS* _getTransformedLogicorCons(self, Constraint logicor_cons):
+        """Retrieve the transformed logicor constraint from the original constraint."""
+        cdef SCIP_CONS* transcons
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
+        if not constype == 'logicor':
+            raise Warning(f"dual solution values not available for constraints of type {constype}")
+
+        if logicor_cons.isOriginal():
+            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, logicor_cons.scip_cons, &transcons))
+            return transcons
+
+        return logicor_cons.scip_cons
+
     def getDualsolLogicor(self, Constraint logicor_cons):
         """
         Gets the dual solution of a logicor constraint in the current LP.
@@ -7098,18 +7112,9 @@ cdef class Model:
             Zero if presolve removed the transformed constraint.
 
         """
-        cdef SCIP_CONS* transcons
-
-        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
-        if not constype == 'logicor':
-            raise Warning("dual solution values not available for constraints of type ", constype)
-
-        if logicor_cons.isOriginal():
-            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, logicor_cons.scip_cons, &transcons))
-            if transcons == NULL:
-                return 0.0
-        else:
-            transcons = logicor_cons.scip_cons
+        cdef SCIP_CONS* transcons = self._getTransformedLogicorCons(logicor_cons)
+        if transcons == NULL:
+            return 0.0
 
         return SCIPgetDualsolLogicor(self._scip, transcons)
 
@@ -7128,18 +7133,9 @@ cdef class Model:
             Zero if presolve removed the transformed constraint.
 
         """
-        cdef SCIP_CONS* transcons
-
-        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
-        if not constype == 'logicor':
-            raise Warning("dual solution values not available for constraints of type ", constype)
-
-        if logicor_cons.isOriginal():
-            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, logicor_cons.scip_cons, &transcons))
-            if transcons == NULL:
-                return 0.0
-        else:
-            transcons = logicor_cons.scip_cons
+        cdef SCIP_CONS* transcons = self._getTransformedLogicorCons(logicor_cons)
+        if transcons == NULL:
+            return 0.0
 
         return SCIPgetDualfarkasLogicor(self._scip, transcons)
 
@@ -9504,6 +9500,12 @@ cdef class Model:
             stacklevel=2
         )
 
+    cdef SCIP_BENDERS* _getBenders(self, object benders):
+        """Return the selected Benders' decomposition or the default one."""
+        if benders is None:
+            return SCIPfindBenders(self._scip, "default")
+        return (<Benders>benders)._benders
+
     def updateBendersLowerbounds(self, lowerbounds, Benders benders=None):
         """
         Updates the subproblem lower bounds for benders using
@@ -9516,14 +9518,9 @@ cdef class Model:
         benders : Benders or None, optional
 
         """
-        cdef SCIP_BENDERS* _benders
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
 
         assert type(lowerbounds) is dict
-
-        if benders is None:
-            _benders = SCIPfindBenders(self._scip, "default")
-        else:
-            _benders = benders._benders
 
         for d in lowerbounds.keys():
             SCIPbendersUpdateSubproblemLowerbound(_benders, d, lowerbounds[d])
@@ -9590,18 +9587,13 @@ cdef class Model:
             PY_SCIP_BENDERSENFOTYPE: LP, RELAX, PSEUDO or CHECK. Default is LP.
 
         """
-        cdef SCIP_BENDERS* scip_benders
+        cdef SCIP_BENDERS* scip_benders = self._getBenders(benders)
         cdef SCIP_SOL* scip_sol
 
         if isinstance(solution, Solution):
             scip_sol = solution.sol
         else:
             scip_sol = NULL
-
-        if benders is None:
-            scip_benders = SCIPfindBenders(self._scip, "default")
-        else:
-            scip_benders = benders._benders
 
         retcode = SCIPsetupBendersSubproblem(self._scip, scip_benders, scip_sol, probnumber, checktype)
 
@@ -9632,7 +9624,7 @@ cdef class Model:
 
         """
 
-        cdef SCIP_BENDERS* scip_benders
+        cdef SCIP_BENDERS* scip_benders = self._getBenders(benders)
         cdef SCIP_SOL* scip_sol
         cdef SCIP_Real objective
         cdef SCIP_Bool infeasible
@@ -9641,11 +9633,6 @@ cdef class Model:
             scip_sol = solution.sol
         else:
             scip_sol = NULL
-
-        if benders is None:
-            scip_benders = SCIPfindBenders(self._scip, "default")
-        else:
-            scip_benders = benders._benders
 
         PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip, scip_benders, scip_sol,
             probnumber, &infeasible, solvecip, &objective))
@@ -9670,13 +9657,8 @@ cdef class Model:
         Model
 
         """
-        cdef SCIP_BENDERS* scip_benders
+        cdef SCIP_BENDERS* scip_benders = self._getBenders(benders)
         cdef SCIP* scip_subprob
-
-        if benders is None:
-            scip_benders = SCIPfindBenders(self._scip, "default")
-        else:
-            scip_benders = benders._benders
 
         scip_subprob = SCIPbendersSubproblem(scip_benders, probnumber)
 
@@ -9701,13 +9683,8 @@ cdef class Model:
         Variable or None
 
         """
-        cdef SCIP_BENDERS* _benders
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
         cdef SCIP_VAR* _mappedvar
-
-        if benders is None:
-            _benders = SCIPfindBenders(self._scip, "default")
-        else:
-            _benders = benders._benders
 
         if probnumber == -1:
             PY_SCIP_CALL(SCIPgetBendersMasterVar(self._scip, _benders, var.scip_var, &_mappedvar))
@@ -9734,13 +9711,8 @@ cdef class Model:
         Variable
 
         """
-        cdef SCIP_BENDERS* _benders
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
         cdef SCIP_VAR* _auxvar
-
-        if benders is None:
-            _benders = SCIPfindBenders(self._scip, "default")
-        else:
-            _benders = benders._benders
 
         _auxvar = SCIPbendersGetAuxiliaryVar(_benders, probnumber)
         return self._getOrCreateVar(_auxvar)
@@ -9764,14 +9736,9 @@ cdef class Model:
             flag to indicate whether the current subproblem is optimal for the master
 
         """
-        cdef SCIP_BENDERS* _benders
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
         cdef SCIP_SOL* scip_sol
         cdef SCIP_Bool optimal
-
-        if benders is None:
-            _benders = SCIPfindBenders(self._scip, "default")
-        else:
-            _benders = benders._benders
 
         if isinstance(solution, Solution):
             scip_sol = solution.sol
@@ -11097,6 +11064,13 @@ cdef class Model:
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
+    cdef SCIP_HEUR* _getHeur(self, object heur):
+        """Resolve a heuristic to its ptr."""
+        if isinstance(heur, Heur):
+            n = str_conversion(heur.name)
+            return SCIPfindHeur(self._scip, n)
+        return NULL
+
     def createSol(self, Heur heur = None, initlp=False):
         """
         Create a new primal solution in the transformed space.
@@ -11116,11 +11090,7 @@ cdef class Model:
         cdef SCIP_HEUR* _heur
         cdef SCIP_SOL* _sol
 
-        if isinstance(heur, Heur):
-            n = str_conversion(heur.name)
-            _heur = SCIPfindHeur(self._scip, n)
-        else:
-            _heur = NULL
+        _heur = self._getHeur(heur)
         if not initlp:
             PY_SCIP_CALL(SCIPcreateSol(self._scip, &_sol, _heur))
         else:
@@ -11145,11 +11115,7 @@ cdef class Model:
         cdef SCIP_HEUR* _heur
         cdef SCIP_SOL* _sol
 
-        if isinstance(heur, Heur):
-            n = str_conversion(heur.name)
-            _heur = SCIPfindHeur(self._scip, n)
-        else:
-            _heur = NULL
+        _heur = self._getHeur(heur)
         PY_SCIP_CALL(SCIPcreatePartialSol(self._scip, &_sol, _heur))
         partialsolution = Solution.create(self._scip, _sol)
         return partialsolution
@@ -11171,11 +11137,7 @@ cdef class Model:
         cdef SCIP_HEUR* _heur
         cdef SCIP_SOL* _sol
 
-        if isinstance(heur, Heur):
-            n = str_conversion(heur.name)
-            _heur = SCIPfindHeur(self._scip, n)
-        else:
-            _heur = NULL
+        _heur = self._getHeur(heur)
 
         PY_SCIP_CALL(SCIPcreateOrigSol(self._scip, &_sol, _heur))
         solution = Solution.create(self._scip, _sol)
@@ -11626,6 +11588,12 @@ cdef class Model:
             raise ValueError("Cannot get solution time: solution is None or NULL")
         return SCIPgetSolTime(self._scip, sol.sol)
 
+    cdef _ensureFreshBestSol(self):
+        """Refresh the cached _bestSol if the underlying SCIP pointer has changed."""
+        cdef SCIP_SOL* current_best_sol = SCIPgetBestSol(self._scip)
+        if self._bestSol is None or self._bestSol.sol != current_best_sol:
+            self._bestSol = Solution.create(self._scip, current_best_sol)
+
     def getObjVal(self, original=True):
         """
         Retrieve the objective value of the best solution.
@@ -11641,10 +11609,7 @@ cdef class Model:
 
         """
 
-        # Ensure _bestSol is up-to-date (cheap pointer comparison)
-        cdef SCIP_SOL* current_best_sol = SCIPgetBestSol(self._scip)
-        if self._bestSol is None or self._bestSol.sol != current_best_sol:
-            self._bestSol = Solution.create(self._scip, current_best_sol)
+        self._ensureFreshBestSol()
 
         if SCIPgetNSols(self._scip) == 0:
             if self.getStage() != SCIP_STAGE_SOLVING:
@@ -11713,10 +11678,7 @@ cdef class Model:
         if SCIPgetStage(self._scip) in {SCIP_STAGE_INIT, SCIP_STAGE_FREE}:
             raise Warning("Method cannot be called in stage ", self.getStage())
 
-        # Ensure _bestSol is up-to-date (cheap pointer comparison)
-        cdef SCIP_SOL* current_best_sol = SCIPgetBestSol(self._scip)
-        if self._bestSol is None or self._bestSol.sol != current_best_sol:
-            self._bestSol = Solution.create(self._scip, current_best_sol)
+        self._ensureFreshBestSol()
 
         if self._bestSol.sol == NULL and SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
             raise Warning("No solution available")
@@ -11925,6 +11887,13 @@ cdef class Model:
         else:
             return "unknown"
 
+    cdef SCIP_EVENTHDLR* _getEventhdlr(self, object eventhdlr):
+        """Resolve an event handler to its ptr."""
+        if isinstance(eventhdlr, Eventhdlr):
+            n = str_conversion(eventhdlr.name)
+            return SCIPfindEventhdlr(self._scip, n)
+        raise Warning("event handler not found")
+
     def catchEvent(self, eventtype, Eventhdlr eventhdlr):
         """
         Catches a global (not variable or row dependent) event.
@@ -11936,11 +11905,7 @@ cdef class Model:
 
         """
         cdef SCIP_EVENTHDLR* _eventhdlr
-        if isinstance(eventhdlr, Eventhdlr):
-            n = str_conversion(eventhdlr.name)
-            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
-        else:
-            raise Warning("event handler not found")
+        _eventhdlr = self._getEventhdlr(eventhdlr)
 
         PY_SCIP_CALL(SCIPcatchEvent(self._scip, eventtype, _eventhdlr, NULL, NULL))
         eventhdlr._caught_events.append(eventtype)
@@ -11956,11 +11921,7 @@ cdef class Model:
 
         """
         cdef SCIP_EVENTHDLR* _eventhdlr
-        if isinstance(eventhdlr, Eventhdlr):
-            n = str_conversion(eventhdlr.name)
-            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
-        else:
-            raise Warning("event handler not found")
+        _eventhdlr = self._getEventhdlr(eventhdlr)
 
         PY_SCIP_CALL(SCIPdropEvent(self._scip, eventtype, _eventhdlr, NULL, -1))
         if eventtype in eventhdlr._caught_events:
@@ -11978,11 +11939,7 @@ cdef class Model:
 
         """
         cdef SCIP_EVENTHDLR* _eventhdlr
-        if isinstance(eventhdlr, Eventhdlr):
-            n = str_conversion(eventhdlr.name)
-            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
-        else:
-            raise Warning("event handler not found")
+        _eventhdlr = self._getEventhdlr(eventhdlr)
         PY_SCIP_CALL(SCIPcatchVarEvent(self._scip, var.scip_var, eventtype, _eventhdlr, NULL, NULL))
 
     def dropVarEvent(self, Variable var, eventtype, Eventhdlr eventhdlr):
@@ -11997,11 +11954,7 @@ cdef class Model:
 
         """
         cdef SCIP_EVENTHDLR* _eventhdlr
-        if isinstance(eventhdlr, Eventhdlr):
-            n = str_conversion(eventhdlr.name)
-            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
-        else:
-            raise Warning("event handler not found")
+        _eventhdlr = self._getEventhdlr(eventhdlr)
         PY_SCIP_CALL(SCIPdropVarEvent(self._scip, var.scip_var, eventtype, _eventhdlr, NULL, -1))
 
     def catchRowEvent(self, Row row, eventtype, Eventhdlr eventhdlr):
@@ -12016,11 +11969,7 @@ cdef class Model:
 
         """
         cdef SCIP_EVENTHDLR* _eventhdlr
-        if isinstance(eventhdlr, Eventhdlr):
-            n = str_conversion(eventhdlr.name)
-            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
-        else:
-            raise Warning("event handler not found")
+        _eventhdlr = self._getEventhdlr(eventhdlr)
         PY_SCIP_CALL(SCIPcatchRowEvent(self._scip, row.scip_row, eventtype, _eventhdlr, NULL, NULL))
 
     def dropRowEvent(self, Row row, eventtype, Eventhdlr eventhdlr):
@@ -12035,11 +11984,7 @@ cdef class Model:
 
         """
         cdef SCIP_EVENTHDLR* _eventhdlr
-        if isinstance(eventhdlr, Eventhdlr):
-            n = str_conversion(eventhdlr.name)
-            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
-        else:
-            raise Warning("event handler not found")
+        _eventhdlr = self._getEventhdlr(eventhdlr)
         PY_SCIP_CALL(SCIPdropRowEvent(self._scip, row.scip_row, eventtype, _eventhdlr, NULL, -1))
 
     # Statistic Methods
