@@ -11932,7 +11932,7 @@ cdef class Model:
         if isinstance(eventhdlr, Eventhdlr):
             n = str_conversion(eventhdlr.name)
             return SCIPfindEventhdlr(self._scip, n)
-        raise Warning("event handler not found")
+        raise Warning(f"Expected an Eventhdlr instance, got {type(eventhdlr).__name__}")
 
     def catchEvent(self, eventtype, Eventhdlr eventhdlr):
         """
