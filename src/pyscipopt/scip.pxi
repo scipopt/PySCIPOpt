@@ -7084,7 +7084,27 @@ cdef class Model:
         PY_SCIP_CALL(SCIPaddCoefLogicor(self._scip, logicor_cons.scip_cons, var.scip_var))
 
     cdef SCIP_CONS* _getTransformedCons(self, Constraint cons, str expected_cons_type):
-        """Validate constraint type and retrieve its transformed representation."""
+        """
+        Validates constraint type and retrieves its transformed representation.
+
+        Parameters
+        ----------
+        cons : Constraint
+            Constraint to get the transformed representation for.
+        expected_cons_type : str
+            Expected constraint type name (e.g. 'linear', 'logicor', 'knapsack').
+
+        Returns
+        -------
+        SCIP_CONS*
+            Pointer to the transformed SCIP constraint, or NULL if transformed constraint does not exist.
+
+        Raises
+        ------
+        Warning
+            If the constraint handler type does not match expected_cons_type.
+
+        """
         cdef SCIP_CONS* transcons
 
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
@@ -9264,6 +9284,7 @@ cdef class Model:
             Zero if presolve removed the transformed constraint.
 
         """
+        # TODO this should ideally be handled on the SCIP side
         cdef SCIP_CONS* transcons = self._getTransformedCons(cons, "linear")
         if transcons == NULL:
             return 0.0
@@ -9284,6 +9305,7 @@ cdef class Model:
         float
 
         """
+        # TODO this should ideally be handled on the SCIP side
         cdef SCIP_CONS* transcons = self._getTransformedCons(cons, "knapsack")
         if transcons == NULL:
             return 0.0
@@ -9475,7 +9497,20 @@ cdef class Model:
         )
 
     cdef SCIP_BENDERS* _getBenders(self, object benders):
-        """Return the selected Benders' decomposition or the default one."""
+        """
+        Retrieves the SCIP_BENDERS pointer for the given Benders object or the default decomposition.
+
+        Parameters
+        ----------
+        benders : Benders or None
+            The Benders' decomposition object, or None to use the default Benders' decomposition.
+
+        Returns
+        -------
+        SCIP_BENDERS*
+            Pointer to the underlying SCIP_BENDERS structure, or NULL if not found.
+
+        """
         if benders is None:
             return SCIPfindBenders(self._scip, "default")
         return (<Benders>benders)._benders
@@ -11039,7 +11074,20 @@ cdef class Model:
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
     cdef SCIP_HEUR* _getHeur(self, object heur):
-        """Resolve a heuristic to its ptr."""
+        """
+        Retrieves the SCIP_HEUR pointer corresponding to a heuristic object.
+
+        Parameters
+        ----------
+        heur : Heur or None
+            The heuristic object to resolve.
+
+        Returns
+        -------
+        SCIP_HEUR*
+            Pointer to the SCIP heuristic, or NULL if heur is not a Heur instance or not found.
+
+        """
         if isinstance(heur, Heur):
             n = str_conversion(heur.name)
             return SCIPfindHeur(self._scip, n)
@@ -11061,10 +11109,9 @@ cdef class Model:
         Solution
 
         """
-        cdef SCIP_HEUR* _heur
         cdef SCIP_SOL* _sol
+        cdef SCIP_HEUR* _heur = self._getHeur(heur)
 
-        _heur = self._getHeur(heur)
         if not initlp:
             PY_SCIP_CALL(SCIPcreateSol(self._scip, &_sol, _heur))
         else:
@@ -11086,10 +11133,9 @@ cdef class Model:
         Solution
 
         """
-        cdef SCIP_HEUR* _heur
         cdef SCIP_SOL* _sol
+        cdef SCIP_HEUR* _heur = self._getHeur(heur)
 
-        _heur = self._getHeur(heur)
         PY_SCIP_CALL(SCIPcreatePartialSol(self._scip, &_sol, _heur))
         partialsolution = Solution.create(self._scip, _sol)
         return partialsolution
@@ -11563,7 +11609,9 @@ cdef class Model:
         return SCIPgetSolTime(self._scip, sol.sol)
 
     cdef _ensureFreshBestSol(self):
-        """Refresh the cached _bestSol if the underlying SCIP pointer has changed."""
+        """
+        Refreshes the internal _bestSol attribute if the underlying SCIP pointer has changed.
+        """
         cdef SCIP_SOL* current_best_sol = SCIPgetBestSol(self._scip)
         if self._bestSol is None or self._bestSol.sol != current_best_sol:
             self._bestSol = Solution.create(self._scip, current_best_sol)
@@ -11862,7 +11910,25 @@ cdef class Model:
             return "unknown"
 
     cdef SCIP_EVENTHDLR* _getEventhdlr(self, object eventhdlr):
-        """Resolve an event handler to its ptr."""
+        """
+        Resolves an event handler object to its underlying SCIP_EVENTHDLR pointer.
+
+        Parameters
+        ----------
+        eventhdlr : Eventhdlr
+            The event handler object to resolve.
+
+        Returns
+        -------
+        SCIP_EVENTHDLR*
+            Pointer to the SCIP event handler, or NULL if not found.
+
+        Raises
+        ------
+        Warning
+            If eventhdlr is not an instance of Eventhdlr.
+
+        """
         if isinstance(eventhdlr, Eventhdlr):
             n = str_conversion(eventhdlr.name)
             return SCIPfindEventhdlr(self._scip, n)
@@ -11878,8 +11944,7 @@ cdef class Model:
         eventhdlr : Eventhdlr
 
         """
-        cdef SCIP_EVENTHDLR* _eventhdlr
-        _eventhdlr = self._getEventhdlr(eventhdlr)
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
 
         PY_SCIP_CALL(SCIPcatchEvent(self._scip, eventtype, _eventhdlr, NULL, NULL))
         eventhdlr._caught_events.append(eventtype)
@@ -11894,8 +11959,7 @@ cdef class Model:
         eventhdlr : Eventhdlr
 
         """
-        cdef SCIP_EVENTHDLR* _eventhdlr
-        _eventhdlr = self._getEventhdlr(eventhdlr)
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
 
         PY_SCIP_CALL(SCIPdropEvent(self._scip, eventtype, _eventhdlr, NULL, -1))
         if eventtype in eventhdlr._caught_events:
@@ -11912,8 +11976,7 @@ cdef class Model:
         eventhdlr : Eventhdlr
 
         """
-        cdef SCIP_EVENTHDLR* _eventhdlr
-        _eventhdlr = self._getEventhdlr(eventhdlr)
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
         PY_SCIP_CALL(SCIPcatchVarEvent(self._scip, var.scip_var, eventtype, _eventhdlr, NULL, NULL))
 
     def dropVarEvent(self, Variable var, eventtype, Eventhdlr eventhdlr):
@@ -11927,8 +11990,7 @@ cdef class Model:
         eventhdlr : Eventhdlr
 
         """
-        cdef SCIP_EVENTHDLR* _eventhdlr
-        _eventhdlr = self._getEventhdlr(eventhdlr)
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
         PY_SCIP_CALL(SCIPdropVarEvent(self._scip, var.scip_var, eventtype, _eventhdlr, NULL, -1))
 
     def catchRowEvent(self, Row row, eventtype, Eventhdlr eventhdlr):
@@ -11942,8 +12004,7 @@ cdef class Model:
         eventhdlr : Eventhdlr
 
         """
-        cdef SCIP_EVENTHDLR* _eventhdlr
-        _eventhdlr = self._getEventhdlr(eventhdlr)
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
         PY_SCIP_CALL(SCIPcatchRowEvent(self._scip, row.scip_row, eventtype, _eventhdlr, NULL, NULL))
 
     def dropRowEvent(self, Row row, eventtype, Eventhdlr eventhdlr):
@@ -11957,8 +12018,7 @@ cdef class Model:
         eventhdlr : Eventhdlr
 
         """
-        cdef SCIP_EVENTHDLR* _eventhdlr
-        _eventhdlr = self._getEventhdlr(eventhdlr)
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
         PY_SCIP_CALL(SCIPdropRowEvent(self._scip, row.scip_row, eventtype, _eventhdlr, NULL, -1))
 
     # Statistic Methods
