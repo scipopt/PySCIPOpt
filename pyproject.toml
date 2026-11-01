@@ -9,7 +9,7 @@ authors = [
     {name = "Zuse Institute Berlin", email = "scip@zib.de"},
 ]
 dependencies = ['numpy >=1.16.0']
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 readme = "README.md"
 classifiers = [
     "Development Status :: 4 - Beta",
