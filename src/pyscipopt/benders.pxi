@@ -1,7 +1,7 @@
 ##@file benders.pxi
 #@brief Base class of the Benders decomposition Plugin
 cdef class Benders:
-    cdef public Model model
+    cdef public BaseModel model
     cdef public str name
     cdef SCIP_BENDERS* _benders
 

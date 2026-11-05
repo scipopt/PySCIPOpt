@@ -2298,7 +2298,7 @@ cdef class IIS:
     @staticmethod
     cdef create(SCIP_IIS* iis)
 
-cdef class Model:
+cdef class BaseModel:
     cdef SCIP* _scip
     cdef SCIP_Bool* _valid
     # store best solution to get the solution values easier
@@ -2339,3 +2339,6 @@ cdef class Model:
 
     @staticmethod
     cdef create(SCIP* scip)
+
+cdef class Model(BaseModel):
+    pass

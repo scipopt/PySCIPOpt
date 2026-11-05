@@ -1,7 +1,7 @@
 ##@file pricer.pxi
 #@brief Base class of the Pricers Plugin
 cdef class Pricer:
-    cdef public Model model
+    cdef public BaseModel model
     cdef SCIP_PRICER* scip_pricer
 
     def pricerfree(self):

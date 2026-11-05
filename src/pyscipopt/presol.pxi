@@ -1,7 +1,7 @@
 ##@file presol.pxi
 #@brief Base class of the Presolver Plugin
 cdef class Presol:
-    cdef public Model model
+    cdef public BaseModel model
 
     def presolfree(self):
         '''frees memory of presolver'''
