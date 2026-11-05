@@ -10,18 +10,18 @@ MODEL_PXI = SCIP_PXI.with_name("model.pxi")
 
 BASE_MODEL_METHODS = frozenset({
     "_freescip", "_getStageNames", "activateBenders", "addBendersSubproblem", "addConss",
-    "addMatrixCons", "addMatrixVar", "addNNodes", "addSol", "addVarLocks",
+    "addMatrixCons", "addNNodes", "addSol", "addVarLocks",
     "addVarLocksType", "allColsInLP", "applyCutsProbing", "attachEventHandlerCallback", "backtrackProbing",
     "branchVar", "catchEvent", "catchRowEvent", "catchVarEvent", "checkBendersSubproblemOptimality",
     "checkSol", "chgVarBranchPriority", "chgVarType", "computeBestSolSubproblems", "constructLP",
-    "copyLargeNeighborhoodSearch", "count", "createChild", "createProbBasic", "cutoffNode",
+    "count", "createChild", "createProbBasic", "cutoffNode",
     "data", "deactivatePricer", "delCons", "delConsLocal", "delVar",
     "disableDebugSol", "disablePropagation", "dropEvent", "dropRowEvent", "dropVarEvent",
     "enableDebugSol", "enableReoptimization", "endProbing", "endStrongbranch", "free",
     "freeBendersSubproblems", "freeProb", "freeReoptSolve", "freeSol", "freeTransform",
     "from_ptr", "generateIIS", "getBendersAuxiliaryVar", "getBendersSubproblem", "getBendersVar",
     "getBestChild", "getBestLeaf", "getBestNode", "getBestSibling", "getBestSol",
-    "getBestboundNode", "getBipartiteGraphRepresentation", "getBranchScoreMultiple", "getChildren", "getCondition",
+    "getBestboundNode", "getBranchScoreMultiple", "getChildren", "getCondition",
     "getConsNVars", "getConss", "getCountedSols", "getCurrentNode", "getDepth",
     "getDeterministicTime", "getFocusNode", "getGap", "getHeurTiming", "getIIS",
     "getLPBasisInd", "getLeaves", "getMajorVersion", "getMaxDepth", "getMaxTotalDepth",
@@ -59,14 +59,15 @@ BASE_MODEL_METHODS = frozenset({
     "writeName", "writeParams", "writeProblem", "writeStatistics", "writeStatisticsJson",
 })
 
-SUBCLASS_CONTRACT = frozenset({"addCons", "addVar", "getSolObjVal"})
+SUBCLASS_CONTRACT = frozenset({"addCons", "getSolObjVal"})
 
-FP_MARKERS = re.compile(r"\bSCIP_Real\b|\bfloat\(|\bExprCons\b|\bExpr\b|\bRow\b|\bColumn\b|\bNLRow\b|SCIPinfinity\(")
+FP_MARKERS = re.compile(
+    r"\bSCIP_Real\b|\bfloat\(|dtype=float|\bModel\b|\bExprCons\b|\bExpr\b|\bRow\b|\bColumn\b|\bNLRow\b|SCIPinfinity\("
+)
 
 FP_ALLOWED = frozenset({
-    "addMatrixCons", "catchRowEvent", "copyLargeNeighborhoodSearch",
-    "dropRowEvent", "getBipartiteGraphRepresentation", "getBranchScoreMultiple",
-    "getCondition", "setParam", "solveBendersSubproblem",
+    "addMatrixCons", "catchRowEvent", "create", "dropRowEvent", "freeBendersSubproblems",
+    "getBranchScoreMultiple", "getCondition", "setParam", "solveBendersSubproblem",
 })
 
 MEMBER_RE = re.compile(r"^    (?:def|cdef|cpdef)\b.*?(\w+)\s*\(")

@@ -716,17 +716,6 @@ class BaseModel:
         removable: bool | np.ndarray = False,
         stickingatnode: bool | np.ndarray = False,
     ) -> Constraint | MatrixConstraint: ...
-    def addMatrixVar(
-        self,
-        shape: int | tuple[int, ...],
-        name: str | np.ndarray = "",
-        vtype: str | np.ndarray = "C",
-        lb: float | np.ndarray | None = 0.0,
-        ub: float | np.ndarray | None = None,
-        obj: float | np.ndarray = 0.0,
-        pricedVar: bool | np.ndarray = False,
-        pricedVarScore: float | np.ndarray = 1.0,
-    ) -> MatrixVariable: ...
     def addSol(self, solution: Solution, free: bool = True) -> bool: ...
     def addVarLocks(self, var: Variable, nlocksdown: int, nlocksup: int) -> None: ...
     def addVarLocksType(
@@ -767,9 +756,6 @@ class BaseModel:
     def chgVarType(self, var: Variable, vtype: str) -> None: ...
     def computeBestSolSubproblems(self) -> None: ...
     def constructLP(self) -> bool: ...
-    def copyLargeNeighborhoodSearch(
-        self, to_fix: Sequence[Variable], fix_vals: Sequence[float]
-    ) -> Model: ...
     def count(self) -> None: ...
     def createChild(self, nodeselprio: float, estimate: float) -> Node: ...
     def createProbBasic(self, problemName: str = "model") -> None: ...
@@ -818,19 +804,6 @@ class BaseModel:
     def getBestSibling(self) -> Node | None: ...
     def getBestSol(self) -> Solution | None: ...
     def getBestboundNode(self) -> Node | None: ...
-    def getBipartiteGraphRepresentation(
-        self,
-        prev_col_features: Sequence[Sequence[float]] | None = None,
-        prev_edge_features: Sequence[Sequence[float]] | None = None,
-        prev_row_features: Sequence[Sequence[float]] | None = None,
-        static_only: bool = False,
-        suppress_warnings: bool = False,
-    ) -> tuple[
-        list[list[float | None]],
-        list[list[float]],
-        list[list[float]],
-        dict[str, dict[str, int]],
-    ]: ...
     def getBranchScoreMultiple(self, var: Variable, gains: list[float]) -> float: ...
     def getChildren(self) -> list[Node]: ...
     def getCondition(self, exact: bool = False) -> float: ...
@@ -1823,6 +1796,33 @@ class Model(BaseModel):
         filename: StrOrBytesPath = "transprob.sol",
         write_zeros: bool = False,
     ) -> None: ...
+    def getBipartiteGraphRepresentation(
+        self,
+        prev_col_features: Sequence[Sequence[float]] | None = None,
+        prev_edge_features: Sequence[Sequence[float]] | None = None,
+        prev_row_features: Sequence[Sequence[float]] | None = None,
+        static_only: bool = False,
+        suppress_warnings: bool = False,
+    ) -> tuple[
+        list[list[float | None]],
+        list[list[float]],
+        list[list[float]],
+        dict[str, dict[str, int]],
+    ]: ...
+    def copyLargeNeighborhoodSearch(
+        self, to_fix: Sequence[Variable], fix_vals: Sequence[float]
+    ) -> Model: ...
+    def addMatrixVar(
+        self,
+        shape: int | tuple[int, ...],
+        name: str | np.ndarray = "",
+        vtype: str | np.ndarray = "C",
+        lb: float | np.ndarray | None = 0.0,
+        ub: float | np.ndarray | None = None,
+        obj: float | np.ndarray = 0.0,
+        pricedVar: bool | np.ndarray = False,
+        pricedVarScore: float | np.ndarray = 1.0,
+    ) -> MatrixVariable: ...
 
 @disjoint_base
 class NLRow:
