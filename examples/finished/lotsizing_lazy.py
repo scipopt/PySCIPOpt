@@ -33,8 +33,7 @@ class Conshdlr_sils(Conshdlr):
                 if checkonly:
                     return True
                 else:
-                    # add the (l,S) inequality  sum_{t in S} x[t] <= sum_{t in S} D[t,l] y[t] + I[l]
-                    # with I[l] eliminated through the flow conservation constraints (I[0] = 0)
+                    # add cutting plane constraint
                     self.model.addCons(quicksum([x[t] for t in L]) + \
                                        quicksum(D[t, ell] * y[t] for t in S)
                                        >= D[1, ell], removable=True)
@@ -54,12 +53,6 @@ class Conshdlr_sils(Conshdlr):
             return {"result": SCIP_RESULT.FEASIBLE}
 
     def conslock(self, constraint, locktype, nlockspos, nlocksneg):
-        # With needscons=False, SCIP calls this once with constraint=None and expects the
-        # handler to lock every variable it enforces. The (l,S) inequalities only have
-        # positive coefficients and are ">=" constraints, so they can only be violated by
-        # rounding x or y down. Without these locks, presolve is free to apply dual
-        # reductions (e.g. aggregating the relaxed y[t] away), and the cuts added later
-        # would then cut off the true optimum.
         y, x, I = self.model.data
         for t in self.data[1]:
             self.model.addVarLocksType(y[t], locktype, nlockspos, nlocksneg)

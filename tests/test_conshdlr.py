@@ -1,6 +1,8 @@
 import os
 import runpy
 
+import pytest
+
 from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PRESOLTIMING, SCIP_PROPTIMING, SCIP_LOCKTYPE
 from sys import version_info
 
@@ -280,9 +282,7 @@ def test_conshdlr():
 
 
 def test_lotsizing_lazy_example():
-    # The example solves the same instance with the plain MIP formulation and with
-    # (l,S) inequalities added lazily by a needscons=False constraint handler, and
-    # asserts that both give the same objective. It regressed silently once presolve
-    # started aggregating away variables the handler had not locked (#1228).
     example = os.path.join(os.path.dirname(__file__), "..", "examples", "finished", "lotsizing_lazy.py")
-    runpy.run_path(example, run_name="__main__")
+    ns = runpy.run_path(example, run_name="__main__")
+    assert ns["sils_obj"] == pytest.approx(57)
+    assert ns["sils_cut_obj"] == pytest.approx(57)

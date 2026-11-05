@@ -8,6 +8,7 @@
 - Added tests for `getObjVal()` and `getVal()`
 - Added `addConsLinear()` to add linear constraints from variables and coefficients without building an expression
 ### Fixed
+- Fixed `lotsizing_lazy` example: lock the handler's variables in `conslock` so presolve cannot aggregate them away (#1252)
 - Dual and Farkas getters for linear, knapsack, and logicor constraints now return zero when presolving has removed them.
 - Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
 - Fixed `getDualsolKnapsack()` and `getDualfarkasKnapsack()` returning 0 for original constraints, and the handler check in `getVarsAnd()` that could never fail
@@ -31,7 +32,6 @@
 - Added tests for `getRowLinear()` and extended existing testing for `isActive()`
 ### Fixed
 - Fixed Cython 3.3 compatibility (#1248)
-- Fixed `lotsizing_lazy` example: the constraint handler now locks its variables in `conslock`, so presolve can no longer aggregate them away and make the lazily added (l,S) cuts cut off the optimum (#1228)
 - Made `test_markDoNotAggrVar_and_getStatus` robust to SCIP presolve changes by discovering the aggregated/multi-aggregated variables instead of hardcoding them
 - Ensure probing has ended when freeing scip instance in benders
 ### Changed
