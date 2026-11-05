@@ -538,6 +538,9 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_DIVESET:
         pass
 
+    ctypedef struct SCIP_SPARSESOL:
+        pass
+
     ctypedef struct SCIP_HASHMAP:
         pass
 
@@ -2176,6 +2179,9 @@ cdef extern from "scip/cons_countsols.h":
     SCIP_RETCODE SCIPcount(SCIP* scip)
     SCIP_RETCODE SCIPsetParamsCountsols(SCIP* scip)
     SCIP_Longint SCIPgetNCountedSols(SCIP* scip, SCIP_Bool* valid)
+    void SCIPgetCountedSparseSols(SCIP* scip, SCIP_VAR*** vars, int* nvars, SCIP_SPARSESOL*** sols, int* nsols)
+    void SCIPsparseSolGetFirstSol(SCIP_SPARSESOL* sparsesol, SCIP_Longint* sol, int nvars)
+    SCIP_Bool SCIPsparseSolGetNextSol(SCIP_SPARSESOL* sparsesol, SCIP_Longint* sol, int nvars)
 
 cdef extern from "scip/paramset.h":
 
@@ -2266,7 +2272,7 @@ cdef class ExprLike:
     cdef ExprLike copy(self, bint copy=*)
 
 cdef class Expr(ExprLike):
-    cdef public terms
+    cdef readonly terms
 
 cdef class Event:
     cdef SCIP_EVENT* event
@@ -2404,6 +2410,12 @@ cdef class Model:
     cdef _getOrCreateCons(self, SCIP_CONS* scip_cons)
     cdef _getOrCreateVar(self, SCIP_VAR* scip_var)
     cdef _free_scip_instance(self)
+    
+    cdef _ensureFreshBestSol(self)
+    cdef SCIP_CONS* _getTransformedCons(self, Constraint cons, str expected_cons_type)
+    cdef SCIP_EVENTHDLR* _getEventhdlr(self, object eventhdlr)
+    cdef SCIP_BENDERS* _getBenders(self, object benders)
+    cdef SCIP_HEUR* _getHeur(self, object heur)
 
     @staticmethod
     cdef create(SCIP* scip)

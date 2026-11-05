@@ -7,3 +7,7 @@ pyscipopt.scip.ExprLike.__rmul__
 pyscipopt.scip.ExprLike.__rsub__
 pyscipopt.scip.ExprLike.__rtruediv__
 pyscipopt.scip.ExprLike.__sub__
+# Cython exposes generic signatures; these constructors reject arguments at runtime.
+pyscipopt.scip.PowExpr.__init__
+pyscipopt.scip.ProdExpr.__init__
+pyscipopt.scip.SumExpr.__init__
