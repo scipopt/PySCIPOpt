@@ -8,6 +8,7 @@
 - Added tests for `getObjVal()` and `getVal()`
 - Added `addConsLinear()` to add linear constraints from variables and coefficients without building an expression
 - Added example `heur_lpt.py`: warm-starting a scheduling MIP with a `Heur` plugin that builds its solution in the original space
+- Added example `scheduling_logical.py`: the same scheduling problem modelled with and/or/indicator, disjunction and cardinality constraints
 ### Fixed
 - Fixed `lotsizing_lazy` example: lock the handler's variables in `conslock` so presolve cannot aggregate them away (#1252)
 - Dual and Farkas getters for linear, knapsack, and logicor constraints now return zero when presolving has removed them.
