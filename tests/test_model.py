@@ -486,6 +486,82 @@ def test_getObjVal():
     assert m.getObjVal() == 16 
     assert m.getVal(x) == 0
 
+def test_getObjVal_missing_bestSol():
+    m = Model()
+    m.hideOutput()
+
+    x = m.addVar("x", obj=2.0)
+    m.addCons(x >= 1.0)
+
+    # Add a solution 
+    sol = m.createSol()
+    m.setSolVal(sol, x, 10.0)
+    m.addSol(sol)
+
+    # Without the fix from #1272, m._bestSol remained NULL,
+    # causing an assertion failure: assert self._bestSol.sol != NULL
+    assert m.getObjVal() == 20.0
+
+def test_getObjVal_outdated_bestSol():
+    m = Model()
+    m.hideOutput()
+
+    x = m.addVar("x", obj=2.0)
+    m.addCons(x >= 1.0)
+
+    # Add initial solution and populate _bestSol
+    sol1 = m.createSol()
+    m.setSolVal(sol1, x, 10.0)
+    m.addSol(sol1)
+    m.getBestSol()  # populates m._bestSol with sol1
+
+    # Add a better solution
+    sol2 = m.createSol()
+    m.setSolVal(sol2, x, 3.0)
+    m.addSol(sol2)
+
+    # Without the fix from #1272, _bestSol remained stuck
+    # on sol1 and incorrectly returned 20.0 instead of 6.0
+    assert m.getObjVal() == 6.0
+
+def test_getVal_missing_bestSol():
+    m = Model()
+    m.hideOutput()
+
+    x = m.addVar("x", obj=2.0)
+    m.addCons(x >= 1.0)
+
+    # Add a solution 
+    sol = m.createSol()
+    m.setSolVal(sol, x, 10.0)
+    m.addSol(sol)
+
+    # Without the fix from #993, m._bestSol was None here
+    # causing "No solution available" warning
+    assert m.getVal(x) == 10.0
+
+def test_getVal_outdated_bestSol():
+    m = Model()
+    m.hideOutput()
+
+    x = m.addVar("x", obj=2.0)
+    m.addCons(x >= 1.0)
+
+    # Add initial solution and populate _bestSol
+    sol1 = m.createSol()
+    m.setSolVal(sol1, x, 10.0)
+    m.addSol(sol1)
+    m.getBestSol()  # populates m._bestSol with sol1
+
+    # Add a better solution
+    sol2 = m.createSol()
+    m.setSolVal(sol2, x, 3.0)
+    m.addSol(sol2)
+
+    # Without the fix from #993, _bestSol remained stuck
+    # on sol1 and incorrectly returned 10.0 instead of 3.0
+    assert m.getVal(x) == 3.0
+
 # tests writeProblem() after redirectOutput()
 def test_redirection():
 
@@ -662,3 +738,31 @@ def test_memory_methods():
 
     assert m.getMemUsed() > 0
     assert m.getMemTotal() > 0
+
+
+def test_getCountedSols():
+    m = Model()
+    m.hideOutput()
+    m.setParam("constraints/countsols/collect", True)
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    x = m.addVar("x", vtype="I", lb=-2, ub=3)
+    y = m.addVar("y", vtype="I", lb=0, ub=4)
+    z = m.addVar("z", vtype="I", lb=0, ub=10)
+    w = m.addVar("w", vtype="B")
+    m.addCons(z == 2*x + 3)
+    m.addCons(x + y <= 4)
+    m.addCons(w + y >= 1)
+
+    assert m.getCountedSols() == []
+
+    m.count()
+    sols = m.getCountedSols()
+    expected = {(a, b, c, d) for a, b, c, d in itertools.product(range(-2, 4), range(5), range(11), range(2))
+                if c == 2*a + 3 and a + b <= 4 and d + b >= 1}
+    assert len(sols) == m.getNCountedSols() == len(expected)
+    assert all(isinstance(sol, dict) and set(sol) == {"x", "y", "z", "w"} for sol in sols)
+    assert all(type(val) is int for sol in sols for val in sol.values())
+    assert {tuple(sol[v.name] for v in (x, y, z, w)) for sol in sols} == expected
+
+    m.freeTransform()
+    assert m.getCountedSols() == []

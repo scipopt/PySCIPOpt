@@ -8,6 +8,7 @@ if hasattr(os, 'add_dll_directory'):
 
 # export user-relevant objects:
 from pyscipopt.Multidict import multidict as multidict
+from pyscipopt.scip      import BaseModel as BaseModel
 from pyscipopt.scip      import Model as Model
 from pyscipopt.scip      import ExactModel as ExactModel
 from pyscipopt.scip      import ExactVariable as ExactVariable

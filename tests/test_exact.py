@@ -2,7 +2,7 @@ from fractions import Fraction
 
 import pytest
 
-from pyscipopt import (SCIP_EVENTTYPE, SCIP_LPSOLSTAT, SCIP_PARAMSETTING, Eventhdlr, Model,
+from pyscipopt import (SCIP_EVENTTYPE, SCIP_LPSOLSTAT, SCIP_PARAMSETTING, BaseModel, Eventhdlr, Model,
                        ExactModel, ExactVariable, Variable)
 
 
@@ -19,7 +19,7 @@ pytestmark = pytest.mark.skipif(not _exact_supported(), reason="SCIP was built w
 
 def test_exact_model():
     m = ExactModel()
-    assert isinstance(m, Model)
+    assert isinstance(m, BaseModel)
     assert not hasattr(Model(), "chgVarObj")
     assert not hasattr(m, "addVarExact")
     with pytest.raises(TypeError):
@@ -144,7 +144,6 @@ def test_linear_constraints():
     w = n.addVar("w")
     lin = n.addCons(w <= 1)
     assert isinstance(n.getLhs(lin), float)
-    assert not hasattr(n, "addConsLinear")
     assert not hasattr(m, "addConsExactLinear")
 
 

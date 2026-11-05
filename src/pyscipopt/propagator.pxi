@@ -1,7 +1,7 @@
 ##@file propagator.pxi
 #@brief Base class of the Propagators Plugin
 cdef class Prop:
-    cdef public Model model
+    cdef public BaseModel model
 
     def propfree(self):
         '''calls destructor and frees memory of propagator'''

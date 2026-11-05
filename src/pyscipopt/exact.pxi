@@ -321,7 +321,7 @@ cdef class ExactVariable(Variable):
         """
         return _VARSTATUS_NAMES.get(SCIPvarGetStatusExact(self.scip_var))
 
-cdef class ExactModel(Model):
+cdef class ExactModel(BaseModel):
     """
     Model that solves exactly over the rationals.
 
@@ -853,7 +853,7 @@ cdef class ExactModel(Model):
             raise Warning("getLPSolstat cannot be called in stage %i." % SCIPgetStage(self._scip))
         return SCIPgetLPExactSolstat(self._scip)
 
-    def printRow(self, row):
+    def printRow(self, RowExact row not None):
         """
         Print a row to stdout; a RowExact is printed with its exact coefficients and sides.
 
@@ -862,10 +862,7 @@ cdef class ExactModel(Model):
         row : Row or RowExact
 
         """
-        if isinstance(row, RowExact):
-            PY_SCIP_CALL(SCIPprintRowExact(self._scip, (<RowExact>row).scip_row_exact, NULL))
-        else:
-            super().printRow(row)
+        PY_SCIP_CALL(SCIPprintRowExact(self._scip, row.scip_row_exact, NULL))
 
     def addConsLinear(self, vars, vals, lhs, rhs, name="",
                            initial=True, separate=True, enforce=True, check=True,
@@ -1334,7 +1331,7 @@ cdef class ExactModel(Model):
 
         constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(constraint.scip_cons))).decode('UTF-8')
         if constype != 'exactlinear':
-            return super().getConsVals(constraint)
+            raise ValueError("getConsVals is only available for exact linear constraints in exact solving mode")
         vals = SCIPgetValsExactLinear(self._scip, constraint.scip_cons)
         return [_fromRational(vals[i]) for i in range(SCIPgetNVarsExactLinear(self._scip, constraint.scip_cons))]
 
@@ -1531,11 +1528,12 @@ cdef class ExactModel(Model):
         """Print the best exact primal solution."""
         cdef SCIP_SOL* best = SCIPgetBestSol(self._scip)
 
-        if best == NULL:
-            return super().printBestSol(write_zeros)
         user_locale = locale.getlocale(category=locale.LC_NUMERIC)
         locale.setlocale(locale.LC_NUMERIC, "C")
-        PY_SCIP_CALL(SCIPprintSolExact(self._scip, best, NULL, write_zeros))
+        if best == NULL:
+            PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, write_zeros))
+        else:
+            PY_SCIP_CALL(SCIPprintSolExact(self._scip, best, NULL, write_zeros))
         locale.setlocale(locale.LC_NUMERIC, user_locale)
 
     def writeSol(self, Solution solution, filename="origprob.sol", write_zeros=False):
@@ -1551,13 +1549,14 @@ cdef class ExactModel(Model):
         """Write the best exact primal solution to a file."""
         cdef SCIP_SOL* best = SCIPgetBestSol(self._scip)
 
-        if best == NULL:
-            return super().writeBestSol(filename, write_zeros)
         user_locale = locale.getlocale(category=locale.LC_NUMERIC)
         locale.setlocale(locale.LC_NUMERIC, "C")
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
-            PY_SCIP_CALL(SCIPprintSolExact(self._scip, best, cfile, write_zeros))
+            if best == NULL:
+                PY_SCIP_CALL(SCIPprintBestSol(self._scip, cfile, write_zeros))
+            else:
+                PY_SCIP_CALL(SCIPprintSolExact(self._scip, best, cfile, write_zeros))
         locale.setlocale(locale.LC_NUMERIC, user_locale)
 
     def getPrimalbound(self):

@@ -1,7 +1,7 @@
 ##@file benderscut.pxi
 #@brief Base class of the Benderscut Plugin
 cdef class Benderscut:
-    cdef public Model model
+    cdef public BaseModel model
     cdef public Benders benders
     cdef public str name
 

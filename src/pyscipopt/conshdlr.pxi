@@ -2,7 +2,7 @@
 #@brief base class of the Constraint Handler plugin
 
 cdef class Conshdlr:
-    cdef public Model model
+    cdef public BaseModel model
     cdef public str name
 
     def consfree(self):
