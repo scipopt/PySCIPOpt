@@ -522,6 +522,9 @@ cdef extern from "scip/scip.h":
     ctypedef struct SCIP_DIVESET:
         pass
 
+    ctypedef struct SCIP_SPARSESOL:
+        pass
+
     ctypedef struct SCIP_HASHMAP:
         pass
 
@@ -625,6 +628,7 @@ cdef extern from "scip/scip.h":
     SCIP_Real SCIPgetSolvingTime(SCIP* scip)
     SCIP_Real SCIPgetReadingTime(SCIP* scip)
     SCIP_Real SCIPgetPresolvingTime(SCIP* scip)
+    SCIP_Real SCIPgetDeterministicTime(SCIP* scip)
     SCIP_STAGE SCIPgetStage(SCIP* scip)
     SCIP_RETCODE SCIPsetProbName(SCIP* scip, char* name)
     const char* SCIPgetProbName(SCIP* scip)
@@ -749,6 +753,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPpresolve(SCIP* scip)
 
     # Node Methods
+    SCIP_NODE* SCIPgetFocusNode(SCIP* scip)
     SCIP_NODE* SCIPgetCurrentNode(SCIP* scip)
     SCIP_NODE* SCIPnodeGetParent(SCIP_NODE* node)
     SCIP_Longint SCIPnodeGetNumber(SCIP_NODE* node)
@@ -969,6 +974,7 @@ cdef extern from "scip/scip.h":
     SCIP_RETCODE SCIPprintBestTransSol(SCIP* scip, FILE* outfile, SCIP_Bool printzeros)
     SCIP_RETCODE SCIPprintSol(SCIP* scip, SCIP_SOL* sol, FILE* outfile, SCIP_Bool printzeros)
     SCIP_RETCODE SCIPprintTransSol(SCIP* scip, SCIP_SOL* sol, FILE* outfile, SCIP_Bool printzeros)
+    SCIP_Real SCIPgetFirstPrimalBound(SCIP* scip)
     SCIP_Real SCIPgetPrimalbound(SCIP* scip)
     SCIP_Real SCIPgetGap(SCIP* scip)
     int SCIPgetDepth(SCIP* scip)
@@ -1480,12 +1486,19 @@ cdef extern from "scip/scip.h":
     SCIP_Longint SCIPgetNTotalNodes(SCIP* scip)
     SCIP_Longint SCIPgetNFeasibleLeaves(SCIP* scip)
     SCIP_Longint SCIPgetNInfeasibleLeaves(SCIP* scip)
+    SCIP_Longint SCIPgetNObjlimLeaves(SCIP* scip)
     SCIP_Longint SCIPgetNLPs(SCIP* scip)
     SCIP_Longint SCIPgetNLPIterations(SCIP* scip)
     int SCIPgetNSepaRounds(SCIP* scip)
+    SCIP_Real SCIPgetAvgLowerbound(SCIP* scip)
+    SCIP_Real SCIPgetAvgDualbound(SCIP* scip)
     SCIP_Real SCIPgetLowerbound(SCIP* scip)
+    SCIP_Real SCIPgetLowerboundRoot(SCIP* scip)
     SCIP_Real SCIPgetCutoffbound(SCIP* scip)
+    SCIP_Real SCIPgetUpperbound(SCIP* scip)
     int SCIPgetMaxDepth(SCIP* scip)
+    int SCIPgetMaxTotalDepth(SCIP* scip)
+    SCIP_Longint SCIPgetNBacktracks(SCIP* scip)
     int SCIPgetPlungeDepth(SCIP* scip)
     SCIP_Longint SCIPgetNNodeLPIterations(SCIP* scip)
     SCIP_Longint SCIPgetNStrongbranchLPIterations(SCIP* scip)
@@ -1840,6 +1853,28 @@ cdef extern from "scip/cons_xor.h":
                                          SCIP_Bool removable,
                                          SCIP_Bool stickingatnode)
 
+cdef extern from "scip/cons_logicor.h":
+    SCIP_RETCODE SCIPcreateConsLogicor(SCIP* scip,
+                                         SCIP_CONS** cons,
+                                         const char* name,
+                                         int nvars,
+                                         SCIP_VAR** vars,
+                                         SCIP_Bool initial,
+                                         SCIP_Bool separate,
+                                         SCIP_Bool enforce,
+                                         SCIP_Bool check,
+                                         SCIP_Bool propagate,
+                                         SCIP_Bool local,
+                                         SCIP_Bool modifiable,
+                                         SCIP_Bool dynamic,
+                                         SCIP_Bool removable,
+                                         SCIP_Bool stickingatnode)
+    SCIP_RETCODE SCIPaddCoefLogicor(SCIP* scip, SCIP_CONS* cons, SCIP_VAR* var)
+    int          SCIPgetNVarsLogicor(SCIP* scip, SCIP_CONS* cons)
+    SCIP_VAR**   SCIPgetVarsLogicor(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Real    SCIPgetDualsolLogicor(SCIP* scip, SCIP_CONS* cons)
+    SCIP_Real    SCIPgetDualfarkasLogicor(SCIP* scip, SCIP_CONS* cons)
+
 cdef extern from "scip/scip_cons.h":
     SCIP_RETCODE SCIPprintCons(SCIP* scip,
                                SCIP_CONS* cons,
@@ -2070,6 +2105,9 @@ cdef extern from "scip/cons_countsols.h":
     SCIP_RETCODE SCIPcount(SCIP* scip)
     SCIP_RETCODE SCIPsetParamsCountsols(SCIP* scip)
     SCIP_Longint SCIPgetNCountedSols(SCIP* scip, SCIP_Bool* valid)
+    void SCIPgetCountedSparseSols(SCIP* scip, SCIP_VAR*** vars, int* nvars, SCIP_SPARSESOL*** sols, int* nsols)
+    void SCIPsparseSolGetFirstSol(SCIP_SPARSESOL* sparsesol, SCIP_Longint* sol, int nvars)
+    SCIP_Bool SCIPsparseSolGetNextSol(SCIP_SPARSESOL* sparsesol, SCIP_Longint* sol, int nvars)
 
 cdef extern from "scip/paramset.h":
 
@@ -2156,12 +2194,11 @@ cdef extern from "tpi/tpi.h":
 
 cdef class ExprLike:
 
+    cpdef double _evaluate(self, Solution sol)
     cdef ExprLike copy(self, bint copy=*)
 
 cdef class Expr(ExprLike):
-    cdef public terms
-
-    cpdef double _evaluate(self, Solution sol)
+    cdef readonly terms
 
 cdef class Event:
     cdef SCIP_EVENT* event
@@ -2293,6 +2330,12 @@ cdef class Model:
     cdef _getOrCreateCons(self, SCIP_CONS* scip_cons)
     cdef _getOrCreateVar(self, SCIP_VAR* scip_var)
     cdef _free_scip_instance(self)
+    
+    cdef _ensureFreshBestSol(self)
+    cdef SCIP_CONS* _getTransformedCons(self, Constraint cons, str expected_cons_type)
+    cdef SCIP_EVENTHDLR* _getEventhdlr(self, object eventhdlr)
+    cdef SCIP_BENDERS* _getBenders(self, object benders)
+    cdef SCIP_HEUR* _getHeur(self, object heur)
 
     @staticmethod
     cdef create(SCIP* scip)

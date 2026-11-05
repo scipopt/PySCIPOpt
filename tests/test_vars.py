@@ -1,5 +1,6 @@
-from pyscipopt import Model, SCIP_PARAMSETTING, SCIP_BRANCHDIR, SCIP_IMPLINTTYPE
+from pyscipopt import Model, SCIP_BRANCHDIR, SCIP_IMPLINTTYPE
 from helpers.utils import random_mip_1
+
 
 def test_variablebounds():
     m = Model()
@@ -121,16 +122,66 @@ def test_getNBranchingsCurrentRun():
 
     assert n_branchings == m.getNNodes() - 1
 
+
+# test for a small model so that AGGREGATED and FIXED statuses are easily created
 def test_isActive():
     m = Model()
-    x = m.addVar(vtype='C', lb=0.0, ub=1.0)
-    # newly added variables should be active
-    assert x.isActive()
-    m.freeProb()
+    x = m.addVar("x", lb=0, ub=20)
+    y = m.addVar("y", lb=0, ub=20)
+    z = m.addVar("z", lb=0, ub=15)
+    original_vars = [x, y, z]
 
-    # TODO lacks tests for cases when returned false due to 
-    # - fixed (probably during probing)
-    # - aggregated
+    m.addCons(y - x == 0)
+    m.addCons(z + x == 10)
+
+    m.presolve()
+
+    # original variables are active (i.e., neither aggregated nor fixed)
+    for var in original_vars:
+        assert var.getStatus() == "ORIGINAL"
+        assert var.isActive()
+
+    transformed_vars = [m.getTransformedVar(var) for var in original_vars]
+
+    # at the time of writing this test, the presolve step aggregates two variables and fixes one variable
+    aggregated_vars = [var for var in transformed_vars if var.getStatus() == "AGGREGATED"]
+    assert aggregated_vars, "presolve no longer aggregates variables; update the test model"
+    for var in aggregated_vars:
+        assert not var.isActive()
+
+    fixed_vars = [var for var in transformed_vars if var.getStatus() == "FIXED"]
+    assert fixed_vars, "presolve no longer fixes variables; update the test model"
+    for var in fixed_vars:
+        assert not var.isActive()
+
+
+# test for a bigger model so that LOOSE and COLUMN statuses are created
+def test_isActive_mip():
+    model = random_mip_1(small=True)
+
+    vars = model.getVars()
+    
+    for var in vars:
+        assert var.getStatus() == "ORIGINAL"
+        assert var.isActive()
+
+    model.presolve()
+    # at the time of writing this test, all variables are LOOSE after presolve
+    transformed_vars = [model.getTransformedVar(var) for var in vars]
+    for var in transformed_vars:
+        assert var.getStatus() == "LOOSE", (
+            f"Expected all variables to be LOOSE after presolve, but got: {[mip_var.getStatus() for mip_var in transformed_vars]}; update the test model"
+        )
+        assert var.isActive()
+
+    model.optimize()
+    # at the time of writing this test, all variables are COLUMN after optimization
+    for var in transformed_vars:
+        assert var.getStatus() == "COLUMN", (
+            f"Expected all variables to be COLUMN after optimization, but got: {[mip_var.getStatus() for mip_var in transformed_vars]}; update the test model"
+        )
+        assert var.isActive()
+
 
 def test_markDoNotAggrVar_and_getStatus():
     model = Model()

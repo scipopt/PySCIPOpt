@@ -1,4 +1,5 @@
-from pyscipopt import Model, quicksum
+from pyscipopt import Eventhdlr, Model, quicksum, SCIP_EVENTTYPE, SCIP_PARAMSETTING
+from pyscipopt.scip import Row
 import random
 import pytest
 
@@ -106,6 +107,54 @@ def test_cons_and():
     m.sortAndCons(and_cons)
     assert m.isAndConsSorted(and_cons)
     
+def test_cons_logicor():
+    m = Model()
+    x1 = m.addVar(vtype="B")
+    x2 = m.addVar(vtype="B")
+    x3 = m.addVar(vtype="B")
+
+    logicor_cons = m.addConsLogicor([x1, x2])
+
+    assert m.getNVarsLogicor(logicor_cons) == 2
+    assert m.getVarsLogicor(logicor_cons) == [x1, x2]
+
+    m.addCoefLogicor(logicor_cons, x3)
+    assert m.getNVarsLogicor(logicor_cons) == 3
+    assert m.getVarsLogicor(logicor_cons) == [x1, x2, x3]
+
+    # the constraint forces one of the three to be set, so minimising their
+    # sum costs exactly one rather than zero
+    m.setObjective(x1 + x2 + x3, "minimize")
+    m.hideOutput()
+    m.optimize()
+
+    assert m.getStatus() == "optimal"
+    assert m.isEQ(m.getObjVal(), 1.0)
+
+
+def test_cons_logicor_duals():
+    m = Model()
+    x1 = m.addVar(vtype="B")
+    x2 = m.addVar(vtype="B")
+
+    # passed as an original constraint, so the accessors have to look the
+    # transformed one up before asking SCIP for a dual value
+    logicor_cons = m.addConsLogicor([x1, x2])
+    linear_cons = m.addCons(x1 + x2 <= 2)
+
+    m.setObjective(x1 + x2, "minimize")
+    m.hideOutput()
+    m.optimize()
+
+    assert isinstance(m.getDualsolLogicor(logicor_cons), float)
+    assert isinstance(m.getDualfarkasLogicor(logicor_cons), float)
+
+    with pytest.raises(Warning):
+        m.getDualsolLogicor(linear_cons)
+    with pytest.raises(Warning):
+        m.getDualfarkasLogicor(linear_cons)
+
+
 def test_cons_logical_fail():
     m = Model()
     x1 = m.addVar(vtype="B")
@@ -351,6 +400,78 @@ def test_cons_knapsack():
     assert m.getDualsolKnapsack(knapsack_cons) == 0
     assert m.getDualfarkasKnapsack(knapsack_cons) == 0
 
+
+@pytest.mark.parametrize("handler", ["Linear", "Knapsack", "Logicor"])
+@pytest.mark.parametrize("accessor", ["getDualsol", "getDualfarkas"])
+def test_dual_accessors_for_removed_constraints(handler, accessor):
+    m = Model()
+    m.hideOutput()
+    x = m.addVar(vtype="B", obj=-1)
+    y = m.addVar(vtype="B", obj=2)
+    if handler == "Linear":
+        cons = m.addCons(x + y <= 2)
+    elif handler == "Knapsack":
+        cons = m.addConsKnapsack([x, y], [4, 2], 5)
+    else:
+        cons = m.addConsLogicor([x, y])
+    m.optimize()
+
+    # Presolve removes the constraint after solving this two-variable model.
+    with pytest.raises(Warning, match="NULL"):
+        m.getTransformedCons(cons)
+    assert getattr(m, accessor + handler)(cons) == 0.0
+
+
+def _lp_only_model():
+    # presolve, heuristics, separation and propagation off, so the constraint
+    # stays in the LP and its dual values are still there after the solve
+    m = Model()
+    m.hideOutput()
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    m.setHeuristics(SCIP_PARAMSETTING.OFF)
+    m.setSeparating(SCIP_PARAMSETTING.OFF)
+    m.disablePropagation()
+    return m
+
+
+def test_cons_knapsack_dualsol_on_original_constraint():
+    m = _lp_only_model()
+    x = m.addVar(vtype="B")
+    y = m.addVar(vtype="B")
+    knapsack_cons = m.addConsKnapsack([x, y], [1, 1], 1)
+    m.setObjective(-x - y, "minimize")
+    m.optimize()
+
+    # the knapsack is binding and its dual is unique here, so asking through
+    # the original constraint has to give the same value as the transformed one
+    transformed = m.getTransformedCons(knapsack_cons)
+    assert m.isEQ(m.getDualsolKnapsack(knapsack_cons), -1.0)
+    assert m.isEQ(m.getDualsolKnapsack(knapsack_cons), m.getDualsolKnapsack(transformed))
+
+
+def test_cons_knapsack_dualfarkas_on_original_constraint():
+    m = _lp_only_model()
+    x = m.addVar(vtype="B")
+    y = m.addVar(vtype="B")
+    knapsack_cons = m.addConsKnapsack([x, y], [1, 1], 1)
+    m.addCons(x + y >= 2)
+    m.optimize()
+
+    assert m.getStatus() == "infeasible"
+    transformed = m.getTransformedCons(knapsack_cons)
+    assert not m.isZero(m.getDualfarkasKnapsack(knapsack_cons))
+    assert m.isEQ(m.getDualfarkasKnapsack(knapsack_cons), m.getDualfarkasKnapsack(transformed))
+
+
+def test_getVarsAnd_rejects_other_constraint_types():
+    m = Model()
+    x = m.addVar(vtype="B")
+    linear_cons = m.addCons(x <= 1)
+
+    with pytest.raises(AssertionError):
+        m.getVarsAnd(linear_cons)
+
+
 def test_cons_cumulative():
     """Three jobs on a resource with capacity 3 must not overlap in demand.
 
@@ -384,6 +505,33 @@ def test_cons_cumulative():
     assert m.isEQ(m.getVal(start3), 0)
     assert m.isEQ(m.getObjVal(), 3)
 
+def test_addConsLinear():
+    m = Model()
+    x = m.addVar("x", lb=0, ub=2, obj=-1)
+    y = m.addVar("y", lb=0, ub=4, obj=-1)
+    z = m.addVar("z", lb=0, ub=5, obj=2)
+
+    c1 = m.addConsLinear([x, y], [2, 1], rhs=5, name="c1")
+    c2 = m.addConsLinear((x, z), (1.0, 4.0), lhs=1, rhs=5)
+    c3 = m.addConsLinear([y], [1], lhs=1)
+    assert c1.getConshdlrName() == "linear"
+    assert c1.name == "c1"
+    assert m.getValsLinear(c1) == {'x': 2, 'y': 1}
+    assert m.getValsLinear(c2) == {'x': 1, 'z': 4}
+    assert (m.getLhs(c1), m.getRhs(c1)) == (-m.infinity(), 5)
+    assert (m.getLhs(c2), m.getRhs(c2)) == (1, 5)
+    assert (m.getLhs(c3), m.getRhs(c3)) == (1, m.infinity())
+    assert m.getConss() == [c1, c2, c3]
+
+    m.optimize()
+    assert m.getObjVal() == -4.25
+    assert m.getActivity(c1, m.getBestSol()) == 5
+
+    with pytest.raises(ValueError):
+        m.addConsLinear([x, y], [1])
+    with pytest.raises(TypeError):
+        m.addConsLinear([x, 1], [1, 1])
+
 def test_getValsLinear():
     m = Model()
     x = m.addVar("x", lb=0, ub=2, obj=-1)
@@ -398,6 +546,69 @@ def test_getValsLinear():
 
     assert m.getValsLinear(c2) == {'x': 1, 'z': 4}
 
-@pytest.mark.skip(reason="TODO: test getRowLinear()")
-def test_getRowLinear():
-    assert True
+
+def test_getRowLinear_for_linear_constraints():
+    class RowAddedEvent(Eventhdlr):
+        def __init__(self, cons):
+            super().__init__()
+            self.cons_by_name = {con.name: con for con in cons}
+            self.matched = {con: False for con in cons}
+
+        def eventinit(self):
+            self.model.catchEvent(SCIP_EVENTTYPE.ROWADDEDLP, self)
+
+        def eventexit(self):
+            self.model.dropEvent(SCIP_EVENTTYPE.ROWADDEDLP, self)
+
+        def eventexec(self, event):
+            row = event.getRow()
+            con = self.cons_by_name[row.name]
+
+            trans_con = self.model.getTransformedCons(con)
+            row_from_con = self.model.getRowLinear(trans_con)
+
+            assert isinstance(row_from_con, Row)
+            assert row == row_from_con
+            assert row.getNNonz() == row_from_con.getNNonz()
+            assert row.getVals() == row_from_con.getVals()
+            assert row.getRhs() == row_from_con.getRhs()
+            assert row.getLhs() == row_from_con.getLhs()
+            self.matched[con] = True
+
+    m = Model()
+    x = m.addVar("x", lb=0, ub=10)
+    y = m.addVar("y", lb=0, ub=10)
+    z = m.addVar("z", lb=0, ub=10)
+
+    m.setObjective(x + 2 * y + 3 * z, "maximize")
+    con_1 = m.addCons(x + y <= 5)
+    con_2 = m.addCons(2 * x + 3 * y - z <= 12)
+    con_3 = m.addCons(x - y <= 2)
+    cons = [con_1, con_2, con_3]
+
+    hdlr = RowAddedEvent(cons)
+    m.includeEventhdlr(hdlr, "rowadded", "row added to LP")
+
+    # turn off presolve to ensure that the constraints are not removed or modified before the LP is created
+    m.setPresolve(SCIP_PARAMSETTING.OFF)
+    m.optimize()
+
+    for con in cons:
+        assert con.isLinear()
+    assert all(hdlr.matched.values()), "Not all constraints matched the added rows in the LP"
+
+
+def test_getRowLinear_for_nonlinear_constraints():
+    m = Model()
+    x = m.addVar("x", lb=0, ub=2)
+    y = m.addVar("y", lb=0, ub=4)
+
+    con_1 = m.addCons(x * y + 3 * y <= 5)
+    con_2 = m.addCons(x**2 + y**2 <= 10)
+
+    assert con_1.isNonlinear()
+    assert con_2.isNonlinear()
+    with pytest.raises(Warning):
+        m.getRowLinear(con_1)
+    with pytest.raises(Warning):
+        m.getRowLinear(con_2)

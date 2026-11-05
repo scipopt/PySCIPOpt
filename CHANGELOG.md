@@ -2,19 +2,49 @@
 
 ## Unreleased
 ### Added
-- Added methods: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()` with tests
+- Added `getCountedSols()` to retrieve the solutions collected by `count()` (#906)
+- Added docstrings to the bundled stubs in release wheels for Python 3.10 and later.
+- Added more type annotations and deprecation markers to the stubs.
+- Added tests for `getObjVal()` and `getVal()`
+- Added `addConsLinear()` to add linear constraints from variables and coefficients without building an expression
+### Fixed
+- Dual and Farkas getters for linear, knapsack, and logicor constraints now return zero when presolving has removed them.
+- Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
+- Fixed `getDualsolKnapsack()` and `getDualfarkasKnapsack()` returning 0 for original constraints, and the handler check in `getVarsAnd()` that could never fail
+### Changed
+- Replaced `format()` with f-strings in examples
+- Refactor general expression conversion into per-class `to_scip_expr` recursion
+- Made expression fields read-only to prevent accidental runtime modification
+- Methods taking a list of variables (e.g. `addConsKnapsack()`) no longer convert it to a NumPy array to check its dimension
+- Speed up `PowExpr._evaluate` via the C-level API
+- `PowExpr._evaluate` now raises `ValueError("math domain error")` for a negative base with a non-integer exponent and `OverflowError` when the result overflows.
+### Removed
+- Removed support for Python 3.8
+
+## 6.3.0 - 2026.10.11
+### Added
+- Added the following methods with tests: `getNNodesLeft()`, `getNRuns()`, `getNReoptRuns()`, `addNNodes()`, `getDeterministicTime()`, `getAvgDualbound()`, `getMaxTotalDepth()`, `getNBacktracks()`, `getFocusNode()`, `getAvgLowerbound()`, `getFirstPrimalBound()`, `getLowerboundRoot()`, `getUpperbound()`, `getNObjlimLeaves()`
 - Added `addConsCumulative()` for SCIP cumulative constraints (#1222)
+- Added `addConsLogicor()`, `addCoefLogicor()`, `getNVarsLogicor()`, `getVarsLogicor()`, `getDualsolLogicor()` and `getDualfarkasLogicor()` for SCIP logicor constraints (#977)
 - `Expr` and `GenExpr` support `__pos__` magic method like `+Expr` or `+GenExpr`
 - Added type annotations to most methods on the `Model` class
+- Added tests for `getRowLinear()` and extended existing testing for `isActive()`
 ### Fixed
 - Fixed Cython 3.3 compatibility (#1248)
 - Fixed `lotsizing_lazy` example: the constraint handler now locks its variables in `conslock`, so presolve can no longer aggregate them away and make the lazily added (l,S) cuts cut off the optimum (#1228)
 - Made `test_markDoNotAggrVar_and_getStatus` robust to SCIP presolve changes by discovering the aggregated/multi-aggregated variables instead of hardcoding them
+- Ensure probing has ended when freeing scip instance in benders
 ### Changed
 - Move magic methods (`__radd__`, `__sub__`, `__rsub__`, `__rmul__`, `__richcmp__`, `__neg__`, and `__rtruediv__`) to `ExprLike` base class (#1204)
-- Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API
+- Speed up `Expr.__add__` and `Expr.__iadd__` via the C-level API (#1205)
+- Replace Python math with C-level math functions and refactor unary expressions (#1224)
+- Speed up `ProdExpr.__neg__` and `Constant.__neg__` via C-level API (#1250)
 - Extended `structured_optimization_trace` recipe to support context-managed JSONL tracing with final `run_end` records, alongside the existing attach-style in-memory tracing.
+- Integration tests now run in the merge queue before merging instead of after pushing to `master` (#1249)
 ### Removed
+- `SumExpr`.coefs has been removed; its values were always 1.0 (#1258)
+- Deprecated `getOp` method in `GenExpr` (#1259)
+- Deprecated inner enumerate class `Operator` (#1259)
 
 ## 6.2.1 - 2026.05.16
 ### Fixed

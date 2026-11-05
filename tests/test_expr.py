@@ -4,7 +4,15 @@ import numpy as np
 import pytest
 
 from pyscipopt import Model, cos, exp, log, quickprod, sin, sqrt
-from pyscipopt.scip import CONST, Expr, ExprCons, GenExpr, MatrixGenExpr
+from pyscipopt.scip import (
+    CONST,
+    Constant,
+    Expr,
+    ExprCons,
+    GenExpr,
+    MatrixGenExpr,
+    ProdExpr,
+)
 
 
 @pytest.fixture(scope="module")
@@ -212,14 +220,70 @@ def test_getVal_with_GenExpr():
     assert m.getVal(y / x) == 2
     # test "**(prod(1.0,**(sum(0.0,prod(1.0,x)),-1)),2)"
     assert m.getVal((1 / x) ** 2) == 1
-    # test "sin(sum(0.0,prod(1.0,x)))"
+
+    # test C-level math functions
+    assert m.getVal(abs(x)) == 1
+    assert m.getVal(abs(-x)) == 1
+    assert m.getVal(abs(abs(-x))) == 1
+    assert round(m.getVal(exp(x)), 6) == round(math.exp(1), 6)
+    assert round(m.getVal(log(x)), 6) == round(math.log(1), 6)
+    assert round(m.getVal(sqrt(x)), 6) == round(math.sqrt(1), 6)
     assert round(m.getVal(sin(x)), 6) == round(math.sin(1), 6)
+    assert round(m.getVal(cos(x)), 6) == round(math.cos(1), 6)
 
     with pytest.raises(TypeError):
         m.getVal(1)
 
     with pytest.raises(ZeroDivisionError):
         m.getVal(1 / z)
+
+    # math domain errors match the math module
+    with pytest.raises(ValueError, match="math domain error"):
+        m.getVal(log(z))  # log(0)
+
+    with pytest.raises(ValueError, match="math domain error"):
+        m.getVal(log(-y))  # log(-2)
+
+    with pytest.raises(ValueError, match="math domain error"):
+        m.getVal(sqrt(-y))  # sqrt(-2)
+
+    # sqrt(0) is inside the domain, like math.sqrt(0)
+    assert m.getVal(sqrt(z)) == 0
+
+    # +inf is inside log's domain, like math.log(inf) -> inf
+    assert m.getVal(log(math.inf)) == math.inf
+
+    # sin and cos reject infinite arguments, like math.sin(inf)
+    with pytest.raises(ValueError, match="math domain error"):
+        m.getVal(sin(math.inf))
+    with pytest.raises(ValueError, match="math domain error"):
+        m.getVal(cos(-math.inf))
+
+    # nested unary expressions propagate the inner domain error
+    with pytest.raises(ValueError, match="math domain error"):
+        m.getVal(exp(log(-x)))
+
+
+def test_getVal_pow():
+    m = Model()
+    y = m.addVar(lb=2, ub=2, name="y")
+    z = m.addVar(lb=0, ub=0, name="z")
+    n = m.addVar(lb=-2, ub=-2, name="n")
+    m.optimize()
+
+    # C-level pow with a negative exponent (matches Python: 2.0**-2.0 == 0.25)
+    assert m.getVal(y ** -2.0) == 0.25
+
+    # non-integer exponents are undefined for negative bases, like math.pow
+    with pytest.raises(ValueError, match="math domain error"):
+        m.getVal(n ** 0.5)
+
+    # zero to a negative power raises, like Python's 0.0**-1.0
+    with pytest.raises(ZeroDivisionError):
+        m.getVal(z ** -1.0)
+
+    with pytest.raises(OverflowError, match="math range error"):
+        m.getVal(exp(y) ** 10000.0)
 
 
 def test_unary_ufunc(model):
@@ -594,3 +658,25 @@ def test_pos():
     e = +c
     assert str(e) == str(c)
     assert e is not c
+
+def test_neg():
+    m = Model()
+    x = m.addVar(name="x")
+
+    expr = (x + 1) ** 3
+    neg_expr = -expr
+    assert isinstance(expr, Expr)
+    assert isinstance(neg_expr, Expr)
+    assert (
+        str(neg_expr)
+        == "Expr({Term(x, x, x): -1.0, Term(x, x): -3.0, Term(x): -3.0, Term(): -1.0})"
+    )
+
+    base = sqrt(x)
+    expr = base * -1
+    neg_expr = -expr
+    assert isinstance(expr, ProdExpr)
+    assert isinstance(neg_expr, ProdExpr)
+    assert str(neg_expr) == "prod(1.0,sqrt(sum(0.0,prod(1.0,x))))"
+
+    assert str(-Constant(3.0)) == "-3.0"

@@ -1,23 +1,27 @@
 name: Integration test
 
 env:
-  version: 10.0.0
+  version: 10.0.2
 
 on:
-  push:
+  pull_request:
     branches:
       - 'master'
+  merge_group:
   workflow_dispatch:
 
 
 jobs:
 
   Integration-test:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version:
+          - &python-oldest "3.9"
+          - &python-latest "3.15"
     steps:
       - uses: actions/checkout@v3
 
@@ -43,12 +47,13 @@ jobs:
         run: pytest -nauto
 
   Windows-test:
+    if: github.event_name != 'pull_request'
     env:
       SCIPOPTDIR: C:\scipoptdir
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: [*python-oldest, *python-latest]
     steps:
       - uses: actions/checkout@v3
 
@@ -85,10 +90,11 @@ jobs:
         run: pytest -nauto
 
   MacOS-test:
-    runs-on: macos-latest
+    if: github.event_name != 'pull_request'
+    runs-on: macos-15
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: [*python-oldest, *python-latest]
     steps:
       - uses: actions/checkout@v3
 
@@ -127,6 +133,27 @@ jobs:
 #          export SCIPOPTDIR=${{ github.workspace }}/scipoptsuite/
 #          export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${{ github.workspace }}/scipoptsuite/lib
 #          pytest
+
+  integration-gate:
+    if: always()
+    needs: [Integration-test, Windows-test, MacOS-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check integration test results
+        run: |
+          failed=0
+          for entry in "Integration-test=${{ needs.Integration-test.result }}" \
+                       "Windows-test=${{ needs.Windows-test.result }}" \
+                       "MacOS-test=${{ needs.MacOS-test.result }}"; do
+            job=${entry%%=*}
+            result=${entry#*=}
+            echo "$job: $result"
+            if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
+              echo "::error::$job finished with result '$result'"
+              failed=1
+            fi
+          done
+          exit $failed
 
   ### if you need valgrind on mac, you can install it via
   # brew tap LouisBrunner/valgrind
