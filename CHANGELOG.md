@@ -30,6 +30,7 @@
 - `Expr` and `GenExpr` support `__pos__` magic method like `+Expr` or `+GenExpr`
 - Added type annotations to most methods on the `Model` class
 - Added tests for `getRowLinear()` and extended existing testing for `isActive()`
+- Added `ExactModel` and `ExactVariable` for exact (rational) solving with SCIP 11; their ordinary methods take and return `Fraction`s, and `RowExact`/`ColumnExact` gained getters
 ### Fixed
 - Fixed Cython 3.3 compatibility (#1248)
 - Made `test_markDoNotAggrVar_and_getStatus` robust to SCIP presolve changes by discovering the aggregated/multi-aggregated variables instead of hardcoding them
@@ -42,6 +43,7 @@
 - Extended `structured_optimization_trace` recipe to support context-managed JSONL tracing with final `run_end` records, alongside the existing attach-style in-memory tracing.
 - Integration tests now run in the merge queue before merging instead of after pushing to `master` (#1249)
 ### Removed
+- Removed `Model.enableExactSolving()`, `Model.isExact()`, `Model.allowNegSlackExact()`, `Model.branchLPExact()` and `Model.addRowExact()`; use `ExactModel`, which exposes the last three as `allowNegSlack()`, `branchLP()` and `addRow()`
 - `SumExpr`.coefs has been removed; its values were always 1.0 (#1258)
 - Deprecated `getOp` method in `GenExpr` (#1259)
 - Deprecated inner enumerate class `Operator` (#1259)
