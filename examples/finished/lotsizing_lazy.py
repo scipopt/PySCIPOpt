@@ -53,6 +53,7 @@ class Conshdlr_sils(Conshdlr):
             return {"result": SCIP_RESULT.FEASIBLE}
 
     def conslock(self, constraint, locktype, nlockspos, nlocksneg):
+        # without these locks presolve may aggregate the variables away and the lazy cuts then cut off the optimum
         y, x, I = self.model.data
         for t in self.data[1]:
             self.model.addVarLocksType(y[t], locktype, nlockspos, nlocksneg)
