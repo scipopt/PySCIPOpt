@@ -104,10 +104,10 @@ class StubGenerator:
     # Classes that should have @disjoint_base decorator
     # These are user-facing classes that should not be structurally compatible
     DISJOINT_BASE_CLASSES = {
-        'Benders', 'Benderscut', 'BoundChange', 'Branchrule', 'Column', 'ColumnExact',
+        'BaseModel', 'Benders', 'Benderscut', 'BoundChange', 'Branchrule', 'Column', 'ColumnExact',
         'Conshdlr', 'Constant', 'Constraint', 'Cutsel', 'DomainChanges', 'Event',
         'Eventhdlr', 'Expr', 'ExprCons', 'GenExpr', 'Heur', 'IIS', 'IISfinder',
-        'LP', 'Model', 'NLRow', 'Node', 'Nodesel', 'PowExpr', 'Presol', 'Pricer',
+        'LP', 'NLRow', 'Node', 'Nodesel', 'PowExpr', 'Presol', 'Pricer',
         'ProdExpr', 'Prop', 'Reader', 'Relax', 'Row', 'RowExact', 'Sepa', 'Solution',
         'SumExpr', 'Term', 'UnaryExpr', 'Variable', '_VarArray',
     }
