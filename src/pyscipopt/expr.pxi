@@ -53,7 +53,7 @@ from cpython.long cimport PyLong_Check
 from cpython.number cimport PyNumber_Check
 from cpython.object cimport Py_LE, Py_EQ, Py_GE, Py_TYPE
 from cpython.ref cimport PyObject
-from cpython.tuple cimport PyTuple_GET_ITEM
+from cpython.tuple cimport PyTuple_GET_ITEM, PyTuple_GET_SIZE
 from libc.math cimport cos as c_cos
 from libc.math cimport exp as c_exp
 from libc.math cimport fabs as c_fabs
@@ -79,8 +79,25 @@ cdef class Term:
     cdef Py_ssize_t hashval
 
     def __init__(self, *vartuple: Variable):
-        self.vartuple = tuple(sorted(vartuple, key=lambda v: v.getIndex()))
-        self.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in self.vartuple))
+        cdef Py_ssize_t n = PyTuple_GET_SIZE(vartuple)
+        cdef Variable var
+
+        if n == 0:
+            # The constant term; the empty args tuple is already canonical.
+            self.vartuple = vartuple
+            self.hashval = <Py_ssize_t>hash(vartuple)
+
+        elif n == 1:
+            # A single variable is trivially sorted, so avoid sorted and the generator.
+            # `vartuple` is the exact tuple built from *args, so PyTuple_GET_ITEM needs
+            # no bounds check; the `<object>` cast keeps the Variable type check.
+            var = <object>PyTuple_GET_ITEM(vartuple, 0)
+            self.vartuple = vartuple
+            self.hashval = <Py_ssize_t>hash((var.ptr(),))
+
+        else:
+            self.vartuple = tuple(sorted(vartuple, key=lambda v: v.getIndex()))
+            self.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in self.vartuple))
 
     def __getitem__(self, idx):
         return self.vartuple[idx]
@@ -94,12 +111,12 @@ cdef class Term:
         if <type>Py_TYPE(other) is not Term:
             return False
 
-        cdef int n = len(self)
+        cdef Py_ssize_t n = PyTuple_GET_SIZE(self.vartuple)
         cdef Term _other = <Term>other
-        if n != len(_other) or self.hashval != _other.hashval:
+        if n != PyTuple_GET_SIZE(_other.vartuple) or self.hashval != _other.hashval:
             return False
 
-        cdef int i
+        cdef Py_ssize_t i
         cdef Variable var1, var2
         for i in range(n):
             var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
@@ -109,41 +126,52 @@ cdef class Term:
         return True
 
     def __len__(self):
-        return len(self.vartuple)
+        return PyTuple_GET_SIZE(self.vartuple)
 
     def __mul__(self, Term other):
         # NOTE: This merge algorithm requires a sorted `Term.vartuple`.
         # This should be ensured in the constructor of Term.
-        cdef int n1 = len(self)
-        cdef int n2 = len(other)
+        cdef Py_ssize_t n1 = PyTuple_GET_SIZE(self.vartuple)
+        cdef Py_ssize_t n2 = PyTuple_GET_SIZE(other.vartuple)
         if n1 == 0: return other
         if n2 == 0: return self
 
-        cdef list vartuple = [None] * (n1 + n2)
-        cdef int i = 0, j = 0, k = 0
+        cdef Py_ssize_t m = n1 + n2
+        cdef list vartuple = [None] * m
+        # The variable pointers are collected during the merge, so the hash can be
+        # built without a generator that calls the Python-level `Variable.ptr()`
+        # once per variable.
+        cdef list ptrs = [None] * m
+        cdef Py_ssize_t i = 0, j = 0, k = 0
         cdef Variable var1, var2
         while i < n1 and j < n2:
             var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
             var2 = <Variable>PyTuple_GET_ITEM(other.vartuple, j)
             if var1.getIndex() <= var2.getIndex():
                 vartuple[k] = var1
+                ptrs[k] = var1.ptr()
                 i += 1
             else:
                 vartuple[k] = var2
+                ptrs[k] = var2.ptr()
                 j += 1
             k += 1
         while i < n1:
-            vartuple[k] = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
+            var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
+            vartuple[k] = var1
+            ptrs[k] = var1.ptr()
             i += 1
             k += 1
         while j < n2:
-            vartuple[k] = <Variable>PyTuple_GET_ITEM(other.vartuple, j)
+            var2 = <Variable>PyTuple_GET_ITEM(other.vartuple, j)
+            vartuple[k] = var2
+            ptrs[k] = var2.ptr()
             j += 1
             k += 1
 
         cdef Term res = Term.__new__(Term)
         res.vartuple = tuple(vartuple)
-        res.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in res.vartuple))
+        res.hashval = <Py_ssize_t>hash(tuple(ptrs))
         return res
 
     def __repr__(self) -> str:
@@ -153,11 +181,11 @@ cdef class Term:
         cdef double res = 1.0
         cdef SCIP* scip_ptr = sol.scip
         cdef SCIP_SOL* sol_ptr = sol.sol
-        cdef int i = 0, n = len(self)
+        cdef Py_ssize_t i, n = PyTuple_GET_SIZE(self.vartuple)
         cdef Variable var
 
         for i in range(n):
-            var = <Variable>self.vartuple[i]
+            var = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
             res *= SCIPgetSolVal(scip_ptr, sol_ptr, var.scip_var)
             if res == 0:  # early stop
                 return 0.0
