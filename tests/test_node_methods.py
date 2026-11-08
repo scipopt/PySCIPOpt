@@ -181,3 +181,24 @@ def test_getNStrongbranchLPIterations():
 
     assert sb_iters >= 0, f"Expected non-negative strong branching iterations, got {sb_iters}"
     assert sb_iters <= total_lp_iters, f"Strong branching iterations {sb_iters} should not exceed total LP iterations {total_lp_iters}"
+
+
+def test_getFocusDepth():
+    m = random_mip_1(small=True, node_lim=1)
+    m.presolve()
+    assert m.getFocusDepth() == -1
+
+    m.optimize()
+    focus = m.getFocusNode()
+    assert focus is not None
+    assert m.getFocusDepth() == focus.getDepth() == m.getDepth() == 0
+
+    m.startProbing()
+    m.newProbingNode()
+    m.newProbingNode()
+    assert m.getProbingDepth() == 2
+    assert m.getDepth() > focus.getDepth()
+    assert m.getFocusDepth() == focus.getDepth()
+    m.endProbing()
+
+    assert m.getFocusDepth() == m.getDepth() == focus.getDepth()

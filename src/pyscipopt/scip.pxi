@@ -3459,6 +3459,19 @@ cdef class Model:
         """
         return Node.create(SCIPgetFocusNode(self._scip))
 
+    def getFocusDepth(self):
+        """
+        Gets depth of the focus node, or -1 if no focus node exists.
+        The focus node is the currently processed node in the branching tree, excluding the nodes of the probing path.
+
+        Returns
+        -------
+        int
+            The depth of the focus node, or -1 if no focus node exists.
+
+        """
+        return SCIPgetFocusDepth(self._scip)
+
     def getCurrentNode(self):
         """
         Retrieve current node.
