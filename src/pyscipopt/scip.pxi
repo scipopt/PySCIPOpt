@@ -3470,6 +3470,26 @@ cdef class Model:
         """
         return Node.create(SCIPgetCurrentNode(self._scip))
 
+    def nodesSharePath(self, Node node1 not None, Node node2 not None):
+        """
+        Checks for two nodes whether they share the same root path, i.e., whether one is an ancestor of the other.
+        If node1 and node2 are the same node, True is returned.
+
+        Parameters
+        ----------
+        node1 : Node
+            First node to compare.
+        node2 : Node
+            Second node to compare.
+
+        Returns
+        -------
+        bool
+            Whether the nodes share a root path.
+
+        """
+        return bool(SCIPnodesSharePath(node1.scip_node, node2.scip_node))
+
     def getGap(self):
         """
         Retrieve the gap,

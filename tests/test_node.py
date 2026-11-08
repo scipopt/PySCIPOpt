@@ -101,3 +101,25 @@ def test_getFocusNode_and_getCurrentNode():
 
     m.includeEventhdlr(ProbingNodeChecker(), "Probing Node Checker", "test if getFocusNode and getCurrentNode work correctly")
     m.optimize()
+
+def test_nodesSharePath():
+    m = random_mip_1(small=True, node_lim=1)
+    m.optimize()
+
+    root = m.getCurrentNode()
+    assert root is not None
+
+    # create two children of the root node
+    child1 = m.createChild(0, m.getLocalEstimate())
+    child2 = m.createChild(0, m.getLocalEstimate())
+
+    assert m.nodesSharePath(root, root) is True
+    assert m.nodesSharePath(child1, child1) is True
+    assert m.nodesSharePath(child2, child2) is True
+
+    for child in (child1, child2):
+        assert m.nodesSharePath(root, child) is True
+        assert m.nodesSharePath(child, root) is True
+
+    assert m.nodesSharePath(child1, child2) is False
+    assert m.nodesSharePath(child2, child1) is False
