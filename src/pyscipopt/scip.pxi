@@ -3472,6 +3472,18 @@ cdef class Model:
         """
         return SCIPgetFocusDepth(self._scip)
 
+    def getRootNode(self):
+        """
+        Gets the root node of the tree.
+
+        Returns
+        -------
+        Node
+            The root node of the search tree.
+
+        """
+        return Node.create(SCIPgetRootNode(self._scip))
+
     def getCurrentNode(self):
         """
         Retrieve current node.

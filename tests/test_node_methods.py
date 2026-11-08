@@ -202,3 +202,19 @@ def test_getFocusDepth():
     m.endProbing()
 
     assert m.getFocusDepth() == m.getDepth() == focus.getDepth()
+
+
+def test_getRootNode():
+    m = random_mip_1(small=True, node_lim=1)
+    m.optimize()
+
+    root = m.getFocusNode()
+    assert root is not None
+    assert root.getDepth() == 0
+    assert root.getParent() is None
+
+    m.setParam("limits/nodes", 10)
+    m.optimize()
+
+    assert m.getRootNode() == root
+    assert m.getFocusNode() != root
