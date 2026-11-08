@@ -538,7 +538,7 @@ cdef class LP:
 
         Returns
         -------
-        tuple of (list of int, list of int)
+        tuple of (list of SCIP_BASESTAT, list of SCIP_BASESTAT)
             Column basis statuses and row basis statuses.
 
         """
@@ -550,8 +550,8 @@ cdef class LP:
 
         PY_SCIP_CALL(SCIPlpiGetBase(self.lpi, c_cstat, c_rstat))
 
-        cstat = [c_cstat[i] for i in range(ncols)]
-        rstat = [c_rstat[i] for i in range(nrows)]
+        cstat = [PY_SCIP_BASESTAT(c_cstat[i]) for i in range(ncols)]
+        rstat = [PY_SCIP_BASESTAT(c_rstat[i]) for i in range(nrows)]
 
         free(c_rstat)
         free(c_cstat)

@@ -18,6 +18,7 @@ from posix.stdio cimport fileno
 from collections.abc import Iterable
 from itertools import repeat
 from dataclasses import dataclass
+from enum import IntEnum, IntFlag
 from typing import Union
 
 import numpy as np
@@ -71,7 +72,7 @@ cdef extern from "scip/config.h":
 # This is required to return SCIP_RESULT in the python code
 # In __init__.py this is imported as SCIP_RESULT to keep the
 # original naming scheme using capital letters
-cdef class PY_SCIP_RESULT:
+class PY_SCIP_RESULT(IntEnum):
     DIDNOTRUN   = SCIP_DIDNOTRUN
     DELAYED     = SCIP_DELAYED
     DIDNOTFIND  = SCIP_DIDNOTFIND
@@ -90,13 +91,13 @@ cdef class PY_SCIP_RESULT:
     SUSPENDED   = SCIP_SUSPENDED
     SUCCESS     = SCIP_SUCCESS
 
-cdef class PY_SCIP_PARAMSETTING:
+class PY_SCIP_PARAMSETTING(IntEnum):
     DEFAULT     = SCIP_PARAMSETTING_DEFAULT
     AGGRESSIVE  = SCIP_PARAMSETTING_AGGRESSIVE
     FAST        = SCIP_PARAMSETTING_FAST
     OFF         = SCIP_PARAMSETTING_OFF
 
-cdef class PY_SCIP_LPPARAM:
+class PY_SCIP_LPPARAM(IntEnum):
     FROMSCRATCH    = SCIP_LPPAR_FROMSCRATCH
     FASTMIP        = SCIP_LPPAR_FASTMIP
     SCALING        = SCIP_LPPAR_SCALING
@@ -118,13 +119,13 @@ cdef class PY_SCIP_LPPARAM:
     POLISHING      = SCIP_LPPAR_POLISHING
     REFACTOR       = SCIP_LPPAR_REFACTOR
 
-cdef class PY_SCIP_BASESTAT:
+class PY_SCIP_BASESTAT(IntEnum):
     LOWER = SCIP_BASESTAT_LOWER
     BASIC = SCIP_BASESTAT_BASIC
     UPPER = SCIP_BASESTAT_UPPER
     ZERO  = SCIP_BASESTAT_ZERO
 
-cdef class PY_SCIP_PARAMEMPHASIS:
+class PY_SCIP_PARAMEMPHASIS(IntEnum):
     DEFAULT      = SCIP_PARAMEMPHASIS_DEFAULT
     CPSOLVER     = SCIP_PARAMEMPHASIS_CPSOLVER
     EASYCIP      = SCIP_PARAMEMPHASIS_EASYCIP
@@ -138,7 +139,7 @@ cdef class PY_SCIP_PARAMEMPHASIS:
     NUMERICS     = SCIP_PARAMEMPHASIS_NUMERICS
     BENCHMARK    = SCIP_PARAMEMPHASIS_BENCHMARK
 
-cdef class PY_SCIP_STATUS:
+class PY_SCIP_STATUS(IntEnum):
     UNKNOWN        = SCIP_STATUS_UNKNOWN
     USERINTERRUPT  = SCIP_STATUS_USERINTERRUPT
     NODELIMIT      = SCIP_STATUS_NODELIMIT
@@ -157,8 +158,7 @@ cdef class PY_SCIP_STATUS:
     UNBOUNDED      = SCIP_STATUS_UNBOUNDED
     INFORUNBD      = SCIP_STATUS_INFORUNBD
 
-StageNames = {}
-cdef class PY_SCIP_STAGE:
+class PY_SCIP_STAGE(IntEnum):
     INIT         = SCIP_STAGE_INIT
     PROBLEM      = SCIP_STAGE_PROBLEM
     TRANSFORMING = SCIP_STAGE_TRANSFORMING
@@ -174,7 +174,9 @@ cdef class PY_SCIP_STAGE:
     FREETRANS    = SCIP_STAGE_FREETRANS
     FREE         = SCIP_STAGE_FREE
 
-cdef class PY_SCIP_NODETYPE:
+StageNames = {stage.value: stage.name for stage in PY_SCIP_STAGE}
+
+class PY_SCIP_NODETYPE(IntEnum):
     FOCUSNODE   = SCIP_NODETYPE_FOCUSNODE
     PROBINGNODE = SCIP_NODETYPE_PROBINGNODE
     SIBLING     = SCIP_NODETYPE_SIBLING
@@ -187,19 +189,19 @@ cdef class PY_SCIP_NODETYPE:
     SUBROOT     = SCIP_NODETYPE_SUBROOT
     REFOCUSNODE = SCIP_NODETYPE_REFOCUSNODE
 
-cdef class PY_SCIP_PROPTIMING:
+class PY_SCIP_PROPTIMING(IntFlag):
     BEFORELP     = SCIP_PROPTIMING_BEFORELP
     DURINGLPLOOP = SCIP_PROPTIMING_DURINGLPLOOP
     AFTERLPLOOP  = SCIP_PROPTIMING_AFTERLPLOOP
     AFTERLPNODE  = SCIP_PROPTIMING_AFTERLPNODE
 
-cdef class PY_SCIP_PRESOLTIMING:
+class PY_SCIP_PRESOLTIMING(IntFlag):
     NONE       = SCIP_PRESOLTIMING_NONE
     FAST       = SCIP_PRESOLTIMING_FAST
     MEDIUM     = SCIP_PRESOLTIMING_MEDIUM
     EXHAUSTIVE = SCIP_PRESOLTIMING_EXHAUSTIVE
 
-cdef class PY_SCIP_HEURTIMING:
+class PY_SCIP_HEURTIMING(IntFlag):
     BEFORENODE        = SCIP_HEURTIMING_BEFORENODE
     DURINGLPLOOP      = SCIP_HEURTIMING_DURINGLPLOOP
     AFTERLPLOOP       = SCIP_HEURTIMING_AFTERLPLOOP
@@ -212,8 +214,7 @@ cdef class PY_SCIP_HEURTIMING:
     DURINGPRESOLLOOP  = SCIP_HEURTIMING_DURINGPRESOLLOOP
     AFTERPROPLOOP     = SCIP_HEURTIMING_AFTERPROPLOOP
 
-EventNames = {}
-cdef class PY_SCIP_EVENTTYPE:
+class PY_SCIP_EVENTTYPE(IntFlag):
     DISABLED          = SCIP_EVENTTYPE_DISABLED
     VARADDED          = SCIP_EVENTTYPE_VARADDED
     VARDELETED        = SCIP_EVENTTYPE_VARDELETED
@@ -271,16 +272,18 @@ cdef class PY_SCIP_EVENTTYPE:
     ROWCHANGED        = SCIP_EVENTTYPE_ROWCHANGED
     ROWEVENT          = SCIP_EVENTTYPE_ROWEVENT
 
-cdef class PY_SCIP_LOCKTYPE:
+EventNames = {eventtype.value: eventtype.name for eventtype in PY_SCIP_EVENTTYPE.__members__.values()}
+
+class PY_SCIP_LOCKTYPE(IntEnum):
     MODEL    = SCIP_LOCKTYPE_MODEL
     CONFLICT = SCIP_LOCKTYPE_CONFLICT
 
-cdef class PY_SCIP_IMPLINTTYPE:
+class PY_SCIP_IMPLINTTYPE(IntEnum):
     NONE   = SCIP_IMPLINTTYPE_NONE
     WEAK   = SCIP_IMPLINTTYPE_WEAK
     STRONG = SCIP_IMPLINTTYPE_STRONG
 
-cdef class PY_SCIP_LPSOLSTAT:
+class PY_SCIP_LPSOLSTAT(IntEnum):
     NOTSOLVED    = SCIP_LPSOLSTAT_NOTSOLVED
     OPTIMAL      = SCIP_LPSOLSTAT_OPTIMAL
     INFEASIBLE   = SCIP_LPSOLSTAT_INFEASIBLE
@@ -290,25 +293,25 @@ cdef class PY_SCIP_LPSOLSTAT:
     TIMELIMIT    = SCIP_LPSOLSTAT_TIMELIMIT
     ERROR        = SCIP_LPSOLSTAT_ERROR
 
-cdef class PY_SCIP_BRANCHDIR:
+class PY_SCIP_BRANCHDIR(IntEnum):
     DOWNWARDS = SCIP_BRANCHDIR_DOWNWARDS
     UPWARDS   = SCIP_BRANCHDIR_UPWARDS
     FIXED     = SCIP_BRANCHDIR_FIXED
     AUTO      = SCIP_BRANCHDIR_AUTO
 
-cdef class PY_SCIP_BENDERSENFOTYPE:
+class PY_SCIP_BENDERSENFOTYPE(IntEnum):
     LP     = SCIP_BENDERSENFOTYPE_LP
     RELAX  = SCIP_BENDERSENFOTYPE_RELAX
     PSEUDO = SCIP_BENDERSENFOTYPE_PSEUDO
     CHECK  = SCIP_BENDERSENFOTYPE_CHECK
 
-cdef class PY_SCIP_ROWORIGINTYPE:
+class PY_SCIP_ROWORIGINTYPE(IntEnum):
     UNSPEC = SCIP_ROWORIGINTYPE_UNSPEC
     CONS   = SCIP_ROWORIGINTYPE_CONS
     SEPA   = SCIP_ROWORIGINTYPE_SEPA
     REOPT  = SCIP_ROWORIGINTYPE_REOPT
 
-cdef class PY_SCIP_SOLORIGIN:
+class PY_SCIP_SOLORIGIN(IntEnum):
     ORIGINAL  = SCIP_SOLORIGIN_ORIGINAL
     ZERO      = SCIP_SOLORIGIN_ZERO
     LPSOL     = SCIP_SOLORIGIN_LPSOL
@@ -393,7 +396,7 @@ cdef class Event:
         PY_SCIP_EVENTTYPE
 
         """
-        return SCIPeventGetType(self.event)
+        return PY_SCIP_EVENTTYPE(SCIPeventGetType(self.event))
 
     def getName(self):
         """
@@ -404,16 +407,7 @@ cdef class Event:
         str
 
         """
-        if not EventNames:
-            self._getEventNames()
-        return EventNames[self.getType()]
-
-    def _getEventNames(self):
-        """Gets event names."""
-        for name in dir(PY_SCIP_EVENTTYPE):
-            attr = getattr(PY_SCIP_EVENTTYPE, name)
-            if isinstance(attr, int):
-                EventNames[attr] = name
+        return self.getType().name
 
     def __repr__(self):
         return str(self.getType())
@@ -857,7 +851,7 @@ cdef class Row:
         PY_SCIP_ROWORIGINTYPE
 
         """
-        return SCIProwGetOrigintype(self.scip_row)
+        return PY_SCIP_ROWORIGINTYPE(SCIProwGetOrigintype(self.scip_row))
 
     def getConsOriginConshdlrtype(self):
         """
@@ -1145,7 +1139,7 @@ cdef class Solution:
         -------
         PY_SCIP_SOLORIGIN
         """
-        return SCIPsolGetOrigin(self.sol)
+        return PY_SCIP_SOLORIGIN(SCIPsolGetOrigin(self.sol))
 
     def retransform(self):
         """ retransforms solution to original problem space """
@@ -1361,7 +1355,7 @@ cdef class Node:
         PY_SCIP_NODETYPE
 
         """
-        return SCIPnodeGetType(self.scip_node)
+        return PY_SCIP_NODETYPE(SCIPnodeGetType(self.scip_node))
 
     def getLowerbound(self):
         """
@@ -1636,7 +1630,7 @@ cdef class Variable(Expr):
         -------
         PY_SCIP_IMPLINTTYPE
         """
-        return SCIPvarGetImplType(self.scip_var)
+        return PY_SCIP_IMPLINTTYPE(SCIPvarGetImplType(self.scip_var))
 
     def getStatus(self):
         """
@@ -4427,7 +4421,7 @@ cdef class Model:
         _heur = SCIPfindHeur(self._scip, n)
         if _heur == NULL:
             raise ValueError("Could not find heuristic <%s>" % heurname)
-        return SCIPheurGetTimingmask(_heur)
+        return PY_SCIP_HEURTIMING(SCIPheurGetTimingmask(_heur))
 
     def disablePropagation(self, onlyroot=False):
         """
@@ -5441,7 +5435,7 @@ cdef class Model:
         SCIP_LPSOLSTAT
 
         """
-        return SCIPgetLPSolstat(self._scip)
+        return PY_SCIP_LPSOLSTAT(SCIPgetLPSolstat(self._scip))
 
     def constructLP(self):
         """
@@ -11821,10 +11815,10 @@ cdef class Model:
 
         Returns
         -------
-        int
+        SCIP_STAGE
 
         """
-        return SCIPgetStage(self._scip)
+        return PY_SCIP_STAGE(SCIPgetStage(self._scip))
 
     def getStageName(self):
         """
@@ -11835,16 +11829,7 @@ cdef class Model:
         str
 
         """
-        if not StageNames:
-            self._getStageNames()
-        return StageNames[self.getStage()]
-
-    def _getStageNames(self):
-        """Gets names of stages."""
-        for name in dir(PY_SCIP_STAGE):
-            attr = getattr(PY_SCIP_STAGE, name)
-            if isinstance(attr, int):
-                StageNames[attr] = name
+        return self.getStage().name
 
     def getStatus(self):
         """
@@ -12927,7 +12912,7 @@ cdef class Model:
         """
         cdef SCIP_RESULT result
         PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
-        return result
+        return PY_SCIP_RESULT(result)
 
     def addRowExact(self, RowExact rowexact):
         """

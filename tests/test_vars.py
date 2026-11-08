@@ -71,7 +71,7 @@ def test_vtype():
     assert is_int(z) and not is_implint(z)  and is_bin(z)
     assert w.vtype() == "CONTINUOUS" and is_int(w) and is_implint(w) and not is_bin(w)
 
-    assert w.getImplType() == SCIP_IMPLINTTYPE.WEAK
+    assert w.getImplType() is SCIP_IMPLINTTYPE.WEAK
 
     m.chgVarType(x, 'I')
     assert x.vtype() == "INTEGER"
