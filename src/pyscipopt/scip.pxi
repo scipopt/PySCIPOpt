@@ -158,7 +158,6 @@ class PY_SCIP_STATUS(IntEnum):
     UNBOUNDED      = SCIP_STATUS_UNBOUNDED
     INFORUNBD      = SCIP_STATUS_INFORUNBD
 
-StageNames = {}
 class PY_SCIP_STAGE(IntEnum):
     INIT         = SCIP_STAGE_INIT
     PROBLEM      = SCIP_STAGE_PROBLEM
@@ -174,6 +173,8 @@ class PY_SCIP_STAGE(IntEnum):
     EXITSOLVE    = SCIP_STAGE_EXITSOLVE
     FREETRANS    = SCIP_STAGE_FREETRANS
     FREE         = SCIP_STAGE_FREE
+
+StageNames = {stage.value: stage.name for stage in PY_SCIP_STAGE}
 
 class PY_SCIP_NODETYPE(IntEnum):
     FOCUSNODE   = SCIP_NODETYPE_FOCUSNODE
@@ -213,7 +214,6 @@ class PY_SCIP_HEURTIMING(IntFlag):
     DURINGPRESOLLOOP  = SCIP_HEURTIMING_DURINGPRESOLLOOP
     AFTERPROPLOOP     = SCIP_HEURTIMING_AFTERPROPLOOP
 
-EventNames = {}
 class PY_SCIP_EVENTTYPE(IntFlag):
     DISABLED          = SCIP_EVENTTYPE_DISABLED
     VARADDED          = SCIP_EVENTTYPE_VARADDED
@@ -271,6 +271,8 @@ class PY_SCIP_EVENTTYPE(IntFlag):
     GAPUPDATED        = SCIP_EVENTTYPE_GAPUPDATED
     ROWCHANGED        = SCIP_EVENTTYPE_ROWCHANGED
     ROWEVENT          = SCIP_EVENTTYPE_ROWEVENT
+
+EventNames = {eventtype.value: eventtype.name for eventtype in PY_SCIP_EVENTTYPE.__members__.values()}
 
 class PY_SCIP_LOCKTYPE(IntEnum):
     MODEL    = SCIP_LOCKTYPE_MODEL
@@ -394,7 +396,7 @@ cdef class Event:
         PY_SCIP_EVENTTYPE
 
         """
-        return SCIPeventGetType(self.event)
+        return PY_SCIP_EVENTTYPE(SCIPeventGetType(self.event))
 
     def getName(self):
         """
@@ -405,16 +407,7 @@ cdef class Event:
         str
 
         """
-        if not EventNames:
-            self._getEventNames()
-        return EventNames[self.getType()]
-
-    def _getEventNames(self):
-        """Gets event names."""
-        for name in dir(PY_SCIP_EVENTTYPE):
-            attr = getattr(PY_SCIP_EVENTTYPE, name)
-            if isinstance(attr, int):
-                EventNames[attr] = name
+        return self.getType().name
 
     def __repr__(self):
         return str(self.getType())
@@ -858,7 +851,7 @@ cdef class Row:
         PY_SCIP_ROWORIGINTYPE
 
         """
-        return SCIProwGetOrigintype(self.scip_row)
+        return PY_SCIP_ROWORIGINTYPE(SCIProwGetOrigintype(self.scip_row))
 
     def getConsOriginConshdlrtype(self):
         """
@@ -1146,7 +1139,7 @@ cdef class Solution:
         -------
         PY_SCIP_SOLORIGIN
         """
-        return SCIPsolGetOrigin(self.sol)
+        return PY_SCIP_SOLORIGIN(SCIPsolGetOrigin(self.sol))
 
     def retransform(self):
         """ retransforms solution to original problem space """
@@ -1362,7 +1355,7 @@ cdef class Node:
         PY_SCIP_NODETYPE
 
         """
-        return SCIPnodeGetType(self.scip_node)
+        return PY_SCIP_NODETYPE(SCIPnodeGetType(self.scip_node))
 
     def getLowerbound(self):
         """
@@ -1637,7 +1630,7 @@ cdef class Variable(Expr):
         -------
         PY_SCIP_IMPLINTTYPE
         """
-        return SCIPvarGetImplType(self.scip_var)
+        return PY_SCIP_IMPLINTTYPE(SCIPvarGetImplType(self.scip_var))
 
     def getStatus(self):
         """
@@ -4428,7 +4421,7 @@ cdef class Model:
         _heur = SCIPfindHeur(self._scip, n)
         if _heur == NULL:
             raise ValueError("Could not find heuristic <%s>" % heurname)
-        return SCIPheurGetTimingmask(_heur)
+        return PY_SCIP_HEURTIMING(SCIPheurGetTimingmask(_heur))
 
     def disablePropagation(self, onlyroot=False):
         """
@@ -5442,7 +5435,7 @@ cdef class Model:
         SCIP_LPSOLSTAT
 
         """
-        return SCIPgetLPSolstat(self._scip)
+        return PY_SCIP_LPSOLSTAT(SCIPgetLPSolstat(self._scip))
 
     def constructLP(self):
         """
@@ -11822,10 +11815,10 @@ cdef class Model:
 
         Returns
         -------
-        int
+        SCIP_STAGE
 
         """
-        return SCIPgetStage(self._scip)
+        return PY_SCIP_STAGE(SCIPgetStage(self._scip))
 
     def getStageName(self):
         """
@@ -11836,16 +11829,7 @@ cdef class Model:
         str
 
         """
-        if not StageNames:
-            self._getStageNames()
-        return StageNames[self.getStage()]
-
-    def _getStageNames(self):
-        """Gets names of stages."""
-        for name in dir(PY_SCIP_STAGE):
-            attr = getattr(PY_SCIP_STAGE, name)
-            if isinstance(attr, int):
-                StageNames[attr] = name
+        return self.getStage().name
 
     def getStatus(self):
         """
@@ -12928,7 +12912,7 @@ cdef class Model:
         """
         cdef SCIP_RESULT result
         PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
-        return result
+        return PY_SCIP_RESULT(result)
 
     def addRowExact(self, RowExact rowexact):
         """

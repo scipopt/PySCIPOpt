@@ -81,6 +81,7 @@ class MyEvent(Eventhdlr):
             self.model.dropEvent(self.event_type, self)
 
     def eventexec(self, event):
+        assert isinstance(event.getType(), SCIP_EVENTTYPE)
         assert str(event) == event.getName()
         assert type(event.getName()) == str
 
@@ -126,19 +127,12 @@ class MyEvent(Eventhdlr):
 
 def test_event():
 
-    all_events = {}
-    for attr_name in dir(SCIP_EVENTTYPE):
-        if not attr_name.startswith('_'):
-            attr = getattr(SCIP_EVENTTYPE, attr_name)
-            if isinstance(attr, int):
-                all_events[attr_name] = attr
-    
     all_event_hdlrs = []
-    for event_name, event in all_events.items():
+    for event_name, event in SCIP_EVENTTYPE.__members__.items():
         s = Model()
         s.hideOutput()
         all_event_hdlrs.append(MyEvent())
-        all_event_hdlrs[-1].event_type = all_events[event_name]
+        all_event_hdlrs[-1].event_type = event
         s.includeEventhdlr(all_event_hdlrs[-1], str(event), "python event handler to catch %s" % str(event_name))
 
         x = {}

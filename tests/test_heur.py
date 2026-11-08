@@ -34,6 +34,7 @@ class SimpleRoundingHeuristic(Heur):
 
         # This heuristic does not run if the LP status is not optimal
         lpsolstat = scip.getLPSolstat()
+        assert isinstance(lpsolstat, SCIP_LPSOLSTAT)
         if lpsolstat != SCIP_LPSOLSTAT.OPTIMAL:
             return {"result": result}
 
@@ -133,5 +134,8 @@ def test_simple_round_heur():
 
 def test_heurTiming():
     model = Model()
-    model.setHeurTiming('rins', SCIP_HEURTIMING.BEFORENODE)
-    print("timing of rins: %d\n" % model.getHeurTiming('rins'))
+    timing = SCIP_HEURTIMING.BEFORENODE | SCIP_HEURTIMING.AFTERLPNODE
+    model.setHeurTiming('rins', timing)
+    returned_timing = model.getHeurTiming('rins')
+    assert isinstance(returned_timing, SCIP_HEURTIMING)
+    assert returned_timing == timing
