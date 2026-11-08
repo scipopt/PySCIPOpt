@@ -113,9 +113,8 @@ def test_nodesSharePath():
     child1 = m.createChild(0, m.getLocalEstimate())
     child2 = m.createChild(0, m.getLocalEstimate())
 
-    assert m.nodesSharePath(root, root) is True
-    assert m.nodesSharePath(child1, child1) is True
-    assert m.nodesSharePath(child2, child2) is True
+    for node in (root, child1, child2):
+        assert m.nodesSharePath(node, node) is True
 
     for child in (child1, child2):
         assert m.nodesSharePath(root, child) is True
@@ -123,3 +122,23 @@ def test_nodesSharePath():
 
     assert m.nodesSharePath(child1, child2) is False
     assert m.nodesSharePath(child2, child1) is False
+
+def test_nodesGetCommonAncestor():
+    m = random_mip_1(small=True, node_lim=1)
+    m.optimize()
+
+    root = m.getCurrentNode()
+    assert root is not None
+
+    child1 = m.createChild(0, m.getLocalEstimate())
+    child2 = m.createChild(0, m.getLocalEstimate())
+
+    for node in (root, child1, child2):
+        assert m.nodesGetCommonAncestor(node, node) == node
+
+    for child in (child1, child2):
+        assert m.nodesGetCommonAncestor(root, child) == root
+        assert m.nodesGetCommonAncestor(child, root) == root
+
+    assert m.nodesGetCommonAncestor(child1, child2) == root
+    assert m.nodesGetCommonAncestor(child2, child1) == root

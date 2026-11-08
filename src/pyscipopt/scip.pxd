@@ -756,6 +756,7 @@ cdef extern from "scip/scip.h":
     SCIP_NODE* SCIPgetFocusNode(SCIP* scip)
     SCIP_NODE* SCIPgetCurrentNode(SCIP* scip)
     SCIP_Bool SCIPnodesSharePath(SCIP_NODE* node1, SCIP_NODE* node2)
+    SCIP_NODE* SCIPnodesGetCommonAncestor(SCIP_NODE* node1, SCIP_NODE* node2)
     SCIP_NODE* SCIPnodeGetParent(SCIP_NODE* node)
     SCIP_Longint SCIPnodeGetNumber(SCIP_NODE* node)
     int SCIPnodeGetDepth(SCIP_NODE* node)

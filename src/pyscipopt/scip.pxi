@@ -3490,6 +3490,26 @@ cdef class Model:
         """
         return bool(SCIPnodesSharePath(node1.scip_node, node2.scip_node))
 
+    def nodesGetCommonAncestor(self, Node node1 not None, Node node2 not None):
+        """
+        Finds the common ancestor node of two given nodes.
+        If node1 and node2 are the same node, that node is returned.
+
+        Parameters
+        ----------
+        node1 : Node
+            First node to compare.
+        node2 : Node
+            Second node to compare.
+
+        Returns
+        -------
+        Node
+            The common ancestor closest to the given nodes.
+
+        """
+        return Node.create(SCIPnodesGetCommonAncestor(node1.scip_node, node2.scip_node))
+
     def getGap(self):
         """
         Retrieve the gap,
