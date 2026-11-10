@@ -2172,6 +2172,7 @@ cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
     int SCIPgetFocusDepth(SCIP* scip)
     SCIP_NODE* SCIPgetRootNode(SCIP* scip)
+    SCIP_Bool SCIPwasNodeLastBranchParent(SCIP* scip, SCIP_NODE* node)
     SCIP_RETCODE SCIPgetChildren(SCIP* scip, SCIP_NODE*** children, int* nchildren)
     SCIP_Longint SCIPgetNChildren(SCIP* scip)
     SCIP_NODE* SCIPgetBestChild(SCIP* scip)

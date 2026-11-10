@@ -3496,6 +3496,27 @@ cdef class Model:
         """
         return Node.create(SCIPgetCurrentNode(self._scip))
 
+    def wasNodeLastBranchParent(self, Node node=None):
+        """
+        Checks whether the node was the parent in the most recent branching of the tree.
+
+        Parameters
+        ----------
+        node : Node or None
+            A node of this model, or None to check the focus node.
+
+        Returns
+        -------
+        bool
+            Whether the node was the last branching parent. False if no branching
+            has occurred or no focus node exists when node is None.
+
+        """
+        cdef SCIP_NODE* scip_node = NULL
+        if node is not None:
+            scip_node = node.scip_node
+        return bool(SCIPwasNodeLastBranchParent(self._scip, scip_node))
+
     def nodesSharePath(self, Node node1 not None, Node node2 not None):
         """
         Checks for two nodes whether they share the same root path, i.e., whether one is an ancestor of the other.
