@@ -3474,12 +3474,13 @@ cdef class Model:
 
     def getRootNode(self):
         """
-        Gets the root node of the tree.
+        Gets the root node of the tree, or None if no root node exists.
 
         Returns
         -------
-        Node
-            The root node of the search tree.
+        Node or None
+            The root node of the search tree, or None if no root node exists
+            (e.g., after the problem has been solved to optimality).
 
         """
         return Node.create(SCIPgetRootNode(self._scip))
@@ -3517,7 +3518,7 @@ cdef class Model:
 
     def nodesGetCommonAncestor(self, Node node1 not None, Node node2 not None):
         """
-        Finds the common ancestor node of two given nodes.
+        Finds the common ancestor node of two given nodes, or None if no common ancestor is found.
         If node1 and node2 are the same node, that node is returned.
 
         Parameters
@@ -3529,8 +3530,9 @@ cdef class Model:
 
         Returns
         -------
-        Node
-            The common ancestor closest to the given nodes.
+        Node or None
+            The common ancestor closest to the given nodes, or None if no common ancestor is found
+            (e.g., if the nodes belong to different trees).
 
         """
         return Node.create(SCIPnodesGetCommonAncestor(node1.scip_node, node2.scip_node))
