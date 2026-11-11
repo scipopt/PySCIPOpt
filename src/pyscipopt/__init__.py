@@ -31,6 +31,7 @@ from pyscipopt.scip      import Sepa as Sepa
 from pyscipopt.scip      import Symhdlr as Symhdlr
 from pyscipopt.scip      import SymComp as SymComp
 from pyscipopt.scip      import LP as LP
+from pyscipopt.scip      import LPExact as LPExact
 from pyscipopt.scip      import IISfinder as IISfinder 
 from pyscipopt.scip      import PY_SCIP_LPPARAM as SCIP_LPPARAM
 from pyscipopt.scip      import PY_SCIP_BASESTAT as SCIP_BASESTAT

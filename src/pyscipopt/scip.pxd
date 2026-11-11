@@ -1702,9 +1702,54 @@ cdef extern from "scip/bendersdefcuts.h":
 cdef extern from "scip/rational.h":
     SCIP_RETCODE SCIPrationalCreate(SCIP_RATIONAL** rational)
     void SCIPrationalFree(SCIP_RATIONAL** rational)
+    SCIP_RETCODE SCIPrationalCreateArray(SCIP_RATIONAL*** rational, int size)
+    void SCIPrationalFreeArray(SCIP_RATIONAL*** ratarray, int size)
     void SCIPrationalSetString(SCIP_RATIONAL* res, const char* desc)
     int SCIPrationalToString(SCIP_RATIONAL* rational, char* str, int strlen)
     int SCIPrationalStrLen(SCIP_RATIONAL* rational)
+
+cdef extern from "lpiexact/type_lpiexact.h":
+    ctypedef struct SCIP_LPIEXACT:
+        pass
+
+cdef extern from "lpiexact/lpiexact.h":
+    const char* SCIPlpiExactGetSolverName()
+    SCIP_RETCODE SCIPlpiExactCreate(SCIP_LPIEXACT** lpi, SCIP_MESSAGEHDLR* messagehdlr, const char* name, SCIP_OBJSEN objsen)
+    SCIP_RETCODE SCIPlpiExactFree(SCIP_LPIEXACT** lpi)
+    SCIP_RETCODE SCIPlpiExactWriteLP(SCIP_LPIEXACT* lpi, const char* fname)
+    SCIP_RETCODE SCIPlpiExactReadLP(SCIP_LPIEXACT* lpi, const char* fname)
+    SCIP_RETCODE SCIPlpiExactAddCols(SCIP_LPIEXACT* lpi, int ncols, SCIP_RATIONAL** obj, SCIP_RATIONAL** lb, SCIP_RATIONAL** ub, char** colnames, int nnonz, int* beg, int* ind, SCIP_RATIONAL** val)
+    SCIP_RETCODE SCIPlpiExactDelCols(SCIP_LPIEXACT* lpi, int firstcol, int lastcol)
+    SCIP_RETCODE SCIPlpiExactAddRows(SCIP_LPIEXACT* lpi, int nrows, SCIP_RATIONAL** lhs, SCIP_RATIONAL** rhs, char** rownames, int nnonz, int* beg, int* ind, SCIP_RATIONAL** val)
+    SCIP_RETCODE SCIPlpiExactDelRows(SCIP_LPIEXACT* lpi, int firstrow, int lastrow)
+    SCIP_RETCODE SCIPlpiExactGetBounds(SCIP_LPIEXACT* lpi, int firstcol, int lastcol, SCIP_RATIONAL** lbs, SCIP_RATIONAL** ubs)
+    SCIP_RETCODE SCIPlpiExactGetRows(SCIP_LPIEXACT* lpi, int firstrow, int lastrow, SCIP_RATIONAL** lhs, SCIP_RATIONAL** rhs, int* nnonz, int* beg, int* ind, SCIP_RATIONAL** val)
+    SCIP_RETCODE SCIPlpiExactChgObj(SCIP_LPIEXACT* lpi, int ncols, int* ind, SCIP_RATIONAL** obj)
+    SCIP_RETCODE SCIPlpiExactChgCoef(SCIP_LPIEXACT* lpi, int row, int col, SCIP_RATIONAL* newval)
+    SCIP_RETCODE SCIPlpiExactChgBounds(SCIP_LPIEXACT* lpi, int ncols, int* ind, SCIP_RATIONAL** lb, SCIP_RATIONAL** ub)
+    SCIP_RETCODE SCIPlpiExactChgSides(SCIP_LPIEXACT* lpi, int nrows, int* ind, SCIP_RATIONAL** lhs, SCIP_RATIONAL** rhs)
+    SCIP_RETCODE SCIPlpiExactClear(SCIP_LPIEXACT* lpi)
+    SCIP_RETCODE SCIPlpiExactGetNRows(SCIP_LPIEXACT* lpi, int* nrows)
+    SCIP_RETCODE SCIPlpiExactGetNCols(SCIP_LPIEXACT* lpi, int* ncols)
+    SCIP_RETCODE SCIPlpiExactSolvePrimal(SCIP_LPIEXACT* lpi)
+    SCIP_RETCODE SCIPlpiExactSolveDual(SCIP_LPIEXACT* lpi)
+    SCIP_Bool SCIPlpiExactIsOptimal(SCIP_LPIEXACT* lpi)
+    SCIP_Bool SCIPlpiExactIsPrimalFeasible(SCIP_LPIEXACT* lpi)
+    SCIP_Bool SCIPlpiExactIsDualFeasible(SCIP_LPIEXACT* lpi)
+    SCIP_Bool SCIPlpiExactHasPrimalRay(SCIP_LPIEXACT* lpi)
+    SCIP_Bool SCIPlpiExactHasDualRay(SCIP_LPIEXACT* lpi)
+    SCIP_RETCODE SCIPlpiExactGetObjval(SCIP_LPIEXACT* lpi, SCIP_RATIONAL* objval)
+    SCIP_RETCODE SCIPlpiExactGetSol(SCIP_LPIEXACT* lpi, SCIP_RATIONAL* objval, SCIP_RATIONAL** primsol, SCIP_RATIONAL** dualsol, SCIP_RATIONAL** activity, SCIP_RATIONAL** redcost)
+    SCIP_RETCODE SCIPlpiExactGetPrimalRay(SCIP_LPIEXACT* lpi, SCIP_RATIONAL** ray)
+    SCIP_RETCODE SCIPlpiExactGetDualfarkas(SCIP_LPIEXACT* lpi, SCIP_RATIONAL** dualfarkas)
+    SCIP_RETCODE SCIPlpiExactGetIterations(SCIP_LPIEXACT* lpi, int* iterations)
+    SCIP_RETCODE SCIPlpiExactGetBasisInd(SCIP_LPIEXACT* lpi, int* bind)
+    SCIP_RETCODE SCIPlpiExactGetBase(SCIP_LPIEXACT* lpi, int* cstat, int* rstat)
+    SCIP_RETCODE SCIPlpiExactSetBase(SCIP_LPIEXACT* lpi, int* cstat, int* rstat)
+    SCIP_RETCODE SCIPlpiExactGetIntpar(SCIP_LPIEXACT* lpi, SCIP_LPPARAM type, int* ival)
+    SCIP_RETCODE SCIPlpiExactGetRealpar(SCIP_LPIEXACT* lpi, SCIP_LPPARAM type, SCIP_Real* dval)
+    SCIP_RETCODE SCIPlpiExactSetIntpar(SCIP_LPIEXACT* lpi, SCIP_LPPARAM type, int ival)
+    SCIP_RETCODE SCIPlpiExactSetRealpar(SCIP_LPIEXACT* lpi, SCIP_LPPARAM type, SCIP_Real dval)
 
 cdef extern from "scip/cons_exactlinear.h":
     SCIP_RETCODE SCIPcreateConsExactLinear(SCIP* scip,

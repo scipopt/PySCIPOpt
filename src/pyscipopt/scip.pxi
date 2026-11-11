@@ -7172,3 +7172,4 @@ def print_memory_in_use():
 
 include "model.pxi"
 include "exact.pxi"
+include "lpexact.pxi"
