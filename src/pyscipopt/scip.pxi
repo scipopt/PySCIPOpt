@@ -3459,6 +3459,32 @@ cdef class Model:
         """
         return Node.create(SCIPgetFocusNode(self._scip))
 
+    def getFocusDepth(self):
+        """
+        Gets depth of the focus node, or -1 if no focus node exists.
+        The focus node is the currently processed node in the branching tree, excluding the nodes of the probing path.
+
+        Returns
+        -------
+        int
+            The depth of the focus node, or -1 if no focus node exists.
+
+        """
+        return SCIPgetFocusDepth(self._scip)
+
+    def getRootNode(self):
+        """
+        Gets the root node of the tree, or None if no root node exists.
+
+        Returns
+        -------
+        Node or None
+            The root node of the search tree, or None if no root node exists
+            (e.g., after the problem has been solved to optimality).
+
+        """
+        return Node.create(SCIPgetRootNode(self._scip))
+
     def getCurrentNode(self):
         """
         Retrieve current node.
@@ -3469,6 +3495,68 @@ cdef class Model:
 
         """
         return Node.create(SCIPgetCurrentNode(self._scip))
+
+    def wasNodeLastBranchParent(self, Node node=None):
+        """
+        Checks whether the node was the parent in the most recent branching of the tree.
+
+        Parameters
+        ----------
+        node : Node or None
+            A node of this model, or None to check the focus node.
+
+        Returns
+        -------
+        bool
+            Whether the node was the last branching parent. False if no branching
+            has occurred or no focus node exists when node is None.
+
+        """
+        cdef SCIP_NODE* scip_node = NULL
+        if node is not None:
+            scip_node = node.scip_node
+        return bool(SCIPwasNodeLastBranchParent(self._scip, scip_node))
+
+    def nodesSharePath(self, Node node1 not None, Node node2 not None):
+        """
+        Checks for two nodes whether they share the same root path, i.e., whether one is an ancestor of the other.
+        If node1 and node2 are the same node, True is returned.
+
+        Parameters
+        ----------
+        node1 : Node
+            First node to compare.
+        node2 : Node
+            Second node to compare.
+
+        Returns
+        -------
+        bool
+            Whether the nodes share a root path.
+
+        """
+        return bool(SCIPnodesSharePath(node1.scip_node, node2.scip_node))
+
+    def nodesGetCommonAncestor(self, Node node1 not None, Node node2 not None):
+        """
+        Finds the common ancestor node of two given nodes, or None if no common ancestor is found.
+        If node1 and node2 are the same node, that node is returned.
+
+        Parameters
+        ----------
+        node1 : Node
+            First node to compare.
+        node2 : Node
+            Second node to compare.
+
+        Returns
+        -------
+        Node or None
+            The common ancestor closest to the given nodes, or None if no common ancestor is found
+            (e.g., if the nodes belong to different trees).
+
+        """
+        return Node.create(SCIPnodesGetCommonAncestor(node1.scip_node, node2.scip_node))
 
     def getGap(self):
         """
