@@ -9,6 +9,7 @@
 - Added tests for `getObjVal()` and `getVal()`
 - Added `addConsLinear()` to add linear constraints from variables and coefficients without building an expression
 ### Fixed
+- Fixed `MatrixVariable.varMayRound()` rounding direction
 - Fixed `lotsizing_lazy` example: lock the handler's variables in `conslock` so presolve cannot aggregate them away (#1252)
 - Dual and Farkas getters for linear, knapsack, and logicor constraints now return zero when presolving has removed them.
 - Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).

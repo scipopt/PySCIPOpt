@@ -2186,7 +2186,7 @@ class MatrixVariable(MatrixExpr):
         """
         mayround = np.empty(self.shape, dtype=bool)
         for idx in np.ndindex(self.shape):
-            mayround[idx] = self[idx].varMayRound()
+            mayround[idx] = self[idx].varMayRound(direction)
         return mayround
 
 cdef class Constraint:
