@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added the `Symhdlr` plugin base class and `SymComp` with `includeSymhdlr()`, `inferVarLbSym()` and `inferVarUbSym()` for SCIP 11 symmetry handlers
 - Added the following methods with tests: `nodesSharePath()`, `nodesGetCommonAncestor()`, `getFocusDepth()`, `getRootNode()`, `wasNodeLastBranchParent()`
 - Added `getCountedSols()` to retrieve the solutions collected by `count()` (#906)
 - Added docstrings to the bundled stubs in release wheels for Python 3.10 and later.
