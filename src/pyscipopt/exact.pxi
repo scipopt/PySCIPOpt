@@ -56,9 +56,13 @@ cdef class ExactModel(BaseModel):
     """
     Model that solves exactly over the rationals.
 
-    Construction enables SCIP's exact solving mode. The rational variable,
-    constraint and solution methods are not available yet, so only the methods
-    shared with Model through BaseModel can be used.
+    Warning: SCIP has to be compiled with exact solving capabilities.
+    Please see https://www.scipopt.org/doc-10.0.0/html/EXACT.php. 
+    
+    As of version 6.3.0, almost no exact methods are available, only
+    reading models with rational data and solving them exactly is possible.
+    
+    
     """
 
     def __init__(self, problemName='model', defaultPlugins=True, createscip=True, threadsafe=False):

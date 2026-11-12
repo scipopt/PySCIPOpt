@@ -531,7 +531,7 @@ cdef class NLRow:
 
 
 cdef class Model(BaseModel):
-    """Model solving with floating-point arithmetic."""
+    """This class contains methods that may use floating-point arithmetic, as opposed to exact SCIP models using rational arithmetic."""
 
     def getFirstPrimalBound(self):
         """
@@ -1723,7 +1723,6 @@ cdef class Model(BaseModel):
         """
         return SCIPgetColRedcost(self._scip, col.scip_col)
 
-    #TODO: documentation!!
     # LP Row Methods
     def createEmptyRowSepa(self, Sepa sepa, name="row", lhs = 0.0, rhs = None, local = True, modifiable = False, removable = True):
         """
