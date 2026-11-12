@@ -23,7 +23,7 @@ BASE_MODEL_METHODS = frozenset({
     "getBestChild", "getBestLeaf", "getBestNode", "getBestSibling", "getBestSol",
     "getBestboundNode", "getBranchScoreMultiple", "getChildren", "getCondition",
     "getConsNVars", "getConss", "getCountedSols", "getCurrentNode", "getDepth",
-    "getDeterministicTime", "getFocusNode", "getGap", "getHeurTiming", "getIIS",
+    "getDeterministicTime", "getFocusDepth", "getFocusNode", "getGap", "getHeurTiming", "getIIS",
     "getLPBasisInd", "getLeaves", "getMajorVersion", "getMaxDepth", "getMaxTotalDepth",
     "getMemExternEstim", "getMemTotal", "getMemUsed", "getMinorVersion", "getNBacktracks",
     "getNBestSolsFound", "getNBinVars", "getNChildren", "getNConss", "getNContVars",
@@ -35,7 +35,7 @@ BASE_MODEL_METHODS = frozenset({
     "getNStrongbranchLPIterations", "getNTotalNodes", "getNVars", "getObjVal", "getObjectiveSense",
     "getOpenNodes", "getParam", "getParams", "getPlungeDepth", "getPresolvingTime",
     "getPrimalDualIntegral", "getPrioChild", "getPrioSibling", "getProbName", "getProbingDepth",
-    "getPseudoBranchCands", "getReadingTime", "getSiblings", "getSolTime", "getSols",
+    "getPseudoBranchCands", "getReadingTime", "getRootNode", "getSiblings", "getSolTime", "getSols",
     "getSolvingTime", "getStage", "getStageName", "getStatus", "getTechVersion",
     "getTotalTime", "getTransformedCons", "getTransformedVar", "getTreesizeEstimation", "getVarPseudocost",
     "getVarPseudocostScore", "getVarStrongbranchNode", "getVars", "hasPrimalRay", "hideOutput",
@@ -44,7 +44,7 @@ BASE_MODEL_METHODS = frozenset({
     "includeHeur", "includeIISfinder", "includeNodesel", "includePresol", "includePricer",
     "includeProp", "includeReader", "includeRelax", "includeSepa", "initBendersDefault",
     "interruptSolve", "isLPSolBasic", "isObjChangedProbing", "isObjIntegral", "isReoptEnabled",
-    "lpiGetIterations", "markDoNotAggrVar", "markDoNotMultaggrVar", "newProbingNode", "optimize",
+    "lpiGetIterations", "markDoNotAggrVar", "markDoNotMultaggrVar", "newProbingNode", "nodesGetCommonAncestor", "nodesSharePath", "optimize",
     "optimizeNogil", "presolve", "printCons", "printExternalCodeVersions", "printProblem",
     "printStatistics", "printStatisticsJson", "printVersion", "propagateProbing", "readParams",
     "readProblem", "redirectOutput", "relax", "repropagateNode", "resetParam",
@@ -56,7 +56,7 @@ BASE_MODEL_METHODS = frozenset({
     "setRemovable", "setSeparating", "setStringParam", "setupBendersSubproblem", "solveBendersSubproblem",
     "solveConcurrent", "solveProbingLP", "solveProbingLPWithPricing", "startProbing", "startStrongbranch",
     "to_ptr", "translateSubSol", "updateBendersLowerbounds", "updateVarPseudocost", "version",
-    "writeName", "writeParams", "writeProblem", "writeStatistics", "writeStatisticsJson",
+    "wasNodeLastBranchParent", "writeName", "writeParams", "writeProblem", "writeStatistics", "writeStatisticsJson",
 })
 
 SUBCLASS_CONTRACT = frozenset({"addCons", "getSolObjVal"})

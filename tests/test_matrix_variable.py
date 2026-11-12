@@ -481,6 +481,20 @@ def test_MatrixVariable_attributes():
     assert x.getAvgSol().tolist() == [[5, 6], [2, 8]]
     assert x.varMayRound().tolist() == [[True, True], [True, True]]
 
+
+def test_matrix_var_may_round_direction():
+    m = Model()
+    x = m.addMatrixVar((2,), vtype="I")
+    # downward rounding is blocked; upward rounding is allowed
+    m.addVarLocks(x[0], nlocksdown=1, nlocksup=0)
+    # downward rounding is allowed; upward rounding is blocked
+    m.addVarLocks(x[1], nlocksdown=0, nlocksup=1)
+
+    assert x.varMayRound().tolist() == [False, True]
+    assert x.varMayRound("down").tolist() == [False, True]
+    assert x.varMayRound("up").tolist() == [True, False]
+
+
 @pytest.mark.skip(reason="Performance test")
 def test_add_cons_performance():
     start_orig = time()

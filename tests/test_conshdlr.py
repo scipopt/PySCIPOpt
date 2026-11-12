@@ -1,3 +1,8 @@
+import os
+import runpy
+
+import pytest
+
 from pyscipopt import Model, Conshdlr, SCIP_RESULT, SCIP_PRESOLTIMING, SCIP_PROPTIMING, SCIP_LOCKTYPE
 from sys import version_info
 
@@ -274,3 +279,10 @@ def test_conshdlr():
     #assert "consdelvars" in calls
     #assert "consprint" in calls
     assert "consgetnvars" in calls
+
+
+def test_lotsizing_lazy_example():
+    example = os.path.join(os.path.dirname(__file__), "..", "examples", "finished", "lotsizing_lazy.py")
+    ns = runpy.run_path(example, run_name="__main__")
+    assert ns["sils_obj"] == pytest.approx(57)
+    assert ns["sils_cut_obj"] == pytest.approx(57)

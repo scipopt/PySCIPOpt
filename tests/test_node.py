@@ -101,3 +101,44 @@ def test_getFocusNode_and_getCurrentNode():
 
     m.includeEventhdlr(ProbingNodeChecker(), "Probing Node Checker", "test if getFocusNode and getCurrentNode work correctly")
     m.optimize()
+
+def test_nodesSharePath():
+    m = random_mip_1(small=True, node_lim=1)
+    m.optimize()
+
+    root = m.getCurrentNode()
+    assert root is not None
+
+    # create two children of the root node
+    child1 = m.createChild(0, m.getLocalEstimate())
+    child2 = m.createChild(0, m.getLocalEstimate())
+
+    for node in (root, child1, child2):
+        assert m.nodesSharePath(node, node) is True
+
+    for child in (child1, child2):
+        assert m.nodesSharePath(root, child) is True
+        assert m.nodesSharePath(child, root) is True
+
+    assert m.nodesSharePath(child1, child2) is False
+    assert m.nodesSharePath(child2, child1) is False
+
+def test_nodesGetCommonAncestor():
+    m = random_mip_1(small=True, node_lim=1)
+    m.optimize()
+
+    root = m.getCurrentNode()
+    assert root is not None
+
+    child1 = m.createChild(0, m.getLocalEstimate())
+    child2 = m.createChild(0, m.getLocalEstimate())
+
+    for node in (root, child1, child2):
+        assert m.nodesGetCommonAncestor(node, node) == node
+
+    for child in (child1, child2):
+        assert m.nodesGetCommonAncestor(root, child) == root
+        assert m.nodesGetCommonAncestor(child, root) == root
+
+    assert m.nodesGetCommonAncestor(child1, child2) == root
+    assert m.nodesGetCommonAncestor(child2, child1) == root

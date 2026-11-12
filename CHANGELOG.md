@@ -2,12 +2,15 @@
 
 ## Unreleased
 ### Added
+- Added the following methods with tests: `nodesSharePath()`, `nodesGetCommonAncestor()`, `getFocusDepth()`, `getRootNode()`, `wasNodeLastBranchParent()`
 - Added `getCountedSols()` to retrieve the solutions collected by `count()` (#906)
 - Added docstrings to the bundled stubs in release wheels for Python 3.10 and later.
 - Added more type annotations and deprecation markers to the stubs.
 - Added tests for `getObjVal()` and `getVal()`
 - Added `addConsLinear()` to add linear constraints from variables and coefficients without building an expression
 ### Fixed
+- Fixed `MatrixVariable.varMayRound()` rounding direction
+- Fixed `lotsizing_lazy` example: lock the handler's variables in `conslock` so presolve cannot aggregate them away (#1252)
 - Dual and Farkas getters for linear, knapsack, and logicor constraints now return zero when presolving has removed them.
 - Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
 - Fixed `getDualsolKnapsack()` and `getDualfarkasKnapsack()` returning 0 for original constraints, and the handler check in `getVarsAnd()` that could never fail
