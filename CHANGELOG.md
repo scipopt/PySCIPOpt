@@ -7,6 +7,7 @@
 - Added more type annotations and deprecation markers to the stubs.
 - Added tests for `getObjVal()` and `getVal()`
 - Added `addConsLinear()` to add linear constraints from variables and coefficients without building an expression
+- Added `LPExact` to build and solve LPs in exact rational arithmetic through SCIP 11's exact LP interface
 ### Fixed
 - Fixed `lotsizing_lazy` example: lock the handler's variables in `conslock` so presolve cannot aggregate them away (#1252)
 - Dual and Farkas getters for linear, knapsack, and logicor constraints now return zero when presolving has removed them.
