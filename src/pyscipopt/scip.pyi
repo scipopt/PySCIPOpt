@@ -345,6 +345,15 @@ class Eventhdlr:
     def eventinit(self) -> Incomplete: ...
     def eventinitsol(self) -> Incomplete: ...
 
+class ExactModel(BaseModel):
+    def __init__(
+        self,
+        problemName: str = "model",
+        defaultPlugins: bool = True,
+        createscip: bool = True,
+        threadsafe: bool = False,
+    ) -> None: ...
+
 @disjoint_base
 class ExprLike:
     def __array_ufunc__(

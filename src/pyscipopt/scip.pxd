@@ -2342,8 +2342,13 @@ cdef class BaseModel:
     cdef SCIP_BENDERS* _getBenders(self, object benders)
     cdef SCIP_HEUR* _getHeur(self, object heur)
 
+    cdef _configureScip(self)
+
     @staticmethod
     cdef create(SCIP* scip)
 
 cdef class Model(BaseModel):
+    pass
+
+cdef class ExactModel(BaseModel):
     pass

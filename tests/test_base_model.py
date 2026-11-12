@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from pyscipopt import BaseModel, Eventhdlr, Model
+from pyscipopt.scip import ExactModel
 
 SCIP_PXI = Path(__file__).resolve().parents[1] / "src" / "pyscipopt" / "scip.pxi"
 MODEL_PXI = SCIP_PXI.with_name("model.pxi")
@@ -158,3 +159,14 @@ def test_plugin_sees_the_same_model_object():
     m.hideOutput()
     m.optimize()
     assert seen and seen[0] is m and isinstance(seen[0], BaseModel)
+
+
+def test_exact_model_skeleton():
+    assert ExactModel.__mro__[:2] == (ExactModel, BaseModel)
+    try:
+        m = ExactModel()
+    except ValueError:
+        pytest.skip("SCIP was built without exact solving support")
+    assert not isinstance(m, Model)
+    assert not hasattr(m, "addCons")
+    assert m.getNVars() == 0

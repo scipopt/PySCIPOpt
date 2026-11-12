@@ -64,8 +64,14 @@ cdef extern from "scip/config.h":
     #else
     #define PYSCIPOPT_WITH_DEBUG_SOLUTION 0
     #endif
+    #ifdef SCIP_WITH_EXACTSOLVE
+    #define PYSCIPOPT_WITH_EXACTSOLVE 1
+    #else
+    #define PYSCIPOPT_WITH_EXACTSOLVE 0
+    #endif
     """
     bint PYSCIPOPT_WITH_DEBUG_SOLUTION
+    bint PYSCIPOPT_WITH_EXACTSOLVE
 
 # Mapping the SCIP_RESULT enum to a python class
 # This is required to return SCIP_RESULT in the python code
@@ -486,56 +492,6 @@ cdef class Event:
     def __eq__(self, other):
         return (self.__class__ == other.__class__
                 and self.event == (<Event>other).event)
-
-cdef class ColumnExact:
-    """Base class holding a pointer to corresponding SCIP_COLEXACT."""
-
-    @staticmethod
-    cdef create(SCIP_COLEXACT* scipcolexact):
-        """
-        Main method for creating a ColumnExact class. Is used instead of __init__.
-
-        Parameters
-        ----------
-        scipcolexact : SCIP_COLEXACT*
-            A pointer to the SCIP_COLEXACT
-
-        Returns
-        -------
-        col : ColumnExact
-            The Python representative of the SCIP_COLEXACT
-
-        """
-        if scipcolexact == NULL:
-            raise Warning("cannot create ColumnExact with SCIP_COLEXACT* == NULL")
-        col = ColumnExact()
-        col.scip_col_exact = scipcolexact
-        return col
-
-cdef class RowExact:
-    """Base class holding a pointer to corresponding SCIP_ROW."""
-
-    @staticmethod
-    cdef create(SCIP_ROWEXACT* sciprowexact):
-        """
-        Main method for creating a RowExact class. Is used instead of __init__.
-
-        Parameters
-        ----------
-        sciprow : SCIP_ROWEXACT*
-            A pointer to the SCIP_ROWEXACT
-
-        Returns
-        -------
-        row : Row
-            The Python representative of the SCIP_ROWEXACT
-
-        """
-        if sciprowexact == NULL:
-            raise Warning("cannot create Row with SCIP_ROWEXACT* == NULL")
-        row_exact = RowExact()
-        row_exact.scip_row_exact = sciprowexact
-        return row_exact
 
 cdef class Solution:
     """Base class holding a pointer to corresponding SCIP_SOL."""
@@ -2317,6 +2273,7 @@ cdef class BaseModel:
             self._bestSol = None
             if defaultPlugins:
                 self.includeDefaultPlugins()
+            self._configureScip()
             self.createProbBasic(problemName)
         else:
             PY_SCIP_CALL(SCIPcreate(&self._scip))
@@ -2384,6 +2341,9 @@ cdef class BaseModel:
         ``Model.free`` for the full lifecycle policy.
         """
         self._free_scip_instance()
+
+    cdef _configureScip(self):
+        pass
 
     def __dealloc__(self):
         """Fallback SCIP cleanup if ``__del__`` did not already free the instance."""
@@ -7189,3 +7149,4 @@ def print_memory_in_use():
     BMScheckEmptyMemory()
 
 include "model.pxi"
+include "exact.pxi"
