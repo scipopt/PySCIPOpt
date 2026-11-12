@@ -107,7 +107,7 @@ class StubGenerator:
         'BaseModel', 'Benders', 'Benderscut', 'BoundChange', 'Branchrule', 'Column', 'ColumnExact',
         'Conshdlr', 'Constant', 'Constraint', 'Cutsel', 'DomainChanges', 'Event',
         'Eventhdlr', 'Expr', 'ExprCons', 'GenExpr', 'Heur', 'IIS', 'IISfinder',
-        'LP', 'NLRow', 'Node', 'Nodesel', 'PowExpr', 'Presol', 'Pricer',
+        'LP', 'LPExact', 'NLRow', 'Node', 'Nodesel', 'PowExpr', 'Presol', 'Pricer',
         'ProdExpr', 'Prop', 'Reader', 'Relax', 'Row', 'RowExact', 'Sepa', 'Solution',
         'SumExpr', 'Term', 'UnaryExpr', 'Variable', '_VarArray',
     }
