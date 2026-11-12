@@ -7,6 +7,7 @@ from pyscipopt import BaseModel, Eventhdlr, Model
 from pyscipopt.scip import ExactModel
 
 SCIP_PXI = Path(__file__).resolve().parents[1] / "src" / "pyscipopt" / "scip.pxi"
+BASEMODEL_PXI = SCIP_PXI.with_name("basemodel.pxi")
 MODEL_PXI = SCIP_PXI.with_name("model.pxi")
 
 BASE_MODEL_METHODS = frozenset({
@@ -108,7 +109,7 @@ def test_subclass_contract_is_implemented_by_model():
 
 
 def test_base_model_calls_only_shared_methods():
-    base = class_members(SCIP_PXI, "cdef class BaseModel:")
+    base = class_members(BASEMODEL_PXI, "cdef class BaseModel:")
     model_only = set(class_members(MODEL_PXI, "cdef class Model(BaseModel):")) - set(base)
     offenders = {}
     for name, body in base.items():
@@ -120,7 +121,7 @@ def test_base_model_calls_only_shared_methods():
 
 
 def test_base_model_has_no_fp_markers():
-    base = class_members(SCIP_PXI, "cdef class BaseModel:")
+    base = class_members(BASEMODEL_PXI, "cdef class BaseModel:")
     hits = {name for name, body in base.items() if FP_MARKERS.search(body)}
     assert hits - FP_ALLOWED == set()
 
