@@ -590,6 +590,7 @@ cdef extern from "scip/scip.h":
                           const char*           suffix,
                           SCIP_Bool             globalcopy,
                           SCIP_Bool             enablepricing,
+                          SCIP_Bool             copysymhdlrs,
                           SCIP_Bool             threadsafe,
                           SCIP_Bool             passmessagehdlr,
                           SCIP_Bool*            valid)
@@ -599,6 +600,7 @@ cdef extern from "scip/scip.h":
                               SCIP_HASHMAP*         consmap,
                               const char*           suffix,
                               SCIP_Bool             enablepricing,
+                              SCIP_Bool             copysymhdlrs,
                               SCIP_Bool             threadsafe,
                               SCIP_Bool             passmessagehdlr,
                               SCIP_Bool*            valid)
@@ -781,7 +783,7 @@ cdef extern from "scip/scip.h":
     void SCIPnodeGetAddedConss(SCIP_NODE* node, SCIP_CONS** addedconss,
                                int* naddedconss, int addedconsssize)
     void SCIPnodeGetNDomchg(SCIP_NODE* node, int* nbranchings, int* nconsprop,
-                            int* nprop)
+                            int* nprop, int* nsymprop)
     SCIP_DOMCHG* SCIPnodeGetDomchg(SCIP_NODE* node)
 
     # Domain change methods
@@ -1235,6 +1237,7 @@ cdef extern from "scip/scip.h":
                                       const char* name,
                                       const char* desc,
                                       int         priority,
+                                      SCIP_Bool   enable,
                                       SCIP_RETCODE (*iisfindercopy) (SCIP* scip, SCIP_IISFINDER* iisfinder),
                                       SCIP_RETCODE (*iisfinderfree) (SCIP* scip, SCIP_IISFINDER* iisfinder),
                                       SCIP_RETCODE (*iisfinderexec) (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_RESULT* result),

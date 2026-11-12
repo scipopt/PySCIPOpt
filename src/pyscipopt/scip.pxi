@@ -1503,7 +1503,7 @@ cdef class Node:
         cdef int nbranchings
         cdef int nconsprop
         cdef int nprop
-        SCIPnodeGetNDomchg(self.scip_node, &nbranchings, &nconsprop, &nprop)
+        SCIPnodeGetNDomchg(self.scip_node, &nbranchings, &nconsprop, &nprop, NULL)
         return nbranchings, nconsprop, nprop
 
     def getDomchg(self):
@@ -2854,9 +2854,9 @@ cdef class Model:
             self._bestSol = <Solution> sourceModel._bestSol
             n = str_conversion(problemName)
             if origcopy:
-                PY_SCIP_CALL(SCIPcopyOrig(sourceModel._scip, self._scip, NULL, NULL, n, enablepricing, threadsafe, True, self._valid))
+                PY_SCIP_CALL(SCIPcopyOrig(sourceModel._scip, self._scip, NULL, NULL, n, enablepricing, True, threadsafe, True, self._valid))
             else:
-                PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, threadsafe, True, self._valid))
+                PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, True, threadsafe, True, self._valid))
 
     def attachEventHandlerCallback(self,
         callback,
@@ -10328,7 +10328,7 @@ cdef class Model:
 
         iisfinder.iis = IIS()
 
-        PY_SCIP_CALL(SCIPincludeIISfinder(self._scip, nam, des, priority, PyiisfinderCopy, PyiisfinderFree,
+        PY_SCIP_CALL(SCIPincludeIISfinder(self._scip, nam, des, priority, True, PyiisfinderCopy, PyiisfinderFree,
                                          PyiisfinderExec, <SCIP_IISFINDERDATA*> iisfinder))
 
         scip_iisfinder = SCIPfindIISfinder(self._scip, nam)

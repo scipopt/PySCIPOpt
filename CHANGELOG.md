@@ -15,6 +15,7 @@
 - Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
 - Fixed `getDualsolKnapsack()` and `getDualfarkasKnapsack()` returning 0 for original constraints, and the handler check in `getVarsAnd()` that could never fail
 ### Changed
+- Adapted to the SCIP 11 API: new `copysymhdlrs` argument of `SCIPcopy`/`SCIPcopyOrig`, `nsymprop` of `SCIPnodeGetNDomchg` and `enable` of `SCIPincludeIISfinder`; SCIP 11 is now required
 - Replaced `format()` with f-strings in examples
 - Refactor general expression conversion into per-class `to_scip_expr` recursion
 - Made expression fields read-only to prevent accidental runtime modification
