@@ -3,8 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from pyscipopt import BaseModel, Eventhdlr, Model
-from pyscipopt.scip import ExactModel
+from pyscipopt import BaseModel, Eventhdlr, ExactModel, Model
 
 SCIP_PXI = Path(__file__).resolve().parents[1] / "src" / "pyscipopt" / "scip.pxi"
 BASEMODEL_PXI = SCIP_PXI.with_name("basemodel.pxi")
@@ -164,6 +163,9 @@ def test_plugin_sees_the_same_model_object():
 
 def test_exact_model_skeleton():
     assert ExactModel.__mro__[:2] == (ExactModel, BaseModel)
+    assert {"addRow", "allowNegSlack", "branchLP"} <= set(vars(ExactModel))
+    with pytest.warns(DeprecationWarning):
+        Model().isExact()
     try:
         m = ExactModel()
     except ValueError:

@@ -5880,7 +5880,14 @@ cdef class Model(BaseModel):
         ----------
         enable : SCIP_Bool
             Whether to enable exact solving mode (True) or disable it (False).
+
+        Deprecated since 6.3.0; construct an ExactModel instead.
         """
+        warnings.warn(
+            "enableExactSolving() is deprecated and will be removed in PySCIPOpt 7.0.0; construct an ExactModel instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
 
         PY_SCIP_CALL(SCIPenableExactSolving(self._scip, enable))
 
@@ -5891,7 +5898,14 @@ cdef class Model(BaseModel):
         Returns
         -------
         bool
+
+        Deprecated since 6.3.0; exact models are instances of ExactModel.
         """
+        warnings.warn(
+            "isExact() is deprecated and will be removed in PySCIPOpt 7.0.0; exact models are instances of ExactModel.",
+            DeprecationWarning,
+            stacklevel=2
+        )
 
         return SCIPisExact(self._scip)
 
@@ -5902,7 +5916,14 @@ cdef class Model(BaseModel):
         Returns
         -------
         bool
+
+        Deprecated since 6.3.0; use ExactModel.allowNegSlack() instead.
         """
+        warnings.warn(
+            "allowNegSlackExact() is deprecated and will be removed in PySCIPOpt 7.0.0; use ExactModel.allowNegSlack() instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
 
         return SCIPallowNegSlack(self._scip)
     
@@ -5913,7 +5934,14 @@ cdef class Model(BaseModel):
         Returns
         -------
         SCIP_RESULT
+
+        Deprecated since 6.3.0; use ExactModel.branchLP() instead.
         """
+        warnings.warn(
+            "branchLPExact() is deprecated and will be removed in PySCIPOpt 7.0.0; use ExactModel.branchLP() instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         cdef SCIP_RESULT result
         PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
         return result
@@ -5926,7 +5954,14 @@ cdef class Model(BaseModel):
         ----------
         rowexact : RowExact
             The exact row to add.
+
+        Deprecated since 6.3.0; use ExactModel.addRow() instead.
         """
+        warnings.warn(
+            "addRowExact() is deprecated and will be removed in PySCIPOpt 7.0.0; use ExactModel.addRow() instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         PY_SCIP_CALL(SCIPaddRowExact(self._scip, rowexact.scip_row_exact))
 
     def getBipartiteGraphRepresentation(self, prev_col_features=None, prev_edge_features=None, prev_row_features=None,
