@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from pyscipopt import BaseModel, Eventhdlr, ExactModel, Model
+from pyscipopt import BaseModel, Eventhdlr, ExactModel, ExactSolution, ExactVariable, Model, Variable
 
 SCIP_PXI = Path(__file__).resolve().parents[1] / "src" / "pyscipopt" / "scip.pxi"
 BASEMODEL_PXI = SCIP_PXI.with_name("basemodel.pxi")
@@ -161,7 +161,7 @@ def test_plugin_sees_the_same_model_object():
     assert seen and seen[0] is m and isinstance(seen[0], BaseModel)
 
 
-def test_exact_model_skeleton():
+def test_exact_model_skeleton(tmp_path):
     assert ExactModel.__mro__[:2] == (ExactModel, BaseModel)
     assert {"addRow", "allowNegSlack", "branchLP"} <= set(vars(ExactModel))
     with pytest.warns(DeprecationWarning):
@@ -173,3 +173,18 @@ def test_exact_model_skeleton():
     assert not isinstance(m, Model)
     assert not hasattr(m, "addCons")
     assert m.getNVars() == 0
+    assert type(Model().addVar()) is Variable
+    path = tmp_path / "exact.lp"
+    path.write_text("Minimize\n obj: x + 3 y\nSubject To\n c1: 2 x + 3 y >= 1\nBounds\n 0 <= x <= 10\n 0 <= y <= 10\nGeneral\n x\nEnd\n")
+    m.hideOutput()
+    m.readProblem(str(path))
+    m.optimize()
+    assert all(type(v) is ExactVariable for v in m.getVars())
+    sol = m.getBestSol()
+    assert type(sol) is ExactSolution
+    x = m.getVars()[0]
+    assert x.name == "x" and x.vtype() == "INTEGER"
+    with pytest.raises(NotImplementedError):
+        x.getLbLocal()
+    with pytest.raises(NotImplementedError):
+        sol[x]

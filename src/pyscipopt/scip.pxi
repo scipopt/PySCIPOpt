@@ -1,5 +1,7 @@
 ##@file scip.pxi
-#@brief holding functions in python that reference the SCIP public functions included in scip.pxd
+#@brief Core of the pyscipopt.scip module: constants, error handling and the wrappers both model classes share
+# (Variable, Constraint, Solution, Node, Event, IIS). Model methods go to basemodel.pxi if they are correct for
+# exact solving too, otherwise to model.pxi; exact-only code goes to exact.pxi.
 from os.path import abspath
 from os.path import splitext
 import os
@@ -386,7 +388,10 @@ cdef class Event:
         """
         if scip_event == NULL:
             raise Warning("cannot create Event with SCIP_EVENT* == NULL")
-        event = Event()
+        if SCIPeventGetType(scip_event) & (SCIP_EVENTTYPE_VARADDED | SCIP_EVENTTYPE_VARCHANGED) and SCIPvarIsExact(SCIPeventGetVar(scip_event)):
+            event = ExactEvent()
+        else:
+            event = Event()
         event.event = scip_event
         return event
 
@@ -522,7 +527,7 @@ cdef class Solution:
         """
         if scip == NULL:
             raise Warning("cannot create Solution with SCIP* == NULL")
-        sol = Solution(raise_error=False)
+        sol = ExactSolution(raise_error=False) if scip_sol != NULL and SCIPsolIsExact(scip_sol) else Solution(raise_error=False)
         sol.sol = scip_sol
         sol.scip = scip
         return sol
@@ -616,7 +621,7 @@ cdef class BoundChange:
         """
         if scip_boundchg == NULL:
             raise Warning("cannot create BoundChange with SCIP_BOUNDCHG* == NULL")
-        boundchg = BoundChange()
+        boundchg = ExactBoundChange() if SCIPvarIsExact(SCIPboundchgGetVar(scip_boundchg)) else BoundChange()
         boundchg.scip_boundchg = scip_boundchg
         return boundchg
 
@@ -973,7 +978,7 @@ cdef class Variable(Expr):
         """
         if scipvar == NULL:
             raise Warning("cannot create Variable with SCIP_VAR* == NULL")
-        var = Variable()
+        var = ExactVariable() if SCIPvarIsExact(scipvar) else Variable()
         var.scip_var = scipvar
         Expr.__init__(var, {Term(var) : 1.0})
         return var

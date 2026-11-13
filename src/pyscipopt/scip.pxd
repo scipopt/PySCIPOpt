@@ -855,6 +855,7 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsActive(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsExact(SCIP_VAR* var)
     SCIP_COL* SCIPvarGetCol(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsInLP(SCIP_VAR* var)
     SCIP_Real SCIPvarGetLbOriginal(SCIP_VAR* var)
@@ -961,6 +962,7 @@ cdef extern from "scip/scip.h":
     SCIP_SOL* SCIPgetBestSol(SCIP* scip)
     SCIP_Real SCIPgetSolVal(SCIP* scip, SCIP_SOL* sol, SCIP_VAR* var)
     SCIP_Bool SCIPsolIsOriginal(SCIP_SOL* sol)
+    SCIP_Bool SCIPsolIsExact(SCIP_SOL* sol)
     SCIP_RETCODE SCIPwriteVarName(SCIP* scip, FILE* outfile, SCIP_VAR* var, SCIP_Bool vartype)
     SCIP_Real SCIPgetSolOrigObj(SCIP* scip, SCIP_SOL* sol)
     SCIP_Real SCIPgetSolTransObj(SCIP* scip, SCIP_SOL* sol)
@@ -2351,4 +2353,16 @@ cdef class Model(BaseModel):
     pass
 
 cdef class ExactModel(BaseModel):
+    pass
+
+cdef class ExactVariable(Variable):
+    pass
+
+cdef class ExactSolution(Solution):
+    pass
+
+cdef class ExactEvent(Event):
+    pass
+
+cdef class ExactBoundChange(BoundChange):
     pass

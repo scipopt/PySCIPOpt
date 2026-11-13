@@ -52,6 +52,82 @@ cdef class RowExact:
         return row_exact
 
 
+cdef class ExactVariable(Variable):
+    """Variable of an ExactModel."""
+
+    def getObj(self):
+        raise NotImplementedError("ExactVariable.getObj() is not available yet; exact values come with PySCIPOpt 7.0.0")
+
+
+    def getLbOriginal(self):
+        raise NotImplementedError("ExactVariable.getLbOriginal() is not available yet; exact values come with PySCIPOpt 7.0.0")
+
+
+    def getUbOriginal(self):
+        raise NotImplementedError("ExactVariable.getUbOriginal() is not available yet; exact values come with PySCIPOpt 7.0.0")
+
+
+    def getLbGlobal(self):
+        raise NotImplementedError("ExactVariable.getLbGlobal() is not available yet; exact values come with PySCIPOpt 7.0.0")
+
+
+    def getUbGlobal(self):
+        raise NotImplementedError("ExactVariable.getUbGlobal() is not available yet; exact values come with PySCIPOpt 7.0.0")
+
+
+    def getLbLocal(self):
+        raise NotImplementedError("ExactVariable.getLbLocal() is not available yet; exact values come with PySCIPOpt 7.0.0")
+
+
+    def getUbLocal(self):
+        raise NotImplementedError("ExactVariable.getUbLocal() is not available yet; exact values come with PySCIPOpt 7.0.0")
+
+
+    def getLPSol(self):
+        raise NotImplementedError("ExactVariable.getLPSol() is not available yet; exact values come with PySCIPOpt 7.0.0")
+
+
+    def getCol(self):
+        raise NotImplementedError("ExactVariable.getCol() is not available yet; exact values come with PySCIPOpt 7.0.0")
+
+
+    def getStatus(self):
+        raise NotImplementedError("ExactVariable.getStatus() is not available yet; exact values come with PySCIPOpt 7.0.0")
+
+
+
+cdef class ExactSolution(Solution):
+    """Solution of an ExactModel."""
+
+    def __getitem__(self, expr):
+        raise NotImplementedError("ExactSolution values are not available yet; exact values come with PySCIPOpt 7.0.0")
+
+
+    def __setitem__(self, Variable var, value):
+        raise NotImplementedError("ExactSolution values are not available yet; exact values come with PySCIPOpt 7.0.0")
+
+
+
+cdef class ExactEvent(Event):
+    """Event on a variable of an ExactModel."""
+
+    def getNewBound(self):
+        raise NotImplementedError("ExactEvent.getNewBound() is not available yet; exact values come with PySCIPOpt 7.0.0")
+
+
+    def getOldBound(self):
+        raise NotImplementedError("ExactEvent.getOldBound() is not available yet; exact values come with PySCIPOpt 7.0.0")
+
+
+
+cdef class ExactBoundChange(BoundChange):
+    """Bound change of a variable of an ExactModel."""
+
+    def getNewBound(self):
+        raise NotImplementedError("ExactBoundChange.getNewBound() is not available yet; exact values come with PySCIPOpt 7.0.0")
+
+
+
 cdef class ExactModel(BaseModel):
     """
     Model that solves exactly over the rationals.
