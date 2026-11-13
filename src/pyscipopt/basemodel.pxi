@@ -1987,6 +1987,40 @@ cdef class BaseModel:
 
         return nvars
 
+    def getConsVars(self, Constraint constraint):
+        """
+        Gets variables in a constraint.
+
+        Parameters
+        ----------
+        constraint : Constraint
+            Constraint to get the variables from.
+
+        Returns
+        -------
+        list of Variable
+
+        """
+        cdef SCIP_VAR** _vars
+        cdef int nvars
+        cdef SCIP_Bool success
+        cdef int i
+
+        SCIPgetConsNVars(self._scip, constraint.scip_cons, &nvars, &success)
+        _vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
+        SCIPgetConsVars(self._scip, constraint.scip_cons, _vars, nvars, &success)
+
+        if not success:
+            free(_vars)
+            return None
+
+        vars = []
+        for i in range(nvars):
+            vars.append(self._getOrCreateVar(_vars[i]))
+
+        free(_vars)
+        return vars
+
     cdef SCIP_CONS* _getTransformedCons(self, Constraint cons, str expected_cons_type):
         """
         Validates constraint type and retrieves its transformed representation.

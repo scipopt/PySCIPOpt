@@ -24,7 +24,7 @@ BASE_MODEL_METHODS = frozenset({
     "from_ptr", "generateIIS", "getBendersAuxiliaryVar", "getBendersSubproblem", "getBendersVar",
     "getBestChild", "getBestLeaf", "getBestNode", "getBestSibling", "getBestSol",
     "getBestboundNode", "getBranchScoreMultiple", "getChildren", "getCondition",
-    "getConsNVars", "getConss", "getCountedSols", "getCurrentNode", "getDepth",
+    "getConsNVars", "getConsVars", "getConss", "getCountedSols", "getCurrentNode", "getDepth",
     "getDeterministicTime", "getFocusDepth", "getFocusNode", "getGap", "getHeurTiming", "getIIS",
     "getLPBasisInd", "getLeaves", "getMajorVersion", "getMaxDepth", "getMaxTotalDepth",
     "getMemExternEstim", "getMemTotal", "getMemUsed", "getMinorVersion", "getNBacktracks",
