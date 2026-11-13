@@ -1,7 +1,7 @@
 ##@file reader.pxi
 #@brief Base class of the Reader Plugin
 cdef class Reader:
-    cdef public Model model
+    cdef public BaseModel model
     cdef public str name
 
     def readerfree(self):
