@@ -10026,7 +10026,7 @@ cdef class Model:
                                 initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
         return constraint
 
-    def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing=SCIP_PRESOLTIMING_FAST):
+    def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing=PY_SCIP_PRESOLTIMING.FAST):
         """
         Include a presolver.
 
@@ -10123,7 +10123,7 @@ cdef class Model:
         self._plugins.append(reader)
 
     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
-                    proptiming, presoltiming=SCIP_PRESOLTIMING_FAST, priority=1, freq=1, delay=True):
+                    proptiming, presoltiming=PY_SCIP_PRESOLTIMING.FAST, priority=1, freq=1, delay=True):
         """
         Include a propagator.
 
@@ -10164,7 +10164,7 @@ cdef class Model:
         self._plugins.append(prop)
 
     def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,
-                    maxdepth=-1, timingmask=SCIP_HEURTIMING_BEFORENODE, usessubscip=False):
+                    maxdepth=-1, timingmask=PY_SCIP_HEURTIMING.BEFORENODE, usessubscip=False):
         """
         Include a primal heuristic.
 
