@@ -1239,6 +1239,7 @@ cdef class BoundChange:
         Returns
         -------
         PY_SCIP_BOUNDCHGTYPE
+            BRANCHING, CONSINFER or PROPINFER
 
         """
         return PY_SCIP_BOUNDCHGTYPE(SCIPboundchgGetBoundchgtype(self.scip_boundchg))
@@ -1250,6 +1251,7 @@ cdef class BoundChange:
         Returns
         -------
         PY_SCIP_BOUNDTYPE
+            LOWER or UPPER
 
         """
         return PY_SCIP_BOUNDTYPE(SCIPboundchgGetBoundtype(self.scip_boundchg))
