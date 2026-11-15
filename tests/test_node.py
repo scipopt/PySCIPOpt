@@ -1,4 +1,4 @@
-from pyscipopt import SCIP_RESULT, Eventhdlr, SCIP_EVENTTYPE, scip
+from pyscipopt import SCIP_RESULT, Eventhdlr, SCIP_EVENTTYPE, SCIP_NODETYPE, scip
 from helpers.utils import random_mip_1
 
 class cutoffEventHdlr(Eventhdlr):
@@ -78,6 +78,7 @@ class ProbingNodeChecker(Eventhdlr):
 
         assert isinstance(focus, scip.Node)
         assert isinstance(current, scip.Node)
+        assert focus.getType() is SCIP_NODETYPE.FOCUSNODE
 
         # focus and current node should be the same before probing
         assert focus.getNumber() == current.getNumber()

@@ -327,7 +327,7 @@ cdef SCIP_RETCODE PyConsProp (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS** c
     constraints = []
     for i in range(nconss):
         constraints.append(getPyCons(conss[i]))
-    result_dict = PyConshdlr.consprop(constraints, nusefulconss, nmarkedconss, proptiming)
+    result_dict = PyConshdlr.consprop(constraints, nusefulconss, nmarkedconss, PY_SCIP_PROPTIMING(proptiming))
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
 
@@ -353,8 +353,8 @@ cdef SCIP_RETCODE PyConsPresol (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS**
     result_dict["nupgdconss"]   = nupgdconss[0]
     result_dict["nchgcoefs"]    = nchgcoefs[0]
     result_dict["nchgsides"]    = nchgsides[0]
-    result_dict["result"]       = result[0]
-    PyConshdlr.conspresol(constraints, nrounds, presoltiming,
+    result_dict["result"]       = PY_SCIP_RESULT(result[0])
+    PyConshdlr.conspresol(constraints, nrounds, PY_SCIP_PRESOLTIMING(presoltiming),
                           nnewfixedvars, nnewaggrvars, nnewchgvartypes, nnewchgbds, nnewholes,
                           nnewdelconss, nnewaddconss, nnewupgdconss, nnewchgcoefs, nnewchgsides, result_dict)
     result[0]       = result_dict["result"]
@@ -379,10 +379,10 @@ cdef SCIP_RETCODE PyConsResprop (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS*
 cdef SCIP_RETCODE PyConsLock (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons, SCIP_LOCKTYPE locktype, int nlockspos, int nlocksneg) noexcept with gil:
     PyConshdlr = getPyConshdlr(conshdlr)
     if cons == NULL:
-        PyConshdlr.conslock(None, locktype, nlockspos, nlocksneg)
+        PyConshdlr.conslock(None, PY_SCIP_LOCKTYPE(locktype), nlockspos, nlocksneg)
     else:
         PyCons = getPyCons(cons)
-        PyConshdlr.conslock(PyCons, locktype, nlockspos, nlocksneg)
+        PyConshdlr.conslock(PyCons, PY_SCIP_LOCKTYPE(locktype), nlockspos, nlocksneg)
     return SCIP_OKAY
 
 cdef SCIP_RETCODE PyConsActive (SCIP* scip, SCIP_CONSHDLR* conshdlr, SCIP_CONS* cons) noexcept with gil:
