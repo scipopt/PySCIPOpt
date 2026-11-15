@@ -104,3 +104,8 @@ To include the heuristic in the SCIP model one would use the following code:
   This is done by calling ``scip.freeSol(sol)``, although this is not necessary when the solution has been
   passed to ``scip.trySol(sol)`` with ``free=True`` (default behavior).
 
+Warm Start from a Heuristic Plugin
+==================================
+
+For a heuristic that runs once before the root node and hands SCIP a solution built in the original
+problem space, see `examples/finished/heur_lpt.py <https://github.com/scipopt/PySCIPOpt/blob/master/examples/finished/heur_lpt.py>`_.
