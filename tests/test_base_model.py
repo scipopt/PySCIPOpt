@@ -10,17 +10,16 @@ BASEMODEL_PXI = SRC / "basemodel.pxi"
 MODEL_PXI = SRC / "model.pxi"
 
 BASE_MODEL_METHODS = frozenset({
-    "_freescip", "_getStageNames", "activateBenders", "addBendersSubproblem", "addConss",
+    "_freescip", "_getStageNames", "addConss",
     "addMatrixCons", "addNNodes", "addSol", "addVarLocks",
     "addVarLocksType", "allColsInLP", "applyCutsProbing", "attachEventHandlerCallback", "backtrackProbing",
-    "branchVar", "catchEvent", "catchRowEvent", "catchVarEvent", "checkBendersSubproblemOptimality",
-    "checkSol", "chgVarBranchPriority", "chgVarType", "computeBestSolSubproblems", "constructLP",
+    "branchVar", "catchEvent", "catchRowEvent", "catchVarEvent",
+    "checkSol", "chgVarBranchPriority", "chgVarType", "constructLP",
     "count", "createChild", "createProbBasic", "cutoffNode",
     "data", "deactivatePricer", "delCons", "delConsLocal", "delVar",
     "disableDebugSol", "disablePropagation", "dropEvent", "dropRowEvent", "dropVarEvent",
-    "enableDebugSol", "enableReoptimization", "endProbing", "endStrongbranch", "free",
-    "freeBendersSubproblems", "freeProb", "freeReoptSolve", "freeSol", "freeTransform",
-    "from_ptr", "generateIIS", "getBendersAuxiliaryVar", "getBendersSubproblem", "getBendersVar",
+    "enableDebugSol", "enableReoptimization", "endProbing", "endStrongbranch", "free", "freeProb", "freeReoptSolve", "freeSol", "freeTransform",
+    "from_ptr", "generateIIS",
     "getBestChild", "getBestLeaf", "getBestNode", "getBestSibling", "getBestSol",
     "getBestboundNode", "getBranchScoreMultiple", "getChildren", "getCondition",
     "getConsNVars", "getConsVars", "getConss", "getCountedSols", "getCurrentNode", "getDepth",
@@ -40,23 +39,23 @@ BASE_MODEL_METHODS = frozenset({
     "getSolvingTime", "getStage", "getStageName", "getStatus", "getTechVersion",
     "getTotalTime", "getTransformedCons", "getTransformedVar", "getTreesizeEstimation", "getVarPseudocost",
     "getVarPseudocostScore", "getVarStrongbranchNode", "getVars", "hasPrimalRay", "hideOutput",
-    "inProbing", "inRepropagation", "includeBenders", "includeBendersDefaultCuts", "includeBenderscut",
+    "inProbing", "inRepropagation",
     "includeBranchrule", "includeConshdlr", "includeCutsel", "includeDefaultPlugins", "includeEventhdlr",
     "includeHeur", "includeIISfinder", "includeNodesel", "includePresol", "includePricer",
-    "includeProp", "includeReader", "includeRelax", "includeSepa", "initBendersDefault",
+    "includeProp", "includeReader", "includeRelax", "includeSepa",
     "interruptSolve", "isLPSolBasic", "isObjChangedProbing", "isObjIntegral", "isReoptEnabled",
     "lpiGetIterations", "markDoNotAggrVar", "markDoNotMultaggrVar", "newProbingNode", "nodesGetCommonAncestor", "nodesSharePath", "optimize",
     "optimizeNogil", "presolve", "printCons", "printExternalCodeVersions", "printProblem",
     "printStatistics", "printStatisticsJson", "printVersion", "propagateProbing", "readParams",
     "readProblem", "redirectOutput", "relax", "repropagateNode", "resetParam",
-    "resetParams", "restartSolve", "separateSol", "setBendersSubproblemIsConvex", "setBoolParam",
+    "resetParams", "restartSolve", "separateSol", "setBoolParam",
     "setCharParam", "setCheck", "setEmphasis", "setEnforced", "setHeurTiming",
     "setHeuristics", "setInitial", "setIntParam", "setLogfile", "setLongintParam",
     "setMaximize", "setMinimize", "setModifiable", "setObjIntegral", "setParam",
     "setParams", "setParamsCountsols", "setPresolve", "setProbName", "setRealParam",
-    "setRemovable", "setSeparating", "setStringParam", "setupBendersSubproblem", "solveBendersSubproblem",
+    "setRemovable", "setSeparating", "setStringParam",
     "solveConcurrent", "solveProbingLP", "solveProbingLPWithPricing", "startProbing", "startStrongbranch",
-    "to_ptr", "translateSubSol", "updateBendersLowerbounds", "updateVarPseudocost", "version",
+    "to_ptr", "translateSubSol", "updateVarPseudocost", "version",
     "wasNodeLastBranchParent", "writeName", "writeParams", "writeProblem", "writeStatistics", "writeStatisticsJson",
 })
 
@@ -66,8 +65,8 @@ FP_TYPES = ("SCIP_Real", "Model", "Expr", "ExprCons", "Row", "Column", "NLRow")
 FP_CALLS = ("float(", "dtype=float", "SCIPinfinity(")
 
 FP_ALLOWED = frozenset({
-    "addMatrixCons", "catchRowEvent", "create", "dropRowEvent", "freeBendersSubproblems",
-    "getBranchScoreMultiple", "getCondition", "setParam", "solveBendersSubproblem",
+    "addMatrixCons", "catchRowEvent", "create", "dropRowEvent",
+    "getBranchScoreMultiple", "getCondition", "setParam",
 })
 
 MEMBER_RE = re.compile(r"^    (?:def|cdef|cpdef)\b.*?(\w+)\s*\(")

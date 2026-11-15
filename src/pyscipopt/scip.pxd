@@ -2341,7 +2341,6 @@ cdef class BaseModel:
     cdef _ensureFreshBestSol(self)
     cdef SCIP_CONS* _getTransformedCons(self, Constraint cons, str expected_cons_type)
     cdef SCIP_EVENTHDLR* _getEventhdlr(self, object eventhdlr)
-    cdef SCIP_BENDERS* _getBenders(self, object benders)
     cdef SCIP_HEUR* _getHeur(self, object heur)
 
     cdef _configureScip(self)
@@ -2350,7 +2349,7 @@ cdef class BaseModel:
     cdef create(SCIP* scip)
 
 cdef class Model(BaseModel):
-    pass
+    cdef SCIP_BENDERS* _getBenders(self, object benders)
 
 cdef class ExactModel(BaseModel):
     pass

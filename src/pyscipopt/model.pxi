@@ -1,3 +1,6 @@
+##@file model.pxi
+#@brief Model: the floating-point methods, with the LP wrappers Column, Row and NLRow
+
 cdef class Column:
     """Base class holding a pointer to corresponding SCIP_COL."""
 
@@ -6389,3 +6392,458 @@ cdef class Model(BaseModel):
                                                pricedVarScore=matrix_priced_var_scores[idx])
 
         return matrix_variable.view(MatrixVariable)
+
+    def includeBenders(self, Benders benders, name, desc, priority=1, cutlp=True, cutpseudo=True, cutrelax=True,
+            shareaux=False):
+        """
+        Include a Benders' decomposition.
+
+        Parameters
+        ----------
+        benders : Benders
+            the Benders decomposition
+        name : str
+            the name
+        desc : str
+            the description
+        priority : int, optional
+            priority of the Benders' decomposition
+        cutlp : bool, optional
+            should Benders' cuts be generated from LP solutions
+        cutpseudo : bool, optional
+            should Benders' cuts be generated from pseudo solutions
+        cutrelax : bool, optional
+            should Benders' cuts be generated from relaxation solutions
+        shareaux : bool, optional
+            should the Benders' decomposition share the auxiliary variables of the
+            highest priority Benders' decomposition
+
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeBenders(self._scip, n, d,
+                                            priority, cutlp, cutrelax, cutpseudo, shareaux,
+                                            PyBendersCopy, PyBendersFree, PyBendersInit, PyBendersExit, PyBendersInitpre,
+                                            PyBendersExitpre, PyBendersInitsol, PyBendersExitsol, PyBendersGetvar,
+                                            PyBendersCreatesub, PyBendersPresubsolve, PyBendersSolvesubconvex,
+                                            PyBendersSolvesub, PyBendersPostsolve, PyBendersFreesub,
+                                            <SCIP_BENDERSDATA*>benders))
+        cdef SCIP_BENDERS* scip_benders
+        scip_benders = SCIPfindBenders(self._scip, n)
+        benders.model = self
+        benders.name = name
+        benders._benders = scip_benders
+        self._plugins.append(benders)
+
+    def includeBenderscut(self, Benders benders, Benderscut benderscut, name, desc, priority=1, islpcut=True):
+        """
+        Include a Benders' decomposition cutting method
+
+        Parameters
+        ----------
+        benders : Benders
+            the Benders' decomposition that this cutting method is attached to
+        benderscut : Benderscut
+            the Benders' decomposition cutting method
+        name : str
+            the name
+        desc : str
+            the description
+        priority : int. optional
+            priority of the Benders' decomposition (Default = 1)
+        islpcut : bool, optional
+            is this cutting method suitable for generating cuts for convex relaxations?
+            (Default = True)
+
+        """
+        cdef SCIP_BENDERS* _benders
+
+        _benders = benders._benders
+
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeBenderscut(self._scip, _benders, n, d, priority, islpcut,
+                                            PyBenderscutCopy, PyBenderscutFree, PyBenderscutInit, PyBenderscutExit,
+                                            PyBenderscutInitsol, PyBenderscutExitsol, PyBenderscutExec,
+                                            <SCIP_BENDERSCUTDATA*>benderscut))
+
+        cdef SCIP_BENDERSCUT* scip_benderscut
+        scip_benderscut = SCIPfindBenderscut(_benders, n)
+        benderscut.model = self
+        benderscut.benders = benders
+        benderscut.name = name
+        self._plugins.append(benderscut)
+
+    def includeBendersDefaultCuts(self, Benders benders):
+        """
+        Includes the default Benders' decomposition cuts to the custom Benders' decomposition plugin.
+
+        Parameters
+        ----------
+        benders : Benders
+            the Benders' decomposition that the default cuts will be applied to
+
+        """
+        PY_SCIP_CALL( SCIPincludeBendersDefaultCuts(self._scip, benders._benders) )
+
+    def initBendersDefault(self, subproblems):
+        """
+        Initialises the default Benders' decomposition with a dictionary of subproblems.
+
+        Parameters
+        ----------
+        subproblems : Model or dict of object to Model
+            a single Model instance or dictionary of Model instances
+
+        """
+        cdef SCIP** subprobs
+        cdef SCIP_BENDERS* benders
+        cdef int nsubproblems
+        cdef int i
+
+        # checking whether subproblems is a dictionary
+        if isinstance(subproblems, dict):
+            isdict = True
+            nsubproblems = len(subproblems)
+        else:
+            isdict = False
+            nsubproblems = 1
+
+        # create array of SCIP instances for the subproblems
+        subprobs = <SCIP**> malloc(nsubproblems * sizeof(SCIP*))
+
+        # if subproblems is a dictionary, then the dictionary is turned into a c array
+        if isdict:
+            for i, subprob in enumerate(subproblems.values()):
+                subprobs[i] = (<Model>subprob)._scip
+        else:
+            subprobs[0] = (<Model>subproblems)._scip
+
+        # creating the default Benders' decomposition
+        PY_SCIP_CALL(SCIPcreateBendersDefault(self._scip, subprobs, nsubproblems))
+        benders = SCIPfindBenders(self._scip, "default")
+
+        # Free the temporary array (SCIPcreateBendersDefault copies the pointers internally)
+        free(subprobs)
+
+        # Store references to subproblem Models and transfer ownership to master.
+        # The master will free the Benders subproblems in its __dealloc__ method.
+        # Set _freescip = False on the subproblem Model(s) to prevent double-free
+        # if they are deallocated before the master.
+        if isdict:
+            self._benders_subproblems = list(subproblems.values())
+            for subprob in self._benders_subproblems:
+                (<Model>subprob)._freescip = False
+        else:
+            self._benders_subproblems = [subproblems]
+            (<Model>subproblems)._freescip = False
+
+        # activating the Benders' decomposition constraint handlers
+        self.setBoolParam("constraints/benderslp/active", True)
+        self.setBoolParam("constraints/benders/active", True)
+        #self.setIntParam("limits/maxorigsol", 0)
+
+    def activateBenders(self, Benders benders, int nsubproblems):
+        """
+        Activates the Benders' decomposition plugin with the input name.
+
+        Parameters
+        ----------
+        benders : Benders
+            the Benders' decomposition to which the subproblem belongs to
+        nsubproblems : int
+            the number of subproblems in the Benders' decomposition
+
+        """
+        PY_SCIP_CALL(SCIPactivateBenders(self._scip, benders._benders, nsubproblems))
+
+    def addBendersSubproblem(self, Benders benders, subproblem):
+        """
+        Adds a subproblem to the Benders' decomposition given by the input
+        name.
+
+        Parameters
+        ----------
+        benders : Benders
+            the Benders' decomposition to which the subproblem belongs to
+        subproblem : Model
+            the subproblem to add to the decomposition
+
+        """
+        PY_SCIP_CALL(SCIPaddBendersSubproblem(self._scip, benders._benders, (<Model>subproblem)._scip))
+
+    def setupBendersSubproblem(self, probnumber, Benders benders = None, Solution solution = None, checktype = PY_SCIP_BENDERSENFOTYPE.LP):
+        """
+        Sets up the Benders' subproblem given the master problem solution.
+
+        Parameters
+        ----------
+        probnumber : int
+            the index of the problem that is to be set up
+        benders : Benders or None, optional
+            the Benders' decomposition to which the subproblem belongs to
+        solution : Solution or None, optional
+            the master problem solution that is used for the set up, if None, then the LP solution is used
+        checktype : PY_SCIP_BENDERSENFOTYPE
+            the type of solution check that prompted the solving of the Benders' subproblems, either
+            PY_SCIP_BENDERSENFOTYPE: LP, RELAX, PSEUDO or CHECK. Default is LP.
+
+        """
+        cdef SCIP_BENDERS* scip_benders = self._getBenders(benders)
+        cdef SCIP_SOL* scip_sol
+
+        if isinstance(solution, Solution):
+            scip_sol = solution.sol
+        else:
+            scip_sol = NULL
+
+        retcode = SCIPsetupBendersSubproblem(self._scip, scip_benders, scip_sol, probnumber, checktype)
+
+        PY_SCIP_CALL(retcode)
+
+    def solveBendersSubproblem(self, probnumber, solvecip, Benders benders = None, Solution solution = None):
+        """
+        Solves the Benders' decomposition subproblem. The convex relaxation will be solved unless
+        the parameter solvecip is set to True.
+
+        Parameters
+        ----------
+        probnumber : int
+            the index of the problem that is to be set up
+        solvecip : bool
+            whether the CIP of the subproblem should be solved. If False, then only the convex relaxation is solved.
+        benders : Benders or None, optional
+            the Benders' decomposition to which the subproblem belongs to
+        solution : Solution or None, optional
+            the master problem solution that is used for the set up, if None, then the LP solution is used
+
+        Returns
+        -------
+        infeasible : bool
+            returns whether the current subproblem is infeasible
+        objective : float or None
+            the objective function value of the subproblem, can be None
+
+        """
+
+        cdef SCIP_BENDERS* scip_benders = self._getBenders(benders)
+        cdef SCIP_SOL* scip_sol
+        cdef SCIP_Real objective
+        cdef SCIP_Bool infeasible
+
+        if isinstance(solution, Solution):
+            scip_sol = solution.sol
+        else:
+            scip_sol = NULL
+
+        PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip, scip_benders, scip_sol,
+            probnumber, &infeasible, solvecip, &objective))
+
+        return infeasible, objective
+
+    def getBendersSubproblem(self, probnumber, Benders benders = None):
+        """
+        Returns a Model object that wraps around the SCIP instance of the subproblem.
+        NOTE: This Model object is just a place holder and SCIP instance will not be
+        freed when the object is destroyed.
+
+        Parameters
+        ----------
+        probnumber : int
+            the problem number for subproblem that is required
+        benders : Benders or None, optional
+            the Benders' decomposition object that the subproblem belongs to (Default = None)
+
+        Returns
+        -------
+        Model
+
+        """
+        cdef SCIP_BENDERS* scip_benders = self._getBenders(benders)
+        cdef SCIP* scip_subprob
+
+        scip_subprob = SCIPbendersSubproblem(scip_benders, probnumber)
+
+        return Model.create(scip_subprob)
+
+    def getBendersVar(self, Variable var, Benders benders = None, probnumber = -1):
+        """
+        Returns the variable for the subproblem or master problem
+        depending on the input probnumber.
+
+        Parameters
+        ----------
+        var : Variable
+            the source variable for which the target variable is requested
+        benders : Benders or None, optional
+            the Benders' decomposition to which the subproblem variables belong to
+        probnumber : int, optional
+            the problem number for which the target variable belongs, -1 for master problem
+
+        Returns
+        -------
+        Variable or None
+
+        """
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
+        cdef SCIP_VAR* _mappedvar
+
+        if probnumber == -1:
+            PY_SCIP_CALL(SCIPgetBendersMasterVar(self._scip, _benders, var.scip_var, &_mappedvar))
+        else:
+            PY_SCIP_CALL(SCIPgetBendersSubproblemVar(self._scip, _benders, var.scip_var, &_mappedvar, probnumber))
+
+        if _mappedvar == NULL:
+            return None
+        return self._getOrCreateVar(_mappedvar)
+
+    def getBendersAuxiliaryVar(self, probnumber, Benders benders = None):
+        """
+        Returns the auxiliary variable that is associated with the input problem number
+
+        Parameters
+        ----------
+        probnumber : int
+            the problem number for which the target variable belongs, -1 for master problem
+        benders : Benders or None, optional
+            the Benders' decomposition to which the subproblem variables belong to
+
+        Returns
+        -------
+        Variable
+
+        """
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
+        cdef SCIP_VAR* _auxvar
+
+        _auxvar = SCIPbendersGetAuxiliaryVar(_benders, probnumber)
+        return self._getOrCreateVar(_auxvar)
+
+    def setBendersSubproblemIsConvex(self, Benders benders, probnumber, isconvex = True):
+        """
+        Sets a flag indicating whether the subproblem is convex.
+
+        Parameters
+        ----------
+        benders : Benders
+            the Benders' decomposition which contains the subproblem
+        probnumber : int
+            the problem number of the subproblem that the convexity will be set for
+        isconvex : bool, optional
+            flag to indicate whether the subproblem is convex (default=True)
+
+        """
+        SCIPbendersSetSubproblemIsConvex(benders._benders, probnumber, isconvex)
+
+    def checkBendersSubproblemOptimality(self, Solution solution, probnumber, Benders benders = None):
+        """
+        Returns whether the subproblem is optimal w.r.t the master problem auxiliary variables.
+
+        Parameters
+        ----------
+        solution : Solution
+            the master problem solution that is being checked for optimamlity
+        probnumber : int
+            the problem number for which optimality is being checked
+        benders : Benders or None, optional
+            the Benders' decomposition to which the subproblem belongs to
+
+        Returns
+        -------
+        optimal : bool
+            flag to indicate whether the current subproblem is optimal for the master
+
+        """
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
+        cdef SCIP_SOL* scip_sol
+        cdef SCIP_Bool optimal
+
+        if isinstance(solution, Solution):
+            scip_sol = solution.sol
+        else:
+            scip_sol = NULL
+
+        PY_SCIP_CALL( SCIPcheckBendersSubproblemOptimality(self._scip, _benders,
+            scip_sol, probnumber, &optimal) )
+
+        return optimal
+
+    def updateBendersLowerbounds(self, lowerbounds, Benders benders=None):
+        """
+        Updates the subproblem lower bounds for benders using
+        the lowerbounds dict. If benders is None, then the default
+        Benders' decomposition is updated.
+
+        Parameters
+        ----------
+        lowerbounds : dict of int to float
+        benders : Benders or None, optional
+
+        """
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
+
+        assert type(lowerbounds) is dict
+
+        for d in lowerbounds.keys():
+            SCIPbendersUpdateSubproblemLowerbound(_benders, d, lowerbounds[d])
+
+    def freeBendersSubproblems(self):
+        """Deprecated: This method is no longer needed.
+
+        Benders subproblems are now automatically managed and freed by the master
+        Model when it is deallocated. Calling this method explicitly has no effect.
+
+        .. deprecated:: 5.7.0
+            This method is deprecated and will be removed in a future version.
+            Subproblem memory management is now handled automatically.
+        """
+        warnings.warn(
+            "freeBendersSubproblems() is deprecated and no longer needed. "
+            "Benders subproblems are automatically freed when the master Model "
+            "is deallocated.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+
+    def computeBestSolSubproblems(self):
+        """Solves the subproblems with the best solution to the master problem.
+        Afterwards, the best solution from each subproblem can be queried to get
+        the solution to the original problem.
+        If the user wants to resolve the subproblems, they must free them by
+        calling freeBendersSubproblems()
+        """
+        cdef SCIP_BENDERS** benders = SCIPgetBenders(self._scip)
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool solvecip = True
+        cdef int nbenders = SCIPgetNActiveBenders(self._scip)
+        cdef int nsubproblems
+        cdef int i
+        cdef int j
+
+        # solving all subproblems from all Benders' decompositions
+        for i in range(nbenders):
+            nsubproblems = SCIPbendersGetNSubproblems(benders[i])
+            for j in range(nsubproblems):
+                PY_SCIP_CALL(SCIPsetupBendersSubproblem(self._scip,
+                    benders[i], self._bestSol.sol, j, SCIP_BENDERSENFOTYPE_CHECK))
+                PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip,
+                    benders[i], self._bestSol.sol, j, &infeasible, solvecip, NULL))
+
+    cdef SCIP_BENDERS* _getBenders(self, object benders):
+        """
+        Retrieves the SCIP_BENDERS pointer for the given Benders object or the default decomposition.
+
+        Parameters
+        ----------
+        benders : Benders or None
+            The Benders' decomposition object, or None to use the default Benders' decomposition.
+
+        Returns
+        -------
+        SCIP_BENDERS*
+            Pointer to the underlying SCIP_BENDERS structure, or NULL if not found.
+
+        """
+        if benders is None:
+            return SCIPfindBenders(self._scip, "default")
+        return (<Benders>benders)._benders
