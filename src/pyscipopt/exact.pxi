@@ -161,6 +161,13 @@ cdef class ExactModel(BaseModel):
     cdef _configureScip(self):
         PY_SCIP_CALL(SCIPenableExactSolving(self._scip, True))
 
+    def addCons(self, cons, name='', initial=True, separate=True, enforce=True, check=True, propagate=True,
+                local=False, modifiable=False, dynamic=False, removable=False, stickingatnode=False):
+        raise NotImplementedError("ExactModel.addCons() is not available yet; exact constraints come with PySCIPOpt 7.0.0")
+
+    def getSolObjVal(self, Solution sol, original=True):
+        raise NotImplementedError("ExactModel.getSolObjVal() is not available yet; exact values come with PySCIPOpt 7.0.0")
+
     def allowNegSlack(self):
         """
         Returns whether negative slack is allowed in exact solving mode.

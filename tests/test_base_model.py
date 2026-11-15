@@ -12,19 +12,18 @@ MODEL_PXI = SRC / "model.pxi"
 BASE_MODEL_METHODS = frozenset({
     "_freescip", "_getStageNames", "addConss",
     "addMatrixCons", "addNNodes", "addSol", "addVarLocks",
-    "addVarLocksType", "allColsInLP", "applyCutsProbing", "attachEventHandlerCallback", "backtrackProbing",
+    "addVarLocksType", "allColsInLP", "attachEventHandlerCallback", "backtrackProbing",
     "branchVar", "catchEvent", "catchRowEvent", "catchVarEvent",
     "checkSol", "chgVarBranchPriority", "chgVarType", "constructLP",
     "count", "createChild", "createProbBasic", "cutoffNode",
     "data", "deactivatePricer", "delCons", "delConsLocal", "delVar",
     "disableDebugSol", "disablePropagation", "dropEvent", "dropRowEvent", "dropVarEvent",
     "enableDebugSol", "enableReoptimization", "endProbing", "endStrongbranch", "free", "freeProb", "freeReoptSolve", "freeSol", "freeTransform",
-    "from_ptr", "generateIIS",
+    "from_ptr",
     "getBestChild", "getBestLeaf", "getBestNode", "getBestSibling", "getBestSol",
-    "getBestboundNode", "getBranchScoreMultiple", "getChildren", "getCondition",
+    "getBestboundNode", "getBranchScoreMultiple", "getChildren",
     "getConsNVars", "getConsVars", "getConss", "getCountedSols", "getCurrentNode", "getDepth",
-    "getDeterministicTime", "getFocusDepth", "getFocusNode", "getGap", "getHeurTiming", "getIIS",
-    "getLPBasisInd", "getLeaves", "getMajorVersion", "getMaxDepth", "getMaxTotalDepth",
+    "getDeterministicTime", "getFocusDepth", "getFocusNode", "getGap", "getHeurTiming", "getLeaves", "getMajorVersion", "getMaxDepth", "getMaxTotalDepth",
     "getMemExternEstim", "getMemTotal", "getMemUsed", "getMinorVersion", "getNBacktracks",
     "getNBestSolsFound", "getNBinVars", "getNChildren", "getNConss", "getNContVars",
     "getNCountedSols", "getNCuts", "getNCutsApplied", "getNFeasibleLeaves", "getNImplVars",
@@ -41,7 +40,7 @@ BASE_MODEL_METHODS = frozenset({
     "getVarPseudocostScore", "getVarStrongbranchNode", "getVars", "hasPrimalRay", "hideOutput",
     "inProbing", "inRepropagation",
     "includeBranchrule", "includeConshdlr", "includeCutsel", "includeDefaultPlugins", "includeEventhdlr",
-    "includeHeur", "includeIISfinder", "includeNodesel", "includePresol", "includePricer",
+    "includeHeur", "includeNodesel", "includePresol", "includePricer",
     "includeProp", "includeReader", "includeRelax", "includeSepa",
     "interruptSolve", "isLPSolBasic", "isObjChangedProbing", "isObjIntegral", "isReoptEnabled",
     "lpiGetIterations", "markDoNotAggrVar", "markDoNotMultaggrVar", "newProbingNode", "nodesGetCommonAncestor", "nodesSharePath", "optimize",
@@ -54,7 +53,7 @@ BASE_MODEL_METHODS = frozenset({
     "setMaximize", "setMinimize", "setModifiable", "setObjIntegral", "setParam",
     "setParams", "setParamsCountsols", "setPresolve", "setProbName", "setRealParam",
     "setRemovable", "setSeparating", "setStringParam",
-    "solveConcurrent", "solveProbingLP", "solveProbingLPWithPricing", "startProbing", "startStrongbranch",
+    "solveConcurrent", "startProbing", "startStrongbranch",
     "to_ptr", "translateSubSol", "updateVarPseudocost", "version",
     "wasNodeLastBranchParent", "writeName", "writeParams", "writeProblem", "writeStatistics", "writeStatisticsJson",
 })
@@ -66,7 +65,7 @@ FP_CALLS = ("float(", "dtype=float", "SCIPinfinity(")
 
 FP_ALLOWED = frozenset({
     "addMatrixCons", "catchRowEvent", "create", "dropRowEvent",
-    "getBranchScoreMultiple", "getCondition", "setParam",
+    "getBranchScoreMultiple", "setParam",
 })
 
 MEMBER_RE = re.compile(r"^    (?:def|cdef|cpdef)\b.*?(\w+)\s*\(")
@@ -173,7 +172,9 @@ def test_exact_model_skeleton(tmp_path):
     except ValueError:
         pytest.skip("SCIP was built without exact solving support")
     assert not isinstance(m, Model)
-    assert not hasattr(m, "addCons")
+    assert not hasattr(m, "getVal")
+    with pytest.raises(NotImplementedError):
+        m.addCons(None)
     assert m.getNVars() == 0
     assert type(Model().addVar()) is Variable
     path = tmp_path / "exact.lp"

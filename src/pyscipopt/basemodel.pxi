@@ -864,30 +864,6 @@ cdef class BaseModel:
         """
         PY_SCIP_CALL( SCIPcutoffNode(self._scip, node.scip_node) )
 
-    def getCondition(self, exact=False):
-        """
-        Get the current LP's condition number.
-
-        Parameters
-        ----------
-        exact : bool, optional
-            whether to get an estimate or the exact value (Default value = False)
-
-        Returns
-        -------
-        float
-
-        """
-        cdef SCIP_LPI* lpi
-        PY_SCIP_CALL(SCIPgetLPI(self._scip, &lpi))
-        cdef SCIP_Real quality = 0
-        if exact:
-            PY_SCIP_CALL(SCIPlpiGetRealSolQuality(lpi, SCIP_LPSOLQUALITY_EXACTCONDITION, &quality))
-        else:
-            PY_SCIP_CALL(SCIPlpiGetRealSolQuality(lpi, SCIP_LPSOLQUALITY_ESTIMCONDITION, &quality))
-
-        return quality
-
     def enableReoptimization(self, enable=True):
         """
         Include specific heuristics and branching rules for reoptimization.
@@ -1591,26 +1567,6 @@ cdef class BaseModel:
 
         """
         return SCIPgetNLPCols(self._scip)
-
-    def getLPBasisInd(self):
-        """
-        Gets all indices of basic columns and rows:
-        index i >= 0 corresponds to column i, index i < 0 to row -i-1
-
-        Returns
-        -------
-        list of int
-
-        """
-        cdef int nrows = SCIPgetNLPRows(self._scip)
-        cdef int* inds = <int *> malloc(nrows * sizeof(int))
-        cdef int i
-
-        PY_SCIP_CALL(SCIPgetLPBasisInd(self._scip, inds))
-        result = [inds[i] for i in range(nrows)]
-        free(inds)
-
-        return result
 
     def isLPSolBasic(self):
         """
@@ -2621,73 +2577,6 @@ cdef class BaseModel:
         heur.name = name
         self._plugins.append(heur)
     
-    def includeIISfinder(self, IISfinder iisfinder, name, desc, priority=10000, freq=1):
-        """
-        Include an IIS (Irreducible Infeasible Set) finder handler.
-
-        Parameters
-        ----------
-        iisfinder : IISfinder
-            IIS finder
-        name : str
-            name of IIS finder
-        desc : str
-            description of IIS finder
-        priority : int, optional
-            priority of the IISfinder (#todo description)
-        freq : int, optional
-            frequency for calling IIS finder
-
-        """
-        cdef SCIP_IISFINDER* scip_iisfinder
-
-        nam = str_conversion(name)
-        des = str_conversion(desc)
-
-        iisfinder.iis = IIS()
-
-        PY_SCIP_CALL(SCIPincludeIISfinder(self._scip, nam, des, priority, PyiisfinderCopy, PyiisfinderFree,
-                                         PyiisfinderExec, <SCIP_IISFINDERDATA*> iisfinder))
-
-        scip_iisfinder = SCIPfindIISfinder(self._scip, nam)
-        iisfinder.model = self
-        iisfinder.name = name
-        self._plugins.append(iisfinder)
-        iisfinder.scip_iisfinder = scip_iisfinder
-
-    def generateIIS(self):
-        """
-        Generates an Irreducible Infeasible Subsystem (IIS) from the current
-        problem.
-
-        Returns
-        -------
-        IIS
-
-        """
-        cdef SCIP_IIS* _iis
-
-        PY_SCIP_CALL( SCIPgenerateIIS(self._scip) )
-
-        _iis = SCIPgetIIS(self._scip)
-        return IIS.create(_iis)
-    
-    def getIIS(self):
-        """
-        Get the IIS object.
-        Note: Needs to be called after generateIIS, or after a single execution of the iisfinderExec.
-        
-        Returns
-        -------
-        IIS 
-        """
-        cdef SCIP_IIS* _iis
-
-        _iis = SCIPgetIIS(self._scip)
-        assert _iis != NULL, "No IIS exists. You need to first call generateIIS() or run the iisfinderexec method of your custom IISfinder class."
-
-        return IIS.create(_iis)
-
     def includeRelax(self, Relax relax, name, desc, priority=10000, freq=1):
         """
         Include a relaxation handler.
@@ -2950,77 +2839,6 @@ cdef class BaseModel:
 
         """
         return SCIPinProbing(self._scip)
-
-    def solveProbingLP(self, itlim = -1):
-        """
-        Solves the LP at the current probing node (cannot be applied at preprocessing stage)
-        no separation or pricing is applied.
-
-        Parameters
-        ----------
-        itlim : int
-            maximal number of LP iterations to perform (Default value = -1, that is, no limit)
-
-        Returns
-        -------
-        lperror : bool
-            if an unresolved lp error occured
-        cutoff : bool
-            whether the LP was infeasible or the objective limit was reached
-
-        """
-        cdef SCIP_Bool lperror
-        cdef SCIP_Bool cutoff
-
-        PY_SCIP_CALL( SCIPsolveProbingLP(self._scip, itlim, &lperror, &cutoff) )
-        return lperror, cutoff
-
-    def solveProbingLPWithPricing(self, pretendroot=False, displayinfo=False, maxpricerounds=-1):
-        """
-        Solves the LP at the current probing node (cannot be applied at preprocessing stage) and applies pricing
-        until the LP is solved to optimality; no separation is applied.
-
-        Parameters
-        ----------
-        pretendroot : bool
-            should the pricers be called as if we are at the root node? (Default value = False)
-        displayinfo : bool
-            should info lines be displayed after each pricing round? (Default value = False)
-        maxpricerounds : int
-            maximal number of pricing rounds (-1: no limit); a finite limit means that the LP might not be
-            solved to optimality! (Default value = -1)
-
-        Returns
-        -------
-        lperror : bool
-            whether an unresolved LP error occurred
-        cutoff : bool
-            whether the probing LP was infeasible or the objective limit was reached
-
-        """
-        cdef SCIP_Bool lperror
-        cdef SCIP_Bool cutoff
-
-        PY_SCIP_CALL( SCIPsolveProbingLPWithPricing(self._scip, pretendroot, displayinfo, maxpricerounds, &lperror, &cutoff) )
-        return lperror, cutoff
-
-    def applyCutsProbing(self):
-        """
-        Applies the cuts in the separation storage to the LP and clears the storage afterwards;
-        this method can only be applied during probing; the user should resolve the probing LP afterwards
-        in order to get a new solution.
-        returns:
-
-        Returns
-        -------
-        cutoff : bool
-            whether an empty domain was created
-
-        """
-        cdef SCIP_Bool cutoff
-
-        PY_SCIP_CALL( SCIPapplyCutsProbing(self._scip, &cutoff) )
-        return cutoff
 
     def propagateProbing(self, maxproprounds):
         """
