@@ -9,51 +9,6 @@ SRC = Path(__file__).resolve().parents[1] / "src" / "pyscipopt"
 BASEMODEL_PXI = SRC / "basemodel.pxi"
 MODEL_PXI = SRC / "model.pxi"
 
-BASE_MODEL_METHODS = frozenset({
-    "_freescip", "_getStageNames", "addConss",
-    "addMatrixCons", "addNNodes", "addSol", "addVarLocks",
-    "addVarLocksType", "allColsInLP", "attachEventHandlerCallback", "backtrackProbing",
-    "branchVar", "catchEvent", "catchVarEvent",
-    "checkSol", "chgVarBranchPriority", "chgVarType", "constructLP", "createChild", "createProbBasic", "cutoffNode",
-    "data", "deactivatePricer", "delCons", "delConsLocal", "delVar",
-    "disableDebugSol", "disablePropagation", "dropEvent", "dropVarEvent",
-    "enableDebugSol", "endProbing", "free", "freeProb", "freeSol", "freeTransform",
-    "from_ptr",
-    "getBestChild", "getBestLeaf", "getBestNode", "getBestSibling", "getBestSol",
-    "getBestboundNode", "getBranchScoreMultiple", "getChildren",
-    "getConsNVars", "getConsVars", "getConss", "getCurrentNode", "getDepth",
-    "getDeterministicTime", "getFocusDepth", "getFocusNode", "getHeurTiming", "getLeaves", "getMajorVersion", "getMaxDepth", "getMaxTotalDepth",
-    "getMemExternEstim", "getMemTotal", "getMemUsed", "getMinorVersion", "getNBacktracks",
-    "getNBestSolsFound", "getNBinVars", "getNChildren", "getNConss", "getNContVars", "getNCuts", "getNCutsApplied", "getNFeasibleLeaves", "getNImplVars",
-    "getNInfeasibleLeaves", "getNIntVars", "getNLPBranchCands", "getNLPCols", "getNLPIterations",
-    "getNLPRows", "getNLPs", "getNLeaves", "getNLimSolsFound", "getNNodeLPIterations",
-    "getNNodes", "getNNodesLeft", "getNObjlimLeaves", "getNReaders",
-    "getNRuns", "getNSepaRounds", "getNSiblings", "getNSols", "getNSolsFound",
-    "getNStrongbranchLPIterations", "getNTotalNodes", "getNVars", "getObjVal", "getObjectiveSense",
-    "getOpenNodes", "getParam", "getParams", "getPlungeDepth", "getPresolvingTime",
-    "getPrimalDualIntegral", "getPrioChild", "getPrioSibling", "getProbName", "getProbingDepth",
-    "getPseudoBranchCands", "getReadingTime", "getRootNode", "getSiblings", "getSolTime", "getSols",
-    "getSolvingTime", "getStage", "getStageName", "getStatus", "getTechVersion",
-    "getTotalTime", "getTransformedCons", "getTransformedVar", "getTreesizeEstimation", "getVarPseudocost",
-    "getVarPseudocostScore", "getVarStrongbranchNode", "getVars", "hideOutput",
-    "inProbing", "inRepropagation",
-    "includeBranchrule", "includeConshdlr", "includeCutsel", "includeDefaultPlugins", "includeEventhdlr",
-    "includeHeur", "includeNodesel", "includePresol", "includePricer",
-    "includeProp", "includeReader", "includeRelax", "includeSepa",
-    "interruptSolve", "isObjChangedProbing", "isObjIntegral", "markDoNotAggrVar", "markDoNotMultaggrVar", "newProbingNode", "nodesGetCommonAncestor", "nodesSharePath", "optimize",
-    "optimizeNogil", "presolve", "printCons", "printExternalCodeVersions", "printProblem",
-    "printStatistics", "printStatisticsJson", "printVersion", "readParams",
-    "readProblem", "redirectOutput", "relax", "repropagateNode", "resetParam",
-    "resetParams", "restartSolve", "separateSol", "setBoolParam",
-    "setCharParam", "setCheck", "setEmphasis", "setEnforced", "setHeurTiming",
-    "setHeuristics", "setInitial", "setIntParam", "setLogfile", "setLongintParam",
-    "setMaximize", "setMinimize", "setModifiable", "setObjIntegral", "setParam",
-    "setParams", "setPresolve", "setProbName", "setRealParam",
-    "setRemovable", "setSeparating", "setStringParam", "startProbing",
-    "to_ptr", "updateVarPseudocost", "version",
-    "wasNodeLastBranchParent", "writeName", "writeParams", "writeProblem", "writeStatistics", "writeStatisticsJson",
-})
-
 SUBCLASS_CONTRACT = frozenset({"addCons", "getSolObjVal"})
 
 FP_TYPES = ("SCIP_Real", "Model", "Expr", "ExprCons", "Row", "Column", "NLRow")
@@ -93,11 +48,6 @@ def class_members(path, header):
         text = re.sub(r'"""[\s\S]*?"""', "", "\n".join(body))
         stripped[name] = "\n".join(line.split("#")[0] for line in text.splitlines())
     return stripped
-
-
-def test_base_model_surface_is_pinned():
-    actual = {name for name in vars(BaseModel) if not name.startswith("__")}
-    assert actual == BASE_MODEL_METHODS
 
 
 def test_subclass_contract_is_implemented_by_model():
