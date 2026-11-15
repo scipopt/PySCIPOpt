@@ -755,6 +755,8 @@ cdef extern from "scip/scip.h":
     # Node Methods
     SCIP_NODE* SCIPgetFocusNode(SCIP* scip)
     SCIP_NODE* SCIPgetCurrentNode(SCIP* scip)
+    SCIP_Bool SCIPnodesSharePath(SCIP_NODE* node1, SCIP_NODE* node2)
+    SCIP_NODE* SCIPnodesGetCommonAncestor(SCIP_NODE* node1, SCIP_NODE* node2)
     SCIP_NODE* SCIPnodeGetParent(SCIP_NODE* node)
     SCIP_Longint SCIPnodeGetNumber(SCIP_NODE* node)
     int SCIPnodeGetDepth(SCIP_NODE* node)
@@ -2168,6 +2170,9 @@ cdef extern from "scip/pub_lp.h":
 
 cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
+    int SCIPgetFocusDepth(SCIP* scip)
+    SCIP_NODE* SCIPgetRootNode(SCIP* scip)
+    SCIP_Bool SCIPwasNodeLastBranchParent(SCIP* scip, SCIP_NODE* node)
     SCIP_RETCODE SCIPgetChildren(SCIP* scip, SCIP_NODE*** children, int* nchildren)
     SCIP_Longint SCIPgetNChildren(SCIP* scip)
     SCIP_NODE* SCIPgetBestChild(SCIP* scip)

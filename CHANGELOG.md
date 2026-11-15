@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Added the following methods with tests: `nodesSharePath()`, `nodesGetCommonAncestor()`, `getFocusDepth()`, `getRootNode()`, `wasNodeLastBranchParent()`
 - Added `getCountedSols()` to retrieve the solutions collected by `count()` (#906)
 - Added docstrings to the bundled stubs in release wheels for Python 3.10 and later.
 - Added more type annotations and deprecation markers to the stubs.
@@ -9,6 +10,7 @@
 - Added `addConsLinear()` to add linear constraints from variables and coefficients without building an expression
 - Added `SCIP_BOUNDTYPE` and `SCIP_BOUNDCHGTYPE` enums
 ### Fixed
+- Fixed `MatrixVariable.varMayRound()` rounding direction
 - Fixed `lotsizing_lazy` example: lock the handler's variables in `conslock` so presolve cannot aggregate them away (#1252)
 - Dual and Farkas getters for linear, knapsack, and logicor constraints now return zero when presolving has removed them.
 - Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
@@ -18,6 +20,7 @@
 - Replaced `format()` with f-strings in examples
 - Refactor general expression conversion into per-class `to_scip_expr` recursion
 - Made expression fields read-only to prevent accidental runtime modification
+- Expression fields now use concrete Cython types (`double`/`list`), so values are converted on construction
 - Methods taking a list of variables (e.g. `addConsKnapsack()`) no longer convert it to a NumPy array to check its dimension
 - Speed up `PowExpr._evaluate` via the C-level API
 - `PowExpr._evaluate` now raises `ValueError("math domain error")` for a negative base with a non-integer exponent and `OverflowError` when the result overflows.
