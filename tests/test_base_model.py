@@ -5,9 +5,9 @@ import pytest
 
 from pyscipopt import BaseModel, Eventhdlr, ExactModel, ExactSolution, ExactVariable, Model, Variable
 
-SCIP_PXI = Path(__file__).resolve().parents[1] / "src" / "pyscipopt" / "scip.pxi"
-BASEMODEL_PXI = SCIP_PXI.with_name("basemodel.pxi")
-MODEL_PXI = SCIP_PXI.with_name("model.pxi")
+SRC = Path(__file__).resolve().parents[1] / "src" / "pyscipopt"
+BASEMODEL_PXI = SRC / "basemodel.pxi"
+MODEL_PXI = SRC / "model.pxi"
 
 BASE_MODEL_METHODS = frozenset({
     "_freescip", "_getStageNames", "activateBenders", "addBendersSubproblem", "addConss",
@@ -62,9 +62,8 @@ BASE_MODEL_METHODS = frozenset({
 
 SUBCLASS_CONTRACT = frozenset({"addCons", "getSolObjVal"})
 
-FP_MARKERS = re.compile(
-    r"\bSCIP_Real\b|\bfloat\(|dtype=float|\bModel\b|\bExprCons\b|\bExpr\b|\bRow\b|\bColumn\b|\bNLRow\b|SCIPinfinity\("
-)
+FP_TYPES = ("SCIP_Real", "Model", "Expr", "ExprCons", "Row", "Column", "NLRow")
+FP_CALLS = ("float(", "dtype=float", "SCIPinfinity(")
 
 FP_ALLOWED = frozenset({
     "addMatrixCons", "catchRowEvent", "create", "dropRowEvent", "freeBendersSubproblems",
@@ -72,6 +71,10 @@ FP_ALLOWED = frozenset({
 })
 
 MEMBER_RE = re.compile(r"^    (?:def|cdef|cpdef)\b.*?(\w+)\s*\(")
+
+
+def uses_floating_point(body):
+    return any(re.search(rf"\b{name}\b", body) for name in FP_TYPES) or any(call in body for call in FP_CALLS)
 
 
 def class_members(path, header):
@@ -121,7 +124,7 @@ def test_base_model_calls_only_shared_methods():
 
 def test_base_model_has_no_fp_markers():
     base = class_members(BASEMODEL_PXI, "cdef class BaseModel:")
-    hits = {name for name, body in base.items() if FP_MARKERS.search(body)}
+    hits = {name for name, body in base.items() if uses_floating_point(body)}
     assert hits - FP_ALLOWED == set()
 
 
