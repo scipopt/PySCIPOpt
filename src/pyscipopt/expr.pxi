@@ -43,7 +43,7 @@
 # gets called (I guess) and so a copy is returned.
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
 import warnings
-from typing import TYPE_CHECKING, Literal, Union
+from typing import TYPE_CHECKING, Literal, Optional, Union
 
 import numpy as np
 
@@ -466,11 +466,17 @@ cdef class Expr(ExprLike):
 
 cdef class ExprCons:
     '''Constraints with a polynomial expressions and lower/upper bounds.'''
-    cdef public expr
-    cdef public _lhs
-    cdef public _rhs
 
-    def __init__(self, expr, lhs=None, rhs=None):
+    cdef readonly ExprLike expr
+    cdef readonly object _lhs
+    cdef readonly object _rhs
+
+    def __init__(
+        self,
+        ExprLike expr not None,
+        lhs: Optional[float]=None,
+        rhs: Optional[float]=None,
+    ):
         self.expr = expr
         self._lhs = lhs
         self._rhs = rhs
@@ -575,7 +581,7 @@ Operator = Op()
 cdef class GenExpr(ExprLike):
 
     cdef public _op
-    cdef readonly children
+    cdef readonly list children
 
     def __init__(self): # do we need it
         ''' '''
@@ -756,7 +762,7 @@ cdef class GenExpr(ExprLike):
 # Sum Expressions
 cdef class SumExpr(GenExpr):
 
-    cdef readonly constant
+    cdef readonly double constant
 
     def __init__(self):
         self.constant = 0.0
@@ -810,7 +816,7 @@ cdef class SumExpr(GenExpr):
 # Prod Expressions
 cdef class ProdExpr(GenExpr):
 
-    cdef readonly constant
+    cdef readonly double constant
 
     def __init__(self):
         self.constant = 1.0
@@ -887,7 +893,7 @@ cdef class VarExpr(GenExpr):
 # Pow Expressions
 cdef class PowExpr(GenExpr):
 
-    cdef readonly expo
+    cdef readonly double expo
 
     def __init__(self):
         self.expo = 1.0
@@ -906,14 +912,13 @@ cdef class PowExpr(GenExpr):
 
     cpdef double _evaluate(self, Solution sol) except *:
         cdef double base = (<GenExpr>self.children[0])._evaluate(sol)
-        cdef double expo = <double>self.expo
-        if base == 0.0 and expo < 0:
+        if base == 0.0 and self.expo < 0:
             raise ZeroDivisionError("0.0 cannot be raised to a negative power")
-        elif base < 0.0 and expo != c_floor(expo):
+        elif base < 0.0 and self.expo != c_floor(self.expo):
             raise ValueError("math domain error")
 
-        cdef double res = c_pow(base, expo)
-        if c_fabs(res) == INFINITY and c_fabs(base) != INFINITY and c_fabs(expo) != INFINITY:
+        cdef double res = c_pow(base, self.expo)
+        if c_fabs(res) == INFINITY and c_fabs(base) != INFINITY and c_fabs(self.expo) != INFINITY:
             raise OverflowError("math range error")
         return res
 
@@ -1045,7 +1050,7 @@ cdef class CosExpr(UnaryExpr):
 
 cdef class Constant(GenExpr):
 
-    cdef readonly number
+    cdef readonly double number
 
     def __init__(self, number: Union[int, float]):
         self.number = number
