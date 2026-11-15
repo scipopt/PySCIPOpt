@@ -7040,3 +7040,287 @@ cdef class Model(BaseModel):
 
         """
         return SCIPisLPSolBasic(self._scip)
+
+    def solveConcurrent(self):
+        """Transforms, presolves, and solves problem using additional solvers which emphasize on
+        finding solutions.
+        WARNING: This feature is still experimental and prone to some errors."""
+        if SCIPtpiGetNumThreads() == 1:
+            warnings.warn("SCIP was compiled without task processing interface. Parallel solve not possible - using optimize() instead of solveConcurrent()")
+            self.optimize()
+        else:
+            PY_SCIP_CALL(SCIPsolveConcurrent(self._scip))
+            self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
+
+    def enableReoptimization(self, enable=True):
+        """
+        Include specific heuristics and branching rules for reoptimization.
+
+        Parameters
+        ----------
+        enable : bool, optional
+            True to enable and False to disable
+
+        """
+        PY_SCIP_CALL(SCIPenableReoptimization(self._scip, enable))
+
+    def isReoptEnabled(self):
+        """
+        Returns whether reoptimization is enabled.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisReoptEnabled(self._scip)
+
+    def freeReoptSolve(self):
+        """Frees all solution process data and prepares for reoptimization."""
+
+        if not SCIPisReoptEnabled(self._scip):
+            raise ValueError("freeReoptSolve requires reoptimization to be enabled. "
+                             "Call enableReoptimization() before solving.")
+
+        if self.getStage() not in [SCIP_STAGE_INIT,
+                                 SCIP_STAGE_PROBLEM,
+                                 SCIP_STAGE_TRANSFORMED,
+                                 SCIP_STAGE_PRESOLVING,
+                                 SCIP_STAGE_PRESOLVED,
+                                 SCIP_STAGE_SOLVING,
+                                 SCIP_STAGE_SOLVED]:
+            raise Warning("method cannot be called in stage %i." % self.getStage())
+        PY_SCIP_CALL(SCIPfreeReoptSolve(self._scip))
+
+    def getNReoptRuns(self):
+        """
+        Gets number of reoptimization runs performed, including the current run
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNReoptRuns(self._scip)
+
+    def propagateProbing(self, maxproprounds):
+        """
+        Applies domain propagation on the probing sub problem, that was changed after SCIPstartProbing() was called;
+        the propagated domains of the variables can be accessed with the usual bound accessing calls SCIPvarGetLbLocal()
+        and SCIPvarGetUbLocal(); the propagation is only valid locally, i.e. the local bounds as well as the changed
+        bounds due to SCIPchgVarLbProbing(), SCIPchgVarUbProbing(), and SCIPfixVarProbing() are used for propagation.
+
+        Parameters
+        ----------
+        maxproprounds : int
+            maximal number of propagation rounds (Default value = -1, that is, no limit)
+
+        Returns
+        -------
+        cutoff : bool
+            whether the probing node can be cutoff
+        ndomredsfound : int
+            number of domain reductions found
+
+        """
+        cdef SCIP_Bool cutoff
+        cdef SCIP_Longint ndomredsfound
+
+        PY_SCIP_CALL( SCIPpropagateProbing(self._scip, maxproprounds, &cutoff, &ndomredsfound) )
+        return cutoff, ndomredsfound
+
+    def count(self):
+        """Counts the number of feasible points of problem."""
+        PY_SCIP_CALL(SCIPcount(self._scip))
+
+    def setParamsCountsols(self):
+        """Sets SCIP parameters such that a valid counting process is possible."""
+        PY_SCIP_CALL(SCIPsetParamsCountsols(self._scip))
+
+    def getCountedSols(self):
+        """
+        Get the feasible solutions collected by `count()`.
+
+        Requires `constraints/countsols/collect` to be True and presolving to be off
+        before calling `count()`, and a problem without continuous variables.
+
+        Returns
+        -------
+        list of dict
+            Each solution maps the variable names to their values.
+
+        """
+        cdef SCIP_VAR** vars
+        cdef SCIP_SPARSESOL** sparsesols
+        cdef SCIP_Longint* vals
+        cdef SCIP_Bool valid
+        cdef int nvars
+        cdef int nsparsesols
+        cdef int i
+        cdef int s
+
+        if not self.getParam("constraints/countsols/collect"):
+            raise Warning("set constraints/countsols/collect to True before calling count()")
+        if self.getParam("presolving/maxrounds") != 0:
+            raise Warning("turn presolving off before calling count()")
+        if SCIPgetNContVars(self._scip) > 0:
+            raise Warning("counted solutions are only available for problems without continuous variables")
+
+        SCIPgetNCountedSols(self._scip, &valid)
+        if not valid:
+            raise Warning("number of counted solutions does not fit into a long integer, cannot collect them")
+
+        SCIPgetCountedSparseSols(self._scip, &vars, &nvars, &sparsesols, &nsparsesols)
+        # vars are transformed, strip the "t_" prefix to get the original names
+        names = [bytes(SCIPvarGetName(vars[i])).decode("utf-8")[2:] for i in range(nvars)]
+
+        vals = <SCIP_Longint*> malloc(nvars * sizeof(SCIP_Longint))
+        sols = []
+        for s in range(nsparsesols):
+            SCIPsparseSolGetFirstSol(sparsesols[s], vals, nvars)
+            while True:
+                sols.append({names[i]: vals[i] for i in range(nvars)})
+                if not SCIPsparseSolGetNextSol(sparsesols[s], vals, nvars):
+                    break
+
+        free(vals)
+
+        return sols
+
+    def getNCountedSols(self):
+        """
+        Get number of feasible solution.
+
+        Returns
+        -------
+        int
+
+        """
+        cdef SCIP_Bool valid
+        cdef SCIP_Longint nsols
+
+        nsols = SCIPgetNCountedSols(self._scip, &valid)
+        if not valid:
+            print('total number of solutions found is not valid!')
+        return nsols
+
+    def lpiGetIterations(self):
+        """
+        Get the iteration count of the last solved LP.
+
+        Returns
+        -------
+        int
+
+        """
+        cdef SCIP_LPI* lpi
+        cdef int iters = 0
+
+        PY_SCIP_CALL(SCIPgetLPI(self._scip, &lpi))
+        PY_SCIP_CALL(SCIPlpiGetIterations(lpi, &iters))
+
+        return iters
+
+    # Objective function
+
+    def startStrongbranch(self):
+        """Start strong branching. Needs to be called before any strong branching. Must also later end strong branching.
+        TODO: Propagation option has currently been disabled via Python.
+        If propagation is enabled then strong branching is not done on the LP, but on additionally created nodes
+        (has some overhead). """
+
+        PY_SCIP_CALL(SCIPstartStrongbranch(self._scip, False))
+
+    def endStrongbranch(self):
+        """End strong branching. Needs to be called if startStrongBranching was called previously.
+        Between these calls the user can access all strong branching functionality."""
+
+        PY_SCIP_CALL(SCIPendStrongbranch(self._scip))
+
+    def hasPrimalRay(self):
+        """
+        Returns whether a primal ray is stored that proves unboundedness of the LP relaxation.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPhasPrimalRay(self._scip)
+
+    def translateSubSol(self, Model sub_model, Solution sol, heur) -> Solution:
+        """
+		Translates a solution of a model copy into a solution of the main model
+
+		Parameters
+		----------
+		sub_model : Model
+			The python-wrapper of the subscip
+		sol : Solution
+			The python-wrapper of the solution of the subscip
+		heur : Heur
+			The python-wrapper of the heuristic that found the solution
+
+		Returns
+		-------
+		solution : Solution
+			The corresponding solution in the main model
+        """
+        cdef SCIP_VAR** vars
+        cdef SCIP_SOL* real_sol
+        cdef SCIP_SOL* subscip_sol = sol.sol
+        cdef SCIP_HEUR* _heur
+        cdef SCIP_Bool success
+        cdef int i
+        cdef _VarArray wrapper
+        
+        assert sub_model.getNVars(False) >= self.getNVars(True), "The sub_model must have at least as many variables as the main model."
+
+        wrapper = _VarArray(sub_model.getVars(False))
+        _heur = SCIPfindHeur(self._scip, str_conversion(heur.name))
+        PY_SCIP_CALL( SCIPtranslateSubSol(self._scip, sub_model._scip, subscip_sol, _heur, wrapper.ptr, &real_sol) )
+        solution = Solution.create(self._scip, real_sol)
+
+        return solution
+
+    def catchRowEvent(self, Row row, eventtype, Eventhdlr eventhdlr):
+        """
+        Catches a row coefficient, constant, or side change event on the given row.
+
+        Parameters
+        ----------
+        row : Row
+        eventtype : PY_SCIP_EVENTTYPE
+        eventhdlr : Eventhdlr
+
+        """
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
+        PY_SCIP_CALL(SCIPcatchRowEvent(self._scip, row.scip_row, eventtype, _eventhdlr, NULL, NULL))
+
+    def dropRowEvent(self, Row row, eventtype, Eventhdlr eventhdlr):
+        """
+        Drops a row coefficient, constant, or side change event (stops tracking the event) on the given row.
+
+        Parameters
+        ----------
+        row : Row
+        eventtype : PY_SCIP_EVENTTYPE
+        eventhdlr : Eventhdlr
+
+        """
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
+        PY_SCIP_CALL(SCIPdropRowEvent(self._scip, row.scip_row, eventtype, _eventhdlr, NULL, -1))
+
+    # Statistic Methods
+
+    def getGap(self):
+        """
+        Retrieve the gap,
+        i.e. abs((primalbound - dualbound)/min(abs(primalbound),abs(dualbound)))
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetGap(self._scip)
