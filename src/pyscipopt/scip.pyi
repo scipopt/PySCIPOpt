@@ -70,14 +70,17 @@ class Benders:
     def benderspostsolve(
         self,
         solution: Incomplete,
-        enfotype: Incomplete,
+        enfotype: PY_SCIP_BENDERSENFOTYPE,
         mergecandidates: Incomplete,
         npriomergecands: Incomplete,
         checkint: Incomplete,
         infeasible: Incomplete,
     ) -> Incomplete: ...
     def benderspresubsolve(
-        self, solution: Incomplete, enfotype: Incomplete, checkint: Incomplete
+        self,
+        solution: Incomplete,
+        enfotype: PY_SCIP_BENDERSENFOTYPE,
+        checkint: Incomplete,
     ) -> Incomplete: ...
     def benderssolvesub(
         self, solution: Incomplete, probnumber: Incomplete
@@ -93,7 +96,10 @@ class Benderscut:
     name: Incomplete
     def __init__(self) -> None: ...
     def benderscutexec(
-        self, solution: Incomplete, probnumber: Incomplete, enfotype: Incomplete
+        self,
+        solution: Incomplete,
+        probnumber: Incomplete,
+        enfotype: PY_SCIP_BENDERSENFOTYPE,
     ) -> Incomplete: ...
     def benderscutexit(self) -> Incomplete: ...
     def benderscutexitsol(self) -> Incomplete: ...
@@ -208,7 +214,7 @@ class Conshdlr:
     def conslock(
         self,
         constraint: Incomplete,
-        locktype: Incomplete,
+        locktype: PY_SCIP_LOCKTYPE,
         nlockspos: Incomplete,
         nlocksneg: Incomplete,
     ) -> Incomplete: ...
@@ -217,7 +223,7 @@ class Conshdlr:
         self,
         constraints: Incomplete,
         nrounds: Incomplete,
-        presoltiming: Incomplete,
+        presoltiming: PY_SCIP_PRESOLTIMING,
         nnewfixedvars: Incomplete,
         nnewaggrvars: Incomplete,
         nnewchgvartypes: Incomplete,
@@ -236,7 +242,7 @@ class Conshdlr:
         constraints: Incomplete,
         nusefulconss: Incomplete,
         nmarkedconss: Incomplete,
-        proptiming: Incomplete,
+        proptiming: PY_SCIP_PROPTIMING,
     ) -> Incomplete: ...
     def consresprop(self) -> Incomplete: ...
     def conssepalp(
@@ -478,7 +484,7 @@ class Heur:
     name: Incomplete
     def __init__(self) -> None: ...
     def heurexec(
-        self, heurtiming: Incomplete, nodeinfeasible: Incomplete
+        self, heurtiming: PY_SCIP_HEURTIMING, nodeinfeasible: Incomplete
     ) -> Incomplete: ...
     def heurexit(self) -> Incomplete: ...
     def heurexitsol(self) -> Incomplete: ...
@@ -2162,7 +2168,7 @@ class Presol:
     model: Incomplete
     def __init__(self) -> None: ...
     def presolexec(
-        self, nrounds: Incomplete, presoltiming: Incomplete
+        self, nrounds: Incomplete, presoltiming: PY_SCIP_PRESOLTIMING
     ) -> Incomplete: ...
     def presolexit(self) -> Incomplete: ...
     def presolexitpre(self) -> Incomplete: ...
@@ -2193,7 +2199,7 @@ class ProdExpr(GenExpr):
 class Prop:
     model: Incomplete
     def __init__(self) -> None: ...
-    def propexec(self, proptiming: Incomplete) -> Incomplete: ...
+    def propexec(self, proptiming: PY_SCIP_PROPTIMING) -> Incomplete: ...
     def propexit(self) -> Incomplete: ...
     def propexitpre(self) -> Incomplete: ...
     def propexitsol(self, restart: Incomplete) -> Incomplete: ...
@@ -2202,7 +2208,10 @@ class Prop:
     def propinitpre(self) -> Incomplete: ...
     def propinitsol(self) -> Incomplete: ...
     def proppresol(
-        self, nrounds: Incomplete, presoltiming: Incomplete, result_dict: Incomplete
+        self,
+        nrounds: Incomplete,
+        presoltiming: PY_SCIP_PRESOLTIMING,
+        result_dict: Incomplete,
     ) -> Incomplete: ...
     def propresprop(
         self,

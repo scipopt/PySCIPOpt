@@ -76,7 +76,7 @@ cdef SCIP_RETCODE PyPresolExec (SCIP* scip, SCIP_PRESOL* presol, int nrounds, SC
     cdef SCIP_PRESOLDATA* presoldata
     presoldata = SCIPpresolGetData(presol)
     PyPresol = <Presol>presoldata
-    result_dict = PyPresol.presolexec(nrounds, presoltiming)
+    result_dict = PyPresol.presolexec(nrounds, PY_SCIP_PRESOLTIMING(presoltiming))
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     nfixedvars[0] += result_dict.get("nnewfixedvars", 0)
     naggrvars[0] += result_dict.get("nnewaggrvars", 0)

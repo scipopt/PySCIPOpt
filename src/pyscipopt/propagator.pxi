@@ -117,8 +117,8 @@ cdef SCIP_RETCODE PyPropPresol (SCIP* scip, SCIP_PROP* prop, int nrounds, SCIP_P
     result_dict["nupgdconss"]   = nupgdconss[0]
     result_dict["nchgcoefs"]    = nchgcoefs[0]
     result_dict["nchgsides"]    = nchgsides[0]
-    result_dict["result"]       = result[0]
-    PyProp.proppresol(nrounds, presoltiming,
+    result_dict["result"]       = PY_SCIP_RESULT(result[0])
+    PyProp.proppresol(nrounds, PY_SCIP_PRESOLTIMING(presoltiming),
                       nnewfixedvars, nnewaggrvars, nnewchgvartypes, nnewchgbds, nnewholes,
                       nnewdelconss, nnewaddconss, nnewupgdconss, nnewchgcoefs, nnewchgsides, result_dict)
     result[0]       = result_dict["result"]
@@ -138,7 +138,7 @@ cdef SCIP_RETCODE PyPropExec (SCIP* scip, SCIP_PROP* prop, SCIP_PROPTIMING propt
     cdef SCIP_PROPDATA* propdata
     propdata = SCIPpropGetData(prop)
     PyProp = <Prop>propdata
-    returnvalues = PyProp.propexec(proptiming)
+    returnvalues = PyProp.propexec(PY_SCIP_PROPTIMING(proptiming))
     result_dict = returnvalues
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY
