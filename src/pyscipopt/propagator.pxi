@@ -154,7 +154,7 @@ cdef SCIP_RETCODE PyPropResProp (SCIP* scip, SCIP_PROP* prop, SCIP_VAR* infervar
     #TODO: parse bdchgidx?
 
     PyProp = <Prop>propdata
-    returnvalues = PyProp.propresprop(confvar, inferinfo, boundtype, relaxedbd)
+    returnvalues = PyProp.propresprop(confvar, inferinfo, PY_SCIP_BOUNDTYPE(boundtype), relaxedbd)
     result_dict = returnvalues
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY

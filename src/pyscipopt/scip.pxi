@@ -311,6 +311,15 @@ class PY_SCIP_BRANCHDIR(_ScipEnum):
     FIXED     = SCIP_BRANCHDIR_FIXED
     AUTO      = SCIP_BRANCHDIR_AUTO
 
+class PY_SCIP_BOUNDTYPE(_ScipEnum):
+    LOWER = SCIP_BOUNDTYPE_LOWER
+    UPPER = SCIP_BOUNDTYPE_UPPER
+
+class PY_SCIP_BOUNDCHGTYPE(_ScipEnum):
+    BRANCHING = SCIP_BOUNDCHGTYPE_BRANCHING
+    CONSINFER = SCIP_BOUNDCHGTYPE_CONSINFER
+    PROPINFER = SCIP_BOUNDCHGTYPE_PROPINFER
+
 class PY_SCIP_BENDERSENFOTYPE(_ScipEnum):
     LP     = SCIP_BENDERSENFOTYPE_LP
     RELAX  = SCIP_BENDERSENFOTYPE_RELAX
@@ -1229,11 +1238,10 @@ cdef class BoundChange:
 
         Returns
         -------
-        int
-            (0 = branching, 1 = consinfer, 2 = propinfer)
+        PY_SCIP_BOUNDCHGTYPE
 
         """
-        return SCIPboundchgGetBoundchgtype(self.scip_boundchg)
+        return PY_SCIP_BOUNDCHGTYPE(SCIPboundchgGetBoundchgtype(self.scip_boundchg))
 
     def getBoundtype(self):
         """
@@ -1241,11 +1249,10 @@ cdef class BoundChange:
 
         Returns
         -------
-        int
-            (0 = lower, 1 = upper)
+        PY_SCIP_BOUNDTYPE
 
         """
-        return SCIPboundchgGetBoundtype(self.scip_boundchg)
+        return PY_SCIP_BOUNDTYPE(SCIPboundchgGetBoundtype(self.scip_boundchg))
 
     def isRedundant(self):
         """
@@ -1474,7 +1481,7 @@ cdef class Node:
         -------
         list of Variable
         list of float
-        list of int
+        list of PY_SCIP_BOUNDTYPE
 
         """
         cdef int nbranchvars = self.getNParentBranchings()
@@ -1489,7 +1496,7 @@ cdef class Node:
 
         py_variables = [Variable.create(branchvars[i]) for i in range(nbranchvars)]
         py_branchbounds = [branchbounds[i] for i in range(nbranchvars)]
-        py_boundtypes = [boundtypes[i] for i in range(nbranchvars)]
+        py_boundtypes = [PY_SCIP_BOUNDTYPE(boundtypes[i]) for i in range(nbranchvars)]
         free(boundtypes)
         free(branchbounds)
         free(branchvars)
