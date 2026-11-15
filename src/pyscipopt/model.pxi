@@ -7029,3 +7029,14 @@ cdef class Model(BaseModel):
         assert _iis != NULL, "No IIS exists. You need to first call generateIIS() or run the iisfinderexec method of your custom IISfinder class."
 
         return IIS.create(_iis)
+
+    def isLPSolBasic(self):
+        """
+        Returns whether the current LP solution is basic, i.e. is defined by a valid simplex basis.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisLPSolBasic(self._scip)

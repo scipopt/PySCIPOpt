@@ -42,7 +42,7 @@ BASE_MODEL_METHODS = frozenset({
     "includeBranchrule", "includeConshdlr", "includeCutsel", "includeDefaultPlugins", "includeEventhdlr",
     "includeHeur", "includeNodesel", "includePresol", "includePricer",
     "includeProp", "includeReader", "includeRelax", "includeSepa",
-    "interruptSolve", "isLPSolBasic", "isObjChangedProbing", "isObjIntegral", "isReoptEnabled",
+    "interruptSolve", "isObjChangedProbing", "isObjIntegral", "isReoptEnabled",
     "lpiGetIterations", "markDoNotAggrVar", "markDoNotMultaggrVar", "newProbingNode", "nodesGetCommonAncestor", "nodesSharePath", "optimize",
     "optimizeNogil", "presolve", "printCons", "printExternalCodeVersions", "printProblem",
     "printStatistics", "printStatisticsJson", "printVersion", "propagateProbing", "readParams",

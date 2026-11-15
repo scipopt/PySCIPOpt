@@ -1568,17 +1568,6 @@ cdef class BaseModel:
         """
         return SCIPgetNLPCols(self._scip)
 
-    def isLPSolBasic(self):
-        """
-        Returns whether the current LP solution is basic, i.e. is defined by a valid simplex basis.
-
-        Returns
-        -------
-        bool
-
-        """
-        return SCIPisLPSolBasic(self._scip)
-
     def allColsInLP(self):
         """
         Checks if all columns, i.e. every variable with non-empty column is present in the LP.
