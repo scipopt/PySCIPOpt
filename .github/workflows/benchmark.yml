@@ -81,7 +81,6 @@ jobs:
       base: ${{ steps.refs.outputs.base }}
       behind: ${{ steps.refs.outputs.behind }}
       release: ${{ steps.refs.outputs.release }}
-      scip: ${{ steps.refs.outputs.scip }}
       builds: ${{ steps.refs.outputs.builds }}
       filter: ${{ steps.refs.outputs.filter }}
       timelimit: ${{ steps.refs.outputs.timelimit }}
@@ -135,10 +134,6 @@ jobs:
             exit 1
           fi
           release=$(gh api repos/scipopt/PySCIPOpt/releases/latest --jq .tag_name)
-          deploy=$(gh api "repos/scipopt/PySCIPOpt/contents/pyproject.toml?ref=$release" --jq .content | base64 -d \
-            | grep -o 'scipoptsuite-deploy/releases/download/v[0-9.]*' | head -1 | sed 's|.*/||')
-          scip=$(gh api "repos/scipopt/scipoptsuite-deploy/contents/.github/workflows/build_binaries.yml?ref=$deploy" --jq .content \
-            | base64 -d | sed -n '/scip_version:/,/default:/{s/.*default: "\(.*\)"/\1/p;}' | head -1)
           builds=$(jq -nc --arg repo "$repo" --arg base "$base" --arg head "$head" --arg release "$release" --argjson warm "$warm" '
             [{side: "base", repository: $repo, ref: $base, list: $warm}]
             + (if $warm then [] else [{side: "pr", repository: $repo, ref: $head, list: true}] end)
@@ -149,7 +144,6 @@ jobs:
             echo "base=$base"
             echo "behind=$(gh api "repos/$repo/compare/$base...$head" --jq .behind_by)"
             echo "release=$release"
-            echo "scip=$scip"
             echo "builds=$builds"
             echo "filter=$filter"
             echo "timelimit=$timelimit"
@@ -161,8 +155,6 @@ jobs:
     name: "build: ${{ matrix.side }}"
     runs-on: ubuntu-22.04
     timeout-minutes: 30
-    env:
-      SCIP: ${{ needs.prepare.outputs.scip }}
     strategy:
       matrix:
         include: ${{ fromJSON(needs.prepare.outputs.builds) }}
@@ -174,33 +166,9 @@ jobs:
         if: matrix.side != 'pr'
         with:
           path: wheels/${{ matrix.side }}
-          key: wheel-${{ matrix.ref }}-scip${{ env.SCIP }}-py3.13
+          key: wheel-${{ matrix.ref }}-py3.13
 
       - uses: actions/checkout@v4
-        if: steps.cache.outputs.cache-hit != 'true'
-        with:
-          repository: ${{ matrix.repository }}
-          ref: ${{ matrix.ref }}
-          path: src
-          persist-credentials: false
-
-      - name: Install SCIP
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          wget --quiet --no-check-certificate "https://github.com/scipopt/scip/releases/download/v${SCIP}/scipoptsuite_${SCIP}-1+jammy_amd64.deb"
-          sudo apt-get update && sudo apt install -y ./scipoptsuite_${SCIP}-1+jammy_amd64.deb
-
-      - uses: actions/setup-python@v5
-        if: steps.cache.outputs.cache-hit != 'true'
-        with:
-          python-version: "3.13"
-
-      - name: Build wheel
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: python -m pip wheel --no-deps -w "wheels/${{ matrix.side }}" ./src
-
-      - uses: actions/checkout@v4
-        if: matrix.list && steps.cache.outputs.cache-hit == 'true'
         with:
           repository: ${{ matrix.repository }}
           ref: ${{ matrix.ref }}
@@ -208,15 +176,20 @@ jobs:
           persist-credentials: false
 
       - uses: actions/setup-python@v5
-        if: matrix.list && steps.cache.outputs.cache-hit == 'true'
         with:
           python-version: "3.13"
 
-      - name: Install SCIP
-        if: matrix.list && steps.cache.outputs.cache-hit == 'true'
+      - name: Build wheel against the SCIP in pyproject.toml
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          wget --quiet --no-check-certificate "https://github.com/scipopt/scip/releases/download/v${SCIP}/scipoptsuite_${SCIP}-1+jammy_amd64.deb"
-          sudo apt-get update && sudo apt install -y ./scipoptsuite_${SCIP}-1+jammy_amd64.deb
+          url=$(grep -o 'https://github.com/scipopt/scipoptsuite-deploy/releases/download/v[0-9.]*' src/pyproject.toml | head -1)
+          wget --quiet "$url/libscip-linux.zip" -O scip.zip
+          unzip -q scip.zip
+          out="wheels/${{ matrix.side }}"
+          mkdir -p "$out"
+          mv scip_install "$out/scip"
+          SCIPOPTDIR="$PWD/$out/scip" python -m pip wheel --no-deps -w "$out" ./src
+          find "$out/scip" -mindepth 1 -maxdepth 1 ! -name lib -exec rm -rf {} +
 
       - name: List benchmarks
         id: list
@@ -226,6 +199,7 @@ jobs:
         run: |
           python -m venv venv
           venv/bin/pip install -q -r src/requirements/benchmark.txt wheels/${{ matrix.side }}/*.whl
+          export LD_LIBRARY_PATH="$PWD/wheels/${{ matrix.side }}/scip/lib"
           select=()
           [ -n "$FILTER" ] && select=(-k "$FILTER")
           cd src
@@ -250,8 +224,6 @@ jobs:
     name: "bench: ${{ matrix.name }}"
     runs-on: ubuntu-22.04
     timeout-minutes: ${{ fromJSON(needs.prepare.outputs.job_minutes) }}
-    env:
-      SCIP: ${{ needs.prepare.outputs.scip }}
     strategy:
       fail-fast: false
       matrix:
@@ -269,10 +241,8 @@ jobs:
           path: wheels
           merge-multiple: true
 
-      - name: Install SCIP and Valgrind
-        run: |
-          wget --quiet --no-check-certificate "https://github.com/scipopt/scip/releases/download/v${SCIP}/scipoptsuite_${SCIP}-1+jammy_amd64.deb"
-          sudo apt-get update && sudo apt install -y ./scipoptsuite_${SCIP}-1+jammy_amd64.deb valgrind
+      - name: Install Valgrind
+        run: sudo apt-get update && sudo apt-get install -y valgrind
 
       - uses: actions/setup-python@v5
         with:
@@ -288,7 +258,7 @@ jobs:
           done
           cc -O2 -shared -fPIC -o callgrind.so pr/benchmarks/callgrind.c
           deps=$(venv-base/bin/pip freeze | grep -iv '^pyscipopt' | sha256sum | cut -c1-16)
-          echo "cache_env=$ImageOS-$ImageVersion-scip$SCIP-$deps-${{ hashFiles('pr/benchmarks/**') }}" >> "$GITHUB_OUTPUT"
+          echo "cache_env=$ImageOS-$ImageVersion-$deps-${{ hashFiles('pr/benchmarks/**') }}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/cache@v4
         with:
@@ -316,7 +286,7 @@ jobs:
             local side=$1 mode=$2 out=$3 limit="${TIMELIMIT}s" code=0
             shift 3
             [ "$mode" = instructions ] && limit="$(( 3 * TIMELIMIT ))s"
-            BENCH_MODE=$mode BENCH_OUT="$out" \
+            BENCH_MODE=$mode BENCH_OUT="$out" LD_LIBRARY_PATH="$PWD/../wheels/$side/scip/lib" \
               timeout "$limit" "$@" "../venv-$side/bin/python" -m pytest "$BENCH_ID" -q -p no:cacheprovider || code=$?
             if [ "$code" -ne 0 ]; then
               local why="failed ($mode)"
