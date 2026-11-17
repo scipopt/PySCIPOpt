@@ -76,6 +76,7 @@ cdef extern from "scip/scip.h":
         SCIP_RESULT SCIP_FOUNDSOL
         SCIP_RESULT SCIP_SUSPENDED
         SCIP_RESULT SCIP_SUCCESS
+        SCIP_RESULT SCIP_DELAYNODE
 
     ctypedef int SCIP_STATUS
     cdef extern from "scip/type_stat.h":
@@ -370,6 +371,7 @@ cdef extern from "scip/scip.h":
     ctypedef int SCIP_ROWORIGINTYPE
     cdef extern from "scip/type_lp.h":
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_UNSPEC
+        SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_CONSHDLR
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_CONS
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_SEPA
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_REOPT

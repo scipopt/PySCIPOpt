@@ -9,7 +9,7 @@
 - Added tests for `getObjVal()` and `getVal()`
 - Added `addConsLinear()` to add linear constraints from variables and coefficients without building an expression
 - Added `SCIP_BOUNDTYPE` and `SCIP_BOUNDCHGTYPE` enums
-- Added missing SCIP constants: `SCIP_EVENTTYPE.TYPECHANGED`/`IMPLTYPECHANGED`, `SCIP_PROPTIMING.NONE`/`ALWAYS`, `SCIP_PRESOLTIMING.FINAL`/`ALWAYS`/`MAX`, `SCIP_HEURTIMING.NONE`/`AFTERNODE`/`AFTERPLUNGE`
+- Added missing SCIP constants: `SCIP_EVENTTYPE.TYPECHANGED`/`IMPLTYPECHANGED`, `SCIP_PROPTIMING.NONE`/`ALWAYS`, `SCIP_PRESOLTIMING.FINAL`/`ALWAYS`/`MAX`, `SCIP_HEURTIMING.NONE`/`AFTERNODE`/`AFTERPLUNGE`, `SCIP_RESULT.DELAYNODE`, `SCIP_ROWORIGINTYPE.CONSHDLR`
 ### Fixed
 - Fixed `MatrixVariable.varMayRound()` rounding direction
 - Fixed `lotsizing_lazy` example: lock the handler's variables in `conslock` so presolve cannot aggregate them away (#1252)
