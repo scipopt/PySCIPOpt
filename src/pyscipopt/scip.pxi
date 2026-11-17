@@ -352,6 +352,12 @@ class PY_SCIP_SOLORIGIN(_ScipEnum):
     PARTIAL   = SCIP_SOLORIGIN_PARTIAL
     UNKNOWN   = SCIP_SOLORIGIN_UNKNOWN
 
+cdef dict _ENUMS = {
+    cls: {m.value: m for m in cls.__members__.values()}
+    for cls in _ScipEnum.__subclasses__() + _ScipFlag.__subclasses__()
+}
+cdef dict _STAGE_NAMES = {v: m.name for v, m in _ENUMS[PY_SCIP_STAGE].items()}
+
 def PY_SCIP_CALL(SCIP_RETCODE rc):
     if rc == SCIP_OKAY:
         pass
@@ -427,7 +433,7 @@ cdef class Event:
         PY_SCIP_EVENTTYPE
 
         """
-        return PY_SCIP_EVENTTYPE(SCIPeventGetType(self.event))
+        return _ENUMS[PY_SCIP_EVENTTYPE][SCIPeventGetType(self.event)]
 
     def getName(self):
         """
@@ -882,7 +888,7 @@ cdef class Row:
         PY_SCIP_ROWORIGINTYPE
 
         """
-        return PY_SCIP_ROWORIGINTYPE(SCIProwGetOrigintype(self.scip_row))
+        return _ENUMS[PY_SCIP_ROWORIGINTYPE][SCIProwGetOrigintype(self.scip_row)]
 
     def getConsOriginConshdlrtype(self):
         """
@@ -1170,7 +1176,7 @@ cdef class Solution:
         -------
         PY_SCIP_SOLORIGIN
         """
-        return PY_SCIP_SOLORIGIN(SCIPsolGetOrigin(self.sol))
+        return _ENUMS[PY_SCIP_SOLORIGIN][SCIPsolGetOrigin(self.sol)]
 
     def retransform(self):
         """ retransforms solution to original problem space """
@@ -1252,7 +1258,7 @@ cdef class BoundChange:
             BRANCHING, CONSINFER or PROPINFER
 
         """
-        return PY_SCIP_BOUNDCHGTYPE(SCIPboundchgGetBoundchgtype(self.scip_boundchg))
+        return _ENUMS[PY_SCIP_BOUNDCHGTYPE][SCIPboundchgGetBoundchgtype(self.scip_boundchg)]
 
     def getBoundtype(self):
         """
@@ -1264,7 +1270,7 @@ cdef class BoundChange:
             LOWER or UPPER
 
         """
-        return PY_SCIP_BOUNDTYPE(SCIPboundchgGetBoundtype(self.scip_boundchg))
+        return _ENUMS[PY_SCIP_BOUNDTYPE][SCIPboundchgGetBoundtype(self.scip_boundchg)]
 
     def isRedundant(self):
         """
@@ -1386,7 +1392,7 @@ cdef class Node:
         PY_SCIP_NODETYPE
 
         """
-        return PY_SCIP_NODETYPE(SCIPnodeGetType(self.scip_node))
+        return _ENUMS[PY_SCIP_NODETYPE][SCIPnodeGetType(self.scip_node)]
 
     def getLowerbound(self):
         """
@@ -1508,7 +1514,7 @@ cdef class Node:
 
         py_variables = [Variable.create(branchvars[i]) for i in range(nbranchvars)]
         py_branchbounds = [branchbounds[i] for i in range(nbranchvars)]
-        py_boundtypes = [PY_SCIP_BOUNDTYPE(boundtypes[i]) for i in range(nbranchvars)]
+        py_boundtypes = [_ENUMS[PY_SCIP_BOUNDTYPE][boundtypes[i]] for i in range(nbranchvars)]
         free(boundtypes)
         free(branchbounds)
         free(branchvars)
@@ -1661,7 +1667,7 @@ cdef class Variable(Expr):
         -------
         PY_SCIP_IMPLINTTYPE
         """
-        return PY_SCIP_IMPLINTTYPE(SCIPvarGetImplType(self.scip_var))
+        return _ENUMS[PY_SCIP_IMPLINTTYPE][SCIPvarGetImplType(self.scip_var)]
 
     def getStatus(self):
         """
@@ -3164,7 +3170,7 @@ cdef class Model:
     def freeTransform(self):
         """Frees all solution process data including presolving and
         transformed problem, only original problem is kept."""
-        if self.getStage() not in [SCIP_STAGE_INIT,
+        if SCIPgetStage(self._scip) not in [SCIP_STAGE_INIT,
                                  SCIP_STAGE_PROBLEM,
                                  SCIP_STAGE_TRANSFORMED,
                                  SCIP_STAGE_PRESOLVING,
@@ -5377,7 +5383,7 @@ cdef class Model:
 
     def relax(self):
         """Relaxes the integrality restrictions of the model."""
-        if self.getStage() != SCIP_STAGE_PROBLEM:
+        if SCIPgetStage(self._scip) != SCIP_STAGE_PROBLEM:
             raise Warning("method can only be called in stage PROBLEM")
 
         for var in self.getVars():
@@ -5554,7 +5560,7 @@ cdef class Model:
         SCIP_LPSOLSTAT
 
         """
-        return PY_SCIP_LPSOLSTAT(SCIPgetLPSolstat(self._scip))
+        return _ENUMS[PY_SCIP_LPSOLSTAT][SCIPgetLPSolstat(self._scip)]
 
     def constructLP(self):
         """
@@ -7294,7 +7300,7 @@ cdef class Model:
         coef : float
 
         """
-        assert self.getStage() == 1, "addExprNonlinear cannot be called in stage %i." % self.getStage()
+        assert SCIPgetStage(self._scip) == 1, "addExprNonlinear cannot be called in stage %i." % SCIPgetStage(self._scip)
         assert cons.isNonlinear(), "addExprNonlinear can only be called with nonlinear constraints."
 
         cdef Constraint temp_cons
@@ -8828,7 +8834,7 @@ cdef class Model:
         cdef SCIP_Real activity
         cdef SCIP_SOL* scip_sol
 
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
+        if not SCIPgetStage(self._scip) >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
 
         if isinstance(sol, Solution):
@@ -8867,7 +8873,7 @@ cdef class Model:
         cdef SCIP_SOL* scip_sol
 
 
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
+        if not SCIPgetStage(self._scip) >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
 
         if isinstance(sol, Solution):
@@ -9501,7 +9507,7 @@ cdef class Model:
 
     def presolve(self):
         """Presolve the problem."""
-        if self.getStage() not in [SCIP_STAGE_PROBLEM, SCIP_STAGE_TRANSFORMED,\
+        if SCIPgetStage(self._scip) not in [SCIP_STAGE_PROBLEM, SCIP_STAGE_TRANSFORMED,\
                                 SCIP_STAGE_PRESOLVING, SCIP_STAGE_PRESOLVED, \
                                 SCIP_STAGE_SOLVED]:
             raise Warning("method cannot be called in stage %i." % self.getStage())
@@ -11747,7 +11753,7 @@ cdef class Model:
         self._ensureFreshBestSol()
 
         if SCIPgetNSols(self._scip) == 0:
-            if self.getStage() != SCIP_STAGE_SOLVING:
+            if SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
                 raise Warning("Without a solution, method can only be called in stage SOLVING.")
         else:
             assert self._bestSol.sol != NULL
@@ -11757,7 +11763,7 @@ cdef class Model:
             else:
                 min_stage_requirement = SCIP_STAGE_TRANSFORMING
 
-            if not self.getStage() >= min_stage_requirement:
+            if not SCIPgetStage(self._scip) >= min_stage_requirement:
                 raise Warning("method cannot be called in stage %i." % self.getStage)
 
         return self.getSolObjVal(self._bestSol, original)
@@ -11937,7 +11943,7 @@ cdef class Model:
         SCIP_STAGE
 
         """
-        return PY_SCIP_STAGE(SCIPgetStage(self._scip))
+        return _ENUMS[PY_SCIP_STAGE][SCIPgetStage(self._scip)]
 
     def getStageName(self):
         """
@@ -11948,7 +11954,7 @@ cdef class Model:
         str
 
         """
-        return self.getStage().name
+        return _STAGE_NAMES[SCIPgetStage(self._scip)]
 
     def getStatus(self):
         """
@@ -12709,7 +12715,7 @@ cdef class Model:
             raise ValueError("freeReoptSolve requires reoptimization to be enabled. "
                              "Call enableReoptimization() before solving.")
 
-        if self.getStage() not in [SCIP_STAGE_INIT,
+        if SCIPgetStage(self._scip) not in [SCIP_STAGE_INIT,
                                  SCIP_STAGE_PROBLEM,
                                  SCIP_STAGE_TRANSFORMED,
                                  SCIP_STAGE_PRESOLVING,
@@ -13031,7 +13037,7 @@ cdef class Model:
         """
         cdef SCIP_RESULT result
         PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
-        return PY_SCIP_RESULT(result)
+        return _ENUMS[PY_SCIP_RESULT][result]
 
     def addRowExact(self, RowExact rowexact):
         """

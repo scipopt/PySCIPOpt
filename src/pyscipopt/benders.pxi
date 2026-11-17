@@ -135,7 +135,7 @@ cdef SCIP_RETCODE PyBendersPresubsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_
         solution = None
     else:
         solution = Solution.create(scip, sol)
-    enfotype = PY_SCIP_BENDERSENFOTYPE(type)
+    enfotype = _ENUMS[PY_SCIP_BENDERSENFOTYPE][type]
     result_dict = PyBenders.benderspresubsolve(solution, enfotype, checkint)
     infeasible[0] = result_dict.get("infeasible", False)
     auxviol[0] = result_dict.get("auxviol", False)
@@ -179,7 +179,7 @@ cdef SCIP_RETCODE PyBendersPostsolve (SCIP* scip, SCIP_BENDERS* benders, SCIP_SO
         solution = None
     else:
         solution = Solution.create(scip, sol)
-    enfotype = PY_SCIP_BENDERSENFOTYPE(type)
+    enfotype = _ENUMS[PY_SCIP_BENDERSENFOTYPE][type]
     mergecandidates = []
     for i in range(nmergecands):
         mergecandidates.append(mergecands[i])
