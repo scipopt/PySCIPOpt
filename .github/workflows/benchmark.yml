@@ -1,8 +1,5 @@
 name: Benchmark
 
-env:
-  version: 10.0.2
-
 on:
   issue_comment:
     types: [created]
@@ -84,6 +81,7 @@ jobs:
       base: ${{ steps.refs.outputs.base }}
       behind: ${{ steps.refs.outputs.behind }}
       release: ${{ steps.refs.outputs.release }}
+      scip: ${{ steps.refs.outputs.scip }}
       builds: ${{ steps.refs.outputs.builds }}
       filter: ${{ steps.refs.outputs.filter }}
       timelimit: ${{ steps.refs.outputs.timelimit }}
@@ -137,6 +135,10 @@ jobs:
             exit 1
           fi
           release=$(gh api repos/scipopt/PySCIPOpt/releases/latest --jq .tag_name)
+          deploy=$(gh api "repos/scipopt/PySCIPOpt/contents/pyproject.toml?ref=$release" --jq .content | base64 -d \
+            | grep -o 'scipoptsuite-deploy/releases/download/v[0-9.]*' | head -1 | sed 's|.*/||')
+          scip=$(gh api "repos/scipopt/scipoptsuite-deploy/contents/.github/workflows/build_binaries.yml?ref=$deploy" --jq .content \
+            | base64 -d | sed -n '/scip_version:/,/default:/{s/.*default: "\(.*\)"/\1/p;}' | head -1)
           builds=$(jq -nc --arg repo "$repo" --arg base "$base" --arg head "$head" --arg release "$release" --argjson warm "$warm" '
             [{side: "base", repository: $repo, ref: $base, list: $warm}]
             + (if $warm then [] else [{side: "pr", repository: $repo, ref: $head, list: true}] end)
@@ -147,6 +149,7 @@ jobs:
             echo "base=$base"
             echo "behind=$(gh api "repos/$repo/compare/$base...$head" --jq .behind_by)"
             echo "release=$release"
+            echo "scip=$scip"
             echo "builds=$builds"
             echo "filter=$filter"
             echo "timelimit=$timelimit"
@@ -158,6 +161,8 @@ jobs:
     name: "build: ${{ matrix.side }}"
     runs-on: ubuntu-22.04
     timeout-minutes: 30
+    env:
+      SCIP: ${{ needs.prepare.outputs.scip }}
     strategy:
       matrix:
         include: ${{ fromJSON(needs.prepare.outputs.builds) }}
@@ -169,7 +174,7 @@ jobs:
         if: matrix.side != 'pr'
         with:
           path: wheels/${{ matrix.side }}
-          key: wheel-${{ matrix.ref }}-scip${{ env.version }}-py3.13
+          key: wheel-${{ matrix.ref }}-scip${{ env.SCIP }}-py3.13
 
       - uses: actions/checkout@v4
         if: steps.cache.outputs.cache-hit != 'true'
@@ -182,8 +187,8 @@ jobs:
       - name: Install SCIP
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          wget --quiet --no-check-certificate "https://github.com/scipopt/scip/releases/download/v${version}/scipoptsuite_${version}-1+jammy_amd64.deb"
-          sudo apt-get update && sudo apt install -y ./scipoptsuite_${version}-1+jammy_amd64.deb
+          wget --quiet --no-check-certificate "https://github.com/scipopt/scip/releases/download/v${SCIP}/scipoptsuite_${SCIP}-1+jammy_amd64.deb"
+          sudo apt-get update && sudo apt install -y ./scipoptsuite_${SCIP}-1+jammy_amd64.deb
 
       - uses: actions/setup-python@v5
         if: steps.cache.outputs.cache-hit != 'true'
@@ -210,8 +215,8 @@ jobs:
       - name: Install SCIP
         if: matrix.list && steps.cache.outputs.cache-hit == 'true'
         run: |
-          wget --quiet --no-check-certificate "https://github.com/scipopt/scip/releases/download/v${version}/scipoptsuite_${version}-1+jammy_amd64.deb"
-          sudo apt-get update && sudo apt install -y ./scipoptsuite_${version}-1+jammy_amd64.deb
+          wget --quiet --no-check-certificate "https://github.com/scipopt/scip/releases/download/v${SCIP}/scipoptsuite_${SCIP}-1+jammy_amd64.deb"
+          sudo apt-get update && sudo apt install -y ./scipoptsuite_${SCIP}-1+jammy_amd64.deb
 
       - name: List benchmarks
         id: list
@@ -245,6 +250,8 @@ jobs:
     name: "bench: ${{ matrix.name }}"
     runs-on: ubuntu-22.04
     timeout-minutes: ${{ fromJSON(needs.prepare.outputs.job_minutes) }}
+    env:
+      SCIP: ${{ needs.prepare.outputs.scip }}
     strategy:
       fail-fast: false
       matrix:
@@ -264,8 +271,8 @@ jobs:
 
       - name: Install SCIP and Valgrind
         run: |
-          wget --quiet --no-check-certificate "https://github.com/scipopt/scip/releases/download/v${version}/scipoptsuite_${version}-1+jammy_amd64.deb"
-          sudo apt-get update && sudo apt install -y ./scipoptsuite_${version}-1+jammy_amd64.deb valgrind
+          wget --quiet --no-check-certificate "https://github.com/scipopt/scip/releases/download/v${SCIP}/scipoptsuite_${SCIP}-1+jammy_amd64.deb"
+          sudo apt-get update && sudo apt install -y ./scipoptsuite_${SCIP}-1+jammy_amd64.deb valgrind
 
       - uses: actions/setup-python@v5
         with:
@@ -281,7 +288,7 @@ jobs:
           done
           cc -O2 -shared -fPIC -o callgrind.so pr/benchmarks/callgrind.c
           deps=$(venv-base/bin/pip freeze | grep -iv '^pyscipopt' | sha256sum | cut -c1-16)
-          echo "cache_env=$ImageOS-$ImageVersion-scip$version-$deps-${{ hashFiles('pr/benchmarks/**') }}" >> "$GITHUB_OUTPUT"
+          echo "cache_env=$ImageOS-$ImageVersion-scip$SCIP-$deps-${{ hashFiles('pr/benchmarks/**') }}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/cache@v4
         with:
