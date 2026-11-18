@@ -183,13 +183,15 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           url=$(grep -o 'https://github.com/scipopt/scipoptsuite-deploy/releases/download/v[0-9.]*' src/pyproject.toml | head -1)
-          wget --quiet "$url/libscip-linux.zip" -O scip.zip
+          wget --quiet --tries=5 "$url/libscip-linux.zip" -O scip.zip
           unzip -q scip.zip
+          SCIPOPTDIR="$PWD/scip_install" python -m pip wheel --no-deps -w dist ./src
+          sudo apt-get update && sudo apt-get install -y libgfortran5
+          python -m pip install -q auditwheel patchelf
           out="wheels/${{ matrix.side }}"
-          mkdir -p "$out"
-          mv scip_install "$out/scip"
-          SCIPOPTDIR="$PWD/$out/scip" python -m pip wheel --no-deps -w "$out" ./src
-          find "$out/scip" -mindepth 1 -maxdepth 1 ! -name lib -exec rm -rf {} +
+          LD_LIBRARY_PATH="$PWD/scip_install/lib" auditwheel repair --plat "manylinux_2_35_$(uname -m)" -w "$out" dist/*.whl
+          version=$(awk '/#define SCIP_VERSION_(MAJOR|MINOR|PATCH)/ {print $3}' scip_install/include/scip/config.h | paste -sd.)
+          echo "SCIP $version (deploy ${url##*/})" > "$out/scip.txt"
 
       - name: List benchmarks
         id: list
@@ -199,7 +201,6 @@ jobs:
         run: |
           python -m venv venv
           venv/bin/pip install -q -r src/requirements/benchmark.txt wheels/${{ matrix.side }}/*.whl
-          export LD_LIBRARY_PATH="$PWD/wheels/${{ matrix.side }}/scip/lib"
           select=()
           [ -n "$FILTER" ] && select=(-k "$FILTER")
           cd src
@@ -251,10 +252,12 @@ jobs:
       - name: Install wheels
         id: install
         run: |
+          mkdir -p results
           for side in base pr release; do
             [ -d "wheels/$side" ] || continue
             python -m venv "venv-$side"
             "venv-$side/bin/pip" install -q -r pr/requirements/benchmark.txt "wheels/$side"/*.whl
+            cp "wheels/$side/scip.txt" "results/scip-$side.txt"
           done
           cc -O2 -shared -fPIC -o callgrind.so pr/benchmarks/callgrind.c
           deps=$(venv-base/bin/pip freeze | grep -iv '^pyscipopt' | sha256sum | cut -c1-16)
@@ -286,7 +289,7 @@ jobs:
             local side=$1 mode=$2 out=$3 limit="${TIMELIMIT}s" code=0
             shift 3
             [ "$mode" = instructions ] && limit="$(( 3 * TIMELIMIT ))s"
-            BENCH_MODE=$mode BENCH_OUT="$out" LD_LIBRARY_PATH="$PWD/../wheels/$side/scip/lib" \
+            BENCH_MODE=$mode BENCH_OUT="$out" \
               timeout "$limit" "$@" "../venv-$side/bin/python" -m pytest "$BENCH_ID" -q -p no:cacheprovider || code=$?
             if [ "$code" -ne 0 ]; then
               local why="failed ($mode)"
@@ -306,7 +309,7 @@ jobs:
             fi
           }
 
-          release_ok=true
+          declare -A ok=([base]=true [release]=true)
           for side in base release; do
             cached="../cached/$side/results.jsonl"
             if [ -s "$cached" ]; then
@@ -314,12 +317,10 @@ jobs:
             elif deterministic "$side" "../$side.tmp"; then
               mkdir -p "../cached/$side"
               mv "../$side.tmp" "$cached"
-            elif [ "$side" = release ]; then
-              echo "::warning::$BENCH_ID does not run on $side"
-              release_ok=false
-              continue
             else
-              exit 1
+              echo "::warning::$BENCH_ID does not run on $side"
+              ok[$side]=false
+              continue
             fi
             cat "$cached" >> "../results/$side-$INDEX.jsonl"
           done
@@ -327,9 +328,9 @@ jobs:
 
           deterministic pr "../results/pr-$INDEX.jsonl" || exit 1
           if [ "$TIMING" = "true" ]; then
-            run base time "../results/base-$INDEX.jsonl"
+            [ "${ok[base]}" = false ] || run base time "../results/base-$INDEX.jsonl" || true
             run pr time "../results/pr-$INDEX.jsonl"
-            [ "$release_ok" = false ] || run release time "../results/release-$INDEX.jsonl" || true
+            [ "${ok[release]}" = false ] || run release time "../results/release-$INDEX.jsonl" || true
           fi
 
       - uses: actions/upload-artifact@v4
@@ -469,13 +470,19 @@ jobs:
           RELEASE: ${{ needs.prepare.outputs.release }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          scip() { cat "results/scip-$1.txt" 2>/dev/null || echo "unknown SCIP"; }
+          mismatch() {
+            [ "$(scip "$1")" = "$(scip pr)" ] || printf '\n%s\n' "$2 uses $(scip "$1"), the PR uses $(scip pr), so the differences include SCIP changes."
+          }
           {
             python tools/benchmarks/compare.py --base results/base-*.jsonl --pr results/pr-*.jsonl
+            mismatch base Base
             if compgen -G "results/release-*.jsonl" > /dev/null; then
               echo
               echo "<details><summary>Against $RELEASE</summary>"
               echo
               python tools/benchmarks/compare.py --title "$RELEASE → PR" --base results/release-*.jsonl --pr results/pr-*.jsonl
+              mismatch release "$RELEASE"
               echo
               echo "</details>"
             fi
