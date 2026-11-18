@@ -550,8 +550,8 @@ cdef class LP:
 
         PY_SCIP_CALL(SCIPlpiGetBase(self.lpi, c_cstat, c_rstat))
 
-        cstat = [PY_SCIP_BASESTAT(c_cstat[i]) for i in range(ncols)]
-        rstat = [PY_SCIP_BASESTAT(c_rstat[i]) for i in range(nrows)]
+        cstat = [_ENUMS[PY_SCIP_BASESTAT][c_cstat[i]] for i in range(ncols)]
+        rstat = [_ENUMS[PY_SCIP_BASESTAT][c_rstat[i]] for i in range(nrows)]
 
         free(c_rstat)
         free(c_cstat)

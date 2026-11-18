@@ -9,6 +9,7 @@
 - Added tests for `getObjVal()` and `getVal()`
 - Added `addConsLinear()` to add linear constraints from variables and coefficients without building an expression
 - Added `SCIP_BOUNDTYPE` and `SCIP_BOUNDCHGTYPE` enums
+- Added missing SCIP constants: `SCIP_EVENTTYPE.TYPECHANGED`/`IMPLTYPECHANGED`, `SCIP_PROPTIMING.NONE`/`ALWAYS`, `SCIP_PRESOLTIMING.FINAL`/`ALWAYS`/`MAX`, `SCIP_HEURTIMING.NONE`/`AFTERNODE`/`AFTERPLUNGE`, `SCIP_RESULT.DELAYNODE`, `SCIP_ROWORIGINTYPE.CONSHDLR`
 ### Fixed
 - Fixed `MatrixVariable.varMayRound()` rounding direction
 - Fixed `lotsizing_lazy` example: lock the handler's variables in `conslock` so presolve cannot aggregate them away (#1252)
@@ -17,6 +18,7 @@
 - Fixed `getDualsolKnapsack()` and `getDualfarkasKnapsack()` returning 0 for original constraints, and the handler check in `getVarsAnd()` that could never fail
 ### Changed
 - Replaced SCIP constant classes with `IntEnum` and `IntFlag`, including enum return values and type annotations (#1286).
+- Speed up enum-returning getters and plugin callbacks with precomputed lookup tables
 - Replaced `format()` with f-strings in examples
 - Refactor general expression conversion into per-class `to_scip_expr` recursion
 - Made expression fields read-only to prevent accidental runtime modification
