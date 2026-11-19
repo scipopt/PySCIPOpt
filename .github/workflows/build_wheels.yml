@@ -1,13 +1,12 @@
 name: Build wheels
 
+# Builds the wheels of PySCIPOpt and of its variants PySCIPOpt-debug and
+# PySCIPOpt-exact (SCIP in debug mode / with exact solving, see
+# scripts/rename_package.py). A failed variant doesn't fail the run and isn't uploaded.
+
 on:
   workflow_dispatch:
       inputs:
-          # scip_version:
-          #     type: string
-          #     description: SCIPOptSuite deployment version
-          #     required: true
-          #     default: "v0.4.0"
           upload_to_pypi:
               type: boolean
               description: Should upload
@@ -21,26 +20,27 @@ on:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build ${{ matrix.variant }} wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.variant != 'release' }}
     strategy:
+      fail-fast: false
       matrix:
+        variant: [release, debug, exact]
+        os: [ubuntu-22.04, ubuntu-24.04-arm, macos-15, macos-15-intel, windows-latest]
         include:
-          - os: ubuntu-22.04
-            arch: x86_64
-          - os: ubuntu-24.04-arm
-            arch: aarch64
-          - os: macos-15
-            arch: arm64
-          - os: macos-15-intel
-            arch: x86_64
-          - os: windows-latest
-            arch: AMD64
-
-
+          - {os: ubuntu-22.04, arch: x86_64}
+          - {os: ubuntu-24.04-arm, arch: aarch64}
+          - {os: macos-15, arch: arm64}
+          - {os: macos-15-intel, arch: x86_64}
+          - {os: windows-latest, arch: AMD64}
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Rename package
+        if: matrix.variant != 'release'
+        run: python scripts/rename_package.py ${{ matrix.variant }}
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v4.3.0
@@ -48,12 +48,14 @@ jobs:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_BEFORE_TEST: "pip install -r {project}/requirements/test.txt"
           CIBW_TEST_COMMAND: "pytest {project}/tests"
+          SCIP_ARTIFACT_SUFFIX: ${{ matrix.variant != 'release' && format('-{0}', matrix.variant) || '' }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ matrix.os}}-${{ matrix.arch }}
+          name: wheels-${{ matrix.variant }}-${{ matrix.os }}-${{ matrix.arch }}
           path: ./wheelhouse/*.whl
 
+  # variants are wheels only: built from source, they'd use whatever SCIP is installed
   build_sdist:
     name: Build source distribution
     runs-on: ubuntu-22.04
@@ -66,38 +68,14 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: source-distribution
+          name: sdist-release
           path: dist/*.tar.gz
 
-  merge_artifacts:
-    name: Merge Artifacts
-    needs: [build_wheels, build_sdist]
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@v4
-
+  # needs every release wheel; failed variants are skipped by publish_wheels.yml
   upload_pypi:
-    needs: [build_wheels, build_sdist, merge_artifacts]
-    runs-on: ubuntu-22.04
-    if: github.event.inputs.upload_to_pypi == 'true'
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: merged-artifacts
-          path: dist
-
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        if: github.event.inputs.test_pypi == 'false'
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          verbose: true
-    
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        if: github.event.inputs.test_pypi == 'true'
-        with:
-          repository-url: https://test.pypi.org/legacy/
-          user: __token__
-          password: ${{ secrets.TESTPYPI_API_TOKEN }}
-          verbose: true
+    needs: [build_wheels, build_sdist]
+    if: inputs.upload_to_pypi
+    uses: ./.github/workflows/publish_wheels.yml
+    with:
+      test_pypi: ${{ inputs.test_pypi }}
+    secrets: inherit

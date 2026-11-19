@@ -62,15 +62,8 @@ validate_deploy_version() {
     fi
 }
 
-prompt_version() {
-    local label="$1" current="$2"
-    read -rp "${label} [${current}]: " value
-    value="${value:-$current}"
-    validate_version "$value"
-    echo "$value"
-}
-
-# --- Collect all inputs ---
+# --- Pick the scipoptsuite-deploy release ---
+# Deploy releases are made in scipoptsuite-deploy (its release.sh); this only picks one.
 
 CURRENT_DEPLOY_VERSION=$(grep -o 'scipoptsuite-deploy/releases/download/v[0-9.]*' "$PYPROJECT" | head -1 | sed 's|.*/||')
 
@@ -79,91 +72,33 @@ if [[ -z "$CURRENT_DEPLOY_VERSION" ]]; then
     exit 1
 fi
 validate_deploy_version "$CURRENT_DEPLOY_VERSION"
+echo "Current scipoptsuite-deploy release: ${CURRENT_DEPLOY_VERSION}"
 
-echo "Current scipoptsuite-deploy version: ${CURRENT_DEPLOY_VERSION}"
-echo ""
-echo "Enter component versions (press enter to keep current):"
-
-# Fetch current defaults from the deploy workflow
-DEPLOY_WORKFLOW=$(gh api repos/${DEPLOY_REPO}/contents/.github/workflows/build_binaries.yml --jq '.content' | base64 --decode)
-current_deploy_default() {
-    echo "$DEPLOY_WORKFLOW" | sed -n "/${1}:/,/default:/{s/.*default: \"\(.*\)\"/\1/p;}" | head -1
-}
-
-CUR_SCIP=$(current_deploy_default "scip_version")
-CUR_SOPLEX=$(current_deploy_default "soplex_version")
-CUR_GCG=$(current_deploy_default "gcg_version")
-CUR_IPOPT=$(current_deploy_default "ipopt_version")
-
-SCIP_VERSION=$(prompt_version "SCIP" "$CUR_SCIP")
-SOPLEX_VERSION=$(prompt_version "SoPlex" "$CUR_SOPLEX")
-GCG_VERSION=$(prompt_version "GCG" "$CUR_GCG")
-IPOPT_VERSION=$(prompt_version "IPOPT" "$CUR_IPOPT")
-
-# --- Check if a matching deploy release already exists ---
-
-RELEASE_NAME="SCIP ${SCIP_VERSION} SOPLEX ${SOPLEX_VERSION} GCG ${GCG_VERSION} IPOPT ${IPOPT_VERSION}"
-EXISTING_TAG=$(gh release list --repo "$DEPLOY_REPO" --limit 20 --json tagName,name \
-    --jq ".[] | select(.name == \"${RELEASE_NAME}\") | .tagName" | head -1)
-
-SKIP_DEPLOY=false
-if [[ -n "$EXISTING_TAG" ]]; then
-    echo "Found existing release '${EXISTING_TAG}' matching these versions. Skipping build."
-    NEW_DEPLOY_VERSION="$EXISTING_TAG"
-    SKIP_DEPLOY=true
-else
-    # Bump deploy version (increment minor)
-    DEPLOY_MAJOR=$(echo "$CURRENT_DEPLOY_VERSION" | sed 's/^v//' | cut -d. -f1)
-    DEPLOY_MINOR=$(echo "$CURRENT_DEPLOY_VERSION" | sed 's/^v//' | cut -d. -f2)
-    DEPLOY_PATCH=$(echo "$CURRENT_DEPLOY_VERSION" | sed 's/^v//' | cut -d. -f3)
-    SUGGESTED_DEPLOY="v$((DEPLOY_MAJOR)).$((DEPLOY_MINOR + 1)).$((DEPLOY_PATCH))"
-
-    read -rp "New deploy release tag [${SUGGESTED_DEPLOY}]: " NEW_DEPLOY_VERSION
-    NEW_DEPLOY_VERSION="${NEW_DEPLOY_VERSION:-$SUGGESTED_DEPLOY}"
-
-    validate_deploy_version "$NEW_DEPLOY_VERSION"
-
-    if gh release view "$NEW_DEPLOY_VERSION" --repo "$DEPLOY_REPO" &>/dev/null; then
-        echo "Error: deploy tag ${NEW_DEPLOY_VERSION} already exists in ${DEPLOY_REPO} (with different versions)."
-        exit 1
-    fi
-fi
+LATEST_DEPLOY=$(gh release view --repo "$DEPLOY_REPO" --json tagName -q .tagName)
+read -rp "scipoptsuite-deploy release to use [${LATEST_DEPLOY}]: " NEW_DEPLOY_VERSION
+NEW_DEPLOY_VERSION="${NEW_DEPLOY_VERSION:-$LATEST_DEPLOY}"
+validate_deploy_version "$NEW_DEPLOY_VERSION"
 
 if [[ "$CURRENT_DEPLOY_VERSION" == "$NEW_DEPLOY_VERSION" ]]; then
-    echo "Error: new deploy version (${NEW_DEPLOY_VERSION}) matches current; nothing to upgrade."
+    echo "Error: ${NEW_DEPLOY_VERSION} is already used; nothing to upgrade."
+    echo "To build new SCIP binaries, make a release in ${DEPLOY_REPO} first (its release.sh)."
     exit 1
 fi
+
+# release titles look like "SCIP 10.1.0 SOPLEX 8.1.0 GCG 4.1.0 IPOPT 3.14.19"
+RELEASE_NAME=$(gh release view "$NEW_DEPLOY_VERSION" --repo "$DEPLOY_REPO" --json name -q .name)
+SCIP_VERSION=$(echo "$RELEASE_NAME" | sed -n 's/^SCIP \([0-9.]*\) .*/\1/p')
+validate_version "$SCIP_VERSION"
 
 # --- Show summary and confirm ---
 
 BRANCH="upgrade-scip-${SCIP_VERSION}"
 
 echo ""
-if [[ "$DRY_RUN" == true ]]; then
-    echo "DRY RUN: This script would:"
-else
-    echo "This script will:"
-fi
-if [[ "$SKIP_DEPLOY" == false ]]; then
-    echo "  1. Build new SCIP binaries (SCIP=${SCIP_VERSION} SoPlex=${SOPLEX_VERSION} GCG=${GCG_VERSION} IPOPT=${IPOPT_VERSION})"
-    echo "  2. Create scipoptsuite-deploy release ${NEW_DEPLOY_VERSION}"
-    echo "  3. Create branch '${BRANCH}', update pyproject.toml and CI SCIP version, and open a PR"
-else
-    echo "  1. [skip] Build binaries — release ${NEW_DEPLOY_VERSION} already exists"
-    echo "  2. [skip] Create release — already exists"
-    echo "  3. Create branch '${BRANCH}', update pyproject.toml and CI SCIP version, and open a PR"
-fi
+echo "${NEW_DEPLOY_VERSION}: ${RELEASE_NAME}"
 echo ""
-
 if [[ "$DRY_RUN" == true ]]; then
     echo "DRY RUN: would have run:"
-    if [[ "$SKIP_DEPLOY" == false ]]; then
-        echo "  gh workflow run build_binaries.yml --repo ${DEPLOY_REPO} \\"
-        echo "      -f scip_version=${SCIP_VERSION} -f soplex_version=${SOPLEX_VERSION} \\"
-        echo "      -f gcg_version=${GCG_VERSION} -f ipopt_version=${IPOPT_VERSION}"
-        echo "  (wait for run, download artifacts)"
-        echo "  gh release create ${NEW_DEPLOY_VERSION} --repo ${DEPLOY_REPO} ..."
-    fi
     echo "  git checkout -b ${BRANCH}"
     echo "  (sed) ${CURRENT_DEPLOY_VERSION} -> ${NEW_DEPLOY_VERSION} in ${PYPROJECT}"
     echo "  (sed) 'version: ${SCIP_VERSION}' in $(grep -l '^  version: ' "${WORKFLOWS[@]}" | tr '\n' ' ')"
@@ -173,83 +108,9 @@ if [[ "$DRY_RUN" == true ]]; then
     exit 0
 fi
 
+echo "This script will create branch '${BRANCH}', update ${PYPROJECT} and the CI SCIP version, and open a PR."
 read -rp "Proceed? [Y/n] " confirm
 [[ "${confirm:-Y}" =~ ^[Nn] ]] && exit 0
-
-# ============================================================
-# From here on, everything runs without further prompts.
-# ============================================================
-
-if [[ "$SKIP_DEPLOY" == false ]]; then
-
-    ARTIFACT_DIR=""
-    cleanup() { [[ -n "$ARTIFACT_DIR" ]] && rm -rf "$ARTIFACT_DIR"; }
-    trap cleanup EXIT
-
-    # --- Build SCIP binaries ---
-
-    echo ""
-    echo "Triggering SCIP binary build..."
-    DISPATCH_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-    gh workflow run build_binaries.yml --repo "$DEPLOY_REPO" \
-        -f scip_version="$SCIP_VERSION" \
-        -f soplex_version="$SOPLEX_VERSION" \
-        -f gcg_version="$GCG_VERSION" \
-        -f ipopt_version="$IPOPT_VERSION"
-
-    # Wait for the run to appear. Filter by actor and earliest createdAt so a
-    # concurrent workflow_dispatch (by us or someone else) can't hijack RUN_ID.
-    MY_LOGIN=$(gh api user --jq .login)
-    for i in {1..12}; do
-        sleep 5
-        RUN_ID=$(gh run list --workflow=build_binaries.yml --repo "$DEPLOY_REPO" \
-            --limit 20 --event workflow_dispatch \
-            --json databaseId,createdAt,actor \
-            --jq "[.[] | select(.createdAt >= \"${DISPATCH_TIME}\") | select(.actor.login == \"${MY_LOGIN}\")] | sort_by(.createdAt) | .[0].databaseId")
-        [[ -n "$RUN_ID" && "$RUN_ID" != "null" ]] && break
-    done
-
-    if [[ -z "$RUN_ID" || "$RUN_ID" == "null" ]]; then
-        echo "Error: could not find the triggered workflow run."
-        exit 1
-    fi
-
-    echo "Waiting for build to complete (run ${RUN_ID})..."
-    echo "  https://github.com/${DEPLOY_REPO}/actions/runs/${RUN_ID}"
-    gh run watch "$RUN_ID" --repo "$DEPLOY_REPO" --exit-status
-
-    # --- Create deploy release ---
-
-    ARTIFACT_DIR=$(mktemp -d)
-    echo "Downloading artifacts..."
-    gh run download "$RUN_ID" --repo "$DEPLOY_REPO" --dir "$ARTIFACT_DIR"
-
-    shopt -s nullglob
-    for subdir in linux linux-arm macos-arm macos-intel windows; do
-        zips=("$ARTIFACT_DIR/$subdir"/*.zip)
-        if [[ ${#zips[@]} -eq 0 ]]; then
-            echo "Error: no .zip files found in $ARTIFACT_DIR/$subdir/ — artifact layout may have changed."
-            exit 1
-        fi
-    done
-    shopt -u nullglob
-
-    RELEASE_NAME="SCIP ${SCIP_VERSION} SOPLEX ${SOPLEX_VERSION} GCG ${GCG_VERSION} IPOPT ${IPOPT_VERSION}"
-    echo "Creating release ${NEW_DEPLOY_VERSION}..."
-    gh release create "$NEW_DEPLOY_VERSION" \
-        --repo "$DEPLOY_REPO" \
-        --title "$RELEASE_NAME" \
-        --notes "$RELEASE_NAME" \
-        "$ARTIFACT_DIR"/linux/*.zip \
-        "$ARTIFACT_DIR"/linux-arm/*.zip \
-        "$ARTIFACT_DIR"/macos-arm/*.zip \
-        "$ARTIFACT_DIR"/macos-intel/*.zip \
-        "$ARTIFACT_DIR"/windows/*.zip
-
-    rm -rf "$ARTIFACT_DIR"
-    ARTIFACT_DIR=""
-
-fi
 
 # --- Create PR with updated pyproject.toml ---
 
@@ -295,7 +156,7 @@ git push -u "$PUSH_REMOTE" "$BRANCH"
 gh pr create --repo "$REPO" \
     --title "Upgrade to SCIP ${SCIP_VERSION}" \
     --body "$(cat <<EOF
-Updates scipoptsuite-deploy ${CURRENT_DEPLOY_VERSION} -> ${NEW_DEPLOY_VERSION} (SCIP ${SCIP_VERSION}, SoPlex ${SOPLEX_VERSION}, GCG ${GCG_VERSION}, IPOPT ${IPOPT_VERSION}) and the SCIP version used by CI workflows.
+Updates scipoptsuite-deploy ${CURRENT_DEPLOY_VERSION} -> ${NEW_DEPLOY_VERSION} (${RELEASE_NAME}) and the SCIP version used by CI workflows.
 
 ## Checklist
 - [ ] Fix any API incompatibilities

@@ -2,10 +2,7 @@
 
 ## Upgrading SCIP
 
-Run `./upgrade_scip.sh` from the `master` branch (use `--dry-run` first to preview without side effects). The script will:
-1. Prompt for SCIP, SoPlex, GCG, and IPOPT versions
-2. Build new binaries via [scipoptsuite-deploy](https://github.com/scipopt/scipoptsuite-deploy) (skipped if a matching release already exists)
-3. Create a branch, update `pyproject.toml`, and open a PR
+New SCIP binaries are released in [scipoptsuite-deploy](https://github.com/scipopt/scipoptsuite-deploy) (its `release.sh`). Then run `./upgrade_scip.sh` from the `master` branch (use `--dry-run` first to preview without side effects). It asks which deploy release to use (default: the latest), creates a branch, updates `pyproject.toml`, and opens a PR.
 
 On the PR:
 - [ ] Fix any API incompatibilities
@@ -49,7 +46,7 @@ If the smoke test **passes**:
 ./release.sh --finalize
 ```
 
-Checks the release-candidate workflow succeeded, then tags `vX.Y.Z`, pushes master, and deletes the release-candidate branch.
+Checks the release-candidate workflow succeeded, then tags `vX.Y.Z`, pushes master, deletes the release-candidate branch, uploads that workflow's wheels to pypi (`publish_wheels.yml`, the same files tested on test-pypi), and creates the GitHub release.
 
 If the smoke test **fails** (or you change your mind):
 
@@ -61,14 +58,7 @@ Deletes the release-candidate branch and resets the local release commit. test-p
 
 ### After finalize
 
-- [ ] Release to production pypi:
-  ```bash
-  gh workflow run build_wheels.yml --repo scipopt/PySCIPOpt --ref vX.Y.Z -f upload_to_pypi=true -f test_pypi=false
-  ```
-- [ ] Create a GitHub release:
-  ```bash
-  gh release create vX.Y.Z --repo scipopt/PySCIPOpt --title vX.Y.Z --generate-notes
-  ```
+- [ ] Check the pypi upload finished (Actions -> Publish wheels)
 - [ ] Update readthedocs: Builds -> Build version (latest and stable)
 
 ## Manual release (fallback)

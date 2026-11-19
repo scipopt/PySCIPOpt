@@ -134,6 +134,8 @@ finalize_release() {
         echo "  git push ${PUSH_REMOTE} ${CURRENT_BRANCH}"
         echo "  git push ${PUSH_REMOTE} v${version}"
         echo "  git push ${PUSH_REMOTE} --delete ${candidate_branch}"
+        echo "  gh workflow run publish_wheels.yml --repo ${REPO} -f run_id=${run_id} -f test_pypi=false"
+        echo "  gh release create v${version} --repo ${REPO} --title v${version} --generate-notes"
         exit 0
     fi
 
@@ -143,17 +145,16 @@ finalize_release() {
     git push "$PUSH_REMOTE" "v${version}"
     git push "$PUSH_REMOTE" --delete "$candidate_branch"
 
+
+    # the wheels tested on test-pypi, not a rebuild
+    gh workflow run publish_wheels.yml --repo "$REPO" -f run_id="$run_id" -f test_pypi=false
+    gh release create "v${version}" --repo "$REPO" --title "v${version}" --generate-notes
+
     echo ""
-    echo "Done! v${version} is now tagged on ${PUSH_REMOTE}."
+    echo "Done! v${version} is tagged, and its wheels are being uploaded to pypi:"
+    echo "  https://github.com/${REPO}/actions/workflows/publish_wheels.yml"
     echo ""
-    echo "Remaining manual steps:"
-    echo "  1. Verify test-pypi:"
-    echo "       pip install -i https://test.pypi.org/simple/ PySCIPOpt==${version}"
-    echo "  2. Release to production pypi:"
-    echo "       gh workflow run build_wheels.yml --repo ${REPO} --ref v${version} -f upload_to_pypi=true -f test_pypi=false"
-    echo "  3. Create a GitHub release from tag v${version}:"
-    echo "       gh release create v${version} --repo ${REPO} --title v${version} --generate-notes"
-    echo "  4. Update readthedocs: Builds -> Build version (latest and stable)"
+    echo "Remaining manual step: update readthedocs (Builds -> Build version, latest and stable)."
 }
 
 # Abandon a pending release: delete release-candidate branch, reset local release commit.

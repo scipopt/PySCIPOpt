@@ -1,0 +1,78 @@
+name: Publish wheels
+
+# Uploads the wheels of a build_wheels.yml run, so PyPI gets exactly what was tested.
+# Called by build_wheels.yml for its own run; release.sh --finalize starts it with
+# the release candidate's run to publish to PyPI.
+# Each package uses PYPI_API_TOKEN_DEBUG / _EXACT if set, else PYPI_API_TOKEN
+# (same for TESTPYPI_API_TOKEN).
+
+on:
+  workflow_call:
+      inputs:
+          run_id: {type: string, required: false, default: ""}
+          test_pypi: {type: boolean, required: false, default: true}
+  workflow_dispatch:
+      inputs:
+          run_id:
+              type: string
+              description: build_wheels.yml run whose wheels to upload
+              required: true
+          test_pypi:
+              type: boolean
+              description: Use Test PyPI
+              required: false
+              default: true
+
+permissions:
+  actions: read
+
+jobs:
+  publish:
+    name: Publish ${{ matrix.variant }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {variant: release, token: ""}
+          - {variant: debug, token: _DEBUG}
+          - {variant: exact, token: _EXACT}
+    steps:
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: "*-${{ matrix.variant }}*"
+          path: artifacts
+          run-id: ${{ inputs.run_id || github.run_id }}
+          github-token: ${{ github.token }}
+
+      # a variant is uploaded only if it built on every platform
+      - name: Check all platforms built
+        id: check
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          n=$(ls -d artifacts/wheels-* 2>/dev/null | wc -l)
+          if [ "$n" -ne 5 ]; then
+              echo "::warning::$VARIANT built on $n of 5 platforms, not uploading it"
+              [ "$VARIANT" != release ] || exit 1
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+          mkdir dist
+          find artifacts -type f -exec mv {} dist/ \;
+          ls dist
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        if: steps.check.outputs.skip != 'true' && !inputs.test_pypi
+        with:
+          user: __token__
+          password: ${{ secrets[format('PYPI_API_TOKEN{0}', matrix.token)] || secrets.PYPI_API_TOKEN }}
+          verbose: true
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        if: steps.check.outputs.skip != 'true' && inputs.test_pypi
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          user: __token__
+          password: ${{ secrets[format('TESTPYPI_API_TOKEN{0}', matrix.token)] || secrets.TESTPYPI_API_TOKEN }}
+          verbose: true
