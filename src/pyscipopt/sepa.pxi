@@ -1,7 +1,7 @@
 ##@file sepa.pxi
 #@brief Base class of the Separator Plugin
 cdef class Sepa:
-    cdef public Model model
+    cdef public BaseModel model
     cdef public str name
 
     def sepafree(self):

@@ -1,7 +1,7 @@
 ##@file heuristic.pxi
 #@brief Base class of the Heuristics Plugin
 cdef class Heur:
-    cdef public Model model
+    cdef public BaseModel model
     cdef public str name
 
     def heurfree(self):

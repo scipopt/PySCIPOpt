@@ -1,7 +1,7 @@
 ##@file event.pxi
 #@brief Base class of the Event Handler Plugin
 cdef class Eventhdlr:
-    cdef public Model model
+    cdef public BaseModel model
     cdef public str name
     # eventtypes caught via `Model.catchEvent`, auto-dropped on `eventexit`.
     cdef list _caught_events

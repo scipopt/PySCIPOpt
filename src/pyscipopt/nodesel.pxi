@@ -1,7 +1,7 @@
 ##@file nodesel.pxi
 #@brief Base class of the Nodesel Plugin
 cdef class Nodesel:
-  cdef public Model model
+  cdef public BaseModel model
 
   def nodefree(self):
     '''frees memory of node selector'''

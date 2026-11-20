@@ -1,7 +1,7 @@
 ##@file cutsel.pxi
 #@brief Base class of the Cutsel Plugin
 cdef class Cutsel:
-  cdef public Model model
+  cdef public BaseModel model
 
   def cutselfree(self):
     '''frees memory of cut selector'''
