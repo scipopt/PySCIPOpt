@@ -234,12 +234,9 @@ jobs:
       - name: Download Valgrind
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          mkdir -p debs/partial
           sudo apt-get update -o Acquire::Retries=3
-          sudo apt-get install -y --download-only --no-install-recommends -o Acquire::Retries=3 \
-            -o Dir::Cache::archives="$PWD/debs" valgrind
-          sudo rm -rf debs/partial debs/lock
-          ls debs/*.deb
+          mkdir -p debs && cd debs
+          apt-get download -o Acquire::Retries=3 valgrind
 
       - uses: actions/upload-artifact@v4
         with:
@@ -274,7 +271,7 @@ jobs:
           path: debs
 
       - name: Install Valgrind
-        run: sudo dpkg -i debs/*.deb
+        run: sudo dpkg -i --force-depends debs/valgrind_*.deb
 
       - uses: actions/setup-python@v5
         with:
