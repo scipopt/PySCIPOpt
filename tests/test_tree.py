@@ -1,6 +1,6 @@
 import pytest
 
-from pyscipopt import Model, Eventhdlr, SCIP_RESULT, SCIP_EVENTTYPE, SCIP_PARAMSETTING
+from pyscipopt import Model, Eventhdlr, SCIP_RESULT, SCIP_EVENTTYPE, SCIP_PARAMSETTING, SCIP_BOUNDTYPE, SCIP_BOUNDCHGTYPE
 
 
 class NodeEventHandler(Eventhdlr):
@@ -31,6 +31,9 @@ class NodeEventHandler(Eventhdlr):
         domain_changes = node.getDomchg()
         bound_changes = domain_changes.getBoundchgs()
         assert len(bound_changes) == 1
+        assert isinstance(boundtypes[0], SCIP_BOUNDTYPE)
+        assert bound_changes[0].getBoundtype() == boundtypes[0]
+        assert bound_changes[0].getBoundchgtype() == SCIP_BOUNDCHGTYPE.BRANCHING
 
 
 def test_tree():

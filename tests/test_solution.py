@@ -220,10 +220,10 @@ def test_getOrigin_retrasform():
     m.optimize()
 
     sol = m.getBestSol()
-    assert sol.getOrigin() == SCIP_SOLORIGIN.ZERO
+    assert sol.getOrigin() is SCIP_SOLORIGIN.ZERO
 
     sol.retransform()
-    assert sol.getOrigin() == SCIP_SOLORIGIN.ORIGINAL
+    assert sol.getOrigin() is SCIP_SOLORIGIN.ORIGINAL
 
 
 def test_translate():

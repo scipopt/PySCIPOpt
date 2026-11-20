@@ -18,9 +18,22 @@ from posix.stdio cimport fileno
 from collections.abc import Iterable
 from itertools import repeat
 from dataclasses import dataclass
+from enum import Enum, Flag, IntEnum, IntFlag
 from typing import Union
 
 import numpy as np
+
+class _ScipEnum(IntEnum):
+    __str__ = Enum.__str__
+
+    def __format__(self, spec):
+        return str(self) if not spec else int.__format__(self, spec)
+
+class _ScipFlag(IntFlag):
+    __str__ = Flag.__str__
+
+    def __format__(self, spec):
+        return str(self) if not spec else int.__format__(self, spec)
 
 include "expr.pxi"
 include "lp.pxi"
@@ -71,7 +84,7 @@ cdef extern from "scip/config.h":
 # This is required to return SCIP_RESULT in the python code
 # In __init__.py this is imported as SCIP_RESULT to keep the
 # original naming scheme using capital letters
-cdef class PY_SCIP_RESULT:
+class PY_SCIP_RESULT(_ScipEnum):
     DIDNOTRUN   = SCIP_DIDNOTRUN
     DELAYED     = SCIP_DELAYED
     DIDNOTFIND  = SCIP_DIDNOTFIND
@@ -89,14 +102,15 @@ cdef class PY_SCIP_RESULT:
     FOUNDSOL    = SCIP_FOUNDSOL
     SUSPENDED   = SCIP_SUSPENDED
     SUCCESS     = SCIP_SUCCESS
+    DELAYNODE   = SCIP_DELAYNODE
 
-cdef class PY_SCIP_PARAMSETTING:
+class PY_SCIP_PARAMSETTING(_ScipEnum):
     DEFAULT     = SCIP_PARAMSETTING_DEFAULT
     AGGRESSIVE  = SCIP_PARAMSETTING_AGGRESSIVE
     FAST        = SCIP_PARAMSETTING_FAST
     OFF         = SCIP_PARAMSETTING_OFF
 
-cdef class PY_SCIP_LPPARAM:
+class PY_SCIP_LPPARAM(_ScipEnum):
     FROMSCRATCH    = SCIP_LPPAR_FROMSCRATCH
     FASTMIP        = SCIP_LPPAR_FASTMIP
     SCALING        = SCIP_LPPAR_SCALING
@@ -118,13 +132,13 @@ cdef class PY_SCIP_LPPARAM:
     POLISHING      = SCIP_LPPAR_POLISHING
     REFACTOR       = SCIP_LPPAR_REFACTOR
 
-cdef class PY_SCIP_BASESTAT:
+class PY_SCIP_BASESTAT(_ScipEnum):
     LOWER = SCIP_BASESTAT_LOWER
     BASIC = SCIP_BASESTAT_BASIC
     UPPER = SCIP_BASESTAT_UPPER
     ZERO  = SCIP_BASESTAT_ZERO
 
-cdef class PY_SCIP_PARAMEMPHASIS:
+class PY_SCIP_PARAMEMPHASIS(_ScipEnum):
     DEFAULT      = SCIP_PARAMEMPHASIS_DEFAULT
     CPSOLVER     = SCIP_PARAMEMPHASIS_CPSOLVER
     EASYCIP      = SCIP_PARAMEMPHASIS_EASYCIP
@@ -138,7 +152,7 @@ cdef class PY_SCIP_PARAMEMPHASIS:
     NUMERICS     = SCIP_PARAMEMPHASIS_NUMERICS
     BENCHMARK    = SCIP_PARAMEMPHASIS_BENCHMARK
 
-cdef class PY_SCIP_STATUS:
+class PY_SCIP_STATUS(_ScipEnum):
     UNKNOWN        = SCIP_STATUS_UNKNOWN
     USERINTERRUPT  = SCIP_STATUS_USERINTERRUPT
     NODELIMIT      = SCIP_STATUS_NODELIMIT
@@ -157,8 +171,7 @@ cdef class PY_SCIP_STATUS:
     UNBOUNDED      = SCIP_STATUS_UNBOUNDED
     INFORUNBD      = SCIP_STATUS_INFORUNBD
 
-StageNames = {}
-cdef class PY_SCIP_STAGE:
+class PY_SCIP_STAGE(_ScipEnum):
     INIT         = SCIP_STAGE_INIT
     PROBLEM      = SCIP_STAGE_PROBLEM
     TRANSFORMING = SCIP_STAGE_TRANSFORMING
@@ -174,7 +187,9 @@ cdef class PY_SCIP_STAGE:
     FREETRANS    = SCIP_STAGE_FREETRANS
     FREE         = SCIP_STAGE_FREE
 
-cdef class PY_SCIP_NODETYPE:
+StageNames = {stage.value: stage.name for stage in PY_SCIP_STAGE}
+
+class PY_SCIP_NODETYPE(_ScipEnum):
     FOCUSNODE   = SCIP_NODETYPE_FOCUSNODE
     PROBINGNODE = SCIP_NODETYPE_PROBINGNODE
     SIBLING     = SCIP_NODETYPE_SIBLING
@@ -187,19 +202,24 @@ cdef class PY_SCIP_NODETYPE:
     SUBROOT     = SCIP_NODETYPE_SUBROOT
     REFOCUSNODE = SCIP_NODETYPE_REFOCUSNODE
 
-cdef class PY_SCIP_PROPTIMING:
+class PY_SCIP_PROPTIMING(_ScipFlag):
     BEFORELP     = SCIP_PROPTIMING_BEFORELP
     DURINGLPLOOP = SCIP_PROPTIMING_DURINGLPLOOP
     AFTERLPLOOP  = SCIP_PROPTIMING_AFTERLPLOOP
     AFTERLPNODE  = SCIP_PROPTIMING_AFTERLPNODE
+    NONE         = SCIP_PROPTIMING_NONE
+    ALWAYS       = SCIP_PROPTIMING_ALWAYS
 
-cdef class PY_SCIP_PRESOLTIMING:
+class PY_SCIP_PRESOLTIMING(_ScipFlag):
     NONE       = SCIP_PRESOLTIMING_NONE
     FAST       = SCIP_PRESOLTIMING_FAST
     MEDIUM     = SCIP_PRESOLTIMING_MEDIUM
     EXHAUSTIVE = SCIP_PRESOLTIMING_EXHAUSTIVE
+    FINAL      = SCIP_PRESOLTIMING_FINAL
+    ALWAYS     = SCIP_PRESOLTIMING_ALWAYS
+    MAX        = SCIP_PRESOLTIMING_MAX
 
-cdef class PY_SCIP_HEURTIMING:
+class PY_SCIP_HEURTIMING(_ScipFlag):
     BEFORENODE        = SCIP_HEURTIMING_BEFORENODE
     DURINGLPLOOP      = SCIP_HEURTIMING_DURINGLPLOOP
     AFTERLPLOOP       = SCIP_HEURTIMING_AFTERLPLOOP
@@ -211,15 +231,19 @@ cdef class PY_SCIP_HEURTIMING:
     BEFOREPRESOL      = SCIP_HEURTIMING_BEFOREPRESOL
     DURINGPRESOLLOOP  = SCIP_HEURTIMING_DURINGPRESOLLOOP
     AFTERPROPLOOP     = SCIP_HEURTIMING_AFTERPROPLOOP
+    NONE              = SCIP_HEURTIMING_NONE
+    AFTERNODE         = SCIP_HEURTIMING_AFTERNODE
+    AFTERPLUNGE       = SCIP_HEURTIMING_AFTERPLUNGE
 
-EventNames = {}
-cdef class PY_SCIP_EVENTTYPE:
+class PY_SCIP_EVENTTYPE(_ScipFlag):
     DISABLED          = SCIP_EVENTTYPE_DISABLED
     VARADDED          = SCIP_EVENTTYPE_VARADDED
     VARDELETED        = SCIP_EVENTTYPE_VARDELETED
     VARFIXED          = SCIP_EVENTTYPE_VARFIXED
     VARUNLOCKED       = SCIP_EVENTTYPE_VARUNLOCKED
     OBJCHANGED        = SCIP_EVENTTYPE_OBJCHANGED
+    TYPECHANGED       = SCIP_EVENTTYPE_TYPECHANGED
+    IMPLTYPECHANGED   = SCIP_EVENTTYPE_IMPLTYPECHANGED
     GLBCHANGED        = SCIP_EVENTTYPE_GLBCHANGED
     GUBCHANGED        = SCIP_EVENTTYPE_GUBCHANGED
     LBTIGHTENED       = SCIP_EVENTTYPE_LBTIGHTENED
@@ -271,16 +295,18 @@ cdef class PY_SCIP_EVENTTYPE:
     ROWCHANGED        = SCIP_EVENTTYPE_ROWCHANGED
     ROWEVENT          = SCIP_EVENTTYPE_ROWEVENT
 
-cdef class PY_SCIP_LOCKTYPE:
+EventNames = {eventtype.value: eventtype.name for eventtype in PY_SCIP_EVENTTYPE.__members__.values()}
+
+class PY_SCIP_LOCKTYPE(_ScipEnum):
     MODEL    = SCIP_LOCKTYPE_MODEL
     CONFLICT = SCIP_LOCKTYPE_CONFLICT
 
-cdef class PY_SCIP_IMPLINTTYPE:
+class PY_SCIP_IMPLINTTYPE(_ScipEnum):
     NONE   = SCIP_IMPLINTTYPE_NONE
     WEAK   = SCIP_IMPLINTTYPE_WEAK
     STRONG = SCIP_IMPLINTTYPE_STRONG
 
-cdef class PY_SCIP_LPSOLSTAT:
+class PY_SCIP_LPSOLSTAT(_ScipEnum):
     NOTSOLVED    = SCIP_LPSOLSTAT_NOTSOLVED
     OPTIMAL      = SCIP_LPSOLSTAT_OPTIMAL
     INFEASIBLE   = SCIP_LPSOLSTAT_INFEASIBLE
@@ -290,25 +316,35 @@ cdef class PY_SCIP_LPSOLSTAT:
     TIMELIMIT    = SCIP_LPSOLSTAT_TIMELIMIT
     ERROR        = SCIP_LPSOLSTAT_ERROR
 
-cdef class PY_SCIP_BRANCHDIR:
+class PY_SCIP_BRANCHDIR(_ScipEnum):
     DOWNWARDS = SCIP_BRANCHDIR_DOWNWARDS
     UPWARDS   = SCIP_BRANCHDIR_UPWARDS
     FIXED     = SCIP_BRANCHDIR_FIXED
     AUTO      = SCIP_BRANCHDIR_AUTO
 
-cdef class PY_SCIP_BENDERSENFOTYPE:
+class PY_SCIP_BOUNDTYPE(_ScipEnum):
+    LOWER = SCIP_BOUNDTYPE_LOWER
+    UPPER = SCIP_BOUNDTYPE_UPPER
+
+class PY_SCIP_BOUNDCHGTYPE(_ScipEnum):
+    BRANCHING = SCIP_BOUNDCHGTYPE_BRANCHING
+    CONSINFER = SCIP_BOUNDCHGTYPE_CONSINFER
+    PROPINFER = SCIP_BOUNDCHGTYPE_PROPINFER
+
+class PY_SCIP_BENDERSENFOTYPE(_ScipEnum):
     LP     = SCIP_BENDERSENFOTYPE_LP
     RELAX  = SCIP_BENDERSENFOTYPE_RELAX
     PSEUDO = SCIP_BENDERSENFOTYPE_PSEUDO
     CHECK  = SCIP_BENDERSENFOTYPE_CHECK
 
-cdef class PY_SCIP_ROWORIGINTYPE:
-    UNSPEC = SCIP_ROWORIGINTYPE_UNSPEC
-    CONS   = SCIP_ROWORIGINTYPE_CONS
-    SEPA   = SCIP_ROWORIGINTYPE_SEPA
-    REOPT  = SCIP_ROWORIGINTYPE_REOPT
+class PY_SCIP_ROWORIGINTYPE(_ScipEnum):
+    UNSPEC   = SCIP_ROWORIGINTYPE_UNSPEC
+    CONSHDLR = SCIP_ROWORIGINTYPE_CONSHDLR
+    CONS     = SCIP_ROWORIGINTYPE_CONS
+    SEPA     = SCIP_ROWORIGINTYPE_SEPA
+    REOPT    = SCIP_ROWORIGINTYPE_REOPT
 
-cdef class PY_SCIP_SOLORIGIN:
+class PY_SCIP_SOLORIGIN(_ScipEnum):
     ORIGINAL  = SCIP_SOLORIGIN_ORIGINAL
     ZERO      = SCIP_SOLORIGIN_ZERO
     LPSOL     = SCIP_SOLORIGIN_LPSOL
@@ -317,6 +353,12 @@ cdef class PY_SCIP_SOLORIGIN:
     PSEUDOSOL = SCIP_SOLORIGIN_PSEUDOSOL
     PARTIAL   = SCIP_SOLORIGIN_PARTIAL
     UNKNOWN   = SCIP_SOLORIGIN_UNKNOWN
+
+cdef dict _ENUMS = {
+    cls: {m.value: m for m in cls.__members__.values()}
+    for cls in _ScipEnum.__subclasses__() + _ScipFlag.__subclasses__()
+}
+cdef dict _STAGE_NAMES = {v: m.name for v, m in _ENUMS[PY_SCIP_STAGE].items()}
 
 def PY_SCIP_CALL(SCIP_RETCODE rc):
     if rc == SCIP_OKAY:
@@ -393,7 +435,7 @@ cdef class Event:
         PY_SCIP_EVENTTYPE
 
         """
-        return SCIPeventGetType(self.event)
+        return _ENUMS[PY_SCIP_EVENTTYPE][SCIPeventGetType(self.event)]
 
     def getName(self):
         """
@@ -404,16 +446,7 @@ cdef class Event:
         str
 
         """
-        if not EventNames:
-            self._getEventNames()
-        return EventNames[self.getType()]
-
-    def _getEventNames(self):
-        """Gets event names."""
-        for name in dir(PY_SCIP_EVENTTYPE):
-            attr = getattr(PY_SCIP_EVENTTYPE, name)
-            if isinstance(attr, int):
-                EventNames[attr] = name
+        return self.getType().name
 
     def __repr__(self):
         return str(self.getType())
@@ -857,7 +890,7 @@ cdef class Row:
         PY_SCIP_ROWORIGINTYPE
 
         """
-        return SCIProwGetOrigintype(self.scip_row)
+        return _ENUMS[PY_SCIP_ROWORIGINTYPE][SCIProwGetOrigintype(self.scip_row)]
 
     def getConsOriginConshdlrtype(self):
         """
@@ -1145,7 +1178,7 @@ cdef class Solution:
         -------
         PY_SCIP_SOLORIGIN
         """
-        return SCIPsolGetOrigin(self.sol)
+        return _ENUMS[PY_SCIP_SOLORIGIN][SCIPsolGetOrigin(self.sol)]
 
     def retransform(self):
         """ retransforms solution to original problem space """
@@ -1223,11 +1256,11 @@ cdef class BoundChange:
 
         Returns
         -------
-        int
-            (0 = branching, 1 = consinfer, 2 = propinfer)
+        PY_SCIP_BOUNDCHGTYPE
+            BRANCHING, CONSINFER or PROPINFER
 
         """
-        return SCIPboundchgGetBoundchgtype(self.scip_boundchg)
+        return _ENUMS[PY_SCIP_BOUNDCHGTYPE][SCIPboundchgGetBoundchgtype(self.scip_boundchg)]
 
     def getBoundtype(self):
         """
@@ -1235,11 +1268,11 @@ cdef class BoundChange:
 
         Returns
         -------
-        int
-            (0 = lower, 1 = upper)
+        PY_SCIP_BOUNDTYPE
+            LOWER or UPPER
 
         """
-        return SCIPboundchgGetBoundtype(self.scip_boundchg)
+        return _ENUMS[PY_SCIP_BOUNDTYPE][SCIPboundchgGetBoundtype(self.scip_boundchg)]
 
     def isRedundant(self):
         """
@@ -1361,7 +1394,7 @@ cdef class Node:
         PY_SCIP_NODETYPE
 
         """
-        return SCIPnodeGetType(self.scip_node)
+        return _ENUMS[PY_SCIP_NODETYPE][SCIPnodeGetType(self.scip_node)]
 
     def getLowerbound(self):
         """
@@ -1468,7 +1501,7 @@ cdef class Node:
         -------
         list of Variable
         list of float
-        list of int
+        list of PY_SCIP_BOUNDTYPE
 
         """
         cdef int nbranchvars = self.getNParentBranchings()
@@ -1483,7 +1516,7 @@ cdef class Node:
 
         py_variables = [Variable.create(branchvars[i]) for i in range(nbranchvars)]
         py_branchbounds = [branchbounds[i] for i in range(nbranchvars)]
-        py_boundtypes = [boundtypes[i] for i in range(nbranchvars)]
+        py_boundtypes = [_ENUMS[PY_SCIP_BOUNDTYPE][boundtypes[i]] for i in range(nbranchvars)]
         free(boundtypes)
         free(branchbounds)
         free(branchvars)
@@ -1636,7 +1669,7 @@ cdef class Variable(Expr):
         -------
         PY_SCIP_IMPLINTTYPE
         """
-        return SCIPvarGetImplType(self.scip_var)
+        return _ENUMS[PY_SCIP_IMPLINTTYPE][SCIPvarGetImplType(self.scip_var)]
 
     def getStatus(self):
         """
@@ -2186,7 +2219,7 @@ class MatrixVariable(MatrixExpr):
         """
         mayround = np.empty(self.shape, dtype=bool)
         for idx in np.ndindex(self.shape):
-            mayround[idx] = self[idx].varMayRound()
+            mayround[idx] = self[idx].varMayRound(direction)
         return mayround
 
 cdef class Constraint:
@@ -3139,7 +3172,7 @@ cdef class Model:
     def freeTransform(self):
         """Frees all solution process data including presolving and
         transformed problem, only original problem is kept."""
-        if self.getStage() not in [SCIP_STAGE_INIT,
+        if SCIPgetStage(self._scip) not in [SCIP_STAGE_INIT,
                                  SCIP_STAGE_PROBLEM,
                                  SCIP_STAGE_TRANSFORMED,
                                  SCIP_STAGE_PRESOLVING,
@@ -3459,6 +3492,32 @@ cdef class Model:
         """
         return Node.create(SCIPgetFocusNode(self._scip))
 
+    def getFocusDepth(self):
+        """
+        Gets depth of the focus node, or -1 if no focus node exists.
+        The focus node is the currently processed node in the branching tree, excluding the nodes of the probing path.
+
+        Returns
+        -------
+        int
+            The depth of the focus node, or -1 if no focus node exists.
+
+        """
+        return SCIPgetFocusDepth(self._scip)
+
+    def getRootNode(self):
+        """
+        Gets the root node of the tree, or None if no root node exists.
+
+        Returns
+        -------
+        Node or None
+            The root node of the search tree, or None if no root node exists
+            (e.g., after the problem has been solved to optimality).
+
+        """
+        return Node.create(SCIPgetRootNode(self._scip))
+
     def getCurrentNode(self):
         """
         Retrieve current node.
@@ -3469,6 +3528,68 @@ cdef class Model:
 
         """
         return Node.create(SCIPgetCurrentNode(self._scip))
+
+    def wasNodeLastBranchParent(self, Node node=None):
+        """
+        Checks whether the node was the parent in the most recent branching of the tree.
+
+        Parameters
+        ----------
+        node : Node or None
+            A node of this model, or None to check the focus node.
+
+        Returns
+        -------
+        bool
+            Whether the node was the last branching parent. False if no branching
+            has occurred or no focus node exists when node is None.
+
+        """
+        cdef SCIP_NODE* scip_node = NULL
+        if node is not None:
+            scip_node = node.scip_node
+        return bool(SCIPwasNodeLastBranchParent(self._scip, scip_node))
+
+    def nodesSharePath(self, Node node1 not None, Node node2 not None):
+        """
+        Checks for two nodes whether they share the same root path, i.e., whether one is an ancestor of the other.
+        If node1 and node2 are the same node, True is returned.
+
+        Parameters
+        ----------
+        node1 : Node
+            First node to compare.
+        node2 : Node
+            Second node to compare.
+
+        Returns
+        -------
+        bool
+            Whether the nodes share a root path.
+
+        """
+        return bool(SCIPnodesSharePath(node1.scip_node, node2.scip_node))
+
+    def nodesGetCommonAncestor(self, Node node1 not None, Node node2 not None):
+        """
+        Finds the common ancestor node of two given nodes, or None if no common ancestor is found.
+        If node1 and node2 are the same node, that node is returned.
+
+        Parameters
+        ----------
+        node1 : Node
+            First node to compare.
+        node2 : Node
+            Second node to compare.
+
+        Returns
+        -------
+        Node or None
+            The common ancestor closest to the given nodes, or None if no common ancestor is found
+            (e.g., if the nodes belong to different trees).
+
+        """
+        return Node.create(SCIPnodesGetCommonAncestor(node1.scip_node, node2.scip_node))
 
     def getGap(self):
         """
@@ -4427,7 +4548,7 @@ cdef class Model:
         _heur = SCIPfindHeur(self._scip, n)
         if _heur == NULL:
             raise ValueError("Could not find heuristic <%s>" % heurname)
-        return SCIPheurGetTimingmask(_heur)
+        return PY_SCIP_HEURTIMING(SCIPheurGetTimingmask(_heur))
 
     def disablePropagation(self, onlyroot=False):
         """
@@ -5264,7 +5385,7 @@ cdef class Model:
 
     def relax(self):
         """Relaxes the integrality restrictions of the model."""
-        if self.getStage() != SCIP_STAGE_PROBLEM:
+        if SCIPgetStage(self._scip) != SCIP_STAGE_PROBLEM:
             raise Warning("method can only be called in stage PROBLEM")
 
         for var in self.getVars():
@@ -5441,7 +5562,7 @@ cdef class Model:
         SCIP_LPSOLSTAT
 
         """
-        return SCIPgetLPSolstat(self._scip)
+        return _ENUMS[PY_SCIP_LPSOLSTAT][SCIPgetLPSolstat(self._scip)]
 
     def constructLP(self):
         """
@@ -7083,6 +7204,40 @@ cdef class Model:
 
         PY_SCIP_CALL(SCIPaddCoefLogicor(self._scip, logicor_cons.scip_cons, var.scip_var))
 
+    cdef SCIP_CONS* _getTransformedCons(self, Constraint cons, str expected_cons_type):
+        """
+        Validates constraint type and retrieves its transformed representation.
+
+        Parameters
+        ----------
+        cons : Constraint
+            Constraint to get the transformed representation for.
+        expected_cons_type : str
+            Expected constraint type name (e.g. 'linear', 'logicor', 'knapsack').
+
+        Returns
+        -------
+        SCIP_CONS*
+            Pointer to the transformed SCIP constraint, or NULL if transformed constraint does not exist.
+
+        Raises
+        ------
+        Warning
+            If the constraint handler type does not match expected_cons_type.
+
+        """
+        cdef SCIP_CONS* transcons
+
+        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
+        if not constype == expected_cons_type:
+            raise Warning(f"dual solution values not available for constraints of type {constype}")
+
+        if cons.isOriginal():
+            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
+            return transcons
+
+        return cons.scip_cons
+
     def getDualsolLogicor(self, Constraint logicor_cons):
         """
         Gets the dual solution of a logicor constraint in the current LP.
@@ -7098,18 +7253,9 @@ cdef class Model:
             Zero if presolve removed the transformed constraint.
 
         """
-        cdef SCIP_CONS* transcons
-
-        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
-        if not constype == 'logicor':
-            raise Warning("dual solution values not available for constraints of type ", constype)
-
-        if logicor_cons.isOriginal():
-            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, logicor_cons.scip_cons, &transcons))
-            if transcons == NULL:
-                return 0.0
-        else:
-            transcons = logicor_cons.scip_cons
+        cdef SCIP_CONS* transcons = self._getTransformedCons(logicor_cons, "logicor")
+        if transcons == NULL:
+            return 0.0
 
         return SCIPgetDualsolLogicor(self._scip, transcons)
 
@@ -7128,18 +7274,9 @@ cdef class Model:
             Zero if presolve removed the transformed constraint.
 
         """
-        cdef SCIP_CONS* transcons
-
-        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(logicor_cons.scip_cons))).decode('UTF-8')
-        if not constype == 'logicor':
-            raise Warning("dual solution values not available for constraints of type ", constype)
-
-        if logicor_cons.isOriginal():
-            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, logicor_cons.scip_cons, &transcons))
-            if transcons == NULL:
-                return 0.0
-        else:
-            transcons = logicor_cons.scip_cons
+        cdef SCIP_CONS* transcons = self._getTransformedCons(logicor_cons, "logicor")
+        if transcons == NULL:
+            return 0.0
 
         return SCIPgetDualfarkasLogicor(self._scip, transcons)
 
@@ -7165,7 +7302,7 @@ cdef class Model:
         coef : float
 
         """
-        assert self.getStage() == 1, "addExprNonlinear cannot be called in stage %i." % self.getStage()
+        assert SCIPgetStage(self._scip) == 1, "addExprNonlinear cannot be called in stage %i." % SCIPgetStage(self._scip)
         assert cons.isNonlinear(), "addExprNonlinear can only be called with nonlinear constraints."
 
         cdef Constraint temp_cons
@@ -8699,7 +8836,7 @@ cdef class Model:
         cdef SCIP_Real activity
         cdef SCIP_SOL* scip_sol
 
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
+        if not SCIPgetStage(self._scip) >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
 
         if isinstance(sol, Solution):
@@ -8738,7 +8875,7 @@ cdef class Model:
         cdef SCIP_SOL* scip_sol
 
 
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
+        if not SCIPgetStage(self._scip) >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
 
         if isinstance(sol, Solution):
@@ -9211,17 +9348,10 @@ cdef class Model:
             Zero if presolve removed the transformed constraint.
 
         """
-        cdef SCIP_CONS* transcons
+        cdef SCIP_CONS* transcons = self._getTransformedCons(cons, "linear")
+        if transcons == NULL:
+            return 0.0
 
-        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
-        if not constype == 'linear':
-            raise Warning("dual solution values not available for constraints of type ", constype)
-        if cons.isOriginal():
-            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
-            if transcons == NULL:
-                return 0.0
-        else:
-            transcons = cons.scip_cons
         return SCIPgetDualsolLinear(self._scip, transcons)
 
     def getDualsolKnapsack(self, Constraint cons):
@@ -9238,18 +9368,10 @@ cdef class Model:
         float
 
         """
-        cdef SCIP_CONS* transcons
+        cdef SCIP_CONS* transcons = self._getTransformedCons(cons, "knapsack")
+        if transcons == NULL:
+            return 0.0
 
-        constype = bytes(SCIPconshdlrGetName(SCIPconsGetHdlr(cons.scip_cons))).decode('UTF-8')
-        if not constype == 'knapsack':
-            raise Warning("dual solution values not available for constraints of type ", constype)
-        if cons.isOriginal():
-            # presolve may have removed it, and then there's no dual to read
-            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
-            if transcons == NULL:
-                return 0.0
-        else:
-            transcons = cons.scip_cons
         return SCIPgetDualsolKnapsack(self._scip, transcons)
 
     def getDualMultiplier(self, Constraint cons):
@@ -9283,16 +9405,12 @@ cdef class Model:
             Zero if presolve removed the transformed constraint.
 
         """
-        cdef SCIP_CONS* transcons
-
         # TODO this should ideally be handled on the SCIP side
-        if cons.isOriginal():
-            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
-            if transcons == NULL:
-                return 0.0
-            return SCIPgetDualfarkasLinear(self._scip, transcons)
-        else:
-            return SCIPgetDualfarkasLinear(self._scip, cons.scip_cons)
+        cdef SCIP_CONS* transcons = self._getTransformedCons(cons, "linear")
+        if transcons == NULL:
+            return 0.0
+
+        return SCIPgetDualfarkasLinear(self._scip, transcons)
     
     def getDualfarkasKnapsack(self, Constraint cons):
         """
@@ -9308,17 +9426,12 @@ cdef class Model:
         float
 
         """
-        cdef SCIP_CONS* transcons
-
         # TODO this should ideally be handled on the SCIP side
-        if cons.isOriginal():
-            # presolve may have removed it, and then there's no Farkas value to read
-            PY_SCIP_CALL(SCIPgetTransformedCons(self._scip, cons.scip_cons, &transcons))
-            if transcons == NULL:
-                return 0.0
-            return SCIPgetDualfarkasKnapsack(self._scip, transcons)
-        else:
-            return SCIPgetDualfarkasKnapsack(self._scip, cons.scip_cons)
+        cdef SCIP_CONS* transcons = self._getTransformedCons(cons, "knapsack")
+        if transcons == NULL:
+            return 0.0
+            
+        return SCIPgetDualfarkasKnapsack(self._scip, transcons)
 
     def getVarRedcost(self, Variable var):
         """
@@ -9396,7 +9509,7 @@ cdef class Model:
 
     def presolve(self):
         """Presolve the problem."""
-        if self.getStage() not in [SCIP_STAGE_PROBLEM, SCIP_STAGE_TRANSFORMED,\
+        if SCIPgetStage(self._scip) not in [SCIP_STAGE_PROBLEM, SCIP_STAGE_TRANSFORMED,\
                                 SCIP_STAGE_PRESOLVING, SCIP_STAGE_PRESOLVED, \
                                 SCIP_STAGE_SOLVED]:
             raise Warning("method cannot be called in stage %i." % self.getStage())
@@ -9504,6 +9617,25 @@ cdef class Model:
             stacklevel=2
         )
 
+    cdef SCIP_BENDERS* _getBenders(self, object benders):
+        """
+        Retrieves the SCIP_BENDERS pointer for the given Benders object or the default decomposition.
+
+        Parameters
+        ----------
+        benders : Benders or None
+            The Benders' decomposition object, or None to use the default Benders' decomposition.
+
+        Returns
+        -------
+        SCIP_BENDERS*
+            Pointer to the underlying SCIP_BENDERS structure, or NULL if not found.
+
+        """
+        if benders is None:
+            return SCIPfindBenders(self._scip, "default")
+        return (<Benders>benders)._benders
+
     def updateBendersLowerbounds(self, lowerbounds, Benders benders=None):
         """
         Updates the subproblem lower bounds for benders using
@@ -9516,14 +9648,9 @@ cdef class Model:
         benders : Benders or None, optional
 
         """
-        cdef SCIP_BENDERS* _benders
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
 
         assert type(lowerbounds) is dict
-
-        if benders is None:
-            _benders = SCIPfindBenders(self._scip, "default")
-        else:
-            _benders = benders._benders
 
         for d in lowerbounds.keys():
             SCIPbendersUpdateSubproblemLowerbound(_benders, d, lowerbounds[d])
@@ -9590,18 +9717,13 @@ cdef class Model:
             PY_SCIP_BENDERSENFOTYPE: LP, RELAX, PSEUDO or CHECK. Default is LP.
 
         """
-        cdef SCIP_BENDERS* scip_benders
+        cdef SCIP_BENDERS* scip_benders = self._getBenders(benders)
         cdef SCIP_SOL* scip_sol
 
         if isinstance(solution, Solution):
             scip_sol = solution.sol
         else:
             scip_sol = NULL
-
-        if benders is None:
-            scip_benders = SCIPfindBenders(self._scip, "default")
-        else:
-            scip_benders = benders._benders
 
         retcode = SCIPsetupBendersSubproblem(self._scip, scip_benders, scip_sol, probnumber, checktype)
 
@@ -9632,7 +9754,7 @@ cdef class Model:
 
         """
 
-        cdef SCIP_BENDERS* scip_benders
+        cdef SCIP_BENDERS* scip_benders = self._getBenders(benders)
         cdef SCIP_SOL* scip_sol
         cdef SCIP_Real objective
         cdef SCIP_Bool infeasible
@@ -9641,11 +9763,6 @@ cdef class Model:
             scip_sol = solution.sol
         else:
             scip_sol = NULL
-
-        if benders is None:
-            scip_benders = SCIPfindBenders(self._scip, "default")
-        else:
-            scip_benders = benders._benders
 
         PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip, scip_benders, scip_sol,
             probnumber, &infeasible, solvecip, &objective))
@@ -9670,13 +9787,8 @@ cdef class Model:
         Model
 
         """
-        cdef SCIP_BENDERS* scip_benders
+        cdef SCIP_BENDERS* scip_benders = self._getBenders(benders)
         cdef SCIP* scip_subprob
-
-        if benders is None:
-            scip_benders = SCIPfindBenders(self._scip, "default")
-        else:
-            scip_benders = benders._benders
 
         scip_subprob = SCIPbendersSubproblem(scip_benders, probnumber)
 
@@ -9701,13 +9813,8 @@ cdef class Model:
         Variable or None
 
         """
-        cdef SCIP_BENDERS* _benders
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
         cdef SCIP_VAR* _mappedvar
-
-        if benders is None:
-            _benders = SCIPfindBenders(self._scip, "default")
-        else:
-            _benders = benders._benders
 
         if probnumber == -1:
             PY_SCIP_CALL(SCIPgetBendersMasterVar(self._scip, _benders, var.scip_var, &_mappedvar))
@@ -9734,13 +9841,8 @@ cdef class Model:
         Variable
 
         """
-        cdef SCIP_BENDERS* _benders
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
         cdef SCIP_VAR* _auxvar
-
-        if benders is None:
-            _benders = SCIPfindBenders(self._scip, "default")
-        else:
-            _benders = benders._benders
 
         _auxvar = SCIPbendersGetAuxiliaryVar(_benders, probnumber)
         return self._getOrCreateVar(_auxvar)
@@ -9764,14 +9866,9 @@ cdef class Model:
             flag to indicate whether the current subproblem is optimal for the master
 
         """
-        cdef SCIP_BENDERS* _benders
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
         cdef SCIP_SOL* scip_sol
         cdef SCIP_Bool optimal
-
-        if benders is None:
-            _benders = SCIPfindBenders(self._scip, "default")
-        else:
-            _benders = benders._benders
 
         if isinstance(solution, Solution):
             scip_sol = solution.sol
@@ -10056,7 +10153,7 @@ cdef class Model:
                                 initial, separate, enforce, check, propagate, local, modifiable, dynamic, removable, stickingatnode))
         return constraint
 
-    def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing=SCIP_PRESOLTIMING_FAST):
+    def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing=PY_SCIP_PRESOLTIMING.FAST):
         """
         Include a presolver.
 
@@ -10153,7 +10250,7 @@ cdef class Model:
         self._plugins.append(reader)
 
     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
-                    proptiming, presoltiming=SCIP_PRESOLTIMING_FAST, priority=1, freq=1, delay=True):
+                    proptiming, presoltiming=PY_SCIP_PRESOLTIMING.FAST, priority=1, freq=1, delay=True):
         """
         Include a propagator.
 
@@ -10194,7 +10291,7 @@ cdef class Model:
         self._plugins.append(prop)
 
     def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,
-                    maxdepth=-1, timingmask=SCIP_HEURTIMING_BEFORENODE, usessubscip=False):
+                    maxdepth=-1, timingmask=PY_SCIP_HEURTIMING.BEFORENODE, usessubscip=False):
         """
         Include a primal heuristic.
 
@@ -11097,6 +11194,26 @@ cdef class Model:
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
+    cdef SCIP_HEUR* _getHeur(self, object heur):
+        """
+        Retrieves the SCIP_HEUR pointer corresponding to a heuristic object.
+
+        Parameters
+        ----------
+        heur : Heur or None
+            The heuristic object to resolve.
+
+        Returns
+        -------
+        SCIP_HEUR*
+            Pointer to the SCIP heuristic, or NULL if heur is not a Heur instance or not found.
+
+        """
+        if isinstance(heur, Heur):
+            n = str_conversion(heur.name)
+            return SCIPfindHeur(self._scip, n)
+        return NULL
+
     def createSol(self, Heur heur = None, initlp=False):
         """
         Create a new primal solution in the transformed space.
@@ -11113,14 +11230,9 @@ cdef class Model:
         Solution
 
         """
-        cdef SCIP_HEUR* _heur
         cdef SCIP_SOL* _sol
+        cdef SCIP_HEUR* _heur = self._getHeur(heur)
 
-        if isinstance(heur, Heur):
-            n = str_conversion(heur.name)
-            _heur = SCIPfindHeur(self._scip, n)
-        else:
-            _heur = NULL
         if not initlp:
             PY_SCIP_CALL(SCIPcreateSol(self._scip, &_sol, _heur))
         else:
@@ -11142,14 +11254,9 @@ cdef class Model:
         Solution
 
         """
-        cdef SCIP_HEUR* _heur
         cdef SCIP_SOL* _sol
+        cdef SCIP_HEUR* _heur = self._getHeur(heur)
 
-        if isinstance(heur, Heur):
-            n = str_conversion(heur.name)
-            _heur = SCIPfindHeur(self._scip, n)
-        else:
-            _heur = NULL
         PY_SCIP_CALL(SCIPcreatePartialSol(self._scip, &_sol, _heur))
         partialsolution = Solution.create(self._scip, _sol)
         return partialsolution
@@ -11171,11 +11278,7 @@ cdef class Model:
         cdef SCIP_HEUR* _heur
         cdef SCIP_SOL* _sol
 
-        if isinstance(heur, Heur):
-            n = str_conversion(heur.name)
-            _heur = SCIPfindHeur(self._scip, n)
-        else:
-            _heur = NULL
+        _heur = self._getHeur(heur)
 
         PY_SCIP_CALL(SCIPcreateOrigSol(self._scip, &_sol, _heur))
         solution = Solution.create(self._scip, _sol)
@@ -11626,6 +11729,14 @@ cdef class Model:
             raise ValueError("Cannot get solution time: solution is None or NULL")
         return SCIPgetSolTime(self._scip, sol.sol)
 
+    cdef _ensureFreshBestSol(self):
+        """
+        Refreshes the internal _bestSol attribute if the underlying SCIP pointer has changed.
+        """
+        cdef SCIP_SOL* current_best_sol = SCIPgetBestSol(self._scip)
+        if self._bestSol is None or self._bestSol.sol != current_best_sol:
+            self._bestSol = Solution.create(self._scip, current_best_sol)
+
     def getObjVal(self, original=True):
         """
         Retrieve the objective value of the best solution.
@@ -11641,13 +11752,10 @@ cdef class Model:
 
         """
 
-        # Ensure _bestSol is up-to-date (cheap pointer comparison)
-        cdef SCIP_SOL* current_best_sol = SCIPgetBestSol(self._scip)
-        if self._bestSol is None or self._bestSol.sol != current_best_sol:
-            self._bestSol = Solution.create(self._scip, current_best_sol)
+        self._ensureFreshBestSol()
 
         if SCIPgetNSols(self._scip) == 0:
-            if self.getStage() != SCIP_STAGE_SOLVING:
+            if SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
                 raise Warning("Without a solution, method can only be called in stage SOLVING.")
         else:
             assert self._bestSol.sol != NULL
@@ -11657,7 +11765,7 @@ cdef class Model:
             else:
                 min_stage_requirement = SCIP_STAGE_TRANSFORMING
 
-            if not self.getStage() >= min_stage_requirement:
+            if not SCIPgetStage(self._scip) >= min_stage_requirement:
                 raise Warning("method cannot be called in stage %i." % self.getStage)
 
         return self.getSolObjVal(self._bestSol, original)
@@ -11713,10 +11821,7 @@ cdef class Model:
         if SCIPgetStage(self._scip) in {SCIP_STAGE_INIT, SCIP_STAGE_FREE}:
             raise Warning("Method cannot be called in stage ", self.getStage())
 
-        # Ensure _bestSol is up-to-date (cheap pointer comparison)
-        cdef SCIP_SOL* current_best_sol = SCIPgetBestSol(self._scip)
-        if self._bestSol is None or self._bestSol.sol != current_best_sol:
-            self._bestSol = Solution.create(self._scip, current_best_sol)
+        self._ensureFreshBestSol()
 
         if self._bestSol.sol == NULL and SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
             raise Warning("No solution available")
@@ -11837,10 +11942,10 @@ cdef class Model:
 
         Returns
         -------
-        int
+        SCIP_STAGE
 
         """
-        return SCIPgetStage(self._scip)
+        return _ENUMS[PY_SCIP_STAGE][SCIPgetStage(self._scip)]
 
     def getStageName(self):
         """
@@ -11851,16 +11956,7 @@ cdef class Model:
         str
 
         """
-        if not StageNames:
-            self._getStageNames()
-        return StageNames[self.getStage()]
-
-    def _getStageNames(self):
-        """Gets names of stages."""
-        for name in dir(PY_SCIP_STAGE):
-            attr = getattr(PY_SCIP_STAGE, name)
-            if isinstance(attr, int):
-                StageNames[attr] = name
+        return _STAGE_NAMES[SCIPgetStage(self._scip)]
 
     def getStatus(self):
         """
@@ -11925,6 +12021,31 @@ cdef class Model:
         else:
             return "unknown"
 
+    cdef SCIP_EVENTHDLR* _getEventhdlr(self, object eventhdlr):
+        """
+        Resolves an event handler object to its underlying SCIP_EVENTHDLR pointer.
+
+        Parameters
+        ----------
+        eventhdlr : Eventhdlr
+            The event handler object to resolve.
+
+        Returns
+        -------
+        SCIP_EVENTHDLR*
+            Pointer to the SCIP event handler, or NULL if not found.
+
+        Raises
+        ------
+        Warning
+            If eventhdlr is not an instance of Eventhdlr.
+
+        """
+        if isinstance(eventhdlr, Eventhdlr):
+            n = str_conversion(eventhdlr.name)
+            return SCIPfindEventhdlr(self._scip, n)
+        raise Warning(f"Expected an Eventhdlr instance, got {type(eventhdlr).__name__}")
+
     def catchEvent(self, eventtype, Eventhdlr eventhdlr):
         """
         Catches a global (not variable or row dependent) event.
@@ -11935,12 +12056,7 @@ cdef class Model:
         eventhdlr : Eventhdlr
 
         """
-        cdef SCIP_EVENTHDLR* _eventhdlr
-        if isinstance(eventhdlr, Eventhdlr):
-            n = str_conversion(eventhdlr.name)
-            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
-        else:
-            raise Warning("event handler not found")
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
 
         PY_SCIP_CALL(SCIPcatchEvent(self._scip, eventtype, _eventhdlr, NULL, NULL))
         eventhdlr._caught_events.append(eventtype)
@@ -11955,12 +12071,7 @@ cdef class Model:
         eventhdlr : Eventhdlr
 
         """
-        cdef SCIP_EVENTHDLR* _eventhdlr
-        if isinstance(eventhdlr, Eventhdlr):
-            n = str_conversion(eventhdlr.name)
-            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
-        else:
-            raise Warning("event handler not found")
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
 
         PY_SCIP_CALL(SCIPdropEvent(self._scip, eventtype, _eventhdlr, NULL, -1))
         if eventtype in eventhdlr._caught_events:
@@ -11977,12 +12088,7 @@ cdef class Model:
         eventhdlr : Eventhdlr
 
         """
-        cdef SCIP_EVENTHDLR* _eventhdlr
-        if isinstance(eventhdlr, Eventhdlr):
-            n = str_conversion(eventhdlr.name)
-            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
-        else:
-            raise Warning("event handler not found")
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
         PY_SCIP_CALL(SCIPcatchVarEvent(self._scip, var.scip_var, eventtype, _eventhdlr, NULL, NULL))
 
     def dropVarEvent(self, Variable var, eventtype, Eventhdlr eventhdlr):
@@ -11996,12 +12102,7 @@ cdef class Model:
         eventhdlr : Eventhdlr
 
         """
-        cdef SCIP_EVENTHDLR* _eventhdlr
-        if isinstance(eventhdlr, Eventhdlr):
-            n = str_conversion(eventhdlr.name)
-            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
-        else:
-            raise Warning("event handler not found")
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
         PY_SCIP_CALL(SCIPdropVarEvent(self._scip, var.scip_var, eventtype, _eventhdlr, NULL, -1))
 
     def catchRowEvent(self, Row row, eventtype, Eventhdlr eventhdlr):
@@ -12015,12 +12116,7 @@ cdef class Model:
         eventhdlr : Eventhdlr
 
         """
-        cdef SCIP_EVENTHDLR* _eventhdlr
-        if isinstance(eventhdlr, Eventhdlr):
-            n = str_conversion(eventhdlr.name)
-            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
-        else:
-            raise Warning("event handler not found")
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
         PY_SCIP_CALL(SCIPcatchRowEvent(self._scip, row.scip_row, eventtype, _eventhdlr, NULL, NULL))
 
     def dropRowEvent(self, Row row, eventtype, Eventhdlr eventhdlr):
@@ -12034,12 +12130,7 @@ cdef class Model:
         eventhdlr : Eventhdlr
 
         """
-        cdef SCIP_EVENTHDLR* _eventhdlr
-        if isinstance(eventhdlr, Eventhdlr):
-            n = str_conversion(eventhdlr.name)
-            _eventhdlr = SCIPfindEventhdlr(self._scip, n)
-        else:
-            raise Warning("event handler not found")
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
         PY_SCIP_CALL(SCIPdropRowEvent(self._scip, row.scip_row, eventtype, _eventhdlr, NULL, -1))
 
     # Statistic Methods
@@ -12626,7 +12717,7 @@ cdef class Model:
             raise ValueError("freeReoptSolve requires reoptimization to be enabled. "
                              "Call enableReoptimization() before solving.")
 
-        if self.getStage() not in [SCIP_STAGE_INIT,
+        if SCIPgetStage(self._scip) not in [SCIP_STAGE_INIT,
                                  SCIP_STAGE_PROBLEM,
                                  SCIP_STAGE_TRANSFORMED,
                                  SCIP_STAGE_PRESOLVING,
@@ -12948,7 +13039,7 @@ cdef class Model:
         """
         cdef SCIP_RESULT result
         PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
-        return result
+        return _ENUMS[PY_SCIP_RESULT][result]
 
     def addRowExact(self, RowExact rowexact):
         """

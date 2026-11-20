@@ -76,6 +76,7 @@ cdef extern from "scip/scip.h":
         SCIP_RESULT SCIP_FOUNDSOL
         SCIP_RESULT SCIP_SUSPENDED
         SCIP_RESULT SCIP_SUCCESS
+        SCIP_RESULT SCIP_DELAYNODE
 
     ctypedef int SCIP_STATUS
     cdef extern from "scip/type_stat.h":
@@ -165,6 +166,8 @@ cdef extern from "scip/scip.h":
         SCIP_PROPTIMING SCIP_PROPTIMING_DURINGLPLOOP
         SCIP_PROPTIMING SCIP_PROPTIMING_AFTERLPLOOP
         SCIP_PROPTIMING SCIP_PROPTIMING_AFTERLPNODE
+        SCIP_PROPTIMING SCIP_PROPTIMING_NONE
+        SCIP_PROPTIMING SCIP_PROPTIMING_ALWAYS
 
     ctypedef unsigned long SCIP_PRESOLTIMING
     cdef extern from "scip/type_timing.h":
@@ -172,6 +175,9 @@ cdef extern from "scip/scip.h":
         SCIP_PRESOLTIMING SCIP_PRESOLTIMING_FAST
         SCIP_PRESOLTIMING SCIP_PRESOLTIMING_MEDIUM
         SCIP_PRESOLTIMING SCIP_PRESOLTIMING_EXHAUSTIVE
+        SCIP_PRESOLTIMING SCIP_PRESOLTIMING_FINAL
+        SCIP_PRESOLTIMING SCIP_PRESOLTIMING_ALWAYS
+        SCIP_PRESOLTIMING SCIP_PRESOLTIMING_MAX
 
     ctypedef unsigned long SCIP_HEURTIMING
     cdef extern from "scip/type_timing.h":
@@ -186,6 +192,9 @@ cdef extern from "scip/scip.h":
         SCIP_HEURTIMING SCIP_HEURTIMING_BEFOREPRESOL
         SCIP_HEURTIMING SCIP_HEURTIMING_DURINGPRESOLLOOP
         SCIP_HEURTIMING SCIP_HEURTIMING_AFTERPROPLOOP
+        SCIP_HEURTIMING SCIP_HEURTIMING_NONE
+        SCIP_HEURTIMING SCIP_HEURTIMING_AFTERNODE
+        SCIP_HEURTIMING SCIP_HEURTIMING_AFTERPLUNGE
 
     ctypedef int SCIP_EXPR
     cdef extern from "scip/type_expr.h":
@@ -257,6 +266,8 @@ cdef extern from "scip/scip.h":
         SCIP_EVENTTYPE SCIP_EVENTTYPE_VARFIXED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_VARUNLOCKED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_OBJCHANGED
+        SCIP_EVENTTYPE SCIP_EVENTTYPE_TYPECHANGED
+        SCIP_EVENTTYPE SCIP_EVENTTYPE_IMPLTYPECHANGED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_GLBCHANGED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_GUBCHANGED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_LBTIGHTENED
@@ -360,6 +371,7 @@ cdef extern from "scip/scip.h":
     ctypedef int SCIP_ROWORIGINTYPE
     cdef extern from "scip/type_lp.h":
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_UNSPEC
+        SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_CONSHDLR
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_CONS
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_SEPA
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_REOPT
@@ -755,6 +767,8 @@ cdef extern from "scip/scip.h":
     # Node Methods
     SCIP_NODE* SCIPgetFocusNode(SCIP* scip)
     SCIP_NODE* SCIPgetCurrentNode(SCIP* scip)
+    SCIP_Bool SCIPnodesSharePath(SCIP_NODE* node1, SCIP_NODE* node2)
+    SCIP_NODE* SCIPnodesGetCommonAncestor(SCIP_NODE* node1, SCIP_NODE* node2)
     SCIP_NODE* SCIPnodeGetParent(SCIP_NODE* node)
     SCIP_Longint SCIPnodeGetNumber(SCIP_NODE* node)
     int SCIPnodeGetDepth(SCIP_NODE* node)
@@ -2168,6 +2182,9 @@ cdef extern from "scip/pub_lp.h":
 
 cdef extern from "scip/scip_tree.h":
     SCIP_RETCODE SCIPgetOpenNodesData(SCIP* scip, SCIP_NODE*** leaves, SCIP_NODE*** children, SCIP_NODE*** siblings, int* nleaves, int* nchildren, int* nsiblings)
+    int SCIPgetFocusDepth(SCIP* scip)
+    SCIP_NODE* SCIPgetRootNode(SCIP* scip)
+    SCIP_Bool SCIPwasNodeLastBranchParent(SCIP* scip, SCIP_NODE* node)
     SCIP_RETCODE SCIPgetChildren(SCIP* scip, SCIP_NODE*** children, int* nchildren)
     SCIP_Longint SCIPgetNChildren(SCIP* scip)
     SCIP_NODE* SCIPgetBestChild(SCIP* scip)
@@ -2333,6 +2350,12 @@ cdef class Model:
     cdef _getOrCreateCons(self, SCIP_CONS* scip_cons)
     cdef _getOrCreateVar(self, SCIP_VAR* scip_var)
     cdef _free_scip_instance(self)
+    
+    cdef _ensureFreshBestSol(self)
+    cdef SCIP_CONS* _getTransformedCons(self, Constraint cons, str expected_cons_type)
+    cdef SCIP_EVENTHDLR* _getEventhdlr(self, object eventhdlr)
+    cdef SCIP_BENDERS* _getBenders(self, object benders)
+    cdef SCIP_HEUR* _getHeur(self, object heur)
 
     @staticmethod
     cdef create(SCIP* scip)
