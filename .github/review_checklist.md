@@ -1,6 +1,6 @@
 ## Reviewer checklist
 
-Ticked by the reviewer, nothing to do here for the author.
+To be checked by the reviewer.
 
 ### Code
 
