@@ -186,7 +186,7 @@ jobs:
           wget --quiet --tries=5 "$url/libscip-linux.zip" -O scip.zip
           unzip -q scip.zip
           SCIPOPTDIR="$PWD/scip_install" python -m pip wheel --no-deps -w dist ./src
-          sudo apt-get update && sudo apt-get install -y libgfortran5
+          sudo apt-get update -o Acquire::Retries=3 && sudo apt-get install -y -o Acquire::Retries=3 libgfortran5
           python -m pip install -q auditwheel patchelf
           out="wheels/${{ matrix.side }}"
           LD_LIBRARY_PATH="$PWD/scip_install/lib" auditwheel repair --plat "manylinux_2_35_$(uname -m)" -w "$out" dist/*.whl
@@ -243,7 +243,8 @@ jobs:
           merge-multiple: true
 
       - name: Install Valgrind
-        run: sudo apt-get update && sudo apt-get install -y valgrind
+        timeout-minutes: 5
+        run: sudo apt-get update -o Acquire::Retries=3 && sudo apt-get install -y -o Acquire::Retries=3 valgrind
 
       - uses: actions/setup-python@v5
         with:
