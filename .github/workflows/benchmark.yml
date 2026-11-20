@@ -220,8 +220,34 @@ jobs:
           name: wheels-${{ matrix.side }}
           path: wheels/
 
+  valgrind:
+    needs: prepare
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: debs
+          key: valgrind-ubuntu-22.04-${{ runner.arch }}
+
+      - name: Download Valgrind
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p debs/partial
+          sudo apt-get update -o Acquire::Retries=3
+          sudo apt-get install -y --download-only --no-install-recommends -o Acquire::Retries=3 \
+            -o Dir::Cache::archives="$PWD/debs" valgrind
+          sudo rm -rf debs/partial debs/lock
+          ls debs/*.deb
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: valgrind
+          path: debs/
+
   bench:
-    needs: [prepare, build]
+    needs: [prepare, build, valgrind]
     name: "bench: ${{ matrix.name }}"
     runs-on: ubuntu-22.04
     timeout-minutes: ${{ fromJSON(needs.prepare.outputs.job_minutes) }}
@@ -242,9 +268,13 @@ jobs:
           path: wheels
           merge-multiple: true
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: valgrind
+          path: debs
+
       - name: Install Valgrind
-        timeout-minutes: 5
-        run: sudo apt-get update -o Acquire::Retries=3 && sudo apt-get install -y -o Acquire::Retries=3 valgrind
+        run: sudo dpkg -i debs/*.deb
 
       - uses: actions/setup-python@v5
         with:
