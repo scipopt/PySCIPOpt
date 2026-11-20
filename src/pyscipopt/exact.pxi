@@ -189,7 +189,7 @@ cdef class ExactModel(BaseModel):
         """
         cdef SCIP_RESULT result
         PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
-        return result
+        return _ENUMS[PY_SCIP_RESULT][result]
 
     def addRow(self, RowExact rowexact):
         """
