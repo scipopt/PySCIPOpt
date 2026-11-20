@@ -284,18 +284,18 @@ def test_objLim():
 def test_getStage():
     m = Model() 
 
-    assert m.getStage() == SCIP_STAGE.PROBLEM
+    assert m.getStage() is SCIP_STAGE.PROBLEM
     assert m.getStageName() == "PROBLEM"
 
     x = m.addVar()
     m.addCons(x >= 1)    
     
-    assert m.getStage() == SCIP_STAGE.PROBLEM
+    assert m.getStage() is SCIP_STAGE.PROBLEM
     assert m.getStageName() == "PROBLEM" 
 
     m.optimize()
 
-    assert m.getStage() == SCIP_STAGE.SOLVED
+    assert m.getStage() is SCIP_STAGE.SOLVED
     assert m.getStageName() == "SOLVED"
 
 def test_getObjective():

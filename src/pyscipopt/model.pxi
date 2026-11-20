@@ -346,7 +346,7 @@ cdef class Row:
         PY_SCIP_ROWORIGINTYPE
 
         """
-        return SCIProwGetOrigintype(self.scip_row)
+        return _ENUMS[PY_SCIP_ROWORIGINTYPE][SCIProwGetOrigintype(self.scip_row)]
 
     def getConsOriginConshdlrtype(self):
         """
@@ -1612,7 +1612,7 @@ cdef class Model(BaseModel):
         SCIP_LPSOLSTAT
 
         """
-        return SCIPgetLPSolstat(self._scip)
+        return _ENUMS[PY_SCIP_LPSOLSTAT][SCIPgetLPSolstat(self._scip)]
 
     def getLPObjVal(self):
         """
@@ -2839,7 +2839,7 @@ cdef class Model(BaseModel):
         coef : float
 
         """
-        assert self.getStage() == 1, "addExprNonlinear cannot be called in stage %i." % self.getStage()
+        assert SCIPgetStage(self._scip) == 1, "addExprNonlinear cannot be called in stage %i." % SCIPgetStage(self._scip)
         assert cons.isNonlinear(), "addExprNonlinear can only be called with nonlinear constraints."
 
         cdef Constraint temp_cons
@@ -4313,7 +4313,7 @@ cdef class Model(BaseModel):
         cdef SCIP_Real activity
         cdef SCIP_SOL* scip_sol
 
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
+        if not SCIPgetStage(self._scip) >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
 
         if isinstance(sol, Solution):
@@ -4352,7 +4352,7 @@ cdef class Model(BaseModel):
         cdef SCIP_SOL* scip_sol
 
 
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
+        if not SCIPgetStage(self._scip) >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
 
         if isinstance(sol, Solution):
@@ -5947,7 +5947,7 @@ cdef class Model(BaseModel):
         )
         cdef SCIP_RESULT result
         PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
-        return result
+        return _ENUMS[PY_SCIP_RESULT][result]
 
     def addRowExact(self, RowExact rowexact):
         """
@@ -7082,7 +7082,7 @@ cdef class Model(BaseModel):
             raise ValueError("freeReoptSolve requires reoptimization to be enabled. "
                              "Call enableReoptimization() before solving.")
 
-        if self.getStage() not in [SCIP_STAGE_INIT,
+        if SCIPgetStage(self._scip) not in [SCIP_STAGE_INIT,
                                  SCIP_STAGE_PROBLEM,
                                  SCIP_STAGE_TRANSFORMED,
                                  SCIP_STAGE_PRESOLVING,

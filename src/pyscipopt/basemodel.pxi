@@ -347,7 +347,7 @@ cdef class BaseModel:
     def freeTransform(self):
         """Frees all solution process data including presolving and
         transformed problem, only original problem is kept."""
-        if self.getStage() not in [SCIP_STAGE_INIT,
+        if SCIPgetStage(self._scip) not in [SCIP_STAGE_INIT,
                                  SCIP_STAGE_PROBLEM,
                                  SCIP_STAGE_TRANSFORMED,
                                  SCIP_STAGE_PRESOLVING,
@@ -958,7 +958,7 @@ cdef class BaseModel:
         _heur = SCIPfindHeur(self._scip, n)
         if _heur == NULL:
             raise ValueError("Could not find heuristic <%s>" % heurname)
-        return SCIPheurGetTimingmask(_heur)
+        return PY_SCIP_HEURTIMING(SCIPheurGetTimingmask(_heur))
 
     def disablePropagation(self, onlyroot=False):
         """
@@ -1299,7 +1299,7 @@ cdef class BaseModel:
 
     def relax(self):
         """Relaxes the integrality restrictions of the model."""
-        if self.getStage() != SCIP_STAGE_PROBLEM:
+        if SCIPgetStage(self._scip) != SCIP_STAGE_PROBLEM:
             raise Warning("method can only be called in stage PROBLEM")
 
         for var in self.getVars():
@@ -2130,7 +2130,7 @@ cdef class BaseModel:
 
     def presolve(self):
         """Presolve the problem."""
-        if self.getStage() not in [SCIP_STAGE_PROBLEM, SCIP_STAGE_TRANSFORMED,\
+        if SCIPgetStage(self._scip) not in [SCIP_STAGE_PROBLEM, SCIP_STAGE_TRANSFORMED,\
                                 SCIP_STAGE_PRESOLVING, SCIP_STAGE_PRESOLVED, \
                                 SCIP_STAGE_SOLVED]:
             raise Warning("method cannot be called in stage %i." % self.getStage())
@@ -2273,7 +2273,7 @@ cdef class BaseModel:
         cdef SCIP_PRICER* scip_pricer
         PY_SCIP_CALL(SCIPdeactivatePricer(self._scip, pricer.scip_pricer))
 
-    def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing=SCIP_PRESOLTIMING_FAST):
+    def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing=PY_SCIP_PRESOLTIMING.FAST):
         """
         Include a presolver.
 
@@ -2370,7 +2370,7 @@ cdef class BaseModel:
         self._plugins.append(reader)
 
     def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
-                    proptiming, presoltiming=SCIP_PRESOLTIMING_FAST, priority=1, freq=1, delay=True):
+                    proptiming, presoltiming=PY_SCIP_PRESOLTIMING.FAST, priority=1, freq=1, delay=True):
         """
         Include a propagator.
 
@@ -2411,7 +2411,7 @@ cdef class BaseModel:
         self._plugins.append(prop)
 
     def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,
-                    maxdepth=-1, timingmask=SCIP_HEURTIMING_BEFORENODE, usessubscip=False):
+                    maxdepth=-1, timingmask=PY_SCIP_HEURTIMING.BEFORENODE, usessubscip=False):
         """
         Include a primal heuristic.
 
@@ -2944,7 +2944,7 @@ cdef class BaseModel:
         self._ensureFreshBestSol()
 
         if SCIPgetNSols(self._scip) == 0:
-            if self.getStage() != SCIP_STAGE_SOLVING:
+            if SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
                 raise Warning("Without a solution, method can only be called in stage SOLVING.")
         else:
             assert self._bestSol.sol != NULL
@@ -2954,7 +2954,7 @@ cdef class BaseModel:
             else:
                 min_stage_requirement = SCIP_STAGE_TRANSFORMING
 
-            if not self.getStage() >= min_stage_requirement:
+            if not SCIPgetStage(self._scip) >= min_stage_requirement:
                 raise Warning("method cannot be called in stage %i." % self.getStage)
 
         return self.getSolObjVal(self._bestSol, original)
@@ -2981,10 +2981,10 @@ cdef class BaseModel:
 
         Returns
         -------
-        int
+        SCIP_STAGE
 
         """
-        return SCIPgetStage(self._scip)
+        return _ENUMS[PY_SCIP_STAGE][SCIPgetStage(self._scip)]
 
     def getStageName(self):
         """
@@ -2995,16 +2995,7 @@ cdef class BaseModel:
         str
 
         """
-        if not StageNames:
-            self._getStageNames()
-        return StageNames[self.getStage()]
-
-    def _getStageNames(self):
-        """Gets names of stages."""
-        for name in dir(PY_SCIP_STAGE):
-            attr = getattr(PY_SCIP_STAGE, name)
-            if isinstance(attr, int):
-                StageNames[attr] = name
+        return _STAGE_NAMES[SCIPgetStage(self._scip)]
 
     def getStatus(self):
         """
