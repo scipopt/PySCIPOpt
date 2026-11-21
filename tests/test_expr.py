@@ -12,6 +12,7 @@ from pyscipopt.scip import (
     GenExpr,
     MatrixGenExpr,
     ProdExpr,
+    Term,
 )
 
 
@@ -680,3 +681,21 @@ def test_neg():
     assert str(neg_expr) == "prod(1.0,sqrt(sum(0.0,prod(1.0,x))))"
 
     assert str(-Constant(3.0)) == "-3.0"
+
+
+def test_term_rejects_non_variable_arguments(model):
+    m, x, y, z = model
+
+    with pytest.raises(TypeError, match="must be Variable"):
+        Term(None)
+    with pytest.raises(TypeError, match="must be Variable"):
+        Term(1)
+    with pytest.raises(TypeError, match="must be Variable"):
+        Term(x, None)
+    with pytest.raises(TypeError, match="must be Variable"):
+        Term(None, x)
+
+    # Valid constructions are unaffected.
+    assert len(Term()) == 0
+    assert len(Term(x)) == 1
+    assert Term(x, y) == Term(y, x)

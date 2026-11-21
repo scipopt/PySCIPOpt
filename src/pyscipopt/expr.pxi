@@ -79,8 +79,16 @@ cdef class Term:
     cdef Py_ssize_t hashval
 
     def __init__(self, *vartuple: Variable):
-        cdef Py_ssize_t n = PyTuple_GET_SIZE(vartuple)
+        cdef i, Py_ssize_t n = PyTuple_GET_SIZE(vartuple)
         cdef Variable var
+        cdef object item
+
+        for i in range(n):
+            item = <object>PyTuple_GET_ITEM(vartuple, i)
+            if not isinstance(item, Variable):
+                raise TypeError(
+                    f"Term() arguments must be Variable, got {type(item).__name__}"
+                )
 
         if n == 0:
             # The constant term; the empty args tuple is already canonical.
@@ -89,7 +97,7 @@ cdef class Term:
 
         elif n == 1:
             # Avoid sorting single variable
-            var = <object>PyTuple_GET_ITEM(vartuple, 0)
+            var = <Variable>PyTuple_GET_ITEM(vartuple, 0)
             self.vartuple = vartuple
             self.hashval = <Py_ssize_t>hash((var.ptr(),))
 
