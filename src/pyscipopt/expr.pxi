@@ -88,9 +88,7 @@ cdef class Term:
             self.hashval = <Py_ssize_t>hash(vartuple)
 
         elif n == 1:
-            # A single variable is trivially sorted, so avoid sorted and the generator.
-            # `vartuple` is the exact tuple built from *args, so PyTuple_GET_ITEM needs
-            # no bounds check; the `<object>` cast keeps the Variable type check.
+            # Avoid sorting single variable
             var = <object>PyTuple_GET_ITEM(vartuple, 0)
             self.vartuple = vartuple
             self.hashval = <Py_ssize_t>hash((var.ptr(),))
