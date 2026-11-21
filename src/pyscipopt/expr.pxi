@@ -79,7 +79,7 @@ cdef class Term:
     cdef Py_ssize_t hashval
 
     def __init__(self, *vartuple: Variable):
-        cdef i, Py_ssize_t n = PyTuple_GET_SIZE(vartuple)
+        cdef Py_ssize_t i, n = PyTuple_GET_SIZE(vartuple)
         cdef Variable var
         cdef object item
 
