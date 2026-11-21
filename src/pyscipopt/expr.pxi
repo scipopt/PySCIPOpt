@@ -136,9 +136,6 @@ cdef class Term:
 
         cdef Py_ssize_t m = n1 + n2
         cdef list vartuple = [None] * m
-        # The variable pointers are collected during the merge, so the hash can be
-        # built without a generator that calls the Python-level `Variable.ptr()`
-        # once per variable.
         cdef list ptrs = [None] * m
         cdef Py_ssize_t i = 0, j = 0, k = 0
         cdef Variable var1, var2
