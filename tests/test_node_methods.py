@@ -1,5 +1,5 @@
 from helpers.utils import random_mip_1
-from pyscipopt import Eventhdlr, SCIP_EVENTTYPE, SCIP_RESULT
+from pyscipopt import Eventhdlr, Model, SCIP_EVENTTYPE, SCIP_RESULT, SCIP_STAGE
 
 class MaxDepthTracker(Eventhdlr):
     def __init__(self):
@@ -181,3 +181,97 @@ def test_getNStrongbranchLPIterations():
 
     assert sb_iters >= 0, f"Expected non-negative strong branching iterations, got {sb_iters}"
     assert sb_iters <= total_lp_iters, f"Strong branching iterations {sb_iters} should not exceed total LP iterations {total_lp_iters}"
+
+
+def test_getFocusDepth():
+    m = random_mip_1(small=True, node_lim=1)
+    m.presolve()
+    assert m.getFocusDepth() == -1
+
+    m.optimize()
+    focus = m.getFocusNode()
+    assert focus is not None
+    assert m.getFocusDepth() == focus.getDepth() == m.getDepth() == 0
+
+    m.startProbing()
+    m.newProbingNode()
+    m.newProbingNode()
+    assert m.getProbingDepth() == 2
+    assert m.getDepth() > focus.getDepth()
+    assert m.getFocusDepth() == focus.getDepth()
+    m.endProbing()
+
+    assert m.getFocusDepth() == m.getDepth() == focus.getDepth()
+
+
+def test_getRootNode():
+    m = random_mip_1(small=True, node_lim=1)
+    m.optimize()
+
+    root = m.getFocusNode()
+    assert root is not None
+    assert root.getDepth() == 0
+    assert root.getParent() is None
+
+    m.setParam("limits/nodes", 10)
+    m.optimize()
+
+    assert m.getRootNode() == root
+    assert m.getFocusNode() != root
+
+
+class LastBranchParentTracker(Eventhdlr):
+    def __init__(self):
+        self.branched_depths = set()
+
+    def eventinit(self):
+        self.model.catchEvent(SCIP_EVENTTYPE.NODEBRANCHED, self)
+
+    def eventexit(self):
+        self.model.dropEvent(SCIP_EVENTTYPE.NODEBRANCHED, self)
+
+    def eventexec(self, event):
+        node = event.getNode()
+        assert node == self.model.getFocusNode()
+        assert self.model.wasNodeLastBranchParent() is True
+        assert self.model.wasNodeLastBranchParent(node=node) is True
+
+        self.branched_depths.add(node.getDepth())
+        children = self.model.getChildren()
+        assert children
+        for child in children:
+            assert self.model.wasNodeLastBranchParent(child) is False
+
+        parent = node.getParent()
+        if parent is not None:
+            # An older branching parent must be False after a new branching.
+            assert self.model.wasNodeLastBranchParent(parent) is False
+
+
+def test_wasNodeLastBranchParent():
+    m = random_mip_1(small=True, node_lim=30)
+    m.hideOutput()
+    tracker = LastBranchParentTracker()
+    m.includeEventhdlr(tracker, "last_branch_parent", "Check the last branching parent")
+
+    m.presolve()
+    assert m.getStage() == SCIP_STAGE.PRESOLVED
+    assert m.wasNodeLastBranchParent() is False
+
+    m.optimize()
+
+    # to make sure that branchings occurred
+    assert any(depth > 0 for depth in tracker.branched_depths)
+
+
+def test_wasNodeLastBranchParent_solved_without_branching():
+    m = Model()
+    m.hideOutput()
+    x = m.addVar(vtype="B", obj=1)
+    m.addCons(x >= 1)
+    m.optimize()
+
+    assert m.getStage() == SCIP_STAGE.SOLVED
+    assert m.getStatus() == "optimal"
+    assert m.wasNodeLastBranchParent() is False
+    assert m.wasNodeLastBranchParent(None) is False
