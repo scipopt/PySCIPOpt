@@ -536,6 +536,43 @@ cdef class NLRow:
 cdef class Model(BaseModel):
     """This class contains methods that may use floating-point arithmetic, as opposed to exact SCIP models using rational arithmetic."""
 
+    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=True, createscip=True, threadsafe=False):
+        """
+        Main class holding a pointer to SCIP for managing most interactions
+
+        Parameters
+        ----------
+        problemName : str, optional
+            name of the problem (default 'model')
+        defaultPlugins : bool, optional
+            use default plugins? (default True)
+        sourceModel : Model or None, optional
+            create a copy of the given Model instance (default None)
+        origcopy : bool, optional
+            whether to call copy or copyOrig (default False)
+        globalcopy : bool, optional
+            whether to create a global or a local copy (default True)
+        enablepricing : bool, optional
+            whether to enable pricing in copy (default True)
+        createscip : bool, optional
+            initialize the Model object and creates a SCIP instance (default True)
+        threadsafe : bool, optional
+            False if data can be safely shared between the source and target problem (default False)
+
+        """
+        if sourceModel is None or not createscip:
+            super().__init__(problemName, defaultPlugins, createscip=createscip)
+            return
+        super().__init__(problemName, defaultPlugins, createscip=False)
+        self._freescip = True
+        PY_SCIP_CALL(SCIPcreate(&self._scip))
+        self._bestSol = <Solution> sourceModel._bestSol
+        n = str_conversion(problemName)
+        if origcopy:
+            PY_SCIP_CALL(SCIPcopyOrig(sourceModel._scip, self._scip, NULL, NULL, n, enablepricing, threadsafe, True, self._valid))
+        else:
+            PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, threadsafe, True, self._valid))
+
     def getFirstPrimalBound(self):
         """
         Gets the primal bound of the very first solution in the original space.

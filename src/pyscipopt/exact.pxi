@@ -141,7 +141,7 @@ cdef class ExactModel(BaseModel):
     
     """
 
-    def __init__(self, problemName='model', defaultPlugins=True, createscip=True, threadsafe=False):
+    def __init__(self, problemName='model', defaultPlugins=True, createscip=True):
         """
         Parameters
         ----------
@@ -151,12 +151,10 @@ cdef class ExactModel(BaseModel):
             use default plugins (default True)
         createscip : bool, optional
             initialize the Model object and creates a SCIP instance
-        threadsafe : bool, optional
-            False if data can be safely shared between the source and target problem
         """
         if not PYSCIPOPT_WITH_EXACTSOLVE:
             raise ValueError("SCIP was built without exact solving support, ExactModel needs a SCIP build with exact solving enabled")
-        super().__init__(problemName, defaultPlugins, createscip=createscip, threadsafe=threadsafe)
+        super().__init__(problemName, defaultPlugins, createscip=createscip)
 
     cdef _configureScip(self):
         PY_SCIP_CALL(SCIPenableExactSolving(self._scip, True))

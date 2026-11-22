@@ -360,7 +360,6 @@ class ExactModel(BaseModel):
         problemName: str = "model",
         defaultPlugins: bool = True,
         createscip: bool = True,
-        threadsafe: bool = False,
     ) -> None: ...
     def addRow(self, rowexact: RowExact) -> None: ...
     def allowNegSlack(self) -> bool: ...
@@ -705,12 +704,7 @@ class BaseModel:
         self,
         problemName: str = "model",
         defaultPlugins: bool = True,
-        sourceModel: BaseModel | None = None,
-        origcopy: bool = False,
-        globalcopy: bool = True,
-        enablepricing: bool = True,
         createscip: bool = True,
-        threadsafe: bool = False,
     ) -> None: ...
     def addSol(self, solution: Solution, free: bool = True) -> bool: ...
     def addVarLocks(self, var: Variable, nlocksdown: int, nlocksup: int) -> None: ...
@@ -1090,6 +1084,17 @@ class BaseModel:
     def __ne__(self, other: object, /) -> bool: ...
 
 class Model(BaseModel):
+    def __init__(
+        self,
+        problemName: str = "model",
+        defaultPlugins: bool = True,
+        sourceModel: Model | None = None,
+        origcopy: bool = False,
+        globalcopy: bool = True,
+        enablepricing: bool = True,
+        createscip: bool = True,
+        threadsafe: bool = False,
+    ) -> None: ...
     def _createConsGenNonlinear(
         self, cons: ExprCons, **kwargs: Incomplete
     ) -> Constraint: ...

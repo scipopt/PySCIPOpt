@@ -3,7 +3,7 @@
 
 cdef class BaseModel:
 
-    def __init__(self, problemName='model', defaultPlugins=True, BaseModel sourceModel=None, origcopy=False, globalcopy=True, enablepricing=True, createscip=True, threadsafe=False):
+    def __init__(self, problemName='model', defaultPlugins=True, createscip=True):
         """
         Main class holding a pointer to SCIP for managing most interactions
 
@@ -13,18 +13,8 @@ cdef class BaseModel:
             name of the problem (default 'model')
         defaultPlugins : bool, optional
             use default plugins? (default True)
-        sourceModel : Model or None, optional
-            create a copy of the given Model instance (default None)
-        origcopy : bool, optional
-            whether to call copy or copyOrig (default False)
-        globalcopy : bool, optional
-            whether to create a global or a local copy (default True)
-        enablepricing : bool, optional
-            whether to enable pricing in copy (default True)
         createscip : bool, optional
             initialize the Model object and creates a SCIP instance (default True)
-        threadsafe : bool, optional
-            False if data can be safely shared between the source and target problem (default False)
 
         """
         if self.getMajorVersion() < MAJOR:
@@ -47,21 +37,13 @@ cdef class BaseModel:
             self._scip = NULL
             self._bestSol = None
             self._freescip = False
-        elif sourceModel is None:
+        else:
             PY_SCIP_CALL(SCIPcreate(&self._scip))
             self._bestSol = None
             if defaultPlugins:
                 self.includeDefaultPlugins()
             self._configureScip()
             self.createProbBasic(problemName)
-        else:
-            PY_SCIP_CALL(SCIPcreate(&self._scip))
-            self._bestSol = <Solution> sourceModel._bestSol
-            n = str_conversion(problemName)
-            if origcopy:
-                PY_SCIP_CALL(SCIPcopyOrig(sourceModel._scip, self._scip, NULL, NULL, n, enablepricing, threadsafe, True, self._valid))
-            else:
-                PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, threadsafe, True, self._valid))
 
     def attachEventHandlerCallback(self,
         callback,
