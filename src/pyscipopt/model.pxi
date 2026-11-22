@@ -534,7 +534,7 @@ cdef class NLRow:
 
 
 cdef class Model(BaseModel):
-    """This class contains methods that may use floating-point arithmetic, as opposed to exact SCIP models using rational arithmetic."""
+    """Main class holding a pointer to SCIP for managing most interactions."""
 
     def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=True, createscip=True, threadsafe=False):
         """

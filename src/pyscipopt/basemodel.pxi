@@ -2,6 +2,7 @@
 #@brief Methods shared by Model and ExactModel
 
 cdef class BaseModel:
+    """Methods shared by Model and ExactModel. Not meant to be used directly; create a Model."""
 
     def __init__(self, problemName='model', defaultPlugins=True, createscip=True):
         """
@@ -17,6 +18,8 @@ cdef class BaseModel:
             initialize the Model object and creates a SCIP instance (default True)
 
         """
+        if type(self) is BaseModel:
+            raise TypeError("BaseModel cannot be instantiated directly; use one of its subclasses")
         if self.getMajorVersion() < MAJOR:
             raise Exception("linked SCIP is not compatible to this version of PySCIPOpt - use at least version", MAJOR)
         if self.getMajorVersion() == MAJOR and self.getMinorVersion() < MINOR:

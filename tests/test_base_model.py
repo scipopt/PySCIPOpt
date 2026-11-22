@@ -67,6 +67,8 @@ def test_base_model_has_no_fp_markers():
 
 def test_model_subclass_and_mro():
     assert Model.__mro__[:2] == (Model, BaseModel)
+    with pytest.raises(TypeError):
+        BaseModel()
 
     class MyModel(Model):
         def __init__(self):

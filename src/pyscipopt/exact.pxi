@@ -130,7 +130,7 @@ cdef class ExactBoundChange(BoundChange):
 
 cdef class ExactModel(BaseModel):
     """
-    Model that solves exactly over the rationals.
+    Specialised model for exact solving over the rationals. Should be used only if a certified solution is needed.
 
     Warning: SCIP has to be compiled with exact solving capabilities.
     Please see https://www.scipopt.org/doc-10.0.0/html/EXACT.php. 
