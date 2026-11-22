@@ -112,7 +112,10 @@ def test_exact_model_skeleton(tmp_path):
         pytest.skip("SCIP was built without exact solving support")
     assert not isinstance(m, Model)
     assert not hasattr(m, "getVal")
-    assert not hasattr(m, "addCons")
+    with pytest.raises(AttributeError, match="Model.includeConshdlr has this attribute"):
+        m.includeConshdlr
+    with pytest.raises(AttributeError, match="no attribute 'noSuchMethod'$"):
+        m.noSuchMethod
     assert m.getNVars() == 0
     assert type(Model().addVar()) is Variable
     path = tmp_path / "exact.lp"

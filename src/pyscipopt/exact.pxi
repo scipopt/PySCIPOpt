@@ -159,6 +159,15 @@ cdef class ExactModel(BaseModel):
     cdef _configureScip(self):
         PY_SCIP_CALL(SCIPenableExactSolving(self._scip, True))
 
+    def __getattr__(self, name):
+        if hasattr(Model, name):
+            raise AttributeError(
+                f"'ExactModel' object has no attribute '{name}'. Model.{name} has this attribute, which means that "
+                "the underlying SCIP method is not compatible with exact mode, or has not yet been interfaced for "
+                "exact mode in PySCIPOpt."
+            )
+        raise AttributeError(f"'ExactModel' object has no attribute '{name}'")
+
     def allowNegSlack(self):
         """
         Returns whether negative slack is allowed in exact solving mode.

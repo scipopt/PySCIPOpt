@@ -874,51 +874,11 @@ class BaseModel:
     def hideOutput(self, quiet: bool = True) -> None: ...
     def inProbing(self) -> bool: ...
     def inRepropagation(self) -> bool: ...
-    def includeBranchrule(
-        self,
-        branchrule: Branchrule,
-        name: str,
-        desc: str,
-        priority: int,
-        maxdepth: int,
-        maxbounddist: float,
-    ) -> None: ...
-    def includeConshdlr(
-        self,
-        conshdlr: Conshdlr,
-        name: str,
-        desc: str,
-        sepapriority: int = 0,
-        enfopriority: int = 0,
-        chckpriority: int = 0,
-        sepafreq: int = -1,
-        propfreq: int = -1,
-        eagerfreq: int = 100,
-        maxprerounds: int = -1,
-        delaysepa: bool = False,
-        delayprop: bool = False,
-        needscons: bool = True,
-        proptiming: PY_SCIP_PROPTIMING = ...,
-        presoltiming: PY_SCIP_PRESOLTIMING = ...,
-    ) -> None: ...
     def includeCutsel(
         self, cutsel: Cutsel, name: str, desc: str, priority: int
     ) -> None: ...
     def includeDefaultPlugins(self) -> None: ...
     def includeEventhdlr(self, eventhdlr: Eventhdlr, name: str, desc: str) -> None: ...
-    def includeHeur(
-        self,
-        heur: Heur,
-        name: str,
-        desc: str,
-        dispchar: str,
-        priority: int = 10000,
-        freq: int = 1,
-        freqofs: int = 0,
-        maxdepth: int = -1,
-        timingmask: PY_SCIP_HEURTIMING = ...,
-        usessubscip: bool = False,
-    ) -> None: ...
     def includeNodesel(
         self,
         nodesel: Nodesel,
@@ -926,51 +886,6 @@ class BaseModel:
         desc: str,
         stdpriority: int,
         memsavepriority: int,
-    ) -> None: ...
-    def includePresol(
-        self,
-        presol: Presol,
-        name: str,
-        desc: str,
-        priority: int,
-        maxrounds: int,
-        timing: PY_SCIP_PRESOLTIMING = ...,
-    ) -> None: ...
-    def includePricer(
-        self,
-        pricer: Pricer,
-        name: str,
-        desc: str,
-        priority: int = 1,
-        delay: bool = True,
-    ) -> None: ...
-    def includeProp(
-        self,
-        prop: Prop,
-        name: str,
-        desc: str,
-        presolpriority: int,
-        presolmaxrounds: int,
-        proptiming: PY_SCIP_PROPTIMING,
-        presoltiming: PY_SCIP_PRESOLTIMING = ...,
-        priority: int = 1,
-        freq: int = 1,
-        delay: bool = True,
-    ) -> None: ...
-    def includeReader(self, reader: Reader, name: str, desc: str, ext: str) -> None: ...
-    def includeRelax(
-        self, relax: Relax, name: str, desc: str, priority: int = 10000, freq: int = 1
-    ) -> None: ...
-    def includeSepa(
-        self,
-        sepa: Sepa,
-        name: str,
-        desc: str,
-        priority: int = 0,
-        freq: int = 10,
-        maxbounddist: float = 1.0,
-        usessubscip: bool = False,
-        delay: bool = False,
     ) -> None: ...
     def interruptSolve(self) -> None: ...
     def isObjChangedProbing(self) -> bool: ...
@@ -1715,6 +1630,46 @@ class Model(BaseModel):
         priority: int = 1,
         islpcut: bool = True,
     ) -> None: ...
+    def includeBranchrule(
+        self,
+        branchrule: Branchrule,
+        name: str,
+        desc: str,
+        priority: int,
+        maxdepth: int,
+        maxbounddist: float,
+    ) -> None: ...
+    def includeConshdlr(
+        self,
+        conshdlr: Conshdlr,
+        name: str,
+        desc: str,
+        sepapriority: int = 0,
+        enfopriority: int = 0,
+        chckpriority: int = 0,
+        sepafreq: int = -1,
+        propfreq: int = -1,
+        eagerfreq: int = 100,
+        maxprerounds: int = -1,
+        delaysepa: bool = False,
+        delayprop: bool = False,
+        needscons: bool = True,
+        proptiming: PY_SCIP_PROPTIMING = ...,
+        presoltiming: PY_SCIP_PRESOLTIMING = ...,
+    ) -> None: ...
+    def includeHeur(
+        self,
+        heur: Heur,
+        name: str,
+        desc: str,
+        dispchar: str,
+        priority: int = 10000,
+        freq: int = 1,
+        freqofs: int = 0,
+        maxdepth: int = -1,
+        timingmask: PY_SCIP_HEURTIMING = ...,
+        usessubscip: bool = False,
+    ) -> None: ...
     def includeIISfinder(
         self,
         iisfinder: IISfinder,
@@ -1722,6 +1677,51 @@ class Model(BaseModel):
         desc: str,
         priority: int = 10000,
         freq: int = 1,
+    ) -> None: ...
+    def includePresol(
+        self,
+        presol: Presol,
+        name: str,
+        desc: str,
+        priority: int,
+        maxrounds: int,
+        timing: PY_SCIP_PRESOLTIMING = ...,
+    ) -> None: ...
+    def includePricer(
+        self,
+        pricer: Pricer,
+        name: str,
+        desc: str,
+        priority: int = 1,
+        delay: bool = True,
+    ) -> None: ...
+    def includeProp(
+        self,
+        prop: Prop,
+        name: str,
+        desc: str,
+        presolpriority: int,
+        presolmaxrounds: int,
+        proptiming: PY_SCIP_PROPTIMING,
+        presoltiming: PY_SCIP_PRESOLTIMING = ...,
+        priority: int = 1,
+        freq: int = 1,
+        delay: bool = True,
+    ) -> None: ...
+    def includeReader(self, reader: Reader, name: str, desc: str, ext: str) -> None: ...
+    def includeRelax(
+        self, relax: Relax, name: str, desc: str, priority: int = 10000, freq: int = 1
+    ) -> None: ...
+    def includeSepa(
+        self,
+        sepa: Sepa,
+        name: str,
+        desc: str,
+        priority: int = 0,
+        freq: int = 10,
+        maxbounddist: float = 1.0,
+        usessubscip: bool = False,
+        delay: bool = False,
     ) -> None: ...
     def infinity(self) -> float: ...
     def initBendersDefault(self, subproblems: Model | dict[Any, Model]) -> None: ...
