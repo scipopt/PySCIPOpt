@@ -75,11 +75,11 @@ if TYPE_CHECKING:
 
 
 cdef class Term:
-    '''This is a monomial term.
+    """This is a monomial term.
 
     A Term holds a single variable; ``Term()`` (or ``Term(None)``) is the
     constant term. Multi-variable terms are produced by multiplying Terms.
-    '''
+    """
 
     cdef readonly tuple vartuple
     cdef Py_ssize_t hashval
