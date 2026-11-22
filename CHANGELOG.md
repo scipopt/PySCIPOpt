@@ -25,8 +25,9 @@
 - Expression fields now use concrete Cython types (`double`/`list`), so values are converted on construction
 - Methods taking a list of variables (e.g. `addConsKnapsack()`) no longer convert it to a NumPy array to check its dimension
 - Speed up `PowExpr._evaluate` via the C-level API
-- Add shortcut path for `Term()` and `Term(x)`to speed up `Term.__init__`, `Term.__eq__`, and `Term.__mul__`
 - `PowExpr._evaluate` now raises `ValueError("math domain error")` for a negative base with a non-integer exponent and `OverflowError` when the result overflows.
+- Add shortcut path for `Term()` and `Term(x)` to speed up `Term.__init__`, `Term.__eq__`, and `Term.__mul__`
+- `Term` now accepts a single argument (`Variable` or `None`) instead of multiple arguments
 ### Removed
 - Removed support for Python 3.8
 

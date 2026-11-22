@@ -7,10 +7,12 @@
 # A `term` is a tuple of variables
 # For examples, 2*x*x*y*z - 1.3 x*y*y + 1 is stored as a
 # {Term(x,x,y,z) : 2, Term(x,y,y) : -1.3, Term() : 1}
+# (the keys above are reprs: a Term holds a single variable, and multi-variable
+#  terms are produced by multiplying Terms, e.g. Term(x) * Term(x) * Term(y))
 # Addition of common terms and expansion of exponents occur automatically.
 # Given the way `Expr`s are stored, it is easy to access the terms: e.g.
 # expr = 2*x*x*y*z - 1.3 x*y*y + 1
-# expr[Term(x,x,y,z)] returns 1.3
+# expr[Term(x) * Term(x) * Term(y) * Term(z)] returns 1.3
 # expr[Term(x)] returns 0.0
 #
 # On the other hand, when dealing with expressions more general than polynomials,
@@ -73,37 +75,24 @@ if TYPE_CHECKING:
 
 
 cdef class Term:
-    '''This is a monomial term'''
+    '''This is a monomial term.
+
+    A Term holds a single variable; ``Term()`` (or ``Term(None)``) is the
+    constant term. Multi-variable terms are produced by multiplying Terms.
+    '''
 
     cdef readonly tuple vartuple
     cdef Py_ssize_t hashval
 
-    def __init__(self, *vartuple: Variable):
-        cdef Py_ssize_t i, n = PyTuple_GET_SIZE(vartuple)
-        cdef Variable var
-        cdef object item
-
-        for i in range(n):
-            item = <object>PyTuple_GET_ITEM(vartuple, i)
-            if not isinstance(item, Variable):
-                raise TypeError(
-                    f"Term() arguments must be Variable, got {type(item).__name__}"
-                )
-
-        if n == 0:
+    def __init__(self, Variable var=None):
+        if var is None:
             # The constant term; the empty args tuple is already canonical.
-            self.vartuple = vartuple
-            self.hashval = <Py_ssize_t>hash(vartuple)
-
-        elif n == 1:
-            # Avoid sorting single variable
-            var = <Variable>PyTuple_GET_ITEM(vartuple, 0)
-            self.vartuple = vartuple
-            self.hashval = <Py_ssize_t>hash((var.ptr(),))
-
+            self.vartuple = ()
+            self.hashval = <Py_ssize_t>hash(self.vartuple)
         else:
-            self.vartuple = tuple(sorted(vartuple, key=lambda v: v.getIndex()))
-            self.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in self.vartuple))
+            # Avoid sorting single variable
+            self.vartuple = (var,)
+            self.hashval = <Py_ssize_t>hash((var.ptr(),))
 
     def __getitem__(self, idx):
         return self.vartuple[idx]

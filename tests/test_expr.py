@@ -683,19 +683,14 @@ def test_neg():
     assert str(-Constant(3.0)) == "-3.0"
 
 
-def test_term_rejects_non_variable_arguments(model):
+def test_term_constructor(model):
     m, x, y, z = model
 
-    with pytest.raises(TypeError, match="must be Variable"):
-        Term(None)
-    with pytest.raises(TypeError, match="must be Variable"):
-        Term(1)
-    with pytest.raises(TypeError, match="must be Variable"):
-        Term(x, None)
-    with pytest.raises(TypeError, match="must be Variable"):
-        Term(None, x)
-
-    # Valid constructions are unaffected.
-    assert len(Term()) == 0
+    # No argument and None both denote the constant term.
+    assert Term() == Term(None) == CONST
     assert len(Term(x)) == 1
-    assert Term(x, y) == Term(y, x)
+
+    with pytest.raises(TypeError):
+        Term(1)  # not a Variable
+    with pytest.raises(TypeError):
+        Term(x, y)  # only a single argument is accepted
