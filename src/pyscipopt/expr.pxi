@@ -86,7 +86,7 @@ cdef class Term:
 
     def __init__(self, Variable var=None):
         if var is None:
-            # The constant term; the empty args tuple is already canonical.
+            # The constant term
             self.vartuple = ()
             self.hashval = <Py_ssize_t>hash(self.vartuple)
         else:
