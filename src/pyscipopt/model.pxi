@@ -6096,8 +6096,11 @@ cdef class Model(BaseModel):
         enable : SCIP_Bool
             Whether to enable exact solving mode (True) or disable it (False).
 
-        Deprecated since 6.4.0; construct an ExactModel instead.
+        Deprecated since 6.4.0; construct an ExactModel instead. Enabling
+        exact solving on a Model raises a ValueError.
         """
+        if enable:
+            raise ValueError("Model cannot solve exactly; construct an ExactModel instead.")
         warnings.warn(
             "enableExactSolving() is deprecated and will be removed in PySCIPOpt 7.0.0; construct an ExactModel instead.",
             DeprecationWarning,

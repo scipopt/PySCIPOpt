@@ -106,11 +106,14 @@ def test_exact_model_skeleton(tmp_path):
     assert {"addRow", "allowNegSlack", "branchLP"} <= set(vars(ExactModel))
     with pytest.warns(DeprecationWarning):
         Model().isExact()
+    with pytest.raises(ValueError):
+        Model().enableExactSolving(True)
     try:
         m = ExactModel()
     except ValueError:
         pytest.skip("SCIP was built without exact solving support")
     assert not isinstance(m, Model)
+    assert type(BaseModel.from_ptr(m.to_ptr(False), False)) is ExactModel
     assert not hasattr(m, "getVal")
     with pytest.raises(AttributeError, match="Model.includeConshdlr has this attribute"):
         m.includeConshdlr

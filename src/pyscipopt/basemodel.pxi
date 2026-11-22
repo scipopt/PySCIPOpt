@@ -164,12 +164,12 @@ cdef class BaseModel:
 
         Returns
         -------
-        Model
+        Model or ExactModel (if the SCIP instance solves exactly)
 
         """
         if scip == NULL:
             raise Warning("cannot create Model with SCIP* == NULL")
-        model = Model(createscip=False)
+        cdef BaseModel model = (ExactModel if SCIPisExact(scip) else Model)(createscip=False)
         model._scip = scip
         model._bestSol = Solution.create(scip, SCIPgetBestSol(scip))
         model._benders_subproblems = []  # Initialize Benders subproblems list
@@ -235,7 +235,7 @@ cdef class BaseModel:
 
         Returns
         -------
-        Model
+        Model or ExactModel (if the SCIP instance solves exactly)
 
         """
         if not PyCapsule_IsValid(capsule, "scip"):
