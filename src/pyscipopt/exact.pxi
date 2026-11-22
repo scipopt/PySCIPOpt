@@ -135,7 +135,7 @@ cdef class ExactModel(BaseModel):
     Warning: SCIP has to be compiled with exact solving capabilities.
     Please see https://www.scipopt.org/doc-10.0.0/html/EXACT.php. 
     
-    As of version 6.3.0, almost no exact methods are available, only
+    As of version 6.4.0, almost no exact methods are available, only
     reading models with rational data and solving them exactly is possible.
     
     
@@ -160,13 +160,6 @@ cdef class ExactModel(BaseModel):
 
     cdef _configureScip(self):
         PY_SCIP_CALL(SCIPenableExactSolving(self._scip, True))
-
-    def addCons(self, cons, name='', initial=True, separate=True, enforce=True, check=True, propagate=True,
-                local=False, modifiable=False, dynamic=False, removable=False, stickingatnode=False):
-        raise NotImplementedError("ExactModel.addCons() is not available yet; exact constraints come with PySCIPOpt 7.0.0")
-
-    def getSolObjVal(self, Solution sol, original=True):
-        raise NotImplementedError("ExactModel.getSolObjVal() is not available yet; exact values come with PySCIPOpt 7.0.0")
 
     def allowNegSlack(self):
         """

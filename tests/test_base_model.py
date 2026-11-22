@@ -9,14 +9,11 @@ SRC = Path(__file__).resolve().parents[1] / "src" / "pyscipopt"
 BASEMODEL_PXI = SRC / "basemodel.pxi"
 MODEL_PXI = SRC / "model.pxi"
 
-SUBCLASS_CONTRACT = frozenset({"addCons", "getSolObjVal"})
-
 FP_TYPES = ("SCIP_Real", "Model", "Expr", "ExprCons", "Row", "Column", "NLRow")
 FP_CALLS = ("float(", "dtype=float", "SCIPinfinity(")
 
 FP_ALLOWED = frozenset({
-    "addMatrixCons", "create",
-    "getBranchScoreMultiple", "setParam",
+    "create", "getBranchScoreMultiple", "setParam",
 })
 
 MEMBER_RE = re.compile(r"^    (?:def|cdef|cpdef)\b.*?(\w+)\s*\(")
@@ -50,17 +47,13 @@ def class_members(path, header):
     return stripped
 
 
-def test_subclass_contract_is_implemented_by_model():
-    assert SUBCLASS_CONTRACT <= set(vars(Model))
-
-
 def test_base_model_calls_only_shared_methods():
     base = class_members(BASEMODEL_PXI, "cdef class BaseModel:")
     model_only = set(class_members(MODEL_PXI, "cdef class Model(BaseModel):")) - set(base)
     offenders = {}
     for name, body in base.items():
         calls = set(re.findall(r"self\.(\w+)\(", body))
-        bad = sorted((calls & model_only) - SUBCLASS_CONTRACT)
+        bad = sorted(calls & model_only)
         if bad:
             offenders[name] = bad
     assert offenders == {}
@@ -119,8 +112,7 @@ def test_exact_model_skeleton(tmp_path):
         pytest.skip("SCIP was built without exact solving support")
     assert not isinstance(m, Model)
     assert not hasattr(m, "getVal")
-    with pytest.raises(NotImplementedError):
-        m.addCons(None)
+    assert not hasattr(m, "addCons")
     assert m.getNVars() == 0
     assert type(Model().addVar()) is Variable
     path = tmp_path / "exact.lp"

@@ -2874,6 +2874,257 @@ cdef class Model(BaseModel):
         else:
             raise NotImplementedError("Adding coefficients to %s constraints is not implemented." % constype)
 
+    def addConss(self, conss, name='', initial=True, separate=True,
+                 enforce=True, check=True, propagate=True, local=False,
+                 modifiable=False, dynamic=False, removable=False,
+                 stickingatnode=False):
+        """Adds multiple constraints.
+
+        Each of the constraints is added to the model using Model.addCons().
+
+        For all parameters, except `conss`, this method behaves differently depending on the
+        type of the passed argument:
+        1. If the value is iterable, it must be of the same length as `conss`. For each
+        constraint, Model.addCons() will be called with the value at the corresponding index.
+        2. Else, the (default) value will be applied to all of the constraints.
+
+        Parameters
+        ----------
+        conss : iterable of ExprCons
+            An iterable of constraint objects. Any iterable will be converted into a list before further processing.
+        name : str or iterable of str, optional
+            the name of the constraint, generic name if empty (Default value = '')
+        initial : bool or iterable of bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool or iterable of bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool or iterable of bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool or iterable of bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool or iterable of bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool or iterable of bool, optional
+            is the constraint only valid locally? (Default value = False)
+        modifiable : bool or iterable of bool, optional
+            is the constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool or iterable of bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool or iterable of bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool or iterable of bool, optional
+            should the constraints always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        list of Constraint
+            The created and added Constraint objects.
+
+        """
+        cdef int n_conss
+        cdef int i
+
+        if isinstance(conss, MatrixExprCons):
+            conss = conss.flatten()
+
+        def ensure_iterable(elem, length):
+            if isinstance(elem, Iterable):
+                return elem
+            else:
+                return list(repeat(elem, length))
+
+        assert isinstance(conss, Iterable), "Given constraint list is not iterable."
+
+        conss = list(conss)
+        n_conss = len(conss)
+
+        if isinstance(name, str):
+            if name == "":
+                name = ["" for i in range(n_conss)]
+            else:
+                name = ["%s_%s" % (name, i) for i in range(n_conss)]
+
+        initial = ensure_iterable(initial, n_conss)
+        separate = ensure_iterable(separate, n_conss)
+        enforce = ensure_iterable(enforce, n_conss)
+        check = ensure_iterable(check, n_conss)
+        propagate = ensure_iterable(propagate, n_conss)
+        local = ensure_iterable(local, n_conss)
+        modifiable = ensure_iterable(modifiable, n_conss)
+        dynamic = ensure_iterable(dynamic, n_conss)
+        removable = ensure_iterable(removable, n_conss)
+        stickingatnode = ensure_iterable(stickingatnode, n_conss)
+
+        constraints = []
+        for i, cons in enumerate(conss):
+            constraints.append(
+                self.addCons(cons, name[i], initial[i], separate[i], enforce[i],
+                             check[i], propagate[i], local[i], modifiable[i],
+                             dynamic[i], removable[i], stickingatnode[i])
+            )
+
+        return constraints
+
+    def addMatrixCons(self,
+                      cons: Union[ExprCons, MatrixExprCons],
+                      name: Union[str, np.ndarray] ='',
+                      initial: Union[bool, np.ndarray] = True,
+                      separate: Union[bool, np.ndarray] = True,
+                      enforce: Union[bool, np.ndarray] = True,
+                      check: Union[bool, np.ndarray] = True,
+                      propagate: Union[bool, np.ndarray] = True,
+                      local: Union[bool, np.ndarray] = False,
+                      modifiable: Union[bool, np.ndarray] = False,
+                      dynamic: Union[bool, np.ndarray] = False,
+                      removable: Union[bool, np.ndarray] = False,
+                      stickingatnode: Union[bool, np.ndarray] = False):
+        """
+        Add a linear or nonlinear matrix constraint.
+
+        Parameters
+        ----------
+        cons : ExprCons or MatrixExprCons
+            The matrix expression constraint or expression constraint, that are not yet an actual constraint
+        name : str or np.ndarray, optional
+            the name of the matrix constraint, generic name if empty (Default value = "")
+        initial : bool or np.ndarray, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool or np.ndarray, optional
+            should the matrix constraint be separated during LP processing? (Default value = True)
+        enforce : bool or np.ndarray, optional
+            should the matrix constraint be enforced during node processing? (Default value = True)
+        check : bool or np.ndarray, optional
+            should the matrix constraint be checked for feasibility? (Default value = True)
+        propagate : bool or np.ndarray, optional
+            should the matrix constraint be propagated during node processing? (Default value = True)
+        local : bool or np.ndarray, optional
+            is the matrix constraint only valid locally? (Default value = False)
+        modifiable : bool or np.ndarray, optional
+            is the matrix constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool or np.ndarray, optional
+            is the matrix constraint subject to aging? (Default value = False)
+        removable : bool or np.ndarray, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool or np.ndarray, optional
+            should the matrix constraints always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        Constraint or MatrixConstraint
+            The created and added Constraint or MatrixConstraint.
+        """
+        if not isinstance(cons, (ExprCons, MatrixExprCons)):
+            raise TypeError("given constraint is not MatrixExprCons nor ExprCons but %s" % cons.__class__.__name__)
+
+        if isinstance(cons, ExprCons):
+            return self.addCons(cons, name=name, initial=initial, separate=separate,
+                        enforce=enforce, check=check, propagate=propagate,
+                        local=local, modifiable=modifiable, dynamic=dynamic,
+                        removable=removable, stickingatnode=stickingatnode)
+
+        shape = cons.shape
+
+        if isinstance(name, np.ndarray):
+            assert name.shape == shape
+        if isinstance(initial, np.ndarray):
+            assert initial.shape == shape
+        if isinstance(separate, np.ndarray):
+            assert separate.shape == shape
+        if isinstance(enforce, np.ndarray):
+            assert enforce.shape == shape
+        if isinstance(check, np.ndarray):
+            assert check.shape == shape
+        if isinstance(propagate, np.ndarray):
+            assert propagate.shape == shape
+        if isinstance(local, np.ndarray):
+            assert local.shape == shape
+        if isinstance(modifiable, np.ndarray):
+            assert modifiable.shape == shape
+        if isinstance(dynamic, np.ndarray):
+            assert dynamic.shape == shape
+        if isinstance(removable, np.ndarray):
+            assert removable.shape == shape
+        if isinstance(stickingatnode, np.ndarray):
+            assert stickingatnode.shape == shape
+
+        matrix_cons = np.empty(shape, dtype=object)
+
+        if isinstance(shape, int):
+            ndim = 1
+        else:
+            ndim = len(shape)
+        # cdef np.ndarray[object, ndim=ndim] matrix_variable = np.empty(shape, dtype=object)
+        matrix_variable = np.empty(shape, dtype=object)
+
+        if isinstance(name, str):
+            matrix_names = np.full(shape, name, dtype=object)
+            if name != "":
+                for idx in np.ndindex(matrix_variable.shape):
+                    matrix_names[idx] = f"{name}_{'_'.join(map(str, idx))}"
+        else:
+            matrix_names = name
+
+        if not isinstance(initial, np.ndarray):
+            matrix_initial = np.full(shape, initial, dtype=bool)
+        else:
+            matrix_initial = initial
+
+        if not isinstance(separate, np.ndarray):
+            matrix_separate = np.full(shape, separate, dtype=bool)
+        else:
+            matrix_separate = separate
+
+        if not isinstance(enforce, np.ndarray):
+            matrix_enforce = np.full(shape, enforce, dtype=bool)
+        else:
+            matrix_enforce = enforce
+
+        if not isinstance(check, np.ndarray):
+            matrix_check = np.full(shape, check, dtype=bool)
+        else:
+            matrix_check = check
+
+        if not isinstance(propagate, np.ndarray):
+            matrix_propagate = np.full(shape, propagate, dtype=bool)
+        else:
+            matrix_propagate = propagate
+
+        if not isinstance(local, np.ndarray):
+            matrix_local = np.full(shape, local, dtype=bool)
+        else:
+            matrix_local = local
+
+        if not isinstance(modifiable, np.ndarray):
+            matrix_modifiable = np.full(shape, modifiable, dtype=bool)
+        else:
+            matrix_modifiable = modifiable
+
+        if not isinstance(dynamic, np.ndarray):
+            matrix_dynamic = np.full(shape, dynamic, dtype=bool)
+        else:
+            matrix_dynamic = dynamic
+
+        if not isinstance(removable, np.ndarray):
+            matrix_removable = np.full(shape, removable, dtype=bool)
+        else:
+            matrix_removable = removable
+
+        if not isinstance(stickingatnode, np.ndarray):
+            matrix_stickingatnode = np.full(shape, stickingatnode, dtype=bool)
+        else:
+            matrix_stickingatnode = stickingatnode
+
+        for idx in np.ndindex(cons.shape):
+            matrix_cons[idx] = self.addCons(cons[idx], name=matrix_names[idx], initial=matrix_initial[idx],
+                                            separate=matrix_separate[idx], check=matrix_check[idx],
+                                            propagate=matrix_propagate[idx], local=matrix_local[idx],
+                                            modifiable=matrix_modifiable[idx], dynamic=matrix_dynamic[idx],
+                                            removable=matrix_removable[idx], stickingatnode=matrix_stickingatnode[idx])
+
+        return matrix_cons.view(MatrixConstraint)
+
     def addConsNode(self, Node node, ExprCons cons, Node validnode=None, name='',
                     initial=True, separate=True, enforce=True, check=True,
                     propagate=True, local=True, dynamic=False, removable=True,
@@ -5308,70 +5559,6 @@ cdef class Model(BaseModel):
         solution = Solution.create(self._scip, _sol)
         return solution
 
-    def printBestSol(self, write_zeros=False):
-        """
-        Prints the best feasible primal solution.
-
-        Parameters
-        ----------
-        write_zeros : bool, optional
-            include variables that are set to zero (Default = False)
-
-        """
-        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
-        locale.setlocale(locale.LC_NUMERIC, "C")
-
-        PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, write_zeros))
-
-        locale.setlocale(locale.LC_NUMERIC,user_locale)
-
-    def printSol(self, Solution solution=None, write_zeros=False):
-        """
-        Print the given primal solution.
-
-        Parameters
-        ----------
-        solution : Solution or None, optional
-            solution to print (default = None)
-        write_zeros : bool, optional
-            include variables that are set to zero (Default=False)
-
-        """
-
-        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
-        locale.setlocale(locale.LC_NUMERIC, "C")
-
-        if solution is None:
-            PY_SCIP_CALL(SCIPprintSol(self._scip, NULL, NULL, write_zeros))
-        else:
-            PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, NULL, write_zeros))
-
-        locale.setlocale(locale.LC_NUMERIC,user_locale)
-
-    def writeBestSol(self, filename="origprob.sol", write_zeros=False):
-        """
-        Write the best feasible primal solution to a file.
-
-        Parameters
-        ----------
-        filename : str, optional
-            name of the output file (Default="origprob.sol")
-        write_zeros : bool, optional
-            include variables that are set to zero (Default=False)
-
-        """
-
-        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
-        locale.setlocale(locale.LC_NUMERIC, "C")
-
-        # use this doubled opening pattern to ensure that IOErrors are
-        #   triggered early and in Python not in C,Cython or SCIP.
-        with open(filename, "w") as f:
-            cfile = fdopen(f.fileno(), "w")
-            PY_SCIP_CALL(SCIPprintBestSol(self._scip, cfile, write_zeros))
-
-        locale.setlocale(locale.LC_NUMERIC,user_locale)
-
     def writeBestTransSol(self, filename="transprob.sol", write_zeros=False):
         """
         Write the best feasible primal solution for the transformed problem to a file.
@@ -5392,31 +5579,6 @@ cdef class Model(BaseModel):
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintBestTransSol(self._scip, cfile, write_zeros))
-
-        locale.setlocale(locale.LC_NUMERIC,user_locale)
-
-    def writeSol(self, Solution solution, filename="origprob.sol", write_zeros=False):
-        """
-        Write the given primal solution to a file.
-
-        Parameters
-        ----------
-        solution : Solution
-            solution to write
-        filename : str, optional
-            name of the output file (Default="origprob.sol")
-        write_zeros : bool, optional
-            include variables that are set to zero (Default=False)
-
-        """
-        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
-        locale.setlocale(locale.LC_NUMERIC, "C")
-
-        # use this doubled opening pattern to ensure that IOErrors are
-        #   triggered early and in Python not in C,Cython or SCIP.
-        with open(filename, "w") as f:
-            cfile = fdopen(f.fileno(), "w")
-            PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, cfile, write_zeros))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
@@ -5444,26 +5606,6 @@ cdef class Model(BaseModel):
             PY_SCIP_CALL(SCIPprintTransSol(self._scip, solution.sol, cfile, write_zeros))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
-
-    # perhaps this should not be included as it implements duplicated functionality
-    #   (as does it's namesake in SCIP)
-    def readSol(self, filename):
-        """
-        Reads a given solution file, problem has to be transformed in advance.
-
-        Parameters
-        ----------
-        filename : str
-            name of the input file
-
-        """
-        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
-        locale.setlocale(locale.LC_NUMERIC, "C")
-
-        absfile = str_conversion(abspath(filename))
-        PY_SCIP_CALL(SCIPreadSol(self._scip, absfile))
-
-        locale.setlocale(locale.LC_NUMERIC, user_locale)
 
     def readSolFile(self, filename):
         """
@@ -5556,6 +5698,39 @@ cdef class Model(BaseModel):
         else:
             PY_SCIP_CALL(SCIPtrySol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
         return stored
+
+    def getObjVal(self, original=True):
+        """
+        Retrieve the objective value of the best solution.
+
+        Parameters
+        ----------
+        original : bool, optional
+            objective value in original space (Default value = True)
+
+        Returns
+        -------
+        float
+
+        """
+
+        self._ensureFreshBestSol()
+
+        if SCIPgetNSols(self._scip) == 0:
+            if SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
+                raise Warning("Without a solution, method can only be called in stage SOLVING.")
+        else:
+            assert self._bestSol.sol != NULL
+
+            if SCIPsolIsOriginal(self._bestSol.sol):
+                min_stage_requirement = SCIP_STAGE_PROBLEM
+            else:
+                min_stage_requirement = SCIP_STAGE_TRANSFORMING
+
+            if not SCIPgetStage(self._scip) >= min_stage_requirement:
+                raise Warning("method cannot be called in stage %i." % self.getStage)
+
+        return self.getSolObjVal(self._bestSol, original)
 
     def getSolObjVal(self, Solution sol, original=True):
         """
@@ -5884,12 +6059,12 @@ cdef class Model(BaseModel):
         enable : SCIP_Bool
             Whether to enable exact solving mode (True) or disable it (False).
 
-        Deprecated since 6.3.0; construct an ExactModel instead.
+        Deprecated since 6.4.0; construct an ExactModel instead.
         """
         warnings.warn(
             "enableExactSolving() is deprecated and will be removed in PySCIPOpt 7.0.0; construct an ExactModel instead.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=1
         )
 
         PY_SCIP_CALL(SCIPenableExactSolving(self._scip, enable))
@@ -5902,12 +6077,12 @@ cdef class Model(BaseModel):
         -------
         bool
 
-        Deprecated since 6.3.0; exact models are instances of ExactModel.
+        Deprecated since 6.4.0; exact models are instances of ExactModel.
         """
         warnings.warn(
             "isExact() is deprecated and will be removed in PySCIPOpt 7.0.0; exact models are instances of ExactModel.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=1
         )
 
         return SCIPisExact(self._scip)
@@ -5920,12 +6095,12 @@ cdef class Model(BaseModel):
         -------
         bool
 
-        Deprecated since 6.3.0; use ExactModel.allowNegSlack() instead.
+        Deprecated since 6.4.0; use ExactModel.allowNegSlack() instead.
         """
         warnings.warn(
             "allowNegSlackExact() is deprecated and will be removed in PySCIPOpt 7.0.0; use ExactModel.allowNegSlack() instead.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=1
         )
 
         return SCIPallowNegSlack(self._scip)
@@ -5938,12 +6113,12 @@ cdef class Model(BaseModel):
         -------
         SCIP_RESULT
 
-        Deprecated since 6.3.0; use ExactModel.branchLP() instead.
+        Deprecated since 6.4.0; use ExactModel.branchLP() instead.
         """
         warnings.warn(
             "branchLPExact() is deprecated and will be removed in PySCIPOpt 7.0.0; use ExactModel.branchLP() instead.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=1
         )
         cdef SCIP_RESULT result
         PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
@@ -5958,12 +6133,12 @@ cdef class Model(BaseModel):
         rowexact : RowExact
             The exact row to add.
 
-        Deprecated since 6.3.0; use ExactModel.addRow() instead.
+        Deprecated since 6.4.0; use ExactModel.addRow() instead.
         """
         warnings.warn(
             "addRowExact() is deprecated and will be removed in PySCIPOpt 7.0.0; use ExactModel.addRow() instead.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=1
         )
         PY_SCIP_CALL(SCIPaddRowExact(self._scip, rowexact.scip_row_exact))
 
@@ -6802,7 +6977,7 @@ cdef class Model(BaseModel):
             "Benders subproblems are automatically freed when the master Model "
             "is deallocated.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=1
         )
 
     def computeBestSolSubproblems(self):
