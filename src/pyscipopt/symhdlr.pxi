@@ -81,7 +81,7 @@ cdef list getPySymComps(SCIP_SYMCOMP** symcomps, int nsymcomps):
 cdef SCIP_RETCODE PySymhdlrTryAdd (SCIP* scip, SCIP_SYMHDLR* symhdlr, SYM_SYMTYPE symtype, int** perms, int nperms,
                                    SCIP_VAR** permvars, int npermvars, SCIP_Real* permvardomcenter, SCIP_HASHMAP* permvarmap,
                                    SYM_GRAPH* symgraph, int id, SCIP_SYMCOMPDATA** symcompdata, int* naddedconss,
-                                   SCIP_Bool allowbdchgs, int* nchgbds, SCIP_Bool* success) noexcept with gil:
+                                   SCIP_Bool allowbdchgs, int* nchgbds, int* naggrvars, SCIP_Bool* success) noexcept with gil:
     cdef int permlen = npermvars if symtype == SYM_SYMTYPE_PERM else 2 * npermvars
     PySymhdlr = getPySymhdlr(symhdlr)
     pyperms = [[perms[p][i] for i in range(permlen)] for p in range(nperms)]
@@ -96,6 +96,7 @@ cdef SCIP_RETCODE PySymhdlrTryAdd (SCIP* scip, SCIP_SYMHDLR* symhdlr, SYM_SYMTYP
     success[0] = result_dict.get("success", False)
     naddedconss[0] = result_dict.get("naddedconss", 0)
     nchgbds[0] = result_dict.get("nchgbds", 0)
+    naggrvars[0] = result_dict.get("naggrvars", 0)
     if success[0]:
         data = result_dict.get("data")
         PySymhdlr._symcompdata.append(data)
