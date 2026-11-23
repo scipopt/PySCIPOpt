@@ -286,15 +286,30 @@ cdef class ExprLike:
 
         return NotImplemented
 
-    def __getitem__(self, key):
-        cdef Expr expr = self.as_expr()
+    def __getitem__(self, key) -> float:
+        if key is None:
+            raise TypeError("index must be a Term or Variable, got None")
         if not isinstance(key, Term):
-            key = Term(key)
-        return expr.terms.get(key, 0.0)
+            try:
+                key = Term(key)
+            except TypeError:
+                raise TypeError(
+                    f"index must be a Term or Variable, got {type(key).__name__}"
+                ) from None
+        return self.as_expr().terms.get(key, 0.0)
 
     def __iter__(self):
-        cdef Expr expr = self.as_expr()
-        return iter(expr.terms)
+        return iter(self.as_expr().terms)
+
+    def __contains__(self, key) -> bool:
+        if key is None:
+            return False
+        if not isinstance(key, Term):
+            try:
+                key = Term(key)
+            except TypeError:
+                return False
+        return key in self.as_expr().terms
 
     def __add__(self, other, /):
         return self.as_expr() + other
@@ -646,6 +661,9 @@ cdef class GenExpr(ExprLike):
 
     def __iter__(self):
         raise TypeError(f"{self.__class__.__name__!s} cannot be iterated")
+
+    def __contains__(self, _):
+        raise TypeError(f"{self.__class__.__name__!s} cannot be used with 'in'")
 
     def __add__(self, other, /):
         if not _is_genexpr_compatible(other):
