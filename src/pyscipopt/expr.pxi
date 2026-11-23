@@ -287,14 +287,14 @@ cdef class ExprLike:
         return NotImplemented
 
     def __getitem__(self, key):
-        cdef Expr v = self.as_expr()
+        cdef Expr expr = self.as_expr()
         if not isinstance(key, Term):
             key = Term(key)
-        return v.terms.get(key, 0.0)
+        return expr.terms.get(key, 0.0)
 
     def __iter__(self):
-        cdef Expr v = self.as_expr()
-        return iter(v.terms)
+        cdef Expr expr = self.as_expr()
+        return iter(expr.terms)
 
     def __add__(self, other, /):
         return self.as_expr() + other
