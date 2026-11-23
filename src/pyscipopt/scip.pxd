@@ -1241,7 +1241,7 @@ cdef extern from "scip/scip.h":
                                     SCIP_RETCODE (*symhdlrtryadd) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SYM_SYMTYPE symtype, int** perms, int nperms,
                                                                    SCIP_VAR** permvars, int npermvars, SCIP_Real* permvardomcenter, SCIP_HASHMAP* permvarmap,
                                                                    SYM_GRAPH* symgraph, int id, SCIP_SYMCOMPDATA** symcompdata, int* naddedconss,
-                                                                   SCIP_Bool allowbdchgs, int* nchgbds, SCIP_Bool* success),
+                                                                   SCIP_Bool allowbdchgs, int* nchgbds, int* naggrvars, SCIP_Bool* success),
                                     SCIP_RETCODE (*symcopy) (SCIP* scip, SCIP_SYMHDLR* symhdlr),
                                     SCIP_RETCODE (*symfree) (SCIP* scip, SCIP_SYMHDLR* symhdlr),
                                     SCIP_RETCODE (*syminit) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP** symcomps, int nsymcomps),
