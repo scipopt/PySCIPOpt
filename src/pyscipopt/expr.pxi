@@ -355,12 +355,13 @@ cdef class ExprLike:
 
     cpdef double degree(self) except? -1:
         cdef Expr expr = self.as_expr()
-        cdef double deg = 0
+        cdef double deg = 0, res = 0
         cdef Term t
         for t in expr.terms:
-            if len(t) > deg:
-                deg = len(t)
-        return deg
+            deg = len(t)
+            if deg > res:
+                res = deg
+        return res
 
     cdef Expr as_expr(self):
         raise NotImplementedError(
