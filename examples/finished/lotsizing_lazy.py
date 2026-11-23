@@ -53,7 +53,11 @@ class Conshdlr_sils(Conshdlr):
             return {"result": SCIP_RESULT.FEASIBLE}
 
     def conslock(self, constraint, locktype, nlockspos, nlocksneg):
-        pass
+        # without these locks presolve may aggregate the variables away and the lazy cuts then cut off the optimum
+        y, x, I = self.model.data
+        for t in self.data[1]:
+            self.model.addVarLocksType(y[t], locktype, nlockspos, nlocksneg)
+            self.model.addVarLocksType(x[t], locktype, nlockspos, nlocksneg)
 
 
 def sils(T, f, c, d, h):
@@ -160,7 +164,6 @@ if __name__ == "__main__":
 
     conshdlr = Conshdlr_sils()
     model = sils_cut(T, f, c, d, h, conshdlr)
-    model.setBoolParam("misc/allowstrongdualreds", 0)
     model.optimize()
     sils_cut_obj = model.getObjVal()
     y, x, I = model.data

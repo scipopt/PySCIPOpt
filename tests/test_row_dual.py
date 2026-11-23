@@ -1,4 +1,4 @@
-from pyscipopt import Model, Sepa, SCIP_RESULT, SCIP_PARAMSETTING
+from pyscipopt import Model, Sepa, SCIP_RESULT, SCIP_PARAMSETTING, SCIP_ROWORIGINTYPE
 
 
 class SimpleSepa(Sepa):
@@ -26,6 +26,7 @@ class SimpleSepa(Sepa):
         cut = scip.createEmptyRowSepa(self,
                                       lhs=-scip.infinity(),
                                       rhs=1.0)
+        assert cut.getOrigintype() is SCIP_ROWORIGINTYPE.SEPA
 
         scip.cacheRowExtensions(cut)
 

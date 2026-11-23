@@ -3,6 +3,8 @@ set -euo pipefail
 
 VERSION_FILE="src/pyscipopt/_version.py"
 SETUP_FILE="setup.py"
+PYPROJECT="pyproject.toml"
+DEPLOY_REPO="scipopt/scipoptsuite-deploy"
 CHANGELOG="CHANGELOG.md"
 REPO="scipopt/PySCIPOpt"
 
@@ -210,6 +212,28 @@ if [[ "$HEAD_MSG" =~ ^release\ v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
     echo "  ./release.sh --finalize   # promote (requires the release-candidate workflow to have succeeded)"
     echo "  ./release.sh --rollback   # abandon (delete release-candidate branch, reset local commit)"
     exit 1
+fi
+
+# --- Check bundled SCIP is the latest scipoptsuite-deploy release ---
+
+PINNED_DEPLOY=$(grep -o 'scipoptsuite-deploy/releases/download/v[0-9.]*' "$PYPROJECT" | sed 's|.*/||' | sort -u)
+if [[ $(echo "$PINNED_DEPLOY" | wc -l) -ne 1 || -z "$PINNED_DEPLOY" ]]; then
+    echo "Error: expected exactly one scipoptsuite-deploy version in ${PYPROJECT}, found: ${PINNED_DEPLOY:-none}"
+    exit 1
+fi
+LATEST_DEPLOY=$(gh release view --repo "$DEPLOY_REPO" --json tagName -q .tagName)
+PINNED_NAME=$(gh release view "$PINNED_DEPLOY" --repo "$DEPLOY_REPO" --json name -q .name)
+if [[ "$PINNED_DEPLOY" != "$LATEST_DEPLOY" ]]; then
+    LATEST_NAME=$(gh release view "$LATEST_DEPLOY" --repo "$DEPLOY_REPO" --json name -q .name)
+    echo ""
+    echo "Warning: wheels will bundle an outdated SCIP."
+    echo "  pinned: ${PINNED_DEPLOY} (${PINNED_NAME})"
+    echo "  latest: ${LATEST_DEPLOY} (${LATEST_NAME})"
+    echo "Run ./upgrade_scip.sh and merge its PR first to ship the latest SCIP."
+    read -rp "Release with the outdated SCIP anyway? [y/N] " outdated_confirm
+    [[ "${outdated_confirm:-N}" =~ ^[Yy] ]] || exit 0
+else
+    echo "Bundled SCIP: ${PINNED_DEPLOY} (${PINNED_NAME})"
 fi
 
 # --- Read current version ---

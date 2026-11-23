@@ -12,6 +12,7 @@ from pyscipopt.scip import (
     GenExpr,
     MatrixGenExpr,
     ProdExpr,
+    Term,
 )
 
 
@@ -214,11 +215,11 @@ def test_getVal_with_GenExpr():
     assert m.getVal(z * x * y) == 0
     # test "Expr({Term(x): 1.0, Term(y): 1.0, Term(): 1.0})"
     assert m.getVal(x + y + 1) == 4
-    # test "prod(1.0,sum(0.0,prod(1.0,x)),**(sum(0.0,prod(1.0,x)),-1))"
+    # test "prod(1.0,sum(0.0,prod(1.0,x)),**(sum(0.0,prod(1.0,x)),-1.0))"
     assert m.getVal(x / x) == 1
-    # test "prod(1.0,sum(0.0,prod(1.0,y)),**(sum(0.0,prod(1.0,x)),-1))"
+    # test "prod(1.0,sum(0.0,prod(1.0,y)),**(sum(0.0,prod(1.0,x)),-1.0))"
     assert m.getVal(y / x) == 2
-    # test "**(prod(1.0,**(sum(0.0,prod(1.0,x)),-1)),2)"
+    # test "**(prod(1.0,**(sum(0.0,prod(1.0,x)),-1.0)),2.0)"
     assert m.getVal((1 / x) ** 2) == 1
 
     # test C-level math functions
@@ -256,13 +257,34 @@ def test_getVal_with_GenExpr():
     # sin and cos reject infinite arguments, like math.sin(inf)
     with pytest.raises(ValueError, match="math domain error"):
         m.getVal(sin(math.inf))
-
     with pytest.raises(ValueError, match="math domain error"):
         m.getVal(cos(-math.inf))
 
     # nested unary expressions propagate the inner domain error
     with pytest.raises(ValueError, match="math domain error"):
         m.getVal(exp(log(-x)))
+
+
+def test_getVal_pow():
+    m = Model()
+    y = m.addVar(lb=2, ub=2, name="y")
+    z = m.addVar(lb=0, ub=0, name="z")
+    n = m.addVar(lb=-2, ub=-2, name="n")
+    m.optimize()
+
+    # C-level pow with a negative exponent (matches Python: 2.0**-2.0 == 0.25)
+    assert m.getVal(y ** -2.0) == 0.25
+
+    # non-integer exponents are undefined for negative bases, like math.pow
+    with pytest.raises(ValueError, match="math domain error"):
+        m.getVal(n ** 0.5)
+
+    # zero to a negative power raises, like Python's 0.0**-1.0
+    with pytest.raises(ZeroDivisionError):
+        m.getVal(z ** -1.0)
+
+    with pytest.raises(OverflowError, match="math range error"):
+        m.getVal(exp(y) ** 10000.0)
 
 
 def test_unary_ufunc(model):
@@ -348,9 +370,9 @@ def test_binary_ufunc(model):
 
     # test np.divide
     assert str(np.divide(x, 2)) == "Expr({Term(x): 0.5})"
-    assert str(np.divide(2, x)) == "prod(2.0,**(sum(0.0,prod(1.0,x)),-1))"
+    assert str(np.divide(2, x)) == "prod(2.0,**(sum(0.0,prod(1.0,x)),-1.0))"
     assert str(np.divide(x, a)) == "[Expr({Term(x): 0.5})]"
-    assert str(np.divide(a, x)) == "[prod(2.0,**(sum(0.0,prod(1.0,x)),-1))]"
+    assert str(np.divide(a, x)) == "[prod(2.0,**(sum(0.0,prod(1.0,x)),-1.0))]"
 
     # test np.power
     assert str(np.power(x, 2)) == "Expr({Term(x, x): 1.0})"
@@ -659,3 +681,16 @@ def test_neg():
     assert str(neg_expr) == "prod(1.0,sqrt(sum(0.0,prod(1.0,x))))"
 
     assert str(-Constant(3.0)) == "-3.0"
+
+
+def test_term_constructor(model):
+    m, x, y, z = model
+
+    # No argument and None both denote the constant term.
+    assert Term() == Term(None) == CONST
+    assert len(Term(x)) == 1
+
+    with pytest.raises(TypeError):
+        Term(1)  # not a Variable
+    with pytest.raises(TypeError):
+        Term(x, y)  # only a single argument is accepted

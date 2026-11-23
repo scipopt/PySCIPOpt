@@ -7,10 +7,12 @@
 # A `term` is a tuple of variables
 # For examples, 2*x*x*y*z - 1.3 x*y*y + 1 is stored as a
 # {Term(x,x,y,z) : 2, Term(x,y,y) : -1.3, Term() : 1}
+# (the keys above are reprs: a Term holds a single variable, and multi-variable
+#  terms are produced by multiplying Terms, e.g. Term(x) * Term(x) * Term(y))
 # Addition of common terms and expansion of exponents occur automatically.
 # Given the way `Expr`s are stored, it is easy to access the terms: e.g.
 # expr = 2*x*x*y*z - 1.3 x*y*y + 1
-# expr[Term(x,x,y,z)] returns 1.3
+# expr[Term(x) * Term(x) * Term(y) * Term(z)] returns 1.3
 # expr[Term(x)] returns 0.0
 #
 # On the other hand, when dealing with expressions more general than polynomials,
@@ -43,7 +45,7 @@
 # gets called (I guess) and so a copy is returned.
 # Modifying the expression directly would be a bug, given that the expression might be re-used by the user. </pre>
 import warnings
-from typing import TYPE_CHECKING, Literal, Union
+from typing import TYPE_CHECKING, Literal, Optional, Union
 
 import numpy as np
 
@@ -53,11 +55,13 @@ from cpython.long cimport PyLong_Check
 from cpython.number cimport PyNumber_Check
 from cpython.object cimport Py_LE, Py_EQ, Py_GE, Py_TYPE
 from cpython.ref cimport PyObject
-from cpython.tuple cimport PyTuple_GET_ITEM
+from cpython.tuple cimport PyTuple_GET_ITEM, PyTuple_GET_SIZE
 from libc.math cimport cos as c_cos
 from libc.math cimport exp as c_exp
 from libc.math cimport fabs as c_fabs
+from libc.math cimport floor as c_floor
 from libc.math cimport log as c_log
+from libc.math cimport pow as c_pow
 from libc.math cimport sqrt as c_sqrt
 from libc.math cimport sin as c_sin
 from libc.math cimport INFINITY
@@ -71,14 +75,24 @@ if TYPE_CHECKING:
 
 
 cdef class Term:
-    '''This is a monomial term'''
+    """This is a monomial term.
+
+    A Term holds a single variable; ``Term()`` (or ``Term(None)``) is the
+    constant term. Multi-variable terms are produced by multiplying Terms.
+    """
 
     cdef readonly tuple vartuple
     cdef Py_ssize_t hashval
 
-    def __init__(self, *vartuple: Variable):
-        self.vartuple = tuple(sorted(vartuple, key=lambda v: v.getIndex()))
-        self.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in self.vartuple))
+    def __init__(self, Variable var=None):
+        if var is None:
+            # The constant term
+            self.vartuple = ()
+            self.hashval = <Py_ssize_t>hash(self.vartuple)
+        else:
+            # Avoid sorting single variable
+            self.vartuple = (var,)
+            self.hashval = <Py_ssize_t>hash((var.ptr(),))
 
     def __getitem__(self, idx):
         return self.vartuple[idx]
@@ -92,12 +106,12 @@ cdef class Term:
         if <type>Py_TYPE(other) is not Term:
             return False
 
-        cdef int n = len(self)
+        cdef Py_ssize_t n = PyTuple_GET_SIZE(self.vartuple)
         cdef Term _other = <Term>other
-        if n != len(_other) or self.hashval != _other.hashval:
+        if n != PyTuple_GET_SIZE(_other.vartuple) or self.hashval != _other.hashval:
             return False
 
-        cdef int i
+        cdef Py_ssize_t i
         cdef Variable var1, var2
         for i in range(n):
             var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
@@ -107,41 +121,49 @@ cdef class Term:
         return True
 
     def __len__(self):
-        return len(self.vartuple)
+        return PyTuple_GET_SIZE(self.vartuple)
 
     def __mul__(self, Term other):
         # NOTE: This merge algorithm requires a sorted `Term.vartuple`.
         # This should be ensured in the constructor of Term.
-        cdef int n1 = len(self)
-        cdef int n2 = len(other)
+        cdef Py_ssize_t n1 = PyTuple_GET_SIZE(self.vartuple)
+        cdef Py_ssize_t n2 = PyTuple_GET_SIZE(other.vartuple)
         if n1 == 0: return other
         if n2 == 0: return self
 
-        cdef list vartuple = [None] * (n1 + n2)
-        cdef int i = 0, j = 0, k = 0
+        cdef Py_ssize_t m = n1 + n2
+        cdef list vartuple = [None] * m
+        cdef list ptrs = [None] * m
+        cdef Py_ssize_t i = 0, j = 0, k = 0
         cdef Variable var1, var2
         while i < n1 and j < n2:
             var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
             var2 = <Variable>PyTuple_GET_ITEM(other.vartuple, j)
             if var1.getIndex() <= var2.getIndex():
                 vartuple[k] = var1
+                ptrs[k] = var1.ptr()
                 i += 1
             else:
                 vartuple[k] = var2
+                ptrs[k] = var2.ptr()
                 j += 1
             k += 1
         while i < n1:
-            vartuple[k] = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
+            var1 = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
+            vartuple[k] = var1
+            ptrs[k] = var1.ptr()
             i += 1
             k += 1
         while j < n2:
-            vartuple[k] = <Variable>PyTuple_GET_ITEM(other.vartuple, j)
+            var2 = <Variable>PyTuple_GET_ITEM(other.vartuple, j)
+            vartuple[k] = var2
+            ptrs[k] = var2.ptr()
             j += 1
             k += 1
 
         cdef Term res = Term.__new__(Term)
         res.vartuple = tuple(vartuple)
-        res.hashval = <Py_ssize_t>hash(tuple(v.ptr() for v in res.vartuple))
+        res.hashval = <Py_ssize_t>hash(tuple(ptrs))
         return res
 
     def __repr__(self) -> str:
@@ -151,11 +173,11 @@ cdef class Term:
         cdef double res = 1.0
         cdef SCIP* scip_ptr = sol.scip
         cdef SCIP_SOL* sol_ptr = sol.sol
-        cdef int i = 0, n = len(self)
+        cdef Py_ssize_t i, n = PyTuple_GET_SIZE(self.vartuple)
         cdef Variable var
 
         for i in range(n):
-            var = <Variable>self.vartuple[i]
+            var = <Variable>PyTuple_GET_ITEM(self.vartuple, i)
             res *= SCIPgetSolVal(scip_ptr, sol_ptr, var.scip_var)
             if res == 0:  # early stop
                 return 0.0
@@ -497,11 +519,17 @@ cdef class Expr(ExprLike):
 
 cdef class ExprCons:
     '''Constraints with a polynomial expressions and lower/upper bounds.'''
-    cdef public expr
-    cdef public _lhs
-    cdef public _rhs
 
-    def __init__(self, expr, lhs=None, rhs=None):
+    cdef readonly ExprLike expr
+    cdef readonly object _lhs
+    cdef readonly object _rhs
+
+    def __init__(
+        self,
+        ExprLike expr not None,
+        lhs: Optional[float]=None,
+        rhs: Optional[float]=None,
+    ):
         self.expr = expr
         self._lhs = lhs
         self._rhs = rhs
@@ -608,7 +636,7 @@ Operator = Op()
 cdef class GenExpr(ExprLike):
 
     cdef public _op
-    cdef readonly children
+    cdef readonly list children
 
     def __init__(self): # do we need it
         ''' '''
@@ -802,7 +830,7 @@ cdef class GenExpr(ExprLike):
 # Sum Expressions
 cdef class SumExpr(GenExpr):
 
-    cdef readonly constant
+    cdef readonly double constant
 
     def __init__(self):
         self.constant = 0.0
@@ -856,7 +884,7 @@ cdef class SumExpr(GenExpr):
 # Prod Expressions
 cdef class ProdExpr(GenExpr):
 
-    cdef readonly constant
+    cdef readonly double constant
 
     def __init__(self):
         self.constant = 1.0
@@ -933,7 +961,7 @@ cdef class VarExpr(GenExpr):
 # Pow Expressions
 cdef class PowExpr(GenExpr):
 
-    cdef readonly expo
+    cdef readonly double expo
 
     def __init__(self):
         self.expo = 1.0
@@ -951,7 +979,16 @@ cdef class PowExpr(GenExpr):
         return expr
 
     cpdef double _evaluate(self, Solution sol) except *:
-        return (<GenExpr>self.children[0])._evaluate(sol) ** self.expo
+        cdef double base = (<GenExpr>self.children[0])._evaluate(sol)
+        if base == 0.0 and self.expo < 0:
+            raise ZeroDivisionError("0.0 cannot be raised to a negative power")
+        elif base < 0.0 and self.expo != c_floor(self.expo):
+            raise ValueError("math domain error")
+
+        cdef double res = c_pow(base, self.expo)
+        if c_fabs(res) == INFINITY and c_fabs(base) != INFINITY and c_fabs(self.expo) != INFINITY:
+            raise OverflowError("math range error")
+        return res
 
     cdef PowExpr copy(self, bint copy=True):
         cdef PowExpr res = PowExpr.__new__(PowExpr)
@@ -1081,7 +1118,7 @@ cdef class CosExpr(UnaryExpr):
 
 cdef class Constant(GenExpr):
 
-    cdef readonly number
+    cdef readonly double number
 
     def __init__(self, number: Union[int, float]):
         self.number = number

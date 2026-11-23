@@ -3,9 +3,9 @@ Requirements
 
 From version 5.0.0, SCIP is automatically shipped when using PyPI for the following systems:
 
-- CPython 3.8 / 3.9 / 3.10 / 3.11 / 3.12 for  Linux (manylinux2014)
-- CPython 3.8 / 3.9 / 3.10 / 3.11 / 3.12 for MacOS for x86_64 / ARM64
-- CPython 3.8 / 3.9 / 3.10 / 3.11 / 3.12 for Windows 64bit
+- CPython 3.9 to 3.15 for Linux x86_64 / aarch64 (manylinux_2_28)
+- CPython 3.9 to 3.15 for MacOS x86_64 / ARM64
+- CPython 3.9 to 3.15 for Windows 64bit
 
 This work is currently ongoing, and is planned to encompass all Python and OS combinations. 
 
