@@ -641,15 +641,11 @@ cdef class GenExpr(ExprLike):
     def __init__(self): # do we need it
         ''' '''
 
-    def __getitem__(self, key):
-        raise TypeError(
-            f"{self.__class__.__name__!s} has no polynomial form and cannot be indexed"
-        )
+    def __getitem__(self, _):
+        raise TypeError(f"{self.__class__.__name__!s} cannot be indexed")
 
     def __iter__(self):
-        raise TypeError(
-            f"{self.__class__.__name__!s} has no polynomial form and cannot be iterated"
-        )
+        raise TypeError(f"{self.__class__.__name__!s} cannot be iterated")
 
     def __add__(self, other, /):
         if not _is_genexpr_compatible(other):
