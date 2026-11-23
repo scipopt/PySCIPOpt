@@ -49,7 +49,7 @@ class VariableTest(unittest.TestCase):
         square = x * x
         self.assertIsInstance(square, Expr)
         self.assertEqual(len(square.terms), 1)
-        self.assertEqual(square[Term(x, x)], 1.0)
+        self.assertEqual(square[Term(x) * Term(x)], 1.0)
         self.assertEqual(square[x], 0.0)
 
     def test_subtract_variable_from_itself(self):

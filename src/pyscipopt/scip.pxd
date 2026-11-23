@@ -2211,6 +2211,7 @@ cdef extern from "tpi/tpi.h":
 
 cdef class ExprLike:
 
+    cpdef double degree(self) except? -1
     cdef Expr as_expr(self)
     cdef void normalize(self)
     cpdef double _evaluate(self, Solution sol)

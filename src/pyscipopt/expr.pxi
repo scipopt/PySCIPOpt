@@ -353,8 +353,14 @@ cdef class ExprLike:
     def cos(self, /) -> CosExpr:
         return CosExpr(Operator.cos, buildGenExprObj(self))
 
-    def degree(self, /) -> float:
-        return self.as_expr().degree()
+    cpdef double degree(self) except? -1:
+        cdef Expr expr = self.as_expr()
+        cdef double deg = 0
+        cdef Term t
+        for t in expr.terms:
+            if len(t) > deg:
+                deg = len(t)
+        return deg
 
     cdef Expr as_expr(self):
         raise NotImplementedError(
@@ -481,13 +487,6 @@ cdef class Expr(ExprLike):
 
     def __repr__(self) -> str:
         return 'Expr(%s)' % repr(self.terms)
-
-    def degree(self, /) -> int:
-        '''computes highest degree of terms'''
-        if len(self.terms) == 0:
-            return 0
-        else:
-            return max(len(v) for v in self.terms)
 
     cdef Expr as_expr(self):
         return self
@@ -788,7 +787,7 @@ cdef class GenExpr(ExprLike):
             return NotImplemented
         return super().__rtruediv__(other)
 
-    def degree(self, /) -> float:
+    cpdef double degree(self) except? -1:
         '''Note: none of these expressions should be polynomial'''
         return INFINITY
 
