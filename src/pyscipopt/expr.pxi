@@ -389,7 +389,7 @@ cdef class Expr(ExprLike):
     def __add__(self, other, /):
         if not _is_expr_compatible(other):
             if isinstance(other, GenExpr):
-                return other.__add__(self)
+                return other + self
             return NotImplemented
 
         if _is_number(other):
@@ -413,7 +413,7 @@ cdef class Expr(ExprLike):
     def __mul__(self, other, /):
         if not _is_expr_compatible(other):
             if isinstance(other, GenExpr):
-                return other.__mul__(self)
+                return other * self
             return NotImplemented
 
         cdef dict res = {}
