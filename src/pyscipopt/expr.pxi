@@ -996,7 +996,7 @@ cdef class PowExpr(GenExpr):
 
 cdef class UnaryExpr(GenExpr):
 
-    def __init__(self, op, expr: Union[Expr, GenExpr]):
+    def __init__(self, op, GenExpr expr not None):
         self._op = op
         self.children = [expr]
 
@@ -1148,7 +1148,7 @@ def exp(x):
 
     Parameters
     ----------
-    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+    x : Variable, Expr, GenExpr, number, np.ndarray, list, or tuple
         - If x is a scalar expression or number, apply the exp function directly to it.
           And if it's a number, convert it to a Constant expression first.
         - If x is a vector (np.ndarray, list, or tuple), apply the exp function
@@ -1172,7 +1172,7 @@ def log(x):
 
     Parameters
     ----------
-    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+    x : Variable, Expr, GenExpr, number, np.ndarray, list, or tuple
         - If x is a scalar expression or number, apply the log function directly to it.
           And if it's a number, convert it to a Constant expression first.
         - If x is a vector (np.ndarray, list, or tuple), apply the log function
@@ -1196,7 +1196,7 @@ def sqrt(x):
 
     Parameters
     ----------
-    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+    x : Variable, Expr, GenExpr, number, np.ndarray, list, or tuple
         - If x is a scalar expression or number, apply the sqrt function directly to it.
           And if it's a number, convert it to a Constant expression first.
         - If x is a vector (np.ndarray, list, or tuple), apply the sqrt function
@@ -1220,7 +1220,7 @@ def sin(x):
 
     Parameters
     ----------
-    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+    x : Variable, Expr, GenExpr, number, np.ndarray, list, or tuple
         - If x is a scalar expression or number, apply the sin function directly to it.
           And if it's a number, convert it to a Constant expression first.
         - If x is a vector (np.ndarray, list, or tuple), apply the sin function
@@ -1244,7 +1244,7 @@ def cos(x):
 
     Parameters
     ----------
-    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+    x : Variable, Expr, GenExpr, number, np.ndarray, list, or tuple
         - If x is a scalar expression or number, apply the cos function directly to it.
           And if it's a number, convert it to a Constant expression first.
         - If x is a vector (np.ndarray, list, or tuple), apply the cos function
@@ -1273,7 +1273,7 @@ cdef inline object _wrap_ufunc(object x, object ufunc):
 
     Parameters
     ----------
-    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+    x : Variable, Expr, GenExpr, number, np.ndarray, list, or tuple
         - If x is a scalar expression or number, apply the ufunc directly to it. And if
           it's a number, convert it to a Constant expression first.
         - If x is a vector (np.ndarray, list, or tuple), apply the ufunc element-wise
