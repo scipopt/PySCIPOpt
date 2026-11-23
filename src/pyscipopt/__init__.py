@@ -25,6 +25,8 @@ from pyscipopt.scip      import Pricer as Pricer
 from pyscipopt.scip      import Prop as Prop
 from pyscipopt.scip      import Reader as Reader
 from pyscipopt.scip      import Sepa as Sepa
+from pyscipopt.scip      import Symhdlr as Symhdlr
+from pyscipopt.scip      import SymComp as SymComp
 from pyscipopt.scip      import LP as LP
 from pyscipopt.scip      import IISfinder as IISfinder 
 from pyscipopt.scip      import PY_SCIP_LPPARAM as SCIP_LPPARAM
