@@ -1,3 +1,6 @@
+##@file exact.pxi
+#@brief Exact (rational) solving: ExactModel, the exact wrappers and the exact LP row and column wrappers
+
 cdef SCIP_RATIONAL* _createRational(value) except NULL:
     """Create a SCIP_RATIONAL holding the finite rational value; the caller must free it with SCIPrationalFree."""
     cdef SCIP_RATIONAL* rational = NULL
@@ -321,15 +324,60 @@ cdef class ExactVariable(Variable):
         """
         return _VARSTATUS_NAMES.get(SCIPvarGetStatusExact(self.scip_var))
 
+cdef class ExactSolution(Solution):
+    """Solution of an ExactModel."""
+
+    def __getitem__(self, expr):
+        cdef SCIP_RATIONAL* rational
+
+        self._checkStage("SCIPgetSolVal")
+        if not isinstance(expr, Variable):
+            raise TypeError("exact solution values are only available for variables; evaluate expressions from the variable values")
+        rational = _createRational(0)
+        SCIPgetSolValExact(self.scip, self.sol, (<Variable>expr).scip_var, rational)
+        result = _fromRational(rational)
+        SCIPrationalFree(&rational)
+        return result
+
+    def __setitem__(self, Variable var, value):
+        cdef SCIP_RATIONAL* rational
+        cdef SCIP_RETCODE rc
+
+        rational = _createRational(value)
+        rc = SCIPsetSolValExact(self.scip, self.sol, var.scip_var, rational)
+        SCIPrationalFree(&rational)
+        PY_SCIP_CALL(rc)
+
+
+cdef class ExactEvent(Event):
+    """Event of an ExactModel."""
+
+    def getNewBound(self):
+        raise NotImplementedError("ExactEvent.getNewBound() is not available: SCIP has no exact getter for the new bound of an event")
+
+    def getOldBound(self):
+        raise NotImplementedError("ExactEvent.getOldBound() is not available yet in exact mode")
+
+
+cdef class ExactBoundChange(BoundChange):
+    """Bound change of a variable of an ExactModel."""
+
+    def getNewBound(self):
+        raise NotImplementedError("ExactBoundChange.getNewBound() is not available: SCIP has no exact getter for the new bound of a bound change")
+
+
 cdef class ExactModel(BaseModel):
     """
-    Model that solves exactly over the rationals.
+    Specialised model for exact solving over the rationals. Should be used only if a certified solution is needed.
+
+    Warning: SCIP has to be compiled with exact solving capabilities.
+    Please see https://www.scipopt.org/doc/html/EXACT.php.
 
     Variables, constraints and solutions carry exact data. Methods take Fractions
     (or ints) and return Fractions; infinite bounds and sides are +/- float("inf").
     """
 
-    def __init__(self, problemName='model', defaultPlugins=True, createscip=True, threadsafe=False):
+    def __init__(self, problemName='model', defaultPlugins=True, createscip=True):
         """
         Parameters
         ----------
@@ -339,16 +387,23 @@ cdef class ExactModel(BaseModel):
             use default plugins (default True)
         createscip : bool, optional
             initialize the Model object and creates a SCIP instance
-        threadsafe : bool, optional
-            False if data can be safely shared between the source and target problem
 
         """
         if not PYSCIPOPT_WITH_EXACTSOLVE:
             raise ValueError("SCIP was built without exact solving support, ExactModel needs a SCIP build with exact solving enabled")
-        super().__init__(problemName, defaultPlugins, createscip=createscip, threadsafe=threadsafe)
+        super().__init__(problemName, defaultPlugins, createscip=createscip)
 
     cdef _configureScip(self):
         PY_SCIP_CALL(SCIPenableExactSolving(self._scip, True))
+
+    def __getattr__(self, name):
+        if hasattr(Model, name):
+            raise AttributeError(
+                f"'ExactModel' object has no attribute '{name}'. Model.{name} has this attribute, which means that "
+                "the underlying SCIP method is not compatible with exact mode, or has not yet been interfaced for "
+                "exact mode in PySCIPOpt."
+            )
+        raise AttributeError(f"'ExactModel' object has no attribute '{name}'")
 
     def setObjective(self, expr, sense='minimize', clear='true'):
         """
@@ -687,46 +742,6 @@ cdef class ExactModel(BaseModel):
         SCIPrationalFree(&rational)
         PY_SCIP_CALL(rc)
 
-    def tightenVarLbGlobal(self, var, lb, force=False):
-        """Not available in exact solving mode."""
-        raise ValueError("tightenVarLbGlobal is not available in exact solving mode")
-
-    def tightenVarUbGlobal(self, var, ub, force=False):
-        """Not available in exact solving mode."""
-        raise ValueError("tightenVarUbGlobal is not available in exact solving mode")
-
-    def chgVarLbNode(self, node, var, lb):
-        """Not available in exact solving mode."""
-        raise ValueError("chgVarLbNode is not available in exact solving mode")
-
-    def chgVarUbNode(self, node, var, ub):
-        """Not available in exact solving mode."""
-        raise ValueError("chgVarUbNode is not available in exact solving mode")
-
-    def chgVarObjDive(self, var, newobj):
-        """Not available in exact solving mode."""
-        raise ValueError("chgVarObjDive is not available in exact solving mode")
-
-    def chgVarLbProbing(self, var, lb):
-        """Not available in exact solving mode."""
-        raise ValueError("chgVarLbProbing is not available in exact solving mode")
-
-    def chgVarUbProbing(self, var, ub):
-        """Not available in exact solving mode."""
-        raise ValueError("chgVarUbProbing is not available in exact solving mode")
-
-    def chgVarObjProbing(self, var, newobj):
-        """Not available in exact solving mode."""
-        raise ValueError("chgVarObjProbing is not available in exact solving mode")
-
-    def fixVarProbing(self, var, fixedval):
-        """Not available in exact solving mode."""
-        raise ValueError("fixVarProbing is not available in exact solving mode")
-
-    def setObjlimit(self, objlimit):
-        """Not available in exact solving mode: SCIP has no exact objective limit."""
-        raise ValueError("setObjlimit is not available in exact solving mode")
-
     def infinity(self):
         """Retrieve the value representing infinity in exact solving mode: inf."""
         return float("inf")
@@ -835,10 +850,6 @@ cdef class ExactModel(BaseModel):
     def isFeasGE(self, val1, val2):
         """Return whether val1 is exactly greater than or equal to val2."""
         return self.isGE(val1, val2)
-
-    def isHugeValue(self, val):
-        """Not available in exact solving mode: there is no huge-value threshold."""
-        raise ValueError("isHugeValue is not available in exact solving mode")
 
     def getLPSolstat(self):
         """
@@ -1369,14 +1380,6 @@ cdef class ExactModel(BaseModel):
             PY_SCIP_CALL(SCIPcreateLPSolExact(self._scip, &_sol, _heur))
         return Solution.create(self._scip, _sol)
 
-    def createOrigSol(self, Heur heur = None):
-        """Not available in exact solving mode."""
-        raise ValueError("createOrigSol is not available in exact solving mode")
-
-    def createPartialSol(self, Heur heur = None):
-        """Not available in exact solving mode."""
-        raise ValueError("createPartialSol is not available in exact solving mode")
-
     def setSolVal(self, Solution solution, Variable var, val):
         """
         Set a variable in a solution to a rational value.
@@ -1455,6 +1458,39 @@ cdef class ExactModel(BaseModel):
             raise Warning("No solution available")
         return self.getSolVal(self._bestSol, expr)
 
+    def getObjVal(self, original=True):
+        """
+        Retrieve the objective value of the best solution.
+
+        Parameters
+        ----------
+        original : bool, optional
+            objective value in original space (Default value = True)
+
+        Returns
+        -------
+        Fraction
+
+        """
+
+        self._ensureFreshBestSol()
+
+        if SCIPgetNSols(self._scip) == 0:
+            if SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
+                raise Warning("Without a solution, method can only be called in stage SOLVING.")
+        else:
+            assert self._bestSol.sol != NULL
+
+            if SCIPsolIsOriginal(self._bestSol.sol):
+                min_stage_requirement = SCIP_STAGE_PROBLEM
+            else:
+                min_stage_requirement = SCIP_STAGE_TRANSFORMING
+
+            if not SCIPgetStage(self._scip) >= min_stage_requirement:
+                raise Warning("method cannot be called in stage %i." % self.getStage)
+
+        return self.getSolObjVal(self._bestSol, original)
+
     def getSolObjVal(self, Solution sol, original=True):
         """
         Retrieve the exact objective value of the solution.
@@ -1503,61 +1539,6 @@ cdef class ExactModel(BaseModel):
         else:
             PY_SCIP_CALL(SCIPtrySol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
         return stored
-
-    def printSol(self, Solution solution=None, write_zeros=False):
-        """
-        Print the given exact primal solution.
-
-        Parameters
-        ----------
-        solution : Solution or None, optional
-            solution to print, None for the current LP/pseudo solution
-        write_zeros : bool, optional
-            include variables that are set to zero
-
-        """
-        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
-        locale.setlocale(locale.LC_NUMERIC, "C")
-        if solution is None:
-            PY_SCIP_CALL(SCIPprintSolExact(self._scip, NULL, NULL, write_zeros))
-        else:
-            PY_SCIP_CALL(SCIPprintSolExact(self._scip, solution.sol, NULL, write_zeros))
-        locale.setlocale(locale.LC_NUMERIC, user_locale)
-
-    def printBestSol(self, write_zeros=False):
-        """Print the best exact primal solution."""
-        cdef SCIP_SOL* best = SCIPgetBestSol(self._scip)
-
-        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
-        locale.setlocale(locale.LC_NUMERIC, "C")
-        if best == NULL:
-            PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, write_zeros))
-        else:
-            PY_SCIP_CALL(SCIPprintSolExact(self._scip, best, NULL, write_zeros))
-        locale.setlocale(locale.LC_NUMERIC, user_locale)
-
-    def writeSol(self, Solution solution, filename="origprob.sol", write_zeros=False):
-        """Write the given exact primal solution to a file."""
-        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
-        locale.setlocale(locale.LC_NUMERIC, "C")
-        with open(filename, "w") as f:
-            cfile = fdopen(f.fileno(), "w")
-            PY_SCIP_CALL(SCIPprintSolExact(self._scip, solution.sol, cfile, write_zeros))
-        locale.setlocale(locale.LC_NUMERIC, user_locale)
-
-    def writeBestSol(self, filename="origprob.sol", write_zeros=False):
-        """Write the best exact primal solution to a file."""
-        cdef SCIP_SOL* best = SCIPgetBestSol(self._scip)
-
-        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
-        locale.setlocale(locale.LC_NUMERIC, "C")
-        with open(filename, "w") as f:
-            cfile = fdopen(f.fileno(), "w")
-            if best == NULL:
-                PY_SCIP_CALL(SCIPprintBestSol(self._scip, cfile, write_zeros))
-            else:
-                PY_SCIP_CALL(SCIPprintSolExact(self._scip, best, cfile, write_zeros))
-        locale.setlocale(locale.LC_NUMERIC, user_locale)
 
     def getPrimalbound(self):
         """
@@ -1682,7 +1663,7 @@ cdef class ExactModel(BaseModel):
         """
         cdef SCIP_RESULT result
         PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
-        return result
+        return _ENUMS[PY_SCIP_RESULT][result]
 
     def addRow(self, RowExact rowexact):
         """

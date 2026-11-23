@@ -3,12 +3,15 @@
 ## Unreleased
 ### Added
 - Support for SCIP 11.0.0
+- Added `ExactModel`, which enables SCIP's exact solving mode on construction, and the wrapper types `ExactVariable`, `ExactSolution`, `ExactEvent` and `ExactBoundChange` that SCIP objects of an exact model are returned as; for now it can only read problems and solve them exactly, and it is unavailable when SCIP was built without exact solving support
 - Added the following methods with tests: `nodesSharePath()`, `nodesGetCommonAncestor()`, `getFocusDepth()`, `getRootNode()`, `wasNodeLastBranchParent()`
 - Added `getCountedSols()` to retrieve the solutions collected by `count()` (#906)
 - Added docstrings to the bundled stubs in release wheels for Python 3.10 and later.
 - Added more type annotations and deprecation markers to the stubs.
 - Added tests for `getObjVal()` and `getVal()`
 - Added `addConsLinear()` to add linear constraints from variables and coefficients without building an expression
+- Added `SCIP_BOUNDTYPE` and `SCIP_BOUNDCHGTYPE` enums
+- Added missing SCIP constants: `SCIP_EVENTTYPE.TYPECHANGED`/`IMPLTYPECHANGED`, `SCIP_PROPTIMING.NONE`/`ALWAYS`, `SCIP_PRESOLTIMING.FINAL`/`ALWAYS`/`MAX`, `SCIP_HEURTIMING.NONE`/`AFTERNODE`/`AFTERPLUNGE`, `SCIP_RESULT.DELAYNODE`, `SCIP_ROWORIGINTYPE.CONSHDLR`
 ### Fixed
 - Fixed `MatrixVariable.varMayRound()` rounding direction
 - Fixed `lotsizing_lazy` example: lock the handler's variables in `conslock` so presolve cannot aggregate them away (#1252)
@@ -16,9 +19,14 @@
 - Fixed incorrect `getObjVal()` result when called before `getBestSol()` (e.g., in event handlers).
 - Fixed `getDualsolKnapsack()` and `getDualfarkasKnapsack()` returning 0 for original constraints, and the handler check in `getVarsAnd()` that could never fail
 ### Changed
+- Replaced SCIP constant classes with `IntEnum` and `IntFlag`, including enum return values and type annotations (#1286).
+- Speed up enum-returning getters and plugin callbacks with precomputed lookup tables
+- Deprecated `Model.enableExactSolving()`, `Model.isExact()`, `Model.allowNegSlackExact()`, `Model.branchLPExact()` and `Model.addRowExact()` in favour of `ExactModel`; they will be removed in 7.0.0
+- Split `Model` into `BaseModel` (methods shared with exact solving) and `Model(BaseModel)` (floating-point methods); the public surface of `Model` is unchanged and `BaseModel` is exported from `pyscipopt`
 - Replaced `format()` with f-strings in examples
 - Refactor general expression conversion into per-class `to_scip_expr` recursion
 - Made expression fields read-only to prevent accidental runtime modification
+- Expression fields now use concrete Cython types (`double`/`list`), so values are converted on construction
 - Methods taking a list of variables (e.g. `addConsKnapsack()`) no longer convert it to a NumPy array to check its dimension
 - Speed up `PowExpr._evaluate` via the C-level API
 - `PowExpr._evaluate` now raises `ValueError("math domain error")` for a negative base with a non-integer exponent and `OverflowError` when the result overflows.

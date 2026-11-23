@@ -98,6 +98,7 @@ def test_lp():
     cstat, rstat = myLP.getBase()
     assert len(cstat) == myLP.ncols()
     assert len(rstat) == myLP.nrows()
+    assert all(isinstance(s, SCIP_BASESTAT) for s in cstat + rstat)
     assert all(s in (SCIP_BASESTAT.LOWER, SCIP_BASESTAT.BASIC,
                      SCIP_BASESTAT.UPPER, SCIP_BASESTAT.ZERO) for s in cstat)
     assert all(s in (SCIP_BASESTAT.LOWER, SCIP_BASESTAT.BASIC,

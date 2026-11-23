@@ -71,8 +71,9 @@ def test_exact_model():
     assert not hasattr(x, "getLbOriginalExact")
 
 
-RAISING = ["tightenVarLbGlobal", "tightenVarUbGlobal", "chgVarObjDive", "chgVarLbProbing",
-           "chgVarUbProbing", "chgVarObjProbing", "fixVarProbing"]
+MODEL_ONLY = ["tightenVarLbGlobal", "tightenVarUbGlobal", "chgVarObjDive", "chgVarLbProbing",
+              "chgVarUbProbing", "chgVarObjProbing", "fixVarProbing", "chgVarLbNode", "chgVarUbNode",
+              "setObjlimit", "createOrigSol", "createPartialSol", "isHugeValue"]
 
 
 def test_bound_changes():
@@ -86,15 +87,9 @@ def test_bound_changes():
     assert x.getLbLocal() == Fraction(1, 2)
     assert m.fixVar(x, Fraction(3, 2)) == (False, True)
     assert x.getLbLocal() == x.getUbLocal() == Fraction(3, 2)
-    for name in RAISING:
-        with pytest.raises(ValueError):
-            getattr(m, name)(x, 1)
-    with pytest.raises(ValueError):
-        m.chgVarLbNode(None, x, 1)
-    with pytest.raises(ValueError):
-        m.chgVarUbNode(None, x, 1)
-    with pytest.raises(ValueError):
-        m.setObjlimit(Fraction(1, 3))
+    for name in MODEL_ONLY:
+        with pytest.raises(AttributeError, match=f"Model.{name} has this attribute"):
+            getattr(m, name)
     assert not hasattr(m, "chgVarLbExact")
 
 
@@ -162,10 +157,6 @@ def test_solutions():
     m, x, y, c = _knapsack()
     with pytest.raises(Warning):
         m.getPrimalbound()
-    with pytest.raises(ValueError):
-        m.createOrigSol()
-    with pytest.raises(ValueError):
-        m.createPartialSol()
 
     sol = m.createSol()
     m.setSolVal(sol, x, Fraction(1, 2))
@@ -235,8 +226,6 @@ def test_numerics():
     assert m.frac(Fraction(7, 3)) == third and m.feasFrac(Fraction(-7, 3)) == Fraction(2, 3)
     assert m.feasFloor(Fraction(7, 3)) == 2 and m.feasCeil(Fraction(7, 3)) == 3
     assert m.feasRound(Fraction(1, 2)) == 1 and m.feasRound(Fraction(-1, 2)) == 0
-    with pytest.raises(ValueError):
-        m.isHugeValue(1)
 
 
 class _LPProbe(Eventhdlr):

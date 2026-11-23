@@ -76,6 +76,7 @@ cdef extern from "scip/scip.h":
         SCIP_RESULT SCIP_FOUNDSOL
         SCIP_RESULT SCIP_SUSPENDED
         SCIP_RESULT SCIP_SUCCESS
+        SCIP_RESULT SCIP_DELAYNODE
 
     ctypedef int SCIP_STATUS
     cdef extern from "scip/type_stat.h":
@@ -165,6 +166,8 @@ cdef extern from "scip/scip.h":
         SCIP_PROPTIMING SCIP_PROPTIMING_DURINGLPLOOP
         SCIP_PROPTIMING SCIP_PROPTIMING_AFTERLPLOOP
         SCIP_PROPTIMING SCIP_PROPTIMING_AFTERLPNODE
+        SCIP_PROPTIMING SCIP_PROPTIMING_NONE
+        SCIP_PROPTIMING SCIP_PROPTIMING_ALWAYS
 
     ctypedef unsigned long SCIP_PRESOLTIMING
     cdef extern from "scip/type_timing.h":
@@ -172,6 +175,9 @@ cdef extern from "scip/scip.h":
         SCIP_PRESOLTIMING SCIP_PRESOLTIMING_FAST
         SCIP_PRESOLTIMING SCIP_PRESOLTIMING_MEDIUM
         SCIP_PRESOLTIMING SCIP_PRESOLTIMING_EXHAUSTIVE
+        SCIP_PRESOLTIMING SCIP_PRESOLTIMING_FINAL
+        SCIP_PRESOLTIMING SCIP_PRESOLTIMING_ALWAYS
+        SCIP_PRESOLTIMING SCIP_PRESOLTIMING_MAX
 
     ctypedef unsigned long SCIP_HEURTIMING
     cdef extern from "scip/type_timing.h":
@@ -186,6 +192,9 @@ cdef extern from "scip/scip.h":
         SCIP_HEURTIMING SCIP_HEURTIMING_BEFOREPRESOL
         SCIP_HEURTIMING SCIP_HEURTIMING_DURINGPRESOLLOOP
         SCIP_HEURTIMING SCIP_HEURTIMING_AFTERPROPLOOP
+        SCIP_HEURTIMING SCIP_HEURTIMING_NONE
+        SCIP_HEURTIMING SCIP_HEURTIMING_AFTERNODE
+        SCIP_HEURTIMING SCIP_HEURTIMING_AFTERPLUNGE
 
     ctypedef int SCIP_EXPR
     cdef extern from "scip/type_expr.h":
@@ -257,6 +266,8 @@ cdef extern from "scip/scip.h":
         SCIP_EVENTTYPE SCIP_EVENTTYPE_VARFIXED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_VARUNLOCKED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_OBJCHANGED
+        SCIP_EVENTTYPE SCIP_EVENTTYPE_TYPECHANGED
+        SCIP_EVENTTYPE SCIP_EVENTTYPE_IMPLTYPECHANGED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_GLBCHANGED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_GUBCHANGED
         SCIP_EVENTTYPE SCIP_EVENTTYPE_LBTIGHTENED
@@ -360,6 +371,7 @@ cdef extern from "scip/scip.h":
     ctypedef int SCIP_ROWORIGINTYPE
     cdef extern from "scip/type_lp.h":
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_UNSPEC
+        SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_CONSHDLR
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_CONS
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_SEPA
         SCIP_ROWORIGINTYPE SCIP_ROWORIGINTYPE_REOPT
@@ -874,6 +886,7 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPvarIsOriginal(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsTransformed(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsActive(SCIP_VAR* var)
+    SCIP_Bool SCIPvarIsExact(SCIP_VAR* var)
     SCIP_COL* SCIPvarGetCol(SCIP_VAR* var)
     SCIP_Bool SCIPvarIsInLP(SCIP_VAR* var)
     SCIP_Real SCIPvarGetLbOriginal(SCIP_VAR* var)
@@ -980,6 +993,7 @@ cdef extern from "scip/scip.h":
     SCIP_SOL* SCIPgetBestSol(SCIP* scip)
     SCIP_Real SCIPgetSolVal(SCIP* scip, SCIP_SOL* sol, SCIP_VAR* var)
     SCIP_Bool SCIPsolIsOriginal(SCIP_SOL* sol)
+    SCIP_Bool SCIPsolIsExact(SCIP_SOL* sol)
     SCIP_RETCODE SCIPwriteVarName(SCIP* scip, FILE* outfile, SCIP_VAR* var, SCIP_Bool vartype)
     SCIP_Real SCIPgetSolOrigObj(SCIP* scip, SCIP_SOL* sol)
     SCIP_Real SCIPgetSolTransObj(SCIP* scip, SCIP_SOL* sol)
@@ -2510,14 +2524,22 @@ cdef class BaseModel:
     cdef _ensureFreshBestSol(self)
     cdef SCIP_CONS* _getTransformedCons(self, Constraint cons, str expected_cons_type)
     cdef SCIP_EVENTHDLR* _getEventhdlr(self, object eventhdlr)
-    cdef SCIP_BENDERS* _getBenders(self, object benders)
     cdef SCIP_HEUR* _getHeur(self, object heur)
 
     @staticmethod
     cdef create(SCIP* scip)
 
 cdef class Model(BaseModel):
-    pass
+    cdef SCIP_BENDERS* _getBenders(self, object benders)
 
 cdef class ExactModel(BaseModel):
+    pass
+
+cdef class ExactSolution(Solution):
+    pass
+
+cdef class ExactEvent(Event):
+    pass
+
+cdef class ExactBoundChange(BoundChange):
     pass

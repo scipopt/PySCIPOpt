@@ -1,3 +1,6 @@
+##@file model.pxi
+#@brief Model: the floating-point methods, with the LP wrappers Column, Row and NLRow
+
 cdef class Column:
     """Base class holding a pointer to corresponding SCIP_COL."""
 
@@ -343,7 +346,7 @@ cdef class Row:
         PY_SCIP_ROWORIGINTYPE
 
         """
-        return SCIProwGetOrigintype(self.scip_row)
+        return _ENUMS[PY_SCIP_ROWORIGINTYPE][SCIProwGetOrigintype(self.scip_row)]
 
     def getConsOriginConshdlrtype(self):
         """
@@ -531,7 +534,44 @@ cdef class NLRow:
 
 
 cdef class Model(BaseModel):
-    """Model solving with floating-point arithmetic."""
+    """Main class holding a pointer to SCIP for managing most interactions."""
+
+    def __init__(self, problemName='model', defaultPlugins=True, Model sourceModel=None, origcopy=False, globalcopy=True, enablepricing=True, createscip=True, threadsafe=False):
+        """
+        Main class holding a pointer to SCIP for managing most interactions
+
+        Parameters
+        ----------
+        problemName : str, optional
+            name of the problem (default 'model')
+        defaultPlugins : bool, optional
+            use default plugins? (default True)
+        sourceModel : Model or None, optional
+            create a copy of the given Model instance (default None)
+        origcopy : bool, optional
+            whether to call copy or copyOrig (default False)
+        globalcopy : bool, optional
+            whether to create a global or a local copy (default True)
+        enablepricing : bool, optional
+            whether to enable pricing in copy (default True)
+        createscip : bool, optional
+            initialize the Model object and creates a SCIP instance (default True)
+        threadsafe : bool, optional
+            False if data can be safely shared between the source and target problem (default False)
+
+        """
+        if sourceModel is None or not createscip:
+            super().__init__(problemName, defaultPlugins, createscip=createscip)
+            return
+        super().__init__(problemName, defaultPlugins, createscip=False)
+        self._freescip = True
+        PY_SCIP_CALL(SCIPcreate(&self._scip))
+        self._bestSol = <Solution> sourceModel._bestSol
+        n = str_conversion(problemName)
+        if origcopy:
+            PY_SCIP_CALL(SCIPcopyOrig(sourceModel._scip, self._scip, NULL, NULL, n, enablepricing, True, threadsafe, True, self._valid))
+        else:
+            PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, True, threadsafe, True, self._valid))
 
     def getFirstPrimalBound(self):
         """
@@ -1112,7 +1152,6 @@ cdef class Model(BaseModel):
         if expr.degree() > 1:
             raise ValueError("SCIP does not support nonlinear objective functions. Consider using set_nonlinear_objective in the pyscipopt.recipe.nonlinear")
 
-
         if clear:
             # clear existing objective function
             self.addObjoffset(-self.getObjoffset())
@@ -1610,7 +1649,7 @@ cdef class Model(BaseModel):
         SCIP_LPSOLSTAT
 
         """
-        return SCIPgetLPSolstat(self._scip)
+        return _ENUMS[PY_SCIP_LPSOLSTAT][SCIPgetLPSolstat(self._scip)]
 
     def getLPObjVal(self):
         """
@@ -1724,7 +1763,6 @@ cdef class Model(BaseModel):
         """
         return SCIPgetColRedcost(self._scip, col.scip_col)
 
-    #TODO: documentation!!
     # LP Row Methods
     def createEmptyRowSepa(self, Sepa sepa, name="row", lhs = 0.0, rhs = None, local = True, modifiable = False, removable = True):
         """
@@ -2838,7 +2876,7 @@ cdef class Model(BaseModel):
         coef : float
 
         """
-        assert self.getStage() == 1, "addExprNonlinear cannot be called in stage %i." % self.getStage()
+        assert SCIPgetStage(self._scip) == 1, "addExprNonlinear cannot be called in stage %i." % SCIPgetStage(self._scip)
         assert cons.isNonlinear(), "addExprNonlinear can only be called with nonlinear constraints."
 
         cdef Constraint temp_cons
@@ -2872,6 +2910,257 @@ cdef class Model(BaseModel):
             PY_SCIP_CALL(SCIPaddCoefKnapsack(self._scip, cons.scip_cons, var.scip_var, coeff))
         else:
             raise NotImplementedError("Adding coefficients to %s constraints is not implemented." % constype)
+
+    def addConss(self, conss, name='', initial=True, separate=True,
+                 enforce=True, check=True, propagate=True, local=False,
+                 modifiable=False, dynamic=False, removable=False,
+                 stickingatnode=False):
+        """Adds multiple constraints.
+
+        Each of the constraints is added to the model using Model.addCons().
+
+        For all parameters, except `conss`, this method behaves differently depending on the
+        type of the passed argument:
+        1. If the value is iterable, it must be of the same length as `conss`. For each
+        constraint, Model.addCons() will be called with the value at the corresponding index.
+        2. Else, the (default) value will be applied to all of the constraints.
+
+        Parameters
+        ----------
+        conss : iterable of ExprCons
+            An iterable of constraint objects. Any iterable will be converted into a list before further processing.
+        name : str or iterable of str, optional
+            the name of the constraint, generic name if empty (Default value = '')
+        initial : bool or iterable of bool, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool or iterable of bool, optional
+            should the constraint be separated during LP processing? (Default value = True)
+        enforce : bool or iterable of bool, optional
+            should the constraint be enforced during node processing? (Default value = True)
+        check : bool or iterable of bool, optional
+            should the constraint be checked for feasibility? (Default value = True)
+        propagate : bool or iterable of bool, optional
+            should the constraint be propagated during node processing? (Default value = True)
+        local : bool or iterable of bool, optional
+            is the constraint only valid locally? (Default value = False)
+        modifiable : bool or iterable of bool, optional
+            is the constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool or iterable of bool, optional
+            is the constraint subject to aging? (Default value = False)
+        removable : bool or iterable of bool, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool or iterable of bool, optional
+            should the constraints always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        list of Constraint
+            The created and added Constraint objects.
+
+        """
+        cdef int n_conss
+        cdef int i
+
+        if isinstance(conss, MatrixExprCons):
+            conss = conss.flatten()
+
+        def ensure_iterable(elem, length):
+            if isinstance(elem, Iterable):
+                return elem
+            else:
+                return list(repeat(elem, length))
+
+        assert isinstance(conss, Iterable), "Given constraint list is not iterable."
+
+        conss = list(conss)
+        n_conss = len(conss)
+
+        if isinstance(name, str):
+            if name == "":
+                name = ["" for i in range(n_conss)]
+            else:
+                name = ["%s_%s" % (name, i) for i in range(n_conss)]
+
+        initial = ensure_iterable(initial, n_conss)
+        separate = ensure_iterable(separate, n_conss)
+        enforce = ensure_iterable(enforce, n_conss)
+        check = ensure_iterable(check, n_conss)
+        propagate = ensure_iterable(propagate, n_conss)
+        local = ensure_iterable(local, n_conss)
+        modifiable = ensure_iterable(modifiable, n_conss)
+        dynamic = ensure_iterable(dynamic, n_conss)
+        removable = ensure_iterable(removable, n_conss)
+        stickingatnode = ensure_iterable(stickingatnode, n_conss)
+
+        constraints = []
+        for i, cons in enumerate(conss):
+            constraints.append(
+                self.addCons(cons, name[i], initial[i], separate[i], enforce[i],
+                             check[i], propagate[i], local[i], modifiable[i],
+                             dynamic[i], removable[i], stickingatnode[i])
+            )
+
+        return constraints
+
+    def addMatrixCons(self,
+                      cons: Union[ExprCons, MatrixExprCons],
+                      name: Union[str, np.ndarray] ='',
+                      initial: Union[bool, np.ndarray] = True,
+                      separate: Union[bool, np.ndarray] = True,
+                      enforce: Union[bool, np.ndarray] = True,
+                      check: Union[bool, np.ndarray] = True,
+                      propagate: Union[bool, np.ndarray] = True,
+                      local: Union[bool, np.ndarray] = False,
+                      modifiable: Union[bool, np.ndarray] = False,
+                      dynamic: Union[bool, np.ndarray] = False,
+                      removable: Union[bool, np.ndarray] = False,
+                      stickingatnode: Union[bool, np.ndarray] = False):
+        """
+        Add a linear or nonlinear matrix constraint.
+
+        Parameters
+        ----------
+        cons : ExprCons or MatrixExprCons
+            The matrix expression constraint or expression constraint, that are not yet an actual constraint
+        name : str or np.ndarray, optional
+            the name of the matrix constraint, generic name if empty (Default value = "")
+        initial : bool or np.ndarray, optional
+            should the LP relaxation of constraint be in the initial LP? (Default value = True)
+        separate : bool or np.ndarray, optional
+            should the matrix constraint be separated during LP processing? (Default value = True)
+        enforce : bool or np.ndarray, optional
+            should the matrix constraint be enforced during node processing? (Default value = True)
+        check : bool or np.ndarray, optional
+            should the matrix constraint be checked for feasibility? (Default value = True)
+        propagate : bool or np.ndarray, optional
+            should the matrix constraint be propagated during node processing? (Default value = True)
+        local : bool or np.ndarray, optional
+            is the matrix constraint only valid locally? (Default value = False)
+        modifiable : bool or np.ndarray, optional
+            is the matrix constraint modifiable (subject to column generation)? (Default value = False)
+        dynamic : bool or np.ndarray, optional
+            is the matrix constraint subject to aging? (Default value = False)
+        removable : bool or np.ndarray, optional
+            should the relaxation be removed from the LP due to aging or cleanup? (Default value = False)
+        stickingatnode : bool or np.ndarray, optional
+            should the matrix constraints always be kept at the node where it was added,
+            even if it may be moved to a more global node? (Default value = False)
+
+        Returns
+        -------
+        Constraint or MatrixConstraint
+            The created and added Constraint or MatrixConstraint.
+        """
+        if not isinstance(cons, (ExprCons, MatrixExprCons)):
+            raise TypeError("given constraint is not MatrixExprCons nor ExprCons but %s" % cons.__class__.__name__)
+
+        if isinstance(cons, ExprCons):
+            return self.addCons(cons, name=name, initial=initial, separate=separate,
+                        enforce=enforce, check=check, propagate=propagate,
+                        local=local, modifiable=modifiable, dynamic=dynamic,
+                        removable=removable, stickingatnode=stickingatnode)
+
+        shape = cons.shape
+
+        if isinstance(name, np.ndarray):
+            assert name.shape == shape
+        if isinstance(initial, np.ndarray):
+            assert initial.shape == shape
+        if isinstance(separate, np.ndarray):
+            assert separate.shape == shape
+        if isinstance(enforce, np.ndarray):
+            assert enforce.shape == shape
+        if isinstance(check, np.ndarray):
+            assert check.shape == shape
+        if isinstance(propagate, np.ndarray):
+            assert propagate.shape == shape
+        if isinstance(local, np.ndarray):
+            assert local.shape == shape
+        if isinstance(modifiable, np.ndarray):
+            assert modifiable.shape == shape
+        if isinstance(dynamic, np.ndarray):
+            assert dynamic.shape == shape
+        if isinstance(removable, np.ndarray):
+            assert removable.shape == shape
+        if isinstance(stickingatnode, np.ndarray):
+            assert stickingatnode.shape == shape
+
+        matrix_cons = np.empty(shape, dtype=object)
+
+        if isinstance(shape, int):
+            ndim = 1
+        else:
+            ndim = len(shape)
+        # cdef np.ndarray[object, ndim=ndim] matrix_variable = np.empty(shape, dtype=object)
+        matrix_variable = np.empty(shape, dtype=object)
+
+        if isinstance(name, str):
+            matrix_names = np.full(shape, name, dtype=object)
+            if name != "":
+                for idx in np.ndindex(matrix_variable.shape):
+                    matrix_names[idx] = f"{name}_{'_'.join(map(str, idx))}"
+        else:
+            matrix_names = name
+
+        if not isinstance(initial, np.ndarray):
+            matrix_initial = np.full(shape, initial, dtype=bool)
+        else:
+            matrix_initial = initial
+
+        if not isinstance(separate, np.ndarray):
+            matrix_separate = np.full(shape, separate, dtype=bool)
+        else:
+            matrix_separate = separate
+
+        if not isinstance(enforce, np.ndarray):
+            matrix_enforce = np.full(shape, enforce, dtype=bool)
+        else:
+            matrix_enforce = enforce
+
+        if not isinstance(check, np.ndarray):
+            matrix_check = np.full(shape, check, dtype=bool)
+        else:
+            matrix_check = check
+
+        if not isinstance(propagate, np.ndarray):
+            matrix_propagate = np.full(shape, propagate, dtype=bool)
+        else:
+            matrix_propagate = propagate
+
+        if not isinstance(local, np.ndarray):
+            matrix_local = np.full(shape, local, dtype=bool)
+        else:
+            matrix_local = local
+
+        if not isinstance(modifiable, np.ndarray):
+            matrix_modifiable = np.full(shape, modifiable, dtype=bool)
+        else:
+            matrix_modifiable = modifiable
+
+        if not isinstance(dynamic, np.ndarray):
+            matrix_dynamic = np.full(shape, dynamic, dtype=bool)
+        else:
+            matrix_dynamic = dynamic
+
+        if not isinstance(removable, np.ndarray):
+            matrix_removable = np.full(shape, removable, dtype=bool)
+        else:
+            matrix_removable = removable
+
+        if not isinstance(stickingatnode, np.ndarray):
+            matrix_stickingatnode = np.full(shape, stickingatnode, dtype=bool)
+        else:
+            matrix_stickingatnode = stickingatnode
+
+        for idx in np.ndindex(cons.shape):
+            matrix_cons[idx] = self.addCons(cons[idx], name=matrix_names[idx], initial=matrix_initial[idx],
+                                            separate=matrix_separate[idx], check=matrix_check[idx],
+                                            propagate=matrix_propagate[idx], local=matrix_local[idx],
+                                            modifiable=matrix_modifiable[idx], dynamic=matrix_dynamic[idx],
+                                            removable=matrix_removable[idx], stickingatnode=matrix_stickingatnode[idx])
+
+        return matrix_cons.view(MatrixConstraint)
 
     def addConsNode(self, Node node, ExprCons cons, Node validnode=None, name='',
                     initial=True, separate=True, enforce=True, check=True,
@@ -4312,7 +4601,7 @@ cdef class Model(BaseModel):
         cdef SCIP_Real activity
         cdef SCIP_SOL* scip_sol
 
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
+        if not SCIPgetStage(self._scip) >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
 
         if isinstance(sol, Solution):
@@ -4351,7 +4640,7 @@ cdef class Model(BaseModel):
         cdef SCIP_SOL* scip_sol
 
 
-        if not self.getStage() >= SCIP_STAGE_SOLVING:
+        if not SCIPgetStage(self._scip) >= SCIP_STAGE_SOLVING:
             raise Warning("method cannot be called before problem is solved")
 
         if isinstance(sol, Solution):
@@ -5307,70 +5596,6 @@ cdef class Model(BaseModel):
         solution = Solution.create(self._scip, _sol)
         return solution
 
-    def printBestSol(self, write_zeros=False):
-        """
-        Prints the best feasible primal solution.
-
-        Parameters
-        ----------
-        write_zeros : bool, optional
-            include variables that are set to zero (Default = False)
-
-        """
-        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
-        locale.setlocale(locale.LC_NUMERIC, "C")
-
-        PY_SCIP_CALL(SCIPprintBestSol(self._scip, NULL, write_zeros))
-
-        locale.setlocale(locale.LC_NUMERIC,user_locale)
-
-    def printSol(self, Solution solution=None, write_zeros=False):
-        """
-        Print the given primal solution.
-
-        Parameters
-        ----------
-        solution : Solution or None, optional
-            solution to print (default = None)
-        write_zeros : bool, optional
-            include variables that are set to zero (Default=False)
-
-        """
-
-        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
-        locale.setlocale(locale.LC_NUMERIC, "C")
-
-        if solution is None:
-            PY_SCIP_CALL(SCIPprintSol(self._scip, NULL, NULL, write_zeros))
-        else:
-            PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, NULL, write_zeros))
-
-        locale.setlocale(locale.LC_NUMERIC,user_locale)
-
-    def writeBestSol(self, filename="origprob.sol", write_zeros=False):
-        """
-        Write the best feasible primal solution to a file.
-
-        Parameters
-        ----------
-        filename : str, optional
-            name of the output file (Default="origprob.sol")
-        write_zeros : bool, optional
-            include variables that are set to zero (Default=False)
-
-        """
-
-        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
-        locale.setlocale(locale.LC_NUMERIC, "C")
-
-        # use this doubled opening pattern to ensure that IOErrors are
-        #   triggered early and in Python not in C,Cython or SCIP.
-        with open(filename, "w") as f:
-            cfile = fdopen(f.fileno(), "w")
-            PY_SCIP_CALL(SCIPprintBestSol(self._scip, cfile, write_zeros))
-
-        locale.setlocale(locale.LC_NUMERIC,user_locale)
-
     def writeBestTransSol(self, filename="transprob.sol", write_zeros=False):
         """
         Write the best feasible primal solution for the transformed problem to a file.
@@ -5391,31 +5616,6 @@ cdef class Model(BaseModel):
         with open(filename, "w") as f:
             cfile = fdopen(f.fileno(), "w")
             PY_SCIP_CALL(SCIPprintBestTransSol(self._scip, cfile, write_zeros))
-
-        locale.setlocale(locale.LC_NUMERIC,user_locale)
-
-    def writeSol(self, Solution solution, filename="origprob.sol", write_zeros=False):
-        """
-        Write the given primal solution to a file.
-
-        Parameters
-        ----------
-        solution : Solution
-            solution to write
-        filename : str, optional
-            name of the output file (Default="origprob.sol")
-        write_zeros : bool, optional
-            include variables that are set to zero (Default=False)
-
-        """
-        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
-        locale.setlocale(locale.LC_NUMERIC, "C")
-
-        # use this doubled opening pattern to ensure that IOErrors are
-        #   triggered early and in Python not in C,Cython or SCIP.
-        with open(filename, "w") as f:
-            cfile = fdopen(f.fileno(), "w")
-            PY_SCIP_CALL(SCIPprintSol(self._scip, solution.sol, cfile, write_zeros))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
 
@@ -5443,26 +5643,6 @@ cdef class Model(BaseModel):
             PY_SCIP_CALL(SCIPprintTransSol(self._scip, solution.sol, cfile, write_zeros))
 
         locale.setlocale(locale.LC_NUMERIC,user_locale)
-
-    # perhaps this should not be included as it implements duplicated functionality
-    #   (as does it's namesake in SCIP)
-    def readSol(self, filename):
-        """
-        Reads a given solution file, problem has to be transformed in advance.
-
-        Parameters
-        ----------
-        filename : str
-            name of the input file
-
-        """
-        user_locale = locale.getlocale(category=locale.LC_NUMERIC)
-        locale.setlocale(locale.LC_NUMERIC, "C")
-
-        absfile = str_conversion(abspath(filename))
-        PY_SCIP_CALL(SCIPreadSol(self._scip, absfile))
-
-        locale.setlocale(locale.LC_NUMERIC, user_locale)
 
     def readSolFile(self, filename):
         """
@@ -5555,6 +5735,39 @@ cdef class Model(BaseModel):
         else:
             PY_SCIP_CALL(SCIPtrySol(self._scip, solution.sol, printreason, completely, checkbounds, checkintegrality, checklprows, &stored))
         return stored
+
+    def getObjVal(self, original=True):
+        """
+        Retrieve the objective value of the best solution.
+
+        Parameters
+        ----------
+        original : bool, optional
+            objective value in original space (Default value = True)
+
+        Returns
+        -------
+        float
+
+        """
+
+        self._ensureFreshBestSol()
+
+        if SCIPgetNSols(self._scip) == 0:
+            if SCIPgetStage(self._scip) != SCIP_STAGE_SOLVING:
+                raise Warning("Without a solution, method can only be called in stage SOLVING.")
+        else:
+            assert self._bestSol.sol != NULL
+
+            if SCIPsolIsOriginal(self._bestSol.sol):
+                min_stage_requirement = SCIP_STAGE_PROBLEM
+            else:
+                min_stage_requirement = SCIP_STAGE_TRANSFORMING
+
+            if not SCIPgetStage(self._scip) >= min_stage_requirement:
+                raise Warning("method cannot be called in stage %i." % self.getStage)
+
+        return self.getSolObjVal(self._bestSol, original)
 
     def getSolObjVal(self, Solution sol, original=True):
         """
@@ -6354,3 +6567,1322 @@ cdef class Model(BaseModel):
         PY_SCIP_CALL(SCIPinferVarUbSym(self._scip, var.scip_var, ub, symcomp.scip_symcomp, inferinfo, force,
                                        &infeasible, &tightened))
         return infeasible, tightened
+
+    def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
+        """
+        Include a branching rule.
+
+        Parameters
+        ----------
+        branchrule : Branchrule
+            branching rule
+        name : str
+            name of branching rule
+        desc : str
+            description of branching rule
+        priority : int
+            priority of branching rule
+        maxdepth : int
+            maximal depth level up to which this branching rule should be used (or -1)
+        maxbounddist : float
+            maximal relative distance from current node's dual bound to primal bound
+            compared to best node's dual bound for applying branching rule
+            (0.0: only on current best node, 1.0: on all nodes)
+
+        """
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeBranchrule(self._scip, nam, des,
+                                          priority, maxdepth, maxbounddist,
+                                          PyBranchruleCopy, PyBranchruleFree, PyBranchruleInit, PyBranchruleExit,
+                                          PyBranchruleInitsol, PyBranchruleExitsol, PyBranchruleExeclp, PyBranchruleExecext,
+                                          PyBranchruleExecps, <SCIP_BRANCHRULEDATA*> branchrule))
+        branchrule.model = self
+        self._plugins.append(branchrule)
+
+    def includeConshdlr(self, Conshdlr conshdlr, name, desc, sepapriority=0,
+                        enfopriority=0, chckpriority=0, sepafreq=-1, propfreq=-1,
+                        eagerfreq=100, maxprerounds=-1, delaysepa=False,
+                        delayprop=False, needscons=True,
+                        proptiming=PY_SCIP_PROPTIMING.BEFORELP,
+                        presoltiming=PY_SCIP_PRESOLTIMING.MEDIUM):
+        """
+        Include a constraint handler.
+
+        Parameters
+        ----------
+        conshdlr : Conshdlr
+            constraint handler
+        name : str
+            name of constraint handler
+        desc : str
+            description of constraint handler
+        sepapriority : int, optional
+            priority for separation (Default value = 0)
+        enfopriority : int, optional
+            priority for constraint enforcing (Default value = 0)
+        chckpriority : int, optional
+            priority for checking feasibility (Default value = 0)
+        sepafreq : int, optional
+            frequency for separating cuts; 0 = only at root node (Default value = -1)
+        propfreq : int, optional
+            frequency for propagating domains; 0 = only preprocessing propagation (Default value = -1)
+        eagerfreq : int, optional
+            frequency for using all instead of only the useful constraints in separation,
+             propagation and enforcement; -1 = no eager evaluations, 0 = first only
+             (Default value = 100)
+        maxprerounds : int, optional
+            maximal number of presolving rounds the constraint handler participates in (Default value = -1)
+        delaysepa : bool, optional
+            should separation method be delayed, if other separators found cuts? (Default value = False)
+        delayprop : bool, optional
+            should propagation method be delayed, if other propagators found reductions? (Default value = False)
+        needscons : bool, optional
+            should the constraint handler be skipped, if no constraints are available? (Default value = True)
+        proptiming : PY_SCIP_PROPTIMING
+            positions in the node solving loop where propagation method of constraint handlers
+             should be executed (Default value = SCIP_PROPTIMING.BEFORELP)
+        presoltiming : PY_SCIP_PRESOLTIMING
+            timing mask of the constraint handler's presolving method (Default value = SCIP_PRESOLTIMING.MEDIUM)
+
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeConshdlr(self._scip, n, d, sepapriority, enfopriority, chckpriority, sepafreq, propfreq, eagerfreq,
+                                              maxprerounds, delaysepa, delayprop, needscons, proptiming, presoltiming,
+                                              PyConshdlrCopy, PyConsFree, PyConsInit, PyConsExit, PyConsInitpre, PyConsExitpre,
+                                              PyConsInitsol, PyConsExitsol, PyConsDelete, PyConsTrans, PyConsInitlp, PyConsSepalp, PyConsSepasol,
+                                              PyConsEnfolp, PyConsEnforelax, PyConsEnfops, PyConsCheck, PyConsProp, PyConsPresol, PyConsResprop, PyConsLock,
+                                              PyConsActive, PyConsDeactive, PyConsEnable, PyConsDisable, PyConsDelvars, PyConsPrint, PyConsCopy,
+                                              PyConsParse, PyConsGetvars, PyConsGetnvars, PyConsGetdivebdchgs, PyConsGetPermSymGraph, PyConsGetSignedPermSymGraph,
+                                              <SCIP_CONSHDLRDATA*>conshdlr))
+        conshdlr.model = self
+        conshdlr.name = name
+        self._plugins.append(conshdlr)
+
+    def includeHeur(self, Heur heur, name, desc, dispchar, priority=10000, freq=1, freqofs=0,
+                    maxdepth=-1, timingmask=PY_SCIP_HEURTIMING.BEFORENODE, usessubscip=False):
+        """
+        Include a primal heuristic.
+
+        Parameters
+        ----------
+        heur : Heur
+            heuristic
+        name : str
+            name of heuristic
+        desc : str
+            description of heuristic
+        dispchar : str
+            display character of heuristic. Please use a single length string.
+        priority : int. optional
+            priority of the heuristic (Default value = 10000)
+        freq : int, optional
+            frequency for calling heuristic (Default value = 1)
+        freqofs : int. optional
+            frequency offset for calling heuristic (Default value = 0)
+        maxdepth : int, optional
+            maximal depth level to call heuristic at (Default value = -1)
+        timingmask : PY_SCIP_HEURTIMING, optional
+            positions in the node solvingreturn {
+            'result': SCIP_RESULT.SUCCESS,
+            'lowerbound': 10e4
+        } loop where heuristic should be executed
+            (Default value = SCIP_HEURTIMING_BEFORENODE)
+        usessubscip : bool, optional
+            does the heuristic use a secondary SCIP instance? (Default value = False)
+
+        """
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        dis = ord(str_conversion(dispchar))
+        PY_SCIP_CALL(SCIPincludeHeur(self._scip, nam, des, dis,
+                                          priority, freq, freqofs,
+                                          maxdepth, timingmask, usessubscip,
+                                          PyHeurCopy, PyHeurFree, PyHeurInit, PyHeurExit,
+                                          PyHeurInitsol, PyHeurExitsol, PyHeurExec,
+                                          <SCIP_HEURDATA*> heur))
+        heur.model = self
+        heur.name = name
+        self._plugins.append(heur)
+    
+    def includePresol(self, Presol presol, name, desc, priority, maxrounds, timing=PY_SCIP_PRESOLTIMING.FAST):
+        """
+        Include a presolver.
+
+        Parameters
+        ----------
+        presol : Presol
+            presolver
+        name : str
+            name of presolver
+        desc : str
+            description of presolver
+        priority : int
+            priority of the presolver (>= 0: before, < 0: after constraint handlers)
+        maxrounds : int
+            maximal number of presolving rounds the presolver participates in (-1: no limit)
+        timing : PY_SCIP_PRESOLTIMING, optional
+             timing mask of presolver (Default value = SCIP_PRESOLTIMING_FAST)
+
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludePresol(self._scip, n, d, priority, maxrounds, timing, PyPresolCopy, PyPresolFree, PyPresolInit,
+                                            PyPresolExit, PyPresolInitpre, PyPresolExitpre, PyPresolExec, <SCIP_PRESOLDATA*>presol))
+        presol.model = self
+        self._plugins.append(presol)
+
+    def includePricer(self, Pricer pricer, name, desc, priority=1, delay=True):
+        """
+        Include a pricer.
+
+        Parameters
+        ----------
+        pricer : Pricer
+            pricer
+        name : str
+            name of pricer
+        desc : str
+            description of pricer
+        priority : int, optional
+            priority of pricer (Default value = 1)
+        delay : bool, optional
+            should the pricer be delayed until no other pricers or already existing problem variables
+            with negative reduced costs are found? (Default value = True)
+
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludePricer(self._scip, n, d,
+                                            priority, delay,
+                                            PyPricerCopy, PyPricerFree, PyPricerInit, PyPricerExit, PyPricerInitsol, PyPricerExitsol, PyPricerRedcost, PyPricerFarkas,
+                                            <SCIP_PRICERDATA*>pricer))
+        cdef SCIP_PRICER* scip_pricer
+        scip_pricer = SCIPfindPricer(self._scip, n)
+        PY_SCIP_CALL(SCIPactivatePricer(self._scip, scip_pricer))
+        pricer.model = self
+        self._plugins.append(pricer)
+        pricer.scip_pricer = scip_pricer
+
+    def includeProp(self, Prop prop, name, desc, presolpriority, presolmaxrounds,
+                    proptiming, presoltiming=PY_SCIP_PRESOLTIMING.FAST, priority=1, freq=1, delay=True):
+        """
+        Include a propagator.
+
+        Parameters
+        ----------
+        prop : Prop
+            propagator
+        name : str
+            name of propagator
+        desc : str
+            description of propagator
+        presolpriority : int
+            presolving priority of the propgator (>= 0: before, < 0: after constraint handlers)
+        presolmaxrounds : int
+            maximal number of presolving rounds the propagator participates in (-1: no limit)
+        proptiming : SCIP_PROPTIMING
+            positions in the node solving loop where propagation method of constraint handlers should be executed
+        presoltiming : PY_SCIP_PRESOLTIMING, optional
+            timing mask of the constraint handler's presolving method (Default value = SCIP_PRESOLTIMING_FAST)
+        priority : int, optional
+            priority of the propagator (Default value = 1)
+        freq : int, optional
+            frequency for calling propagator (Default value = 1)
+        delay : bool, optional
+            should propagator be delayed if other propagators have found reductions? (Default value = True)
+
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeProp(self._scip, n, d,
+                                          priority, freq, delay,
+                                          proptiming, presolpriority, presolmaxrounds,
+                                          presoltiming, PyPropCopy, PyPropFree, PyPropInit, PyPropExit,
+                                          PyPropInitpre, PyPropExitpre, PyPropInitsol, PyPropExitsol,
+                                          PyPropPresol, PyPropExec, PyPropResProp,
+                                          <SCIP_PROPDATA*> prop))
+        prop.model = self
+        self._plugins.append(prop)
+
+    def includeReader(self, Reader reader, name, desc, ext):
+        """
+        Include a reader.
+
+        Parameters
+        ----------
+        reader : Reader
+            reader
+        name : str
+            name of reader
+        desc : str
+            description of reader
+        ext : str
+            file extension of reader
+
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        e = str_conversion(ext)
+        PY_SCIP_CALL(SCIPincludeReader(self._scip, n, d, e, PyReaderCopy, PyReaderFree,
+                                          PyReaderRead, PyReaderWrite, <SCIP_READERDATA*>reader))
+        reader.model = self
+        reader.name = name
+        self._plugins.append(reader)
+
+    def includeRelax(self, Relax relax, name, desc, priority=10000, freq=1):
+        """
+        Include a relaxation handler.
+
+        Parameters
+        ----------
+        relax : Relax
+            relaxation handler
+        name : str
+            name of relaxation handler
+        desc : str
+            description of relaxation handler
+        priority : int, optional
+            priority of the relaxation handler (negative: after LP, non-negative: before LP, Default value = 10000)
+        freq : int, optional
+            frequency for calling relaxation handler
+
+        """
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeRelax(self._scip, nam, des, priority, freq, PyRelaxCopy, PyRelaxFree, PyRelaxInit, PyRelaxExit,
+                                          PyRelaxInitsol, PyRelaxExitsol, PyRelaxExec, <SCIP_RELAXDATA*> relax))
+        relax.model = self
+        relax.name = name
+        self._plugins.append(relax)
+
+    def includeSepa(self, Sepa sepa, name, desc, priority=0, freq=10, maxbounddist=1.0, usessubscip=False, delay=False):
+        """
+        Include a separator
+
+        :param Sepa sepa: separator
+        :param name: name of separator
+        :param desc: description of separator
+        :param priority: priority of separator (>= 0: before, < 0: after constraint handlers)
+        :param freq: frequency for calling separator
+        :param maxbounddist: maximal relative distance from current node's dual bound to primal bound compared to best node's dual bound for applying separation
+        :param usessubscip: does the separator use a secondary SCIP instance? (Default value = False)
+        :param delay: should separator be delayed, if other separators found cuts? (Default value = False)
+
+
+        Parameters
+        ----------
+        sepa : Sepa
+            separator
+        name : str
+            name of separator
+        desc : str
+            description of separator
+        priority : int, optional
+            priority of separator (>= 0: before, < 0: after constraint handlers) (default=0)
+        freq : int, optional
+            frequency for calling separator (default=10)
+        maxbounddist : float, optional
+            maximal relative distance from current node's dual bound to primal
+            bound compared to best node's dual bound for applying separation.
+            (default = 1.0)
+        usessubscip : bool, optional
+            does the separator use a secondary SCIP instance? (Default value = False)
+        delay : bool, optional
+            should separator be delayed if other separators found cuts? (Default value = False)
+
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeSepa(self._scip, n, d, priority, freq, maxbounddist, usessubscip, delay, PySepaCopy, PySepaFree,
+                                          PySepaInit, PySepaExit, PySepaInitsol, PySepaExitsol, PySepaExeclp, PySepaExecsol, <SCIP_SEPADATA*>sepa))
+        sepa.model = self
+        sepa.name = name
+        self._plugins.append(sepa)
+
+    def includeBenders(self, Benders benders, name, desc, priority=1, cutlp=True, cutpseudo=True, cutrelax=True,
+            shareaux=False):
+        """
+        Include a Benders' decomposition.
+
+        Parameters
+        ----------
+        benders : Benders
+            the Benders decomposition
+        name : str
+            the name
+        desc : str
+            the description
+        priority : int, optional
+            priority of the Benders' decomposition
+        cutlp : bool, optional
+            should Benders' cuts be generated from LP solutions
+        cutpseudo : bool, optional
+            should Benders' cuts be generated from pseudo solutions
+        cutrelax : bool, optional
+            should Benders' cuts be generated from relaxation solutions
+        shareaux : bool, optional
+            should the Benders' decomposition share the auxiliary variables of the
+            highest priority Benders' decomposition
+
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeBenders(self._scip, n, d,
+                                            priority, cutlp, cutrelax, cutpseudo, shareaux,
+                                            PyBendersCopy, PyBendersFree, PyBendersInit, PyBendersExit, PyBendersInitpre,
+                                            PyBendersExitpre, PyBendersInitsol, PyBendersExitsol, PyBendersGetvar,
+                                            PyBendersCreatesub, PyBendersPresubsolve, PyBendersSolvesubconvex,
+                                            PyBendersSolvesub, PyBendersPostsolve, PyBendersFreesub,
+                                            <SCIP_BENDERSDATA*>benders))
+        cdef SCIP_BENDERS* scip_benders
+        scip_benders = SCIPfindBenders(self._scip, n)
+        benders.model = self
+        benders.name = name
+        benders._benders = scip_benders
+        self._plugins.append(benders)
+
+    def includeBenderscut(self, Benders benders, Benderscut benderscut, name, desc, priority=1, islpcut=True):
+        """
+        Include a Benders' decomposition cutting method
+
+        Parameters
+        ----------
+        benders : Benders
+            the Benders' decomposition that this cutting method is attached to
+        benderscut : Benderscut
+            the Benders' decomposition cutting method
+        name : str
+            the name
+        desc : str
+            the description
+        priority : int. optional
+            priority of the Benders' decomposition (Default = 1)
+        islpcut : bool, optional
+            is this cutting method suitable for generating cuts for convex relaxations?
+            (Default = True)
+
+        """
+        cdef SCIP_BENDERS* _benders
+
+        _benders = benders._benders
+
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        PY_SCIP_CALL(SCIPincludeBenderscut(self._scip, _benders, n, d, priority, islpcut,
+                                            PyBenderscutCopy, PyBenderscutFree, PyBenderscutInit, PyBenderscutExit,
+                                            PyBenderscutInitsol, PyBenderscutExitsol, PyBenderscutExec,
+                                            <SCIP_BENDERSCUTDATA*>benderscut))
+
+        cdef SCIP_BENDERSCUT* scip_benderscut
+        scip_benderscut = SCIPfindBenderscut(_benders, n)
+        benderscut.model = self
+        benderscut.benders = benders
+        benderscut.name = name
+        self._plugins.append(benderscut)
+
+    def includeBendersDefaultCuts(self, Benders benders):
+        """
+        Includes the default Benders' decomposition cuts to the custom Benders' decomposition plugin.
+
+        Parameters
+        ----------
+        benders : Benders
+            the Benders' decomposition that the default cuts will be applied to
+
+        """
+        PY_SCIP_CALL( SCIPincludeBendersDefaultCuts(self._scip, benders._benders) )
+
+    def initBendersDefault(self, subproblems):
+        """
+        Initialises the default Benders' decomposition with a dictionary of subproblems.
+
+        Parameters
+        ----------
+        subproblems : Model or dict of object to Model
+            a single Model instance or dictionary of Model instances
+
+        """
+        cdef SCIP** subprobs
+        cdef SCIP_BENDERS* benders
+        cdef int nsubproblems
+        cdef int i
+
+        # checking whether subproblems is a dictionary
+        if isinstance(subproblems, dict):
+            isdict = True
+            nsubproblems = len(subproblems)
+        else:
+            isdict = False
+            nsubproblems = 1
+
+        # create array of SCIP instances for the subproblems
+        subprobs = <SCIP**> malloc(nsubproblems * sizeof(SCIP*))
+
+        # if subproblems is a dictionary, then the dictionary is turned into a c array
+        if isdict:
+            for i, subprob in enumerate(subproblems.values()):
+                subprobs[i] = (<Model>subprob)._scip
+        else:
+            subprobs[0] = (<Model>subproblems)._scip
+
+        # creating the default Benders' decomposition
+        PY_SCIP_CALL(SCIPcreateBendersDefault(self._scip, subprobs, nsubproblems))
+        benders = SCIPfindBenders(self._scip, "default")
+
+        # Free the temporary array (SCIPcreateBendersDefault copies the pointers internally)
+        free(subprobs)
+
+        # Store references to subproblem Models and transfer ownership to master.
+        # The master will free the Benders subproblems in its __dealloc__ method.
+        # Set _freescip = False on the subproblem Model(s) to prevent double-free
+        # if they are deallocated before the master.
+        if isdict:
+            self._benders_subproblems = list(subproblems.values())
+            for subprob in self._benders_subproblems:
+                (<Model>subprob)._freescip = False
+        else:
+            self._benders_subproblems = [subproblems]
+            (<Model>subproblems)._freescip = False
+
+        # activating the Benders' decomposition constraint handlers
+        self.setBoolParam("constraints/benderslp/active", True)
+        self.setBoolParam("constraints/benders/active", True)
+        #self.setIntParam("limits/maxorigsol", 0)
+
+    def activateBenders(self, Benders benders, int nsubproblems):
+        """
+        Activates the Benders' decomposition plugin with the input name.
+
+        Parameters
+        ----------
+        benders : Benders
+            the Benders' decomposition to which the subproblem belongs to
+        nsubproblems : int
+            the number of subproblems in the Benders' decomposition
+
+        """
+        PY_SCIP_CALL(SCIPactivateBenders(self._scip, benders._benders, nsubproblems))
+
+    def addBendersSubproblem(self, Benders benders, subproblem):
+        """
+        Adds a subproblem to the Benders' decomposition given by the input
+        name.
+
+        Parameters
+        ----------
+        benders : Benders
+            the Benders' decomposition to which the subproblem belongs to
+        subproblem : Model
+            the subproblem to add to the decomposition
+
+        """
+        PY_SCIP_CALL(SCIPaddBendersSubproblem(self._scip, benders._benders, (<Model>subproblem)._scip))
+
+    def setupBendersSubproblem(self, probnumber, Benders benders = None, Solution solution = None, checktype = PY_SCIP_BENDERSENFOTYPE.LP):
+        """
+        Sets up the Benders' subproblem given the master problem solution.
+
+        Parameters
+        ----------
+        probnumber : int
+            the index of the problem that is to be set up
+        benders : Benders or None, optional
+            the Benders' decomposition to which the subproblem belongs to
+        solution : Solution or None, optional
+            the master problem solution that is used for the set up, if None, then the LP solution is used
+        checktype : PY_SCIP_BENDERSENFOTYPE
+            the type of solution check that prompted the solving of the Benders' subproblems, either
+            PY_SCIP_BENDERSENFOTYPE: LP, RELAX, PSEUDO or CHECK. Default is LP.
+
+        """
+        cdef SCIP_BENDERS* scip_benders = self._getBenders(benders)
+        cdef SCIP_SOL* scip_sol
+
+        if isinstance(solution, Solution):
+            scip_sol = solution.sol
+        else:
+            scip_sol = NULL
+
+        retcode = SCIPsetupBendersSubproblem(self._scip, scip_benders, scip_sol, probnumber, checktype)
+
+        PY_SCIP_CALL(retcode)
+
+    def solveBendersSubproblem(self, probnumber, solvecip, Benders benders = None, Solution solution = None):
+        """
+        Solves the Benders' decomposition subproblem. The convex relaxation will be solved unless
+        the parameter solvecip is set to True.
+
+        Parameters
+        ----------
+        probnumber : int
+            the index of the problem that is to be set up
+        solvecip : bool
+            whether the CIP of the subproblem should be solved. If False, then only the convex relaxation is solved.
+        benders : Benders or None, optional
+            the Benders' decomposition to which the subproblem belongs to
+        solution : Solution or None, optional
+            the master problem solution that is used for the set up, if None, then the LP solution is used
+
+        Returns
+        -------
+        infeasible : bool
+            returns whether the current subproblem is infeasible
+        objective : float or None
+            the objective function value of the subproblem, can be None
+
+        """
+
+        cdef SCIP_BENDERS* scip_benders = self._getBenders(benders)
+        cdef SCIP_SOL* scip_sol
+        cdef SCIP_Real objective
+        cdef SCIP_Bool infeasible
+
+        if isinstance(solution, Solution):
+            scip_sol = solution.sol
+        else:
+            scip_sol = NULL
+
+        PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip, scip_benders, scip_sol,
+            probnumber, &infeasible, solvecip, &objective))
+
+        return infeasible, objective
+
+    def getBendersSubproblem(self, probnumber, Benders benders = None):
+        """
+        Returns a Model object that wraps around the SCIP instance of the subproblem.
+        NOTE: This Model object is just a place holder and SCIP instance will not be
+        freed when the object is destroyed.
+
+        Parameters
+        ----------
+        probnumber : int
+            the problem number for subproblem that is required
+        benders : Benders or None, optional
+            the Benders' decomposition object that the subproblem belongs to (Default = None)
+
+        Returns
+        -------
+        Model
+
+        """
+        cdef SCIP_BENDERS* scip_benders = self._getBenders(benders)
+        cdef SCIP* scip_subprob
+
+        scip_subprob = SCIPbendersSubproblem(scip_benders, probnumber)
+
+        return Model.create(scip_subprob)
+
+    def getBendersVar(self, Variable var, Benders benders = None, probnumber = -1):
+        """
+        Returns the variable for the subproblem or master problem
+        depending on the input probnumber.
+
+        Parameters
+        ----------
+        var : Variable
+            the source variable for which the target variable is requested
+        benders : Benders or None, optional
+            the Benders' decomposition to which the subproblem variables belong to
+        probnumber : int, optional
+            the problem number for which the target variable belongs, -1 for master problem
+
+        Returns
+        -------
+        Variable or None
+
+        """
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
+        cdef SCIP_VAR* _mappedvar
+
+        if probnumber == -1:
+            PY_SCIP_CALL(SCIPgetBendersMasterVar(self._scip, _benders, var.scip_var, &_mappedvar))
+        else:
+            PY_SCIP_CALL(SCIPgetBendersSubproblemVar(self._scip, _benders, var.scip_var, &_mappedvar, probnumber))
+
+        if _mappedvar == NULL:
+            return None
+        return self._getOrCreateVar(_mappedvar)
+
+    def getBendersAuxiliaryVar(self, probnumber, Benders benders = None):
+        """
+        Returns the auxiliary variable that is associated with the input problem number
+
+        Parameters
+        ----------
+        probnumber : int
+            the problem number for which the target variable belongs, -1 for master problem
+        benders : Benders or None, optional
+            the Benders' decomposition to which the subproblem variables belong to
+
+        Returns
+        -------
+        Variable
+
+        """
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
+        cdef SCIP_VAR* _auxvar
+
+        _auxvar = SCIPbendersGetAuxiliaryVar(_benders, probnumber)
+        return self._getOrCreateVar(_auxvar)
+
+    def setBendersSubproblemIsConvex(self, Benders benders, probnumber, isconvex = True):
+        """
+        Sets a flag indicating whether the subproblem is convex.
+
+        Parameters
+        ----------
+        benders : Benders
+            the Benders' decomposition which contains the subproblem
+        probnumber : int
+            the problem number of the subproblem that the convexity will be set for
+        isconvex : bool, optional
+            flag to indicate whether the subproblem is convex (default=True)
+
+        """
+        SCIPbendersSetSubproblemIsConvex(benders._benders, probnumber, isconvex)
+
+    def checkBendersSubproblemOptimality(self, Solution solution, probnumber, Benders benders = None):
+        """
+        Returns whether the subproblem is optimal w.r.t the master problem auxiliary variables.
+
+        Parameters
+        ----------
+        solution : Solution
+            the master problem solution that is being checked for optimamlity
+        probnumber : int
+            the problem number for which optimality is being checked
+        benders : Benders or None, optional
+            the Benders' decomposition to which the subproblem belongs to
+
+        Returns
+        -------
+        optimal : bool
+            flag to indicate whether the current subproblem is optimal for the master
+
+        """
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
+        cdef SCIP_SOL* scip_sol
+        cdef SCIP_Bool optimal
+
+        if isinstance(solution, Solution):
+            scip_sol = solution.sol
+        else:
+            scip_sol = NULL
+
+        PY_SCIP_CALL( SCIPcheckBendersSubproblemOptimality(self._scip, _benders,
+            scip_sol, probnumber, &optimal) )
+
+        return optimal
+
+    def updateBendersLowerbounds(self, lowerbounds, Benders benders=None):
+        """
+        Updates the subproblem lower bounds for benders using
+        the lowerbounds dict. If benders is None, then the default
+        Benders' decomposition is updated.
+
+        Parameters
+        ----------
+        lowerbounds : dict of int to float
+        benders : Benders or None, optional
+
+        """
+        cdef SCIP_BENDERS* _benders = self._getBenders(benders)
+
+        assert type(lowerbounds) is dict
+
+        for d in lowerbounds.keys():
+            SCIPbendersUpdateSubproblemLowerbound(_benders, d, lowerbounds[d])
+
+    def freeBendersSubproblems(self):
+        """Deprecated: This method is no longer needed.
+
+        Benders subproblems are now automatically managed and freed by the master
+        Model when it is deallocated. Calling this method explicitly has no effect.
+
+        .. deprecated:: 5.7.0
+            This method is deprecated and will be removed in a future version.
+            Subproblem memory management is now handled automatically.
+        """
+        warnings.warn(
+            "freeBendersSubproblems() is deprecated and no longer needed. "
+            "Benders subproblems are automatically freed when the master Model "
+            "is deallocated.",
+            DeprecationWarning,
+            stacklevel=1
+        )
+
+    def computeBestSolSubproblems(self):
+        """Solves the subproblems with the best solution to the master problem.
+        Afterwards, the best solution from each subproblem can be queried to get
+        the solution to the original problem.
+        If the user wants to resolve the subproblems, they must free them by
+        calling freeBendersSubproblems()
+        """
+        cdef SCIP_BENDERS** benders = SCIPgetBenders(self._scip)
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool solvecip = True
+        cdef int nbenders = SCIPgetNActiveBenders(self._scip)
+        cdef int nsubproblems
+        cdef int i
+        cdef int j
+
+        # solving all subproblems from all Benders' decompositions
+        for i in range(nbenders):
+            nsubproblems = SCIPbendersGetNSubproblems(benders[i])
+            for j in range(nsubproblems):
+                PY_SCIP_CALL(SCIPsetupBendersSubproblem(self._scip,
+                    benders[i], self._bestSol.sol, j, SCIP_BENDERSENFOTYPE_CHECK))
+                PY_SCIP_CALL(SCIPsolveBendersSubproblem(self._scip,
+                    benders[i], self._bestSol.sol, j, &infeasible, solvecip, NULL))
+
+    cdef SCIP_BENDERS* _getBenders(self, object benders):
+        """
+        Retrieves the SCIP_BENDERS pointer for the given Benders object or the default decomposition.
+
+        Parameters
+        ----------
+        benders : Benders or None
+            The Benders' decomposition object, or None to use the default Benders' decomposition.
+
+        Returns
+        -------
+        SCIP_BENDERS*
+            Pointer to the underlying SCIP_BENDERS structure, or NULL if not found.
+
+        """
+        if benders is None:
+            return SCIPfindBenders(self._scip, "default")
+        return (<Benders>benders)._benders
+
+    def getCondition(self, exact=False):
+        """
+        Get the current LP's condition number.
+
+        Parameters
+        ----------
+        exact : bool, optional
+            whether to get an estimate or the exact value (Default value = False)
+
+        Returns
+        -------
+        float
+
+        """
+        cdef SCIP_LPI* lpi
+        PY_SCIP_CALL(SCIPgetLPI(self._scip, &lpi))
+        cdef SCIP_Real quality = 0
+        if exact:
+            PY_SCIP_CALL(SCIPlpiGetRealSolQuality(lpi, SCIP_LPSOLQUALITY_EXACTCONDITION, &quality))
+        else:
+            PY_SCIP_CALL(SCIPlpiGetRealSolQuality(lpi, SCIP_LPSOLQUALITY_ESTIMCONDITION, &quality))
+
+        return quality
+
+    def getLPBasisInd(self):
+        """
+        Gets all indices of basic columns and rows:
+        index i >= 0 corresponds to column i, index i < 0 to row -i-1
+
+        Returns
+        -------
+        list of int
+
+        """
+        cdef int nrows = SCIPgetNLPRows(self._scip)
+        cdef int* inds = <int *> malloc(nrows * sizeof(int))
+        cdef int i
+
+        PY_SCIP_CALL(SCIPgetLPBasisInd(self._scip, inds))
+        result = [inds[i] for i in range(nrows)]
+        free(inds)
+
+        return result
+
+    def solveProbingLP(self, itlim = -1):
+        """
+        Solves the LP at the current probing node (cannot be applied at preprocessing stage)
+        no separation or pricing is applied.
+
+        Parameters
+        ----------
+        itlim : int
+            maximal number of LP iterations to perform (Default value = -1, that is, no limit)
+
+        Returns
+        -------
+        lperror : bool
+            if an unresolved lp error occured
+        cutoff : bool
+            whether the LP was infeasible or the objective limit was reached
+
+        """
+        cdef SCIP_Bool lperror
+        cdef SCIP_Bool cutoff
+
+        PY_SCIP_CALL( SCIPsolveProbingLP(self._scip, itlim, &lperror, &cutoff) )
+        return lperror, cutoff
+
+    def solveProbingLPWithPricing(self, pretendroot=False, displayinfo=False, maxpricerounds=-1):
+        """
+        Solves the LP at the current probing node (cannot be applied at preprocessing stage) and applies pricing
+        until the LP is solved to optimality; no separation is applied.
+
+        Parameters
+        ----------
+        pretendroot : bool
+            should the pricers be called as if we are at the root node? (Default value = False)
+        displayinfo : bool
+            should info lines be displayed after each pricing round? (Default value = False)
+        maxpricerounds : int
+            maximal number of pricing rounds (-1: no limit); a finite limit means that the LP might not be
+            solved to optimality! (Default value = -1)
+
+        Returns
+        -------
+        lperror : bool
+            whether an unresolved LP error occurred
+        cutoff : bool
+            whether the probing LP was infeasible or the objective limit was reached
+
+        """
+        cdef SCIP_Bool lperror
+        cdef SCIP_Bool cutoff
+
+        PY_SCIP_CALL( SCIPsolveProbingLPWithPricing(self._scip, pretendroot, displayinfo, maxpricerounds, &lperror, &cutoff) )
+        return lperror, cutoff
+
+    def applyCutsProbing(self):
+        """
+        Applies the cuts in the separation storage to the LP and clears the storage afterwards;
+        this method can only be applied during probing; the user should resolve the probing LP afterwards
+        in order to get a new solution.
+        returns:
+
+        Returns
+        -------
+        cutoff : bool
+            whether an empty domain was created
+
+        """
+        cdef SCIP_Bool cutoff
+
+        PY_SCIP_CALL( SCIPapplyCutsProbing(self._scip, &cutoff) )
+        return cutoff
+
+    def includeSymhdlr(self, Symhdlr symhdlr, name, desc, priority=0, proppriority=0, sepapriority=0,
+                       presolpriority=0, propfreq=-1, sepafreq=-1, delayprop=False, delaysepa=False,
+                       maxbounddist=1.0, maxprerounds=-1, proptiming=SCIP_PROPTIMING_BEFORELP,
+                       presoltiming=SCIP_PRESOLTIMING_FAST):
+        """
+        Include a symmetry handler.
+
+        Parameters
+        ----------
+        symhdlr : Symhdlr
+            symmetry handler
+        name : str
+            name of symmetry handler
+        desc : str
+            description of symmetry handler
+        priority : int, optional
+            priority for trying to add the handler to symmetry components (Default value = 0)
+        proppriority : int, optional
+            priority for propagation (Default value = 0)
+        sepapriority : int, optional
+            priority for separation (Default value = 0)
+        presolpriority : int, optional
+            priority for presolving (Default value = 0)
+        propfreq : int, optional
+            frequency for calling propagation, -1 to disable (Default value = -1)
+        sepafreq : int, optional
+            frequency for calling separation, -1 to disable (Default value = -1)
+        delayprop : bool, optional
+            should propagation be delayed if other propagators found reductions? (Default value = False)
+        delaysepa : bool, optional
+            should separation be delayed if other separators found cuts? (Default value = False)
+        maxbounddist : float, optional
+            maximal relative distance from current node's dual bound to primal bound for applying separation (Default value = 1.0)
+        maxprerounds : int, optional
+            maximal number of presolving rounds, -1 for no limit (Default value = -1)
+        proptiming : PY_SCIP_PROPTIMING, optional
+            timing mask of propagation (Default value = SCIP_PROPTIMING_BEFORELP)
+        presoltiming : PY_SCIP_PRESOLTIMING, optional
+            timing mask of presolving (Default value = SCIP_PRESOLTIMING_FAST)
+
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        symhdlr._symcompdata = []
+        PY_SCIP_CALL(SCIPincludeSymhdlr(self._scip, n, d, priority, proppriority, sepapriority, presolpriority,
+                                        propfreq, sepafreq, delayprop, delaysepa, maxbounddist, maxprerounds,
+                                        proptiming, presoltiming, PySymhdlrTryAdd, NULL, PySymhdlrFree,
+                                        PySymhdlrInit, PySymhdlrExit, PySymhdlrInitsol, PySymhdlrExitsol,
+                                        PySymhdlrSepaLP, PySymhdlrSepaSol, PySymhdlrProp, PySymhdlrResProp,
+                                        PySymhdlrPresol, <SCIP_SYMHDLRDATA*> symhdlr))
+        symhdlr.model = self
+        symhdlr.name = name
+        self._plugins.append(symhdlr)
+
+    def includeIISfinder(self, IISfinder iisfinder, name, desc, priority=10000, freq=1):
+        """
+        Include an IIS (Irreducible Infeasible Set) finder handler.
+
+        Parameters
+        ----------
+        iisfinder : IISfinder
+            IIS finder
+        name : str
+            name of IIS finder
+        desc : str
+            description of IIS finder
+        priority : int, optional
+            priority of the IISfinder (#todo description)
+        freq : int, optional
+            frequency for calling IIS finder
+
+        """
+        cdef SCIP_IISFINDER* scip_iisfinder
+
+        nam = str_conversion(name)
+        des = str_conversion(desc)
+
+        iisfinder.iis = IIS()
+
+        PY_SCIP_CALL(SCIPincludeIISfinder(self._scip, nam, des, priority, True, PyiisfinderCopy, PyiisfinderFree,
+                                         PyiisfinderExec, <SCIP_IISFINDERDATA*> iisfinder))
+
+        scip_iisfinder = SCIPfindIISfinder(self._scip, nam)
+        iisfinder.model = self
+        iisfinder.name = name
+        self._plugins.append(iisfinder)
+        iisfinder.scip_iisfinder = scip_iisfinder
+
+    def generateIIS(self):
+        """
+        Generates an Irreducible Infeasible Subsystem (IIS) from the current
+        problem.
+
+        Returns
+        -------
+        IIS
+
+        """
+        cdef SCIP_IIS* _iis
+
+        PY_SCIP_CALL( SCIPgenerateIIS(self._scip) )
+
+        _iis = SCIPgetIIS(self._scip)
+        return IIS.create(_iis)
+
+    def getIIS(self):
+        """
+        Get the IIS object.
+        Note: Needs to be called after generateIIS, or after a single execution of the iisfinderExec.
+        
+        Returns
+        -------
+        IIS 
+        """
+        cdef SCIP_IIS* _iis
+
+        _iis = SCIPgetIIS(self._scip)
+        assert _iis != NULL, "No IIS exists. You need to first call generateIIS() or run the iisfinderexec method of your custom IISfinder class."
+
+        return IIS.create(_iis)
+
+    def isLPSolBasic(self):
+        """
+        Returns whether the current LP solution is basic, i.e. is defined by a valid simplex basis.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisLPSolBasic(self._scip)
+
+    def solveConcurrent(self):
+        """Transforms, presolves, and solves problem using additional solvers which emphasize on
+        finding solutions.
+        WARNING: This feature is still experimental and prone to some errors."""
+        if SCIPtpiGetNumThreads() == 1:
+            warnings.warn("SCIP was compiled without task processing interface. Parallel solve not possible - using optimize() instead of solveConcurrent()")
+            self.optimize()
+        else:
+            PY_SCIP_CALL(SCIPsolveConcurrent(self._scip))
+            self._bestSol = Solution.create(self._scip, SCIPgetBestSol(self._scip))
+
+    def enableReoptimization(self, enable=True):
+        """
+        Include specific heuristics and branching rules for reoptimization.
+
+        Parameters
+        ----------
+        enable : bool, optional
+            True to enable and False to disable
+
+        """
+        PY_SCIP_CALL(SCIPenableReoptimization(self._scip, enable))
+
+    def isReoptEnabled(self):
+        """
+        Returns whether reoptimization is enabled.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPisReoptEnabled(self._scip)
+
+    def freeReoptSolve(self):
+        """Frees all solution process data and prepares for reoptimization."""
+
+        if not SCIPisReoptEnabled(self._scip):
+            raise ValueError("freeReoptSolve requires reoptimization to be enabled. "
+                             "Call enableReoptimization() before solving.")
+
+        if SCIPgetStage(self._scip) not in [SCIP_STAGE_INIT,
+                                 SCIP_STAGE_PROBLEM,
+                                 SCIP_STAGE_TRANSFORMED,
+                                 SCIP_STAGE_PRESOLVING,
+                                 SCIP_STAGE_PRESOLVED,
+                                 SCIP_STAGE_SOLVING,
+                                 SCIP_STAGE_SOLVED]:
+            raise Warning("method cannot be called in stage %i." % self.getStage())
+        PY_SCIP_CALL(SCIPfreeReoptSolve(self._scip))
+
+    def getNReoptRuns(self):
+        """
+        Gets number of reoptimization runs performed, including the current run
+
+        Returns
+        -------
+        int
+
+        """
+        return SCIPgetNReoptRuns(self._scip)
+
+    def propagateProbing(self, maxproprounds):
+        """
+        Applies domain propagation on the probing sub problem, that was changed after SCIPstartProbing() was called;
+        the propagated domains of the variables can be accessed with the usual bound accessing calls SCIPvarGetLbLocal()
+        and SCIPvarGetUbLocal(); the propagation is only valid locally, i.e. the local bounds as well as the changed
+        bounds due to SCIPchgVarLbProbing(), SCIPchgVarUbProbing(), and SCIPfixVarProbing() are used for propagation.
+
+        Parameters
+        ----------
+        maxproprounds : int
+            maximal number of propagation rounds (Default value = -1, that is, no limit)
+
+        Returns
+        -------
+        cutoff : bool
+            whether the probing node can be cutoff
+        ndomredsfound : int
+            number of domain reductions found
+
+        """
+        cdef SCIP_Bool cutoff
+        cdef SCIP_Longint ndomredsfound
+
+        PY_SCIP_CALL( SCIPpropagateProbing(self._scip, maxproprounds, &cutoff, &ndomredsfound) )
+        return cutoff, ndomredsfound
+
+    def count(self):
+        """Counts the number of feasible points of problem."""
+        PY_SCIP_CALL(SCIPcount(self._scip))
+
+    def setParamsCountsols(self):
+        """Sets SCIP parameters such that a valid counting process is possible."""
+        PY_SCIP_CALL(SCIPsetParamsCountsols(self._scip))
+
+    def getCountedSols(self):
+        """
+        Get the feasible solutions collected by `count()`.
+
+        Requires `constraints/countsols/collect` to be True and presolving to be off
+        before calling `count()`, and a problem without continuous variables.
+
+        Returns
+        -------
+        list of dict
+            Each solution maps the variable names to their values.
+
+        """
+        cdef SCIP_VAR** vars
+        cdef SCIP_SPARSESOL** sparsesols
+        cdef SCIP_Longint* vals
+        cdef SCIP_Bool valid
+        cdef int nvars
+        cdef int nsparsesols
+        cdef int i
+        cdef int s
+
+        if not self.getParam("constraints/countsols/collect"):
+            raise Warning("set constraints/countsols/collect to True before calling count()")
+        if self.getParam("presolving/maxrounds") != 0:
+            raise Warning("turn presolving off before calling count()")
+        if SCIPgetNContVars(self._scip) > 0:
+            raise Warning("counted solutions are only available for problems without continuous variables")
+
+        SCIPgetNCountedSols(self._scip, &valid)
+        if not valid:
+            raise Warning("number of counted solutions does not fit into a long integer, cannot collect them")
+
+        SCIPgetCountedSparseSols(self._scip, &vars, &nvars, &sparsesols, &nsparsesols)
+        # vars are transformed, strip the "t_" prefix to get the original names
+        names = [bytes(SCIPvarGetName(vars[i])).decode("utf-8")[2:] for i in range(nvars)]
+
+        vals = <SCIP_Longint*> malloc(nvars * sizeof(SCIP_Longint))
+        sols = []
+        for s in range(nsparsesols):
+            SCIPsparseSolGetFirstSol(sparsesols[s], vals, nvars)
+            while True:
+                sols.append({names[i]: vals[i] for i in range(nvars)})
+                if not SCIPsparseSolGetNextSol(sparsesols[s], vals, nvars):
+                    break
+
+        free(vals)
+
+        return sols
+
+    def getNCountedSols(self):
+        """
+        Get number of feasible solution.
+
+        Returns
+        -------
+        int
+
+        """
+        cdef SCIP_Bool valid
+        cdef SCIP_Longint nsols
+
+        nsols = SCIPgetNCountedSols(self._scip, &valid)
+        if not valid:
+            print('total number of solutions found is not valid!')
+        return nsols
+
+    def lpiGetIterations(self):
+        """
+        Get the iteration count of the last solved LP.
+
+        Returns
+        -------
+        int
+
+        """
+        cdef SCIP_LPI* lpi
+        cdef int iters = 0
+
+        PY_SCIP_CALL(SCIPgetLPI(self._scip, &lpi))
+        PY_SCIP_CALL(SCIPlpiGetIterations(lpi, &iters))
+
+        return iters
+
+    # Objective function
+
+    def startStrongbranch(self):
+        """Start strong branching. Needs to be called before any strong branching. Must also later end strong branching.
+        TODO: Propagation option has currently been disabled via Python.
+        If propagation is enabled then strong branching is not done on the LP, but on additionally created nodes
+        (has some overhead). """
+
+        PY_SCIP_CALL(SCIPstartStrongbranch(self._scip, False))
+
+    def endStrongbranch(self):
+        """End strong branching. Needs to be called if startStrongBranching was called previously.
+        Between these calls the user can access all strong branching functionality."""
+
+        PY_SCIP_CALL(SCIPendStrongbranch(self._scip))
+
+    def hasPrimalRay(self):
+        """
+        Returns whether a primal ray is stored that proves unboundedness of the LP relaxation.
+
+        Returns
+        -------
+        bool
+
+        """
+        return SCIPhasPrimalRay(self._scip)
+
+    def translateSubSol(self, Model sub_model, Solution sol, heur) -> Solution:
+        """
+		Translates a solution of a model copy into a solution of the main model
+
+		Parameters
+		----------
+		sub_model : Model
+			The python-wrapper of the subscip
+		sol : Solution
+			The python-wrapper of the solution of the subscip
+		heur : Heur
+			The python-wrapper of the heuristic that found the solution
+
+		Returns
+		-------
+		solution : Solution
+			The corresponding solution in the main model
+        """
+        cdef SCIP_VAR** vars
+        cdef SCIP_SOL* real_sol
+        cdef SCIP_SOL* subscip_sol = sol.sol
+        cdef SCIP_HEUR* _heur
+        cdef SCIP_Bool success
+        cdef int i
+        cdef _VarArray wrapper
+        
+        assert sub_model.getNVars(False) >= self.getNVars(True), "The sub_model must have at least as many variables as the main model."
+
+        wrapper = _VarArray(sub_model.getVars(False))
+        _heur = SCIPfindHeur(self._scip, str_conversion(heur.name))
+        PY_SCIP_CALL( SCIPtranslateSubSol(self._scip, sub_model._scip, subscip_sol, _heur, wrapper.ptr, &real_sol) )
+        solution = Solution.create(self._scip, real_sol)
+
+        return solution
+
+    def catchRowEvent(self, Row row, eventtype, Eventhdlr eventhdlr):
+        """
+        Catches a row coefficient, constant, or side change event on the given row.
+
+        Parameters
+        ----------
+        row : Row
+        eventtype : PY_SCIP_EVENTTYPE
+        eventhdlr : Eventhdlr
+
+        """
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
+        PY_SCIP_CALL(SCIPcatchRowEvent(self._scip, row.scip_row, eventtype, _eventhdlr, NULL, NULL))
+
+    def dropRowEvent(self, Row row, eventtype, Eventhdlr eventhdlr):
+        """
+        Drops a row coefficient, constant, or side change event (stops tracking the event) on the given row.
+
+        Parameters
+        ----------
+        row : Row
+        eventtype : PY_SCIP_EVENTTYPE
+        eventhdlr : Eventhdlr
+
+        """
+        cdef SCIP_EVENTHDLR* _eventhdlr = self._getEventhdlr(eventhdlr)
+        PY_SCIP_CALL(SCIPdropRowEvent(self._scip, row.scip_row, eventtype, _eventhdlr, NULL, -1))
+
+    # Statistic Methods
+
+    def getGap(self):
+        """
+        Retrieve the gap,
+        i.e. abs((primalbound - dualbound)/min(abs(primalbound),abs(dualbound)))
+
+        Returns
+        -------
+        float
+
+        """
+        return SCIPgetGap(self._scip)

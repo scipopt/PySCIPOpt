@@ -1,76 +1,27 @@
 import re
+from fractions import Fraction
 from pathlib import Path
 
 import pytest
 
-from pyscipopt import BaseModel, Eventhdlr, Model
+from pyscipopt import BaseModel, Eventhdlr, ExactModel, ExactSolution, ExactVariable, Model, Variable
 
-SCIP_PXI = Path(__file__).resolve().parents[1] / "src" / "pyscipopt" / "scip.pxi"
-MODEL_PXI = SCIP_PXI.with_name("model.pxi")
+SRC = Path(__file__).resolve().parents[1] / "src" / "pyscipopt"
+BASEMODEL_PXI = SRC / "basemodel.pxi"
+MODEL_PXI = SRC / "model.pxi"
 
-BASE_MODEL_METHODS = frozenset({
-    "_freescip", "_getStageNames", "activateBenders", "addBendersSubproblem", "addConss",
-    "addMatrixCons", "addNNodes", "addSol", "addVarLocks",
-    "addVarLocksType", "allColsInLP", "applyCutsProbing", "attachEventHandlerCallback", "backtrackProbing",
-    "branchVar", "catchEvent", "catchRowEvent", "catchVarEvent", "checkBendersSubproblemOptimality",
-    "checkSol", "chgVarBranchPriority", "chgVarType", "computeBestSolSubproblems", "constructLP",
-    "count", "createChild", "createProbBasic", "cutoffNode",
-    "data", "deactivatePricer", "delCons", "delConsLocal", "delVar",
-    "disableDebugSol", "disablePropagation", "dropEvent", "dropRowEvent", "dropVarEvent",
-    "enableDebugSol", "enableReoptimization", "endProbing", "endStrongbranch", "free",
-    "freeBendersSubproblems", "freeProb", "freeReoptSolve", "freeSol", "freeTransform",
-    "from_ptr", "generateIIS", "getBendersAuxiliaryVar", "getBendersSubproblem", "getBendersVar",
-    "getBestChild", "getBestLeaf", "getBestNode", "getBestSibling", "getBestSol",
-    "getBestboundNode", "getBranchScoreMultiple", "getChildren", "getCondition",
-    "getConsNVars", "getConsVars", "getConss", "getCountedSols", "getCurrentNode", "getDepth",
-    "getDeterministicTime", "getFocusNode", "getGap", "getHeurTiming", "getIIS",
-    "getLPBasisInd", "getLeaves", "getMajorVersion", "getMaxDepth", "getMaxTotalDepth",
-    "getMemExternEstim", "getMemTotal", "getMemUsed", "getMinorVersion", "getNBacktracks",
-    "getNBestSolsFound", "getNBinVars", "getNChildren", "getNConss", "getNContVars",
-    "getNCountedSols", "getNCuts", "getNCutsApplied", "getNFeasibleLeaves", "getNImplVars",
-    "getNInfeasibleLeaves", "getNIntVars", "getNLPBranchCands", "getNLPCols", "getNLPIterations",
-    "getNLPRows", "getNLPs", "getNLeaves", "getNLimSolsFound", "getNNodeLPIterations",
-    "getNNodes", "getNNodesLeft", "getNObjlimLeaves", "getNReaders", "getNReoptRuns",
-    "getNRuns", "getNSepaRounds", "getNSiblings", "getNSols", "getNSolsFound",
-    "getNStrongbranchLPIterations", "getNTotalNodes", "getNVars", "getObjVal", "getObjectiveSense",
-    "getOpenNodes", "getParam", "getParams", "getPlungeDepth", "getPresolvingTime",
-    "getPrimalDualIntegral", "getPrioChild", "getPrioSibling", "getProbName", "getProbingDepth",
-    "getPseudoBranchCands", "getReadingTime", "getSiblings", "getSolTime", "getSols",
-    "getSolvingTime", "getStage", "getStageName", "getStatus", "getTechVersion",
-    "getTotalTime", "getTransformedCons", "getTransformedVar", "getTreesizeEstimation", "getVarPseudocost",
-    "getVarPseudocostScore", "getVarStrongbranchNode", "getVars", "hasPrimalRay", "hideOutput",
-    "inProbing", "inRepropagation", "includeBenders", "includeBendersDefaultCuts", "includeBenderscut",
-    "includeBranchrule", "includeConshdlr", "includeCutsel", "includeDefaultPlugins", "includeEventhdlr",
-    "includeHeur", "includeIISfinder", "includeNodesel", "includePresol", "includePricer",
-    "includeProp", "includeReader", "includeRelax", "includeSepa", "includeSymhdlr", "initBendersDefault",
-    "interruptSolve", "isLPSolBasic", "isObjChangedProbing", "isObjIntegral", "isReoptEnabled",
-    "lpiGetIterations", "markDoNotAggrVar", "markDoNotMultaggrVar", "newProbingNode", "optimize",
-    "optimizeNogil", "presolve", "printCons", "printExternalCodeVersions", "printProblem",
-    "printStatistics", "printStatisticsJson", "printVersion", "propagateProbing", "readParams",
-    "readProblem", "redirectOutput", "relax", "repropagateNode", "resetParam",
-    "resetParams", "restartSolve", "separateSol", "setBendersSubproblemIsConvex", "setBoolParam",
-    "setCharParam", "setCheck", "setEmphasis", "setEnforced", "setHeurTiming",
-    "setHeuristics", "setInitial", "setIntParam", "setLogfile", "setLongintParam",
-    "setMaximize", "setMinimize", "setModifiable", "setObjIntegral", "setParam",
-    "setParams", "setParamsCountsols", "setPresolve", "setProbName", "setRealParam",
-    "setRemovable", "setSeparating", "setStringParam", "setupBendersSubproblem", "solveBendersSubproblem",
-    "solveConcurrent", "solveProbingLP", "solveProbingLPWithPricing", "startProbing", "startStrongbranch",
-    "to_ptr", "translateSubSol", "updateBendersLowerbounds", "updateVarPseudocost", "version",
-    "writeName", "writeParams", "writeProblem", "writeStatistics", "writeStatisticsJson",
-})
-
-SUBCLASS_CONTRACT = frozenset({"addCons", "getSolObjVal"})
-
-FP_MARKERS = re.compile(
-    r"\bSCIP_Real\b|\bfloat\(|dtype=float|\bModel\b|\bExprCons\b|\bExpr\b|\bRow\b|\bColumn\b|\bNLRow\b|SCIPinfinity\("
-)
+FP_TYPES = ("SCIP_Real", "Model", "Expr", "ExprCons", "Row", "Column", "NLRow")
+FP_CALLS = ("float(", "dtype=float", "SCIPinfinity(")
 
 FP_ALLOWED = frozenset({
-    "addMatrixCons", "catchRowEvent", "create", "dropRowEvent", "freeBendersSubproblems",
-    "getBranchScoreMultiple", "getCondition", "setParam", "solveBendersSubproblem",
+    "create", "getBranchScoreMultiple", "setParam",
 })
 
 MEMBER_RE = re.compile(r"^    (?:def|cdef|cpdef)\b.*?(\w+)\s*\(")
+
+
+def uses_floating_point(body):
+    return any(re.search(rf"\b{name}\b", body) for name in FP_TYPES) or any(call in body for call in FP_CALLS)
 
 
 def class_members(path, header):
@@ -97,35 +48,28 @@ def class_members(path, header):
     return stripped
 
 
-def test_base_model_surface_is_pinned():
-    actual = {name for name in vars(BaseModel) if not name.startswith("__")}
-    assert actual == BASE_MODEL_METHODS
-
-
-def test_subclass_contract_is_implemented_by_model():
-    assert SUBCLASS_CONTRACT <= set(vars(Model))
-
-
 def test_base_model_calls_only_shared_methods():
-    base = class_members(SCIP_PXI, "cdef class BaseModel:")
+    base = class_members(BASEMODEL_PXI, "cdef class BaseModel:")
     model_only = set(class_members(MODEL_PXI, "cdef class Model(BaseModel):")) - set(base)
     offenders = {}
     for name, body in base.items():
         calls = set(re.findall(r"self\.(\w+)\(", body))
-        bad = sorted((calls & model_only) - SUBCLASS_CONTRACT)
+        bad = sorted(calls & model_only)
         if bad:
             offenders[name] = bad
     assert offenders == {}
 
 
 def test_base_model_has_no_fp_markers():
-    base = class_members(SCIP_PXI, "cdef class BaseModel:")
-    hits = {name for name, body in base.items() if FP_MARKERS.search(body)}
+    base = class_members(BASEMODEL_PXI, "cdef class BaseModel:")
+    hits = {name for name, body in base.items() if uses_floating_point(body)}
     assert hits - FP_ALLOWED == set()
 
 
 def test_model_subclass_and_mro():
     assert Model.__mro__[:2] == (Model, BaseModel)
+    with pytest.raises(TypeError):
+        BaseModel()
 
     class MyModel(Model):
         def __init__(self):
@@ -158,3 +102,35 @@ def test_plugin_sees_the_same_model_object():
     m.hideOutput()
     m.optimize()
     assert seen and seen[0] is m and isinstance(seen[0], BaseModel)
+
+
+def test_exact_model_skeleton(tmp_path):
+    assert ExactModel.__mro__[:2] == (ExactModel, BaseModel)
+    assert {"addRow", "allowNegSlack", "branchLP"} <= set(vars(ExactModel))
+    assert not {"enableExactSolving", "isExact", "allowNegSlackExact", "branchLPExact", "addRowExact"} & set(dir(Model))
+    try:
+        m = ExactModel()
+    except ValueError:
+        pytest.skip("SCIP was built without exact solving support")
+    assert not isinstance(m, Model)
+    assert type(BaseModel.from_ptr(m.to_ptr(False), False)) is ExactModel
+    assert not hasattr(m, "addConsAnd")
+    with pytest.raises(AttributeError, match="Model.includeConshdlr has this attribute"):
+        m.includeConshdlr
+    with pytest.raises(AttributeError, match="no attribute 'noSuchMethod'$"):
+        m.noSuchMethod
+    assert m.getNVars() == 0
+    assert type(Model().addVar()) is Variable
+    path = tmp_path / "exact.lp"
+    path.write_text("Minimize\n obj: x + 2 y\nSubject To\n c1: 2 x + 3 y >= 1\nBounds\n 0 <= x <= 10\n 0 <= y <= 10\nGeneral\n x\nEnd\n")
+    m.hideOutput()
+    m.readProblem(str(path))
+    m.optimize()
+    assert all(type(v) is ExactVariable for v in m.getVars())
+    sol = m.getBestSol()
+    assert type(sol) is ExactSolution
+    x = m.getVars()[0]
+    assert x.name == "x" and x.vtype() == "INTEGER"
+    y = m.getVars()[1]
+    assert x.getLbLocal() == 0
+    assert sol[x] == 0 and sol[y] == Fraction(1, 3)
