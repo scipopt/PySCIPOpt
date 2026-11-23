@@ -1343,7 +1343,7 @@ cdef inline bint _is_genexpr_compatible(object x):
 
 cdef object _expr_richcmp(
     ExprLike self,
-    other: Union[int, float, np.number, Variable, Expr, GenExpr],
+    other: Union[int, float, np.number, ExprLike],
     int op,
 ):
     if isinstance(other, np.ndarray):
