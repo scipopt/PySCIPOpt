@@ -305,6 +305,7 @@ def model():
 
     # turn off presolve
     s.setPresolve(SCIP_PARAMSETTING.OFF)
+    s.setBoolParam("symmetries/enabled", False)
     # turn off heuristics
     s.setHeuristics(SCIP_PARAMSETTING.OFF)
     # turn off propagation
