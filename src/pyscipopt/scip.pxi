@@ -1137,12 +1137,12 @@ cdef class Solution:
 
     def __getitem__(
         self,
-        expr: Union[ExprLike, MatrixExpr],
+        expr: Union[ExprLike, MatrixExprLike],
     ) -> Union[float, np.ndarray]:
-        if not isinstance(expr, (ExprLike, MatrixExpr)):
+        if not isinstance(expr, (ExprLike, MatrixExprLike)):
             raise TypeError(
                 "Argument 'expr' has incorrect type, expected 'Variable', 'Expr', "
-                f"'GenExpr', or 'MatrixExpr', got {type(expr).__name__!r}"
+                f"'GenExpr', 'MatrixVariable', or 'MatrixExpr', got {type(expr).__name__!r}"
             )
 
         self._checkStage("SCIPgetSolVal")
@@ -2025,7 +2025,7 @@ cdef class Variable(ExprLike):
         """
         return SCIPvarGetNBranchingsCurrentRun(self.scip_var, branchdir)
 
-class MatrixVariable(MatrixExpr):
+class MatrixVariable(MatrixExprLike):
 
     def vtype(self):
         """
@@ -11784,7 +11784,7 @@ cdef class Model:
     def getSolVal(
         self,
         Solution sol,
-        expr: Union[ExprLike, MatrixExpr],
+        expr: Union[ExprLike, MatrixExprLike],
     ) -> Union[float, np.ndarray]:
         """
         Retrieve value of given variable or expression in the given solution.
@@ -11795,7 +11795,7 @@ cdef class Model:
             Solution to query the value from. If None, the current LP/pseudo solution is
             used.
 
-        expr : Variable, Expr, GenExpr, MatrixExpr
+        expr : Variable, Expr, GenExpr, MatrixVariable, MatrixExpr
             Expression to query the value of.
 
         Returns
@@ -11810,14 +11810,14 @@ cdef class Model:
         # no need to create a NULL solution wrapper in case we have a variable
         return (sol or Solution.create(self._scip, NULL))[expr]
 
-    def getVal(self, expr: Union[ExprLike, MatrixExpr]) -> Union[float, np.ndarray]:
+    def getVal(self, expr: Union[ExprLike, MatrixExprLike]) -> Union[float, np.ndarray]:
         """
         Retrieve the value of the given variable or expression in the best known solution.
         Can only be called after solving is completed.
 
         Parameters
         ----------
-        expr : Variable, Expr, GenExpr or MatrixExpr
+        expr : Variable, Expr, GenExpr, MatrixVariable, MatrixExpr
             Expression to query the value of.
 
         Returns
