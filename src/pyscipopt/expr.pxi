@@ -409,9 +409,9 @@ cdef class Expr(ExprLike):
             self.terms[CONST] = 0.0
 
     def __add__(self, other, /):
+        if isinstance(other, GenExpr):
+            return other + self
         if not _is_expr_compatible(other):
-            if isinstance(other, GenExpr):
-                return other + self
             return NotImplemented
 
         if _is_number(other):
@@ -433,9 +433,9 @@ cdef class Expr(ExprLike):
         return self
 
     def __mul__(self, other, /):
+        if isinstance(other, GenExpr):
+            return other * self
         if not _is_expr_compatible(other):
-            if isinstance(other, GenExpr):
-                return other * self
             return NotImplemented
 
         cdef dict res = {}
