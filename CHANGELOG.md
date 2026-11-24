@@ -28,6 +28,7 @@
 - `PowExpr._evaluate` now raises `ValueError("math domain error")` for a negative base with a non-integer exponent and `OverflowError` when the result overflows.
 - Faster construction of polynomial expressions (`Term()` creation, comparison, and multiplication are cheaper).
 - `Term` now accepts a single argument (`Variable` or `None`) instead of multiple arguments
+- Refactored the inheritance hierarchy of `Variable` from `Expr` to the base interface `ExprLike`
 - Refactored the inheritance hierarchy of `MatrixVariable` and `MatrixGenExpr` from `MatrixExpr` to the base interface `MatrixExprLike`
 ### Removed
 - Removed support for Python 3.8
@@ -51,7 +52,6 @@
 - Speed up `ProdExpr.__neg__` and `Constant.__neg__` via C-level API (#1250)
 - Extended `structured_optimization_trace` recipe to support context-managed JSONL tracing with final `run_end` records, alongside the existing attach-style in-memory tracing.
 - Integration tests now run in the merge queue before merging instead of after pushing to `master` (#1249)
-- Refactored the inheritance hierarchy of `Variable` from `Expr` to the base interface `ExprLike`
 ### Removed
 - `SumExpr`.coefs has been removed; its values were always 1.0 (#1258)
 - Deprecated `getOp` method in `GenExpr` (#1259)
