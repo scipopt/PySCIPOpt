@@ -2464,6 +2464,9 @@ cdef class Variable(Expr):
     @staticmethod
     cdef create(SCIP_VAR* scipvar)
 
+    cpdef size_t ptr(self) noexcept
+    cpdef int getIndex(self) noexcept
+
 cdef class ExactVariable(Variable):
     pass
 
