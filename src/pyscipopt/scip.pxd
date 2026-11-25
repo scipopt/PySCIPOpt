@@ -2358,8 +2358,6 @@ cdef class BaseModel:
     cdef SCIP_EVENTHDLR* _getEventhdlr(self, object eventhdlr)
     cdef SCIP_HEUR* _getHeur(self, object heur)
 
-    cdef _configureScip(self)
-
     @staticmethod
     cdef create(SCIP* scip)
 

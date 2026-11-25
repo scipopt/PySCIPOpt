@@ -154,10 +154,15 @@ cdef class ExactModel(BaseModel):
         """
         if not PYSCIPOPT_WITH_EXACTSOLVE:
             raise ValueError("SCIP was built without exact solving support, ExactModel needs a SCIP build with exact solving enabled")
-        super().__init__(problemName, defaultPlugins, createscip=createscip)
-
-    cdef _configureScip(self):
+        super().__init__(problemName, defaultPlugins, createscip=False)
+        if not createscip:
+            return
+        self._freescip = True
+        PY_SCIP_CALL(SCIPcreate(&self._scip))
+        if defaultPlugins:
+            self.includeDefaultPlugins()
         PY_SCIP_CALL(SCIPenableExactSolving(self._scip, True))
+        self.createProbBasic(problemName)
 
     def __getattr__(self, name):
         if hasattr(Model, name):
