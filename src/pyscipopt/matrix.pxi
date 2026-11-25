@@ -14,7 +14,7 @@ from pyscipopt.scip cimport Expr, Solution
 cnp.import_array()
 
 
-class MatrixExpr(np.ndarray):
+class MatrixExprLike(np.ndarray):
 
     __array_priority__ = 100
 
@@ -78,7 +78,11 @@ class MatrixExpr(np.ndarray):
         return _vec_evaluate(self, sol).view(np.ndarray)
 
 
-class MatrixGenExpr(MatrixExpr):
+class MatrixExpr(MatrixExprLike):
+    pass
+
+
+class MatrixGenExpr(MatrixExprLike):
     pass
 
 

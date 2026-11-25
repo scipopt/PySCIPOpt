@@ -28,6 +28,8 @@
 - `PowExpr._evaluate` now raises `ValueError("math domain error")` for a negative base with a non-integer exponent and `OverflowError` when the result overflows.
 - Faster construction of polynomial expressions (`Term()` creation, comparison, and multiplication are cheaper).
 - `Term` now accepts a single argument (`Variable` or `None`) instead of multiple arguments
+- Refactored the inheritance hierarchy of `Variable` from `Expr` to the base interface `ExprLike`
+- Refactored the inheritance hierarchy of `MatrixVariable` and `MatrixGenExpr` from `MatrixExpr` to the base interface `MatrixExprLike`
 ### Removed
 - Removed support for Python 3.8
 

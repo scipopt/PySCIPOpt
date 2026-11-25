@@ -20,7 +20,7 @@ from pyscipopt import (
     sin,
     sqrt,
 )
-from pyscipopt.scip import CONST, GenExpr
+from pyscipopt.scip import CONST, GenExpr, MatrixExprLike, MatrixGenExpr
 
 
 def test_catching_errors():
@@ -711,3 +711,15 @@ def test_evaluate():
 
     assert type(m.getVal(x)) is np.ndarray
     assert m.getVal(x).sum() == 1
+
+
+def test_matrix_exprlike_hierarchy():
+    m = Model()
+    mvar = m.addMatrixVar(shape=(2,))
+    assert isinstance(mvar, MatrixExprLike)
+    assert not isinstance(mvar, MatrixExpr)
+
+    gen = sqrt([2, 2])
+    assert isinstance(gen, MatrixGenExpr)
+    assert isinstance(gen, MatrixExprLike)
+    assert not isinstance(gen, MatrixExpr)

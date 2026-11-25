@@ -2211,6 +2211,9 @@ cdef extern from "tpi/tpi.h":
 
 cdef class ExprLike:
 
+    cpdef double degree(self) except? -1
+    cdef Expr as_expr(self)
+    cdef void normalize(self)
     cpdef double _evaluate(self, Solution sol)
     cdef ExprLike copy(self, bint copy=*)
 
@@ -2293,8 +2296,9 @@ cdef class Node:
     @staticmethod
     cdef create(SCIP_NODE* scipnode)
 
-cdef class Variable(Expr):
+cdef class Variable(ExprLike):
     cdef SCIP_VAR* scip_var
+    cdef Expr _expr
     # can be used to store problem data
     cdef public object data
 

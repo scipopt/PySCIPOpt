@@ -1137,12 +1137,12 @@ cdef class Solution:
 
     def __getitem__(
         self,
-        expr: Union[Expr, GenExpr, MatrixExpr],
+        expr: Union[ExprLike, MatrixExprLike],
     ) -> Union[float, np.ndarray]:
-        if not isinstance(expr, (Expr, GenExpr, MatrixExpr)):
+        if not isinstance(expr, (ExprLike, MatrixExprLike)):
             raise TypeError(
-                "Argument 'expr' has incorrect type, expected 'Expr', 'GenExpr', or "
-                f"'MatrixExpr', got {type(expr).__name__!r}"
+                "Argument 'expr' has incorrect type, expected 'Variable', 'Expr', "
+                f"'GenExpr', 'MatrixVariable', or 'MatrixExpr', got {type(expr).__name__!r}"
             )
 
         self._checkStage("SCIPgetSolVal")
@@ -1560,17 +1560,22 @@ cdef class Node:
         return (self.__class__ == other.__class__
                 and self.scip_node == (<Node>other).scip_node)
 
-cdef class Variable(Expr):
-    """Is a linear expression and has SCIP_VAR*"""
+cdef class Variable(ExprLike):
+
+    def __init__(self, *_):
+        raise TypeError(
+            "cannot create 'Variable' instances directly, "
+            "use Model.addVar() instead"
+        )
 
     @staticmethod
-    cdef create(SCIP_VAR* scipvar):
+    cdef create(SCIP_VAR* scip_var):
         """
         Main method for creating a Variable class. Is used instead of __init__.
 
         Parameters
         ----------
-        scipvar : SCIP_VAR*
+        scip_var : SCIP_VAR*
             A pointer to the SCIP_VAR
 
         Returns
@@ -1579,11 +1584,14 @@ cdef class Variable(Expr):
             The Python representative of the SCIP_VAR
 
         """
-        if scipvar == NULL:
+        if scip_var == NULL:
             raise Warning("cannot create Variable with SCIP_VAR* == NULL")
-        var = Variable()
-        var.scip_var = scipvar
-        Expr.__init__(var, {Term(var) : 1.0})
+
+        cdef Variable var = Variable.__new__(Variable)
+        cdef Expr expr = Expr.__new__(Expr)
+        var.scip_var = scip_var
+        expr.terms = {Term(var): 1.0}
+        var._expr = expr
         return var
 
     @property
@@ -1600,6 +1608,9 @@ cdef class Variable(Expr):
 
     def __repr__(self):
         return self.name
+
+    cdef Expr as_expr(self):
+        return self._expr
 
     def vtype(self):
         """
@@ -2014,7 +2025,7 @@ cdef class Variable(Expr):
         """
         return SCIPvarGetNBranchingsCurrentRun(self.scip_var, branchdir)
 
-class MatrixVariable(MatrixExpr):
+class MatrixVariable(MatrixExprLike):
 
     def vtype(self):
         """
@@ -4317,7 +4328,7 @@ cdef class Model:
 
         Parameters
         ----------
-        expr : Expr or float
+        expr : Variable, Expr or float
             the objective function SCIP Expr, or constant value
         sense : str, optional
             the objective sense ("minimize" or "maximize") (Default value = 'minimize')
@@ -4331,9 +4342,9 @@ cdef class Model:
         cdef int i
         cdef _VarArray wrapper
 
-        if not isinstance(expr, Expr) and not _is_number(expr):
+        if not isinstance(expr, (Variable, Expr)) and not _is_number(expr):
             raise TypeError(
-                f"requires Expr or number but got type {type(expr).__name__!s}"
+                f"requires Variable, Expr or number but got type {type(expr).__name__!s}"
             )
 
         # turn the constant value into an Expr instance for further processing
@@ -4376,7 +4387,7 @@ cdef class Model:
 
         """
         variables = self.getVars()
-        objective = Expr()
+        cdef Expr objective = Expr()
         for var in variables:
             coeff = var.getObj()
             if coeff != 0:
@@ -7291,14 +7302,14 @@ cdef class Model:
         """
         return PY_SCIP_CALL(SCIPprintCons(self._scip, constraint.scip_cons, NULL))
 
-    def addExprNonlinear(self, Constraint cons, expr, coef):
+    def addExprNonlinear(self, Constraint cons, ExprLike expr, double coef):
         """
         Add coef*expr to nonlinear constraint.
 
         Parameters
         ----------
         cons : Constraint
-        expr : Expr or GenExpr
+        expr : Variable, Expr or GenExpr
         coef : float
 
         """
@@ -11773,7 +11784,7 @@ cdef class Model:
     def getSolVal(
         self,
         Solution sol,
-        expr: Union[Expr, GenExpr, MatrixExpr],
+        expr: Union[ExprLike, MatrixExprLike],
     ) -> Union[float, np.ndarray]:
         """
         Retrieve value of given variable or expression in the given solution.
@@ -11784,7 +11795,7 @@ cdef class Model:
             Solution to query the value from. If None, the current LP/pseudo solution is
             used.
 
-        expr : Expr, GenExpr, MatrixExpr
+        expr : Variable, Expr, GenExpr, MatrixVariable, MatrixExpr
             Expression to query the value of.
 
         Returns
@@ -11799,14 +11810,14 @@ cdef class Model:
         # no need to create a NULL solution wrapper in case we have a variable
         return (sol or Solution.create(self._scip, NULL))[expr]
 
-    def getVal(self, expr: Union[Expr, GenExpr, MatrixExpr]) -> Union[float, np.ndarray]:
+    def getVal(self, expr: Union[ExprLike, MatrixExprLike]) -> Union[float, np.ndarray]:
         """
         Retrieve the value of the given variable or expression in the best known solution.
         Can only be called after solving is completed.
 
         Parameters
         ----------
-        expr : Expr, GenExpr or MatrixExpr
+        expr : Variable, Expr, GenExpr, MatrixVariable, MatrixExpr
             Expression to query the value of.
 
         Returns
@@ -12727,13 +12738,13 @@ cdef class Model:
             raise Warning("method cannot be called in stage %i." % self.getStage())
         PY_SCIP_CALL(SCIPfreeReoptSolve(self._scip))
 
-    def chgReoptObjective(self, coeffs, sense = 'minimize'):
+    def chgReoptObjective(self, coeffs: Union[Variable, Expr], sense = 'minimize'):
         """
         Change the objective function for reoptimization.
 
         Parameters
         ----------
-        coeffs : Expr
+        coeffs : Variable, Expr
             the coefficients as a linear expression
         sense : str
             the objective sense (Default value = 'minimize')
@@ -12745,6 +12756,7 @@ cdef class Model:
         cdef SCIP_OBJSENSE objsense
         cdef int i
         cdef _VarArray wrapper
+        cdef Expr expr
 
         if sense == "minimize":
             objsense = SCIP_OBJSENSE_MINIMIZE
@@ -12753,14 +12765,17 @@ cdef class Model:
         else:
             raise Warning("unrecognized optimization sense: %s" % sense)
 
-        assert isinstance(coeffs, Expr), "given coefficients are not Expr but %s" % coeffs.__class__.__name__
+        assert isinstance(coeffs, (Variable, Expr)), "given coefficients are not Variable or Expr but %s" % coeffs.__class__.__name__
 
-        if coeffs.degree() > 1:
+        # Variable is not an Expr anymore (M4): use its shared, read-only Expr view.
+        expr = (<ExprLike>coeffs).as_expr()
+
+        if expr.degree() > 1:
             raise ValueError("Nonlinear objective functions are not supported!")
-        if coeffs[CONST] != 0.0:
+        if expr[CONST] != 0.0:
             raise ValueError("Constant offsets in objective are not supported!")
 
-        nvars = len(coeffs.terms) - (CONST in coeffs.terms)
+        nvars = len(expr.terms) - (CONST in expr.terms)
 
         if nvars == 0:
             PY_SCIP_CALL(SCIPchgReoptObjective(self._scip, objsense, NULL, NULL, 0))
@@ -12770,7 +12785,7 @@ cdef class Model:
         vars = <SCIP_VAR**> malloc(nvars * sizeof(SCIP_VAR*))
 
         i = 0
-        for term, coef in coeffs.terms.items():
+        for term, coef in expr.terms.items():
             # avoid CONST term of Expr
             if term != CONST:
                 wrapper = _VarArray(term[0])

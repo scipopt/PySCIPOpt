@@ -188,7 +188,7 @@ CONST = Term()
 
 
 # helper function
-def buildGenExprObj(expr: Union[int, float, np.number, Expr, GenExpr]) -> GenExpr:
+def buildGenExprObj(expr: Union[int, float, np.number, ExprLike]) -> GenExpr:
     """helper function to generate an object of type GenExpr"""
     if not _is_genexpr_compatible(expr):
         raise TypeError(f"unsupported type {type(expr).__name__!s}")
@@ -196,12 +196,12 @@ def buildGenExprObj(expr: Union[int, float, np.number, Expr, GenExpr]) -> GenExp
     if _is_number(expr):
         return Constant(expr)
 
-    elif isinstance(expr, Expr):
+    elif isinstance(expr, (Variable, Expr)):
         # loop over terms and create a sumexpr with the sum of each term
         # each term is either a variable (which gets transformed into varexpr)
         # or a product of variables (which gets tranformed into a prod)
         sumexpr = SumExpr()
-        for vars, coef in expr.terms.items():
+        for vars, coef in (<ExprLike>expr).as_expr().terms.items():
             if len(vars) == 0:
                 sumexpr += coef
             elif len(vars) == 1:
@@ -229,7 +229,7 @@ cdef class ExprLike:
     ):
         if kwargs.get("out", None) is not None:
             raise TypeError(
-                f"{self.__class__.__name__} doesn't support the 'out' parameter in __array_ufunc__"
+                f"{self.__class__.__name__!s} doesn't support the 'out' parameter in __array_ufunc__"
             )
 
         if method == "__call__":
@@ -272,7 +272,7 @@ cdef class ExprLike:
             elif ufunc is np.equal:
                 return args[0] == args[1]
             elif ufunc is np.absolute:
-                return args[0].__abs__()
+                return abs(args[0])
             elif ufunc is np.exp:
                 return args[0].exp()
             elif ufunc is np.log:
@@ -286,6 +286,34 @@ cdef class ExprLike:
 
         return NotImplemented
 
+    def __getitem__(self, key) -> float:
+        if key is None:
+            raise TypeError("index must be a Term or Variable, got None")
+        if not isinstance(key, Term):
+            try:
+                key = Term(key)
+            except TypeError:
+                raise TypeError(
+                    f"index must be a Term or Variable, got {type(key).__name__}"
+                ) from None
+        return self.as_expr().terms.get(key, 0.0)
+
+    def __iter__(self):
+        return iter(self.as_expr().terms)
+
+    def __contains__(self, key) -> bool:
+        if key is None:
+            return False
+        if not isinstance(key, Term):
+            try:
+                key = Term(key)
+            except TypeError:
+                return False
+        return key in self.as_expr().terms
+
+    def __add__(self, other, /):
+        return self.as_expr() + other
+
     def __radd__(self, other, /):
         return self + other
 
@@ -295,11 +323,23 @@ cdef class ExprLike:
     def __rsub__(self, other, /):
         return (-self) + other
 
+    def __mul__(self, other, /):
+        return self.as_expr() * other
+
     def __rmul__(self, other, /):
         return self * other
 
+    def __truediv__(self, other, /):
+        return self.as_expr() / other
+
     def __rtruediv__(self, other, /) -> GenExpr:
         return buildGenExprObj(other) / self
+
+    def __pow__(self, other, /):
+        return self.as_expr() ** other
+
+    def __rpow__(self, other, /):
+        return other ** self.as_expr()
 
     def __richcmp__(self, other, int op):
         return _expr_richcmp(self, other, op)
@@ -307,7 +347,7 @@ cdef class ExprLike:
     def __neg__(self, /) -> Union[Expr, GenExpr]:
         return self * -1.0
 
-    def __pos__(self, /) -> Union[Expr, GenExpr]:
+    def __pos__(self, /) -> ExprLike:
         return self.copy()
 
     def __abs__(self, /) -> AbsExpr:
@@ -328,10 +368,26 @@ cdef class ExprLike:
     def cos(self, /) -> CosExpr:
         return CosExpr(Operator.cos, buildGenExprObj(self))
 
-    cpdef double _evaluate(self, Solution sol) except *:
+    cpdef double degree(self) except? -1:
+        cdef Expr expr = self.as_expr()
+        cdef double deg = 0, res = 0
+        cdef Term t
+        for t in expr.terms:
+            deg = len(t)
+            if deg > res:
+                res = deg
+        return res
+
+    cdef Expr as_expr(self):
         raise NotImplementedError(
-            f"{self.__class__.__name__!s} need to implement _evaluate() method"
+            f"{self.__class__.__name__!s} need to implement as_expr() method"
         )
+
+    cdef void normalize(self):
+        self.as_expr().normalize()
+
+    cpdef double _evaluate(self, Solution sol) except *:
+        return self.as_expr()._evaluate(sol)
 
     cdef ExprLike copy(self, bint copy=True):
         raise NotImplementedError(
@@ -352,15 +408,9 @@ cdef class Expr(ExprLike):
         if len(self.terms) == 0:
             self.terms[CONST] = 0.0
 
-    def __getitem__(self, key):
-        if not isinstance(key, Term):
-            key = Term(key)
-        return self.terms.get(key, 0.0)
-
-    def __iter__(self):
-        return iter(self.terms)
-
-    def __add__(self, other):
+    def __add__(self, other, /):
+        if isinstance(other, GenExpr):
+            return other + self
         if not _is_expr_compatible(other):
             return NotImplemented
 
@@ -371,7 +421,7 @@ cdef class Expr(ExprLike):
 
         return Expr(_to_dict(self, other, copy=True))
 
-    def __iadd__(self, other):
+    def __iadd__(self, other, /):
         if not _is_expr_compatible(other):
             return NotImplemented
 
@@ -382,7 +432,9 @@ cdef class Expr(ExprLike):
 
         return self
 
-    def __mul__(self, other):
+    def __mul__(self, other, /):
+        if isinstance(other, GenExpr):
+            return other * self
         if not _is_expr_compatible(other):
             return NotImplemented
 
@@ -401,10 +453,10 @@ cdef class Expr(ExprLike):
             while PyDict_Next(self.terms, &pos1, &k1_ptr, &v1_ptr):
                 res[<Term>k1_ptr] = <double>(<object>v1_ptr) * coef
 
-        elif isinstance(other, Expr):
+        elif isinstance(other, (Variable, Expr)):
             while PyDict_Next(self.terms, &pos1, &k1_ptr, &v1_ptr):
                 pos2 = <Py_ssize_t>0
-                while PyDict_Next(other.terms, &pos2, &k2_ptr, &v2_ptr):
+                while PyDict_Next((<ExprLike>other).as_expr().terms, &pos2, &k2_ptr, &v2_ptr):
                     child = (<Term>k1_ptr) * (<Term>k2_ptr)
                     coef = (<double>(<object>v1_ptr)) * (<double>(<object>v2_ptr))
                     if (old_v_ptr := PyDict_GetItem(res, child)) != NULL:
@@ -413,7 +465,7 @@ cdef class Expr(ExprLike):
                         res[child] = coef
         return Expr(res)
 
-    def __truediv__(self, other):
+    def __truediv__(self, other, /):
         if not _is_expr_compatible(other):
             return NotImplemented
 
@@ -426,7 +478,7 @@ cdef class Expr(ExprLike):
             return NotImplemented
         return super().__rtruediv__(other)
 
-    def __pow__(self, other, modulo):
+    def __pow__(self, other, /):
         if float(other).is_integer() and other >= 0:
             exp = int(other)
         else: # need to transform to GenExpr
@@ -437,7 +489,7 @@ cdef class Expr(ExprLike):
             res *= self
         return res
 
-    def __rpow__(self, other):
+    def __rpow__(self, other, /):
         """
         Implements base**x as scip.exp(x * scip.log(base)).
         Note: base must be positive.
@@ -449,19 +501,15 @@ cdef class Expr(ExprLike):
             raise ValueError("Base of a**x must be positive, as expression is reformulated to scip.exp(x * scip.log(a)); got %g" % base)
         return (self * Constant(base).log()).exp()
 
-    def normalize(self):
-        '''remove terms with coefficient of 0'''
-        self.terms =  {t:c for (t,c) in self.terms.items() if c != 0.0}
-
     def __repr__(self) -> str:
         return 'Expr(%s)' % repr(self.terms)
 
-    def degree(self):
-        '''computes highest degree of terms'''
-        if len(self.terms) == 0:
-            return 0
-        else:
-            return max(len(v) for v in self.terms)
+    cdef Expr as_expr(self):
+        return self
+
+    cdef void normalize(self):
+        '''remove terms with coefficient of 0'''
+        self.terms =  {t:c for (t,c) in self.terms.items() if c != 0.0}
 
     cpdef double _evaluate(self, Solution sol) except *:
         cdef double res = 0
@@ -502,14 +550,16 @@ cdef class ExprCons:
         self._rhs = rhs
         assert not (lhs is None and rhs is None)
         self.normalize()
+        assert not isinstance(self.expr, Variable), \
+            "ExprCons.expr must be a plain Expr after normalize()"
 
-    def normalize(self):
+    cdef void normalize(self):
         '''move constant terms in expression to bounds'''
-        if isinstance(self.expr, Expr):
+        if isinstance(self.expr, (Variable, Expr)):
             c = self.expr[CONST]
             self.expr -= c
             assert self.expr[CONST] == 0.0
-            self.expr.normalize()
+            (<ExprLike>self.expr).normalize()
         else:
             assert isinstance(self.expr, GenExpr)
             return
@@ -606,7 +656,16 @@ cdef class GenExpr(ExprLike):
     def __init__(self): # do we need it
         ''' '''
 
-    def __add__(self, other):
+    def __getitem__(self, _):
+        raise TypeError(f"{self.__class__.__name__!s} cannot be indexed")
+
+    def __iter__(self):
+        raise TypeError(f"{self.__class__.__name__!s} cannot be iterated")
+
+    def __contains__(self, _):
+        raise TypeError(f"{self.__class__.__name__!s} cannot be used with 'in'")
+
+    def __add__(self, other, /):
         if not _is_genexpr_compatible(other):
             return NotImplemented
 
@@ -657,7 +716,7 @@ cdef class GenExpr(ExprLike):
     #        self.children.append(right)
     #    return self
 
-    def __mul__(self, other):
+    def __mul__(self, other, /):
         if not _is_genexpr_compatible(other):
             return NotImplemented
 
@@ -707,7 +766,7 @@ cdef class GenExpr(ExprLike):
     #        self.children.append(right)
     #    return self
 
-    def __pow__(self, other, modulo):
+    def __pow__(self, other, /):
         expo = buildGenExprObj(other)
         if <type>Py_TYPE(expo) is not Constant:
             raise NotImplementedError("exponents must be numbers")
@@ -719,7 +778,7 @@ cdef class GenExpr(ExprLike):
 
         return ans
 
-    def __rpow__(self, other):
+    def __rpow__(self, other, /):
         """
         Implements base**x as scip.exp(x * scip.log(base)). 
         Note: base must be positive.
@@ -732,7 +791,7 @@ cdef class GenExpr(ExprLike):
         return (self * Constant(base).log()).exp()
 
     #TODO: ipow, idiv, etc
-    def __truediv__(self,other):
+    def __truediv__(self,other, /):
         if not _is_genexpr_compatible(other):
             return NotImplemented
 
@@ -747,7 +806,7 @@ cdef class GenExpr(ExprLike):
             return NotImplemented
         return super().__rtruediv__(other)
 
-    def degree(self):
+    cpdef double degree(self) except? -1:
         '''Note: none of these expressions should be polynomial'''
         return INFINITY
 
@@ -770,6 +829,9 @@ cdef class GenExpr(ExprLike):
         raise NotImplementedError(
             f"{self.__class__.__name__!s} need to implement to_scip_expr() method"
         )
+
+    cdef void normalize(self):
+        ...
 
     cdef GenExpr copy(self, bint copy=True):
         cdef object cls = <type>Py_TYPE(self)
@@ -907,7 +969,7 @@ cdef class VarExpr(GenExpr):
         return expr
 
     cpdef double _evaluate(self, Solution sol) except *:
-        return (<Expr>self.children[0])._evaluate(sol)
+        return (<ExprLike>self.children[0]).as_expr()._evaluate(sol)
 
 
 # Pow Expressions
@@ -952,7 +1014,7 @@ cdef class PowExpr(GenExpr):
 
 cdef class UnaryExpr(GenExpr):
 
-    def __init__(self, op, expr: Union[Expr, GenExpr]):
+    def __init__(self, op, GenExpr expr not None):
         self._op = op
         self.children = [expr]
 
@@ -1104,7 +1166,7 @@ def exp(x):
 
     Parameters
     ----------
-    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+    x : Variable, Expr, GenExpr, number, np.ndarray, list, or tuple
         - If x is a scalar expression or number, apply the exp function directly to it.
           And if it's a number, convert it to a Constant expression first.
         - If x is a vector (np.ndarray, list, or tuple), apply the exp function
@@ -1128,7 +1190,7 @@ def log(x):
 
     Parameters
     ----------
-    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+    x : Variable, Expr, GenExpr, number, np.ndarray, list, or tuple
         - If x is a scalar expression or number, apply the log function directly to it.
           And if it's a number, convert it to a Constant expression first.
         - If x is a vector (np.ndarray, list, or tuple), apply the log function
@@ -1152,7 +1214,7 @@ def sqrt(x):
 
     Parameters
     ----------
-    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+    x : Variable, Expr, GenExpr, number, np.ndarray, list, or tuple
         - If x is a scalar expression or number, apply the sqrt function directly to it.
           And if it's a number, convert it to a Constant expression first.
         - If x is a vector (np.ndarray, list, or tuple), apply the sqrt function
@@ -1176,7 +1238,7 @@ def sin(x):
 
     Parameters
     ----------
-    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+    x : Variable, Expr, GenExpr, number, np.ndarray, list, or tuple
         - If x is a scalar expression or number, apply the sin function directly to it.
           And if it's a number, convert it to a Constant expression first.
         - If x is a vector (np.ndarray, list, or tuple), apply the sin function
@@ -1200,7 +1262,7 @@ def cos(x):
 
     Parameters
     ----------
-    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+    x : Variable, Expr, GenExpr, number, np.ndarray, list, or tuple
         - If x is a scalar expression or number, apply the cos function directly to it.
           And if it's a number, convert it to a Constant expression first.
         - If x is a vector (np.ndarray, list, or tuple), apply the cos function
@@ -1229,7 +1291,7 @@ cdef inline object _wrap_ufunc(object x, object ufunc):
 
     Parameters
     ----------
-    x : Expr, GenExpr, number, np.ndarray, list, or tuple
+    x : Variable, Expr, GenExpr, number, np.ndarray, list, or tuple
         - If x is a scalar expression or number, apply the ufunc directly to it. And if
           it's a number, convert it to a Constant expression first.
         - If x is a vector (np.ndarray, list, or tuple), apply the ufunc element-wise
@@ -1255,11 +1317,17 @@ cdef inline object _wrap_ufunc(object x, object ufunc):
 cdef inline object _ensure_matrix(object arg):
     if type(arg) is np.ndarray:
         return arg.view(MatrixExpr)
-    matrix = MatrixExpr if isinstance(arg, Expr) else MatrixGenExpr
+    matrix = MatrixExpr if isinstance(arg, (Variable, Expr)) else MatrixGenExpr
     return np.array(arg, dtype=object).view(matrix)
 
-cdef dict _to_dict(Expr expr, Expr other, bool copy = True):
-    cdef dict children = expr.terms.copy() if copy else expr.terms
+cdef dict _to_dict(
+    expr: Union[Variable, Expr],
+    other: Union[Variable, Expr],
+    bool copy = True,
+):
+    cdef Expr _expr = (<ExprLike>expr).as_expr()
+    cdef Expr _other = (<ExprLike>other).as_expr()
+    cdef dict children = _expr.terms.copy() if copy else _expr.terms
     cdef Py_ssize_t pos = <Py_ssize_t>0
     cdef PyObject* k_ptr = NULL
     cdef PyObject* v_ptr = NULL
@@ -1267,7 +1335,7 @@ cdef dict _to_dict(Expr expr, Expr other, bool copy = True):
     cdef double other_v
     cdef object k_obj
 
-    while PyDict_Next(other.terms, &pos, &k_ptr, &v_ptr):
+    while PyDict_Next(_other.terms, &pos, &k_ptr, &v_ptr):
         other_v = <double>(<object>v_ptr)
         k_obj = <object>k_ptr
         old_v_ptr = PyDict_GetItem(children, k_obj)
@@ -1287,14 +1355,14 @@ cdef inline bint _is_number(object x):
     return PyNumber_Check(x)
 
 cdef inline bint _is_expr_compatible(object x):
-    return _is_number(x) or isinstance(x, Expr)
+    return _is_number(x) or isinstance(x, (Variable, Expr))
 
 cdef inline bint _is_genexpr_compatible(object x):
     return _is_expr_compatible(x) or isinstance(x, GenExpr)
 
 cdef object _expr_richcmp(
     ExprLike self,
-    other: Union[int, float, np.number, Expr, GenExpr],
+    other: Union[int, float, np.number, ExprLike],
     int op,
 ):
     if isinstance(other, np.ndarray):
