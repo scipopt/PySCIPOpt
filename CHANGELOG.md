@@ -2,7 +2,7 @@
 
 ## Unreleased
 ### Added
-- Added `ExactModel`, which enables SCIP's exact solving mode on construction, and the wrapper types `ExactVariable`, `ExactSolution`, `ExactEvent` and `ExactBoundChange` that SCIP objects of an exact model are returned as; for now it can only read problems and solve them exactly, and it is unavailable when SCIP was built without exact solving support
+- Added `ExactModel`, which enables SCIP's exact solving mode on construction, and the new types `ExactVariable`, `ExactSolution`, `ExactEvent` and `ExactBoundChange`. Full support for exact solving should come in the next major release.
 - Added the following methods with tests: `nodesSharePath()`, `nodesGetCommonAncestor()`, `getFocusDepth()`, `getRootNode()`, `wasNodeLastBranchParent()`
 - Added `getCountedSols()` to retrieve the solutions collected by `count()` (#906)
 - Added docstrings to the bundled stubs in release wheels for Python 3.10 and later.
@@ -20,8 +20,8 @@
 ### Changed
 - Replaced SCIP constant classes with `IntEnum` and `IntFlag`, including enum return values and type annotations (#1286).
 - Speed up enum-returning getters and plugin callbacks with precomputed lookup tables
-- Deprecated `Model.enableExactSolving()`, `Model.isExact()`, `Model.allowNegSlackExact()`, `Model.branchLPExact()` and `Model.addRowExact()` in favour of `ExactModel`; they will be removed in 7.0.0
-- Split `Model` into `BaseModel` (methods shared with exact solving) and `Model(BaseModel)` (floating-point methods); the public surface of `Model` is unchanged and `BaseModel` is exported from `pyscipopt`
+- Deprecated `Model.enableExactSolving()`, `Model.isExact()`, `Model.allowNegSlackExact()`, `Model.branchLPExact()` and `Model.addRowExact()`
+- Split `Model` into `BaseModel` (methods shared with exact solving) and `Model(BaseModel)` (floating-point methods). The public-facing `Model` is unchanged, `BaseModel` is only used internally.
 - Replaced `format()` with f-strings in examples
 - Refactor general expression conversion into per-class `to_scip_expr` recursion
 - Made expression fields read-only to prevent accidental runtime modification
