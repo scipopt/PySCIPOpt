@@ -92,6 +92,17 @@ def test_operations_do_not_mutate_variable_view(model):
     assert x[y] == 0.0
 
 
+def test_degree_and_membership(model):
+    _, x, y = model
+    assert x.degree() == 1.0
+
+    expr = 2 * x + 3 * y
+    assert x in expr
+    assert y in expr
+    assert x not in (y + 1)
+    assert set(expr) == {Term(x), Term(y)}
+
+
 def test_chgReoptObjective_with_variable(model):
     m, x, y = model
     m.enableReoptimization()

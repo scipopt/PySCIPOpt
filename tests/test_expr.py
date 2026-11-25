@@ -136,8 +136,59 @@ def test_genexpr_op_genexpr(model):
 
 def test_degree(model):
     m, x, y, z = model
-    expr = GenExpr()
-    assert expr.degree() == float('inf')
+    assert GenExpr().degree() == float('inf')
+
+    # ExprLike.degree is the maximum number of variables in a term
+    assert (x + y).degree() == 1.0
+    assert (x * y).degree() == 2.0
+    assert (x * y * z).degree() == 3.0
+    assert (x ** 2).degree() == 2.0
+    assert Expr().degree() == 0.0
+    # zero coefficients are only dropped on normalization
+    assert (x - x).degree() == 1.0
+    assert x.degree() == 1.0
+
+
+def test_getitem(model):
+    m, x, y, z = model
+    expr = 2 * x + 3 * y + 5
+    assert expr[x] == 2.0
+    assert expr[y] == 3.0
+    assert expr[Term(x)] == 2.0
+    assert expr[CONST] == 5.0
+    assert expr[z] == 0.0
+
+    with pytest.raises(TypeError, match="index must be a Term or Variable, got None"):
+        expr[None]
+    with pytest.raises(TypeError, match="index must be a Term or Variable, got int"):
+        expr[1]
+
+
+def test_iter(model):
+    m, x, y, z = model
+    expr = 2 * x + 3 * y
+    terms = list(expr)
+    assert len(terms) == 2
+    assert all(isinstance(term, Term) for term in terms)
+    assert set(terms) == {Term(x), Term(y)}
+
+
+def test_contains(model):
+    m, x, y, z = model
+    expr = 2 * x + 3 * y
+    assert x in expr
+    assert Term(x) in expr
+    assert z not in expr
+    assert None not in expr
+    assert 1 not in expr
+    assert Term(x) * Term(y) not in expr
+
+
+def test_contains_genexpr_raises(model):
+    m, x, y, z = model
+    with pytest.raises(TypeError, match="cannot be used with 'in'"):
+        x in exp(x)
+
 
 # In contrast to Expr inequalities, we can't expect much of the sides
 def test_inequality(model):
