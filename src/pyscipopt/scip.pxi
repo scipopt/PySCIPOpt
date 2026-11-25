@@ -20,6 +20,7 @@ from posix.stdio cimport fileno
 from collections.abc import Iterable
 from itertools import repeat
 from dataclasses import dataclass
+from fractions import Fraction
 from enum import Enum, Flag, IntEnum, IntFlag
 from typing import Union
 
@@ -51,6 +52,7 @@ include "presol.pxi"
 include "pricer.pxi"
 include "propagator.pxi"
 include "sepa.pxi"
+include "symhdlr.pxi"
 include "reader.pxi"
 include "relax.pxi"
 include "nodesel.pxi"
@@ -610,9 +612,22 @@ cdef class Solution:
         """
         return _ENUMS[PY_SCIP_SOLORIGIN][SCIPsolGetOrigin(self.sol)]
 
+    def isExact(self):
+        """
+        Returns whether the solution has exact (rational) values.
+
+        Returns
+        -------
+        bool
+        """
+        return self.sol != NULL and SCIPsolIsExact(self.sol)
+
     def retransform(self):
         """ retransforms solution to original problem space """
-        PY_SCIP_CALL(SCIPretransformSol(self.scip, self.sol))
+        if SCIPsolIsExact(self.sol):
+            PY_SCIP_CALL(SCIPretransformSolExact(self.scip, self.sol))
+        else:
+            PY_SCIP_CALL(SCIPretransformSol(self.scip, self.sol))
 
     def translate(self, BaseModel target):
         """
@@ -832,9 +847,14 @@ cdef class Node:
 
         Returns
         -------
-        float
+        float or Fraction
+            a Fraction (or -inf) when the node belongs to an exact model
 
         """
+        cdef SCIP_RATIONAL* exact = SCIPnodeGetLowerboundExact(self.scip_node)
+
+        if exact != NULL:
+            return _fromRational(exact)
         return SCIPnodeGetLowerbound(self.scip_node)
 
     def getEstimate(self):
@@ -966,7 +986,7 @@ cdef class Node:
         cdef int nbranchings
         cdef int nconsprop
         cdef int nprop
-        SCIPnodeGetNDomchg(self.scip_node, &nbranchings, &nconsprop, &nprop)
+        SCIPnodeGetNDomchg(self.scip_node, &nbranchings, &nconsprop, &nprop, NULL)
         return nbranchings, nconsprop, nprop
 
     def getDomchg(self):

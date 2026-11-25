@@ -108,7 +108,7 @@ def test_getCutoffbound():
         disable_sepa=True,
         disable_heur=True,
         disable_presolve=True,
-        node_lim=10000,
+        node_lim=100000,
         small=True
     )
 

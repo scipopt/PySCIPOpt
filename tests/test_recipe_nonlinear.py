@@ -44,9 +44,6 @@ def test_nonlinear_objective():
     obj_expr = model.getObjective()
     assert obj_expr.degree() == 1
 
-    model.setParam("numerics/epsilon", 10**(-5)) # bigger eps due to nonlinearities
-    model2.setParam("numerics/epsilon", 10**(-5)) 
-
     model.optimize()
     model2.optimize()
     assert model.isEQ(model.getObjVal(), model2.getObjVal())

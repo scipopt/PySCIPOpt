@@ -569,9 +569,9 @@ cdef class Model(BaseModel):
         self._bestSol = <Solution> sourceModel._bestSol
         n = str_conversion(problemName)
         if origcopy:
-            PY_SCIP_CALL(SCIPcopyOrig(sourceModel._scip, self._scip, NULL, NULL, n, enablepricing, threadsafe, True, self._valid))
+            PY_SCIP_CALL(SCIPcopyOrig(sourceModel._scip, self._scip, NULL, NULL, n, enablepricing, True, threadsafe, True, self._valid))
         else:
-            PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, threadsafe, True, self._valid))
+            PY_SCIP_CALL(SCIPcopy(sourceModel._scip, self._scip, NULL, NULL, n, globalcopy, enablepricing, True, threadsafe, True, self._valid))
 
     def getFirstPrimalBound(self):
         """
@@ -6086,102 +6086,6 @@ cdef class Model(BaseModel):
 
         return down, up, downvalid, upvalid, downinf, upinf, downconflict, upconflict, lperror
 
-    # Exact SCIP methods
-    def enableExactSolving(self, SCIP_Bool enable):
-        """
-        Enables or disables exact solving mode in SCIP.
-
-        Parameters
-        ----------
-        enable : SCIP_Bool
-            Whether to enable exact solving mode (True) or disable it (False).
-
-        Deprecated since 6.4.0; construct an ExactModel instead. Enabling
-        exact solving on a Model raises a ValueError.
-        """
-        if enable:
-            raise ValueError("Model cannot solve exactly; construct an ExactModel instead.")
-        warnings.warn(
-            "enableExactSolving() is deprecated and will be removed in PySCIPOpt 7.0.0; construct an ExactModel instead.",
-            DeprecationWarning,
-            stacklevel=1
-        )
-
-        PY_SCIP_CALL(SCIPenableExactSolving(self._scip, enable))
-
-    def isExact(self):
-        """
-        Returns whether exact solving mode is enabled in SCIP.
-
-        Returns
-        -------
-        bool
-
-        Deprecated since 6.4.0; exact models are instances of ExactModel.
-        """
-        warnings.warn(
-            "isExact() is deprecated and will be removed in PySCIPOpt 7.0.0; exact models are instances of ExactModel.",
-            DeprecationWarning,
-            stacklevel=1
-        )
-
-        return SCIPisExact(self._scip)
-
-    def allowNegSlackExact(self):
-        """
-        Returns whether negative slack is allowed in exact solving mode.
-
-        Returns
-        -------
-        bool
-
-        Deprecated since 6.4.0; use ExactModel.allowNegSlack() instead.
-        """
-        warnings.warn(
-            "allowNegSlackExact() is deprecated and will be removed in PySCIPOpt 7.0.0; use ExactModel.allowNegSlack() instead.",
-            DeprecationWarning,
-            stacklevel=1
-        )
-
-        return SCIPallowNegSlack(self._scip)
-    
-    def branchLPExact(self):
-        """
-        Performs exact LP branching.
-
-        Returns
-        -------
-        SCIP_RESULT
-
-        Deprecated since 6.4.0; use ExactModel.branchLP() instead.
-        """
-        warnings.warn(
-            "branchLPExact() is deprecated and will be removed in PySCIPOpt 7.0.0; use ExactModel.branchLP() instead.",
-            DeprecationWarning,
-            stacklevel=1
-        )
-        cdef SCIP_RESULT result
-        PY_SCIP_CALL(SCIPbranchLPExact(self._scip, &result))
-        return _ENUMS[PY_SCIP_RESULT][result]
-
-    def addRowExact(self, RowExact rowexact):
-        """
-        Adds an exact row to the LP.
-
-        Parameters
-        ----------
-        rowexact : RowExact
-            The exact row to add.
-
-        Deprecated since 6.4.0; use ExactModel.addRow() instead.
-        """
-        warnings.warn(
-            "addRowExact() is deprecated and will be removed in PySCIPOpt 7.0.0; use ExactModel.addRow() instead.",
-            DeprecationWarning,
-            stacklevel=1
-        )
-        PY_SCIP_CALL(SCIPaddRowExact(self._scip, rowexact.scip_row_exact))
-
     def getBipartiteGraphRepresentation(self, prev_col_features=None, prev_edge_features=None, prev_row_features=None,
                                         static_only=False, suppress_warnings=False):
         """
@@ -6607,6 +6511,62 @@ cdef class Model(BaseModel):
                                                pricedVarScore=matrix_priced_var_scores[idx])
 
         return matrix_variable.view(MatrixVariable)
+
+    def inferVarLbSym(self, Variable var, lb, SymComp symcomp, inferinfo, force=False):
+        """
+        Tighten the lower bound of a variable, storing the symmetry component as reason for conflict analysis.
+
+        Parameters
+        ----------
+        var : Variable
+        lb : float
+            new lower bound
+        symcomp : SymComp
+            symmetry component that deduced the bound change
+        inferinfo : int
+            user information passed to symresprop()
+        force : bool, optional
+            force tightening even if below bound strengthening tolerance (Default value = False)
+
+        Returns
+        -------
+        infeasible : bool
+        tightened : bool
+
+        """
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool tightened
+        PY_SCIP_CALL(SCIPinferVarLbSym(self._scip, var.scip_var, lb, symcomp.scip_symcomp, inferinfo, force,
+                                       &infeasible, &tightened))
+        return infeasible, tightened
+
+    def inferVarUbSym(self, Variable var, ub, SymComp symcomp, inferinfo, force=False):
+        """
+        Tighten the upper bound of a variable, storing the symmetry component as reason for conflict analysis.
+
+        Parameters
+        ----------
+        var : Variable
+        ub : float
+            new upper bound
+        symcomp : SymComp
+            symmetry component that deduced the bound change
+        inferinfo : int
+            user information passed to symresprop()
+        force : bool, optional
+            force tightening even if below bound strengthening tolerance (Default value = False)
+
+        Returns
+        -------
+        infeasible : bool
+        tightened : bool
+
+        """
+        cdef SCIP_Bool infeasible
+        cdef SCIP_Bool tightened
+        PY_SCIP_CALL(SCIPinferVarUbSym(self._scip, var.scip_var, ub, symcomp.scip_symcomp, inferinfo, force,
+                                       &infeasible, &tightened))
+        return infeasible, tightened
 
     def includeBranchrule(self, Branchrule branchrule, name, desc, priority, maxdepth, maxbounddist):
         """
@@ -7511,6 +7471,60 @@ cdef class Model(BaseModel):
         PY_SCIP_CALL( SCIPapplyCutsProbing(self._scip, &cutoff) )
         return cutoff
 
+    def includeSymhdlr(self, Symhdlr symhdlr, name, desc, priority=0, proppriority=0, sepapriority=0,
+                       presolpriority=0, propfreq=-1, sepafreq=-1, delayprop=False, delaysepa=False,
+                       maxbounddist=1.0, maxprerounds=-1, proptiming=SCIP_PROPTIMING_BEFORELP,
+                       presoltiming=SCIP_PRESOLTIMING_FAST):
+        """
+        Include a symmetry handler.
+
+        Parameters
+        ----------
+        symhdlr : Symhdlr
+            symmetry handler
+        name : str
+            name of symmetry handler
+        desc : str
+            description of symmetry handler
+        priority : int, optional
+            priority for trying to add the handler to symmetry components (Default value = 0)
+        proppriority : int, optional
+            priority for propagation (Default value = 0)
+        sepapriority : int, optional
+            priority for separation (Default value = 0)
+        presolpriority : int, optional
+            priority for presolving (Default value = 0)
+        propfreq : int, optional
+            frequency for calling propagation, -1 to disable (Default value = -1)
+        sepafreq : int, optional
+            frequency for calling separation, -1 to disable (Default value = -1)
+        delayprop : bool, optional
+            should propagation be delayed if other propagators found reductions? (Default value = False)
+        delaysepa : bool, optional
+            should separation be delayed if other separators found cuts? (Default value = False)
+        maxbounddist : float, optional
+            maximal relative distance from current node's dual bound to primal bound for applying separation (Default value = 1.0)
+        maxprerounds : int, optional
+            maximal number of presolving rounds, -1 for no limit (Default value = -1)
+        proptiming : PY_SCIP_PROPTIMING, optional
+            timing mask of propagation (Default value = SCIP_PROPTIMING_BEFORELP)
+        presoltiming : PY_SCIP_PRESOLTIMING, optional
+            timing mask of presolving (Default value = SCIP_PRESOLTIMING_FAST)
+
+        """
+        n = str_conversion(name)
+        d = str_conversion(desc)
+        symhdlr._symcompdata = []
+        PY_SCIP_CALL(SCIPincludeSymhdlr(self._scip, n, d, priority, proppriority, sepapriority, presolpriority,
+                                        propfreq, sepafreq, delayprop, delaysepa, maxbounddist, maxprerounds,
+                                        proptiming, presoltiming, PySymhdlrTryAdd, NULL, PySymhdlrFree,
+                                        PySymhdlrInit, PySymhdlrExit, PySymhdlrInitsol, PySymhdlrExitsol,
+                                        PySymhdlrSepaLP, PySymhdlrSepaSol, PySymhdlrProp, PySymhdlrResProp,
+                                        PySymhdlrPresol, <SCIP_SYMHDLRDATA*> symhdlr))
+        symhdlr.model = self
+        symhdlr.name = name
+        self._plugins.append(symhdlr)
+
     def includeIISfinder(self, IISfinder iisfinder, name, desc, priority=10000, freq=1):
         """
         Include an IIS (Irreducible Infeasible Set) finder handler.
@@ -7536,7 +7550,7 @@ cdef class Model(BaseModel):
 
         iisfinder.iis = IIS()
 
-        PY_SCIP_CALL(SCIPincludeIISfinder(self._scip, nam, des, priority, PyiisfinderCopy, PyiisfinderFree,
+        PY_SCIP_CALL(SCIPincludeIISfinder(self._scip, nam, des, priority, True, PyiisfinderCopy, PyiisfinderFree,
                                          PyiisfinderExec, <SCIP_IISFINDERDATA*> iisfinder))
 
         scip_iisfinder = SCIPfindIISfinder(self._scip, nam)

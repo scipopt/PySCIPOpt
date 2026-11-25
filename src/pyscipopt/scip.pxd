@@ -429,6 +429,22 @@ cdef extern from "scip/scip.h":
     ctypedef struct SYM_GRAPH:
         pass
 
+    ctypedef enum SYM_SYMTYPE:
+        SYM_SYMTYPE_PERM
+        SYM_SYMTYPE_SIGNPERM
+
+    ctypedef struct SCIP_SYMHDLR:
+        pass
+
+    ctypedef struct SCIP_SYMHDLRDATA:
+        pass
+
+    ctypedef struct SCIP_SYMCOMP:
+        pass
+
+    ctypedef struct SCIP_SYMCOMPDATA:
+        pass
+
     ctypedef struct SCIP_READER:
         pass
 
@@ -602,6 +618,7 @@ cdef extern from "scip/scip.h":
                           const char*           suffix,
                           SCIP_Bool             globalcopy,
                           SCIP_Bool             enablepricing,
+                          SCIP_Bool             copysymhdlrs,
                           SCIP_Bool             threadsafe,
                           SCIP_Bool             passmessagehdlr,
                           SCIP_Bool*            valid)
@@ -611,6 +628,7 @@ cdef extern from "scip/scip.h":
                               SCIP_HASHMAP*         consmap,
                               const char*           suffix,
                               SCIP_Bool             enablepricing,
+                              SCIP_Bool             copysymhdlrs,
                               SCIP_Bool             threadsafe,
                               SCIP_Bool             passmessagehdlr,
                               SCIP_Bool*            valid)
@@ -773,6 +791,7 @@ cdef extern from "scip/scip.h":
     SCIP_Longint SCIPnodeGetNumber(SCIP_NODE* node)
     int SCIPnodeGetDepth(SCIP_NODE* node)
     SCIP_Real SCIPnodeGetLowerbound(SCIP_NODE* node)
+    SCIP_RATIONAL* SCIPnodeGetLowerboundExact(SCIP_NODE* node)
     SCIP_RETCODE SCIPupdateNodeLowerbound(SCIP* scip, SCIP_NODE* node, SCIP_Real newbound)
     SCIP_Real SCIPnodeGetEstimate(SCIP_NODE* node)
     SCIP_NODETYPE SCIPnodeGetType(SCIP_NODE* node)
@@ -793,7 +812,7 @@ cdef extern from "scip/scip.h":
     void SCIPnodeGetAddedConss(SCIP_NODE* node, SCIP_CONS** addedconss,
                                int* naddedconss, int addedconsssize)
     void SCIPnodeGetNDomchg(SCIP_NODE* node, int* nbranchings, int* nconsprop,
-                            int* nprop)
+                            int* nprop, int* nsymprop)
     SCIP_DOMCHG* SCIPnodeGetDomchg(SCIP_NODE* node)
 
     # Domain change methods
@@ -1220,6 +1239,61 @@ cdef extern from "scip/scip.h":
 
     SCIP_PROPDATA* SCIPpropGetData (SCIP_PROP* prop)
 
+    # Symmetry handler plugin
+    SCIP_RETCODE SCIPincludeSymhdlr(SCIP* scip,
+                                    const char* name,
+                                    const char* desc,
+                                    int priority,
+                                    int proppriority,
+                                    int sepapriority,
+                                    int presolpriority,
+                                    int propfreq,
+                                    int sepafreq,
+                                    SCIP_Bool delayprop,
+                                    SCIP_Bool delaysepa,
+                                    SCIP_Real maxbounddist,
+                                    int maxprerounds,
+                                    SCIP_PROPTIMING proptiming,
+                                    SCIP_PRESOLTIMING presoltiming,
+                                    SCIP_RETCODE (*symhdlrtryadd) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SYM_SYMTYPE symtype, int** perms, int nperms,
+                                                                   SCIP_VAR** permvars, int npermvars, SCIP_Real* permvardomcenter, SCIP_HASHMAP* permvarmap,
+                                                                   SYM_GRAPH* symgraph, int id, SCIP_SYMCOMPDATA** symcompdata, int* naddedconss,
+                                                                   SCIP_Bool allowbdchgs, int* nchgbds, SCIP_Bool* success),
+                                    SCIP_RETCODE (*symcopy) (SCIP* scip, SCIP_SYMHDLR* symhdlr),
+                                    SCIP_RETCODE (*symfree) (SCIP* scip, SCIP_SYMHDLR* symhdlr),
+                                    SCIP_RETCODE (*syminit) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP** symcomps, int nsymcomps),
+                                    SCIP_RETCODE (*symexit) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP** symcomps, int nsymcomps),
+                                    SCIP_RETCODE (*syminitsol) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP** symcomps, int nsymcomps),
+                                    SCIP_RETCODE (*symexitsol) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP** symcomps, int nsymcomps, SCIP_Bool restart),
+                                    SCIP_RETCODE (*symsepalp) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP** symcomps, int nsymcomps,
+                                                               SCIP_RESULT* result, SCIP_Bool allowlocal, int depth),
+                                    SCIP_RETCODE (*symsepasol) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SOL* sol, SCIP_SYMCOMP** symcomps, int nsymcomps,
+                                                                SCIP_RESULT* result, SCIP_Bool allowlocal, int depth),
+                                    SCIP_RETCODE (*symprop) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP** symcomps, int nsymcomps,
+                                                             SCIP_PROPTIMING proptiming, SCIP_RESULT* result),
+                                    SCIP_RETCODE (*symresprop) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP* symcomp, SCIP_VAR* infervar, int inferinfo,
+                                                                SCIP_BOUNDTYPE boundtype, SCIP_BDCHGIDX* bdchgidx, SCIP_Real relaxedbd, SCIP_RESULT* result),
+                                    SCIP_RETCODE (*sympresol) (SCIP* scip, SCIP_SYMHDLR* symhdlr, SCIP_SYMCOMP** symcomps, int nsymcomps, int nrounds,
+                                                               SCIP_PRESOLTIMING presoltiming, int nnewfixedvars, int nnewaggrvars, int nnewchgvartypes,
+                                                               int nnewchgbds, int nnewholes, int nnewdelconss, int nnewaddconss, int nnewupgdconss,
+                                                               int nnewchgcoefs, int nnewchgsides, int* nfixedvars, int* naggrvars, int* nchgvartypes,
+                                                               int* nchgbds, int* naddholes, int* ndelconss, int* naddconss, int* nupgdconss,
+                                                               int* nchgcoefs, int* nchgsides, SCIP_RESULT* result),
+                                    SCIP_SYMHDLRDATA* symhdlrdata)
+
+    SCIP_SYMHDLRDATA* SCIPsymhdlrGetData(SCIP_SYMHDLR* symhdlr)
+    const char* SCIPsymhdlrGetName(SCIP_SYMHDLR* symhdlr)
+    SCIP_SYMHDLR* SCIPfindSymhdlr(SCIP* scip, const char* name)
+    SCIP_SYMHDLR** SCIPgetSymhdlrs(SCIP* scip)
+    int SCIPgetNSymhdlrs(SCIP* scip)
+    SCIP_SYMCOMPDATA* SCIPsymcompGetData(SCIP_SYMCOMP* symcomp)
+    SCIP_SYMHDLR* SCIPsymcompGetHdlr(SCIP_SYMCOMP* symcomp)
+    const char* SCIPsymcompGetName(SCIP_SYMCOMP* symcomp)
+    SCIP_RETCODE SCIPinferVarLbSym(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound, SCIP_SYMCOMP* infersymcomp, int inferinfo,
+                                   SCIP_Bool force, SCIP_Bool* infeasible, SCIP_Bool* tightened)
+    SCIP_RETCODE SCIPinferVarUbSym(SCIP* scip, SCIP_VAR* var, SCIP_Real newbound, SCIP_SYMCOMP* infersymcomp, int inferinfo,
+                                   SCIP_Bool force, SCIP_Bool* infeasible, SCIP_Bool* tightened)
+
     # Heuristics plugin
     SCIP_RETCODE SCIPincludeHeur(SCIP* scip,
                                  const char* name,
@@ -1249,6 +1323,7 @@ cdef extern from "scip/scip.h":
                                       const char* name,
                                       const char* desc,
                                       int         priority,
+                                      SCIP_Bool   enable,
                                       SCIP_RETCODE (*iisfindercopy) (SCIP* scip, SCIP_IISFINDER* iisfinder),
                                       SCIP_RETCODE (*iisfinderfree) (SCIP* scip, SCIP_IISFINDER* iisfinder),
                                       SCIP_RETCODE (*iisfinderexec) (SCIP_IIS* iis, SCIP_IISFINDER* iisfinder, SCIP_RESULT* result),
@@ -1474,6 +1549,50 @@ cdef extern from "scip/scip.h":
     SCIP_Bool SCIPallowNegSlack(SCIP* scip);
     SCIP_RETCODE SCIPbranchLPExact(SCIP* scip, SCIP_RESULT* result);
     SCIP_RETCODE SCIPaddRowExact(SCIP* scip, SCIP_ROWEXACT* rowexact);
+    SCIP_RETCODE SCIPaddVarExactData(SCIP* scip, SCIP_VAR* var, SCIP_RATIONAL* lb, SCIP_RATIONAL* ub, SCIP_RATIONAL* obj)
+    SCIP_RETCODE SCIPchgVarObjExact(SCIP* scip, SCIP_VAR* var, SCIP_RATIONAL* newobj)
+    SCIP_RETCODE SCIPchgVarLbExact(SCIP* scip, SCIP_VAR* var, SCIP_RATIONAL* newbound)
+    SCIP_RETCODE SCIPchgVarUbExact(SCIP* scip, SCIP_VAR* var, SCIP_RATIONAL* newbound)
+    SCIP_Bool SCIPvarIsExact(SCIP_VAR* var)
+    SCIP_RATIONAL* SCIPvarGetObjExact(SCIP_VAR* var)
+    SCIP_RATIONAL* SCIPvarGetLbOriginalExact(SCIP_VAR* var)
+    SCIP_RATIONAL* SCIPvarGetUbOriginalExact(SCIP_VAR* var)
+    SCIP_RATIONAL* SCIPvarGetLbGlobalExact(SCIP_VAR* var)
+    SCIP_VARSTATUS SCIPvarGetStatusExact(SCIP_VAR* var)
+    SCIP_RATIONAL* SCIPvarGetUbGlobalExact(SCIP_VAR* var)
+    SCIP_RATIONAL* SCIPvarGetLbLocalExact(SCIP_VAR* var)
+    SCIP_RATIONAL* SCIPvarGetUbLocalExact(SCIP_VAR* var)
+    void SCIPvarGetLPSolExact(SCIP_VAR* var, SCIP_RATIONAL* res)
+    SCIP_COLEXACT* SCIPvarGetColExact(SCIP_VAR* var)
+    SCIP_RETCODE SCIPchgVarLbGlobalExact(SCIP* scip, SCIP_VAR* var, SCIP_RATIONAL* newbound)
+    SCIP_RETCODE SCIPchgVarUbGlobalExact(SCIP* scip, SCIP_VAR* var, SCIP_RATIONAL* newbound)
+    SCIP_RETCODE SCIPchgVarLbExactDive(SCIP* scip, SCIP_VAR* var, SCIP_RATIONAL* newbound)
+    SCIP_RETCODE SCIPchgVarUbExactDive(SCIP* scip, SCIP_VAR* var, SCIP_RATIONAL* newbound)
+    SCIP_RETCODE SCIPstartExactDive(SCIP* scip)
+    SCIP_LPSOLSTAT SCIPgetLPExactSolstat(SCIP* scip)
+    SCIP_RETCODE SCIPprintRowExact(SCIP* scip, SCIP_ROWEXACT* row, FILE* file)
+    SCIP_RETCODE SCIPendExactDive(SCIP* scip)
+    SCIP_RETCODE SCIPsolveExactDiveLP(SCIP* scip, int itlim, SCIP_Bool* lperror, SCIP_Bool* cutoff)
+    SCIP_RETCODE SCIPfixVarExact(SCIP* scip, SCIP_VAR* var, SCIP_RATIONAL* fixedval, SCIP_Bool* infeasible, SCIP_Bool* fixed)
+    SCIP_RETCODE SCIPtightenVarLbExact(SCIP* scip, SCIP_VAR* var, SCIP_RATIONAL* newbound, SCIP_Bool* infeasible, SCIP_Bool* tightened)
+    SCIP_RETCODE SCIPtightenVarUbExact(SCIP* scip, SCIP_VAR* var, SCIP_RATIONAL* newbound, SCIP_Bool* infeasible, SCIP_Bool* tightened)
+    SCIP_RETCODE SCIPaggregateVarsExact(SCIP* scip, SCIP_VAR* varx, SCIP_VAR* vary, SCIP_RATIONAL* scalarx, SCIP_RATIONAL* scalary, SCIP_RATIONAL* rhs, SCIP_Bool* infeasible, SCIP_Bool* redundant, SCIP_Bool* aggregated)
+    void SCIPgetSolValExact(SCIP* scip, SCIP_SOL* sol, SCIP_VAR* var, SCIP_RATIONAL* res)
+    void SCIPgetSolOrigObjExact(SCIP* scip, SCIP_SOL* sol, SCIP_RATIONAL* res)
+    SCIP_RETCODE SCIPcreateSolExact(SCIP* scip, SCIP_SOL** sol, SCIP_HEUR* heur)
+    SCIP_RETCODE SCIPcreateLPSolExact(SCIP* scip, SCIP_SOL** sol, SCIP_HEUR* heur)
+    SCIP_RETCODE SCIPsetSolValExact(SCIP* scip, SCIP_SOL* sol, SCIP_VAR* var, SCIP_RATIONAL* val)
+    SCIP_RETCODE SCIPprintSolExact(SCIP* scip, SCIP_SOL* sol, FILE* file, SCIP_Bool printzeros)
+    SCIP_RETCODE SCIPretransformSolExact(SCIP* scip, SCIP_SOL* sol)
+    SCIP_Bool SCIPsolIsExact(SCIP_SOL* sol)
+    void SCIPgetPrimalboundExact(SCIP* scip, SCIP_RATIONAL* result)
+    void SCIPgetDualboundExact(SCIP* scip, SCIP_RATIONAL* result)
+    void SCIPgetUpperboundExact(SCIP* scip, SCIP_RATIONAL* result)
+    void SCIPgetLowerboundExact(SCIP* scip, SCIP_RATIONAL* result)
+    SCIP_RATIONAL* SCIPgetCutoffboundExact(SCIP* scip)
+    void SCIPgetLPExactObjval(SCIP* scip, SCIP_RATIONAL* result)
+    SCIP_RETCODE SCIPaddOrigObjoffsetExact(SCIP* scip, SCIP_RATIONAL* addval)
+    SCIP_RATIONAL* SCIPgetOrigObjoffsetExact(SCIP* scip)
 
     # Exact LP SCIP methods
     SCIP_VAR* SCIPcolExactGetVar(SCIP_COLEXACT* col);
@@ -1595,6 +1714,48 @@ cdef extern from "scip/scipdefplugins.h":
 
 cdef extern from "scip/bendersdefcuts.h":
     SCIP_RETCODE SCIPincludeBendersDefaultCuts(SCIP* scip, SCIP_BENDERS* benders)
+
+cdef extern from "scip/rational.h":
+    SCIP_RETCODE SCIPrationalCreate(SCIP_RATIONAL** rational)
+    void SCIPrationalFree(SCIP_RATIONAL** rational)
+    void SCIPrationalSetString(SCIP_RATIONAL* res, const char* desc)
+    int SCIPrationalToString(SCIP_RATIONAL* rational, char* str, int strlen)
+    int SCIPrationalStrLen(SCIP_RATIONAL* rational)
+
+cdef extern from "scip/cons_exactlinear.h":
+    SCIP_RETCODE SCIPcreateConsExactLinear(SCIP* scip,
+                                           SCIP_CONS** cons,
+                                           const char* name,
+                                           int nvars,
+                                           SCIP_VAR** vars,
+                                           SCIP_RATIONAL** vals,
+                                           SCIP_RATIONAL* lhs,
+                                           SCIP_RATIONAL* rhs,
+                                           SCIP_Bool initial,
+                                           SCIP_Bool separate,
+                                           SCIP_Bool enforce,
+                                           SCIP_Bool check,
+                                           SCIP_Bool propagate,
+                                           SCIP_Bool local,
+                                           SCIP_Bool modifiable,
+                                           SCIP_Bool dynamic,
+                                           SCIP_Bool removable,
+                                           SCIP_Bool stickingatnode)
+    SCIP_RETCODE SCIPaddCoefExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR* var, SCIP_RATIONAL* val)
+    SCIP_RETCODE SCIPchgCoefExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR* var, SCIP_RATIONAL* val)
+    SCIP_RETCODE SCIPchgLhsExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_RATIONAL* lhs)
+    SCIP_RETCODE SCIPchgRhsExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_RATIONAL* rhs)
+    SCIP_RATIONAL* SCIPgetLhsExactLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RATIONAL* SCIPgetRhsExactLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RATIONAL** SCIPgetValsExactLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_VAR** SCIPgetVarsExactLinear(SCIP* scip, SCIP_CONS* cons)
+    int SCIPgetNVarsExactLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_RETCODE SCIPdelCoefExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_VAR* var)
+    SCIP_ROW* SCIPgetRowExactLinear(SCIP* scip, SCIP_CONS* cons)
+    SCIP_ROWEXACT* SCIPgetRowExactExactLinear(SCIP* scip, SCIP_CONS* cons)
+    void SCIPgetFpDualsolExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_RATIONAL* ret)
+    void SCIPgetFpDualfarkasExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_RATIONAL* ret)
+    SCIP_RETCODE SCIPgetActivityExactLinear(SCIP* scip, SCIP_CONS* cons, SCIP_SOL* sol, SCIP_RATIONAL* ret)
 
 cdef extern from "scip/cons_linear.h":
     SCIP_RETCODE SCIPcreateConsLinear(SCIP* scip,
@@ -2306,6 +2467,9 @@ cdef class Variable(Expr):
     cpdef size_t ptr(self) noexcept
     cpdef int getIndex(self) noexcept
 
+cdef class ExactVariable(Variable):
+    pass
+
 cdef class Constraint:
     cdef SCIP_CONS* scip_cons
     # can be used to store problem data
@@ -2319,6 +2483,12 @@ cdef class IIS:
 
     @staticmethod
     cdef create(SCIP_IIS* iis)
+
+cdef class SymComp:
+    cdef SCIP_SYMCOMP* scip_symcomp
+
+    @staticmethod
+    cdef create(SCIP_SYMCOMP* scip_symcomp)
 
 cdef class BaseModel:
     cdef SCIP* _scip
@@ -2365,9 +2535,6 @@ cdef class Model(BaseModel):
     cdef SCIP_BENDERS* _getBenders(self, object benders)
 
 cdef class ExactModel(BaseModel):
-    pass
-
-cdef class ExactVariable(Variable):
     pass
 
 cdef class ExactSolution(Solution):

@@ -1,4 +1,5 @@
 import re
+from fractions import Fraction
 from pathlib import Path
 
 import pytest
@@ -106,17 +107,14 @@ def test_plugin_sees_the_same_model_object():
 def test_exact_model_skeleton(tmp_path):
     assert ExactModel.__mro__[:2] == (ExactModel, BaseModel)
     assert {"addRow", "allowNegSlack", "branchLP"} <= set(vars(ExactModel))
-    with pytest.warns(DeprecationWarning):
-        Model().isExact()
-    with pytest.raises(ValueError):
-        Model().enableExactSolving(True)
+    assert not {"enableExactSolving", "isExact", "allowNegSlackExact", "branchLPExact", "addRowExact"} & set(dir(Model))
     try:
         m = ExactModel()
     except ValueError:
         pytest.skip("SCIP was built without exact solving support")
     assert not isinstance(m, Model)
     assert type(BaseModel.from_ptr(m.to_ptr(False), False)) is ExactModel
-    assert not hasattr(m, "getVal")
+    assert not hasattr(m, "addConsAnd")
     with pytest.raises(AttributeError, match="Model.includeConshdlr has this attribute"):
         m.includeConshdlr
     with pytest.raises(AttributeError, match="no attribute 'noSuchMethod'$"):
@@ -124,7 +122,7 @@ def test_exact_model_skeleton(tmp_path):
     assert m.getNVars() == 0
     assert type(Model().addVar()) is Variable
     path = tmp_path / "exact.lp"
-    path.write_text("Minimize\n obj: x + 3 y\nSubject To\n c1: 2 x + 3 y >= 1\nBounds\n 0 <= x <= 10\n 0 <= y <= 10\nGeneral\n x\nEnd\n")
+    path.write_text("Minimize\n obj: x + 2 y\nSubject To\n c1: 2 x + 3 y >= 1\nBounds\n 0 <= x <= 10\n 0 <= y <= 10\nGeneral\n x\nEnd\n")
     m.hideOutput()
     m.readProblem(str(path))
     m.optimize()
@@ -133,7 +131,6 @@ def test_exact_model_skeleton(tmp_path):
     assert type(sol) is ExactSolution
     x = m.getVars()[0]
     assert x.name == "x" and x.vtype() == "INTEGER"
-    with pytest.raises(NotImplementedError):
-        x.getLbLocal()
-    with pytest.raises(NotImplementedError):
-        sol[x]
+    y = m.getVars()[1]
+    assert x.getLbLocal() == 0
+    assert sol[x] == 0 and sol[y] == Fraction(1, 3)
