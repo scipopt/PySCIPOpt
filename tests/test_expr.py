@@ -12,6 +12,7 @@ from pyscipopt.scip import (
     GenExpr,
     MatrixGenExpr,
     ProdExpr,
+    Term,
 )
 
 
@@ -214,11 +215,11 @@ def test_getVal_with_GenExpr():
     assert m.getVal(z * x * y) == 0
     # test "Expr({Term(x): 1.0, Term(y): 1.0, Term(): 1.0})"
     assert m.getVal(x + y + 1) == 4
-    # test "prod(1.0,sum(0.0,prod(1.0,x)),**(sum(0.0,prod(1.0,x)),-1))"
+    # test "prod(1.0,sum(0.0,prod(1.0,x)),**(sum(0.0,prod(1.0,x)),-1.0))"
     assert m.getVal(x / x) == 1
-    # test "prod(1.0,sum(0.0,prod(1.0,y)),**(sum(0.0,prod(1.0,x)),-1))"
+    # test "prod(1.0,sum(0.0,prod(1.0,y)),**(sum(0.0,prod(1.0,x)),-1.0))"
     assert m.getVal(y / x) == 2
-    # test "**(prod(1.0,**(sum(0.0,prod(1.0,x)),-1)),2)"
+    # test "**(prod(1.0,**(sum(0.0,prod(1.0,x)),-1.0)),2.0)"
     assert m.getVal((1 / x) ** 2) == 1
 
     # test C-level math functions
@@ -369,9 +370,9 @@ def test_binary_ufunc(model):
 
     # test np.divide
     assert str(np.divide(x, 2)) == "Expr({Term(x): 0.5})"
-    assert str(np.divide(2, x)) == "prod(2.0,**(sum(0.0,prod(1.0,x)),-1))"
+    assert str(np.divide(2, x)) == "prod(2.0,**(sum(0.0,prod(1.0,x)),-1.0))"
     assert str(np.divide(x, a)) == "[Expr({Term(x): 0.5})]"
-    assert str(np.divide(a, x)) == "[prod(2.0,**(sum(0.0,prod(1.0,x)),-1))]"
+    assert str(np.divide(a, x)) == "[prod(2.0,**(sum(0.0,prod(1.0,x)),-1.0))]"
 
     # test np.power
     assert str(np.power(x, 2)) == "Expr({Term(x, x): 1.0})"
@@ -680,3 +681,16 @@ def test_neg():
     assert str(neg_expr) == "prod(1.0,sqrt(sum(0.0,prod(1.0,x))))"
 
     assert str(-Constant(3.0)) == "-3.0"
+
+
+def test_term_constructor(model):
+    m, x, y, z = model
+
+    # No argument and None both denote the constant term.
+    assert Term() == Term(None) == CONST
+    assert len(Term(x)) == 1
+
+    with pytest.raises(TypeError):
+        Term(1)  # not a Variable
+    with pytest.raises(TypeError):
+        Term(x, y)  # only a single argument is accepted

@@ -61,6 +61,8 @@ jobs:
           # we need to ignore the .deb file we download above
           if [[ -n $(git status --porcelain --untracked-files=no) ]]; then
             echo "Baseline test files are out of date, run: ./stubs/baseline.sh on Python ${{ env.PYTHON_VERSION }} to update"
+            git status --short --untracked-files=no
+            git --no-pager diff
             exit 1
           fi
 

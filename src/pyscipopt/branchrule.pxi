@@ -1,7 +1,7 @@
 ##@file branchrule.pxi
 #@brief Base class of the Branchrule Plugin
 cdef class Branchrule:
-    cdef public Model model
+    cdef public BaseModel model
 
     def branchfree(self):
         '''frees memory of branching rule'''

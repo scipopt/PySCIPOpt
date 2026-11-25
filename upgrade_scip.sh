@@ -2,6 +2,7 @@
 set -euo pipefail
 
 PYPROJECT="pyproject.toml"
+WORKFLOWS=(.github/workflows/*.yml)
 DEPLOY_REPO="scipopt/scipoptsuite-deploy"
 REPO="scipopt/PySCIPOpt"
 
@@ -146,11 +147,11 @@ fi
 if [[ "$SKIP_DEPLOY" == false ]]; then
     echo "  1. Build new SCIP binaries (SCIP=${SCIP_VERSION} SoPlex=${SOPLEX_VERSION} GCG=${GCG_VERSION} IPOPT=${IPOPT_VERSION})"
     echo "  2. Create scipoptsuite-deploy release ${NEW_DEPLOY_VERSION}"
-    echo "  3. Create branch '${BRANCH}', update pyproject.toml, and open a PR"
+    echo "  3. Create branch '${BRANCH}', update pyproject.toml and CI SCIP version, and open a PR"
 else
     echo "  1. [skip] Build binaries — release ${NEW_DEPLOY_VERSION} already exists"
     echo "  2. [skip] Create release — already exists"
-    echo "  3. Create branch '${BRANCH}', update pyproject.toml, and open a PR"
+    echo "  3. Create branch '${BRANCH}', update pyproject.toml and CI SCIP version, and open a PR"
 fi
 echo ""
 
@@ -165,6 +166,7 @@ if [[ "$DRY_RUN" == true ]]; then
     fi
     echo "  git checkout -b ${BRANCH}"
     echo "  (sed) ${CURRENT_DEPLOY_VERSION} -> ${NEW_DEPLOY_VERSION} in ${PYPROJECT}"
+    echo "  (sed) 'version: ${SCIP_VERSION}' in $(grep -l '^  version: ' "${WORKFLOWS[@]}" | tr '\n' ' ')"
     echo "  git commit -m 'Update scipoptsuite-deploy to ${NEW_DEPLOY_VERSION} (SCIP ${SCIP_VERSION})'"
     echo "  git push -u ${PUSH_REMOTE} ${BRANCH}"
     echo "  gh pr create --repo ${REPO} --title 'Upgrade to SCIP ${SCIP_VERSION}'"
@@ -279,14 +281,21 @@ if cmp -s "$PYPROJECT" "${PYPROJECT}.bak"; then
 fi
 rm -f "${PYPROJECT}.bak"
 
-git add "$PYPROJECT"
+for wf in "${WORKFLOWS[@]}"; do
+    if grep -q '^  version: ' "$wf"; then
+        sed -i.bak "s/^  version: .*/  version: ${SCIP_VERSION}/" "$wf"
+        rm -f "${wf}.bak"
+    fi
+done
+
+git add "$PYPROJECT" "${WORKFLOWS[@]}"
 git commit -m "Update scipoptsuite-deploy to ${NEW_DEPLOY_VERSION} (SCIP ${SCIP_VERSION})"
 git push -u "$PUSH_REMOTE" "$BRANCH"
 
 gh pr create --repo "$REPO" \
     --title "Upgrade to SCIP ${SCIP_VERSION}" \
     --body "$(cat <<EOF
-Updates scipoptsuite-deploy ${CURRENT_DEPLOY_VERSION} -> ${NEW_DEPLOY_VERSION} (SCIP ${SCIP_VERSION}, SoPlex ${SOPLEX_VERSION}, GCG ${GCG_VERSION}, IPOPT ${IPOPT_VERSION}).
+Updates scipoptsuite-deploy ${CURRENT_DEPLOY_VERSION} -> ${NEW_DEPLOY_VERSION} (SCIP ${SCIP_VERSION}, SoPlex ${SOPLEX_VERSION}, GCG ${GCG_VERSION}, IPOPT ${IPOPT_VERSION}) and the SCIP version used by CI workflows.
 
 ## Checklist
 - [ ] Fix any API incompatibilities

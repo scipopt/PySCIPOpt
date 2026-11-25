@@ -1,7 +1,7 @@
 ##@file relax.pxi
 #@brief Base class of the Relaxator Plugin
 cdef class Relax:
-    cdef public Model model
+    cdef public BaseModel model
     cdef public str name
 
     def relaxfree(self):

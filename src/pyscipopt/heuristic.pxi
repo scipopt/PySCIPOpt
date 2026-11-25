@@ -1,7 +1,7 @@
 ##@file heuristic.pxi
 #@brief Base class of the Heuristics Plugin
 cdef class Heur:
-    cdef public Model model
+    cdef public BaseModel model
     cdef public str name
 
     def heurfree(self):
@@ -72,6 +72,6 @@ cdef SCIP_RETCODE PyHeurExec (SCIP* scip, SCIP_HEUR* heur, SCIP_HEURTIMING heurt
     cdef SCIP_HEURDATA* heurdata
     heurdata = SCIPheurGetData(heur)
     PyHeur = <Heur>heurdata
-    result_dict = PyHeur.heurexec(heurtiming, nodeinfeasible)
+    result_dict = PyHeur.heurexec(PY_SCIP_HEURTIMING(heurtiming), nodeinfeasible)
     result[0] = result_dict.get("result", <SCIP_RESULT>result[0])
     return SCIP_OKAY

@@ -8,7 +8,13 @@ if hasattr(os, 'add_dll_directory'):
 
 # export user-relevant objects:
 from pyscipopt.Multidict import multidict as multidict
+from pyscipopt.scip      import BaseModel as BaseModel
 from pyscipopt.scip      import Model as Model
+from pyscipopt.scip      import ExactModel as ExactModel
+from pyscipopt.scip      import ExactVariable as ExactVariable
+from pyscipopt.scip      import ExactSolution as ExactSolution
+from pyscipopt.scip      import ExactEvent as ExactEvent
+from pyscipopt.scip      import ExactBoundChange as ExactBoundChange
 from pyscipopt.scip      import Variable as Variable
 from pyscipopt.scip      import MatrixVariable as MatrixVariable
 from pyscipopt.scip      import Constraint as Constraint
@@ -55,6 +61,8 @@ from pyscipopt.scip      import PY_SCIP_LOCKTYPE        as SCIP_LOCKTYPE
 from pyscipopt.scip      import PY_SCIP_LPSOLSTAT       as SCIP_LPSOLSTAT
 from pyscipopt.scip      import PY_SCIP_BRANCHDIR       as SCIP_BRANCHDIR
 from pyscipopt.scip      import PY_SCIP_BENDERSENFOTYPE as SCIP_BENDERSENFOTYPE
+from pyscipopt.scip      import PY_SCIP_BOUNDTYPE       as SCIP_BOUNDTYPE
+from pyscipopt.scip      import PY_SCIP_BOUNDCHGTYPE    as SCIP_BOUNDCHGTYPE
 from pyscipopt.scip      import PY_SCIP_ROWORIGINTYPE as SCIP_ROWORIGINTYPE
 from pyscipopt.scip      import PY_SCIP_SOLORIGIN as SCIP_SOLORIGIN
 from pyscipopt.scip      import PY_SCIP_NODETYPE as SCIP_NODETYPE
