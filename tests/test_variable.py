@@ -92,6 +92,12 @@ def test_operations_do_not_mutate_variable_view(model):
     assert x[y] == 0.0
 
 
+def test_direct_instantiation_is_rejected():
+    # A Variable must be backed by a SCIP_VAR*, so it can only come from a Model.
+    with pytest.raises(TypeError, match="cannot create 'Variable' instances"):
+        Variable()
+
+
 def test_degree_and_membership(model):
     _, x, y = model
     assert x.degree() == 1.0

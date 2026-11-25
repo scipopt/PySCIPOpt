@@ -1563,9 +1563,9 @@ cdef class Node:
 cdef class Variable(ExprLike):
 
     def __init__(self, *_):
-        raise NotImplementedError(
-            "Direct instantiation of 'Variable' is not supported. "
-            "Please use Model to create variables."
+        raise TypeError(
+            "cannot create 'Variable' instances directly, "
+            "use Model.addVar() instead"
         )
 
     @staticmethod
