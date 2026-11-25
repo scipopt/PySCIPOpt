@@ -21,6 +21,8 @@ To download SCIP please either use the pre-built SCIP Optimization Suite availab
 
     * - SCIP
       - PySCIPOpt
+    * - 11.0.0
+      - 7.0
     * - 10.0.2
       - 6.2  
     * - 10.0.1

@@ -2,6 +2,7 @@
 
 ## Unreleased
 ### Added
+- Support for SCIP 11.0.0
 - Added `ExactModel`, which enables SCIP's exact solving mode on construction, and the new types `ExactVariable`, `ExactSolution`, `ExactEvent` and `ExactBoundChange`. Full support for exact solving should come in the next major release.
 - Added the following methods with tests: `nodesSharePath()`, `nodesGetCommonAncestor()`, `getFocusDepth()`, `getRootNode()`, `wasNodeLastBranchParent()`
 - Added `getCountedSols()` to retrieve the solutions collected by `count()` (#906)
