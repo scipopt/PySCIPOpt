@@ -45,7 +45,6 @@ cdef class BaseModel:
             self._bestSol = None
             if defaultPlugins:
                 self.includeDefaultPlugins()
-            self._configureScip()
             self.createProbBasic(problemName)
 
     def attachEventHandlerCallback(self,
@@ -105,9 +104,6 @@ cdef class BaseModel:
         ``Model.free`` for the full lifecycle policy.
         """
         self._free_scip_instance()
-
-    cdef _configureScip(self):
-        pass
 
     def __dealloc__(self):
         """Fallback SCIP cleanup if ``__del__`` did not already free the instance."""
