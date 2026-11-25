@@ -1,7 +1,7 @@
 ##@file iisfinder.pxi
 #@brief Base class of the IIS finder Plugin
 cdef class IISfinder:
-    cdef public Model model
+    cdef public BaseModel model
     cdef public IIS iis
     cdef SCIP_IIS* scip_iis
     cdef SCIP_IISFINDER* scip_iisfinder
